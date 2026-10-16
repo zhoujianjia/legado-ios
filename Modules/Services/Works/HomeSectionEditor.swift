@@ -1,0 +1,206 @@
+import Combine
+import Foundation
+
+/// Unified library 5d-5: one section's form, for 新增欄目 and for a section already on the home
+/// (design §13.3, Rex's 「設定資料來源」; Phase 5 plan, decision 23).
+///
+/// - 新增欄目 keeps its section here until 新增: a form left with 取消 changes nothing. Its
+///   section has no binding until 選擇內容來源 gives it one.
+/// - A section already on the home is written back on every change, as the rest of 編輯首頁
+///   writes (`HomePageStore.edit`), in its place.
+/// - The preview is a home of its own (`preview`) with the one section, so it loads one real
+///   page of it as the home would, without touching the home's rows.
+@MainActor
+final class HomeSectionEditor: ObservableObject {
+    /// The section as the form shows it.
+    struct Draft: Equatable {
+        var id: UUID
+        var layout: HomeSectionLayout
+        /// Empty reads the binding's own.
+        var title: String
+        var binding: HomeSectionBinding?
+        var isEnabled: Bool
+        var parameters: [String: String]
+
+        var section: HomeSection? {
+            binding.map { HomeSection(id: id, layout: layout, title: title, binding: $0, isEnabled: isEnabled, parameters: parameters) }
+        }
+    }
+
+    @Published private(set) var draft: Draft
+    /// 新增欄目's form, not yet on the home.
+    let isNew: Bool
+    let preview: HomeModel
+    private let store: HomePageStore
+    private let aggregation: AggregationSettingsStore
+    /// 新增欄目's 顯示在最新 choices, written on 新增 (`isNew` only).
+    @Published private var pendingLatest: [SourceInstanceKey: Bool] = [:]
+    /// The title the last choice gave, which the next one may replace.
+    private var chosenTitle = ""
+
+    /// 新增欄目: `layout` chosen first (Rex's order, decision 23).
+    init(newSectionIn store: HomePageStore? = nil, layout: HomeSectionLayout,
+         aggregation: AggregationSettingsStore? = nil, preview: HomeModel) {
+        draft = Draft(id: UUID(), layout: layout, title: "", binding: nil, isEnabled: true, parameters: [:])
+        isNew = true
+        self.store = store ?? .shared
+        self.aggregation = aggregation ?? .shared
+        self.preview = preview
+    }
+
+    init(section: HomeSection, store: HomePageStore? = nil, aggregation: AggregationSettingsStore? = nil,
+         preview: HomeModel) {
+        draft = Draft(id: section.id, layout: section.layout, title: section.title, binding: section.binding,
+                      isEnabled: section.isEnabled, parameters: section.parameters)
+        isNew = false
+        self.store = store ?? .shared
+        self.aggregation = aggregation ?? .shared
+        self.preview = preview
+    }
+
+    /// What the preview draws: the section, shown, whatever 在首頁顯示 says.
+    var previewPage: HomePage? {
+        guard var section = draft.section else { return nil }
+        section.isEnabled = true
+        return HomePage(sections: [section])
+    }
+
+    // MARK: Changing
+
+    func setLayout(_ layout: HomeSectionLayout) {
+        change { $0.layout = layout }
+    }
+
+    func setTitle(_ title: String) {
+        change { $0.title = title }
+    }
+
+    func setEnabled(_ isEnabled: Bool) {
+        change { $0.isEnabled = isEnabled }
+    }
+
+    /// 選擇內容來源's choice, with the parameters that go with it; those of the binding it
+    /// replaces go.
+    /// - Parameter itemTitle: the choice's name, for a binding that cannot name itself (a
+    ///   feed): it becomes the title (design §13.3: 「預設帶入子項目名稱」), unless the reader
+    ///   gave one. A binding that names itself leaves the title empty, to follow it.
+    func choose(_ binding: HomeSectionBinding, parameters: [String: String] = [:], itemTitle: String = "") {
+        let ownName = HomeSection(layout: draft.layout, binding: binding).displayTitle(sourceName: "")
+        let followsChoice = draft.title.isEmpty || draft.title == chosenTitle
+        let title = ownName.isEmpty ? itemTitle : ""
+        change {
+            $0.binding = binding
+            $0.parameters = parameters
+            if followsChoice { $0.title = title }
+            // Lists are drawn as 專題集合 and books never are (`HomeLayoutStyle.choices`): a
+            // choice across the two takes the layout that draws it.
+            if !HomeLayoutStyle.choices(for: binding).contains($0.layout.style) {
+                $0.layout = binding.listsCollections ? .collection : .row
+            }
+        }
+        if followsChoice { chosenTitle = title }
+    }
+
+    /// A module list's parameter (Phase 6f), by its name; nil goes back to the module's default.
+    func setParameter(_ name: String, to value: String?) {
+        change { $0.parameters[name] = value }
+    }
+
+    // MARK: 最新's categories
+
+    /// The categories picked for 最新, one per book source (design §13.3: a book source's 最新 is
+    /// the discover category the reader picks for it), by source URL.
+    var latestCategories: [ExploreCategoryReference] {
+        guard let section = draft.section, section.binding == .latest else { return [] }
+        let prefix = HomeSection.latestCategoryKey(sourceURL: "")
+        return section.parameters.keys.filter { $0.hasPrefix(prefix) }.sorted()
+            .compactMap { section.latestCategory(forSourceURL: String($0.dropFirst(prefix.count))) }
+    }
+
+    /// Picks the category that stands for a book source in 最新, with the discover filter values
+    /// it was picked under; nil takes the source out of it.
+    func setLatestCategory(_ reference: ExploreCategoryReference?, filterValues: [String: String] = [:],
+                           forSourceURL sourceURL: String) {
+        guard var section = draft.section, section.binding == .latest else { return }
+        section.setLatestCategory(reference, forSourceURL: sourceURL)
+        if reference != nil { section.setFilterValues(filterValues, forSourceURL: sourceURL) }
+        change { $0.parameters = section.parameters }
+    }
+
+    /// The discover filter values the section's category of `sourceURL` was picked under
+    /// (`HomeSection.filtersKey`).
+    func filterValues(forSourceURL sourceURL: String) -> [String: String] {
+        HomeSection.filterValues(in: draft.parameters, sourceURL: sourceURL)
+    }
+
+    // MARK: 為你推薦's categories
+
+    /// The categories 為你推薦 reads (Discovery Phase 7a-4): the selected 首頁配置's and its own,
+    /// less those left out.
+    var forYouCategories: [ExploreCategoryReference] {
+        guard let section = draft.section, section.binding == .forYou else { return [] }
+        return ForYouInputs.categories(on: store.page?.sections ?? [], for: section)
+    }
+
+    func addForYouCategory(_ reference: ExploreCategoryReference) {
+        guard var section = draft.section, section.binding == .forYou else { return }
+        section.addForYouCategory(reference, homeSections: store.page?.sections ?? [])
+        change { $0.parameters = section.parameters }
+    }
+
+    func removeForYouCategory(_ reference: ExploreCategoryReference) {
+        guard var section = draft.section, section.binding == .forYou else { return }
+        section.removeForYouCategory(reference, homeSections: store.page?.sections ?? [])
+        change { $0.parameters = section.parameters }
+    }
+
+    // MARK: 最新's libraries
+
+    /// 顯示在最新, set in 最新's form as Emby 4.10 sets a section's libraries (decision 36). It
+    /// stays 聚合設定's one value (`AggregationSettingsStore.hiddenFromLatest`), which every 最新
+    /// section shares; 新增欄目 keeps the reader's choice until 新增.
+    func isShownInLatest(_ key: SourceInstanceKey) -> Bool {
+        pendingLatest[key] ?? aggregation.isShownInLatest(key)
+    }
+
+    func setShownInLatest(_ shown: Bool, for key: SourceInstanceKey) {
+        if isNew { pendingLatest[key] = shown } else { aggregation.setShownInLatest(shown, for: key) }
+    }
+
+    /// The libraries 最新 leaves out, with the form's choices: what the preview loads without.
+    var hiddenFromLatest: Set<SourceInstanceKey> {
+        var hidden = Set(aggregation.settings.hiddenFromLatest ?? [])
+        for (key, shown) in pendingLatest {
+            if shown { hidden.remove(key) } else { hidden.insert(key) }
+        }
+        return hidden
+    }
+
+    /// 新增: the section at the end of the selected 首頁配置, and, for 最新, its libraries' choices.
+    /// False when it has no binding yet.
+    @discardableResult
+    func add() -> Bool {
+        guard isNew, let section = draft.section else { return false }
+        store.edit { $0.appendSection(section) }
+        if section.binding == .latest {
+            for (key, shown) in pendingLatest.sorted(by: { $0.key.id < $1.key.id }) {
+                aggregation.setShownInLatest(shown, for: key)
+            }
+        }
+        return true
+    }
+
+    func delete() {
+        guard !isNew else { return }
+        store.edit { $0.removeSection(draft.id) }
+    }
+
+    private func change(_ apply: (inout Draft) -> Void) {
+        var changed = draft
+        apply(&changed)
+        guard changed != draft else { return }
+        draft = changed
+        guard !isNew, let section = changed.section else { return }
+        store.edit { $0.replaceSection(section) }
+    }
+}

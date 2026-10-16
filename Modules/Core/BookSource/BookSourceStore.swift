@@ -1,0 +1,1136 @@
+import Foundation
+import Combine
+import os
+
+// MARK: - Pin State
+
+/// Where a user explicitly pinned a source (置頂／置底). Unlike a plain move, a pin is a
+/// deliberate claim on the head/tail region: the list shows a pin icon, and 取消置頂／取消置底
+/// drops the pin and puts the source back where it was.
+enum SourcePinPosition: String, Codable, Equatable {
+    case top
+    case bottom
+}
+
+struct SourcePinRecord: Codable, Equatable {
+    var position: SourcePinPosition
+    /// The source's array index when it was pinned, so unpinning can restore it
+    /// (clamped to the current list size — later insertions/deletions shift everything).
+    var originalIndex: Int
+    /// When the pin was set, newest-first within each pin group. Pre-multi-pin files
+    /// carry no timestamp and decode as `.distantPast`, sorting last — i.e. bottom of
+    /// their pin group — instead of jumping the order.
+    var pinnedAt: Date
+
+    init(position: SourcePinPosition, originalIndex: Int, pinnedAt: Date = Date()) {
+        self.position = position
+        self.originalIndex = originalIndex
+        self.pinnedAt = pinnedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        position = try container.decode(SourcePinPosition.self, forKey: .position)
+        originalIndex = try container.decode(Int.self, forKey: .originalIndex)
+        pinnedAt = try container.decodeIfPresent(Date.self, forKey: .pinnedAt) ?? .distantPast
+    }
+}
+
+// MARK: - Book Source Management (ObservableObject)
+
+class BookSourceStore: ObservableObject {
+    static let shared: BookSourceStore = {
+        #if DEBUG
+        // Profiling/UI-test hook: `-book-source-store-dir <path>` points the shared store at a
+        // scratch directory, so a 50,000-source fixture never overwrites the simulator's real
+        // library (or its pins). Compiled out of Release.
+        if let directory = debugStoreDirectory {
+            return BookSourceStore(directory: directory)
+        }
+        #endif
+        return BookSourceStore(
+            fileURL: StorageLocations.bookSourcesFile,
+            pinsFileURL: StorageLocations.support.appendingPathComponent("book_source_pins.json")
+        )
+    }()
+
+    #if DEBUG
+    private static var debugStoreDirectory: URL? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-book-source-store-dir"),
+              arguments.indices.contains(index + 1) else { return nil }
+        return URL(fileURLWithPath: arguments[index + 1], isDirectory: true)
+    }
+    #endif
+
+    /// Monotonic local mutation token used to prevent an in-flight cloud merge from writing an
+    /// older snapshot over a deletion (or another user edit) that completed while the network
+    /// request was running.
+    private(set) var mutationRevision = 0
+
+    /// The library itself. Read through `sources`, which guarantees it has been loaded.
+    @Published private var library: [BookSource] = [] {
+        didSet {
+            mutationRevision += 1
+            rebuildIndex()
+        }
+    }
+
+    /// Position of each source in `library`, rebuilt at its single write point (`didSet`).
+    /// Lookups by id used to scan the array — `sources.first { $0.id == id }` — in 40 places,
+    /// some of them per bookshelf cover per render: 200 covers took 3.06 s against 50 000
+    /// sources (Debug simulator). A derived index, not a second copy of the library.
+    private let index = OSAllocatedUnfairLock(initialState: [UUID: Int]())
+
+    private func rebuildIndex() {
+        var positions: [UUID: Int] = [:]
+        positions.reserveCapacity(library.count)
+        for (position, source) in library.enumerated() where positions[source.id] == nil {
+            positions[source.id] = position
+        }
+        index.withLock { $0 = positions }
+    }
+
+    /// The source with this id, without scanning the library.
+    func source(id: UUID) -> BookSource? {
+        ensureLoaded()
+        if let snapshot = loadedSnapshot {
+            // A background caller between the read and its apply on the main thread.
+            return snapshot.first { $0.id == id }
+        }
+        let current = library
+        guard let position = index.withLock({ $0[id] }), current.indices.contains(position),
+              current[position].id == id else { return nil }
+        return current[position]
+    }
+
+    /// Every source, in display order.
+    ///
+    /// The file is read on `loadQueue` as soon as the store exists: at 50 000 sources it is
+    /// ~290 MB of JSON, and reading it inline in `App.init` held the main thread 1.3 s
+    /// (Debug simulator) on every launch. Reading this property before that read finishes
+    /// waits for it — never longer than what is left of the read, and never returning the
+    /// empty placeholder, so no caller can mistake "not read yet" for "no sources". A wait on
+    /// the main thread is a `bookSources.waitOnMain` span, which `MainThreadMonitor` names:
+    /// it shows which reader still runs before the read is done. Writing always waits.
+    var sources: [BookSource] {
+        get {
+            ensureLoaded()
+            return loadedSnapshot ?? library
+        }
+        set {
+            ensureLoaded()
+            library = newValue
+        }
+    }
+
+    /// `$sources`, for subscribers. Emits the placeholder `[]` until the library is read;
+    /// use `whenLoaded` for anything that must not treat that as "no sources".
+    var sourcesPublisher: Published<[BookSource]>.Publisher { $library }
+
+    // MARK: Loading
+
+    private let loadQueue = DispatchQueue(label: "com.yuedu.bookSourceStore.load", qos: .userInitiated)
+    private let readDone = DispatchGroup()
+    private struct LoadState {
+        var read: [BookSource]?
+        /// Set once the read result has been assigned to `library` on the main thread.
+        var applied = false
+    }
+    private let loadState = OSAllocatedUnfairLock(initialState: LoadState())
+    /// Main thread only.
+    private var loadWaiters: [([BookSource]) -> Void] = []
+
+    /// What a background reader gets between the read finishing and the main thread
+    /// applying it: the read result itself. Nil once applied.
+    private var loadedSnapshot: [BookSource]? {
+        loadState.withLock { $0.applied ? nil : $0.read }
+    }
+
+    var isLoaded: Bool { loadState.withLock { $0.applied } }
+
+    private func startLoading() {
+        readDone.enter()
+        let url = fileURL
+        loadQueue.async { [weak self] in
+            let read = Self.readLibrary(at: url)
+            self?.loadState.withLock { $0.read = read }
+            self?.readDone.leave()
+            DispatchQueue.main.async { self?.applyLoadedLibrary() }
+        }
+    }
+
+    /// Waits for the read when it has not finished. On the main thread it also applies it,
+    /// so the `@Published` assignment happens there.
+    private func ensureLoaded() {
+        if loadState.withLock({ $0.applied }) { return }
+        if Thread.isMainThread {
+            SourcePerfTrace.span("bookSources.waitOnMain", thresholdMs: 1) { readDone.wait() }
+            applyLoadedLibrary()
+        } else {
+            readDone.wait()
+        }
+    }
+
+    /// Main thread.
+    private func applyLoadedLibrary() {
+        let read: [BookSource]? = loadState.withLock { state in
+            guard !state.applied else { return nil }
+            state.applied = true
+            return state.read ?? []
+        }
+        guard let read else { return }
+        library = read
+        prunePins()
+        let waiters = loadWaiters
+        loadWaiters.removeAll()
+        for waiter in waiters { waiter(read) }
+    }
+
+    /// Calls `body` on the main thread with the library once it is read — immediately when it
+    /// already is. For decisions that must not run on the "not read yet" placeholder.
+    func whenLoaded(_ body: @escaping ([BookSource]) -> Void) {
+        DispatchQueue.main.async { [self] in
+            if isLoaded { body(library) } else { loadWaiters.append(body) }
+        }
+    }
+
+    /// Returns once the library file has been read and applied.
+    func waitUntilLoaded() async {
+        await withCheckedContinuation { continuation in
+            whenLoaded { _ in continuation.resume() }
+        }
+    }
+
+    /// Reads and dedupes the file; off the main thread. A missing file is an empty library;
+    /// an unreadable one is logged and also empty, as before (the next save would replace
+    /// it, which is the existing behaviour this change does not alter).
+    private static func readLibrary(at url: URL) -> [BookSource] {
+        guard FileManager.default.fileExists(atPath: url.path) else { return [] }
+        return SourcePerfTrace.span("bookSources.load", "main=\(Thread.isMainThread)", thresholdMs: 1) {
+            do {
+                let data = try Data(contentsOf: url)
+                let decoded = try JSONDecoder().decode([BookSource].self, from: data)
+                // Clean up any duplicates a previous buggy sync may have persisted to disk.
+                return dedupedByURL(decoded)
+            } catch {
+                AppLogger.cache("Book sources could not be read", error: error, context: ["file": url.lastPathComponent])
+                return []
+            }
+        }
+    }
+
+    /// Persisted 置頂／置底 pin state, keyed by source id. Kept OUT of `BookSource` (and thus
+    /// out of the exported/synced source JSON) so pinning never looks like a content edit:
+    /// it must not advance `lastUpdateTime` or churn the sync merge (same contract as the
+    /// ordering — array position is the display order, and pins are management state).
+    @Published private(set) var pinRecords: [UUID: SourcePinRecord] = [:]
+
+    /// The shared store's file lives under Application Support, not Documents: Documents is
+    /// user-visible in the Files app and this is app-internal. `StorageMigration` moves the
+    /// legacy file.
+    private let fileURL: URL
+    private let pinsFileURL: URL
+
+    /// A store on its own directory — tests and profiling fixtures, never the user's library.
+    convenience init(directory: URL) {
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        } catch {
+            AppLogger.cache("BookSourceStore could not create \(directory.path)", error: error)
+        }
+        self.init(
+            fileURL: directory.appendingPathComponent("book_sources.json"),
+            pinsFileURL: directory.appendingPathComponent("book_source_pins.json")
+        )
+    }
+
+    private init(fileURL: URL, pinsFileURL: URL) {
+        self.fileURL = fileURL
+        self.pinsFileURL = pinsFileURL
+        loadPins()
+        startLoading()
+    }
+
+    // MARK: CRUD
+    //
+    // `@Published` has no in-place accessor, so `sources[i].x = y` reads the whole array
+    // out, mutates a copy that shares its buffer — the first write copies every source —
+    // and assigns it back with a change notification. Once per edit that is one O(n) copy;
+    // in a loop it is quadratic: measured on a simulator, `setRespondTimes` over 10,000
+    // sources took 27.9 s and `setEnabledByUser` 55.8 s, and a finished validation run
+    // over 50,000 sources would have spent minutes there. Every method below edits one
+    // local copy and assigns it once — one copy, one notification, one save.
+
+    func add(_ source: BookSource) {
+        var stamped = source
+        // Stamp the local-modification clock so this creation wins the iCloud sync merge
+        // (see importSources for why lastUpdateTime doubles as the last-write-wins clock).
+        stamped.lastUpdateTime = Self.currentMillis()
+        // New sources appear at the head of the list — but below the whole 置頂 group,
+        // or the pin markers would no longer match the head region.
+        if let lastTopPinned = sources.lastIndex(where: { pinRecords[$0.id]?.position == .top }) {
+            sources.insert(stamped, at: lastTopPinned + 1)
+        } else {
+            sources.insert(stamped, at: 0)
+        }
+        save()
+    }
+
+    func update(_ source: BookSource) {
+        if let idx = sources.firstIndex(where: { $0.id == source.id }) {
+            var updated = source
+            // Advance the sync clock so an in-app edit wins the last-write-wins merge and isn't
+            // resurrected to the cloud copy on the next sync. Skip when only the clock would move,
+            // so re-saving an unchanged source doesn't churn the sync.
+            updated.lastUpdateTime = updated.hasSameContent(as: sources[idx])
+                ? sources[idx].lastUpdateTime
+                : Self.currentMillis()
+            sources[idx] = updated
+            save()
+        }
+    }
+
+    @discardableResult
+    func delete(id: UUID) -> Int {
+        delete(ids: Set([id]))
+    }
+
+    @discardableResult
+    func delete(ids: Set<UUID>) -> Int {
+        guard !ids.isEmpty else { return 0 }
+        let originalCount = sources.count
+        sources.removeAll { ids.contains($0.id) }
+        let removedCount = originalCount - sources.count
+        if removedCount > 0 {
+            for id in ids {
+                pinRecords.removeValue(forKey: id)
+            }
+            savePins()
+            save()
+        }
+        return removedCount
+    }
+
+    func toggle(id: UUID) {
+        if let idx = sources.firstIndex(where: { $0.id == id }) {
+            var source = sources[idx]
+            source.enabled.toggle()
+            // The user's enable/disable must win the iCloud sync merge (advance the clock).
+            source.lastUpdateTime = Self.currentMillis()
+            sources[idx] = source
+            save()
+        }
+    }
+
+    /// Moves a source to the head of the list and marks it 置頂. Any number of sources can
+    /// be pinned: the 置頂 group orders newest-first, so a re-pin refreshes the timestamp
+    /// and moves the source to the group's head. The management list and `enabledSources`
+    /// both render `sources` in array order — there is no sort key, so array position *is*
+    /// the display and search order (Legado's `customOrder` field is only mirrored to the
+    /// JS bridge, never consulted here).
+    ///
+    /// Deliberately does NOT advance `lastUpdateTime`: position isn't part of a source's
+    /// content, the sync merge hashes the encoded source, and seeding the merge from the
+    /// local array already preserves this device's order — so a reorder must not register
+    /// as an edit and churn the sync.
+    func pinToTop(id: UUID) {
+        guard let idx = sources.firstIndex(where: { $0.id == id }) else { return }
+        let originalIndex = pinRecords[id]?.originalIndex ?? idx
+        var reordered = sources
+        let source = reordered.remove(at: idx)
+        if let firstTop = reordered.firstIndex(where: { pinRecords[$0.id]?.position == .top }) {
+            reordered.insert(source, at: firstTop)
+        } else {
+            reordered.insert(source, at: 0)
+        }
+        sources = reordered
+        pinRecords[id] = SourcePinRecord(position: .top, originalIndex: originalIndex)
+        savePins()
+        save()
+    }
+
+    /// Moves a source to the tail of the list and marks it 置底. Newest-first like 置頂:
+    /// the newest bottom pin sits at the group's head, right against the rest of the list.
+    /// See `pinToTop(id:)` for the ordering and sync-clock contract.
+    func pinToBottom(id: UUID) {
+        guard let idx = sources.firstIndex(where: { $0.id == id }) else { return }
+        let originalIndex = pinRecords[id]?.originalIndex ?? idx
+        var reordered = sources
+        let source = reordered.remove(at: idx)
+        if let firstBottom = reordered.firstIndex(where: { pinRecords[$0.id]?.position == .bottom }) {
+            reordered.insert(source, at: firstBottom)
+        } else {
+            reordered.append(source)
+        }
+        sources = reordered
+        pinRecords[id] = SourcePinRecord(position: .bottom, originalIndex: originalIndex)
+        savePins()
+        save()
+    }
+
+    /// 取消置頂／取消置底: drops the pin and returns the source to the position it held when
+    /// pinned — inserted before the first unpinned source at or after the recorded index,
+    /// or after the last unpinned source when everything else is pinned. Pins ahead in the
+    /// array shift indices, so the position clamps naturally when the list shrank meanwhile.
+    func unpin(id: UUID) {
+        guard let record = pinRecords[id],
+              let idx = sources.firstIndex(where: { $0.id == id }) else { return }
+        pinRecords.removeValue(forKey: id)
+        var reordered = sources
+        let source = reordered.remove(at: idx)
+
+        var insertIndex: Int?
+        for (index, candidate) in reordered.enumerated() {
+            guard pinRecords[candidate.id] == nil, index >= record.originalIndex else { continue }
+            insertIndex = index
+            break
+        }
+        if let insertIndex {
+            reordered.insert(source, at: insertIndex)
+        } else if let lastUnpinned = reordered.lastIndex(where: { pinRecords[$0.id] == nil }) {
+            reordered.insert(source, at: lastUnpinned + 1)
+        } else if let firstBottom = reordered.firstIndex(where: { pinRecords[$0.id]?.position == .bottom }) {
+            reordered.insert(source, at: firstBottom)
+        } else {
+            reordered.append(source)
+        }
+        sources = reordered
+        savePins()
+        save()
+    }
+
+    func pinRecord(for id: UUID) -> SourcePinRecord? {
+        pinRecords[id]
+    }
+
+    // MARK: Pin Persistence
+
+    private func savePins() {
+        if let data = try? JSONEncoder().encode(pinRecords) {
+            try? data.write(to: pinsFileURL)
+        }
+    }
+
+    private func loadPins() {
+        guard let data = try? Data(contentsOf: pinsFileURL),
+              let decoded = try? JSONDecoder().decode([UUID: SourcePinRecord].self, from: data)
+        else { return }
+        pinRecords = decoded
+    }
+
+    /// Drops pins whose source no longer exists (deleted locally, deduped by sync, etc.).
+    private func prunePins() {
+        let liveIDs = Set(sources.map(\.id))
+        let staleIDs = pinRecords.keys.filter { !liveIDs.contains($0) }
+        guard !staleIDs.isEmpty else { return }
+        for id in staleIDs {
+            pinRecords.removeValue(forKey: id)
+        }
+        savePins()
+    }
+
+    /// Records the health checker's measured response time (ms), using Legado's persisted
+    /// values: elapsed on success, timeout+elapsed on failure. Deliberately does NOT advance
+    /// `lastUpdateTime`: an automated measurement
+    /// shouldn't win the sync merge (same contract as `setEnabled`).
+    func setRespondTime(id: UUID, ms: Int64) {
+        setRespondTimes([id: ms])
+    }
+
+    /// Bulk form used by the health checker, which finishes one source at a time but
+    /// has no reason to persist between them.
+    ///
+    /// The per-source form was quadratic in the worst case that matters: validating
+    /// a 3000-source pack ran a linear `firstIndex` scan, re-encoded and rewrote the
+    /// **entire** source file, and republished the whole `@Published` array — three
+    /// thousand times. One pass, one save.
+    func setRespondTimes(_ times: [UUID: Int64]) {
+        guard !times.isEmpty else { return }
+        var updated = sources
+        var changed = false
+        for idx in updated.indices {
+            guard let ms = times[updated[idx].id], updated[idx].respondTime != ms else {
+                continue
+            }
+            updated[idx].respondTime = ms
+            changed = true
+        }
+        guard changed else { return }
+        sources = updated
+        save()
+    }
+
+    /// Sets a source's enabled flag to an explicit value (no-op if already set). Used by the
+    /// health checker to disable bad/slow sources without risk of accidentally re-enabling.
+    /// Deliberately does NOT advance `lastUpdateTime`: an automated, possibly-transient disable
+    /// shouldn't win the sync merge and propagate to other devices (unlike a user toggle above).
+    func setEnabled(id: UUID, enabled: Bool) {
+        setEnabled(ids: [id], enabled: enabled)
+    }
+
+    /// Bulk form of the above, for the health checker's post-run 停用 policy. Same
+    /// contract — no `lastUpdateTime` bump — but one save instead of one per source,
+    /// which matters when a run disables hundreds of sources out of a large pack.
+    func setEnabled(ids: Set<UUID>, enabled: Bool) {
+        guard !ids.isEmpty else { return }
+        var updated = sources
+        var changed = false
+        for idx in updated.indices
+        where ids.contains(updated[idx].id) && updated[idx].enabled != enabled {
+            updated[idx].enabled = enabled
+            changed = true
+        }
+        guard changed else { return }
+        sources = updated
+        save()
+    }
+
+    /// Bulk enable/disable driven by the user (全部啟用／停用, 啟用選中, and the group menu).
+    /// Advances `lastUpdateTime` exactly like `toggle(id:)` — a deliberate user action has to
+    /// win the iCloud sync merge — and saves once instead of once per source, which is what
+    /// separates it from the health checker's `setEnabled(id:enabled:)`.
+    func setEnabledByUser(ids: Set<UUID>, enabled: Bool) {
+        guard !ids.isEmpty else { return }
+        let now = Self.currentMillis()
+        var updated = sources
+        var changed = false
+        for idx in updated.indices
+        where ids.contains(updated[idx].id) && updated[idx].enabled != enabled {
+            updated[idx].enabled = enabled
+            updated[idx].lastUpdateTime = now
+            changed = true
+        }
+        guard changed else { return }
+        sources = updated
+        save()
+    }
+
+    /// Rewrites `bookSourceGroup` for a set of sources (重命名分組 / 合併到其他分組). An empty
+    /// `group` clears the field, which returns those sources to the built-in default group.
+    /// Group membership is source content, so this advances the sync clock — otherwise the
+    /// last-write-wins merge would resurrect the old group name from another device.
+    func setGroup(_ group: String, ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        let trimmed = group.trimmingCharacters(in: .whitespacesAndNewlines)
+        let now = Self.currentMillis()
+        var updated = sources
+        var changed = false
+        for idx in updated.indices
+        where ids.contains(updated[idx].id) && updated[idx].bookSourceGroup != trimmed {
+            updated[idx].bookSourceGroup = trimmed
+            updated[idx].lastUpdateTime = now
+            changed = true
+        }
+        guard changed else { return }
+        sources = updated
+        save()
+    }
+
+    /// Every distinct non-empty `bookSourceGroup` with how many sources it holds, in
+    /// first-appearance order — the destinations 移動到分組 / 合併到其他分組 offer.
+    ///
+    /// Call this when a picker opens, never per row: it is a full pass over `sources` with a
+    /// trim per entry, and the group menus used to run one such pass each (see the note in
+    /// `BookSourceRowViews.swift`).
+    ///
+    /// - Parameter excluded: A group to leave out — the one the sources are moving away from.
+    func groupCounts(excluding excluded: String = "") -> [(name: String, count: Int)] {
+        var order: [String] = []
+        var counts: [String: Int] = [:]
+        for source in sources {
+            let name = source.bookSourceGroup.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !name.isEmpty, name != excluded else { continue }
+            if counts[name] == nil { order.append(name) }
+            counts[name, default: 0] += 1
+        }
+        return order.map { (name: $0, count: counts[$0] ?? 0) }
+    }
+
+    var enabledSources: [BookSource] {
+        sources.filter { $0.enabled }
+    }
+
+    /// 按域名分組 (Legado's menu action): rewrites every source's `bookSourceGroup`
+    /// to the host of its `bookSourceUrl`, so imported packs sort themselves by site.
+    /// Group membership is source content, so this advances the sync clock (same
+    /// contract as `setGroup`). Returns how many sources changed group.
+    @discardableResult
+    func groupByDomain() -> Int {
+        let now = Self.currentMillis()
+        var updated = sources
+        var changed = 0
+        for idx in updated.indices {
+            let domain = Self.domain(of: updated[idx].bookSourceUrl)
+            guard updated[idx].bookSourceGroup != domain else { continue }
+            updated[idx].bookSourceGroup = domain
+            updated[idx].lastUpdateTime = now
+            changed += 1
+        }
+        if changed > 0 {
+            sources = updated
+            save()
+        }
+        return changed
+    }
+
+    /// The domain used by 按域名分組: the URL host when one exists; for non-URL rules
+    /// (`@js:`, relative paths, …) the authority-ish segment after `://`; otherwise
+    /// 無域名 (Legado's 无域名 fallback for URLs without a scheme).
+    static func domain(of url: String) -> String {
+        let trimmed = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+        if let host = URLComponents(string: trimmed)?.host, !host.isEmpty {
+            return host
+        }
+        if let schemeRange = trimmed.range(of: "://") {
+            let afterScheme = trimmed[schemeRange.upperBound...]
+            if let slash = afterScheme.firstIndex(of: "/") {
+                return String(afterScheme[..<slash])
+            }
+            if let colon = afterScheme.firstIndex(of: ":") {
+                return String(afterScheme[..<colon])
+            }
+            return String(afterScheme)
+        }
+        return "無域名"
+    }
+
+    // MARK: Import (Legado Compatible)
+
+    /// Import from raw Data, using the file extension to choose the right parser.
+    @discardableResult
+    func importFromData(_ data: Data, fileExtension ext: String) throws -> Int {
+        try importSources(parseForImport(data: data, fileExtension: ext))
+    }
+
+    @discardableResult
+    func importFromJSON(_ json: String) throws -> Int {
+        try importSources(parseForImport(json: json))
+    }
+
+    /// Parses without writing anything, so the import confirmation list can show what a file
+    /// holds before the user commits to it. The importers above are this plus a merge — there
+    /// is no second decoder for the preview.
+    func parseForImport(data: Data, fileExtension ext: String) throws -> [BookSource] {
+        let lower = ext.lowercased()
+        switch lower {
+        case "yds":
+            return try parseYDS(data)
+        case "mrs":
+            throw ImportError.encryptedFormat(lower.uppercased())
+        default:
+            // .txt, .json, or unknown → try as Legado JSON
+            guard let text = String(data: data, encoding: .utf8)
+                          ?? String(data: data, encoding: .isoLatin1) else {
+                throw ImportError.invalidData
+            }
+            return try parseForImport(json: text)
+        }
+    }
+
+    func parseForImport(json: String) throws -> [BookSource] {
+        guard let data = json.data(using: .utf8) else {
+            throw ImportError.invalidData
+        }
+        if let imported = Self.parseSources(json) {
+            return imported
+        }
+        // Produce useful diagnostic messages
+        let decoder = JSONDecoder()
+        let detail: String
+        do {
+            _ = try decoder.decode([BookSource].self, from: data)
+            detail = ""
+        } catch let DecodingError.typeMismatch(type, ctx) {
+            detail = "Type mismatch: expected \(type), path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+        } catch let DecodingError.keyNotFound(key, ctx) {
+            detail = "Missing key: \(key.stringValue), path: \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+        } catch let DecodingError.dataCorrupted(ctx) {
+            detail = "Data corrupted: \(ctx.debugDescription)"
+        } catch {
+            detail = error.localizedDescription
+        }
+        throw ImportError.parseErrorDetail(detail)
+    }
+
+    /// Parses Legado book-source JSON (single `{}`, array `[]`, or `{"bookSources":[...]}`
+    /// backup format) WITHOUT touching the store. Returns nil when nothing decodes.
+    /// Single parse path shared by 本地導入 / 粘貼源 / deep links — importers should
+    /// never re-implement their own decoder.
+    static func parseSources(_ json: String) -> [BookSource]? {
+        guard let data = json.data(using: .utf8) else { return nil }
+        let decoder = JSONDecoder()
+        if let arr = try? decoder.decode([BookSource].self, from: data) {
+            return arr
+        }
+        if let single = try? decoder.decode(BookSource.self, from: data) {
+            return [single]
+        }
+        if let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let raw = dict["bookSources"],
+           let subData = try? JSONSerialization.data(withJSONObject: raw),
+           let arr = try? decoder.decode([BookSource].self, from: subData) {
+            return arr
+        }
+        return nil
+    }
+
+    // MARK: Private: Merge Book Sources
+
+    /// Imports the rows the user ticked in the confirmation list. Shares the single merge
+    /// implementation below with every other import route; the only difference is the
+    /// `options` that decide what an overwrite keeps from the local copy.
+    @discardableResult
+    func importSelected(
+        _ sources: [BookSource],
+        options: BookSourceImportOptions
+    ) throws -> Int {
+        try importSources(sources, options: options)
+    }
+
+    /// `lastUpdateTime` per `bookSourceUrl`, for building an import confirmation list's
+    /// 新增/更新/已有 states. Built as one map because the alternative — a lookup per
+    /// incoming source — is the quadratic scan that made importing a pack crawl.
+    func existingUpdateClocks() -> [String: Int64] {
+        var clocks: [String: Int64] = .init(minimumCapacity: sources.count)
+        for source in sources where !source.bookSourceUrl.isEmpty {
+            // Keep the newest when the library somehow holds the same URL twice, so a
+            // duplicate can never make an incoming source look newer than it is.
+            if let existing = clocks[source.bookSourceUrl] {
+                clocks[source.bookSourceUrl] = max(existing, source.lastUpdateTime)
+            } else {
+                clocks[source.bookSourceUrl] = source.lastUpdateTime
+            }
+        }
+        return clocks
+    }
+
+    @discardableResult
+    private func importSources(
+        _ imported: [BookSource],
+        options: BookSourceImportOptions = .direct
+    ) throws -> Int {
+        guard !imported.isEmpty else { throw ImportError.parseError }
+        // iCloud/Firestore sync merges book sources last-write-wins, using `lastUpdateTime` as
+        // the per-item clock (ties/older-remote win). A source's author-declared `lastUpdateTime`
+        // is baked into the JSON — it is NOT a "modified locally now" time — so a freshly imported
+        // version whose `lastUpdateTime` happens to be ≤ the cloud copy's would be silently
+        // resurrected to the OLD version on the next sync (reported: import a new 大灰狼 source, it
+        // reverts after one read). Stamp the import moment onto `lastUpdateTime` so the deliberate
+        // local import wins the merge. Only bump when content actually changed, so re-importing an
+        // identical list doesn't churn the sync. `lastUpdateTime` is otherwise only a sync clock /
+        // cache key / display value — nothing compares it against a remote source to gate updates.
+        let nowMillis = Self.currentMillis()
+        // Work on a local array and index the existing sources by URL first: the per-source
+        // `firstIndex(where:)` scan made importing a pack quadratic (a 3000-source pack over
+        // 3000 existing sources spent ~86 ms just re-scanning), and mutating `sources`
+        // in the loop republished the whole `@Published` array once per imported source.
+        var merged = sources
+        var indexByURL: [String: Int] = .init(minimumCapacity: merged.count)
+        for (index, source) in merged.enumerated() where !source.bookSourceUrl.isEmpty {
+            if indexByURL[source.bookSourceUrl] == nil { indexByURL[source.bookSourceUrl] = index }
+        }
+        // Genuinely new sources are collected and inserted in one go. Inserting them one at a
+        // time would shift every index behind the 置底 group per source — quadratic again.
+        var additions: [BookSource] = []
+        var additionIndexByURL: [String: Int] = [:]
+        for src in imported {
+            let localIndex = src.bookSourceUrl.isEmpty ? nil : indexByURL[src.bookSourceUrl]
+            // Apply the import options once, here, for both the overwrite and the insert
+            // path: the keep-switches need the local copy (absent for a genuine addition),
+            // while 匯入到分組 applies to every selected source either way. Doing it before
+            // the content comparison below means keeping the local name/group doesn't
+            // register as a change and needlessly bump the sync clock.
+            var candidate = options.merged(
+                incoming: src,
+                local: localIndex.map { merged[$0] }
+            )
+            if let idx = localIndex {
+                candidate.id = merged[idx].id
+                candidate.lastUpdateTime = candidate.hasSameContent(as: merged[idx])
+                    ? merged[idx].lastUpdateTime
+                    : nowMillis
+                merged[idx] = candidate
+            } else if !candidate.bookSourceUrl.isEmpty,
+                      let idx = additionIndexByURL[candidate.bookSourceUrl] {
+                // The same URL twice inside one imported pack: the later entry wins, exactly
+                // as it did when each addition was written into `sources` immediately.
+                candidate.id = additions[idx].id
+                candidate.lastUpdateTime = nowMillis
+                additions[idx] = candidate
+            } else {
+                candidate.lastUpdateTime = nowMillis
+                if !candidate.bookSourceUrl.isEmpty {
+                    additionIndexByURL[candidate.bookSourceUrl] = additions.count
+                }
+                additions.append(candidate)
+            }
+        }
+        if !additions.isEmpty {
+            // New imports append at the tail — but above the whole 置底 group,
+            // so the pin markers keep matching the tail region.
+            let insertionIndex = merged.firstIndex(
+                where: { pinRecords[$0.id]?.position == .bottom }) ?? merged.count
+            merged.insert(contentsOf: additions, at: insertionIndex)
+        }
+        sources = merged
+        save()
+        return imported.count
+    }
+
+    /// Current wall-clock time in milliseconds — the unit `BookSource.lastUpdateTime` (and the
+    /// iCloud/Firestore sync last-write-wins merge clock) is expressed in.
+    private static func currentMillis() -> Int64 {
+        Int64(Date().timeIntervalSince1970 * 1000)
+    }
+
+    /// Collapses sources sharing a `bookSourceUrl` to one newest entry. Legado source JSON carries
+    /// no stable `id`, so each device decodes an imported source under a fresh random UUID; the
+    /// iCloud merge keys on that UUID and can't tell two devices' copies of the *same* source apart,
+    /// letting the cloud's older copy resurface — read by the user as a version revert / duplicate.
+    /// `bookSourceUrl` is the real identity (importSources already dedupes on it), so normalize
+    /// merged- and loaded-in source lists the same way, keeping the most recently updated copy.
+    static func dedupedByURL(_ input: [BookSource]) -> [BookSource] {
+        var indexByURL: [String: Int] = .init(minimumCapacity: input.count)
+        var result: [BookSource] = []
+        result.reserveCapacity(input.count)
+        for source in input {
+            let key = source.bookSourceUrl
+            guard !key.isEmpty else {
+                result.append(source)   // no URL to key on — keep as-is
+                continue
+            }
+            if let idx = indexByURL[key] {
+                if source.lastUpdateTime > result[idx].lastUpdateTime {
+                    result[idx] = source   // keep the newer copy in the earlier slot
+                }
+            } else {
+                indexByURL[key] = result.count
+                result.append(source)
+            }
+        }
+        return result
+    }
+
+    // MARK: YDS (.yds) Format Parsing
+
+    /// .yds is a JSON dictionary keyed by source display name.
+    /// Each value uses different field names from Legado; convert to BookSource.
+    private func parseYDS(_ data: Data) throws -> [BookSource] {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw ImportError.invalidData
+        }
+        var results: [BookSource] = []
+        for (_, value) in root {
+            guard let obj = value as? [String: Any] else { continue }
+            var bs = BookSource()
+            bs.bookSourceName  = obj["siteName"] as? String ?? ""
+            bs.bookSourceUrl   = obj["host"] as? String ?? ""
+            bs.bookSourceType  = obj["siteType"] as? Int ?? 0
+            bs.enabled         = obj["enable"] as? Bool ?? true
+            bs.loginUrl        = obj["loginUrl"] as? String ?? ""
+
+            let host = bs.bookSourceUrl
+
+            // ── searchRule ──────────────────────────────
+            if let sr = obj["searchRule"] as? [String: Any] {
+                bs.searchUrl          = ydsResolveUrl(sr["requestUrl"], host: host)
+                bs.ruleSearch.bookList  = sr["list"]      as? String ?? ""
+                bs.ruleSearch.name      = sr["title"]     as? String ?? ""
+                bs.ruleSearch.author    = sr["author"]    as? String ?? ""
+                bs.ruleSearch.coverUrl  = sr["cover"]     as? String ?? ""
+                bs.ruleSearch.kind      = sr["tags"]      as? String ?? ""
+                bs.ruleSearch.intro     = sr["desc"]      as? String ?? ""
+                bs.ruleSearch.bookUrl   = sr["detailUrl"] as? String ?? ""
+            }
+
+            // ── detailRule → ruleBookInfo ────────────────
+            if let dr = obj["detailRule"] as? [String: Any] {
+                bs.ruleBookInfo.initScript = dr["requestUrl"] as? String ?? ""
+                // detailRule.url is the identifier extracted from detail response
+                // chapterRule.requestUrl then builds the actual TOC URL from that
+                let chapterRequestUrl = (obj["chapterRule"] as? [String: Any])?["requestUrl"] as? String ?? ""
+                if !chapterRequestUrl.isEmpty {
+                    // Compose: extract detailRule.url, then pipe into chapterRule.requestUrl
+                    let detailUrl = dr["url"] as? String ?? ""
+                    bs.ruleBookInfo.tocUrl = ydsComposeTocUrl(detailUrl: detailUrl,
+                                                               chapterRequestUrl: chapterRequestUrl)
+                }
+            }
+
+            // ── chapterRule → ruleToc ────────────────────
+            if let cr = obj["chapterRule"] as? [String: Any] {
+                bs.ruleToc.chapterList = cr["list"]  as? String ?? ""
+                bs.ruleToc.chapterName = cr["title"] as? String ?? ""
+                bs.ruleToc.chapterUrl  = cr["url"]   as? String ?? ""
+            }
+
+            // ── contentRule → ruleContent ────────────────
+            if let cont = obj["contentRule"] as? [String: Any] {
+                bs.ruleContent.content = cont["content"] as? String ?? ""
+                // contentRule.requestUrl: store as a init/preUpdate comment
+                if let reqUrl = cont["requestUrl"] as? String, !reqUrl.isEmpty {
+                    bs.ruleContent.webJs = reqUrl
+                }
+            }
+
+            if !bs.bookSourceName.isEmpty || !bs.bookSourceUrl.isEmpty {
+                results.append(bs)
+            }
+        }
+        return results
+    }
+
+    /// Resolve a .yds `requestUrl` to the actual URL string used in Legado.
+    /// The requestUrl is either:
+    ///   - A JSON string like `{"url": "/path?$keyWord..."}` → combine with host
+    ///   - A `@js:` expression → use as-is
+    ///   - A plain URL → use as-is
+    private func ydsResolveUrl(_ raw: Any?, host: String) -> String {
+        guard let raw else { return "" }
+        let s: String
+        if let str = raw as? String { s = str.trimmingCharacters(in: .whitespacesAndNewlines) }
+        else { return "" }
+
+        if s.hasPrefix("@js:") || s.hasPrefix("@JS:") { return s }
+
+        // Try JSON object with "url" key
+        if s.hasPrefix("{"), let d = s.data(using: .utf8),
+           let dict = try? JSONSerialization.jsonObject(with: d) as? [String: Any],
+           let path = dict["url"] as? String {
+            let trimmedPath = path.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmedPath.hasPrefix("http") { return trimmedPath }
+            return host + trimmedPath
+        }
+        // Plain URL or template
+        if s.hasPrefix("http") { return s }
+        return host + s
+    }
+
+    /// Compose a Legado `ruleBookInfo.tocUrl` from the .yds two-step chain:
+    /// 1. `detailUrl` is a template/JSONPath applied to the detail response
+    /// 2. `chapterRequestUrl` (@js:) builds the chapter list URL from that
+    /// If detailUrl is empty, just return chapterRequestUrl directly.
+    private func ydsComposeTocUrl(detailUrl: String, chapterRequestUrl: String) -> String {
+        let det = detailUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        let chap = chapterRequestUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        // If the chapterRequestUrl is pure @js:, wrap both into a single @js: that:
+        //   1. evaluates the detailUrl rule against `result` (the raw response)
+        //   2. passes that to the chapterRequestUrl JS
+        if det.isEmpty { return chap }
+        if chap.hasPrefix("@js:") {
+            let jsBody = String(chap.dropFirst(4)).trimmingCharacters(in: .whitespacesAndNewlines)
+            return "@js:\n// step 1: extract detail intermediate value\nvar _result = result;\n// step 2: build chapter URL\n\(jsBody)"
+        }
+        return det.isEmpty ? chap : det
+    }
+
+    // MARK: Export
+
+    func exportToJSON() -> String {
+        guard let data = try? JSONEncoder().encode(sources),
+              let str = String(data: data, encoding: .utf8)
+        else { return "[]" }
+        return str
+    }
+
+    func exportToJSON(ids: [UUID]) -> String {
+        // Set, not `Array.contains`: 匯出選中／匯出該分組 over a large pack was O(sources × ids).
+        let wanted = Set(ids)
+        let selected = sources.filter { wanted.contains($0.id) }
+        guard let data = try? JSONEncoder().encode(selected),
+              let str = String(data: data, encoding: .utf8)
+        else { return "[]" }
+        return str
+    }
+
+    @discardableResult
+    func replaceSourcesFromSync(
+        _ syncedSources: [BookSource],
+        expectedMutationRevision: Int? = nil
+    ) -> Bool {
+        guard expectedMutationRevision == nil || expectedMutationRevision == mutationRevision else {
+            return false
+        }
+        // Collapse any cross-device duplicates (same bookSourceUrl, different random id) the merge
+        // couldn't unify, so an old cloud copy can't resurface next to a freshly imported one.
+        sources = Self.dedupedByURL(syncedSources)
+        prunePins()
+        save()
+        return true
+    }
+
+    /// Re-reads the on-disk store into memory. Used after an iCloud restore
+    /// overwrites `book_sources.json` so the live UI reflects it without a relaunch.
+    func reloadFromDisk() {
+        ensureLoaded()
+        sources = Self.readLibrary(at: fileURL)
+        prunePins()
+    }
+
+    // MARK: Persistence
+
+    /// Serialises persistence so writes land in the order they were requested, and so a
+    /// burst of `save()` calls cannot overlap on the file.
+    private static let persistQueue = DispatchQueue(
+        label: "com.yuedu.bookSourceStore.persist", qos: .utility
+    )
+
+    /// Encodes and writes off the calling thread.
+    ///
+    /// This used to encode and write inline. `save()` is reached from
+    /// `replaceSourcesFromSync`, which iCloud sync calls inside `await MainActor.run`, so a
+    /// full-library sync did a ~3 MB `JSONEncoder` pass and a synchronous file write **on the
+    /// main thread** — with five more main-actor applies queued behind it in the same sync.
+    /// A device came back with `0x8BADF00D`: the scene-update watchdog killing the app for
+    /// exhausting its 10-second wall-clock budget.
+    ///
+    /// Only the in-memory assignment has to be on the main actor (`sources` is `@Published`);
+    /// the encode and the write do not. The snapshot is taken on the caller's thread so the
+    /// background write can never observe a half-updated array.
+    ///
+    /// `flushPendingWrites()` exists because of what this trade costs: the write is no longer
+    /// guaranteed to have landed when the caller returns.
+    ///
+    /// Writes coalesce. Each one writes the whole library — about 290 MB of JSON at 50,000
+    /// sources — and a burst of edits (switches flipped in a row, or a finished validation
+    /// run writing respond times, then 停用, then 刪除) used to queue one full encode per
+    /// edit, each holding its own snapshot of the library. Now the queue writes whatever
+    /// snapshot is newest when it gets there; edits that land meanwhile only replace it.
+    private func save() {
+        guard pendingWrite.replace(with: sources) else { return }
+        let url = fileURL
+        let pendingWrite = self.pendingWrite
+        Self.persistQueue.async {
+            guard let snapshot = pendingWrite.take() else { return }
+            do {
+                try Self.writeLibrary(snapshot, to: url)
+            } catch {
+                AppLogger.cache("BookSourceStore could not write book_sources.json", error: error)
+            }
+        }
+    }
+
+    private let pendingWrite = PendingSourceWrite()
+
+    /// How much encoded JSON is gathered before it goes to the file.
+    private static let libraryWriteChunkBytes = 1 << 20
+
+    /// Writes `sources` as the JSON array `JSONEncoder().encode(sources)` produces, one
+    /// source at a time, and swaps it in atomically the way `Data.write(options: .atomic)`
+    /// did.
+    ///
+    /// Encoding the array in one call held the library's whole JSON in memory until the write
+    /// landed: a 50,000-source save grew the process by 738 MB (100,000: 1.37 GB) — most of
+    /// the headroom a 3 GB iPhone leaves the app. Here the extra memory is one chunk of
+    /// encoded sources.
+    static func writeLibrary(_ sources: [BookSource], to url: URL) throws {
+        let fileManager = FileManager.default
+        let temporaryURL = url.deletingLastPathComponent()
+            .appendingPathComponent(".\(url.lastPathComponent).\(UUID().uuidString).tmp")
+        guard fileManager.createFile(atPath: temporaryURL.path, contents: nil) else {
+            throw CocoaError(.fileWriteUnknown, userInfo: [NSFilePathErrorKey: temporaryURL.path])
+        }
+        do {
+            let handle = try FileHandle(forWritingTo: temporaryURL)
+            let written = Result { try writeLibraryJSON(sources, to: handle) }
+            let closed = Result { try handle.close() }
+            try written.get()
+            try closed.get()
+            // rename(2) replaces the old file in one step: a crash mid-write leaves the
+            // previous library in place, never half a file.
+            guard rename(temporaryURL.path, url.path) == 0 else {
+                throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+            }
+        } catch {
+            do {
+                try fileManager.removeItem(at: temporaryURL)
+            } catch {
+                AppLogger.cache("BookSourceStore could not remove a partial library write", error: error)
+            }
+            throw error
+        }
+    }
+
+    private static func writeLibraryJSON(_ sources: [BookSource], to handle: FileHandle) throws {
+        let encoder = JSONEncoder()
+        var chunk = Data()
+        chunk.reserveCapacity(libraryWriteChunkBytes)
+        chunk.append(UInt8(ascii: "["))
+        for index in sources.indices {
+            try autoreleasepool {
+                if index > 0 { chunk.append(UInt8(ascii: ",")) }
+                chunk.append(try encoder.encode(sources[index]))
+                if chunk.count >= libraryWriteChunkBytes {
+                    try handle.write(contentsOf: chunk)
+                    chunk.removeAll(keepingCapacity: true)
+                }
+            }
+        }
+        chunk.append(UInt8(ascii: "]"))
+        try handle.write(contentsOf: chunk)
+    }
+
+    /// Keeps the app running until every queued write has landed.
+    ///
+    /// Call before the app can be suspended. Persistence became asynchronous to keep it off
+    /// the main thread, which means a save issued moments before the app goes away is still
+    /// in flight — and book sources are user data, not a cache that can be refetched. It used
+    /// to wait on the main thread; a 50 000-source save in flight then held the scene
+    /// transition past the background watchdog. A background task holds the app instead.
+    func flushPendingWrites() {
+        let hold = BackgroundTaskHold(name: "bookSources.persist")
+        Self.persistQueue.async { hold.release() }
+    }
+
+    /// Waits on the calling thread for queued writes. Tests only; never from UI code.
+    func waitForQueuedWrites() {
+        Self.persistQueue.sync {}
+    }
+
+
+    // MARK: Errors
+
+    enum ImportError: LocalizedError {
+        case invalidData
+        case parseError
+        case parseErrorDetail(String)
+        case encryptedFormat(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidData: return "Invalid data format"
+            case .parseError: return "Unable to parse book source JSON"
+            case .parseErrorDetail(let detail):
+                return "Unable to parse book source JSON: \(detail)"
+            case .encryptedFormat(let fmt):
+                return "\(fmt) format uses proprietary encryption and is not supported for direct import. Please use the corresponding app to export as JSON/TXT format."
+            }
+        }
+    }
+}
+
+/// Lock-guarded hand-off of the newest library snapshot from `save()` to the persist queue.
+private final class PendingSourceWrite: @unchecked Sendable {
+    private let lock = NSLock()
+    private var snapshot: [BookSource]?
+
+    /// Stores the newest snapshot. True when no write was waiting for one, so the caller
+    /// has to queue it.
+    func replace(with newSnapshot: [BookSource]) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        let needsWrite = snapshot == nil
+        snapshot = newSnapshot
+        return needsWrite
+    }
+
+    func take() -> [BookSource]? {
+        lock.lock()
+        defer { lock.unlock() }
+        let current = snapshot
+        snapshot = nil
+        return current
+    }
+}

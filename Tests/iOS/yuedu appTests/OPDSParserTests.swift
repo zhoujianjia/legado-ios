@@ -1,0 +1,206 @@
+import Foundation
+import Testing
+@testable import yuedu_app
+
+@Suite("OPDS Atom parser")
+struct OPDSParserTests {
+
+    private let feedURL = URL(string: "https://example.com/opds")!
+
+    private let sample = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom" xmlns:opds="http://opds-spec.org/2010/catalog">
+      <title>Sample Catalog</title>
+      <link rel="next" href="?page=2" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+      <link rel="search" href="/opds/search.xml" type="application/opensearchdescription+xml"/>
+      <entry>
+        <title>Fiction</title>
+        <id>nav-fiction</id>
+        <link rel="subsection" href="/opds/fiction" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+      </entry>
+      <entry>
+        <title>The Great Book</title>
+        <id>urn:book:1</id>
+        <author><name>Jane Doe</name></author>
+        <summary>A great book.</summary>
+        <link rel="http://opds-spec.org/image/thumbnail" href="/covers/1-thumb.jpg" type="image/jpeg"/>
+        <link rel="http://opds-spec.org/image" href="/covers/1.jpg" type="image/jpeg"/>
+        <link rel="http://opds-spec.org/acquisition" href="/download/1.epub" type="application/epub+zip"/>
+      </entry>
+      <entry>
+        <title>PDF Only</title>
+        <id>urn:book:2</id>
+        <link rel="http://opds-spec.org/acquisition/open-access" href="/download/2.pdf" type="application/pdf"/>
+      </entry>
+    </feed>
+    """
+
+    @Test func genericMediaTypeUsesAdvertisedFilename() {
+        let file = OPDSAcquisition(url: URL(string: "https://example.com/book.EPUB")!,
+            type: "application/octet-stream", rel: "http://opds-spec.org/acquisition")
+        #expect(file.importExtension == "epub")
+        #expect(file.isSupported)
+        let unsupported = OPDSAcquisition(url: URL(string: "https://example.com/book.mobi")!,
+            type: "application/octet-stream", rel: "http://opds-spec.org/acquisition")
+        #expect(!unsupported.isSupported)
+    }
+
+    @Test("the newest additions: the feed's own sort/new link, or else a navigation entry's")
+    func newestLink() throws {
+        let entryOnly = """
+        <feed xmlns="http://www.w3.org/2005/Atom"><id>r</id><title>R</title>
+          <entry><id>a</id><title>By author</title><link rel="subsection" href="/by-author" type="application/atom+xml;profile=opds-catalog"/></entry>
+          <entry><id>n</id><title>New</title><link rel="http://opds-spec.org/sort/new" href="/new" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/></entry>
+        </feed>
+        """
+        let fromEntry = try OPDSClient.parseFeed(data: Data(entryOnly.utf8), feedURL: feedURL)
+        #expect(fromEntry.newestURL == URL(string: "https://example.com/new"))
+        #expect(fromEntry.entries.map(\.title) == ["By author", "New"], "the entry stays a navigation entry")
+
+        let feedLink = """
+        <feed xmlns="http://www.w3.org/2005/Atom"><id>r</id><title>R</title>
+          <link rel="HTTP://opds-spec.org/sort/new" href="/latest" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+          <entry><id>n</id><title>New</title><link rel="http://opds-spec.org/sort/new" href="/new" type="application/atom+xml"/></entry>
+        </feed>
+        """
+        #expect(try OPDSClient.parseFeed(data: Data(feedLink.utf8), feedURL: feedURL).newestURL
+                == URL(string: "https://example.com/latest"))
+        #expect(try OPDSClient.parseFeed(data: Data(sample.utf8), feedURL: feedURL).newestURL == nil)
+    }
+
+    @Test("parses feed title, pagination and search links")
+    func feedLevelLinks() throws {
+        let feed = try OPDSClient.parseFeed(data: Data(sample.utf8), feedURL: feedURL)
+        #expect(feed.title == "Sample Catalog")
+        #expect(feed.nextPageURL?.absoluteString == "https://example.com/opds?page=2")
+        #expect(feed.searchDescriptionURL?.absoluteString == "https://example.com/opds/search.xml")
+        #expect(feed.entries.count == 3)
+    }
+
+    @Test("classifies a navigation entry and resolves relative href")
+    func navigationEntry() throws {
+        let feed = try OPDSClient.parseFeed(data: Data(sample.utf8), feedURL: feedURL)
+        let nav = try #require(feed.entries.first { $0.title == "Fiction" })
+        #expect(nav.isNavigation)
+        #expect(!nav.isBook)
+        #expect(nav.navigationURL?.absoluteString == "https://example.com/opds/fiction")
+    }
+
+    @Test("classifies a book entry with author, covers and EPUB acquisition")
+    func bookEntry() throws {
+        let feed = try OPDSClient.parseFeed(data: Data(sample.utf8), feedURL: feedURL)
+        let book = try #require(feed.entries.first { $0.title == "The Great Book" })
+        #expect(book.isBook)
+        #expect(book.author == "Jane Doe")
+        #expect(book.thumbnailURL?.absoluteString == "https://example.com/covers/1-thumb.jpg")
+        #expect(book.coverURL?.absoluteString == "https://example.com/covers/1.jpg")
+        #expect(book.displayCoverURL == book.thumbnailURL)
+        #expect(book.bestAcquisition?.importExtension == "epub")
+    }
+
+    @Test("PDF acquisition is readable")
+    func unsupportedAcquisition() throws {
+        let feed = try OPDSClient.parseFeed(data: Data(sample.utf8), feedURL: feedURL)
+        let pdf = try #require(feed.entries.first { $0.title == "PDF Only" })
+        #expect(pdf.isBook)
+        #expect(pdf.bestAcquisition?.importExtension == "pdf")
+    }
+    @Test("empty Atom feed is valid; broken XML and HTML login are errors")
+    func distinguishesEmptyAndInvalid() throws {
+        #expect(try OPDSClient.parseFeed(data: Data("<feed xmlns=\"http://www.w3.org/2005/Atom\"/>".utf8), feedURL: feedURL).entries.isEmpty)
+        #expect(throws: OPDSError.self) { try OPDSClient.parseFeed(data: Data("<feed><entry>".utf8), feedURL: feedURL) }
+        do {
+            _ = try OPDSClient.parseFeed(data: Data("<html><body>Login</body></html>".utf8), feedURL: feedURL)
+            Issue.record("HTML must not become an empty catalog")
+        } catch OPDSError.loginPage {} catch { Issue.record("Unexpected error: \(error)") }
+    }
+
+    @Test("XHTML descriptions preserve nested text, multiple authors and acquisition sizes")
+    func nestedMetadata() throws {
+        let xml = """
+        <feed xmlns="http://www.w3.org/2005/Atom" xml:base="https://example.com/proxy/opds/">
+          <entry><id>b</id><title>A &amp; B</title><author><name>One</name></author><author><name>Two</name></author>
+          <content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>First <b>bold</b>.</p><p>Second.</p></div></content>
+          <link rel="http://opds-spec.org/acquisition" href="get/1.epub?library=main" type="application/epub+zip" length="2345"/></entry>
+        </feed>
+        """
+        let entry = try #require(OPDSClient.parseFeed(data: Data(xml.utf8), feedURL: feedURL).entries.first)
+        #expect(entry.author == "One, Two")
+        // One line per paragraph, as the feed wrote them.
+        #expect(entry.summary == "First bold.\nSecond.")
+        #expect(entry.title == "A & B")
+        #expect(entry.bestAcquisition?.size == 2345)
+        #expect(entry.bestAcquisition?.url.absoluteString == "https://example.com/proxy/opds/get/1.epub?library=main")
+    }
+
+    @Test("an xhtml title's paragraphs read as one line")
+    func xhtmlTitle() throws {
+        let xml = """
+        <feed xmlns="http://www.w3.org/2005/Atom"><entry><id>b</id>
+          <title type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>One</p><p>Two</p></div></title>
+          <summary type="html">&lt;p&gt;First.&lt;/p&gt;&lt;p&gt;Second.&lt;/p&gt;</summary>
+          <link rel="http://opds-spec.org/acquisition" href="get/1.epub" type="application/epub+zip"/></entry>
+        </feed>
+        """
+        let entry = try #require(OPDSClient.parseFeed(data: Data(xml.utf8), feedURL: feedURL).entries.first)
+        #expect(entry.title == "One Two")
+        // Escaped HTML keeps its paragraphs too.
+        #expect(entry.summary == "First.\nSecond.")
+    }
+
+    @Test("search templates retain braces and encode punctuation in path or query")
+    func rawSearchTemplate() async throws {
+        let xml = """
+        <feed xmlns="http://www.w3.org/2005/Atom"><link rel="search" type="application/atom+xml" href="search/{searchTerms}?library=main&amp;count={count?}"/></feed>
+        """
+        let base = URL(string: "https://example.com/proxy/opds/")!
+        let feed = try OPDSClient.parseFeed(data: Data(xml.utf8), feedURL: base)
+        let search = try #require(feed.search)
+        let url = try #require(try await OPDSClient().searchFeedURL(search: search, query: "中文 &/+?#"))
+        #expect(url.absoluteString == "https://example.com/proxy/opds/search/%E4%B8%AD%E6%96%87%20%26%2F%2B%3F%23?library=main&count=50")
+        let queryURL = try #require(OPDSClient.resolveSearchTemplate("?q={searchTerms}&library=x", baseURL: base, query: "a&b=c+d"))
+        #expect(URLComponents(url: queryURL, resolvingAgainstBaseURL: false)?.queryItems?.first?.value == "a&b=c+d")
+    }
+
+    @Test("Calibre no-books compatibility only applies to explicit search 404")
+    func calibreNoResults() {
+        let data = Data("No books found".utf8)
+        #expect(OPDSClient.isCalibreEmptySearch(data: data, status: 404, kind: .calibre, isSearch: true))
+        #expect(!OPDSClient.isCalibreEmptySearch(data: data, status: 404, kind: .calibre, isSearch: false))
+        #expect(!OPDSClient.isCalibreEmptySearch(data: data, status: 404, kind: .opds, isSearch: true))
+        #expect(!OPDSClient.isCalibreEmptySearch(data: Data("Not found".utf8), status: 404, kind: .calibre, isSearch: true))
+        #expect(!OPDSClient.isCalibreEmptySearch(data: data, status: 401, kind: .calibre, isSearch: true))
+    }
+
+    @Test func recordedGutenbergFeeds() async throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures/Gutenberg")
+        func feed(_ file: String, _ path: String) throws -> OPDSFeed {
+            try SourcePerfTrace.span("gutenberg.fixture.parse", file, thresholdMs: 0) {
+                try OPDSClient.parseFeed(data: Data(contentsOf: root.appendingPathComponent(file)),
+                    feedURL: URL(string: "https://www.gutenberg.org/" + path)!)
+            }
+        }
+        let navigation = try feed("root.xml", "ebooks.opds/")
+        #expect(navigation.entries.count == 3)
+        #expect(navigation.entries.allSatisfy { $0.isNavigation })
+        let chinese = try feed("chinese.xml", "ebooks/search.opds/?query=l.zh")
+        #expect(chinese.entries.count == 25)
+        #expect(chinese.entries.allSatisfy { $0.navigationURL?.path.hasSuffix(".opds") == true })
+        #expect(chinese.nextPageURL?.absoluteString.contains("start_index=26") == true)
+        let thumbnail = try #require(chinese.entries.first?.thumbnailURL)
+        #expect(thumbnail.scheme == "data")
+        #expect(await BookCoverLoader.loadImage(urlString: thumbnail.absoluteString, headers: [:]) != nil)
+        let book = try feed("1342.xml", "ebooks/1342.opds")
+        let illustrated = try #require(book.entries.first { $0.id.hasSuffix(":3") })
+        #expect(illustrated.bestAcquisition?.url.path.hasSuffix(".epub3.images") == true)
+        #expect(illustrated.coverURL?.path == "/cache/epub/1342/pg1342.cover.medium.jpg")
+        #expect(illustrated.alternateURL?.absoluteString == "https://www.gutenberg.org/ebooks/1342")
+        var reordered = illustrated
+        reordered.acquisitions.reverse()
+        #expect(reordered.bestAcquisition?.url.path.hasSuffix(".epub3.images") == true)
+        let item = RemoteLibraryBookRoute(entry: reordered, connectionID: "builtin.gutenberg").item
+        #expect(item.alternateURL == illustrated.alternateURL)
+        #expect(RemoteLibraryBrowsePresentation.preferredFormat(in: item)?.url.path.hasSuffix(".epub3.images") == true)
+    }
+
+}

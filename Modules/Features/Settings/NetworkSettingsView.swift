@@ -1,0 +1,125 @@
+import SwiftUI
+
+struct NetworkSettingsView: View {
+    @Bindable private var settings = GlobalSettings.shared
+    /// 封面並發數, 探索設定's until 5d-1b; a network setting since decision 31, same key.
+    @AppStorage(BookCoverLoader.downloadLimitKey) private var coverDownloadLimit = 0
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var store: BookStore
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    stepperRow(
+                        title: localized("並發數"),
+                        description: localized("搜索/缓存/下载/校验等网络请求并发数，建议16个"),
+                        value: $settings.searchConcurrency,
+                        range: 1...30
+                    )
+                    stepperRow(
+                        title: localized("自動暫停"),
+                        description: localized("每搜索到N个精確結果(或5N個模糊結果)後自動暫停(0不暫停)，防止設備發燙和流量消耗過多"),
+                        value: $settings.searchAutoPauseCount,
+                        range: 0...50
+                    )
+                    stepperRow(
+                        title: localized("搜索結果快取天數"),
+                        description: localized("搜索時啟用快取，避免重複搜索，預設快取 5 日"),
+                        value: $settings.searchCacheDays,
+                        range: 0...30
+                    )
+                    Toggle(
+                        localized("換源時載入目錄"),
+                        isOn: $settings.changeSourceLoadToc
+                    )
+                } footer: {
+                    Text(localized("換源搜索時順便抓取每個來源配置的目錄，點選來源配置可立即切換；代價是搜索期間的網路請求加倍"))
+                        .dsSectionFooter()
+                }
+                .interfaceSectionSurface()
+                Section {
+                    Picker(selection: $coverDownloadLimit) {
+                        ForEach(ExploreSettings.coverDownloadLimitOptions, id: \.self) { limit in
+                            Text(limit == 0 ? localized("不限制") : limit.formatted()).tag(limit)
+                        }
+                    } label: {
+                        Text(localized("封面並發數"))
+                    }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("network.coverDownloadLimit")
+                } footer: {
+                    Text(localized("同時下載的封面上限，書架和書籍詳情的封面也算在內。數字越低捲動時越不容易發熱，但封面出現得慢一些。"))
+                        .dsSectionFooter()
+                }
+                .interfaceSectionSurface()
+                Section {
+                    Toggle(localized("自動補齊書籍資料"), isOn: $settings.autoFillBookMetadata)
+                        .accessibilityIdentifier("network.autoFillBookMetadata")
+                        .onChange(of: settings.autoFillBookMetadata) { store.metadataFill.conditionsChanged() }
+                    // Phase 6h: which places fill, in what order (Emby's 中繼資料下載器).
+                    NavigationLink {
+                        MetadataFillSourcesView()
+                    } label: {
+                        Text(localized("資料來源"))
+                    }
+                    .accessibilityIdentifier("network.metadataFillSources")
+                } footer: {
+                    Text(localized("書名、作者與 ISBN 會送到「資料來源」裡勾選的地方，用來補上空白的封面、簡介與分類；只在 Wi-Fi 下進行。"))
+                        .dsSectionFooter()
+                }
+                .interfaceSectionSurface()
+            }
+            .softScrollEdges()
+            .themedAppSurface(for: .settings)
+            .navigationTitle(localized("網路設定"))
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+        }
+    }
+
+    /// A settings row with a title, the current value, a native stepper, and a
+    /// description. The value is shown next to the stepper (the stepper's own
+    /// label stays hidden), and the stepper keeps its native appearance so the
+    /// −/+ control blends into the grouped background.
+    @ViewBuilder
+    private func stepperRow(
+        title: String,
+        description: String,
+        value: Binding<Int>,
+        range: ClosedRange<Int>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                Text(title)
+                    .font(DSFont.body)
+                    .foregroundColor(DSColor.textPrimary)
+                Spacer()
+                Text("\(value.wrappedValue)")
+                    .font(DSFont.bodyBold)
+                    .monospacedDigit()
+                    .foregroundColor(DSColor.textSecondary)
+                Stepper("", value: value, in: range)
+                    .labelsHidden()
+                    .fixedSize()
+            }
+            Text(description)
+                .font(DSFont.caption)
+                .foregroundColor(DSColor.textSecondary)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+#Preview {
+    NetworkSettingsView()
+        .environmentObject(BookStore())
+}

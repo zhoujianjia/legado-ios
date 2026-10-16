@@ -1,0 +1,57 @@
+import UIKit
+
+enum CoreTextScrollAxis: Equatable {
+    case vertical
+    case horizontalRTL
+
+    var isHorizontalRTL: Bool {
+        self == .horizontalRTL
+    }
+
+    /// Scroll axis in `ReaderScrollLayout`'s own terms.
+    var readerScrollLayoutAxis: ReaderScrollLayout.Axis {
+        switch self {
+        case .vertical:
+            return .vertical
+        case .horizontalRTL:
+            return .horizontalRTL
+        }
+    }
+
+    /// Used by the reader: `CoreTextCollectionScrollViewController` is on flow layout. The swap to
+    /// `ReaderScrollLayout` was reverted, so an earlier version of this comment claiming otherwise
+    /// was wrong. `ReaderScrollLayoutTests` also reads it, to stand a real flow layout next to the
+    /// custom one and assert their geometry matches.
+    var collectionScrollDirection: UICollectionView.ScrollDirection {
+        switch self {
+        case .vertical:
+            return .vertical
+        case .horizontalRTL:
+            return .horizontal
+        }
+    }
+
+    var semanticContentAttribute: UISemanticContentAttribute {
+        switch self {
+        case .vertical:
+            return .unspecified
+        case .horizontalRTL:
+            return .forceRightToLeft
+        }
+    }
+
+    /// Where `scrollToItem` puts an item for its text to start at the reading edge.
+    ///
+    /// `scrollToItem` speaks the collection view's own coordinates, and UIKit draws a
+    /// right-to-left one mirrored, cells mirrored back: an item's right edge on screen, where
+    /// vertical writing starts, is its *left* there. Measured on iOS 17.5, 26.5 and 27
+    /// (2026-10-15); `.right` opened a chapter at 0% on its last columns.
+    var initialScrollPosition: UICollectionView.ScrollPosition {
+        switch self {
+        case .vertical:
+            return .top
+        case .horizontalRTL:
+            return .left
+        }
+    }
+}

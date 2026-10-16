@@ -1,0 +1,173 @@
+import SwiftUI
+
+/// 作者其他作品 at the foot of 作品詳情: the author's other works as a shelf of covers, drawn as
+/// Explore's home draws a row of them. Not shown at all until the works are read — no header
+/// over a spinner that could then vanish and move the page — nor when there is no other work
+/// (`AuthorWorksModel.State.hidden`). A failed read keeps its retry.
+struct BookDetailAuthorWorksSection: View {
+    let state: AuthorWorksModel.State
+    /// The author's page, for the libraries that have one.
+    let onShowAll: (() -> Void)?
+    let onSelect: (WorkDetailRoute) -> Void
+    let onRetry: () -> Void
+    @EnvironmentObject private var store: BookStore
+
+    private var isShown: Bool {
+        switch state {
+        case .loaded(let entries): !entries.isEmpty
+        case .failed: true
+        case .loading, .hidden: false
+        }
+    }
+
+    var body: some View {
+        if isShown {
+            VStack(alignment: .leading, spacing: DSSpacing.sm) {
+                BookDetailSectionHeader(
+                    title: localized("作者其他作品"),
+                    actionTitle: onShowAll == nil ? nil : localized("查看全部"),
+                    action: onShowAll
+                )
+                .padding(.horizontal, DSSpacing.lg)
+                content
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch state {
+        case .loaded(let entries):
+            BookDetailCoverShelf(cards: HomeRowContent(entries: entries, store: store).cards,
+                                 identifier: "detail.authorWorks.book", onSelect: onSelect)
+        case .failed:
+            Button(action: onRetry) {
+                Label(localized("載入失敗，點按重試"), systemImage: "arrow.clockwise")
+                    .font(DSFont.subheadline)
+                    .foregroundStyle(DSColor.accent)
+                    .frame(maxWidth: .infinity, minHeight: DSLayout.discoverShelfCoverHeight)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, DSSpacing.lg)
+        case .loading, .hidden:
+            EmptyView()
+        }
+    }
+}
+
+/// A row of covers under a section header of 作品詳情 (作者其他作品, 同系列), as Explore's
+/// home draws one.
+struct BookDetailCoverShelf: View {
+    let cards: [HomeCardContent]
+    /// The UI tests' name for each book.
+    let identifier: String
+    let onSelect: (WorkDetailRoute) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            LazyHStack(alignment: .top, spacing: DSSpacing.md) {
+                // By position: a source can list one item twice.
+                ForEach(cards.indices, id: \.self) { index in
+                    let card = cards[index]
+                    if let route = card.route {
+                        Button { onSelect(route) } label: {
+                            HomeBookCard(content: card, coverWidth: DSLayout.discoverShelfCoverWidth)
+                        }
+                        .buttonStyle(ExploreTileButtonStyle())
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityLabel(card.accessibilityLabel)
+                        .accessibilityValue(card.accessibilityValue)
+                        .accessibilityIdentifier(identifier)
+                    }
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollIndicators(.hidden)
+        .contentMargins(.horizontal, DSSpacing.lg, for: .scrollContent)
+        .scrollTargetBehavior(.viewAligned)
+        .scrollClipDisabled()
+    }
+}
+
+/// A public library's author page pushed from 作品詳情: a book on it opens that book's 作品詳情
+/// on top, keeping the author's page to come back to.
+struct WorkDetailAuthorPage: View {
+    let destination: PublicLibraryAuthorDestination
+
+    var body: some View {
+        PublicLibraryAuthorPage(destination: destination)
+            .opensWorkDetail()
+    }
+}
+
+/// A 青空文庫 分類's works, from 作品詳情's hero: the list 依分類 opens, each work opening its
+/// 作品詳情 on top.
+struct WorkDetailAozoraWorksPage: View {
+    let title: String
+    let works: [AozoraWork]
+    let index: AozoraCatalogIndex
+
+    var body: some View {
+        AozoraWorksView(index: index, works: works, title: title)
+            .opensWorkDetail()
+    }
+}
+
+private struct OpensWorkDetail: ViewModifier {
+    @EnvironmentObject private var store: BookStore
+    @State private var pushedWork: WorkDetailRoute?
+
+    func body(content: Content) -> some View {
+        content
+            .environment(\.openPublicLibraryBooks) { selection in
+                if let book = selection.selectedBook { pushedWork = WorkDetailRoute(book) }
+            }
+            .navigationDestination(item: $pushedWork) { route in
+                WorkDetailView(route: route).environmentObject(store)
+            }
+    }
+}
+
+private extension View {
+    /// A public library's book on this page opens its 作品詳情 on the same stack.
+    func opensWorkDetail() -> some View { modifier(OpensWorkDetail()) }
+}
+
+/// An author's page in a public library: Gutenberg's feed of their books, or 青空文庫's list of
+/// their works. A book on it opens through `openPublicLibraryBooks`, as the page's host sets it.
+struct PublicLibraryAuthorPage: View {
+    let destination: PublicLibraryAuthorDestination
+
+    var body: some View {
+        switch destination {
+        case .gutenberg(let author):
+            PublicLibraryFeedView(route: OPDSFeedRoute(catalogID: PublicLibraryID.gutenberg.rawValue,
+                url: author.url.absoluteString, title: author.displayName, presentation: .storefront))
+        case .aozora(let author, let index):
+            AozoraWorksView(index: index, works: index.works(forPerson: author.id), title: author.name)
+        }
+    }
+}
+
+#Preview("青空文庫分類") {
+    let index = AozoraCatalogIndex.preview
+    return NavigationStack {
+        WorkDetailAozoraWorksPage(title: localized("小説・物語"), works: index.newWorks, index: index)
+    }
+    .environmentObject(BookStore())
+}
+
+#Preview("作者其他作品") {
+    let index = AozoraCatalogIndex.preview
+    let entries = index.newWorks.map { CollectionEntry.aozora($0, index: index) }
+    return ScrollView {
+        VStack(spacing: DSSpacing.xl) {
+            BookDetailAuthorWorksSection(state: .loaded(entries), onShowAll: {}, onSelect: { _ in }, onRetry: {})
+            BookDetailAuthorWorksSection(state: .loading, onShowAll: nil, onSelect: { _ in }, onRetry: {})
+            BookDetailAuthorWorksSection(state: .failed("timeout"), onShowAll: {}, onSelect: { _ in }, onRetry: {})
+        }
+    }
+    .environmentObject(BookStore())
+}
