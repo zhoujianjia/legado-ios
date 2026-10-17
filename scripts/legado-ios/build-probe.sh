@@ -65,6 +65,8 @@ PY
 python3 "$SCRIPT_DIR/verify-runtime.py" --java-home "$APP/LegadoRuntime/java-home" \
   --jar "$APP/LegadoRuntime/legado-runtime.jar"
 otool -L "$APP/LegadoRuntimeProbe" > "$WORK_DIR/probe-device-linked-libraries.log"
+python3 "$SCRIPT_DIR/verify-native-exports.py" --executable "$APP/LegadoRuntimeProbe" \
+  --report "$WORK_DIR/probe-device-exports.json"
 mkdir -p "$OUTPUT/Payload"
 ditto "$APP" "$OUTPUT/Payload/LegadoRuntimeProbe.app"
 # ditto preserves the executable bits and bundle layout needed by later signing.
@@ -87,6 +89,7 @@ record = {
     'ipaBytes': ipa.stat().st_size,
     'simulatorCompilationPassed': True,
     'deviceCompilationPassed': True,
+    'requiredNativeExportsPresent': True,
     'signed': False,
     'deviceValidationPassed': False,
 }

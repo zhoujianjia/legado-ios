@@ -46,6 +46,9 @@ FFI_HEADERS="$WORK_DIR/ffi-build/iphoneos/install/include"
 python3 "$SCRIPT_DIR/prepare-symbol-keeper.py" \
   --source "$TOOLS/openjdk-ext/src/hotspot/symbol_keeper.cpp" \
   --destination "$MOBILE/src/hotspot/os/bsd/symbol_keeper.cpp"
+# The pinned Zero backend predates shared Apple ARM64 W^X state hooks.
+# Port their complete same-revision implementation, retaining iOS's no-JIT guard.
+python3 "$SCRIPT_DIR/prepare-zero-wx.py" --mobile-root "$MOBILE"
 cd "$MOBILE"
 for target in device simulator; do
   if [[ $target == device ]]; then

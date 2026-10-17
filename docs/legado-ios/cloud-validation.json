@@ -81,9 +81,42 @@
       "failure": "Payload staging rejected missing jdk.charsets module; simulator JVM build not reached",
       "resolution": "Explicitly build every required <module>-java target and java.base-gendata alongside static-libs-image, preserving dependency traversal and all thirteen modules",
       "native_zero_build": "device native compilation passed; required Java module closure incomplete"
+    },
+    {
+      "run_id": 39001183491,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39001183491",
+      "source_commit": "acb8e12db93b65c0f735cda99ffddb31fbdcb704",
+      "tag": "legado-probe-acb8e12",
+      "status": "failed",
+      "portable_job_id": 117304251772,
+      "portable_job": "passed",
+      "python_inventory_tests_passed": 12,
+      "python_runtime_tool_tests_passed": 11,
+      "junit_tests_passed": 45,
+      "junit_failures_errors_skipped": 0,
+      "portable_report_artifact_id": 12089257150,
+      "portable_report_artifact_sha256": "9aeec6ba24cdbc13d274464ae305b5d1067f98875481f644667e12ad416e31aa",
+      "macos_job_id": 117304519091,
+      "source_only_swift_tests_passed": 8,
+      "native_zero_build": "Device and simulator static libraries, thirteen Java modules, runtime data and XCFramework completed",
+      "native_probe_source_compilation": "Swift, C and Objective-C passed for iOS Simulator Release",
+      "failure": "Simulator app linking found undefined DefaultWXWriteMode, os::_jit_exec_enabled and os::thread_wx_enable_write_impl",
+      "root_cause": "Physical Apple ARM64 enables shared W^X hooks, while Zero selects bsd_zero.cpp without the definitions from bsd_aarch64.cpp",
+      "macos_logs_artifact_id": 12089761643,
+      "device_app_build": "Not reached after simulator link failure",
+      "resolution": "Copy the complete W^X state implementation from the same revision's AArch64 backend into Zero, retaining the iOS guard that excludes the real pthread JIT switch; validate both original hashes and the exact prepared output"
     }
   ],
   "source_preflight_fixes": {
+    "zero_wx_state": {
+      "target": "src/hotspot/os_cpu/bsd_zero/os_bsd_zero.cpp",
+      "original_target_sha256": "8451f0f8bea69dbb16e6f26c1dbd4c7b3e96e39850206e5a0e91940bf030da08",
+      "donor": "src/hotspot/os_cpu/bsd_aarch64/os_bsd_aarch64.cpp",
+      "original_donor_sha256": "78a0c5aa1d2b5b696ef94ded1f5d50d0aeb8a8e93bd4e13428bcc198ecf021a5",
+      "prepared_target_sha256": "702ba78cb0c9c19e0c178d2dd34479b2a03ff2aa3c43de903755c3d49b866dcc",
+      "regression_tests_passed": 5,
+      "native_validation": "Pending the next cloud build"
+    },
     "runtime_data": "Copy the built conf tree, tzdb.dat, and cacerts into each Java home; verify five required data files are readable and nonempty",
     "symbol_registration": {
       "removed_symbol": "Java_sun_nio_fs_UnixNativeDispatcher_fchmodatNoFollowSupported0",
@@ -94,7 +127,7 @@
       "other_registrations_preserved": 449
     },
     "runtime_tool_tests_passed": 11,
-    "swift_changes": "Syntax parsed only; Apple SDK compilation remains pending"
+    "swift_changes": "Eight source-only Swift package tests and real simulator app source compilation passed; native linking is tracked per attempt"
   },
   "macos_build_environment_verified": true,
   "ios_compilation_passed": false,

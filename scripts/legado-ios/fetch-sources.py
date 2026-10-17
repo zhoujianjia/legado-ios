@@ -2,6 +2,7 @@
 """Fetch fixed source revisions and verify libffi bytes. Never fetch an unsigned JVM binary."""
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -11,7 +12,7 @@ import urllib.request
 
 HERE = Path(__file__).resolve().parent
 
-def checkout(repository: str, revision: str, destination: Path) -> None:
+def checkout(repository: str, revision: str, destination: Path, allowed_edits: dict[str, str] | None = None) -> None:
     if not destination.exists():
         subprocess.run(["git", "init", str(destination)], check=True)
         subprocess.run(["git", "-C", str(destination), "remote", "add", "origin", repository], check=True)
@@ -19,8 +20,19 @@ def checkout(repository: str, revision: str, destination: Path) -> None:
     if configured != repository:
         raise ValueError(f"Source origin mismatch in {destination}")
     changes = subprocess.check_output(["git", "-C", str(destination), "status", "--porcelain"], text=True)
-    # The build explicitly copies the pinned symbol keeper into mobile; otherwise do not clobber edits.
-    changes = "\n".join(line for line in changes.splitlines() if line[3:] != "src/hotspot/os/bsd/symbol_keeper.cpp")
+    # Keep only the exact, reviewed source adaptation across an incremental build.
+    # Any other edited bytes still stop checkout before git can overwrite them.
+    unexpected = []
+    for line in changes.splitlines():
+        relative = line[3:]
+        if relative == "src/hotspot/os/bsd/symbol_keeper.cpp":
+            continue  # Generated from the separately hash-checked ios-tools input.
+        path = destination / relative
+        expected = (allowed_edits or {}).get(relative)
+        if expected and path.is_file() and not path.is_symlink() and hashlib.sha256(path.read_bytes()).hexdigest() == expected:
+            continue
+        unexpected.append(line)
+    changes = "\n".join(unexpected)
     if changes:
         raise ValueError(f"Source checkout contains edits: {destination}")
     subprocess.run(["git", "-C", str(destination), "fetch", "--depth=1", "origin", revision], check=True)
@@ -38,8 +50,12 @@ def main() -> None:
     work = args.work_dir.resolve()
     work.mkdir(parents=True, exist_ok=True)
     lock = json.loads((HERE / "runtime-lock.json").read_text(encoding="utf-8"))
+    patch_spec = importlib.util.spec_from_file_location("zero_wx_patch", HERE / "prepare-zero-wx.py")
+    patch = importlib.util.module_from_spec(patch_spec)
+    patch_spec.loader.exec_module(patch)
     for name, folder in [("openjdkMobile", "mobile"), ("iosTools", "ios-tools")]:
-        checkout(lock[name]["repository"], lock[name]["commit"], work / folder)
+        edits = {patch.TARGET_RELATIVE_PATH: patch.PREPARED_SHA256} if name == "openjdkMobile" else None
+        checkout(lock[name]["repository"], lock[name]["commit"], work / folder, edits)
     ffi = lock["libffi"]
     archive = work / f"libffi-{ffi['version']}.tar.gz"
     if not archive.exists():
