@@ -273,7 +273,7 @@ LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapM
         NSString *homeOption = [@"-Djava.home=" stringByAppendingString:home];
         NSString *heapOption = [NSString stringWithFormat:@"-Xmx%dm", maximumHeapMB];
         NSString *errorOption = diagnosticsCurrent ? [@"-XX:ErrorFile=" stringByAppendingString:[diagnosticsCurrent stringByAppendingPathComponent:@"hs_err_pid%p.log"]] : nil;
-        JavaVMOption options[7] = {0};
+        JavaVMOption options[8] = {0};
         options[0].optionString = (char *)cpOption.UTF8String;
         options[1].optionString = (char *)homeOption.UTF8String;
         options[2].optionString = (char *)heapOption.UTF8String;
@@ -284,8 +284,12 @@ LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapM
             options[6].optionString = "vfprintf";
             options[6].extraInfo = (void *)diagnosticsVfprintf;
         }
+        jint optionCount = errorOption ? 7 : 5;
+#if TARGET_OS_SIMULATOR
+        options[optionCount++].optionString = "-Xlog:os+map=trace";
+#endif
         JavaVMInitArgs args = {0};
-        args.version = JNI_VERSION_1_8; args.nOptions = errorOption ? 7 : 5; args.options = options; args.ignoreUnrecognized = JNI_FALSE;
+        args.version = JNI_VERSION_1_8; args.nOptions = optionCount; args.options = options; args.ignoreUnrecognized = JNI_FALSE;
         JNIEnv *env = NULL;
 #if TARGET_OS_IPHONE
         if (!recordStage("loadfunctions.before", 0)) { pthread_mutex_unlock(&startupLock); return diagnosticFailureResult(); }
