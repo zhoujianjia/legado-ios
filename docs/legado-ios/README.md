@@ -80,6 +80,23 @@ passed and produced an unsigned iOS 18+ IPA after both app links and a nine-entr
 dynamic export check. Follow [Windows signing and installation](windows-install.md)
 to collect actual iPhone results; all device gates remain pending.
 
+For app, packaging or runner fixes that leave the native/JVM inputs unchanged,
+the [Legado iOS Runtime Replay workflow](../../.github/workflows/legado-ios-replay.yml)
+reuses matching source-built products instead of rebuilding Zero and the JAR.
+Its trigger tag is `legado-replay-<sourceRunID>-<currentSHA prefix>`, where the
+source run belongs to this repository and the 7–40 hexadecimal-character prefix
+matches the tagged current commit.
+
+The replay checks Git objects for the pinned native build inputs and complete JVM
+tree, then validates the selected source artifacts and runtime files. Changed
+inputs require a fresh source build. Only the matching Zero framework, Java homes
+and JVM payload are reused; the current iOS app is compiled and linked again
+before attempting the Simulator fixture. Keep `runtime-reuse.json` with the
+artifact and `legado-replay-logs` to distinguish reused provenance from a fresh
+runtime compilation. Runtime success remains pending: run 39039281290 failed at
+Simulator CLI argument handling before launch, and run 39039849269 failed on
+Python 3.9 union annotations in Xcode's script environment.
+
 Use JDK 21 for the portable JVM module. On Windows, the
 [validation runner](../../scripts/test-legado.ps1) discovers the local JDK or uses
 `-JdkHome`, resolves the current Windows HTTP proxy for Gradle, and restores its
@@ -142,7 +159,7 @@ python3 scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/device
 
 Staging targets `Resources/LegadoRuntime` by default and refuses an existing
 payload unless `--replace` is supplied. For a simulator build, stage
-`simulator-static/java-home` instead. Version 0.2 build 3's final **Prepare static
+`simulator-static/java-home` instead. Version 0.2 build 4's final **Prepare static
 JVM bootstrap home** app build phase moves the staged `LegadoRuntime/java-home`
 tree to the final `App.app/lib`; exploded classes then live at `App.app/lib/modules`.
 The home is moved without duplication or symbolic links, and the JAR and staging
@@ -172,7 +189,7 @@ terminated the app; the cause and JVM startup progress are unknown. See
 
 Version 0.2 build 2 introduced persistent `probeProgress`, native
 `current`/`previous` logs, VM `vfprintf`/`hs_err` capture, and a JSON file shared
-through `ShareLink` that can be saved to Files. Build 3 retains this support with
+through `ShareLink` that can be saved to Files. Build 4 retains this support with
 the bootstrap layout fix, whose runtime result is pending. Recorded times include
 diagnostic I/O and are not production performance measurements. Simulator autorun is pending;
 the current cloud evidence establishes compilation/linking, not runtime success.

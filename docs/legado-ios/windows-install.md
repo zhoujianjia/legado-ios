@@ -27,7 +27,14 @@ Get-FileHash -Algorithm SHA256 -LiteralPath .\LegadoRuntimeProbe-unsigned.ipa
 The workflow exports an arm64 iPhoneOS app. Its simulator compilation is a
 separate check; simulator products cannot be installed on the phone.
 
-The next version 0.2 build 3 keeps the diagnostics introduced in build 2 and fixes
+A runtime replay can also produce this artifact after reusing source-built Zero
+and JVM products with matching inputs. The app is compiled again from the tagged
+current commit; its `runtime-reuse.json` records the source run and checks. The
+trigger tag is `legado-replay-<sourceRunID>-<currentSHA prefix>`; see the
+[replay requirements](README.md#build-and-validation-sequence). An exported IPA
+does not imply that Simulator or physical-device execution passed.
+
+The next version 0.2 build 4 keeps the diagnostics introduced in build 2 and fixes
 the bootstrap Java-home layout; its runtime validation is pending. Staging uses
 `Resources/LegadoRuntime/java-home`, while the final app build phase moves that
 home to `LegadoRuntimeProbe.app/lib` without duplication or symbolic links. The
@@ -38,26 +45,39 @@ termination. See the [bootstrap investigation](bootstrap-layout-investigation.js
 
 ## Sign locally and install
 
-Use [Sideloadly's official Windows download](https://sideloadly.io/).
-Its current prerequisites are the web versions of Apple's iTunes and iCloud,
-linked from that page. Check existing Apple software before changing drivers.
-The tool supports free Apple accounts and accepts IPA files for signing.
+The successful Windows installation used **iloader v2.3.9**, available from
+[iloader.app](https://iloader.app/) or its
+[official release](https://github.com/nab138/iloader/releases/tag/v2.3.9).
+The [versioned README](https://github.com/nab138/iloader/blob/v2.3.9/README.md)
+documents importing an IPA; SideStore installation is not required for this probe.
 
 1. Connect and unlock the iPhone over USB, and accept **Trust This Computer**.
-2. Open Sideloadly, select the connected device and load the extracted IPA.
-   Choose **Apple ID Sideload** as the installation mode.
-3. Enter the Apple account and any authentication prompts in the local signing
-   tool. Keep these credentials out of chat, the repository and Actions.
+2. Open iloader, select the phone and choose **Import IPA**. Select the extracted
+   `LegadoRuntimeProbe-unsigned.ipa` from the intended build.
+3. Sign in with the Apple account used for the existing installation. Approve
+   two-factor authentication on the trusted iPhone and enter its verification
+   code in iloader. Keep the account credentials and code out of chat and Actions.
 4. Install, then follow any device prompt to trust the developer account under
    **Settings → General → VPN & Device Management**.
 5. Enable **Settings → Privacy & Security → Developer Mode**, restart and confirm
    when requested. See [Apple's Developer Mode instructions](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device)
-   and the [Sideloadly setup/trust FAQ](https://sideloadly.io/faq).
+   if it is not already enabled.
+
+For a new probe build, use the same Apple account to update the existing app and
+retain its diagnostics. Export available reports first and keep the old app
+installed; deleting it removes its app-owned diagnostic files.
+
+In this session, Sideloadly encountered a GSA HTTP 503 error. After switching to
+iloader, its default `mac-ani.jkcoxson.com/v3/client_info` returned HTTP 502.
+Selecting **Jkcoxson (Windows)** (`ani.jkcoxson.com`) in iloader's anisette settings
+then allowed installation to complete. This is a built-in choice in the
+[v2.3.9 settings source](https://github.com/nab138/iloader/blob/v2.3.9/src/pages/Settings.tsx);
+server availability can change. [Sideloadly](https://sideloadly.io/) remains an
+alternative signing tool, but iloader is the working route recorded here.
 
 Free Personal Team provisioning expires after seven days; refresh the signature
 to keep the test app usable. See [Apple's account overview](https://developer.apple.com/help/account/basics/about-your-developer-account).
-Paid membership is optional for this first test. Sideloadly also documents
-refreshing in its FAQ.
+Paid membership is optional for this test.
 
 ## Preserve evidence if the app closes
 
@@ -76,7 +96,7 @@ text. If no matching report is found, record that result; do not substitute an
 unrelated report or infer a cause from a filename. See Apple's
 [crash and diagnostic log instructions](https://developer.apple.com/documentation/xcode/acquiring-crash-reports-and-diagnostic-logs).
 
-For diagnostic version 0.2 build 3, once available, reopen the app after a
+For diagnostic version 0.2 build 4, once available, reopen the app after a
 termination and share its technical JSON report with the report's Share action
 (`ShareLink`). Preserve
 `savedDiagnostics` and `probeProgress`, including any recovered JVM error report,

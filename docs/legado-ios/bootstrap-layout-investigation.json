@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-17T14:15:50Z",
+  "scope": "Pinned OpenJDK Mobile iOS Zero bootstrap resource layout; static source inspection and original unsigned IPA inspection only.",
+  "status": {
+    "packaging": "confirmed_packaging_defect",
+    "reportedDeviceExitCause": "runtime_cause_pending_reproduction",
+    "gatesChanged": false,
+    "deviceRuntimePassClaimed": false
+  },
+  "sourcePins": {
+    "openjdkMobile": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+    "iosTools": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+  },
+  "sourceLineNumberMethod": "All source anchors use 1-based physical line numbers counted from the pinned raw GitHub file content, including empty lines; web extraction line numbers are not used.",
+  "originalArtifactInspection": {
+    "method": "Python zipfile.ZipFile central-directory inspection and hashlib.file_digest SHA-256; no extraction or mutation.",
+    "artifactPath": ".build/cloud-evidence/run-39003367690/LegadoRuntimeProbe-unsigned.ipa",
+    "sourceCommit": "314d20c",
+    "cloudRunID": "39003367690",
+    "sha256": "cf19f3aeee196f39d35c3271d9ca26ea15305d48c930c29cf06260ff50a1c36f",
+    "appPrefix": "Payload/LegadoRuntimeProbe.app/",
+    "entriesWithRootLibPrefix": 0,
+    "rootExplodedObjectClass": {
+      "path": "Payload/LegadoRuntimeProbe.app/lib/modules/java.base/java/lang/Object.class",
+      "present": false
+    },
+    "rootJimage": {
+      "path": "Payload/LegadoRuntimeProbe.app/lib/lib/modules",
+      "present": false
+    },
+    "nestedExplodedObjectClass": {
+      "path": "Payload/LegadoRuntimeProbe.app/LegadoRuntime/java-home/modules/java.base/java/lang/Object.class",
+      "present": true
+    },
+    "symbolicLinkCount": 0,
+    "interpretation": "The classes were packaged, but neither bootstrap layout searched under the static iOS VM's early Java home was present. Checking only the configured nested Java home could therefore report a successful payload preflight while leaving native bootstrap unable to locate java.base."
+  },
+  "conditions": {
+    "platform": "The Apple branch of os::init_system_properties_values with __IOS__ defined.",
+    "linkage": "The is_vm_statically_linked() branch is required for the appended /lib. This probe links the source-built libjvm.a into libOpenJDK.a and that static archive into the app executable; it does not load a separate libjvm dynamic library. The official static iOS example independently uses the matching bundle layout.",
+    "staticBuildTerminology": "STATIC_BUILD denotes the upstream static build path; the home calculation is guarded by the runtime helper is_vm_statically_linked(), not by a literal #ifdef STATIC_BUILD in os_bsd.cpp. Do not generalize this result to a dynamically linked macOS JVM.",
+    "addressResolution": "For VM code statically linked into LegadoRuntimeProbe, dladdr resolves the app Mach-O executable. The source then strips the executable filename, retains the app directory under __IOS__, and appends /lib for the static VM.",
+    "derivedEarlyJavaHome": "<App.app>/lib"
+  },
+  "sourceChain": [
+    {
+      "id": "startup-order",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/runtime/threads.cpp#L480-L495",
+      "lines": { "start": 480, "end": 495 },
+      "finding": "Threads::create_vm initializes system properties before Arguments::parse(args). Ordinary VM options, including -Djava.home, cannot repair a failure during that earlier initialization."
+    },
+    {
+      "id": "system-properties",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/runtime/arguments.cpp#L387-L426",
+      "lines": { "start": 387, "end": 426 },
+      "finding": "Arguments::init_system_properties creates the initially unset java.home property and calls os::init_system_properties_values synchronously."
+    },
+    {
+      "id": "static-ios-home",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/os/bsd/os_bsd.cpp#L492-L523",
+      "lines": { "start": 492, "end": 523 },
+      "finding": "The Apple code obtains os::jvm_path, removes the final filename, skips the two parent-directory removals under __IOS__, appends /lib for a statically linked VM, sets java.home, and immediately requires set_boot_path to succeed. Failure invokes vm_exit_during_initialization."
+    },
+    {
+      "id": "executable-path",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/os/bsd/os_bsd.cpp#L1111-L1128",
+      "lines": { "start": 1111, "end": 1128 },
+      "finding": "dll_address_to_library_name uses dladdr's dli_fname for the address-containing image. In this app's static linkage, that image is the app executable."
+    },
+    {
+      "id": "environment-override-scope",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/os/posix/os_posix.cpp#L1118-L1202",
+      "lines": { "start": 1118, "end": 1202 },
+      "finding": "os::jvm_path discovers and canonicalizes the address-containing image. Its JAVA_HOME override is inside Arguments::executing_unit_tests(); merely setting JAVA_HOME in an ordinary embedded app does not select the nested Java home through this path. No supported public pre-JNI home setter was identified in this audit."
+    },
+    {
+      "id": "bootstrap-search",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/runtime/os.cpp#L1501-L1529",
+      "lines": { "start": 1501, "end": 1529 },
+      "finding": "os::set_boot_path first tests <java.home>/lib/modules as a jimage, then <java.home>/modules/java.base as exploded classes. Both absent returns false. With the derived early home, the physical candidates are App.app/lib/lib/modules and App.app/lib/modules/java.base."
+    },
+    {
+      "id": "java-module-resolution",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/classes/jdk/internal/module/SystemModuleFinders.java#L176-L208",
+      "lines": { "start": 176, "end": 208 },
+      "finding": "Later Java module discovery also uses java.home: lib/modules for a runtime image or modules for an exploded build. Keeping the native early home and configured java.home equal avoids a second, inconsistent module location."
+    },
+    {
+      "id": "early-exit-native-chain",
+      "urls": [
+        "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/runtime/java.cpp#L606-L616",
+        "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/runtime/java.cpp#L686-L691",
+        "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/os/posix/os_posix.cpp#L2245-L2252"
+      ],
+      "finding": "The initialization error overload calls vm_abort(false), which forwards to os::abort(false). The POSIX implementation calls os::_exit(1); ::abort() is only used when dump_core is true. This source path can terminate the process without a signal crash report, but does not prove which path the reported device execution took."
+    },
+    {
+      "id": "diagnostic-hook-order",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/runtime/arguments.cpp#L2366-L2367",
+      "lines": { "start": 2366, "end": 2367 },
+      "finding": "The JNI vfprintf hook is installed during option parsing, after early system-property initialization. A stage log stopping at JNI_CreateJavaVM.before with an empty vm-output.log or no hs_err file would therefore not exclude this earlier layout failure."
+    }
+  ],
+  "officialPinnedExample": {
+    "sourcePin": "2f0a489b48cdb13901185be051004f7a9c23bf14",
+    "packagingSource": "https://github.com/openjdk-mobile/ios-tools/blob/2f0a489b48cdb13901185be051004f7a9c23bf14/app/script.sh#L54-L59",
+    "packagingLines": { "start": 54, "end": 59 },
+    "packagingFinding": "The official sample creates HelloMobileApp/lib/lib and copies the jimage modules file there. In the built app this is App.app/lib/lib/modules, matching early java.home=App.app/lib.",
+    "startupSource": "https://github.com/openjdk-mobile/ios-tools/blob/2f0a489b48cdb13901185be051004f7a9c23bf14/app/source/main.m#L20-L31",
+    "startupLines": { "start": 20, "end": 31 },
+    "startupFinding": "The sample passes one VM option for java.class.path, calls loadfunctions, then JNI_CreateJavaVM. It does not depend on -Djava.home or JAVA_HOME to redirect the early resource lookup.",
+    "executionClaim": "Reference source inspected; the upstream sample was not executed locally."
+  },
+  "minimalCorrection": {
+    "approach": "Move the complete exploded Java home from App.app/LegadoRuntime/java-home to App.app/lib while preparing the built app, and configure java.home to App.app/lib.",
+    "expectedObjectClassPath": "App.app/lib/modules/java.base/java/lang/Object.class",
+    "otherResources": "Move conf, lib runtime data, legal notices and release together with modules; keep JARs and runtime-manifest.json under App.app/LegadoRuntime.",
+    "copies": 1,
+    "symbolicLinksRequired": false,
+    "jvmSourcePatchRequired": false,
+    "performanceParameterChangeRequired": false,
+    "reportedCorrectionCommit": "3f096bf",
+    "reportedCorrectionRunID": "39039849269",
+    "validationAtRecordTime": "Correction submitted for cloud build; this investigation does not assert the resulting simulator or device runtime passed."
+  },
+  "requiredReproduction": [
+    "Capture the original-layout diagnostic build's actual process exit and native stage/VM output evidence, including an explicit bootstrap error if available.",
+    "Inspect the corrected built app or IPA to prove the early bootstrap candidate and configured java.home now identify the same complete Java home.",
+    "Run the corrected simulator and self-signed physical-device probe without treating successful packaging or payload preflight as a JVM-start pass.",
+    "Keep G1-G5 pending until their existing runtime assertions actually pass; retain both original and corrected artifacts and reports."
+  ],
+  "limits": [
+    "The original IPA inspection confirms a packaging defect relative to the pinned static iOS bootstrap lookup. It does not establish that this was the only device startup failure.",
+    "No signal handler, fatal-error recovery, private JAVA_HOME override, or speculative JVM parameter change is part of this correction.",
+    "Native JVM initialization, java.beans, the 25-case semantic suite, synthetic reading flow and cancellation have not been established as passing on the reported device by this investigation."
+  ]
+}

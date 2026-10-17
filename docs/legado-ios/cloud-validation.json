@@ -57,7 +57,12 @@
       "python_inventory_tests_passed": 12,
       "python_runtime_tool_tests_passed": 11,
       "jvm_job": "passed, including test/runtimeJar/runtimeSmoke",
-      "packaged_semantics": {"e4x": "ok", "indirect": "function", "dynamicThis": true, "legacy": 42},
+      "packaged_semantics": {
+        "e4x": "ok",
+        "indirect": "function",
+        "dynamicThis": true,
+        "legacy": 42
+      },
       "macos_job_id": 117301011427,
       "xcode": "26.2 (17C52)",
       "macos_library_source_compilation": "passed in source-only mode",
@@ -124,7 +129,12 @@
       "device_app_compile_and_link": "passed",
       "zero_wx_state_fix": "Validated by both complete app links",
       "required_dynamic_exports_present": 5,
-      "missing_dynamic_exports": ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource"],
+      "missing_dynamic_exports": [
+        "JIMAGE_Open",
+        "JIMAGE_Close",
+        "JIMAGE_FindResource",
+        "JIMAGE_GetResource"
+      ],
       "failure": "Final executable dyld export-trie gate rejected exactly the four JIMAGE entrypoints; no IPA was exported",
       "resolution": "Add four precise -u archive roots for static iOS linking; no all-load flag or weakened export gate",
       "resolution_commit": "314d20c9ef47bb9a7b2d2623a969fb1e52bd02a8"
@@ -162,11 +172,60 @@
       "metadata_note": "Xcode omitted the arbitrary source-commit Info.plist setting; pair this first artifact's runtime report with build-manifest.json. Subsequent packaging explicitly stamps the field before unsigned export.",
       "signed": false,
       "device_validation_passed": false
+    },
+    {
+      "run_id": 39039281290,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39039281290",
+      "source_commit": "24031e9069c338895095bd786ead65b8ea7a6de2",
+      "tag": "legado-probe-24031e9",
+      "status": "failed",
+      "portable_job_id": 117415283199,
+      "portable_job": "passed",
+      "macos_job_id": 117415628199,
+      "source_only_swift_tests_passed": 12,
+      "native_zero_build": "Both source-built runtime slices, thirteen modules and runtime data passed",
+      "simulator_app_compile_and_link": "passed",
+      "device_app_compile_and_link": "passed",
+      "required_dynamic_exports_present": 9,
+      "unsigned_artifact_id": 12104325526,
+      "unsigned_artifact_zip_sha256": "47526d9378984871c327d407b4d12fea610c90d04b2cbe62f796abc6d20cd2dd",
+      "ipa_bytes": 49520183,
+      "ipa_sha256": "00a4e4a6c002995f95e3d1e04887758c2f44f2332faab9c878442fa85535641a",
+      "macos_log_artifact_id": 12103941582,
+      "macos_log_artifact_zip_sha256": "d2fda7b540571f341d89a683c848e1e4a34b457a9d20e174fba26550ad3e476e",
+      "failure": "Simulator runner passed --stdout as a separate token. simctl rejected it as an invalid device before the app was launched. No native execution evidence was obtained.",
+      "resolution": "Pass --stdout=<path> and --stderr=<path>; retain simctl launch help with smoke evidence. This old-layout IPA is not the proposed phone update.",
+      "device_validation_passed": false
+    },
+    {
+      "run_id": 39039849269,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39039849269",
+      "source_commit": "3f096bf4dd6201d62b3ec11d74600d014461e3c9",
+      "tag": "legado-probe-3f096bf",
+      "status": "failed",
+      "portable_job_id": 117416914617,
+      "portable_job": "passed",
+      "macos_job_id": 117417247839,
+      "source_only_swift_tests_passed": 12,
+      "native_zero_build": "Both source-built runtime slices, thirteen modules and runtime data passed",
+      "simulator_app_compile_and_link": "Passed before the final bootstrap-layout script phase",
+      "device_app_compile_and_link": "not reached",
+      "unsigned_artifact_id": null,
+      "macos_log_artifact_id": 12104067149,
+      "macos_log_artifact_zip_sha256": "cd4c225aff1753d7f6dcd1c11886ab7b8df3108ac271b69c42b83f54982cf652",
+      "failure": "The Xcode build phase selected Apple system Python 3.9. Evaluating Path | None annotations raised TypeError before layout preparation.",
+      "resolution": "Postpone annotations in verify-runtime.py and replace hashlib.file_digest in the build-phase helper with incremental SHA256 compatible with Python 3.9. Native build inputs are unchanged.",
+      "device_validation_passed": false
     }
   ],
   "source_preflight_fixes": {
     "jimage_archive_roots": {
-      "symbols": ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource"],
+      "symbols": [
+        "JIMAGE_Open",
+        "JIMAGE_Close",
+        "JIMAGE_FindResource",
+        "JIMAGE_GetResource"
+      ],
       "reason": "Static iOS HotSpot resolves these by dlsym; the keeper's NativeImageBuffer object does not reference their separate jimage.cpp object",
       "change": "Four exact iOS -u linker roots, with a final executable dyld export-trie check",
       "native_validation": "Run 39003367690 passed all nine final executable exports; the downloaded ARM64 Mach-O export trie was independently verified on Windows"
@@ -190,7 +249,14 @@
       "other_registrations_preserved": 449
     },
     "runtime_tool_tests_passed": 11,
-    "swift_changes": "Eight source-only Swift package tests and real simulator app source compilation passed; native linking is tracked per attempt"
+    "swift_changes": "Eight source-only Swift package tests and real simulator app source compilation passed; native linking is tracked per attempt",
+    "bootstrap_home_layout": {
+      "evidence": "bootstrap-layout-investigation.json",
+      "confirmed_defect": "The static iOS VM derives early java.home=App.app/lib before parsing -D options; the original IPA contained only LegadoRuntime/java-home.",
+      "change": "Physically move the single staged home to App.app/lib; configure the same Java home while keeping JAR and manifest under LegadoRuntime.",
+      "local_artifact_check": "A separately extracted copy of the original unsigned IPA passed all thirteen module checks after relocation. A second preparation was idempotent; executable and JAR hashes were unchanged.",
+      "actual_device_exit_cause": "pending runtime evidence; no physical gate changed"
+    }
   },
   "macos_build_environment_verified": true,
   "ios_compilation_passed": true,

@@ -47,7 +47,7 @@ actor ProbeRunner {
         try Data(report.utf8).write(to: file, options: .atomic)
         return file
     }
-    func run() async throws -> String {
+    func run() async throws -> (report: String, file: URL) {
         guard !running else { throw mismatch("A fixture is already running") }
         running = true
         defer { running = false }
@@ -139,8 +139,12 @@ actor ProbeRunner {
                 "semantics": semantics, "state": state, "requests": await host.capturedRequests(),
                 "limits": "Covers the packaged original 25 JsEngineCapabilitiesTest cases, the explicit java.beans probe and synthetic mainJs fixtures. This is not exhaustive proof of Java collection, byte-array or overload conversion compatibility. Full G4 reference-trace parity and G5 network/browser timeouts, concurrent isolation and sustained sessions remain unverified. Peak RSS is process lifetime; payloadBytes excludes the linked native JVM binary. Gate 1 also requires launching Release on a physical iPhone from the Home Screen without a debugger."]
             let serialized = try json(report)
+            // The completion checkpoint is consumed by the simulator runner.
+            // Publish the full report first so collecting a passed run cannot
+            // race the UI and preserve only its earlier preflight report.
+            let file = try shareableReport(serialized)
             try recordProgress("passed")
-            return serialized
+            return (serialized, file)
         } catch {
             let original = error
             if !closeAttempted {

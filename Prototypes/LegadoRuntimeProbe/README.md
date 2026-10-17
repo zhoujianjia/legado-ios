@@ -23,6 +23,14 @@ produce an unsigned IPA. Observed runs and fixes are recorded in
 actual device validation remain separate steps. The local Mac instructions below are an alternative when
 a macOS development environment is available.
 
+For app or packaging fixes with unchanged native/JVM inputs, the
+[runtime replay workflow](../../.github/workflows/legado-ios-replay.yml) can reuse
+matching source-built artifacts, then compile and link the current app again and
+attempt its Simulator fixture. Its tag is
+`legado-replay-<sourceRunID>-<currentSHA prefix>`; see the
+[reuse requirements](../../docs/legado-ios/README.md#build-and-validation-sequence).
+Replay runtime success has not been established.
+
 ## Prepare the payload on a Mac
 
 From the repository root, follow the runtime build prerequisites and run:
@@ -38,7 +46,7 @@ python3 scripts/legado-ios/stage-runtime.py \
 ```
 
 The staging directory is `../../Resources/LegadoRuntime/java-home`, with exploded
-classes under `java-home/modules`. In version 0.2 build 3, the final **Prepare
+classes under `java-home/modules`. In version 0.2 build 4, the final **Prepare
 static JVM bootstrap home** build phase moves that entire home inside the built
 app to `LegadoRuntimeProbe.app/lib`, so its classes are at `lib/modules`. This is
 one moved home, without duplication or a symbolic link; the engine JAR and staging
@@ -47,7 +55,7 @@ staged payload, explicitly add `--replace`. Simulator runs require the simulator
 Java home instead.
 
 Source inspection identified a packaging defect: the pinned BSD VM selects
-`App.app/lib` during bootstrap before parsing `-Djava.home`. The build 3 path fix
+`App.app/lib` during bootstrap before parsing `-Djava.home`. The build 4 path fix
 still needs runtime validation and has not established the cause of the user's
 termination. See the [bootstrap investigation](../../docs/legado-ios/bootstrap-layout-investigation.json).
 
@@ -117,7 +125,7 @@ declarative-rule and real-source compatibility remain pending.
 
 Version 0.2 build 2 introduced root-level `probeProgress` checkpoints and native
 `current`/`previous` attempt logs, VM `vfprintf` capture and an `hs_err` request.
-Build 3 retains these diagnostics with the bootstrap layout fix; its runtime
+Build 4 retains these diagnostics with the bootstrap layout fix; its runtime
 result is pending. After a termination, reopen the app and inspect the
 report before retrying. Preserve `savedDiagnostics` and `probeProgress`; a native
 failure may not produce an `hs_err` file. The Share action uses a file URL through

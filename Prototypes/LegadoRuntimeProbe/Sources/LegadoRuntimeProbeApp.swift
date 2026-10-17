@@ -32,10 +32,8 @@ import Observation
         do {
             let result = try await runner.run()
             try Task.checkCancellation()
-            let file = try await runner.shareableReport(result)
-            try Task.checkCancellation()
-            report = result
-            reportFile = file
+            report = result.report
+            reportFile = result.file
         } catch {
             let message = error is CancellationError ? localized("probe.cancelled") : error.localizedDescription
             failure = message

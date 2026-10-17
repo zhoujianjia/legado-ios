@@ -10,7 +10,7 @@ is available for self-signing. JVM startup and compatibility on a physical devic
 remain pending; this is a runtime prototype, not a complete Legado release.
 The user reports successful iPhone installation and payload preflight, followed
 by termination when running the fixture; the cause is unknown. See
-[device evidence](docs/legado-ios/device-validation.json). Version 0.2 build 3
+[device evidence](docs/legado-ios/device-validation.json). Version 0.2 build 4
 retains build 2's persistent diagnostics and JSON sharing, and corrects the
 bootstrap Java-home layout. The path fix, simulator autorun and all physical-device
 gates still need runtime validation; the reported termination's cause is unconfirmed.
