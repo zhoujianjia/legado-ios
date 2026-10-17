@@ -1,0 +1,92 @@
+name: Legado Original Android Reference
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'legado-reference-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legado-android-reference-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  original-android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify the sanitized original source and stage the isolated test
+        run: |
+          mkdir -p .build/ci-logs/android-reference
+          python -B scripts/legado-reference/test-prepare-reference.py -v 2>&1 | tee .build/ci-logs/android-reference/preparation-tests.log
+          python -B scripts/legado-reference/test-compare-reference.py -v 2>&1 | tee .build/ci-logs/android-reference/comparator-tests.log
+          python -B scripts/legado-reference/test-run-reference.py -v 2>&1 | tee .build/ci-logs/android-reference/execution-driver-tests.log
+          python -B scripts/legado-reference/prepare-reference.py stage --snapshot-directory Packages/LegadoRuntime/vendor/android-reference --destination .build/legado-reference/source
+          python -B scripts/legado-reference/run-reference.py stage
+      - name: Resolve the installed Android SDK and enable emulator acceleration
+        run: |
+          command -v sdkmanager
+          python - <<'PY'
+          import subprocess
+          subprocess.run(['sdkmanager', '--licenses'], input='y\n' * 100, text=True, check=True)
+          subprocess.run(['sdkmanager', 'platforms;android-36', 'build-tools;36.0.0', 'platform-tools'], check=True)
+          PY
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          test -r /dev/kvm
+      - name: Compile the original application and only the added reference test
+        run: |
+          bash .build/legado-reference/source/gradlew -p .build/legado-reference/source --no-daemon --max-workers=2 \
+            -Dorg.gradle.jvmargs='-Xmx4g -Dfile.encoding=UTF-8' \
+            :app:assembleAppDebug :app:assembleAppDebugAndroidTest --stacktrace \
+            2>&1 | tee .build/ci-logs/android-reference/build.log
+      - name: Execute the original reading chain on Android
+        uses: reactivecircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808 # v2, resolved 2026-10-18
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 300
+          disable-animations: true
+          script: python -B scripts/legado-reference/run-reference.py execute
+      - name: Preserve reference diagnostics and trace, including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-original-android-reference
+          path: |
+            .build/ci-logs/android-reference/
+            .build/legado-reference/source/app/build/outputs/androidTest-results/
+            .build/legado-reference/source/app/build/reports/androidTests/
+            .build/legado-reference/source/app/build/outputs/logs/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Explain the reference boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          This job executes the pinned archive's original Android business code with one added instrumentation test and a local HTTP fixture server.
+          The source snapshot excludes the original signing key, GitHub workflows and Google services configuration. It retains original business source bytes and licenses; test-only Google configuration and telemetry settings are generated separately.
+          A passing Android trace is a reference, not an iOS G4 pass. Compare its declared canonical fields and retained request bytes against the matching iOS fixture separately. Failed builds and partial traces cannot pass G4.
+          SUMMARY

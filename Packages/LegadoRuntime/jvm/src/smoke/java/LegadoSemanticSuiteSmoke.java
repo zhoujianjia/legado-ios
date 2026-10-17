@@ -17,6 +17,25 @@ public class LegadoSemanticSuiteSmoke {
         var source = "{\"bookSourceUrl\":\"https://fixture.invalid\",\"mainJs\":\"function search(){return [];}\"}";
         var session = checked(LegadoRuntime.createSession(source)).get("sessionId").getAsString();
         try {
+            var interopResponse = checked(LegadoRuntime.execute(session, "packaged-interop-suite",
+                "interopSuite", "{\"timeoutMs\":300000}"));
+            var interop = interopResponse.getAsJsonObject("result");
+            if (!interop.get("suite").getAsString().equals("InteropSemanticSuite") ||
+                !interop.get("caseSetVersion").getAsString().equals("legado-interop-v1") ||
+                !interop.get("passed").getAsBoolean() || interop.get("passedCount").getAsInt() != 28 ||
+                interop.get("failed").getAsInt() != 0 || interop.get("total").getAsInt() != 28 ||
+                interop.getAsJsonArray("tests").size() != interop.get("total").getAsInt())
+                throw new AssertionError(interopResponse);
+            var interopNames = new HashSet<String>();
+            for (var entry : interop.getAsJsonArray("tests")) {
+                var test = entry.getAsJsonObject();
+                if (!test.get("passed").getAsBoolean() ||
+                    !interopNames.add(test.get("name").getAsString()) ||
+                    !test.has("actual") || !test.has("expected") ||
+                    !test.get("actual").getAsString().equals(test.get("expected").getAsString()))
+                    throw new AssertionError(interopResponse);
+            }
+            System.out.println("PACKAGED_INTEROP_SUITE_OK " + interopResponse);
             var response = JsonParser.parseString(LegadoRuntime.execute(session, "packaged-semantic-suite",
                 "semanticSuite", "{\"timeoutMs\":300000}")).getAsJsonObject();
             if (args[0].equals("absent")) {

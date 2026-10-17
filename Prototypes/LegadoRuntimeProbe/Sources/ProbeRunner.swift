@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import Darwin
 import LegadoRuntime
 import os
@@ -83,7 +84,16 @@ actor ProbeRunner {
             throw LegadoRuntimeError(code: "MISSING_FIXTURE", message: "main-source.js is absent")
         }
         let source = try String(contentsOf: sourceURL, encoding: .utf8)
-        let sourceJSON = try json(["bookSourceName": "Synthetic fixture", "bookSourceUrl": "https://fixture.invalid", "mainJs": source])
+        // Match the original-Android reference input, including explicit transport
+        // headers. The source hash lets the comparison reject a different fixture.
+        let referenceHeaders = #"{"User-Agent":"Legado-Reference-Fixture/1","Accept":"*/*","Accept-Encoding":"identity","Connection":"close"}"#
+        let sourceHash = SHA256.hash(data: Data(source.utf8)).map { String(format: "%02x", $0) }.joined()
+        let sourceInput: [String: Any] = ["bookSourceName": "Synthetic fixture", "bookSourceUrl": "https://fixture.invalid",
+            "enabledCookieJar": true, "header": referenceHeaders, "mainJsSHA256": sourceHash]
+        var sourceConfiguration = sourceInput
+        sourceConfiguration.removeValue(forKey: "mainJsSHA256")
+        sourceConfiguration["mainJs"] = source
+        let sourceJSON = try json(sourceConfiguration)
         let started = clock.now
         let memoryBefore = memory()
         try recordProgress("create_session.begin")
@@ -99,6 +109,8 @@ actor ProbeRunner {
             }
             let semanticSuite = try result(await call(engine, session, "semanticSuite", ["timeoutMs": 300_000]))
             try verifySemanticSuite(semanticSuite, javaVersion: javaVersion)
+            let interopSuite = try result(await call(engine, session, "interopSuite", ["timeoutMs": 300_000]))
+            try verifyInteropSuite(interopSuite)
             let semantics = try result(await call(engine, session, "semanticProbe"))
             guard let semanticValues = semantics as? [String: Any], semanticValues["e4x"] as? String == "ok",
                   semanticValues["indirect"] as? String == "function", semanticValues["dynamicThis"] as? Bool == true,
@@ -108,13 +120,25 @@ actor ProbeRunner {
                   first["name"] as? String == "Fixture" else { throw mismatch("Search") }
             guard let book = try result(await call(engine, session, "details", ["book": first])) as? [String: Any], book["intro"] as? String == "Introduction" else { throw mismatch("Details/Jsoup") }
             guard let chapters = try result(await call(engine, session, "toc", ["book": book])) as? [[String: Any]], chapters.count == 2 else { throw mismatch("TOC") }
-            guard try result(await call(engine, session, "content", ["book": book, "chapter": chapters[0]])) as? String == "第一章\ncontent one" else { throw mismatch("Content") }
+            guard let content = try result(await call(engine, session, "content", ["book": book, "chapter": chapters[0], "nextChapterUrl": chapters[1]["url"] ?? NSNull()])) as? String,
+                  content == "第一章\ncontent one" else { throw mismatch("Content") }
+            let beforeBatch = try result(await call(engine, session, "snapshot"))
+            guard let beforeBatchState = beforeBatch as? [String: Any],
+                  let cacheBeforeContent = beforeBatchState["contents"] as? [String: Any] else {
+                throw mismatch("Content cache before the batch operation")
+            }
             guard let batch = try result(await call(engine, session, "batch", ["book": book, "chapters": chapters])) as? [String: Any],
                   (batch["saved"] as? [Any])?.count == 2, (batch["missing"] as? [Any])?.isEmpty == true else { throw mismatch("Batch") }
             let state = try result(await call(engine, session, "snapshot"))
             guard let snapshot = state as? [String: Any], let variables = snapshot["variables"] as? [String: Any],
                   variables["@variable"] as? String == "logged-in", let cache = snapshot["cache"] as? [String: Any],
                   cache["lastKey"] as? String == "书" else { throw mismatch("Source variable/cache state") }
+            guard let sharedCalls = try result(await call(engine, session, "evaluate", ["script": "globalThis.calls"])) as? Int,
+                  sharedCalls == 1 else { throw mismatch("Source shared call counter") }
+            let readingChain: [String: Any] = ["traceVersion": "legado-main-js-v1", "sourceInput": sourceInput,
+                "login": true, "search": books, "details": book, "toc": chapters, "content": content,
+                "batch": batch, "cacheBeforeContent": cacheBeforeContent, "snapshot": snapshot,
+                "sharedCalls": sharedCalls, "exceptions": [String]()]
             let cancelStarted = clock.now
             try recordProgress("cancellation.begin")
             try await verifyCancellation(engine, session: session)
@@ -132,12 +156,12 @@ actor ProbeRunner {
                 "probeProgress": try savedProgress(),
                 "timingNote": "Includes durable diagnostic checkpoints and native journal writes; not production performance measurements.",
                 "runtimeDiagnostics": runtimeDiagnostics, "runtimeJavaVersion": javaVersion,
-                "semanticSuite": semanticSuite,
+                "semanticSuite": semanticSuite, "interopSuite": interopSuite,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
                 "payloadBytes": try payloadSize([configuration.javaHome, payloadDirectory]),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
-                "semantics": semantics, "state": state, "requests": await host.capturedRequests(),
-                "limits": "Covers the packaged original 25 JsEngineCapabilitiesTest cases, the explicit java.beans probe and synthetic mainJs fixtures. This is not exhaustive proof of Java collection, byte-array or overload conversion compatibility. Full G4 reference-trace parity and G5 network/browser timeouts, concurrent isolation and sustained sessions remain unverified. Peak RSS is process lifetime; payloadBytes excludes the linked native JVM binary. Gate 1 also requires launching Release on a physical iPhone from the Home Screen without a debugger."]
+                "semantics": semantics, "state": state, "readingChain": readingChain, "requests": await host.capturedRequests(),
+                "limits": "Covers the packaged original 25 JsEngineCapabilitiesTest cases, the explicit java.beans probe, the 28 versioned interopSuite conversion/overload vectors and synthetic mainJs fixtures. The interop matrix proves only its listed vectors, not exhaustive Java collection, byte-array or overload conversion compatibility. Full G4 reference-trace parity and G5 network/browser timeouts, concurrent isolation and sustained sessions remain unverified. Peak RSS is process lifetime; payloadBytes excludes the linked native JVM binary. Gate 1 also requires launching Release on a physical iPhone from the Home Screen without a debugger."]
             let serialized = try json(report)
             // The completion checkpoint is consumed by the simulator runner.
             // Publish the full report first so collecting a passed run cannot
@@ -194,6 +218,58 @@ actor ProbeRunner {
             // The existing UI displays thrown errors; retain every case/error there as
             // well as in successful reports, rather than reducing a failure to a count.
             throw LegadoRuntimeError(code: "SEMANTIC_SUITE_FAILED", message: failures.joined(separator: "\n") + "\n" + (try json(["semanticSuite": report])))
+        }
+    }
+
+    private struct InteropSuiteReport: Decodable {
+        let suite: String
+        let caseSetVersion: String
+        let passed: Bool
+        let passedCount: Int
+        let failed: Int
+        let total: Int
+        let tests: [InteropCaseReport]
+    }
+
+    private struct InteropCaseReport: Decodable {
+        let name: String
+        let passed: Bool
+        let actual: String
+        let expected: String
+    }
+
+    private func verifyInteropSuite(_ report: Any) throws {
+        let preservedReport = try json(["interopSuite": report])
+        guard let object = report as? [String: Any] else {
+            throw LegadoRuntimeError(code: "INTEROP_SUITE_FAILED", message: "Invalid interop suite report:\n\(preservedReport)")
+        }
+        let suite: InteropSuiteReport
+        do {
+            // Decode required fields strictly: JSON booleans must not be accepted
+            // as numeric counts, and a missing case result must fail the probe.
+            let data = try JSONSerialization.data(withJSONObject: object)
+            suite = try JSONDecoder().decode(InteropSuiteReport.self, from: data)
+        } catch {
+            throw LegadoRuntimeError(code: "INTEROP_SUITE_FAILED", message: "Invalid interop suite fields: \(error.localizedDescription)\n\(preservedReport)")
+        }
+        var failures: [String] = []
+        if suite.suite != "InteropSemanticSuite" || suite.caseSetVersion != "legado-interop-v1" {
+            failures.append("Unexpected Java interop suite or case-set version")
+        }
+        if !suite.passed || suite.failed != 0 || suite.total != 28 || suite.passedCount != 28 {
+            failures.append("Expected 28 Java interop cases passed and zero failures")
+        }
+        let names = suite.tests.map(\.name)
+        if suite.tests.count != suite.total || names.contains(where: \.isEmpty) || Set(names).count != suite.total {
+            failures.append("Interop cases must be complete and have distinct nonempty names")
+        }
+        if !suite.tests.allSatisfy({ $0.passed && !$0.actual.isEmpty && !$0.expected.isEmpty && $0.actual == $0.expected }) {
+            failures.append("Each interop case must pass with matching actual and expected JSON values")
+        }
+        if !failures.isEmpty {
+            // Preserve the original per-case actual/expected/error fields in the
+            // failure export, including fields not needed by the typed validator.
+            throw LegadoRuntimeError(code: "INTEROP_SUITE_FAILED", message: failures.joined(separator: "\n") + "\n" + preservedReport)
         }
     }
 

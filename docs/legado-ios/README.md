@@ -8,6 +8,9 @@ iPhone build to start without a debugger or JIT before full feature migration.
 
 ## Baseline and acceptance inventory
 
+- [android-reference.md](android-reference.md) describes the new versioned Java
+  interop matrix, finite mainJs DTO conversion and independent original-Android
+  cloud reference. These additions require their own simulator/device evidence.
 - [desktop-validation.json](desktop-validation.json) records 45 passing JVM tests,
   18 passing Python tests and an assembled-payload smoke run with `-Xint` and
   a 128 MiB Java heap. This is the earlier desktop snapshot; current cloud

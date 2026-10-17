@@ -4,6 +4,7 @@ import com.google.gson.*
 import com.script.ScriptBindings
 import com.script.SharedGlobalStateHandle
 import com.script.rhino.RhinoScriptEngine
+import com.script.rhino.runScriptWithContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import java.util.UUID
@@ -126,6 +127,9 @@ object LegadoRuntime {
             "supportedSourceTypes" to listOf("mainJs", "declarative subset"), "platformHosts" to "prototype subset"
         )
         if (operation == "semanticSuite") return EngineSemanticSuite.run(task)
+        if (operation == "interopSuite") return runScriptWithContext(task.job) {
+            gson.toJsonTree(InteropSemanticSuite.run())
+        }
         if (operation == "snapshot") return jsonObject(
             "variables" to task.session.variables, "cache" to task.session.cache.snapshot(),
             "cookies" to task.session.cookies.snapshot(), "contents" to task.session.contents,
@@ -136,6 +140,7 @@ object LegadoRuntime {
         if (source["mainJs"]?.takeUnless { it.isJsonNull }?.asString.isNullOrBlank()) {
             return DeclarativeSource(task, javaHost).execute(operation, input)
         }
+        val preparedInput = MainJsResultMarshaller.prepareInput(operation, input, source)
         val scope = ScriptBindings()
         // Bindings are invocation-local. The source's shared-global prototype retains its
         // first parent, including intrinsic mutations, just as upstream ScriptBindings does.
@@ -146,7 +151,7 @@ object LegadoRuntime {
         scope["cache"] = task.session.cache
         scope["cookie"] = task.session.cookies
         scope["baseUrl"] = source["bookSourceUrl"]?.asString.orEmpty()
-        scope["__runtimeInputJSON"] = input.toString()
+        scope["__runtimeInputJSON"] = preparedInput.toString()
         RhinoScriptEngine.eval(
             "var __runtimeInput = JSON.parse(String(__runtimeInputJSON));" +
                 "var key = __runtimeInput.key || ''; var page = __runtimeInput.page == null ? 1 : __runtimeInput.page;" +
@@ -197,15 +202,13 @@ object LegadoRuntime {
         scope["__runtimeResult"] = raw
         val json = RhinoScriptEngine.eval("JSON.stringify(__runtimeResult)", scope, task.job)?.toString()
         var result = json?.let { JsonParser.parseString(it) } ?: JsonNull.INSTANCE
-        // Legacy JS sources may return an already serialized book/list.
-        if (operation in setOf("search", "explore", "details", "getBookInfo", "toc", "getChapters") &&
-            result.isJsonPrimitive && result.asJsonPrimitive.isString) {
-            result = JsonParser.parseString(result.asString)
-        }
+        // The prototype carries a JSON book, rather than upstream's mutable Java
+        // entity. Retain mutations for legacy sources that return no book; exact
+        // Java Book reference semantics remain outside this finite DTO projection.
         if (operation in setOf("details", "getBookInfo") && result.isJsonNull) {
             result = JsonParser.parseString(RhinoScriptEngine.eval("JSON.stringify(book)", scope, task.job).toString())
         }
-        return result
+        return MainJsResultMarshaller.marshal(operation, result, preparedInput, source)
     }
 
     private fun dispatchHost(task: RuntimeTask, operation: String, request: JsonObject): JsonObject {
