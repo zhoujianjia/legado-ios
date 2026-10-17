@@ -15,24 +15,18 @@ handshake checks. The unsigned IPA passed integrity, version/source metadata,
 payload-layout and independent ARM64 ten-export checks; see
 [validation evidence](../../docs/legado-ios/simulator-validation.json). Download
 `legado-probe-unsigned` from the linked run and follow the
-[Windows installation guide](../../docs/legado-ios/windows-install.md). These are
-Simulator fixtures; real networking, complete G4 reference traces and sustained
+[Windows installation guide](../../docs/legado-ios/windows-install.md). Real
+networking, complete G4 reference traces and sustained
 G5/browser/concurrency behavior remain unverified.
 
-Build 5 in [run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077)
-started the actual Simulator JVM (`JNI_CreateJavaVM` returned 0 in 4.725 seconds),
-created a session, read diagnostics and closed it without a hard exit. Loading the
-original suite then failed with `java.lang.VerifyError: Could not link verifier`;
-the 25 cases did not run in that earlier build.
-Earlier failed IPAs remain diagnostic artifacts rather than validated candidates.
-JVM startup and compatibility on a physical device remain unverified. The user
-reports self-signing, installation and a
-passed payload preflight on iPhone, followed by termination on fixture execution;
-the cause is unknown. See [device evidence](../../docs/legado-ios/device-validation.json).
-All physical-device gates remain pending. See the
-[code-cache investigation](../../docs/legado-ios/code-cache-investigation.json)
-for the earlier Simulator permission failure and repaired startup. No generated
-OpenJDK binaries are committed.
+The hash-checked build 6 `ios-device` report from `iPhone18,3` / iOS 27.0.1 also
+has `passed=true`, with the same 25/0/0 engine results, JavaBeans, customized
+semantics and fixed reading/state/cancellation-handshake fixture passing. The
+earlier termination did not recur; its original cause remains unconfirmed. The
+user confirmed direct Home Screen launch of the self-signed app without a
+debugger, extra JIT tooling or jailbreak. G1 and G2 passed; G3–G5 are partially
+covered. See [device evidence](../../docs/legado-ios/device-validation.json).
+No generated OpenJDK binaries are committed.
 
 With Windows, an iPhone, and an iPad but no local Mac, follow the
 [manual cloud-build guide](../../docs/legado-ios/cloud-build.md). The prepared

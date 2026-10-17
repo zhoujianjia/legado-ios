@@ -1,12 +1,15 @@
 # Install the prototype from Windows
 
 These instructions apply after a successful cloud build produces
-`legado-probe-unsigned`. The user has self-signed, installed, and opened the first
-build on an iPhone. A screenshot shows payload preflight passing, but the user
-reports that running the synthetic fixture closes the app. No crash log has been
-provided, and JVM startup and all device gates remain unverified. See
-[device-validation.json](device-validation.json). The standalone probe requires
-iOS/iPadOS 18 or later.
+`legado-probe-unsigned`. Build 6 at `78930be` now has a hash-checked `ios-device`
+report with `passed=true` on `iPhone18,3` / iOS 27.0.1. Its 25 original engine
+cases (0 failed/skipped), JavaBeans, custom semantics and fixed reading/state/
+cancellation-handshake fixture passed. The earlier termination did not recur;
+its original cause remains unconfirmed. The user confirmed direct Home Screen
+launch of the self-signed app without a debugger, extra JIT tooling or jailbreak.
+G1 and G2 passed; G3–G5 are partially covered. See
+[device-validation.json](device-validation.json). The probe requires iOS/iPadOS
+18 or later; full feature migration remains gated.
 
 ## Get the device build
 
@@ -44,7 +47,7 @@ fixture in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/r
 Its 25 original engine tests, JavaBeans probe and fixed reading chain passed;
 the downloaded device IPA also passed hash, bundle, payload and ten-export
 checks. See [simulator-validation.json](simulator-validation.json). Use this
-build for the next phone test; all physical-device gates remain pending.
+build to reproduce the successful device fixture and collect remaining gate evidence.
 
 The unsigned IPA is 48,830,136 bytes with SHA256
 `ae0a90eddadcb1f6b54df08370fe1971a97478717e074426b139ea4759eb3afc`.
@@ -118,10 +121,10 @@ does not include this project's iOS 18+ devices. These options were checked on
 ## Preserve evidence if the app closes
 
 Do not delete or reinstall the app before exporting available reports and app
-diagnostics. The current report is a user-observed termination after starting the
-fixture; a passed payload inspection does not show how far JVM startup reached.
-The user has not found a report beginning with the app name. That absence does
-not establish whether iOS generated a crash or memory-pressure report.
+diagnostics. An earlier attempt terminated after starting the fixture, and the
+user did not find a matching crash report. Build 6 completed the device fixture;
+that success does not independently establish the earlier termination's cause.
+For any future unexpected exit, preserve available logs before another attempt.
 
 On the iPhone, open **Settings > Privacy & Security > Analytics & Improvements >
 Analytics Data**. Look for a report beginning with `LegadoRuntimeProbe` near the

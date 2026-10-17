@@ -78,7 +78,8 @@ signing and device validation, and what must first exist in your own repository.
 [Cloud run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
 passed and produced an unsigned iOS 18+ IPA after both app links and a nine-entry
 dynamic export check. Follow [Windows signing and installation](windows-install.md)
-to collect actual iPhone results; all device gates remain pending.
+to collect device evidence. Build 6 now has a passing physical-iPhone fixture
+report; current gate coverage is recorded in [device-validation.json](device-validation.json).
 
 For app, packaging or runner fixes that leave the native/JVM inputs unchanged,
 the [Legado iOS Runtime Replay workflow](../../.github/workflows/legado-ios-replay.yml)
@@ -132,10 +133,16 @@ does not prove interruption after entering a CPU-only infinite loop. Real networ
 behavior, full G4 reference traces and G5 sustained/browser/concurrency cases remain
 pending.
 
-The diagnostic Simulator run recorded 4.204015 seconds for JVM creation,
-4522.442625 ms for startup/session, 6094.959667 ms total and 251412480 bytes for
-both final RSS and process-lifetime peak RSS. These measurements include durable
-diagnostic I/O and are not physical-device or production performance results.
+The hash-checked build 6 `ios-device` report from `iPhone18,3` / iOS 27.0.1 has
+`passed=true`: 25 original cases passed with 0 failures/skips, JavaBeans and custom
+semantics passed, and the fixed `mainJs` reading/state/cancellation-handshake
+fixture completed. JVM creation took 1.911987 seconds, startup/session
+2062.754458 ms and the full run 2953.558042 ms; final and peak RSS were
+111067136 bytes (about 111 MB). These are one-run diagnostic measurements with
+logging I/O, not production performance results. The user confirmed direct Home
+Screen launch of the self-signed app without a debugger, extra JIT tooling or
+jailbreak. G1 and G2 passed; G3–G5 are partially covered. Full feature
+migration remains gated. See [device-validation.json](device-validation.json).
 The changed native inputs require a fresh build; bytecode verification remains
 enabled. Earlier failed IPAs are retained as diagnostic evidence.
 
@@ -224,9 +231,8 @@ For the first device gate, use the
 [standalone probe app](../../Prototypes/LegadoRuntimeProbe/README.md). It links
 only the local runtime package and provides signing/install instructions plus a
 synthetic reading-chain report, without resolving the production app's remote
-packages. Cloud simulator/device compilation and linking passed. The user reports
-successful iPhone installation and payload preflight, but fixture execution
-terminated the app; the cause and JVM startup progress are unknown. See
+packages. The build 6 fixture passed on Simulator and a physical iPhone. The
+earlier reported termination did not recur; its original cause remains unconfirmed. See
 [device-validation.json](device-validation.json).
 
 Version 0.2 build 2 introduced persistent `probeProgress`, native
@@ -234,9 +240,9 @@ Version 0.2 build 2 introduced persistent `probeProgress`, native
 through `ShareLink` that can be saved to Files. Build 6 retains this support, the
 layout correction and the repaired code cache, adding the verifier fix that
 passed the actual Simulator smoke. Recorded times
-include diagnostic I/O and are not production performance measurements. Simulator
-JVM startup and the audited synthetic fixture now succeed on Simulator. All
-physical-device gates remain pending.
+include diagnostic I/O and are not production performance measurements.
+JVM startup and the audited synthetic fixture now succeed on Simulator and the
+reported iPhone. This covers the recorded fixtures rather than complete parity.
 
 The production app exposes the opt-in probe at **Settings → Advanced → Legado
 Runtime Verification**. It runs only an included synthetic, network-free source
@@ -260,10 +266,9 @@ Run the gates in order:
    isolation and repeated sessions. Measure cold startup, package-size increase,
    peak memory and rule latency on the same device and build.
 
-The current workspace is Windows; cloud Xcode compilation/linking is verified,
-and user-operated iPhone testing is available. The reported execution termination
-has no crash log yet. All device gates remain pending until their required runtime
-evidence is recorded. Do not proceed to full feature migration
+The current workspace is Windows; cloud Xcode builds and user-operated iPhone
+testing have produced runtime evidence. G1 and G2 passed, while G3–G5 retain
+uncovered cases. Do not proceed to full feature migration
 before gates 1 through 4 pass. If the JVM route fails those gates, retain the same
 semantic tests when evaluating a different engine.
 

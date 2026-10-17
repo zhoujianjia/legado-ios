@@ -26,10 +26,14 @@ and independent ARM64 ten-export checks; see
 interruption after a host handshake; real network behavior, full G4 reference
 traces and sustained G5/browser/concurrency checks remain pending.
 Retained IPAs from failed runs are diagnostic evidence, not validated candidates.
-The user's earlier iPhone installation and preflight succeeded, but fixture
-execution terminated the app for an unconfirmed reason; see
-[device-validation.json](device-validation.json). All physical-device gates
-remain pending.
+The hash-checked build 6 `ios-device` report from `iPhone18,3` / iOS 27.0.1 now
+has `passed=true`: all 25 original cases (0 failed/skipped), JavaBeans, custom
+semantics and the fixed reading/state/cancellation-handshake fixture passed.
+The earlier termination did not recur, although its original cause remains
+unconfirmed. The user confirmed direct Home Screen launch of the self-signed app
+without a debugger, extra JIT tooling or jailbreak. G1 and G2 passed; G3–G5 are
+partially covered. See [device-validation.json](device-validation.json). Full
+feature migration remains gated.
 Pinned source revisions make the inputs reviewable; they do not guarantee that
 the Zero build will succeed on the selected runner.
 

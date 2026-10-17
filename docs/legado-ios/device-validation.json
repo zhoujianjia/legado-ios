@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "evidence_status": "user_reported",
+  "schema_version": 2,
+  "evidence_status": "user_exported_device_report_validated",
   "original_unsigned_build": {
     "run_id": 39003367690,
     "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690",
@@ -15,17 +15,21 @@
   },
   "device": {
     "type": "iPhone",
-    "model": null,
-    "os_version": null,
+    "model": "iPhone",
+    "os_version": "27.0.1",
     "user_reported_os_requirement_met": "iOS 18 or later",
-    "event_timestamp": null
+    "event_timestamp": "2026-10-17T15:51:03.326772+00:00",
+    "hardware_identifier": "iPhone18,3",
+    "event_time_asia_shanghai": "2026-10-17T23:51:03.326772+08:00"
   },
   "installation": {
-    "status": "user_reported",
+    "status": "user_confirmed_with_passing_exported_report",
     "self_signed": true,
     "installed": true,
     "app_opened": true,
-    "launch_debugger_state": "not independently recorded"
+    "launch_debugger_state": "User explicitly confirmed normal Home Screen launch without debugger or extra JIT activation.",
+    "jailbreak_state": "User explicitly confirmed the phone is not jailbroken.",
+    "launch_confirmation_source": "User reply in this conversation: directly opened the app and ran it without the listed tools."
   },
   "screenshot": {
     "source": "user attachment in this conversation",
@@ -37,7 +41,20 @@
     },
     "meaning": "The screenshot reports native bridge and payload preflight availability. These fields do not prove JVM creation, engine loading or fixture execution."
   },
-  "execution_attempt": {
+  "next_evidence": [
+    "Extend Java host conversion tests to cover collections, byte arrays and overload selection against the original baseline (G3).",
+    "Collect and compare Android-original request bytes, outputs, variables, cookies, exceptions and cache traces for the fixed reading fixtures (G4).",
+    "Test interruption after the CPU loop is known to have entered, network/browser cancellation and timeouts, concurrent isolation and sustained sessions (G5)."
+  ],
+  "device_gates_passed": [
+    "G1.signed-device-startup",
+    "G2.locked-engine-and-modules"
+  ],
+  "g1_status": "passed",
+  "device_validation_passed": false,
+  "full_feature_migration_allowed": false,
+  "latest_runtime_probe_passed": true,
+  "original_execution_attempt": {
     "status": "pending_crash_log",
     "user_report": "The app terminated after the user selected the synthetic fixture run.",
     "vm_startup_position": "unknown",
@@ -48,15 +65,133 @@
     "jetsam_report": null,
     "hs_err_report": null,
     "savedDiagnostics": null,
-    "probeProgress": null
+    "probeProgress": null,
+    "historical_scope": "Initial source 314d20c installation; retained independently of the later passing build6 run."
   },
-  "next_evidence": [
-    "Export an available matching iPhone Analytics Data ips or JetsamEvent report before deleting or reinstalling the app; preserve the complete original file.",
-    "Use the subsequent diagnostic build to capture savedDiagnostics and probeProgress after reopening, then export the technical report with its Share action.",
-    "Preserve the matching build manifest and actual device/OS details with each report; do not infer them from the original cloud runner."
-  ],
-  "device_gates_passed": [],
-  "g1_status": "pending",
-  "device_validation_passed": false,
-  "full_feature_migration_allowed": false
+  "latest_unsigned_build": {
+    "run_id": 39044188251,
+    "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251",
+    "source_commit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
+    "version": "0.2",
+    "build": 6,
+    "artifact_id": 12106190049,
+    "ipa_bytes": 48830136,
+    "unsigned_ipa_sha256": "ae0a90eddadcb1f6b54df08370fe1971a97478717e074426b139ea4759eb3afc",
+    "signed_ipa_sha256": null,
+    "meaning": "The exported report matches this unsigned build source and JAR. The installed signed executable was not retrieved independently."
+  },
+  "execution_attempt": {
+    "status": "passed",
+    "execution_platform": "ios-device",
+    "fixture_only": true,
+    "cold_jvm_start_attempt": true,
+    "vm_startup_position": "JNI_CreateJavaVM returned 0; startup.complete, session creation, execution and close completed.",
+    "termination_observed_in_this_run": false,
+    "original_termination_cause": "not independently established",
+    "source_commit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
+    "report_sha256": "b09ba35432fb1bfb02483e3e53cfebb605f107709484f433648f45e57e245483",
+    "raw_report_local_only": ".build/device-evidence/build6-b09ba35432fb/LegadoProbe-report.json",
+    "raw_report_git_ignored": true,
+    "runtime_manifest_jar_sha256": "0fab0b184b42844c5623c80ca761dcc3eaf75c848b575a37d066e4a9a7493c0a",
+    "original_semantic_cases_passed": 25,
+    "original_semantic_cases_failed": 0,
+    "original_semantic_cases_skipped": 0,
+    "java_beans_passed": true,
+    "custom_semantics": {
+      "dynamicThis": true,
+      "e4x": "ok",
+      "indirect": "function",
+      "legacy": 42
+    },
+    "fixture_operations": [
+      "diagnostics",
+      "semanticSuite",
+      "semanticProbe",
+      "login",
+      "search",
+      "details",
+      "toc",
+      "content",
+      "batch",
+      "snapshot",
+      "cancel"
+    ],
+    "request_count": 8,
+    "comparison": {
+      "reference": "simulator-validation.json, run39044188251; same port, not independent Android golden",
+      "request_trace_exact_match": true,
+      "semantic_suite_exact_match": true,
+      "custom_semantics_exact_match": true,
+      "state_match_after_removing_request_deadlines_and_remaining_timeouts": true,
+      "excluded_state_fields": [
+        "deadlineEpochMs",
+        "remainingTimeoutMs"
+      ],
+      "jar_sha256_and_source_pins_match": true
+    },
+    "native_vm_output_empty": true,
+    "saved_report_checkpoint_note": "The report captures close_session.begin before the terminal checkpoint is published. Native closeSession.after=0 and top-level passed=true confirm completion.",
+    "launch_conditions_confirmed": true
+  },
+  "metrics": {
+    "jvm_creation_ms": 1911.987,
+    "startup_and_session_ms": 2062.754458,
+    "fixture_total_ms": 2953.558042,
+    "memory_before": {
+      "processLifetimePeakRSSBytes": 65929216,
+      "residentBytes": 62521344
+    },
+    "memory_after": {
+      "processLifetimePeakRSSBytes": 111067136,
+      "residentBytes": 111067136
+    },
+    "operations": [
+      {
+        "milliseconds": 32.027375,
+        "operation": "diagnostics"
+      },
+      {
+        "milliseconds": 725.335458,
+        "operation": "semanticSuite"
+      },
+      {
+        "milliseconds": 24.767458,
+        "operation": "semanticProbe"
+      },
+      {
+        "milliseconds": 27.662292,
+        "operation": "login"
+      },
+      {
+        "milliseconds": 14.511667,
+        "operation": "search"
+      },
+      {
+        "milliseconds": 12.784792,
+        "operation": "details"
+      },
+      {
+        "milliseconds": 9.880083,
+        "operation": "toc"
+      },
+      {
+        "milliseconds": 10.987167,
+        "operation": "content"
+      },
+      {
+        "milliseconds": 13.517125,
+        "operation": "batch"
+      },
+      {
+        "milliseconds": 3.001875,
+        "operation": "snapshot"
+      },
+      {
+        "milliseconds": 13.376042,
+        "operation": "cancel"
+      }
+    ],
+    "note": "Includes durable diagnostic checkpoints and native journal writes; not production performance measurements. Single physical-device run; process peak includes the app, not just the JVM. App cold-launch time and production-size increment were not measured."
+  },
+  "packaged_original_suite_device_status": "passed"
 }

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "desktop_validation": {
     "status": "passed",
     "evidence": "desktop-validation.json",
@@ -8,18 +8,23 @@
   "packaged_reference_suite": {
     "desktop_status": "passed",
     "evidence": "packaged-suite-validation.json",
-    "device_status": "pending",
-    "meaning": "The diagnostic payload can execute the unchanged original 25 tests and a JavaBeans functional probe; desktop packaging results do not pass an iOS gate."
+    "device_status": "passed",
+    "meaning": "The original unchanged 25 cases and JavaBeans functional probe now pass in the exported physical-device report. Broader G3 conversions remain partial.",
+    "device_evidence": "device-validation.json"
   },
   "environment": {
     "workspace": "Windows PowerShell",
-    "user_reported_hardware": ["Windows PC", "iPhone", "iPad"],
-    "user_reported_iphone_os": "iOS 18 or later; minimum prototype version met",
+    "user_reported_hardware": [
+      "Windows PC",
+      "iPhone",
+      "iPad"
+    ],
+    "user_reported_iphone_os": "Device report: iOS 27.0.1; minimum iOS18 requirement met",
     "macos_build_available": true,
     "ios_device_validation_available": true,
-    "ios_device_validation_route": "User-operated iPhone testing; installation, launch and payload preflight are user-reported. The fixture run terminated the app; crash evidence is pending in device-validation.json.",
-    "macos_build_route": "SSH build tags start GitHub-hosted macOS builds. Run 39003367690 passed both jobs, native simulator/device app links and all nine dynamic exports, and produced the unsigned IPA; see cloud-validation.json.",
-    "meaning": "The user owns an iOS 18+ iPhone and an iPad, but no Mac. Remote Xcode 26.2 builds and unsigned packaging work. The user has self-signed and opened the probe on iPhone; payload preflight passed in a screenshot, but the fixture attempt terminated the app. User interaction is available; no physical-device gate has passed."
+    "ios_device_validation_route": "Self-signed user-operated iPhone; exported build6 report proves actual JVM startup and the included fixture passed. User explicitly confirmed a normal Home Screen launch on a non-jailbroken phone without debugger or extra JIT activation.",
+    "macos_build_route": "SSH tags start GitHub macOS builds; run39044188251 built both slices, passed ten exports and the Simulator fixture, and produced the matched unsigned build6 IPA.",
+    "meaning": "Windows PC and iPhone/iPad, no local Mac. Physical-device runtime report plus explicit launch-condition confirmation pass G1 and G2. G3-G5 retain uncovered requirements; full feature migration is not allowed yet."
   },
   "inventory_checks": {
     "status": "passed",
@@ -38,45 +43,79 @@
   "gates": [
     {
       "id": "G1.signed-device-startup",
-      "status": "pending",
+      "status": "passed",
       "required_evidence": "Signed iPhone app starts JVM after debugger disconnect and relaunch, without JIT or jailbreak.",
-      "observation_status": "pending_crash_log",
-      "observation": "User reported self-signing, installation and opening on iPhone; screenshot payload preflight passed. Running the synthetic fixture reportedly terminated the app. No ips, Jetsam or hs_err report is available, so JVM startup progress and termination cause are unconfirmed.",
-      "evidence": ["device-validation.json"]
+      "observation_status": "device_report_and_user_launch_confirmation",
+      "observation": "Matching Release build6 report shows successful cold JVM creation and fixture execution on iPhone. The user explicitly confirmed direct Home Screen launch without debugger, extra JIT activation or jailbreak.",
+      "evidence": [
+        "device-validation.json"
+      ]
     },
     {
       "id": "G2.locked-engine-and-modules",
-      "status": "pending",
+      "status": "passed",
       "required_evidence": "Locked engine loads on device; actual E4X and Java interop calls prove required XML/beans classes work.",
-      "evidence": []
+      "evidence": [
+        "device-validation.json"
+      ],
+      "observation_status": "device_report_validated",
+      "observation": "Physical-device report matches build6 source and JAR; htmlunit-core-js5.3.0-legado.4 on interpreted OpenJDK Zero executes E4X, Java interop and JavaBeans getter/setter discovery/read/write. Thirteen packaged modules match the validated manifest."
     },
     {
       "id": "G3.original-engine-semantics",
-      "status": "pending",
+      "status": "partial",
       "required_evidence": "Original semantics cases pass on the iOS JVM including this/eval/Function/scope/E4X/Java wrapping/overloads.",
-      "evidence": []
+      "evidence": [
+        "device-validation.json"
+      ],
+      "observation_status": "device_report_validated",
+      "observation": "All 25 unchanged original engine cases and the JavaBeans probe pass on the device. Exhaustive Java collections, byte arrays, type conversion and overload-selection comparisons remain pending."
     },
     {
       "id": "G4.fixture-reading-chain",
-      "status": "pending",
+      "status": "partial",
       "required_evidence": "On-device reference comparison covers search/details/TOC/content, pure JS, login and batch content, including requests and state effects.",
-      "evidence": []
+      "evidence": [
+        "device-validation.json"
+      ],
+      "observation_status": "device_report_validated",
+      "observation": "Physical fixed mainJs login/search/details/TOC/content/batch/state fixture passes; all eight requests and normalized state match the Simulator. The Simulator uses the same port; independent Android-original golden traces remain pending."
     },
     {
       "id": "G5.stability-and-performance",
-      "status": "pending",
+      "status": "partial",
       "required_evidence": "On-device cancellation, timeout, browser cancellation, isolation and repeated-run results with measured performance.",
-      "evidence": []
+      "evidence": [
+        "device-validation.json"
+      ],
+      "observation_status": "device_report_validated",
+      "observation": "Single-device timings/RSS and host-handshake cancellation pass. The handshake does not prove entry into the CPU loop before cancellation; network/browser timeouts and cancellation, concurrency isolation and sustained sessions remain pending."
     }
   ],
   "device_metrics": {
-    "device": null,
-    "ios_version": null,
-    "runtime_commit": null,
+    "device": "iPhone18,3",
+    "ios_version": "27.0.1",
+    "runtime_commit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
     "cold_start_ms": null,
     "app_size_increase_bytes": null,
-    "peak_memory_bytes": null,
-    "rule_latency_ms": null
+    "peak_memory_bytes": 111067136,
+    "rule_latency_ms": {
+      "diagnostics": 32.027375,
+      "semanticSuite": 725.335458,
+      "semanticProbe": 24.767458,
+      "login": 27.662292,
+      "search": 14.511667,
+      "details": 12.784792,
+      "toc": 9.880083,
+      "content": 10.987167,
+      "batch": 13.517125,
+      "snapshot": 3.001875,
+      "cancel": 13.376042
+    },
+    "jvm_creation_ms": 1911.987,
+    "startup_and_session_ms": 2062.754458,
+    "fixture_total_ms": 2953.558042,
+    "measurement_note": "Single synthetic run with diagnostic I/O. Cold app launch and app size increase remain unmeasured; latency values are one sample per operation, not percentiles."
   },
   "full_feature_migration_allowed": false
 }

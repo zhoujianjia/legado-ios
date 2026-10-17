@@ -4,23 +4,19 @@ This repository evaluates running the original Legado Java/Kotlin parsing core
 locally inside a native iOS reader using OpenJDK Mobile Zero. It is based on the
 pinned Yuedu source recorded in [the provenance lock](docs/legado-ios/provenance-lock.json).
 
-Version 0.2 build 6 at `78930be` passed both CI jobs, native simulator/device
-compilation and linking, ten required dynamic exports, and the actual Simulator
-smoke in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
-The audited Simulator report confirms all 25 original engine cases, JavaBeans,
-and the fixed `mainJs` reading/state/cancellation fixture pass. The unsigned IPA
-also passed integrity, bundle-layout and independent ten-export checks; see
-[validation evidence](docs/legado-ios/simulator-validation.json). Download the
-`legado-probe-unsigned` artifact from that run and follow the
-[Windows installation guide](docs/legado-ios/windows-install.md).
-Build 5 had started the JVM but failed to load the original
-suite with `java.lang.VerifyError: Could not link verifier`; build 6 adds the
-static verifier. Earlier failed IPAs remain diagnostic artifacts.
+Version 0.2 build 6 at `78930be` now has a hash-checked physical-iPhone report with
+`passed=true` on `iPhone18,3` / iOS 27.0.1: all 25 original engine cases (0 failed,
+0 skipped), JavaBeans, customized semantics and the fixed `mainJs` reading/state
+and cancellation-handshake fixture passed. The earlier termination did not recur;
+its original cause remains unconfirmed. See [device evidence](docs/legado-ios/device-validation.json).
 
-The user reports successful iPhone installation and payload preflight, followed by
-termination when running the fixture. That phone failure remains unexplained and
-G1–G5 remain pending; see [device evidence](docs/legado-ios/device-validation.json).
-This is a runtime prototype, not a complete Legado release.
+CI, the Simulator fixture and the unsigned IPA audit also passed in
+[run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+Download its `legado-probe-unsigned` artifact and follow the
+[Windows installation guide](docs/legado-ios/windows-install.md).
+The user confirmed the self-signed app ran directly from the Home Screen without
+a debugger, extra JIT tooling or jailbreak. G1 and G2 passed; G3–G5 have partial
+coverage. Full feature migration remains gated; this is a runtime prototype.
 
 - [Prototype architecture, coverage and validation gates](docs/legado-ios/README.md)
 - [Build from Windows using GitHub Actions](docs/legado-ios/cloud-build.md)
