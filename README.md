@@ -4,18 +4,18 @@ This repository evaluates running the original Legado Java/Kotlin parsing core
 locally inside a native iOS reader using OpenJDK Mobile Zero. It is based on the
 pinned Yuedu source recorded in [the provenance lock](docs/legado-ios/provenance-lock.json).
 
-Portable tests and native simulator/device compilation and linking pass. An
-[unsigned iOS 18+ probe](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
-is available for self-signing. JVM startup and compatibility on a physical device
-remain pending; this is a runtime prototype, not a complete Legado release.
-The user reports successful iPhone installation and payload preflight, followed
-by termination when running the fixture; the cause is unknown. See
-[device evidence](docs/legado-ios/device-validation.json). Build 4 now reproduces a
-Simulator exit inside `JNI_CreateJavaVM`: `Could not reserve enough space in
-CodeCache (160K)`. Candidate version 0.2 build 5 adds an iOS Zero source adaptation
-to keep its code-cache reservation non-executable; a fresh native build at
-`203b352` is under validation. Its effect and all physical-device gates remain
-pending; the reported iPhone termination's cause is unconfirmed.
+Portable tests and native simulator/device compilation and linking pass. Build 5
+started the actual Simulator JVM: `JNI_CreateJavaVM` returned 0 in 4.725 seconds,
+and session creation, diagnostics and close succeeded. Loading the original
+semantic suite then failed with `java.lang.VerifyError: Could not link verifier`;
+its 25 cases did not run. Candidate version 0.2 build 6 at `78930be` adds the static
+verifier and a ten-export gate; [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251)
+is still validating it. Earlier failed IPAs are diagnostic artifacts.
+
+The user reports successful iPhone installation and payload preflight, followed by
+termination when running the fixture. That phone failure remains unexplained and
+G1–G5 remain pending; see [device evidence](docs/legado-ios/device-validation.json).
+This is a runtime prototype, not a complete Legado release.
 
 - [Prototype architecture, coverage and validation gates](docs/legado-ios/README.md)
 - [Build from Windows using GitHub Actions](docs/legado-ios/cloud-build.md)

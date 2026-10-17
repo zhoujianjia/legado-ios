@@ -1,15 +1,17 @@
 {
   "schemaVersion": 1,
-  "recordedAtUTC": "2026-10-17T14:55:00Z",
-  "scope": "Actual arm64 iOS Simulator Zero startup failures and source-pinned candidate repair; physical-device cause remains unknown.",
+  "recordedAtUTC": "2026-10-17T15:19:37Z",
+  "scope": "Actual arm64 iOS Simulator mprotect startup failure, source-pinned repair and successful repaired JVM initialization; physical-device cause remains unknown.",
   "observed": {
     "runs": [
       39041613385,
-      39041825118
+      39041825118,
+      39043099245
     ],
     "sourceCommits": [
       "2e1dcb6d4a98a6f73b89f5aa0e19014f5828e06a",
-      "2867da1065b21b41fcee10cc7bc0e6e2c9b4639e"
+      "2867da1065b21b41fcee10cc7bc0e6e2c9b4639e",
+      "b91c05ab70b5a1102097af4a19b3a72edca8a437"
     ],
     "nativeSourceRunID": 39040672462,
     "nativeSourceCommit": "a823b5b66200077e24dfa7d17567462520e1a9a4",
@@ -19,16 +21,37 @@
     "nativeThreadStackBytes": 536576,
     "vmOutput": "Error occurred during initialization of VM\nCould not reserve enough space in CodeCache (160K)\n",
     "diagnosticLogsCollected": true,
-    "actualErrno": null,
-    "failingSystemCall": null,
-    "semanticSuiteExecuted": false
+    "actualErrno": "Permission denied (text emitted by JVM; numeric errno not printed)",
+    "failingSystemCall": "mprotect",
+    "semanticSuiteExecuted": false,
+    "syscallEvidence": {
+      "runID": 39043099245,
+      "diagnosticSourceCommit": "b91c05ab70b5a1102097af4a19b3a72edca8a437",
+      "nativeSourceRunID": 39040672462,
+      "nativeSourceCommit": "a823b5b66200077e24dfa7d17567462520e1a9a4",
+      "nativeRuntimeRecompiled": false,
+      "simulatorOnlyVMOption": "-Xlog:os+map=trace",
+      "artifactID": 12104324460,
+      "artifactZipSHA256": "29472d0610b740a4f65e1ee58e25ef237ecb4423b64da1b2ece60078919e7e75",
+      "logRelativeToArtifact": "ci-logs/simulator-probe/run-20261017T151148Z-ad76bdf6/diagnostics/current/vm-output.log",
+      "logSHA256": "524872ca191a80f3182438a11a0f0eb050a1bd9d0aaf4cc1975bd3154a4c4bb3",
+      "lines4to8": [
+        "[0.008s][debug][os,map] Reserved [0x0000000116800000 - 0x0000000118800000), (33554432 bytes)",
+        "[0.008s][trace][os,map] mprotect failed: [0x0000000116800000 - 0x0000000116828000), (163840 bytes) errno=(Permission denied)",
+        "[0.008s][info ][os,map] Failed to commit [0x0000000116800000 - 0x0000000116828000), (163840 bytes)",
+        "Error occurred during initialization of VM",
+        "Could not reserve enough space in CodeCache (160K)"
+      ],
+      "directObservation": "32 MiB reservation succeeded; mprotect for its first 160 KiB failed with Permission denied. The initial CodeCache commit failed before VM initialization completed.",
+      "protectionFlags": "The trace does not print prot bits; RWX is established by the pinned source call chain below."
+    }
   },
   "candidateMechanism": {
-    "status": "source_evidenced_pending_repaired_runtime",
+    "status": "confirmed_by_syscall_trace_and_pinned_source_with_repaired_startup_observed",
     "failureSite": "CodeCache::add_heap rejects CodeHeap::reserve failure. This is not the distinct reserve_heap_memory error.",
     "reservationMetadata": "CodeMemoryReserver originally always passes ExecMem, preserved by ReservedSpace and VirtualSpace.",
     "initialCommit": "The BSD Apple executable commit calls mprotect with PROT_READ|PROT_WRITE|PROT_EXEC. The pinned iOS anonymous reservation omits MAP_JIT.",
-    "alternativeFailure": "CodeHeap::reserve can also fail its segment-map initialization. Existing logs do not independently identify the syscall or errno.",
+    "alternativeFailure": "Resolved for diagnostic run 39043099245: direct trace identifies mprotect permission denial during initial commit rather than reservation or segment-map failure.",
     "zeroExecution": "The Zero cache stores ZeroEntry structures and static C++ function addresses. invoke calls the saved function address; native_entry uses precompiled ffi_call and signature metadata.",
     "boundary": "This audit covers the exercised Zero/JNI path, not every libffi closure or Foreign API upcall."
   },
@@ -49,7 +72,25 @@
     "actualPinnedSourcePreparationVerified": true,
     "newBuildRunID": 39042657077,
     "newBuildSourceCommit": "203b352353707472e847c76f146104098924d1d2",
-    "runtimeValidation": "pending"
+    "runtimeValidation": "Actual Simulator JNI_CreateJavaVM returned 0 in run 39042657077 (4.725756 seconds); session creation, runtime diagnostics and close succeeded. The full fixture remained blocked by a separate missing legacy bytecode verifier.",
+    "successfulJVMInitialization": {
+      "runID": 39042657077,
+      "sourceCommit": "203b352353707472e847c76f146104098924d1d2",
+      "platform": "arm64 iOS Simulator 26.2 (23C54)",
+      "beforeUnixSeconds": 1792249791.978464,
+      "afterUnixSeconds": 1792249796.70422,
+      "elapsedSeconds": 4.725756,
+      "jniReturnCode": 0,
+      "nativeStartupCompleted": true,
+      "createSessionPassed": true,
+      "runtimeDiagnosticsPassed": true,
+      "closeSessionPassed": true,
+      "semanticSuiteExecuted": false,
+      "nextFailure": "java.lang.VerifyError: Could not link verifier",
+      "nextInvestigation": "verifier-investigation.json",
+      "simulatorFixturePassed": false,
+      "deviceValidationPassed": false
+    }
   },
   "sources": [
     {

@@ -6,21 +6,19 @@ macOS runner can build the native prototype; the iPhone or iPad is still needed
 for installation and actual runtime validation. No Mac SSH connection is needed.
 
 See [cloud-validation.json](cloud-validation.json) for observed cloud runs,
-failures, and verified fixes. The initial runs exposed missing dependency
-checksum entries, which have been added and checked with a fresh dependency
-cache and forced JVM rebuild/tests. The cloud has passed eight Swift tests,
-built both native Zero slices with complete Java module/data payloads, linked
-both apps and verified all nine required dynamic exports. Successful
-[run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
-provides the first unsigned IPA. The user reports installing and opening that
-build, followed by a termination when starting the fixture; see
-[device-validation.json](device-validation.json). Build 4 subsequently launched
-in Simulator and exited during `JNI_CreateJavaVM` with `Could not reserve enough
-space in CodeCache (160K)`. Candidate version 0.2 build 5 at `203b352` is under
-fresh native validation in
-[run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077).
-The candidate's effect and all physical-device gates remain pending; the iPhone
-termination's cause has not been established.
+failures, and verified fixes. Build 5 at `203b352` in
+[run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077)
+started the actual Simulator JVM (`JNI_CreateJavaVM` returned 0 in 4.725 seconds),
+created a session, read diagnostics and closed it without a hard exit. The
+original suite then failed to load with `java.lang.VerifyError: Could not link
+verifier`; none of its 25 cases ran. Candidate version 0.2 build 6 at `78930be`
+adds the static verifier and a ten-export gate; its fresh source build is pending
+in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+Retained IPAs from failed runs are diagnostic evidence, not validated candidates.
+The user's earlier iPhone installation and preflight succeeded, but fixture
+execution terminated the app for an unconfirmed reason; see
+[device-validation.json](device-validation.json). All physical-device gates
+remain pending.
 Pinned source revisions make the inputs reviewable; they do not guarantee that
 the Zero build will succeed on the selected runner.
 
@@ -93,7 +91,7 @@ The jobs perform these checks in order:
 3. Stage the simulator payload and compile/link the standalone iOS simulator app
    against the actual native bridge.
 4. Stage the device payload, compile the unsigned iOS device app, and package it
-   as an unsigned IPA after checking nine source-proven bootstrap exports in the
+   as an unsigned IPA after checking ten source-proven bootstrap/verifier exports in the
    final executable's dyld export trie.
 5. Launch the Simulator app and attempt its synthetic fixture, preserving reports
    and logs. A produced IPA is retained even if this runtime check fails.
@@ -105,19 +103,25 @@ guard excluding the actual pthread JIT switch is retained. See
 [prepare-zero-wx.py](../../scripts/legado-ios/prepare-zero-wx.py). This changes
 neither the locked JavaScript engine nor the no-JIT device acceptance criteria.
 
-The build 5 candidate adds
+The build uses
 [prepare-zero-code-cache.py](../../scripts/legado-ios/prepare-zero-code-cache.py).
 It verifies the complete original and prepared source hashes, then passes
 `!ExecMem` to `CodeMemoryReserver` only under `__IOS__ && ZERO`. Zero stores
 metadata and pointers to precompiled C++ interpreter functions in this cache.
-This changes native build inputs and requires rebuilding both runtime slices.
-The observed Simulator error contains no measured syscall/errno; runtime proof
-of this repair and the original iPhone failure's cause remain pending. See the
+Diagnostic run 39043099245 confirmed the old runtime's 32 MiB reservation
+succeeded, then `mprotect` on its initial 160 KiB failed with `Permission denied`.
+The executable-memory request follows the pinned source chain. Build 5 started
+the repaired Simulator JVM; the original iPhone failure remains unexplained. See the
 [code-cache investigation](code-cache-investigation.json).
 
+Build 6 adds the source-built `libverify.a`, precisely retains
+`_VerifyClassForMajorVersion`, and checks ten final dynamic exports to address
+the subsequent verifier-link error. This repair requires a fresh native build
+and remains under runtime validation; bytecode verification is not bypassed.
+
 The source-only Swift tests run on macOS. The Simulator smoke launches the app;
-it is separate from iOS XCTest and physical-device validation. Build 4 reached
-the native JVM creation call and failed initialization before the semantic suite.
+it is separate from iOS XCTest and physical-device validation. Build 5 initialized
+the JVM successfully but failed before the original semantic cases could run.
 A successful cloud run cannot pass the physical-device gates.
 
 For later app or packaging fixes with unchanged native/JVM inputs, the
@@ -148,6 +152,8 @@ If a job fails, open that job and the first failed step, then download
 starts will have its evidence in the Linux job log instead. Preserve the run URL,
 failed step, and relevant log with any fix; do not mark a gate passed from an
 artifact name or an incomplete build.
+Wait for a candidate with the required successful Simulator fixture result before
+the next phone installation; a retained IPA from a failed fixture is for diagnosis.
 
 ## Sign and test on iPhone or iPad
 

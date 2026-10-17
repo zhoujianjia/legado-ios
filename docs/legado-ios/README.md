@@ -100,15 +100,26 @@ Python 3.9 union annotations in Xcode's script environment. Later build 4 replay
 actually launched the Simulator app and captured a `JNI_CreateJavaVM` exit with
 `Could not reserve enough space in CodeCache (160K)`.
 
-Candidate version 0.2 build 5 at `203b352` is under fresh native validation in
-[run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077).
+Build 5 at `203b352` started the actual Simulator JVM in
+[run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077):
+`JNI_CreateJavaVM` returned 0 in 4.725 seconds; session creation, diagnostics and
+close succeeded without a hard exit. Suite loading then failed with
+`java.lang.VerifyError: Could not link verifier`, before any of the 25 cases ran.
 The [code-cache adaptation](../../scripts/legado-ios/prepare-zero-code-cache.py)
 checks complete original/prepared source hashes and passes `!ExecMem` to
 `CodeMemoryReserver` only for `__IOS__ && ZERO`. Zero stores pointers to precompiled
-C++ interpreter functions. Runtime effectiveness remains pending; the logs did
-not capture a syscall or errno, and the iPhone termination remains unexplained.
-See [code-cache-investigation.json](code-cache-investigation.json). The changed
-native inputs require a fresh build rather than replaying the earlier runtime.
+C++ interpreter functions. Independent diagnostic run 39043099245 confirmed the
+old runtime reserved 32 MiB, then failed `mprotect` on the first 160 KiB with
+`Permission denied`. The executable-memory path follows the pinned source chain;
+the repaired Simulator startup does not explain the original iPhone termination.
+See [code-cache-investigation.json](code-cache-investigation.json).
+
+Candidate version 0.2 build 6 at `78930be` adds `libverify.a`, retains the exact
+`_VerifyClassForMajorVersion` archive root and requires ten final dynamic exports.
+Its full source build is pending in
+[run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+The changed native inputs require a fresh build; bytecode verification remains
+enabled. Earlier failed IPAs are retained as diagnostic evidence.
 
 Use JDK 21 for the portable JVM module. On Windows, the
 [validation runner](../../scripts/test-legado.ps1) discovers the local JDK or uses
@@ -172,15 +183,15 @@ python3 scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/device
 
 Staging targets `Resources/LegadoRuntime` by default and refuses an existing
 payload unless `--replace` is supplied. For a simulator build, stage
-`simulator-static/java-home` instead. Version 0.2 build 5's final **Prepare static
+`simulator-static/java-home` instead. Version 0.2 build 6's final **Prepare static
 JVM bootstrap home** app build phase moves the staged `LegadoRuntime/java-home`
 tree to the final `App.app/lib`; exploded classes then live at `App.app/lib/modules`.
 The home is moved without duplication or symbolic links, and the JAR and staging
 manifest stay in `App.app/LegadoRuntime`. The pinned BSD VM derives this home
 before parsing `-Djava.home`; source inspection identified the previous mismatch
 as a packaging defect. See [bootstrap-layout-investigation.json](bootstrap-layout-investigation.json).
-Runtime validation of the fix is pending, and the reported termination's exact
-cause is unconfirmed. File checks and staging do not establish
+Build 5 reached successful Simulator JVM initialization with this layout; the
+reported iPhone termination's exact cause remains unconfirmed. File checks and staging do not establish
 successful runtime execution. Preserve upstream license and notice files with
 redistributed artifacts.
 
@@ -202,11 +213,11 @@ terminated the app; the cause and JVM startup progress are unknown. See
 
 Version 0.2 build 2 introduced persistent `probeProgress`, native
 `current`/`previous` logs, VM `vfprintf`/`hs_err` capture, and a JSON file shared
-through `ShareLink` that can be saved to Files. Build 5 retains this support and
-the layout correction, adding the candidate code-cache adaptation. Recorded times
+through `ShareLink` that can be saved to Files. Build 6 retains this support, the
+layout correction and the repaired code cache, adding the pending verifier fix. Recorded times
 include diagnostic I/O and are not production performance measurements. Simulator
-autorun has captured the build 4 initialization failure; successful JVM startup
-and all physical-device gates remain pending.
+JVM startup now succeeds, while the semantic suite remains blocked before its
+cases execute. All physical-device gates remain pending.
 
 The production app exposes the opt-in probe at **Settings → Advanced → Legado
 Runtime Verification**. It runs only an included synthetic, network-free source

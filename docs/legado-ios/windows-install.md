@@ -39,12 +39,19 @@ trigger tag is `legado-replay-<sourceRunID>-<currentSHA prefix>`; see the
 [replay requirements](README.md#build-and-validation-sequence). An exported IPA
 does not imply that Simulator or physical-device execution passed.
 
-The latest candidate version 0.2 build 5 at `203b352` is under fresh native
-validation. It keeps build 2's diagnostics and the corrected bootstrap layout.
-Build 4's Simulator run exited during `JNI_CreateJavaVM` with `Could not reserve
-enough space in CodeCache (160K)`; build 5 adds a source-checked iOS Zero
-non-executable code-cache adaptation whose effect remains pending. This does not
-confirm the original iPhone termination's cause. See the
+Candidate version 0.2 build 6 at `78930be` is under fresh native validation in
+[run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+Build 5 started the Simulator JVM and created a session successfully, but loading
+the semantic suite failed with `java.lang.VerifyError: Could not link verifier`.
+Build 6 adds the missing static verifier, its linker root and a ten-export check.
+Wait for the required Simulator fixture to pass before installing the next phone
+update. Earlier failed IPAs remain diagnostic artifacts.
+
+The build retains persistent diagnostics, the corrected bootstrap layout and
+the non-executable Zero code-cache adaptation. A diagnostic run confirmed the
+old Simulator runtime's `mprotect` failed with `Permission denied`; the repaired
+runtime then initialized successfully. This does not establish the original
+iPhone termination's cause. See the
 [code-cache investigation](code-cache-investigation.json). Staging uses
 `Resources/LegadoRuntime/java-home`, while the final app build phase moves that
 home to `LegadoRuntimeProbe.app/lib` without duplication or symbolic links. The
@@ -88,6 +95,19 @@ alternative signing tool, but iloader is the working route recorded here.
 Free Personal Team provisioning expires after seven days; refresh the signature
 to keep the test app usable. See [Apple's account overview](https://developer.apple.com/help/account/basics/about-your-developer-account).
 Paid membership is optional for this test.
+
+To reduce weekly signing work, [SideStore](https://docs.sidestore.io/docs/faq)
+can refresh apps on the phone after its initial computer-assisted installation.
+This renews the free seven-day profile rather than removing its expiration;
+check that refreshing succeeds before it expires. SideStore itself also needs
+refreshing and occupies one of the free account's three app slots.
+
+An account enrolled in the [Apple Developer Program](https://developer.apple.com/programs/whats-included/)
+costs 99 USD per membership year or the local price. SideStore documents a
+365-day expiry with a paid account; the actual profile/certificate expiration
+still applies. The standard [TrollStore supported range](https://github.com/opa334/TrollStore)
+does not include this project's iOS 18+ devices. These options were checked on
+2026-10-17; they do not alter the prototype's runtime acceptance criteria.
 
 ## Preserve evidence if the app closes
 

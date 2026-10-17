@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-17T15:18:48Z",
+  "scope": "Static verifier linkage investigation following a real iOS Simulator run; no physical-device pass or completed semantic-suite result is asserted.",
+  "status": {
+    "observedFailure": "confirmed_simulator_verifier_linkage_failure",
+    "nativeVerifierExport": "absent_from_original_device_export_trie",
+    "correction": "source_rebuild_pending",
+    "deviceGatesChanged": false,
+    "deviceValidationPassed": false
+  },
+  "observedRun": {
+    "cloudRunID": "39042657077",
+    "sourceCommit": "203b352353707472e847c76f146104098924d1d2",
+    "sourceCommitAttribution": "Associated cloud build and probe-build.log record this commit. The app-generated failure report itself records sourceCommit=not_injected; do not treat that field as a successful provenance injection.",
+    "executionPlatform": "ios-simulator",
+    "signing": "ad-hoc simulator app; no Apple account",
+    "operatingSystem": "Version 26.2 (Build 23C54)",
+    "processIdentifier": 39086,
+    "fixtureOnly": true,
+    "fixturePassed": false,
+    "failureVerbatim": "SEMANTIC_SUITE_NOT_PACKAGED: Engine suite dependency is unavailable: java.lang.VerifyError: Could not link verifier",
+    "failureInterpretation": "The semantic-suite loader catches LinkageError and wraps it with SEMANTIC_SUITE_NOT_PACKAGED. Here the underlying failure is a native verifier linkage error, rather than evidence that the test classes were omitted.",
+    "jvmCreation": {
+      "beforeEpochSeconds": "1792249791.978464",
+      "afterEpochSeconds": "1792249796.704220",
+      "elapsedSeconds": 4.725756,
+      "returnCode": 0,
+      "threadStackBytes": 536576,
+      "startupCompleteObserved": true,
+      "facadeMethodsAndRegisterNativesCompleted": true
+    },
+    "session": {
+      "createBeforeEpochSeconds": "1792249796.830557",
+      "createAfterEpochSeconds": "1792249797.065526",
+      "nativeReturnCode": 0,
+      "subsequentExecuteCallsObserved": 2,
+      "closeSessionCompleted": true,
+      "interpretation": "Session creation succeeded. The subsequent diagnostic execution returned the controlled semantic-suite failure. The initial console checkpoint create_session.begin does not establish that creation failed."
+    },
+    "originalExportGate": {
+      "requiredExportsCount": 9,
+      "reportedRequiredDynamicExportsPresent": true,
+      "reportedMissingExports": [],
+      "includedVerifierExport": false,
+      "fullDeviceExportTrieContainsVerifyClassForMajorVersion": false,
+      "interpretation": "The old nine-entry gate passed because it did not require the legacy verifier symbol. Independent inspection of the retained full device export listing found no _VerifyClassForMajorVersion. The device export listing is packaging evidence, not proof of device execution."
+    },
+    "evidence": [
+      {
+        "path": ".build/cloud-evidence/run-39042657077/macos-logs/ci-logs/simulator-probe/result.json",
+        "sha256": "80532e1a0197fce7200f435fed22470b19dc74cd4dab56fd0bfb7782d5750762"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39042657077/macos-logs/ci-logs/simulator-probe/run-20261017T150638Z-ae495e10/diagnostics/exports/LegadoProbe-report.json",
+        "sha256": "9119b2232b99241778b13fe222b331106698879799a165f8ec2376e008dd0044"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39042657077/macos-logs/legado-ios/probe-device-exports.json",
+        "sha256": "713515de5b3d27364b70ae69049810464efd3ee3f8d394fd4c26c4943189d006"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39042657077/macos-logs/legado-ios/probe-device-exports.log",
+        "sha256": "57eea76e4434d9929c4d334a8e607c8c0584691127cdb60ef0e9a086f8e11e98",
+        "inspection": "Exact exported-symbol token _VerifyClassForMajorVersion was absent."
+      }
+    ]
+  },
+  "legacyClassFormat": {
+    "method": "Read the first eight bytes of class entries with Python zipfile and struct.unpack('>IHH'); checked CAFEBABE magic and class-file major/minor versions.",
+    "inspectionScope": "The retained local fat JAR uses the pinned JUnit 4.13.2 and Hamcrest Core 1.3 dependencies. Its archive SHA differs from the cloud build's recorded JAR SHA, so this is dependency-class evidence rather than a byte-for-byte inspection of the cloud JAR.",
+    "localJarPath": "Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar",
+    "localJarSHA256": "595b487e142bb2f39d1dd3c9159ebfa6ef4e4c917e286caa21ee1f0dcab8aea7",
+    "cloudJarSHA256FromProbeBuildLog": "11715f58aedee993361908b6126c260e0d64f24f0e08fc14ee0abbe795858097",
+    "inspectedClasses": [
+      {
+        "entry": "org/junit/Test.class",
+        "majorVersion": 49,
+        "minorVersion": 0,
+        "classSHA256": "b54e7036bfa345e82910a35658aab3647d3f558e66d3b6449be801dc94cfc0dd"
+      },
+      {
+        "entry": "org/junit/Assert.class",
+        "majorVersion": 49,
+        "minorVersion": 0,
+        "classSHA256": "be8bb6e9b85dfba4479b50d73605642bdb16b23ef70c0004e0ca79ee8db192b5"
+      },
+      {
+        "entry": "org/junit/runner/JUnitCore.class",
+        "majorVersion": 49,
+        "minorVersion": 0,
+        "classSHA256": "2912fc51d397bd281bf223705c1da68600edfa9f1c29ed5dae90401bd44e5f0f"
+      },
+      {
+        "entry": "org/hamcrest/Matcher.class",
+        "majorVersion": 49,
+        "minorVersion": 0,
+        "classSHA256": "ad69d3e4f25a1dba26eceed93d3382d0c5d98b898a44080e9c1d67e144cc3920"
+      }
+    ],
+    "causalBoundary": "Major 49 is below the pinned verifier's stack-map threshold of 50, so eligible classes use inference_verify. The suite explicitly loads JUnit classes before running tests. The simulator error is exactly the inference verifier's unresolved-entry error, but the retained failure does not identify the first class that triggered it."
+  },
+  "sourcePin": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+  "sourceLineNumberMethod": "1-based physical line numbers from pinned raw source content, including empty lines.",
+  "sourceEvidence": [
+    {
+      "path": "src/hotspot/share/classfile/verifier.cpp",
+      "sha256": "814886cc6699e1f96001ae67db2f8f0b2a97ececa75f78bafe010e72b4420c55",
+      "anchors": [
+        {
+          "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/classfile/verifier.cpp#L79-L108",
+          "finding": "For a statically linked VM, obtain the default process handle and resolve VerifyClassForMajorVersion using os::dll_lookup. This path does not load a separate verify dylib or invoke JNI_OnLoad_verify."
+        },
+        {
+          "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/classfile/verifier.cpp#L219-L260",
+          "finding": "Class versions below the stack-map threshold select the inference verifier; some later versions can also fall back to it."
+        },
+        {
+          "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/classfile/verifier.cpp#L302-L310",
+          "finding": "An unresolved verifier function produces java.lang.VerifyError with the observed Could not link verifier message."
+        }
+      ]
+    },
+    {
+      "path": "src/hotspot/share/classfile/verifier.hpp",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/classfile/verifier.hpp#L37-L42",
+      "finding": "STACKMAP_ATTRIBUTE_MAJOR_VERSION is 50."
+    },
+    {
+      "path": "src/java.base/share/native/libverify/check_code.c",
+      "sha256": "3affee5009bf5be8d22bdf6263f11e73c4da7a1980788f29a458f300c6654f26",
+      "anchors": [
+        {
+          "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/native/libverify/check_code.c#L487-L490",
+          "finding": "Declares a library-specific static JNI_OnLoad entry through DEF_STATIC_JNI_OnLoad. That entry is separate from the verifier lookup used here."
+        },
+        {
+          "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/native/libverify/check_code.c#L770-L773",
+          "finding": "Defines the exported native VerifyClassForMajorVersion function."
+        }
+      ]
+    },
+    {
+      "path": "make/modules/java.base/lib/CoreLibraries.gmk",
+      "sha256": "be4e69e243695695dfbaef04620a51ebf25e5c1e06989e84e9c74bc34264b7fe",
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/make/modules/java.base/lib/CoreLibraries.gmk#L32-L43",
+      "finding": "Upstream builds the verify native library with SetupJdkLibrary, libjava headers, and libjvm linkage. The static image provides libverify.a; it must be included in the merged native archive."
+    }
+  ],
+  "correction": {
+    "sourceCommit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
+    "prototypeBuildNumber": 6,
+    "cloudRunID": "39044188251",
+    "statusAtRecordTime": "pending",
+    "changes": [
+      "Merge the pinned upstream build's images/static-libs/lib/libverify.a into each device/simulator libOpenJDK.a.",
+      "Retain _VerifyClassForMajorVersion with an exact linker -u root so static archive selection and dead stripping cannot remove the runtime lookup target.",
+      "Add VerifyClassForMajorVersion to the final Mach-O dynamic export gate, increasing the required entries from nine to ten."
+    ],
+    "jniOnLoadVerifyForced": false,
+    "bytecodeVerificationDisabled": false,
+    "independentAugmentationArtifactUsed": false,
+    "runtimePassed": false,
+    "interpretation": "A source rebuild is pending. The correction addresses the missing linkage target; completion of the semantic suite and later fixture operations must be established by subsequent execution."
+  },
+  "limits": [
+    "Successful JNI_CreateJavaVM and session creation were observed on the simulator only. They do not satisfy the physical-device installation and debugger-free launch gate.",
+    "The semantic suite did not complete; no claim of 25 passing tests, java.beans success, complete reading flow or cancellation success follows from this run.",
+    "All physical-device validation gates remain unchanged. This investigation edits no gate status and does not claim the pending build passed."
+  ]
+}
