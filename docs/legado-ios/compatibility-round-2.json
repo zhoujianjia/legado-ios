@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-18",
+  "ios_source_commit": "55200f0a19e3e0d64f35f8401c9ee7fe80b27213",
+  "original_archive_sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "fixture_sha256": "731f1f1f743b9bc393ea221a7118ff4a115ffa35947aa40c88ff088bb758a894",
+  "desktop": {
+    "environment": "Windows, JDK21.0.12.1, Gradle8.14.3; offline locked dependencies",
+    "junit_tests": 80,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "packaged_xint_smoke": "passed; payload probe, original25+JavaBeans and interop28; -Xint -Xmx128m",
+    "interop_case_set": "legado-interop-v1",
+    "interop_cases_passed": 28,
+    "reference_packaging_tests": 15,
+    "reference_comparator_tests": 14,
+    "reference_execution_driver_tests": 7,
+    "source_inventory_tests": 12,
+    "source_inventory_check": "64 domains,2792 files,13 MCP tools; archive identity and generated inventory passed",
+    "swift_static_parse": "ProbeRunner tree-sitter parse passed; actual Apple compilation is tracked in the cloud run",
+    "workflow_lint": "actionlint passed for both changed workflows",
+    "native_reuse_tool_tests": 23
+  },
+  "ios_cloud": {
+    "run_id": 39052129099,
+    "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39052129099",
+    "workflow": "fresh-jvm-reused-native",
+    "status": "failed_before_app_compilation",
+    "portable_core": "passed",
+    "simulator_execution": "not_run",
+    "ipa_audit": "not_run",
+    "failure": "Pinned native archive identity passed; verifier required an absent optional java-home/release. No fresh app compiled or executed in this run."
+  },
+  "original_android_reference": {
+    "run_id": 39052290844,
+    "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39052290844",
+    "source_commit": "34a4c1cfcc227041a1f9497f8c9056a4d2f3fb23",
+    "status": "passed",
+    "snapshot_sha256": "f3af069072b496fec21b3827135be344133705e7bff4ffb5bc0afcaa495759f6",
+    "retained_original_files": 2747,
+    "snapshot_matches_original_bytes": true,
+    "exclusions": "All original .github entries including signing key; original Google services configuration",
+    "test_overlays": "Added test+shared fixture, inert Google configuration, debug telemetry metadata, external minSdk26 init script",
+    "emulator_api": 35,
+    "declared_minimum_sdk_for_reference": 26,
+    "configuration_reason": "Original minSdk23 fails D8 because pinned Rhino uses MethodHandle.invoke/invokeExact. The external init script changes build configuration only; original Gradle, engine and business bytes are retained.",
+    "failed_attempts": [
+      {
+        "run_id": 39049939872,
+        "reason": "SDK command-line tools were not in PATH; no application compilation or runtime test"
+      },
+      {
+        "run_id": 39050072287,
+        "reason": "D8 rejects bundled Rhino MethodHandle bytecode at original minSdk23; no instrumentation executed"
+      },
+      {
+        "run_id": 39050786567,
+        "reason": "Real original reading chain completed through batch; final shared-global assertion exposed original jsLib-dependent state behavior. Partial Android report is not a passing golden. Port and dual-scope probes subsequently corrected.",
+        "artifact_id": 12107962010,
+        "artifact_sha256": "aa6d600e8470bea3cb60130aac9471e618691474d585ca6e724c25586f62b6f5"
+      },
+      {
+        "run_id": 39052129304,
+        "reason": "KVM permission check raced asynchronous udev change; no new instrumentation executed. Replaced by synchronous chmod on the specific /dev/kvm device."
+      }
+    ],
+    "artifact_id": 12108790684,
+    "artifact_sha256": "5e71a287d2bdedf4f8f347992651767bba9b70f7da75febe0c880e310d9c0858",
+    "report_sha256": "f7513d0be00ad44664660a8ff8835ebf158dcd3acbf59e9c9dfd2113ea6851b0",
+    "reference_execution_id": "e5943568-c5b5-4c97-a81a-e1362a6c52cd",
+    "reading_chain_and_scope_isolation": "passed on original archive Android app; search/detail/toc/content/login/batch with actual loopback HTTP wire capture"
+  },
+  "reference_comparison": {
+    "status": "not_run_for_current_ios_payload",
+    "g4_validation_passed": false,
+    "reason": "A passing original Android golden is available, but the corresponding fresh iOS payload did not compile in its run. Known HTTP header differences remain unresolved."
+  },
+  "physical_device": {
+    "new_build_report": "pending",
+    "historical_evidence": "device-validation.json: build6 passed G1/G2, original25+JavaBeans and fixed chain; it does not prove the added28 or updated marshalling",
+    "g3_status": "partial",
+    "g4_status": "partial",
+    "g5_status": "partial"
+  },
+  "scope_limits": [
+    "The interop matrix proves its28 listed vectors, not every Java overload or conversion.",
+    "The DTO slice omits Java Book reference identity/methods, Room state, generated time and computed properties.",
+    "Multi-key variable-map serialization order can differ from the original entity HashMap.",
+    "The reference compares one pure-JS fixture; declarative rules and representative real sources remain pending.",
+    "Android retains raw wire bytes; the iOS fixture captures logical host requests, not actual URLSession wire framing.",
+    "CPU-loop entry cancellation, real network/browser timeouts, concurrent isolation and sustained device runs remain pending.",
+    "Observed original HTTP transport headers differ from the prototype logical host requests: repeated Connection, Keep-Alive, Cache-Control and POST Content-Type charset; strict comparison remains required."
+  ],
+  "full_feature_migration_allowed": false,
+  "full_feature_parity_established": false
+}

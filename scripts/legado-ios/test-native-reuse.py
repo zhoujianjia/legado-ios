@@ -157,16 +157,16 @@ class NativeFilesTests(unittest.TestCase):
                 output.writestr(name, data)
         return archive
 
-    def jar(self, version=65, omit=()):
+    def jar(self, version=65, omit=(), minor=0):
         jar = self.root / reuse.JAR_PATH
         jar.parent.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(jar, "w") as output:
             for name in reuse.REQUIRED_JAR_CLASSES:
                 if name not in omit:
-                    output.writestr(name, b"\xca\xfe\xba\xbe" + struct.pack(">HH", 0, version) + b"fixture")
+                    output.writestr(name, b"\xca\xfe\xba\xbe" + struct.pack(">HH", minor, version) + b"fixture")
         return jar
 
-    def native(self):
+    def native(self, release=None):
         native = self.root / "source"
         native.mkdir()
         lock = (HERE / "runtime-lock.json").read_bytes()
@@ -188,9 +188,12 @@ class NativeFilesTests(unittest.TestCase):
                 self.write(f"source/{home}/modules/{module}/module-info.class")
             for module, path in reuse.verifier.PROBES.items():
                 self.write(f"source/{home}/modules/{module}/{path}")
+            self.write(f"source/{home}/modules/java.base/java/lang/Object.class",
+                       b"\xca\xfe\xba\xbe" + struct.pack(">HH", 0, 72) + b"fixture")
             for path in reuse.verifier.REQUIRED_DATA_FILES:
                 self.write(f"source/{home}/{path}")
-            self.write(f"source/{home}/release", b'JAVA_VERSION="28-internal"\n')
+            if release is not None:
+                self.write(f"source/{home}/release", release)
         return native
 
     def test_path_attack_or_extra_old_jar_is_rejected_before_any_extraction(self):
@@ -270,12 +273,61 @@ class NativeFilesTests(unittest.TestCase):
     def test_native_layout_has_all_modules_classes_data_and_fresh_jar(self):
         jar, native = self.jar(), self.native()
         result = reuse.validate_layout(native, jar)
-        self.assertEqual(result["device"]["javaFeature"], 28)
+        compatibility = result["device"]["bytecodeCompatibility"]
+        self.assertEqual(compatibility["source"], "modules/java.base/java/lang/Object.class")
+        self.assertEqual(compatibility["nativeClassMajor"], 72)
+        self.assertEqual(compatibility["freshJarMaximumBaseClassMajor"], 65)
+        self.assertFalse(compatibility["runtimeJavaVersionMeasured"])
+        self.assertNotIn("releaseDeclaration", compatibility)
+        for relative in reuse.HOMES.values():
+            self.assertFalse((native / relative / "release").exists())
         self.assertTrue(result["simulator"]["staticValidationPassed"])
         missing = native / reuse.HOMES["device"] / "modules/java.desktop/java/beans/Introspector.class"
         missing.unlink()
         with self.assertRaisesRegex(ValueError, "Missing required class"):
             reuse.validate_layout(native, jar)
+
+    def test_optional_release_is_parsed_and_cross_checked_against_native_class(self):
+        jar, native = self.jar(), self.native(release=b'JAVA_VERSION="28-internal"\n')
+        result = reuse.validate_layout(native, jar)
+        self.assertEqual(result["device"]["bytecodeCompatibility"]["releaseDeclaration"],
+                         {"source": "release", "javaVersion": "28-internal", "javaFeature": 28})
+        release = native / reuse.HOMES["device"] / "release"
+        for content in (b'JAVA_VERSION="27-internal"\n', b'JAVA_VERSION="29-internal"\n'):
+            release.write_bytes(content)
+            with self.subTest(content=content), self.assertRaisesRegex(ValueError, "disagree"):
+                reuse.validate_layout(native, jar)
+
+    def test_present_but_invalid_release_does_not_use_class_header_as_fallback(self):
+        jar, native = self.jar(), self.native(release=b"")
+        release = native / reuse.HOMES["device"] / "release"
+        for content in (b"", b'JAVA_VERSION="garbage"\n', b'JAVA_VERSION="28 garbage"\n', b'JAVA_VERSION="28+garbage"\n',
+                        b'JAVA_VERSION="28-internal" unexpected\n',
+                        b'JAVA_VERSION="28-internal"\nJAVA_VERSION="28"\n',
+                        b'JAVA_VERSION="28-internal"\nJAVA_VERSION=garbage\n'):
+            release.write_bytes(content)
+            with self.subTest(content=content), self.assertRaisesRegex(ValueError, "valid JAVA_VERSION"):
+                reuse.validate_layout(native, jar)
+
+    def test_malformed_preview_or_invalid_native_class_header_rejected_without_release(self):
+        jar, native = self.jar(), self.native()
+        object_class = native / reuse.HOMES["device"] / "modules/java.base/java/lang/Object.class"
+        invalid = (b"", b"bad magic", b"\xca\xfe\xba\xbe" + struct.pack(">HH", 0, 44),
+                   b"\xca\xfe\xba\xbe" + struct.pack(">HH", 65535, 72),
+                   b"\xca\xfe\xba\xbe" + struct.pack(">HH", 1, 72))
+        for header in invalid:
+            object_class.write_bytes(header)
+            with self.subTest(header=header), self.assertRaisesRegex(ValueError, "native Object.class"):
+                reuse.validate_layout(native, jar)
+
+    def test_exact_native_class_major_is_allowed_but_newer_or_preview_jar_is_rejected(self):
+        native = self.native()
+        result = reuse.validate_layout(native, self.jar(version=72))
+        self.assertEqual(result["device"]["bytecodeCompatibility"]["freshJarMaximumBaseClassMajor"], 72)
+        with self.assertRaisesRegex(ValueError, "base bytecode"):
+            reuse.validate_layout(native, self.jar(version=73))
+        with self.assertRaisesRegex(ValueError, "Preview bytecode"):
+            reuse.validate_layout(native, self.jar(version=72, minor=65535))
 
     def test_changed_native_lock_or_missing_module_rejected(self):
         jar, native = self.jar(), self.native()

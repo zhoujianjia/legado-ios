@@ -346,6 +346,46 @@ def native_inventory(root):
     return {"schemaVersion": 1, "origin": "consumer-verified", "files": files}
 
 
+def native_bytecode_compatibility(home, maximum_base_major):
+    # The authenticated build-6 exploded JavaHome has no release file:
+    # build-zero.sh copies that optional image metadata only when it exists.
+    # Its own java.base bytecode supplies a conservative compatibility ceiling;
+    # this is not a measurement of the running VM's java.version property.
+    relative = "modules/java.base/java/lang/Object.class"
+    with (home / relative).open("rb") as stream:
+        header = stream.read(8)
+    if len(header) != 8 or header[:4] != b"\xca\xfe\xba\xbe":
+        raise ValueError("Malformed native Object.class header")
+    minor, major = struct.unpack(">HH", header[4:])
+    if major < 45:
+        raise ValueError("Invalid native Object.class major version")
+    if minor == 65535:
+        raise ValueError("Preview native Object.class bytecode is not allowed")
+    if (major == 45 and minor > 3) or (major > 45 and minor != 0):
+        raise ValueError("Invalid native Object.class minor version")
+    result = {"source": relative, "nativeClassMajor": major, "nativeClassMinor": minor,
+              "freshJarMaximumBaseClassMajor": maximum_base_major,
+              "runtimeJavaVersionMeasured": False}
+    release_path = home / "release"
+    if release_path.exists():
+        release = release_path.read_text(encoding="utf-8")
+        declarations = [line for line in release.splitlines() if re.match(r"^\s*JAVA_VERSION\b", line)]
+        match = re.fullmatch(
+            r'JAVA_VERSION="(([1-9][0-9]*)(?:\.[0-9]+)*(?:-[A-Za-z0-9]+)?'
+            r'(?:\+[0-9]+(?:-[A-Za-z0-9.-]+)?)?)"', declarations[0]
+        ) if len(declarations) == 1 else None
+        if match is None:
+            raise ValueError("Native Java release does not declare one valid JAVA_VERSION")
+        feature = int(match.group(2))
+        if feature + 44 != major:
+            raise ValueError("Native Java release and Object.class major version disagree")
+        result["releaseDeclaration"] = {"source": "release", "javaVersion": match.group(1),
+                                        "javaFeature": feature}
+    if maximum_base_major > major:
+        raise ValueError("Fresh JAR base bytecode exceeds the native Object.class compatibility ceiling")
+    return result
+
+
 def validate_layout(native, jar):
     artifact_lock = native / LOCK
     if artifact_lock.read_bytes() != (REPO / LOCK).read_bytes():
@@ -358,6 +398,7 @@ def validate_layout(native, jar):
             value = item.get(key, "Headers" if key == "HeadersPath" else "")
             entry_path(value)
     required = set(json.loads(artifact_lock.read_text(encoding="utf-8"))["requiredModules"])
+    maximum_base_major = jar_details(jar)["maximumBaseClassMajor"]
     validation = {}
     for platform, relative in HOMES.items():
         home = native / relative
@@ -367,14 +408,7 @@ def validate_layout(native, jar):
         validation[platform] = verifier.validate(home, jar, framework)
         # Check only bytecode eligible on this VM; higher multi-release entries
         # are not loaded. Base classes must all fit the reused Java runtime.
-        release = (home / "release").read_text(encoding="utf-8")
-        match = re.search(r'^JAVA_VERSION="([0-9]+)[^"\n]*"', release, re.MULTILINE)
-        if match is None:
-            raise ValueError("Native Java release does not declare JAVA_VERSION")
-        feature = int(match.group(1))
-        if jar_details(jar)["maximumBaseClassMajor"] > feature + 44:
-            raise ValueError("Fresh JAR base bytecode exceeds the native runtime Java version")
-        validation[platform]["javaFeature"] = feature
+        validation[platform]["bytecodeCompatibility"] = native_bytecode_compatibility(home, maximum_base_major)
     return validation
 
 
