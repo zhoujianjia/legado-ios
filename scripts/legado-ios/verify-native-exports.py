@@ -8,7 +8,8 @@ import subprocess
 
 
 # Pinned Mobile classLoader.cpp load_java_library/load_jimage_library and
-# nativeLookup.cpp lookup_style require these exports even with exploded modules.
+# nativeLookup.cpp lookup_style and verifier.cpp require these exports even with
+# exploded modules. Older class files need libverify's inference verifier.
 # Direct-call entries such as JNI_CreateJavaVM do not need dynamic exports.
 REQUIRED_EXPORTS = (
     "JDK_Canonicalize",
@@ -16,6 +17,7 @@ REQUIRED_EXPORTS = (
     "JIMAGE_Close",
     "JIMAGE_FindResource",
     "JIMAGE_GetResource",
+    "VerifyClassForMajorVersion",
     "Java_java_lang_Class_registerNatives",
     "Java_java_lang_ClassLoader_registerNatives",
     "Java_java_lang_System_registerNatives",

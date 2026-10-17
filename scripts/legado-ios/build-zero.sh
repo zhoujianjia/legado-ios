@@ -82,6 +82,7 @@ MODULEMAP
   libtool -static -o "$SLICE/libOpenJDK.a" \
     "$BUILD/images/static-libs/lib/zero/libjvm.a" "$FFI_LIB/libffi.a" \
     "$BUILD/images/static-libs/lib/libjava.a" "$BUILD/images/static-libs/lib/libzip.a" \
+    "$BUILD/images/static-libs/lib/libverify.a" \
     "$BUILD/images/static-libs/lib/libnet.a" "$BUILD/images/static-libs/lib/libnio.a" \
     "$BUILD/images/static-libs/lib/libjimage.a"
   for module in "${REQUIRED_MODULES[@]}"; do

@@ -11,12 +11,13 @@ var targets: [Target] = []
 if hasRuntime { targets.append(.binaryTarget(name: "OpenJDK", path: artifact)) }
 var nativeLinkerSettings: [LinkerSetting] = [.linkedFramework("Foundation"), .linkedLibrary("z"), .linkedLibrary("c++")]
 if hasRuntime {
-    // HotSpot's static iOS loader finds these through dlsym. The keeper anchors
-    // NativeImageBuffer.cpp, which does not reference the separate jimage.cpp.
-    // Exact undefined roots pull that object from the archive and survive stripping.
-    let imageEntries = ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource"]
+    // HotSpot's static iOS loader resolves these through dlsym. The keeper does
+    // not anchor the separate jimage or legacy verifier objects. Exact roots
+    // retain their archive members and dynamic exports without loading all code.
+    let dynamicEntries = ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource",
+                          "VerifyClassForMajorVersion"]
     nativeLinkerSettings.append(.unsafeFlags(
-        imageEntries.flatMap { ["-Xlinker", "-u", "-Xlinker", "_" + $0] },
+        dynamicEntries.flatMap { ["-Xlinker", "-u", "-Xlinker", "_" + $0] },
         .when(platforms: [.iOS])
     ))
 }
