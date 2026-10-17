@@ -12,10 +12,39 @@ if hasRuntime { targets.append(.binaryTarget(name: "OpenJDK", path: artifact)) }
 var nativeLinkerSettings: [LinkerSetting] = [.linkedFramework("Foundation"), .linkedLibrary("z"), .linkedLibrary("c++")]
 if hasRuntime {
     // HotSpot's static iOS loader resolves these through dlsym. The keeper does
-    // not anchor the separate jimage or legacy verifier objects. Exact roots
-    // retain their archive members and dynamic exports without loading all code.
+    // not anchor the separate jimage/verifier objects or the current java.net
+    // entrypoints. Exact roots retain their archive members and dynamic exports.
+    // Keep the builtin library hooks too: JNI_OnLoad_net initializes the IP
+    // availability flags read by InetAddress. Merely retaining the JNI methods
+    // leaves those flags zero. All names exist in both pinned native slices.
     let dynamicEntries = ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource",
-                          "VerifyClassForMajorVersion"]
+                          "VerifyClassForMajorVersion", "JNI_OnLoad_net", "JNI_OnLoad_nio",
+                          "Java_java_net_InetAddress_isIPv4Available",
+                          "Java_java_net_InetAddress_isIPv6Supported",
+                          "Java_java_net_Inet4AddressImpl_getLocalHostName",
+                          "Java_java_net_Inet4AddressImpl_lookupAllHostAddr",
+                          "Java_java_net_Inet4AddressImpl_getHostByAddr",
+                          "Java_java_net_Inet4AddressImpl_isReachable0",
+                          "Java_java_net_Inet6AddressImpl_getLocalHostName",
+                          "Java_java_net_Inet6AddressImpl_lookupAllHostAddr",
+                          "Java_java_net_Inet6AddressImpl_getHostByAddr",
+                          "Java_java_net_Inet6AddressImpl_isReachable0",
+                          "Java_java_net_NetworkInterface_getAll",
+                          "Java_java_net_NetworkInterface_getByName0",
+                          "Java_java_net_NetworkInterface_getByIndex0",
+                          "Java_java_net_NetworkInterface_boundInetAddress0",
+                          "Java_java_net_NetworkInterface_getByInetAddress0",
+                          "Java_java_net_NetworkInterface_isUp0",
+                          "Java_java_net_NetworkInterface_isLoopback0",
+                          "Java_java_net_NetworkInterface_supportsMulticast0",
+                          "Java_java_net_NetworkInterface_isP2P0",
+                          "Java_java_net_NetworkInterface_getMacAddr0",
+                          "Java_java_net_NetworkInterface_getMTU0",
+                          "Java_java_net_NetworkInterface_init",
+                          "Java_sun_net_PortConfig_getLower0", "Java_sun_net_PortConfig_getUpper0",
+                          "Java_sun_net_spi_DefaultProxySelector_init",
+                          "Java_sun_net_spi_DefaultProxySelector_getSystemProxies",
+                          "Java_sun_net_dns_ResolverConfigurationImpl_fallbackDomain0"]
     nativeLinkerSettings.append(.unsafeFlags(
         dynamicEntries.flatMap { ["-Xlinker", "-u", "-Xlinker", "_" + $0] },
         .when(platforms: [.iOS])

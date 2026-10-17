@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "scope": "Static linkage investigation for the pinned Mobile JVM Socket path; proposed App relink remains unvalidated.",
+  "observation": {
+    "runID": 39078893553,
+    "sourceCommit": "6af471799bfb128c19d5cb78e03357844e79158f",
+    "sourceIdentityEvidence": "build-manifest.json and device IPA Info.plist; the Simulator report itself contained sourceCommit=not_injected.",
+    "reportSHA256": "53c5bd272904ceb884fee5fecd70706b0f197cdbc3e777132b9bdbd4e5840730",
+    "reportTopLevelPassed": true,
+    "nativeTCPProbePassed": false,
+    "failure": "jni_7: java.lang.UnsatisfiedLinkError: 'boolean java.net.InetAddress.isIPv6Supported()'",
+    "failureStage": "InetAddress native lookup before the loopback TCP connection.",
+    "diagnosticsArtifact": {
+      "id": 12118387555,
+      "bytes": 1923048,
+      "sha256": "93c6e144f8b8907d24d3501124b75b5ee859c4c86063d07229038193a4238e3e"
+    },
+    "unsignedProbeArtifact": {
+      "id": 12118252960,
+      "bytes": 44081937,
+      "sha256": "7243538e0bd67a3b443d4eea3ab2e5239f48f5005ac3c831a373261ff7504e18"
+    },
+    "originalIPA": {
+      "bytes": 48960687,
+      "sha256": "0806c38075a3ca5c7eb576ccc8ee8ca7f64ec3919f2476715c6e564511696e0c"
+    },
+    "originalDeviceExportLogSHA256": "85127c970bb83ba94743c90da87f7b164aefac9dd675cf9cd076e1829e8ff275",
+    "proposedRootsAbsentFromOriginalDeviceExports": 29
+  },
+  "sourcePins": {
+    "mobile": {
+      "repository": "https://github.com/openjdk/mobile",
+      "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+    },
+    "iosTools": {
+      "repository": "https://github.com/openjdk-mobile/ios-tools",
+      "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+    }
+  },
+  "nativeArchive": {
+    "producerRunID": 39044188251,
+    "producerSourceCommit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
+    "artifactID": 12104908951,
+    "artifactName": "legado-zero-source-build",
+    "bytes": 89898165,
+    "sha256": "59b72f07996e1b510018be0ee390ee7a1608074d7eb8923b87d84dd5b55682d8",
+    "slices": [
+      {
+        "path": "OpenJDK.xcframework/ios-arm64/libOpenJDK.a",
+        "bytes": 28252416,
+        "sha256": "0a007b51b563190e3bbb0bdd8e9a7667335d2dfce6aea9ca4bffca6862e1df53"
+      },
+      {
+        "path": "OpenJDK.xcframework/ios-arm64-simulator/libOpenJDK.a",
+        "bytes": 28169688,
+        "sha256": "1d9546ed66e249250f23a244d62eae2597eb68dabb90f608acf925d772dc14cc"
+      }
+    ],
+    "rootDefinitionAudit": {
+      "method": "Read the static archive members' Mach-O LC_SYMTAB/nlist_64 records.",
+      "rootCount": 29,
+      "allRootsDefinedInBothSlices": true,
+      "nType": 15,
+      "meaning": "N_EXT | N_SECT, with N_PEXT unset; every proposed root is a real, externally visible definition."
+    },
+    "additionalOSFrameworkImportsForRootObjects": [],
+    "systemProxyImplementation": "The actual DefaultProxySelector.o contains libgio-2.0.so and uses dlopen/dlsym. It is the Unix implementation, not the macosx CFNetwork implementation; adding these roots does not implement iOS system proxy integration."
+  },
+  "diagnosis": {
+    "keeperOriginalSHA256": "db8636b8e24cbd4420a9de5f92cdeaa1fc18a15d6153ac4262084af3f404bee2",
+    "keeperPreparedSHA256": "ef1f9744e430af5ef3dc71bc26764d01fc996b43617cc60a38a0fc12f7ff635f",
+    "keeperHasJavaNetRoots": false,
+    "granularDeadStripping": "InetAddress.o has MH_SUBSECTIONS_VIA_SYMBOLS=0x2000. The original executable exports InetAddress_init but not the two availability methods from that same object; retaining the archive member alone is insufficient.",
+    "builtinInitialization": "NativeLibraries identifies a built-in library by JNI_OnLoad_<name>. JNI_OnLoad_net calls its dynamic initializer, which initializes IPv4_available and IPv6_available; retaining only the query methods would leave these flags zero.",
+    "tlsClassAudit": "The inspected java.base TLS/security/provider classes had no native methods requiring additional JNI roots. This is a static scope observation, not a successful TLS execution.",
+    "excludedRoot": "Java_sun_nio_ch_Net_discardOOB is not defined in either archive slice and must not be force-rooted."
+  },
+  "proposedRepair": {
+    "operation": "Add exact -u _<symbol> roots when linking the App, and require the same names in the final Mach-O export check.",
+    "files": [
+      "Packages/LegadoRuntime/Package.swift",
+      "scripts/legado-ios/verify-native-exports.py"
+    ],
+    "roots": [
+      "JNI_OnLoad_net",
+      "JNI_OnLoad_nio",
+      "Java_java_net_InetAddress_isIPv4Available",
+      "Java_java_net_InetAddress_isIPv6Supported",
+      "Java_java_net_Inet4AddressImpl_getLocalHostName",
+      "Java_java_net_Inet4AddressImpl_lookupAllHostAddr",
+      "Java_java_net_Inet4AddressImpl_getHostByAddr",
+      "Java_java_net_Inet4AddressImpl_isReachable0",
+      "Java_java_net_Inet6AddressImpl_getLocalHostName",
+      "Java_java_net_Inet6AddressImpl_lookupAllHostAddr",
+      "Java_java_net_Inet6AddressImpl_getHostByAddr",
+      "Java_java_net_Inet6AddressImpl_isReachable0",
+      "Java_java_net_NetworkInterface_getAll",
+      "Java_java_net_NetworkInterface_getByName0",
+      "Java_java_net_NetworkInterface_getByIndex0",
+      "Java_java_net_NetworkInterface_boundInetAddress0",
+      "Java_java_net_NetworkInterface_getByInetAddress0",
+      "Java_java_net_NetworkInterface_isUp0",
+      "Java_java_net_NetworkInterface_isLoopback0",
+      "Java_java_net_NetworkInterface_supportsMulticast0",
+      "Java_java_net_NetworkInterface_isP2P0",
+      "Java_java_net_NetworkInterface_getMacAddr0",
+      "Java_java_net_NetworkInterface_getMTU0",
+      "Java_java_net_NetworkInterface_init",
+      "Java_sun_net_PortConfig_getLower0",
+      "Java_sun_net_PortConfig_getUpper0",
+      "Java_sun_net_spi_DefaultProxySelector_init",
+      "Java_sun_net_spi_DefaultProxySelector_getSystemProxies",
+      "Java_sun_net_dns_ResolverConfigurationImpl_fallbackDomain0"
+    ],
+    "nativeArchiveRecompilationRequired": false,
+    "originalNativeBuildInputsChanged": false,
+    "nativeSourcePatchesRequired": false,
+    "wholeArchiveForceLoadRequired": false
+  },
+  "sourceEvidence": [
+    {
+      "pin": "iosTools",
+      "path": "openjdk-ext/src/hotspot/symbol_keeper.cpp",
+      "sha256": "db8636b8e24cbd4420a9de5f92cdeaa1fc18a15d6153ac4262084af3f404bee2",
+      "finding": "The keeper contains sun.nio.ch roots but no Java_java_net_* roots."
+    },
+    {
+      "pin": "mobile",
+      "path": "src/hotspot/os/bsd/os_bsd.cpp",
+      "lines": [
+        1214,
+        1216
+      ],
+      "sha256": "0311a72a146af5122cc820d472ee7872852dfca8cb2e34d77ae94294091683be",
+      "finding": "A statically linked VM resolves library loads through the default process handle."
+    },
+    {
+      "pin": "mobile",
+      "path": "src/hotspot/share/prims/nativeLookup.cpp",
+      "lines": [
+        252,
+        257
+      ],
+      "sha256": "76b79f3fb899334b249e3c29819fad221ca180bea442938c513a0e7c5ae68d44",
+      "finding": "Bootstrap native methods are looked up by name in the native Java library."
+    },
+    {
+      "pin": "mobile",
+      "path": "src/java.base/share/native/libjava/NativeLibraries.c",
+      "lines": [
+        65,
+        90,
+        119,
+        128,
+        275,
+        280
+      ],
+      "sha256": "4609719b27b65f042cc5fa8ff56ba95e8260c68f0a3896c172d26fbce8c71f02",
+      "finding": "Builtin detection and initialization look up and invoke the suffixed JNI_OnLoad entry."
+    },
+    {
+      "pin": "mobile",
+      "path": "src/java.base/share/native/libjava/jni_util.h",
+      "lines": [
+        383,
+        390
+      ],
+      "sha256": "74fcbeaaf10a95d3025d16da442157d21ac097971972564e643709270e01e02d",
+      "finding": "STATIC_BUILD exposes JNI_OnLoad_<library>, invokes its dynamic initializer and reports JNI 1.8."
+    },
+    {
+      "pin": "mobile",
+      "path": "src/java.base/share/native/libnet/net_util.c",
+      "lines": [
+        35,
+        36,
+        55,
+        87
+      ],
+      "sha256": "6671e42a63e148c9f9fa6b4482b928a5aa3a3cdcaaf35a5e6e1cae04e1d30f2e",
+      "finding": "Availability flags are initialized only by the library initializer."
+    },
+    {
+      "pin": "mobile",
+      "path": "src/java.base/share/native/libnet/InetAddress.c",
+      "lines": [
+        82,
+        94
+      ],
+      "sha256": "ef454f72326492377c8d3cb6b3200c3ccc6b0c915c699767526f21d86fa9a25a",
+      "finding": "The two availability JNI methods return those initialized flags."
+    }
+  ],
+  "validation": {
+    "archiveDigestAndBothSliceDefinitions": "verified",
+    "originalDeviceExportsMissing29Roots": "verified",
+    "proposedLinkerAndExportCheckLists": "static review matched all 29 roots without duplicates",
+    "appRelink": "pending",
+    "simulatorTCP": "pending",
+    "physicalDeviceTCP": "pending",
+    "tls": "not tested",
+    "httpCompatibility": "not proved by this investigation",
+    "fullLegadoCompatibility": "not proved"
+  }
+}

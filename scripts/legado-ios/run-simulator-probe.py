@@ -6,6 +6,7 @@ device gate, regardless of its result.
 """
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,7 @@ BUNDLE_ID = "local.legado.runtime-probe"
 DIAGNOSTICS_PATH = Path("Library/Application Support/LegadoRuntimeDiagnostics")
 TERMINAL_STAGES = {"passed", "failed"}
 CHECKPOINT_LIMIT = 32_768
+REPORT_LIMIT = 8 * 1024 * 1024
 
 
 def utc_now():
@@ -129,8 +131,24 @@ def built_app(settings):
     return app
 
 
+def stamp_simulator_source(app, source_commit):
+    """Label this run's already-verified simulator bundle before ad-hoc signing.
+
+    This records the checkout used by the runner. It does not establish which
+    source produced an existing executable or replace its build provenance.
+    """
+    if re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
+        raise RuntimeError("git HEAD must be one canonical 40-hex commit SHA")
+    path = app / "Info.plist"
+    info = plistlib.loads(path.read_bytes())
+    info["LegadoSourceCommit"] = source_commit
+    path.write_bytes(plistlib.dumps(info, fmt=plistlib.FMT_BINARY))
+    if plistlib.loads(path.read_bytes()).get("LegadoSourceCommit") != source_commit:
+        raise RuntimeError("Simulator source-commit label did not persist")
+
+
 class ProbeRun:
-    def __init__(self, repo, output, timeout_seconds):
+    def __init__(self, repo, output, timeout_seconds, require_native_tcp=False):
         self.repo = repo
         output.mkdir(parents=True, exist_ok=True)
         self.output_root = output
@@ -143,6 +161,7 @@ class ProbeRun:
         self.pid = None
         self.udid = None
         self.launched_at = None
+        self.require_native_tcp = require_native_tcp
         self.result = {
             "schemaVersion": 1,
             "startedAt": utc_now(),
@@ -154,6 +173,7 @@ class ProbeRun:
             "evidenceDirectory": str(self.output),
             "lastCheckpoint": None,
             "collectionErrors": [],
+            "capabilityRequired": {"nativeTCP": require_native_tcp},
         }
 
     def command(self, name, argv, timeout=120, enforce_deadline=True):
@@ -208,6 +228,11 @@ class ProbeRun:
                                 "CODE_SIGNING_ALLOWED=NO", "-showBuildSettings", "-json"])
         app = built_app(json.loads(settings))
         self.result["appPath"] = str(app)
+        source_commit = self.command("source-commit", ["git", "rev-parse", "HEAD"]).strip()
+        stamp_simulator_source(app, source_commit)
+        self.result.update({"sourceCommit": source_commit,
+                            "sourceCommitStamp": {"kind": "runner-checkout-label",
+                                                  "provesCompiledBinarySourceIdentity": False}})
         # build-probe.sh deliberately disables signing for both products. Only
         # this verified simulator bundle gets a local ad-hoc signature; the
         # separately packaged unsigned iPhone/iPad IPA is never modified here.
@@ -245,7 +270,37 @@ class ProbeRun:
             self.result["pidNotice"] = "simctl returned no parseable PID; checkpoint timestamps establish freshness"
         checkpoint_path = self.container / DIAGNOSTICS_PATH / "probe-progress.json"
         wait_for_probe(checkpoint_path, self.pid, self.launched_at, self.deadline, self.observe)
+        self.verify_required_native_tcp()
         self.result.update({"simulatorValidationPassed": True, "status": "passed"})
+
+    def verify_required_native_tcp(self):
+        if not self.require_native_tcp:
+            return
+        path = self.container / DIAGNOSTICS_PATH / "exports/LegadoProbe-report.json"
+        gate = {"passed": False, "reportPath": str(path)}
+        self.result["nativeTCPGate"] = gate
+        with path.open("rb") as stream:
+            data = stream.read(REPORT_LIMIT + 1)
+        if len(data) > REPORT_LIMIT:
+            raise RuntimeError("Required native TCP report exceeds its size limit: " + str(path))
+        gate["reportSHA256"] = hashlib.sha256(data).hexdigest()
+        report = json.loads(data.decode("utf-8-sig"))
+        if not isinstance(report, dict):
+            raise RuntimeError("Required native TCP report is not an object: " + str(path))
+        native = report.get("nativeTCPProbe")
+        gate["probe"] = native
+        if (report.get("passed") is not True or report.get("executionPlatform") != "ios-simulator"
+                or report.get("sourceCommit") != self.result["sourceCommit"]):
+            raise RuntimeError("Required native TCP report does not match this Simulator run: " + str(path))
+        progress = report.get("probeProgress")
+        checkpoint = progress.get("probe-progress.json") if isinstance(progress, dict) else None
+        if not isinstance(checkpoint, dict) or not checkpoint_is_current(checkpoint, self.pid, self.launched_at):
+            raise RuntimeError("Required native TCP report has no current-run checkpoint: " + str(path))
+        if not isinstance(native, dict) or native.get("passed") is not True:
+            detail = (str(native.get("errorCode", "unknown")) + ": " + str(native.get("failure", "passed must be true"))) \
+                if isinstance(native, dict) else "nativeTCPProbe is missing or invalid"
+            raise RuntimeError("Required native TCP capability failed: " + detail + "; report: " + str(path))
+        gate["passed"] = True
 
     def collect(self):
         if self.container:
@@ -288,12 +343,14 @@ def main():
     parser.add_argument("--device-filter", default="iPhone", help="Name substring passed to scripts/sim.sh")
     parser.add_argument("--timeout-seconds", type=float, default=600)
     parser.add_argument("--output-directory", type=Path)
+    parser.add_argument("--require-native-tcp", action="store_true",
+                        help="Fail unless this run's exported report proves native TCP loopback success")
     args = parser.parse_args()
     if not 0 < args.timeout_seconds <= 600:
         parser.error("--timeout-seconds must be greater than zero and at most 600")
     repo = Path(__file__).resolve().parents[2]
     output = (args.output_directory or repo / ".build/ci-logs/simulator-probe").resolve()
-    probe = ProbeRun(repo, output, args.timeout_seconds)
+    probe = ProbeRun(repo, output, args.timeout_seconds, require_native_tcp=args.require_native_tcp)
     try:
         probe.run(args.device_filter)
     except (Exception, KeyboardInterrupt) as error:
