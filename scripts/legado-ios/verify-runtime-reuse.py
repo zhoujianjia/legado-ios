@@ -6,6 +6,7 @@ The restore phase validates downloaded files in isolation before copying only
 the framework, Java homes and payload. Current app code must still be compiled.
 """
 import argparse
+import base64
 from datetime import datetime, timezone
 import hashlib
 import importlib.util
@@ -26,6 +27,7 @@ REPO = HERE.parents[1]
 NATIVE_INPUTS = (
     "scripts/legado-ios/build-zero.sh",
     "scripts/legado-ios/prepare-zero-wx.py",
+    "scripts/legado-ios/prepare-zero-code-cache.py",
     "scripts/legado-ios/prepare-symbol-keeper.py",
     "scripts/legado-ios/fetch-sources.py",
     "scripts/legado-ios/runtime-lock.json",
@@ -39,12 +41,18 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def git(*arguments):
-    result = subprocess.run(["git", *arguments], cwd=REPO, capture_output=True,
-                            text=True, encoding="utf-8", errors="replace", timeout=180)
+def git(*arguments, environment=None):
+    try:
+        result = subprocess.run(["git", *arguments], cwd=REPO, capture_output=True,
+                                text=True, encoding="utf-8", errors="replace", timeout=180,
+                                env=environment)
+    except Exception as error:
+        # A transport exception may include subprocess details. Never format its
+        # value or context: an authenticated fetch has credentials in its env.
+        raise RuntimeError(f"git {arguments[0]} could not complete ({type(error).__name__})") from None
     if result.returncode:
         # Do not print transport diagnostics that could contain an authenticated
-        # remote URL. The hosted checkout uses an anonymous public origin.
+        # remote URL or headers. Authentication never appears in argv or config files.
         raise RuntimeError(f"git {arguments[0]} failed with exit status {result.returncode}")
     return result.stdout.strip()
 
@@ -53,6 +61,37 @@ def valid_sha(value):
     if not isinstance(value, str) or SHA_PATTERN.fullmatch(value) is None:
         raise ValueError("Expected an exact 40-character Git SHA")
     return value
+
+
+def fetch_source(source_sha, token):
+    valid_sha(source_sha)
+    if not isinstance(token, str) or not token:
+        raise ValueError("GITHUB_TOKEN is required to fetch the source revision")
+    environment = os.environ.copy()
+    try:
+        count = int(environment.get("GIT_CONFIG_COUNT") or "0")
+    except ValueError:
+        raise ValueError("Invalid inherited Git runtime configuration count") from None
+    if not 0 <= count <= 1024:
+        raise ValueError("Invalid inherited Git runtime configuration count")
+    for index in range(count):
+        if f"GIT_CONFIG_KEY_{index}" not in environment or f"GIT_CONFIG_VALUE_{index}" not in environment:
+            raise ValueError("Incomplete inherited Git runtime configuration")
+    for name in list(environment):
+        if name.startswith("GIT_TRACE") or name == "GIT_CURL_VERBOSE":
+            environment.pop(name)
+    header_key = "http.https://github.com/.extraheader"
+    # Reset inherited HTTP headers before adding this run's read-only token.
+    # Git command-scope configuration is supplied only to this subprocess; no
+    # token or derived Basic value is written to argv, git config, or reports.
+    encoded = base64.b64encode(("x-access-token:" + token).encode("utf-8")).decode("ascii")
+    environment[f"GIT_CONFIG_KEY_{count}"] = header_key
+    environment[f"GIT_CONFIG_VALUE_{count}"] = ""
+    environment[f"GIT_CONFIG_KEY_{count + 1}"] = header_key
+    environment[f"GIT_CONFIG_VALUE_{count + 1}"] = "AUTHORIZATION: basic " + encoded
+    environment["GIT_CONFIG_COUNT"] = str(count + 2)
+    environment["GIT_TERMINAL_PROMPT"] = "0"
+    git("fetch", "--depth=1", "origin", source_sha, environment=environment)
 
 
 class GitHub:
@@ -159,7 +198,7 @@ def prepare(record, timeout_seconds):
     source_sha = valid_sha(state["head_sha"])
     record.update({"repository": api.repository, "sourceRunID": run_id, "sourceSHA": source_sha,
                    "currentSHA": current_sha, "sourceRunURL": state.get("html_url")})
-    git("fetch", "--depth=1", "origin", source_sha)
+    fetch_source(source_sha, api.token)
     checks = compare_inputs(source_sha, current_sha)
     record["inputChecks"] = checks
     if not all(check["matches"] for check in checks):

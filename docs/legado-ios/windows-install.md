@@ -27,6 +27,11 @@ Get-FileHash -Algorithm SHA256 -LiteralPath .\LegadoRuntimeProbe-unsigned.ipa
 The workflow exports an arm64 iPhoneOS app. Its simulator compilation is a
 separate check; simulator products cannot be installed on the phone.
 
+If Windows PowerShell shows an `Invoke-WebRequest` page-parsing security prompt,
+choose **No** and download through the browser or use `-UseBasicParsing` for that
+request. This is PowerShell's HTML parser prompt, separate from IPA signing and
+the phone's developer trust setting. See [Microsoft's command documentation](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/Invoke-WebRequest?view=powershell-5.1).
+
 A runtime replay can also produce this artifact after reusing source-built Zero
 and JVM products with matching inputs. The app is compiled again from the tagged
 current commit; its `runtime-reuse.json` records the source run and checks. The

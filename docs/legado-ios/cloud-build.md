@@ -12,7 +12,9 @@ cache and forced JVM rebuild/tests. The cloud has passed eight Swift tests,
 built both native Zero slices with complete Java module/data payloads, linked
 both apps and verified all nine required dynamic exports. Successful
 [run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
-provides an unsigned IPA. Signing and device execution remain unverified, and all
+provides the first unsigned IPA. The user reports installing and opening that
+build, followed by a termination when starting the fixture; see
+[device-validation.json](device-validation.json). JVM execution and all physical
 device validation gates remain pending.
 Pinned source revisions make the inputs reviewable; they do not guarantee that
 the Zero build will succeed on the selected runner.
@@ -26,7 +28,12 @@ The user-controlled destination is
 be pushed to the destination, with GitHub Actions enabled. SSH authentication
 has been verified as `zhoujianjia` and the prepared prototype has been pushed.
 The browser-based CLI login is optional when using SSH build tags or the
-Actions page's manual trigger.
+Actions page's manual trigger. The user subsequently made this repository
+private. SSH still permits Git transport, while reading private Actions status,
+logs and artifacts requires an API/CLI login or GitHub app access to this
+repository. An unauthenticated HTTP 404 does not establish that the repository
+or build was deleted. Keep the repository private and grant the intended
+reader access, or retrieve artifacts through the signed-in Actions page.
 
 Include the implementation, vendored runtime JARs and their license/provenance
 files, the Gradle wrapper, and the workflow at
