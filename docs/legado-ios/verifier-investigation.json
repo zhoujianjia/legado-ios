@@ -1,11 +1,12 @@
 {
   "schemaVersion": 1,
   "recordedAtUTC": "2026-10-17T15:18:48Z",
-  "scope": "Static verifier linkage investigation following a real iOS Simulator run; no physical-device pass or completed semantic-suite result is asserted.",
+  "updatedAtUTC": "2026-10-17T15:36:46Z",
+  "scope": "Static verifier linkage investigation and subsequent successful iOS Simulator validation; no physical-device pass is asserted.",
   "status": {
     "observedFailure": "confirmed_simulator_verifier_linkage_failure",
     "nativeVerifierExport": "absent_from_original_device_export_trie",
-    "correction": "source_rebuild_pending",
+    "correction": "verified_on_ios_simulator",
     "deviceGatesChanged": false,
     "deviceValidationPassed": false
   },
@@ -151,7 +152,7 @@
     "sourceCommit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
     "prototypeBuildNumber": 6,
     "cloudRunID": "39044188251",
-    "statusAtRecordTime": "pending",
+    "statusAtRecordTime": "verified_on_ios_simulator",
     "changes": [
       "Merge the pinned upstream build's images/static-libs/lib/libverify.a into each device/simulator libOpenJDK.a.",
       "Retain _VerifyClassForMajorVersion with an exact linker -u root so static archive selection and dead stripping cannot remove the runtime lookup target.",
@@ -160,12 +161,99 @@
     "jniOnLoadVerifyForced": false,
     "bytecodeVerificationDisabled": false,
     "independentAugmentationArtifactUsed": false,
-    "runtimePassed": false,
-    "interpretation": "A source rebuild is pending. The correction addresses the missing linkage target; completion of the semantic suite and later fixture operations must be established by subsequent execution."
+    "runtimePassedOnSimulator": true,
+    "physicalDeviceRuntimePassed": false,
+    "interpretation": "The rebuilt app passed the simulator probe, including all 25 original engine tests, the explicit java.beans assertion and fixed mainJs fixture. The previously observed verifier linkage error did not recur. Physical-device execution remains pending."
+  },
+  "correctedSimulatorValidation": {
+    "cloudRunID": "39044188251",
+    "sourceCommit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
+    "prototypeBuildNumber": 6,
+    "sourceCommitAttribution": "Attributed by the associated cloud run and sourceCommit in probe-build.log. The simulator report and final checkpoint still record sourceCommit=not_injected. Its runtimeManifest supplies the JAR SHA and runtime source pins, rather than the app source commit.",
+    "executionPlatform": "ios-simulator",
+    "simulatorSigning": "ad-hoc; simulator app only; no Apple account",
+    "operatingSystem": "Version 26.2 (Build 23C54)",
+    "processIdentifier": 18627,
+    "fixtureOnly": true,
+    "fixturePassed": true,
+    "simulatorValidationPassed": true,
+    "deviceValidationPassed": false,
+    "sourceCommitReportedByApp": "not_injected",
+    "runtimeJavaVersion": "28-internal",
+    "vmName": "OpenJDK 64-Bit Zero VM",
+    "vmVersion": "28-internal-adhoc.runner.mobile",
+    "packagedJavaHomeRelativePath": "lib",
+    "runtimeJarSHA256FromManifest": "0fab0b184b42844c5623c80ca761dcc3eaf75c848b575a37d066e4a9a7493c0a",
+    "runtimeMobileSourcePinFromManifest": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+    "semanticSuite": {
+      "suite": "JsEngineCapabilitiesTest",
+      "total": 25,
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0,
+      "individualResults": "The referenced full report contains 25 distinct named test records, all with passed=true.",
+      "javaBeans": {
+        "passed": true,
+        "propertyName": "value",
+        "readMethod": "getValue",
+        "writeMethod": "setValue"
+      }
+    },
+    "completedFixtureOperations": [
+      "diagnostics",
+      "semanticSuite",
+      "semanticProbe",
+      "login",
+      "search",
+      "details",
+      "toc",
+      "content",
+      "batch",
+      "snapshot",
+      "cancel"
+    ],
+    "nativeExportGate": {
+      "requiredDynamicExportsPresent": true,
+      "requiredExportsCount": 10,
+      "requiredExports": [
+        "JDK_Canonicalize",
+        "JIMAGE_Open",
+        "JIMAGE_Close",
+        "JIMAGE_FindResource",
+        "JIMAGE_GetResource",
+        "VerifyClassForMajorVersion",
+        "Java_java_lang_Class_registerNatives",
+        "Java_java_lang_ClassLoader_registerNatives",
+        "Java_java_lang_System_registerNatives",
+        "Java_java_lang_Thread_registerNatives"
+      ],
+      "missingExports": [],
+      "fullDeviceExportTrieContainsVerifyClassForMajorVersion": true,
+      "deviceExportInspectionIsRuntimeValidation": false
+    },
+    "evidence": [
+      {
+        "path": ".build/cloud-evidence/run-39044188251/macos-logs/ci-logs/simulator-probe/result.json",
+        "sha256": "c3f957a4fce34d6172ccdb1033b831e0791d9720fac4a80c5bcd00ddb10d583e"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39044188251/macos-logs/ci-logs/simulator-probe/run-20261017T153102Z-3e12c67c/diagnostics/exports/LegadoProbe-report.json",
+        "sha256": "12afad81f111b55fe1af43bfb6414a09df862713263367eb3245f660ed36b3c6"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39044188251/macos-logs/legado-ios/probe-device-exports.json",
+        "sha256": "a493e3bcb79c386251e7c59ef13b97180fd0730fffc2e678213b61daea7cb3e0"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39044188251/macos-logs/legado-ios/probe-device-exports.log",
+        "sha256": "a7a55de4fbbd55e9c1e3fccf8eed2c6f94aae0f49d9bf0760fbc4e22d9b86f23",
+        "inspection": "Exact exported-symbol token _VerifyClassForMajorVersion is present."
+      }
+    ]
   },
   "limits": [
-    "Successful JNI_CreateJavaVM and session creation were observed on the simulator only. They do not satisfy the physical-device installation and debugger-free launch gate.",
-    "The semantic suite did not complete; no claim of 25 passing tests, java.beans success, complete reading flow or cancellation success follows from this run.",
-    "All physical-device validation gates remain unchanged. This investigation edits no gate status and does not claim the pending build passed."
+    "Successful runtime and fixture execution were observed on the simulator only. They do not satisfy the physical-device installation and debugger-free launch gate.",
+    "The corrected simulator run proves the packaged original 25 cases, explicit java.beans assertion and fixed synthetic mainJs fixture passed. It does not prove exhaustive Java collection, byte-array or overload compatibility, full G4 reference-trace parity, or the G5 network/browser timeout, concurrency and sustained-session requirements.",
+    "All physical-device validation gates remain unchanged and pending. The original failed run is retained above; successful device execution must be recorded separately."
   ]
 }

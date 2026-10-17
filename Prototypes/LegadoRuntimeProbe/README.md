@@ -5,12 +5,25 @@ It does not resolve Yuedu's Firebase, authentication, or other remote packages. 
 uses the same JVM facade and synthetic `main-source.js` fixture as the desktop
 tests. No source engine is implemented in this app, and no HTTP request leaves it.
 
-**Status:** build 5 in [run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077)
+**Status:** version 0.2 build 6 at `78930be` passed both CI jobs, simulator/device
+app compilation/linking, ten dynamic-export checks and the actual Simulator smoke
+in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+The downloaded, hash-checked report passes all 25 original `JsEngineCapabilitiesTest`
+cases (0 failed, 0 skipped), JavaBeans discovery/read/write, customized semantics,
+and fixed `mainJs` login/search/details/TOC/content/batch/state and cancellation
+handshake checks. The unsigned IPA passed integrity, version/source metadata,
+payload-layout and independent ARM64 ten-export checks; see
+[validation evidence](../../docs/legado-ios/simulator-validation.json). Download
+`legado-probe-unsigned` from the linked run and follow the
+[Windows installation guide](../../docs/legado-ios/windows-install.md). These are
+Simulator fixtures; real networking, complete G4 reference traces and sustained
+G5/browser/concurrency behavior remain unverified.
+
+Build 5 in [run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077)
 started the actual Simulator JVM (`JNI_CreateJavaVM` returned 0 in 4.725 seconds),
 created a session, read diagnostics and closed it without a hard exit. Loading the
 original suite then failed with `java.lang.VerifyError: Could not link verifier`;
-the 25 cases did not run. Candidate version 0.2 build 6 at `78930be` is under fresh
-validation in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+the 25 cases did not run in that earlier build.
 Earlier failed IPAs remain diagnostic artifacts rather than validated candidates.
 JVM startup and compatibility on a physical device remain unverified. The user
 reports self-signing, installation and a
@@ -77,7 +90,7 @@ Simulator executable-memory failure, not the iPhone failure's cause.
 
 Build 6 adds `libverify.a`, the exact `_VerifyClassForMajorVersion` archive root,
 and a ten-entry dynamic-export check to address the subsequent verifier error.
-Its end-to-end result is pending; bytecode verification remains enabled.
+Its CI and actual Simulator smoke now pass; bytecode verification remains enabled.
 
 The source-only app also builds without these artifacts: its diagnostic report
 then lists the missing bridge/modules/JAR. It does not silently substitute JSC.
@@ -146,7 +159,7 @@ declarative-rule and real-source compatibility remain pending.
 Version 0.2 build 2 introduced root-level `probeProgress` checkpoints and native
 `current`/`previous` attempt logs, VM `vfprintf` capture and an `hs_err` request.
 Build 6 retains these diagnostics, layout correction and non-executable code-cache
-adaptation, adding the pending static-verifier fix. After a
+adaptation, adding the static-verifier fix that passed the Simulator smoke. After a
 termination, reopen the app and inspect the
 report before retrying. Preserve `savedDiagnostics` and `probeProgress`; a native
 failure may not produce an `hs_err` file. The Share action uses a file URL through

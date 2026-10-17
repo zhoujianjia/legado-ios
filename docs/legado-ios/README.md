@@ -94,7 +94,7 @@ inputs require a fresh source build. Only the matching Zero framework, Java home
 and JVM payload are reused; the current iOS app is compiled and linked again
 before attempting the Simulator fixture. Keep `runtime-reuse.json` with the
 artifact and `legado-replay-logs` to distinguish reused provenance from a fresh
-runtime compilation. Runtime success remains pending: run 39039281290 failed at
+runtime compilation. Earlier run 39039281290 failed at
 Simulator CLI argument handling before launch, and run 39039849269 failed on
 Python 3.9 union annotations in Xcode's script environment. Later build 4 replays
 actually launched the Simulator app and captured a `JNI_CreateJavaVM` exit with
@@ -114,10 +114,28 @@ old runtime reserved 32 MiB, then failed `mprotect` on the first 160 KiB with
 the repaired Simulator startup does not explain the original iPhone termination.
 See [code-cache-investigation.json](code-cache-investigation.json).
 
-Candidate version 0.2 build 6 at `78930be` adds `libverify.a`, retains the exact
+Version 0.2 build 6 at `78930be` adds `libverify.a`, retains the exact
 `_VerifyClassForMajorVersion` archive root and requires ten final dynamic exports.
-Its full source build is pending in
+Its portable and macOS jobs, both native app links, ten-export gate and actual
+Simulator smoke passed in
 [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+The downloaded, hash-checked Simulator report confirms 25 original
+`JsEngineCapabilitiesTest` cases passed with 0 failures and 0 skips, JavaBeans
+property discovery/read/write, `dynamicThis=true`, `e4x=ok`, `indirect=function`
+and `legacy=42`, plus fixed `mainJs` login/search/details/TOC/content/batch/state
+and cancellation-handshake checks. The unsigned IPA also passed integrity,
+version/source metadata, payload-layout and independent ARM64 ten-export checks;
+see [simulator-validation.json](simulator-validation.json). Download the run's
+`legado-probe-unsigned` artifact for [Windows signing and installation](windows-install.md).
+The cancellation check observes interruption after an active-host handshake; it
+does not prove interruption after entering a CPU-only infinite loop. Real network
+behavior, full G4 reference traces and G5 sustained/browser/concurrency cases remain
+pending.
+
+The diagnostic Simulator run recorded 4.204015 seconds for JVM creation,
+4522.442625 ms for startup/session, 6094.959667 ms total and 251412480 bytes for
+both final RSS and process-lifetime peak RSS. These measurements include durable
+diagnostic I/O and are not physical-device or production performance results.
 The changed native inputs require a fresh build; bytecode verification remains
 enabled. Earlier failed IPAs are retained as diagnostic evidence.
 
@@ -214,10 +232,11 @@ terminated the app; the cause and JVM startup progress are unknown. See
 Version 0.2 build 2 introduced persistent `probeProgress`, native
 `current`/`previous` logs, VM `vfprintf`/`hs_err` capture, and a JSON file shared
 through `ShareLink` that can be saved to Files. Build 6 retains this support, the
-layout correction and the repaired code cache, adding the pending verifier fix. Recorded times
+layout correction and the repaired code cache, adding the verifier fix that
+passed the actual Simulator smoke. Recorded times
 include diagnostic I/O and are not production performance measurements. Simulator
-JVM startup now succeeds, while the semantic suite remains blocked before its
-cases execute. All physical-device gates remain pending.
+JVM startup and the audited synthetic fixture now succeed on Simulator. All
+physical-device gates remain pending.
 
 The production app exposes the opt-in probe at **Settings → Advanced → Legado
 Runtime Verification**. It runs only an included synthetic, network-free source

@@ -351,15 +351,47 @@
       "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251",
       "source_commit": "78930beee13f2fa739cfbc178793d1c25ad6cf9f",
       "tag": "legado-probe-78930be",
-      "status": "in_progress",
+      "status": "passed",
       "version": "0.2",
       "build_number": 6,
       "portable_job_id": 117429540609,
       "portable_job": "passed",
       "macos_job_id": 117429912668,
       "change": "Merge libverify.a into both static runtime slices; retain VerifyClassForMajorVersion as an exact archive root and require ten final executable exports.",
-      "simulator_validation_passed": false,
-      "device_validation_passed": false
+      "simulator_validation_passed": true,
+      "device_validation_passed": false,
+      "source_only_swift_tests_passed": 12,
+      "python_inventory_tests_passed": 12,
+      "python_runtime_tool_tests_passed": 21,
+      "zero_wx_tests_passed": 5,
+      "zero_code_cache_tests_passed": 6,
+      "junit_tests_passed": 45,
+      "native_zero_build": "Both source-built runtime slices, thirteen modules and runtime data passed",
+      "simulator_app_compile_and_link": "passed",
+      "device_app_compile_and_link": "passed",
+      "required_dynamic_exports_present": 10,
+      "unsigned_artifact_id": 12106190049,
+      "unsigned_artifact_zip_sha256": "e9a735d1cbd58c7b6c82b5316e6fe6c5728e78f648e16b28a7a56279ce05e1a2",
+      "macos_log_artifact_id": 12105283998,
+      "macos_log_artifact_zip_sha256": "1223248b6890a29f6675896a7aca6c90b9237808e84d47806974f9f269b89231",
+      "native_artifact_id": 12104908951,
+      "native_artifact_zip_sha256": "59b72f07996e1b510018be0ee390ee7a1608074d7eb8923b87d84dd5b55682d8",
+      "simulator_app_launched": true,
+      "simulator_platform": "arm64 iOS Simulator 26.2 (23C54)",
+      "jvm_creation_return_code": 0,
+      "jvm_creation_seconds": 4.204015,
+      "semantic_suite_passed": 25,
+      "semantic_suite_failed": 0,
+      "semantic_suite_skipped": 0,
+      "java_beans_passed": true,
+      "synthetic_main_js_reading_fixture_passed": true,
+      "reading_fixture_milliseconds": 6094.959667,
+      "investigation": "simulator-validation.json",
+      "ipa_sha256": "ae0a90eddadcb1f6b54df08370fe1971a97478717e074426b139ea4759eb3afc",
+      "ipa_bytes": 48830136,
+      "downloaded_ipa_integrity_verified": true,
+      "downloaded_ipa_bundle_version_verified": true,
+      "downloaded_ipa_macho_exports_independently_verified": 10
     }
   ],
   "source_preflight_fixes": {
@@ -413,11 +445,13 @@
     "legacy_verifier": {
       "evidence": "verifier-investigation.json",
       "change": "Include pinned libverify.a; retain VerifyClassForMajorVersion and check its final dynamic export.",
-      "native_validation": "pending run 39044188251; no bytecode-verification bypass"
+      "native_validation": "Run 39044188251 passed all ten final exports, all 25 original engine cases, the JavaBeans probe and the synthetic reading fixture in the actual Simulator."
     }
   },
   "macos_build_environment_verified": true,
   "ios_compilation_passed": true,
   "native_bootstrap_exports_passed": true,
-  "device_validation_passed": false
+  "device_validation_passed": false,
+  "simulator_validation_passed": true,
+  "simulator_validation_scope": "Run 39044188251: 25 original engine tests, JavaBeans and fixed synthetic mainJs reading/state/cancellation-handshake fixture only; no physical gate passed."
 }

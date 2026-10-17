@@ -4,13 +4,18 @@ This repository evaluates running the original Legado Java/Kotlin parsing core
 locally inside a native iOS reader using OpenJDK Mobile Zero. It is based on the
 pinned Yuedu source recorded in [the provenance lock](docs/legado-ios/provenance-lock.json).
 
-Portable tests and native simulator/device compilation and linking pass. Build 5
-started the actual Simulator JVM: `JNI_CreateJavaVM` returned 0 in 4.725 seconds,
-and session creation, diagnostics and close succeeded. Loading the original
-semantic suite then failed with `java.lang.VerifyError: Could not link verifier`;
-its 25 cases did not run. Candidate version 0.2 build 6 at `78930be` adds the static
-verifier and a ten-export gate; [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251)
-is still validating it. Earlier failed IPAs are diagnostic artifacts.
+Version 0.2 build 6 at `78930be` passed both CI jobs, native simulator/device
+compilation and linking, ten required dynamic exports, and the actual Simulator
+smoke in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+The audited Simulator report confirms all 25 original engine cases, JavaBeans,
+and the fixed `mainJs` reading/state/cancellation fixture pass. The unsigned IPA
+also passed integrity, bundle-layout and independent ten-export checks; see
+[validation evidence](docs/legado-ios/simulator-validation.json). Download the
+`legado-probe-unsigned` artifact from that run and follow the
+[Windows installation guide](docs/legado-ios/windows-install.md).
+Build 5 had started the JVM but failed to load the original
+suite with `java.lang.VerifyError: Could not link verifier`; build 6 adds the
+static verifier. Earlier failed IPAs remain diagnostic artifacts.
 
 The user reports successful iPhone installation and payload preflight, followed by
 termination when running the fixture. That phone failure remains unexplained and

@@ -11,9 +11,20 @@ failures, and verified fixes. Build 5 at `203b352` in
 started the actual Simulator JVM (`JNI_CreateJavaVM` returned 0 in 4.725 seconds),
 created a session, read diagnostics and closed it without a hard exit. The
 original suite then failed to load with `java.lang.VerifyError: Could not link
-verifier`; none of its 25 cases ran. Candidate version 0.2 build 6 at `78930be`
-adds the static verifier and a ten-export gate; its fresh source build is pending
-in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+verifier`; none of its 25 cases ran in that build. Version 0.2 build 6 at `78930be`
+adds the static verifier and a ten-export gate. Both CI jobs, both native app
+links, the ten-export check and the actual Simulator smoke passed in
+[run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+The downloaded, hash-checked Simulator report confirms all 25 original engine
+cases (0 failed, 0 skipped), JavaBeans, customized semantics and the fixed `mainJs`
+login/search/details/TOC/content/batch/state and cancellation-handshake checks.
+The unsigned IPA also passed integrity, version/source metadata, payload-layout
+and independent ARM64 ten-export checks; see
+[simulator-validation.json](simulator-validation.json). Download the
+`legado-probe-unsigned` artifact from the linked run for
+[Windows signing and installation](windows-install.md). The cancellation evidence covers
+interruption after a host handshake; real network behavior, full G4 reference
+traces and sustained G5/browser/concurrency checks remain pending.
 Retained IPAs from failed runs are diagnostic evidence, not validated candidates.
 The user's earlier iPhone installation and preflight succeeded, but fixture
 execution terminated the app for an unconfirmed reason; see
@@ -116,12 +127,13 @@ the repaired Simulator JVM; the original iPhone failure remains unexplained. See
 
 Build 6 adds the source-built `libverify.a`, precisely retains
 `_VerifyClassForMajorVersion`, and checks ten final dynamic exports to address
-the subsequent verifier-link error. This repair requires a fresh native build
-and remains under runtime validation; bytecode verification is not bypassed.
+the subsequent verifier-link error. Its fresh native build and actual Simulator
+smoke passed in run 39044188251; bytecode verification is not bypassed.
 
 The source-only Swift tests run on macOS. The Simulator smoke launches the app;
 it is separate from iOS XCTest and physical-device validation. Build 5 initialized
-the JVM successfully but failed before the original semantic cases could run.
+the JVM successfully but failed before the original semantic cases could run;
+build 6 subsequently passed the smoke.
 A successful cloud run cannot pass the physical-device gates.
 
 For later app or packaging fixes with unchanged native/JVM inputs, the

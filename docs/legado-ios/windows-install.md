@@ -39,13 +39,18 @@ trigger tag is `legado-replay-<sourceRunID>-<currentSHA prefix>`; see the
 [replay requirements](README.md#build-and-validation-sequence). An exported IPA
 does not imply that Simulator or physical-device execution passed.
 
-Candidate version 0.2 build 6 at `78930be` is under fresh native validation in
-[run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
-Build 5 started the Simulator JVM and created a session successfully, but loading
-the semantic suite failed with `java.lang.VerifyError: Could not link verifier`.
-Build 6 adds the missing static verifier, its linker root and a ten-export check.
-Wait for the required Simulator fixture to pass before installing the next phone
-update. Earlier failed IPAs remain diagnostic artifacts.
+Version 0.2 build 6 at `78930be` passed both CI jobs and the actual Simulator
+fixture in [run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
+Its 25 original engine tests, JavaBeans probe and fixed reading chain passed;
+the downloaded device IPA also passed hash, bundle, payload and ten-export
+checks. See [simulator-validation.json](simulator-validation.json). Use this
+build for the next phone test; all physical-device gates remain pending.
+
+The unsigned IPA is 48,830,136 bytes with SHA256
+`ae0a90eddadcb1f6b54df08370fe1971a97478717e074426b139ea4759eb3afc`.
+Build 5 had started the JVM but failed to link its legacy verifier; build 6 adds
+the missing static verifier and exact linker root. Earlier failed IPAs remain
+diagnostic artifacts.
 
 The build retains persistent diagnostics, the corrected bootstrap layout and
 the non-executable Zero code-cache adaptation. A diagnostic run confirmed the
@@ -101,6 +106,7 @@ can refresh apps on the phone after its initial computer-assisted installation.
 This renews the free seven-day profile rather than removing its expiration;
 check that refreshing succeeds before it expires. SideStore itself also needs
 refreshing and occupies one of the free account's three app slots.
+The probe does not currently implement in-app signing or automatic refresh.
 
 An account enrolled in the [Apple Developer Program](https://developer.apple.com/programs/whats-included/)
 costs 99 USD per membership year or the local price. SideStore documents a
