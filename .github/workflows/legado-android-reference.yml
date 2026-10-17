@@ -48,11 +48,17 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - name: Verify the Android SDK and enable emulator acceleration
         run: |
+          set -x
           command -v sdkmanager
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+          id
+          test -c /dev/kvm
+          ls -l /dev/kvm
+          # This hosted job has one existing KVM node. Set its permissions
+          # synchronously instead of racing an asynchronous udev trigger.
+          sudo chmod 0666 /dev/kvm
+          ls -l /dev/kvm
           test -r /dev/kvm
+          test -w /dev/kvm
       - name: Compile the original application and only the added reference test
         run: |
           bash .build/legado-reference/source/gradlew -p .build/legado-reference/source --no-daemon --max-workers=2 \
