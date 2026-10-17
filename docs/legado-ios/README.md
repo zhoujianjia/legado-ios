@@ -87,15 +87,28 @@ Its trigger tag is `legado-replay-<sourceRunID>-<currentSHA prefix>`, where the
 source run belongs to this repository and the 7–40 hexadecimal-character prefix
 matches the tagged current commit.
 
-The replay checks Git objects for the pinned native build inputs and complete JVM
-tree, then validates the selected source artifacts and runtime files. Changed
+The replay checks Git objects for six native input files (including
+`prepare-zero-code-cache.py`) and the complete JVM tree, then validates the
+selected source artifacts and runtime files. Changed
 inputs require a fresh source build. Only the matching Zero framework, Java homes
 and JVM payload are reused; the current iOS app is compiled and linked again
 before attempting the Simulator fixture. Keep `runtime-reuse.json` with the
 artifact and `legado-replay-logs` to distinguish reused provenance from a fresh
 runtime compilation. Runtime success remains pending: run 39039281290 failed at
 Simulator CLI argument handling before launch, and run 39039849269 failed on
-Python 3.9 union annotations in Xcode's script environment.
+Python 3.9 union annotations in Xcode's script environment. Later build 4 replays
+actually launched the Simulator app and captured a `JNI_CreateJavaVM` exit with
+`Could not reserve enough space in CodeCache (160K)`.
+
+Candidate version 0.2 build 5 at `203b352` is under fresh native validation in
+[run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077).
+The [code-cache adaptation](../../scripts/legado-ios/prepare-zero-code-cache.py)
+checks complete original/prepared source hashes and passes `!ExecMem` to
+`CodeMemoryReserver` only for `__IOS__ && ZERO`. Zero stores pointers to precompiled
+C++ interpreter functions. Runtime effectiveness remains pending; the logs did
+not capture a syscall or errno, and the iPhone termination remains unexplained.
+See [code-cache-investigation.json](code-cache-investigation.json). The changed
+native inputs require a fresh build rather than replaying the earlier runtime.
 
 Use JDK 21 for the portable JVM module. On Windows, the
 [validation runner](../../scripts/test-legado.ps1) discovers the local JDK or uses
@@ -159,7 +172,7 @@ python3 scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/device
 
 Staging targets `Resources/LegadoRuntime` by default and refuses an existing
 payload unless `--replace` is supplied. For a simulator build, stage
-`simulator-static/java-home` instead. Version 0.2 build 4's final **Prepare static
+`simulator-static/java-home` instead. Version 0.2 build 5's final **Prepare static
 JVM bootstrap home** app build phase moves the staged `LegadoRuntime/java-home`
 tree to the final `App.app/lib`; exploded classes then live at `App.app/lib/modules`.
 The home is moved without duplication or symbolic links, and the JAR and staging
@@ -189,10 +202,11 @@ terminated the app; the cause and JVM startup progress are unknown. See
 
 Version 0.2 build 2 introduced persistent `probeProgress`, native
 `current`/`previous` logs, VM `vfprintf`/`hs_err` capture, and a JSON file shared
-through `ShareLink` that can be saved to Files. Build 4 retains this support with
-the bootstrap layout fix, whose runtime result is pending. Recorded times include
-diagnostic I/O and are not production performance measurements. Simulator autorun is pending;
-the current cloud evidence establishes compilation/linking, not runtime success.
+through `ShareLink` that can be saved to Files. Build 5 retains this support and
+the layout correction, adding the candidate code-cache adaptation. Recorded times
+include diagnostic I/O and are not production performance measurements. Simulator
+autorun has captured the build 4 initialization failure; successful JVM startup
+and all physical-device gates remain pending.
 
 The production app exposes the opt-in probe at **Settings → Advanced → Legado
 Runtime Verification**. It runs only an included synthetic, network-free source

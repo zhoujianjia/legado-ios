@@ -12,8 +12,11 @@ provides an unsigned IPA. JVM startup and compatibility on a physical device
 remain unverified. The user reports self-signing, installation and a
 passed payload preflight on iPhone, followed by termination on fixture execution;
 the cause is unknown. See [device evidence](../../docs/legado-ios/device-validation.json).
-Simulator autorun and all physical-device gates remain pending. No generated
-OpenJDK binaries are committed.
+Build 4's actual Simulator run exited during `JNI_CreateJavaVM` with `Could not
+reserve enough space in CodeCache (160K)`. Candidate version 0.2 build 5 at
+`203b352` is undergoing a fresh native build; its repair and all physical-device
+gates remain unverified. See the [code-cache investigation](../../docs/legado-ios/code-cache-investigation.json).
+No generated OpenJDK binaries are committed.
 
 With Windows, an iPhone, and an iPad but no local Mac, follow the
 [manual cloud-build guide](../../docs/legado-ios/cloud-build.md). The prepared
@@ -46,7 +49,7 @@ python3 scripts/legado-ios/stage-runtime.py \
 ```
 
 The staging directory is `../../Resources/LegadoRuntime/java-home`, with exploded
-classes under `java-home/modules`. In version 0.2 build 4, the final **Prepare
+classes under `java-home/modules`. In version 0.2 build 5, the final **Prepare
 static JVM bootstrap home** build phase moves that entire home inside the built
 app to `LegadoRuntimeProbe.app/lib`, so its classes are at `lib/modules`. This is
 one moved home, without duplication or a symbolic link; the engine JAR and staging
@@ -55,9 +58,17 @@ staged payload, explicitly add `--replace`. Simulator runs require the simulator
 Java home instead.
 
 Source inspection identified a packaging defect: the pinned BSD VM selects
-`App.app/lib` during bootstrap before parsing `-Djava.home`. The build 4 path fix
-still needs runtime validation and has not established the cause of the user's
+`App.app/lib` during bootstrap before parsing `-Djava.home`. Build 5 retains this
+layout correction; complete startup is unverified, as is the cause of the user's
 termination. See the [bootstrap investigation](../../docs/legado-ios/bootstrap-layout-investigation.json).
+
+The build 5 candidate also applies
+[prepare-zero-code-cache.py](../../scripts/legado-ios/prepare-zero-code-cache.py),
+which checks complete source/prepared hashes and passes `!ExecMem` to
+`CodeMemoryReserver` only for `__IOS__ && ZERO`. Zero retains pointers to
+precompiled C++ interpreter functions in this cache. The change needs a new native
+build and runtime test; the captured Simulator error does not identify a syscall
+or errno and does not establish the iPhone failure's cause.
 
 The source-only app also builds without these artifacts: its diagnostic report
 then lists the missing bridge/modules/JAR. It does not silently substitute JSC.
@@ -125,8 +136,9 @@ declarative-rule and real-source compatibility remain pending.
 
 Version 0.2 build 2 introduced root-level `probeProgress` checkpoints and native
 `current`/`previous` attempt logs, VM `vfprintf` capture and an `hs_err` request.
-Build 4 retains these diagnostics with the bootstrap layout fix; its runtime
-result is pending. After a termination, reopen the app and inspect the
+Build 5 retains these diagnostics and layout correction with the candidate
+non-executable code-cache adaptation; its runtime result is pending. After a
+termination, reopen the app and inspect the
 report before retrying. Preserve `savedDiagnostics` and `probeProgress`; a native
 failure may not produce an `hs_err` file. The Share action uses a file URL through
 `ShareLink`, so the complete JSON report can be saved to Files without copying

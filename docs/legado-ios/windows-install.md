@@ -39,8 +39,13 @@ trigger tag is `legado-replay-<sourceRunID>-<currentSHA prefix>`; see the
 [replay requirements](README.md#build-and-validation-sequence). An exported IPA
 does not imply that Simulator or physical-device execution passed.
 
-The next version 0.2 build 4 keeps the diagnostics introduced in build 2 and fixes
-the bootstrap Java-home layout; its runtime validation is pending. Staging uses
+The latest candidate version 0.2 build 5 at `203b352` is under fresh native
+validation. It keeps build 2's diagnostics and the corrected bootstrap layout.
+Build 4's Simulator run exited during `JNI_CreateJavaVM` with `Could not reserve
+enough space in CodeCache (160K)`; build 5 adds a source-checked iOS Zero
+non-executable code-cache adaptation whose effect remains pending. This does not
+confirm the original iPhone termination's cause. See the
+[code-cache investigation](code-cache-investigation.json). Staging uses
 `Resources/LegadoRuntime/java-home`, while the final app build phase moves that
 home to `LegadoRuntimeProbe.app/lib` without duplication or symbolic links. The
 engine JAR and staging manifest remain in the app's `LegadoRuntime` directory.
@@ -101,7 +106,7 @@ text. If no matching report is found, record that result; do not substitute an
 unrelated report or infer a cause from a filename. See Apple's
 [crash and diagnostic log instructions](https://developer.apple.com/documentation/xcode/acquiring-crash-reports-and-diagnostic-logs).
 
-For diagnostic version 0.2 build 4, once available, reopen the app after a
+For diagnostic version 0.2 build 5, once available, reopen the app after a
 termination and share its technical JSON report with the report's Share action
 (`ShareLink`). Preserve
 `savedDiagnostics` and `probeProgress`, including any recovered JVM error report,

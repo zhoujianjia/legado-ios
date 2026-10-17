@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-17T14:55:00Z",
+  "scope": "Actual arm64 iOS Simulator Zero startup failures and source-pinned candidate repair; physical-device cause remains unknown.",
+  "observed": {
+    "runs": [
+      39041613385,
+      39041825118
+    ],
+    "sourceCommits": [
+      "2e1dcb6d4a98a6f73b89f5aa0e19014f5828e06a",
+      "2867da1065b21b41fcee10cc7bc0e6e2c9b4639e"
+    ],
+    "nativeSourceRunID": 39040672462,
+    "nativeSourceCommit": "a823b5b66200077e24dfa7d17567462520e1a9a4",
+    "platform": "arm64 iOS Simulator 26.2 (23C54)",
+    "lastProbeStage": "create_session.begin",
+    "lastNativeStage": "JNI_CreateJavaVM.before",
+    "nativeThreadStackBytes": 536576,
+    "vmOutput": "Error occurred during initialization of VM\nCould not reserve enough space in CodeCache (160K)\n",
+    "diagnosticLogsCollected": true,
+    "actualErrno": null,
+    "failingSystemCall": null,
+    "semanticSuiteExecuted": false
+  },
+  "candidateMechanism": {
+    "status": "source_evidenced_pending_repaired_runtime",
+    "failureSite": "CodeCache::add_heap rejects CodeHeap::reserve failure. This is not the distinct reserve_heap_memory error.",
+    "reservationMetadata": "CodeMemoryReserver originally always passes ExecMem, preserved by ReservedSpace and VirtualSpace.",
+    "initialCommit": "The BSD Apple executable commit calls mprotect with PROT_READ|PROT_WRITE|PROT_EXEC. The pinned iOS anonymous reservation omits MAP_JIT.",
+    "alternativeFailure": "CodeHeap::reserve can also fail its segment-map initialization. Existing logs do not independently identify the syscall or errno.",
+    "zeroExecution": "The Zero cache stores ZeroEntry structures and static C++ function addresses. invoke calls the saved function address; native_entry uses precompiled ffi_call and signature metadata.",
+    "boundary": "This audit covers the exercised Zero/JNI path, not every libffi closure or Foreign API upcall."
+  },
+  "repair": {
+    "script": "scripts/legado-ios/prepare-zero-code-cache.py",
+    "target": "src/hotspot/share/memory/memoryReserver.cpp",
+    "sourcePin": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+    "targetSourceSHA256": "b04ee67ec46ab113d21e5a71638c0f99fc9232243e9c2cb965cb31796be96d6f",
+    "preparedSHA256": "b48140304e19ed5951fb19fd377ef911cf43690bc50088b7b7c9192f3355d582",
+    "condition": "defined(__IOS__) && defined(ZERO)",
+    "change": "Pass !ExecMem only for iOS Zero code reservations, preserving the same non-executable metadata through subsequent commits and growth.",
+    "enablesJIT": false,
+    "nativeRuntimeRebuildRequired": true,
+    "originalCodeCacheAndStackSizesChanged": false,
+    "unknownSourceRejected": true,
+    "preparationIdempotent": true,
+    "staticTestsPassed": 6,
+    "actualPinnedSourcePreparationVerified": true,
+    "newBuildRunID": 39042657077,
+    "newBuildSourceCommit": "203b352353707472e847c76f146104098924d1d2",
+    "runtimeValidation": "pending"
+  },
+  "sources": [
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/code/codeCache.cpp#L539-L541",
+      "finding": "Observed error text and CodeHeap reserve failure site."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/memory/memoryReserver.cpp#L286-L295",
+      "finding": "Original code reservation unconditionally executable."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/memory/virtualspace.cpp#L60-L71",
+      "finding": "VirtualSpace preserves executable metadata for future commits."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/os/bsd/os_bsd.cpp#L1622-L1653",
+      "finding": "Executable Apple commit requests RWX through mprotect."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/os/bsd/os_bsd.cpp#L1813-L1830",
+      "finding": "iOS anonymous reservation excludes MAP_JIT."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/share/interpreter/zero/zeroInterpreterGenerator.hpp#L59-L63",
+      "finding": "ZeroEntry stores a precompiled entry address."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/cpu/zero/entry_zero.hpp#L58-L66",
+      "finding": "invoke calls the saved entry pointer instead of executing the structure."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/cpu/zero/interpreterRT_zero.cpp#L131-L151",
+      "finding": "Signature preparation builds libffi metadata."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/cpu/zero/zeroInterpreter_zero.cpp#L423",
+      "finding": "Native entry invokes precompiled ffi_call."
+    },
+    {
+      "url": "https://github.com/openjdk/mobile/blob/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/hotspot/cpu/zero/stubGenerator_zero.cpp#L189-L207",
+      "finding": "Static C++ call_stub and empty continuation/compiler generators."
+    }
+  ],
+  "deviceValidationPassed": false,
+  "deviceGatesChanged": false,
+  "reportedPhoneTerminationCause": "not independently established",
+  "independentlyFetchedRawSources": [
+    {
+      "path": "cpu_zero_entry_zero.hpp",
+      "sha256": "a81909bb216460c261314af3fcd6dbc07673c2ae786838b9c10fe952d36ab2b4",
+      "lineNumbers": "physical 1-based raw source including empty lines"
+    },
+    {
+      "path": "cpu_zero_interpreterRT_zero.cpp",
+      "sha256": "cfe9cd08baa48f9e96b73b14986ad7e4b11a5d6f6a38cc85efc76a194fed4311",
+      "lineNumbers": "physical 1-based raw source including empty lines"
+    },
+    {
+      "path": "cpu_zero_zeroInterpreter_zero.cpp",
+      "sha256": "b691cbdce734f75cca43c564be30a7633f7820eab349e3d49f1f18d244ccf79e",
+      "lineNumbers": "physical 1-based raw source including empty lines"
+    },
+    {
+      "path": "share_interpreter_zero_zeroInterpreterGenerator.hpp",
+      "sha256": "fe1e947c04d290b31c4012bf51794394d977514ac7b21da29db61d3a4d86025b",
+      "lineNumbers": "physical 1-based raw source including empty lines"
+    },
+    {
+      "path": "share_memory_heap.cpp",
+      "sha256": "568043f69da93b8ce5a480d4b22aa330096f261ed7377bdcc219b3a7db3ba21c",
+      "lineNumbers": "physical 1-based raw source including empty lines"
+    }
+  ]
+}

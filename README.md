@@ -10,10 +10,12 @@ is available for self-signing. JVM startup and compatibility on a physical devic
 remain pending; this is a runtime prototype, not a complete Legado release.
 The user reports successful iPhone installation and payload preflight, followed
 by termination when running the fixture; the cause is unknown. See
-[device evidence](docs/legado-ios/device-validation.json). Version 0.2 build 4
-retains build 2's persistent diagnostics and JSON sharing, and corrects the
-bootstrap Java-home layout. The path fix, simulator autorun and all physical-device
-gates still need runtime validation; the reported termination's cause is unconfirmed.
+[device evidence](docs/legado-ios/device-validation.json). Build 4 now reproduces a
+Simulator exit inside `JNI_CreateJavaVM`: `Could not reserve enough space in
+CodeCache (160K)`. Candidate version 0.2 build 5 adds an iOS Zero source adaptation
+to keep its code-cache reservation non-executable; a fresh native build at
+`203b352` is under validation. Its effect and all physical-device gates remain
+pending; the reported iPhone termination's cause is unconfirmed.
 
 - [Prototype architecture, coverage and validation gates](docs/legado-ios/README.md)
 - [Build from Windows using GitHub Actions](docs/legado-ios/cloud-build.md)

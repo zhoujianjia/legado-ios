@@ -14,8 +14,13 @@ both apps and verified all nine required dynamic exports. Successful
 [run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
 provides the first unsigned IPA. The user reports installing and opening that
 build, followed by a termination when starting the fixture; see
-[device-validation.json](device-validation.json). JVM execution and all physical
-device validation gates remain pending.
+[device-validation.json](device-validation.json). Build 4 subsequently launched
+in Simulator and exited during `JNI_CreateJavaVM` with `Could not reserve enough
+space in CodeCache (160K)`. Candidate version 0.2 build 5 at `203b352` is under
+fresh native validation in
+[run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077).
+The candidate's effect and all physical-device gates remain pending; the iPhone
+termination's cause has not been established.
 Pinned source revisions make the inputs reviewable; they do not guarantee that
 the Zero build will succeed on the selected runner.
 
@@ -28,12 +33,13 @@ The user-controlled destination is
 be pushed to the destination, with GitHub Actions enabled. SSH authentication
 has been verified as `zhoujianjia` and the prepared prototype has been pushed.
 The browser-based CLI login is optional when using SSH build tags or the
-Actions page's manual trigger. The user subsequently made this repository
-private. SSH still permits Git transport, while reading private Actions status,
-logs and artifacts requires an API/CLI login or GitHub app access to this
-repository. An unauthenticated HTTP 404 does not establish that the repository
-or build was deleted. Keep the repository private and grant the intended
-reader access, or retrieve artifacts through the signed-in Actions page.
+Actions page's manual trigger. The repository was temporarily private, causing
+unauthenticated API requests to return 404; the user has since temporarily made
+it public again. If it becomes private later, SSH Git access and permission to
+read Actions through the API remain separate: the API/CLI login or GitHub app
+must have access to this repository. An unauthenticated 404 does not establish
+that the repository or build was deleted. Private artifacts can also be retrieved
+through the signed-in Actions page.
 
 Include the implementation, vendored runtime JARs and their license/provenance
 files, the Gradle wrapper, and the workflow at
@@ -89,6 +95,8 @@ The jobs perform these checks in order:
 4. Stage the device payload, compile the unsigned iOS device app, and package it
    as an unsigned IPA after checking nine source-proven bootstrap exports in the
    final executable's dyld export trie.
+5. Launch the Simulator app and attempt its synthetic fixture, preserving reports
+   and logs. A produced IPA is retained even if this runtime check fails.
 
 The pinned Zero backend requires a local source adaptation: its Apple ARM64 W^X
 state implementation is copied from the same revision's AArch64 backend. Both
@@ -97,9 +105,30 @@ guard excluding the actual pthread JIT switch is retained. See
 [prepare-zero-wx.py](../../scripts/legado-ios/prepare-zero-wx.py). This changes
 neither the locked JavaScript engine nor the no-JIT device acceptance criteria.
 
-The source-only Swift tests run on macOS. The simulator step compiles and links
-the iOS app; it does not launch the simulator, execute the JVM on iOS, or run iOS
-XCTest. A successful cloud run is build evidence, not a passed device gate.
+The build 5 candidate adds
+[prepare-zero-code-cache.py](../../scripts/legado-ios/prepare-zero-code-cache.py).
+It verifies the complete original and prepared source hashes, then passes
+`!ExecMem` to `CodeMemoryReserver` only under `__IOS__ && ZERO`. Zero stores
+metadata and pointers to precompiled C++ interpreter functions in this cache.
+This changes native build inputs and requires rebuilding both runtime slices.
+The observed Simulator error contains no measured syscall/errno; runtime proof
+of this repair and the original iPhone failure's cause remain pending. See the
+[code-cache investigation](code-cache-investigation.json).
+
+The source-only Swift tests run on macOS. The Simulator smoke launches the app;
+it is separate from iOS XCTest and physical-device validation. Build 4 reached
+the native JVM creation call and failed initialization before the semantic suite.
+A successful cloud run cannot pass the physical-device gates.
+
+For later app or packaging fixes with unchanged native/JVM inputs, the
+[Legado iOS Runtime Replay workflow](../../.github/workflows/legado-ios-replay.yml)
+accepts a `legado-replay-<sourceRunID>-<currentSHA prefix>` tag. It checks six
+native input files (`build-zero.sh`, `prepare-zero-wx.py`,
+`prepare-zero-code-cache.py`, `prepare-symbol-keeper.py`, `fetch-sources.py`, and
+`runtime-lock.json`) and the full JVM tree against the source run before reusing
+its matching products. The current app is compiled and linked again before its
+Simulator attempt. Keep `runtime-reuse.json` with the result; replay does not
+claim a new runtime compilation. Changed inputs require the full source build.
 
 ## Download the result or inspect a failure
 
@@ -109,7 +138,9 @@ The run's **Artifacts** section contains:
 | --- | --- |
 | `legado-jvm-payload` | The assembled portable JVM payload used by the native build. |
 | `legado-portable-test-logs` | Python/JVM test logs and available JUnit reports. |
+| `legado-zero-source-build` | Source-built native framework, Java homes and lock used by a matching follow-up replay. |
 | `legado-macos-build-logs` | Available macOS build logs and diagnostic reports, including evidence from a failed build. |
+| `legado-replay-logs` | Follow-up replay provenance, app-build and Simulator diagnostics. |
 | `legado-probe-unsigned` | The unsigned IPA, build manifest, and signing reminder produced after successful native builds. |
 
 If a job fails, open that job and the first failed step, then download
@@ -123,7 +154,8 @@ artifact name or an incomplete build.
 The unsigned IPA cannot be installed directly as a working iOS app. Signing and
 provisioning are a separate, account-dependent step. The account/team, bundle
 identifier, and target device must be decided before preparing an installable
-build. No signing service or account has been configured by this prototype.
+build. The user completed the initial installation locally with iloader; no
+Apple signing credentials are configured in the cloud workflow.
 For the Windows route, follow [local signing and USB installation](windows-install.md)
 after a successful device build.
 
