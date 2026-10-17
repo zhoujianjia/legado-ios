@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/zhoujianjia/legado-ios",
+  "git_transport": "SSH authenticated as zhoujianjia; push succeeded",
+  "trigger": "Explicit legado-probe-* tag push",
+  "attempts": [
+    {
+      "run_id": 38999137279,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/38999137279",
+      "source_commit": "157d0de815b102724f52a85887e6b077ebf77d31",
+      "tag": "legado-probe-157d0de",
+      "status": "failed",
+      "portable_job_id": 117298142534,
+      "python_inventory_tests_passed": 12,
+      "python_runtime_tool_tests_passed": 6,
+      "jvm_tests": "not reached; Gradle classpath dependency verification failed",
+      "failure": "The checksum entry for org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.0 POM was missing on a fresh Linux runner",
+      "resolution": {
+        "change": "Added only the missing POM SHA256; existing pins and strict verification retained",
+        "sha256": "1239e9dbe1397cd5971342956b2511bc3ace7b641842e4372a088dcfa8b9ad55",
+        "origin_check": "Maven Central, Gradle Plugin Portal redirect, and cached Windows POM bytes match",
+        "targeted_check": "Gradle help --refresh-dependencies --dependency-verification strict passed on Windows"
+      },
+      "macos_job": "skipped because the portable-core job failed"
+    }
+  ],
+  "ios_compilation_passed": false,
+  "device_validation_passed": false
+}
