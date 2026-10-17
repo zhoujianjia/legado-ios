@@ -155,5 +155,5 @@ jobs:
           This workflow compiles the prototype and runs its synthetic fixture in Simulator. It does not sign, install, or run it on an iPhone/iPad.
           When packaging succeeds, download `legado-probe-unsigned`; its IPA must be signed separately before installation, even if the simulator step fails.
           On failure, inspect `legado-macos-build-logs` and the failing step. No fallback runtime is substituted.
-          All iOS device validation gates remain pending, including JVM startup without JIT or a debugger.
+          This cloud run cannot update physical-device gates. Historical build 6 device evidence is recorded separately; additions in this build still need a matching iPhone report.
           SUMMARY

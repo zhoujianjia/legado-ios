@@ -56,7 +56,10 @@ internal object MainJsResultMarshaller {
             decoded.asJsonArray.forEach { value ->
                 if (!value.isJsonObject) return@forEach
                 val dto = runCatching { dtoGson.fromJson(value, SearchDto::class.java) }.getOrNull() ?: return@forEach
-                if (dto.name.isNullOrBlank() || dto.bookUrl.isNullOrBlank()) return@forEach
+                // Archive JsSourceMarshaller:49 validates outside runCatching.
+                // Gson can reflect an explicit JSON null into these non-null fields;
+                // keep its failing isBlank call rather than silently dropping the row.
+                if (dto.name.isBlank() || dto.bookUrl.isBlank()) return@forEach
                 val output = dtoGson.toJsonTree(dto).asJsonObject
                 output.addProperty("origin", originalString(source["bookSourceUrl"], ""))
                 output.addProperty("originName", originalString(source["bookSourceName"], ""))
@@ -78,8 +81,10 @@ internal object MainJsResultMarshaller {
         decoded.asJsonArray.forEach { value ->
             if (!value.isJsonObject) return@forEach
             val dto = runCatching { dtoGson.fromJson(value, ChapterDto::class.java) }.getOrNull() ?: return@forEach
-            val title = dto.title ?: return@forEach
-            val url = dto.url ?: return@forEach
+            // Archive JsSourceMarshaller:148 has the same unguarded, short-circuit
+            // validation: missing fields default to "", explicit null must fail.
+            val title = dto.title
+            val url = dto.url
             if (title.isBlank() || url.isBlank()) return@forEach
             dto.url = if (dto.isVolume && url == title) url else absoluteUrl(tocUrl, url)
             dto.bookUrl = bookUrl
@@ -178,7 +183,7 @@ internal object MainJsResultMarshaller {
 
     // Stable JSON fields of the corresponding entities; no generated time/computed properties.
     private data class SearchDto(
-        var bookUrl: String? = "", var name: String? = "", var author: String? = "",
+        var bookUrl: String = "", var name: String = "", var author: String? = "",
         var origin: String? = "", var originName: String? = "", var originOrder: Int = 0,
         var type: Int = 8, var tocUrl: String? = "", var kind: String? = null,
         var coverUrl: String? = null, var intro: String? = null, var wordCount: String? = null,
@@ -189,7 +194,7 @@ internal object MainJsResultMarshaller {
     )
 
     private data class ChapterDto(
-        var url: String? = "", var title: String? = "", var isVolume: Boolean = false,
+        var url: String = "", var title: String = "", var isVolume: Boolean = false,
         var baseUrl: String? = "", var bookUrl: String? = "", var index: Int = 0,
         var isVip: Boolean = false, var isPay: Boolean = false,
         var resourceUrl: String? = null, var tag: String? = null, var wordCount: String? = null,

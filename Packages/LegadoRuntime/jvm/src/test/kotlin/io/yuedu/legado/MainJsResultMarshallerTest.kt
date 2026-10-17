@@ -44,11 +44,49 @@ class MainJsResultMarshallerTest {
     @Test fun searchPreservesOriginalCustomGsonStringCoercionsAndSkipsBadObjects() {
         // GsonExtensions.StringJsonDeserializer accepts structured values as JSON text.
         val result = marshal("search", """[{"name":123,"bookUrl":true,"intro":{"html":"x"}},
-            {"name":"bad time","bookUrl":"u","time":[]},{"name":null,"bookUrl":"u"}]""").asJsonArray
+            {"name":"bad time","bookUrl":"u","time":[]}]""").asJsonArray
         assertEquals(1, result.size())
         assertEquals("123", result[0].asJsonObject["name"].asString)
         assertEquals("true", result[0].asJsonObject["bookUrl"].asString)
         assertEquals("""{"html":"x"}""", result[0].asJsonObject["intro"].asString)
+    }
+
+    @Test fun explicitNullSearchIdentityFailsWholeOperationAfterDtoDeserialization() {
+        // Archive JsSourceMarshaller:47-49: fromJson is caught, isBlank is not.
+        // Explicit null reaches a Kotlin non-null String field via Gson reflection.
+        listOf("search", "explore").forEach { operation ->
+            listOf("""{"name":null,"bookUrl":"u"}""", """{"name":"bad","bookUrl":null}""").forEach { invalid ->
+                assertOriginalNullFailure {
+                    marshal(operation, """[{"name":"before","bookUrl":"u"},$invalid,{"name":"after","bookUrl":"v"}]""")
+                }
+            }
+        }
+    }
+
+    @Test fun explicitNullChapterIdentityFailsWholeOperationAfterDtoDeserialization() {
+        // Archive JsSourceMarshaller:146-148: title/url validation is outside runCatching.
+        listOf("toc", "getChapters").forEach { operation ->
+            listOf("""{"title":null,"url":"/bad"}""", """{"title":"bad","url":null}""").forEach { invalid ->
+                assertOriginalNullFailure {
+                    marshal(operation, """[{"title":"before","url":"/one"},$invalid,{"title":"after","url":"/two"}]""")
+                }
+            }
+        }
+    }
+
+    @Test fun missingIdentityFieldsKeepDefaultsAndBlankFirstFieldShortCircuitsNullSecondField() {
+        // The original || checks name/title first: a missing/blank first field is
+        // filtered before accessing a null second field; null first fields still fail.
+        val books = marshal("search", """[{"name":"missing URL"},{"bookUrl":"u"},
+            {"bookUrl":null},{"name":" ","bookUrl":null},{"name":"ok","bookUrl":"u"}]""").asJsonArray
+        assertEquals(1, books.size())
+        assertEquals("ok", books[0].asJsonObject["name"].asString)
+        val chapters = marshal("toc", """[{"title":"missing URL"},{"url":"/one"},
+            {"url":null},{"title":" ","url":null},{"title":"ok","url":"/one"}]""").asJsonArray
+        assertEquals(1, chapters.size())
+        assertEquals(0, chapters[0].asJsonObject["index"].asInt)
+        assertOriginalNullFailure { marshal("search", """[{"name":null,"bookUrl":""}]""") }
+        assertOriginalNullFailure { marshal("toc", """[{"title":null,"url":""}]""") }
     }
 
     @Test fun searchAcceptsLegacyJsonStringsButRejectsWrongShapeAndStringifiedNull() {
@@ -213,6 +251,10 @@ class MainJsResultMarshallerTest {
         MainJsResultMarshaller.marshal(operation, json(result), request, source)
     private fun obj(value: String) = json(value).asJsonObject
     private fun json(value: String) = JsonParser.parseString(value)
+    private fun assertOriginalNullFailure(action: () -> Any?) {
+        try { action(); fail("Expected original non-null String validation to fail") }
+        catch (_: NullPointerException) { /* Same failure boundary as the original isBlank call. */ }
+    }
     private fun assertFailure(code: String, message: String, action: () -> Any?) {
         try { action(); fail("Expected $code") }
         catch (error: RuntimeFailure) {

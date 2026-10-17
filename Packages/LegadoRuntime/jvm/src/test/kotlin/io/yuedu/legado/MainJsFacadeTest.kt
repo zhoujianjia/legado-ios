@@ -122,6 +122,38 @@ class MainJsFacadeTest {
         assertError(session, "toc", jsonObject("book" to book), "TOC_EMPTY", "目录列表为空")
     }
 
+    @Test fun explicitNullRequiredFieldsFailFacadeWithoutReturningPartialLists() {
+        // Original JsSourceMarshaller:49/148 validates reflected non-null String
+        // fields outside its fromJson runCatching; mixed valid/null rows must fail.
+        val session = create("""
+            function search(key) {
+                if (key === 'missing') return [{name:'missing URL'},{bookUrl:'u'},{name:'ok',bookUrl:'u'}];
+                return [{name:'before',bookUrl:'u'},
+                    key === 'name' ? {name:null,bookUrl:'u'} : {name:'bad',bookUrl:null},
+                    {name:'after',bookUrl:'v'}];
+            }
+            function getChapters(book) {
+                if (book.name === 'missing') return [{title:'missing URL'},{url:'/one'},{title:'ok',url:'/one'}];
+                return [{title:'before',url:'/one'},
+                    book.name === 'title' ? {title:null,url:'/bad'} : {title:'bad',url:null},
+                    {title:'after',url:'/two'}];
+            }
+        """.trimIndent())
+        listOf("name", "bookUrl").forEach { field ->
+            assertNullFailure(session, "search", jsonObject("key" to field))
+        }
+        listOf("title", "url").forEach { field ->
+            val book = jsonObject("name" to field, "bookUrl" to "$BASE/book/null", "tocUrl" to "$BASE/toc")
+            assertNullFailure(session, "toc", jsonObject("book" to book))
+        }
+        // Failed calls do not poison the session; missing fields are still filtered.
+        assertEquals(1, call(session, "search", jsonObject("key" to "missing")).asJsonArray.size())
+        val book = jsonObject("name" to "missing", "bookUrl" to "$BASE/book/null", "tocUrl" to "$BASE/toc")
+        val chapters = call(session, "toc", jsonObject("book" to book)).asJsonArray
+        assertEquals(1, chapters.size())
+        assertEquals(0, chapters[0].asJsonObject["index"].asInt)
+    }
+
     private fun create(script: String, sourceType: Int = 0): String {
         val created = parseObject(LegadoRuntime.createSession(jsonObject("bookSourceUrl" to BASE,
             "bookSourceName" to "Facade source", "customOrder" to 11,
@@ -139,6 +171,13 @@ class MainJsFacadeTest {
         assertFalse(result.toString(), result["ok"].asBoolean)
         assertEquals(code, result["error"].asJsonObject["code"].asString)
         assertTrue(result.toString(), result["error"].asJsonObject["message"].asString.contains(message))
+    }
+    private fun assertNullFailure(session: String, operation: String, input: JsonObject) {
+        val result = parseObject(LegadoRuntime.execute(session, UUID.randomUUID().toString(), operation, input.toString()))
+        assertFalse(result.toString(), result["ok"].asBoolean)
+        assertEquals("SCRIPT_ERROR", result["error"].asJsonObject["code"].asString)
+        assertTrue(result.toString(), result["error"].asJsonObject["message"].asString.isNotEmpty())
+        assertFalse("A failed operation must not expose a partial result: $result", result.has("result"))
     }
     companion object { private const val BASE = "https://facade.example" }
 }

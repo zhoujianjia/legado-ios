@@ -11,6 +11,10 @@ chapter ownership, base URL and consecutive indices. It covers the declared
 JSON fields only. Scripts currently receive JSON book objects, rather than the
 original mutable Java/Room entities; timestamps, computed fields, arbitrary Java
 Book methods and exact reference mutation behavior remain outside this slice.
+Required search/chapter fields distinguish absent defaults from explicit `null`;
+the latter preserves the original short-circuit validation failure. Multi-key
+book-variable maps currently preserve values but can differ in serialized key
+order from the original entity's mutable HashMap.
 
 ## Independent reference execution
 
