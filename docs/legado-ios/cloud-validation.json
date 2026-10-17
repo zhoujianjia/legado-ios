@@ -22,8 +22,45 @@
         "targeted_check": "Gradle help --refresh-dependencies --dependency-verification strict passed on Windows"
       },
       "macos_job": "skipped because the portable-core job failed"
+    },
+    {
+      "run_id": 38999532197,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/38999532197",
+      "source_commit": "7f703ef0e09be207c81d4e5c112c0496fec6d0a8",
+      "tag": "legado-probe-7f703ef",
+      "status": "failed",
+      "portable_job_id": 117299318232,
+      "python_inventory_tests_passed": 12,
+      "python_runtime_tool_tests_passed": 6,
+      "jvm_tests": "not reached; runtimeClasspath dependency verification failed",
+      "failure": "The checksum entry for org.junit:junit-bom:5.7.1 module metadata was missing when realizing runtimeJar",
+      "resolution": {
+        "change": "Added only the missing module metadata SHA256; strict verification retained",
+        "sha256": "9854e3894d64b2485207e0046bca07b3d42d169e782f4fa8c9ce229a78faee04",
+        "origin_check": "Canonical Maven Central module metadata matches the existing Windows cached bytes",
+        "targeted_check": "Full task graph resolved with a new empty GRADLE_USER_HOME, followed by forced rebuild/test/runtimeSmoke under strict verification",
+        "junit_tests_passed": 45,
+        "junit_failures_errors_skipped": 0,
+        "packaged_smoke": "PACKAGED_PAYLOAD_OK",
+        "rebuilt_jar_bytes": 8532617,
+        "rebuilt_jar_sha256": "d45186206ace678838356cd205be35b8137ed7cd9ad6dea24eec257069d9ca01"
+      },
+      "macos_job": "skipped because the portable-core job failed"
     }
   ],
+  "source_preflight_fixes": {
+    "runtime_data": "Copy the built conf tree, tzdb.dat, and cacerts into each Java home; verify five required data files are readable and nonempty",
+    "symbol_registration": {
+      "removed_symbol": "Java_sun_nio_fs_UnixNativeDispatcher_fchmodatNoFollowSupported0",
+      "reason": "Pinned ios-tools retains a JNI method removed from the pinned Mobile sources",
+      "original_keeper_sha256": "db8636b8e24cbd4420a9de5f92cdeaa1fc18a15d6153ac4262084af3f404bee2",
+      "prepared_keeper_sha256": "ef1f9744e430af5ef3dc71bc26764d01fc996b43617cc60a38a0fc12f7ff635f",
+      "removed_lines": 3,
+      "other_registrations_preserved": 449
+    },
+    "runtime_tool_tests_passed": 11,
+    "swift_changes": "Syntax parsed only; Apple SDK compilation remains pending"
+  },
   "ios_compilation_passed": false,
   "device_validation_passed": false
 }

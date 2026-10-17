@@ -40,8 +40,11 @@ FFI_SIM="$WORK_DIR/ffi-build/iphonesimulator/install/lib"
 FFI_HEADERS="$WORK_DIR/ffi-build/iphoneos/install/include"
 [[ -f "$FFI_HEADERS/ffi.h" ]] || { echo "libffi headers missing at $FFI_HEADERS" >&2; exit 3; }
 
-# Upstream explicitly requires this static-symbol registration unit for loadfunctions().
-cp "$TOOLS/openjdk-ext/src/hotspot/symbol_keeper.cpp" "$MOBILE/src/hotspot/os/bsd/symbol_keeper.cpp"
+# Upstream requires this unit for loadfunctions(). The exact pinned tools retain
+# one method removed from the pinned JDK; reject changed inputs before adapting.
+python3 "$SCRIPT_DIR/prepare-symbol-keeper.py" \
+  --source "$TOOLS/openjdk-ext/src/hotspot/symbol_keeper.cpp" \
+  --destination "$MOBILE/src/hotspot/os/bsd/symbol_keeper.cpp"
 cd "$MOBILE"
 for target in device simulator; do
   if [[ $target == device ]]; then
@@ -73,6 +76,16 @@ MODULEMAP
   for module in java.base java.xml java.desktop java.datatransfer java.prefs java.logging jdk.charsets java.compiler java.instrument java.net.http java.sql java.transaction.xa jdk.unsupported; do
     [[ -d "$BUILD/jdk/modules/$module" ]] || { echo "Required module not built: $module; java.beans/E4X gate failed" >&2; exit 4; }
     cp -R "$BUILD/jdk/modules/$module" "$SLICE/java-home/modules/"
+  done
+  # Classes alone are not a usable JavaHome: Security/Cipher read conf, Rhino
+  # Date uses tzdb.dat, and Java HTTPS uses cacerts. Dereference build symlinks
+  # so the app bundle never points back into the runner's build directory.
+  [[ -d "$BUILD/jdk/conf" ]] || { echo "JDK runtime configuration missing: $BUILD/jdk/conf" >&2; exit 4; }
+  cp -RL "$BUILD/jdk/conf" "$SLICE/java-home/"
+  for data_file in lib/tzdb.dat lib/security/cacerts; do
+    [[ -s "$BUILD/jdk/$data_file" ]] || { echo "JDK runtime data missing: $data_file" >&2; exit 4; }
+    mkdir -p "$SLICE/java-home/$(dirname "$data_file")"
+    cp -L "$BUILD/jdk/$data_file" "$SLICE/java-home/$data_file"
   done
   [[ ! -f "$BUILD/jdk/release" ]] || cp "$BUILD/jdk/release" "$SLICE/java-home/"
   [[ ! -d "$BUILD/jdk/legal" ]] || cp -R "$BUILD/jdk/legal" "$SLICE/java-home/"

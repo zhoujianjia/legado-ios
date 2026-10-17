@@ -12,6 +12,13 @@ PROBES = {
     "java.xml": "javax/xml/parsers/DocumentBuilderFactory.class",
     "java.desktop": "java/beans/Introspector.class",
 }
+REQUIRED_DATA_FILES = (
+    "conf/security/java.security",
+    "conf/security/policy/unlimited/default_US_export.policy",
+    "conf/security/policy/unlimited/default_local.policy",
+    "lib/tzdb.dat",
+    "lib/security/cacerts",
+)
 
 def validate(java_home: Path, jar: Path | None = None, xcframework: Path | None = None) -> dict:
     lock = json.loads((HERE / "runtime-lock.json").read_text(encoding="utf-8"))
@@ -21,6 +28,15 @@ def validate(java_home: Path, jar: Path | None = None, xcframework: Path | None 
     for module, probe in PROBES.items():
         if not (java_home / "modules" / module / probe).is_file():
             raise ValueError(f"Missing required class: {module}/{probe}")
+    for name in REQUIRED_DATA_FILES:
+        path = java_home / name
+        try:
+            with path.open("rb") as resource:
+                nonempty = bool(resource.read(1))
+        except OSError as error:
+            raise ValueError(f"Missing or unreadable JDK runtime data: {name}") from error
+        if not nonempty:
+            raise ValueError(f"Empty JDK runtime data: {name}")
     if (java_home / "lib/modules").is_dir():
         raise ValueError("Exploded modules belong in java.home/modules; lib/modules is reserved for a jimage file")
     if jar is not None:

@@ -73,6 +73,13 @@ public final class LegadoRuntime: @unchecked Sendable {
             for probe in probes where !manager.fileExists(atPath: configuration.javaHome.appendingPathComponent("modules/\(probe)").path) {
                 issues.append("missing_class: \(probe)")
             }
+            let runtimeFiles = ["conf/security/java.security",
+                                "conf/security/policy/unlimited/default_US_export.policy",
+                                "conf/security/policy/unlimited/default_local.policy",
+                                "lib/tzdb.dat", "lib/security/cacerts"]
+            for file in runtimeFiles where !manager.isReadableFile(atPath: configuration.javaHome.appendingPathComponent(file).path) {
+                issues.append("missing_runtime_file: \(file)")
+            }
             if configuration.classPath.isEmpty { issues.append("missing_jars: bundled JVM facade and locked dependencies") }
             for jar in configuration.classPath where !manager.isReadableFile(atPath: jar.path) { issues.append("missing_jar: \(jar.lastPathComponent)") }
             if !(32...2048).contains(configuration.maximumHeapMegabytes) { issues.append("invalid_heap: expected 32...2048 MiB") }

@@ -35,6 +35,7 @@ private final class BlockingTransport: LegadoRuntimeTransport, @unchecked Sendab
         XCTAssertFalse(diagnostics.available)
         XCTAssertTrue(diagnostics.issues.contains { $0.contains("java.xml") })
         XCTAssertTrue(diagnostics.issues.contains { $0.contains("java.desktop") })
+        XCTAssertTrue(diagnostics.issues.contains { $0.contains("conf/security/java.security") })
         XCTAssertTrue(diagnostics.deviceValidationRequired)
     }
     func testJSONErrorEnvelopeIsNotAcceptedAsSuccess() {

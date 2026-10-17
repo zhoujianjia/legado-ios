@@ -5,13 +5,13 @@ develop and test the portable Legado core. A manually triggered GitHub Actions
 macOS runner can build the native prototype; the iPhone or iPad is still needed
 for installation and actual runtime validation. No Mac SSH connection is needed.
 
-The first cloud run started through an SSH-pushed build tag. Its Python tests
-passed; the portable JVM build stopped at dependency verification before the
-macOS job. See [cloud-validation.json](cloud-validation.json) for the run and
-failure evidence. Apple compilation, signing, and device execution remain
-unverified, and all device validation gates remain pending. Pinned source
-revisions make the inputs reviewable; they do not guarantee that the Zero build
-will succeed on the selected runner.
+See [cloud-validation.json](cloud-validation.json) for observed cloud runs,
+failures, and verified fixes. The initial runs exposed missing dependency
+checksum entries, which have been added and checked with a fresh dependency
+cache and forced JVM rebuild/tests. Apple compilation, signing, and device
+execution remain unverified, and all device validation gates remain pending.
+Pinned source revisions make the inputs reviewable; they do not guarantee that
+the Zero build will succeed on the selected runner.
 
 ## Prepare your own repository
 
