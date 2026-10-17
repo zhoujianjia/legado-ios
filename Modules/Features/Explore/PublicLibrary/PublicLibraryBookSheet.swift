@@ -614,9 +614,15 @@ private struct PublicLibraryCarouselDim: View {
     let level: Double
     let height: CGFloat
 
+    private var dimOpacity: Double {
+        let distance: CGFloat = carried > 0 ? carried : pull.distance
+        let remaining: CGFloat = max(0, 1 - distance / max(height, 1))
+        return DSLayout.cardCarouselDimOpacity * level * Double(remaining)
+    }
+
     var body: some View {
         DSColor.cardCarouselDim
-            .opacity(DSLayout.cardCarouselDimOpacity * level * max(0, 1 - (carried > 0 ? carried : pull.distance) / max(height, 1)))
+            .opacity(dimOpacity)
             .contentShape(Rectangle())
             .accessibilityHidden(true)
     }

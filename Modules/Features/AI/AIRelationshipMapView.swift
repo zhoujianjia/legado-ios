@@ -103,42 +103,55 @@ struct AIRelationshipMapView: View {
 
     private func ring(center: AIRelationshipGraph.Node, neighbors: [AIRelationshipGraph.Neighbor]) -> some View {
         GeometryReader { proxy in
-            let size = proxy.size
-            let middle = CGPoint(x: size.width / 2, y: size.height / 2)
-            let radius = max(0, min(size.width, size.height) / 2 - DSLayout.relationshipNodeInset)
-            let points = neighbors.indices.map { index -> CGPoint in
-                let angle = 2 * Double.pi * Double(index) / Double(max(neighbors.count, 1)) - Double.pi / 2
-                return CGPoint(x: middle.x + radius * cos(angle), y: middle.y + radius * sin(angle))
+            ringContent(center: center, neighbors: neighbors, size: proxy.size)
+        }
+    }
+
+    private func ringContent(center: AIRelationshipGraph.Node, neighbors: [AIRelationshipGraph.Neighbor], size: CGSize) -> some View {
+        let middle = CGPoint(x: size.width / 2, y: size.height / 2)
+        let radius: CGFloat = max(0, min(size.width, size.height) / 2 - DSLayout.relationshipNodeInset)
+        let points = ringPoints(count: neighbors.count, middle: middle, radius: radius)
+        return ZStack {
+            Path { path in
+                for point in points { path.move(to: middle); path.addLine(to: point) }
             }
-            ZStack {
-                Path { path in
-                    for point in points { path.move(to: middle); path.addLine(to: point) }
-                }
-                .stroke(DSColor.separator, lineWidth: DSLayout.relationshipLineWidth)
-                .accessibilityHidden(true)
-                ForEach(Array(neighbors.enumerated()), id: \.element.id) { index, neighbor in
-                    Button { recenter(neighbor.node.id) } label: {
-                        VStack(spacing: 0) {
-                            node(neighbor.node.name, emphasized: false)
-                            // The relation sits under the name, away from the crowded centre.
-                            Text(neighbor.relations[0].text)
-                                .font(DSFont.caption2)
-                                .foregroundStyle(DSColor.textSecondary)
-                                .lineLimit(1)
-                                .frame(maxWidth: DSLayout.relationshipLabelWidth)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .position(points[index])
-                    .accessibilityLabel(neighbor.node.name)
-                    .accessibilityValue(neighbor.relations.map(\.text).joined(separator: "；"))
-                    .accessibilityHint(localized("改看這個人物的關係"))
-                }
-                node(center.name, emphasized: true)
-                    .position(middle)
-                    .accessibilityAddTraits(.isHeader)
+            .stroke(DSColor.separator, lineWidth: DSLayout.relationshipLineWidth)
+            .accessibilityHidden(true)
+            ForEach(Array(neighbors.enumerated()), id: \.element.id) { index, neighbor in
+                neighborButton(neighbor, at: points[index])
+            }
+            node(center.name, emphasized: true)
+                .position(middle)
+                .accessibilityAddTraits(.isHeader)
+        }
+    }
+
+    private func ringPoints(count: Int, middle: CGPoint, radius: CGFloat) -> [CGPoint] {
+        (0..<count).map { index in
+            let angle: Double = 2 * Double.pi * Double(index) / Double(max(count, 1)) - Double.pi / 2
+            let x: CGFloat = middle.x + radius * CGFloat(cos(angle))
+            let y: CGFloat = middle.y + radius * CGFloat(sin(angle))
+            return CGPoint(x: x, y: y)
+        }
+    }
+
+    private func neighborButton(_ neighbor: AIRelationshipGraph.Neighbor, at point: CGPoint) -> some View {
+        Button { recenter(neighbor.node.id) } label: {
+            VStack(spacing: 0) {
+                node(neighbor.node.name, emphasized: false)
+                // The relation sits under the name, away from the crowded centre.
+                Text(neighbor.relations[0].text)
+                    .font(DSFont.caption2)
+                    .foregroundStyle(DSColor.textSecondary)
+                    .lineLimit(1)
+                    .frame(maxWidth: DSLayout.relationshipLabelWidth)
             }
         }
+        .buttonStyle(.plain)
+        .position(point)
+        .accessibilityLabel(neighbor.node.name)
+        .accessibilityValue(neighbor.relations.map(\.text).joined(separator: "；"))
+        .accessibilityHint(localized("改看這個人物的關係"))
     }
 
     private func node(_ name: String, emphasized: Bool) -> some View {

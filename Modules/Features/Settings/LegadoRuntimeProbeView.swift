@@ -80,7 +80,7 @@ struct LegadoRuntimeProbeView: View {
                 }
             }
             if model.passed, let report = model.report {
-                Section(header: Text(localized("Legado 本地驗證通過"))) {
+                Section {
                     ForEach(report.completedSteps, id: \.self) { step in
                         Label(localized(step), systemImage: "checkmark.circle")
                             .foregroundStyle(DSColor.success)
@@ -88,6 +88,8 @@ struct LegadoRuntimeProbeView: View {
                     if let milliseconds = report.elapsedMilliseconds {
                         LabeledContent(localized("Legado 驗證耗時"), value: String(format: "%.0f ms", milliseconds))
                     }
+                } header: {
+                    Text(localized("Legado 本地驗證通過"))
                 } footer: {
                     Text(localized("Legado 通過範圍說明"))
                         .dsSectionFooter()
