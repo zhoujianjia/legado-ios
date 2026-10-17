@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Stage and execute one added test against the unchanged original Android code.
 
-Only the test, its fixture and debug telemetry settings are overlaid. The source
-snapshot and generated Google configuration are prepared by prepare-reference.py.
+Only the test, its fixture, external minimum-SDK init script and debug telemetry
+settings are overlaid. The source snapshot and generated Google configuration
+are prepared by prepare-reference.py.
 An Android result is not itself an iOS compatibility result.
 """
 from __future__ import annotations
@@ -26,6 +27,9 @@ OUTPUT = REPO / ".build/ci-logs/android-reference"
 SNAPSHOT = REPO / "Packages/LegadoRuntime/vendor/android-reference"
 FIXTURE = REPO / "Packages/LegadoRuntime/jvm/src/test/resources/fixtures/main-source.js"
 HARNESS = REPO / "tools/legado-reference/androidTest/LegadoGoldenTraceTest.kt"
+INIT_SCRIPT = REPO / "tools/legado-reference/reference.init.gradle"
+STAGED_INIT_SCRIPT = SOURCE / "reference.init.gradle"
+REFERENCE_MIN_SDK = 26
 PACKAGE = "com.legado.app.debug"
 TEST_CLASS = "io.legado.app.reference.LegadoGoldenTraceTest"
 REMOTE_REPORT = "files/legado-reference/android-golden.json"
@@ -57,6 +61,7 @@ def stage() -> None:
     additions = {
         SOURCE / "app/src/androidTest/java/io/legado/app/reference/LegadoGoldenTraceTest.kt": HARNESS.read_bytes(),
         SOURCE / "app/src/androidTest/assets/legado-reference/main-source.js": FIXTURE.read_bytes(),
+        STAGED_INIT_SCRIPT: INIT_SCRIPT.read_bytes(),
         # Test-only collection settings. All original business files stay intact.
         SOURCE / "app/src/debug/AndroidManifest.xml": b'''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <application>
@@ -83,6 +88,8 @@ def stage() -> None:
         "snapshotManifestSHA256": digest(SNAPSHOT / "manifest.json"),
         "fixtureSHA256": digest(FIXTURE),
         "harnessSHA256": digest(HARNESS),
+        "initScriptSHA256": digest(INIT_SCRIPT),
+        "buildMinSdkVersion": REFERENCE_MIN_SDK,
         "originalFilesVerified": len(manifest["files"]),
         "overlays": [{"path": path.relative_to(SOURCE).as_posix(), "sha256": digest(path)} for path in additions],
         "testConfiguration": {
@@ -91,6 +98,7 @@ def stage() -> None:
             "cronet": "test selects original OkHttp path using the original preference API",
             "network": "original network security config; fixture server listens on emulator loopback only",
             "application": "original Application and AndroidJUnitRunner; no replacement host or business source",
+            "minimumSdk": "external reference.init.gradle applies androidComponents.finalizeDsl to :app only; minSdk 23 -> 26 for bundled Rhino MethodHandle bytecode; original Gradle files unchanged",
         },
         "iosValidationPassed": False,
     }
@@ -138,6 +146,10 @@ def execute() -> None:
     inputs = json.loads((OUTPUT / "reference-inputs.json").read_bytes())
     if inputs["fixtureSHA256"] != digest(FIXTURE) or inputs["harnessSHA256"] != digest(HARNESS):
         raise ValueError("Reference fixture/harness changed after staging")
+    if inputs["initScriptSHA256"] != digest(INIT_SCRIPT) or inputs["buildMinSdkVersion"] != REFERENCE_MIN_SDK:
+        raise ValueError("Reference minimum-SDK configuration changed after staging")
+    if digest(STAGED_INIT_SCRIPT) != inputs["initScriptSHA256"]:
+        raise ValueError("Staged reference minimum-SDK init script changed")
     for overlay in inputs["overlays"]:
         if digest(SOURCE / overlay["path"]) != overlay["sha256"]:
             raise ValueError("Reference overlay changed after staging")
@@ -147,7 +159,7 @@ def execute() -> None:
               "referenceKind": "original-archive-android-instrumentation", "passed": False,
               "referenceRunId": reference_run_id,
               "sourceCommit": inputs["sourceCommit"], "iosValidationPassed": False}
-    command = ["bash", str(SOURCE / "gradlew"), "-p", str(SOURCE), "--no-daemon", "--max-workers=2",
+    command = ["bash", str(SOURCE / "gradlew"), "-p", str(SOURCE), "-I", str(STAGED_INIT_SCRIPT), "--no-daemon", "--max-workers=2",
                "-Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8", ":app:connectedAppDebugAndroidTest",
                "-Pandroid.testInstrumentationRunnerArguments.class=" + TEST_CLASS,
                "-Pandroid.testInstrumentationRunnerArguments.archiveSHA256=" + manifest["originalArchiveSHA256"],
@@ -174,6 +186,8 @@ def execute() -> None:
             raise RuntimeError("Original reference report does not match the staged inputs")
         if report.get("applicationClass") != "io.legado.app.App":
             raise RuntimeError("Reference did not execute the original Application")
+        if report.get("applicationMinSdkVersion") != REFERENCE_MIN_SDK:
+            raise RuntimeError("Reference APK minimum SDK does not match the staged override")
         verify_original_files()
         if result["instrumentationExitCode"]:
             raise RuntimeError("Instrumentation failed despite a report file")

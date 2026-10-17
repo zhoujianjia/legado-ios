@@ -34,6 +34,13 @@ the test and shared fixture, and debug metadata disabling telemetry collection.
 Original business files are verified again before and after execution. Failed
 builds or partial reports cannot constitute an Android reference pass.
 
+The archive declares Android API 23, while D8 rejects the bundled Rhino's
+`MethodHandle.invoke/invokeExact` below API 26. An external Gradle init script
+raises only the reference application's minimum SDK to 26; both APK compilation
+and instrumentation use that same hashed script. The test verifies the installed
+APK's declaration and runs on API 35. The original Gradle and engine files stay
+unchanged. This reference therefore makes no Android API 23 compatibility claim.
+
 Reproduce staging on Windows without an Android SDK:
 
 ```powershell

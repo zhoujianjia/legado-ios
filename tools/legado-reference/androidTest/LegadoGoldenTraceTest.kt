@@ -50,6 +50,7 @@ class LegadoGoldenTraceTest {
     fun originalMainJsReadingChain() = runBlocking {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
+        val applicationMinSdkVersion = context.applicationInfo.minSdkVersion
         val referenceRunId = InstrumentationRegistry.getArguments().getString("referenceRunId")
         // Preserve explicit BookHelp null readbacks in this test's evidence.
         // The original business serializers and model conversions stay intact.
@@ -63,6 +64,7 @@ class LegadoGoldenTraceTest {
             "iosValidationPassed" to false,
             "instrumentationRunner" to "androidx.test.runner.AndroidJUnitRunner",
             "applicationClass" to context.applicationContext.javaClass.name,
+            "applicationMinSdkVersion" to applicationMinSdkVersion,
             "androidApi" to Build.VERSION.SDK_INT,
             "androidRelease" to Build.VERSION.RELEASE,
             "normalization" to "Only the loopback origin and its Host authority are replaced by https://fixture.invalid/fixture.invalid in canonicalTrace. Raw wire bytes are retained separately.",
@@ -77,6 +79,7 @@ class LegadoGoldenTraceTest {
         try {
             require(!referenceRunId.isNullOrBlank()) { "The referenceRunId instrumentation argument is required" }
             require(UUID.fromString(referenceRunId).toString() == referenceRunId) { "referenceRunId must be a canonical UUID" }
+            assertEquals("Reference APK must declare the external minimum-SDK override", 26, applicationMinSdkVersion)
             // This is test configuration, not an alternative Application or host.
             // A fresh emulator also defaults to this original OkHttp path.
             context.putPrefBoolean(PreferKey.cronet, false)
@@ -85,7 +88,9 @@ class LegadoGoldenTraceTest {
                 .bufferedReader(Charsets.UTF_8).use { it.readText() }
             report["fixtureSHA256"] = sha256(script.toByteArray(Charsets.UTF_8))
             report["originalArchiveSHA256"] = InstrumentationRegistry.getArguments().getString("archiveSHA256")
-            report["testConfiguration"] = mapOf("Cronet" to false, "httpServer" to "loopback ServerSocket; no HTTP interceptor or native-host replacement")
+            report["testConfiguration"] = mapOf("Cronet" to false,
+                "minimumSdk" to "External reference.init.gradle raises only :app from 23 to 26 via androidComponents.finalizeDsl; original Gradle and business source files are unchanged",
+                "httpServer" to "loopback ServerSocket; no HTTP interceptor or native-host replacement")
 
             server = FixtureServer()
             origin = server.origin

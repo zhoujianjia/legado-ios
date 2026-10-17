@@ -56,6 +56,7 @@ jobs:
       - name: Compile the original application and only the added reference test
         run: |
           bash .build/legado-reference/source/gradlew -p .build/legado-reference/source --no-daemon --max-workers=2 \
+            -I "$GITHUB_WORKSPACE/.build/legado-reference/source/reference.init.gradle" \
             -Dorg.gradle.jvmargs='-Xmx4g -Dfile.encoding=UTF-8' \
             :app:assembleAppDebug :app:assembleAppDebugAndroidTest --stacktrace \
             2>&1 | tee .build/ci-logs/android-reference/build.log
@@ -89,5 +90,6 @@ jobs:
           cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
           This job executes the pinned archive's original Android business code with one added instrumentation test and a local HTTP fixture server.
           The source snapshot excludes the original signing key, GitHub workflows and Google services configuration. It retains original business source bytes and licenses; test-only Google configuration and telemetry settings are generated separately.
+          An external init script raises only the reference app's minSdk from 23 to 26 so D8 can encode the bundled Rhino MethodHandle calls. The original Gradle files and runtime JAR bytes remain unchanged, and the test verifies the installed APK's declared minimum SDK on the API 35 emulator.
           A passing Android trace is a reference, not an iOS G4 pass. Compare its declared canonical fields and retained request bytes against the matching iOS fixture separately. Failed builds and partial traces cannot pass G4.
           SUMMARY

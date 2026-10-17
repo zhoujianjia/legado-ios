@@ -1,0 +1,13 @@
+// Reference-test build configuration only. The pinned app declares minSdk 23,
+// but its bundled Rhino uses MethodHandle.invoke/invokeExact, which D8 can only
+// encode for API 26+. The reference runs on API 35; no business source or JAR is
+// rewritten. Apply this same script to both APK compilation and instrumentation.
+gradle.beforeProject { targetProject ->
+    if (targetProject.path == ":app") {
+        targetProject.pluginManager.withPlugin("com.android.application") {
+            targetProject.extensions.getByName("androidComponents").finalizeDsl { androidDsl ->
+                androidDsl.defaultConfig.minSdk = 26
+            }
+        }
+    }
+}
