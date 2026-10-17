@@ -42,7 +42,9 @@ public final class LegadoRuntime: @unchecked Sendable {
                 .filter { $0.pathExtension == "jar" }.sorted { $0.lastPathComponent < $1.lastPathComponent } ?? []
             let diagnostics = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
                 .appendingPathComponent("LegadoRuntimeDiagnostics", isDirectory: true)
-            return Configuration(javaHome: root.appendingPathComponent("java-home", isDirectory: true), classPath: jars, diagnosticsDirectory: diagnostics)
+            // A statically linked iOS JVM derives this home from the executable
+            // before parsing -Djava.home. Keep the packaged location identical.
+            return Configuration(javaHome: resources.appendingPathComponent("lib", isDirectory: true), classPath: jars, diagnosticsDirectory: diagnostics)
         }
     }
 

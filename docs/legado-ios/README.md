@@ -127,8 +127,8 @@ The default work directory is `.build/legado-ios`; `LEGADO_IOS_BUILD_DIR` overri
 it, and `LEGADO_BOOT_JDK` can select the boot JDK explicitly. The output is
 `Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework`, with separate
 `device-static/java-home` and `simulator-static/java-home` directories in the work
-directory. Exploded class modules must remain under `java-home/modules`, not
-`java-home/lib/modules`.
+directory. In these build/staging outputs, exploded class modules remain under
+`java-home/modules`, not `java-home/lib/modules`.
 
 [verify-runtime.py](../../scripts/legado-ios/verify-runtime.py) statically checks
 module descriptors, XML/beans probe classes, facade/engine classes and XCFramework
@@ -142,7 +142,15 @@ python3 scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/device
 
 Staging targets `Resources/LegadoRuntime` by default and refuses an existing
 payload unless `--replace` is supplied. For a simulator build, stage
-`simulator-static/java-home` instead. File checks and staging do not establish
+`simulator-static/java-home` instead. Version 0.2 build 3's final **Prepare static
+JVM bootstrap home** app build phase moves the staged `LegadoRuntime/java-home`
+tree to the final `App.app/lib`; exploded classes then live at `App.app/lib/modules`.
+The home is moved without duplication or symbolic links, and the JAR and staging
+manifest stay in `App.app/LegadoRuntime`. The pinned BSD VM derives this home
+before parsing `-Djava.home`; source inspection identified the previous mismatch
+as a packaging defect. See [bootstrap-layout-investigation.json](bootstrap-layout-investigation.json).
+Runtime validation of the fix is pending, and the reported termination's exact
+cause is unconfirmed. File checks and staging do not establish
 successful runtime execution. Preserve upstream license and notice files with
 redistributed artifacts.
 
@@ -162,10 +170,11 @@ successful iPhone installation and payload preflight, but fixture execution
 terminated the app; the cause and JVM startup progress are unknown. See
 [device-validation.json](device-validation.json).
 
-Diagnostic version 0.2 (build 2) adds persistent `probeProgress`, native
+Version 0.2 build 2 introduced persistent `probeProgress`, native
 `current`/`previous` logs, VM `vfprintf`/`hs_err` capture, and a JSON file shared
-through `ShareLink` that can be saved to Files. Recorded times include diagnostic
-I/O and are not production performance measurements. Simulator autorun is pending;
+through `ShareLink` that can be saved to Files. Build 3 retains this support with
+the bootstrap layout fix, whose runtime result is pending. Recorded times include
+diagnostic I/O and are not production performance measurements. Simulator autorun is pending;
 the current cloud evidence establishes compilation/linking, not runtime success.
 
 The production app exposes the opt-in probe at **Settings → Advanced → Legado

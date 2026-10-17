@@ -3,8 +3,10 @@
 import importlib.util
 import json
 from pathlib import Path
+import plistlib
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 
 HERE = Path(__file__).resolve().parent
@@ -18,6 +20,7 @@ def load(name, path):
 verify = load("verify_runtime_test", HERE / "verify-runtime.py")
 stager = load("stage_runtime_test", HERE / "stage-runtime.py")
 keeper = load("prepare_symbol_keeper_test", HERE / "prepare-symbol-keeper.py")
+app_runtime = load("prepare_app_runtime_test", HERE / "prepare-app-runtime.py")
 
 
 class SymbolKeeperTests(unittest.TestCase):
@@ -114,5 +117,131 @@ class RuntimeToolsTests(unittest.TestCase):
         (destination / "java-home").mkdir()
         with self.assertRaisesRegex(ValueError, "ownership marker"):
             stager.stage(self.java_home, self.jar, destination, replace=True)
+
+    def app(self, staged=True):
+        app = self.root / "Probe.app"
+        app.mkdir()
+        (app / "Info.plist").write_bytes(plistlib.dumps({"CFBundleExecutable": "Probe"}))
+        (app / "Probe").write_bytes(b"synthetic bundle executable")
+        if staged:
+            stager.stage(self.java_home, self.jar, app / "LegadoRuntime")
+        return app
+
+    def test_app_runtime_moves_one_home_and_is_idempotent(self):
+        app = self.app()
+        original_manifest = (app / "LegadoRuntime/runtime-manifest.json").read_bytes()
+        prepared = app_runtime.prepare(app)
+        self.assertTrue(prepared["changed"])
+        self.assertTrue(prepared["staticValidationPassed"])
+        self.assertFalse(prepared["deviceValidationPassed"])
+        self.assertEqual(prepared["javaHomeRelativePath"], "lib")
+        self.assertFalse((app / "LegadoRuntime/java-home").exists())
+        self.assertTrue((app / "lib/modules/java.base/java/lang/Object.class").is_file())
+        self.assertTrue((app / "lib" / app_runtime.OWNER_FILE).is_file())
+        self.assertEqual((app / "LegadoRuntime/runtime-manifest.json").read_bytes(), original_manifest)
+        self.assertFalse(app_runtime.prepare(app)["changed"])
+
+    def test_app_runtime_replaces_owned_home_after_incremental_copy(self):
+        app = self.app()
+        app_runtime.prepare(app)
+        (app / "lib/old-runtime-only.txt").write_bytes(b"old payload")
+        (self.java_home / "new-runtime-only.txt").write_bytes(b"new payload")
+        stager.stage(self.java_home, self.jar, app / "LegadoRuntime", replace=True)
+        self.assertTrue(app_runtime.prepare(app)["changed"])
+        self.assertTrue((app / "lib/new-runtime-only.txt").is_file())
+        self.assertFalse((app / "lib/old-runtime-only.txt").exists())
+        self.assertFalse((app / "LegadoRuntime/java-home").exists())
+        self.assertEqual(list(app.glob(".legado-runtime-lib-previous-*")), [])
+
+    def test_app_runtime_source_only_is_explicitly_unavailable(self):
+        app = self.app(staged=False)
+        result = app_runtime.prepare(app)
+        self.assertFalse(result["javaHomePresent"])
+        self.assertFalse(result["staticValidationPassed"])
+        self.assertEqual(result["layout"], "source-only")
+        self.assertFalse((app / "lib").exists())
+
+    def test_bad_app_runtime_source_preserves_old_home(self):
+        app = self.app()
+        app_runtime.prepare(app)
+        sentinel = app / "lib/preserve.txt"
+        sentinel.write_bytes(b"keep original owned home")
+        stager.stage(self.java_home, self.jar, app / "LegadoRuntime", replace=True)
+        (app / "LegadoRuntime/java-home/conf/security/java.security").unlink()
+        with self.assertRaisesRegex(ValueError, "Missing or unreadable JDK runtime data"):
+            app_runtime.prepare(app)
+        self.assertEqual(sentinel.read_bytes(), b"keep original owned home")
+        self.assertTrue((app / "LegadoRuntime/java-home").is_dir())
+
+    def test_app_runtime_missing_marker_preserves_old_home(self):
+        app = self.app()
+        app_runtime.prepare(app)
+        stager.stage(self.java_home, self.jar, app / "LegadoRuntime", replace=True)
+        (app / "LegadoRuntime/runtime-manifest.json").unlink()
+        with self.assertRaisesRegex(ValueError, "ownership marker"):
+            app_runtime.prepare(app)
+        self.assertTrue((app / "lib/modules/java.base/java/lang/Object.class").is_file())
+        self.assertTrue((app / "LegadoRuntime/java-home").is_dir())
+
+    def test_app_runtime_refuses_unknown_existing_lib(self):
+        app = self.app()
+        (app / "lib").mkdir()
+        sentinel = app / "lib/preserve.txt"
+        sentinel.write_bytes(b"unowned data")
+        with self.assertRaisesRegex(ValueError, "unowned"):
+            app_runtime.prepare(app)
+        self.assertEqual(sentinel.read_bytes(), b"unowned data")
+
+    def test_app_runtime_requires_local_bundle_executable(self):
+        app = self.app()
+        (app / "Info.plist").write_bytes(plistlib.dumps({"CFBundleExecutable": "../outside"}))
+        with self.assertRaisesRegex(ValueError, "bundle-local executable"):
+            app_runtime.prepare(app)
+        (app / "Info.plist").write_bytes(plistlib.dumps({"CFBundleExecutable": "Absent"}))
+        with self.assertRaisesRegex(ValueError, "executable is absent"):
+            app_runtime.prepare(app)
+
+    def test_app_runtime_rejects_escape_before_any_mutation(self):
+        app = self.app()
+        with self.assertRaisesRegex(ValueError, "escapes"):
+            app_runtime.checked_path(app.resolve() / ".." / "outside", app.resolve())
+        self.assertTrue((app / "LegadoRuntime/java-home").is_dir())
+
+    def test_app_runtime_rename_failure_restores_old_home(self):
+        app = self.app()
+        app_runtime.prepare(app)
+        sentinel = app / "lib/preserve.txt"
+        sentinel.write_bytes(b"old payload")
+        stager.stage(self.java_home, self.jar, app / "LegadoRuntime", replace=True)
+        original_rename = Path.rename
+        source = (app / "LegadoRuntime/java-home").resolve()
+        def fail_source(path, target):
+            if path == source:
+                raise OSError("synthetic rename failure")
+            return original_rename(path, target)
+        with patch.object(Path, "rename", fail_source), self.assertRaisesRegex(OSError, "synthetic rename failure"):
+            app_runtime.prepare(app)
+        self.assertEqual(sentinel.read_bytes(), b"old payload")
+        self.assertTrue(source.is_dir())
+        self.assertEqual(list(app.glob(".legado-runtime-lib-previous-*")), [])
+
+    def test_app_runtime_rejects_source_and_destination_links(self):
+        app = self.app()
+        outside = self.root / "outside"
+        outside.mkdir()
+        target = outside / "data.txt"
+        target.write_bytes(b"external data")
+        nested = app / "LegadoRuntime/java-home/escape.txt"
+        try:
+            nested.symlink_to(target)
+        except OSError:
+            self.skipTest("Host does not permit creating symlinks")
+        with self.assertRaisesRegex(ValueError, "symlinked"):
+            app_runtime.prepare(app)
+        nested.unlink()
+        (app / "lib").symlink_to(outside, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "symlinked"):
+            app_runtime.prepare(app)
+        self.assertEqual(target.read_bytes(), b"external data")
 
 if __name__ == "__main__": unittest.main()

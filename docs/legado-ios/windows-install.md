@@ -27,6 +27,15 @@ Get-FileHash -Algorithm SHA256 -LiteralPath .\LegadoRuntimeProbe-unsigned.ipa
 The workflow exports an arm64 iPhoneOS app. Its simulator compilation is a
 separate check; simulator products cannot be installed on the phone.
 
+The next version 0.2 build 3 keeps the diagnostics introduced in build 2 and fixes
+the bootstrap Java-home layout; its runtime validation is pending. Staging uses
+`Resources/LegadoRuntime/java-home`, while the final app build phase moves that
+home to `LegadoRuntimeProbe.app/lib` without duplication or symbolic links. The
+engine JAR and staging manifest remain in the app's `LegadoRuntime` directory.
+Source inspection identified an early BSD VM lookup of `App.app/lib` before
+`-Djava.home` is parsed, but has not confirmed the cause of the reported
+termination. See the [bootstrap investigation](bootstrap-layout-investigation.json).
+
 ## Sign locally and install
 
 Use [Sideloadly's official Windows download](https://sideloadly.io/).
@@ -67,13 +76,16 @@ text. If no matching report is found, record that result; do not substitute an
 unrelated report or infer a cause from a filename. See Apple's
 [crash and diagnostic log instructions](https://developer.apple.com/documentation/xcode/acquiring-crash-reports-and-diagnostic-logs).
 
-For the next diagnostic build, reopen the app after a termination and share its
-technical JSON report with the report's Share action (`ShareLink`). Preserve
+For diagnostic version 0.2 build 3, once available, reopen the app after a
+termination and share its technical JSON report with the report's Share action
+(`ShareLink`). Preserve
 `savedDiagnostics` and `probeProgress`, including any recovered JVM error report,
 with the matching build manifest. These fields are intended to survive a failed
 attempt and identify the last recorded phase; they do not guarantee that a native
-crash produced a log. The first IPA from run 39003367690 predates this persistence
-and sharing support, so its absence there is expected.
+crash produced a log. The Share action exports an actual JSON file that can be
+saved to Files. The first IPA from run 39003367690 predates this persistence and
+sharing support, so its absence there is expected. Reported timings include
+diagnostic I/O and do not measure production performance.
 
 ## Capture the actual runtime result
 

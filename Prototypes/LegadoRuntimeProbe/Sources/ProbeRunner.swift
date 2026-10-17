@@ -24,6 +24,7 @@ actor ProbeRunner {
                          "buildNumber": Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown",
                          "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString,
                          "hardwareIdentifier": hardwareIdentifier,
+                         "packagedJavaHomeRelativePath": "lib",
                          "savedDiagnostics": try LegadoRuntime.savedDiagnostics(),
                          "probeProgress": try savedProgress()])
     }
@@ -121,6 +122,7 @@ actor ProbeRunner {
             let report: [String: Any] = ["fixtureOnly": true, "passed": true, "coldJVMStartAttempt": coldStart,
                 "device": device, "executionPlatform": executionPlatform,
                 "sourceCommit": sourceCommit, "runtimeManifest": runtimeManifest,
+                "packagedJavaHomeRelativePath": "lib",
                 "savedDiagnostics": try LegadoRuntime.savedDiagnostics(configuration: configuration),
                 "probeProgress": try savedProgress(),
                 "timingNote": "Includes durable diagnostic checkpoints and native journal writes; not production performance measurements.",

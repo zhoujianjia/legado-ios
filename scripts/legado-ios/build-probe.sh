@@ -73,8 +73,12 @@ PY
   echo 'The device executable must contain only the arm64 slice.' >&2
   exit 4
 }
-python3 "$SCRIPT_DIR/verify-runtime.py" --java-home "$APP/LegadoRuntime/java-home" \
+python3 "$SCRIPT_DIR/verify-runtime.py" --java-home "$APP/lib" \
   --jar "$APP/LegadoRuntime/legado-runtime.jar"
+[[ ! -e "$APP/LegadoRuntime/java-home" ]] || {
+  echo 'Legacy nested Java home remains; the static JVM must boot from App.app/lib.' >&2
+  exit 4
+}
 otool -L "$APP/LegadoRuntimeProbe" > "$WORK_DIR/probe-device-linked-libraries.log"
 python3 "$SCRIPT_DIR/verify-native-exports.py" --executable "$APP/LegadoRuntimeProbe" \
   --report "$WORK_DIR/probe-device-exports.json"
@@ -96,6 +100,7 @@ record = {
     'developerDirectory': os.environ['DEVELOPER_DIR'],
     'runtimePins': json.loads((repo / 'scripts/legado-ios/runtime-lock.json').read_text()),
     'payloadManifest': json.loads((output / 'Payload/LegadoRuntimeProbe.app/LegadoRuntime/runtime-manifest.json').read_text()),
+    'packagedJavaHomeRelativePath': 'lib',
     'ipaSHA256': ipa_hash,
     'ipaBytes': ipa.stat().st_size,
     'simulatorCompilationPassed': True,
