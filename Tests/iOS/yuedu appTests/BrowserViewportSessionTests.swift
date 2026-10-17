@@ -64,10 +64,12 @@ struct BrowserViewportSessionTests {
         let image = UIGraphicsImageRenderer(size: CGSize(width: 90, height: 180)).image { ctx in
             UIColor.red.setFill(); ctx.fill(CGRect(x: 0, y: 0, width: 90, height: 180))
         }
-        let html = "<body style='background-image:url(bg.png)'>" + (0..<24).map { i in
-            "<div style='margin:13px 0;padding:7px'><p id='p\(i)'>\(i) " + String(repeating: "連續文字 seam ", count: 20)
-            + "</p>" + (i.isMultiple(of: 3) ? "<img src='image.png' style='width:120px'/>" : "") + "</div>"
-        }.joined() + "</body>"
+        let paragraphText = String(repeating: "連續文字 seam ", count: 20)
+        let blocks: [String] = (0..<24).map { index -> String in
+            let imageHTML = index.isMultiple(of: 3) ? "<img src='image.png' style='width:120px'/>" : ""
+            return "<div style='margin:13px 0;padding:7px'><p id='p\(index)'>\(index) \(paragraphText)</p>\(imageHTML)</div>"
+        }
+        let html = "<body style='background-image:url(bg.png)'>" + blocks.joined() + "</body>"
         let input = HTMLLayoutDocument(input: .currentCompatibility(html: html, cssTexts: []), configuration: BrowserLayoutConfig(renderWidth: 320, renderHeight: 600),
                                        imageLoader: { _ in image })
         // The session leaves the page background to its host (`BrowserPageBackground`).

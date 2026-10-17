@@ -14,7 +14,10 @@
   "bundleIdentifier": "local.zhoujianjia.legado-reader",
   "platform": "iPhoneOS",
   "architecture": "arm64",
-  "deviceFamilies": ["iPhone", "iPad"],
+  "deviceFamilies": [
+    "iPhone",
+    "iPad"
+  ],
   "minimumIOS": "17.0",
   "configuration": "Release",
   "signed": false,
@@ -33,7 +36,7 @@
     "importURLSchemesPreserved": "passed",
     "noJVMOrProvisioningPayload": "passed",
     "physicalDeviceReading": "pending user trial",
-    "simulatorReadingSmoke": "pending"
+    "simulatorReadingSmoke": "pending; first attempt failed while compiling an existing unrelated test expression, before executing tests"
   },
   "trialScope": [
     "Local TXT and EPUB import, bookshelf and native reading",
@@ -47,5 +50,18 @@
     "Account, CloudKit and subscription backend services are not configured.",
     "Widget and ShareExtension are compiled and embedded; their shared-group functionality depends on signing capabilities and remains unvalidated."
   ],
-  "fullFeatureParityEstablished": false
+  "fullFeatureParityEstablished": false,
+  "simulatorSmokeInitialAttempt": {
+    "sourceCommit": "6af471799bfb128c19d5cb78e03357844e79158f",
+    "runId": 39078893326,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39078893326",
+    "artifactId": 12118598117,
+    "artifactZipSHA256": "801976caa9a472f9a31f8788b23c1b338204540906a522108369c3a21ae5a88b",
+    "portableSmokeGuardTests": 7,
+    "status": "failed_before_test_execution",
+    "failure": "Swift could not type-check the long HTML fixture expression in BrowserViewportSessionTests.swift:67. No selected unit or UI tests executed.",
+    "configurationTestsExecuted": 0,
+    "readerUITestsExecuted": 0,
+    "repair": "Split the fixture into explicitly typed intermediate values without changing any of its 24 generated HTML blocks. A fresh cloud run is required."
+  }
 }
