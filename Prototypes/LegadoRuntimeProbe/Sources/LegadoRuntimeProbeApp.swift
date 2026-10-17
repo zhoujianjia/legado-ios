@@ -7,26 +7,46 @@ import Observation
 
 @MainActor @Observable final class ProbeModel {
     var report: String?
+    var reportFile: URL?
     var failure: String?
     var isRunning = false
     let runner = ProbeRunner()
 
     func inspect() async {
-        do { report = try await runner.inspect(); failure = nil }
+        do {
+            let value = try await runner.inspect()
+            let file = try await runner.shareableReport(value)
+            report = value
+            reportFile = file
+            failure = nil
+        }
         catch { failure = error.localizedDescription }
     }
     func run() async {
         guard !isRunning else { return }
         isRunning = true
         report = nil
+        reportFile = nil
         failure = nil
         defer { isRunning = false }
         do {
             let result = try await runner.run()
             try Task.checkCancellation()
+            let file = try await runner.shareableReport(result)
+            try Task.checkCancellation()
             report = result
-        } catch is CancellationError { failure = localized("probe.cancelled") }
-        catch { failure = error.localizedDescription }
+            reportFile = file
+        } catch {
+            let message = error is CancellationError ? localized("probe.cancelled") : error.localizedDescription
+            failure = message
+            do {
+                let value = try await runner.failureReport(message)
+                let file = try await runner.shareableReport(value)
+                report = value
+                reportFile = file
+            }
+            catch { failure = message + "\n" + error.localizedDescription }
+        }
     }
 }
 
@@ -60,7 +80,21 @@ struct ProbeView: View {
             }
             .navigationTitle(localized("probe.title"))
             .toolbarTitleDisplayMode(.inline)
-            .task { await model.inspect() }
+            .toolbar {
+                if let file = model.reportFile {
+                    ShareLink(item: file) {
+                        Label(localized("probe.share_report"), systemImage: "square.and.arrow.up")
+                    }
+                }
+            }
+            .task {
+                await model.inspect()
+                // The cloud smoke launches the same Release app and JNI path.
+                // Manual installs stay idle until the user chooses to run.
+                if ProcessInfo.processInfo.arguments.contains("--legado-probe-autorun") {
+                    runID = UUID()
+                }
+            }
             .task(id: runID) {
                 guard let identifier = runID else { return }
                 await model.run()

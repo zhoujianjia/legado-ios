@@ -57,6 +57,9 @@ internal final class NativeLegadoTransport: LegadoRuntimeTransport, @unchecked S
     func start(_ configuration: LegadoRuntime.Configuration) throws {
         let diagnostics = LegadoRuntime.diagnose(configuration: configuration)
         guard diagnostics.available else { throw LegadoRuntimeError(code: "missing_runtime", message: diagnostics.issues.joined(separator: "; ")) }
+        if let directory = configuration.diagnosticsDirectory {
+            _ = try strings([directory.path]) { LGRSetDiagnosticsDirectory($0[0]) }
+        }
         let box = Unmanaged.passRetained(HostBox(host))
         do {
             _ = try strings([configuration.classPath.map(\.path).joined(separator: ":"), configuration.javaHome.path]) { values in

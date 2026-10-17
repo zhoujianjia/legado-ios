@@ -30,15 +30,19 @@ public final class LegadoRuntime: @unchecked Sendable {
         public let javaHome: URL
         public let classPath: [URL]
         public let maximumHeapMegabytes: Int
-        public init(javaHome: URL, classPath: [URL], maximumHeapMegabytes: Int = 128) {
+        public let diagnosticsDirectory: URL?
+        public init(javaHome: URL, classPath: [URL], maximumHeapMegabytes: Int = 128, diagnosticsDirectory: URL? = nil) {
             self.javaHome = javaHome; self.classPath = classPath; self.maximumHeapMegabytes = maximumHeapMegabytes
+            self.diagnosticsDirectory = diagnosticsDirectory
         }
         public static func bundled(in bundle: Bundle = .main) -> Configuration? {
             guard let resources = bundle.resourceURL else { return nil }
             let root = resources.appendingPathComponent("LegadoRuntime", isDirectory: true)
             let jars = (try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil))?
                 .filter { $0.pathExtension == "jar" }.sorted { $0.lastPathComponent < $1.lastPathComponent } ?? []
-            return Configuration(javaHome: root.appendingPathComponent("java-home", isDirectory: true), classPath: jars)
+            let diagnostics = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+                .appendingPathComponent("LegadoRuntimeDiagnostics", isDirectory: true)
+            return Configuration(javaHome: root.appendingPathComponent("java-home", isDirectory: true), classPath: jars, diagnosticsDirectory: diagnostics)
         }
     }
 
@@ -85,6 +89,13 @@ public final class LegadoRuntime: @unchecked Sendable {
             if !(32...2048).contains(configuration.maximumHeapMegabytes) { issues.append("invalid_heap: expected 32...2048 MiB") }
         } else { issues.append("missing_configuration: runtime resources not found") }
         return LegadoRuntimeDiagnostics(nativeBridgePresent: present, available: issues.isEmpty, issues: issues, deviceValidationRequired: true)
+    }
+
+    /// Read on a worker/actor. This never starts a JVM, creates a directory or
+    /// rotates evidence. Keys identify current/previous startup attempt files.
+    public static func savedDiagnostics(configuration: Configuration? = Configuration.bundled()) throws -> [String: String] {
+        guard let directory = configuration?.diagnosticsDirectory else { return [:] }
+        return try LegadoSavedDiagnostics.read(directory)
     }
 
     public func createSession(sourceJSON: String) async throws -> LegadoSourceSession {

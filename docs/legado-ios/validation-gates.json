@@ -16,9 +16,10 @@
     "user_reported_hardware": ["Windows PC", "iPhone", "iPad"],
     "user_reported_iphone_os": "iOS 18 or later; minimum prototype version met",
     "macos_build_available": true,
-    "ios_device_validation_available": false,
+    "ios_device_validation_available": true,
+    "ios_device_validation_route": "User-operated iPhone testing; installation, launch and payload preflight are user-reported. The fixture run terminated the app; crash evidence is pending in device-validation.json.",
     "macos_build_route": "SSH build tags start GitHub-hosted macOS builds. Run 39003367690 passed both jobs, native simulator/device app links and all nine dynamic exports, and produced the unsigned IPA; see cloud-validation.json.",
-    "meaning": "The user owns an iOS 18+ iPhone and an iPad, but no Mac. Remote Xcode 26.2 builds and unsigned packaging work. Signing and physical-device gates remain pending."
+    "meaning": "The user owns an iOS 18+ iPhone and an iPad, but no Mac. Remote Xcode 26.2 builds and unsigned packaging work. The user has self-signed and opened the probe on iPhone; payload preflight passed in a screenshot, but the fixture attempt terminated the app. User interaction is available; no physical-device gate has passed."
   },
   "inventory_checks": {
     "status": "passed",
@@ -39,7 +40,9 @@
       "id": "G1.signed-device-startup",
       "status": "pending",
       "required_evidence": "Signed iPhone app starts JVM after debugger disconnect and relaunch, without JIT or jailbreak.",
-      "evidence": []
+      "observation_status": "pending_crash_log",
+      "observation": "User reported self-signing, installation and opening on iPhone; screenshot payload preflight passed. Running the synthetic fixture reportedly terminated the app. No ips, Jetsam or hs_err report is available, so JVM startup progress and termination cause are unconfirmed.",
+      "evidence": ["device-validation.json"]
     },
     {
       "id": "G2.locked-engine-and-modules",

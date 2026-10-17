@@ -14,6 +14,9 @@ typedef LGRResult (*LGRHostCallback)(void *context, LGRString task, LGRString op
 int32_t LGRBridgeAvailable(void);
 LGRResult LGRMakeResult(const uint8_t *bytes, size_t count, int32_t code);
 void LGRFreeResult(LGRResult result);
+// Configures a process-scoped, app-owned diagnostics root. No files are created
+// until LGRStart attempts JVM startup on its worker thread.
+LGRResult LGRSetDiagnosticsDirectory(LGRString directory);
 LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapMB,
                    LGRHostCallback callback, void *context);
 LGRResult LGRCreateSession(LGRString sourceJSON);

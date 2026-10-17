@@ -1,8 +1,12 @@
 # Install the prototype from Windows
 
 These instructions apply after a successful cloud build produces
-`legado-probe-unsigned`. No IPA has been installed or validated on a device yet.
-The standalone probe requires iOS/iPadOS 18 or later.
+`legado-probe-unsigned`. The user has self-signed, installed, and opened the first
+build on an iPhone. A screenshot shows payload preflight passing, but the user
+reports that running the synthetic fixture closes the app. No crash log has been
+provided, and JVM startup and all device gates remain unverified. See
+[device-validation.json](device-validation.json). The standalone probe requires
+iOS/iPadOS 18 or later.
 
 ## Get the device build
 
@@ -45,6 +49,31 @@ Free Personal Team provisioning expires after seven days; refresh the signature
 to keep the test app usable. See [Apple's account overview](https://developer.apple.com/help/account/basics/about-your-developer-account).
 Paid membership is optional for this first test. Sideloadly also documents
 refreshing in its FAQ.
+
+## Preserve evidence if the app closes
+
+Do not delete or reinstall the app before exporting available reports and app
+diagnostics. The current report is a user-observed termination after starting the
+fixture; a passed payload inspection does not show how far JVM startup reached.
+The user has not found a report beginning with the app name. That absence does
+not establish whether iOS generated a crash or memory-pressure report.
+
+On the iPhone, open **Settings > Privacy & Security > Analytics & Improvements >
+Analytics Data**. Look for a report beginning with `LegadoRuntimeProbe` near the
+attempt, and also check `JetsamEvent` entries from that period. Open a matching
+entry and use **Share** to save the complete `.ips` file to Files, then transfer
+it to Windows. Export the original file instead of copying a long screen of
+text. If no matching report is found, record that result; do not substitute an
+unrelated report or infer a cause from a filename. See Apple's
+[crash and diagnostic log instructions](https://developer.apple.com/documentation/xcode/acquiring-crash-reports-and-diagnostic-logs).
+
+For the next diagnostic build, reopen the app after a termination and share its
+technical JSON report with the report's Share action (`ShareLink`). Preserve
+`savedDiagnostics` and `probeProgress`, including any recovered JVM error report,
+with the matching build manifest. These fields are intended to survive a failed
+attempt and identify the last recorded phase; they do not guarantee that a native
+crash produced a log. The first IPA from run 39003367690 predates this persistence
+and sharing support, so its absence there is expected.
 
 ## Capture the actual runtime result
 

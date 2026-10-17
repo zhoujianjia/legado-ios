@@ -26,7 +26,7 @@ iPhone build to start without a debugger or JIT before full feature migration.
   MCP tool registrations. The declaration index uses regular expressions and is
   an audit aid, not an exhaustive semantic analysis.
 - [validation-gates.json](validation-gates.json) separates passing inventory checks
-  from unrun device gates. A desktop or cloud compile never changes a device gate to
+  from pending device gates. A desktop or cloud compile never changes a device gate to
   passed.
 
 Regenerate or verify the inventory from the repository root with Python 3.11+:
@@ -157,7 +157,16 @@ For the first device gate, use the
 [standalone probe app](../../Prototypes/LegadoRuntimeProbe/README.md). It links
 only the local runtime package and provides signing/install instructions plus a
 synthetic reading-chain report, without resolving the production app's remote
-packages. Its device compilation and execution remain unverified.
+packages. Cloud simulator/device compilation and linking passed. The user reports
+successful iPhone installation and payload preflight, but fixture execution
+terminated the app; the cause and JVM startup progress are unknown. See
+[device-validation.json](device-validation.json).
+
+Diagnostic version 0.2 (build 2) adds persistent `probeProgress`, native
+`current`/`previous` logs, VM `vfprintf`/`hs_err` capture, and a JSON file shared
+through `ShareLink` that can be saved to Files. Recorded times include diagnostic
+I/O and are not production performance measurements. Simulator autorun is pending;
+the current cloud evidence establishes compilation/linking, not runtime success.
 
 The production app exposes the opt-in probe at **Settings → Advanced → Legado
 Runtime Verification**. It runs only an included synthetic, network-free source
@@ -181,9 +190,10 @@ Run the gates in order:
    isolation and repeated sessions. Measure cold startup, package-size increase,
    peak memory and rule latency on the same device and build.
 
-The current workspace is Windows. No Mac, Xcode or iPhone runtime result is
-available from this environment; those gates remain pending until their actual
-logs and measurements are recorded. Do not proceed to full feature migration
+The current workspace is Windows; cloud Xcode compilation/linking is verified,
+and user-operated iPhone testing is available. The reported execution termination
+has no crash log yet. All device gates remain pending until their required runtime
+evidence is recorded. Do not proceed to full feature migration
 before gates 1 through 4 pass. If the JVM route fails those gates, retain the same
 semantic tests when evaluating a different engine.
 

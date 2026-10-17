@@ -104,7 +104,10 @@ jobs:
         run: LEGADO_BOOT_JDK="$JAVA_HOME" bash scripts/legado-ios/build-zero.sh 2>&1 | tee .build/ci-logs/zero-build.log
       - name: Compile both iOS slices and package the unsigned device app
         run: bash scripts/legado-ios/build-probe.sh 2>&1 | tee .build/ci-logs/probe-build.log
+      - name: Run the native Zero probe in Simulator
+        run: python -B scripts/legado-ios/run-simulator-probe.py 2>&1 | tee .build/ci-logs/simulator-probe.log
       - name: Save the unsigned probe and its build manifest
+        if: ${{ always() && hashFiles('.build/legado-ios/probe-output/LegadoRuntimeProbe-unsigned.ipa') != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: legado-probe-unsigned
@@ -135,8 +138,8 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
-          This workflow compiles the prototype; it does not sign, install, or run it on an iPhone/iPad.
-          On success, download `legado-probe-unsigned`; its IPA must be signed separately before installation.
+          This workflow compiles the prototype and runs its synthetic fixture in Simulator. It does not sign, install, or run it on an iPhone/iPad.
+          When packaging succeeds, download `legado-probe-unsigned`; its IPA must be signed separately before installation, even if the simulator step fails.
           On failure, inspect `legado-macos-build-logs` and the failing step. No fallback runtime is substituted.
           All iOS device validation gates remain pending, including JVM startup without JIT or a debugger.
           SUMMARY

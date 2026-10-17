@@ -11,13 +11,40 @@ actor ProbeRunner {
     private let clock = ContinuousClock()
     private var measurements: [[String: Any]] = []
     private var running = false
+    private var diagnosticsDirectory: URL?
     private let logger = Logger(subsystem: "local.legado.runtime-probe", category: "Fixture")
 
     func inspect() throws -> String {
         let diagnostics = LegadoRuntime.diagnose()
         return try json(["fixtureOnly": true, "nativeBridgePresent": diagnostics.nativeBridgePresent,
                          "payloadPreflightPassed": diagnostics.available, "deviceValidationRequired": true,
-                         "issues": diagnostics.issues])
+                         "issues": diagnostics.issues,
+                         "sourceCommit": sourceCommit,
+                         "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
+                         "buildNumber": Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown",
+                         "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString,
+                         "hardwareIdentifier": hardwareIdentifier,
+                         "savedDiagnostics": try LegadoRuntime.savedDiagnostics(),
+                         "probeProgress": try savedProgress()])
+    }
+
+    func failureReport(_ message: String) throws -> String {
+        if diagnosticsDirectory != nil { try recordProgress("failed", failure: message) }
+        return try json(["fixtureOnly": true, "passed": false, "failure": message,
+                         "sourceCommit": sourceCommit,
+                         "savedDiagnostics": try LegadoRuntime.savedDiagnostics(),
+                         "probeProgress": try savedProgress()])
+    }
+
+    func shareableReport(_ report: String) throws -> URL {
+        guard let directory = LegadoRuntime.Configuration.bundled()?.diagnosticsDirectory else {
+            throw LegadoRuntimeError(code: "MISSING_DIAGNOSTICS_DIRECTORY", message: "No report export directory is configured")
+        }
+        let exports = directory.appendingPathComponent("exports", isDirectory: true)
+        try FileManager.default.createDirectory(at: exports, withIntermediateDirectories: true)
+        let file = exports.appendingPathComponent("LegadoProbe-report.json")
+        try Data(report.utf8).write(to: file, options: .atomic)
+        return file
     }
     func run() async throws -> String {
         guard !running else { throw mismatch("A fixture is already running") }
@@ -28,17 +55,13 @@ actor ProbeRunner {
         guard diagnostics.available, let configuration = LegadoRuntime.Configuration.bundled() else {
             throw LegadoRuntimeError(code: "MISSING_RUNTIME", message: diagnostics.issues.joined(separator: "\n"))
         }
+        diagnosticsDirectory = configuration.diagnosticsDirectory
+        try beginProgress()
         var device = await MainActor.run {
             let current = UIDevice.current
             return ["model": current.model, "systemName": current.systemName, "systemVersion": current.systemVersion]
         }
-        var systemInfo = utsname()
-        if uname(&systemInfo) == 0 {
-            device["hardwareIdentifier"] = withUnsafeBytes(of: systemInfo.machine) {
-                String(decoding: $0.prefix { $0 != 0 }, as: UTF8.self)
-            }
-        }
-        let sourceCommit = Bundle.main.object(forInfoDictionaryKey: "LegadoSourceCommit") as? String
+        device["hardwareIdentifier"] = hardwareIdentifier
         let manifestURL = configuration.javaHome.deletingLastPathComponent().appendingPathComponent("runtime-manifest.json")
         let manifestData = try Data(contentsOf: manifestURL)
         guard let runtimeManifest = try JSONSerialization.jsonObject(with: manifestData) as? [String: Any] else {
@@ -57,10 +80,12 @@ actor ProbeRunner {
         let sourceJSON = try json(["bookSourceName": "Synthetic fixture", "bookSourceUrl": "https://fixture.invalid", "mainJs": source])
         let started = clock.now
         let memoryBefore = memory()
+        try recordProgress("create_session.begin")
         let session = try await engine.createSession(sourceJSON: sourceJSON)
         let startupAndSessionMS = milliseconds(since: started)
         var closeAttempted = false
         do {
+            try recordProgress("create_session.returned")
             let runtimeDiagnostics = try result(await call(engine, session, "diagnostics"))
             guard let runtimeValues = runtimeDiagnostics as? [String: Any],
                   let javaVersion = runtimeValues["javaVersion"] as? String, !javaVersion.isEmpty else {
@@ -85,14 +110,20 @@ actor ProbeRunner {
                   variables["@variable"] as? String == "logged-in", let cache = snapshot["cache"] as? [String: Any],
                   cache["lastKey"] as? String == "书" else { throw mismatch("Source variable/cache state") }
             let cancelStarted = clock.now
+            try recordProgress("cancellation.begin")
             try await verifyCancellation(engine, session: session)
+            try recordProgress("cancellation.returned")
             measurements.append(["operation": "cancel", "milliseconds": milliseconds(since: cancelStarted)])
             try Task.checkCancellation()
             closeAttempted = true
+            try recordProgress("close_session.begin")
             try await engine.close(session: session)
             let report: [String: Any] = ["fixtureOnly": true, "passed": true, "coldJVMStartAttempt": coldStart,
                 "device": device, "executionPlatform": executionPlatform,
-                "sourceCommit": sourceCommit ?? "not_injected", "runtimeManifest": runtimeManifest,
+                "sourceCommit": sourceCommit, "runtimeManifest": runtimeManifest,
+                "savedDiagnostics": try LegadoRuntime.savedDiagnostics(configuration: configuration),
+                "probeProgress": try savedProgress(),
+                "timingNote": "Includes durable diagnostic checkpoints and native journal writes; not production performance measurements.",
                 "runtimeDiagnostics": runtimeDiagnostics, "runtimeJavaVersion": javaVersion,
                 "semanticSuite": semanticSuite,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
@@ -100,7 +131,9 @@ actor ProbeRunner {
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
                 "semantics": semantics, "state": state, "requests": await host.capturedRequests(),
                 "limits": "Covers the packaged original 25 JsEngineCapabilitiesTest cases, the explicit java.beans probe and synthetic mainJs fixtures. This is not exhaustive proof of Java collection, byte-array or overload conversion compatibility. Full G4 reference-trace parity and G5 network/browser timeouts, concurrent isolation and sustained sessions remain unverified. Peak RSS is process lifetime; payloadBytes excludes the linked native JVM binary. Gate 1 also requires launching Release on a physical iPhone from the Home Screen without a debugger."]
-            return try json(report)
+            let serialized = try json(report)
+            try recordProgress("passed")
+            return serialized
         } catch {
             let original = error
             if !closeAttempted {
@@ -113,7 +146,9 @@ actor ProbeRunner {
 
     private func call(_ engine: LegadoRuntime, _ session: LegadoSourceSession, _ operation: String, _ request: [String: Any] = [:]) async throws -> Data {
         let before = clock.now
+        try recordProgress("execute.begin", operation: operation)
         let response = try await engine.execute(session: session, operation: operation, requestJSON: json(request))
+        try recordProgress("execute.returned", operation: operation)
         measurements.append(["operation": operation, "milliseconds": milliseconds(since: before)])
         return Data(response.utf8)
     }
@@ -183,6 +218,66 @@ actor ProbeRunner {
         } onCancel: { pending.cancel() }
     }
     private func mismatch(_ step: String) -> LegadoRuntimeError { LegadoRuntimeError(code: "FIXTURE_MISMATCH", message: step) }
+    private var sourceCommit: String { Bundle.main.object(forInfoDictionaryKey: "LegadoSourceCommit") as? String ?? "not_injected" }
+    private var hardwareIdentifier: String {
+        var systemInfo = utsname()
+        guard uname(&systemInfo) == 0 else { return "unknown" }
+        return withUnsafeBytes(of: systemInfo.machine) {
+            String(decoding: $0.prefix { $0 != 0 }, as: UTF8.self)
+        }
+    }
+
+    /// A small operation checkpoint complements the lower-level JNI journal. It
+    /// contains no book-source scripts, HTTP bodies, cookies, or account details.
+    /// All disk access stays on this actor, never in a view or on MainActor.
+    private func beginProgress() throws {
+        guard let directory = diagnosticsDirectory else {
+            throw LegadoRuntimeError(code: "MISSING_DIAGNOSTICS_DIRECTORY", message: "The probe requires a writable diagnostics directory")
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let current = directory.appendingPathComponent("probe-progress.json")
+        if FileManager.default.fileExists(atPath: current.path) {
+            let previous = try readProgress(current)
+            try JSONSerialization.data(withJSONObject: previous, options: [.sortedKeys])
+                .write(to: directory.appendingPathComponent("previous-probe-progress.json"), options: .atomic)
+        }
+        try recordProgress("preparing_runtime")
+    }
+
+    private func recordProgress(_ stage: String, operation: String? = nil, failure: String? = nil) throws {
+        guard let directory = diagnosticsDirectory else { return }
+        var checkpoint: [String: Any] = ["stage": stage, "recordedAt": Date().timeIntervalSince1970,
+                                       "sourceCommit": sourceCommit, "executionPlatform": executionPlatform,
+                                       "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString,
+                                       "hardwareIdentifier": hardwareIdentifier,
+                                       "processIdentifier": ProcessInfo.processInfo.processIdentifier]
+        if let operation { checkpoint["operation"] = operation }
+        if let failure { checkpoint["failure"] = String(failure.prefix(4096)) }
+        let data = try JSONSerialization.data(withJSONObject: checkpoint, options: [.sortedKeys])
+        try data.write(to: directory.appendingPathComponent("probe-progress.json"), options: .atomic)
+    }
+
+    private func savedProgress() throws -> [String: Any] {
+        guard let directory = LegadoRuntime.Configuration.bundled()?.diagnosticsDirectory else { return [:] }
+        var result: [String: Any] = [:]
+        for name in ["probe-progress.json", "previous-probe-progress.json"] {
+            let file = directory.appendingPathComponent(name)
+            if FileManager.default.fileExists(atPath: file.path) { result[name] = try readProgress(file) }
+        }
+        return result
+    }
+
+    private func readProgress(_ file: URL) throws -> [String: Any] {
+        let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+        guard let size = attributes[.size] as? NSNumber, size.intValue <= 32_768 else {
+            throw LegadoRuntimeError(code: "INVALID_PROGRESS_FILE", message: "Probe checkpoint exceeds its size limit")
+        }
+        let data = try Data(contentsOf: file)
+        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw LegadoRuntimeError(code: "INVALID_PROGRESS_FILE", message: "Probe checkpoint is not a JSON object")
+        }
+        return object
+    }
     private var executionPlatform: String {
 #if targetEnvironment(simulator)
         "ios-simulator"

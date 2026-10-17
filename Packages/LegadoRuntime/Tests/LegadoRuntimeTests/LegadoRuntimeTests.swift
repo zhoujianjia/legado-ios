@@ -30,6 +30,57 @@ private final class BlockingTransport: LegadoRuntimeTransport, @unchecked Sendab
     func closeSession(_ session: String) throws -> String { "{\"ok\":true}" }
 }
 @MainActor final class LegadoRuntimeTests: XCTestCase {
+    private func diagnosticsFolder() throws -> URL {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        addTeardownBlock { try FileManager.default.removeItem(at: folder) }
+        return folder
+    }
+    private func diagnosticsConfiguration(_ root: URL) -> LegadoRuntime.Configuration {
+        .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: [], diagnosticsDirectory: root)
+    }
+    func testInspectingMissingDiagnosticsDoesNotCreateFiles() throws {
+        let parent = try diagnosticsFolder()
+        let missing = parent.appendingPathComponent("not-created", isDirectory: true)
+        XCTAssertEqual(try LegadoRuntime.savedDiagnostics(configuration: diagnosticsConfiguration(missing)), [:])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: missing.path))
+    }
+    func testSavedDiagnosticsPreserveBothAttemptsAndVMOutput() throws {
+        let root = try diagnosticsFolder()
+        for attempt in ["current", "previous"] {
+            let folder = root.appendingPathComponent(attempt, isDirectory: true)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            try Data("stage=JNI_CreateJavaVM.before".utf8).write(to: folder.appendingPathComponent("stages.log"))
+            try Data("VM initialization failed".utf8).write(to: folder.appendingPathComponent("vm-output.log"))
+            try Data("fatal header".utf8).write(to: folder.appendingPathComponent("hs_err_pid123.log"))
+        }
+        let configuration = diagnosticsConfiguration(root)
+        let first = try LegadoRuntime.savedDiagnostics(configuration: configuration)
+        XCTAssertEqual(first.count, 6)
+        XCTAssertEqual(first["previous/vm-output.log"], "VM initialization failed")
+        XCTAssertEqual(first["current/hs_err_pid123.log"], "fatal header")
+        XCTAssertEqual(try LegadoRuntime.savedDiagnostics(configuration: configuration), first)
+    }
+    func testLargeFatalLogRetainsHeaderAndTailWithinReadLimit() throws {
+        let root = try diagnosticsFolder()
+        let current = root.appendingPathComponent("current", isDirectory: true)
+        try FileManager.default.createDirectory(at: current, withIntermediateDirectories: true)
+        let contents = "FATAL HEADER\n" + String(repeating: "x", count: 300_000) + "\nVM OPTIONS TAIL"
+        try Data(contents.utf8).write(to: current.appendingPathComponent("hs_err_pid1.log"))
+        let reports = try LegadoRuntime.savedDiagnostics(configuration: diagnosticsConfiguration(root))
+        let saved = try XCTUnwrap(reports["current/hs_err_pid1.log"])
+        XCTAssertTrue(saved.hasPrefix("FATAL HEADER"))
+        XCTAssertTrue(saved.hasSuffix("VM OPTIONS TAIL"))
+        XCTAssertTrue(saved.contains("[truncated:"))
+        XCTAssertLessThan(saved.utf8.count, LegadoSavedDiagnostics.fatalLimit + 256)
+    }
+    func testInvalidAttemptPathIsAnExplicitReadError() throws {
+        let root = try diagnosticsFolder()
+        try Data("not a directory".utf8).write(to: root.appendingPathComponent("current"))
+        XCTAssertThrowsError(try LegadoRuntime.savedDiagnostics(configuration: diagnosticsConfiguration(root))) { error in
+            XCTAssertEqual((error as? LegadoRuntimeError)?.code, "invalid_diagnostics_path")
+        }
+    }
     func testMissingPayloadIsExplicit() {
         let diagnostics = LegadoRuntime.diagnose(configuration: .init(javaHome: URL(fileURLWithPath: "/nonexistent-legado-runtime"), classPath: []))
         XCTAssertFalse(diagnostics.available)

@@ -8,6 +8,11 @@ Portable tests and native simulator/device compilation and linking pass. An
 [unsigned iOS 18+ probe](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
 is available for self-signing. JVM startup and compatibility on a physical device
 remain pending; this is a runtime prototype, not a complete Legado release.
+The user reports successful iPhone installation and payload preflight, followed
+by termination when running the fixture; the cause is unknown. See
+[device evidence](docs/legado-ios/device-validation.json). Diagnostic version 0.2
+(build 2) adds persistent progress/logs and JSON file sharing for the next attempt;
+simulator autorun and all physical-device gates remain pending.
 
 - [Prototype architecture, coverage and validation gates](docs/legado-ios/README.md)
 - [Build from Windows using GitHub Actions](docs/legado-ios/cloud-build.md)

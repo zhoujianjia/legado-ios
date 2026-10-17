@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "evidence_status": "user_reported",
+  "original_unsigned_build": {
+    "run_id": 39003367690,
+    "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690",
+    "source_commit": "314d20c9ef47bb9a7b2d2623a969fb1e52bd02a8",
+    "artifact_id": 12090376479,
+    "ipa_filename": "LegadoRuntimeProbe-unsigned.ipa",
+    "ipa_bytes": 49497149,
+    "unsigned_ipa_sha256": "cf19f3aeee196f39d35c3271d9ca26ea15305d48c930c29cf06260ff50a1c36f",
+    "evidence": "cloud-validation.json",
+    "manifest_note": "The first unsigned artifact records its commit in build-manifest.json; its on-device source commit field can be not_injected. These hashes identify the original unsigned artifact, not an independently retrieved signed installation.",
+    "signed_ipa_sha256": null
+  },
+  "device": {
+    "type": "iPhone",
+    "model": null,
+    "os_version": null,
+    "user_reported_os_requirement_met": "iOS 18 or later",
+    "event_timestamp": null
+  },
+  "installation": {
+    "status": "user_reported",
+    "self_signed": true,
+    "installed": true,
+    "app_opened": true,
+    "launch_debugger_state": "not independently recorded"
+  },
+  "screenshot": {
+    "source": "user attachment in this conversation",
+    "local_path": null,
+    "observed_fields": {
+      "nativeBridgePresent": true,
+      "payloadPreflightPassed": true,
+      "issues": []
+    },
+    "meaning": "The screenshot reports native bridge and payload preflight availability. These fields do not prove JVM creation, engine loading or fixture execution."
+  },
+  "execution_attempt": {
+    "status": "pending_crash_log",
+    "user_report": "The app terminated after the user selected the synthetic fixture run.",
+    "vm_startup_position": "unknown",
+    "termination_cause": "unknown",
+    "user_crash_log_available": false,
+    "crash_log_search_result": "The user reported not finding an Analytics Data entry beginning with Legado; no report has been supplied. This does not prove that no report exists.",
+    "ios_ips": null,
+    "jetsam_report": null,
+    "hs_err_report": null,
+    "savedDiagnostics": null,
+    "probeProgress": null
+  },
+  "next_evidence": [
+    "Export an available matching iPhone Analytics Data ips or JetsamEvent report before deleting or reinstalling the app; preserve the complete original file.",
+    "Use the subsequent diagnostic build to capture savedDiagnostics and probeProgress after reopening, then export the technical report with its Share action.",
+    "Preserve the matching build manifest and actual device/OS details with each report; do not infer them from the original cloud runner."
+  ],
+  "device_gates_passed": [],
+  "g1_status": "pending",
+  "device_validation_passed": false,
+  "full_feature_migration_allowed": false
+}

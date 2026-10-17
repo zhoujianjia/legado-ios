@@ -8,8 +8,12 @@ tests. No source engine is implemented in this app, and no HTTP request leaves i
 **Status:** portable tests, macOS Swift tests, both Zero runtime builds,
 simulator/device app links and nine required dynamic exports have passed.
 [Cloud run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
-provides an unsigned IPA. Signing, JVM startup and device execution remain
-unverified. No generated OpenJDK binaries are committed.
+provides an unsigned IPA. JVM startup and compatibility on a physical device
+remain unverified. The user reports self-signing, installation and a
+passed payload preflight on iPhone, followed by termination on fixture execution;
+the cause is unknown. See [device evidence](../../docs/legado-ios/device-validation.json).
+Simulator autorun and all physical-device gates remain pending. No generated
+OpenJDK binaries are committed.
 
 With Windows, an iPhone, and an iPad but no local Mac, follow the
 [manual cloud-build guide](../../docs/legado-ios/cloud-build.md). The prepared
@@ -77,7 +81,7 @@ does not pass the JVM gate.
 ## Read the results
 
 “Inspect runtime payload” only checks files and native bridge presence. “Run
-synthetic reading fixture” actually starts the same process-scoped JVM and checks
+synthetic reading fixture” attempts to start the process-scoped JVM and then checks
 the original 25 `JsEngineCapabilitiesTest` cases, actual JavaBeans property
 discovery/read/write, custom Rhino/E4X semantics, login request bytes, Cookie/header persistence,
 search → details → TOC → content → batch, variables/cache, and cancellation.
@@ -95,9 +99,19 @@ artifact omitted its custom Info.plist source-commit field, so that report uses
 script now stamps the field explicitly for subsequent builds.
 Startup/session time combines JVM startup and session creation; later
 runs reuse the JVM and are explicitly marked warm. Payload bytes are not an IPA
-size estimate. Errors remain visible. These results cover synthetic `mainJs`
+size estimate. Diagnostic checkpoints and native log writes add I/O to the
+reported times; they are not production performance measurements. Errors remain
+visible. These results cover synthetic `mainJs`
 fixtures and the packaged original semantic suite; complete G4 reference traces,
 declarative-rule and real-source compatibility remain pending.
+
+Diagnostic version 0.2 (build 2) persists root-level `probeProgress` checkpoints
+and native `current`/`previous` attempt logs, captures VM `vfprintf` output and
+requests an `hs_err` file. After a termination, reopen the app and inspect the
+report before retrying. Preserve `savedDiagnostics` and `probeProgress`; a native
+failure may not produce an `hs_err` file. The Share action uses a file URL through
+`ShareLink`, so the complete JSON report can be saved to Files without copying
+screen text. The earlier IPA does not contain this diagnostic support.
 
 If startup fails, relaunch the process before retrying: an embedded JVM cannot be
 restarted. After Gate 1 succeeds, validate browser/platform adapters, original
