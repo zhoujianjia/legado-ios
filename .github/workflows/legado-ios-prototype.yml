@@ -1,8 +1,11 @@
 name: Legado iOS Prototype
 
-# Run explicitly: this experiment compiles OpenJDK twice and needs no signing secrets.
+# Run explicitly by UI or a dedicated Git tag; this experiment compiles OpenJDK twice.
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'legado-probe-*'
 
 permissions:
   contents: read

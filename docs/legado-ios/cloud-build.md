@@ -16,8 +16,10 @@ The user-controlled destination is
 [`zhoujianjia/legado-ios`](https://github.com/zhoujianjia/legado-ios). The local
 `origin` targets that repository; the original Yuedu remote is retained as
 `upstream`. Before the cloud workflow can run, the prepared implementation must
-be pushed to the destination, with GitHub Actions enabled. Local GitHub
-authentication is required for that push and workflow dispatch.
+be pushed to the destination, with GitHub Actions enabled. SSH authentication
+has been verified as `zhoujianjia` and the prepared prototype has been pushed.
+The browser-based CLI login is optional when using SSH build tags or the
+Actions page's manual trigger.
 
 Include the implementation, vendored runtime JARs and their license/provenance
 files, the Gradle wrapper, and the workflow at
@@ -45,9 +47,20 @@ to offer its manual trigger. The branch selected below determines the code built
    select **Run workflow** again.
 4. Open the resulting run to watch its jobs and download its artifacts.
 
-The workflow uses `workflow_dispatch`; it does not run automatically for every
-push. It does not publish a release, sign an app, or upload an app to Apple. No
-Apple account credentials are needed for these unsigned compilation steps.
+The workflow accepts `workflow_dispatch` and pushes of dedicated
+`legado-probe-*` tags. A build tag can be pushed using an existing SSH key,
+without a GitHub CLI/API login:
+
+```bash
+git tag legado-probe-<unique-build-id> <reviewed-commit>
+git push origin refs/tags/legado-probe-<unique-build-id>
+```
+
+Replace the placeholders with an unused build name and the commit to validate.
+Normal branch pushes do not start this expensive workflow. A build tag starts
+validation only; the workflow does not publish a GitHub Release, sign an app,
+or upload an app to Apple. No Apple account credentials are needed for these
+unsigned compilation steps.
 
 The jobs perform these checks in order:
 
