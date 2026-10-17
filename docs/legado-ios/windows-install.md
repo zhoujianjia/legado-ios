@@ -9,7 +9,12 @@ The standalone probe requires iOS/iPadOS 18 or later.
 Download `legado-probe-unsigned` from the successful Actions run and extract the
 downloaded artifact ZIP. Use the contained `LegadoRuntimeProbe-unsigned.ipa`;
 the outer artifact ZIP is not itself an IPA. Preserve `build-manifest.json`
-with the build's run URL and revision. Compare the IPA hash with `ipaSHA256`:
+with the build's run URL and revision.
+The first successful build, run 39003367690, records its source commit only in
+that accompanying manifest; its on-device JSON can say `not_injected` for the
+commit field. Keep both files together. Later packaging stamps the bundle field.
+
+Compare the IPA hash with `ipaSHA256`:
 
 ```powershell
 Get-FileHash -Algorithm SHA256 -LiteralPath .\LegadoRuntimeProbe-unsigned.ipa
@@ -44,8 +49,11 @@ refreshing in its FAQ.
 ## Capture the actual runtime result
 
 Disconnect USB and launch **Legado Probe** from the Home Screen. Inspect the
-payload, run the synthetic reading fixture and save its JSON report. For a cold
-start, terminate the app and relaunch before running the fixture. Record the
+payload, run the synthetic reading fixture and save its JSON report. The
+diagnostic payload also executes the unchanged original 25-case engine
+suite and a JavaBeans functionality probe; preserve every case result and the
+device/OS, source commit, runtime versions and payload manifest in that report.
+For a cold start, terminate the app and relaunch before running the fixture. Record the
 device model, OS version, build manifest and run URL alongside the report.
 
 Repeat on iPad after the initial iPhone run. Installation and a file preflight

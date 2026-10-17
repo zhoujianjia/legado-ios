@@ -105,6 +105,63 @@
       "macos_logs_artifact_id": 12089761643,
       "device_app_build": "Not reached after simulator link failure",
       "resolution": "Copy the complete W^X state implementation from the same revision's AArch64 backend into Zero, retaining the iOS guard that excludes the real pthread JIT switch; validate both original hashes and the exact prepared output"
+    },
+    {
+      "run_id": 39002531478,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39002531478",
+      "source_commit": "8cddc9a34eb0eee85ae34416dbdde63609d8e7e4",
+      "tag": "legado-probe-8cddc9a",
+      "status": "failed",
+      "portable_job_id": 117308288763,
+      "portable_job": "passed",
+      "python_inventory_tests_passed": 12,
+      "python_runtime_tool_tests_passed": 11,
+      "python_zero_adaptation_tests_passed": 5,
+      "macos_job_id": 117308590565,
+      "source_only_swift_tests_passed": 8,
+      "native_zero_build": "Both runtime slices, all thirteen modules and runtime data passed",
+      "simulator_app_compile_and_link": "passed",
+      "device_app_compile_and_link": "passed",
+      "zero_wx_state_fix": "Validated by both complete app links",
+      "required_dynamic_exports_present": 5,
+      "missing_dynamic_exports": ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource"],
+      "failure": "Final executable dyld export-trie gate rejected exactly the four JIMAGE entrypoints; no IPA was exported",
+      "resolution": "Add four precise -u archive roots for static iOS linking; no all-load flag or weakened export gate",
+      "resolution_commit": "314d20c9ef47bb9a7b2d2623a969fb1e52bd02a8"
+    },
+    {
+      "run_id": 39003367690,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690",
+      "source_commit": "314d20c9ef47bb9a7b2d2623a969fb1e52bd02a8",
+      "tag": "legado-probe-314d20c",
+      "status": "success",
+      "portable_job_id": 117310754705,
+      "portable_job": "passed",
+      "python_inventory_tests_passed": 12,
+      "python_runtime_tool_tests_passed": 11,
+      "python_zero_adaptation_tests_passed": 5,
+      "junit_tests_passed": 45,
+      "packaged_original_cases_passed": 25,
+      "packaged_original_cases_failed_skipped": 0,
+      "packaged_java_beans_functional_probe": "passed on Linux desktop JVM with -Xint and -Xmx128m",
+      "macos_job_id": 117311022602,
+      "source_only_swift_tests_passed": 8,
+      "native_zero_build": "Both runtime slices, all thirteen modules and runtime data passed",
+      "simulator_app_compile_and_link": "passed",
+      "device_app_compile_and_link": "passed",
+      "required_dynamic_exports_present": 9,
+      "missing_dynamic_exports": [],
+      "unsigned_artifact_id": 12090376479,
+      "unsigned_artifact_zip_sha256": "8701d0fb4e66421091cb90c4bf500d566fef4fad1b64bc20c4b2be3bfd6b40e6",
+      "ipa_bytes": 49497149,
+      "ipa_sha256": "cf19f3aeee196f39d35c3271d9ca26ea15305d48c930c29cf06260ff50a1c36f",
+      "jar_sha256": "7bd5ce658650f9721331c0aa8194daef0b9637e3921cf9c5c6cb90ff667fb4fe",
+      "native_executable_bytes": 9496080,
+      "native_executable_sha256": "6f4b6156b82587dbc36b46c05b73342001ee6d8b02bca366919895966c644a9e",
+      "windows_artifact_audit": "Downloaded bytes match both artifact and IPA digests; LIEF independently confirmed ARM64 and all nine LC_DYLD_EXPORTS_TRIE entries; packaged JAR hash and original test/JUnit classes confirmed",
+      "metadata_note": "Xcode omitted the arbitrary source-commit Info.plist setting; pair this first artifact's runtime report with build-manifest.json. Subsequent packaging explicitly stamps the field before unsigned export.",
+      "signed": false,
+      "device_validation_passed": false
     }
   ],
   "source_preflight_fixes": {
@@ -112,7 +169,7 @@
       "symbols": ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource"],
       "reason": "Static iOS HotSpot resolves these by dlsym; the keeper's NativeImageBuffer object does not reference their separate jimage.cpp object",
       "change": "Four exact iOS -u linker roots, with a final executable dyld export-trie check",
-      "native_validation": "Pending the cloud build"
+      "native_validation": "Run 39003367690 passed all nine final executable exports; the downloaded ARM64 Mach-O export trie was independently verified on Windows"
     },
     "zero_wx_state": {
       "target": "src/hotspot/os_cpu/bsd_zero/os_bsd_zero.cpp",
@@ -121,7 +178,7 @@
       "original_donor_sha256": "78a0c5aa1d2b5b696ef94ded1f5d50d0aeb8a8e93bd4e13428bcc198ecf021a5",
       "prepared_target_sha256": "702ba78cb0c9c19e0c178d2dd34479b2a03ff2aa3c43de903755c3d49b866dcc",
       "regression_tests_passed": 5,
-      "native_validation": "Pending the next cloud build"
+      "native_validation": "Run 39002531478 compiled and linked both simulator and device apps with this adaptation"
     },
     "runtime_data": "Copy the built conf tree, tzdb.dat, and cacerts into each Java home; verify five required data files are readable and nonempty",
     "symbol_registration": {
@@ -136,6 +193,7 @@
     "swift_changes": "Eight source-only Swift package tests and real simulator app source compilation passed; native linking is tracked per attempt"
   },
   "macos_build_environment_verified": true,
-  "ios_compilation_passed": false,
+  "ios_compilation_passed": true,
+  "native_bootstrap_exports_passed": true,
   "device_validation_passed": false
 }

@@ -8,11 +8,12 @@ for installation and actual runtime validation. No Mac SSH connection is needed.
 See [cloud-validation.json](cloud-validation.json) for observed cloud runs,
 failures, and verified fixes. The initial runs exposed missing dependency
 checksum entries, which have been added and checked with a fresh dependency
-cache and forced JVM rebuild/tests. The cloud has passed eight Swift tests and
-built both native Zero slices with complete Java module/data payloads. The first
-real simulator app reached linking and exposed missing Zero W^X state hooks.
-App linking, signing, and device execution remain unverified, and all device
-validation gates remain pending.
+cache and forced JVM rebuild/tests. The cloud has passed eight Swift tests,
+built both native Zero slices with complete Java module/data payloads, linked
+both apps and verified all nine required dynamic exports. Successful
+[run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
+provides an unsigned IPA. Signing and device execution remain unverified, and all
+device validation gates remain pending.
 Pinned source revisions make the inputs reviewable; they do not guarantee that
 the Zero build will succeed on the selected runner.
 

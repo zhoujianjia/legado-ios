@@ -6,6 +6,17 @@ Requires JDK 21. From this directory:
 ./gradlew test runtimeJar runtimeBundle runtimeSmoke
 ```
 
+For the standalone diagnostic app, opt in to the unchanged original engine suite:
+
+```sh
+./gradlew -PincludeEngineTests=true test runtimeJar runtimeSmoke runtimeSuiteSmoke
+```
+
+That payload includes the 25 original test cases and JUnit/Hamcrest with separate
+licenses. `runtimeSuiteSmoke` runs the packaged cases and a JavaBeans property
+discovery/read/write probe under `-Xint`; ordinary payloads instead verify the
+explicit `SEMANTIC_SUITE_NOT_PACKAGED` response and absence of test classes.
+
 `build/libs/legado-runtime.jar` is a self-contained JNI payload. Source classes
 (including the upstream E4X overrides) precede dependency classes during assembly;
 service-provider files are merged. `build/runtime/lib` is the equivalent thin
@@ -42,12 +53,14 @@ compares this behavior directly with the copied upstream bindings.
 
 Operations: `search {key,page}`, `explore {url,page}`, `details {book}`,
 `toc {book}`, `content {chapter,book,nextChapterUrl}`, `batch {chapters,book}`,
-`login {…}`, `evaluate {script}`, `semanticProbe {}`, `diagnostics {}`,
+`login {…}`, `evaluate {script}`, `semanticProbe {}`, `semanticSuite {}`, `diagnostics {}`,
 and `snapshot {}`. The original function names `getBookInfo`, `getChapters`,
 `getContent`, `getContentBatch` are aliases. Chapter identities accept both `url`
 and `chapterUrl`. `batch` returns `exists`, saved URLs and missing chapters.
 `snapshot` exposes fixture requests, cookies, variables and cache changes for
 comparison and is intended for the diagnostic tool.
+`semanticSuite` returns all 25 individual results, JavaBeans functionality and
+actual Java/VM versions; failed cases retain their error type, message and stack.
 
 The embedding app registers static native
 `io.yuedu.legado.NativeHost.dispatch(String taskId, String operation, String requestJson)`.
@@ -83,5 +96,5 @@ Tests include the original engine capability and DOM regression suites, fixed
 search→details→TOC→content/batch/login fixtures, request/body/cookie/state
 comparisons, call/session isolation and reference prototype behavior, native host failure propagation,
 deadlines, cancellation races and missing platform hosts. iOS Zero launch without
-a debugger, VM footprint, signing and device performance still require the Mac
-and iPhone gate; desktop test success does not certify those gates.
+a debugger, VM footprint, signing and device performance still require the signed
+iPhone gate after a local Mac or cloud build; desktop test success does not certify those gates.

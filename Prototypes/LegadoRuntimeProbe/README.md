@@ -5,9 +5,11 @@ It does not resolve Yuedu's Firebase, authentication, or other remote packages. 
 uses the same JVM facade and synthetic `main-source.js` fixture as the desktop
 tests. No source engine is implemented in this app, and no HTTP request leaves it.
 
-**Status:** portable tests, macOS Swift tests and both Zero runtime builds have
-passed. Native app linking is being validated; signing, JVM startup and device
-execution remain unverified. No generated OpenJDK binaries are committed.
+**Status:** portable tests, macOS Swift tests, both Zero runtime builds,
+simulator/device app links and nine required dynamic exports have passed.
+[Cloud run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
+provides an unsigned IPA. Signing, JVM startup and device execution remain
+unverified. No generated OpenJDK binaries are committed.
 
 With Windows, an iPhone, and an iPad but no local Mac, follow the
 [manual cloud-build guide](../../docs/legado-ios/cloud-build.md). The prepared
@@ -87,6 +89,10 @@ The selectable JSON report includes per-operation times, first-session/startup
 time, total time, uncompressed payload bytes, current RSS and process-lifetime
 peak RSS, device/OS identifiers, the injected source commit, actual Java/VM
 versions, payload manifest and every original semantic test result.
+Preserve `build-manifest.json` beside the report: the first successful cloud
+artifact omitted its custom Info.plist source-commit field, so that report uses
+`not_injected`; the accompanying manifest records the exact commit. The packaging
+script now stamps the field explicitly for subsequent builds.
 Startup/session time combines JVM startup and session creation; later
 runs reuse the JVM and are explicitly marked warm. Payload bytes are not an IPA
 size estimate. Errors remain visible. These results cover synthetic `mainJs`

@@ -14,10 +14,11 @@
   "environment": {
     "workspace": "Windows PowerShell",
     "user_reported_hardware": ["Windows PC", "iPhone", "iPad"],
+    "user_reported_iphone_os": "iOS 18 or later; minimum prototype version met",
     "macos_build_available": true,
     "ios_device_validation_available": false,
-    "macos_build_route": "SSH build tags start GitHub-hosted macOS builds. Run 39001183491 passed portable-core and eight Swift tests, built both Zero runtimes and complete Java homes, then failed at simulator app linking; see cloud-validation.json.",
-    "meaning": "The user owns iPhone and iPad test devices but no Mac. Remote Xcode 26.2 builds work; native iOS app linking and device gates remain pending."
+    "macos_build_route": "SSH build tags start GitHub-hosted macOS builds. Run 39003367690 passed both jobs, native simulator/device app links and all nine dynamic exports, and produced the unsigned IPA; see cloud-validation.json.",
+    "meaning": "The user owns an iOS 18+ iPhone and an iPad, but no Mac. Remote Xcode 26.2 builds and unsigned packaging work. Signing and physical-device gates remain pending."
   },
   "inventory_checks": {
     "status": "passed",

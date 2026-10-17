@@ -4,8 +4,10 @@ This repository evaluates running the original Legado Java/Kotlin parsing core
 locally inside a native iOS reader using OpenJDK Mobile Zero. It is based on the
 pinned Yuedu source recorded in [the provenance lock](docs/legado-ios/provenance-lock.json).
 
-The portable JVM tests pass. Native iOS compilation, JVM startup and device
-compatibility remain pending. There is no installable release yet.
+Portable tests and native simulator/device compilation and linking pass. An
+[unsigned iOS 18+ probe](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
+is available for self-signing. JVM startup and compatibility on a physical device
+remain pending; this is a runtime prototype, not a complete Legado release.
 
 - [Prototype architecture, coverage and validation gates](docs/legado-ios/README.md)
 - [Build from Windows using GitHub Actions](docs/legado-ios/cloud-build.md)

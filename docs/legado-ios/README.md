@@ -10,7 +10,10 @@ iPhone build to start without a debugger or JIT before full feature migration.
 
 - [desktop-validation.json](desktop-validation.json) records 45 passing JVM tests,
   18 passing Python tests and an assembled-payload smoke run with `-Xint` and
-  a 128 MiB Java heap. Apple compilation and device gates remain unrun.
+  a 128 MiB Java heap. This is the earlier desktop snapshot; current cloud
+  compilation evidence is in [cloud-validation.json](cloud-validation.json).
+- [packaged-suite-validation.json](packaged-suite-validation.json) validates
+  optional packaging of the unchanged original 25-case suite and JavaBeans probe.
 
 - [provenance-lock.json](provenance-lock.json) pins the user-provided Legado ZIP,
   custom engine JAR/POM, source-revision claims and Yuedu source snapshot. The ZIP
@@ -23,7 +26,7 @@ iPhone build to start without a debugger or JIT before full feature migration.
   MCP tool registrations. The declaration index uses regular expressions and is
   an audit aid, not an exhaustive semantic analysis.
 - [validation-gates.json](validation-gates.json) separates passing inventory checks
-  from unrun runtime/device gates. A desktop test never changes a device gate to
+  from unrun device gates. A desktop or cloud compile never changes a device gate to
   passed.
 
 Regenerate or verify the inventory from the repository root with Python 3.11+:
@@ -72,7 +75,10 @@ For Windows development with an iPhone/iPad and no local Mac, use the
 [manual cloud-build guide](cloud-build.md). It explains how the prepared GitHub
 Actions workflow builds an unsigned prototype on macOS, which results still need
 signing and device validation, and what must first exist in your own repository.
-No cloud run has been completed.
+[Cloud run 39003367690](https://github.com/zhoujianjia/legado-ios/actions/runs/39003367690)
+passed and produced an unsigned iOS 18+ IPA after both app links and a nine-entry
+dynamic export check. Follow [Windows signing and installation](windows-install.md)
+to collect actual iPhone results; all device gates remain pending.
 
 Use JDK 21 for the portable JVM module. On Windows, the
 [validation runner](../../scripts/test-legado.ps1) discovers the local JDK or uses
