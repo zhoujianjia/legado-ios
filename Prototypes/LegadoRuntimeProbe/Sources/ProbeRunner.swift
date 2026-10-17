@@ -2,6 +2,7 @@ import Foundation
 import Darwin
 import LegadoRuntime
 import os
+import UIKit
 
 /// Owns one process-scoped runtime and runs all inspection/JSON work off MainActor.
 actor ProbeRunner {
@@ -27,6 +28,22 @@ actor ProbeRunner {
         guard diagnostics.available, let configuration = LegadoRuntime.Configuration.bundled() else {
             throw LegadoRuntimeError(code: "MISSING_RUNTIME", message: diagnostics.issues.joined(separator: "\n"))
         }
+        var device = await MainActor.run {
+            let current = UIDevice.current
+            return ["model": current.model, "systemName": current.systemName, "systemVersion": current.systemVersion]
+        }
+        var systemInfo = utsname()
+        if uname(&systemInfo) == 0 {
+            device["hardwareIdentifier"] = withUnsafeBytes(of: systemInfo.machine) {
+                String(decoding: $0.prefix { $0 != 0 }, as: UTF8.self)
+            }
+        }
+        let sourceCommit = Bundle.main.object(forInfoDictionaryKey: "LegadoSourceCommit") as? String
+        let manifestURL = configuration.javaHome.deletingLastPathComponent().appendingPathComponent("runtime-manifest.json")
+        let manifestData = try Data(contentsOf: manifestURL)
+        guard let runtimeManifest = try JSONSerialization.jsonObject(with: manifestData) as? [String: Any] else {
+            throw mismatch("runtime-manifest.json is not a JSON object")
+        }
         logger.notice("Starting synthetic JVM fixture; main=\(Thread.isMainThread)")
         let coldStart = runtime == nil
         let engine: LegadoRuntime
@@ -44,6 +61,13 @@ actor ProbeRunner {
         let startupAndSessionMS = milliseconds(since: started)
         var closeAttempted = false
         do {
+            let runtimeDiagnostics = try result(await call(engine, session, "diagnostics"))
+            guard let runtimeValues = runtimeDiagnostics as? [String: Any],
+                  let javaVersion = runtimeValues["javaVersion"] as? String, !javaVersion.isEmpty else {
+                throw mismatch("Runtime diagnostics omitted the actual Java version")
+            }
+            let semanticSuite = try result(await call(engine, session, "semanticSuite", ["timeoutMs": 300_000]))
+            try verifySemanticSuite(semanticSuite, javaVersion: javaVersion)
             let semantics = try result(await call(engine, session, "semanticProbe"))
             guard let semanticValues = semantics as? [String: Any], semanticValues["e4x"] as? String == "ok",
                   semanticValues["indirect"] as? String == "function", semanticValues["dynamicThis"] as? Bool == true,
@@ -67,11 +91,15 @@ actor ProbeRunner {
             closeAttempted = true
             try await engine.close(session: session)
             let report: [String: Any] = ["fixtureOnly": true, "passed": true, "coldJVMStartAttempt": coldStart,
+                "device": device, "executionPlatform": executionPlatform,
+                "sourceCommit": sourceCommit ?? "not_injected", "runtimeManifest": runtimeManifest,
+                "runtimeDiagnostics": runtimeDiagnostics, "runtimeJavaVersion": javaVersion,
+                "semanticSuite": semanticSuite,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
                 "payloadBytes": try payloadSize(configuration.javaHome.deletingLastPathComponent()),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
                 "semantics": semantics, "state": state, "requests": await host.capturedRequests(),
-                "limits": "Synthetic mainJs fixtures only; not declarative-rule or real-source compatibility. Peak RSS is process lifetime. Gate 1 also requires launching Release from the Home Screen without a debugger."]
+                "limits": "Covers the packaged original 25 JsEngineCapabilitiesTest cases, the explicit java.beans probe and synthetic mainJs fixtures. This is not exhaustive proof of Java collection, byte-array or overload conversion compatibility. Full G4 reference-trace parity and G5 network/browser timeouts, concurrent isolation and sustained sessions remain unverified. Peak RSS is process lifetime; payloadBytes excludes the linked native JVM binary. Gate 1 also requires launching Release on a physical iPhone from the Home Screen without a debugger."]
             return try json(report)
         } catch {
             let original = error
@@ -94,6 +122,33 @@ actor ProbeRunner {
             throw LegadoRuntimeError(code: "INVALID_PROBE_RESPONSE", message: "JVM result is missing")
         }
         return result
+    }
+
+    private func verifySemanticSuite(_ report: Any, javaVersion: String) throws {
+        guard let suite = report as? [String: Any] else {
+            throw LegadoRuntimeError(code: "SEMANTIC_SUITE_FAILED", message: "Invalid semantic suite report:\n\(try json(["semanticSuite": report]))")
+        }
+        var failures: [String] = []
+        if suite["suite"] as? String != "JsEngineCapabilitiesTest" { failures.append("Unexpected original test suite") }
+        if suite["total"] as? Int != 25 || suite["passed"] as? Int != 25 || suite["failed"] as? Int != 0 || suite["skipped"] as? Int != 0 {
+            failures.append("Expected 25 original tests passed, 0 failed and 0 skipped")
+        }
+        let tests = suite["tests"] as? [[String: Any]] ?? []
+        let names = tests.compactMap { $0["name"] as? String }.filter { !$0.isEmpty }
+        if tests.count != 25 || Set(names).count != 25 || !tests.allSatisfy({ $0["passed"] as? Bool == true }) {
+            failures.append("Each of the 25 distinct original cases must report success")
+        }
+        if let beans = suite["javaBeans"] as? [String: Any] {
+            if beans["passed"] as? Bool != true || beans["propertyName"] as? String != "value" || beans["readMethod"] as? String != "getValue" || beans["writeMethod"] as? String != "setValue" {
+                failures.append("java.beans property introspection/read/write probe failed")
+            }
+        } else { failures.append("java.beans functional probe was omitted") }
+        if suite["javaVersion"] as? String != javaVersion { failures.append("Semantic suite Java version differs from runtime diagnostics") }
+        if !failures.isEmpty {
+            // The existing UI displays thrown errors; retain every case/error there as
+            // well as in successful reports, rather than reducing a failure to a count.
+            throw LegadoRuntimeError(code: "SEMANTIC_SUITE_FAILED", message: failures.joined(separator: "\n") + "\n" + (try json(["semanticSuite": report])))
+        }
     }
 
     private func verifyCancellation(_ engine: LegadoRuntime, session: LegadoSourceSession) async throws {
@@ -128,6 +183,13 @@ actor ProbeRunner {
         } onCancel: { pending.cancel() }
     }
     private func mismatch(_ step: String) -> LegadoRuntimeError { LegadoRuntimeError(code: "FIXTURE_MISMATCH", message: step) }
+    private var executionPlatform: String {
+#if targetEnvironment(simulator)
+        "ios-simulator"
+#else
+        "ios-device"
+#endif
+    }
     private func json(_ object: Any) throws -> String { String(decoding: try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys]), as: UTF8.self) }
     private func milliseconds(since start: ContinuousClock.Instant) -> Double {
         let duration = start.duration(to: clock.now).components

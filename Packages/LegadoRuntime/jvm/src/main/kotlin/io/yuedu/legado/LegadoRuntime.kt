@@ -121,8 +121,11 @@ object LegadoRuntime {
             "engine" to "htmlunit-core-js", "version" to "5.3.0-legado.4",
             "interpreted" to true, "requiredModules" to listOf("java.base", "java.xml", "java.desktop"),
             "javaVersion" to System.getProperty("java.version"),
+            "vmVersion" to System.getProperty("java.vm.version"),
+            "vmName" to System.getProperty("java.vm.name"),
             "supportedSourceTypes" to listOf("mainJs", "declarative subset"), "platformHosts" to "prototype subset"
         )
+        if (operation == "semanticSuite") return EngineSemanticSuite.run(task)
         if (operation == "snapshot") return jsonObject(
             "variables" to task.session.variables, "cache" to task.session.cache.snapshot(),
             "cookies" to task.session.cookies.snapshot(), "contents" to task.session.contents,

@@ -28,6 +28,11 @@ dependencies {
 
 tasks.test { useJUnit(); maxHeapSize = "512m" }
 
+// The first device gate opts in explicitly; ordinary app payloads never ship JUnit.
+val includeEngineTests = providers.gradleProperty("includeEngineTests")
+    .map(String::toBooleanStrict).getOrElse(false)
+val payloadDependencies = if (includeEngineTests) configurations.testRuntimeClasspath else configurations.runtimeClasspath
+
 // JNI classpath consists of this JAR plus the unmodified dependency JARs.
 tasks.register<Copy>("runtimeBundle") {
     dependsOn(tasks.jar)
@@ -39,13 +44,14 @@ tasks.register<Copy>("runtimeBundle") {
 
 val mergedServices = layout.buildDirectory.dir("merged-services")
 val mergeServices by tasks.registering {
-    inputs.files(configurations.runtimeClasspath)
+    inputs.files(payloadDependencies)
     outputs.dir(mergedServices)
     doLast {
         val output = mergedServices.get().asFile
+        check(output.canonicalFile.toPath().startsWith(layout.buildDirectory.get().asFile.canonicalFile.toPath()))
         output.deleteRecursively()
         val services = linkedMapOf<String, LinkedHashSet<String>>()
-        configurations.runtimeClasspath.get().files.forEach { dependency ->
+        payloadDependencies.get().files.forEach { dependency ->
             ZipFile(dependency).use { archive ->
                 archive.entries().asSequence().filter {
                     !it.isDirectory && it.name.startsWith("META-INF/services/")
@@ -66,8 +72,13 @@ val runtimeJar by tasks.registering(Jar::class) {
     dependsOn(tasks.classes, mergeServices)
     archiveFileName.set("legado-runtime.jar")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property("includeEngineTests", includeEngineTests)
     from(sourceSets.main.get().output)
-    configurations.runtimeClasspath.get().files.forEach { dependency ->
+    if (includeEngineTests) {
+        dependsOn(tasks.testClasses)
+        from(sourceSets.test.get().output)
+    }
+    payloadDependencies.get().files.forEach { dependency ->
         from(zipTree(dependency)) {
             exclude("META-INF/services/**", "META-INF/*.SF", "META-INF/*.RSA", "META-INF/*.DSA",
                 "module-info.class", "META-INF/versions/**/module-info.class")
@@ -77,8 +88,24 @@ val runtimeJar by tasks.registering(Jar::class) {
     from("../vendor/LICENSE") { into("META-INF/licenses/legado") }
     from("../vendor/licenses") { into("META-INF/licenses") }
     from("../vendor/manifest.json") { into("META-INF/legado-provenance") }
+    if (includeEngineTests) {
+        // These are third-party test-runtime notices, not user-archive provenance.
+        val junit = payloadDependencies.get().files.single { it.name == "junit-4.13.2.jar" }
+        val hamcrest = payloadDependencies.get().files.single { it.name == "hamcrest-core-1.3.jar" }
+        from(zipTree(junit)) {
+            include("LICENSE-junit.txt")
+            into("META-INF/licenses/engine-suite")
+            rename { "junit-4.13.2-LICENSE.txt" }
+        }
+        from(zipTree(hamcrest)) {
+            include("LICENSE.txt")
+            into("META-INF/licenses/engine-suite")
+            rename { "hamcrest-core-1.3-LICENSE.txt" }
+        }
+    }
     manifest.attributes["Implementation-Version"] = project.version
     manifest.attributes["Legado-Engine-Version"] = "5.3.0-legado.4"
+    manifest.attributes["Legado-Engine-Tests"] = includeEngineTests.toString()
 }
 
 tasks.register<JavaExec>("runtimeSmoke") {
@@ -86,5 +113,14 @@ tasks.register<JavaExec>("runtimeSmoke") {
     javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) })
     classpath = files(runtimeJar.flatMap { it.archiveFile })
     mainClass.set(layout.projectDirectory.file("src/smoke/java/LegadoPayloadSmoke.java").asFile.absolutePath)
+    jvmArgs("-Xint", "-Xmx128m")
+}
+
+tasks.register<JavaExec>("runtimeSuiteSmoke") {
+    dependsOn(runtimeJar)
+    javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) })
+    classpath = files(runtimeJar.flatMap { it.archiveFile })
+    mainClass.set(layout.projectDirectory.file("src/smoke/java/LegadoSemanticSuiteSmoke.java").asFile.absolutePath)
+    args(if (includeEngineTests) "present" else "absent")
     jvmArgs("-Xint", "-Xmx128m")
 }

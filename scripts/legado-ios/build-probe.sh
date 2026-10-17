@@ -19,6 +19,8 @@ ARTIFACT="$REPO_DIR/Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework"
 JAR="$REPO_DIR/Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar"
 RESOURCE="$REPO_DIR/Resources/LegadoRuntime"
 OUTPUT="$WORK_DIR/probe-output"
+SOURCE_COMMIT=$(git -C "$REPO_DIR" rev-parse HEAD)
+BUILD_METADATA=("INFOPLIST_KEY_LegadoSourceCommit=$SOURCE_COMMIT")
 mkdir -p "$OUTPUT"
 
 # Preserve prior results; use a new work directory instead of silently overwriting evidence.
@@ -38,16 +40,16 @@ python3 "$SCRIPT_DIR/stage-runtime.py" "${STAGE_ARGS[@]}"
 xcodebuild -project "$PROJECT" -scheme LegadoRuntimeProbe -configuration Release \
   -destination 'generic/platform=iOS Simulator' \
   -resultBundlePath "$WORK_DIR/probe-simulator.xcresult" \
-  ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' build
+  ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' "${BUILD_METADATA[@]}" build
 
 python3 "$SCRIPT_DIR/stage-runtime.py" --java-home "$WORK_DIR/device-static/java-home" \
   --jar "$JAR" --destination "$RESOURCE" --replace
 xcodebuild -project "$PROJECT" -scheme LegadoRuntimeProbe -configuration Release \
   -destination 'generic/platform=iOS' -resultBundlePath "$WORK_DIR/probe-device.xcresult" \
-  ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' build
+  ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' "${BUILD_METADATA[@]}" build
 SETTINGS="$WORK_DIR/probe-device-build-settings.json"
 xcodebuild -project "$PROJECT" -scheme LegadoRuntimeProbe -configuration Release \
-  -destination 'generic/platform=iOS' ARCHS=arm64 CODE_SIGNING_ALLOWED=NO -showBuildSettings -json > "$SETTINGS"
+  -destination 'generic/platform=iOS' ARCHS=arm64 CODE_SIGNING_ALLOWED=NO "${BUILD_METADATA[@]}" -showBuildSettings -json > "$SETTINGS"
 APP=$(python3 - "$SETTINGS" <<'PY'
 import json, pathlib, sys
 targets = [item for item in json.loads(pathlib.Path(sys.argv[1]).read_text()) if item['target'] == 'LegadoRuntimeProbe']

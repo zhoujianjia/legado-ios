@@ -71,7 +71,9 @@ unsigned compilation steps.
 The jobs perform these checks in order:
 
 1. Run the portable Python/JVM tests on Linux, assemble the pinned JVM payload,
-   and run its packaged interpreter smoke test.
+   and run its packaged interpreter smoke tests. The diagnostic payload opts in
+   with `-PincludeEngineTests=true`, carrying the unchanged original 25-case
+   engine suite and separately retained JUnit/Hamcrest licenses for device use.
 2. On `macos-15`, run source-only Swift package unit tests and build the pinned
    OpenJDK Mobile Zero device and arm64 simulator slices.
 3. Stage the simulator payload and compile/link the standalone iOS simulator app

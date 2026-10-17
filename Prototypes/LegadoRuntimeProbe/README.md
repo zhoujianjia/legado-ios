@@ -5,14 +5,16 @@ It does not resolve Yuedu's Firebase, authentication, or other remote packages. 
 uses the same JVM facade and synthetic `main-source.js` fixture as the desktop
 tests. No source engine is implemented in this app, and no HTTP request leaves it.
 
-**Status:** source prepared on Windows; Xcode compilation, signing, JVM startup,
-and device execution remain unverified. No OpenJDK binaries are included.
+**Status:** portable tests, macOS Swift tests and both Zero runtime builds have
+passed. Native app linking is being validated; signing, JVM startup and device
+execution remain unverified. No generated OpenJDK binaries are committed.
 
 With Windows, an iPhone, and an iPad but no local Mac, follow the
 [manual cloud-build guide](../../docs/legado-ios/cloud-build.md). The prepared
 **Legado iOS Prototype** workflow can compile this project on a macOS runner and
-produce an unsigned IPA. It has not run yet; signing and actual device validation
-remain separate steps. The local Mac instructions below are an alternative when
+produce an unsigned IPA. Observed runs and fixes are recorded in
+[cloud-validation.json](../../docs/legado-ios/cloud-validation.json); signing and
+actual device validation remain separate steps. The local Mac instructions below are an alternative when
 a macOS development environment is available.
 
 ## Prepare the payload on a Mac
@@ -22,7 +24,7 @@ From the repository root, follow the runtime build prerequisites and run:
 ```bash
 bash scripts/legado-ios/build-zero.sh
 cd Packages/LegadoRuntime/jvm
-JAVA_HOME="$(/usr/libexec/java_home -v 21)" ./gradlew runtimeJar
+JAVA_HOME="$(/usr/libexec/java_home -v 21)" ./gradlew -PincludeEngineTests=true test runtimeJar runtimeSmoke runtimeSuiteSmoke
 cd ../../..
 python3 scripts/legado-ios/stage-runtime.py \
   --java-home .build/legado-ios/device-static/java-home \
@@ -74,17 +76,22 @@ does not pass the JVM gate.
 
 “Inspect runtime payload” only checks files and native bridge presence. “Run
 synthetic reading fixture” actually starts the same process-scoped JVM and checks
-custom Rhino/E4X semantics, login request bytes, Cookie/header persistence,
+the original 25 `JsEngineCapabilitiesTest` cases, actual JavaBeans property
+discovery/read/write, custom Rhino/E4X semantics, login request bytes, Cookie/header persistence,
 search → details → TOC → content → batch, variables/cache, and cancellation.
-An infinite-script test uses a host handshake and a 5-second JVM deadline; it
-does not sleep to guess when the engine has started.
+An active-task cancellation check uses a host handshake and a 5-second JVM
+deadline. The handshake confirms an active host call; interruption after entering
+the infinite loop still needs dedicated evidence.
 
 The selectable JSON report includes per-operation times, first-session/startup
 time, total time, uncompressed payload bytes, current RSS and process-lifetime
-peak RSS. Startup/session time combines JVM startup and session creation; later
+peak RSS, device/OS identifiers, the injected source commit, actual Java/VM
+versions, payload manifest and every original semantic test result.
+Startup/session time combines JVM startup and session creation; later
 runs reuse the JVM and are explicitly marked warm. Payload bytes are not an IPA
 size estimate. Errors remain visible. These results cover synthetic `mainJs`
-fixtures only; they do not pass declarative-rule or real-source compatibility.
+fixtures and the packaged original semantic suite; complete G4 reference traces,
+declarative-rule and real-source compatibility remain pending.
 
 If startup fails, relaunch the process before retrying: an embedded JVM cannot be
 restarted. After Gate 1 succeeds, validate browser/platform adapters, original

@@ -108,6 +108,12 @@
     }
   ],
   "source_preflight_fixes": {
+    "jimage_archive_roots": {
+      "symbols": ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource"],
+      "reason": "Static iOS HotSpot resolves these by dlsym; the keeper's NativeImageBuffer object does not reference their separate jimage.cpp object",
+      "change": "Four exact iOS -u linker roots, with a final executable dyld export-trie check",
+      "native_validation": "Pending the cloud build"
+    },
     "zero_wx_state": {
       "target": "src/hotspot/os_cpu/bsd_zero/os_bsd_zero.cpp",
       "original_target_sha256": "8451f0f8bea69dbb16e6f26c1dbd4c7b3e96e39850206e5a0e91940bf030da08",

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "environment": "Windows, desktop JDK 21; not iOS device evidence",
+  "original_suite": {
+    "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/JsEngineCapabilitiesTest.kt",
+    "source_sha256": "cd2db43bcc838370c4ed264261fcd2c3271b96f26566035353073688c179c69f",
+    "matches_user_archive_bytes": true,
+    "tests": 25,
+    "also_included_in_existing_junit_total": 45
+  },
+  "ordinary_payload": {
+    "junit_classes_absent": true,
+    "original_test_classes_absent": true,
+    "semantic_suite_error": "SEMANTIC_SUITE_NOT_PACKAGED"
+  },
+  "diagnostic_payload": {
+    "command": "gradlew -PincludeEngineTests=true test runtimeJar runtimeSmoke runtimeSuiteSmoke --offline",
+    "junit_tests_passed": 45,
+    "packaged_suite_jvm_flags": ["-Xint", "-Xmx128m"],
+    "packaged_original_cases_passed": 25,
+    "packaged_original_cases_failed": 0,
+    "packaged_original_cases_skipped": 0,
+    "java_beans_property_discovery_read_write_passed": true,
+    "junit_and_hamcrest_original_license_bytes_retained": true,
+    "jar_bytes": 9011748,
+    "jar_sha256": "595b487e142bb2f39d1dd3c9159ebfa6ef4e4c917e286caa21ee1f0dcab8aea7"
+  },
+  "device_validation_passed": false,
+  "meaning": "Desktop validation of the optional packaged reference suite and its missing-payload failure. iOS original semantics, module functionality, startup and reading gates require actual device results."
+}

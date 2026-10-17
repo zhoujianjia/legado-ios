@@ -5,6 +5,12 @@
     "evidence": "desktop-validation.json",
     "meaning": "45 JVM and 18 Python tests passed; the packaged JAR smoke passed on desktop. This does not pass an iOS device gate."
   },
+  "packaged_reference_suite": {
+    "desktop_status": "passed",
+    "evidence": "packaged-suite-validation.json",
+    "device_status": "pending",
+    "meaning": "The diagnostic payload can execute the unchanged original 25 tests and a JavaBeans functional probe; desktop packaging results do not pass an iOS gate."
+  },
   "environment": {
     "workspace": "Windows PowerShell",
     "user_reported_hardware": ["Windows PC", "iPhone", "iPad"],

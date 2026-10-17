@@ -99,6 +99,7 @@ object RhinoClassShutter : ClassShutter {
             "io.yuedu.legado.RuntimeSession",
             "io.yuedu.legado.RuntimeTask",
             "io.yuedu.legado.RuntimeFailure",
+            "io.yuedu.legado.EngineSemanticSuite",
             "androidx.core.content.FileProvider",
             "splitties.init.AppCtxKt",
             "okio.JvmSystemFileSystem",
