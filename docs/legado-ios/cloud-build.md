@@ -8,8 +8,9 @@ for installation and actual runtime validation. No Mac SSH connection is needed.
 See [cloud-validation.json](cloud-validation.json) for observed cloud runs,
 failures, and verified fixes. The initial runs exposed missing dependency
 checksum entries, which have been added and checked with a fresh dependency
-cache and forced JVM rebuild/tests. Apple compilation, signing, and device
-execution remain unverified, and all device validation gates remain pending.
+cache and forced JVM rebuild/tests. The cloud has compiled the source-only
+runtime library on macOS. iOS app compilation, signing, and device execution
+remain unverified, and all device validation gates remain pending.
 Pinned source revisions make the inputs reviewable; they do not guarantee that
 the Zero build will succeed on the selected runner.
 

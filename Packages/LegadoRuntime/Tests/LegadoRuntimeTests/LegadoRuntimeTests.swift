@@ -87,8 +87,13 @@ private final class BlockingTransport: LegadoRuntimeTransport, @unchecked Sendab
         let runtime = LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []), host: UnsupportedLegadoHost(), transport: transport)
         let session = try await runtime.createSession(sourceJSON: "{}")
         let task = Task { try await runtime.execute(session: session, operation: "blocking", taskID: "cancel-test") }
-        let startSignal = Task.detached { transport.entered.wait(timeout: .now() + 5) == .success }
-        let started = await startSignal.value
+        let started = await withCheckedContinuation { continuation in
+            // Wait for the real entry signal on a blocking worker, with a test deadline.
+            DispatchQueue(label: "io.yuedu.legado.test-entry").async {
+                let entered = transport.entered.wait(timeout: .now() + 5) == .success
+                continuation.resume(returning: entered)
+            }
+        }
         XCTAssertTrue(started)
         task.cancel()
         let result = await task.result

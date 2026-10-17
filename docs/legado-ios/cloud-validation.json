@@ -46,6 +46,25 @@
         "rebuilt_jar_sha256": "d45186206ace678838356cd205be35b8137ed7cd9ad6dea24eec257069d9ca01"
       },
       "macos_job": "skipped because the portable-core job failed"
+    },
+    {
+      "run_id": 38999991808,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/38999991808",
+      "source_commit": "f15c4ae13266f64c370f98b9e92b80a161067037",
+      "tag": "legado-probe-f15c4ae",
+      "status": "failed",
+      "portable_job_id": 117300690663,
+      "python_inventory_tests_passed": 12,
+      "python_runtime_tool_tests_passed": 11,
+      "jvm_job": "passed, including test/runtimeJar/runtimeSmoke",
+      "packaged_semantics": {"e4x": "ok", "indirect": "function", "dynamicThis": true, "legacy": 42},
+      "macos_job_id": 117301011427,
+      "xcode": "26.2 (17C52)",
+      "macos_library_source_compilation": "passed in source-only mode",
+      "swift_tests": "not run; test source compilation failed",
+      "failure": "Swift 6 disallows direct DispatchSemaphore.wait in the test's async Task.detached closure",
+      "resolution": "Wait for the real entry signal on a dedicated GCD worker and resume an async continuation; retain the bounded test deadline",
+      "native_zero_build": "not reached"
     }
   ],
   "source_preflight_fixes": {
@@ -61,6 +80,7 @@
     "runtime_tool_tests_passed": 11,
     "swift_changes": "Syntax parsed only; Apple SDK compilation remains pending"
   },
+  "macos_build_environment_verified": true,
   "ios_compilation_passed": false,
   "device_validation_passed": false
 }

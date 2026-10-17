@@ -102,7 +102,7 @@ minimum iOS version and the complete required module list are pinned in
 [runtime-lock.json](../../scripts/legado-ios/runtime-lock.json).
 [fetch-sources.py](../../scripts/legado-ios/fetch-sources.py) checks out those
 revisions and verifies libffi. [build-zero.sh](../../scripts/legado-ios/build-zero.sh)
-calls it automatically, then builds arm64 device and simulator slices:
+calls it automatically, then builds arm64 device and simulator slices.
 
 The build copies the JDK security configuration, cryptographic policy, time-zone
 data and default TLS trust store alongside the exploded modules. A hash-guarded
@@ -110,6 +110,8 @@ data and default TLS trust store alongside the exploded modules. A hash-guarded
 removes one stale JNI registration from the pinned tools to match the pinned
 Mobile sources; the other 449 registrations are preserved. This adaptation is
 recorded in the build log and [cloud validation evidence](cloud-validation.json).
+
+Start the build from the repository root:
 
 ```bash
 bash scripts/legado-ios/build-zero.sh
