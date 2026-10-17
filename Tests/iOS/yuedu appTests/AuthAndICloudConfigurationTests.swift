@@ -1,9 +1,45 @@
+import CloudKit
 import Foundation
 import Testing
 @testable import yuedu_app
 
 @Suite("Auth and iCloud configuration")
 struct AuthAndICloudConfigurationTests {
+    @Test("local experience requires an explicit Info boolean and defaults off")
+    func localExperienceRequiresExplicitInfoBoolean() {
+        #expect(!ReaderExperienceConfiguration.isLocalExperience(in: nil))
+        #expect(!ReaderExperienceConfiguration.isLocalExperience(in: [:]))
+        #expect(!ReaderExperienceConfiguration.isLocalExperience(in: ["YueduLocalExperience": false]))
+        #expect(!ReaderExperienceConfiguration.isLocalExperience(in: ["YueduLocalExperience": "true"]))
+        #expect(ReaderExperienceConfiguration.isLocalExperience(in: ["YueduLocalExperience": true]))
+        #expect(ReaderExperienceConfiguration.cloudKitEnabled == !ReaderExperienceConfiguration.isLocalExperience)
+    }
+
+    @Test("disabled CloudKit sync constructs safely and rejects remote work")
+    func disabledCloudKitSyncDoesNotConstructContainer() async throws {
+        // Inject the explicit capability policy without constructing a CKContainer
+        // in the call site or requiring a CloudKit entitlement in the test host.
+        let sync = ICloudSyncManager(cloudKitEnabled: false)
+        #expect(sync.accountStatus == .restricted)
+        #expect(await sync.refreshAccountStatus() == .restricted)
+        do {
+            try await sync.sync(reason: "local-experience-construction-test")
+            Issue.record("An explicitly disabled CloudKit service must reject sync")
+        } catch ICloudSyncError.accountUnavailable(let status) {
+            #expect(status == .restricted)
+        } catch {
+            Issue.record("Unexpected disabled CloudKit error: \(error)")
+        }
+        #expect(!sync.isSyncing)
+    }
+
+    @Test("disabled subscription mirror constructs safely and reports disabled")
+    func disabledSubscriptionMirrorDoesNotConstructContainer() async {
+        let mirror = SubscriptionICloudMirror(cloudKitEnabled: false)
+        #expect(await mirror.accountStatusDescription() == "disabled")
+        #expect(await mirror.load() == nil)
+    }
+
     @Test("main app entitlements enable Apple sign-in and CloudKit")
     func mainAppEntitlementsEnableAppleSignInAndCloudKit() throws {
         let entitlements = try loadMainAppEntitlements()

@@ -1,0 +1,79 @@
+name: Yuedu Reader Experience
+
+on:
+  push:
+    tags:
+      - 'reader-experience-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-experience-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  reader:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify this tag and portable experience-packaging checks
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/stage-config.py validate-tag
+          python -B scripts/reader-experience/test-stage-config.py -v 2>&1 | tee .build/ci-logs/reader-config-tests.log
+          bash -n scripts/reader-experience/build.sh
+      - name: Resolve the installed Apple toolchain
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/xcode-version.log
+          xcodebuild -showsdks 2>&1 | tee .build/ci-logs/apple-sdks.log
+      - name: Build the full Release reader and package its unsigned device app
+        env:
+          LEGADO_RUNTIME_SOURCE_ONLY: '1'
+        run: bash scripts/reader-experience/build.sh 2>&1 | tee .build/ci-logs/reader-experience-build.log
+      - name: Preserve the unsigned reading experience first
+        if: ${{ always() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-experience-unsigned
+          path: |
+            .build/reader-experience/output/YueduReader-experience-unsigned.ipa
+            .build/reader-experience/output/build-manifest.json
+            .build/reader-experience/output/README.txt
+            docs/legado-ios/fixtures/阅读体验样书.txt
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve build evidence and failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-experience-logs
+          path: |
+            .build/ci-logs/
+            .build/reader-experience/*.json
+            .build/reader-experience/*.log
+            .build/reader-experience/*.xcresult/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Explain the experience scope
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This package retains Yuedu's complete reader UI, CoreText renderer and existing JavaScriptCore source route. The experimental JVM is not integrated into this reading path and is not compiled here.
+          The Release iPhoneOS app and both original extensions are compiled without signing, using synthetic backend configuration and local-experience mode. Account/cloud/subscription services are not configured.
+          Download `reader-experience-unsigned` and sign its nested components before installation. This run checks compilation/packaging; it does not claim Simulator or physical-device functional acceptance. Inspect the included build manifest for exact source, version and IPA SHA256.
+          TEXT

@@ -224,8 +224,8 @@ final class ICloudSyncManager: ObservableObject {
         static let updatedAt = "updatedAt"
     }
 
-    private let container: CKContainer
-    private let database: CKDatabase
+    private let container: CKContainer?
+    private let database: CKDatabase?
 
     private static var deviceId: String {
         if let id = UserDefaults.standard.string(forKey: deviceIdKey) { return id }
@@ -234,9 +234,23 @@ final class ICloudSyncManager: ObservableObject {
         return id
     }
 
-    private init(container: CKContainer = CKContainer(identifier: ICloudSyncManager.containerIdentifier)) {
-        self.container = container
-        database = container.privateCloudDatabase
+    init(
+        container: CKContainer? = nil,
+        cloudKitEnabled: Bool = ReaderExperienceConfiguration.cloudKitEnabled
+    ) {
+        // A locally signed experience build has no CloudKit entitlement. The
+        // explicit build mode must be checked before constructing CKContainer,
+        // which can raise an Objective-C exception on an unentitled device.
+        guard cloudKitEnabled else {
+            self.container = nil
+            database = nil
+            lastSyncDate = UserDefaults.standard.object(forKey: Self.lastSyncKey) as? Date
+            accountStatus = .restricted
+            return
+        }
+        let resolvedContainer = container ?? CKContainer(identifier: Self.containerIdentifier)
+        self.container = resolvedContainer
+        database = resolvedContainer.privateCloudDatabase
         lastSyncDate = UserDefaults.standard.object(forKey: Self.lastSyncKey) as? Date
     }
 
@@ -1167,7 +1181,8 @@ final class ICloudSyncManager: ObservableObject {
     }
 
     private func fetchAccountStatus() async -> CKAccountStatus {
-        await withCheckedContinuation { continuation in
+        guard let container else { return .restricted }
+        return await withCheckedContinuation { continuation in
             container.accountStatus { status, _ in
                 continuation.resume(returning: status)
             }
@@ -1547,7 +1562,8 @@ final class ICloudSyncManager: ObservableObject {
     }
 
     private func fetchRecord(_ recordID: CKRecord.ID) async throws -> CKRecord {
-        try await withCheckedThrowingContinuation { continuation in
+        guard let database else { throw ICloudSyncError.accountUnavailable(.restricted) }
+        return try await withCheckedThrowingContinuation { continuation in
             database.fetch(withRecordID: recordID) { record, error in
                 if let error {
                     continuation.resume(throwing: error)
@@ -1566,7 +1582,8 @@ final class ICloudSyncManager: ObservableObject {
     /// behind, the asset with it, so a blob of any size costs one small round trip. Nil when
     /// there is no such record.
     private func fetchRecordChangeTag(_ recordID: CKRecord.ID) async throws -> String? {
-        try await withCheckedThrowingContinuation { continuation in
+        guard let database else { throw ICloudSyncError.accountUnavailable(.restricted) }
+        return try await withCheckedThrowingContinuation { continuation in
             let operation = CKFetchRecordsOperation(recordIDs: [recordID])
             operation.desiredKeys = []
             // Both blocks run on the operation's own serial queue: the record's result
@@ -1603,6 +1620,7 @@ final class ICloudSyncManager: ObservableObject {
     }
 
     private func deleteRecord(_ recordID: CKRecord.ID) async throws {
+        guard let database else { throw ICloudSyncError.accountUnavailable(.restricted) }
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             database.delete(withRecordID: recordID) { _, error in
                 if let error {
@@ -1615,6 +1633,7 @@ final class ICloudSyncManager: ObservableObject {
     }
 
     private func saveRecord(_ record: CKRecord) async throws {
+        guard let database else { throw ICloudSyncError.accountUnavailable(.restricted) }
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             database.save(record) { _, error in
                 if let error {
