@@ -63,7 +63,12 @@ actor ProbeRunner {
             return ["model": current.model, "systemName": current.systemName, "systemVersion": current.systemVersion]
         }
         device["hardwareIdentifier"] = hardwareIdentifier
-        let manifestURL = configuration.javaHome.deletingLastPathComponent().appendingPathComponent("runtime-manifest.json")
+        guard let payloadDirectory = Bundle.main.resourceURL?.appendingPathComponent("LegadoRuntime", isDirectory: true) else {
+            throw LegadoRuntimeError(code: "MISSING_FIXTURE", message: "The runtime payload resource directory is absent")
+        }
+        // The JAR/manifest remain resources; the static JVM's Java home is a
+        // separate sibling at App.app/lib. Neither path derives from the other.
+        let manifestURL = payloadDirectory.appendingPathComponent("runtime-manifest.json")
         let manifestData = try Data(contentsOf: manifestURL)
         guard let runtimeManifest = try JSONSerialization.jsonObject(with: manifestData) as? [String: Any] else {
             throw mismatch("runtime-manifest.json is not a JSON object")
@@ -129,7 +134,7 @@ actor ProbeRunner {
                 "runtimeDiagnostics": runtimeDiagnostics, "runtimeJavaVersion": javaVersion,
                 "semanticSuite": semanticSuite,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
-                "payloadBytes": try payloadSize(configuration.javaHome.deletingLastPathComponent()),
+                "payloadBytes": try payloadSize([configuration.javaHome, payloadDirectory]),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
                 "semantics": semantics, "state": state, "requests": await host.capturedRequests(),
                 "limits": "Covers the packaged original 25 JsEngineCapabilitiesTest cases, the explicit java.beans probe and synthetic mainJs fixtures. This is not exhaustive proof of Java collection, byte-array or overload conversion compatibility. Full G4 reference-trace parity and G5 network/browser timeouts, concurrent isolation and sustained sessions remain unverified. Peak RSS is process lifetime; payloadBytes excludes the linked native JVM binary. Gate 1 also requires launching Release on a physical iPhone from the Home Screen without a debugger."]
@@ -303,14 +308,16 @@ actor ProbeRunner {
         guard status == KERN_SUCCESS else { return ["machError": UInt64(status)] }
         return ["residentBytes": UInt64(info.resident_size), "processLifetimePeakRSSBytes": UInt64(info.resident_size_max)]
     }
-    private func payloadSize(_ folder: URL) throws -> UInt64 {
-        guard let files = FileManager.default.enumerator(at: folder, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey]) else {
-            throw mismatch("Cannot enumerate runtime payload")
-        }
+    private func payloadSize(_ folders: [URL]) throws -> UInt64 {
         var size: UInt64 = 0
-        for case let file as URL in files {
-            let values = try file.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
-            if values.isRegularFile == true { size += UInt64(values.fileSize ?? 0) }
+        for folder in folders {
+            guard let files = FileManager.default.enumerator(at: folder, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey]) else {
+                throw mismatch("Cannot enumerate runtime payload")
+            }
+            for case let file as URL in files {
+                let values = try file.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+                if values.isRegularFile == true { size += UInt64(values.fileSize ?? 0) }
+            }
         }
         return size
     }

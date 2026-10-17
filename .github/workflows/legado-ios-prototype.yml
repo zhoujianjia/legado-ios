@@ -102,6 +102,18 @@ jobs:
           df -h . | tee .build/ci-logs/disk-before-build.log
       - name: Build the pinned device and simulator Zero runtime
         run: LEGADO_BOOT_JDK="$JAVA_HOME" bash scripts/legado-ios/build-zero.sh 2>&1 | tee .build/ci-logs/zero-build.log
+      - name: Preserve the source-built native runtime for follow-up diagnosis
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-zero-source-build
+          path: |
+            Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework/
+            .build/legado-ios/device-static/java-home/
+            .build/legado-ios/simulator-static/java-home/
+            scripts/legado-ios/runtime-lock.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
       - name: Compile both iOS slices and package the unsigned device app
         run: bash scripts/legado-ios/build-probe.sh 2>&1 | tee .build/ci-logs/probe-build.log
       - name: Run the native Zero probe in Simulator
