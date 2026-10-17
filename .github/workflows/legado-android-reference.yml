@@ -40,14 +40,15 @@ jobs:
           python -B scripts/legado-reference/test-run-reference.py -v 2>&1 | tee .build/ci-logs/android-reference/execution-driver-tests.log
           python -B scripts/legado-reference/prepare-reference.py stage --snapshot-directory Packages/LegadoRuntime/vendor/android-reference --destination .build/legado-reference/source
           python -B scripts/legado-reference/run-reference.py stage
-      - name: Resolve the installed Android SDK and enable emulator acceleration
+      - name: Install the Android SDK command-line tools and required packages
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4, resolved 2026-10-18
+        with:
+          cmdline-tools-version: '15859902'
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - name: Verify the Android SDK and enable emulator acceleration
         run: |
           command -v sdkmanager
-          python - <<'PY'
-          import subprocess
-          subprocess.run(['sdkmanager', '--licenses'], input='y\n' * 100, text=True, check=True)
-          subprocess.run(['sdkmanager', 'platforms;android-36', 'build-tools;36.0.0', 'platform-tools'], check=True)
-          PY
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
