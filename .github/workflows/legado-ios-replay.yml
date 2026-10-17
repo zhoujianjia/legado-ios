@@ -1,0 +1,106 @@
+name: Legado iOS Runtime Replay
+
+on:
+  push:
+    tags:
+      - 'legado-replay-*'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: legado-ios-replay-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  replay:
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Resolve Xcode and warm the selected Simulator while the source build finishes
+        run: |
+          mkdir -p .build/ci-logs
+          test "$(uname -m)" = arm64
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/xcode-version.log
+          SIMULATOR_UDID="$(bash scripts/sim.sh udid)"
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b 2>&1 | tee .build/ci-logs/simulator-early-boot.log
+      - name: Wait for the source runtime artifacts and verify unchanged build inputs
+        id: reuse
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -B scripts/legado-ios/verify-runtime-reuse.py prepare 2>&1 | tee .build/ci-logs/runtime-reuse-prepare.log
+      - name: Download the verified source JVM artifact in isolation
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ steps.reuse.outputs.jvm_artifact_id }}
+          run-id: ${{ steps.reuse.outputs.source_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          path: .build/reused-runtime/jvm
+          digest-mismatch: error
+      - name: Download the verified source Zero artifact in isolation
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ steps.reuse.outputs.native_artifact_id }}
+          run-id: ${{ steps.reuse.outputs.source_run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          path: .build/reused-runtime/native
+          digest-mismatch: error
+      - name: Validate and restore only the matching runtime products
+        run: |
+          python -B scripts/legado-ios/verify-runtime-reuse.py restore 2>&1 | tee .build/ci-logs/runtime-reuse-restore.log
+          mkdir -p .build/legado-ios/probe-output
+          cp .build/ci-logs/runtime-reuse.json .build/legado-ios/probe-output/runtime-reuse.json
+      - name: Compile the current iOS app and package its unsigned device IPA
+        run: bash scripts/legado-ios/build-probe.sh 2>&1 | tee .build/ci-logs/probe-build.log
+      - name: Execute the current native Zero probe in Simulator
+        run: python -B scripts/legado-ios/run-simulator-probe.py 2>&1 | tee .build/ci-logs/simulator-probe.log
+      - name: Preserve the unsigned device probe even when Simulator smoke fails
+        if: ${{ always() && hashFiles('.build/legado-ios/probe-output/LegadoRuntimeProbe-unsigned.ipa') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-probe-unsigned
+          path: |
+            .build/legado-ios/probe-output/LegadoRuntimeProbe-unsigned.ipa
+            .build/legado-ios/probe-output/build-manifest.json
+            .build/legado-ios/probe-output/README.txt
+            .build/legado-ios/probe-output/runtime-reuse.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve replay diagnostics, including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-replay-logs
+          path: |
+            .build/ci-logs/
+            .build/legado-ios/probe-device-linked-libraries.log
+            .build/legado-ios/probe-device-exports.*
+            .build/legado-ios/*.xcresult/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the reused provenance and remaining device gate
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          This replay reuses a source-built Zero runtime and JVM payload only after matching their Git build inputs. It does not claim a fresh runtime compilation.
+          The current iOS app is compiled and linked again, then its synthetic fixture runs in Simulator. See `runtime-reuse.json` for the exact source run, SHA, artifact IDs and input checks.
+          An exported IPA is retained even if Simulator smoke fails; sign it separately before installing on iPhone/iPad.
+          All physical-device validation gates remain pending. A simulator result cannot pass G1 or replace iPhone/iPad evidence.
+          SUMMARY

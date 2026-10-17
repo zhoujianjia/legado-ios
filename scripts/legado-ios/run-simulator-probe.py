@@ -234,9 +234,10 @@ class ProbeRun:
         stderr = self.output / "app-stderr.log"
         stdout.touch()
         stderr.touch()
+        self.command("launch-help", ["xcrun", "simctl", "help", "launch"])
         self.launched_at = time.time()
         launch_output = self.command("launch", ["xcrun", "simctl", "launch", "--terminate-running-process",
-                                     "--stdout", str(stdout), "--stderr", str(stderr), self.udid,
+                                     "--stdout=" + str(stdout), "--stderr=" + str(stderr), self.udid,
                                      BUNDLE_ID, "--legado-probe-autorun"], timeout=60)
         self.pid = launch_pid(launch_output)
         self.result.update({"launchPID": self.pid, "launchedAtUnix": self.launched_at})

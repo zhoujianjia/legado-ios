@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Reject incomplete Zero payloads; this is static validation, not a JVM execution test."""
+from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path

@@ -72,9 +72,13 @@ def read_manifest(marker: Path, jar: Path) -> dict:
         raise ValueError("Invalid runtime-manifest.json ownership marker")
     if not jar.is_file():
         raise ValueError("Runtime payload JAR is absent")
+    # Xcode build phases may select Apple's system Python 3.9 even when the
+    # calling shell selected a newer interpreter. Do not require file_digest (3.11).
+    digest = hashlib.sha256()
     with jar.open("rb") as stream:
-        digest = hashlib.file_digest(stream, "sha256").hexdigest()
-    if manifest.get("jarSHA256") != digest:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    if manifest.get("jarSHA256") != digest.hexdigest():
         raise ValueError("Runtime payload JAR does not match its staging manifest")
     return manifest
 
