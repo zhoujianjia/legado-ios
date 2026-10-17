@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-18",
+  "sourceCommit": "864da12653d3ee397cea6ef7bc94691b9583900c",
+  "runId": 39054041842,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39054041842",
+  "cloudBuild": "passed",
+  "artifactId": 12110016162,
+  "artifactZipSHA256": "79475367e082ffdb63eeebf82e815fbe2c7f72ccb1c1051e58f234accde18097",
+  "ipaSHA256": "930aab6e7ed1d64d97d6ccfed0aebe893496eec8a9e99ec2cc4b07d92751e241",
+  "ipaBytes": 47211786,
+  "version": "3.0.0",
+  "build": "1",
+  "bundleIdentifier": "local.zhoujianjia.legado-reader",
+  "platform": "iPhoneOS",
+  "architecture": "arm64",
+  "deviceFamilies": ["iPhone", "iPad"],
+  "minimumIOS": "17.0",
+  "configuration": "Release",
+  "signed": false,
+  "readerRoute": "Existing Yuedu SwiftUI/CoreText reader and JavaScriptCore book-source implementation",
+  "jvmIntegratedIntoReading": false,
+  "backendServicesConfigured": false,
+  "localCloudKitPolicy": "Explicit local-experience flag disables CloudKit before constructing a CKContainer",
+  "checks": {
+    "portablePackagingRegressionCases": 15,
+    "localizationWorkflow": "passed at this source commit",
+    "deviceTargetCompilation": "passed",
+    "mainAndBothEmbeddedExtensionIdentity": "passed",
+    "mainAndBothEmbeddedExtensionARM64PhysicalIOS": "passed",
+    "localModeAndDisabledCollectionPlistFlags": "passed",
+    "syntheticBackendConfiguration": "passed",
+    "importURLSchemesPreserved": "passed",
+    "noJVMOrProvisioningPayload": "passed",
+    "physicalDeviceReading": "pending user trial",
+    "simulatorReadingSmoke": "pending"
+  },
+  "trialScope": [
+    "Local TXT and EPUB import, bookshelf and native reading",
+    "Table of contents, page turns and reading progress",
+    "Existing book-source import, search and online reading routes"
+  ],
+  "limits": [
+    "The package does not establish full Legado feature or runtime compatibility.",
+    "Functional trial scope describes existing code paths, not completed device acceptance.",
+    "Complex JavaScript sources still depend on the existing JSC compatibility layer.",
+    "Account, CloudKit and subscription backend services are not configured.",
+    "Widget and ShareExtension are compiled and embedded; their shared-group functionality depends on signing capabilities and remains unvalidated."
+  ],
+  "fullFeatureParityEstablished": false
+}

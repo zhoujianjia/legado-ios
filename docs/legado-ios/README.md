@@ -6,6 +6,24 @@ compatibility prototype. It does not establish full Legado parity or replace the
 production JavaScriptCore parser. The accepted migration gate requires a signed
 iPhone build to start without a debugger or JIT before full feature migration.
 
+## Reader experience build
+
+An unsigned full-reader experience is available from
+[run 39054041842](https://github.com/zhoujianjia/legado-ios/actions/runs/39054041842).
+It retains Yuedu's existing SwiftUI/CoreText UI and JavaScriptCore book-source
+route. It does not integrate the experimental JVM into search or reading.
+[reader-experience.json](reader-experience.json) records the exact source,
+artifact/IPA hashes, device-target compilation and independent package audit.
+The app uses its own bundle identifier and synthetic backend configuration;
+account, CloudKit and subscription backend services are not configured.
+
+Sign the IPA with the existing Windows installation workflow and try the
+[original TXT sample](fixtures/阅读体验样书.txt) before testing personal book
+sources. Device-target compilation is not physical-device reading acceptance.
+The separate `reader-smoke-<sha7>` workflow exercises a Debug Simulator TXT
+import, chapter jump and persisted reading position. It must report actual
+nonzero test counts and does not promote a physical-device or full-parity gate.
+
 ## Baseline and acceptance inventory
 
 - [android-reference.md](android-reference.md) describes the new versioned Java

@@ -55,8 +55,11 @@ class LegadoRuntimeTest {
         val body = "name=reader&password=%E4%B9%A6"
         assertEquals(body, requests.first()["body"].asString)
         assertArrayEquals(body.toByteArray(), java.util.Base64.getDecoder().decode(requests.first()["bodyBase64"].asString))
-        assertEquals("sid=fixture", requests[1]["headers"].asJsonObject["Cookie"].asString)
-        assertEquals("Bearer fixture", requests[1]["headers"].asJsonObject["Authorization"].asString)
+        assertEquals(listOf("sid=fixture"), headerValues(requests[1], "Cookie"))
+        assertEquals(listOf("Bearer fixture"), headerValues(requests[1], "Authorization"))
+        assertEquals(listOf("300"), headerValues(requests[1], "Keep-Alive"))
+        assertEquals(listOf("no-cache"), headerValues(requests[1], "Cache-Control"))
+        assertEquals(listOf("application/x-www-form-urlencoded; charset=utf-8"), headerValues(requests[0], "Content-Type"))
         assertTrue(requests[1]["remainingTimeoutMs"].asLong > 0)
         assertTrue(requests[1]["deadlineEpochMs"].asLong >= System.currentTimeMillis() - 30_000)
         assertEquals(listOf("/login", "/search?key=%E4%B9%A6&page=1", "/book/1", "/toc/1", "/chapter/1", "/chapter/1", "/chapter/2"), requests.map { it["url"].asString.removePrefix(BASE) })
@@ -109,7 +112,7 @@ class LegadoRuntimeTest {
         call(id, "evaluate", jsonObject("script" to "java.ajax('$BASE/get')"))
         val body = "书🙂"
         call(id, "evaluate", jsonObject("script" to
-            """java.connect('$BASE/post,{"method":"POST","body":"$body"}').body()"""))
+            """java.connect('$BASE/post,{"method":"POST","body":"$body","headers":{"Content-Type":"text/plain"}}').body()"""))
 
         val requests = call(id, "snapshot").asJsonObject["requests"].asJsonArray
         assertEquals(2, requests.size())
@@ -203,6 +206,8 @@ class LegadoRuntimeTest {
         assertFalse(result.toString(), result["ok"].asBoolean)
         assertEquals(result.toString(), code, result["error"].asJsonObject["code"].asString)
     }
+    private fun headerValues(request: JsonObject, name: String): List<String> = request["headers"].asJsonArray
+        .map { it.asJsonObject }.filter { it["name"].asString.equals(name, true) }.map { it["value"].asString }
     private fun create(script: String, jsLib: String? = null, sourceUrl: String = BASE): String {
         val source = jsonObject("bookSourceUrl" to sourceUrl, "bookSourceName" to "Fixture", "mainJs" to script)
         jsLib?.let { source.addProperty("jsLib", it) }

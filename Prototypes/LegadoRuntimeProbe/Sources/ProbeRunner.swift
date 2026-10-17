@@ -146,6 +146,7 @@ actor ProbeRunner {
             try await verifyCancellation(engine, session: session)
             try recordProgress("cancellation.returned")
             measurements.append(["operation": "cancel", "milliseconds": milliseconds(since: cancelStarted)])
+            let nativeTCP = try await probeNativeTCP(engine, session: session)
             try Task.checkCancellation()
             closeAttempted = true
             try recordProgress("close_session.begin")
@@ -159,6 +160,7 @@ actor ProbeRunner {
                 "timingNote": "Includes durable diagnostic checkpoints and native journal writes; not production performance measurements.",
                 "runtimeDiagnostics": runtimeDiagnostics, "runtimeJavaVersion": javaVersion,
                 "semanticSuite": semanticSuite, "interopSuite": interopSuite, "scopeIsolationProbe": scopeIsolation,
+                "nativeTCPProbe": nativeTCP,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
                 "payloadBytes": try payloadSize([configuration.javaHome, payloadDirectory]),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
@@ -194,6 +196,53 @@ actor ProbeRunner {
             throw LegadoRuntimeError(code: "INVALID_PROBE_RESPONSE", message: "JVM result is missing")
         }
         return result
+    }
+
+    /// Reports an independent networking capability; failure does not change the
+    /// meaning of the fixed parser fixture or claim transport/reference parity.
+    private func probeNativeTCP(_ engine: LegadoRuntime, session: LegadoSourceSession) async throws -> [String: Any] {
+        try recordProgress("native_tcp.begin")
+        do {
+            let (server, port) = try await NativeTCPProbeServer.start()
+            defer { server.stop() }
+            let script = """
+            (function() {
+              var socket = new Packages.java.net.Socket();
+              try {
+                socket.connect(new Packages.java.net.InetSocketAddress('127.0.0.1', \(port)), 2000);
+                socket.setSoTimeout(2000);
+                var output = socket.getOutputStream();
+                output.write(new Packages.java.lang.String('LEGADO_NATIVE_TCP\\n').getBytes('US-ASCII'));
+                output.flush();
+                var input = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(socket.getInputStream(), 'US-ASCII'));
+                return String(input.readLine());
+              } finally { socket.close(); }
+            })();
+            """
+            let reply = try result(await call(engine, session, "evaluate", ["script": script, "timeoutMs": 10_000]))
+            let received = await server.receivedBytes()
+            guard reply as? String == NativeTCPProbeServer.replyLine,
+                  received == NativeTCPProbeServer.requestBytes else {
+                throw mismatch("Native TCP loopback request/response bytes differ")
+            }
+            try recordProgress("native_tcp.passed")
+            return ["passed": true, "loopbackOnly": true, "transport": "java.net.Socket via linked JVM natives",
+                    "requestBase64": received.base64EncodedString(), "reply": NativeTCPProbeServer.replyLine,
+                    "provesTLSOrHTTPCompatibility": false]
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            try recordProgress("native_tcp.failed", failure: error.localizedDescription)
+            var failure: [String: Any] = ["passed": false, "loopbackOnly": true, "failure": error.localizedDescription,
+                                          "provesTLSOrHTTPCompatibility": false]
+            if let runtimeError = error as? LegadoRuntimeError { failure["errorCode"] = runtimeError.code }
+            else {
+                let nativeError = error as NSError
+                failure["errorDomain"] = nativeError.domain
+                failure["errorCode"] = nativeError.code
+            }
+            return failure
+        }
     }
 
     private func verifySemanticSuite(_ report: Any, javaVersion: String) throws {

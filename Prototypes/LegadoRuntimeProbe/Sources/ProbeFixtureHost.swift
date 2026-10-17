@@ -23,13 +23,13 @@ actor ProbeFixtureHost: LegadoPlatformHost {
         guard request.operation == "http.request" else {
             throw LegadoRuntimeError(code: "PROBE_UNSUPPORTED_HOST", message: request.operation)
         }
-        struct Input: Decodable { let url: String; let method: String?; let headers: [String: String]?; let bodyBase64: String? }
+        struct Input: Decodable { let url: String; let method: String?; let headers: LegadoHTTPHeaders?; let bodyBase64: String? }
         let input = try JSONDecoder().decode(Input.self, from: Data(request.requestJSON.utf8))
         guard input.url.hasPrefix(base + "/") else { throw failure("Unexpected fixture URL: \(input.url)") }
         let path = String(input.url.dropFirst(base.count))
         captures.append(["url": input.url, "method": input.method ?? "GET", "bodyBase64": input.bodyBase64 ?? "",
-                         "cookie": input.headers?.first(where: { $0.key.lowercased() == "cookie" })?.value ?? "",
-                         "authorization": input.headers?.first(where: { $0.key.lowercased() == "authorization" })?.value ?? ""])
+                         "cookie": input.headers?.entries.first(where: { $0.name.lowercased() == "cookie" })?.value ?? "",
+                         "authorization": input.headers?.entries.first(where: { $0.name.lowercased() == "authorization" })?.value ?? ""])
         let text: String
         var headers: [String: Any] = [:]
         switch path {
@@ -40,8 +40,8 @@ actor ProbeFixtureHost: LegadoPlatformHost {
             }
             text = "ok"; headers["Set-Cookie"] = ["sid=fixture; Path=/; HttpOnly"]
         case "/search?key=%E4%B9%A6&page=1":
-            guard input.headers?.first(where: { $0.key.lowercased() == "cookie" })?.value == "sid=fixture",
-                  input.headers?.first(where: { $0.key.lowercased() == "authorization" })?.value == "Bearer fixture" else {
+            guard input.headers?.entries.first(where: { $0.name.lowercased() == "cookie" })?.value == "sid=fixture",
+                  input.headers?.entries.first(where: { $0.name.lowercased() == "authorization" })?.value == "Bearer fixture" else {
                 throw failure("Source login/Cookie state was not preserved")
             }
             text = "{\"books\":[{\"name\":\"Fixture\",\"bookUrl\":\"\(base)/book/1\"}]}"

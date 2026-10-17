@@ -65,9 +65,8 @@ class SourceJavaHost internal constructor(
         val method = options["method"]?.asString?.uppercase() ?: "GET"
         val body = options["body"]?.asString
         val charset = options["charset"]?.asString ?: "UTF-8"
-        val request = jsonObject("url" to resolved, "method" to method, "headers" to headers,
-            "body" to body, "bodyBase64" to body?.let { Base64.getEncoder().encodeToString(it.toByteArray(Charset.forName(charset))) },
-            "timeoutMs" to (timeoutMs ?: 30_000L))
+        val request = LegadoHttpRequestPreprocessor.prepare(resolved, method, headers, body,
+            options["charset"]?.asString).apply { addProperty("timeoutMs", timeoutMs ?: 30_000L) }
         val response = dispatch(task, "http.request", request)
         val responseUrl = response["url"]?.asString ?: resolved
         val responseHeaders = linkedMapOf<String, String>()

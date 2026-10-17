@@ -56,6 +56,8 @@ internal enum LegadoHTTPBodyCodec {
 
 /// Optional HTTP adapter for the prototype. Cookie state remains in the JVM;
 /// browser, filesystem, notifications and media operations require explicit adapters.
+/// Repeated field lines are rejected because URLSession cannot preserve their
+/// wire representation. Full HTTP parity requires the original JVM transport.
 public actor URLSessionLegadoHost: LegadoPlatformHost {
     private let session: URLSession
     private var requests: [String: [UUID: Task<String, Error>]] = [:]
@@ -74,7 +76,7 @@ public actor URLSessionLegadoHost: LegadoPlatformHost {
             throw LegadoRuntimeError(code: "unsupported_host", message: "Platform operation \(request.operation) is not configured")
         }
         struct Input: Decodable {
-            let url: String; let method: String?; let headers: [String: String]?; let body: String?; let bodyBase64: String?; let timeoutMs: Double?
+            let url: String; let method: String?; let headers: LegadoHTTPHeaders?; let body: String?; let bodyBase64: String?; let timeoutMs: Double?
         }
         let input = try JSONDecoder().decode(Input.self, from: Data(request.requestJSON.utf8))
         guard let url = URL(string: input.url), ["http", "https"].contains(url.scheme?.lowercased() ?? "") else {
@@ -82,7 +84,7 @@ public actor URLSessionLegadoHost: LegadoPlatformHost {
         }
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = input.method ?? "GET"
-        urlRequest.allHTTPHeaderFields = input.headers
+        urlRequest.allHTTPHeaderFields = try input.headers?.urlSessionFields()
         urlRequest.httpBody = try LegadoHTTPBodyCodec.requestBody(text: input.body, base64: input.bodyBase64)
         urlRequest.timeoutInterval = min(170, max(0.001, min(request.remainingTimeoutSeconds, (input.timeoutMs ?? 30_000) / 1000)))
         let client = session
