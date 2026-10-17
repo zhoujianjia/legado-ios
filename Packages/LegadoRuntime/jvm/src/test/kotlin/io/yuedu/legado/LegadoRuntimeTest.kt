@@ -36,7 +36,7 @@ class LegadoRuntimeTest {
             response.toString()
         }
         val script = javaClass.getResource("/fixtures/main-source.js")!!.readText()
-        val id = create(script)
+        val id = create(script, jsLib = SHARED_LIBRARY)
         assertEquals(true, call(id, "login").asBoolean)
         val list = call(id, "search", jsonObject("key" to "书", "page" to 1)).asJsonArray
         assertEquals("Fixture", list[0].asJsonObject["name"].asString)
@@ -60,7 +60,8 @@ class LegadoRuntimeTest {
         assertTrue(requests[1]["remainingTimeoutMs"].asLong > 0)
         assertTrue(requests[1]["deadlineEpochMs"].asLong >= System.currentTimeMillis() - 30_000)
         assertEquals(listOf("/login", "/search?key=%E4%B9%A6&page=1", "/book/1", "/toc/1", "/chapter/1", "/chapter/1", "/chapter/2"), requests.map { it["url"].asString.removePrefix(BASE) })
-        // The source script executes again in a fresh call scope but explicit globals survive.
+        // A nonblank jsLib opts this source into upstream's explicit-global sharing.
+        // The source script still executes again in a fresh invocation binding scope.
         call(id, "search", jsonObject("key" to "书"))
         assertEquals(2, call(id, "evaluate", jsonObject("script" to "globalThis.calls")).asInt)
     }
@@ -97,9 +98,38 @@ class LegadoRuntimeTest {
             jsonObject("script" to "java.ajax('$BASE/gbk')")).asString)
     }
 
+    @Test fun snapshotRequestEvidencePreservesExplicitGetNullAndExactPostBodyBase64() {
+        val captured = mutableListOf<JsonObject>()
+        LegadoRuntime.setHostCallback { _, operation, request ->
+            assertEquals("http.request", operation)
+            captured += parseObject(request)
+            jsonObject("status" to 200, "body" to "ok").toString()
+        }
+        val id = create("function search(){return [];}")
+        call(id, "evaluate", jsonObject("script" to "java.ajax('$BASE/get')"))
+        val body = "书🙂"
+        call(id, "evaluate", jsonObject("script" to
+            """java.connect('$BASE/post,{"method":"POST","body":"$body"}').body()"""))
+
+        val requests = call(id, "snapshot").asJsonObject["requests"].asJsonArray
+        assertEquals(2, requests.size())
+        val get = requests[0].asJsonObject
+        assertEquals("GET", get["method"].asString)
+        assertTrue("An explicit null request body is evidence, not a missing field", get.has("bodyBase64"))
+        assertTrue(get["bodyBase64"].isJsonNull)
+        val post = requests[1].asJsonObject
+        assertEquals("POST", post["method"].asString)
+        assertEquals(java.util.Base64.getEncoder().encodeToString(body.toByteArray(Charsets.UTF_8)), post["bodyBase64"].asString)
+        // The snapshot producer must preserve the actual dispatched request DTO,
+        // including nulls, without changing transport bytes or filling defaults.
+        captured.forEachIndexed { index, original -> assertEquals(original, requests[index]) }
+    }
+
     @Test fun sharedPrototypeMatchesUpstreamWhileOtherSessionsAndCallBindingsRemainIsolated() {
-        val first = create("function search(key) { var local = key; return local; }")
-        val second = create("function search(key) { return key; }")
+        val first = create("function search(key) { var local = key; return local; }", jsLib = SHARED_LIBRARY,
+            sourceUrl = "$BASE/first-source")
+        val second = create("function search(key) { return key; }", jsLib = SHARED_LIBRARY,
+            sourceUrl = "$BASE/second-source")
         call(first, "evaluate", jsonObject("script" to "globalThis.marker='first'; Array.prototype.custom='leak'; true"))
         val handle = com.script.ScriptBindings.getSharedGlobalStateHandle("reference:${UUID.randomUUID()}")
         try {
@@ -173,8 +203,10 @@ class LegadoRuntimeTest {
         assertFalse(result.toString(), result["ok"].asBoolean)
         assertEquals(result.toString(), code, result["error"].asJsonObject["code"].asString)
     }
-    private fun create(script: String): String {
-        val result = parseObject(LegadoRuntime.createSession(jsonObject("bookSourceUrl" to BASE, "bookSourceName" to "Fixture", "mainJs" to script).toString()))
+    private fun create(script: String, jsLib: String? = null, sourceUrl: String = BASE): String {
+        val source = jsonObject("bookSourceUrl" to sourceUrl, "bookSourceName" to "Fixture", "mainJs" to script)
+        jsLib?.let { source.addProperty("jsLib", it) }
+        val result = parseObject(LegadoRuntime.createSession(source.toString()))
         assertTrue(result.toString(), result["ok"].asBoolean)
         return result["sessionId"].asString.also(ids::add)
     }
@@ -183,5 +215,8 @@ class LegadoRuntimeTest {
         assertTrue(result.toString(), result["ok"].asBoolean)
         return result["result"]
     }
-    companion object { private const val BASE = "https://fixture.invalid" }
+    companion object {
+        private const val BASE = "https://fixture.invalid"
+        private const val SHARED_LIBRARY = "/* Legado reference shared scope */"
+    }
 }

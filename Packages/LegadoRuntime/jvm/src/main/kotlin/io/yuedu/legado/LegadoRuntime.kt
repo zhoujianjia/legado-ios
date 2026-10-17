@@ -110,7 +110,7 @@ object LegadoRuntime {
         val session = sessions.remove(sessionId) ?: return jsonObject("ok" to true).toString()
         synchronized(session) { session.closed.set(true) }
         tasks.values.filter { it.session === session }.forEach { cancel(it.id) }
-        ScriptBindings.removeSharedGlobalState(session.sharedGlobal)
+        session.sharedGlobal?.let(ScriptBindings::removeSharedGlobalState)
         session.variables.clear()
         session.cache.clear()
         session.contents.clear()
@@ -133,7 +133,11 @@ object LegadoRuntime {
         if (operation == "snapshot") return jsonObject(
             "variables" to task.session.variables, "cache" to task.session.cache.snapshot(),
             "cookies" to task.session.cookies.snapshot(), "contents" to task.session.contents,
-            "requests" to synchronized(task.session.requests) { task.session.requests.toList() }
+            // Copy JsonElements directly: Gson's List adapter would omit explicit
+            // null request fields such as a GET's bodyBase64 from this evidence.
+            "requests" to synchronized(task.session.requests) {
+                JsonArray().apply { task.session.requests.forEach { add(it.deepCopy()) } }
+            }
         )
         val source = task.session.source
         val javaHost = SourceJavaHost(task, ::dispatchHost)
@@ -142,8 +146,10 @@ object LegadoRuntime {
         }
         val preparedInput = MainJsResultMarshaller.prepareInput(operation, input, source)
         val scope = ScriptBindings()
-        // Bindings are invocation-local. The source's shared-global prototype retains its
-        // first parent, including intrinsic mutations, just as upstream ScriptBindings does.
+        // BaseSourceExtensions.getSharedGlobalStateKey returns a handle only for a
+        // nonblank jsLib. Without it, explicit globals are invocation-local too.
+        // A configured shared-global prototype retains its first parent, including
+        // intrinsic mutations, just as upstream ScriptBindings does.
         scope.chainTo(RhinoScriptEngine.newStandardTopLevel(), task.session.sharedGlobal)
         scope["java"] = javaHost
         scope["source"] = SourceHost(task.session)
@@ -242,7 +248,9 @@ object LegadoRuntime {
 
 internal class RuntimeSession(val id: String, val source: JsonObject) {
     val closed = AtomicBoolean(false)
-    val sharedGlobal: SharedGlobalStateHandle = ScriptBindings.getSharedGlobalStateHandle("ios:$id")
+    val sharedGlobal: SharedGlobalStateHandle? = source["jsLib"]
+        ?.takeIf { it.isJsonPrimitive && it.asString.isNotBlank() }
+        ?.let { ScriptBindings.getSharedGlobalStateHandle("ios:$id") }
     val variables = ConcurrentHashMap<String, String>()
     val cache = SessionCache()
     val cookies = SessionCookies()

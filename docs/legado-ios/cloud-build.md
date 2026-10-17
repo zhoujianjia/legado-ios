@@ -5,6 +5,17 @@ develop and test the portable Legado core. A manually triggered GitHub Actions
 macOS runner can build the native prototype; the iPhone or iPad is still needed
 for installation and actual runtime validation. No Mac SSH connection is needed.
 
+For changes to the Java/Kotlin core, the separate
+[Core Update workflow](../../.github/workflows/legado-ios-core-update.yml)
+uses a `legado-core-<current SHA7>` tag. It builds the current JVM payload and app,
+and reuses only the fixed, audited build6 native artifact after checking all six
+native build inputs, producer identity, actual ZIP digest/size, modules and data.
+`native-reuse.json` separates the original native producer from the fresh JVM
+commit, vendor inputs, artifact and JAR hash. It retains both app compilations,
+ten-export checks and current Simulator execution. A changed native input or an
+expired baseline requires a fresh full build. The older replay's requirement for
+an identical JVM tree remains unchanged.
+
 See [cloud-validation.json](cloud-validation.json) for observed cloud runs,
 failures, and verified fixes. Build 5 at `203b352` in
 [run 39042657077](https://github.com/zhoujianjia/legado-ios/actions/runs/39042657077)

@@ -15,6 +15,7 @@ import io.legado.app.help.CacheManager
 import io.legado.app.help.book.BookHelp
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.http.CookieStore
+import io.legado.app.model.jsSource.JsSourceEngine
 import io.legado.app.model.webBook.WebBook
 import io.legado.app.utils.GSON
 import io.legado.app.utils.putPrefBoolean
@@ -27,6 +28,7 @@ import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
+import java.math.BigDecimal
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -90,7 +92,12 @@ class LegadoGoldenTraceTest {
             report["originalArchiveSHA256"] = InstrumentationRegistry.getArguments().getString("archiveSHA256")
             report["testConfiguration"] = mapOf("Cronet" to false,
                 "minimumSdk" to "External reference.init.gradle raises only :app from 23 to 26 via androidComponents.finalizeDsl; original Gradle and business source files are unchanged",
+                "sharedScope" to "Reading-chain source explicitly supplies the nonblank jsLib shown in sourceInput; the original no-library isolation behavior is tested separately without network requests",
                 "httpServer" to "loopback ServerSocket; no HTTP interceptor or native-host replacement")
+
+            val scopeIsolationProbe = linkedMapOf<String, Any?>("passed" to false)
+            report["scopeIsolationProbe"] = scopeIsolationProbe
+            probeOriginalScopeIsolation(scopeIsolationProbe, referenceRunId)
 
             server = FixtureServer()
             origin = server.origin
@@ -100,10 +107,12 @@ class LegadoGoldenTraceTest {
                 enabledCookieJar = true,
                 header = FIXED_HEADERS,
                 mainJs = script,
+                jsLib = SHARED_JS_LIB,
             )
             canonical["sourceInput"] = mapOf("bookSourceUrl" to origin,
                 "bookSourceName" to source.bookSourceName, "enabledCookieJar" to true,
-                "header" to FIXED_HEADERS, "mainJsSHA256" to report["fixtureSHA256"])
+                "header" to FIXED_HEADERS, "mainJsSHA256" to report["fixtureSHA256"],
+                "jsLib" to SHARED_JS_LIB)
             source.removeLoginInfo()
             source.removeLoginHeader()
             source.putVariable(null)
@@ -171,12 +180,15 @@ class LegadoGoldenTraceTest {
             steps.add("batch.returned")
 
             val calls = source.evalJS("globalThis.calls")
+            // Persist the actual engine return type/value before asserting, so
+            // undefined and wrapped values remain diagnosable in failed traces.
+            report["readingChainSharedCallsRaw"] = describeRawResult(calls)
             assertTrue("Original source shared state must survive calls", calls is Number)
-            assertEquals(1, (calls as Number).toInt())
+            assertExactCount("Original reading-chain shared count", JsSourceEngine.normalizeJsResult(calls), 1)
             outputs["state"] = mapOf("loginInfo" to source.getLoginInfo(),
                 "loginHeader" to source.getLoginHeader(), "variable" to source.getVariable(),
                 "lastKey" to CacheManager.get("lastKey"), "cookie" to CookieStore.getCookie(origin),
-                "calls" to calls.toInt())
+                "calls" to (calls as Number).toInt())
             assertEquals("书", CacheManager.get("lastKey"))
             server.assertHealthy()
             val captures = server.requests()
@@ -209,6 +221,59 @@ class LegadoGoldenTraceTest {
                 putString("legadoReferencePassed", report["passed"].toString())
             })
         }
+    }
+
+    /** Exercise original scope rules before creating the HTTP fixture server. */
+    private fun probeOriginalScopeIsolation(probe: MutableMap<String, Any?>, referenceRunId: String) {
+        val touchScript = "function touch(){globalThis.calls=(globalThis.calls||0)+1;return globalThis.calls;}"
+        val source = BookSource(bookSourceUrl = "https://scope-fixture.invalid/$referenceRunId",
+            bookSourceName = "Original scope isolation probe", mainJs = touchScript)
+        probe["sourceKey"] = source.bookSourceUrl
+        probe["mainJs"] = touchScript
+
+        val isolated = linkedMapOf<String, Any?>("jsLib" to null)
+        probe["withoutJsLib"] = isolated
+        val isolatedCalls = arrayListOf<Map<String, Any?>>()
+        isolated["calls"] = isolatedCalls
+        repeat(2) { index ->
+            val result = JsSourceEngine(source).callFunction("touch", emptyList())
+            isolatedCalls.add(describeRawResult(result))
+            assertExactCount("No-library original call ${index + 1}", result, 1)
+        }
+        val isolatedType = source.evalJS("typeof globalThis.calls")
+        isolated["evalTypeOfCalls"] = describeRawResult(isolatedType)
+        isolated["evalCalls"] = describeRawResult(source.evalJS("globalThis.calls"))
+        assertEquals("No-library original globals must remain invocation-local", "undefined", isolatedType)
+
+        // Reuse the same source identity, changing only its explicit library.
+        // Each call still creates a fresh JsSourceEngine, as in normal WebBook.
+        source.jsLib = SHARED_JS_LIB
+        val shared = linkedMapOf<String, Any?>("jsLib" to SHARED_JS_LIB)
+        probe["withJsLib"] = shared
+        val sharedCalls = arrayListOf<Map<String, Any?>>()
+        shared["calls"] = sharedCalls
+        repeat(2) { index ->
+            val result = JsSourceEngine(source).callFunction("touch", emptyList())
+            sharedCalls.add(describeRawResult(result))
+            assertExactCount("Explicit-library original call ${index + 1}", result, index + 1)
+        }
+        val sharedValue = source.evalJS("globalThis.calls")
+        shared["evalCalls"] = describeRawResult(sharedValue)
+        val sharedType = source.evalJS("typeof globalThis.calls")
+        shared["evalTypeOfCalls"] = describeRawResult(sharedType)
+        assertEquals("Explicit-library original globals retain their JS number type", "number", sharedType)
+        assertExactCount("Explicit-library original eval count", JsSourceEngine.normalizeJsResult(sharedValue), 2)
+        probe["passed"] = true
+    }
+
+    private fun describeRawResult(value: Any?): Map<String, Any?> = mapOf(
+        "javaClass" to value?.javaClass?.name, "value" to value?.toString())
+
+    private fun assertExactCount(message: String, normalized: String?, expected: Int) {
+        assertTrue("$message must return a numeric result; actual=$normalized", normalized != null)
+        // GSON may serialize the original Rhino number as 1.0. Compare its full
+        // numeric value without truncation, while retaining the returned text.
+        assertEquals(message, 0, BigDecimal(normalized!!).compareTo(BigDecimal.valueOf(expected.toLong())))
     }
 
     private fun cachedContents(book: Book, chapters: List<BookChapter>): Map<String, String?> =
@@ -337,6 +402,7 @@ class LegadoGoldenTraceTest {
     }
 
     companion object {
+        private const val SHARED_JS_LIB = "/* Legado reference shared scope */"
         const val FIXTURE_ASSET = "legado-reference/main-source.js"
         const val REPORT_PATH = "legado-reference/android-golden.json"
         private const val CANONICAL_ORIGIN = "https://fixture.invalid"

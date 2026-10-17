@@ -1,0 +1,157 @@
+name: Legado iOS Core Update
+
+# This independently rebuilds the current JVM/App and reuses only the audited
+# build-6 native artifact. The stricter legacy replay workflow stays unchanged.
+on:
+  push:
+    tags:
+      - 'legado-core-*'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: legado-ios-core-update-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  portable-core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Require the tag to identify this exact checkout
+        run: python -B scripts/legado-ios/verify-native-reuse.py validate-tag
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Validate portable tools and build the fresh JVM payload
+        run: |
+          mkdir -p .build/ci-logs
+          python -B -m unittest discover -s scripts/tests -p test_legado_inventory.py -v 2>&1 | tee .build/ci-logs/inventory-tests.log
+          python -B scripts/legado-ios/test-runtime-tools.py -v 2>&1 | tee .build/ci-logs/runtime-tools-tests.log
+          python -B scripts/legado-ios/test-zero-wx.py -v 2>&1 | tee .build/ci-logs/zero-wx-tests.log
+          python -B scripts/legado-ios/test-zero-code-cache.py -v 2>&1 | tee .build/ci-logs/zero-code-cache-tests.log
+          python -B scripts/legado-ios/test-native-reuse.py -v 2>&1 | tee .build/ci-logs/native-reuse-tests.log
+          python -B scripts/legado-reference/test-compare-reference.py -v 2>&1 | tee .build/ci-logs/reference-comparator-tests.log
+          bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon -PincludeEngineTests=true test runtimeJar runtimeSmoke runtimeSuiteSmoke 2>&1 | tee .build/ci-logs/jvm-tests.log
+          python -B scripts/legado-ios/verify-native-reuse.py record-jvm 2>&1 | tee .build/ci-logs/fresh-jvm-provenance.log
+          cp Packages/LegadoRuntime/jvm/build/libs/fresh-jvm.json .build/ci-logs/fresh-jvm.json
+      - name: Save this run's fresh JVM payload and provenance
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-jvm-payload
+          path: |
+            Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar
+            Packages/LegadoRuntime/jvm/build/libs/fresh-jvm.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Preserve portable test evidence including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-core-update-portable-logs
+          path: |
+            .build/ci-logs/
+            Packages/LegadoRuntime/jvm/build/test-results/
+            Packages/LegadoRuntime/jvm/build/reports/tests/
+            Packages/LegadoRuntime/jvm/build/reports/dependency-verification/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+
+  ios-probe:
+    needs: portable-core
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Resolve the Apple toolchain and warm its selected Simulator
+        run: |
+          mkdir -p .build/ci-logs
+          test "$(uname -m)" = arm64
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/xcode-version.log
+          xcodebuild -showsdks 2>&1 | tee .build/ci-logs/apple-sdks.log
+          SIMULATOR_UDID="$(bash scripts/sim.sh udid)"
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b 2>&1 | tee .build/ci-logs/simulator-early-boot.log
+      - name: Test the source-only Swift bridge
+        env:
+          LEGADO_RUNTIME_SOURCE_ONLY: '1'
+        run: swift test --package-path Packages/LegadoRuntime 2>&1 | tee .build/ci-logs/swift-package-tests.log
+      - name: Verify the fixed native producer and this run's fresh JVM artifact
+        id: reuse
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -B scripts/legado-ios/verify-native-reuse.py prepare 2>&1 | tee .build/ci-logs/native-reuse-prepare.log
+      - name: Download only this run's verified fresh JVM payload
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ steps.reuse.outputs.jvm_artifact_id }}
+          run-id: ${{ github.run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          path: Packages/LegadoRuntime/jvm/build/libs
+          digest-mismatch: error
+      - name: Hash and safely restore only the audited native runtime
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python -B scripts/legado-ios/verify-native-reuse.py restore 2>&1 | tee .build/ci-logs/native-reuse-restore.log
+          mkdir -p .build/legado-ios/probe-output
+          cp .build/ci-logs/native-reuse.json .build/legado-ios/probe-output/native-reuse.json
+      - name: Compile the current app with the fresh JVM and verify native exports
+        run: bash scripts/legado-ios/build-probe.sh 2>&1 | tee .build/ci-logs/probe-build.log
+      - name: Execute the current native probe and complete fixture in Simulator
+        run: python -B scripts/legado-ios/run-simulator-probe.py 2>&1 | tee .build/ci-logs/simulator-probe.log
+      - name: Preserve the unsigned device probe even if Simulator execution fails
+        if: ${{ always() && hashFiles('.build/legado-ios/probe-output/LegadoRuntimeProbe-unsigned.ipa') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-probe-unsigned
+          path: |
+            .build/legado-ios/probe-output/LegadoRuntimeProbe-unsigned.ipa
+            .build/legado-ios/probe-output/build-manifest.json
+            .build/legado-ios/probe-output/README.txt
+            .build/legado-ios/probe-output/native-reuse.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve core-update provenance and diagnostics including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-core-update-logs
+          path: |
+            .build/ci-logs/
+            .build/legado-ios/probe-device-linked-libraries.log
+            .build/legado-ios/probe-device-exports.*
+            .build/legado-ios/*.xcresult/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State exactly which products were rebuilt
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          This run rebuilds the current JVM payload and iOS app. It reuses only the fixed, audited build-6 native runtime after checking producer identity, all six native inputs, the actual artifact ZIP digest/size and its extracted layout.
+          See `native-reuse.json` for the separate native producer and fresh JVM provenance. The native runtime was not recompiled in this run. The legacy replay workflow and its stricter JVM input closure are unchanged.
+          Compilation, export checks and the current synthetic fixture in Simulator provide evidence for this combination. Historical physical-device results cannot pass newly changed JVM code; a matching iPhone/iPad report remains required. Sign the unsigned IPA separately before installing.
+          SUMMARY

@@ -1,6 +1,6 @@
 # Original Android reading-chain reference
 
-Build 7 adds a 28-case `legado-interop-v1` matrix to the packaged JVM and iOS
+Build 8 adds a 28-case `legado-interop-v1` matrix to the packaged JVM and iOS
 probe, plus a finite JSON DTO implementation of the archive's `JsSourceMarshaller`
 and selected `JsSourceBook` preparation. The original 25-case engine suite stays
 unchanged. Passing desktop tests does not establish a new physical-device pass.
@@ -15,6 +15,14 @@ Required search/chapter fields distinguish absent defaults from explicit `null`;
 the latter preserves the original short-circuit validation failure. Multi-key
 book-variable maps currently preserve values but can differ in serialized key
 order from the original entity's mutable HashMap.
+
+Actual Android execution first exposed a scope difference: the original enables
+explicit shared globals only when `jsLib` is nonblank. The port now preserves
+this condition. Both platforms test counts `1,1` without a library and `1,2`
+with a library, while source variables/cookies/cache still survive calls.
+The main reading fixture explicitly configures the same inert inline library on
+both platforms. Its script bytes remain unchanged. Request snapshots retain
+explicit JSON nulls rather than losing GET body metadata through Gson.
 
 ## Independent reference execution
 
@@ -56,7 +64,7 @@ an Android phone or a local Mac.
 ## Comparing traces
 
 The Android artifact retains raw HTTP request headers/body bytes, full original
-models, cache reads and a declared canonical trace. Build 7's iOS probe report
+models, cache reads and a declared canonical trace. Build 8's iOS probe report
 adds the matching `readingChain` section. Both execute the exact same hashed
 `main-source.js`, using fixed loopback responses and explicit request headers.
 

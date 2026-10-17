@@ -89,7 +89,8 @@ actor ProbeRunner {
         let referenceHeaders = #"{"User-Agent":"Legado-Reference-Fixture/1","Accept":"*/*","Accept-Encoding":"identity","Connection":"close"}"#
         let sourceHash = SHA256.hash(data: Data(source.utf8)).map { String(format: "%02x", $0) }.joined()
         let sourceInput: [String: Any] = ["bookSourceName": "Synthetic fixture", "bookSourceUrl": "https://fixture.invalid",
-            "enabledCookieJar": true, "header": referenceHeaders, "mainJsSHA256": sourceHash]
+            "enabledCookieJar": true, "header": referenceHeaders,
+            "jsLib": "/* Legado reference shared scope */", "mainJsSHA256": sourceHash]
         var sourceConfiguration = sourceInput
         sourceConfiguration.removeValue(forKey: "mainJsSHA256")
         sourceConfiguration["mainJs"] = source
@@ -111,6 +112,7 @@ actor ProbeRunner {
             try verifySemanticSuite(semanticSuite, javaVersion: javaVersion)
             let interopSuite = try result(await call(engine, session, "interopSuite", ["timeoutMs": 300_000]))
             try verifyInteropSuite(interopSuite)
+            let scopeIsolation = try await verifyScopeIsolation(engine)
             let semantics = try result(await call(engine, session, "semanticProbe"))
             guard let semanticValues = semantics as? [String: Any], semanticValues["e4x"] as? String == "ok",
                   semanticValues["indirect"] as? String == "function", semanticValues["dynamicThis"] as? Bool == true,
@@ -156,7 +158,7 @@ actor ProbeRunner {
                 "probeProgress": try savedProgress(),
                 "timingNote": "Includes durable diagnostic checkpoints and native journal writes; not production performance measurements.",
                 "runtimeDiagnostics": runtimeDiagnostics, "runtimeJavaVersion": javaVersion,
-                "semanticSuite": semanticSuite, "interopSuite": interopSuite,
+                "semanticSuite": semanticSuite, "interopSuite": interopSuite, "scopeIsolationProbe": scopeIsolation,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
                 "payloadBytes": try payloadSize([configuration.javaHome, payloadDirectory]),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
@@ -229,6 +231,41 @@ actor ProbeRunner {
         let failed: Int
         let total: Int
         let tests: [InteropCaseReport]
+    }
+
+    private func verifyScopeIsolation(_ engine: LegadoRuntime) async throws -> [String: Any] {
+        var observations: [[String: Any]] = []
+        for (library, expected, expectedType) in [("", [1, 1], "undefined"), ("/* Legado reference shared scope */", [1, 2], "number")] {
+            var source: [String: Any] = ["bookSourceUrl": "https://scope.fixture.invalid",
+                "mainJs": "function touch(){globalThis.calls=(globalThis.calls||0)+1;return globalThis.calls;}"]
+            if !library.isEmpty { source["jsLib"] = library }
+            let session = try await engine.createSession(sourceJSON: json(source))
+            var closeAttempted = false
+            do {
+                var counts: [Int] = []
+                for _ in 0..<2 {
+                    guard let count = try result(await call(engine, session, "evaluate", ["script": "touch()"])) as? Int else {
+                        throw mismatch("Scope counter did not return a number")
+                    }
+                    counts.append(count)
+                }
+                let type = try result(await call(engine, session, "evaluate", ["script": "typeof globalThis.calls"])) as? String
+                guard counts == expected, type == expectedType else {
+                    throw mismatch("Explicit global state must be shared only when jsLib is configured")
+                }
+                closeAttempted = true
+                try await engine.close(session: session)
+                observations.append(["jsLibConfigured": !library.isEmpty, "calls": counts, "typeAfterCalls": expectedType])
+            } catch {
+                let original = error
+                if !closeAttempted {
+                    do { try await engine.close(session: session) }
+                    catch { throw LegadoRuntimeError(code: "PROBE_CLEANUP_FAILED", message: "\(original.localizedDescription); close: \(error.localizedDescription)") }
+                }
+                throw original
+            }
+        }
+        return ["passed": true, "cases": observations]
     }
 
     private struct InteropCaseReport: Decodable {
