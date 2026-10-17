@@ -196,6 +196,14 @@ struct SettingsView: View {
 
                     // ── Advanced ──
                     Section(header: Text(localized("進階")).foregroundStyle(DSColor.textSecondary)) {
+                        NavigationLink {
+                            LegadoRuntimeProbeView()
+                        } label: {
+                            Label(localized("Legado 核心驗證"), systemImage: "testtube.2")
+                                .foregroundColor(DSColor.textPrimary)
+                                .labelStyle(IconConsistentLabelStyle())
+                        }
+                        .accessibilityIdentifier("settings_legado_runtime_probe")
                         // 回饋中心 replaced 診斷與回報 (2026-10-15): reports, replies, and the
                         // diagnostic log viewer as its 診斷紀錄 row.
                         NavigationLink {

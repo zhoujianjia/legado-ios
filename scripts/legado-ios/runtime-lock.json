@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "openjdkMobile": {
+    "repository": "https://github.com/openjdk/mobile.git",
+    "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+  },
+  "iosTools": {
+    "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+    "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+  },
+  "libffi": {
+    "version": "3.5.2",
+    "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+    "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+  },
+  "requiredModules": ["java.base", "java.xml", "java.desktop", "java.datatransfer", "java.prefs", "java.logging", "jdk.charsets", "java.compiler", "java.instrument", "java.net.http", "java.sql", "java.transaction.xa", "jdk.unsupported"],
+  "bootJdkFeature": 26,
+  "minimumIOS": "18.0",
+  "notes": "Source pins, not an assertion that these inputs have passed an iOS device gate. Current upstream workflow uses JDK 26 as boot JDK. Exploded JDK layout is java.home/modules, not java.home/lib/modules."
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-17",
+  "environment": "Windows, Temurin JDK 21.0.12.1, Gradle 8.14.3",
+  "status": "passed",
+  "automated_tests": {
+    "junit_passed": 45,
+    "junit_failures": 0,
+    "junit_errors": 0,
+    "junit_skipped": 0,
+    "original_engine_cases": 25,
+    "original_dom_cases": 7,
+    "prototype_adapter_and_fixture_cases": 13,
+    "python_inventory_cases_passed": 12,
+    "python_runtime_tooling_cases_passed": 6,
+    "apple_swift_tests": "8 prepared; not run"
+  },
+  "packaged_payload": {
+    "path": "Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar",
+    "bytes": 8532617,
+    "sha256": "aa7a4b908373175515be3da68f031579299b42250e6c3377932c582a72b7cf6c",
+    "smoke_test": "passed",
+    "jvm_options": ["-Xint", "-Xmx128m"],
+    "semantic_results": {
+      "e4x": "ok",
+      "indirect_eval": "function",
+      "dynamic_this": true,
+      "legacy_block_scope": 42
+    },
+    "reading_chain": "Synthetic mainJs search, TOC and content passed from the assembled JAR",
+    "module_closure_probe": "Desktop smoke also passed with --limit-modules java.base,java.xml,java.desktop"
+  },
+  "reproduce": [
+    "powershell -NoProfile -File scripts/test-legado.ps1",
+    "JDK21/java -Xint -Xmx128m --class-path Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java"
+  ],
+  "additional_static_checks": [
+    "Both Xcode project files parsed; package and resource references checked",
+    "9 Swift files parsed for syntax only; no Apple type checking or SDK compilation",
+    "21 Yuedu prototype localization keys match across five languages",
+    "Standalone probe project, shared scheme and five-language resources checked",
+    "Bash and PowerShell runner syntax checked",
+    "git diff --check passed"
+  ],
+  "unverified": [
+    "OpenJDK Mobile Zero compilation and native linking on macOS",
+    "Swift and Objective-C compilation with Apple SDKs",
+    "Signed iPhone JVM startup after debugger disconnection",
+    "Original Android business-layer golden trace comparison",
+    "WKWebView, file, media and other unsupported platform adapters",
+    "Full AnalyzeRule/AnalyzeUrl behavior and real-source compatibility",
+    "iOS memory, energy, cold startup and sustained runtime performance"
+  ],
+  "device_gates_passed": false,
+  "full_feature_parity_established": false
+}

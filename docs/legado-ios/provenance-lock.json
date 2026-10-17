@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "legado": {
+    "filename": "legado-master.zip",
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "bytes": 11178463,
+    "zip_comment": "0999ecc04a8cce04ddbfb48c4dcfd9e4ff246ff5",
+    "origin": "user-provided archive; upstream repository identity not verified; ZIP comment is a revision hint, not authenticated provenance"
+  },
+  "yuedu": {
+    "repository": "https://github.com/CHANG-JUI-LIN/Yuedu-reader",
+    "commit": "409b82c731393bcbf8aa1233976c7ef482ec764e",
+    "minimum_ios": "18.0 prototype default; upstream deployment targets are not changed",
+    "source_archive_sha256": "b0ebb19ecd0c5ccea6341bf0cb128edd5d53b03a34e9f5182de67c3fadae9678",
+    "local_import_commit": "6268d89f84de8570933830775e334abcd2a0a3e1"
+  },
+  "engine": {
+    "coordinate": "org.htmlunit:htmlunit-core-js:5.3.0-legado.4",
+    "mode": "interpreted",
+    "archive_artifacts": [
+      {
+        "path": "legado-master/third_party/maven/org/htmlunit/htmlunit-core-js/5.3.0-legado.4/htmlunit-core-js-5.3.0-legado.4.jar",
+        "sha256": "d720f34285515025e4ccc80a5b92aed42cb26c03a7715ca53583d2c74ae51df7"
+      },
+      {
+        "path": "legado-master/third_party/maven/org/htmlunit/htmlunit-core-js/5.3.0-legado.4/htmlunit-core-js-5.3.0-legado.4.pom",
+        "sha256": "7d81c799e9835596330f00f9d197f85b27c134de929d980a6f06c4f5e6b84fbe"
+      },
+      {
+        "path": "legado-master/third_party/maven/org/htmlunit/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+        "sha256": "b2ee8e6ef8578a45425706b15e1887b9fd64d61cdf231cf2e4df6b0f1692acc9"
+      }
+    ],
+    "source_claims": {
+      "authority": "SOURCE.md inside the user-provided archive; not independently reproduced",
+      "packaging_repository": "https://github.com/mgz0227/htmlunit-core-js",
+      "packaging_commit": "3eb5071cdca4a357119d1063a53d5f2d47984ed2",
+      "rhino_repository": "https://github.com/mgz0227/htmlunit-rhino-fork",
+      "rhino_commit": "76460c0312bfd351df6f2bb11168102cdb54170a"
+    }
+  },
+  "runtime": {
+    "provider": "OpenJDK Mobile Zero",
+    "upstream_repository": "https://github.com/openjdk/mobile.git",
+    "build_commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+    "status": "pending_runtime_build_and_ios_device_validation",
+    "required_modules": [
+      "java.base",
+      "java.xml",
+      "java.desktop",
+      "java.datatransfer",
+      "java.prefs",
+      "java.logging",
+      "jdk.charsets",
+      "java.compiler",
+      "java.instrument",
+      "java.net.http",
+      "java.sql",
+      "java.transaction.xa",
+      "jdk.unsupported"
+    ],
+    "java_beans_dependency": "java.beans.Introspector requires java.desktop; java.xml is required for E4X; full module closure is pinned in runtime-lock.json",
+    "ios_tools": {
+      "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+      "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+    },
+    "libffi": {
+      "version": "3.5.2",
+      "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+      "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+    },
+    "boot_jdk_feature": 26,
+    "minimum_ios": "18.0",
+    "layout": "exploded-java-home/modules",
+    "runtime_lock_path": "scripts/legado-ios/runtime-lock.json"
+  }
+}

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F01100000000000000000001 /* LegadoRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = F01100000000000000000002 /* LegadoRuntime */; };
+		F01100000000000000000005 /* LegadoRuntime payload in Resources */ = {isa = PBXBuildFile; fileRef = F01100000000000000000004 /* LegadoRuntime payload */; };
 		1C081706E1002E557584EDC6 /* YueduCoreTextTypography in Frameworks */ = {isa = PBXBuildFile; productRef = 3D3ACA9A6DDE978E3B91280C /* YueduCoreTextTypography */; };
 		1E90D290C84CF7DFB61183AB /* yuedu_app_Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4E4E1DDA4EE35F67778097F0 /* yuedu_app_Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2EE60C00FD763A43CFCAC2A0 /* yuedu_app_ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 81F92752186D8D0E971A17B9 /* yuedu_app_ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -98,6 +100,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F01100000000000000000004 /* LegadoRuntime payload */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "LegadoRuntime payload"; path = Resources/LegadoRuntime; sourceTree = SOURCE_ROOT; };
 		4602AABB2F51C45CAB3FACE1 /* Yuedu-reader_version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Yuedu-reader_version.xcconfig"; sourceTree = "<group>"; };
 		460D36592F51C5B8006E774C /* YueduReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YueduReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		460D36662F51C5B9006E774C /* yuedu appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "yuedu appTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -109,6 +112,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F01100000000000000000006 /* Preserve the JVM payload as a directory */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				LegadoRuntime,
+			);
+			target = 460D36582F51C5B8006E774C /* yuedu app */;
+		};
 		AA11BB22CC33DD44EE55FF66AA11BB22 /* Exceptions for "Widget" folder in "Yuedu-Reader Widget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -128,6 +138,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		460D365B2F51C5B8006E774C /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F01100000000000000000006 /* Preserve the JVM payload as a directory */,
+			);
 			path = Resources;
 			sourceTree = "<group>";
 		};
@@ -174,6 +187,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F01100000000000000000001 /* LegadoRuntime in Frameworks */,
 				8A11B0E32F9A1C7300A1B001 /* ReadiumFuzi in Frameworks */,
 				46A6AB6F2FCD4ED60071B397 /* FirebaseAuthCombine-Community in Frameworks */,
 				46A6AB872FCD4ED60071B397 /* FirebasePerformance in Frameworks */,
@@ -254,6 +268,7 @@
 		460D36502F51C5B8006E774C = {
 			isa = PBXGroup;
 			children = (
+				F01100000000000000000004 /* LegadoRuntime payload */,
 				4639A10E2FFD2ACF008040BE /* YueduPro.storekit */,
 				E661223F57364063B509666C /* GoogleService-Info.plist */,
 				A10000000000000000000001 /* Targets/Yuedu */,
@@ -335,6 +350,7 @@
 			);
 			name = "yuedu app";
 			packageProductDependencies = (
+				F01100000000000000000002 /* LegadoRuntime */,
 				8A11B0E22F9A1C7300A1B001 /* ReadiumFuzi */,
 				7F41A49C749809CDAB632913 /* ReadiumZIPFoundation */,
 				489E6E08B47AA3AC9F140CAD /* SwiftSoup */,
@@ -483,6 +499,7 @@
 			mainGroup = 460D36502F51C5B8006E774C;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				F01100000000000000000003 /* XCLocalSwiftPackageReference "Packages/LegadoRuntime" */,
 				46935AA62F52E48600662F9D /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				46935AA72F52E49B00662F9D /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 				AAAA1111AAAA1111AAAA0003 /* XCRemoteSwiftPackageReference "Nuke" */,
@@ -513,6 +530,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F01100000000000000000005 /* LegadoRuntime payload in Resources */,
 				3B275A36815844CE9EBD5086 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1162,6 +1180,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		F01100000000000000000003 /* XCLocalSwiftPackageReference "Packages/LegadoRuntime" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LegadoRuntime;
+		};
 		D8654E038B484E472D6D37EA /* XCLocalSwiftPackageReference "Packages/CLexbor" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/CLexbor;
@@ -1244,6 +1266,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F01100000000000000000002 /* LegadoRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F01100000000000000000003 /* XCLocalSwiftPackageReference "Packages/LegadoRuntime" */;
+			productName = LegadoRuntime;
+		};
 		3D3ACA9A6DDE978E3B91280C /* YueduCoreTextTypography */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4503FB56A177080D0D9E31E4 /* XCRemoteSwiftPackageReference "YueduCoreText" */;

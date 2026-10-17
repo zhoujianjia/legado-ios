@@ -1,0 +1,909 @@
+{
+  "schema_version": 1,
+  "features": [
+    {
+      "id": "core.engine",
+      "phase": "core",
+      "behavior": "Custom Rhino interpreted execution",
+      "ios_mapping": "Zero JVM retaining the locked JAR and original Kotlin wrappers",
+      "acceptance": "Start a signed device app without a debugger or JIT; compare values and errors",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/modules/rhino/src/main/java/com/script/rhino/RhinoScriptEngine.kt",
+          "contains": "setInterpretedMode(true)"
+        }
+      ]
+    },
+    {
+      "id": "core.dynamic-semantics",
+      "phase": "core",
+      "behavior": "Dynamic this, indirect eval, Function and legacy block scope",
+      "ios_mapping": "Retain RhinoContext compatibility compilation",
+      "acceptance": "Port JsEngineCapabilitiesTest; cached compilation must not retain caller bindings",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/modules/rhino/src/main/java/com/script/rhino/RhinoContext.kt",
+          "contains": "compileWithCompatibility"
+        },
+        {
+          "path": "legado-master/app/src/test/java/io/legado/app/JsEngineCapabilitiesTest.kt",
+          "contains": "dynamicEvalRealmKeepsJavaCryptoCallable"
+        }
+      ]
+    },
+    {
+      "id": "core.e4x",
+      "phase": "core",
+      "behavior": "E4X XML literals and descendant queries",
+      "ios_mapping": "Include java.xml and original Rhino XML implementation",
+      "acceptance": "Run XML literals and data..item_null.text; compare exact strings",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/modules/rhino/src/main/java/com/script/rhino/RhinoContext.kt",
+          "contains": "XMLLoaderImpl().load"
+        }
+      ]
+    },
+    {
+      "id": "core.java-interop",
+      "phase": "core",
+      "behavior": "Java strings, collections, byte arrays, overloads and exceptions",
+      "ios_mapping": "Keep Java objects inside JVM; exchange JSON, bytes and handles with Swift",
+      "acceptance": "Check collection iteration, nested classes, detached methods and catchable failures",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/modules/rhino/src/main/java/com/script/rhino/RhinoWrapFactory.kt",
+          "contains": "RhinoWrapFactory"
+        }
+      ]
+    },
+    {
+      "id": "source.schema",
+      "phase": "core",
+      "behavior": "Book-source JSON schema, groups, import and export",
+      "ios_mapping": "Retain BookSource wire data; map Swift presentation separately",
+      "acceptance": "Round-trip known fields and primary keys; document unknown-field preservation",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BookSource.kt",
+          "contains": "data class BookSource"
+        }
+      ]
+    },
+    {
+      "id": "source.five-types",
+      "phase": "core",
+      "behavior": "Five source types: text, audio, images, files and video",
+      "ios_mapping": "Route type values 0 through 4 to their native workflows",
+      "acceptance": "Exercise all five values without silently treating media as text",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BookSource.kt",
+          "contains": "var bookSourceType"
+        }
+      ]
+    },
+    {
+      "id": "source.main-js",
+      "phase": "core",
+      "behavior": "mainJs single-file sources and optional function dispatch",
+      "ios_mapping": "Retain JsSourceEngine behind the Swift task API",
+      "acceptance": "Run pure-JS search, details, TOC and content; compare missing optional functions",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/jsSource/JsSourceEngine.kt",
+          "contains": "fun callFunction"
+        },
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BookSource.kt",
+          "contains": "var mainJs"
+        }
+      ]
+    },
+    {
+      "id": "source.shared-state",
+      "phase": "core",
+      "behavior": "Independent call scopes with shared per-source state",
+      "ios_mapping": "JVM sessions own source state and isolate call bindings",
+      "acceptance": "Run concurrent same-source calls and two sources; assert no argument or state leakage",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/jsSource/JsSourceEngine.kt",
+          "contains": "private fun buildScope"
+        }
+      ]
+    },
+    {
+      "id": "rules.declarative",
+      "phase": "core",
+      "behavior": "Traditional combined rules, variables, replacements and JS fragments",
+      "ios_mapping": "Retain AnalyzeRule and dependent JVM models",
+      "acceptance": "Compare combined rules, variables, empty values and errors on fixed inputs",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+          "contains": "class AnalyzeRule"
+        }
+      ]
+    },
+    {
+      "id": "rules.css",
+      "phase": "core",
+      "behavior": "Jsoup CSS selectors and Java DOM element objects",
+      "ios_mapping": "Retain the locked Jsoup implementation",
+      "acceptance": "Compare elements, attributes, relative URLs and mixed DOM/JS rules",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSoup.kt",
+          "contains": "class AnalyzeByJSoup"
+        }
+      ]
+    },
+    {
+      "id": "rules.xpath",
+      "phase": "core",
+      "behavior": "XPath extraction",
+      "ios_mapping": "Retain JVM XPath dependencies",
+      "acceptance": "Compare nested, attribute and empty XPath selections",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByXPath.kt",
+          "contains": "class AnalyzeByXPath"
+        }
+      ]
+    },
+    {
+      "id": "rules.jsonpath",
+      "phase": "core",
+      "behavior": "JSONPath extraction",
+      "ios_mapping": "Retain JVM JSONPath dependencies",
+      "acceptance": "Compare arrays, filtering, nulls and numeric conversion",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSonPath.kt",
+          "contains": "class AnalyzeByJSonPath"
+        }
+      ]
+    },
+    {
+      "id": "rules.regex",
+      "phase": "core",
+      "behavior": "Java regex extraction, capture groups and replacements",
+      "ios_mapping": "Retain Java Pattern and Matcher",
+      "acceptance": "Compare escaping, Unicode, multiline, replacements and zero-width matches",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByRegex.kt",
+          "contains": "object AnalyzeByRegex"
+        }
+      ]
+    },
+    {
+      "id": "pipeline.search",
+      "phase": "core",
+      "behavior": "Search pipeline",
+      "ios_mapping": "Retain WebBook with task-ID correlated Swift requests",
+      "acceptance": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/webBook/WebBook.kt",
+          "contains": "suspend fun searchBookAwait"
+        }
+      ]
+    },
+    {
+      "id": "pipeline.explore",
+      "phase": "core",
+      "behavior": "Explore lists and filters",
+      "ios_mapping": "Retain WebBook with task-ID correlated Swift requests",
+      "acceptance": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/webBook/WebBook.kt",
+          "contains": "suspend fun exploreBookAwait"
+        }
+      ]
+    },
+    {
+      "id": "pipeline.info",
+      "phase": "core",
+      "behavior": "Book-details pipeline",
+      "ios_mapping": "Retain WebBook with task-ID correlated Swift requests",
+      "acceptance": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/webBook/WebBook.kt",
+          "contains": "suspend fun getBookInfoAwait"
+        }
+      ]
+    },
+    {
+      "id": "pipeline.toc",
+      "phase": "core",
+      "behavior": "TOC and pre-update scripts",
+      "ios_mapping": "Retain WebBook with task-ID correlated Swift requests",
+      "acceptance": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/webBook/WebBook.kt",
+          "contains": "suspend fun getChapterListAwait"
+        }
+      ]
+    },
+    {
+      "id": "pipeline.content",
+      "phase": "core",
+      "behavior": "Chapter content and subsequent pages",
+      "ios_mapping": "Retain WebBook with task-ID correlated Swift requests",
+      "acceptance": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/webBook/WebBook.kt",
+          "contains": "suspend fun getContentAwait"
+        }
+      ]
+    },
+    {
+      "id": "pipeline.batch",
+      "phase": "core",
+      "behavior": "Batch chapter content",
+      "ios_mapping": "Retain WebBook with task-ID correlated Swift requests",
+      "acceptance": "Compare cache writes, missing chapters, cancellation and original request sequence",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/webBook/WebBook.kt",
+          "contains": "suspend fun getContentBatchAwait"
+        }
+      ]
+    },
+    {
+      "id": "network.requests",
+      "phase": "core",
+      "behavior": "URL templates, methods, bodies, encodings, headers and request options",
+      "ios_mapping": "Prefer JVM network semantics with injectable fixture responses",
+      "acceptance": "Compare GET/POST, redirects, non-UTF-8, binary responses and timeouts",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+          "contains": "class AnalyzeUrl"
+        }
+      ]
+    },
+    {
+      "id": "network.cookie",
+      "phase": "core",
+      "behavior": "CookieJar, script cookies and login state",
+      "ios_mapping": "Adapt JVM CookieStore and WKWebView cookies explicitly",
+      "acceptance": "Compare repeated Set-Cookie, domain/path/expiry, overrides and authenticated retry",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/http/CookieStore.kt",
+          "contains": "CookieStore"
+        }
+      ]
+    },
+    {
+      "id": "network.browser",
+      "phase": "core",
+      "behavior": "WebView extraction, URL interception and verification browser",
+      "ios_mapping": "WKWebView on main thread; cancellable JVM worker wait",
+      "acceptance": "Compare JS execution, navigation, cancellation, timeout, redirects and returned cookies",
+      "platform_difference": "Never block the iOS main thread; cancellation must release browser waits.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+          "contains": "fun webViewGetOverrideUrl"
+        }
+      ]
+    },
+    {
+      "id": "network.http-host",
+      "phase": "core",
+      "behavior": "Synchronous ajax/connect/get/post/head host APIs",
+      "ios_mapping": "Retain Java response objects and synchronous host semantics",
+      "acceptance": "Exercise ajaxAll concurrency, rate limits, response bytes/headers and catchable failures",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+          "contains": "fun ajaxAll"
+        }
+      ]
+    },
+    {
+      "id": "login.legacy",
+      "phase": "core",
+      "behavior": "Legacy loginUi, loginUrl and loginCheckJs",
+      "ios_mapping": "Swift form/WKWebView adapters; JVM login checks",
+      "acceptance": "Compare form/browser success, failure, cancellation and persisted values",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BookSource.kt",
+          "contains": "var loginCheckJs"
+        }
+      ]
+    },
+    {
+      "id": "login.v2",
+      "phase": "core",
+      "behavior": "LoginUiV2 declarative controls and script actions",
+      "ios_mapping": "Swift controls driven by JVM action evaluation",
+      "acceptance": "Port V2 tests for initial values, actions, persisted values and errors",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/login/LoginUiV2.kt",
+          "contains": "LoginUiV2"
+        }
+      ]
+    },
+    {
+      "id": "host.files-archives",
+      "phase": "core",
+      "behavior": "File access/download and ZIP, RAR, 7z archives",
+      "ios_mapping": "Sandbox file adapter plus portable JVM archive libraries",
+      "acceptance": "Compare text/binary/charset inputs, corrupt archives and cancellation",
+      "platform_difference": "Map Android paths into the iOS application sandbox.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+          "contains": "fun unArchiveFile"
+        }
+      ]
+    },
+    {
+      "id": "host.fonts",
+      "phase": "core",
+      "behavior": "TTF glyph queries, obfuscated font replacement and cover decoding",
+      "ios_mapping": "Retain QueryTTF and replacements; adapt font resources",
+      "acceptance": "Compare fixed obfuscated-font vectors, missing glyphs and cache refresh",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+          "contains": "fun queryTTF"
+        }
+      ]
+    },
+    {
+      "id": "host.crypto",
+      "phase": "core",
+      "behavior": "Encoding, digests and cryptography host APIs",
+      "ios_mapping": "Retain JVM crypto/encoding and Java byte semantics",
+      "acceptance": "Compare Base64/hex/charset, AES/RSA/digest vectors and overloaded calls",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/JsEncodeUtils.kt",
+          "contains": "JsEncodeUtils"
+        }
+      ]
+    },
+    {
+      "id": "host.concurrency",
+      "phase": "core",
+      "behavior": "Per-source singleFlight, lock and tick coordination",
+      "ios_mapping": "Keep concurrency state and locks within JVM sessions",
+      "acceptance": "Check one same-key execution, release after error/cancel and independent sources",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+          "contains": "fun singleFlight"
+        }
+      ]
+    },
+    {
+      "id": "source.events-ui",
+      "phase": "core",
+      "behavior": "Source event listeners, custom buttons and refresh callbacks",
+      "ios_mapping": "Swift events call JVM; present platform UI on main thread",
+      "acceptance": "Test event switches, button actions and book/TOC/content refresh effects",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BookSource.kt",
+          "contains": "var eventListener"
+        }
+      ]
+    },
+    {
+      "id": "reader.bookshelf",
+      "phase": "reader",
+      "behavior": "Bookshelf updates, ordering and reading progress",
+      "ios_mapping": "Reuse native Yuedu bookshelf with Legado data mapping",
+      "acceptance": "Check add/delete/update/sort, restart and restored progress",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/ui/main/bookshelf/BookshelfViewModel.kt",
+          "contains": "class BookshelfViewModel"
+        }
+      ]
+    },
+    {
+      "id": "reader.groups",
+      "phase": "reader",
+      "behavior": "Bookshelf groups and source groups",
+      "ios_mapping": "Native group editing and compatible persistence mapping",
+      "acceptance": "Check multi-group membership, delete/reorder and backup round-trip",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BookGroup.kt",
+          "contains": "data class BookGroup"
+        }
+      ]
+    },
+    {
+      "id": "reader.change-source",
+      "phase": "reader",
+      "behavior": "Change-source search and chapter matching",
+      "ios_mapping": "Native source-selection UI with JVM exact search",
+      "acceptance": "Match same-title books and different TOCs while retaining reading position",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/ui/book/changesource/ChangeBookSourceViewModel.kt",
+          "contains": "class ChangeBookSourceViewModel"
+        }
+      ]
+    },
+    {
+      "id": "reader.cache-download",
+      "phase": "reader",
+      "behavior": "Chapter downloads, cache state, resume and retry",
+      "ios_mapping": "Retain JVM download/cache policy with native queue controls",
+      "acceptance": "Check pause/resume/cancel/retry, cache hit and offline restart",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/Download.kt",
+          "contains": "object Download"
+        }
+      ]
+    },
+    {
+      "id": "reader.cleanup",
+      "phase": "reader",
+      "behavior": "Replacement rules and processed chapter text",
+      "ios_mapping": "Retain JVM content processing before native layout",
+      "acceptance": "Compare title processing, regex cleanup and stored versus displayed text",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/book/ContentProcessor.kt",
+          "contains": "ContentProcessor"
+        }
+      ]
+    },
+    {
+      "id": "reader.layout",
+      "phase": "reader",
+      "behavior": "Text layout, fonts, spacing, margins and pagination",
+      "ios_mapping": "CoreText/UIKit rendering with native reading settings",
+      "acceptance": "Long chapters, mixed CJK, images and stable anchors after rotation/font changes",
+      "platform_difference": "Native font metrics and page breaks can differ; text and position anchors require validation.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/ui/book/read/page/provider/TextChapterLayout.kt",
+          "contains": "TextChapterLayout"
+        }
+      ]
+    },
+    {
+      "id": "reader.page-turn",
+      "phase": "reader",
+      "behavior": "Simulation, cover, slide, scroll and no-animation page modes",
+      "ios_mapping": "Native gesture and animation implementations",
+      "acceptance": "Exercise modes, bounds, cancelled gestures, auto page turns and device performance",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/ui/book/read/page/delegate/SimulationPageDelegate.kt",
+          "contains": "class SimulationPageDelegate"
+        }
+      ]
+    },
+    {
+      "id": "local.txt",
+      "phase": "reader",
+      "behavior": "Local TXT import, TOC and chapter content",
+      "ios_mapping": "Portable parser plus native file picker and reader",
+      "acceptance": "Valid/corrupt/charset-boundary files; TOC, cover, progress and close/reopen",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/localBook/TextFile.kt",
+          "contains": "TextFile"
+        }
+      ]
+    },
+    {
+      "id": "local.epub",
+      "phase": "reader",
+      "behavior": "Local EPUB import, TOC and chapter content",
+      "ios_mapping": "Portable parser plus native file picker and reader",
+      "acceptance": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/localBook/EpubFile.kt",
+          "contains": "EpubFile"
+        }
+      ]
+    },
+    {
+      "id": "local.umd",
+      "phase": "reader",
+      "behavior": "Local UMD import, TOC and chapter content",
+      "ios_mapping": "Portable parser plus native file picker and reader",
+      "acceptance": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/localBook/UmdFile.kt",
+          "contains": "UmdFile"
+        }
+      ]
+    },
+    {
+      "id": "local.mobi",
+      "phase": "reader",
+      "behavior": "Local MOBI import, TOC and chapter content",
+      "ios_mapping": "Portable parser plus native file picker and reader",
+      "acceptance": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/localBook/MobiFile.kt",
+          "contains": "MobiFile"
+        }
+      ]
+    },
+    {
+      "id": "local.pdf",
+      "phase": "reader",
+      "behavior": "Local PDF import, outlines and page position",
+      "ios_mapping": "PDFKit rendering with compatible TOC/position mapping",
+      "acceptance": "Valid/corrupt files; outlines, cover, progress and close/reopen",
+      "platform_difference": "Use PDFKit for rendering and verify outline/position mapping.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/localBook/PdfFile.kt",
+          "contains": "PdfFile"
+        }
+      ]
+    },
+    {
+      "id": "reader.bookmarks",
+      "phase": "reader",
+      "behavior": "Bookmarks and chapter positions",
+      "ios_mapping": "Native bookmark editing and compatible persistence",
+      "acceptance": "Add/edit/delete/jump and restore backup with stable anchors",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/Bookmark.kt",
+          "contains": "data class Bookmark"
+        }
+      ]
+    },
+    {
+      "id": "reader.highlights",
+      "phase": "reader",
+      "behavior": "Manual highlights, notes, colors, styles and anchors",
+      "ios_mapping": "Native text selection, anchors and note editor",
+      "acceptance": "Cross-line/page marks, processed-text anchors, note edit/export/restore",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BookHighlight.kt",
+          "contains": "data class BookHighlight"
+        }
+      ]
+    },
+    {
+      "id": "reader.highlight-rules",
+      "phase": "reader",
+      "behavior": "Automatic highlight rules and rule groups",
+      "ios_mapping": "JVM matching with native highlight rendering",
+      "acceptance": "Regex/plain rules, group switches, precedence and overlap with manual highlights",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/HighlightRule.kt",
+          "contains": "data class HighlightRule"
+        }
+      ]
+    },
+    {
+      "id": "reader.dictionary",
+      "phase": "reader",
+      "behavior": "Custom dictionary rules and selected-word lookup",
+      "ios_mapping": "Native selection menu with JVM network/parser flow",
+      "acceptance": "Lookup, failure/empty results, multiple dictionaries and position retention",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/DictRule.kt",
+          "contains": "data class DictRule"
+        }
+      ]
+    },
+    {
+      "id": "reader.read-records",
+      "phase": "reader",
+      "behavior": "Reading records, durations and merged backups",
+      "ios_mapping": "Native lifecycle tracking with compatible data mapping",
+      "acceptance": "Switch books, pause, cross-day, restart and restore without double counting",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/data/entities/ReadRecord.kt",
+          "contains": "data class ReadRecord"
+        }
+      ]
+    },
+    {
+      "id": "extension.reviews",
+      "phase": "extensions",
+      "behavior": "Traditional and pure-JS paragraph reviews, media and actions",
+      "ios_mapping": "JVM review protocol and native comment presentation",
+      "acceptance": "Pagination, paragraph anchors, image/video/actions and empty/error responses",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/jsSource/JsSourceReview.kt",
+          "contains": "JsSourceReview"
+        }
+      ]
+    },
+    {
+      "id": "extension.rss",
+      "phase": "extensions",
+      "behavior": "Default/rule-based RSS, articles, favorites and read history",
+      "ios_mapping": "JVM RSS parser with native subscription UI",
+      "acceptance": "Source import, pagination, full text, login, favorites and offline records",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/rss/Rss.kt",
+          "contains": "object Rss"
+        }
+      ]
+    },
+    {
+      "id": "extension.tts-system",
+      "phase": "extensions",
+      "behavior": "System TTS, sentence position and page following",
+      "ios_mapping": "AVSpeechSynthesizer and native playback controls",
+      "acceptance": "Start/pause/skip/rate, manual page turns, lock screen and audio interruptions",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/service/TTSReadAloudService.kt",
+          "contains": "class TTSReadAloudService"
+        }
+      ]
+    },
+    {
+      "id": "extension.tts-http",
+      "phase": "extensions",
+      "behavior": "HTTP TTS and custom endpoints",
+      "ios_mapping": "JVM URL/audio rules with AVFoundation playback",
+      "acceptance": "Authentication, sentence requests, cache, retry and position synchronization",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/service/HttpReadAloudService.kt",
+          "contains": "class HttpReadAloudService"
+        }
+      ]
+    },
+    {
+      "id": "extension.audio",
+      "phase": "extensions",
+      "behavior": "Audio-source playback, caching and intro/outro skipping",
+      "ios_mapping": "AVFoundation, Now Playing and background audio",
+      "acceptance": "Playlist, seeking, caching, headset/lock-screen interruptions and resume",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/AudioPlay.kt",
+          "contains": "object AudioPlay"
+        }
+      ]
+    },
+    {
+      "id": "extension.video",
+      "phase": "extensions",
+      "behavior": "Video sources, episodes, speed, danmaku and floating playback",
+      "ios_mapping": "AVPlayer, Picture in Picture and native danmaku overlay",
+      "acceptance": "Header-protected media, episodes, overlays, rate, PiP and restoration",
+      "platform_difference": "Use system PiP; Android arbitrary overlay windows have no direct equivalent.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/VideoPlay.kt",
+          "contains": "object VideoPlay"
+        }
+      ]
+    },
+    {
+      "id": "extension.source-editor",
+      "phase": "extensions",
+      "behavior": "Source editing, checking and debugging",
+      "ios_mapping": "Native editing screens with JVM debug tasks",
+      "acceptance": "Import/edit/export, stage logs, error context, cancellation and isolation",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/ui/book/source/debug/BookSourceDebugModel.kt",
+          "contains": "class BookSourceDebugModel"
+        }
+      ]
+    },
+    {
+      "id": "extension.http-logs",
+      "phase": "extensions",
+      "behavior": "HTTP log recording, filters, details and sensitive fields",
+      "ios_mapping": "JVM log models and native log presentation",
+      "acceptance": "Recording switch, filters, truncation, redaction and API payload comparison",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/api/controller/HttpLogController.kt",
+          "contains": "HttpLogController"
+        }
+      ]
+    },
+    {
+      "id": "sync.backup",
+      "phase": "extensions",
+      "behavior": "Complete/encrypted backups, selective restore and legacy migration",
+      "ios_mapping": "Legado data conversion and native file import/export",
+      "acceptance": "Round-trip sources, shelf, settings, cookies, highlights and history; atomic restore",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/storage/Backup.kt",
+          "contains": "object Backup"
+        }
+      ]
+    },
+    {
+      "id": "sync.webdav",
+      "phase": "extensions",
+      "behavior": "WebDAV backups, progress and remote books",
+      "ios_mapping": "JVM WebDAV protocol with native credentials/task control",
+      "acceptance": "Authentication errors, conflicts, replacement, upload/download and cancellation",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/AppWebDav.kt",
+          "contains": "AppWebDav"
+        }
+      ]
+    },
+    {
+      "id": "sync.lan",
+      "phase": "extensions",
+      "behavior": "LAN backup transfer and migration",
+      "ios_mapping": "Foreground LAN transfer service and native permission handling",
+      "acceptance": "Connect, checksums, disconnect, duplicate import and cancellation",
+      "platform_difference": "Local-network permission and foreground lifetime require device tests.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/storage/LanBackupTransfer.kt",
+          "contains": "LanBackupTransfer"
+        }
+      ]
+    },
+    {
+      "id": "web.http-api",
+      "phase": "extensions",
+      "behavior": "Web book/source/rule/review/log APIs",
+      "ios_mapping": "Foreground HTTP service retaining original route/data contracts",
+      "acceptance": "Compare controller methods, status codes, errors and persistent side effects",
+      "platform_difference": "No availability guarantee while the application is suspended.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/web/HttpServer.kt",
+          "contains": "HttpServer"
+        }
+      ]
+    },
+    {
+      "id": "web.editor",
+      "phase": "extensions",
+      "behavior": "Built-in web editor and help assets",
+      "ios_mapping": "Bundle original static resources with foreground routes",
+      "acceptance": "Browser source editing, save, debug and dependent asset loading",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/web/HttpServer.kt",
+          "contains": "HttpServer"
+        }
+      ]
+    },
+    {
+      "id": "web.websocket",
+      "phase": "extensions",
+      "behavior": "Search/source/RSS debug WebSockets",
+      "ios_mapping": "Foreground WebSocket service with cancellable JVM tasks",
+      "acceptance": "Connect, ordered messages, close, reconnect and task termination",
+      "platform_difference": "",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/web/WebSocketServer.kt",
+          "contains": "WebSocketServer"
+        }
+      ]
+    },
+    {
+      "id": "web.mcp",
+      "phase": "extensions",
+      "behavior": "MCP tools/resources, debug progress and access control",
+      "ios_mapping": "Foreground MCP service with original JVM tool contracts",
+      "acceptance": "Compare every extracted tool: parameters, errors, progress and side effects",
+      "platform_difference": "Foreground service; no availability guarantee while suspended.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/web/mcp/McpToolServer.kt",
+          "contains": "private fun registerTools"
+        }
+      ]
+    },
+    {
+      "id": "tasks.cron",
+      "phase": "extensions",
+      "behavior": "Automatic tasks, Cron scheduling, execution and missed runs",
+      "ios_mapping": "JVM task/Cron logic with BGTaskScheduler and foreground catch-up",
+      "acceptance": "Cron boundaries, restart, missed triggers, cancellation, persistence and reentrancy",
+      "platform_difference": "iOS schedules background execution; precise Cron and persistent services cannot be promised.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/model/AutoTask.kt",
+          "contains": "object AutoTask"
+        }
+      ]
+    },
+    {
+      "id": "platform.integration",
+      "phase": "extensions",
+      "behavior": "Share/open-file/browser/notification and external launch integration",
+      "ios_mapping": "File pickers, share extensions, App Intents and notifications",
+      "acceptance": "File/URL import, script-opened URLs, denied permissions and return to reading",
+      "platform_difference": "Android Intents and device identifiers require documented platform mappings.",
+      "evidence": [
+        {
+          "path": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+          "contains": "fun openUrl"
+        }
+      ]
+    }
+  ]
+}

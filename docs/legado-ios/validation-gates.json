@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "desktop_validation": {
+    "status": "passed",
+    "evidence": "desktop-validation.json",
+    "meaning": "45 JVM and 18 Python tests passed; the packaged JAR smoke passed on desktop. This does not pass an iOS device gate."
+  },
+  "environment": {
+    "workspace": "Windows PowerShell",
+    "user_reported_hardware": ["Windows PC", "iPhone", "iPad"],
+    "macos_build_available": false,
+    "ios_device_validation_available": false,
+    "macos_build_route": "Manual GitHub Actions workflow prepared for zhoujianjia/legado-ios; not run. Awaiting authenticated push and workflow dispatch.",
+    "meaning": "The user owns iPhone and iPad test devices but no Mac. No Apple build or device execution evidence has been supplied from this workspace."
+  },
+  "inventory_checks": {
+    "status": "passed",
+    "archive_sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "entry_count": 3249,
+    "file_count": 2792,
+    "feature_domains": 64,
+    "mcp_tools": 13,
+    "regression_tests_passed": 12,
+    "commands": [
+      "python -B scripts/legado-inventory.py --archive F:/legado-master.zip --check",
+      "python -B -m unittest discover -s scripts/tests -p test_legado_inventory.py -v"
+    ],
+    "scope": "Archive identity, deterministic inventory, evidence anchors, bounded reads and malformed-input rejection; no runtime compatibility claim."
+  },
+  "gates": [
+    {
+      "id": "G1.signed-device-startup",
+      "status": "pending",
+      "required_evidence": "Signed iPhone app starts JVM after debugger disconnect and relaunch, without JIT or jailbreak.",
+      "evidence": []
+    },
+    {
+      "id": "G2.locked-engine-and-modules",
+      "status": "pending",
+      "required_evidence": "Locked engine loads on device; actual E4X and Java interop calls prove required XML/beans classes work.",
+      "evidence": []
+    },
+    {
+      "id": "G3.original-engine-semantics",
+      "status": "pending",
+      "required_evidence": "Original semantics cases pass on the iOS JVM including this/eval/Function/scope/E4X/Java wrapping/overloads.",
+      "evidence": []
+    },
+    {
+      "id": "G4.fixture-reading-chain",
+      "status": "pending",
+      "required_evidence": "On-device reference comparison covers search/details/TOC/content, pure JS, login and batch content, including requests and state effects.",
+      "evidence": []
+    },
+    {
+      "id": "G5.stability-and-performance",
+      "status": "pending",
+      "required_evidence": "On-device cancellation, timeout, browser cancellation, isolation and repeated-run results with measured performance.",
+      "evidence": []
+    }
+  ],
+  "device_metrics": {
+    "device": null,
+    "ios_version": null,
+    "runtime_commit": null,
+    "cold_start_ms": null,
+    "app_size_increase_bytes": null,
+    "peak_memory_bytes": null,
+    "rule_latency_ms": null
+  },
+  "full_feature_migration_allowed": false
+}
