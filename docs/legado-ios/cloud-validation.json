@@ -65,6 +65,22 @@
       "failure": "Swift 6 disallows direct DispatchSemaphore.wait in the test's async Task.detached closure",
       "resolution": "Wait for the real entry signal on a dedicated GCD worker and resume an async continuation; retain the bounded test deadline",
       "native_zero_build": "not reached"
+    },
+    {
+      "run_id": 39000267188,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39000267188",
+      "source_commit": "930bc7f0892fe8435777e51ae3596d4c4c83771e",
+      "tag": "legado-probe-930bc7f",
+      "status": "failed",
+      "portable_job_id": 117301524647,
+      "portable_job": "passed",
+      "macos_job_id": 117301801006,
+      "source_only_swift_tests_passed": 8,
+      "source_only_swift_test_failures": 0,
+      "device_static_libraries": "static-libs-image completed successfully for ios-aarch64-zero-release",
+      "failure": "Payload staging rejected missing jdk.charsets module; simulator JVM build not reached",
+      "resolution": "Explicitly build every required <module>-java target and java.base-gendata alongside static-libs-image, preserving dependency traversal and all thirteen modules",
+      "native_zero_build": "device native compilation passed; required Java module closure incomplete"
     }
   ],
   "source_preflight_fixes": {

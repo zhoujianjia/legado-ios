@@ -38,6 +38,9 @@ then lists the missing bridge/modules/JAR. It does not silently substitute JSC.
 
 ## Self-sign and install
 
+Without a local Mac, use the [Windows signing and installation guide](../../docs/legado-ios/windows-install.md)
+after the cloud workflow has exported its unsigned IPA.
+
 Open `LegadoRuntimeProbe.xcodeproj`, select your Personal Team and a connected
 iPhone, and choose a unique bundle identifier. The checked-in team is blank.
 The shared scheme uses Release and disables the debugger for launch.

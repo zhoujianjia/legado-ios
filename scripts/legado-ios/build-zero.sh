@@ -6,6 +6,7 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 WORK_DIR=${LEGADO_IOS_BUILD_DIR:-"$REPO_DIR/.build/legado-ios"}
 BUILD_JOBS=${LEGADO_IOS_BUILD_JOBS:-2}
+REQUIRED_MODULES=(java.base java.xml java.desktop java.datatransfer java.prefs java.logging jdk.charsets java.compiler java.instrument java.net.http java.sql java.transaction.xa jdk.unsupported)
 [[ $BUILD_JOBS =~ ^[1-9][0-9]*$ ]] || { echo 'LEGADO_IOS_BUILD_JOBS must be a positive integer.' >&2; exit 2; }
 if [[ $(uname -s) != Darwin ]]; then
   echo 'OpenJDK Mobile iOS builds require macOS, Xcode, GNU make, autoconf and boot JDK 26.' >&2
@@ -58,8 +59,12 @@ for target in device simulator; do
     --openjdk-target=aarch64-macos-ios --with-boot-jdk="$BOOT_JDK" --with-sysroot="$SDK" \
     --with-libffi-include="$FFI_HEADERS" --with-libffi-lib="$FFI_LIB" \
     --with-cups-include="$SDK_MAC/usr/include" --with-extra-cflags="$EXTRA_FLAGS" --with-extra-cxxflags="$EXTRA_FLAGS"
+  # static-libs-image omits modules without native libraries, such as jdk.charsets.
+  # The dependency-aware -java phase also runs each module's generators. Explicit
+  # base gendata supplies java.security, crypto policies, cacerts and tzdb.dat.
   # Hosted ARM64 Macs have limited RAM; OpenJDK accepts JOBS as its worker limit.
-  gmake CONF="$CONF" JOBS="$BUILD_JOBS" static-libs-image
+  gmake CONF="$CONF" JOBS="$BUILD_JOBS" static-libs-image \
+    "${REQUIRED_MODULES[@]/%/-java}" java.base-gendata
   BUILD="$MOBILE/build/$CONF"
   SLICE="$WORK_DIR/$target-static"
   mkdir -p "$SLICE/headers" "$SLICE/java-home/modules"
@@ -73,7 +78,7 @@ MODULEMAP
     "$BUILD/images/static-libs/lib/libjava.a" "$BUILD/images/static-libs/lib/libzip.a" \
     "$BUILD/images/static-libs/lib/libnet.a" "$BUILD/images/static-libs/lib/libnio.a" \
     "$BUILD/images/static-libs/lib/libjimage.a"
-  for module in java.base java.xml java.desktop java.datatransfer java.prefs java.logging jdk.charsets java.compiler java.instrument java.net.http java.sql java.transaction.xa jdk.unsupported; do
+  for module in "${REQUIRED_MODULES[@]}"; do
     [[ -d "$BUILD/jdk/modules/$module" ]] || { echo "Required module not built: $module; java.beans/E4X gate failed" >&2; exit 4; }
     cp -R "$BUILD/jdk/modules/$module" "$SLICE/java-home/modules/"
   done

@@ -104,6 +104,8 @@ The unsigned IPA cannot be installed directly as a working iOS app. Signing and
 provisioning are a separate, account-dependent step. The account/team, bundle
 identifier, and target device must be decided before preparing an installable
 build. No signing service or account has been configured by this prototype.
+For the Windows route, follow [local signing and USB installation](windows-install.md)
+after a successful device build.
 
 After an appropriately signed build is installed, use an iPhone for the first
 accepted device gate and use the iPad for additional compatibility checks. Launch
