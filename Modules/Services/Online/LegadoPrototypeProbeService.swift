@@ -51,7 +51,7 @@ actor LegadoPrototypeProbeService {
             report.completedSteps.append("Legado 目錄")
             let content: String = try await execute(
                 executor, session: session, operation: "content",
-                request: ContentRequest(chapter: chapter, book: details, nextChapterUrl: chapters[1].chapterUrl)
+                request: ContentRequest(chapter: chapter, book: details, nextChapterUrl: chapters[1].url)
             )
             guard content == "本地正文：第一章" else { throw Self.mismatch("content") }
             report.completedSteps.append("Legado 正文")
@@ -88,7 +88,7 @@ actor LegadoPrototypeProbeService {
 
     private struct ResultEnvelope<Value: Decodable>: Decodable { let result: Value }
     private struct FixtureBook: Codable { let bookUrl: String; let name: String; let author: String }
-    private struct FixtureChapter: Codable { let chapterUrl: String; let title: String }
+    private struct FixtureChapter: Codable { let url: String; let title: String }
     private struct SearchRequest: Encodable { let key: String; let page: Int }
     private struct BookRequest: Encodable { let book: FixtureBook }
     private struct ContentRequest: Encodable { let chapter: FixtureChapter; let book: FixtureBook; let nextChapterUrl: String }
@@ -100,7 +100,7 @@ actor LegadoPrototypeProbeService {
     {
       "bookSourceUrl":"https://legado-prototype.invalid",
       "bookSourceName":"Local runtime probe",
-      "mainJs":"var config = {name:'Local runtime probe'}; function search(key,page){return [{bookUrl:'fixture:book',name:key,author:'Fixture'}]}; function getBookInfo(book){return book}; function getChapters(book){return [{chapterUrl:'fixture:1',title:'第一章'},{chapterUrl:'fixture:2',title:'第二章'}]}; function getContent(chapter,book,nextChapterUrl){return '本地正文：'+chapter.title};"
+      "mainJs":"var config = {name:'Local runtime probe'}; function search(key,page){return [{bookUrl:'fixture:book',name:key,author:'Fixture'}]}; function getBookInfo(book){return book}; function getChapters(book){return [{url:'fixture:1',title:'第一章'},{url:'fixture:2',title:'第二章'}]}; function getContent(chapter,book,nextChapterUrl){return '本地正文：'+chapter.title};"
     }
     """#
 }
