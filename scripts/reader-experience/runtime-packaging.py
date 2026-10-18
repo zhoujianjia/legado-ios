@@ -20,6 +20,14 @@ JAR = REPO / native.JAR_PATH
 REQUIRED = ("io/yuedu/legado/LegadoRuntime.class", "io/yuedu/legado/NativeHost.class",
             "io/yuedu/legado/ProductionHttpTransport.class", "io/yuedu/legado/RuntimeSessionOptions.class",
             "org/htmlunit/corejs/javascript/Context.class", "okhttp3/OkHttpClient.class", "org/brotli/dec/BrotliInputStream.class")
+PROJECT_TEST_CLASSES = (
+    "io/legado/app/JsEngineCapabilitiesTest",
+    "io/legado/app/model/analyzeRule/AnalyzeByJSoupDomTest",
+    *("io/yuedu/legado/" + name for name in (
+        "CpuLoopCapabilityProbeTest", "DeclarativeSourceTest", "InteropSemanticSuiteTest", "LegadoRuntimeTest",
+        "MainJsFacadeTest", "MainJsResultMarshallerTest", "MainJsScopeTest", "OkHttpWireCapabilityProbeTest",
+        "ProductionHttpTransportTest", "SourceHttpSemanticsTest", "StaticRuleReplacementTest", "TlsCapabilityProbeTest")),
+)
 
 
 def inspect_jar(jar):
@@ -27,11 +35,12 @@ def inspect_jar(jar):
         names = archive.namelist()
         if len(names) != len(set(names)) or not set(REQUIRED).issubset(names):
             raise ValueError("Ordinary reader JAR has duplicate entries or lacks the production engine/HTTP classes")
-        forbidden = ("org/junit/", "org/hamcrest/", "fixtures/", "io/legado/app/JsEngineCapabilitiesTest",
+        forbidden = ("org/junit/", "org/hamcrest/", "fixtures/", "io/yuedu/legado/tls-fixture-v1/", "io/legado/app/JsEngineCapabilitiesTest",
                      "io/yuedu/legado/ProbeOkHttpTransport", "io/yuedu/legado/CpuLoopCapabilityProbe",
                      "io/yuedu/legado/ReferenceLoopbackFixture", "io/yuedu/legado/OkHttpWireCapabilityProbe",
                      "io/yuedu/legado/ProductionHttpTransportTest")
-        if any(name.startswith(forbidden) for name in names):
+        if any(name.startswith(forbidden) or any(name == test + ".class" or name.startswith(test + "$")
+                                                for test in PROJECT_TEST_CLASSES) for name in names):
             raise ValueError("Reader JAR must not package optional test fixtures or JUnit")
         if b"Legado-Engine-Tests: false" not in archive.read("META-INF/MANIFEST.MF"):
             raise ValueError("Reader JAR must declare ordinary packaging")

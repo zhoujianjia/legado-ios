@@ -2,8 +2,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.yuedu.legado.LegadoRuntime;
 import java.util.HashSet;
+import java.nio.file.Path;
+import java.util.zip.ZipFile;
 
-/** Runs against only the assembled JAR, proving optional test packaging and real execution. */
+/** Runs the assembled JAR; ordinary mode supplies only external TLS fixture resources. */
 public class LegadoSemanticSuiteSmoke {
     private static JsonObject checked(String json) {
         var result = JsonParser.parseString(json).getAsJsonObject();
@@ -14,6 +16,26 @@ public class LegadoSemanticSuiteSmoke {
     public static void main(String[] args) throws Exception {
         if (args.length != 1 || !(args[0].equals("present") || args[0].equals("absent")))
             throw new IllegalArgumentException("Expected present or absent");
+        boolean diagnostic = args[0].equals("present");
+        String fixturePrefix = "io/yuedu/legado/tls-fixture-v1/";
+        var payloadPath = Path.of(LegadoRuntime.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        try (var payload = new ZipFile(payloadPath.toFile())) {
+            var fixtures = payload.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(fixturePrefix)).toList();
+            var expected = java.util.Set.of("fixture-manifest.json", "server-localhost.der", "test-ca.der",
+                "server-private-key.pk8", "unrelated-ca.der");
+            var actual = new HashSet<String>();
+            for (var entry : fixtures) actual.add(entry.getName().substring(fixturePrefix.length()));
+            if (diagnostic ? !actual.equals(expected) : !actual.isEmpty())
+                throw new AssertionError("TLS fixture packaging mismatch: " + actual);
+        }
+        var fixtureResource = LegadoRuntime.class.getResource("/" + fixturePrefix + "fixture-manifest.json");
+        if (fixtureResource == null || !fixtureResource.getProtocol().equals(diagnostic ? "jar" : "file"))
+            throw new AssertionError("TLS fixture must be " + (diagnostic ? "inside the diagnostic JAR" : "an explicit external test resource"));
+        var fixtureEvidence = new JsonObject();
+        fixtureEvidence.addProperty("fixturePackaging", diagnostic ? "inside-diagnostic-jar" : "external-test-resources");
+        fixtureEvidence.addProperty("resourceURL", fixtureResource.toExternalForm());
+        fixtureEvidence.addProperty("jarContainsTLSFixtures", diagnostic);
+        System.out.println((diagnostic ? "PACKAGED_TLS_FIXTURES_PRESENT_OK " : "ORDINARY_TLS_FIXTURES_ABSENT_EXTERNAL_RESOURCES_OK ") + fixtureEvidence);
         var source = "{\"bookSourceUrl\":\"https://fixture.invalid\",\"mainJs\":\"function search(){return [];}\"}";
         var session = checked(LegadoRuntime.createSession(source)).get("sessionId").getAsString();
         try {
@@ -52,7 +74,7 @@ public class LegadoSemanticSuiteSmoke {
             }
             if (!tlsNames.equals(java.util.Set.of("trusted-tls12", "trusted-tls13", "untrusted-ca", "wrong-host")))
                 throw new AssertionError(tlsResponse);
-            System.out.println("PACKAGED_TLS_CAPABILITY_OK " + tlsResponse);
+            System.out.println((diagnostic ? "PACKAGED_TLS_CAPABILITY_OK " : "ORDINARY_EXTERNAL_RESOURCE_TLS_CAPABILITY_OK ") + tlsResponse);
             var response = JsonParser.parseString(LegadoRuntime.execute(session, "packaged-semantic-suite",
                 "semanticSuite", "{\"timeoutMs\":300000}")).getAsJsonObject();
             if (args[0].equals("absent")) {

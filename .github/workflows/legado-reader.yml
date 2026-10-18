@@ -38,6 +38,7 @@ jobs:
           python -B scripts/reader-experience/runtime-packaging.py validate-tag
           python -B scripts/reader-experience/test-stage-config.py -v 2>&1 | tee .build/ci-logs/reader-package-tests.log
           python -B scripts/reader-experience/test-bundle-local-sources.py -v 2>&1 | tee .build/ci-logs/reader-local-source-packaging-tests.log
+          python -B scripts/reader-experience/test-runtime-packaging.py -v 2>&1 | tee .build/ci-logs/reader-runtime-packaging-tests.log
           bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon test runtimeJar runtimeSmoke runtimeSuiteSmoke runtimeWireSmoke runtimeCpuLoopSmoke 2>&1 | tee .build/ci-logs/reader-jvm-tests.log
           python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/ci-logs/reader-ordinary-jar.json
       - name: Restore only the pinned source-built native VM

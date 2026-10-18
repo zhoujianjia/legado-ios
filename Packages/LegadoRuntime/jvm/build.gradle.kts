@@ -38,6 +38,10 @@ val includeEngineTests = providers.gradleProperty("includeEngineTests")
     .map(String::toBooleanStrict).getOrElse(false)
 val payloadDependencies = if (includeEngineTests) configurations.testRuntimeClasspath else configurations.runtimeClasspath
 
+val tlsFixturePath = "io/yuedu/legado/tls-fixture-v1/**"
+// Keep incremental builds safe even if an older main resources output remains.
+tasks.jar { exclude(tlsFixturePath) }
+
 // JNI classpath consists of this JAR plus the unmodified dependency JARs.
 tasks.register<Copy>("runtimeBundle") {
     dependsOn(tasks.jar)
@@ -78,7 +82,7 @@ val runtimeJar by tasks.registering(Jar::class) {
     archiveFileName.set("legado-runtime.jar")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     inputs.property("includeEngineTests", includeEngineTests)
-    from(sourceSets.main.get().output)
+    from(sourceSets.main.get().output) { exclude(tlsFixturePath) }
     if (includeEngineTests) {
         dependsOn(tasks.testClasses)
         from(sourceSets.test.get().output)
@@ -121,6 +125,16 @@ val runtimeJar by tasks.registering(Jar::class) {
     manifest.attributes["Legado-Engine-Tests"] = includeEngineTests.toString()
 }
 
+// Ordinary payloads contain no TLS test certificates/key. Desktop ordinary-JAR
+// validation supplies only these external resources, never test classes/JUnit.
+val tlsSmokeResources = layout.buildDirectory.dir("smoke-tls-resources")
+val prepareTlsSmokeResources by tasks.registering(Sync::class) {
+    from(sourceSets.test.get().resources) {
+        include(tlsFixturePath)
+    }
+    into(tlsSmokeResources)
+}
+
 // Reproducible evidence for the opt-in probe, including the unchanged normal
 // graph. No local paths, credentials or Gradle cache locations enter this file.
 tasks.register("probeDependencyEvidence") {
@@ -161,6 +175,10 @@ tasks.register<JavaExec>("runtimeSuiteSmoke") {
     dependsOn(runtimeJar)
     javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) })
     classpath = files(runtimeJar.flatMap { it.archiveFile })
+    if (!includeEngineTests) {
+        dependsOn(prepareTlsSmokeResources)
+        classpath += files(tlsSmokeResources)
+    }
     mainClass.set(layout.projectDirectory.file("src/smoke/java/LegadoSemanticSuiteSmoke.java").asFile.absolutePath)
     args(if (includeEngineTests) "present" else "absent")
     jvmArgs("-Xint", "-Xmx128m")
