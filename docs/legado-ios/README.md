@@ -20,15 +20,27 @@ The experimental OpenJDK Mobile Zero package separately tests retained
 Java/Kotlin/Rhino behavior. Passing its probes does not establish that normal
 source import, search or chapter loading uses that core.
 
-The next integration milestone is one explicitly scoped `mainJs` source path:
-import and preserve source data, search, details, table of contents, chapter
-content and native reading through the same Legado runtime session. It needs
-production HTTP, cancellation, timeouts and model mapping, with end-to-end
-execution evidence. Unsupported host APIs or rules must return an explicit
-error instead of silently switching to JavaScriptCore. Existing Yuedu routes
-may remain usable, but their results must not be counted as Legado-core
-acceptance. Traditional-rule parity and the remaining feature domains remain
-separate, required work.
+The main application now implements an explicitly scoped `mainJs` text-source
+path: preservation on import, search, details, table of contents and plain-text
+chapter content use retained JVM sessions, production OkHttp and the native
+reader. Session transport options stay outside script-controlled source JSON.
+Book/chapter DTO references survive app storage round trips; source-level JVM
+Cookies, variables and cache do not yet persist across process restarts.
+Unsupported host APIs and result types return explicit errors without switching
+to JavaScriptCore. Product tests use injected executors; native end-to-end
+execution and a new device build are still required. Traditional-rule sources
+retain Yuedu's existing JavaScriptCore implementation and do not establish
+Legado-core acceptance. Traditional-rule parity and the remaining feature
+domains remain separate, required work.
+
+The user's 1,331-source file remains on Windows, unchanged and uncommitted.
+Cloud builds exclude it. The local
+[packaging command](../../scripts/reader-experience/bundle-local-sources.py)
+checks an unsigned IPA against its cloud manifest, inserts the exact source
+bytes and a hash manifest, and verifies every other bundle file's contents and
+permissions. The first local-mode launch appends missing sources once, preserves
+existing source records and later deletions, and journals the library/marker
+commit for crash recovery. Packaging does not establish live source availability.
 
 The accepted migration gates still apply: a signed iPhone build must start
 without a debugger or JIT, and the original-engine semantics and reading-chain
@@ -107,12 +119,14 @@ only in Debug Simulator and does not execute the delivered Release IPA.
 ## Baseline and acceptance inventory
 
 - The bounded [static replacement kernel](../../Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/StaticRuleReplacement.kt)
-  has 109 passing desktop JVM tests in the current suite and 18 exact-input
-  observations through the ordinary assembled JAR. Its separate
-  [original-Android workflow](../../.github/workflows/legado-rule-reference.yml)
-  collects the unchanged `AnalyzeRule` outputs before comparison. Original-Android
-  comparison is pending; the kernel is not connected to traditional source
-  parsing and establishes no iOS acceptance by itself.
+  matches 18 exact-input observations from the unchanged original Android
+  `AnalyzeRule` entry point with zero differences in
+  [run 39090984862](https://github.com/zhoujianjia/legado-ios/actions/runs/39090984862).
+  [Retained evidence](static-rule-replacement-validation.json) binds the raw
+  original report, corpus, producer and ported JAR. The current complete desktop
+  JVM suite has 121 passing tests, including the production HTTP additions;
+  the kernel is not connected to traditional source parsing and establishes
+  no iOS acceptance by itself.
 - [android-reference.md](android-reference.md) describes the new versioned Java
   interop matrix, finite mainJs DTO conversion and independent original-Android
   cloud reference. These additions require their own simulator/device evidence.

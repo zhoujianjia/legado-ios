@@ -998,8 +998,15 @@ class BookSourceStore: ObservableObject {
     /// overwrites `book_sources.json` so the live UI reflects it without a relaunch.
     func reloadFromDisk() {
         ensureLoaded()
-        sources = Self.readLibrary(at: fileURL)
-        prunePins()
+        do {
+            let read = try Self.readLibrary(at: fileURL)
+            loadState.withLock { $0.readError = nil }
+            sources = read
+            prunePins()
+        } catch {
+            loadState.withLock { $0.readError = error }
+            AppLogger.cache("Book sources could not be reloaded; preserving the current library", error: error)
+        }
     }
 
     // MARK: Persistence

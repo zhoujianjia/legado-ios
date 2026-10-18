@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "suite": "StaticRuleReplacement",
+  "caseSetVersion": "legado-static-rule-replacement-v1",
+  "referenceKind": "original-archive-android-instrumentation",
+  "referenceRunId": "ef055cf2-dfee-4f02-93c6-7936efc5645b",
+  "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "applicationClass": "io.legado.app.App",
+  "applicationMinSdkVersion": 26,
+  "androidApi": 35,
+  "androidRelease": "15",
+  "instrumentationRunner": "androidx.test.runner.AndroidJUnitRunner",
+  "entryPoint": "AnalyzeRule().setContent(text).getString(rule, false)",
+  "scope": "Empty-selector static replacement rules with a nonempty pattern; unescape=false isolates the regex stage. No URL or selector behavior is measured.",
+  "passed": true,
+  "total": 18,
+  "executed": 18,
+  "failed": 0,
+  "iosValidationPassed": false,
+  "cases": [
+    {
+      "caseId": "replace-all-number-groups",
+      "text": "ab12cd34",
+      "rule": "##(\\d+)##[$1]",
+      "actual": "ab[12]cd[34]",
+      "passed": true
+    },
+    {
+      "caseId": "extract-first-match",
+      "text": "ab12cd34",
+      "rule": "##(\\d+)##[$1]###",
+      "actual": "[12]",
+      "passed": true
+    },
+    {
+      "caseId": "extract-first-no-match",
+      "text": "abc",
+      "rule": "##\\d+##x###",
+      "actual": "",
+      "passed": true
+    },
+    {
+      "caseId": "invalid-pattern-literal-fallback",
+      "text": "a[b[c",
+      "rule": "##[##<x>",
+      "actual": "a<x>b<x>c",
+      "passed": true
+    },
+    {
+      "caseId": "invalid-pattern-extract-fallback",
+      "text": "a[b[c",
+      "rule": "##[##<x>###",
+      "actual": "<x>",
+      "passed": true
+    },
+    {
+      "caseId": "invalid-group-literal-fallback",
+      "text": "(a) (a)",
+      "rule": "##(a)##$2",
+      "actual": "$2 $2",
+      "passed": true
+    },
+    {
+      "caseId": "invalid-group-extract-fallback",
+      "text": "(a) (a)",
+      "rule": "##(a)##$2###",
+      "actual": "$2",
+      "passed": true
+    },
+    {
+      "caseId": "missing-replacement-deletes",
+      "text": "a12b34",
+      "rule": "##\\d+",
+      "actual": "ab",
+      "passed": true
+    },
+    {
+      "caseId": "named-capture-replacement",
+      "text": "isbn42",
+      "rule": "##(?<word>[a-z]+)(?<number>\\d+)##${number}:${word}",
+      "actual": "42:isbn",
+      "passed": true
+    },
+    {
+      "caseId": "linebreak-unicode-preservation",
+      "text": "第一12章\n🙂34尾",
+      "rule": "##(\\d+)##{$1}",
+      "actual": "第一{12}章\n🙂{34}尾",
+      "passed": true
+    },
+    {
+      "caseId": "zero-width-boundaries",
+      "text": "ab",
+      "rule": "##^|$##!",
+      "actual": "!ab!",
+      "passed": true
+    },
+    {
+      "caseId": "escaped-literal-dollar",
+      "text": "aa",
+      "rule": "##a##\\$",
+      "actual": "$$",
+      "passed": true
+    },
+    {
+      "caseId": "escaped-literal-backslash",
+      "text": "aa",
+      "rule": "##a##\\\\",
+      "actual": "\\\\",
+      "passed": true
+    },
+    {
+      "caseId": "extract-zero-width-reapplies-in-match",
+      "text": "ab",
+      "rule": "##(?=b)##X###",
+      "actual": "",
+      "passed": true
+    },
+    {
+      "caseId": "extract-lookbehind-reapplies-in-match",
+      "text": "xa",
+      "rule": "##(?<=x)a##Z###",
+      "actual": "a",
+      "passed": true
+    },
+    {
+      "caseId": "fourth-segment-enables-extraction",
+      "text": "ab12cd34",
+      "rule": "##(\\d+)##$1##ignored",
+      "actual": "12",
+      "passed": true
+    },
+    {
+      "caseId": "explicit-empty-replacement",
+      "text": "a12b34",
+      "rule": "##\\d+##",
+      "actual": "ab",
+      "passed": true
+    },
+    {
+      "caseId": "regex-case-sensitive",
+      "text": "aA",
+      "rule": "##a##x",
+      "actual": "xA",
+      "passed": true
+    }
+  ],
+  "fixtureSHA256": "3c6d66f453e1e3a7cea08da8242a1a787902ffb8c28cf81eaadeb6784d9330dd",
+  "sourceProvenance": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+    "fileSHA256": "5441d6d00064059519add3e5a81d85b1776f575bd0e5d30f3b5763d90af9e8a9",
+    "anchors": [
+      "getString:308-311",
+      "getString:344-366",
+      "replaceRegex:544-568",
+      "splitSourceRule:629-633",
+      "SourceRule.makeUpRule:824-833"
+    ]
+  }
+}

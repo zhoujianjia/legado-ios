@@ -198,6 +198,37 @@ struct BuiltInBookSourcesTests {
         #expect(try journal(manifest, in: root).state == .complete)
     }
 
+    @Test("a failed reload preserves memory and blocks saves until a successful reload")
+    func reloadFailurePreservesLibraryAndCanRecover() async throws {
+        let root = try temporaryDirectory()
+        defer { removeDirectory(root) }
+        let local = source("local")
+        try writeExisting([local], in: root)
+        let store = BookSourceStore(directory: root)
+        await store.waitUntilLoaded()
+        let invalid = Data("broken restored library".utf8)
+        try invalid.write(to: libraryURL(root))
+
+        store.reloadFromDisk()
+        #expect(store.loadError != nil)
+        #expect(store.sources.map(\.id) == [local.id])
+        #expect(try sortedJSON(store.sources[0]) == sortedJSON(local))
+        store.setEnabled(id: local.id, enabled: false)
+        await drainWrites(store)
+        #expect(try Data(contentsOf: libraryURL(root)) == invalid)
+
+        let repaired = source("repaired")
+        try writeExisting([repaired], in: root)
+        store.reloadFromDisk()
+        #expect(store.loadError == nil)
+        #expect(store.sources.map(\.id) == [repaired.id])
+        store.setEnabled(id: repaired.id, enabled: false)
+        await drainWrites(store)
+        let saved = try JSONDecoder().decode([BookSource].self, from: Data(contentsOf: libraryURL(root)))
+        #expect(saved.map(\.id) == [repaired.id])
+        #expect(saved[0].enabled == false)
+    }
+
     @Test("a committed pending import finishes only its marker without reimporting")
     func committedPendingImportRecoversWithoutRewriting() async throws {
         let root = try temporaryDirectory()

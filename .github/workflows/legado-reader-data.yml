@@ -68,7 +68,7 @@ jobs:
             -only-testing:'yuedu appTests/BuiltInBookSourcesTests' \
             -only-testing:'yuedu appTests/LegadoMainJSSourceServiceTests'
           xcrun xcresulttool get test-results summary --path .build/reader-data/source-data.xcresult > .build/reader-data/source-data-summary.json
-          python -B scripts/reader-experience/data-smoke-tools.py result --work .build/reader-data --expected 29
+          python -B scripts/reader-experience/data-smoke-tools.py result --work .build/reader-data --expected 30
       - name: Preserve the actual source-data tests and failure logs
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

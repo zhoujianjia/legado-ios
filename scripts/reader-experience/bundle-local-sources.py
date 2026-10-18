@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import plistlib
+import re
 import shutil
 import zipfile
 
@@ -20,6 +21,9 @@ def bundle(ipa, cloud_manifest, sources_path, destination, report_path):
     if len(set(paths)) != 5 or destination.exists() or report_path.exists():
         raise ValueError("Use distinct inputs and absent output paths")
     manifest = json.loads(cloud_manifest.read_bytes())
+    source_commit = manifest.get("sourceCommit")
+    if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
+        raise ValueError("Cloud build manifest requires a full lowercase source commit")
     original_hash = digest(ipa)
     if manifest.get("ipaSHA256") != original_hash or manifest.get("ipaBytes") != ipa.stat().st_size or manifest.get("signed") is not False:
         raise ValueError("Unsigned cloud IPA does not match its build manifest")
@@ -45,6 +49,10 @@ def bundle(ipa, cloud_manifest, sources_path, destination, report_path):
         info = plistlib.loads(archive.read(root + "/Info.plist"))
         if info.get("CFBundleIdentifier") != "local.zhoujianjia.legado-reader" or info.get("YueduLocalExperience") is not True:
             raise ValueError("Expected the isolated local reader")
+        # These are the exact full/short stamps written by stage-config.finalize.
+        if (info.get("YueduExperienceSourceCommit") != source_commit
+                or info.get("GitCommitSHA") != source_commit[:7]):
+            raise ValueError("Packaged source stamps differ from the cloud build manifest")
         if any(name.startswith(root + "/_CodeSignature/") or name == root + "/embedded.mobileprovision" for name in names):
             raise ValueError("Local source insertion requires an unsigned main application")
         additions = {root + "/BuiltInBookSources.json": source_bytes,
@@ -79,7 +87,7 @@ def bundle(ipa, cloud_manifest, sources_path, destination, report_path):
             for name, expected in additions.items():
                 if output.read(name) != expected:
                     raise ValueError("Local book-source payload differs from input")
-    report = {"schemaVersion": 1, "sourceCommit": manifest.get("sourceCommit"),
+    report = {"schemaVersion": 1, "sourceCommit": source_commit,
               "cloudIPA_SHA256": original_hash, "cloudBuildManifestSHA256": digest(cloud_manifest),
               "ipaSHA256": digest(destination), "ipaBytes": destination.stat().st_size,
               "postBuildLocalResourceInsertion": True, "originalBookSourceBytesPreserved": True,
