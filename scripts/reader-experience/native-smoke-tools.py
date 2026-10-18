@@ -39,7 +39,8 @@ def result(work):
         raise ValueError("Expected one main reader test host")
     actual = matches[0]
     for name, expected in {"CONFIGURATION": "Debug", "PLATFORM_NAME": "iphonesimulator",
-                           "SWIFT_VERSION": "5.0", "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE}.items():
+                           "SWIFT_VERSION": "5.0", "ENABLE_DEBUG_DYLIB": "NO",
+                           "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE}.items():
         if actual.get(name) != expected:
             raise ValueError("Unexpected native test-host setting: " + name)
     if "LEGADO_REQUIRE_NATIVE_MAINJS" not in actual.get("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "").split():

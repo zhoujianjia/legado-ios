@@ -58,16 +58,23 @@ jobs:
             CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_IDENTITY=-
             CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGN_ENTITLEMENTS=
             GATEWAY_BASE_URL= YUEDU_LOCAL_EXPERIENCE=YES IPHONEOS_DEPLOYMENT_TARGET=18.0
+            ENABLE_DEBUG_DYLIB=NO
             'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS'
           )
+          # The static JVM belongs to the main executable. Check its real exports
+          # before launching the host, rather than checking an Xcode debug stub.
+          xcodebuild -project Yuedu-Reader.xcodeproj -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" build-for-testing 2>&1 | tee .build/native-reader-test/native-build.log
+          xcodebuild -project Yuedu-Reader.xcodeproj -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > .build/native-reader-test/build-settings.json
+          APP=$(python3 -c 'import json; from pathlib import Path; s=[i["buildSettings"] for i in json.load(open(".build/native-reader-test/build-settings.json")) if i.get("target")=="yuedu app"]; assert len(s)==1; print(Path(s[0]["TARGET_BUILD_DIR"])/s[0]["FULL_PRODUCT_NAME"])')
+          python -B scripts/legado-ios/verify-native-exports.py --executable "$APP/YueduReader" --report .build/native-reader-test/native-exports.json
           bash scripts/xctest.sh -l .build/native-reader-test/native-product-chain.log -t 2700 -- \
             "${ARGS[@]}" -resultBundlePath .build/native-reader-test/native-product-chain.xcresult \
             -only-testing:'yuedu appTests/LegadoNativeMainJSReaderTests'
           xcrun xcresulttool get test-results summary --path .build/native-reader-test/native-product-chain.xcresult > .build/native-reader-test/summary.json
-          xcodebuild -project Yuedu-Reader.xcodeproj -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > .build/native-reader-test/build-settings.json
-          APP=$(python3 -c 'import json; from pathlib import Path; s=[i["buildSettings"] for i in json.load(open(".build/native-reader-test/build-settings.json")) if i.get("target")=="yuedu app"]; assert len(s)==1; print(Path(s[0]["TARGET_BUILD_DIR"])/s[0]["FULL_PRODUCT_NAME"])')
-          python -B scripts/legado-ios/verify-native-exports.py --executable "$APP/YueduReader" --report .build/native-reader-test/native-exports.json
           python -B scripts/reader-experience/native-smoke-tools.py result
+      - name: Preserve this Simulator run's JVM diagnostics and crash reports
+        if: ${{ always() && hashFiles('.build/native-reader-test/overlays.json') != '' }}
+        run: python -B scripts/reader-experience/collect-native-diagnostics.py --udid "$(bash scripts/sim.sh udid)"
       - name: Retain actual test results, payload provenance and failures
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
