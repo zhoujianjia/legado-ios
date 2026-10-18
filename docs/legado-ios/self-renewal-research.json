@@ -243,7 +243,7 @@
     "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
-    "Deliver a source-free diagnostic build through a permitted private channel and inspect a real iPhone report without a debugger.",
+    "Deliver the authorized temporary source-free diagnostic build and inspect a real iPhone report without a debugger.",
     "If needed, evaluate bounded discovery of only this device's own network endpoint; do not infer all transports from loopback results.",
     "Only after transport is demonstrated, validate an authenticated session, signing, replacement installation, cold launch and preserved data.",
     "Validate background triggering, failure retry and expiry recovery separately before claiming automatic self-renewal."
@@ -255,7 +255,9 @@
     "build": "10",
     "status": "build-configuration-prepared-not-built",
     "builtInSources": false,
-    "publicIPAUploadEnabled": false,
-    "privateArtifactChannelRequiredByCurrentPolicy": true
+    "publicIPAUploadEnabled": true,
+    "privateArtifactChannelRequiredByCurrentPolicy": false,
+    "temporaryPublicUploadAuthorized": true,
+    "artifactRetentionDays": 1
   }
 }
