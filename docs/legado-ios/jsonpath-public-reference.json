@@ -1,0 +1,683 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-18",
+  "suite": "JsonPathRuleObservation",
+  "caseSetVersion": "legado-jsonpath-public-v1",
+  "referenceKind": "original-archive-android-instrumentation",
+  "runId": 39106937770,
+  "sourceCommit": "af082b2a9c185aa617b84f8849988d6ca1712da6",
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39106937770",
+  "workflowPath": ".github/workflows/legado-jsonpath-reference.yml",
+  "workflowConclusion": "success",
+  "artifact": {
+    "id": 12129460080,
+    "name": "legado-original-jsonpath-observations",
+    "bytes": 1099848,
+    "sha256": "969cae9998b8b2416c7e17c2a75d88bb0e47edfcb4885d14f3b2ba1a5c0707bf"
+  },
+  "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "sourceProvenance": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "files": [
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "fileSHA256": "5441d6d00064059519add3e5a81d85b1776f575bd0e5d30f3b5763d90af9e8a9",
+        "anchors": [
+          "getStringList:205-285",
+          "getString:308-376",
+          "getElements:453-501",
+          "getAnalyzeByJSonPath:168-174"
+        ]
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSonPath.kt",
+        "fileSHA256": "ee5ee9ebc95b4f5d6e2d459d6f727fccd10a6bd6a36ce872547f6cee5684109d",
+        "anchors": [
+          "getString:34-71",
+          "getStringList:74-126",
+          "getList:132-174"
+        ]
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/RuleAnalyzer.kt",
+        "fileSHA256": "74ab0152bce9d5e014cc69d9c6974cbb093d8353200f1452066f7d05102265a7",
+        "anchors": [
+          "splitRule:165-306",
+          "innerRule:308-376"
+        ]
+      }
+    ]
+  },
+  "fixture": {
+    "path": "Packages/LegadoRuntime/jvm/src/test/resources/fixtures/jsonpath-rule-cases.json",
+    "sha256": "c288cad37df6c76176a7c3b51f39816e8b682f44b1bd615a4d9b7e7d5ce05b1d",
+    "cases": 12,
+    "publicAPIsPerCase": 3
+  },
+  "harness": {
+    "path": "tools/legado-reference/androidTest/JsonPathRuleGoldenTest.kt",
+    "sha256": "55d74ea499441f278ca1493495f4c41f791533c4aabe8473a3be45b139bc1a8b",
+    "entryPoints": [
+      "AnalyzeRule().setContent(jsonText).getString(rule, false)",
+      "AnalyzeRule().setContent(jsonText).getStringList(rule)",
+      "AnalyzeRule().setContent(jsonText).getElements(rule)"
+    ],
+    "usesKotlinInternalAPI": false,
+    "overridesOnError": false,
+    "constructsFreshAnalyzeRulePerObservation": true,
+    "setupFailureIsAPIExceptionOutcome": false,
+    "fatalErrorIsAPIExceptionOutcome": false
+  },
+  "golden": {
+    "path": "Packages/LegadoRuntime/jvm/src/test/resources/fixtures/android-jsonpath-public-golden.json",
+    "bytes": 17043,
+    "sha256": "8563213d759975f4b7857757e7ee784da7e49e4eb4a5825b681f4d9421ec2c98",
+    "originalAndroidReportBytesUnchanged": true,
+    "artifactEntry": "ci-logs/jsonpath-reference/jsonpath-rule-golden.json"
+  },
+  "rawXML": {
+    "filename": "android-instrumentation.xml",
+    "bytes": 546,
+    "sha256": "581bb03a5a1f7ed45a80bb06035eab99e30e0c391efa6eea0575eb99eba7429e",
+    "testClass": "io.legado.app.reference.JsonPathRuleGoldenTest",
+    "testMethod": "observeOriginalPublicJsonPathResults",
+    "executedTestcases": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "artifactEntry": "legado-jsonpath-reference/source/app/build/outputs/androidTest-results/connected/debug/flavors/app/TEST-emulator-5554 - 15-_app-app.xml"
+  },
+  "independentAudit": {
+    "filename": "independent-jsonpath-audit.json",
+    "bytes": 2914,
+    "sha256": "4505313ddbc5a6bc0cae1af9f6d8c699fcd2d2bdfcac2e06b85c49c9130a0be5"
+  },
+  "preparationRecord": {
+    "filename": "reference-inputs.json",
+    "bytes": 2324,
+    "sha256": "b3e2423e6e569f05f1b84c3f4faae401bcab1a029a1383c69b966bbe2517764b",
+    "originalFilesVerified": 2747,
+    "businessSourceBytesChanged": false,
+    "artifactEntry": "ci-logs/jsonpath-reference/reference-inputs.json"
+  },
+  "executionRecord": {
+    "filename": "execution.json",
+    "bytes": 487,
+    "sha256": "c6ed4253b619cdfbac29b4cf1e589ea5d3f887299e14e7522aeb6e371e5324a2",
+    "referenceRunId": "07d45617-66fb-4de8-83c3-d29c9c4cd194",
+    "instrumentationExitCode": 0,
+    "artifactEntry": "ci-logs/jsonpath-reference/execution.json"
+  },
+  "runtime": {
+    "executionPlatform": "original-android-instrumentation",
+    "androidApi": 35,
+    "androidRelease": "15",
+    "applicationClass": "io.legado.app.App",
+    "applicationMinSdkVersion": 26
+  },
+  "observationCompletion": {
+    "passed": true,
+    "total": 36,
+    "executed": 36,
+    "returned": 36,
+    "apiExceptions": 0,
+    "setupOrObservationFailures": 0,
+    "meaning": "All 36 original public API outcomes were captured. This does not assert agreement with a port."
+  },
+  "observations": [
+    {
+      "caseId": "scalar-unicode-newline",
+      "api": "getString",
+      "jsonText": "{\"name\":\"书名\\n🙂\"}",
+      "rule": "$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "书名\n🙂",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "scalar-unicode-newline",
+      "api": "getStringList",
+      "jsonText": "{\"name\":\"书名\\n🙂\"}",
+      "rule": "$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "书名\n🙂"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "scalar-unicode-newline",
+      "api": "getElements",
+      "jsonText": "{\"name\":\"书名\\n🙂\"}",
+      "rule": "$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "missing-path",
+      "api": "getString",
+      "jsonText": "{\"name\":\"present\"}",
+      "rule": "$.missing",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "missing-path",
+      "api": "getStringList",
+      "jsonText": "{\"name\":\"present\"}",
+      "rule": "$.missing",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "missing-path",
+      "api": "getElements",
+      "jsonText": "{\"name\":\"present\"}",
+      "rule": "$.missing",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "invalid-balanced-path",
+      "api": "getString",
+      "jsonText": "{\"items\":[{\"name\":\"item\"}]}",
+      "rule": "$.items[?]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "invalid-balanced-path",
+      "api": "getStringList",
+      "jsonText": "{\"items\":[{\"name\":\"item\"}]}",
+      "rule": "$.items[?]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "invalid-balanced-path",
+      "api": "getElements",
+      "jsonText": "{\"items\":[{\"name\":\"item\"}]}",
+      "rule": "$.items[?]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "explicit-null",
+      "api": "getString",
+      "jsonText": "{\"name\":null}",
+      "rule": "$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "explicit-null",
+      "api": "getStringList",
+      "jsonText": "{\"name\":null}",
+      "rule": "$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "explicit-null",
+      "api": "getElements",
+      "jsonText": "{\"name\":null}",
+      "rule": "$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "mixed-list",
+      "api": "getString",
+      "jsonText": "{\"items\":[\"line\\n🙂\",2,true,null,{\"x\":\"object\"}]}",
+      "rule": "$.items[*]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "line\n🙂\n2\ntrue\nnull\n{x=object}",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "mixed-list",
+      "api": "getStringList",
+      "jsonText": "{\"items\":[\"line\\n🙂\",2,true,null,{\"x\":\"object\"}]}",
+      "rule": "$.items[*]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "line\n🙂",
+        "2",
+        "true",
+        "null",
+        "{x=object}"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String",
+        "java.lang.String",
+        "java.lang.String",
+        "java.lang.String",
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "mixed-list",
+      "api": "getElements",
+      "jsonText": "{\"items\":[\"line\\n🙂\",2,true,null,{\"x\":\"object\"}]}",
+      "rule": "$.items[*]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "line\n🙂",
+        2,
+        true,
+        {
+          "x": "object"
+        }
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String",
+        "java.lang.Integer",
+        "java.lang.Boolean",
+        "java.util.LinkedHashMap"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "empty-list",
+      "api": "getString",
+      "jsonText": "{\"items\":[]}",
+      "rule": "$.items[*]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "empty-list",
+      "api": "getStringList",
+      "jsonText": "{\"items\":[]}",
+      "rule": "$.items[*]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "empty-list",
+      "api": "getElements",
+      "jsonText": "{\"items\":[]}",
+      "rule": "$.items[*]",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "object-result",
+      "api": "getString",
+      "jsonText": "{\"item\":{\"nested\":1,\"empty\":null}}",
+      "rule": "$.item",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "{nested=1, empty=null}",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "object-result",
+      "api": "getStringList",
+      "jsonText": "{\"item\":{\"nested\":1,\"empty\":null}}",
+      "rule": "$.item",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "{nested=1, empty=null}"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "object-result",
+      "api": "getElements",
+      "jsonText": "{\"item\":{\"nested\":1,\"empty\":null}}",
+      "rule": "$.item",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "or-missing-fallback",
+      "api": "getString",
+      "jsonText": "{\"name\":\"fallback\"}",
+      "rule": "$.missing||$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "or-missing-fallback",
+      "api": "getStringList",
+      "jsonText": "{\"name\":\"fallback\"}",
+      "rule": "$.missing||$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "fallback"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "or-missing-fallback",
+      "api": "getElements",
+      "jsonText": "{\"name\":\"fallback\"}",
+      "rule": "$.missing||$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "or-invalid-fallback",
+      "api": "getString",
+      "jsonText": "{\"name\":\"fallback\",\"items\":[]}",
+      "rule": "$.items[?]||$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "or-invalid-fallback",
+      "api": "getStringList",
+      "jsonText": "{\"name\":\"fallback\",\"items\":[]}",
+      "rule": "$.items[?]||$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "fallback"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "or-invalid-fallback",
+      "api": "getElements",
+      "jsonText": "{\"name\":\"fallback\",\"items\":[]}",
+      "rule": "$.items[?]||$.name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "and-lists",
+      "api": "getString",
+      "jsonText": "{\"a\":[\"a1\",\"a2\"],\"b\":[\"b1\"]}",
+      "rule": "$.a&&$.b",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "a1\na2\nb1",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "and-lists",
+      "api": "getStringList",
+      "jsonText": "{\"a\":[\"a1\",\"a2\"],\"b\":[\"b1\"]}",
+      "rule": "$.a&&$.b",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "a1",
+        "a2",
+        "b1"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String",
+        "java.lang.String",
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "and-lists",
+      "api": "getElements",
+      "jsonText": "{\"a\":[\"a1\",\"a2\"],\"b\":[\"b1\"]}",
+      "rule": "$.a&&$.b",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "a1",
+        "a2",
+        "b1"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String",
+        "java.lang.String",
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "interleave-unequal-lists",
+      "api": "getString",
+      "jsonText": "{\"a\":[\"a1\"],\"b\":[\"b1\",\"b2\"]}",
+      "rule": "$.a%%$.b",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "interleave-unequal-lists",
+      "api": "getStringList",
+      "jsonText": "{\"a\":[\"a1\"],\"b\":[\"b1\",\"b2\"]}",
+      "rule": "$.a%%$.b",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "a1",
+        "b1"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String",
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "interleave-unequal-lists",
+      "api": "getElements",
+      "jsonText": "{\"a\":[\"a1\"],\"b\":[\"b1\",\"b2\"]}",
+      "rule": "$.a%%$.b",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "a1",
+        "b1"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String",
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "balanced-filter-inner-and",
+      "api": "getString",
+      "jsonText": "{\"items\":[{\"name\":\"skip\",\"active\":true,\"rank\":1},{\"name\":\"kept\",\"active\":true,\"rank\":2},{\"name\":\"inactive\",\"active\":false,\"rank\":3}]}",
+      "rule": "$.items[?(@.active == true && @.rank >= 2)].name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": "kept",
+      "javaClass": "java.lang.String",
+      "elementJavaClasses": null,
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "balanced-filter-inner-and",
+      "api": "getStringList",
+      "jsonText": "{\"items\":[{\"name\":\"skip\",\"active\":true,\"rank\":1},{\"name\":\"kept\",\"active\":true,\"rank\":2},{\"name\":\"inactive\",\"active\":false,\"rank\":3}]}",
+      "rule": "$.items[?(@.active == true && @.rank >= 2)].name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "kept"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "balanced-filter-inner-and",
+      "api": "getElements",
+      "jsonText": "{\"items\":[{\"name\":\"skip\",\"active\":true,\"rank\":1},{\"name\":\"kept\",\"active\":true,\"rank\":2},{\"name\":\"inactive\",\"active\":false,\"rank\":3}]}",
+      "rule": "$.items[?(@.active == true && @.rank >= 2)].name",
+      "apiInvoked": true,
+      "completed": true,
+      "actual": [
+        "kept"
+      ],
+      "javaClass": "java.util.ArrayList",
+      "elementJavaClasses": [
+        "java.lang.String"
+      ],
+      "exception": null,
+      "outcome": "return"
+    }
+  ],
+  "portComparisonPerformed": false,
+  "portDifferenceCount": null,
+  "iosValidationPassed": false,
+  "deviceValidationPassed": false,
+  "compatibilityValidationPassed": false,
+  "g4ValidationPassed": false,
+  "fullFeatureParityEstablished": false,
+  "scope": "Only twelve fixed JSON object strings and three original public APIs. No production parser was changed. No private source, HTML unescape, URL conversion, JS, replacement rule or complete AnalyzeRule migration is measured. Helper raw outputs have not been treated as equivalent to public API outputs.",
+  "existingStaticReplacementReferenceChanged": false,
+  "existingMainJsReferenceChanged": false
+}

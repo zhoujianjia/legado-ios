@@ -55,8 +55,18 @@ onError?.invoke(e) ?: e.printOnDebug()
 ```
 
 改为无 handler 时直接 `throw e`。这会改变找不到路径／无效表达式与组合规则的失败、返回及 fallback 行为。
-这是一项已知差异；不能仅因正常路径测试通过就忽略，也不能用 `try?`、返回空库或通用空字符串掩盖。须加入原 Android 对照负例，明确比较结果和异常后再决定保持原行为的适配方式。
+这是一项已知差异；不能仅因正常路径测试通过就忽略，也不能用 `try?`、返回空库或通用空字符串掩盖。下述原 Android 观测已取得，移植端仍需独立验证；不能把原公开 API 的输出直接等同于底层 helper 的原始返回值。
 其余可见适配包括去除 `@Keep`，XPath 的 `TextUtils.join` 改为 `joinToString`；原 `RuleAnalyzer` 与 `SourceHtmlParser` 的文本逻辑保持一致。
+
+## 已取得的原版 JSONPath 公开入口基准
+
+源码 `af082b2a9c185aa617b84f8849988d6ca1712da6` 的 [Android run 39106937770](https://github.com/zhoujianjia/legado-ios/actions/runs/39106937770) 已成功。独立测试针对 12 个固定 JSON 字符串，分别调用原 `AnalyzeRule.getString(rule, false)`、`getStringList(rule)` 和 `getElements(rule)`，每次新建实例，共记录 36 次原始观测：36 次返回、0 次 API 异常、0 次构造或采集失败。原 Application、minSdk 26、API 35、run UUID、全部 2,747 个原文件以及 3 个解析文件 SHA 均已核验；原 instrumentation XML 为 1 项执行，失败、错误和跳过均为 0。
+
+原报告的 17,043 字节已原样冻结为 [android-jsonpath-public-golden.json](../../Packages/LegadoRuntime/jvm/src/test/resources/fixtures/android-jsonpath-public-golden.json)，SHA-256 为 `8563213d759975f4b7857757e7ee784da7e49e4eb4a5825b681f4d9421ec2c98`。run、archive、三个源码、输入、harness、原 XML 和独立审计的哈希，以及完整 36 条观测见 [JSONPath 公开入口证据](jsonpath-public-reference.json)。原 18 项静态替换基准和 mainJs 基准保持不变。
+
+本组原版结果确认：缺失路径和无效表达式返回空结果，`||` 的缺失／无效前分支不会阻止后备值；混合列表在 `getElements` 中去除 null、保留数字／布尔／对象类型；不等长 `%%` 在列表入口按首列表长度交错，标量入口返回空串；合法 filter 内的 `&&` 未被拆成外层组合。`getStringList` 会将混合值转为字符串，这与元素入口的类型保留不同。
+
+这些是原版公开 API 的实测结果，**尚未与移植端比较，不构成 36 项 port 零差异**。原 `AnalyzeRule` 在公开入口还包含 null／元素收尾处理，不能用比较器静默补值或归一化 helper 输出来宣称一致。本轮没有修改生产 catch、没有迁移完整 `AnalyzeRule`，也没有读取私人书源；iOS、真机、G4、兼容性及全功能验收均保持未通过。
 
 ## 首批可独立验证的链路
 
