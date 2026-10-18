@@ -6,6 +6,7 @@ import importlib.util
 import io
 import json
 from pathlib import Path
+import socket
 import tempfile
 import threading
 import unittest
@@ -170,6 +171,42 @@ class OnlineSourceFixtureTests(unittest.TestCase):
         with self.assertRaises(OSError):
             with fixture.FixtureServer(self.server.server_port):
                 self.fail("A running fixture port must never be silently reused")
+
+
+class DNSFreeFixtureStartupTests(unittest.TestCase):
+    def test_real_loopback_health_and_business_trace_never_require_reverse_dns(self):
+        with patch.object(socket, "getfqdn", side_effect=AssertionError("Unexpected reverse DNS")) as fqdn, \
+                patch.object(socket, "gethostbyaddr", side_effect=AssertionError("Unexpected reverse DNS")) as reverse:
+            with fixture.FixtureServer(0) as server:
+                self.assertEqual(server.server_address[0], "127.0.0.1")
+                self.assertEqual(server.server_name, "localhost")
+                self.assertEqual(server.server_port, server.socket.getsockname()[1])
+                thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
+                thread.start()
+                try:
+                    opener = build_opener(ProxyHandler({}))
+                    origin = "http://127.0.0.1:" + str(server.server_port)
+                    host = server.info["origin"].removeprefix("http://")
+                    def get(path):
+                        request = Request(origin + path, headers={"Host": host})
+                        with opener.open(request, timeout=3) as response:
+                            self.assertEqual(response.status, 200)
+                            return response.read()
+                    self.assertEqual(json.loads(get("/health")), server.info)
+                    prefix = "/fixture/" + server.info["runId"] + "/"
+                    for route in fixture.ROUTES:
+                        query = "?q=OnlineSmoke&page=1" if route == "search" else ""
+                        get(prefix + route + query)
+                    trace = json.loads(get("/trace?runId=" + server.info["runId"]))
+                    verified = fixture.verify_trace(trace, expected_run_id=server.info["runId"])
+                    self.assertTrue(verified["passed"])
+                    self.assertEqual(verified["requestCount"], 6)
+                    fqdn.assert_not_called()
+                    reverse.assert_not_called()
+                finally:
+                    server.shutdown()
+                    thread.join(timeout=2)
+                    self.assertFalse(thread.is_alive())
 
 
 class StartupDiagnosticsTests(unittest.TestCase):

@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import socketserver
 import sys
 import threading
 import time
@@ -100,6 +101,13 @@ def publish_ready(path, info):
 class FixtureServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = False
+
+    def server_bind(self):
+        # The fixture's hostname is part of its explicit loopback contract.
+        # HTTPServer's reverse lookup can block construction before readiness.
+        socketserver.TCPServer.server_bind(self)
+        self.server_name = "localhost"
+        self.server_port = self.server_address[1]
 
     def __init__(self, port=DEFAULT_PORT):
         super().__init__(("127.0.0.1", port), Handler)

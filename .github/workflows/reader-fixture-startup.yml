@@ -1,0 +1,54 @@
+name: Reader Fixture Startup
+
+on:
+  push:
+    tags:
+      - 'reader-fixture-startup-*'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  startup:
+    runs-on: macos-15
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Require the exact current source tag
+        run: |
+          python - <<'PY'
+          import os
+          import subprocess
+          source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          if os.environ.get('GITHUB_SHA') != source or os.environ.get('GITHUB_REF_NAME') != 'reader-fixture-startup-' + source[:7]:
+              raise SystemExit('Expected reader-fixture-startup-<current SHA7> and matching checkout')
+          print(source)
+          PY
+      - name: Exercise the original runner readiness health and cleanup contract
+        run: |
+          mkdir -p .build/reader-fixture-startup
+          python -VV > .build/reader-fixture-startup/python-version.log
+          python -B scripts/reader-experience/run-online-smoke.py run \
+            --work .build/reader-fixture-startup -- python -c pass
+      - name: Preserve startup evidence separately from any UI acceptance
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-fixture-startup-evidence
+          path: .build/reader-fixture-startup/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the limited scope
+        if: always()
+        run: |
+          echo 'This preflight starts the owned synthetic HTTP fixture, validates its real health response and cleans up its process. The no-op command is not a UI test, JVM check, device run or real book-source acceptance.' >> "$GITHUB_STEP_SUMMARY"

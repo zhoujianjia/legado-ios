@@ -35,6 +35,10 @@ jobs:
           python -B scripts/reader-experience/test-online-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-online-tools.log
           python -B scripts/reader-experience/test-online-source-fixture.py -v 2>&1 | tee .build/ci-logs/reader-online-fixture.log
           bash -n scripts/reader-experience/smoke.sh
+      - name: Check owned fixture readiness and cleanup before Xcode work
+        run: |
+          python -B scripts/reader-experience/run-online-smoke.py run \
+            --work .build/reader-smoke-fixture-preflight -- python -c pass
       - name: Select the installed toolchain and Simulator
         run: |
           export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
@@ -54,6 +58,7 @@ jobs:
           path: |
             .build/ci-logs/
             .build/reader-smoke/
+            .build/reader-smoke-fixture-preflight/
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 7
