@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-18",
+  "recordKind": "release-build8-superseded-old-brand-candidate-statically-audited",
+  "sourceCommit": "5a272190fda65fa7ebababc919f0399c71f2b459",
+  "version": "3.0.0",
+  "build": "8",
+  "bundleIdentifier": "local.zhoujianjia.legado-reader",
+  "configuration": "Release",
+  "intendedPlatform": "iPhoneOS",
+  "intendedArchitecture": "arm64",
+  "minimumIOS": "18.0",
+  "cloudBuild": {
+    "workflowPath": ".github/workflows/legado-reader.yml",
+    "runId": 39126993137,
+    "jobId": 117674089329,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39126993137",
+    "tag": "reader-legado-5a27219",
+    "status": "completed",
+    "conclusion": "success",
+    "privateBookSourcesIncluded": false,
+    "artifact": {
+      "id": 12137540800,
+      "name": "legado-native-reader-unsigned",
+      "bytes": 106138761,
+      "sha256": "cfc0f7a49370e26a945295b622a73a75a9eeb4b6119fa4991cb7a25a82de30f3",
+      "localZIP": {
+        "path": ".build/cloud-evidence/run-39126993137/unsigned.zip",
+        "bytes": 106138761,
+        "sha256": "cfc0f7a49370e26a945295b622a73a75a9eeb4b6119fa4991cb7a25a82de30f3"
+      }
+    },
+    "evidenceArtifact": {
+      "id": 12137222107,
+      "name": "legado-native-reader-build-evidence",
+      "bytes": 1475869,
+      "sha256": "3f45db436455e11916c25a05ea0d6c3ede317b1c6e17fa5afb5c45aa46945c56",
+      "localZIP": {
+        "path": ".build/cloud-evidence/run-39126993137/evidence.zip",
+        "bytes": 1475869,
+        "sha256": "3f45db436455e11916c25a05ea0d6c3ede317b1c6e17fa5afb5c45aa46945c56"
+      }
+    },
+    "ipa": {
+      "path": ".build/cloud-evidence/run-39126993137/unsigned/.build/reader-experience/output/YueduReader-experience-unsigned.ipa",
+      "bytes": 111171240,
+      "sha256": "94467f5c3a911d1a9687b52c13924f89f90cdcd7f0aa8f5ea3172329131c1c56"
+    },
+    "buildManifest": {
+      "path": ".build/cloud-evidence/run-39126993137/unsigned/.build/reader-experience/output/build-manifest.json",
+      "bytes": 7100,
+      "sha256": "ff3718f43f021caab88f3407ecb0a2045a0d88566b4a441a6bcde9daf9aa768a"
+    },
+    "independentAudit": {
+      "path": ".build/cloud-evidence/run-39126993137/independent-static-audit.json",
+      "bytes": 8312,
+      "sha256": "b0901374a94398134604c65d11ae6f431c492599c551ac0ade7f803720e3d054"
+    },
+    "additionalFontAndJVMAudit": {
+      "path": ".build/cloud-evidence/run-39126993137/independent-fonts-jvm-audit.json",
+      "bytes": 5282,
+      "sha256": "41b9052bff3665d6a4596ac3881ce38d8c7c2706438d280c0e14be266b0ff8ae"
+    },
+    "ordinaryPackagingSmokeAudit": {
+      "path": ".build/cloud-evidence/run-39126993137/ordinary-packaging-smoke-audit.json",
+      "bytes": 1272,
+      "sha256": "0b97c6ea890d4e90c79c3bd2ed54cd818a18752ad9000408eb502e03f9074a8c"
+    },
+    "auditSourceBinding": {
+      "path": ".build/cloud-evidence/run-39126993137/audit-source-record.json",
+      "bytes": 601,
+      "sha256": "172b893e27d71b13c75e1d8d56598fdf61790f1a36ebe596cc03fe85cc5d67bf"
+    }
+  },
+  "expectedNativePayload": {
+    "producerRunId": 39083752761,
+    "producerSourceCommit": "ce792982a30942e605fc935b733c5b41bef2736a",
+    "artifactId": 12120530642,
+    "artifactName": "legado-zero-source-build",
+    "artifactBytes": 89898489,
+    "artifactSHA256": "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+    "requiredModuleCount": 13,
+    "requiredModules": [
+      "java.base",
+      "java.xml",
+      "java.desktop",
+      "java.datatransfer",
+      "java.prefs",
+      "java.logging",
+      "jdk.charsets",
+      "java.compiler",
+      "java.instrument",
+      "java.net.http",
+      "java.sql",
+      "java.transaction.xa",
+      "jdk.unsupported"
+    ],
+    "requiredDynamicExports": 39,
+    "source": "Pinned release source scripts/legado-ios/runtime-lock.json and the audited Probe12 native baseline; these are requirements, not build7 audit results."
+  },
+  "requiredIndependentChecks": {
+    "freshOrdinaryJarAndJVMTests": "passed",
+    "artifactBytesAndAPIHash": "passed",
+    "ipaBytesAndHash": "passed",
+    "sourceVersionAndBuildIdentity": "passed",
+    "mainAndBothExtensionsARM64IOS18": "passed",
+    "javaHomeExactly13ModulesAndProducerFileHashes": "passed",
+    "finalExecutable39RequiredExports": "passed",
+    "ordinaryJarRequiredClassesBytecodeAndProvenance": "passed",
+    "JUnitProbeTestsAndFixturesAbsent": "passed",
+    "noPrivateBookSourceInCloudPackage": "passed",
+    "localModeSyntheticServiceConfigurationAndEmptyGateway": "passed"
+  },
+  "additionalChecks": {
+    "bundledChineseFontsAndLicenseBytes": "passed",
+    "fontProvenanceMatchesExactSourceCommit": "passed",
+    "actualUIAppFontsRegistrationPaths": "passed",
+    "simplifiedChineseConfiguration": "passed"
+  },
+  "releaseActions": {
+    "localPrivateSourceInsertionPerformed": false,
+    "deliveredToUser": false,
+    "signedOrInstalled": false,
+    "notForDelivery": true,
+    "privateSourceInsertionAllowed": false,
+    "reason": "The user requested a new application identity and removal of inherited public-facing branding after this source tag started. This build also predates the authoritative plain-text TXT export correction.",
+    "latestUserScope": "One final product continues the JVM compatibility route; no bundled book sources; no distribution at this stage."
+  },
+  "acceptance": {
+    "releaseBuildPassed": true,
+    "releaseStaticAuditPassed": true,
+    "build8PhysicalDeviceReadingAccepted": false,
+    "nativeMainJsUIExecutionAccepted": false,
+    "fullLegadoCompatibilityEstablished": false
+  },
+  "preservedPreviousEvidence": {
+    "path": "docs/legado-ios/native-reader-experience-build7.json",
+    "build": "7",
+    "meaning": "Build7 and build6 user-reported reading acceptance remain independent, unchanged evidence."
+  },
+  "limitations": [
+    "Compilation and static packaging never establish actual iPhone execution or perfect source compatibility.",
+    "Traditional-rule sources remain on the existing JavaScriptCore path; the uncommitted original AnalyzeRule prototype is not included.",
+    "This source has the confirmed TXT export bug that interprets authoritative plain-text bodies/titles as HTML; the correction is outside the Build8 source commit.",
+    "This is historical Build8 evidence only. Later product naming, branding, source-exclusion guards and TXT fixes require their own build and validation; this record does not transfer acceptance to them.",
+    "UIAppFonts registration paths and exact font bytes were inspected statically; UIKit/CoreText font availability and reading behavior require separate runtime tests."
+  ],
+  "actualCloudJVMTests": {
+    "XMLFiles": 17,
+    "actualUniqueTestcases": 135,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "uncommittedOriginalAnalyzeRuleCases": 0,
+    "evidenceDirectory": ".build/cloud-evidence/run-39126993137/evidence/Packages/LegadoRuntime/jvm/build/test-results/test",
+    "scope": "Actual XML counts from this cloud run; no local prototype result is transferred."
+  },
+  "actualStaticChecks": {
+    "staticAuditPassed": true,
+    "issues": [],
+    "bundles": [
+      {
+        "architecture": "arm64",
+        "platform": "iPhoneOS",
+        "minimumIOS": "18.0",
+        "bytes": 144704520,
+        "sha256": "898c3bc7787d6223389d44d065aa18f826e7f82718ec8ff6429d1678d402f93f",
+        "codeSignatureLoadCommand": false,
+        "bundleIdentifier": "local.zhoujianjia.legado-reader",
+        "executable": "YueduReader",
+        "infoPlistSHA256": "051936f0a55f7d78b78b85d88d87dca0b09d9f9156d567d173640cadcc621663"
+      },
+      {
+        "architecture": "arm64",
+        "platform": "iPhoneOS",
+        "minimumIOS": "18.0",
+        "bytes": 376184,
+        "sha256": "a42a571ae6a4b1dd154759c1c3a10bcf8348053621c625c797b7da17f1b7b315",
+        "codeSignatureLoadCommand": false,
+        "bundleIdentifier": "local.zhoujianjia.legado-reader.widget",
+        "executable": "yuedu_app_Widget",
+        "infoPlistSHA256": "85d949dbe668979bd283ed35035508d26c051211081402431a9990a215ac01ba"
+      },
+      {
+        "architecture": "arm64",
+        "platform": "iPhoneOS",
+        "minimumIOS": "18.0",
+        "bytes": 109152,
+        "sha256": "50934c2fdaf1e382294d4ff733e67ccde921c74d819692abe4579b0f71dc22a0",
+        "codeSignatureLoadCommand": false,
+        "bundleIdentifier": "local.zhoujianjia.legado-reader.shareextension",
+        "executable": "yuedu_app_ShareExtension",
+        "infoPlistSHA256": "0942dca92a6f9b4d3b7beb244b6bde02494c9c739ffc09b6b66da681758a5c0e"
+      }
+    ],
+    "javaHome": {
+      "matchesPinnedNative12Bytes": true,
+      "fileCount": 17241,
+      "totalBytes": 73995276,
+      "pathAndFileHashDigest": "3efc7463f6c51f74368610eab3bf0355a59f954d7173c065453616d25f97fa3e",
+      "modules": [
+        "java.base",
+        "java.compiler",
+        "java.datatransfer",
+        "java.desktop",
+        "java.instrument",
+        "java.logging",
+        "java.net.http",
+        "java.prefs",
+        "java.sql",
+        "java.transaction.xa",
+        "java.xml",
+        "jdk.charsets",
+        "jdk.unsupported"
+      ],
+      "extraOwnedMarker": ".legado-runtime-home-owner.json"
+    },
+    "requiredDynamicExportCount": 39,
+    "allRequiredDynamicExportsPresent": true,
+    "ordinaryJar": {
+      "sha256": "e42070b3bc1345e10e3be2d9d384ee58caadc64f72a81126f55b83e586f6708e",
+      "bytes": 10065948,
+      "maximumBaseClassMajor": 65,
+      "requiredClasses": [
+        "io/yuedu/legado/LegadoRuntime.class",
+        "io/yuedu/legado/NativeHost.class",
+        "io/yuedu/legado/ProductionHttpTransport.class",
+        "io/yuedu/legado/RuntimeSessionOptions.class",
+        "io/yuedu/legado/StaticScalarSelectorRule.class",
+        "org/htmlunit/corejs/javascript/Context.class",
+        "okhttp3/OkHttpClient.class",
+        "org/brotli/dec/BrotliInputStream.class",
+        "org/apache/commons/text/StringEscapeUtils.class",
+        "org/apache/commons/lang3/StringUtils.class"
+      ],
+      "testClassesIncluded": false,
+      "licenses": [
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "bytes": 426,
+          "sha256": "3f991eff87a6212affed07c2d2cc0a8bb681a72ecefeff54f4915de7b5aa5a52"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "bytes": 16780,
+          "sha256": "ada0787f27b581e024972a18b51db92c8e8508d0f05017d104a1c70a61b59951"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "bytes": 1825,
+          "sha256": "9246f7f820e791b7328d46ba341bb5a2bb08c3e2e1b9d36803ab0c3899e0462f"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "bytes": 3020,
+          "sha256": "c8539fca8905465681c131e79dd58b98e4276702fc6f221b5f98aa91baf6bcf2"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "bytes": 12369,
+          "sha256": "98793632f4e0ebb70c8e81abb7ca29186878caca0f505374b5ff07f64d7998cc"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "bytes": 1450,
+          "sha256": "7979d0f6470ffe8628473d6a6d36d2fae0d280adee341922353d984f4b113cb4"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/MPL-2.0.html",
+          "bytes": 17329,
+          "sha256": "79fefbb5ce750421056e8639e83b055fa97deb02407617d4c0f9d50cfa0cfd32"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/NOTICE-publicsuffix.txt",
+          "bytes": 223,
+          "sha256": "362ad8b05fc7042f86ac08a5747452052fe422d35cd19a36a28da3f42efffa01"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okio-3.17.0/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/brotli-MIT-LICENSE.txt",
+          "bytes": 1084,
+          "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/ICU-release-58-2-LICENSE.txt",
+          "bytes": 19442,
+          "sha256": "2023a2d68dfcdb1f7b7c5dccb96f88aabba112f63f250cb9e533cc64625eff07"
+        }
+      ],
+      "fixtureAndJUnitExclusionPassed": true
+    },
+    "bundledFonts": [
+      {
+        "fileName": "LXGWWenKaiLite-Regular.ttf",
+        "bytes": 13872424,
+        "sha256": "140c99ba4e28e817cec49bf82a0c5fcdc4fe633fb9dfda16d0ee8d59a8545f15",
+        "licenseFile": "LXGWWenKaiLite-OFL.txt",
+        "licenseBytes": 4448,
+        "licenseSHA256": "c38b1994a5e48ac30ac7d1da7d0409fd8fd8127dfe28a13d6e787d5b1ef34a5e",
+        "sourceCommitBytesMatched": true,
+        "InfoPlistRegistrationPathExists": true
+      },
+      {
+        "fileName": "LXGWNeoZhiSong.ttf",
+        "bytes": 10468036,
+        "sha256": "32b398f9c6278c4ed34f413077add2c2f3c84034d463af2b9cb98f12c4c2c6cd",
+        "licenseFile": "LXGWNeoZhiSong-LICENSE.txt",
+        "licenseBytes": 20613,
+        "licenseSHA256": "1483c7de02dcf8b9c54b3b1aacabf7d6bdf32d412ca6724c0292ea68e862d8cf",
+        "sourceCommitBytesMatched": true,
+        "InfoPlistRegistrationPathExists": true
+      }
+    ],
+    "uncompressedFontBytes": 24340460,
+    "fontProvenance": {
+      "bytes": 1582,
+      "sha256": "bfcca640f1bdfc734ad95119723f5b25346befbe1886ff169b9cfd2e0cf00a80",
+      "matchesExactSourceCommit": true
+    },
+    "simplifiedChineseInfo": {
+      "CFBundleDevelopmentRegion": "zh-Hans",
+      "CFBundleLocalizations": [
+        "zh-Hans",
+        "zh-Hant",
+        "en",
+        "ja",
+        "ko"
+      ],
+      "CFBundleDisplayName": "阅读"
+    },
+    "uncommittedOriginalCoordinatorAbsent": true,
+    "privateSourceResourceAbsent": true
+  }
+}

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Embed user-owned sources locally into an unsigned, hash-bound reader IPA."""
+"""Historical local source-pack tool retained to reproduce prior build audits.
+
+Current reader packages contain no built-in sources. This tool is not part of
+the current build or delivery flow; import sources in the app instead.
+"""
 import argparse
 import copy
 import hashlib

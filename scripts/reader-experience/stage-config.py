@@ -313,6 +313,18 @@ def bundle_summary(app, with_jvm=False):
             "jvmPayloadIncluded": with_jvm, "runtimePayload": runtime, "upstreamCredentialsUsed": False}
 
 
+def require_no_bundled_sources(roots):
+    """Reject historical source-pack resources without reading or modifying them."""
+    names = ("BuiltInBookSources.json", "BuiltInBookSources.manifest.json")
+    for root in roots:
+        root = checked_path(root)
+        if not root.is_dir():
+            raise ValueError("The source-pack exclusion check requires an existing directory")
+        if any(next(root.rglob(name), None) is not None for name in names):
+            raise ValueError("Built-in book-source resources are disabled for reader packages; import sources in the app")
+    return {"included": False}
+
+
 def bundled_sources(app, resource_root=None):
     root = resource_root if resource_root is not None else REPO / "Resources"
     names = ("BuiltInBookSources.json", "BuiltInBookSources.manifest.json")
@@ -342,6 +354,7 @@ def bundled_sources(app, resource_root=None):
 
 
 def manifest(app, ipa, settings, source, xcode, overlay, with_jvm=False):
+    require_no_bundled_sources([REPO / "Resources", app])
     summary = bundle_summary(app, with_jvm=with_jvm)
     info = read_info(app)
     if info.get("YueduExperienceSourceCommit") != source:
@@ -383,6 +396,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("validate-tag")
+    sources = commands.add_parser("require-no-source-pack")
+    sources.add_argument("--root", type=Path, action="append", required=True)
     staging = commands.add_parser("stage")
     staging.add_argument("--destination", type=Path, default=REPO / "GoogleService-Info.plist")
     overlay = commands.add_parser("overlay-project")
@@ -409,6 +424,8 @@ def main():
     try:
         if args.command == "validate-tag":
             value = validate_tag()
+        elif args.command == "require-no-source-pack":
+            value = require_no_bundled_sources(args.root)
         elif args.command == "stage":
             value = stage(args.destination)
         elif args.command == "overlay-project":

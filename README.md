@@ -2,6 +2,8 @@
 
 面向 iPhone 和 iPad 的独立本地阅读器，以 Legado 的书源和功能为兼容目标，采用原生阅读界面。目前是体验版，与 Legado、Yuedu Reader 官方无关，也未获其背书；“本地书架”暂作为本项目名称，不表示已完成商标检索。
 
+只维护一个最终版本，继续现有原生界面与 JVM 原核心兼容路线。后续安装包均不内置书源，由用户自行导入；目前暂不分发安装包。
+
 ## 可以做什么
 
 - 导入书源，搜索书籍、查看目录、阅读正文、换源和缓存章节。
@@ -20,15 +22,11 @@
 
 这些条目描述当前源码；已安装的旧版需要更新后才会变化。
 
-## 安装与使用
+## 现有设备与后续构建
 
-当前 JVM 体验包需要 iOS / iPadOS 18 或更新版本。
+目前暂不分发新的安装包。现有 JVM 体验版需要 iOS / iPadOS 18 或更新版本，已安装的应用可以继续使用；手机中已有的书源、书籍和阅读数据不删除，过去生成的本地安装包也保留为历史记录。
 
-1. 在 Windows 上连接并解锁设备，打开 iloader。
-2. 选择已准备好的 IPA，使用原 Apple ID 覆盖安装；更新前不要卸载旧版。
-3. 打开应用。已有书源会保留，也可以手动导入 Legado 书源 JSON。
-
-首次安装和信任设置见[安装说明](docs/legado-ios/windows-install.md)。IPA 需要自行签名，应用本身不能延长签名有效期。
+以后自建或更新时，仍可通过 iloader 使用原 Apple ID 覆盖安装；不要先卸载旧版。首次安装和信任设置见[安装说明](docs/legado-ios/windows-install.md)。IPA 需要自行签名，应用本身不能延长签名有效期。
 
 ## 兼容性与边界
 
@@ -38,7 +36,7 @@
 
 [功能对照与后续优先级](docs/legado-ios/feature-comparison.md) · [迁移进度](docs/legado-ios/migration-status.md)
 
-私人书源只在本机加入个人安装包，不提交仓库或上传云端构建。亲友分享包默认不携带这份含认证信息、授权情况未逐项确认的私人资源。
+所有后续构建均不内置书源，不区分个人包或亲友包。书源使用应用内手动导入；过去在本机注入私人书源的做法已停止，原文件不提交仓库、不上传构建或日志，已有设备数据不受影响。
 
 ## 开发与来源
 
@@ -46,4 +44,4 @@ Windows 可以整理源码和运行 JVM 测试；iOS 编译使用 Mac / Xcode �
 
 阅读界面与部分服务基于 [Yuedu Reader](https://github.com/CHANG-JUI-LIN/Yuedu-reader)，兼容基准为本机锁定的 Legado 源码。保留各部分原有许可证及署名，详见 [LICENSE](LICENSE)、[源码来源锁定](docs/legado-ios/provenance-lock.json)和[字体来源与许可](Resources/ReaderFonts/ReaderFonts-provenance.json)。
 
-本项目没有获得上游品牌素材使用许可，当前源码使用另行绘制的图标。给亲友提供 IPA 同样需要附带许可、修改说明及对应源码；MPL、Legado GPL 代码和 JDK 的义务分别核对，不把整个安装包简单视为“只有 MPL”。[分发核对记录](docs/legado-ios/redistribution-notes.md)完成前不公开分发 JVM 安装包。历史提交和旧构建产物仍需另行处理。
+本项目没有获得上游品牌素材使用许可，当前源码使用另行绘制的图标。MPL、Legado GPL 代码和 JDK 的义务仍分别核对，不把整个安装包简单视为“只有 MPL”。当前暂不进行任何安装包分发；若未来恢复分享，包括给亲友安装，也须先完成[分发核对](docs/legado-ios/redistribution-notes.md)，提供相应许可、修改说明及对应源码。历史提交和旧构建产物未删除，也不因当前清理而自动取得分发许可。

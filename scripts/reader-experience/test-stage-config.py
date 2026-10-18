@@ -22,6 +22,7 @@ class ReaderExperienceTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
+        (self.root / "Resources").mkdir()
 
     def write(self, path, data=b"fixture"):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -67,6 +68,19 @@ class ReaderExperienceTests(unittest.TestCase):
         self.write(app / "BuiltInBookSources.json", b"[]")
         with self.assertRaisesRegex(ValueError, "Unexpected bundled"):
             config.bundled_sources(app, resources)
+
+    def test_reader_build_rejects_source_pack_in_checkout_or_nested_app_resources(self):
+        resources, app = self.root / "Resources", self.root / "App"
+        app.mkdir()
+        self.assertEqual(config.require_no_bundled_sources([resources, app]), {"included": False})
+        for root in (resources, app / "Nested.bundle"):
+            for name in ("BuiltInBookSources.json", "BuiltInBookSources.manifest.json"):
+                path = self.write(root / name, b"private fixture: never read or delete")
+                with patch.object(Path, "read_bytes", side_effect=AssertionError("Source content must not be read")):
+                    with self.assertRaisesRegex(ValueError, "disabled for reader packages"):
+                        config.require_no_bundled_sources([resources, app])
+                self.assertEqual(path.read_bytes(), b"private fixture: never read or delete")
+                path.unlink()
 
     def test_bundled_source_manifest_binds_actual_resource_and_packaged_bytes(self):
         app, resources = self.root / "App", self.root / "Resources"

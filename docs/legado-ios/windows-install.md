@@ -1,4 +1,14 @@
-# Install the prototype from Windows
+# Windows 安装说明
+
+目前只维护一个用户版本，暂名「本地书架」，最低 iOS / iPadOS 18。后续安装包不内置书源，在 App 内自行导入即可；覆盖更新保留已经导入的书源和阅读数据。当前新版仍在验证，本文下面的旧 IPA、旧名称和 Probe 构建属于历史记录，不是新版下载推荐。
+
+1. 取得已核对版本和哈希的 IPA，在 Windows 上连接并解锁设备。
+2. 打开已用过的 iloader，选中设备，导入 IPA，使用原 Apple ID 覆盖安装；更新前不要卸载旧版。
+3. 打开 App 正常阅读。首次安装时，按设备提示信任开发者并开启开发者模式。
+
+账号密码和验证码只在本机签名工具中输入。签名续期不由本 App 完成。暂时不分发安装包；旧个人包含私人书源，不要转发。
+
+## 历史构建与安装排障记录
 
 These instructions apply after a successful cloud build produces
 `legado-probe-unsigned`. Build 6 at `78930be` now has a hash-checked `ios-device`

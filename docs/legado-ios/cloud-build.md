@@ -1,5 +1,15 @@
 # Build the Legado iOS prototype without a local Mac
 
+Current product policy (2026-10-18): maintain one reader product, retain the
+Legado JVM integration and compatibility research, and package no built-in book
+sources. Users import sources in the app; updates preserve existing app data.
+Source-only builds and the standalone runtime probe remain validation tools,
+not separate user releases. Current use is personal testing, with no planned
+distribution yet. IPA artifact uploads from the public repository are disabled
+while the redistribution review is incomplete; the historical runs and artifact
+tables below describe their original behavior, not a current IPA download offer.
+See [the current policy](distribution-policy.json).
+
 The available devices are a Windows computer, an iPhone, and an iPad. Windows can
 develop and test the portable Legado core. A manually triggered GitHub Actions
 macOS runner can build the native prototype; the iPhone or iPad is still needed

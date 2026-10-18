@@ -87,7 +87,7 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This compiles the current main reader with a freshly assembled ordinary JVM JAR and the immutable audited Probe 12 native VM. Test fixtures and JUnit are excluded from the reader payload. Source/pin checks, ZIP bytes, module inventory, bytecode, final native exports and packaged resources are checked separately.
-          The supported mainJs text path is routed to Rhino/JVM. Traditional-rule sources still use the existing JavaScriptCore implementation. Bundled-source presence/count/hash are recorded; live availability of those sources is not established by packaging.
+          The supported mainJs text path is routed to Rhino/JVM. Traditional-rule sources still use the existing JavaScriptCore implementation. Reader packages contain no built-in book sources; checkout and packaged resources are checked before accepting the manifest. Users import sources in the app.
           This unsigned iOS 18+ device-target build must be signed before installation. Compilation does not establish native mainJs UI execution, physical-device reading acceptance, source-state persistence parity or full Legado compatibility.
           Unsigned IPA uploads are limited to private repositories while the component-license/corresponding-source review remains incomplete. Private self-testing is not a clearance for friends/family or public redistribution.
           TEXT

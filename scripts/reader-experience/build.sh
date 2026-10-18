@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the native reader with an explicit JSC-only or Legado JVM configuration.
+# Build the reader; the source-only configuration remains available for validation.
 set -euo pipefail
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
@@ -27,6 +27,8 @@ mkdir -p "$OUTPUT"
 for path in "$OUTPUT/Payload" "$OUTPUT/YueduReader-experience-unsigned.ipa" "$WORK_DIR/reader-device.xcresult" "$WORK_DIR/build-settings.json"; do
   [[ ! -e "$path" ]] || { echo "Refusing to overwrite prior experience output: $path" >&2; exit 3; }
 done
+python3 "$SCRIPT_DIR/stage-config.py" require-no-source-pack \
+  --root "$REPO_DIR/Resources" > "$WORK_DIR/source-pack-exclusion.json"
 python3 "$SCRIPT_DIR/stage-config.py" stage > "$WORK_DIR/synthetic-config.json"
 python3 "$SCRIPT_DIR/stage-config.py" overlay-project \
   --report "$WORK_DIR/project-overlay.json" > "$WORK_DIR/project-overlay.log"
@@ -54,6 +56,8 @@ APP=$(python3 "$SCRIPT_DIR/stage-config.py" inspect-settings \
   --settings "$WORK_DIR/build-settings.json" --output "$WORK_DIR/verified-settings.json" "${RUNTIME_ARGS[@]}")
 [[ -d "$APP" ]] || { echo "Built reader app is absent: $APP" >&2; exit 4; }
 python3 "$SCRIPT_DIR/stage-config.py" finalize --app "$APP" --source "$SOURCE_COMMIT" "${RUNTIME_ARGS[@]}" > "$WORK_DIR/bundle-validation.json"
+python3 "$SCRIPT_DIR/stage-config.py" require-no-source-pack \
+  --root "$APP" > "$WORK_DIR/built-source-pack-exclusion.json"
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
   python3 "$REPO_DIR/scripts/legado-ios/verify-native-exports.py" --executable "$APP/YueduReader" --report "$WORK_DIR/reader-native-exports.json"
 fi
@@ -75,7 +79,8 @@ cat > "$OUTPUT/README.txt" <<'TEXT'
 
 本包将有限的 mainJs 书源流程接到本地 Rhino/JVM，正文使用原生 CoreText 阅读器。
 传统规则书源仍使用现有 JavaScriptCore 实现，尚未证明完整 Legado 兼容。
-build-manifest.json 记录了实际来源、普通 JVM JAR、内置书源资源和 IPA 的哈希。
+本包不内置书源，安装后自行导入；更新不会清除已导入的书源和阅读数据。
+build-manifest.json 记录了实际来源、普通 JVM JAR、书源资源未打包的检查结果和 IPA 的哈希。
 本包最低 iOS 18。应用账号、会员、遥测及 CloudKit 关闭；不提供上游官方服务。
 本项目与 Legado、Yuedu Reader 官方无关，也未获其背书。许可证和源码义务分别按组件核对。
 小范围分享同样需要许可和对应源码；当前完整 JVM 包的再分发核验未完成，请勿直接转发旧包。
@@ -85,7 +90,8 @@ else
 cat > "$OUTPUT/README.txt" <<'TEXT'
 本地书架（unsigned，独立修改版）
 
-本包提供 CoreText 阅读器和 JavaScriptCore 书源流程，原生界面基于 Yuedu Reader。
+这是用于验证 CoreText 阅读器和 JavaScriptCore 书源流程的构建配置，不另设用户发行版本。
+本包不内置书源；原生界面基于 Yuedu Reader。
 本项目与原项目官方无关，也未获其背书。工程默认使用独立 App 标识；构建清单记录实际是否需要标识覆盖。
 实验性 JVM 尚未接入阅读主流程；本包不代表 Legado 全功能已迁移。
 可安装后尝试导入本地书、导入书源和搜索阅读；本轮只证明编译打包，未逐项验收这些功能。

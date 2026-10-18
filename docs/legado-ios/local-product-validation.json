@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "local-product-cloud-validation-pending",
+  "verifiedOn": "2026-10-18",
+  "overallVerdict": "pending_actual_artifacts_and_case_metadata",
+  "runs": [
+    {
+      "runId": 39126993019,
+      "tag": "reader-smoke-5a27219",
+      "sourceCommit": "5a272190fda65fa7ebababc919f0399c71f2b459",
+      "status": "in_progress",
+      "conclusion": null,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39126993019",
+      "startedAtUTC": "2026-10-18T12:22:13Z",
+      "checkedAtUTC": "2026-10-18T13:24:02.055532+00:00",
+      "elapsedMinutesAtObservation": 61.82,
+      "jobs": [
+        {
+          "id": 117674088655,
+          "status": "in_progress",
+          "conclusion": null,
+          "activeSteps": [
+            {
+              "number": 7,
+              "name": "Execute configuration, source paging, TXT and loopback JSC reader cases",
+              "status": "in_progress",
+              "conclusion": null,
+              "startedAtUTC": "2026-10-18T12:23:27Z"
+            }
+          ]
+        }
+      ],
+      "requiredPassingCounts": {
+        "configuration": 9,
+        "localProduct": 27,
+        "paging": 12,
+        "txtUI": 1,
+        "onlineUI": 1
+      },
+      "artifactAudit": "not_available_while_running",
+      "actualCaseMetadataAudited": false,
+      "firstRealFailure": null,
+      "deliveryPolicy": "historical_only_not_for_delivery",
+      "localMetadataEvidence": {
+        "path": ".build/cloud-evidence/run-39126993019/observations/20261018T132402Z.json",
+        "bytes": 18603,
+        "sha256": "47813eac5c3793348861c02cbff58cf6cacc938fc063eaff35e7b5665a6da81f"
+      }
+    },
+    {
+      "runId": 39128839268,
+      "tag": "reader-smoke-b160788",
+      "sourceCommit": "b1607881a27135b06d6945af380a19f22dbe1daf",
+      "status": "in_progress",
+      "conclusion": null,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39128839268",
+      "startedAtUTC": "2026-10-18T12:48:36Z",
+      "checkedAtUTC": "2026-10-18T13:24:02.055532+00:00",
+      "elapsedMinutesAtObservation": 35.43,
+      "jobs": [
+        {
+          "id": 117679616108,
+          "status": "in_progress",
+          "conclusion": null,
+          "activeSteps": [
+            {
+              "number": 7,
+              "name": "Execute configuration, source paging, TXT and loopback JSC reader cases",
+              "status": "in_progress",
+              "conclusion": null,
+              "startedAtUTC": "2026-10-18T12:49:34Z"
+            }
+          ]
+        }
+      ],
+      "requiredPassingCounts": {
+        "configuration": 9,
+        "localProduct": 41,
+        "paging": 12,
+        "txtUI": 1,
+        "onlineUI": 1
+      },
+      "artifactAudit": "not_available_while_running",
+      "actualCaseMetadataAudited": false,
+      "firstRealFailure": null,
+      "deliveryPolicy": "test_only_no_IPA_distribution",
+      "localMetadataEvidence": {
+        "path": ".build/cloud-evidence/run-39128839268/observations/20261018T132402Z.json",
+        "bytes": 18607,
+        "sha256": "3b36b422c9cc7426852b7ab32f4aac3d3faffc63c35f19db7d0db38e00086993"
+      }
+    }
+  ],
+  "acceptanceBoundary": {
+    "actualSwiftCompilationClaimed": false,
+    "fontsRegisteredOnSimulatorClaimed": false,
+    "cachedTXTExportTestsClaimed": false,
+    "readingUIClaimed": false,
+    "realBookSourcesValidated": false,
+    "physicalDeviceValidationPassed": false,
+    "fullLegadoParityEstablished": false,
+    "IPAForDistributionProducedByTheseSmokeRuns": false
+  },
+  "notes": [
+    "This observation records workflow metadata only, not a compilation or test verdict.",
+    "Step 7 includes five sequential XCTest groups and initial dependency compilation; an in-progress step does not identify its internal current phase.",
+    "Live job logs were unavailable during the previous read; repeated log-404 polling was stopped.",
+    "The old 5a27219 run is preserved only as historical evidence. The b160788 smoke runs the branded local product, not a releasable IPA.",
+    "Distribution and private-source packaging remain outside these smoke results."
+  ]
+}

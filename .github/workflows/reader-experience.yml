@@ -73,7 +73,7 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This package retains Yuedu's complete reader UI, CoreText renderer and existing JavaScriptCore source route. The experimental JVM is not integrated into this reading path and is not compiled here.
+          This source-only validation configuration checks the native CoreText reader and existing JavaScriptCore source route without compiling the experimental JVM. It is not a separate user release. Reader packages contain no built-in book sources; users import sources in the app.
           The Release iPhoneOS app and both original extensions are compiled without signing, using synthetic backend configuration and local-experience mode. Account/cloud/subscription services are not configured.
           Unsigned IPA uploads are limited to private repositories while redistribution review remains incomplete. A private self-test artifact is not a clearance to share the package. This run checks compilation/packaging; it does not claim Simulator or physical-device functional acceptance. Inspect the build manifest for exact source, version and IPA SHA256.
           TEXT
