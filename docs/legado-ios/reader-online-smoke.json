@@ -23,28 +23,52 @@
     "listenAddress": "127.0.0.1",
     "appOrigin": "http://localhost:18769",
     "cacheIsolation": "A new server UUID in every source, search, detail, TOC and chapter URL",
-    "routes": ["sources.json", "search", "book.html", "toc.html", "chapter0.html", "chapter1.html"],
+    "routes": [
+      "sources.json",
+      "search",
+      "book.html",
+      "toc.html",
+      "chapter0.html",
+      "chapter1.html"
+    ],
     "checks": "Current process/source/run ID, actual GET/query/request headers and empty body, successful complete responses and exact rebuilt response bytes/SHA256; all six routes required, unknown routes rejected",
     "repeatPolicy": "Retain known successful refresh/prefetch duplicates",
     "cleanup": "Owned child process is stopped and reaped after success or failure; command status and trace are retained"
   },
   "portableChecks": {
-    "fixtureTestsPassed": 8,
-    "orchestrationEvidenceGuardTestsPassed": 6,
+    "fixtureTestsPassed": 12,
+    "orchestrationEvidenceGuardTestsPassed": 7,
     "realProcessAndSixRoutePreflight": "passed on Windows; no XCTest/UI execution",
     "failedCommandExitAndProcessCleanupPreflight": "passed on Windows; no XCTest/UI execution",
     "swiftSyntax": "passed; type checking and runtime execution require cloud Xcode"
   },
-  "simulatorExecution": "not_run_due_to_failed_txt_prerequisite",
+  "simulatorExecution": "configuration_and_txt_passed_online_ui_failed_test_selector",
   "cloudEvidence": {
-    "runId": 39085769454,
-    "sourceCommit": "4b648a9bae806a6eb43e012447269a940e67bacf",
-    "artifactId": 12121033216,
-    "artifactZipSHA256": "55aed30e034b4610e415ae12a1db739c864609e97f3794693c2a0a59789bf347",
+    "runId": 39106322210,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39106322210",
+    "jobId": 117612827330,
+    "sourceCommit": "8cd67c3de201780a08c172d6dd7406afc774834f",
+    "tag": "reader-smoke-8cd67c3",
+    "status": "completed_failure",
     "configurationTestsPassed": 7,
-    "txtUITestsFailed": 1,
-    "onlineUITestsExecuted": 0,
-    "meaning": "The local StoreKit repair allowed the real first TXT chapter to render. Directory-row selection then failed, so the sequential online UI case never ran. No online trace or acceptance is claimed."
+    "configurationTestsFailed": 0,
+    "configurationTestsSkipped": 0,
+    "txtUITestsPassed": 1,
+    "txtUITestsFailed": 0,
+    "txtUITestsSkipped": 0,
+    "onlineUITestsExecuted": 1,
+    "onlineUITestsPassed": 0,
+    "onlineUITestsFailed": 1,
+    "onlineUITestsSkipped": 0,
+    "fixtureStartupPassed": true,
+    "completeSixRouteTracePassed": false,
+    "onlineJSCReaderSimulatorPassed": false,
+    "independentAudit": {
+      "path": ".build/cloud-evidence/run-39106322210/independent-evidence-audit.json",
+      "bytes": 34969,
+      "sha256": "f20cdcbaff40b7627a6fe477e073ad1ef7ce67f24ad5159336a3ca3b879c5eac"
+    },
+    "meaning": "The fixed fixture starts and actual source download/import review plus the singular success UI are observed. The online test fails at its plural success-label selector; only sources.json is requested. Search/detail/TOC/JSC-body acceptance remains unproven. The actual seven configuration cases and unchanged TXT reading loop pass."
   },
   "configuration": "Debug",
   "deliveredReleaseIPAModified": false,
@@ -52,5 +76,443 @@
   "jvmIntegratedIntoReading": false,
   "physicalDeviceAcceptance": false,
   "realSiteCompatibilityEstablished": false,
-  "fullLegadoParityEstablished": false
+  "fullLegadoParityEstablished": false,
+  "verifiedOn": "2026-10-18",
+  "simulatorAttempts": [
+    {
+      "runId": 39085769454,
+      "sourceCommit": "4b648a9bae806a6eb43e012447269a940e67bacf",
+      "artifactId": 12121033216,
+      "artifactZipSHA256": "55aed30e034b4610e415ae12a1db739c864609e97f3794693c2a0a59789bf347",
+      "configurationTestsPassed": 7,
+      "txtUITestsFailed": 1,
+      "onlineUITestsExecuted": 0,
+      "meaning": "The local StoreKit repair allowed the real first TXT chapter to render. Directory-row selection then failed, so the sequential online UI case never ran. No online trace or acceptance is claimed.",
+      "status": "failed_txt_prerequisite_before_online_execution"
+    },
+    {
+      "runId": 39088051559,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39088051559",
+      "sourceCommit": "c6c89b88fca61221429c5b967d78ffadd91a52eb",
+      "artifactId": 12122388118,
+      "artifactZipBytes": 3129846,
+      "artifactZipSHA256": "ed121ddc6fc3cce4b73a0338c767ae0b1873950794c1e6fe4810848f8c3ed4cc",
+      "status": "txt_passed_online_fixture_startup_failed",
+      "configurationTestsPassed": 7,
+      "configurationTestsSkipped": 0,
+      "txtUITestsPassed": 1,
+      "txtUITestsSkipped": 0,
+      "onlineUITestsExecuted": 0,
+      "meaning": "The original TXT import, actual TOC selection and centered body/restored-progress assertions passed. The fixture child remained alive but did not publish readiness before the unchanged 15-second deadline. Its empty log has no stack, so the later run does not directly prove the old resolver state."
+    },
+    {
+      "runId": 39102495655,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39102495655",
+      "jobId": 117601449975,
+      "sourceCommit": "a52e295035e3cca02e58b5be09bbab40b1321ef0",
+      "status": "configuration_and_txt_passed_online_fixture_construction_failed",
+      "workflowConclusion": "failure",
+      "artifact": {
+        "id": 12128370731,
+        "name": "reader-smoke-evidence",
+        "bytes": 3152823,
+        "sha256": "10a088500dfd0cf0550be478d4427878a1c4aa25ce5248c7fe99c85f035525c3",
+        "independentlyVerified": true
+      },
+      "independentAudit": {
+        "path": ".build/cloud-evidence/run-39102495655/independent-evidence-audit.json",
+        "bytes": 13118,
+        "sha256": "e1679d6d77bb971dc93f1651eb044807ecb8ff851febd960ddc90a04aac2b07a"
+      },
+      "configuration": {
+        "path": ".build/cloud-evidence/run-39102495655/reader-smoke/cloudkit-summary.json",
+        "bytes": 984,
+        "sha256": "3ff5765361019ea20b1c70def56706a0ccdb60030298a42c275ddafcf1f56ee0",
+        "totalTestCount": 7,
+        "passedTests": 7,
+        "failedTests": 0,
+        "skippedTests": 0
+      },
+      "TXTReaderUI": {
+        "path": ".build/cloud-evidence/run-39102495655/reader-smoke/txt-ui-summary.json",
+        "bytes": 984,
+        "sha256": "92f3a35e692fcf541660d81d32c538da2a095b29c2842e5651bb18d0b98422d9",
+        "totalTestCount": 1,
+        "passedTests": 1,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "testIdentifier": "ReaderLocalSmokeUITests/testTXTImportTOCAndProgressSurviveRelaunch()",
+        "testSourceSHA256": "1d1e19fa25d96a493a81ffa6794773fe7613fa023fda551b47561cf8f17ad9cf",
+        "independentResult": {
+          "path": ".build/cloud-evidence/run-39102495655/reader-smoke/result.json",
+          "bytes": 4330,
+          "sha256": "f64d8d166295599c10911338c4637d7786205b4209a13748816e12fcfe233c6a"
+        },
+        "attachment": {
+          "path": ".build/cloud-evidence/run-39102495655/attachments/TXT-reader-smoke-evidence.json",
+          "bytes": 273,
+          "sha256": "923334d98dec5d3839e87b0c6073eb3eeab0a7ad9ea75c6f3ec7a26b98d468a5"
+        },
+        "screenshotsVisuallyReviewed": [
+          {
+            "path": ".build/cloud-evidence/run-39102495655/attachments/02-first-chapter-rendered.png",
+            "bytes": 317299,
+            "sha256": "a0f2ddcfabbd95c375d6a2c266fe28b0d9766380f6d8e16d2f3b1557336b2e37"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39102495655/attachments/03-target-chapter-rendered.png",
+            "bytes": 376224,
+            "sha256": "1ea3bd29e383bbf1cb871fc70ed0c480b2de4784c52b71cd1ad1a709b1165d6f"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39102495655/attachments/05-restored-target-chapter.png",
+            "bytes": 308001,
+            "sha256": "ac8ca3d1c3a03f9330ae739bed1f74aff7e91981de75ddf63dd343992f5557db"
+          }
+        ],
+        "firstChapterBodyVisible": true,
+        "actualTOCSelectionPassed": true,
+        "progressRestoredAfterRelaunch": true,
+        "savedProgressPercent": 50,
+        "restoredBodyMarker": "LOCAL_READER_SMOKE_RESUME"
+      },
+      "online": {
+        "status": "not_executed",
+        "executedTests": 0,
+        "fixtureStage": "construct.before",
+        "processRecord": {
+          "path": ".build/cloud-evidence/run-39102495655/reader-smoke/online-fixture-process.json",
+          "bytes": 440,
+          "sha256": "adbfcb399971ba249b5e8c73887231a1f0272525eea443b56013caaf5d2d860e"
+        },
+        "serverLog": {
+          "path": ".build/cloud-evidence/run-39102495655/reader-smoke/online-fixture-server.log",
+          "bytes": 872,
+          "sha256": "318263c92e5233fe40a6341f8651b5f9973a4041c8100ff3b97ddbef7429e592"
+        },
+        "fixtureStopped": true,
+        "ready": null,
+        "commandExitCode": null,
+        "HTTPTracePresent": false,
+        "onlineUIResultPresent": false,
+        "wholeOwnedRunnerDurationSeconds": 15.068284,
+        "actualStackAtEightSeconds": [
+          "socket.py:808 in getfqdn -> gethostbyaddr(name)",
+          "http/server.py:138 in server_bind",
+          "socketserver.py:457 in __init__",
+          "online-source-fixture.py:105 in __init__",
+          "online-source-fixture.py:304 in main",
+          "online-source-fixture.py:328 in <module>"
+        ],
+        "directObservation": "The 8-second stack shows this run inside reverse DNS during HTTPServer construction. No construct.after or ready-publishing stage was reached; the child was stopped after the original 15-second readiness deadline.",
+        "unknown": "The OS resolver internal cause is not established.",
+        "primarySources": [
+          "https://github.com/python/cpython/blob/v3.12.10/Lib/socket.py#L794-L818",
+          "https://github.com/python/cpython/blob/v3.12.10/Lib/http/server.py#L135-L139"
+        ],
+        "repairScope": "Only the owned synthetic FixtureServer server_bind now calls TCPServer.server_bind and sets known localhost/server_port. Bind127.0.0.1, port18769, port-conflict failure, 15-second deadline, source URLs, real HTTP trace contract and UI assertions remain unchanged."
+      }
+    },
+    {
+      "runId": 39106322210,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39106322210",
+      "jobId": 117612827330,
+      "sourceCommit": "8cd67c3de201780a08c172d6dd7406afc774834f",
+      "tag": "reader-smoke-8cd67c3",
+      "status": "configuration_and_txt_passed_online_ui_failed",
+      "workflowConclusion": "failure",
+      "artifact": {
+        "id": 12129254650,
+        "name": "reader-smoke-evidence",
+        "path": ".build/cloud-evidence/run-39106322210/reader-smoke-evidence.zip",
+        "bytes": 20470583,
+        "sha256": "e31e216e013f35cb485ca84395a72b22f736760d6fbcb6f9b2de1ac0e9688c05",
+        "apiDigestMatched": true,
+        "zipMembers": 251,
+        "allExtractedMembersByteIdentical": true
+      },
+      "independentAudit": {
+        "path": ".build/cloud-evidence/run-39106322210/independent-evidence-audit.json",
+        "bytes": 34969,
+        "sha256": "f20cdcbaff40b7627a6fe477e073ad1ef7ce67f24ad5159336a3ca3b879c5eac"
+      },
+      "configuration": {
+        "path": ".build/cloud-evidence/run-39106322210/reader-smoke/cloudkit-summary.json",
+        "bytes": 984,
+        "sha256": "635e760526b19edd3880c1d65b1ed19431da032b9ee1a8beeb42089927a9c235",
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0,
+        "expectedFailures": 0
+      },
+      "TXTReaderUI": {
+        "path": ".build/cloud-evidence/run-39106322210/reader-smoke/txt-ui-summary.json",
+        "bytes": 984,
+        "sha256": "a89546531611523f5bb5e5a9380a26a1d63f0a0b824dcfd5a89a73b2e590ddaa",
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "expectedFailures": 0,
+        "independentResult": {
+          "path": ".build/cloud-evidence/run-39106322210/reader-smoke/result.json",
+          "bytes": 4330,
+          "sha256": "4eb45167ce01577efcce089df78be40ab6238f525bb428eea702518f2e5d8ae8"
+        },
+        "attachment": {
+          "path": ".build/cloud-evidence/run-39106322210/attachments/txt-ui-TXT-reader-smoke-evidence.json",
+          "bytes": 273,
+          "sha256": "82d0fa4b0e44ec07967df57353eb0024f02e9c11c8d970087e667155186d5aae"
+        },
+        "testSourceSHA256": "1d1e19fa25d96a493a81ffa6794773fe7613fa023fda551b47561cf8f17ad9cf",
+        "firstChapterBodyVisible": true,
+        "actualTOCSelectionPassed": true,
+        "progressRestoredAfterRelaunch": true,
+        "savedProgressPercent": 50,
+        "restoredBodyMarker": "LOCAL_READER_SMOKE_RESUME",
+        "screenshotsVisuallyReviewed": [
+          {
+            "suite": "txt-ui",
+            "name": "02-first-chapter-rendered",
+            "path": ".build/cloud-evidence/run-39106322210/attachments/txt-ui-02-first-chapter-rendered.png",
+            "bytes": 316363,
+            "sha256": "af63abd3606219513a57e5fd03f7b579f14a5135ca92387589170184fcc43772",
+            "payloadRef": "0~3gA7o-hCYzytfwSd_aNUAQC8AcdZoZVXwi82mpIkMBOn_Pcg63o3Jnzxb9fxKGfawVxx3OCQ0rDJu75E6Ua2ig==",
+            "timestamp": "2026-10-18T07:45:07.836+0000"
+          },
+          {
+            "suite": "txt-ui",
+            "name": "03-target-chapter-rendered",
+            "path": ".build/cloud-evidence/run-39106322210/attachments/txt-ui-03-target-chapter-rendered.png",
+            "bytes": 375022,
+            "sha256": "9382fdfce12b7a6f020d78c9b738642e1d3bdcec20c41b6210c9edd454b3fe2b",
+            "payloadRef": "0~NX3ejVi9XwmVeP8bzaY8jKR7SGPU-gHmw4as4vWdPFhbe1bK4JEMjlhEjhAhi3mYU9zXMw5Lb5d8Vqs9OzC_hw==",
+            "timestamp": "2026-10-18T07:45:15.368+0000"
+          },
+          {
+            "suite": "txt-ui",
+            "name": "05-restored-target-chapter",
+            "path": ".build/cloud-evidence/run-39106322210/attachments/txt-ui-05-restored-target-chapter.png",
+            "bytes": 307586,
+            "sha256": "58bce3739ad76d910d483034431da71f734f7109437b374a67840cc91ce2464c",
+            "payloadRef": "0~gorWb65-rRlvg3UatSUlcSBtpFDf3oKgmvo1m1D8O2j6JBjLsAr7YPBEtDIAjqbeBVyHKE2lXiYfI6otq7Iedw==",
+            "timestamp": "2026-10-18T07:45:59.154+0000"
+          }
+        ]
+      },
+      "online": {
+        "status": "failed_test_selector_after_actual_import",
+        "executedTests": 1,
+        "passedTests": 0,
+        "failedTests": 1,
+        "skippedTests": 0,
+        "caseIdentifier": "ReaderBookSourceSmokeUITests/testHTTPSourceImportSearchDetailsTOCAndJSCNativeReading()",
+        "caseDurationSeconds": 291.3045200109482,
+        "countEvidence": "Original xcresult ActionsInvocationRecord metrics testsCount=1/testsFailedCount=1, matching the single Failure case in ActionTestPlanRunSummaries and ActionTestSummary. A later runner-restart log with0tests does not erase the executed failed case.",
+        "rawLog": {
+          "path": ".build/cloud-evidence/run-39106322210/reader-smoke/online-ui-tests.log",
+          "bytes": 685619,
+          "sha256": "5aaad8669ebaa709c110f2f64bc8640acd8e1e8b6d3de4738c591bcd6d534332"
+        },
+        "officialSummaryJSONPresent": false,
+        "originalXCResultCaseMetadata": {
+          "path": ".build/cloud-evidence/run-39106322210/online-ui-actual-cases.json",
+          "bytes": 889,
+          "sha256": "5eed476ffd15344e2d3694f849d22f98ede9e0ba9ca1dc52d9166af43664ed6e"
+        },
+        "originalXCResultMetadataDecoding": "Independently decoded original zstd payloads and their length-prefixed typed records on Windows; no xcresulttool or Simulator was run locally. Original source payloads remain unchanged.",
+        "firstFailure": {
+          "file": "Tests/iOS-UI/ReaderBookSourceSmokeUITests.swift",
+          "line": 86,
+          "type": "Assertion Failure",
+          "expectedStaticText": "Imported 1 sources.",
+          "actualVisibleStaticText": "Imported 1 source.",
+          "actualVisibleButton": "Done",
+          "explanation": "The test waits for a plural label after importing one source; the actual English singular success result is present. No product import failure is established by this assertion.",
+          "rawFailureSummary": {
+            "path": ".build/cloud-evidence/run-39106322210/decoded-records/online-ui-summary-values.json",
+            "bytes": 461583,
+            "sha256": "3fece623f2b2c4ebbaf657b0f8b2db7c32268cdba8899935527f4f04bafd7d47"
+          }
+        },
+        "fixtureStartupPassed": true,
+        "fixtureRunId": "0ce31079-8465-456a-94db-1630b4ed7fb4",
+        "readyPublished": true,
+        "fixtureStopped": true,
+        "issue": null,
+        "processRecord": {
+          "path": ".build/cloud-evidence/run-39106322210/reader-smoke/online-fixture-process.json",
+          "bytes": 896,
+          "sha256": "64936eccdf7aad54a1bbcc314cb717ff8ff1b249048c00dab076ac2797d115aa"
+        },
+        "serverLog": {
+          "path": ".build/cloud-evidence/run-39106322210/reader-smoke/online-fixture-server.log",
+          "bytes": 762,
+          "sha256": "8a1daf65fa1e9e8ff54baebc6923ab66d6efd9875d3e3640df119aed43d226d4"
+        },
+        "trace": {
+          "path": ".build/cloud-evidence/run-39106322210/reader-smoke/online-fixture-trace.json",
+          "bytes": 3065,
+          "sha256": "45f0699336b253abfbe52b8f2e7f76ed40756b5e295378f59a575f2fafee2ed4"
+        },
+        "requestsVerified": [
+          {
+            "sequence": 1,
+            "method": "GET",
+            "path": "/fixture/0ce31079-8465-456a-94db-1630b4ed7fb4/sources.json",
+            "status": 200,
+            "responseBytes": 801,
+            "responseSHA256": "e8304c3a84db0043426cd5aa9e3277438fe4a49794baaa16130fe451108d7986",
+            "originalFixtureResponseBytesMatched": true,
+            "writeCompleted": true
+          }
+        ],
+        "missingRequiredRoutes": [
+          "search",
+          "book.html",
+          "toc.html",
+          "chapter0.html",
+          "chapter1.html"
+        ],
+        "completeSixRouteTracePassed": false,
+        "sourceReviewActuallyVisible": true,
+        "singularImportSuccessActuallyVisible": true,
+        "searchOrDetailBodyActuallyVisible": false,
+        "onlineJSCBodyAssertionPassed": false,
+        "reviewScreenshot": {
+          "suite": "online-ui",
+          "name": "online-01-real-source-import-review",
+          "path": ".build/cloud-evidence/run-39106322210/attachments/online-ui-online-01-real-source-import-review.png",
+          "bytes": 208453,
+          "sha256": "19f7bff0783e9aaaf25b9ec65e2f3fe68b17b6261a3dc285da96baca3b96e00e",
+          "payloadRef": "0~beHMTNbylgTGxeD0pJQZjOCmqZlULHyvNvCtbkS0Yt2_6LF-KPDksv9oIQttXcdjlMNBXvoVekd-wQeOzBJ-KQ==",
+          "timestamp": "2026-10-18T07:50:10.224+0000"
+        },
+        "laterScreenshotWithMisleadingName": {
+          "suite": "online-ui",
+          "name": "online-02-http-search-result",
+          "path": ".build/cloud-evidence/run-39106322210/attachments/online-ui-online-02-http-search-result.png",
+          "bytes": 115249,
+          "sha256": "00ec1840e0c619d9231eff8197df05a5f402ee424fcdf2c023d0400d5f415d85",
+          "payloadRef": "0~LaVuakbVhBtq-1tbsjg9dpuCx1NS4uO2J2qrpcosWF8yL1GTHa7ED0cCDYkv1iwN_NmUm5FVtL2j_D1VGHikVg==",
+          "timestamp": "2026-10-18T07:51:47.269+0000"
+        },
+        "laterScreenshotWithMisleadingNameMeaning": "Visually still the Import Source success page with Imported1source and Done; its filename does not establish search navigation.",
+        "postFailureBoundary": "The raw log has no further Synthesize event after the first failed assertion. Later tap/query messages and screenshots therefore do not establish a separate Done-button or search product defect.",
+        "repairBoundary": "The first assertion needs the actual English singular label. This evidence does not claim a repaired full online reading loop or lower any HTTP/body/visibility gate."
+      }
+    }
+  ],
+  "startupPreflights": [
+    {
+      "runId": 39106137821,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39106137821",
+      "jobId": 117612257458,
+      "sourceCommit": "8cd67c3de201780a08c172d6dd7406afc774834f",
+      "tag": "reader-fixture-startup-8cd67c3",
+      "status": "passed",
+      "executionPlatform": "macos-host-python",
+      "macOSVersion": "15.7.9",
+      "python": "CPython 3.12.10",
+      "artifact": {
+        "id": 12128935423,
+        "name": "reader-fixture-startup-evidence",
+        "localPath": "startup-evidence.zip",
+        "bytes": 1921,
+        "sha256": "efd038e9f1a46e9389aba2258da8e143138b5125335c5cc283b0233ba170e738",
+        "apiDigestMatched": true,
+        "allZipMembersExactlyMatchExtractedFiles": true,
+        "fileCount": 5
+      },
+      "independentAudit": {
+        "path": ".build/cloud-evidence/run-39106137821/independent-startup-audit.json",
+        "bytes": 4673,
+        "sha256": "fdf2c8989cc68fd490e40820bfe9b6f5bf0fbfcefb6f2b15ca95ab9fd4cc6d46"
+      },
+      "files": [
+        {
+          "path": "evidence/online-fixture-process.json",
+          "bytes": 895,
+          "sha256": "9e126bed277667a629536b0bb3bedf20d1b1883c98540466d2f67b579616d252"
+        },
+        {
+          "path": "evidence/online-fixture-ready.json",
+          "bytes": 478,
+          "sha256": "2352890d29a2b43287d1efffa096480b8ed91c347135c76d824cbb141de39fcd"
+        },
+        {
+          "path": "evidence/online-fixture-server.log",
+          "bytes": 762,
+          "sha256": "1ef0f9f9c8d4404b8346de4ea698661fda1056cb6ccdb5fb58ade8bc74da9f2e"
+        },
+        {
+          "path": "evidence/online-fixture-trace.json",
+          "bytes": 533,
+          "sha256": "8280b7bede0cb1810f74b1a9893151f28cc0a4395890e7672853a7c7dab4f04e"
+        },
+        {
+          "path": "evidence/python-version.log",
+          "bytes": 97,
+          "sha256": "d12aa8c48fb2b51d31b0e2bab32d0f3a74fe97d1cd283c6bf025722b5ec92804"
+        }
+      ],
+      "sourceFilesReadFromExactGitCommit": [
+        {
+          "path": ".github/workflows/reader-fixture-startup.yml",
+          "sourceCommit": "8cd67c3de201780a08c172d6dd7406afc774834f",
+          "bytes": 2066,
+          "sha256": "58990865690a9d4db0652f2f62a817b71cb94d976cb1d993b7d3f119da95b919"
+        },
+        {
+          "path": "scripts/reader-experience/run-online-smoke.py",
+          "sourceCommit": "8cd67c3de201780a08c172d6dd7406afc774834f",
+          "bytes": 8394,
+          "sha256": "9718b4846e7632e126faa212728e19e2659d5a11702cfd0cf483f8c07bb45bea"
+        },
+        {
+          "path": "scripts/reader-experience/online-source-fixture.py",
+          "sourceCommit": "8cd67c3de201780a08c172d6dd7406afc774834f",
+          "bytes": 16947,
+          "sha256": "5342372d6354ea9ad278dd44585159072e5ab2e075394f19569b011e849540ca"
+        }
+      ],
+      "fixtureRunId": "f4e61c94-30ed-40b8-aa0c-d6497560879c",
+      "startedAtUTC": "2026-10-18T07:01:47.807338+00:00",
+      "completedAtUTC": "2026-10-18T07:01:47.993150+00:00",
+      "wholeOwnedRunnerDurationSeconds": 0.185812,
+      "readinessDurationUpperBoundSeconds": 0.185812,
+      "readinessDeadlineSeconds": 15,
+      "allStartupStagesPresentInOrder": true,
+      "noStartupTimeoutOrStackDump": true,
+      "healthValidation": "The exact-source original runner only returns from wait_ready after a real loopback GET /health response exactly matches the readiness JSON. ready is non-null and no issue was recorded; the raw health response is not separately retained.",
+      "command": [
+        "python",
+        "-c",
+        "pass"
+      ],
+      "commandExitCode": 0,
+      "fixtureStopped": true,
+      "issue": null,
+      "businessRequests": 0,
+      "configurationTestsExecuted": 0,
+      "uiTestsExecuted": 0,
+      "jvmValidationPassed": false,
+      "deviceValidationPassed": false,
+      "meaning": "The original runner completed process launch, readiness plus real HTTP health validation, no-op execution, trace collection and cleanup in 0.185812 seconds. This is an upper bound on readiness, not a separate readiness measurement. It is not UI or reading acceptance."
+    }
+  ],
+  "evidenceLimits": [
+    "Existing Yuedu/JavaScriptCore and CoreText Debug Simulator paths only; no JVM integration or full Legado runtime parity is established.",
+    "The latest complete UI run executed seven configuration cases and one TXT case successfully; its one online UI case failed after import at the test success-label selector. Search/detail/TOC/JSC-body acceptance remains unproven.",
+    "The standalone synthetic fixture startup preflight executes zero UI/configuration tests and no book-reading requests.",
+    "No physical device, delivered Release IPA or real-site book source is validated here.",
+    "Only synthetic fixtures and run/source/hash metadata are recorded; no private source or private IPA is included."
+  ],
+  "nextOnlineExecution": {
+    "status": "pending_new_run",
+    "runId": null,
+    "sourceCommit": null,
+    "repairScope": "Only the singular Imported1source test selector; retain the original deadlines, real six-route HTTP trace and centered JSC-body assertions. The failed8cd audit remains unchanged."
+  }
 }

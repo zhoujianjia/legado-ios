@@ -83,7 +83,7 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
         XCTAssertTrue(incomingSource.waitForExistence(timeout: 20), "The real download must reach import review.\n\(app.debugDescription)")
         capture(app, name: "online-01-real-source-import-review")
         tapReady(app.navigationBars.buttons["Import"].firstMatch, app: app)
-        XCTAssertTrue(app.staticTexts["Imported 1 sources."].firstMatch.waitForExistence(timeout: 15), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Imported 1 source."].firstMatch.waitForExistence(timeout: 15), app.debugDescription)
         tapReady(app.buttons["Done"].firstMatch, app: app)
 
         tapReady(app.tabBars.buttons["Search"].firstMatch, app: app)
