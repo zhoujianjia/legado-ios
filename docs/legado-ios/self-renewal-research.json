@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "read-only-prototype-awaiting-xcode-and-device-validation",
+  "status": "simulator-verified-read-only-prototype-awaiting-device-transport",
   "product": "single-reader",
   "requiredConditions": {
     "freeApplePersonalTeam": true,
@@ -68,7 +68,7 @@
       "ui": 1
     },
     "implementationCommit": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
-    "simulatorExecution": "retest-pending-not-yet-passed",
+    "simulatorExecution": "passed-and-downloaded-evidence-reviewed",
     "simulatorRunURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39146602853",
     "simulatorSourceTag": "reader-renewal-97d9f0f",
     "xcresultFormatReference": "https://chromium.googlesource.com/chromium/src/+/a8420d0c885e1d5dc4643994e1957595636afd8d/ios/build/bots/scripts/xcode_log_parser.py#898",
@@ -122,7 +122,62 @@
         "probeTestsAccepted": false
       }
     ],
-    "fixtureReview": "97d9f0f also preserves fixture expiry and closes request/stop waiters on terminal paths; actual execution remains pending."
+    "fixtureReview": "Corrected fixture terminal paths compiled and executed in the passing eight-case suite.",
+    "actualSimulatorCases": {
+      "unit": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "expectedFailures": 0,
+        "caseIdentifiers": [
+          "SelfRenewalTransportProbeTests/acceptsBinaryPropertyListResponse",
+          "SelfRenewalTransportProbeTests/cancellationAndPreCancellationFinishOnce",
+          "SelfRenewalTransportProbeTests/confirmsQueryTypeWithoutExportingPrivateFields",
+          "SelfRenewalTransportProbeTests/normalizesErrorsAndRejectsWrongService",
+          "SelfRenewalTransportProbeTests/recordsNetworkFailureWithoutCredentialClaims",
+          "SelfRenewalTransportProbeTests/rejectsInvalidFrameLengths",
+          "SelfRenewalTransportProbeTests/rejectsMalformedAndTruncatedResponses",
+          "SelfRenewalTransportProbeTests/tcpConnectionAloneIsNotServiceSuccess"
+        ]
+      },
+      "ui": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "expectedFailures": 0,
+        "caseIdentifiers": [
+          "SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"
+        ]
+      }
+    },
+    "simulatorArtifact": {
+      "id": 12144238944,
+      "path": ".build/cloud-evidence/run-39146602853/renewal-passed-evidence.zip",
+      "bytes": 2108904,
+      "sha256": "7f10b5eddafd9245579db91def775186197cdcfd6bb5ea7c39cf5a6e045091a8",
+      "apiSHA256Matched": true
+    },
+    "simulatorResult": {
+      "path": ".build/cloud-evidence/run-39146602853/artifact/reader-renewal-probe/result.json",
+      "bytes": 8388,
+      "sha256": "ff341c170831805a47d80928f962c192051ef57ea5d110cd25a8c283f02e9aea"
+    },
+    "sourceFilesByteMatchedToTestedCommit": 13,
+    "evidenceFilesHashMatched": 9,
+    "projectIdentityReplacementCount": 0,
+    "rawTestRecordsIndependentlyReviewed": "Exact testNodes, raw per-case log records and SQLite TestCaseRuns agree on eight unit and one UI success.",
+    "uiScreenshot": {
+      "path": ".build/cloud-evidence/run-39146602853/ui-attachment-review/renewal-read-only-probe-result.png",
+      "bytes": 224368,
+      "sha256": "7ba6cfcf094e2b1bbfdd726b01e9c20c7f5f20ab6df024c3d2e999c20fae99b1"
+    },
+    "uiAccessibilityAttachment": {
+      "path": ".build/cloud-evidence/run-39146602853/ui-attachment-review/renewal-read-only-probe-accessibility.txt",
+      "bytes": 12993,
+      "sha256": "0dd9dc9c4888b06ddc7d9033a0cae1980d5e9bfa6e282aac30f5e84468222ddf"
+    },
+    "uiObservation": "Both fixed Simulator loopback endpoints timed out; Unverified and the export entry remain visible. This is not an iPhone transport result.",
+    "evidenceLimit": "The complete built Info.plist was not uploaded, so its producer-reported testedInfoSHA256 cannot be independently recalculated. Source overlay reconstruction and all nine retained evidence hashes match."
   },
   "upstreamSourceLocks": [
     {
@@ -188,10 +243,19 @@
     "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
-    "Compile and run the exact eight service tests and one UI test in Xcode Simulator, retaining raw xcresult evidence.",
     "Deliver a source-free diagnostic build through a permitted private channel and inspect a real iPhone report without a debugger.",
     "If needed, evaluate bounded discovery of only this device's own network endpoint; do not infer all transports from loopback results.",
     "Only after transport is demonstrated, validate an authenticated session, signing, replacement installation, cold launch and preserved data.",
     "Validate background triggering, failure retry and expiry recovery separately before claiming automatic self-renewal."
-  ]
+  ],
+  "completedGates": [
+    "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed."
+  ],
+  "nextDeviceCandidate": {
+    "build": "10",
+    "status": "build-configuration-prepared-not-built",
+    "builtInSources": false,
+    "publicIPAUploadEnabled": false,
+    "privateArtifactChannelRequiredByCurrentPolicy": true
+  }
 }
