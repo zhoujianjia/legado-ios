@@ -18,7 +18,7 @@
 
 build 9 使用源码 `903e90a`，相关 Swift、资源、Info、工程和测试路径与上述受测版本完全一致；仅打包策略及文档有后续改动，因此不重复启动相同的 UI 验证。Release 构建已成功；另行下载并核对构建证据，确认 135 项普通 JVM 测试、23 项打包门槛和源码／成品无书源检查通过，见[build 9 记录](native-reader-experience-build9.json)。公开仓库的 IPA 上传已跳过，没有取得或独立审计 IPA，也没有新版真机验收。
 
-自续签另加手动只读探针：源码 `502ad35` 的[独立模拟器测试](https://github.com/zhoujianjia/legado-ios/actions/runs/39142240830)正在运行，选择 8 项服务测试和 1 项界面测试，不重复上述阅读器用例。探针目前只检查本机固定 lockdown 入口，不执行签名或安装；真机连接、覆盖安装、数据保留和后台续签均未验证，见[研究记录](self-renewal-research.json)。
+自续签另加手动只读探针：前两次构建分别遇到设置页组件参数和测试断言的编译问题，均已修正并保留原记录；探针用例尚未验收。源码 `97d9f0f` 的[独立模拟器重测](https://github.com/zhoujianjia/legado-ios/actions/runs/39146602853)正在运行，仍选择 8 项服务测试和 1 项界面测试，不重复上述阅读器用例。探针目前只检查本机固定 lockdown 入口，不执行签名或安装；真机连接、覆盖安装、数据保留和后台续签均未验证，见[研究记录](self-renewal-research.json)。
 
 ## 历史本地体验包：3.0.0 build 7
 

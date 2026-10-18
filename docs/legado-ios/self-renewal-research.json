@@ -25,37 +25,128 @@
     "screen": "Modules/Features/Settings/SelfRenewalProbeView.swift",
     "entry": "Settings / Advanced / Self-renewal verification",
     "manualStartRequired": true,
-    "endpoints": ["127.0.0.1:62078", "[::1]:62078"],
+    "endpoints": [
+      "127.0.0.1:62078",
+      "[::1]:62078"
+    ],
     "request": "length-prefixed lockdown QueryType only",
     "timeoutSecondsPerEndpoint": 3,
     "maximumReplyBytes": 16384,
     "arbitraryHostInput": false,
     "export": "user-shared local JSON with normalized errors and no raw server reply",
-    "operationsNotPerformed": ["TLS", "StartSession", "Pair", "Apple login", "signing", "installation"],
+    "operationsNotPerformed": [
+      "TLS",
+      "StartSession",
+      "Pair",
+      "Apple login",
+      "signing",
+      "installation"
+    ],
     "coverage": "partial: fixed loopback lockdown endpoints only",
     "negativeResultExcludesOtherTransports": false,
     "successfulQueryProvesRenewal": false
   },
   "verification": {
-    "windowsPortableProbeGuards": {"passed": 10},
-    "windowsExistingSmokeGuards": {"passed": 12},
-    "windowsSwiftSyntaxParse": {"files": 6, "passed": true, "isTypeCheck": false},
-    "localizationKeyParity": {"languages": 5, "passed": true},
+    "windowsPortableProbeGuards": {
+      "passed": 10
+    },
+    "windowsExistingSmokeGuards": {
+      "passed": 12
+    },
+    "windowsSwiftSyntaxParse": {
+      "files": 6,
+      "passed": true,
+      "isTypeCheck": false
+    },
+    "localizationKeyParity": {
+      "languages": 5,
+      "passed": true
+    },
     "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml",
-    "intendedSimulatorCases": {"unit": 8, "ui": 1},
-    "implementationCommit": "502ad353f19f1cc92b18fde21536d305c335df22",
-    "simulatorExecution": "in-progress-not-yet-passed",
-    "simulatorRunURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39142240830",
-    "simulatorSourceTag": "reader-renewal-502ad35",
+    "intendedSimulatorCases": {
+      "unit": 8,
+      "ui": 1
+    },
+    "implementationCommit": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
+    "simulatorExecution": "retest-pending-not-yet-passed",
+    "simulatorRunURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39146602853",
+    "simulatorSourceTag": "reader-renewal-97d9f0f",
     "xcresultFormatReference": "https://chromium.googlesource.com/chromium/src/+/a8420d0c885e1d5dc4643994e1957595636afd8d/ios/build/bots/scripts/xcode_log_parser.py#898",
     "physicalDeviceExecution": "not-performed",
-    "ipaDelivery": "not-performed"
+    "ipaDelivery": "not-performed",
+    "priorAttempts": [
+      {
+        "commit": "502ad353f19f1cc92b18fde21536d305c335df22",
+        "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39142240830",
+        "status": "failed-before-test-acceptance",
+        "artifact": {
+          "id": 12142612636,
+          "bytes": 970408,
+          "sha256": "1396639dc9d31f8a58a7c46e9db3065e62f6edf0baeca6ceb6fff074456505fd",
+          "downloadedAndHashVerified": true
+        },
+        "rawUnitBuildLog": {
+          "path": ".build/cloud-evidence/run-39142240830/artifact/reader-renewal-probe/unit-tests.log",
+          "bytes": 9804417,
+          "sha256": "13e988014d9247b43c9d823685e64f0154968f77c1cee588377c48b89aea57c6",
+          "uniqueCompilerDiagnostics": 1
+        },
+        "completedJobLogResponse": {
+          "path": ".build/cloud-evidence/run-39142240830/completed-job-log-response.txt",
+          "bytes": 32080,
+          "sha256": "593351c11bdd6fbde8071580677bd2d4bfdd991ee6635acf102559da0a54a2e8",
+          "scope": "Decoded connector response, not claimed to be a complete raw build log."
+        },
+        "compilerDiagnostic": "SelfRenewalProbeView.swift:46:37: error: extraneous argument label 'title:' in call",
+        "localReviewFinding": "Two settings row calls used a title: label absent from the shared component's custom initializer; both corrected in 5ad5707.",
+        "probeTestsAccepted": false
+      },
+      {
+        "commit": "5ad5707f987281cd0f86c3fbda791b4c81bda0ce",
+        "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39143666388",
+        "status": "failed-before-test-acceptance",
+        "artifact": {
+          "id": 12143177347,
+          "bytes": 1224003,
+          "sha256": "43ad07bfd2edf891b2ff7ef4217885f4ab0cee8351297912602d6c75d5f45e2c",
+          "downloadedAndHashVerified": true
+        },
+        "rawUnitBuildLog": {
+          "path": ".build/cloud-evidence/run-39143666388/artifact/reader-renewal-probe/unit-tests.log",
+          "bytes": 11561142,
+          "sha256": "ac92a3e23fcd16d73bf98941cde307ee152a1e60e5e21bff267e0e53b23643dc",
+          "uniqueCompilerDiagnostics": 1
+        },
+        "compilerDiagnostic": "SelfRenewalTransportProbeTests.swift:68 #expect expansion: errors thrown from here are not handled",
+        "correction": "Encode the report with try before entering the nonthrowing expectation macro; corrected in 97d9f0f.",
+        "probeTestsAccepted": false
+      }
+    ],
+    "fixtureReview": "97d9f0f also preserves fixture expiry and closes request/stop waiters on terminal paths; actual execution remains pending."
   },
   "upstreamSourceLocks": [
-    {"repository": "SideStore/SideStore", "commit": "d97ec133719d79916675bdaf722b82a8d091d545", "license": "AGPL-3.0"},
-    {"repository": "SideStore/minimuxer", "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909", "license": "AGPL-3.0", "relationship": "exact SideStore gitlink"},
-    {"repository": "SideStore/idevice", "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76", "license": "MIT", "relationship": "actual minimuxer dependency release v0.1.68-ss-3e55c84"},
-    {"repository": "jkcoxson/LocalDevVPN", "commit": "af3fd697803ada4ac2b8d518358f5ab0a534844c", "relationship": "outer packet-tunnel route, not embedded"}
+    {
+      "repository": "SideStore/SideStore",
+      "commit": "d97ec133719d79916675bdaf722b82a8d091d545",
+      "license": "AGPL-3.0"
+    },
+    {
+      "repository": "SideStore/minimuxer",
+      "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909",
+      "license": "AGPL-3.0",
+      "relationship": "exact SideStore gitlink"
+    },
+    {
+      "repository": "SideStore/idevice",
+      "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
+      "license": "MIT",
+      "relationship": "actual minimuxer dependency release v0.1.68-ss-3e55c84"
+    },
+    {
+      "repository": "jkcoxson/LocalDevVPN",
+      "commit": "af3fd697803ada4ac2b8d518358f5ab0a534844c",
+      "relationship": "outer packet-tunnel route, not embedded"
+    }
   ],
   "findings": [
     "The documented SideStore route uses a separate VPN app; it does not satisfy the single-app requirement.",
