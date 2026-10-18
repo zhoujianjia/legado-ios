@@ -26,7 +26,9 @@ jobs:
         run: |
           mkdir -p .build/ci-logs
           export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
-          swift test --package-path Packages/LegadoRuntime --xunit-output "$PWD/.build/ci-logs/runtime-swift-tests.xml" 2>&1 | tee .build/ci-logs/runtime-swift-tests.log
+          # SwiftPM's serial XCTest runner does not emit xUnit XML (swiftlang/swift-package-manager#9961).
+          # Use its reporting runner with one worker; this package contains XCTest tests only.
+          swift test --package-path Packages/LegadoRuntime --parallel --num-workers 1 --disable-swift-testing --xunit-output "$PWD/.build/ci-logs/runtime-swift-tests.xml" 2>&1 | tee .build/ci-logs/runtime-swift-tests.log
           python3 -B scripts/reader-experience/data-smoke-tools.py verify-package --xml .build/ci-logs/runtime-swift-tests.xml --expected 21
       - name: Preserve exact runtime-interface results
         if: always()
