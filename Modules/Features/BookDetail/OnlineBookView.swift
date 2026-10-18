@@ -767,6 +767,7 @@ struct OnlineBookView: View {
             //    load in parallel instead of TOC waiting on detail.
             let trimmedTocURL = requestBook.tocUrl.trimmingCharacters(in: .whitespacesAndNewlines)
             if !showedCachedTOC,
+               !source.isJsSource,
                !trimmedTocURL.isEmpty,
                trimmedTocURL != requestBook.bookUrl,
                !requestBook.bookUrl.isEmpty {

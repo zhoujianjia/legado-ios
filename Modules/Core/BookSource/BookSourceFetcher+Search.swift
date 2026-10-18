@@ -149,6 +149,12 @@ extension BookSourceFetcher {
         onHasMore: ((Bool?) -> Void)? = nil,
         failureMode: BookSourceSearchFailureMode = .emptyResult
     ) async throws -> BookSourceSearchOutcome {
+        if source.isJsSource {
+            var books = try await mainJSService.search(query: query, page: page, source: source)
+            if let earlyFilter { books = books.filter { earlyFilter($0.name, $0.author) } }
+            onHasMore?(nil)
+            return BookSourceSearchOutcome(books: books)
+        }
         guard !source.searchUrl.isEmpty else { throw FetchError.noSearchURL }
         let cacheDays = GlobalSettings.shared.searchCacheDays
         let cacheEligible = page == 1 && earlyFilter == nil
@@ -306,6 +312,10 @@ extension BookSourceFetcher {
         in source: BookSource,
         onBatch: @escaping @Sendable ([OnlineBook]) async -> Void
     ) async throws -> SearchStreamingOutcome {
+        if source.isJsSource {
+            let books = try await mainJSService.search(query: query, page: 1, source: source)
+            return SearchStreamingOutcome(books: books, streamed: false)
+        }
         guard !source.searchUrl.isEmpty else { throw FetchError.noSearchURL }
         let cacheDays = GlobalSettings.shared.searchCacheDays
         if let cached = SearchResultCache.shared.freshBooks(

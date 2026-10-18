@@ -10,10 +10,9 @@ struct LegadoPrototypeProbeReport: Sendable {
 }
 
 /// The first migration gate is deliberately independent of production source sessions.
-/// One injected actor retains the runtime across visits; opening Settings never starts a JVM.
+/// It shares the process runtime with the reading service, using its own source session.
+/// Opening Settings never starts a JVM.
 actor LegadoPrototypeProbeService {
-    private var runtime: LegadoRuntime?
-
     func inspect() -> LegadoPrototypeProbeReport {
         SourcePerfTrace.span("legado.prototype.inspect", "main=\(Thread.isMainThread)") {
             let diagnostics = LegadoRuntime.diagnose(configuration: .bundled())
@@ -28,16 +27,10 @@ actor LegadoPrototypeProbeService {
     func run() async throws -> LegadoPrototypeProbeReport {
         let started = SourcePerfTrace.now
         var report = inspect()
-        guard report.available, let configuration = LegadoRuntime.Configuration.bundled() else {
+        guard report.available else {
             throw LegadoRuntimeError(code: "missing_runtime", message: report.issues.joined(separator: "\n"))
         }
-        let executor: LegadoRuntime
-        if let runtime {
-            executor = runtime
-        } else {
-            executor = LegadoRuntime(configuration: configuration)
-            runtime = executor
-        }
+        let executor = try await LegadoRuntimeProcess.shared.executor()
         let session = try await executor.createSession(sourceJSON: Self.fixtureSource)
         do {
             report.completedSteps.append("Legado 工作階段")

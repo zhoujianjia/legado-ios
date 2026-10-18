@@ -115,6 +115,7 @@ final class BookSourceFetcher: @unchecked Sendable {
     nonisolated static let chapterCacheRepository = ChapterCacheRepository()
     let pipeline = BookSourceParsingPipeline()
     let webFetcher: WebFetcher
+    let mainJSService: LegadoMainJSSourceService
 
     enum FetchTimeoutError: LocalizedError {
         case chapterTimeout
@@ -127,8 +128,9 @@ final class BookSourceFetcher: @unchecked Sendable {
         }
     }
 
-    init(webFetcher: WebFetcher = WebFetcher.shared) {
+    init(webFetcher: WebFetcher = WebFetcher.shared, mainJSService: LegadoMainJSSourceService = LegadoMainJSSourceService()) {
         self.webFetcher = webFetcher
+        self.mainJSService = mainJSService
     }
 
     // MARK: - WebView JS Rendering Helpers

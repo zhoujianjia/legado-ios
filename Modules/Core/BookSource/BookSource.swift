@@ -318,6 +318,9 @@ struct BookSource: Identifiable, Codable {
     var exploreScreen: String = ""    // Legado: discover page configuration
     var coverDecodeJs: String = ""    // Legado: cover decode JS
     var jsLib: String = ""            // Legado: shared JS library evaluated at source init
+    /// Legado's pure-JS source program. Preserved for import, editing, storage and export;
+    /// execution through the app's JVM reading pipeline is a separate integration step.
+    var mainJs: String?
     var ruleSearch: SearchRule = SearchRule()
     var ruleExplore: ExploreRule = ExploreRule()  // Legado: discover page rule
     var ruleBookInfo: BookInfoRule = BookInfoRule()
@@ -344,7 +347,7 @@ struct BookSource: Identifiable, Codable {
         case header, loginUrl, loginUi, loginCheckJs
         case presentsAndroidIdentity
         case respondTime, lastUpdateTime, weight
-        case variableComment, exploreScreen, coverDecodeJs, jsLib
+        case variableComment, exploreScreen, coverDecodeJs, jsLib, mainJs
         case ruleSearch, ruleExplore, ruleBookInfo, ruleToc, ruleContent, ruleReview
     }
 
@@ -373,6 +376,7 @@ struct BookSource: Identifiable, Codable {
         exploreScreen   = c.safeString(forKey: .exploreScreen)
         coverDecodeJs   = c.safeString(forKey: .coverDecodeJs)
         jsLib           = c.safeString(forKey: .jsLib)
+        mainJs          = try c.decodeIfPresent(String.self, forKey: .mainJs)
         // Legado's enabled field may be Bool, Int 1/0, or String "true"/"false"
         enabled          = c.safeBool(forKey: .enabled, defaultValue: true)
         enabledExplore   = c.safeBool(forKey: .enabledExplore, defaultValue: true)
@@ -813,6 +817,13 @@ extension OnlineChapterRef {
 }
 
 extension BookSource {
+    /// Matches Legado's source classification without changing the stored program or
+    /// selecting an execution engine.
+    var isJsSource: Bool {
+        guard let mainJs else { return false }
+        return !mainJs.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     var legadoReviewContext: ReaderHTMLUtilities.LegadoReviewContext {
         ReaderHTMLUtilities.LegadoReviewContext(
             sourceName: bookSourceName,

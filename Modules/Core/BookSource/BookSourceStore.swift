@@ -50,7 +50,8 @@ class BookSourceStore: ObservableObject {
         #endif
         return BookSourceStore(
             fileURL: StorageLocations.bookSourcesFile,
-            pinsFileURL: StorageLocations.support.appendingPathComponent("book_source_pins.json")
+            pinsFileURL: StorageLocations.support.appendingPathComponent("book_source_pins.json"),
+            builtInPackage: .bundled()
         )
     }()
 
@@ -134,6 +135,8 @@ class BookSourceStore: ObservableObject {
     private let readDone = DispatchGroup()
     private struct LoadState {
         var read: [BookSource]?
+        var readError: Error?
+        var bootstrapError: Error?
         /// Set once the read result has been assigned to `library` on the main thread.
         var applied = false
     }
@@ -149,12 +152,39 @@ class BookSourceStore: ObservableObject {
 
     var isLoaded: Bool { loadState.withLock { $0.applied } }
 
+    /// A failed read is unavailable data, never permission to replace it with [].
+    var loadError: Error? { loadState.withLock { $0.readError } }
+    var builtInBootstrapError: Error? { loadState.withLock { $0.bootstrapError } }
+
     private func startLoading() {
         readDone.enter()
         let url = fileURL
+        let package = builtInPackage
+        let pins = pinRecords
         loadQueue.async { [weak self] in
-            let read = Self.readLibrary(at: url)
-            self?.loadState.withLock { $0.read = read }
+            var read: [BookSource]?
+            var readError: Error?
+            var bootstrapError: Error?
+            do {
+                let existing = try Self.readLibrary(at: url)
+                read = existing
+                if let package {
+                    do {
+                        read = try BuiltInBookSourceBootstrap.apply(package, to: existing, libraryURL: url, pins: pins)
+                    } catch {
+                        bootstrapError = error
+                        AppLogger.cache("Built-in book sources could not be imported", error: error)
+                    }
+                }
+            } catch {
+                readError = error
+                AppLogger.cache("Book sources could not be read", error: error, context: ["file": url.lastPathComponent])
+            }
+            self?.loadState.withLock {
+                $0.read = read
+                $0.readError = readError
+                $0.bootstrapError = bootstrapError
+            }
             self?.readDone.leave()
             DispatchQueue.main.async { self?.applyLoadedLibrary() }
         }
@@ -177,14 +207,15 @@ class BookSourceStore: ObservableObject {
         let read: [BookSource]? = loadState.withLock { state in
             guard !state.applied else { return nil }
             state.applied = true
-            return state.read ?? []
+            return state.read
         }
-        guard let read else { return }
-        library = read
-        prunePins()
+        if let read {
+            library = read
+            prunePins()
+        }
         let waiters = loadWaiters
         loadWaiters.removeAll()
-        for waiter in waiters { waiter(read) }
+        for waiter in waiters { waiter(library) }
     }
 
     /// Calls `body` on the main thread with the library once it is read — immediately when it
@@ -202,20 +233,19 @@ class BookSourceStore: ObservableObject {
         }
     }
 
-    /// Reads and dedupes the file; off the main thread. A missing file is an empty library;
-    /// an unreadable one is logged and also empty, as before (the next save would replace
-    /// it, which is the existing behaviour this change does not alter).
-    private static func readLibrary(at url: URL) -> [BookSource] {
-        guard FileManager.default.fileExists(atPath: url.path) else { return [] }
-        return SourcePerfTrace.span("bookSources.load", "main=\(Thread.isMainThread)", thresholdMs: 1) {
+    /// Only a genuinely missing file is an empty library. Decode/access errors
+    /// preserve the original file and prevent automatic seeding or later saves.
+    private static func readLibrary(at url: URL) throws -> [BookSource] {
+        return try SourcePerfTrace.span("bookSources.load", "main=\(Thread.isMainThread) file=\(url.lastPathComponent)", thresholdMs: 1) {
+            let data: Data
             do {
-                let data = try Data(contentsOf: url)
-                let decoded = try JSONDecoder().decode([BookSource].self, from: data)
-                // Clean up any duplicates a previous buggy sync may have persisted to disk.
-                return dedupedByURL(decoded)
-            } catch {
-                AppLogger.cache("Book sources could not be read", error: error, context: ["file": url.lastPathComponent])
+                data = try Data(contentsOf: url)
+            } catch let error as CocoaError where error.code == .fileReadNoSuchFile || error.code == .fileNoSuchFile {
                 return []
+            }
+            return try SourcePerfTrace.span("bookSources.decode", "main=\(Thread.isMainThread) bytes=\(data.count)") {
+                let decoded = try JSONDecoder().decode([BookSource].self, from: data)
+                return dedupedByURL(decoded)
             }
         }
     }
@@ -231,9 +261,10 @@ class BookSourceStore: ObservableObject {
     /// legacy file.
     private let fileURL: URL
     private let pinsFileURL: URL
+    private let builtInPackage: BuiltInBookSourceBootstrap.Package?
 
     /// A store on its own directory — tests and profiling fixtures, never the user's library.
-    convenience init(directory: URL) {
+    convenience init(directory: URL, builtInPackage: BuiltInBookSourceBootstrap.Package? = nil) {
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         } catch {
@@ -241,13 +272,15 @@ class BookSourceStore: ObservableObject {
         }
         self.init(
             fileURL: directory.appendingPathComponent("book_sources.json"),
-            pinsFileURL: directory.appendingPathComponent("book_source_pins.json")
+            pinsFileURL: directory.appendingPathComponent("book_source_pins.json"),
+            builtInPackage: builtInPackage
         )
     }
 
-    private init(fileURL: URL, pinsFileURL: URL) {
+    private init(fileURL: URL, pinsFileURL: URL, builtInPackage: BuiltInBookSourceBootstrap.Package? = nil) {
         self.fileURL = fileURL
         self.pinsFileURL = pinsFileURL
+        self.builtInPackage = builtInPackage
         loadPins()
         startLoading()
     }
@@ -999,6 +1032,10 @@ class BookSourceStore: ObservableObject {
     /// edit, each holding its own snapshot of the library. Now the queue writes whatever
     /// snapshot is newest when it gets there; edits that land meanwhile only replace it.
     private func save() {
+        if let error = loadError {
+            AppLogger.cache("BookSourceStore preserved an unreadable library instead of replacing it", error: error)
+            return
+        }
         guard pendingWrite.replace(with: sources) else { return }
         let url = fileURL
         let pendingWrite = self.pendingWrite

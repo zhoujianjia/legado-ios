@@ -49,6 +49,8 @@ extension BookSourceFetcher {
     /// as `fetchTOCPackage`'s fast path). Lets UI layers render a previously
     /// fetched chapter list instantly while fresh data loads.
     func cachedTOCPackage(tocUrl: String, source: BookSource) -> TOCPackage? {
+        // Legacy packages have neither original JVM DTOs nor a source-code signature.
+        guard !source.isJsSource else { return nil }
         guard let cached = loadTOCPackageSync(tocUrl: tocUrl, source: source),
               !cached.chapters.isEmpty else { return nil }
         let hasBadURL = cached.chapters.contains { ch in
@@ -65,6 +67,11 @@ extension BookSourceFetcher {
         forceRefresh: Bool = false,
         runPreUpdateJs: Bool = true
     ) async throws -> TOCPackage {
+        if source.isJsSource {
+            let package = try await mainJSService.toc(url: tocUrl, source: source, runtimeVariables: runtimeVariables)
+            if !package.chapters.isEmpty { onFirstPageReady?(package.chapters) }
+            return package
+        }
         if !forceRefresh, let cached = cachedTOCPackage(tocUrl: tocUrl, source: source) {
             return cached
         }

@@ -30,6 +30,10 @@ extension BookSourceFetcher {
         runtimeVariables: [String: String]? = nil,
         knownBook: OnlineBook? = nil
     ) async throws -> BookInfoPackage {
+        if source.isJsSource {
+            return try await mainJSService.details(url: url, source: source,
+                runtimeVariables: runtimeVariables, knownBook: knownBook)
+        }
         // The merge also applies on a cache hit: a package stored before this contract existed (or
         // stored from a call that had no search result to hand) can carry the same empty fields.
         let canReName = !source.ruleBookInfo.canReName

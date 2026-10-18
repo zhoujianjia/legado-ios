@@ -22,6 +22,9 @@ extension BookSourceFetcher {
     func fetchChapterPackage(
         ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil
     ) async throws -> ChapterPackage {
+        if source.isJsSource {
+            return try await fetchMainJSChapterPackage(ref: ref, bookId: bookId, source: source)
+        }
         logChapterFetchGate(ref: ref, source: source)
         guard !ref.shouldRenderAsVolumeSeparator else {
             throw FetchError.volumeSeparator(ref.title)
@@ -288,6 +291,25 @@ extension BookSourceFetcher {
             expectedTOCTitle: ref.title
         )
         guard let reloaded else { throw ChapterCacheWriteError.verificationFailed }
+        return reloaded
+    }
+
+    private func fetchMainJSChapterPackage(ref: OnlineChapterRef, bookId: UUID, source: BookSource) async throws -> ChapterPackage {
+        guard !ref.shouldRenderAsVolumeSeparator else { throw FetchError.volumeSeparator(ref.title) }
+        let content = try await mainJSService.content(ref: ref, source: source)
+        try ChapterFetcher.shared.validateResolvedContent(content)
+        // This pure escaped-text builder performs no source JS or deferred-image resolution.
+        let normalizedHTML = ChapterFetcher.shared.buildNormalizedHTML(title: ref.title, content: content)
+        let checksum = SHA256.hash(data: Data(content.utf8)).map { String(format: "%02x", $0) }.joined()
+        let package = ChapterPackage(bookId: bookId, chapterIndex: ref.index, sourceURL: ref.url,
+            tocTitle: ref.title, canonicalTitle: nil, content: content, contentChecksum: checksum,
+            rawHTMLFilename: nil, normalizedHTMLFilename: "\(ref.index).normalized.xhtml",
+            savedAt: Date(), state: .cached, failureReason: nil)
+        try saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: normalizedHTML)
+        guard let reloaded = loadChapterPackageSync(bookId: bookId, chapterIndex: ref.index,
+            expectedSourceURL: ref.url, expectedTOCTitle: ref.title) else {
+            throw ChapterCacheWriteError.verificationFailed
+        }
         return reloaded
     }
 
