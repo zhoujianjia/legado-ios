@@ -104,7 +104,10 @@ def source_inputs(current):
         raise ValueError("Native build inputs have uncommitted changes")
     checks = []
     for path in replay.NATIVE_INPUTS:
-        before = replay.git("rev-parse", f"{BASELINE_SHA}:{path}")
+        try:
+            before = replay.git("rev-parse", f"{BASELINE_SHA}:{path}")
+        except RuntimeError as error:
+            raise ValueError("Pinned native producer lacks a required build input; a fresh native build is required") from error
         after = replay.git("rev-parse", f"{current}:{path}")
         checks.append({"path": path, "sourceObject": before, "currentObject": after,
                        "matches": before == after})

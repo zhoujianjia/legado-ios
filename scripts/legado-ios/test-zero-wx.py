@@ -91,6 +91,29 @@ class ZeroWXTests(unittest.TestCase):
                     wx.prepare(root)
                 self.assertEqual(target.read_bytes(), prepared)
 
+    def test_exact_signal_successor_is_not_rewritten_and_still_requires_pinned_donor(self):
+        self.assertEqual(wx.SIGNAL_PREPARED_SHA256,
+                         "3eeff75065b744cb7943c28ccfb5d68511a6b3740f0c94d5314eb2b995cde6e3")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            target, donor = self.write_sources(root)
+            successor = wx._backport(TARGET, DONOR) + b"\n// Bounded signal successor fixture\n"
+            target.write_bytes(successor)
+            with patch.multiple(wx, TARGET_SOURCE_SHA256=digest(TARGET), DONOR_SOURCE_SHA256=digest(DONOR),
+                                SIGNAL_PREPARED_SHA256=digest(successor)):
+                with patch.object(Path, "write_bytes", side_effect=AssertionError("Successor must not be rewritten")):
+                    self.assertFalse(wx.prepare(root)["changed"])
+                self.assertEqual(target.read_bytes(), successor)
+                donor.write_bytes(DONOR + b"changed after signal preparation")
+                with self.assertRaisesRegex(ValueError, "donor SHA-256 mismatch"):
+                    wx.prepare(root)
+                self.assertEqual(target.read_bytes(), successor)
+                donor.write_bytes(DONOR)
+                target.write_bytes(successor + b"unknown edit")
+                with self.assertRaisesRegex(ValueError, "Pinned Zero source SHA-256 mismatch"):
+                    wx.prepare(root)
+                self.assertEqual(target.read_bytes(), successor + b"unknown edit")
+
     def write_sources(self, root):
         target, donor = root / wx.TARGET_RELATIVE_PATH, root / wx.DONOR_RELATIVE_PATH
         target.parent.mkdir(parents=True)

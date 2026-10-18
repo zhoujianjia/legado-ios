@@ -11,6 +11,9 @@ DONOR_RELATIVE_PATH = "src/hotspot/os_cpu/bsd_aarch64/os_bsd_aarch64.cpp"
 TARGET_SOURCE_SHA256 = "8451f0f8bea69dbb16e6f26c1dbd4c7b3e96e39850206e5a0e91940bf030da08"
 DONOR_SOURCE_SHA256 = "78a0c5aa1d2b5b696ef94ded1f5d50d0aeb8a8e93bd4e13428bcc198ecf021a5"
 PREPARED_SHA256 = "702ba78cb0c9c19e0c178d2dd34479b2a03ff2aa3c43de903755c3d49b866dcc"
+# The same pinned source after this W^X stage and the bounded signal stage.
+# On repeated builds the following signal script revalidates this successor.
+SIGNAL_PREPARED_SHA256 = "3eeff75065b744cb7943c28ccfb5d68511a6b3740f0c94d5314eb2b995cde6e3"
 INCLUDE_ANCHOR = b'#include "runtime/stubRoutines.hpp"\n'
 THREAD_INCLUDE = b'#include "runtime/thread.inline.hpp"\n'
 OLD_BLOCK = b"""#if defined(AARCH64) && defined(__APPLE__)
@@ -57,7 +60,7 @@ def prepare(mobile_root: Path) -> dict:
     target_hash = hashlib.sha256(target_data).hexdigest()
     if hashlib.sha256(donor_data).hexdigest() != DONOR_SOURCE_SHA256:
         raise ValueError("Pinned W^X donor SHA-256 mismatch; refusing to modify Zero")
-    if target_hash == PREPARED_SHA256:
+    if target_hash in (PREPARED_SHA256, SIGNAL_PREPARED_SHA256):
         changed = False
     elif target_hash == TARGET_SOURCE_SHA256:
         prepared = _backport(target_data, donor_data)

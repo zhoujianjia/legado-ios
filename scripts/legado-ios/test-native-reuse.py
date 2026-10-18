@@ -54,7 +54,7 @@ class NativeIdentityTests(unittest.TestCase):
             with self.subTest(tag=tag), self.assertRaises(ValueError):
                 reuse.validate_tag(tag, CURRENT)
 
-    def test_only_six_native_inputs_are_compared_jvm_may_change(self):
+    def test_only_native_inputs_are_compared_jvm_may_change(self):
         def git(*args):
             if args[0] == "status":
                 self.assertNotIn(reuse.replay.JVM_TREE, args)
@@ -65,7 +65,8 @@ class NativeIdentityTests(unittest.TestCase):
             return "b" * 40
         with patch.object(reuse.replay, "git", side_effect=git):
             result = reuse.source_inputs(CURRENT)
-        self.assertEqual(len(result), 6)
+        self.assertEqual(len(result), 7)
+        self.assertIn("scripts/legado-ios/prepare-zero-signal-context.py", reuse.replay.NATIVE_INPUTS)
         self.assertTrue(all(item["matches"] for item in result))
 
     def test_every_native_input_change_blocks_reuse(self):
@@ -77,6 +78,17 @@ class NativeIdentityTests(unittest.TestCase):
             with self.subTest(path=changed), patch.object(reuse.replay, "git", side_effect=git):
                 with self.assertRaisesRegex(ValueError, "fresh native build"):
                     reuse.source_inputs(CURRENT)
+
+    def test_new_required_input_missing_from_producer_requires_fresh_build(self):
+        def git(*args):
+            if args[0] == "status":
+                return ""
+            if args[1] == reuse.BASELINE_SHA + ":scripts/legado-ios/prepare-zero-signal-context.py":
+                raise RuntimeError("git object does not exist")
+            return "b" * 40
+        with patch.object(reuse.replay, "git", side_effect=git):
+            with self.assertRaisesRegex(ValueError, "required build input; a fresh native build"):
+                reuse.source_inputs(CURRENT)
 
     def test_dirty_native_inputs_and_wrong_workflow_blob_rejected(self):
         with patch.object(reuse.replay, "git", return_value="dirty"):

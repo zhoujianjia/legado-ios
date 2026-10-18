@@ -6,6 +6,13 @@ compatibility prototype. It does not establish full Legado parity or replace the
 production JavaScriptCore parser. The accepted migration gate requires a signed
 iPhone build to start without a debugger or JIT before full feature migration.
 
+The core now has a passing Simulator TCP loopback and a zero-difference strict
+comparison for one synthetic mainJs reading chain. The subsequent TLS attempt
+aborted in an unimplemented Zero signal-PC hook, before returning TLS results.
+The bounded [source repair](zero-signal-context.json) requires a fresh native
+build and the same four TLS cases; [TLS evidence](tls-capability.json) keeps the
+passing desktop results separate from the failed Simulator attempt.
+
 ## Reader experience build
 
 An unsigned full-reader experience is available from
@@ -109,8 +116,8 @@ Its trigger tag is `legado-replay-<sourceRunID>-<currentSHA prefix>`, where the
 source run belongs to this repository and the 7–40 hexadecimal-character prefix
 matches the tagged current commit.
 
-The replay checks Git objects for six native input files (including
-`prepare-zero-code-cache.py`) and the complete JVM tree, then validates the
+The replay checks Git objects for seven native input files (including
+`prepare-zero-code-cache.py` and `prepare-zero-signal-context.py`) and the complete JVM tree, then validates the
 selected source artifacts and runtime files. Changed
 inputs require a fresh source build. Only the matching Zero framework, Java homes
 and JVM payload are reused; the current iOS app is compiled and linked again

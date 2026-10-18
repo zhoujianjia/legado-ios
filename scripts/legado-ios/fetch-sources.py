@@ -12,7 +12,28 @@ import urllib.request
 
 HERE = Path(__file__).resolve().parent
 
-def checkout(repository: str, revision: str, destination: Path, allowed_edits: dict[str, str] | None = None) -> None:
+
+def prepared_edits() -> dict[str, frozenset[str]]:
+    """Allow only the reviewed outputs of this directory's three fixed stages."""
+    stages = []
+    for name in ("zero-wx", "zero-signal-context", "zero-code-cache"):
+        spec = importlib.util.spec_from_file_location("fetch_prepared_" + name.replace("-", "_"),
+                                                     HERE / ("prepare-" + name + ".py"))
+        stage = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(stage)
+        stages.append(stage)
+    wx, signal, code_cache = stages
+    if (wx.TARGET_RELATIVE_PATH != signal.TARGET_RELATIVE_PATH
+            or signal.TARGET_SOURCE_SHA256 != wx.PREPARED_SHA256
+            or signal.PREPARED_SHA256 != wx.SIGNAL_PREPARED_SHA256
+            or code_cache.TARGET_RELATIVE_PATH == wx.TARGET_RELATIVE_PATH):
+        raise ValueError("Pinned source preparation stages do not form the expected pipeline")
+    return {wx.TARGET_RELATIVE_PATH: frozenset((wx.PREPARED_SHA256, signal.PREPARED_SHA256)),
+            code_cache.TARGET_RELATIVE_PATH: frozenset((code_cache.PREPARED_SHA256,))}
+
+
+def checkout(repository: str, revision: str, destination: Path,
+             allowed_edits: dict[str, frozenset[str]] | None = None) -> None:
     if not destination.exists():
         subprocess.run(["git", "init", str(destination)], check=True)
         subprocess.run(["git", "-C", str(destination), "remote", "add", "origin", repository], check=True)
@@ -29,7 +50,8 @@ def checkout(repository: str, revision: str, destination: Path, allowed_edits: d
             continue  # Generated from the separately hash-checked ios-tools input.
         path = destination / relative
         expected = (allowed_edits or {}).get(relative)
-        if expected and path.is_file() and not path.is_symlink() and hashlib.sha256(path.read_bytes()).hexdigest() == expected:
+        if (isinstance(expected, (set, frozenset)) and path.is_file() and not path.is_symlink()
+                and hashlib.sha256(path.read_bytes()).hexdigest() in expected):
             continue
         unexpected.append(line)
     changes = "\n".join(unexpected)
@@ -50,11 +72,9 @@ def main() -> None:
     work = args.work_dir.resolve()
     work.mkdir(parents=True, exist_ok=True)
     lock = json.loads((HERE / "runtime-lock.json").read_text(encoding="utf-8"))
-    patch_spec = importlib.util.spec_from_file_location("zero_wx_patch", HERE / "prepare-zero-wx.py")
-    patch = importlib.util.module_from_spec(patch_spec)
-    patch_spec.loader.exec_module(patch)
+    mobile_edits = prepared_edits()
     for name, folder in [("openjdkMobile", "mobile"), ("iosTools", "ios-tools")]:
-        edits = {patch.TARGET_RELATIVE_PATH: patch.PREPARED_SHA256} if name == "openjdkMobile" else None
+        edits = mobile_edits if name == "openjdkMobile" else None
         checkout(lock[name]["repository"], lock[name]["commit"], work / folder, edits)
     ffi = lock["libffi"]
     archive = work / f"libffi-{ffi['version']}.tar.gz"

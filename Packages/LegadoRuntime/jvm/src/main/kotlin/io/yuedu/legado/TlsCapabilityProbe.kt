@@ -47,6 +47,7 @@ internal object TlsCapabilityProbe {
     fun run(task: RuntimeTask): JsonObject {
         val started = System.nanoTime()
         task.job.ensureActiveForRuntime()
+        stage("run.begin")
         val budget = minOf(60_000L, task.deadlineEpochMs - System.currentTimeMillis())
         if (budget <= 0) throw SocketTimeoutException("TLS probe task deadline already expired")
         val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(budget)
@@ -67,6 +68,7 @@ internal object TlsCapabilityProbe {
                 check(sha256(value) == expected) { "TLS fixture digest mismatch: $name" }
                 value
             }
+            stage("fixtures.verified")
             fun certificate(name: String) = (CertificateFactory.getInstance("X.509")
                 .generateCertificate(bytes.getValue(name).inputStream()) as X509Certificate).apply { checkValidity() }
             val ca = certificate("test-ca.der")
@@ -79,6 +81,7 @@ internal object TlsCapabilityProbe {
             }
             val managers = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()).apply { init(keyStore, password) }
             val serverContext = SSLContext.getInstance("TLS").apply { init(managers.keyManagers, null, null) }
+            stage("server_context.ready")
             val specs = listOf(
                 Case("trusted-tls12", "TLSv1.2", "localhost", ca, "ACCEPTED"),
                 Case("trusted-tls13", "TLSv1.3", "localhost", ca, "ACCEPTED"),
@@ -87,6 +90,7 @@ internal object TlsCapabilityProbe {
             )
             for (spec in specs) {
                 task.job.ensureActiveForRuntime()
+                stage("${spec.name}.begin")
                 val caseStarted = System.nanoTime()
                 val result = jsonObject("name" to spec.name, "protocol" to spec.protocol,
                     "peerHost" to spec.host, "expected" to spec.expected, "passed" to false,
@@ -106,7 +110,9 @@ internal object TlsCapabilityProbe {
                     val future = server.submit<Unit> {
                         owned.add(listener.accept() as SSLSocket).use { socket ->
                             socket.soTimeout = minOf(10_000L, remaining()).toInt()
+                        stage("${spec.name}.server_handshake.begin")
                             socket.startHandshake()
+                        stage("${spec.name}.server_handshake.returned")
                             val received = ByteArray(ping.size)
                             DataInputStream(socket.inputStream).readFully(received)
                             check(received.contentEquals(ping)) { "TLS server received unexpected application bytes" }
@@ -121,7 +127,9 @@ internal object TlsCapabilityProbe {
                             socket.enabledProtocols = arrayOf(spec.protocol)
                             socket.soTimeout = minOf(10_000L, remaining()).toInt()
                             socket.sslParameters = socket.sslParameters.apply { endpointIdentificationAlgorithm = "HTTPS" }
+                            stage("${spec.name}.client_handshake.begin")
                             socket.startHandshake()
+                            stage("${spec.name}.client_handshake.returned")
                             result.addProperty("negotiatedProtocol", socket.session.protocol)
                             result.addProperty("cipherSuite", socket.session.cipherSuite)
                             result.addProperty("peerCertificateSHA256", sha256(socket.session.peerCertificates.first().encoded))
@@ -143,6 +151,7 @@ internal object TlsCapabilityProbe {
                     serverFailure?.let { if (it is VirtualMachineError || it is ThreadDeath) throw it }
                     task.job.ensureActiveForRuntime()
                     val classification = classify(clientFailure, spec.host)
+                    stage("${spec.name}.classified.$classification")
                     result.addProperty("classification", classification)
                     result.add("clientFailure", describe(clientFailure)); result.add("serverFailure", describe(serverFailure))
                     val serverFinished = future.isDone && !future.isCancelled
@@ -170,12 +179,19 @@ internal object TlsCapabilityProbe {
                 cases.all { it.asJsonObject["passed"].asBoolean } && serverStopped && timerStopped &&
                 resources.errors.isEmpty() && !report["deadlineExceeded"].asBoolean)
             report.addProperty("totalMilliseconds", (System.nanoTime() - started) / 1_000_000.0)
+            stage("cleanup.complete")
         }
         task.job.ensureActiveForRuntime()
         return report
     }
 
     private data class Case(val name: String, val protocol: String, val host: String, val anchor: X509Certificate, val expected: String)
+    // Only fixed probe phase identifiers are emitted, never keys, source input
+    // or exception text. Simulator stderr survives a native abort mid-handshake.
+    private fun stage(name: String) {
+        System.err.println("LEGADO_TLS_STAGE $name")
+        System.err.flush()
+    }
     private fun causes(failure: Throwable?) = generateSequence(failure) { it.cause }.take(8).toList()
     private fun describe(failure: Throwable?) = JsonArray().apply {
         causes(failure).forEach { add(jsonObject("type" to it.javaClass.name, "message" to it.message?.take(400))) }

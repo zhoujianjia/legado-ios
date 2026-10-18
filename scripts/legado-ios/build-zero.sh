@@ -49,6 +49,9 @@ python3 "$SCRIPT_DIR/prepare-symbol-keeper.py" \
 # The pinned Zero backend predates shared Apple ARM64 W^X state hooks.
 # Port their complete same-revision implementation, retaining iOS's no-JIT guard.
 python3 "$SCRIPT_DIR/prepare-zero-wx.py" --mobile-root "$MOBILE"
+# Common POSIX signal handling reads the interrupted PC even before ignoring
+# SIGPIPE/SIGXFSZ. Port the pinned Darwin ARM64 context accessors to Zero.
+python3 "$SCRIPT_DIR/prepare-zero-signal-context.py" --mobile-root "$MOBILE"
 # Zero's code cache stores interpreter metadata and static entry addresses.
 # On iOS, reserve it as non-executable so its initial commit never asks for RWX.
 python3 "$SCRIPT_DIR/prepare-zero-code-cache.py" --mobile-root "$MOBILE"

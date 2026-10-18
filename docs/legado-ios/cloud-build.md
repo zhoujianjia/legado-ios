@@ -5,16 +5,21 @@ develop and test the portable Legado core. A manually triggered GitHub Actions
 macOS runner can build the native prototype; the iPhone or iPad is still needed
 for installation and actual runtime validation. No Mac SSH connection is needed.
 
-For changes to the Java/Kotlin core, the separate
-[Core Update workflow](../../.github/workflows/legado-ios-core-update.yml)
-uses a `legado-core-<current SHA7>` tag. It builds the current JVM payload and app,
-and reuses only the fixed, audited build6 native artifact after checking all six
-native build inputs, producer identity, actual ZIP digest/size, modules and data.
-`native-reuse.json` separates the original native producer from the fresh JVM
-commit, vendor inputs, artifact and JAR hash. It retains both app compilations,
-ten-export checks and current Simulator execution. A changed native input or an
-expired baseline requires a fresh full build. The older replay's requirement for
-an identical JVM tree remains unchanged.
+The current source adds a bounded Darwin ARM64 signal-PC repair after the
+first iOS TLS attempt reached an unimplemented Zero hook. It requires a fresh
+native runtime: use the **Legado iOS Prototype** workflow and a
+`legado-probe-<source SHA7>` tag. The workflow rebuilds both native slices and
+requires the existing TCP plus all four TLS cases. See
+[zero-signal-context.json](zero-signal-context.json) for the source hashes and
+[tls-capability.json](tls-capability.json) for the failed attempt and its limits.
+
+The separate [Core Update workflow](../../.github/workflows/legado-ios-core-update.yml)
+uses `legado-core-<source SHA7>` only when its accepted native producer matches
+all seven native inputs. Its original build6 baseline cannot supply the new
+signal repair and is deliberately rejected for the current source. Accepting a
+new producer requires explicit digest, source and layout verification after its
+fresh build; the old artifact is never treated as patched. The older replay
+also requires the same JVM inputs. All physical-device gates remain separate.
 
 See [cloud-validation.json](cloud-validation.json) for observed cloud runs,
 failures, and verified fixes. Build 5 at `203b352` in

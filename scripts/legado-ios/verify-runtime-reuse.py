@@ -27,6 +27,7 @@ REPO = HERE.parents[1]
 NATIVE_INPUTS = (
     "scripts/legado-ios/build-zero.sh",
     "scripts/legado-ios/prepare-zero-wx.py",
+    "scripts/legado-ios/prepare-zero-signal-context.py",
     "scripts/legado-ios/prepare-zero-code-cache.py",
     "scripts/legado-ios/prepare-symbol-keeper.py",
     "scripts/legado-ios/fetch-sources.py",
