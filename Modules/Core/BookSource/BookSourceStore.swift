@@ -694,19 +694,21 @@ class BookSourceStore: ObservableObject {
     static func parseSources(_ json: String) -> [BookSource]? {
         guard let data = json.data(using: .utf8) else { return nil }
         let decoder = JSONDecoder()
-        if let arr = try? decoder.decode([BookSource].self, from: data) {
-            return arr
+        do {
+            let root = try JSONSerialization.jsonObject(with: data)
+            // BookSource tolerates absent fields, so an envelope would otherwise
+            // decode successfully as an empty source and discard its real rows.
+            if let dictionary = root as? [String: Any], let rows = dictionary["bookSources"] {
+                guard rows is [Any] else { return nil }
+                return try decoder.decode([BookSource].self, from: JSONSerialization.data(withJSONObject: rows))
+            }
+            if root is [Any] { return try decoder.decode([BookSource].self, from: data) }
+            guard root is [String: Any] else { return nil }
+            return [try decoder.decode(BookSource.self, from: data)]
+        } catch {
+            AppLogger.cache("Book source import JSON could not be parsed", error: error)
+            return nil
         }
-        if let single = try? decoder.decode(BookSource.self, from: data) {
-            return [single]
-        }
-        if let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let raw = dict["bookSources"],
-           let subData = try? JSONSerialization.data(withJSONObject: raw),
-           let arr = try? decoder.decode([BookSource].self, from: subData) {
-            return arr
-        }
-        return nil
     }
 
     // MARK: Private: Merge Book Sources

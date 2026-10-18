@@ -298,14 +298,14 @@ extension BookSourceFetcher {
         guard !ref.shouldRenderAsVolumeSeparator else { throw FetchError.volumeSeparator(ref.title) }
         let content = try await mainJSService.content(ref: ref, source: source)
         try ChapterFetcher.shared.validateResolvedContent(content)
-        // This pure escaped-text builder performs no source JS or deferred-image resolution.
-        let normalizedHTML = ChapterFetcher.shared.buildNormalizedHTML(title: ref.title, content: content)
+        // mainJs returns authoritative plain text, with no original HTML to retain.
+        // The reader builds its escaped XHTML from this durable body on cache-only opens.
         let checksum = SHA256.hash(data: Data(content.utf8)).map { String(format: "%02x", $0) }.joined()
         let package = ChapterPackage(bookId: bookId, chapterIndex: ref.index, sourceURL: ref.url,
             tocTitle: ref.title, canonicalTitle: nil, content: content, contentChecksum: checksum,
-            rawHTMLFilename: nil, normalizedHTMLFilename: "\(ref.index).normalized.xhtml",
+            rawHTMLFilename: nil, normalizedHTMLFilename: nil,
             savedAt: Date(), state: .cached, failureReason: nil)
-        try saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: normalizedHTML)
+        try saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil)
         guard let reloaded = loadChapterPackageSync(bookId: bookId, chapterIndex: ref.index,
             expectedSourceURL: ref.url, expectedTOCTitle: ref.title) else {
             throw ChapterCacheWriteError.verificationFailed

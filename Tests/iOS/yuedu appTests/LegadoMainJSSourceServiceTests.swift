@@ -21,13 +21,40 @@ struct LegadoMainJSSourceServiceTests {
 
         let nextExecutor = MainJSFixtureExecutor()
         let reopened = BookSourceFetcher(mainJSService: LegadoMainJSSourceService(executor: nextExecutor, contextDirectory: directory))
-        let bookID = UUID()
+        var readingBook = ReadingBook(title: book.name, source: source.bookSourceUrl, contentFilename: "")
+        readingBook.isOnline = true
+        readingBook.bookSourceId = source.id
+        readingBook.onlineChapters = persisted.chapters
+        let bookID = readingBook.id
         defer { reopened.clearAllChapterCache(bookId: bookID) }
         let package = try await reopened.fetchChapterPackage(ref: chapter, bookId: bookID, source: source)
         #expect(package.content == "Native text & preserved variables\nSecond line")
-        let html = try #require(reopened.loadNormalizedChapterHTMLSync(bookId: bookID, chapterIndex: 0,
+        #expect(package.rawHTMLFilename == nil)
+        #expect(package.normalizedHTMLFilename == nil)
+        let cached = try #require(reopened.loadChapterPackageSync(bookId: bookID, chapterIndex: 0,
             expectedSourceURL: chapter.url, expectedTOCTitle: chapter.title))
-        #expect(html.contains("Native text &amp; preserved variables"))
+        #expect(cached.content == "Native text & preserved variables\nSecond line")
+        #expect(cached.rawHTMLFilename == nil)
+        #expect(cached.normalizedHTMLFilename == nil)
+        #expect(OnlineChapterCacheWritePolicy.isReusableCachedPackage(cached, hasBookSource: true))
+
+        // Exercise the same cache-only payload path used by the native reader.
+        // Pure-text packages rebuild XHTML without claiming nonexistent source HTML.
+        let reader = OnlineChapterContentService(book: readingBook, store: nil)
+        let payload = try await reader.payload(at: 0, policy: .cacheOnly)
+        #expect(payload.plainText == "Native text & preserved variables\nSecond line")
+        #expect(payload.title == chapter.title)
+        #expect(payload.sourceHref == chapter.url)
+        if case .html(let html) = payload.body {
+            #expect(html.contains("<article id=\"reader-content\">"))
+            #expect(html.contains("Native text &amp; preserved variables"))
+            #expect(html.contains("Second line"))
+        } else {
+            Issue.record("The reader must build escaped XHTML from the cached mainJs body")
+        }
+        let reopenedReader = OnlineChapterContentService(book: readingBook, store: nil)
+        let reopenedPayload = try await reopenedReader.payload(at: 0, policy: .cacheOnly)
+        #expect(reopenedPayload == payload)
         #expect(await executor.operations() == ["search", "details", "toc"])
         #expect(await nextExecutor.operations() == ["content"])
 

@@ -56,6 +56,10 @@ struct BookSourceMainJSPreservationTests {
             try expectProgram(in: restored, equals: program)
             #expect(restored.hasSameContent(as: imported))
         }
+        // A malformed explicit envelope must not become a default empty source.
+        for invalid in ["{\"bookSources\":null}", "{\"bookSources\":{}}", "{\"bookSources\":\"invalid\"}"] {
+            #expect(BookSourceStore.parseSources(invalid) == nil)
+        }
     }
 
     @Test("editing, removing or changing only whitespace in mainJs is a content change")
