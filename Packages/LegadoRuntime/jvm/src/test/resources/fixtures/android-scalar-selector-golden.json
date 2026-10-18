@@ -1,0 +1,678 @@
+{
+  "schemaVersion": 1,
+  "suite": "ScalarSelectorRuleObservation",
+  "caseSetVersion": "legado-scalar-selector-public-v1",
+  "referenceKind": "original-archive-android-instrumentation",
+  "referenceRunId": "ddf76b67-2444-43c6-91fa-e436522bffdf",
+  "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "applicationClass": "io.legado.app.App",
+  "applicationMinSdkVersion": 26,
+  "androidApi": 35,
+  "androidRelease": "15",
+  "instrumentationRunner": "androidx.test.runner.AndroidJUnitRunner",
+  "entryPoints": [
+    "getString-unescape-false",
+    "getString-default"
+  ],
+  "passedMeaning": "All 28 original observations completed; ordinary API exceptions are outcomes, never port acceptance.",
+  "scope": "Fixed static non-URL scalar selectors, replacement and optional final HTML unescape; no private sources, JS, HTTP or port comparator.",
+  "passed": true,
+  "total": 28,
+  "executed": 28,
+  "failed": 0,
+  "returnedObservations": 28,
+  "exceptionObservations": 0,
+  "iosValidationPassed": false,
+  "deviceValidationPassed": false,
+  "compatibilityValidationPassed": false,
+  "g4ValidationPassed": false,
+  "fullFeatureParityEstablished": false,
+  "observations": [
+    {
+      "caseId": "css-unicode-group-replace",
+      "api": "getString-unescape-false",
+      "content": "<p>章12🙂尾34</p>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@CSS:p@text##([0-9]+)##[$1]",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "章[12]🙂尾[34]",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "css-unicode-group-replace",
+      "api": "getString-default",
+      "content": "<p>章12🙂尾34</p>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@CSS:p@text##([0-9]+)##[$1]",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "章[12]🙂尾[34]",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "css-element-joined-before-replace",
+      "api": "getString-unescape-false",
+      "content": "<article><b>one</b><b>two</b></article>",
+      "context": {
+        "kind": "css-element",
+        "rule": "tag.article",
+        "index": 0
+      },
+      "rule": "@CSS:b@text##one\ntwo##joined",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "org.jsoup.nodes.Element",
+      "actual": "joined",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "css-element-joined-before-replace",
+      "api": "getString-default",
+      "content": "<article><b>one</b><b>two</b></article>",
+      "context": {
+        "kind": "css-element",
+        "rule": "tag.article",
+        "index": 0
+      },
+      "rule": "@CSS:b@text##one\ntwo##joined",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "org.jsoup.nodes.Element",
+      "actual": "joined",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "css-missing-skips-empty-replace",
+      "api": "getString-unescape-false",
+      "content": "<article>present</article>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@CSS:missing@text##^$##fallback",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "css-missing-skips-empty-replace",
+      "api": "getString-default",
+      "content": "<article>present</article>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@CSS:missing@text##^$##fallback",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "css-attribute-whitespace",
+      "api": "getString-unescape-false",
+      "content": "<a data-id=\"  code12  \">value</a>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@CSS:a@data-id##[0-9]+##N",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "  codeN  ",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "css-attribute-whitespace",
+      "api": "getString-default",
+      "content": "<a data-id=\"  code12  \">value</a>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@CSS:a@data-id##[0-9]+##N",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "  codeN  ",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "xpath-document-text",
+      "api": "getString-unescape-false",
+      "content": "<div><b>章12🙂</b><b>尾34</b></div>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@XPath://b/text()##([0-9]+)##[$1]",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "章[12]🙂\n尾[34]",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "xpath-document-text",
+      "api": "getString-default",
+      "content": "<div><b>章12🙂</b><b>尾34</b></div>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@XPath://b/text()##([0-9]+)##[$1]",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "章[12]🙂\n尾[34]",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "xpath-node-relative-text",
+      "api": "getString-unescape-false",
+      "content": "<article><b>node12</b></article>",
+      "context": {
+        "kind": "xpath-node",
+        "rule": "//article",
+        "index": 0
+      },
+      "rule": "@XPath:.//b/text()##[0-9]+##N",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "org.seimicrawler.xpath.JXNode",
+      "actual": "nodeN",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "xpath-node-relative-text",
+      "api": "getString-default",
+      "content": "<article><b>node12</b></article>",
+      "context": {
+        "kind": "xpath-node",
+        "rule": "//article",
+        "index": 0
+      },
+      "rule": "@XPath:.//b/text()##[0-9]+##N",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "org.seimicrawler.xpath.JXNode",
+      "actual": "nodeN",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "xpath-missing-empty-replace",
+      "api": "getString-unescape-false",
+      "content": "<article>present</article>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@XPath://missing/text()##^$##fallback",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "xpath-missing-empty-replace",
+      "api": "getString-default",
+      "content": "<article>present</article>",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@XPath://missing/text()##^$##fallback",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-string-unicode-newline",
+      "api": "getString-unescape-false",
+      "content": "{\"value\":\"首12\\n🙂34尾\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##[0-9]+##N###",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "N",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-string-unicode-newline",
+      "api": "getString-default",
+      "content": "{\"value\":\"首12\\n🙂34尾\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##[0-9]+##N###",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "N",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-missing-empty-replace",
+      "api": "getString-unescape-false",
+      "content": "{\"present\":\"value\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.missing##^$##fallback",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-missing-empty-replace",
+      "api": "getString-default",
+      "content": "{\"present\":\"value\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.missing##^$##fallback",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-invalid-empty-replace",
+      "api": "getString-unescape-false",
+      "content": "{\"items\":[]}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.items[?]##^$##fallback",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-invalid-empty-replace",
+      "api": "getString-default",
+      "content": "{\"items\":[]}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.items[?]##^$##fallback",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-null-empty-replace",
+      "api": "getString-unescape-false",
+      "content": "{\"value\":null}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##^$##fallback",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "json-null-empty-replace",
+      "api": "getString-default",
+      "content": "{\"value\":null}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##^$##fallback",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "fallback",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "static-delimiter-whitespace",
+      "api": "getString-unescape-false",
+      "content": "{\"value\":\"left x right\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": " \t@Json:$.value  ## x ## y \n",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "left yright",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "static-delimiter-whitespace",
+      "api": "getString-default",
+      "content": "{\"value\":\"left x right\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": " \t@Json:$.value  ## x ## y \n",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "left yright",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "entity-in-json-result",
+      "api": "getString-unescape-false",
+      "content": "{\"value\":\"&amp;lt;KEEP\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##KEEP##KEEP",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "&amp;lt;KEEP",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "entity-in-json-result",
+      "api": "getString-default",
+      "content": "{\"value\":\"&amp;lt;KEEP\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##KEEP##KEEP",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "&lt;KEEP",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "entity-introduced-by-replacement",
+      "api": "getString-unescape-false",
+      "content": "{\"value\":\"word\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##word##&amp;lt;",
+      "unescape": false,
+      "defaultArgumentUsed": false,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "&amp;lt;",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    },
+    {
+      "caseId": "entity-introduced-by-replacement",
+      "api": "getString-default",
+      "content": "{\"value\":\"word\"}",
+      "context": {
+        "kind": "document",
+        "rule": "",
+        "index": 0
+      },
+      "rule": "@Json:$.value##word##&amp;lt;",
+      "unescape": true,
+      "defaultArgumentUsed": true,
+      "setupCompleted": true,
+      "apiInvoked": true,
+      "completed": true,
+      "contextJavaClass": "java.lang.String",
+      "actual": "&lt;",
+      "javaClass": "java.lang.String",
+      "exception": null,
+      "observationFailure": null,
+      "outcome": "return"
+    }
+  ],
+  "fixtureSHA256": "97e562c612efe5109e8890f85a9a50f8da0b76c74ce59bf28482ae345cbe8999",
+  "sourceProvenance": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "files": [
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "fileSHA256": "5441d6d00064059519add3e5a81d85b1776f575bd0e5d30f3b5763d90af9e8a9"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSoup.kt",
+        "fileSHA256": "9889421f76a8fda62b0b874e70d0535f2b781b59a9c84fa797af695a9f8cccfa"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByXPath.kt",
+        "fileSHA256": "b6ee22cc3242313f8d5e3758dc93ff06891eeec7b3ab9ee9267ebac11145d842"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSonPath.kt",
+        "fileSHA256": "ee5ee9ebc95b4f5d6e2d459d6f727fccd10a6bd6a36ce872547f6cee5684109d"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/RuleAnalyzer.kt",
+        "fileSHA256": "74ab0152bce9d5e014cc69d9c6974cbb093d8353200f1452066f7d05102265a7"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/SourceHtmlParser.kt",
+        "fileSHA256": "252630eef2545dc71b3c30905accc93dc834b78bfff2f207769e2aabfd3ed19a"
+      }
+    ]
+  }
+}
