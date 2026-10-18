@@ -48,6 +48,23 @@ class FakeAPI:
 
 
 class NativeIdentityTests(unittest.TestCase):
+    def test_scalar_dependency_notices_and_graph_are_bound_to_fresh_jvm_inputs(self):
+        scalar = "Packages/LegadoRuntime/vendor/scalar-rules"
+        self.assertIn(scalar, reuse.JVM_INPUTS)
+        self.assertNotIn(scalar, reuse.replay.NATIVE_INPUTS)
+        self.assertEqual(len(reuse.replay.NATIVE_INPUTS), 7)
+        def git(*args):
+            if args[0] == "status":
+                self.assertIn(scalar, args)
+                return ""
+            return "c" * 40 if args[1] == CURRENT + ":" + scalar else "b" * 40
+        with patch.object(reuse.replay, "git", side_effect=git):
+            inputs = reuse.jvm_inputs(CURRENT)
+        self.assertIn({"path": scalar, "object": "c" * 40}, inputs)
+        with patch.object(reuse.replay, "git", return_value=" M " + scalar + "/manifest.json"):
+            with self.assertRaisesRegex(ValueError, "uncommitted"):
+                reuse.jvm_inputs(CURRENT)
+
     def test_tag_requires_this_protocol_and_exact_sha7(self):
         reuse.validate_tag("legado-core-" + CURRENT[:7], CURRENT)
         for tag in ("legado-core-bbbbbbb", "legado-replay-1-aaaaaaa", "legado-core-aaaaaaaa"):

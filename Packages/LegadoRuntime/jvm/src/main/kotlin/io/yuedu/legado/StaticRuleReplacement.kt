@@ -8,7 +8,8 @@ package io.yuedu.legado
  * replaceRegex 544-568. Original GPL-3.0 license: vendor/LICENSE.
  *
  * This helper does not select HTML/JSON nodes, evaluate JS or variables, unescape
- * HTML, or resolve URLs. It is deliberately not connected to DeclarativeSource.
+ * HTML, or resolve URLs. DeclarativeSource uses it only through the finite
+ * StaticScalarSelectorRule helper; the empty-selector parser remains separate.
  */
 internal object StaticRuleReplacement {
     data class Spec(val pattern: String, val replacement: String, val extractFirst: Boolean)

@@ -19,15 +19,23 @@ spec.loader.exec_module(native)
 JAR = REPO / native.JAR_PATH
 REQUIRED = ("io/yuedu/legado/LegadoRuntime.class", "io/yuedu/legado/NativeHost.class",
             "io/yuedu/legado/ProductionHttpTransport.class", "io/yuedu/legado/RuntimeSessionOptions.class",
-            "org/htmlunit/corejs/javascript/Context.class", "okhttp3/OkHttpClient.class", "org/brotli/dec/BrotliInputStream.class")
+            "io/yuedu/legado/StaticScalarSelectorRule.class", "org/htmlunit/corejs/javascript/Context.class",
+            "okhttp3/OkHttpClient.class", "org/brotli/dec/BrotliInputStream.class",
+            "org/apache/commons/text/StringEscapeUtils.class", "org/apache/commons/lang3/StringUtils.class")
 PROJECT_TEST_CLASSES = (
     "io/legado/app/JsEngineCapabilitiesTest",
     "io/legado/app/model/analyzeRule/AnalyzeByJSoupDomTest",
+    "io/legado/app/model/analyzeRule/AnalyzeByJSonPathErrorPolicyTest",
     *("io/yuedu/legado/" + name for name in (
         "CpuLoopCapabilityProbeTest", "DeclarativeSourceTest", "InteropSemanticSuiteTest", "LegadoRuntimeTest",
         "MainJsFacadeTest", "MainJsResultMarshallerTest", "MainJsScopeTest", "OkHttpWireCapabilityProbeTest",
-        "ProductionHttpTransportTest", "SourceHttpSemanticsTest", "StaticRuleReplacementTest", "TlsCapabilityProbeTest")),
+        "ProductionHttpTransportTest", "SourceHttpSemanticsTest", "StaticRuleReplacementTest", "TlsCapabilityProbeTest",
+        "StaticScalarSelectorRuleTest", "DeclarativeScalarSelectorTest")),
 )
+
+
+def scalar_manifest():
+    return json.loads((REPO / "Packages/LegadoRuntime/vendor/scalar-rules/manifest.json").read_bytes())
 
 
 def inspect_jar(jar):
@@ -51,6 +59,28 @@ def inspect_jar(jar):
             for license in directory.rglob("*"):
                 if license.is_file() and archive.read("META-INF/licenses/jvm-http/" + license.relative_to(directory).as_posix()) != license.read_bytes():
                     raise ValueError("Packaged production HTTP license differs from its source")
+        scalar = REPO / "Packages/LegadoRuntime/vendor/scalar-rules"
+        scalar_origin = scalar_manifest()
+        for name in ("manifest.json", "resolved-dependencies.json"):
+            entry = "META-INF/legado-provenance/scalar-rules/" + name
+            if entry not in names or archive.read(entry) != (scalar / name).read_bytes():
+                raise ValueError("Packaged scalar-rule provenance differs from this source checkout")
+        if hashlib.sha256((scalar / "resolved-dependencies.json").read_bytes()).hexdigest() != scalar_origin["resolvedGraphSHA256"]:
+            raise ValueError("Scalar-rule dependency graph differs from its recorded hash")
+        for item in scalar_origin["requiredRuntimeClasses"]:
+            if hashlib.sha256(archive.read(item["path"])).hexdigest() != item["sha256"]:
+                raise ValueError("Packaged commons-text/lang3 class differs from its pinned release bytes")
+        for item in scalar_origin["licenseFiles"]:
+            expected = (scalar / item["path"]).read_bytes()
+            entry = "META-INF/licenses/scalar-rules/" + item["path"].removeprefix("licenses/")
+            if (hashlib.sha256(expected).hexdigest() != item["sha256"]
+                    or entry not in names or archive.read(entry) != expected):
+                raise ValueError("Packaged scalar-rule license/NOTICE differs from its pinned release bytes")
+        for item in scalar_origin["packagedJarMetadata"]:
+            expected = (scalar / item["path"]).read_bytes()
+            if (hashlib.sha256(expected).hexdigest() != item["sha256"]
+                    or item["jarEntry"] not in names or archive.read(item["jarEntry"]) != expected):
+                raise ValueError("Packaged scalar-rule Maven version metadata differs from its pinned release bytes")
         origin = json.loads((REPO / "Packages/LegadoRuntime/vendor/runtime-http/manifest.json").read_bytes())
         for source in origin["encodingSources"]:
             actual = REPO / "Packages/LegadoRuntime" / source["portedPath"]

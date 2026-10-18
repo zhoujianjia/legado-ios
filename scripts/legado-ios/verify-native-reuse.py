@@ -59,6 +59,7 @@ JVM_INPUTS = (
     "Packages/LegadoRuntime/vendor/manifest.json",
     "Packages/LegadoRuntime/vendor/probe",
     "Packages/LegadoRuntime/vendor/runtime-http",
+    "Packages/LegadoRuntime/vendor/scalar-rules",
 )
 REQUIRED_GRADLE_TASKS = ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke",
                          "runtimeWireSmoke", "runtimeCpuLoopSmoke", "probeDependencyEvidence"]
@@ -73,12 +74,15 @@ REQUIRED_JAR_CLASSES = (
     "io/yuedu/legado/LegadoRuntime.class",
     "io/yuedu/legado/NativeHost.class",
     "org/htmlunit/corejs/javascript/Context.class",
+    "org/apache/commons/text/StringEscapeUtils.class",
+    "org/apache/commons/lang3/StringUtils.class",
     "io/legado/app/JsEngineCapabilitiesTest.class",
     "org/junit/runner/JUnitCore.class",
     "org/hamcrest/Matcher.class",
     "io/yuedu/legado/InteropSemanticSuite.class",
     "io/yuedu/legado/interop/InteropFixture.class",
     "io/yuedu/legado/MainJsResultMarshaller.class",
+    "io/yuedu/legado/StaticScalarSelectorRule.class",
     "io/yuedu/legado/TlsCapabilityProbe.class",
     "io/yuedu/legado/HttpWireDiagnosticBridge.class",
     "io/yuedu/legado/OkHttpWireCapabilityProbe.class",

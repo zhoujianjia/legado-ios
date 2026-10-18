@@ -41,7 +41,7 @@ internal class DeclarativeSource(private val task: RuntimeTask, private val host
             JsonArray().apply { elements(response.body(), required(rules, "chapterList")).forEachIndexed { index, item ->
                 task.job.ensureActiveForRuntime()
                 add(jsonObject("index" to index, "title" to text(item, required(rules, "chapterName")),
-                    "url" to resolve(response.url(), text(item, required(rules, "chapterUrl")))))
+                    "url" to resolve(response.url(), text(item, required(rules, "chapterUrl"), isUrl = true))))
             } }
         }
         "content", "getContent" -> {
@@ -55,6 +55,7 @@ internal class DeclarativeSource(private val task: RuntimeTask, private val host
     }
 
     private fun template(raw: String, input: JsonObject): String {
+        if (raw.contains("##")) unsupported("URL replacement rules")
         var value = raw.replace("{{key}}", URLEncoder.encode(input["key"]?.asString.orEmpty(), StandardCharsets.UTF_8))
             .replace("{{page}}", (input["page"]?.asInt ?: 1).toString())
         if (value.contains("{{") || value.contains("@js:", true)) unsupported("Dynamic URL expressions")
@@ -65,7 +66,7 @@ internal class DeclarativeSource(private val task: RuntimeTask, private val host
     private fun extract(document: Any, rules: JsonObject, fields: List<String>, responseUrl: String): JsonObject = JsonObject().apply {
         fields.forEach { field ->
             rules[field]?.takeUnless { it.isJsonNull || it.asString.isBlank() }?.let { rule ->
-                val value = text(document, rule.asString)
+                val value = text(document, rule.asString, isUrl = field.endsWith("Url"))
                 addProperty(field, if (field.endsWith("Url")) resolve(responseUrl, value) else value)
             }
         }
@@ -81,7 +82,11 @@ internal class DeclarativeSource(private val task: RuntimeTask, private val host
         }
     }
 
-    private fun text(document: Any, rawRule: String): String {
+    private fun text(document: Any, rawRule: String, isUrl: Boolean = false): String {
+        if (rawRule.contains("##")) {
+            if (isUrl) unsupported("URL replacement rules")
+            return StaticScalarSelectorRule.evaluate(document, rawRule)
+        }
         val rule = supported(rawRule)
         if (document is List<*> && rule.matches(Regex("\\$[0-9]+"))) return document.getOrNull(rule.drop(1).toInt())?.toString().orEmpty()
         return when {

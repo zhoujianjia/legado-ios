@@ -27,6 +27,9 @@ dependencies {
     implementation("org.jsoup:jsoup:1.23.2")
     implementation("com.jayway.jsonpath:json-path:3.0.0")
     implementation("cn.wanghaomiao:JsoupXpath:2.5.3")
+    implementation("org.apache.commons:commons-text:1.13.1")
+    // The original commons-text POM requests 3.17.0; JsoupXpath requests 3.12.0.
+    implementation("org.apache.commons:commons-lang3:3.17.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains:annotations:26.0.2")
 }
@@ -101,6 +104,10 @@ val runtimeJar by tasks.registering(Jar::class) {
     from("../vendor/runtime-http/licenses") { into("META-INF/licenses/jvm-http") }
     from("../vendor/runtime-http/manifest.json") { into("META-INF/legado-provenance/runtime-http") }
     from("../vendor/runtime-http/resolved-dependencies.json") { into("META-INF/legado-provenance/runtime-http") }
+    from("../vendor/scalar-rules/licenses") { into("META-INF/licenses/scalar-rules") }
+    from(files("../vendor/scalar-rules/manifest.json", "../vendor/scalar-rules/resolved-dependencies.json")) {
+        into("META-INF/legado-provenance/scalar-rules")
+    }
     if (includeEngineTests) {
         // These are third-party test-runtime notices, not user-archive provenance.
         val junit = payloadDependencies.get().files.single { it.name == "junit-4.13.2.jar" }
