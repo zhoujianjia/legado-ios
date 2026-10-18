@@ -33,6 +33,11 @@ REFERENCE_MIN_SDK = 26
 PACKAGE = "com.legado.app.debug"
 TEST_CLASS = "io.legado.app.reference.LegadoGoldenTraceTest"
 REMOTE_REPORT = "files/legado-reference/android-golden.json"
+HARNESS_RELATIVE = "app/src/androidTest/java/io/legado/app/reference/LegadoGoldenTraceTest.kt"
+FIXTURE_RELATIVE = "app/src/androidTest/assets/legado-reference/main-source.js"
+GOLDEN_FILENAME = "android-golden.json"
+OBSERVED_FILENAME = "android-report-observed.json"
+TEST_CONFIGURATION_OVERRIDES = {}
 
 
 def digest(path: Path) -> str:
@@ -59,8 +64,8 @@ def verify_original_files() -> dict:
 def stage() -> None:
     manifest = verify_original_files()
     additions = {
-        SOURCE / "app/src/androidTest/java/io/legado/app/reference/LegadoGoldenTraceTest.kt": HARNESS.read_bytes(),
-        SOURCE / "app/src/androidTest/assets/legado-reference/main-source.js": FIXTURE.read_bytes(),
+        SOURCE / HARNESS_RELATIVE: HARNESS.read_bytes(),
+        SOURCE / FIXTURE_RELATIVE: FIXTURE.read_bytes(),
         STAGED_INIT_SCRIPT: INIT_SCRIPT.read_bytes(),
         # Test-only collection settings. All original business files stay intact.
         SOURCE / "app/src/debug/AndroidManifest.xml": b'''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -99,6 +104,7 @@ def stage() -> None:
             "network": "original network security config; fixture server listens on emulator loopback only",
             "application": "original Application and AndroidJUnitRunner; no replacement host or business source",
             "minimumSdk": "external reference.init.gradle applies androidComponents.finalizeDsl to :app only; minSdk 23 -> 26 for bundled Rhino MethodHandle bytecode; original Gradle files unchanged",
+            **TEST_CONFIGURATION_OVERRIDES,
         },
         "iosValidationPassed": False,
     }
@@ -174,12 +180,12 @@ def execute() -> None:
             raise RuntimeError("Original app did not export the reference report")
         # Preserve observed bytes for diagnostics, but never promote an old
         # report to this execution's golden output merely because inputs match.
-        (OUTPUT / "android-report-observed.json").write_bytes(exported.stdout)
+        (OUTPUT / OBSERVED_FILENAME).write_bytes(exported.stdout)
         result["reportSHA256"] = hashlib.sha256(exported.stdout).hexdigest()
         report = json.loads(exported.stdout)
         if not isinstance(report, dict) or report.get("referenceRunId") != reference_run_id:
             raise RuntimeError("Original reference report is stale or does not identify this execution")
-        (OUTPUT / "android-golden.json").write_bytes(exported.stdout)
+        (OUTPUT / GOLDEN_FILENAME).write_bytes(exported.stdout)
         if report.get("referenceKind") != result["referenceKind"] or report.get("passed") is not True:
             raise RuntimeError("Original reading-chain reference failed; preserve its partial trace")
         if report.get("fixtureSHA256") != inputs["fixtureSHA256"] or report.get("originalArchiveSHA256") != manifest["originalArchiveSHA256"]:

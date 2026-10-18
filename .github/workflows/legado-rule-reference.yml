@@ -1,0 +1,157 @@
+name: Legado Original Rule Replacement Reference
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'legado-rule-reference-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legado-rule-reference-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  portable-kernel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile and execute the actual ported scalar kernel
+        run: |
+          mkdir -p .build/ci-logs/rule-port
+          git diff --exit-code
+          bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon test runtimeJar 2>&1 | tee .build/ci-logs/rule-port/jvm-tests.log
+          cp Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar .build/ci-logs/rule-port/legado-runtime.jar
+          java -Xint -Xmx128m -cp .build/ci-logs/rule-port/legado-runtime.jar tools/legado-reference/StaticRuleReplacementPortTrace.java Packages/LegadoRuntime/jvm/src/test/resources/fixtures/rule-replacement-cases.json .build/ci-logs/rule-port/port-rule-trace.json "$(git rev-parse HEAD)" .build/ci-logs/rule-port/legado-runtime.jar
+      - name: Preserve the actual ported payload and trace
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-rule-port-trace
+          path: .build/ci-logs/rule-port/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve exact JVM test counts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-rule-jvm-tests
+          path: Packages/LegadoRuntime/jvm/build/test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
+  original-rules:
+    needs: portable-kernel
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify the sanitized original source and stage the isolated test
+        run: |
+          mkdir -p .build/ci-logs/rule-reference
+          python -B scripts/legado-reference/test-prepare-reference.py -v 2>&1 | tee .build/ci-logs/rule-reference/preparation-tests.log
+          python -B scripts/legado-reference/test-compare-reference.py -v 2>&1 | tee .build/ci-logs/rule-reference/comparator-tests.log
+          python -B scripts/legado-reference/test-run-reference.py -v 2>&1 | tee .build/ci-logs/rule-reference/execution-driver-tests.log
+          python -B scripts/legado-reference/test-rule-reference.py -v 2>&1 | tee .build/ci-logs/rule-reference/rule-driver-tests.log
+          python -B scripts/legado-reference/test-compare-rule-replacement.py -v 2>&1 | tee .build/ci-logs/rule-reference/rule-comparison-tests.log
+          python -B scripts/legado-reference/prepare-reference.py stage --snapshot-directory Packages/LegadoRuntime/vendor/android-reference --destination .build/legado-rule-reference/source
+          python -B scripts/legado-reference/run-rule-reference.py stage
+      - name: Install the Android SDK command-line tools and required packages
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4, resolved 2026-10-18
+        with:
+          cmdline-tools-version: '15859902'
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - name: Verify the Android SDK and enable emulator acceleration
+        run: |
+          set -x
+          command -v sdkmanager
+          id
+          test -c /dev/kvm
+          ls -l /dev/kvm
+          # This hosted job has one existing KVM node. Set its permissions
+          # synchronously instead of racing an asynchronous udev trigger.
+          sudo chmod 0666 /dev/kvm
+          ls -l /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+      - name: Compile the original application and only the added reference test
+        run: |
+          bash .build/legado-rule-reference/source/gradlew -p .build/legado-rule-reference/source --no-daemon --max-workers=2 \
+            -I "$GITHUB_WORKSPACE/.build/legado-rule-reference/source/reference.init.gradle" \
+            -Dorg.gradle.jvmargs='-Xmx4g -Dfile.encoding=UTF-8' \
+            :app:assembleAppDebug :app:assembleAppDebugAndroidTest --stacktrace \
+            2>&1 | tee .build/ci-logs/rule-reference/build.log
+      - name: Execute the original static rule replacement cases on Android
+        uses: reactivecircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808 # v2, resolved 2026-10-18
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 300
+          disable-animations: true
+          script: python -B scripts/legado-reference/run-rule-reference.py execute
+      - name: Download this run's actual ported trace and payload
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: legado-rule-port-trace
+          path: .build/ci-logs/rule-port
+          digest-mismatch: error
+      - name: Compare every original scalar result without normalization
+        run: |
+          python -B scripts/legado-reference/compare-rule-replacement.py \
+            --android .build/ci-logs/rule-reference/rule-replacement-golden.json \
+            --port .build/ci-logs/rule-port/port-rule-trace.json \
+            --corpus Packages/LegadoRuntime/jvm/src/test/resources/fixtures/rule-replacement-cases.json \
+            --inputs .build/ci-logs/rule-reference/reference-inputs.json \
+            --execution .build/ci-logs/rule-reference/execution.json \
+            --jar .build/ci-logs/rule-port/legado-runtime.jar \
+            --output .build/ci-logs/rule-reference/ported-kernel-comparison.json
+      - name: Preserve reference diagnostics and trace, including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-original-rule-reference
+          path: |
+            .build/ci-logs/rule-reference/
+            .build/ci-logs/rule-port/
+            .build/legado-rule-reference/source/app/build/outputs/androidTest-results/
+            .build/legado-rule-reference/source/app/build/reports/androidTests/
+            .build/legado-rule-reference/source/app/build/outputs/logs/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Explain the reference boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          This job executes the pinned archive's unchanged AnalyzeRule string replacement methods through a separate added Android instrumentation test and shared static corpus. The added rule test issues no business HTTP requests and does not modify the mainJs reference harness, golden or strict comparator.
+          The source snapshot excludes the original signing key, GitHub workflows and Google services configuration. It retains original business source bytes and licenses; test-only Google configuration and telemetry settings are generated separately.
+          An external init script raises only the reference app's minSdk from 23 to 26 so D8 can encode the bundled Rhino MethodHandle calls. The original Gradle files and runtime JAR bytes remain unchanged, and the test verifies the installed APK's declared minimum SDK on the API 35 emulator.
+          A passing original-Android rule report is a reference, not an iOS or G4 pass. Every corpus case, exact string result, current instrumentation identity and absence of exceptions is checked separately. Failed builds and partial or stale reports cannot pass.
+          SUMMARY
