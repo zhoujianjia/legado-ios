@@ -1,132 +1,47 @@
-# Legado iOS runtime prototype
+# Legado iOS
 
-This repository evaluates running the original Legado Java/Kotlin parsing core
-locally inside a native iOS reader using OpenJDK Mobile Zero. It is based on the
-pinned Yuedu source recorded in [the provenance lock](docs/legado-ios/provenance-lock.json).
+面向 iPhone 和 iPad 的本地阅读器，以 Legado 的书源和功能为兼容目标，采用原生阅读界面。目前是持续完善中的体验版。
 
-The current unsigned main reader candidate is **3.0.0 build 6**, source `ac2ece6`,
-for iOS 18+. Its cloud IPA passed independent packaging, license, module-byte and
-native-export audits; a separate local IPA preserves all 1,331 private sources.
-The finite plain-text `mainJs` route uses Rhino/JVM, while traditional sources
-still use the existing JSC implementation. Runtime execution, physical-device
-reading, real-source availability and full Legado parity remain unverified for
-this candidate. See [current reader evidence](docs/legado-ios/native-reader-experience.json)
-and [migration status](docs/legado-ios/migration-status.md).
+## 可以做什么
 
-The separate runtime probe, version 0.2 build 6 at `78930be`, has a hash-checked physical-iPhone report with
-`passed=true` on `iPhone18,3` / iOS 27.0.1: all 25 original engine cases (0 failed,
-0 skipped), JavaBeans, customized semantics and the fixed `mainJs` reading/state
-and cancellation-handshake fixture passed. The earlier termination did not recur;
-its original cause remains unconfirmed. See [device evidence](docs/legado-ios/device-validation.json).
+- 导入书源，搜索书籍、查看目录、阅读正文、换源和缓存章节。
+- 阅读本地 TXT / EPUB，管理书架、分组、书签与笔记。
+- 调整字体、字号、行距、边距、配色与翻页方式，使用系统朗读。
+- 使用自己配置的 WebDAV、OPDS 和 RSS。
 
-CI, the Simulator fixture and the unsigned IPA audit also passed in
-[run 39044188251](https://github.com/zhoujianjia/legado-ios/actions/runs/39044188251).
-Download its `legado-probe-unsigned` artifact and follow the
-[Windows installation guide](docs/legado-ios/windows-install.md).
-The user confirmed the self-signed app ran directly from the Home Screen without
-a debugger, extra JIT tooling or jailbreak. G1 and G2 passed; G3–G5 have partial
-coverage. Full feature migration remains gated; this is a runtime prototype.
+应用无需注册账号，不设会员或付费解锁。书源网站要求的登录、Cookie 和验证码仍然保留。
 
-- [Prototype architecture, coverage and validation gates](docs/legado-ios/README.md)
-- [Build from Windows using GitHub Actions](docs/legado-ios/cloud-build.md)
-- [Standalone iPhone/iPad runtime probe](Prototypes/LegadoRuntimeProbe/README.md)
+## 本轮整理
 
-Upstream Yuedu documentation and download links follow.
+- 中文界面使用简体，去掉默认公版书库、上游账号、会员和反馈入口。
+- 增加在线书籍的“导出已缓存 TXT”，标明已导出章节数量，不自动下载缺失正文。
+- 增加随包的霞鹜文楷和霞鹜新致宋，继续支持导入自己的字体。
+- 保留用户已有书源、书库、书籍与阅读数据。
 
-# Yuedu
+这些条目描述当前源码；已安装的旧版需要更新后才会变化。
 
-<p align="center">
-  <img src="Resources/Assets.xcassets/AppIcon.appiconset/AppIcon_1024_white_no_alpha.png" width="112" alt="Yuedu">
-</p>
+## 安装与使用
 
-<p align="center">
-  Apple Books-inspired open-source reader for iOS.
-</p>
+当前 JVM 体验包需要 iOS / iPadOS 18 或更新版本。
 
-<p align="center">
-  <a href="README.zh-Hans.md">简体中文</a> ·
-  <a href="README.zh-Hant.md">繁體中文</a> ·
-  <a href="README.md">English</a>
-</p>
+1. 在 Windows 上连接并解锁设备，打开 iloader。
+2. 选择已准备好的 IPA，使用原 Apple ID 覆盖安装；更新前不要卸载旧版。
+3. 打开应用。已有书源会保留，也可以手动导入 Legado 书源 JSON。
 
-<p align="center">
-  <a href="https://apps.apple.com/app/id6772972358">
-    <img src="https://img.shields.io/badge/App%20Store-Download-0D96F6?logo=apple&logoColor=white" alt="Download on the App Store">
-  </a>
-  <a href="https://testflight.apple.com/join/7hvbzYC1">
-    <img src="https://img.shields.io/badge/TestFlight-Beta-0D96F6?logo=apple&logoColor=white" alt="Join the TestFlight beta">
-  </a>
-  <a href="https://iosdevweekly.com/issues/751">
-    <img src="https://img.shields.io/badge/Featured%20in-iOS%20Dev%20Weekly%20%23751-FF6600" alt="Featured in iOS Dev Weekly #751">
-  </a>
-  <img src="https://img.shields.io/badge/iOS-17.0%2B-000000?logo=apple&logoColor=white" alt="iOS 17.0+">
-  <img src="https://img.shields.io/badge/license-MPL--2.0-blue" alt="MPL 2.0 License">
-</p>
+首次安装和信任设置见[安装说明](docs/legado-ios/windows-install.md)。IPA 需要自行签名，应用本身不能延长签名有效期。
 
-> Featured in [iOS Dev Weekly #751](https://iosdevweekly.com/issues/751) — [*From WebView to CoreText: Building a Native EPUB Reader for iOS*](https://chang-jui-lin.github.io/Yuedu-reader/2026/05/20/from-webview-to-coretext/).
+## 兼容性与边界
 
-Yuedu is an open-source reading application focused on a high-quality local and open reading experience. One app for EPUB3, comics, audiobooks, RSS, and open catalogs — rendered natively with CoreText, no WebView.
+目前已收到 iPhone 上可搜索并打开正文的反馈，但不能保证所有书源或全部 Legado 功能完全兼容。传统规则主要走现有 JavaScriptCore；保留原引擎的 JVM 路线仍在逐步接入和验证。
 
-## Features
+复杂 JS、Java 宿主接口、登录验证、媒体源和批量正文需要分别验证；网站失效、网络限制和反爬也会影响可用性。书源数量不等于兼容通过数量。
 
-| | |
-|:--|:--|
-| **Formats** | EPUB3 · TXT · CBZ Comics · Audiobook · PDF *(WIP)* |
-| **Content** | Local Library · WebDAV · OPDS · RSS · Content Sources |
-| **Reading** | Vertical Writing · Themes · Annotation · Bookmarks |
-| **More** | Reading Statistics · iCloud Sync |
+[功能对照与后续优先级](docs/legado-ios/feature-comparison.md) · [迁移进度](docs/legado-ios/migration-status.md)
 
-## Why CoreText, not WebView
+私人书源只在本机加入安装包，不提交仓库或上传云端构建。
 
-Most readers wrap content in a WebView. Yuedu renders every page with CoreText, which gives precise pagination, true CJK vertical writing, frame-accurate text-to-speech sync, and native text selection — at native performance. The full story is in [*From WebView to CoreText*](https://chang-jui-lin.github.io/Yuedu-reader/2026/05/20/from-webview-to-coretext/).
+## 开发与来源
 
-## Architecture
+Windows 可以整理源码和运行 JVM 测试；iOS 编译使用 Mac / Xcode 或仓库的 macOS Actions。构建说明见[开发文档](docs/legado-ios/cloud-build.md)。
 
-```
-UI (SwiftUI)
-  ↓
-Reader (CoreText)
-  ↓
-Parser (EPUB / TXT / CBZ / RSS / Audio)
-  ↓
-Storage (Local-first)
-  ↓
-Sync (WebDAV / iCloud / OPDS)
-```
-
-## Build
-
-**Requirements:** Xcode 16+ · iOS 17.0+ · Swift 6.0
-
-```bash
-git clone https://github.com/CHANG-JUI-LIN/Yuedu-reader.git
-cd Yuedu-reader
-open Yuedu-Reader.xcodeproj
-```
-
-Then select a simulator (or your device) and run. Self-built versions need their own signing configuration and bundle identifier. Publicly redistributed forks must use distinct app names, icons, and branding and must not imply official endorsement.
-
-## Official App Store build
-
-The source code is open source. The App Store version is the official build maintained, signed, reviewed, distributed, and supported by the project owner. Its purchase price supports ongoing development and release maintenance.
-
-## Documentation
-
-### User guides
-
-- **Book sources (Legado-format):** [Guide index](docs/book-source/README.md) · [常见症状对照表](docs/book-source/troubleshooting.zh-Hans.md) — import, five-stage validation, rule debugger, syntax cheat sheet, differences from Legado, and symptom→fix troubleshooting.
-- **Battery SVG templates:** [English](docs/reader-overlay/BatterySVG.en.md) · [简体中文](docs/reader-overlay/BatterySVG.zh-Hans.md) · [繁體中文](docs/reader-overlay/BatterySVG.zh-Hant.md) — template format, dynamic markers, supported SVG subset, and import troubleshooting.
-
-### Developer reference
-
-- [CoreText documentation](docs/coretext/README.md) — reader architecture, rendering pipeline, interaction, and vertical writing.
-- [EPUB compatibility checklist](docs/epub-compatibility-checklist.md) — implementation and regression checklist.
-- [Project architecture](Technotes/Architecture.md) — modules, data flow, and technical boundaries.
-
-## Contributing
-
-Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for conventions and the PR process.
-
-## License
-
-Source code is licensed under the [Mozilla Public License 2.0](LICENSE). The Yuedu name, app icon, logo, screenshots, and other brand assets are not licensed under the MPL; see [TRADEMARKS.md](TRADEMARKS.md). Versions released before the license transition remain available under the license that applied when they were published; see [LICENSING.md](LICENSING.md).
+阅读界面与部分服务基于 [Yuedu Reader](https://github.com/CHANG-JUI-LIN/Yuedu-reader)，兼容基准为本机锁定的 Legado 源码。保留各部分原有许可证及署名，详见 [LICENSE](LICENSE)、[源码来源锁定](docs/legado-ios/provenance-lock.json)和[字体来源与许可](Resources/ReaderFonts/ReaderFonts-provenance.json)。

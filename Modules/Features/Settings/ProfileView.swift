@@ -41,6 +41,9 @@ struct SettingsView: View {
     }
 
     private var appLanguageFooter: String {
+        if ReaderExperienceConfiguration.isLocalExperience {
+            return localized("中文介面使用簡體；其他語言可在系統設定中選擇。")
+        }
         // The name iOS Settings lists the app under: the display name (閱讀), not the bundle name.
         let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "App"
         let template = localized("跟隨系統語言。可在「設定 → %@ → 語言」單獨設定")
@@ -61,15 +64,15 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
                 Form {
-                    Section {
-                        NavigationLink(destination: UserDetailView()) {
-                            AccountRowContent()
+                    if ReaderExperienceConfiguration.accountServicesEnabled {
+                        Section {
+                            NavigationLink(destination: UserDetailView()) {
+                                AccountRowContent()
+                            }
+                            .accessibilityIdentifier("settings_account_row")
                         }
-                        .accessibilityIdentifier("settings_account_row")
-                        // The first row measures the form's scroll for the title's fade.
-                        .rootTabTitleScrollAnchor()
+                        .interfaceSectionSurface()
                     }
-                    .interfaceSectionSurface()
                     // ── App Language ──
                     Section {
                         DSSettingsRow(
@@ -81,6 +84,7 @@ struct SettingsView: View {
                                 }
                             }
                         )
+                        .rootTabTitleScrollAnchor()
                     } header: {
                         Text(localized("App 語言"))
                             .foregroundStyle(DSColor.textSecondary)
@@ -171,7 +175,8 @@ struct SettingsView: View {
                         DSSettingsRow(
                             icon: "arrow.triangle.2.circlepath.icloud",
                             title: localized("備份與同步"),
-                            detail: localized("iCloud、WebDAV"),
+                            detail: ReaderExperienceConfiguration.cloudKitEnabled
+                                ? localized("iCloud、WebDAV") : localized("WebDAV 同步"),
                             action: { showBackupSync = true }
                         )
 
@@ -206,34 +211,46 @@ struct SettingsView: View {
                         .accessibilityIdentifier("settings_legado_runtime_probe")
                         // 回饋中心 replaced 診斷與回報 (2026-10-15): reports, replies, and the
                         // diagnostic log viewer as its 診斷紀錄 row.
-                        NavigationLink {
-                            FeedbackCenterView()
-                        } label: {
-                            Label(localized("回饋中心"), systemImage: "exclamationmark.bubble")
-                                .foregroundColor(DSColor.textPrimary)
-                                .labelStyle(IconConsistentLabelStyle())
+                        if ReaderExperienceConfiguration.feedbackServicesEnabled {
+                            NavigationLink {
+                                FeedbackCenterView()
+                            } label: {
+                                SettingsRowLabel(localized("回饋中心"), systemImage: "exclamationmark.bubble")
+                            }
+                            .accessibilityIdentifier("settings_feedback_center")
+                        } else {
+                            NavigationLink {
+                                DiagnosticsView()
+                            } label: {
+                                SettingsRowLabel(localized("診斷紀錄"), systemImage: "waveform.path.ecg")
+                            }
+                            .accessibilityIdentifier("settings_diagnostics")
                         }
-                        .accessibilityIdentifier("settings_feedback_center")
                     }
                     .interfaceSectionSurface()
 
                     // ── About ──
                     Section(header: Text(localized("關於")).foregroundStyle(DSColor.textSecondary)) {
                         NavigationLink {
-                            AboutSupportView(
-                                appVersion: appVersion,
-                                feedbackEmail: feedbackEmail,
-                                officialQQGroupID: officialQQGroupID,
-                                feedbackMailURL: feedbackMailURL,
-                                telegramGroupURL: telegramGroupURL,
-                                privacyPolicyURL: privacyPolicyURL,
-                                userAgreementURL: userAgreementURL,
-                                paidTermsURL: paidTermsURL,
-                                sourceCodeURL: sourceCodeURL
-                            )
+                            if ReaderExperienceConfiguration.isLocalExperience {
+                                LocalReaderAboutView(appVersion: appVersion)
+                            } else {
+                                AboutSupportView(
+                                    appVersion: appVersion,
+                                    feedbackEmail: feedbackEmail,
+                                    officialQQGroupID: officialQQGroupID,
+                                    feedbackMailURL: feedbackMailURL,
+                                    telegramGroupURL: telegramGroupURL,
+                                    privacyPolicyURL: privacyPolicyURL,
+                                    userAgreementURL: userAgreementURL,
+                                    paidTermsURL: paidTermsURL,
+                                    sourceCodeURL: sourceCodeURL
+                                )
+                            }
                         } label: {
                             HStack {
-                                Label(localized("關於 Yuedu Reader"), systemImage: "info.circle.fill")
+                                Label(localized(ReaderExperienceConfiguration.isLocalExperience
+                                    ? "關於 Legado iOS" : "關於 Yuedu Reader"), systemImage: "info.circle.fill")
                                     .foregroundColor(DSColor.textPrimary)
                                     .labelStyle(IconConsistentLabelStyle())
                                 Spacer(minLength: 12)
@@ -269,7 +286,8 @@ struct SettingsView: View {
                 let arguments = ProcessInfo.processInfo.arguments
                 if arguments.contains("-open-diagnostics") {
                     autoOpenDiagnostics = true
-                } else if arguments.contains("-open-feedback-center") {
+                } else if arguments.contains("-open-feedback-center"),
+                          ReaderExperienceConfiguration.feedbackServicesEnabled {
                     autoOpenFeedbackCenter = true
                 }
             }
@@ -313,9 +331,9 @@ struct SettingsView: View {
         store.books.filter { $0.isOnline && $0.offlineDownloadState == .available }.count
     }
 
-    /// AI is Pro, its settings included (`ReaderPremiumVisibilityPolicy.allowsAI`).
+    /// Standalone local features use capability access rather than membership.
     private var isAILocked: Bool {
-        !ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.isProActive).allowsAI
+        !ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.hasUnrestrictedFeatureAccess).allowsAI
     }
 
     /// Says whether AI is usable at a glance. A reader who has not set it up should not have

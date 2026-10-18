@@ -41,7 +41,8 @@ enum DiagnosticReportUploader {
     /// Renders, compresses and writes the report. Rendering several thousand lines is real
     /// work, so it runs off the main thread; the caller awaits the result.
     static func upload(_ bundle: DiagnosticReportBundle, note: String) async throws -> Receipt {
-        guard FirebaseApp.app() != nil else { throw UploadError.firebaseUnavailable }
+        guard ReaderExperienceConfiguration.feedbackServicesEnabled,
+              FirebaseApp.app() != nil else { throw UploadError.firebaseUnavailable }
         let reportID = makeReportID()
         let prepared = try await Task.detached(priority: .userInitiated) {
             try preparePayload(bundle, reportID: reportID)

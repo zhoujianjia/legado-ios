@@ -1,7 +1,8 @@
 import Foundation
 
-/// Visibility rules for reader customization surfaces that should not be
-/// discoverable until the single Yuedu Pro entitlement is active.
+/// Retained visibility adapter for reader customization. Production callers
+/// pass effective feature availability, including standalone local access;
+/// this value does not imply that an account owns a subscription.
 struct ReaderPremiumVisibilityPolicy {
     let isProActive: Bool
 

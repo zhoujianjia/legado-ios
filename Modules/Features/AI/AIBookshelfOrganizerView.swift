@@ -54,7 +54,7 @@ struct AIBookshelfOrganizerView: View {
     // MARK: - Setup
 
     @ViewBuilder private var setup: some View {
-        if !ReaderPremiumVisibilityPolicy(isProActive: subscription.isProActive).allowsAI {
+        if !ReaderPremiumVisibilityPolicy(isProActive: subscription.hasUnrestrictedFeatureAccess).allowsAI {
             // Reached without Pro only on iOS 17, where the bookshelf menu pushes this page
             // instead of opening the paywall straight from the menu. No service details and
             // no way into AI 助手設定, which is Pro as well.

@@ -500,7 +500,7 @@ struct FixedPageReaderSettingsView: View {
                 }
                 if configuration.layout == .paged {
                     Section {
-                        if ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.isProActive).showsTouchZoneEditor {
+                        if ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.hasUnrestrictedFeatureAccess).showsTouchZoneEditor {
                             Button(action: onOpenTouchZoneEditor) {
                                 Label(localized("翻頁區塊編輯"), systemImage: "hand.tap")
                             }

@@ -44,10 +44,13 @@ final class FirebaseAuthManager: ObservableObject {
     /// the owning account on the same route.
     private var pendingGatewayToken: String?
 
-    private let gateway = GatewayAuthProvider.shared
-    private let gatewayStore = GatewaySessionStore.shared
+    private lazy var gateway = GatewayAuthProvider.shared
+    private lazy var gatewayStore = GatewaySessionStore.shared
 
     private init() {
+        // Do not restore an upstream session, read its keychain, or register an
+        // SDK listener in the standalone local reader.
+        guard ReaderExperienceConfiguration.accountServicesEnabled else { return }
         currentUser = Auth.auth().currentUser
 
         if !GatewayConfiguration.isConfigured, gatewayStore.hasSession {
@@ -96,6 +99,7 @@ final class FirebaseAuthManager: ObservableObject {
     }
 
     func prepareAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else { return }
         let nonce = AppleSignInNonce.random()
         currentAppleNonce = nonce
         request.requestedScopes = [.fullName, .email]
@@ -124,6 +128,7 @@ final class FirebaseAuthManager: ObservableObject {
 
     @discardableResult
     func signInWithApple(credential appleCredential: ASAuthorizationAppleIDCredential) async throws -> AccountUser {
+        try requireAccountServices()
         guard let nonce = currentAppleNonce else {
             throw AuthFlowError.missingAppleNonce
         }
@@ -202,6 +207,7 @@ final class FirebaseAuthManager: ObservableObject {
 
     /// Links a Google identity to the currently signed-in account (same uid).
     func linkGoogle() async throws {
+        try requireAccountServices()
         let route = sessionRoute
         do {
             switch route {
@@ -231,6 +237,7 @@ final class FirebaseAuthManager: ObservableObject {
 
     /// Links an Apple identity to the currently signed-in account (same uid).
     func linkApple() async throws {
+        try requireAccountServices()
         let nonce = AppleSignInNonce.random()
         let coordinator = AppleReauthCoordinator()
         appleReauthCoordinator = coordinator
@@ -272,6 +279,7 @@ final class FirebaseAuthManager: ObservableObject {
 
     /// Links an email/password identity to the currently signed-in account (same uid).
     func linkEmail(email: String, password: String) async throws {
+        try requireAccountServices()
         let route = sessionRoute
         do {
             switch route {
@@ -321,6 +329,7 @@ final class FirebaseAuthManager: ObservableObject {
 
     /// Removes one sign-in method from the current account (same uid, one fewer provider).
     func unlink(providerID: String) async throws {
+        try requireAccountServices()
         let route = sessionRoute
         switch route {
         case .direct:
@@ -351,6 +360,7 @@ final class FirebaseAuthManager: ObservableObject {
     /// changes which identity the profile syncs under.
     @discardableResult
     func signInWithPendingCredential() async throws -> AccountUser {
+        try requireAccountServices()
         if let pendingGatewayToken {
             clearPendingSignInCredential()
             // The profile fingerprint / createdAt caches in UserDefaults are per device,
@@ -380,6 +390,7 @@ final class FirebaseAuthManager: ObservableObject {
     // MARK: - Sign out / delete
 
     func signOut(revokeGoogleAccess: Bool = false) async throws {
+        try requireAccountServices()
         if revokeGoogleAccess {
             try? await GIDSignIn.sharedInstance.disconnect()
         } else {
@@ -405,6 +416,7 @@ final class FirebaseAuthManager: ObservableObject {
     /// documents while the credentials that may delete them still exist → revoke the
     /// Apple token → delete the auth user last.
     func deleteAccount(emailPassword: String? = nil) async throws {
+        try requireAccountServices()
         if activeRoute == .gateway {
             try await deleteGatewayAccount(emailPassword: emailPassword)
             return
@@ -543,6 +555,7 @@ final class FirebaseAuthManager: ObservableObject {
         operation: AccountOperation,
         _ body: (AuthRoute) async throws -> AccountUser
     ) async throws -> AccountUser {
+        try requireAccountServices()
         #if DEBUG
         // A pinned integration build never falls back: switching routes after a
         // connectivity failure would let a direct success masquerade as a
@@ -581,6 +594,12 @@ final class FirebaseAuthManager: ObservableObject {
             adoptIfDirect(user, route: alternate)
             AuthRouteMemory.lastSuccessfulRoute = alternate
             return user
+        }
+    }
+
+    private func requireAccountServices() throws {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else {
+            throw AccountBackendError.disabledForLocalReader
         }
     }
 

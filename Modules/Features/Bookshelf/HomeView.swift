@@ -746,7 +746,7 @@ struct HomeView: View {
     /// (Technotes/iOS17MenuModalPresentation.md), so there it pushes the organizer, whose
     /// 開始整理 opens the paywall instead.
     private var organizerMenuItem: some View {
-        let locked = !ReaderPremiumVisibilityPolicy(isProActive: subscription.isProActive).allowsAI
+        let locked = !ReaderPremiumVisibilityPolicy(isProActive: subscription.hasUnrestrictedFeatureAccess).allowsAI
         return Button {
             if locked, !MenuModalPresentationPolicy.requiresDismissalSequencedChooser {
                 showAIPaywall = true

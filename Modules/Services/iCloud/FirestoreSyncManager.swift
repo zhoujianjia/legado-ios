@@ -20,7 +20,7 @@ final class FirestoreSyncManager: ObservableObject {
 
     @Published private(set) var state: SyncState = .idle
 
-    private let db = Firestore.firestore()
+    private lazy var db = Firestore.firestore()
     private var cancellables = Set<AnyCancellable>()
     private var pushWorkItems: [String: Task<Void, Never>] = [:]
     private var pendingPositions: [String: CoreTextReadingPosition] = [:]
@@ -43,6 +43,7 @@ final class FirestoreSyncManager: ObservableObject {
     static let dataSyncEnabled = false
 
     private init() {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else { return }
         // The auth facade publishes its restored account to GlobalSettings in
         // init. Finish that construction before observing settings; otherwise
         // schedulePush re-enters FirebaseAuthManager.shared's dispatch_once.
@@ -72,6 +73,8 @@ final class FirestoreSyncManager: ObservableObject {
         guard self.bookStore !== bookStore else { return }
         self.bookStore = bookStore
 
+        guard ReaderExperienceConfiguration.accountServicesEnabled else { return }
+
         bookStore.shelfPublisher
             .dropFirst()
             .sink { [weak self] _ in
@@ -82,6 +85,7 @@ final class FirestoreSyncManager: ObservableObject {
 
     /// Pull remote state, then push local changes. Coalesces concurrent callers.
     func syncAfterSignIn() async {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else { return }
         guard FirebaseAuthManager.shared.isAuthenticated else { return }
         guard !isSyncing else { return }
         isSyncing = true
@@ -139,6 +143,9 @@ final class FirestoreSyncManager: ObservableObject {
     // MARK: - Profile
 
     func upsertCurrentProfile(provider: String? = nil) async throws {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else {
+            throw AccountBackendError.disabledForLocalReader
+        }
         // The debounce may be cancelled by another settings edit. Keep an
         // already-started server write serialized so an older nickname cannot
         // finish after, and overwrite, a newer successful upload.
@@ -211,6 +218,9 @@ final class FirestoreSyncManager: ObservableObject {
     }
 
     func uploadAvatar(data: Data) async throws -> URL {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else {
+            throw AccountBackendError.disabledForLocalReader
+        }
         guard FirebaseAuthManager.shared.uid != nil else {
             throw AuthFlowError.missingFirebaseUser
         }
@@ -224,6 +234,7 @@ final class FirestoreSyncManager: ObservableObject {
     // MARK: - Reading position (debounced)
 
     func scheduleReadingPositionPush(_ position: CoreTextReadingPosition, for bookId: String) {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else { return }
         pendingPositions[bookId] = position
         schedulePush("position-\(bookId)") { [weak self] in
             guard let self, let pending = self.pendingPositions[bookId] else { return }
@@ -241,6 +252,9 @@ final class FirestoreSyncManager: ObservableObject {
     // MARK: - Account deletion
 
     func deleteRemoteData(uid: String) async throws {
+        guard ReaderExperienceConfiguration.accountServicesEnabled else {
+            throw AccountBackendError.disabledForLocalReader
+        }
         // Direct route only. Gateway account deletion is orchestrated by
         // `FirebaseAuthManager.deleteAccount` through POST /v1/account/delete.
         try await AccountBackendRouter.shared.firebase.deleteRemoteData(uid: uid)

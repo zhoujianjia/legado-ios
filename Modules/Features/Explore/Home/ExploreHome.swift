@@ -144,7 +144,9 @@ private struct ExploreHomeRoot: View {
             await model.sync(with: pageStore.pageOrDefaults(mode: mode, publicLibrariesAvailable: availability.isAvailable),
                              hiddenFromLatest: Set(aggregation.settings.hiddenFromLatest ?? []))
         }
-        .task { await aozora.load() }
+        .task {
+            if availability.isAvailable { await aozora.load() }
+        }
         // 編輯首頁 edits one 首頁配置; deleting it, the one 預設 takes the place of, ends the edit.
         .onChange(of: pageStore.selectedConfiguration) { _, _ in
             if isEditing { setEditing(false) }

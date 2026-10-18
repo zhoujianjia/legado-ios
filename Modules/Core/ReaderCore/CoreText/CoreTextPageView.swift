@@ -407,7 +407,7 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         }
 
         // AI items only with Pro (`ReaderPremiumVisibilityPolicy.showsAISelectionActions`).
-        let premium = ReaderPremiumVisibilityPolicy(isProActive: SubscriptionStore.shared.isProActive)
+        let premium = ReaderPremiumVisibilityPolicy(isProActive: SubscriptionStore.shared.hasUnrestrictedFeatureAccess)
         // A translation is not the book's text: nothing can be highlighted, noted or turned
         // into a replace rule there, and the assistant has no place in the book to cite.
         if selectionTouchesTranslation {

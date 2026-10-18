@@ -2442,7 +2442,7 @@ struct ReaderView: View {
                     hasParagraphReviews: currentBookHasParagraphReviews,
                     onOpenFontImporter: requestFirstLevelReaderFontImporter,
                     onOpenTouchZoneEditor: {
-                        guard subscriptionStore.isProActive, !effectiveScrollMode else { return }
+                        guard subscriptionStore.hasAccess(.touchZoneEditor), !effectiveScrollMode else { return }
                         setReaderChromeVisible(false)
                         showTouchZoneEditor = true
                     },

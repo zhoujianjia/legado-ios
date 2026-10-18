@@ -225,7 +225,7 @@ final class BrowserTextInteractionController: NSObject, @preconcurrency UIEditMe
             guard let self, acceptsMenuAction(generation: generation) else { return }
             self.requestAnnotation(style: .underline, color: .yellow)
         }]))
-        let premium = ReaderPremiumVisibilityPolicy(isProActive: SubscriptionStore.shared.isProActive)
+        let premium = ReaderPremiumVisibilityPolicy(isProActive: SubscriptionStore.shared.hasUnrestrictedFeatureAccess)
         actions.append(UIAction(title: localized("筆記"), image: UIImage(systemName: premium.allowsParagraphNoteEditing ? "note.text" : "lock.fill")) { [weak self] _ in
             guard let self, acceptsMenuAction(generation: generation) else { return }
             self.requestNote(self.selection.tappedAnnotation)

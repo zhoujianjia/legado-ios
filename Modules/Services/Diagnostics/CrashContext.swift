@@ -17,7 +17,9 @@ enum CrashContext {
     /// `didFinishLaunching`). `App.init` and the stores it creates run before that, and since
     /// long main-thread spans became breadcrumbs they can call in here that early. Those lines
     /// still reach os_log and the diagnostic log; only the Crashlytics copy is skipped.
-    private static var crashlyticsReady: Bool { FirebaseApp.app() != nil }
+    private static var crashlyticsReady: Bool {
+        ReaderExperienceConfiguration.feedbackServicesEnabled && FirebaseApp.app() != nil
+    }
 
     /// A random id for this install, kept across launches. It is the Crashlytics user id, so
     /// every hang, crash and MetricKit report of one install can be listed together, and it

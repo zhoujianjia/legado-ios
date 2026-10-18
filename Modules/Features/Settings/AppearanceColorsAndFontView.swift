@@ -350,6 +350,9 @@ extension GlobalSettings {
         guard let selected = resolvedGlobalFontPostScript else {
             return localized("系統字體")
         }
+        if let font = ReaderFontCatalog.bundledFont(postScriptName: selected) {
+            return localized(font.titleKey)
+        }
         return userFonts.first { $0.postScriptName == selected }?.displayName
             ?? localized("系統字體")
     }

@@ -46,7 +46,7 @@ struct AIRecommendationRow: View {
     }
 
     private var allowsAI: Bool {
-        ReaderPremiumVisibilityPolicy(isProActive: subscription.isProActive).allowsAI
+        ReaderPremiumVisibilityPolicy(isProActive: subscription.hasUnrestrictedFeatureAccess).allowsAI
     }
 
     private var list: AIRecommendationList? { recommendations.list }

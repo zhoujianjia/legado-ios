@@ -47,7 +47,7 @@ extension ReaderView {
     private static let defaultNoteAnnotationColor = AnnotationColor.yellow
 
     var readerPremiumVisibility: ReaderPremiumVisibilityPolicy {
-        ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.isProActive)
+        ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.hasUnrestrictedFeatureAccess)
     }
 
     /// 開啟筆記編輯頁。選取範圍上還沒有標註時先補一條預設標註——「有筆記的段落一定有標註」

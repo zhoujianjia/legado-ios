@@ -586,7 +586,7 @@ struct AppearanceThemeView: View {
 
     @ViewBuilder
     private var rootTabRow: some View {
-        if ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.isProActive).showsBottomTabCustomization {
+        if ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.hasUnrestrictedFeatureAccess).showsBottomTabCustomization {
             NavigationLink {
                 RootTabCustomizationView()
             } label: {

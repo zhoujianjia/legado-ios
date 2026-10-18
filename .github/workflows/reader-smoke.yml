@@ -30,6 +30,7 @@ jobs:
       - name: Verify the source tag and portable smoke evidence guards
         run: |
           mkdir -p .build/ci-logs
+          ruby scripts/check_localizations.rb
           python -B scripts/reader-experience/smoke-tools.py validate-tag
           python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-smoke-tools.log
           python -B scripts/reader-experience/test-online-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-online-tools.log
@@ -66,7 +67,7 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This run independently targets seven configuration tests (the original six plus the local StoreKit regression), twelve SearchAutoPagingTests, and one real TXT reader UI test. Each group requires its own exact passing count and zero failures/skips; pagination is not folded into a configuration count of nineteen. Separate paging.xcresult, paging-summary.json and paging-tests.log are retained.
+          This run independently targets nine configuration tests, 27 local-product tests, twelve SearchAutoPagingTests, and one real TXT reader UI test. Every group requires its exact passing count and zero failures/skips. The product group exercises account-free feature availability without purchased entitlements, actual font bytes/licensing/UIFont registration, validated cache-only UTF-8 export, simplified UI and zero upstream Aozora catalog requests. Separate result bundles, summaries and logs are retained.
           The paging group exercises HTTP stubs through the existing HTML parser and source-script session: an explicit false verdict on page one prevents page two; true, invalid/unknown and cached-page verdicts keep the established bounded paging rules. The public onHasMore callback contract, device pacing and pause/resume regressions remain covered. This is not a live-site or native-JVM network acceptance claim.
           Source Info/project overlays establish isolated local mode before the test host first starts; their original and overlaid hashes are retained. The TXT test imports through the existing DEBUG hook, selects a chapter, closes, removes the import input and relaunches to verify persisted progress/body. Screenshots and accessibility trees are attached to the UI xcresult.
           One additional UI test imports a unique loopback book source through the real deep link, searches, opens details, adds the book, and reads two chapters through JavaScriptCore rules and CoreText. It requires exactly one passing test and zero skips, plus the owned server's complete request/response trace. Its verdict is saved separately from TXT acceptance.

@@ -24,6 +24,7 @@ final class FeedbackScreenshotPrompt {
     private init() {}
 
     func start() {
+        guard ReaderExperienceConfiguration.feedbackServicesEnabled else { return }
         guard observer == nil else { return }
         observer = NotificationCenter.default.addObserver(
             forName: UIApplication.userDidTakeScreenshotNotification,

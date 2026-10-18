@@ -199,7 +199,7 @@ struct ReaderCustomBackgroundEditorView: View {
 
     @ViewBuilder
     private var pictureRow: some View {
-        if ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.isProActive).showsBackgroundImageImport {
+        if ReaderPremiumVisibilityPolicy(isProActive: subscriptionStore.hasUnrestrictedFeatureAccess).showsBackgroundImageImport {
             ImageSourcePickerButton(
                 accessibilityTitle: localized("導入圖片背景"),
                 onPick: importPicture

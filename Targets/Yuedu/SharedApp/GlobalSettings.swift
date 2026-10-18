@@ -478,7 +478,7 @@ final class ReaderConfig: ObservableObject {
 }
 
 func localized(_ key: String, bundle: Bundle = .main) -> String {
-    NSLocalizedString(key, bundle: bundle, comment: "")
+    NSLocalizedString(key, bundle: ReaderInterfaceLanguage.localizationBundle(for: bundle), comment: "")
 }
 
 enum AppearanceColorScheme: String, Equatable {
@@ -1536,7 +1536,8 @@ class GlobalSettings {
 
     var resolvedGlobalFontPostScript: String? {
         guard let selectedGlobalFontPostScript,
-              userFonts.contains(where: { $0.postScriptName == selectedGlobalFontPostScript }) else {
+              ReaderFontCatalog.isBundled(postScriptName: selectedGlobalFontPostScript)
+                || userFonts.contains(where: { $0.postScriptName == selectedGlobalFontPostScript }) else {
             return nil
         }
         return selectedGlobalFontPostScript
@@ -1544,7 +1545,8 @@ class GlobalSettings {
 
     func validateGlobalFontSelection() {
         guard let selectedGlobalFontPostScript else { return }
-        guard userFonts.contains(where: { $0.postScriptName == selectedGlobalFontPostScript }),
+        guard (ReaderFontCatalog.isBundled(postScriptName: selectedGlobalFontPostScript)
+                || userFonts.contains(where: { $0.postScriptName == selectedGlobalFontPostScript })),
               UIFont(name: selectedGlobalFontPostScript, size: 17) != nil else {
             self.selectedGlobalFontPostScript = nil
             return
@@ -2307,7 +2309,8 @@ class GlobalSettings {
         selectedReaderFontPostScript = UserDefaults.standard.string(forKey: "yd_reader_font_postscript")
         let storedGlobalFont = UserDefaults.standard.string(forKey: Self.globalFontPostScriptKey)
         let validatedGlobalFont = storedGlobalFont.flatMap { postScriptName in
-            decodedUserFonts.contains { $0.postScriptName == postScriptName }
+            (ReaderFontCatalog.isBundled(postScriptName: postScriptName)
+                || decodedUserFonts.contains { $0.postScriptName == postScriptName })
                 ? postScriptName
                 : nil
         }

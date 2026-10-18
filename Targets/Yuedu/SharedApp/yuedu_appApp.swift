@@ -229,7 +229,8 @@ struct yuedu_appApp: App {
                     // for non-Google URLs, in which case we route to book-source
                     // import. Routing one concern per URL keeps a deep link from
                     // accidentally invoking both handlers.
-                    if GIDSignIn.sharedInstance.handle(incomingURL) {
+                    if ReaderExperienceConfiguration.accountServicesEnabled,
+                       GIDSignIn.sharedInstance.handle(incomingURL) {
                         return
                     }
                     guard TestFlightAccessController.shared.state.allowsUse else { return }
@@ -259,7 +260,9 @@ struct yuedu_appApp: App {
                     SharedImportQueueDrainer.shared.bind(bookStore: bookStore)
                     WebDAVManager.shared.bind(bookStore: bookStore)
                     DiagnosticScale.publish(bookStore: bookStore, reason: "launch")
-                    _ = FirebaseAuthManager.shared
+                    if ReaderExperienceConfiguration.accountServicesEnabled {
+                        _ = FirebaseAuthManager.shared
+                    }
                     Task {
                         await AppDependencies.live.offlineDownloadManager
                             .reconcileInterruptedDownloads(store: bookStore)
@@ -297,7 +300,7 @@ struct yuedu_appApp: App {
                     // Unified library 3d: empty covers and descriptions fill in the foreground, on Wi-Fi.
                     bookStore.metadataFill.setActive(scenePhase == .active)
                     // Seamless iCloud: merge with the cloud on launch.
-                    if GlobalSettings.shared.iCloudAutoSync {
+                    if ReaderExperienceConfiguration.cloudKitEnabled, GlobalSettings.shared.iCloudAutoSync {
                         Task { try? await ICloudSyncManager.shared.sync(reason: "launch") }
                     }
                 }
@@ -338,7 +341,8 @@ struct yuedu_appApp: App {
                         }
                     }
                     // Seamless iCloud: push/merge when leaving the app.
-                    if newPhase == .background, GlobalSettings.shared.iCloudAutoSync {
+                    if newPhase == .background, ReaderExperienceConfiguration.cloudKitEnabled,
+                       GlobalSettings.shared.iCloudAutoSync {
                         Task { try? await ICloudSyncManager.shared.sync(reason: "background") }
                     }
                 }

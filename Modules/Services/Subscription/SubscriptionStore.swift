@@ -141,6 +141,7 @@ final class SubscriptionStore: ObservableObject {
     // MARK: - Private
 
     private let storeKitEnabled: Bool
+    private let localFeaturesEnabled: Bool
     private var updatesListenerTask: Task<Void, Never>?
     private var loadedStorefrontID: String?
     private var productLoadGeneration = 0
@@ -172,9 +173,17 @@ final class SubscriptionStore: ObservableObject {
     /// Tests can exercise publication without starting StoreKit/network observers.
     init(
         observeTransactions: Bool = true,
-        storeKitEnabled: Bool = ReaderExperienceConfiguration.storeKitEnabled
+        storeKitEnabled: Bool = ReaderExperienceConfiguration.storeKitEnabled,
+        localFeaturesEnabled: Bool = ReaderExperienceConfiguration.localFeaturesEnabled
     ) {
-        self.storeKitEnabled = storeKitEnabled
+        self.localFeaturesEnabled = localFeaturesEnabled
+        self.storeKitEnabled = storeKitEnabled && !localFeaturesEnabled
+        // Local capabilities do not represent a purchase. Keep all entitlement
+        // slots and product IDs empty, and never construct StoreKit observers.
+        if localFeaturesEnabled {
+            hasResolvedEntitlements = true
+            return
+        }
         // This distribution has no App Store receipt or products. In particular,
         // AppTransaction.shared can repeatedly present an Apple Account prompt.
         // Resolve the empty state before creating observers or launch tasks.
@@ -218,9 +227,14 @@ final class SubscriptionStore: ObservableObject {
 
     // MARK: - Feature gating
 
-    /// The single entitlement gate. Coarse in v1: all features map to Pro.
+    /// Local availability is separate from subscription ownership. Retained
+    /// reader policies consume this value; account/member UI uses isProActive.
+    var hasUnrestrictedFeatureAccess: Bool { localFeaturesEnabled || isProActive }
+
+    /// Local capabilities are available without an account or transaction.
+    /// Retained upstream builds continue to use their single entitlement gate.
     func hasAccess(_ feature: PremiumFeature) -> Bool {
-        isProActive
+        hasUnrestrictedFeatureAccess
     }
 
     /// What the paywall shows right now: the offer, or its member page and whether
@@ -733,6 +747,9 @@ final class SubscriptionStore: ObservableObject {
     }
 
     private func recomputeEntitlement() {
+        if localFeaturesEnabled {
+            return
+        }
         let hasPurchase = ProProduct.allCases.contains { purchasedProductIDs.contains($0.rawValue) }
         if storeKitIsProActive != hasPurchase { storeKitIsProActive = hasPurchase }
         #if DEBUG

@@ -81,6 +81,7 @@ struct OnlineBookView: View {
     @State private var showsBookVariableEditor = false
     @State private var showsMoreChooser = false
     @State private var introActionRequest: BookIntroActionRequest?
+    @State private var txtExportRequest: CachedBookTXTExportRequest?
 
     // MARK: Init
 
@@ -292,6 +293,22 @@ struct OnlineBookView: View {
                     action: { openReader(chapterIndex: chapter.index) }
                 )
             }
+            if let copy = shelvedCopy {
+                Section {
+                    Button {
+                        txtExportRequest = CachedBookTXTExportRequest(
+                            bookID: copy.id, title: shown.name, author: shown.author, chapters: chapters
+                        )
+                    } label: {
+                        Label(localized("匯出已快取 TXT"), systemImage: "doc.text")
+                            .frame(minHeight: DSLayout.minimumTapTarget)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal, DSSpacing.lg)
+                    .disabled(loadingTOC || chapters.isEmpty)
+                }
+            }
             if onContinueReading == nil {
                 BookDetailRelatedSection(
                     related: genres.related,
@@ -330,6 +347,9 @@ struct OnlineBookView: View {
             sourceActions: sourceCallBacks?.menuActions
         )
         .sourceCallBackTaps($sourceCallBackTap)
+        .sheet(item: $txtExportRequest) { request in
+            CachedBookTXTExportView(request: request)
+        }
         .bookIntroActions($introActionRequest) { await loadTOC(forceRefresh: true) }
         .bookVariableEditors(
             source: source,

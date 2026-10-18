@@ -1453,7 +1453,7 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                 action = (0.3...0.7).contains(xFraction) ? .toggleMenu : .nextPage
             } else {
                 let config = TouchZoneConfig.effective(
-                    isProActive: SubscriptionStore.shared.isProActive,
+                    isProActive: SubscriptionStore.shared.hasAccess(.touchZoneEditor),
                     isRTL: isRTL
                 )
                 action = config.action(at: point, in: view.bounds.size)

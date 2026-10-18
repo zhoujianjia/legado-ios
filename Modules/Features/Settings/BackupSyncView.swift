@@ -9,14 +9,16 @@ struct BackupSyncView: View {
         NavigationStack {
             Form {
                 Section {
-                    NavigationLink {
-                        ICloudSyncView()
-                    } label: {
-                        syncRow(
-                            icon: "icloud.fill",
-                            title: localized("iCloud 同步"),
-                            detail: iCloudManager.statusTitle(isAppSignedIn: true)
-                        )
+                    if ReaderExperienceConfiguration.cloudKitEnabled {
+                        NavigationLink {
+                            ICloudSyncView()
+                        } label: {
+                            syncRow(
+                                icon: "icloud.fill",
+                                title: localized("iCloud 同步"),
+                                detail: iCloudManager.statusTitle(isAppSignedIn: true)
+                            )
+                        }
                     }
 
                     NavigationLink {

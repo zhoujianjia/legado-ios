@@ -48,10 +48,10 @@ struct LaunchImageSplashOverlay: View {
             // hold the splash or dismiss fast. The image (if any) is already
             // visible from frame 1 because `currentImage` no longer gates on
             // entitlements — this wait only controls dismissal timing.
-            if !subscriptionStore.isProActive {
+            if !subscriptionStore.hasAccess(.launchScreen) {
                 let deadline = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
                     + entitlementWaitNanoseconds
-                while !subscriptionStore.isProActive {
+                while !subscriptionStore.hasAccess(.launchScreen) {
                     if Task.isCancelled { return }
                     if UInt64(Date().timeIntervalSince1970 * 1_000_000_000) >= deadline {
                         break

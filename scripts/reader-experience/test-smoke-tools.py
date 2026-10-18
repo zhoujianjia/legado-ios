@@ -163,34 +163,39 @@ class SmokeEvidenceTests(unittest.TestCase):
             "CONFIGURATION": "Debug", "SWIFT_VERSION": "5.0", "PLATFORM_NAME": "iphonesimulator",
             "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(app.parent),
             "FULL_PRODUCT_NAME": app.name}}]
-        unit = {"totalTestCount": 7, "passedTests": 7, "failedTests": 0, "skippedTests": 0}
+        unit = {"totalTestCount": 9, "passedTests": 9, "failedTests": 0, "skippedTests": 0}
         ui = {**unit, "totalTestCount": 1, "passedTests": 1}
         paging = {**unit, "totalTestCount": 12, "passedTests": 12}
+        product = {**unit, "totalTestCount": 27, "passedTests": 27}
         with patch.object(smoke, "REPO", self.root), patch.object(smoke, "source_sha", return_value=SOURCE), \
                 patch.object(smoke, "git", side_effect=git):
-            result = smoke.result(audit, settings, unit, ui, paging)
+            result = smoke.result(audit, settings, unit, ui, paging, product)
             self.assertEqual(result["status"], "passed")
             self.assertFalse(result["deviceValidationPassed"])
             self.assertFalse(result["deliveredIPAExecuted"])
             self.assertFalse(result["paidFeatureOverrides"])
             self.assertEqual(result["configuration"], "Debug")
-            self.assertEqual(result["targetedTests"]["cloudKitAndLocalServicesConfiguration"]["totalTestCount"], 7)
+            self.assertEqual(result["targetedTests"]["cloudKitAndLocalServicesConfiguration"]["totalTestCount"], 9)
+            self.assertEqual(result["targetedTests"]["localProductFeatures"]["totalTestCount"], 27)
             self.assertEqual(result["targetedTests"]["searchAutoPaging"]["totalTestCount"], 12)
             self.assertEqual(result["targetedTests"]["TXTReaderUI"]["totalTestCount"], 1)
             for key, value in (("totalTestCount", 0), ("totalTestCount", 11), ("totalTestCount", 19),
                                ("passedTests", 11), ("passedTests", True), ("failedTests", 1),
                                ("skippedTests", 1), ("skippedTests", None)):
                 with self.subTest(paging=(key, value)), self.assertRaises(ValueError):
-                    smoke.result(audit, settings, unit, ui, {**paging, key: value})
+                    smoke.result(audit, settings, unit, ui, {**paging, key: value}, product)
             for missing in paging:
                 with self.subTest(missingPagingField=missing), self.assertRaises(ValueError):
-                    smoke.result(audit, settings, unit, ui, {key: value for key, value in paging.items() if key != missing})
+                    smoke.result(audit, settings, unit, ui, {key: value for key, value in paging.items() if key != missing}, product)
             with self.assertRaises(ValueError):
-                smoke.result(audit, settings, unit, ui, None)
+                smoke.result(audit, settings, unit, ui, None, product)
+            for change in ({"totalTestCount": 0}, {"passedTests": 26}, {"skippedTests": 1}, {"failedTests": 1}):
+                with self.subTest(product=change), self.assertRaises(ValueError):
+                    smoke.result(audit, settings, unit, ui, paging, {**product, **change})
             info["YueduLocalExperience"] = False
             self.write(app / "Info.plist", plistlib.dumps(info))
             with self.assertRaisesRegex(ValueError, "local-mode Info"):
-                smoke.result(audit, settings, unit, ui, paging)
+                smoke.result(audit, settings, unit, ui, paging, product)
 
     def test_result_cli_requires_the_independent_paging_summary(self):
         args = ["smoke-tools.py", "result", "--audit", "audit.json", "--settings", "settings.json",

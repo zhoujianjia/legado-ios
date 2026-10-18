@@ -10,7 +10,9 @@ final class AozoraCatalogStore: ObservableObject {
         case ready(AozoraCatalogIndex)
         case failed(any Error, cached: AozoraCatalogIndex?)
     }
-    static let shared = AozoraCatalogStore()
+    static let shared = AozoraCatalogStore(
+        remoteCatalogEnabled: !ReaderExperienceConfiguration.isLocalExperience
+    )
     static let manifestURL = URL(string: "https://yuedureader.com/catalogs/aozora/v1/manifest.json")!
     @Published private(set) var state: State = .unavailable
     @Published private(set) var isRefreshing = false
@@ -24,6 +26,7 @@ final class AozoraCatalogStore: ObservableObject {
     private let defaults: UserDefaults
     private let now: () -> Date
     private let fetch: (URL) async throws -> Data
+    private let remoteCatalogEnabled: Bool
     private let lastCheckKey: String
     private var loadedCache = false
     private var catalogHash: String?
@@ -41,12 +44,14 @@ final class AozoraCatalogStore: ObservableObject {
     init(directory: URL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("PublicLibrary/aozora", isDirectory: true),
          defaults: UserDefaults = .standard, now: @escaping () -> Date = Date.init,
-         fetch: @escaping (URL) async throws -> Data = AozoraCatalogStore.fetchData) {
+         fetch: @escaping (URL) async throws -> Data = AozoraCatalogStore.fetchData,
+         remoteCatalogEnabled: Bool = true) {
         cacheURL = directory.appendingPathComponent("catalog-cache.json")
         lastCheckKey = "aozora.catalog.lastCheck." + directory.path
         self.defaults = defaults
         self.now = now
         self.fetch = fetch
+        self.remoteCatalogEnabled = remoteCatalogEnabled
     }
 
     /// Publish the verified cache before awaiting any network operation.
@@ -76,6 +81,10 @@ final class AozoraCatalogStore: ObservableObject {
         isRefreshing = true
         defer { isRefreshing = false }
         await loadCached()
+        // Saved copies may still request their catalog metadata. Retain an
+        // existing offline catalog without contacting the upstream service or
+        // marking a disabled update as attempted, even for a forced refresh.
+        guard remoteCatalogEnabled else { return }
         if !forceRefresh, let last = defaults.object(forKey: lastCheckKey) as? Date,
            now().timeIntervalSince(last) < 86_400 { return }
         let previous = catalog

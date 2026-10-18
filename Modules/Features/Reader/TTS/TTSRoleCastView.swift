@@ -47,7 +47,7 @@ struct TTSRoleCastView: View {
             // them behind the toggle made them unreachable for anyone on a single source.
             // Character cards are made by AI, which needs Pro; cards made earlier keep
             // working either way.
-            if ReaderPremiumVisibilityPolicy(isProActive: subscription.isProActive).allowsAI {
+            if ReaderPremiumVisibilityPolicy(isProActive: subscription.hasUnrestrictedFeatureAccess).allowsAI {
                 aliasSection
             }
             if supportsMultiRole {

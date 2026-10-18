@@ -147,7 +147,7 @@ def verify_summary(summary, expected):
     return {"expectedTests": expected, **fields}
 
 
-def result(audit, settings, unit, ui, paging):
+def result(audit, settings, unit, ui, paging, product):
     review_overlays(audit)
     matches = [item["buildSettings"] for item in settings if item.get("target") == config.MAIN_TARGET]
     if len(matches) != 1:
@@ -168,7 +168,8 @@ def result(audit, settings, unit, ui, paging):
     return {"schemaVersion": 1, "sourceCommit": audit["sourceCommit"], "configuration": "Debug",
             "executionPlatform": "ios-simulator", "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "status": "passed",
-            "targetedTests": {"cloudKitAndLocalServicesConfiguration": verify_summary(unit, 7),
+            "targetedTests": {"cloudKitAndLocalServicesConfiguration": verify_summary(unit, 9),
+                              "localProductFeatures": verify_summary(product, 27),
                               "searchAutoPaging": verify_summary(paging, 12), "TXTReaderUI": verify_summary(ui, 1)},
             "testedApp": str(app), "testedInfoSHA256": config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "readerRoute": "Existing Yuedu/CoreText local TXT reader and source search pagination",
@@ -196,8 +197,8 @@ def main():
     verify = commands.add_parser("verify-summary")
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--expected", type=int, required=True)
-    summarize = commands.add_parser("result", help="Require independent configuration=7, paging=12 and TXT UI=1 summaries")
-    for name in ("audit", "settings", "unit", "ui", "paging", "output"):
+    summarize = commands.add_parser("result", help="Require configuration=9, product=27, paging=12 and TXT UI=1 summaries")
+    for name in ("audit", "settings", "unit", "ui", "paging", "product", "output"):
         summarize.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -209,7 +210,7 @@ def main():
             value = verify_summary(read_json(args.summary), args.expected)
         else:
             value = result(read_json(args.audit), read_json(args.settings), read_json(args.unit),
-                           read_json(args.ui), read_json(args.paging))
+                           read_json(args.ui), read_json(args.paging), read_json(args.product))
             config.write_new_json(args.output, value)
         print(json.dumps(value, indent=2))
         return 0

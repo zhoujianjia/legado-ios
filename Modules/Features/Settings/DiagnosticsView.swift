@@ -122,19 +122,21 @@ struct DiagnosticsView: View {
                 )
                 .accessibilityIdentifier("diagnostics_export_button")
 
-                Button {
-                    sendNote = ""
-                    showSendConfirmation = true
-                } label: {
-                    Label(
-                        model.isSending ? localized("傳送中…") : localized("傳送給開發者"),
-                        systemImage: "paperplane"
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
+                if ReaderExperienceConfiguration.feedbackServicesEnabled {
+                    Button {
+                        sendNote = ""
+                        showSendConfirmation = true
+                    } label: {
+                        Label(
+                            model.isSending ? localized("傳送中…") : localized("傳送給開發者"),
+                            systemImage: "paperplane"
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .disabled(model.isSending || model.isLoading)
+                    .accessibilityIdentifier("diagnostics_send_button")
                 }
-                .disabled(model.isSending || model.isLoading)
-                .accessibilityIdentifier("diagnostics_send_button")
             } footer: {
                 Text(localized("包含這次啟動的完整紀錄，不受下方篩選影響。"))
                     .dsSectionFooter()

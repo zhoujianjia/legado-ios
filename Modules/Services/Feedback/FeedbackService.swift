@@ -74,7 +74,8 @@ final class FeedbackService {
     }
 
     private func requireFirebase() throws {
-        guard FirebaseApp.app() != nil else { throw FeedbackError.firebaseUnavailable }
+        guard ReaderExperienceConfiguration.feedbackServicesEnabled,
+              FirebaseApp.app() != nil else { throw FeedbackError.firebaseUnavailable }
     }
 
     // MARK: - Sending
@@ -242,7 +243,7 @@ final class FeedbackService {
     /// The inbox's threads, live. Ends with an error the view shows when the listener fails.
     func threadUpdates() -> AsyncThrowingStream<[FeedbackThread], Error> {
         AsyncThrowingStream { continuation in
-            guard FirebaseApp.app() != nil else {
+            guard ReaderExperienceConfiguration.feedbackServicesEnabled, FirebaseApp.app() != nil else {
                 continuation.finish(throwing: FeedbackError.firebaseUnavailable)
                 return
             }
@@ -263,7 +264,7 @@ final class FeedbackService {
     /// One thread's messages, oldest first, live.
     func messageUpdates(threadID: String) -> AsyncThrowingStream<[FeedbackMessage], Error> {
         AsyncThrowingStream { continuation in
-            guard FirebaseApp.app() != nil else {
+            guard ReaderExperienceConfiguration.feedbackServicesEnabled, FirebaseApp.app() != nil else {
                 continuation.finish(throwing: FeedbackError.firebaseUnavailable)
                 return
             }
@@ -284,6 +285,7 @@ final class FeedbackService {
 
     /// An attachment image, from memory after the first load.
     func image(for attachment: FeedbackAttachment) async throws -> UIImage {
+        try requireFirebase()
         if let cached = imageCache.object(forKey: attachment.path as NSString) { return cached }
         let data = try await Storage.storage().reference(withPath: attachment.path)
             .data(maxSize: Int64(FeedbackFirestoreSchema.imageByteLimit))
@@ -293,7 +295,8 @@ final class FeedbackService {
     }
 
     func downloadURL(for attachment: FeedbackAttachment) async throws -> URL {
-        try await Storage.storage().reference(withPath: attachment.path).downloadURL()
+        try requireFirebase()
+        return try await Storage.storage().reference(withPath: attachment.path).downloadURL()
     }
 
     // MARK: - Decoding

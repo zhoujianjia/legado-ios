@@ -177,7 +177,9 @@ final class RSSAppNotificationDelegate: NSObject, UIApplicationDelegate, UNUserN
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        FirebaseApp.configure()
+        if ReaderExperienceConfiguration.accountServicesEnabled {
+            FirebaseApp.configure()
+        }
         // Crash/diagnostics context must come up right after Firebase is configured,
         // so launch-time crashes and MetricKit payloads carry breadcrumbs.
         MetricKitDiagnosticReporter.shared.start()

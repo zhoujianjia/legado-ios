@@ -11,7 +11,7 @@ struct SubscriptionPublicationTests {
         let saved = defaults.object(forKey: "subscription_had_pro_ever")
         defaults.set(false, forKey: "subscription_had_pro_ever")
         defer { defaults.set(saved, forKey: "subscription_had_pro_ever") }
-        let store = SubscriptionStore(observeTransactions: false)
+        let store = SubscriptionStore(observeTransactions: false, localFeaturesEnabled: false)
         var updates = 0
         let token = store.$isProActive.dropFirst().sink { _ in updates += 1 }
         store.debugForceProActive = false
@@ -25,7 +25,7 @@ struct SubscriptionPublicationTests {
         let defaults = UserDefaults.standard
         let saved = defaults.object(forKey: "subscription_had_pro_ever")
         defer { defaults.set(saved, forKey: "subscription_had_pro_ever") }
-        let store = SubscriptionStore(observeTransactions: false)
+        let store = SubscriptionStore(observeTransactions: false, localFeaturesEnabled: false)
         var effective: [Bool] = [], purchased: [Bool] = []
         let effectiveToken = store.$isProActive.dropFirst().sink { effective.append($0) }
         let purchasedToken = store.$storeKitIsProActive.dropFirst().sink { purchased.append($0) }

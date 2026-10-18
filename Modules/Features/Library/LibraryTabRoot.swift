@@ -76,13 +76,15 @@ struct LibraryTabRoot: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: DSSpacing.xl) {
                     if trimmedQuery.isEmpty {
-                        if !noticeDismissed {
+                        if !ReaderExperienceConfiguration.isLocalExperience && !noticeDismissed {
                             notice
                         }
                         publicLibrariesSection
                         remoteLibrariesSection
                         sourcesSection
-                        OfficialModuleSection()
+                        if !ReaderExperienceConfiguration.isLocalExperience {
+                            OfficialModuleSection()
+                        }
                         RuleModuleSection(library: modules) { moduleFlow.begin(.address) }
                         subscriptionsSection
                     } else if !matchingSources.isEmpty {

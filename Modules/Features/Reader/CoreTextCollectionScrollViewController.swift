@@ -395,7 +395,7 @@ final class CoreTextCollectionScrollViewController: UIViewController, UIEditMenu
         }
 
         // AI items only with Pro (`ReaderPremiumVisibilityPolicy.showsAISelectionActions`).
-        let premium = ReaderPremiumVisibilityPolicy(isProActive: SubscriptionStore.shared.isProActive)
+        let premium = ReaderPremiumVisibilityPolicy(isProActive: SubscriptionStore.shared.hasUnrestrictedFeatureAccess)
         // A translation is not the book's text: nothing to highlight, note or replace there,
         // and nothing the assistant could cite.
         if selectionTouchesTranslation {

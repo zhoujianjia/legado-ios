@@ -7,21 +7,25 @@ import StoreKit
 /// cold launch in CHN cannot flash the libraries before StoreKit responds.
 @MainActor
 final class PublicLibraryAvailability: ObservableObject {
-    static let shared = PublicLibraryAvailability()
+    static let shared = PublicLibraryAvailability(
+        builtInLibrariesEnabled: !ReaderExperienceConfiguration.isLocalExperience
+    )
     static let countryKey = "publicLibrary.lastStorefrontCountry"
     @Published private(set) var countryCode: String?
-    var isAvailable: Bool { countryCode != "CHN" }
+    var isAvailable: Bool { builtInLibrariesEnabled && countryCode != "CHN" }
+    private let builtInLibrariesEnabled: Bool
     private let defaults: UserDefaults
     private var currentTask: Task<Void, Never>?
     private var updatesTask: Task<Void, Never>?
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, builtInLibrariesEnabled: Bool = true) {
         self.defaults = defaults
+        self.builtInLibrariesEnabled = builtInLibrariesEnabled
         countryCode = defaults.string(forKey: Self.countryKey)
     }
 
     func start() {
-        guard updatesTask == nil else { return }
+        guard builtInLibrariesEnabled, updatesTask == nil else { return }
         updatesTask = Task { [weak self] in
             for await storefront in Storefront.updates {
                 guard !Task.isCancelled else { return }

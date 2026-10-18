@@ -29,7 +29,7 @@ struct ReaderTouchZoneEditorView: View {
                 resetButton
             }
         }
-        .onChange(of: subscriptionStore.isProActive) { _, isActive in
+        .onChange(of: subscriptionStore.hasUnrestrictedFeatureAccess) { _, isActive in
             if !isActive { onCancel() }
         }
     }
@@ -48,7 +48,7 @@ struct ReaderTouchZoneEditorView: View {
                 .frame(maxWidth: .infinity)
 
             Button {
-                guard model.save(isProActive: subscriptionStore.isProActive) else { return }
+                guard model.save(isProActive: subscriptionStore.hasAccess(.touchZoneEditor)) else { return }
                 onSave()
             } label: {
                 Image(systemName: "checkmark")

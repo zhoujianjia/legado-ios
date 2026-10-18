@@ -3,9 +3,7 @@ import UniformTypeIdentifiers
 
 struct GlobalFontSettingsView: View {
     @Bindable private var settings = GlobalSettings.shared
-    @ObservedObject private var subscription = SubscriptionStore.shared
     @State private var showingImporter = false
-    @State private var showsPaywall = false
     @State private var importError: GlobalFontImportError?
     @State private var fontToDelete: UserFontInfo?
 
@@ -20,6 +18,17 @@ struct GlobalFontSettingsView: View {
             } footer: {
                 Text(localized("套用於 App 介面，閱讀正文仍使用閱讀設定。"))
                     .dsSectionFooter()
+            }
+            .interfaceSectionSurface()
+
+            Section(header: Text(localized("內建閱讀字體")).foregroundStyle(DSColor.textSecondary)) {
+                ForEach(ReaderFontCatalog.bundledFonts) { font in
+                    selectionButton(
+                        title: localized(font.titleKey),
+                        postScriptName: font.postScriptName,
+                        previewFont: GlobalAppTypography.font(.body, postScriptName: font.postScriptName)
+                    )
+                }
             }
             .interfaceSectionSurface()
 
@@ -51,19 +60,10 @@ struct GlobalFontSettingsView: View {
             .interfaceSectionSurface()
 
             Section {
-                // Pro: the entry locks, fonts imported earlier stay usable.
-                let locked = !ReaderPremiumVisibilityPolicy(isProActive: subscription.isProActive).allowsFontImport
                 Button {
-                    if locked { showsPaywall = true } else { showingImporter = true }
+                    showingImporter = true
                 } label: {
-                    HStack {
-                        Label(localized("匯入字體..."), systemImage: locked ? "lock.fill" : "plus")
-                        if locked {
-                            Spacer(minLength: DSSpacing.md)
-                            Text(localized("需要 Pro"))
-                                .foregroundStyle(DSColor.textSecondary)
-                        }
-                    }
+                    Label(localized("匯入字體..."), systemImage: "plus")
                 }
             } footer: {
                 Text(localized("匯入後，字體會同時出現在全局字體與閱讀設定。"))
@@ -75,10 +75,6 @@ struct GlobalFontSettingsView: View {
         .navigationTitle(localized("全局字體"))
         .toolbarTitleDisplayMode(.inline)
         .themedAppSurface(for: .settings)
-        .sheet(isPresented: $showsPaywall) {
-            PaywallView(highlightedFeature: .customFonts)
-                .environmentObject(subscription)
-        }
         .fileImporter(
             isPresented: $showingImporter,
             allowedContentTypes: Self.fontContentTypes,
@@ -133,6 +129,7 @@ struct GlobalFontSettingsView: View {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundStyle(DSColor.accent)
+                        .accessibilityHidden(true)
                 }
             }
         }

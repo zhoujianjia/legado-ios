@@ -18,7 +18,7 @@ struct AIRecommendationModuleView: View {
     }
 
     private var allowsAI: Bool {
-        ReaderPremiumVisibilityPolicy(isProActive: subscription.isProActive).allowsAI
+        ReaderPremiumVisibilityPolicy(isProActive: subscription.hasUnrestrictedFeatureAccess).allowsAI
     }
 
     var body: some View {
