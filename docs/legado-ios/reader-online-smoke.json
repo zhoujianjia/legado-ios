@@ -42,37 +42,33 @@
     "failedCommandExitAndProcessCleanupPreflight": "passed on Windows; no XCTest/UI execution",
     "swiftSyntax": "passed; type checking and runtime execution require cloud Xcode"
   },
-  "simulatorExecution": "configuration_and_txt_passed_online_failed_shelf_control_count_and_extra_pagination_request",
+  "simulatorExecution": "independently_passed_7_configuration_12_paging_1_TXT_1_online_JSC",
   "cloudEvidence": {
-    "runId": 39110317211,
-    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39110317211",
-    "jobId": 117624858464,
-    "sourceCommit": "423396fcfd03f881d01292d92b91dc24d8f23d8f",
-    "tag": "reader-smoke-423396f",
-    "status": "completed_failure",
+    "runId": 39115232249,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39115232249",
+    "jobId": 117639579085,
+    "sourceCommit": "6b3f4b043f537579d399a6548e553566146817f6",
+    "tag": "reader-smoke-6b3f4b0",
+    "status": "independently_passed",
     "configurationTestsPassed": 7,
-    "configurationTestsFailed": 0,
-    "configurationTestsSkipped": 0,
+    "paginationRegressionTestsPassed": 12,
     "txtUITestsPassed": 1,
-    "txtUITestsFailed": 0,
-    "txtUITestsSkipped": 0,
-    "onlineUITestsExecuted": 1,
-    "onlineUITestsPassed": 0,
-    "onlineUITestsFailed": 1,
-    "onlineUITestsSkipped": 0,
-    "fixtureStartupPassed": true,
+    "onlineUITestsPassed": 1,
+    "totalActualCases": 21,
+    "failedTests": 0,
+    "skippedTests": 0,
     "requiredRoutesObservedWith200": 6,
-    "extraUnexpected400Requests": 1,
+    "extraUnexpected400Requests": 0,
     "bothCenteredJSCChapterMarkersObserved": true,
-    "returnToShelfObserved": true,
-    "completeSixRouteTracePassed": false,
-    "onlineJSCReaderSimulatorPassed": false,
+    "returnToOneOnlineShelfRowPassed": true,
+    "completeSixRouteTracePassed": true,
+    "onlineJSCReaderSimulatorPassed": true,
     "independentAudit": {
-      "path": ".build/cloud-evidence/run-39110317211/independent-evidence-audit.json",
-      "bytes": 45729,
-      "sha256": "4a5d3bf42843bad1b961a64abb13561553626928204eba99d5b31e5517b5c3fa"
+      "path": ".build/cloud-evidence/run-39115232249/independent-evidence-audit.json",
+      "bytes": 56567,
+      "sha256": "b273afcb8a1df2736a42da98a88f9ce87a047854f69ae83b8d160e337351b3f2"
     },
-    "meaning": "The centered two-chapter JSC reading flow and return to the shelf are observed, but the actual online test and strict complete HTTP trace remain failed. Preserve both the nested-control count assertion and extra page2=400 evidence."
+    "meaning": "All four targeted groups pass their own original summaries and case records. Exactly six real requests return byte-verified200 responses with no extra pagination400. The two centered JSC-only CoreText chapter labels equal the final XCTest evidence attachment, and the single matching shelf row passes. Scope remains the existing JSC/CoreText Debug Simulator reader."
   },
   "configuration": "Debug",
   "deliveredReleaseIPAModified": false,
@@ -777,6 +773,222 @@
         "originalStrictCompleteTraceValidatorFailure": "Request target/query differs from fixture contract",
         "meaning": "All six required routes returned exact expected200 bytes; both distinct JSC-only chapter markers were actually centered in CoreText and return to one visible online shelf row was observed. The online XCTest still failed at counting nested AX buttons, later recorded a signalterm issue, produced no final combined evidence, and the full strict trace independently fails on the retained extra search?page2=400 request. No overall online acceptance is claimed."
       }
+    },
+    {
+      "runId": 39115232249,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39115232249",
+      "jobId": 117639579085,
+      "sourceCommit": "6b3f4b043f537579d399a6548e553566146817f6",
+      "tag": "reader-smoke-6b3f4b0",
+      "status": "independently_passed_configuration_paging_TXT_and_online_JSC_UI",
+      "artifact": {
+        "id": 12133460956,
+        "name": "reader-smoke-evidence",
+        "path": ".build/cloud-evidence/run-39115232249/reader-smoke-evidence.zip",
+        "bytes": 6198408,
+        "sha256": "7dcfc65cb6d03679b13122558672246df6dfc157c3cd99ba9afe1954e6c0f4c7",
+        "APIBytesAndHashMatched": true,
+        "zipMembers": 248,
+        "allExtractedFilesByteIdentical": true
+      },
+      "independentAudit": {
+        "path": ".build/cloud-evidence/run-39115232249/independent-evidence-audit.json",
+        "bytes": 56567,
+        "sha256": "b273afcb8a1df2736a42da98a88f9ce87a047854f69ae83b8d160e337351b3f2"
+      },
+      "groups": {
+        "cloudkit": {
+          "path": ".build/cloud-evidence/run-39115232249/reader-smoke/cloudkit-summary.json",
+          "bytes": 984,
+          "sha256": "8895268ca1ef25d944ad1695f2eeaab1b351589bce88424d9e0729f76768cc4f",
+          "total": 7,
+          "passed": 7,
+          "failed": 0,
+          "skipped": 0,
+          "expectedFailures": 0
+        },
+        "paging": {
+          "path": ".build/cloud-evidence/run-39115232249/reader-smoke/paging-summary.json",
+          "bytes": 987,
+          "sha256": "d483d192958a24c26725a4c94715e1a6bebb774008373a0f3019152d9e145745",
+          "total": 12,
+          "passed": 12,
+          "failed": 0,
+          "skipped": 0,
+          "expectedFailures": 0
+        },
+        "txt-ui": {
+          "path": ".build/cloud-evidence/run-39115232249/reader-smoke/txt-ui-summary.json",
+          "bytes": 984,
+          "sha256": "32de9930cea0a7b0a813c13f30093643a84b3346df5e40ea932846e29a0a1ca1",
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0,
+          "expectedFailures": 0
+        },
+        "online-ui": {
+          "path": ".build/cloud-evidence/run-39115232249/reader-smoke/online-ui-summary.json",
+          "bytes": 984,
+          "sha256": "7d653cab7667df7d03e7420929fc9300fdf0e9f373f1829be7aa5b7e7f0ccfd7",
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0,
+          "expectedFailures": 0
+        }
+      },
+      "actualUniqueCases": 21,
+      "allCaseMetadataPassedWithZeroSkip": true,
+      "finalOnlineXCTestAttachment": {
+        "path": ".build/cloud-evidence/run-39115232249/attachments/online-ui-online-source-reader-smoke-evidence.json",
+        "bytes": 2497,
+        "sha256": "676ec4ade388865ea9af541494ce88c42e3c324c991a06c0b0ed4ee0d804a2ce"
+      },
+      "onlineResult": {
+        "path": ".build/cloud-evidence/run-39115232249/reader-smoke/online-result.json",
+        "bytes": 2514,
+        "sha256": "e6f796142cfdc3dddd4f2f52e795b2d55addc9cc18898038f1dd03cb77f56037"
+      },
+      "TXTResult": {
+        "path": ".build/cloud-evidence/run-39115232249/reader-smoke/result.json",
+        "bytes": 4711,
+        "sha256": "fa9b3a09fbe97e0d6e54bdeae2ea80cac4ad107fa326fe70899bcc722ff9201c"
+      },
+      "fixture": {
+        "process": {
+          "path": ".build/cloud-evidence/run-39115232249/reader-smoke/online-fixture-process.json",
+          "bytes": 896,
+          "sha256": "2c2974ccb9994287690ce30ece3e76342d2266a0cc160bfd57d0602b7bb9c592"
+        },
+        "trace": {
+          "path": ".build/cloud-evidence/run-39115232249/reader-smoke/online-fixture-trace.json",
+          "bytes": 20897,
+          "sha256": "d8ba0ba8336b803922c007d2e15fab973bfd4fb6fe5b1c8ec40782faa3fbfb97"
+        },
+        "attachedRawTraceEqualsServerTrace": true,
+        "fixtureRunId": "bebaf226-294b-4f7a-bcfd-bf89d6e429e0",
+        "strictOriginalValidatorPassed": true,
+        "verified": {
+          "schemaVersion": 1,
+          "fixture": "reader-book-source-smoke-v1",
+          "passed": true,
+          "runId": "bebaf226-294b-4f7a-bcfd-bf89d6e429e0",
+          "origin": "http://localhost:18769",
+          "baseURL": "http://localhost:18769/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0",
+          "requestCount": 6,
+          "routeCounts": {
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/sources.json": 1,
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/search": 1,
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/book.html": 1,
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/toc.html": 1,
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/chapter0.html": 1,
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/chapter1.html": 1
+          },
+          "responseSHA256": {
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/sources.json": "04740548ef28da28f43799a797d865ccf42106054a63d47fdaa24fa8e24aee64",
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/search": "5296e80a10dd405d57ce37f6b86971051a17e34d9a9399a01b29c507c697a367",
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/book.html": "d5118949774655060ec6a596661632bd2d557e810cc7cff75ad679691702bcab",
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/toc.html": "9048db6c3ef7f192ab6e0f5e68bc45dcf7189ec13d29781270dd93b8333bc552",
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/chapter0.html": "f4b6e84ccf295a57831f7c5f7d0e2d05d4b40c94d930b69c57da5c2fac004663",
+            "/fixture/bebaf226-294b-4f7a-bcfd-bf89d6e429e0/chapter1.html": "9a568c170246bac2f0672e1ff942f1829f2ff0519a8e73944db9ff153435d2b8"
+          },
+          "provesJVMCompatibility": false,
+          "deviceValidationPassed": false
+        },
+        "actualRequestCount": 6,
+        "allActualResponses200": true,
+        "extra400Requests": 0,
+        "fixtureStopped": true,
+        "commandExitCode": 0,
+        "issue": null
+      },
+      "visibleCenteredChapters": [
+        {
+          "marker": "JSC_ONLY_CHAPTER_ONE",
+          "AXFrame": [
+            0.0,
+            0.0,
+            440.0,
+            956.0
+          ],
+          "appCenter": [
+            220,
+            478
+          ],
+          "frameContainsCenter": true,
+          "wrongChapterAndRawMarkerAbsent": true,
+          "exactLabelMatchesFinalXCTestAttachment": true,
+          "accessibility": {
+            "path": ".build/cloud-evidence/run-39115232249/attachments/online-ui-online-04-first-jsc-transformed-coretext-page-accessibility.txt",
+            "bytes": 3597,
+            "sha256": "bf3e435a7b1646c891212735a454bcc39691c76e9602e8a59101ebeb101bb4c8"
+          },
+          "screenshot": {
+            "path": ".build/cloud-evidence/run-39115232249/attachments/online-ui-online-04-first-jsc-transformed-coretext-page.png",
+            "bytes": 315094,
+            "sha256": "6f8b6d456b66c382471e47fe4b647085d706d00cd093b57fe3e27ca14a62ecb1"
+          },
+          "visuallyReviewed": true
+        },
+        {
+          "marker": "JSC_ONLY_CHAPTER_TWO",
+          "AXFrame": [
+            0.0,
+            0.0,
+            440.0,
+            956.0
+          ],
+          "appCenter": [
+            220,
+            478
+          ],
+          "frameContainsCenter": true,
+          "wrongChapterAndRawMarkerAbsent": true,
+          "exactLabelMatchesFinalXCTestAttachment": true,
+          "accessibility": {
+            "path": ".build/cloud-evidence/run-39115232249/attachments/online-ui-online-05-selected-second-jsc-transformed-page-accessibility.txt",
+            "bytes": 8997,
+            "sha256": "a756fe29e8d4235faf36db06cf34f24181bb3b1291f32453fb44793a8d15b2ab"
+          },
+          "screenshot": {
+            "path": ".build/cloud-evidence/run-39115232249/attachments/online-ui-online-05-selected-second-jsc-transformed-page.png",
+            "bytes": 494017,
+            "sha256": "012d3278a56c5fbbe49f1a281d03ac9cc49b520319fb74745e337734c6482082"
+          },
+          "visuallyReviewed": true
+        }
+      ],
+      "returnedToShelf": {
+        "passedActualXCTestRowCount": 1,
+        "visibleHomeBookLists": 1,
+        "onlineTitleStaticTextCount": 1,
+        "AX": {
+          "path": ".build/cloud-evidence/run-39115232249/attachments/online-ui-online-06-returned-to-real-bookshelf-accessibility.txt",
+          "bytes": 12789,
+          "sha256": "ba0edfef4f3ce1e99e31cd80e54f57591b67cd593c01100eb916a7e2d9f2facd"
+        },
+        "screenshot": {
+          "path": ".build/cloud-evidence/run-39115232249/attachments/online-ui-online-06-returned-to-real-bookshelf.png",
+          "bytes": 320688,
+          "sha256": "d256c4fa605dc6a5bc82f7b1c2ea6688d8a90b2166cdaa178fb61291cf93e5a1"
+        },
+        "visuallyReviewed": true
+      },
+      "acceptance": {
+        "configurationPassed": true,
+        "paginationRegressionPassed": true,
+        "TXTReaderSimulatorPassed": true,
+        "onlineJSCReaderSimulatorPassed": true,
+        "completeSixRouteTracePassed": true,
+        "jvmIntegratedIntoThisUIRun": false,
+        "deliveredReleaseIPAExecuted": false,
+        "physicalDeviceAcceptance": false,
+        "allPrivateSourcesCompatible": false,
+        "fullLegadoCompatibilityEstablished": false
+      },
+      "scope": "One fixed loopback source through the existing Yuedu/JavaScriptCore/CoreText Debug Simulator paths; no native JVM or live-site/device acceptance.",
+      "previousFailedAuditsUnchanged": true
     }
   ],
   "startupPreflights": [
@@ -879,25 +1091,13 @@
   ],
   "evidenceLimits": [
     "Existing Yuedu/JavaScriptCore and CoreText Debug Simulator paths only; no JVM integration or full Legado runtime parity is established.",
-    "The latest independently audited complete run passed seven configuration cases and one TXT case. Its online case visibly reached both centered JSC chapters and returned to the shelf, but failed its nested-control count assertion and the full trace retained an extra page2=400 response. The new7+12+1+1 execution is pending and cannot inherit earlier acceptance.",
+    "The latest targeted Debug Simulator run independently passes7configuration+12paging+1TXT+1online cases with zero failures/skips, the exact six-route HTTP contract, two distinct centered JSC chapter markers and return to one matching shelf row. This does not execute the Release IPA or establish native-JVM, real-site or all-source compatibility.",
     "The standalone synthetic fixture startup preflight executes zero UI/configuration tests and no book-reading requests.",
     "No physical device, delivered Release IPA or real-site book source is validated here.",
     "Only synthetic fixtures and run/source/hash metadata are recorded; no private source or private IPA is included."
   ],
   "nextOnlineExecution": {
-    "status": "pending_current_run",
-    "runId": 39115232249,
-    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39115232249",
-    "jobId": 117639579085,
-    "sourceCommit": "6b3f4b043f537579d399a6548e553566146817f6",
-    "tag": "reader-smoke-6b3f4b0",
-    "requiredConfigurationCases": 7,
-    "requiredPaginationRegressionCases": 12,
-    "requiredTXTReaderUICases": 1,
-    "requiredOnlineReaderUICases": 1,
-    "requiredHTTPRoutes": 6,
-    "requiredUnexpected400Requests": 0,
-    "repairScope": "Preserve one shelf-copy assertion by counting matching rows in the unique visible list rather than nested buttons. Forward first-page source pagination metadata through the real search aggregation path; preserve fixture routes, deadlines and centered JSC-body assertions.",
-    "result": "pending_independent_raw_report_and_trace_review"
+    "status": "none_scheduled",
+    "meaning": "The required targeted rerun is independently verified; no additional UI scenario or CI run is required for this delivery."
   }
 }

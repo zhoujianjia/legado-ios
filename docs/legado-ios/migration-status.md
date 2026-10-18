@@ -4,7 +4,15 @@
 
 本轮已完成主 App 的有限 `mainJs` 文本书源接入与数据安全改造。最新数据测试通过，不等于真实 JVM 已驱动新主 App 完成阅读，也不等于用户全部书源可用。
 
-## 当前体验版：3.0.0 build 6
+## 当前可安装版：3.0.0 build 7
+
+用户要求简化流程，后续以「取得 IPA → 原 Apple ID 在 iloader 覆盖安装 → 正常阅读」为主。构建、私有书源本地打包和必要验证由开发侧处理，目前进行中的内核补丁与原版观测收尾后冻结，不为交付追加新场景或 CI。
+
+build 7 修复首页 `hasMoreRule=false` 未传递导致多余搜索请求的问题。云端 Release 构建与独立静态审计已通过；另行 Debug Simulator 的配置、分页、TXT 和书源阅读共 21 项全过，固定书源链路仅有六个必要请求，均为 200，两章正文和返回书架已核对。
+
+完整 1,331 源已在 Windows 本机原样加入 [LegadoReader-build7-with-sources.ipa](/C:/Users/ZJJ/Downloads/LegadoReader-build7-with-sources.ipa)；原 18,256 条目内容和权限均保持，源文件和完整包未上传。具体来源、哈希和验证边界见 [build 7 证据](native-reader-experience-build7.json)。build 7 尚未签名和真机运行，不继承下方 build 6 的用户验收。传统源仍使用现有 JSC，完整 Legado 复刻尚未完成。
+
+## 已取得真机反馈的体验版：3.0.0 build 6
 
 源码 `ac2ece6728053790d68b73d1dfc5d96c3a16d1cc` 的[主 App 构建 run 39099984816](https://github.com/zhoujianjia/legado-ios/actions/runs/39099984816) 已成功。独立静态审计核对了 unsigned iOS 18+ IPA、普通 JAR 的许可证和测试资源排除、13 个模块的全部原文件及 39 个原生导出；构建证据另含 121 项 JVM 测试，失败、错误及跳过均为 0。
 

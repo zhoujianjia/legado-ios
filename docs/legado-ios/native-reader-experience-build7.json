@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-18",
+  "recordKind": "release-build7-local-private-source-package-prepared-for-user",
+  "sourceCommit": "2d13c4402351412a9adc396a44f3621a351defaa",
+  "version": "3.0.0",
+  "build": "7",
+  "bundleIdentifier": "local.zhoujianjia.legado-reader",
+  "configuration": "Release",
+  "intendedPlatform": "iPhoneOS",
+  "intendedArchitecture": "arm64",
+  "minimumIOS": "18.0",
+  "cloudBuild": {
+    "workflowPath": ".github/workflows/legado-reader.yml",
+    "runId": 39116187880,
+    "jobId": 117642345315,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39116187880",
+    "tag": "reader-legado-2d13c44",
+    "status": "completed",
+    "conclusion": "success",
+    "artifact": {
+      "id": 12133510827,
+      "name": "legado-native-reader-unsigned",
+      "bytes": 91444546,
+      "sha256": "eae8f73dda52bc327c3fef298342477f8c41f5a6ca44ece6fc20e4bf93e32736"
+    },
+    "ipa": {
+      "fileName": "YueduReader-experience-unsigned.ipa",
+      "bytes": 96428021,
+      "sha256": "ce183aebb6f6f0669c36ff8ebc0327634a4a8165b4d09dfb8102e1bcab6b2a01"
+    },
+    "buildManifest": {
+      "fileName": "build-manifest.json",
+      "bytes": 7099,
+      "sha256": "31603d47d013627f9e7e7cf83cced382cc02ccfc8ddf1ad930de4f378fcefcdb"
+    },
+    "independentAudit": {
+      "path": ".build/cloud-evidence/run-39116187880/independent-static-audit.json",
+      "bytes": 8311,
+      "sha256": "98d2222028a4443b1cc06f1d577dd054591134bc624209fdd651c9d8ba938607"
+    },
+    "evidenceArtifact": {
+      "id": 12133475967,
+      "name": "legado-native-reader-build-evidence",
+      "bytes": 1472440,
+      "sha256": "eb491d0c00903d329b1769d575d5faa85a194562a28c27650cb60e0abca0faa7"
+    },
+    "privateBookSourcesIncluded": false
+  },
+  "expectedNativePayload": {
+    "producerRunId": 39083752761,
+    "producerSourceCommit": "ce792982a30942e605fc935b733c5b41bef2736a",
+    "artifactId": 12120530642,
+    "artifactName": "legado-zero-source-build",
+    "artifactBytes": 89898489,
+    "artifactSHA256": "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+    "requiredModuleCount": 13,
+    "requiredModules": [
+      "java.base",
+      "java.xml",
+      "java.desktop",
+      "java.datatransfer",
+      "java.prefs",
+      "java.logging",
+      "jdk.charsets",
+      "java.compiler",
+      "java.instrument",
+      "java.net.http",
+      "java.sql",
+      "java.transaction.xa",
+      "jdk.unsupported"
+    ],
+    "requiredDynamicExports": 39,
+    "source": "Pinned release source scripts/legado-ios/runtime-lock.json and the audited Probe12 native baseline; these are requirements, not build7 audit results."
+  },
+  "requiredIndependentChecks": {
+    "freshOrdinaryJarAndJVMTests": "passed",
+    "artifactBytesAndAPIHash": "passed",
+    "ipaBytesAndHash": "passed",
+    "sourceVersionAndBuildIdentity": "passed",
+    "mainAndBothExtensionsARM64IOS18": "passed",
+    "javaHomeExactly13ModulesAndProducerFileHashes": "passed",
+    "finalExecutable39RequiredExports": "passed",
+    "ordinaryJarRequiredClassesBytecodeAndProvenance": "passed",
+    "JUnitProbeTestsAndFixturesAbsent": "passed",
+    "noPrivateBookSourceInCloudPackage": "passed",
+    "localModeSyntheticServiceConfigurationAndEmptyGateway": "passed"
+  },
+  "separateReaderUISmoke": {
+    "runId": 39115232249,
+    "jobId": 117639579085,
+    "sourceCommit": "6b3f4b043f537579d399a6548e553566146817f6",
+    "tag": "reader-smoke-6b3f4b0",
+    "status": "independently_passed",
+    "requiredConfigurationCases": 7,
+    "requiredPaginationCases": 12,
+    "requiredTXTReaderUICases": 1,
+    "requiredOnlineReaderUICases": 1,
+    "requiredHTTPRoutes": 6,
+    "requiredUnexpected400Requests": 0,
+    "meaning": "The Debug Simulator JSC/CoreText reading loop must pass its own raw case, centered-body and complete HTTP trace checks. It does not execute this Release IPA or establish JVM-native reading acceptance.",
+    "actualConfigurationCases": 7,
+    "actualPaginationCases": 12,
+    "actualTXTReaderUICases": 1,
+    "actualOnlineReaderUICases": 1,
+    "failures": 0,
+    "skips": 0,
+    "actualHTTPRequests": 6,
+    "actualUnexpected400Requests": 0,
+    "centeredTwoChapterJSCMarkersVerified": true,
+    "returnedToOneOnlineShelfRowVerified": true,
+    "independentAudit": {
+      "path": ".build/cloud-evidence/run-39115232249/independent-evidence-audit.json",
+      "bytes": 56567,
+      "sha256": "b273afcb8a1df2736a42da98a88f9ce87a047854f69ae83b8d160e337351b3f2"
+    }
+  },
+  "releaseActions": {
+    "localPrivateSourceInsertionPerformed": true,
+    "deliveredToUser": true,
+    "signedOrInstalled": false,
+    "constraint": "Complete private source bytes were inserted only on this Windows host after both audits passed; iloader signing and device installation remain user actions.",
+    "deliveryPrepared": true,
+    "deliveryMethod": "Local Downloads IPA path in assistant reply; no cloud upload of private package."
+  },
+  "acceptance": {
+    "releaseBuildPassed": true,
+    "releaseStaticAuditPassed": true,
+    "build7PhysicalDeviceReadingAccepted": false,
+    "nativeMainJsUIExecutionAccepted": false,
+    "fullLegadoCompatibilityEstablished": false
+  },
+  "preservedPreviousEvidence": {
+    "path": "docs/legado-ios/native-reader-experience.json",
+    "build": "6",
+    "meaning": "The existing Reader6 record and user-reported device reading remain independent and are not overwritten by this candidate."
+  },
+  "limitations": [
+    "Cloud build, separate Simulator reading smoke and local resource-insertion checks passed. This build7 package has not yet been signed, installed or executed on a physical device.",
+    "Traditional-rule source reading still uses the existing JavaScriptCore path; current unfinished original-rule work is not part of this release candidate.",
+    "A successful compile or Simulator smoke does not prove execution of the delivered Release IPA, all 1331 sources, or full Legado feature parity."
+  ],
+  "actualStaticChecks": {
+    "staticAuditPassed": true,
+    "issues": [],
+    "javaHome": {
+      "matchesPinnedNative12Bytes": true,
+      "fileCount": 17241,
+      "totalBytes": 73995276,
+      "pathAndFileHashDigest": "3efc7463f6c51f74368610eab3bf0355a59f954d7173c065453616d25f97fa3e",
+      "modules": [
+        "java.base",
+        "java.compiler",
+        "java.datatransfer",
+        "java.desktop",
+        "java.instrument",
+        "java.logging",
+        "java.net.http",
+        "java.prefs",
+        "java.sql",
+        "java.transaction.xa",
+        "java.xml",
+        "jdk.charsets",
+        "jdk.unsupported"
+      ],
+      "extraOwnedMarker": ".legado-runtime-home-owner.json"
+    },
+    "requiredDynamicExportCount": 39,
+    "allRequiredDynamicExportsPresent": true,
+    "ordinaryJar": {
+      "sha256": "76e6a227d2aa343bbba6593cb5ba78ad856e954911098e946cb08a7af6cf3528",
+      "bytes": 10065948,
+      "maximumBaseClassMajor": 65,
+      "requiredClasses": [
+        "io/yuedu/legado/LegadoRuntime.class",
+        "io/yuedu/legado/NativeHost.class",
+        "io/yuedu/legado/ProductionHttpTransport.class",
+        "io/yuedu/legado/RuntimeSessionOptions.class",
+        "io/yuedu/legado/StaticScalarSelectorRule.class",
+        "org/htmlunit/corejs/javascript/Context.class",
+        "okhttp3/OkHttpClient.class",
+        "org/brotli/dec/BrotliInputStream.class",
+        "org/apache/commons/text/StringEscapeUtils.class",
+        "org/apache/commons/lang3/StringUtils.class"
+      ],
+      "testClassesIncluded": false,
+      "fixtureAndJUnitExclusionPassed": true
+    },
+    "JVMTests": {
+      "XMLFiles": 17,
+      "actualTestcaseElements": 135,
+      "tests": 135,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "evidenceDirectory": ".build/cloud-evidence/run-39116187880/evidence/Packages/LegadoRuntime/jvm/build/test-results/test"
+    }
+  },
+  "localPackage": {
+    "path": "C:\\Users\\ZJJ\\Downloads\\LegadoReader-build7-with-sources.ipa",
+    "ipaSHA256": "50efcbd6b9d85e7d9eb3474550b4c03eee3420afa9aaab3996a79ca5567456d6",
+    "ipaBytes": 97421194,
+    "reportPath": "C:\\Users\\ZJJ\\Downloads\\LegadoReader-build7-local-package.json",
+    "reportSHA256": "93163b41cc8d9f48aa620eefe413983658dca09af1fef985f8db2d97cb78b35d",
+    "bundledBookSources": {
+      "schemaVersion": 1,
+      "version": "local-sources-4427e33c22d884d0",
+      "sha256": "4427e33c22d884d0fbaaa17fdbb1c580e6dfd141de5bde0b954c61bef61ced9b",
+      "sourceCount": 1331,
+      "bytes": 8669535,
+      "mainJsSourceCount": 0
+    },
+    "originalNonSourceEntriesVerified": 18256,
+    "originalNonSourceBytesAndPermissionsPreserved": true,
+    "originalBookSourceBytesPreserved": true,
+    "bookSourcesUploaded": false,
+    "signed": false,
+    "deviceValidationPassed": false
+  },
+  "simplifiedUserFlow": [
+    "Open iloader with the unlocked iPhone connected by USB.",
+    "Select LegadoReader-build7-with-sources.ipa and use the same Apple ID to install over the existing app.",
+    "Open the reader and use it normally; report problems only when encountered."
+  ]
+}
