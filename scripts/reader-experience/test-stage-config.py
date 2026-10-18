@@ -61,6 +61,41 @@ class ReaderExperienceTests(unittest.TestCase):
                     "TARGET_BUILD_DIR": str(self.root), "MARKETING_VERSION": "3.0.0", "CURRENT_PROJECT_VERSION": "1",
                     "SDK_NAME": "iphoneos27.0"}}]
 
+    def test_bundled_sources_are_optional_but_stale_packaging_is_rejected(self):
+        app, resources = self.root / "App", self.root / "Resources"
+        self.assertEqual(config.bundled_sources(app, resources), {"included": False})
+        self.write(app / "BuiltInBookSources.json", b"[]")
+        with self.assertRaisesRegex(ValueError, "Unexpected bundled"):
+            config.bundled_sources(app, resources)
+
+    def test_bundled_source_manifest_binds_actual_resource_and_packaged_bytes(self):
+        app, resources = self.root / "App", self.root / "Resources"
+        raw = json.dumps([{"bookSourceUrl": "https://fixture.invalid", "mainJs": "function search(){return [];}"}]).encode()
+        metadata = json.dumps({"schemaVersion": 1, "version": "test-v1", "sha256": config.hashlib.sha256(raw).hexdigest()}).encode()
+        for root in (resources, app):
+            self.write(root / "BuiltInBookSources.json", raw)
+            self.write(root / "BuiltInBookSources.manifest.json", metadata)
+        result = config.bundled_sources(app, resources)
+        self.assertEqual(result["sourceCount"], 1)
+        self.assertEqual(result["mainJsSourceCount"], 1)
+        self.assertFalse(result["realSourceAvailabilityValidated"])
+        self.write(app / "BuiltInBookSources.json", b"[]")
+        with self.assertRaisesRegex(ValueError, "differ"):
+            config.bundled_sources(app, resources)
+
+    def test_missing_or_changed_source_manifest_never_passes_packaging(self):
+        app, resources = self.root / "App", self.root / "Resources"
+        raw = b'[{"bookSourceUrl":"https://fixture.invalid"}]'
+        self.write(resources / "BuiltInBookSources.json", raw)
+        self.write(app / "BuiltInBookSources.json", raw)
+        with self.assertRaisesRegex(ValueError, "must be packaged"):
+            config.bundled_sources(app, resources)
+        for root in (resources, app):
+            self.write(root / "BuiltInBookSources.manifest.json", json.dumps(
+                {"schemaVersion": 1, "version": "test-v1", "sha256": "0" * 64}).encode())
+        with self.assertRaisesRegex(ValueError, "differ"):
+            config.bundled_sources(app, resources)
+
     def original_project(self):
         return ("// unrelated identifier " + config.UPSTREAM_BUNDLE + "\n" + "\n".join(
             "\tPRODUCT_BUNDLE_IDENTIFIER = " + config.UPSTREAM_BUNDLE + suffix + ";"

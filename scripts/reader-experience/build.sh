@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the original Yuedu reader UI/JSC route; no Zero build or JVM payload.
+# Build the native reader with an explicit JSC-only or Legado JVM configuration.
 set -euo pipefail
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
@@ -13,7 +13,15 @@ for tool in python3 xcrun xcodebuild ditto lipo otool git; do
   command -v "$tool" >/dev/null || { echo "Missing build tool: $tool" >&2; exit 2; }
 done
 export DEVELOPER_DIR=${DEVELOPER_DIR:-$(bash "$REPO_DIR/scripts/sim.sh" xcode)}
-export LEGADO_RUNTIME_SOURCE_ONLY=1
+RUNTIME_ARGS=()
+MIN_IOS=17.0
+if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
+  unset LEGADO_RUNTIME_SOURCE_ONLY
+  RUNTIME_ARGS+=(--with-jvm)
+  MIN_IOS=18.0
+else
+  export LEGADO_RUNTIME_SOURCE_ONLY=1
+fi
 SOURCE_COMMIT=$(git -C "$REPO_DIR" rev-parse HEAD)
 mkdir -p "$OUTPUT"
 for path in "$OUTPUT/Payload" "$OUTPUT/YueduReader-experience-unsigned.ipa" "$WORK_DIR/reader-device.xcresult" "$WORK_DIR/build-settings.json"; do
@@ -28,7 +36,8 @@ BUILD_ARGS=(
   -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader
   -configuration Release -destination 'generic/platform=iOS'
   -onlyUsePackageVersionsFromResolvedFile
-  CURRENT_PROJECT_VERSION=3
+  CURRENT_PROJECT_VERSION=4
+  IPHONEOS_DEPLOYMENT_TARGET="$MIN_IOS"
   ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS=
   GATEWAY_BASE_URL=
   YUEDU_LOCAL_EXPERIENCE=YES
@@ -42,9 +51,12 @@ BUILD_ARGS=(
 xcodebuild "${BUILD_ARGS[@]}" -resultBundlePath "$WORK_DIR/reader-device.xcresult" build
 xcodebuild "${BUILD_ARGS[@]}" -showBuildSettings -json > "$WORK_DIR/build-settings.json"
 APP=$(python3 "$SCRIPT_DIR/stage-config.py" inspect-settings \
-  --settings "$WORK_DIR/build-settings.json" --output "$WORK_DIR/verified-settings.json")
+  --settings "$WORK_DIR/build-settings.json" --output "$WORK_DIR/verified-settings.json" "${RUNTIME_ARGS[@]}")
 [[ -d "$APP" ]] || { echo "Built reader app is absent: $APP" >&2; exit 4; }
-python3 "$SCRIPT_DIR/stage-config.py" finalize --app "$APP" --source "$SOURCE_COMMIT" > "$WORK_DIR/bundle-validation.json"
+python3 "$SCRIPT_DIR/stage-config.py" finalize --app "$APP" --source "$SOURCE_COMMIT" "${RUNTIME_ARGS[@]}" > "$WORK_DIR/bundle-validation.json"
+if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
+  python3 "$REPO_DIR/scripts/legado-ios/verify-native-exports.py" --executable "$APP/YueduReader" --report "$WORK_DIR/reader-native-exports.json"
+fi
 for executable in "$APP/YueduReader" "$APP/PlugIns/yuedu_app_Widget.appex/yuedu_app_Widget" "$APP/PlugIns/yuedu_app_ShareExtension.appex/yuedu_app_ShareExtension"; do
   [[ $(lipo -archs "$executable") == arm64 ]] || { echo "Expected ARM64-only device executable: $executable" >&2; exit 4; }
 done
@@ -56,7 +68,18 @@ python3 "$SCRIPT_DIR/stage-config.py" manifest \
   --app "$OUTPUT/Payload/YueduReader.app" --ipa "$OUTPUT/YueduReader-experience-unsigned.ipa" \
   --settings "$WORK_DIR/verified-settings.json" --source "$SOURCE_COMMIT" \
   --xcode-file "$WORK_DIR/xcode-version.log" --overlay "$WORK_DIR/project-overlay.json" \
-  --output "$OUTPUT/build-manifest.json"
+  --output "$OUTPUT/build-manifest.json" "${RUNTIME_ARGS[@]}"
+if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
+cat > "$OUTPUT/README.txt" <<'TEXT'
+Legado iOS 阅读原型（unsigned）
+
+本包将有限的 mainJs 书源流程接到本地 Rhino/JVM，正文使用原生 CoreText 阅读器。
+传统规则书源仍使用现有 JavaScriptCore 实现，尚未证明完整 Legado 兼容。
+build-manifest.json 记录了实际来源、普通 JVM JAR、内置书源资源和 IPA 的哈希。
+本包最低 iOS 18。账户、云服务和订阅后端未配置；使用合成配置并禁用遥测及 CloudKit。
+编译打包不代表真机运行或全部书源验收。安装前须自行签名主 App 和嵌入组件。
+TEXT
+else
 cat > "$OUTPUT/README.txt" <<'TEXT'
 Yuedu 本地阅读体验版（unsigned）
 
@@ -69,4 +92,5 @@ Yuedu 本地阅读体验版（unsigned）
 安装前须自行签名主 App、嵌入扩展及所需框架；App Group/iCloud 等能力取决于签名授权。
 请保留 build-manifest.json 以核对版本、来源 SHA 和 IPA SHA256。
 TEXT
+fi
 echo "Unsigned reader experience exported: $OUTPUT/YueduReader-experience-unsigned.ipa"

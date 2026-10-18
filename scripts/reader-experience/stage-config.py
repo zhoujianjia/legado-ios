@@ -9,6 +9,7 @@ INFOPLIST_KEY_* settings are not reliably emitted by every Xcode configuration.
 import argparse
 from datetime import datetime, timezone
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -134,13 +135,13 @@ def validate_tag():
     return {"sourceCommit": source}
 
 
-def inspect_settings(settings):
+def inspect_settings(settings, with_jvm=False):
     matches = [item["buildSettings"] for item in settings if item.get("target") == MAIN_TARGET]
     if len(matches) != 1:
         raise ValueError("Expected exactly one main yuedu app target in build settings")
     values = matches[0]
     required = {"CONFIGURATION": "Release", "SWIFT_VERSION": "5.0",
-                "IPHONEOS_DEPLOYMENT_TARGET": "17.0", "PLATFORM_NAME": "iphoneos",
+                "IPHONEOS_DEPLOYMENT_TARGET": "18.0" if with_jvm else "17.0", "PLATFORM_NAME": "iphoneos",
                 "FULL_PRODUCT_NAME": MAIN_PRODUCT, "PRODUCT_BUNDLE_IDENTIFIER": MAIN_BUNDLE,
                 "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "YUEDU_LOCAL_EXPERIENCE": "YES",
                 "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": ""}
@@ -193,13 +194,39 @@ def no_jvm_payload(app):
         raise ValueError("Unexpected JVM bootstrap modules in the reader experience")
 
 
-def finalize(app, source):
+def verify_jvm_payload(app):
+    script = REPO / "scripts/legado-ios/verify-runtime.py"
+    spec = importlib.util.spec_from_file_location("reader_packaged_runtime", script)
+    validator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(validator)
+    jar = checked_path(app / "LegadoRuntime/legado-runtime.jar")
+    home = checked_path(app / "lib")
+    validation = validator.validate(home, jar)
+    if (app / "LegadoRuntime/java-home").exists():
+        raise ValueError("The reader JVM must boot from App.app/lib")
+    staging = json.loads((app / "LegadoRuntime/runtime-manifest.json").read_bytes())
+    if staging.get("jarSHA256") != digest(jar):
+        raise ValueError("Packaged JVM JAR differs from its staging manifest")
+    packaging_spec = importlib.util.spec_from_file_location("reader_ordinary_jar", Path(__file__).with_name("runtime-packaging.py"))
+    packaging = importlib.util.module_from_spec(packaging_spec)
+    packaging_spec.loader.exec_module(packaging)
+    if digest(jar) != digest(packaging.JAR):
+        raise ValueError("Packaged JVM JAR differs from this run's freshly built ordinary JAR")
+    if staging.get("sourcePins") != json.loads((REPO / "scripts/legado-ios/runtime-lock.json").read_bytes()):
+        raise ValueError("Packaged runtime pin differs from this checkout")
+    return {"validation": validation, "jar": packaging.inspect_jar(jar)}
+
+
+def finalize(app, source, with_jvm=False):
     if re.fullmatch(r"[0-9a-f]{40}", source) is None:
         raise ValueError("A full source SHA is required")
     app = checked_path(app)
     if app.name != MAIN_PRODUCT:
         raise ValueError("The experience must retain the YueduReader.app product")
-    no_jvm_payload(app)
+    if with_jvm:
+        verify_jvm_payload(app)
+    else:
+        no_jvm_payload(app)
     bundles = {MAIN_PRODUCT: app, **extension_bundles(app)}
     # Check all bundle/configuration identities before mutating unsigned output.
     for bundle in bundles.values():
@@ -216,8 +243,8 @@ def finalize(app, source):
         info["YueduExperienceSourceCommit"] = source
         info["GitCommitSHA"] = source[:7]
         if name == MAIN_PRODUCT:
-            if info.get("CFBundleIdentifier") != MAIN_BUNDLE or info.get("CFBundleSupportedPlatforms") != ["iPhoneOS"] or info.get("MinimumOSVersion") != "17.0":
-                raise ValueError("Main product must retain its iPhoneOS identity and iOS 17 baseline")
+            if info.get("CFBundleIdentifier") != MAIN_BUNDLE or info.get("CFBundleSupportedPlatforms") != ["iPhoneOS"] or info.get("MinimumOSVersion") != ("18.0" if with_jvm else "17.0"):
+                raise ValueError("Main product must retain its iPhoneOS identity and the selected minimum iOS")
             info["GIDClientID"] = GOOGLE_CLIENT
             # Preserve yuedu/legado document-import URLs, replacing only Google's
             # inherited OAuth redirect identity in this unsigned experience.
@@ -226,11 +253,13 @@ def finalize(app, source):
                 item["CFBundleURLSchemes"] = [GOOGLE_REVERSED if value.startswith("com.googleusercontent.apps.") else value
                                                for value in schemes]
         (bundle / "Info.plist").write_bytes(plistlib.dumps(info, fmt=plistlib.FMT_BINARY, sort_keys=False))
-    return bundle_summary(app)
+    return bundle_summary(app, with_jvm=with_jvm)
 
 
-def bundle_summary(app):
-    no_jvm_payload(app)
+def bundle_summary(app, with_jvm=False):
+    runtime = verify_jvm_payload(app) if with_jvm else None
+    if not with_jvm:
+        no_jvm_payload(app)
     bundles = {MAIN_PRODUCT: app, **extension_bundles(app)}
     result = []
     for name, bundle in bundles.items():
@@ -250,11 +279,39 @@ def bundle_summary(app):
     if len({(item["version"], item["build"]) for item in result}) != 1:
         raise ValueError("App and extensions have mismatched version/build values")
     return {"bundles": result, "localFlags": LOCAL_FLAGS, "extensionsPreserved": True,
-            "jvmPayloadIncluded": False, "upstreamCredentialsUsed": False}
+            "jvmPayloadIncluded": with_jvm, "runtimePayload": runtime, "upstreamCredentialsUsed": False}
 
 
-def manifest(app, ipa, settings, source, xcode, overlay):
-    summary = bundle_summary(app)
+def bundled_sources(app, resource_root=None):
+    root = resource_root if resource_root is not None else REPO / "Resources"
+    names = ("BuiltInBookSources.json", "BuiltInBookSources.manifest.json")
+    source_paths = [root / name for name in names]
+    built_paths = [app / name for name in names]
+    if not any(path.exists() for path in source_paths):
+        if any(path.exists() for path in built_paths):
+            raise ValueError("Unexpected bundled book sources absent from this checkout")
+        return {"included": False}
+    if not all(path.is_file() for path in (*source_paths, *built_paths)):
+        raise ValueError("Both the source pack and its manifest must be packaged")
+    metadata = json.loads(source_paths[1].read_bytes())
+    expected = metadata.get("sha256")
+    if (type(metadata.get("schemaVersion")) is not int or metadata["schemaVersion"] != 1
+            or not isinstance(metadata.get("version"), str) or not metadata["version"].strip()
+            or not isinstance(expected, str) or re.fullmatch(r"[0-9a-f]{64}", expected) is None
+            or digest(source_paths[0]) != expected or digest(built_paths[0]) != expected
+            or source_paths[1].read_bytes() != built_paths[1].read_bytes()):
+        raise ValueError("Bundled book-source bytes/manifest differ from the pinned resource")
+    sources = json.loads(built_paths[0].read_bytes())
+    if not isinstance(sources, list) or not sources or not all(isinstance(item, dict) for item in sources):
+        raise ValueError("Bundled book sources must contain a nonempty source array")
+    return {"included": True, "version": metadata["version"], "sha256": expected,
+            "bytes": built_paths[0].stat().st_size, "sourceCount": len(sources),
+            "mainJsSourceCount": sum(isinstance(item.get("mainJs"), str) and bool(item["mainJs"].strip()) for item in sources),
+            "realSourceAvailabilityValidated": False}
+
+
+def manifest(app, ipa, settings, source, xcode, overlay, with_jvm=False):
+    summary = bundle_summary(app, with_jvm=with_jvm)
     info = read_info(app)
     if info.get("YueduExperienceSourceCommit") != source:
         raise ValueError("Packaged app source stamp differs from HEAD")
@@ -273,22 +330,24 @@ def manifest(app, ipa, settings, source, xcode, overlay):
     if hashlib.sha256(original).hexdigest() != overlay.get("originalSHA256"):
         raise ValueError("Original project overlay hash does not match source HEAD")
     resolved = REPO / "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-    return {"schemaVersion": 1, "artifactKind": "yuedu-local-reader-experience", "createdAt": utc_now(),
+    return {"schemaVersion": 1, "artifactKind": "legado-mainjs-reader-prototype" if with_jvm else "yuedu-local-reader-experience", "createdAt": utc_now(),
             "sourceCommit": source, "workingTreeDirty": dirty, "version": info["CFBundleShortVersionString"],
             "expectedTrackedOverlay": True, "trackedChanges": tracked, "projectOverlay": overlay,
             "build": info["CFBundleVersion"], "bundleIdentifier": info["CFBundleIdentifier"],
             "displayName": info.get("CFBundleDisplayName", info.get("CFBundleName")),
-            "configuration": "Release", "architecture": "arm64", "platform": "iPhoneOS", "minimumIOS": "17.0",
+            "configuration": "Release", "architecture": "arm64", "platform": "iPhoneOS", "minimumIOS": "18.0" if with_jvm else "17.0",
             "actualBuildSettings": settings, "xcode": xcode, "developerDirectory": os.environ.get("DEVELOPER_DIR"),
             "swiftPackageResolvedSHA256": digest(resolved), "bundleValidation": summary,
+            "bundledBookSources": bundled_sources(app),
             "ipaSHA256": digest(ipa), "ipaBytes": ipa.stat().st_size,
-            "readerRoute": "Existing Yuedu SwiftUI/CoreText and JavaScriptCore",
-            "jvmIntegratedIntoReading": False, "nativeJVMCompiled": False,
+            "readerRoute": "Legado Rhino/JVM mainJs route; traditional sources use existing JavaScriptCore; native CoreText reader" if with_jvm else "Existing Yuedu SwiftUI/CoreText and JavaScriptCore",
+            "jvmIntegratedIntoReading": with_jvm, "nativeJVMCompiled": with_jvm,
+            "mainJsRouteExecutionValidated": False,
             "syntheticBackendConfiguration": True, "backendServicesConfigured": False,
             "deviceCompilationPassed": True, "signed": False, "deviceValidationPassed": False,
             "simulatorExecution": "not_run", "functionalAcceptance": "not_run",
             "limitations": ["Unsigned: sign the app and embedded extensions before installation.",
-                            "This package retains the Yuedu reader and its existing JSC source compatibility; it is not the full Legado port.",
+                            "This prototype includes a finite mainJs JVM route; traditional sources use the existing JSC implementation. Full Legado compatibility remains unverified." if with_jvm else "This package retains the Yuedu reader and its existing JSC source compatibility; it is not the full Legado port.",
                             "Accounts, subscription verification, CloudKit and remote backend features are not configured in local experience mode.",
                             "Compilation and packaging do not prove import/search/reading/TTS/RSS work on this device."]}
 
@@ -305,9 +364,11 @@ def main():
     inspect = commands.add_parser("inspect-settings")
     inspect.add_argument("--settings", type=Path, required=True)
     inspect.add_argument("--output", type=Path, required=True)
+    inspect.add_argument("--with-jvm", action="store_true")
     final = commands.add_parser("finalize")
     final.add_argument("--app", type=Path, required=True)
     final.add_argument("--source", required=True)
+    final.add_argument("--with-jvm", action="store_true")
     report = commands.add_parser("manifest")
     report.add_argument("--app", type=Path, required=True)
     report.add_argument("--ipa", type=Path, required=True)
@@ -316,6 +377,7 @@ def main():
     report.add_argument("--xcode-file", type=Path, required=True)
     report.add_argument("--output", type=Path, required=True)
     report.add_argument("--overlay", type=Path, required=True)
+    report.add_argument("--with-jvm", action="store_true")
     args = parser.parse_args()
     try:
         if args.command == "validate-tag":
@@ -325,16 +387,16 @@ def main():
         elif args.command == "overlay-project":
             value = overlay_project(args.project, args.report)
         elif args.command == "inspect-settings":
-            value = inspect_settings(json.loads(args.settings.read_text(encoding="utf-8")))
+            value = inspect_settings(json.loads(args.settings.read_text(encoding="utf-8")), with_jvm=args.with_jvm)
             write_new_json(args.output, value)
             print(value["appPath"])
             return 0
         elif args.command == "finalize":
-            value = finalize(args.app, args.source)
+            value = finalize(args.app, args.source, with_jvm=args.with_jvm)
         else:
             value = manifest(args.app, args.ipa, json.loads(args.settings.read_text(encoding="utf-8")),
                              args.source, args.xcode_file.read_text(encoding="utf-8").strip(),
-                             json.loads(args.overlay.read_text(encoding="utf-8")))
+                             json.loads(args.overlay.read_text(encoding="utf-8")), with_jvm=args.with_jvm)
             write_new_json(args.output, value)
         print(json.dumps(value, indent=2, ensure_ascii=False))
         return 0
