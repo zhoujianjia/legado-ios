@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordKind": "independently-branded-reader-build-in-progress",
+  "recordKind": "reader-build9-producer-evidence-audited-without-IPA",
   "recordedOn": "2026-10-18",
   "sourceCommit": "903e90a6acb86ec4fdd82e0364e56566c5573f81",
   "intendedVersion": "3.0.0",
@@ -13,9 +13,33 @@
     "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39134165166",
     "tag": "reader-legado-903e90a",
     "workflowPath": ".github/workflows/legado-reader.yml",
-    "statusAtObservation": "in_progress",
-    "observedAtUTC": "2026-10-18T14:03:40Z",
-    "conclusion": null
+    "statusAtObservation": "completed",
+    "observedAtUTC": "2026-10-18T14:46:13.788187+00:00",
+    "conclusion": "success",
+    "previousInProgressObservation": {
+      "statusAtObservation": "in_progress",
+      "observedAtUTC": "2026-10-18T14:03:40Z",
+      "conclusion": null
+    },
+    "jobId": 117695177273,
+    "completedAtUTC": "2026-10-18T14:37:54Z",
+    "evidenceArtifact": {
+      "id": 12140510570,
+      "name": "legado-native-reader-build-evidence",
+      "path": ".build/cloud-evidence/run-39134165166/reader-build-evidence.zip",
+      "bytes": 1483449,
+      "sha256": "e545fd597ee21cbb6907c865918465d2fd42cef81c44c4272ffcc5793da1505b",
+      "apiBytesAndHashMatched": true,
+      "allExtractedArtifactFilesByteIdentical": true,
+      "zipMembers": 48,
+      "containsIPAOrOrdinaryJarBytes": false
+    },
+    "finalAPIMetadata": {
+      "path": ".build/cloud-evidence/run-39134165166/final-api-metadata.json",
+      "bytes": 21091,
+      "sha256": "4be183e8690087c40335455d3a9422c6bc81c9b424a08f5ee2c0622eb3f693d1"
+    },
+    "publicIPAUploadStep": "skipped"
   },
   "priorUIEvidence": {
     "sourceCommit": "b1607881a27135b06d6945af380a19f22dbe1daf",
@@ -24,7 +48,12 @@
     "actualPassedCases": 64,
     "failuresOrSkips": 0,
     "unchangedProductPathsComparedWithCandidate": [
-      "Modules", "Targets", "Resources", "Info.plist", "Yuedu-Reader.xcodeproj", "Tests"
+      "Modules",
+      "Targets",
+      "Resources",
+      "Info.plist",
+      "Yuedu-Reader.xcodeproj",
+      "Tests"
     ],
     "comparisonMethod": "git diff --exit-code between both exact commits for the listed paths returned zero",
     "scope": "Debug Simulator using the existing JSC/CoreText route, including fonts, cached TXT, paging and two reading UI cases. It does not validate this Release IPA or native JVM execution."
@@ -35,7 +64,21 @@
     "manualInAppImportPreserved": true,
     "existingDeviceDataPreserved": true,
     "portablePackagingTestsPassed": 23,
-    "newCloudPackagingChecks": "pending"
+    "newCloudPackagingChecks": "passed_in_producer_evidence",
+    "checkEvidence": {
+      "source-pack-exclusion.json": {
+        "included": false,
+        "path": ".build/cloud-evidence/run-39134165166/artifact/.build/reader-experience/source-pack-exclusion.json",
+        "bytes": 24,
+        "sha256": "c1012c41af0c1ade5869a8d9ffa43299283811405fd452646d8007df404c1390"
+      },
+      "built-source-pack-exclusion.json": {
+        "included": false,
+        "path": ".build/cloud-evidence/run-39134165166/artifact/.build/reader-experience/built-source-pack-exclusion.json",
+        "bytes": 24,
+        "sha256": "c1012c41af0c1ade5869a8d9ffa43299283811405fd452646d8007df404c1390"
+      }
+    }
   },
   "delivery": {
     "publicIPAUploadEnabled": false,
@@ -44,11 +87,81 @@
     "signedOrInstalled": false,
     "deliveredToUser": false,
     "redistributionCleared": false,
-    "note": "This public-repository run preserves build evidence, but its unsigned IPA upload is disabled. A build success does not provide a downloadable or independently audited installation package."
+    "note": "The public-repository IPA upload was skipped; only build evidence was downloaded. The manifest was decoded from producer stdout. Reported IPA/JAR hashes were not verified against downloaded binaries.",
+    "publicIPAUploadStep": "skipped",
+    "onlyBuildEvidenceUploaded": true
   },
   "acceptance": {
-    "releaseCompilationPassed": false,
+    "releaseCompilationPassed": true,
     "physicalDeviceValidationPassed": false,
-    "fullLegadoCompatibilityEstablished": false
+    "fullLegadoCompatibilityEstablished": false,
+    "buildEvidenceIndependentlyAudited": true,
+    "IPAIndependentlyAudited": false,
+    "nativeJVMExecutedByThisIOSBuild": false
+  },
+  "auditedOn": "2026-10-19",
+  "independentEvidenceAudit": {
+    "path": ".build/cloud-evidence/run-39134165166/independent-build-evidence-audit.json",
+    "bytes": 33783,
+    "sha256": "fe925bb45bf90e3691dc24b0545af89981ad4038656928008bec2c0e01991715"
+  },
+  "actualBuild": {
+    "version": "3.0.0",
+    "build": "9",
+    "displayName": "本地书架",
+    "bundleIdentifier": "local.zhoujianjia.legado-reader",
+    "configuration": "Release",
+    "platform": "iPhoneOS",
+    "architecture": "arm64",
+    "minimumIOS": "18.0",
+    "rawXCResultBuildStatus": "succeeded",
+    "errorSummaries": 0,
+    "warningCount": 71
+  },
+  "ordinaryJVMTests": {
+    "xmlFiles": 17,
+    "uniqueCases": 135,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "scope": "Actual ordinary desktop JVM XML; this does not execute the iOS native JVM."
+  },
+  "portableCloudTests": {
+    "stageConfigPassed": 23,
+    "runtimePackagingPassed": 6,
+    "localSourcePackagingToolPassed": 7
+  },
+  "projectIdentity": {
+    "sourceProjectSHA256": "b1c85ad750b4874f6ba5415649b2a6272d29438a3fe3f6561089f03cee342342",
+    "strictSourceOverlayVerified": true,
+    "replacementCount": 0,
+    "identifiersAlreadyIndependent": true,
+    "trackedChanges": []
+  },
+  "producerManifestEvidence": {
+    "evidenceOrigin": "JSON printed by stage-config manifest in original producer build log",
+    "decodedLogManifest": {
+      "path": ".build/cloud-evidence/run-39134165166/build-manifest-from-producer-log.json",
+      "bytes": 7308,
+      "sha256": "8c590e6a9b0505d51ae902e64d540938e7e7c34825cac0c6ff31bc69d9ff7aac"
+    },
+    "displayName": "本地书架",
+    "version": "3.0.0",
+    "build": "9",
+    "bundleIdentifier": "local.zhoujianjia.legado-reader",
+    "configuration": "Release",
+    "platform": "iPhoneOS",
+    "architecture": "arm64",
+    "minimumIOS": "18.0",
+    "ipaBytesDeclaredByProducer": 106577726,
+    "ipaSHA256DeclaredByProducer": "3372d54ecb7fc9e8e3997aa3ea54679d81469f77ca0e876e0bb62e1f1f832b05",
+    "IPADownloadedOrIndependentlyHashed": false
+  },
+  "nativePayloadEvidence": {
+    "requiredModuleCountReported": 13,
+    "requiredExportsCheckedInProducerDyldLog": 39,
+    "ordinaryJarSHA256Reported": "d1575d5d14f4e2b5fad8296a928c452fca82cc8cc988f9d7ec2f698be0891142",
+    "ordinaryJarBytesReported": 10065948,
+    "IPAOrJarBytesLocallyInspected": false
   }
 }

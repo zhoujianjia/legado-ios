@@ -43,7 +43,11 @@
     "localizationKeyParity": {"languages": 5, "passed": true},
     "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml",
     "intendedSimulatorCases": {"unit": 8, "ui": 1},
-    "simulatorExecution": "pending",
+    "implementationCommit": "502ad353f19f1cc92b18fde21536d305c335df22",
+    "simulatorExecution": "in-progress-not-yet-passed",
+    "simulatorRunURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39142240830",
+    "simulatorSourceTag": "reader-renewal-502ad35",
+    "xcresultFormatReference": "https://chromium.googlesource.com/chromium/src/+/a8420d0c885e1d5dc4643994e1957595636afd8d/ios/build/bots/scripts/xcode_log_parser.py#898",
     "physicalDeviceExecution": "not-performed",
     "ipaDelivery": "not-performed"
   },
@@ -67,6 +71,19 @@
     "appleCredentialsOrPairingRecordsRead": false,
     "realDeviceIdentifiersExported": false
   },
+  "alternateOTATransport": {
+    "repository": "claration/feather",
+    "commit": "7078b053c0af262809a48e4d3898d42b0d35fedf",
+    "wikiCommit": "2ecb8e822fd47e5dc942f82df381c0dcd7517077",
+    "sourceInspectionOnly": true,
+    "freePersonalTeamOTAInstallation": "unknown-no-primary-passing-evidence",
+    "documentedProvisioning": "Apple Distribution certificate with Ad Hoc profile",
+    "selfUpdate": "locked Feather Server implementation rejects its own bundle ID; this does not establish an OS-wide prohibition",
+    "appleDocumentedSelfUpdate": "in-house HTTPS OTA can be opened from the app; this is not evidence for free Personal Team or an app-hosted server surviving replacement",
+    "profileRenewalProvidedByOTATransport": false,
+    "unattendedOperationProven": false,
+    "integrationPerformed": false
+  },
   "primaryReferences": [
     "https://docs.sidestore.io/docs/installation/prerequisites",
     "https://developer.apple.com/help/account/reference/supported-capabilities-ios/",
@@ -74,7 +91,10 @@
     "https://developer.apple.com/documentation/marketplacekit/applibrary",
     "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
     "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
-    "https://github.com/jkcoxson/LocalDevVPN/blob/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift"
+    "https://github.com/jkcoxson/LocalDevVPN/blob/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift",
+    "https://github.com/claration/feather/blob/7078b053c0af262809a48e4d3898d42b0d35fedf/Feather/Views/Library/Install/InstallPreviewView.swift",
+    "https://github.com/claration/feather/wiki/Using-an-Apple-Developer-Account/2ecb8e822fd47e5dc942f82df381c0dcd7517077",
+    "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
     "Compile and run the exact eight service tests and one UI test in Xcode Simulator, retaining raw xcresult evidence.",

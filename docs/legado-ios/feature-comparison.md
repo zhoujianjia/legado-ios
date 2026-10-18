@@ -57,7 +57,7 @@
 
 公版库的实际来源可以核查：Gutenberg 目录直接使用 `www.gutenberg.org/ebooks.opds/`，见 [PublicLibrary.swift](../../Modules/Services/PublicLibrary/PublicLibrary.swift)；青空文库是日文书库，其目录清单由 `yuedureader.com/catalogs/aozora/v1/manifest.json` 提供，正文下载来自青空文库，见 [AozoraCatalogStore.swift](../../Modules/Services/PublicLibrary/AozoraCatalogStore.swift)及 [下载服务](../../Modules/Services/PublicLibrary/AozoraLibraryDownloadService.swift)。**界面是繁体，不代表这些库的正文都是繁体。**目前没有默认内置“好读”之类中文繁体书库的代码证据，不能仅凭名称猜测用户所指的某一私人书源。
 
-本轮源码已落实：本地分发关闭 App 账号、StoreKit、上游反馈和 CloudKit；会员状态保持未购买，本地阅读能力另行开放。默认公版库隐藏，旧首页公版栏目因没有可用提供者而不发起请求；青空目录服务在本地模式只读已有缓存，即使旧书籍详情调用强制刷新也不访问上游或写检查时间。官方 AI 推荐从提供者注册和栏目选择中移除，用户自行配置的 AI 助手、模块、RSS、WebDAV 及书源网页登录继续保留。中文界面使用简体翻译。**独立品牌源码已通过 Debug Simulator 的 64 项实际验证，包括字体、缓存 TXT 与基础阅读链路；新版 Release 打包及真机验收仍待完成。**详见[当前验证记录](local-product-validation.json)。上游 SDK 源码/依赖尚未全部物理删除，不能据此声称包体已经精简。
+本轮源码已落实：本地分发关闭 App 账号、StoreKit、上游反馈和 CloudKit；会员状态保持未购买，本地阅读能力另行开放。默认公版库隐藏，旧首页公版栏目因没有可用提供者而不发起请求；青空目录服务在本地模式只读已有缓存，即使旧书籍详情调用强制刷新也不访问上游或写检查时间。官方 AI 推荐从提供者注册和栏目选择中移除，用户自行配置的 AI 助手、模块、RSS、WebDAV 及书源网页登录继续保留。中文界面使用简体翻译。**独立品牌源码已通过 Debug Simulator 的 64 项实际验证，包括字体、缓存 TXT 与基础阅读链路；build 9 的 Release 构建及无书源检查也已通过，IPA 独立审计与新版真机验收仍待完成。**详见[当前验证记录](local-product-validation.json)和[build 9 构建证据](native-reader-experience-build9.json)。上游 SDK 源码/依赖尚未全部物理删除，不能据此声称包体已经精简。
 
 ## 能否完美兼容书源
 
