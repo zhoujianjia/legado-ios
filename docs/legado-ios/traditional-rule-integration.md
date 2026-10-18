@@ -46,16 +46,17 @@
 - `JsExtensions.kt` 还引用浏览器、登录、文件、压缩、字体、刷新与 Android UI。应明确划出 iOS 宿主接口，逐项验证；未迁移能力必须显式报错，不能以空值或吞异常冒充成功。
 - `AnalyzeUrl` 的字符集、query/form 字节、动态 header、`bodyJs`、Cookie、登录头域、重试、重定向与 DNS 都影响请求。现有 `URI.resolve` 与 `{{key}}/{{page}}` 字符串替换不足以替代原执行顺序。
 
-## 已确认的 JSONPath 行为差异
+## JSONPath 默认错误策略的有限修复
 
-当前 `AnalyzeByJSonPath.kt` 的三处 catch（原版 53–54、90–91、140–141 附近）将：
+原 `AnalyzeByJSonPath.kt` 的三处 catch（原版 53–54、90–91、140–141 附近）使用：
 
 ```kotlin
 onError?.invoke(e) ?: e.printOnDebug()
 ```
 
-改为无 handler 时直接 `throw e`。这会改变找不到路径／无效表达式与组合规则的失败、返回及 fallback 行为。
-这是一项已知差异；不能仅因正常路径测试通过就忽略，也不能用 `try?`、返回空库或通用空字符串掩盖。下述原 Android 观测已取得，移植端仍需独立验证；不能把原公开 API 的输出直接等同于底层 helper 的原始返回值。
+移植版此前改为无 handler 时直接 `throw e`，导致缺失路径或无效表达式阻止 `||` 后备分支。本次只修复这三处 catch：存在 handler 时仍交由 handler 处理；未传 handler 时记录可控制的 JUL `FINE` 日志并继续原有结果收尾和组合流程。显式 handler 抛出的异常保持同一对象向上传播，JSON 构造失败仍抛出；没有增加通用空值兜底，也没有改变 `&&/%%`、类型转换或元素归一化。
+
+新增 5 项聚焦 JVM 测试覆盖三个 helper 入口的缺失／无效路径、`||` 后备、真实异常类型、显式 handler 与可关闭的日志、同一异常对象传播，以及坏 JSON 构造失败。Windows JDK 21 完整回归实际执行 126 项唯一测试，失败、错误和跳过均为 0；普通 `runtimeJar` 组装及产品 JAR 审计通过，新测试类、冻结 golden、TLS fixture、JUnit／Hamcrest 均未进入普通包。此次修改尚未在 iOS JVM 上执行，既有 Core 探针通过记录不能作为本次新日志分支的运行证明。
 其余可见适配包括去除 `@Keep`，XPath 的 `TextUtils.join` 改为 `joinToString`；原 `RuleAnalyzer` 与 `SourceHtmlParser` 的文本逻辑保持一致。
 
 ## 已取得的原版 JSONPath 公开入口基准
@@ -66,7 +67,7 @@ onError?.invoke(e) ?: e.printOnDebug()
 
 本组原版结果确认：缺失路径和无效表达式返回空结果，`||` 的缺失／无效前分支不会阻止后备值；混合列表在 `getElements` 中去除 null、保留数字／布尔／对象类型；不等长 `%%` 在列表入口按首列表长度交错，标量入口返回空串；合法 filter 内的 `&&` 未被拆成外层组合。`getStringList` 会将混合值转为字符串，这与元素入口的类型保留不同。
 
-这些是原版公开 API 的实测结果，**尚未与移植端比较，不构成 36 项 port 零差异**。原 `AnalyzeRule` 在公开入口还包含 null／元素收尾处理，不能用比较器静默补值或归一化 helper 输出来宣称一致。本轮没有修改生产 catch、没有迁移完整 `AnalyzeRule`，也没有读取私人书源；iOS、真机、G4、兼容性及全功能验收均保持未通过。
+这些是原版公开 API 的实测结果，**不构成 36 项 port 零差异**。本次聚焦测试只将缺失／无效路径的 `||` 后备两个 case 在 `getString` 与 `getStringList` 的 4 条非空结果同原观测比较，值与 Java 结果类型均一致；这些结果不需要公开入口额外归一化。其余 32 条没有进行 port 比对，尤其不能将底层 helper 的可空结果或混合列表直接等同于公开 API。原 `AnalyzeRule` 在公开入口还包含 null／元素收尾处理，不能用比较器静默补值或归一化 helper 输出来宣称一致。本次仅修复上述三处生产 catch，没有迁移完整 `AnalyzeRule`，也没有读取私人书源；iOS、真机、G4、完整书源兼容及全功能验收均保持未通过。
 
 ## 首批可独立验证的链路
 

@@ -2,6 +2,8 @@ package io.legado.app.model.analyzeRule
 
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.ReadContext
+import java.util.logging.Level
+import java.util.logging.Logger
 
 
 @Suppress("RegExpRedundantEscape")
@@ -11,6 +13,7 @@ class AnalyzeByJSonPath(
 ) {
 
     companion object {
+        private val logger = Logger.getLogger(AnalyzeByJSonPath::class.java.name)
 
         fun parse(json: Any): ReadContext {
             return when (json) {
@@ -49,7 +52,7 @@ class AnalyzeByJSonPath(
                         ob.toString()
                     }
                 } catch (e: Exception) {
-                    if (onError != null) onError.invoke(e) else throw e
+                    onError?.invoke(e) ?: logger.log(Level.FINE, "JSONPath rule evaluation failed", e)
                 }
             }
             return result
@@ -86,7 +89,7 @@ class AnalyzeByJSonPath(
                         result.add(obj.toString())
                     }
                 } catch (e: Exception) {
-                    if (onError != null) onError.invoke(e) else throw e
+                    onError?.invoke(e) ?: logger.log(Level.FINE, "JSONPath rule evaluation failed", e)
                 }
             } else {
                 result.add(st)
@@ -136,7 +139,7 @@ class AnalyzeByJSonPath(
                 try {
                     return ArrayList(it.read<List<Any>>(rules[0]))
                 } catch (e: Exception) {
-                    if (onError != null) onError.invoke(e) else throw e
+                    onError?.invoke(e) ?: logger.log(Level.FINE, "JSONPath rule evaluation failed", e)
                 }
             }
         } else {
