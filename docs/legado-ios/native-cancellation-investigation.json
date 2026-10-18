@@ -38,6 +38,132 @@
     "deviceValidationPassed": false,
     "g4ValidationPassed": false
   },
+  "nativeProductChainRevalidation": {
+    "runId": 39104345271,
+    "sourceCommit": "aab2777ac3c615b5ae8660e04a9a18a5fadcc56e",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39104345271",
+    "artifactId": 12129230617,
+    "artifactBytes": 2301532,
+    "artifactSHA256": "b2fe42b6c15a64d166254e9d1ea2a8da75c691a224c086825b6f0ba543c326b7",
+    "actualTestCase": "LegadoNativeMainJSReaderTests.testNativeMainJSProductReadingChain",
+    "executed": 1,
+    "passed": 0,
+    "failed": 1,
+    "assertionIssues": 2,
+    "status": "failed-cancellation-latency-after-scoped-sigio-unblock",
+    "reportSHA256": "91a50e9f8a06f27ea3bf4b9787027b8e663718fd8ca02a8da5c3a10cda6920eb",
+    "independentAudit": {
+      "filename": "independent-review.json",
+      "bytes": 12716,
+      "sha256": "44dc96b87ad1fef6cbf6fe67e336cf4532a197e0ab81802754f0b95c738e5ed7"
+    },
+    "runID": "391b01c2-77fb-490a-b9a8-0c056367954e",
+    "processID": 50290,
+    "startedAtEpochSeconds": 1792307739.353276,
+    "completedAtEpochSeconds": 1792307810.178041,
+    "executionPlatform": "ios-simulator",
+    "attachmentSourceStamp": "aab2777ac3c615b5ae8660e04a9a18a5fadcc56e",
+    "sourceStampMatchesBuildOverlayAndRuntimeRestore": true,
+    "build": {
+      "configuration": "Debug",
+      "platform": "iphonesimulator",
+      "enableDebugDylib": "NO",
+      "requiredDynamicExportsPresent": 39
+    },
+    "ordinaryJAR": {
+      "sha256": "4f7ff392792a70eb49fa49648f9f643d9a4052076b0b1c7a37380a2009172e4b",
+      "bytes": 9712434,
+      "testClassesIncluded": false
+    },
+    "nativeProducer": {
+      "runId": 39083752761,
+      "sourceCommit": "ce792982a30942e605fc935b733c5b41bef2736a",
+      "nativeRuntimeRecompiled": false,
+      "allSevenNativeInputsMatched": true
+    },
+    "actualRequests": 6,
+    "completeResponses": 5,
+    "heldResponses": 1,
+    "searchDetailsTOCAndTwoJVMTextChaptersReached": true,
+    "actualCacheOnlyReaderXHTMLReached": true,
+    "finalChapterMarkersAbsentFromRawServerResponses": true,
+    "fullRequiredSevenRequestChainPassed": false,
+    "recoveryAfterCancellationReached": false,
+    "heldHeadersSent": true,
+    "heldPeerClosed": true,
+    "cancellationMilliseconds": 60193.01700592041,
+    "cancellationErrorType": "Swift.CancellationError",
+    "maximumCancellationMilliseconds": 15000,
+    "sourceOperationDeadlineMilliseconds": 45000,
+    "errors": [
+      "failed(\"Native cancellation waited for its natural deadline\")"
+    ],
+    "secondaryAssertion": "Unwaited held-peer-close expectation after the primary latency assertion threw; retained without suppressing it.",
+    "cleanup": {
+      "connectionsDrained": true,
+      "initialSessionCloseReturned": true,
+      "listenerCancelled": true,
+      "pendingTaskFinished": true,
+      "readerSessionCloseReturned": true,
+      "temporaryContextsRemoved": true
+    },
+    "signalMaskLifecycle": {
+      "invocationsObserved": 11,
+      "distinctNativeThreadsObserved": 4,
+      "entrySIGIOBlockedForAllInvocations": true,
+      "allRecordedMaskAndInvokeReturnCodesZero": true,
+      "perThreadStageOrderVerified": true,
+      "savedMaskEqualityAfterRestoreIndependentlyMeasured": false,
+      "stagesSHA256": "6f9906dc5f5ec3e34c399a08b139df6385a41109e9bd13018a03e538ea96703b"
+    },
+    "heldExecution": {
+      "operation": "execute",
+      "thread": 362991,
+      "entryBlockedAt": "1792307749.851654",
+      "handlerInitializedAt": "1792307749.866448",
+      "unblockedAt": "1792307749.883481",
+      "invokeBefore": "1792307749.884082",
+      "invokeAfter": "1792307809.973642",
+      "durationMilliseconds": 60089.56,
+      "restoredAt": "1792307809.974966",
+      "detachedAt": "1792307809.975193"
+    },
+    "cancelInvocation": {
+      "operation": "cancel",
+      "thread": 363651,
+      "entryBlockedAt": "1792307749.915649",
+      "handlerInitializedAt": "1792307749.916142",
+      "unblockedAt": "1792307749.916480",
+      "invokeBefore": "1792307749.916706",
+      "invokeAfter": "1792307749.929392",
+      "durationMilliseconds": 12.686,
+      "restoredAt": "1792307749.929872",
+      "detachedAt": "1792307749.930029"
+    },
+    "interpretation": "SIGIO was unblocked on the actual held JNI execute thread before execution and restored after return, yet the held execute lasted 60.089560 seconds. The cancel JNI invocation returned code 0 in 12.686 ms, which only proves JNI returned without an exception; it does not prove task lookup matched or the active OkHttp Call.cancel ran. The cancellation root cause remains unestablished.",
+    "diagnosticsCollection": {
+      "status": "partial",
+      "hasNativeDiagnostics": true,
+      "hasCrashReports": false,
+      "rejectedOrigin": "simulator-ips",
+      "rejectedPart": "<SIMULATOR_DATA>/Library/Logs",
+      "requestedPath": "<SIMULATOR_DATA>/Library/Logs/CrashReporter",
+      "safetyRejectionPreserved": true,
+      "collectionSHA256": "9d64ab07dcc1952f6e7ceea72bc5c7883df9ad0d7e295fec8c323ecc47d8b075",
+      "vmOutputBytes": 0,
+      "crashReportsUnavailableBecauseAliasRejected": true
+    },
+    "nextMinimumObservations": [
+      "Correlate the public execute task ID with the cancel task ID and record the real cancel result, including its cancelled boolean and whether the active task was found.",
+      "For that matched task, record job cancellation-handler entry and active OkHttp Call.cancel before/after, isCanceled and any thrown exception; do not swallow errors or log source credentials/body.",
+      "Record the held worker stack and deadline firing relative to those events. Investigate native poll/signal delivery only after the task-to-Call cancellation chain is observed."
+    ],
+    "changesToProductionOrNewCIRunsMadeForThisAudit": false,
+    "readerUIRendered": false,
+    "deviceValidationPassed": false,
+    "g4ValidationPassed": false,
+    "mainAppBlockedHTTPBodyCancellationPassed": false
+  },
   "readOnlyDarwinDiagnostics": [
     {
       "runId": 39103639271,
@@ -183,7 +309,10 @@
     "actualIOSProbeRegressionRunId": 39104510283,
     "mainAppBlockedHTTPBodyCancellationPassed": false,
     "combinedValidationFlagMeaning": "actualIOSMaskAndCancellationRevalidationPassed remains false until the actual main-App blocked HTTP body cancellation/recovery test passes its unchanged deadline.",
-    "actualIOSMaskAndCancellationRevalidationPassed": false
+    "actualIOSMaskAndCancellationRevalidationPassed": false,
+    "actualMainAppMaskLifecycleObserved": true,
+    "mainAppRevalidationRunId": 39104345271,
+    "mainAppRevalidationStatus": "failed-cancellation-latency"
   },
   "nativeCoreProbeRegression": {
     "runId": 39104510283,
@@ -313,11 +442,13 @@
     ],
     "requiredDynamicExportsPresent": 39,
     "mainAppBlockedHTTPBodyCancellation": {
-      "status": "pending-separate-product-chain-revalidation",
+      "status": "failed-separate-product-chain-revalidation",
       "passed": false,
       "requiredMaximumCancellationMilliseconds": 15000,
       "sourceOperationDeadlineMilliseconds": 45000,
-      "priorFailedRunId": 39100746970
+      "priorFailedRunId": 39100746970,
+      "latestFailedRunId": 39104345271,
+      "latestCancellationMilliseconds": 60193.01700592041
     },
     "deliveredReader6IPAExecuted": false,
     "physicalDeviceValidationPassed": false,
