@@ -1,0 +1,44 @@
+name: Legado Darwin Dispatch Signal Diagnosis
+
+on:
+  push:
+    tags:
+      - 'legado-dispatch-signals-*'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  observe:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Observe the actual main and concurrent dispatch thread masks
+        run: |
+          mkdir -p .build/dispatch-signals
+          SOURCE=$(git rev-parse HEAD)
+          test "$GITHUB_SHA" = "$SOURCE"
+          test "$GITHUB_REF_NAME" = "legado-dispatch-signals-${SOURCE:0:7}"
+          printf '%s\n' "$SOURCE" > .build/dispatch-signals/source-commit.txt
+          shasum -a 256 scripts/legado-ios/dispatch-signal-mask.c > .build/dispatch-signals/source-sha256.txt
+          xcrun clang -std=c11 -fblocks -Wall -Wextra -Werror scripts/legado-ios/dispatch-signal-mask.c -o .build/dispatch-signals/observe
+          .build/dispatch-signals/observe | tee .build/dispatch-signals/observed.json
+          python3 -m json.tool .build/dispatch-signals/observed.json > /dev/null
+          sw_vers > .build/dispatch-signals/platform.txt
+          uname -m >> .build/dispatch-signals/platform.txt
+      - name: Preserve raw signal-mask observations
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-darwin-dispatch-signals
+          path: .build/dispatch-signals/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
