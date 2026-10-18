@@ -30,6 +30,12 @@ sources. Device-target compilation is not physical-device reading acceptance.
 The separate `reader-smoke-<sha7>` workflow exercises a Debug Simulator TXT
 import, chapter jump and persisted reading position. It must report actual
 nonzero test counts and does not promote a physical-device or full-parity gate.
+An additional [online-source case](reader-online-smoke.json) targets the real
+deep-link import, search, detail, bookshelf and two-chapter native reader path.
+Its unique loopback source requires a JavaScriptCore transformation to produce
+the visible text, and its independent verdict checks actual HTTP bytes as well
+as one passing UI test. Portable fixture/process checks pass; Simulator UI
+execution remains pending. The delivered Release IPA remains unchanged.
 
 ## Baseline and acceptance inventory
 

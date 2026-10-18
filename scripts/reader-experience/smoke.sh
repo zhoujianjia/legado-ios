@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Target only local-mode construction and the self-contained real TXT UI loop.
+# Target local-mode construction, the real TXT loop and one loopback JSC source.
 set -euo pipefail
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
@@ -40,3 +40,13 @@ xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
   -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > "$WORK/build-settings.json"
 python3 "$SCRIPT_DIR/smoke-tools.py" result --audit "$WORK/overlays.json" --settings "$WORK/build-settings.json" \
   --unit "$WORK/cloudkit-summary.json" --ui "$WORK/txt-ui-summary.json" --output "$WORK/result.json"
+# Preserve the independent TXT verdict even if this additional source case fails.
+# The fixture process belongs to this invocation; bind/readiness errors never
+# fall back to an existing server. Its requests and cleanup record are retained.
+python3 "$SCRIPT_DIR/run-online-smoke.py" run --work "$WORK" -- \
+  bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/online-ui-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/online-ui.xcresult" \
+  -only-testing:'yuedu appUITests/ReaderBookSourceSmokeUITests'
+xcrun xcresulttool get test-results summary --path "$WORK/online-ui.xcresult" > "$WORK/online-ui-summary.json"
+python3 "$SCRIPT_DIR/run-online-smoke.py" result --work "$WORK" \
+  --summary "$WORK/online-ui-summary.json" --output "$WORK/online-result.json"

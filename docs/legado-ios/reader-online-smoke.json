@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "scope": "One fixed loopback source using the existing Yuedu/JavaScriptCore and CoreText paths, separate from JVM compatibility gates.",
+  "implementation": {
+    "uiTest": "Tests/iOS-UI/ReaderBookSourceSmokeUITests.swift",
+    "fixture": "scripts/reader-experience/online-source-fixture.py",
+    "orchestration": "scripts/reader-experience/run-online-smoke.py",
+    "workflow": ".github/workflows/reader-smoke.yml",
+    "requiredUITests": 1,
+    "requiredFailures": 0,
+    "requiredSkips": 0,
+    "originalTXTAndConfigurationGates": "Unchanged: six configuration tests plus one TXT UI test, with a separate verdict."
+  },
+  "flow": [
+    "Empty isolated source store; import one current-run source through the system deep link and real confirmation UI",
+    "Search through a real HTTP request, then parse and display the unique detail response",
+    "Add the book to the real bookshelf",
+    "Read the first chapter in CoreText; require a visible JSC-only marker absent from every raw HTTP response",
+    "Select chapter two through the actual reader TOC and require its different centered body marker",
+    "Close the reader and return to the single real shelf copy"
+  ],
+  "fixtureEvidence": {
+    "listenAddress": "127.0.0.1",
+    "appOrigin": "http://localhost:18769",
+    "cacheIsolation": "A new server UUID in every source, search, detail, TOC and chapter URL",
+    "routes": ["sources.json", "search", "book.html", "toc.html", "chapter0.html", "chapter1.html"],
+    "checks": "Current process/source/run ID, actual GET/query/request headers and empty body, successful complete responses and exact rebuilt response bytes/SHA256; all six routes required, unknown routes rejected",
+    "repeatPolicy": "Retain known successful refresh/prefetch duplicates",
+    "cleanup": "Owned child process is stopped and reaped after success or failure; command status and trace are retained"
+  },
+  "portableChecks": {
+    "fixtureTestsPassed": 8,
+    "orchestrationEvidenceGuardTestsPassed": 6,
+    "realProcessAndSixRoutePreflight": "passed on Windows; no XCTest/UI execution",
+    "failedCommandExitAndProcessCleanupPreflight": "passed on Windows; no XCTest/UI execution",
+    "swiftSyntax": "passed; type checking and runtime execution require cloud Xcode"
+  },
+  "simulatorExecution": "pending",
+  "cloudEvidence": null,
+  "configuration": "Debug",
+  "deliveredReleaseIPAModified": false,
+  "deliveredReleaseIPAExecuted": false,
+  "jvmIntegratedIntoReading": false,
+  "physicalDeviceAcceptance": false,
+  "realSiteCompatibilityEstablished": false,
+  "fullLegadoParityEstablished": false
+}

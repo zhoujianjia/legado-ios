@@ -32,6 +32,8 @@ jobs:
           mkdir -p .build/ci-logs
           python -B scripts/reader-experience/smoke-tools.py validate-tag
           python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-smoke-tools.log
+          python -B scripts/reader-experience/test-online-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-online-tools.log
+          python -B scripts/reader-experience/test-online-source-fixture.py -v 2>&1 | tee .build/ci-logs/reader-online-fixture.log
           bash -n scripts/reader-experience/smoke.sh
       - name: Select the installed toolchain and Simulator
         run: |
@@ -40,7 +42,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-smoke-xcode.log
-      - name: Execute only the configuration suite and real TXT reading loop
+      - name: Execute the configuration, TXT and loopback JSC reader cases
         env:
           LEGADO_RUNTIME_SOURCE_ONLY: '1'
         run: bash scripts/reader-experience/smoke.sh 2>&1 | tee .build/ci-logs/reader-smoke.log
@@ -61,5 +63,6 @@ jobs:
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This run targets the existing six-test configuration suite (including disabled CloudKit construction) and one real TXT reader UI test. Exact nonzero passing counts and zero skips are required.
           Source Info/project overlays establish isolated local mode before the test host first starts; their original and overlaid hashes are retained. The TXT test imports through the existing DEBUG hook, selects a chapter, closes, removes the import input and relaunches to verify persisted progress/body. Screenshots and accessibility trees are attached to the UI xcresult.
-          This is a Debug Simulator check of the existing Yuedu reader. It does not modify or execute the delivered Release IPA, validate the Files picker, accept remote book sources, or pass physical-device/full-Legado gates.
+          One additional UI test imports a unique loopback book source through the real deep link, searches, opens details, adds the book, and reads two chapters through JavaScriptCore rules and CoreText. It requires exactly one passing test and zero skips, plus the owned server's complete request/response trace. Its verdict is saved separately from TXT acceptance.
+          This is a Debug Simulator check of the existing Yuedu reader. It does not modify or execute the delivered Release IPA, validate the Files picker or real-site sources, or pass physical-device/full-Legado gates.
           TEXT
