@@ -127,6 +127,7 @@ object LegadoRuntime {
             "supportedSourceTypes" to listOf("mainJs", "declarative subset"), "platformHosts" to "prototype subset"
         )
         if (operation == "semanticSuite") return EngineSemanticSuite.run(task)
+        if (operation == "tlsCapabilityProbe") return TlsCapabilityProbe.run(task)
         if (operation == "interopSuite") return runScriptWithContext(task.job) {
             gson.toJsonTree(InteropSemanticSuite.run())
         }

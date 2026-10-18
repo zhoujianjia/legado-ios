@@ -36,6 +36,23 @@ public class LegadoSemanticSuiteSmoke {
                     throw new AssertionError(interopResponse);
             }
             System.out.println("PACKAGED_INTEROP_SUITE_OK " + interopResponse);
+            var tlsResponse = checked(LegadoRuntime.execute(session, "packaged-tls-capability",
+                "tlsCapabilityProbe", "{\"timeoutMs\":120000}"));
+            var tls = tlsResponse.getAsJsonObject("result");
+            if (!tls.get("suite").getAsString().equals("TlsCapabilityProbe") ||
+                !tls.get("passed").getAsBoolean() || !tls.get("loopbackOnly").getAsBoolean() ||
+                tls.get("provesHTTPCompatibility").getAsBoolean() || tls.getAsJsonArray("cases").size() != 4)
+                throw new AssertionError(tlsResponse);
+            var tlsNames = new HashSet<String>();
+            for (var entry : tls.getAsJsonArray("cases")) {
+                var test = entry.getAsJsonObject();
+                if (!test.get("passed").getAsBoolean() || !tlsNames.add(test.get("name").getAsString()) ||
+                    !test.get("classification").getAsString().equals(test.get("expected").getAsString()))
+                    throw new AssertionError(tlsResponse);
+            }
+            if (!tlsNames.equals(java.util.Set.of("trusted-tls12", "trusted-tls13", "untrusted-ca", "wrong-host")))
+                throw new AssertionError(tlsResponse);
+            System.out.println("PACKAGED_TLS_CAPABILITY_OK " + tlsResponse);
             var response = JsonParser.parseString(LegadoRuntime.execute(session, "packaged-semantic-suite",
                 "semanticSuite", "{\"timeoutMs\":300000}")).getAsJsonObject();
             if (args[0].equals("absent")) {

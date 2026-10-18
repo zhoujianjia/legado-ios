@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "scope": "Offline JSSE capability only; it does not establish original OkHttp behavior, public trust-store behavior or physical-device compatibility.",
+  "fixtureVersion": "tls-fixture-v1",
+  "fixtureSHA256": {
+    "server-localhost.der": "f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10",
+    "server-private-key.pk8": "685632b4576a8bb80f4cf1fb15e567c03ec4ae638120338e90ebd58529fe929f",
+    "test-ca.der": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08",
+    "unrelated-ca.der": "c7e734a9fc9cc0c07346315745226756b32d3dadd92e46cef9986c1d5440604e"
+  },
+  "fixtureKeyIsPublicTestData": true,
+  "endpointIdentificationAlgorithm": "HTTPS",
+  "globalTLSDefaultsChanged": false,
+  "newDependencies": false,
+  "desktop": {
+    "environment": "Windows JDK21.0.12.1; locked Gradle8.14.3 offline dependencies",
+    "junit": {
+      "tests": 92,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tlsBoundaryTests": "Pre-cancelled and expired tasks reject before TLS setup; these do not prove in-flight cancellation.",
+    "assembledJarXint": "passed four actual loopback handshakes with only assembled JAR on classpath and -Xint -Xmx128m",
+    "tlsResult": {
+      "suite": "TlsCapabilityProbe",
+      "passed": true,
+      "loopbackOnly": true,
+      "provesHTTPCompatibility": false,
+      "fixtureSHA256": {
+        "test-ca.der": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08",
+        "server-localhost.der": "f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10",
+        "server-private-key.pk8": "685632b4576a8bb80f4cf1fb15e567c03ec4ae638120338e90ebd58529fe929f",
+        "unrelated-ca.der": "c7e734a9fc9cc0c07346315745226756b32d3dadd92e46cef9986c1d5440604e"
+      },
+      "cases": [
+        {
+          "name": "trusted-tls12",
+          "protocol": "TLSv1.2",
+          "peerHost": "localhost",
+          "expected": "ACCEPTED",
+          "passed": true,
+          "applicationRoundtrip": true,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "trustAnchorSHA256": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08",
+          "negotiatedProtocol": "TLSv1.2",
+          "cipherSuite": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+          "peerCertificateSHA256": "f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10",
+          "classification": "ACCEPTED",
+          "clientFailure": [],
+          "serverFailure": [],
+          "elapsedMilliseconds": 195.4002
+        },
+        {
+          "name": "trusted-tls13",
+          "protocol": "TLSv1.3",
+          "peerHost": "localhost",
+          "expected": "ACCEPTED",
+          "passed": true,
+          "applicationRoundtrip": true,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "trustAnchorSHA256": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08",
+          "negotiatedProtocol": "TLSv1.3",
+          "cipherSuite": "TLS_AES_256_GCM_SHA384",
+          "peerCertificateSHA256": "f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10",
+          "classification": "ACCEPTED",
+          "clientFailure": [],
+          "serverFailure": [],
+          "elapsedMilliseconds": 529.0172
+        },
+        {
+          "name": "untrusted-ca",
+          "protocol": "TLSv1.3",
+          "peerHost": "localhost",
+          "expected": "CERTIFICATE_CHAIN_REJECTED",
+          "passed": true,
+          "applicationRoundtrip": false,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "trustAnchorSHA256": "c7e734a9fc9cc0c07346315745226756b32d3dadd92e46cef9986c1d5440604e",
+          "classification": "CERTIFICATE_CHAIN_REJECTED",
+          "clientFailure": [
+            {
+              "type": "javax.net.ssl.SSLHandshakeException",
+              "message": "(certificate_unknown) PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"
+            },
+            {
+              "type": "sun.security.validator.ValidatorException",
+              "message": "PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"
+            },
+            {
+              "type": "sun.security.provider.certpath.SunCertPathBuilderException",
+              "message": "unable to find valid certification path to requested target"
+            }
+          ],
+          "serverFailure": [
+            {
+              "type": "java.net.SocketException",
+              "message": "Socket closed"
+            }
+          ],
+          "elapsedMilliseconds": 133.1246
+        },
+        {
+          "name": "wrong-host",
+          "protocol": "TLSv1.3",
+          "peerHost": "wrong.invalid",
+          "expected": "HOSTNAME_REJECTED",
+          "passed": true,
+          "applicationRoundtrip": false,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "trustAnchorSHA256": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08",
+          "classification": "HOSTNAME_REJECTED",
+          "clientFailure": [
+            {
+              "type": "javax.net.ssl.SSLHandshakeException",
+              "message": "(certificate_unknown) No subject alternative DNS name matching wrong.invalid found."
+            },
+            {
+              "type": "java.security.cert.CertificateException",
+              "message": "No subject alternative DNS name matching wrong.invalid found."
+            }
+          ],
+          "serverFailure": [
+            {
+              "type": "java.net.SocketException",
+              "message": "Socket closed"
+            }
+          ],
+          "elapsedMilliseconds": 133.9573
+        }
+      ],
+      "cleanup": {
+        "serverStopped": true,
+        "timerStopped": true,
+        "errors": []
+      },
+      "deadlineExceeded": false,
+      "totalMilliseconds": 2283.8197
+    },
+    "timingScope": "Includes diagnostic setup and cleanup; not a reader performance benchmark."
+  },
+  "iosSimulator": {
+    "status": "pending separate cloud execution"
+  },
+  "physicalDevice": {
+    "status": "pending"
+  },
+  "limits": [
+    "No public Internet or iOS Keychain trust-store validation.",
+    "No original OkHttp/HTTP, redirect, gzip or wire behavior proof.",
+    "In-flight network cancellation remains unverified.",
+    "Fixed public fixture certificates have bounded validity and must not be used as production identities."
+  ]
+}

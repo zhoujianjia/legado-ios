@@ -44,10 +44,11 @@ class SimulatorSourceStampTests(unittest.TestCase):
                 probe.stamp_simulator_source(self.app, invalid)
             self.assertEqual(self.plist.read_bytes(), before)
 
-    def make_run(self, valid_bundle=True, require_native_tcp=False):
+    def make_run(self, valid_bundle=True, require_native_tcp=False, require_native_tls=False):
         if not valid_bundle:
             self.plist.write_bytes(plistlib.dumps({**self.info, "CFBundleIdentifier": "wrong.bundle"}))
-        run = probe.ProbeRun(self.root, self.root / "evidence", 60, require_native_tcp=require_native_tcp)
+        run = probe.ProbeRun(self.root, self.root / "evidence", 60, require_native_tcp=require_native_tcp,
+                             require_native_tls=require_native_tls)
         container = self.root / "simulator-data"
         container.mkdir(exist_ok=True)
         calls = []
@@ -141,6 +142,71 @@ class SimulatorSourceStampTests(unittest.TestCase):
                     run.run("iPhone")
             self.assertEqual(run.result["status"], "failed")
             self.assertFalse(run.result["nativeTCPGate"]["passed"])
+
+    def tls_capability(self):
+        return {"suite": "TlsCapabilityProbe", "passed": True, "loopbackOnly": True,
+                "provesHTTPCompatibility": False,
+                "cases": [{"name": name, "passed": True} for name in
+                    ("trusted-tls12", "trusted-tls13", "untrusted-ca", "wrong-host")],
+                "cleanup": {"serverStopped": True, "timerStopped": True, "errors": []}}
+
+    def test_required_native_tls_accepts_four_current_run_cases_and_preserves_both_gates(self):
+        run, _ = self.make_run(require_native_tcp=True, require_native_tls=True)
+        capability = self.tls_capability()
+        with patch.object(probe.sys, "platform", "darwin"), patch.object(probe, "wait_for_probe",
+                side_effect=lambda *args: self.write_tcp_report(run, {"passed": True}, nativeTLSProbe=capability)):
+            run.run("iPhone")
+        self.assertEqual(run.result["status"], "passed")
+        self.assertEqual(run.result["capabilityRequired"], {"nativeTCP": True, "nativeTLS": True})
+        self.assertTrue(run.result["nativeTCPGate"]["passed"])
+        self.assertTrue(run.result["nativeTLSGate"]["passed"])
+        self.assertEqual(run.result["nativeTLSGate"]["probe"], capability)
+        self.assertEqual(run.result["nativeTLSGate"]["reportSHA256"], run.result["nativeTCPGate"]["reportSHA256"])
+
+    def test_required_native_tls_false_missing_non_boolean_and_cleanup_failure_never_pass(self):
+        failed = {**self.tls_capability(), "passed": False, "failure": [
+            {"type": "java.lang.UnsatisfiedLinkError", "message": "TLS native entry missing"}]}
+        case_false = self.tls_capability()
+        case_false["cases"][2]["passed"] = False
+        case_non_boolean = self.tls_capability()
+        case_non_boolean["cases"][1]["passed"] = 1
+        worker_running = self.tls_capability()
+        worker_running["cleanup"]["serverStopped"] = False
+        cleanup_error = self.tls_capability()
+        cleanup_error["cleanup"]["errors"] = ["socket close failed"]
+        for capability in (failed, None, {**self.tls_capability(), "passed": 1},
+                           case_false, case_non_boolean, worker_running, cleanup_error):
+            run, _ = self.make_run(require_native_tls=True)
+            with self.subTest(capability=capability), patch.object(probe.sys, "platform", "darwin"), \
+                    patch.object(probe, "wait_for_probe", side_effect=lambda *args:
+                        self.write_tcp_report(run, None, nativeTLSProbe=capability)):
+                with self.assertRaisesRegex(RuntimeError, "Required native TLS capability failed") as failure:
+                    run.run("iPhone")
+            self.assertEqual(run.result["status"], "failed")
+            self.assertFalse(run.result["simulatorValidationPassed"])
+            self.assertTrue(run.result["capabilityRequired"]["nativeTLS"])
+            self.assertFalse(run.result["nativeTLSGate"]["passed"])
+            self.assertEqual(run.result["nativeTLSGate"]["probe"], capability)
+            if capability is failed:
+                self.assertIn("TLS native entry missing", str(failure.exception))
+
+    def test_required_native_tls_rejects_missing_duplicate_or_wrong_suite_cases(self):
+        missing_case = self.tls_capability()
+        missing_case["cases"].pop()
+        duplicate_case = self.tls_capability()
+        duplicate_case["cases"][3]["name"] = "trusted-tls12"
+        extra_case = self.tls_capability()
+        extra_case["cases"].append({"name": "unexpected", "passed": True})
+        for capability in (missing_case, duplicate_case, extra_case, {**self.tls_capability(), "suite": "OtherSuite"}):
+            run, _ = self.make_run(require_native_tls=True)
+            with self.subTest(capability=capability), patch.object(probe.sys, "platform", "darwin"), \
+                    patch.object(probe, "wait_for_probe", side_effect=lambda *args:
+                        self.write_tcp_report(run, None, nativeTLSProbe=capability)):
+                with self.assertRaisesRegex(RuntimeError, "Required native TLS capability failed"):
+                    run.run("iPhone")
+            self.assertEqual(run.result["status"], "failed")
+            self.assertFalse(run.result["nativeTLSGate"]["passed"])
+            self.assertEqual(run.result["nativeTLSGate"]["probe"], capability)
 
 
 if __name__ == "__main__":

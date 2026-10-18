@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "scope": "Static linkage investigation for the pinned Mobile JVM Socket path; proposed App relink remains unvalidated.",
+  "scope": "Pinned Mobile JVM networking linkage investigation and successful App relink/real TCP loopback in Simulator; TLS and physical-device networking remain pending.",
   "observation": {
     "runID": 39078893553,
     "sourceCommit": "6af471799bfb128c19d5cb78e03357844e79158f",
@@ -195,11 +195,25 @@
     "archiveDigestAndBothSliceDefinitions": "verified",
     "originalDeviceExportsMissing29Roots": "verified",
     "proposedLinkerAndExportCheckLists": "static review matched all 29 roots without duplicates",
-    "appRelink": "pending",
-    "simulatorTCP": "pending",
+    "appRelink": "passed in Core Update run39080598412 at b4c2a0c1c086993c94b8ec24765a49afb64e1266",
+    "simulatorTCP": "passed; required same-run java.net.Socket request/reply bytes verified",
     "physicalDeviceTCP": "pending",
     "tls": "not tested",
     "httpCompatibility": "not proved by this investigation",
-    "fullLegadoCompatibility": "not proved"
+    "fullLegadoCompatibility": "not proved",
+    "finalDynamicExportCount": 39
+  },
+  "repairExecution": {
+    "runID": 39080598412,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39080598412",
+    "sourceCommit": "b4c2a0c1c086993c94b8ec24765a49afb64e1266",
+    "probeBuild": 10,
+    "reportSHA256": "3fa93b56f695cd5c96905e6596a8af52f7f663a8ba4f337679803546909af2c5",
+    "requiredTCPGatePassed": true,
+    "requestBase64": "TEVHQURPX05BVElWRV9UQ1AK",
+    "reply": "LEGADO_NATIVE_OK",
+    "nativeArchiveRecompiled": false,
+    "physicalDeviceValidationPassed": false,
+    "tlsOrHTTPProven": false
   }
 }

@@ -148,7 +148,7 @@ def stamp_simulator_source(app, source_commit):
 
 
 class ProbeRun:
-    def __init__(self, repo, output, timeout_seconds, require_native_tcp=False):
+    def __init__(self, repo, output, timeout_seconds, require_native_tcp=False, require_native_tls=False):
         self.repo = repo
         output.mkdir(parents=True, exist_ok=True)
         self.output_root = output
@@ -162,6 +162,7 @@ class ProbeRun:
         self.udid = None
         self.launched_at = None
         self.require_native_tcp = require_native_tcp
+        self.require_native_tls = require_native_tls
         self.result = {
             "schemaVersion": 1,
             "startedAt": utc_now(),
@@ -173,7 +174,7 @@ class ProbeRun:
             "evidenceDirectory": str(self.output),
             "lastCheckpoint": None,
             "collectionErrors": [],
-            "capabilityRequired": {"nativeTCP": require_native_tcp},
+            "capabilityRequired": {"nativeTCP": require_native_tcp, "nativeTLS": require_native_tls},
         }
 
     def command(self, name, argv, timeout=120, enforce_deadline=True):
@@ -270,36 +271,81 @@ class ProbeRun:
             self.result["pidNotice"] = "simctl returned no parseable PID; checkpoint timestamps establish freshness"
         checkpoint_path = self.container / DIAGNOSTICS_PATH / "probe-progress.json"
         wait_for_probe(checkpoint_path, self.pid, self.launched_at, self.deadline, self.observe)
-        self.verify_required_native_tcp()
+        self.verify_required_native_capabilities()
         self.result.update({"simulatorValidationPassed": True, "status": "passed"})
 
-    def verify_required_native_tcp(self):
-        if not self.require_native_tcp:
+    def verify_required_native_capabilities(self):
+        required = []
+        if self.require_native_tcp:
+            required.append(("TCP", "nativeTCPProbe", "nativeTCPGate"))
+        if self.require_native_tls:
+            required.append(("TLS", "nativeTLSProbe", "nativeTLSGate"))
+        if not required:
             return
         path = self.container / DIAGNOSTICS_PATH / "exports/LegadoProbe-report.json"
-        gate = {"passed": False, "reportPath": str(path)}
-        self.result["nativeTCPGate"] = gate
+        gates = {}
+        for label, _, key in required:
+            gates[label] = {"passed": False, "reportPath": str(path)}
+            self.result[key] = gates[label]
+        # Read and authenticate this run's report once for both capabilities.
+        # Each gate retains its complete producer evidence, including failures.
+        report = self.read_current_capability_report(path, required, gates)
+        if self.require_native_tcp:
+            self.verify_required_native_tcp(report.get("nativeTCPProbe"), gates["TCP"], path)
+        if self.require_native_tls:
+            self.verify_required_native_tls(report.get("nativeTLSProbe"), gates["TLS"], path)
+
+    def read_current_capability_report(self, path, required, gates):
+        label = "/".join(item[0] for item in required)
         with path.open("rb") as stream:
             data = stream.read(REPORT_LIMIT + 1)
         if len(data) > REPORT_LIMIT:
-            raise RuntimeError("Required native TCP report exceeds its size limit: " + str(path))
-        gate["reportSHA256"] = hashlib.sha256(data).hexdigest()
+            raise RuntimeError("Required native " + label + " report exceeds its size limit: " + str(path))
+        digest = hashlib.sha256(data).hexdigest()
+        for gate in gates.values():
+            gate["reportSHA256"] = digest
         report = json.loads(data.decode("utf-8-sig"))
         if not isinstance(report, dict):
-            raise RuntimeError("Required native TCP report is not an object: " + str(path))
-        native = report.get("nativeTCPProbe")
-        gate["probe"] = native
+            raise RuntimeError("Required native " + label + " report is not an object: " + str(path))
+        for capability, field, _ in required:
+            gates[capability]["probe"] = report.get(field)
         if (report.get("passed") is not True or report.get("executionPlatform") != "ios-simulator"
                 or report.get("sourceCommit") != self.result["sourceCommit"]):
-            raise RuntimeError("Required native TCP report does not match this Simulator run: " + str(path))
+            raise RuntimeError("Required native " + label + " report does not match this Simulator run: " + str(path))
         progress = report.get("probeProgress")
         checkpoint = progress.get("probe-progress.json") if isinstance(progress, dict) else None
         if not isinstance(checkpoint, dict) or not checkpoint_is_current(checkpoint, self.pid, self.launched_at):
-            raise RuntimeError("Required native TCP report has no current-run checkpoint: " + str(path))
+            raise RuntimeError("Required native " + label + " report has no current-run checkpoint: " + str(path))
+        return report
+
+    def verify_required_native_tcp(self, native, gate, path):
         if not isinstance(native, dict) or native.get("passed") is not True:
             detail = (str(native.get("errorCode", "unknown")) + ": " + str(native.get("failure", "passed must be true"))) \
                 if isinstance(native, dict) else "nativeTCPProbe is missing or invalid"
             raise RuntimeError("Required native TCP capability failed: " + detail + "; report: " + str(path))
+        gate["passed"] = True
+
+    def verify_required_native_tls(self, native, gate, path):
+        reason = None
+        if not isinstance(native, dict) or native.get("suite") != "TlsCapabilityProbe" or native.get("passed") is not True:
+            reason = "nativeTLSProbe requires suite=TlsCapabilityProbe and passed=true"
+        else:
+            cases = native.get("cases")
+            names = [case.get("name") for case in cases if isinstance(case, dict)] if isinstance(cases, list) else []
+            expected = {"trusted-tls12", "trusted-tls13", "untrusted-ca", "wrong-host"}
+            if (len(names) != 4 or not all(isinstance(name, str) for name in names)
+                    or set(names) != expected or len(cases) != 4
+                    or any(case.get("passed") is not True for case in cases)):
+                reason = "nativeTLSProbe must pass exactly the four distinct required TLS cases"
+            else:
+                cleanup = native.get("cleanup")
+                if (not isinstance(cleanup, dict) or cleanup.get("serverStopped") is not True
+                        or cleanup.get("timerStopped") is not True or cleanup.get("errors") != []):
+                    reason = "nativeTLSProbe cleanup must stop both workers without errors"
+        if reason:
+            gate["failure"] = reason
+            detail = json.dumps(native, ensure_ascii=True)
+            raise RuntimeError("Required native TLS capability failed: " + reason + "; probe: " + detail + "; report: " + str(path))
         gate["passed"] = True
 
     def collect(self):
@@ -345,12 +391,15 @@ def main():
     parser.add_argument("--output-directory", type=Path)
     parser.add_argument("--require-native-tcp", action="store_true",
                         help="Fail unless this run's exported report proves native TCP loopback success")
+    parser.add_argument("--require-native-tls", action="store_true",
+                        help="Fail unless this run's exported report passes all four TLS cases and cleanup")
     args = parser.parse_args()
     if not 0 < args.timeout_seconds <= 600:
         parser.error("--timeout-seconds must be greater than zero and at most 600")
     repo = Path(__file__).resolve().parents[2]
     output = (args.output_directory or repo / ".build/ci-logs/simulator-probe").resolve()
-    probe = ProbeRun(repo, output, args.timeout_seconds, require_native_tcp=args.require_native_tcp)
+    probe = ProbeRun(repo, output, args.timeout_seconds, require_native_tcp=args.require_native_tcp,
+                     require_native_tls=args.require_native_tls)
     try:
         probe.run(args.device_filter)
     except (Exception, KeyboardInterrupt) as error:

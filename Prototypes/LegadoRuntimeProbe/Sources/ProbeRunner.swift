@@ -147,6 +147,12 @@ actor ProbeRunner {
             try recordProgress("cancellation.returned")
             measurements.append(["operation": "cancel", "milliseconds": milliseconds(since: cancelStarted)])
             let nativeTCP = try await probeNativeTCP(engine, session: session)
+            let nativeTLS: [String: Any]
+            if nativeTCP["passed"] as? Bool == true {
+                nativeTLS = try await probeNativeTLS(engine, session: session)
+            } else {
+                nativeTLS = ["passed": false, "skipped": true, "reason": "Native TCP capability did not pass"]
+            }
             try Task.checkCancellation()
             closeAttempted = true
             try recordProgress("close_session.begin")
@@ -161,6 +167,7 @@ actor ProbeRunner {
                 "runtimeDiagnostics": runtimeDiagnostics, "runtimeJavaVersion": javaVersion,
                 "semanticSuite": semanticSuite, "interopSuite": interopSuite, "scopeIsolationProbe": scopeIsolation,
                 "nativeTCPProbe": nativeTCP,
+                "nativeTLSProbe": nativeTLS,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
                 "payloadBytes": try payloadSize([configuration.javaHome, payloadDirectory]),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
@@ -242,6 +249,24 @@ actor ProbeRunner {
                 failure["errorCode"] = nativeError.code
             }
             return failure
+        }
+    }
+
+    private func probeNativeTLS(_ engine: LegadoRuntime, session: LegadoSourceSession) async throws -> [String: Any] {
+        try recordProgress("native_tls.begin")
+        do {
+            guard let report = try result(await call(engine, session, "tlsCapabilityProbe", ["timeoutMs": 120_000])) as? [String: Any],
+                  report["suite"] as? String == "TlsCapabilityProbe" else {
+                throw mismatch("JVM TLS capability report is missing")
+            }
+            try recordProgress(report["passed"] as? Bool == true ? "native_tls.passed" : "native_tls.failed")
+            return report
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            try recordProgress("native_tls.failed", failure: error.localizedDescription)
+            return ["passed": false, "loopbackOnly": true, "provesHTTPCompatibility": false,
+                    "failure": error.localizedDescription]
         }
     }
 

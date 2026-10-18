@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "verified_on": "2026-10-18",
-  "ios_source_commit": "6af471799bfb128c19d5cb78e03357844e79158f",
+  "ios_source_commit": "b4c2a0c1c086993c94b8ec24765a49afb64e1266",
   "original_archive_sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
   "fixture_sha256": "731f1f1f743b9bc393ea221a7118ff4a115ffa35947aa40c88ff088bb758a894",
   "desktop": {
@@ -24,32 +24,34 @@
     "source_commit": "55200f0a19e3e0d64f35f8401c9ee7fe80b27213"
   },
   "ios_cloud": {
-    "run_id": 39078893553,
-    "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39078893553",
+    "run_id": 39080598412,
+    "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39080598412",
     "workflow": "fresh-jvm-reused-native",
-    "source_commit": "6af471799bfb128c19d5cb78e03357844e79158f",
-    "probe_build": 9,
+    "source_commit": "b4c2a0c1c086993c94b8ec24765a49afb64e1266",
+    "probe_build": 10,
     "status": "passed",
     "portable_core": "89 tests; zero failures, errors and skips; packaged -Xint original25+Beans and interop28 passed",
     "source_only_swift_tests": "19 passed including 7 ordered-header cases; zero failures",
-    "simulator_execution": "fixed semantic/reading fixture passed; independent native TCP capability failed",
+    "simulator_execution": "passed; fixed semantic/reading fixture and required real JVM TCP loopback passed",
     "runtime_java_version": "28-internal",
     "semantic_cases_passed": 25,
     "interop_cases_passed": 28,
     "scope_isolation": "passed; no-jsLib calls [1,1]/undefined, configured-jsLib calls [1,2]/number",
-    "report_sha256": "53c5bd272904ceb884fee5fecd70706b0f197cdbc3e777132b9bdbd4e5840730",
-    "simulator_report_source_commit": "not_injected; run checkout and device IPA identify this source; simulator label fix pending",
-    "logs_artifact_id": 12118387555,
-    "logs_artifact_sha256": "93c6e144f8b8907d24d3501124b75b5ee859c4c86063d07229038193a4238e3e",
-    "ipa_artifact_id": 12118252960,
-    "ipa_artifact_sha256": "7243538e0bd67a3b443d4eea3ab2e5239f48f5005ac3c831a373261ff7504e18",
-    "ipa_sha256": "0806c38075a3ca5c7eb576ccc8ee8ca7f64ec3919f2476715c6e564511696e0c",
-    "ipa_bytes": 48960687,
-    "ipa_static_audit": "passed; source/build/ARM64 iPhoneOS/native exports/classes/data and manifest hashes checked",
+    "report_sha256": "3fa93b56f695cd5c96905e6596a8af52f7f663a8ba4f337679803546909af2c5",
+    "simulator_report_source_commit": "b4c2a0c1c086993c94b8ec24765a49afb64e1266",
+    "logs_artifact_id": 12118832923,
+    "logs_artifact_sha256": "a38382193f46575cdcb1f3ac053b3025a6adaa28e911245cbad3095c81b6ce63",
+    "ipa_artifact_id": 12118574604,
+    "ipa_artifact_sha256": "52239c02f688f788ab6eb94678086e01a609930361c0da916347280d2d6f5e09",
+    "ipa_sha256": "0204916eafb17ddc862c65c7352ec3d4019631ac1b1f3ac9781d362f7b3cda7b",
+    "ipa_bytes": 48972756,
+    "ipa_static_audit": "passed; source/build/ARM64 iPhoneOS/payload/provenance verified; all 39 required exports present",
     "native_tcp": {
-      "passed": false,
-      "error": "java.lang.UnsatisfiedLinkError: boolean java.net.InetAddress.isIPv6Supported()",
-      "reached_tcp_connection": false,
+      "passed": true,
+      "required_by_runner": true,
+      "loopback_only": true,
+      "request_base64": "TEVHQURPX05BVElWRV9UQ1AK",
+      "reply": "LEGADO_NATIVE_OK",
       "tls_or_http_proven": false
     },
     "physical_device_validation": "pending; prior build6 evidence is unchanged"
@@ -95,14 +97,14 @@
   },
   "reference_comparison": {
     "status": "passed_for_one_synthetic_fixture",
-    "ios_source_commit": "6af471799bfb128c19d5cb78e03357844e79158f",
+    "ios_source_commit": "b4c2a0c1c086993c94b8ec24765a49afb64e1266",
     "android_run_id": 39052290844,
     "difference_count": 0,
     "differences": "All seven logical HTTP requests, ordered duplicate header values, body bytes, declared result projections and state match the original Android fixture. iOS requests still use the synthetic host and do not prove wire behavior.",
     "comparator_modified": false,
     "g4_validation_passed": false,
     "wire_parity_established": false,
-    "comparison_sha256": "ced326c61b854031af6150966a88d97573d577b862b980af4f9ade0d3d2a0a53"
+    "comparison_sha256": "dad82405fe5aeb372747794eccf0b47fb932b1db201095fd012142ce0c9330d5"
   },
   "physical_device": {
     "new_build_report": "pending",
@@ -118,7 +120,7 @@
     "The reference compares one pure-JS fixture; declarative rules and representative real sources remain pending.",
     "Android retains raw wire bytes; the iOS fixture captures logical host requests, not actual URLSession wire framing.",
     "CPU-loop entry cancellation, real network/browser timeouts, concurrent isolation and sustained device runs remain pending.",
-    "Ordered request headers and original finite request-preparation cases now match the one fixture; URLSession explicitly rejects duplicate header names instead of collapsing them. Actual JVM Socket/TLS/OkHttp transport remains unverified."
+    "Ordered request headers and finite preparation match one fixture; URLSession explicitly rejects duplicate field names. Real JVM TCP loopback now passes in Simulator; TLS, original OkHttp HTTP transport and current physical-device networking remain pending."
   ],
   "full_feature_migration_allowed": false,
   "full_feature_parity_established": false,
@@ -132,28 +134,6 @@
     "ipa_audit": "not_run",
     "failure": "Pinned native archive identity passed; verifier required an absent optional java-home/release. No fresh app compiled or executed in this run."
   },
-  "previous_ios_cloud": {
-    "run_id": 39078041778,
-    "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39078041778",
-    "workflow": "fresh-jvm-reused-native",
-    "source_commit": "864da12653d3ee397cea6ef7bc94691b9583900c",
-    "status": "passed",
-    "portable_core": "passed",
-    "source_only_swift_tests": "passed",
-    "simulator_execution": "passed",
-    "runtime_java_version": "28-internal",
-    "semantic_cases_passed": 25,
-    "interop_cases_passed": 28,
-    "scope_isolation": "passed; no-jsLib calls [1,1]/undefined, configured-jsLib calls [1,2]/number",
-    "report_sha256": "21454b3a0f66eb640a2197a2c5e9d267065fc5058e5a163fedeaae72ce3be435",
-    "logs_artifact_id": 12118511116,
-    "logs_artifact_sha256": "53bfb39dd7bd95df7596fc0b03211db737ec72e63850204d5590899895803708",
-    "ipa_artifact_id": 12118416599,
-    "ipa_artifact_sha256": "af74e9cf255ef94b78766664ffb58547de32bbc33e4703c56354aa916b4d34d6",
-    "ipa_sha256": "df53556f951089222733abbc6e643b78c5d28ad2a41da77f3a437d258f1d5913",
-    "ipa_bytes": 48909727,
-    "physical_device_validation": "pending; prior build6 evidence is unchanged"
-  },
   "previous_reference_comparison": {
     "status": "failed",
     "ios_source_commit": "864da12653d3ee397cea6ef7bc94691b9583900c",
@@ -163,5 +143,60 @@
     "comparator_modified": false,
     "g4_validation_passed": false,
     "wire_parity_established": false
-  }
+  },
+  "previous_ios_cloud_attempts": [
+    {
+      "run_id": 39078041778,
+      "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39078041778",
+      "workflow": "fresh-jvm-reused-native",
+      "source_commit": "864da12653d3ee397cea6ef7bc94691b9583900c",
+      "status": "passed",
+      "portable_core": "passed",
+      "source_only_swift_tests": "passed",
+      "simulator_execution": "passed",
+      "runtime_java_version": "28-internal",
+      "semantic_cases_passed": 25,
+      "interop_cases_passed": 28,
+      "scope_isolation": "passed; no-jsLib calls [1,1]/undefined, configured-jsLib calls [1,2]/number",
+      "report_sha256": "21454b3a0f66eb640a2197a2c5e9d267065fc5058e5a163fedeaae72ce3be435",
+      "logs_artifact_id": 12118511116,
+      "logs_artifact_sha256": "53bfb39dd7bd95df7596fc0b03211db737ec72e63850204d5590899895803708",
+      "ipa_artifact_id": 12118416599,
+      "ipa_artifact_sha256": "af74e9cf255ef94b78766664ffb58547de32bbc33e4703c56354aa916b4d34d6",
+      "ipa_sha256": "df53556f951089222733abbc6e643b78c5d28ad2a41da77f3a437d258f1d5913",
+      "ipa_bytes": 48909727,
+      "physical_device_validation": "pending; prior build6 evidence is unchanged"
+    },
+    {
+      "run_id": 39078893553,
+      "run_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39078893553",
+      "workflow": "fresh-jvm-reused-native",
+      "source_commit": "6af471799bfb128c19d5cb78e03357844e79158f",
+      "probe_build": 9,
+      "status": "passed",
+      "portable_core": "89 tests; zero failures, errors and skips; packaged -Xint original25+Beans and interop28 passed",
+      "source_only_swift_tests": "19 passed including 7 ordered-header cases; zero failures",
+      "simulator_execution": "fixed semantic/reading fixture passed; independent native TCP capability failed",
+      "runtime_java_version": "28-internal",
+      "semantic_cases_passed": 25,
+      "interop_cases_passed": 28,
+      "scope_isolation": "passed; no-jsLib calls [1,1]/undefined, configured-jsLib calls [1,2]/number",
+      "report_sha256": "53c5bd272904ceb884fee5fecd70706b0f197cdbc3e777132b9bdbd4e5840730",
+      "simulator_report_source_commit": "not_injected; run checkout and device IPA identify this source; simulator label fix pending",
+      "logs_artifact_id": 12118387555,
+      "logs_artifact_sha256": "93c6e144f8b8907d24d3501124b75b5ee859c4c86063d07229038193a4238e3e",
+      "ipa_artifact_id": 12118252960,
+      "ipa_artifact_sha256": "7243538e0bd67a3b443d4eea3ab2e5239f48f5005ac3c831a373261ff7504e18",
+      "ipa_sha256": "0806c38075a3ca5c7eb576ccc8ee8ca7f64ec3919f2476715c6e564511696e0c",
+      "ipa_bytes": 48960687,
+      "ipa_static_audit": "passed; source/build/ARM64 iPhoneOS/native exports/classes/data and manifest hashes checked",
+      "native_tcp": {
+        "passed": false,
+        "error": "java.lang.UnsatisfiedLinkError: boolean java.net.InetAddress.isIPv6Supported()",
+        "reached_tcp_connection": false,
+        "tls_or_http_proven": false
+      },
+      "physical_device_validation": "pending; prior build6 evidence is unchanged"
+    }
+  ]
 }
