@@ -1,10 +1,39 @@
-# Local Legado runtime prototype
+# Legado iOS: product baseline and prototype status
 
-This work tests whether the original Java/Kotlin parsing behavior can run locally
-inside the native Yuedu reader through OpenJDK Mobile Zero. It is an opt-in
-compatibility prototype. It does not establish full Legado parity or replace the
-production JavaScriptCore parser. The accepted migration gate requires a signed
-iPhone build to start without a debugger or JIT before full feature migration.
+The product target is a fully local iOS reader with the capabilities and
+book-source compatibility of the user's locked `F:/legado-master.zip`.
+The ZIP, pinned by [provenance-lock.json](provenance-lock.json), is the acceptance
+baseline. Yuedu supplies reusable iOS components, not a ceiling on supported
+Legado features. Neither an identical Android interface nor an unchanged Yuedu
+application is the product requirement.
+
+| Concern | Decision |
+| --- | --- |
+| Features, book-source behavior and compatible data | Validate against the locked Legado source and [feature matrix](feature-matrix.md). A missing Yuedu feature remains migration work. |
+| Layout, page turns, navigation and interaction | Reuse the better parts of Yuedu and native iOS design; improve them when useful. Preserve reading text, progress and supported behavior without requiring identical pixels or page breaks. |
+| iPhone and iPad presentation | Adapt controls and layouts to each device rather than copying the Android screens. |
+| iOS platform limits | Record the specific difference and its acceptance case; do not silently omit a capability. |
+
+**The currently delivered reader build 3 still uses Yuedu's JavaScriptCore
+parsing route. It is a reader-shell trial, not the integrated Legado reader.**
+The experimental OpenJDK Mobile Zero package separately tests retained
+Java/Kotlin/Rhino behavior. Passing its probes does not establish that normal
+source import, search or chapter loading uses that core.
+
+The next integration milestone is one explicitly scoped `mainJs` source path:
+import and preserve source data, search, details, table of contents, chapter
+content and native reading through the same Legado runtime session. It needs
+production HTTP, cancellation, timeouts and model mapping, with end-to-end
+execution evidence. Unsupported host APIs or rules must return an explicit
+error instead of silently switching to JavaScriptCore. Existing Yuedu routes
+may remain usable, but their results must not be counted as Legado-core
+acceptance. Traditional-rule parity and the remaining feature domains remain
+separate, required work.
+
+The accepted migration gates still apply: a signed iPhone build must start
+without a debugger or JIT, and the original-engine semantics and reading-chain
+checks must pass before full feature migration. The evidence below records
+what has actually run, separately from the intended product.
 
 The core now has passing Simulator TCP and four-case TLS loopbacks, plus a
 zero-difference strict comparison for one synthetic mainJs reading chain.
@@ -27,14 +56,17 @@ The next [CPU-loop diagnostic](cpu-loop-capability.json) distinguishes actual
 interpreter execution from the earlier host handshake. Desktop tests positively
 sample a CPU loop before public cancellation or the natural deadline, preserve
 the distinct original errors and recover on the same worker. All 104 JVM tests
-and the opt-in packaged CPU/HTTP smokes pass. Probe 14 requires this additional
-native evidence; its Simulator and physical-device execution remain pending.
+and the opt-in packaged CPU/HTTP smokes pass. Probe 14 then passed both CPU cases
+and the earlier TCP/TLS/HTTP gates in
+[Simulator run 39088738163](https://github.com/zhoujianjia/legado-ios/actions/runs/39088738163).
+It recovered on the same worker after each original error and cleaned up its
+owned resources. Matching physical-device and full-stability acceptance remain pending.
 
 ## Reader experience build
 
 An unsigned full-reader experience is available from
-[run 39085769476](https://github.com/zhoujianjia/legado-ios/actions/runs/39085769476),
-version 3.0.0 build 2.
+[run 39088051622](https://github.com/zhoujianjia/legado-ios/actions/runs/39088051622),
+version 3.0.0 build 3.
 It retains Yuedu's existing SwiftUI/CoreText UI and JavaScriptCore book-source
 route. It does not integrate the experimental JVM into search or reading.
 [reader-experience.json](reader-experience.json) records the exact source,
@@ -48,9 +80,15 @@ a configuration regression. The Release package passed an independent audit
 of all three device executables, identities, configuration and payload hashes.
 Its Debug Simulator run passed all seven configuration cases and visibly rendered
 the imported TXT first chapter. Directory selection then failed: a center tap
-landed in the plain Button label's transparent Spacer. The label hit-region repair
-requires a fresh build 3; delivered build 2 predates it. The page-visibility and
-persisted-position assertions remain unchanged.
+landed in the plain Button label's transparent Spacer. Build 3 includes explicit
+full hit regions for horizontal and vertical directory labels and passed a fresh
+independent package audit. Its
+[Debug Simulator rerun 39088051559](https://github.com/zhoujianjia/legado-ios/actions/runs/39088051559)
+passed all seven configuration tests and the unchanged TXT UI case, including
+visible text, directory selection and restored progress after relaunch. These
+are Yuedu/CoreText-shell results, not Legado-core reading acceptance. The overall
+workflow failed before the additional online UI case could execute because its
+fixture server did not publish readiness; no online-source pass is claimed.
 
 Sign the IPA with the existing Windows installation workflow and try the
 [original TXT sample](fixtures/阅读体验样书.txt) before testing personal book
@@ -62,12 +100,19 @@ An additional [online-source case](reader-online-smoke.json) targets the real
 deep-link import, search, detail, bookshelf and two-chapter native reader path.
 Its unique loopback source requires a JavaScriptCore transformation to produce
 the visible text, and its independent verdict checks actual HTTP bytes as well
-as one passing UI test. Portable fixture/process checks pass; Simulator UI
-execution remains pending. The online UI case runs only in Debug Simulator
-and does not execute the delivered Release IPA.
+as one passing UI test. Portable fixture/process checks pass; the latest
+Simulator attempt stopped before online test execution. The online UI case runs
+only in Debug Simulator and does not execute the delivered Release IPA.
 
 ## Baseline and acceptance inventory
 
+- The bounded [static replacement kernel](../../Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/StaticRuleReplacement.kt)
+  has 109 passing desktop JVM tests in the current suite and 18 exact-input
+  observations through the ordinary assembled JAR. Its separate
+  [original-Android workflow](../../.github/workflows/legado-rule-reference.yml)
+  collects the unchanged `AnalyzeRule` outputs before comparison. Original-Android
+  comparison is pending; the kernel is not connected to traditional source
+  parsing and establishes no iOS acceptance by itself.
 - [android-reference.md](android-reference.md) describes the new versioned Java
   interop matrix, finite mainJs DTO conversion and independent original-Android
   cloud reference. These additions require their own simulator/device evidence.

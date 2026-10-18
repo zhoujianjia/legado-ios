@@ -24,10 +24,46 @@
     "independentEvidenceGuardPassed": true
   },
   "nativeAcceptance": {
-    "simulatorPassed": false,
+    "simulatorPassed": true,
     "physicalDevicePassed": false,
     "fullStabilityGatePassed": false,
-    "status": "Native execution pending; desktop validation does not satisfy an iOS acceptance gate."
+    "status": "One authenticated Simulator execution passed both CPU cases and cleanup; matching physical-device and full-stability acceptance remain pending."
+  },
+  "nativeSimulator": {
+    "runId": 39088738163,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39088738163",
+    "sourceCommit": "587475909a8badbd8915de8993b4c70bee11f273",
+    "executionPlatform": "ios-simulator",
+    "portableJUnitTestsPassed": 104,
+    "logArtifactId": 12122043975,
+    "logArtifactSHA256": "ad5151b4abab34cbca0670026f40022257374ec50beee68ee9bfffed5f0f2d80",
+    "reportSHA256": "66eaac4f222e78dde6d18953404f0f498b7bc4a6ac22b731b37fba8bcf9ed47a",
+    "reportBytes": 133564,
+    "launchAndCheckpointPID": 43480,
+    "launchedAtUnix": 1792290283.674103,
+    "checkpointRecordedAtUnix": 1792290317.304716,
+    "casesPassed": ["public-cancel", "absolute-deadline"],
+    "sameWorkerId": 78,
+    "signalIterations": 16384,
+    "signalChecksum": 402644992,
+    "positiveInterpreterSamples": 2,
+    "recoveryResult": 42,
+    "cpuDiagnosticMilliseconds": 5542.172083,
+    "cleanup": "Both Rhino contexts exited, isolated sessions closed, owned worker terminated and owned workload registry emptied; errors are empty.",
+    "priorCapabilities": "TCP and all four TLS cases still pass. Actual HTTP retains seven wire requests and seven consumed responses with zero strict differences.",
+    "timingScope": "One fixed diagnostic including a deliberate five-second CPU timeout, not production reader latency."
+  },
+  "deviceTargetPackage": {
+    "artifactId": 12122661044,
+    "artifactZipSHA256": "98a65a011d9e609938689c0ab24bcad82bc6b5324ecc3bac04bfa2157c348875",
+    "ipaSHA256": "655950384f44c365287ea77f241d900bdb7a95b89d0282e2df918d5f621cc882",
+    "ipaBytes": 49927999,
+    "buildManifestSHA256": "6087ab1a75cb3a977711120ee074ebf86c54da6c812d20012b7532f2336b7ff1",
+    "jarSHA256": "8591e88048df952ea53cbb58aa0b2d7e3217f0acb62b54d065cd069431b8f9ab",
+    "independentPackageAuditPassed": true,
+    "packagedCPUHelperPresent": true,
+    "physicalDeviceExecuted": false,
+    "scope": "Static unsigned ARM64 iPhoneOS package audit; not installation or execution evidence."
   },
   "requiredEvidence": [
     "Authenticate enclosing source, platform, launch PID and checkpoint time before checking the CPU result.",

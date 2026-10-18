@@ -11,7 +11,24 @@ G1 and G2 passed; G3–G5 are partially covered. See
 [device-validation.json](device-validation.json). The probe requires iOS/iPadOS
 18 or later; full feature migration remains gated.
 
-## Get the device build
+## Install the reading experience
+
+For the bookshelf and actual reader UI, use the separate unsigned
+`reader-experience-unsigned` artifact from
+[run 39088051622](https://github.com/zhoujianjia/legado-ios/actions/runs/39088051622).
+The locally exported file is `ReaderExperience-c6c89b8.ipa`, version 3.0.0 (3),
+with desktop name **閱讀**. Use the same signing workflow that installed the
+probe, then import [the TXT sample](fixtures/阅读体验样书.txt) to begin.
+Keep its `build-manifest.json`; [reader-experience.json](reader-experience.json)
+records the package hashes and current acceptance limits.
+
+This package includes the local Apple Account prompt repair and full directory
+row hit regions. It uses Yuedu's existing JavaScriptCore/CoreText reader and
+does not include the experimental JVM. The standalone **Legado Probe** app is
+for runtime validation. A passing package audit does not establish device reading
+or full Legado compatibility.
+
+## Get the runtime probe device build
 
 Download `legado-probe-unsigned` from the successful Actions run and extract the
 downloaded artifact ZIP. Use the contained `LegadoRuntimeProbe-unsigned.ipa`;

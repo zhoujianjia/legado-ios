@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "verifiedOn": "2026-10-18",
-  "sourceCommit": "4b648a9bae806a6eb43e012447269a940e67bacf",
-  "runId": 39085769476,
-  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39085769476",
+  "sourceCommit": "c6c89b88fca61221429c5b967d78ffadd91a52eb",
+  "runId": 39088051622,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39088051622",
   "cloudBuild": "passed",
-  "artifactId": 12121700935,
-  "artifactZipSHA256": "5d87bc7cd14a953551f29f41732f8f7ca6e65faffcca5c36a6293e31fc677655",
-  "ipaSHA256": "6d0027aca73945930fe2917b4813621392063ec7bf60670726ba697ef29faa96",
-  "ipaBytes": 47223052,
-  "manifestSHA256": "96b80df69fad41eb72a704b75dea1dea4ac934820997418650f2cf41ce4d8030",
+  "artifactId": 12122431560,
+  "artifactZipSHA256": "676a26e9784551f7179ad59b8cf0be28a2231093b0276790e4653d718dcae359",
+  "ipaSHA256": "ebbb11a5be4bf997c587f7b5f314f33d05220649c5a810a0ef1fde9e565766af",
+  "ipaBytes": 47224235,
+  "manifestSHA256": "f45d79fc2b7c60bb43faccc69a6f802a620cabeb1e40ee86641f9b873fc4d4c9",
   "version": "3.0.0",
-  "build": "2",
+  "build": "3",
   "bundleIdentifier": "local.zhoujianjia.legado-reader",
   "platform": "iPhoneOS",
   "architecture": "arm64",
@@ -38,7 +38,7 @@
     "importURLSchemesPreserved": "passed",
     "noJVMOrProvisioningPayload": "passed",
     "physicalDeviceReading": "pending user trial",
-    "simulatorReadingSmoke": "Debug Simulator run 39085769454 passed seven configuration tests and rendered the imported TXT first chapter; the UI case then failed after a directory-row center tap did not select the third chapter. The Release IPA is audited separately and has not been executed by this audit."
+    "simulatorReadingSmoke": "Debug Simulator run 39088051559 passed seven configuration cases and the unchanged TXT UI case, including directory selection and progress restored after relaunch. The overall workflow failed before online UI execution because its fixture did not publish readiness. This is Yuedu/CoreText shell evidence; the Release IPA and physical-device reading were not executed."
   },
   "trialScope": [
     "Local TXT and EPUB import, bookshelf and native reading",
@@ -54,6 +54,16 @@
   ],
   "fullFeatureParityEstablished": false,
   "previousExperienceBuilds": [
+    {
+      "sourceCommit": "4b648a9bae806a6eb43e012447269a940e67bacf",
+      "runId": 39085769476,
+      "artifactId": 12121700935,
+      "artifactZipSHA256": "5d87bc7cd14a953551f29f41732f8f7ca6e65faffcca5c36a6293e31fc677655",
+      "ipaSHA256": "6d0027aca73945930fe2917b4813621392063ec7bf60670726ba697ef29faa96",
+      "ipaBytes": 47223052,
+      "build": "2",
+      "limitation": "Includes the local SubscriptionStore repair but predates the full directory-row hit-region fix in build 3."
+    },
     {
       "sourceCommit": "864da12653d3ee397cea6ef7bc94691b9583900c",
       "runId": 39054041842,
@@ -124,6 +134,34 @@
       "failure": "After tapping the third-chapter directory Button, the sheet remained open and the centered LOCAL_READER_SMOKE_RESUME body assertion timed out; persisted-position acceptance was not reached.",
       "investigation": "The synthesized touch at (220,378) lies inside the row's transparent Spacer between its title and page number. Its plain Button label lacks a contentShape; no chapter jump or dismissal occurred. The first-chapter screenshot proves actual CoreText rendering, and the prior Apple Account interruption is absent.",
       "repair": "Give the directory Button label an explicit rectangular hit region while preserving the same center tap, body visibility and relaunch assertions. Replacement build 3 and a fresh UI run are required; build 2 above predates this repair."
+    },
+    {
+      "sourceCommit": "c6c89b88fca61221429c5b967d78ffadd91a52eb",
+      "runId": 39088051559,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39088051559",
+      "artifactId": 12122388118,
+      "artifactZipSHA256": "ed121ddc6fc3cce4b73a0338c767ae0b1873950794c1e6fe4810848f8c3ed4cc",
+      "artifactZipBytes": 3129846,
+      "configurationSummarySHA256": "d0ee896973616eb15321c82b5808b061bfd04bdc713433b3aca60595c3a4fd8c",
+      "txtUISummarySHA256": "942d21c34310560512e2a4f5aa6192b45bc476b9c3c461c9c4d51f44f870419d",
+      "txtIndependentResultSHA256": "d5a2753012ac6aeeac45422df2b5fefc1f533fd501f92c13ead9a7972167293a",
+      "txtReaderAttachmentSHA256": "2a193ab85eabee75b1191b797b0742d4efbb7ce076e5a0e7a8b14ca7d8d0de5b",
+      "status": "txt_passed_online_fixture_startup_failed",
+      "configurationTestsExecuted": 7,
+      "configurationTestsPassed": 7,
+      "configurationTestsSkipped": 0,
+      "readerUITestsExecuted": 1,
+      "readerUITestsPassed": 1,
+      "readerUITestsSkipped": 0,
+      "onlineUITestsExecuted": 0,
+      "firstChapterVisiblyRendered": true,
+      "directorySelectionPassed": true,
+      "persistedPositionRestoredAfterRelaunch": true,
+      "readerRoute": "Existing Yuedu/CoreText local TXT reader",
+      "jvmIntegratedIntoReading": false,
+      "deliveredIPAExecuted": false,
+      "deviceValidationPassed": false,
+      "failure": "The later online fixture did not publish readiness within its deadline; the process was stopped. No online UI test or HTTP trace executed. The independent TXT result remains passed."
     }
   ]
 }
