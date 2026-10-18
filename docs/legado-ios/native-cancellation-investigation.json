@@ -179,7 +179,151 @@
     "changesOtherThreadMasks": false,
     "altersJVMOptionsOrNativeRuntimeArchive": false,
     "hostObjectiveCSyntaxCheckPassed": true,
+    "actualIOSProbeMaskLifecycleValidated": true,
+    "actualIOSProbeRegressionRunId": 39104510283,
+    "mainAppBlockedHTTPBodyCancellationPassed": false,
+    "combinedValidationFlagMeaning": "actualIOSMaskAndCancellationRevalidationPassed remains false until the actual main-App blocked HTTP body cancellation/recovery test passes its unchanged deadline.",
     "actualIOSMaskAndCancellationRevalidationPassed": false
+  },
+  "nativeCoreProbeRegression": {
+    "runId": 39104510283,
+    "sourceCommit": "aab2777ac3c615b5ae8660e04a9a18a5fadcc56e",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39104510283",
+    "workflowPath": ".github/workflows/legado-ios-core-update.yml",
+    "workflowConclusion": "success",
+    "executionPlatform": "ios-simulator",
+    "passed": true,
+    "artifacts": [
+      {
+        "name": "legado-core-update-portable-logs",
+        "artifactId": 12128315558,
+        "bytes": 80949,
+        "sha256": "86a9f2d8e7ee35c3d3ad5eb24581ab78c6738bfc6f7120622c8b95d8b4643118"
+      },
+      {
+        "name": "legado-core-update-logs",
+        "artifactId": 12127978409,
+        "bytes": 1968164,
+        "sha256": "cc35277bba77ddd75de48cd0b65fc6f1b5d6feca98a76ff6752e2bc335d4df98"
+      }
+    ],
+    "rawReport": {
+      "filename": "LegadoProbe-report.json",
+      "bytes": 145580,
+      "sha256": "61767336671d4a8ba29850ba6cfca263d034f17c805900f1fd53f2788a9ec74c"
+    },
+    "independentAudit": {
+      "filename": "independent-core-audit.json",
+      "bytes": 2521,
+      "sha256": "f391d32dfd96a7e4a6f8c8680643a4a94b36cf687471104f0b53d503d9909340"
+    },
+    "sourceIdentity": {
+      "fullSourceCommitMatchesReportAndRunner": true,
+      "launchPID": 39302,
+      "checkpointProcessIdentifier": 39302,
+      "executionPlatform": "ios-simulator"
+    },
+    "nativeProducer": {
+      "runId": 39083752761,
+      "sourceCommit": "ce792982a30942e605fc935b733c5b41bef2736a",
+      "nativeRuntimeRecompiled": false,
+      "allSevenNativeInputsMatched": true,
+      "currentCBridgeAndProbeRecompiled": true
+    },
+    "jvmPayload": {
+      "profile": "includeEngineTests=true diagnostic payload",
+      "javaVersionMeasured": "28-internal",
+      "vmNameMeasured": "OpenJDK 64-Bit Zero VM",
+      "jarSHA256": "53845369dad5c15bcb2729302aeb3a0f327a4ba9678b0dd11ca05efe5dca25fa",
+      "ordinaryReaderJarValidatedByThisRun": false
+    },
+    "portableJUnit": {
+      "tests": 121,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "uniqueTests": 121
+    },
+    "sourceOnlySwiftTests": {
+      "executed": 21,
+      "failures": 0
+    },
+    "originalEngineSemanticCases": {
+      "passed": 25,
+      "total": 25,
+      "skipped": 0,
+      "javaBeansPassed": true
+    },
+    "javaInteropCases": {
+      "passed": 28,
+      "total": 28,
+      "failed": 0
+    },
+    "nativeTCPPassed": true,
+    "nativeTLSCases": {
+      "passed": 4,
+      "total": 4,
+      "cleanupErrors": []
+    },
+    "nativeHTTPWire": {
+      "requests": 7,
+      "responses": 7,
+      "differenceCount": 0,
+      "rawRequestsLinkedToSnapshot": true
+    },
+    "nativeCPULoopCases": {
+      "passed": 2,
+      "total": 2
+    },
+    "signalMaskLifecycle": {
+      "signalName": "SIGIO",
+      "invocationsObserved": 31,
+      "distinctNativeThreadsObserved": 3,
+      "entrySIGIOBlockedForAllInvocations": true,
+      "stageEventCounts": {
+        "thread.sigio.entry.blocked": 31,
+        "thread.sigio.handlerInit.before": 31,
+        "thread.sigio.handlerInit.after": 31,
+        "thread.sigio.unblock.before": 31,
+        "thread.sigio.unblock.after": 31,
+        "thread.sigio.restore.before": 31,
+        "thread.sigio.restore.after": 31
+      },
+      "allRecordedStageReturnCodesZero": true,
+      "perThreadStageOrderVerified": true,
+      "restoreAPIReturnsSucceeded": true,
+      "savedMaskEqualityAfterRestoreIndependentlyMeasured": false,
+      "stagesSHA256": "b859adecc6b3f372811a50071cc22c4fb624df86470169d4c4ae1cb2dfdb9458",
+      "measurementBoundary": "The bridge queried SIGIO membership on entry, initialized the original JDK handler, unblocked SIGIO and restored the saved mask. Successful pthread_sigmask return codes were observed; no independent post-restore comparison of every mask bit was collected."
+    },
+    "nativeModules": [
+      "java.base",
+      "java.xml",
+      "java.desktop",
+      "java.datatransfer",
+      "java.prefs",
+      "java.logging",
+      "jdk.charsets",
+      "java.compiler",
+      "java.instrument",
+      "java.net.http",
+      "java.sql",
+      "java.transaction.xa",
+      "jdk.unsupported"
+    ],
+    "requiredDynamicExportsPresent": 39,
+    "mainAppBlockedHTTPBodyCancellation": {
+      "status": "pending-separate-product-chain-revalidation",
+      "passed": false,
+      "requiredMaximumCancellationMilliseconds": 15000,
+      "sourceOperationDeadlineMilliseconds": 45000,
+      "priorFailedRunId": 39100746970
+    },
+    "deliveredReader6IPAExecuted": false,
+    "physicalDeviceValidationPassed": false,
+    "g4ValidationPassed": false,
+    "fullFeatureParityEstablished": false,
+    "scope": "This separate Probe regression exercises packaged original semantics, TLS, a synthetic HTTP wire chain and CPU cancellation/deadline. It does not complete the actual main-App held-response cancellation/recovery test or establish real-source compatibility."
   },
   "validationBoundary": {
     "macosCommandLineObservationIsIOSProof": false,

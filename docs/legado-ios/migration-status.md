@@ -12,7 +12,9 @@
 
 该包的有限 `mainJs` 纯文本路径已接入 JVM，传统规则仍走现有 JSC；本地源包的 `mainJs` 数量为 0。此处通过的是构建和静态完整性检查，尚未执行交付 IPA，不能视为真机阅读、真实源可用性或完整 Legado 兼容验收。
 
-另一次 `0965fb2` 的真实主 App Simulator 用例已执行搜索、详情、目录、两章 JVM 正文及实际缓存阅读器 XHTML，但取消耗时约 60.1 秒，超过 15 秒门槛；第七次恢复请求未执行，整例仍失败。只读 Darwin 观测与固定 JDK 源码支持后台线程屏蔽 `SIGIO` 的原因；`aab2777` 的当前线程掩码候选已通过 host Objective-C 编译检查，iOS 实际取消重测仍待完成。原始请求计数、失败和作用域见[取消调查记录](native-cancellation-investigation.json)，不能把部分链路升级为完整通过。
+另一次 `0965fb2` 的真实主 App Simulator 用例已执行搜索、详情、目录、两章 JVM 正文及实际缓存阅读器 XHTML，但取消耗时约 60.1 秒，超过 15 秒门槛；第七次恢复请求未执行，整例仍失败。只读 Darwin 观测与固定 JDK 源码支持后台线程屏蔽 `SIGIO` 的原因。该失败原记录保持不变。
+
+随后 `aab2777` 的独立 [Probe 回归 run 39104510283](https://github.com/zhoujianjia/legado-ios/actions/runs/39104510283) 已在 iOS Simulator 实际通过：原引擎 25 项及 JavaBeans、interop 28 项、TCP、TLS 4 项、HTTP wire 7 次和 CPU 2 项均通过，wire 与原 Android 固定链路比较为零差异。C 阶段日志记录了 3 个原生线程上共 31 次 JNI 调用：每次进入时 `SIGIO` 均被屏蔽，原 JDK handler 初始化、解除屏蔽和恢复 API 的返回码均为 0；没有独立逐位测量恢复后的完整掩码。13 个模块、39 个导出、来源提交和运行 PID 也已核对。这是包含引擎测试的独立诊断 JAR 回归，不能替代普通 Reader JAR 或主 App 的阻塞 HTTP 正文取消验收。主 App 仍须按原 15 秒取消门槛及 45 秒操作期限完成取消与恢复请求，真机和完整兼容验收保持待定。报告及审计哈希见[取消调查记录](native-cancellation-investigation.json)。
 
 ## 本轮已实现
 
