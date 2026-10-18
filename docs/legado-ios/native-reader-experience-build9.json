@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "independently-branded-reader-build-in-progress",
+  "recordedOn": "2026-10-18",
+  "sourceCommit": "903e90a6acb86ec4fdd82e0364e56566c5573f81",
+  "intendedVersion": "3.0.0",
+  "intendedBuild": "9",
+  "intendedDisplayName": "本地书架",
+  "bundleIdentifier": "local.zhoujianjia.legado-reader",
+  "minimumIOS": "18.0",
+  "cloudBuild": {
+    "runId": 39134165166,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39134165166",
+    "tag": "reader-legado-903e90a",
+    "workflowPath": ".github/workflows/legado-reader.yml",
+    "statusAtObservation": "in_progress",
+    "observedAtUTC": "2026-10-18T14:03:40Z",
+    "conclusion": null
+  },
+  "priorUIEvidence": {
+    "sourceCommit": "b1607881a27135b06d6945af380a19f22dbe1daf",
+    "runId": 39128839268,
+    "record": "local-product-validation.json",
+    "actualPassedCases": 64,
+    "failuresOrSkips": 0,
+    "unchangedProductPathsComparedWithCandidate": [
+      "Modules", "Targets", "Resources", "Info.plist", "Yuedu-Reader.xcodeproj", "Tests"
+    ],
+    "comparisonMethod": "git diff --exit-code between both exact commits for the listed paths returned zero",
+    "scope": "Debug Simulator using the existing JSC/CoreText route, including fonts, cached TXT, paging and two reading UI cases. It does not validate this Release IPA or native JVM execution."
+  },
+  "sourcePackPolicy": {
+    "builtInBookSourcesAllowed": false,
+    "localSourceInjectionPlanned": false,
+    "manualInAppImportPreserved": true,
+    "existingDeviceDataPreserved": true,
+    "portablePackagingTestsPassed": 23,
+    "newCloudPackagingChecks": "pending"
+  },
+  "delivery": {
+    "publicIPAUploadEnabled": false,
+    "IPAArtifactDownloaded": false,
+    "IPAIndependentlyAudited": false,
+    "signedOrInstalled": false,
+    "deliveredToUser": false,
+    "redistributionCleared": false,
+    "note": "This public-repository run preserves build evidence, but its unsigned IPA upload is disabled. A build success does not provide a downloadable or independently audited installation package."
+  },
+  "acceptance": {
+    "releaseCompilationPassed": false,
+    "physicalDeviceValidationPassed": false,
+    "fullLegadoCompatibilityEstablished": false
+  }
+}

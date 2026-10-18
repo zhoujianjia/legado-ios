@@ -1,35 +1,17 @@
 {
   "schemaVersion": 1,
-  "recordKind": "local-product-cloud-validation-pending",
+  "recordKind": "local-product-cloud-validation-independent-results",
   "verifiedOn": "2026-10-18",
-  "overallVerdict": "pending_actual_artifacts_and_case_metadata",
+  "overallVerdict": "passed_for_declared_debug_simulator_scope",
   "runs": [
     {
       "runId": 39126993019,
       "tag": "reader-smoke-5a27219",
       "sourceCommit": "5a272190fda65fa7ebababc919f0399c71f2b459",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39126993019",
       "startedAtUTC": "2026-10-18T12:22:13Z",
-      "checkedAtUTC": "2026-10-18T13:24:02.055532+00:00",
-      "elapsedMinutesAtObservation": 61.82,
-      "jobs": [
-        {
-          "id": 117674088655,
-          "status": "in_progress",
-          "conclusion": null,
-          "activeSteps": [
-            {
-              "number": 7,
-              "name": "Execute configuration, source paging, TXT and loopback JSC reader cases",
-              "status": "in_progress",
-              "conclusion": null,
-              "startedAtUTC": "2026-10-18T12:23:27Z"
-            }
-          ]
-        }
-      ],
       "requiredPassingCounts": {
         "configuration": 9,
         "localProduct": 27,
@@ -37,42 +19,208 @@
         "txtUI": 1,
         "onlineUI": 1
       },
-      "artifactAudit": "not_available_while_running",
-      "actualCaseMetadataAudited": false,
+      "artifactAudit": "independently_passed",
+      "actualCaseMetadataAudited": true,
       "firstRealFailure": null,
       "deliveryPolicy": "historical_only_not_for_delivery",
+      "auditedAtUTC": "2026-10-18T13:56:33.899341+00:00",
+      "independentAudit": {
+        "path": ".build/cloud-evidence/run-39126993019/independent-evidence-audit.json",
+        "bytes": 17512,
+        "sha256": "4605821b8c8a6cd067bc640885150cec14cf5e5094323eb81c083e2c7c563ea2"
+      },
+      "artifact": {
+        "id": 12137129993,
+        "name": "reader-smoke-evidence",
+        "path": ".build/cloud-evidence/run-39126993019/reader-smoke-evidence.zip",
+        "bytes": 6510067,
+        "sha256": "cb9d192e67c3323aa3ee07df7d7187e5c9db71cb1add7b79611a1c08a2e6fad6",
+        "apiBytesAndHashMatched": true,
+        "zipMembers": 338,
+        "allExtractedArtifactFilesByteIdentical": true
+      },
+      "actualPassingCounts": {
+        "cloudkit": 9,
+        "local-product": 27,
+        "paging": 12,
+        "txt-ui": 1,
+        "online-ui": 1
+      },
+      "actualTotalPassingCases": 50,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "expectedFailures": 0,
+      "actualFontCases": [
+        {
+          "identifier": "ReaderFontCatalogTests/bundledFontsAreRegisteredWithLicensedResources()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "ReaderFontCatalogTests/bundledSelectionsReachGlobalAndReaderFontResolvers()",
+          "testStatus": "Success"
+        }
+      ],
+      "actualCachedTXTCases": [
+        {
+          "identifier": "CachedBookTXTExportTests/partialExportUsesValidatedCacheInTOCOrder()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "CachedBookTXTExportTests/completeExportPreservesChinese()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "CachedBookTXTExportTests/emptyExportDoesNotCreateEmptyBook()",
+          "testStatus": "Success"
+        }
+      ],
+      "wire": {
+        "schemaVersion": 1,
+        "fixture": "reader-book-source-smoke-v1",
+        "passed": true,
+        "runId": "0653d903-dd70-4056-985e-28909b7b31a9",
+        "origin": "http://localhost:18769",
+        "baseURL": "http://localhost:18769/fixture/0653d903-dd70-4056-985e-28909b7b31a9",
+        "requestCount": 6,
+        "routeCounts": {
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/sources.json": 1,
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/search": 1,
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/book.html": 1,
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/toc.html": 1,
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/chapter0.html": 1,
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/chapter1.html": 1
+        },
+        "responseSHA256": {
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/sources.json": "6518a3b8ccd274a7f95df69071a7c6eacec80df342e2bc0958df323cbee90a16",
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/search": "c21c6e0049506c8b243722c155209712de5442f13d93c406ae065a70169ddb50",
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/book.html": "2cb329a41a9924f06d08f5b3454e689059a35b63504db78755bd52aea2b432dd",
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/toc.html": "f1c40071fd94a86a25b7899ae50946b69d098d0ac5065a766f43edbdd0ce8d9f",
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/chapter0.html": "f4b6e84ccf295a57831f7c5f7d0e2d05d4b40c94d930b69c57da5c2fac004663",
+          "/fixture/0653d903-dd70-4056-985e-28909b7b31a9/chapter1.html": "9a568c170246bac2f0672e1ff942f1829f2ff0519a8e73944db9ff153435d2b8"
+        },
+        "provesJVMCompatibility": false,
+        "deviceValidationPassed": false
+      },
+      "fixtureProcess": {
+        "schemaVersion": 1,
+        "sourceCommit": "5a272190fda65fa7ebababc919f0399c71f2b459",
+        "startedAt": "2026-10-18T13:22:19.817933+00:00",
+        "completedAt": "2026-10-18T13:27:47.081906+00:00",
+        "fixturePID": 64892,
+        "ready": {
+          "baseURL": "http://localhost:18769/fixture/0653d903-dd70-4056-985e-28909b7b31a9",
+          "bookTitle": "OnlineSmoke Book 0653d903-dd70-4056-985e-28909b7b31a9",
+          "fixture": "reader-book-source-smoke-v1",
+          "origin": "http://localhost:18769",
+          "query": "OnlineSmoke",
+          "runId": "0653d903-dd70-4056-985e-28909b7b31a9",
+          "schemaVersion": 1,
+          "sourceName": "Online Smoke Source 0653d903-dd70-4056-985e-28909b7b31a9",
+          "sourceURL": "http://localhost:18769/fixture/0653d903-dd70-4056-985e-28909b7b31a9/sources.json"
+        },
+        "commandExitCode": 0,
+        "fixtureStopped": true,
+        "issue": null,
+        "deviceValidationPassed": false,
+        "deliveredIPAExecuted": false
+      },
+      "visualAndAccessibilityAudit": {
+        "selectedScreenshotsVisuallyInspected": true,
+        "screenshotFiles": [
+          {
+            "path": ".build/cloud-evidence/run-39126993019/artifact/attachments/online-ui-online-04-first-jsc-transformed-coretext-page.png",
+            "bytes": 314660,
+            "sha256": "06433c588ff27cc6b3b0b5ce737290c1e32843332e8e213e5cf4039ad0dfbf09"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39126993019/artifact/attachments/online-ui-online-05-selected-second-jsc-transformed-page.png",
+            "bytes": 493080,
+            "sha256": "47eefa943336ed9d8632dfa00ef04ad5f3c79a6c9fefb9f67c4fa7a6ff8901f3"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39126993019/artifact/attachments/online-ui-online-06-returned-to-real-bookshelf.png",
+            "bytes": 334090,
+            "sha256": "8b1cf9f268646adfdd9d7bd42139edace938e44ee529e0cd57d6513520cf0a12"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39126993019/artifact/attachments/txt-ui-05-restored-target-chapter.png",
+            "bytes": 306598,
+            "sha256": "9a37388ff77ca8562acc90883e705e7f7f9d7e99d35b02191e145fa4f728fb62"
+          }
+        ],
+        "firstAndSecondTransformedBodiesVisible": true,
+        "returnedBookshelfHasOneOnlineRowAndExistingTXTRow": true,
+        "restoredTXTTargetChapterAndBodyVisible": true,
+        "attachmentManifest": {
+          "path": ".build/cloud-evidence/run-39126993019/artifact/attachment-manifest.json",
+          "bytes": 12328,
+          "sha256": "971d1f2c27f2fc511d1eceeef648e92f2748ec64e3f8fa30ac266d6831e02d56"
+        }
+      },
+      "acceptanceBoundary": {
+        "debugSimulatorOnly": true,
+        "jvmIntegratedIntoReading": false,
+        "deliveredIPAExecuted": false,
+        "physicalDeviceValidationPassed": false,
+        "realBookSourcesValidated": false,
+        "fullLegadoParityEstablished": false,
+        "historicalResultOnlyNoDistribution": true,
+        "doesNotValidateLaterBrandingOrPlainTXTAuthorityFix": true
+      },
+      "previousInProgressObservation": {
+        "status": "in_progress",
+        "conclusion": null,
+        "checkedAtUTC": "2026-10-18T13:24:02.055532+00:00",
+        "elapsedMinutesAtObservation": 61.82,
+        "jobs": [
+          {
+            "id": 117674088655,
+            "status": "in_progress",
+            "conclusion": null,
+            "activeSteps": [
+              {
+                "number": 7,
+                "name": "Execute configuration, source paging, TXT and loopback JSC reader cases",
+                "status": "in_progress",
+                "conclusion": null,
+                "startedAtUTC": "2026-10-18T12:23:27Z"
+              }
+            ]
+          }
+        ],
+        "localMetadataEvidence": {
+          "path": ".build/cloud-evidence/run-39126993019/observations/20261018T132402Z.json",
+          "bytes": 18603,
+          "sha256": "47813eac5c3793348861c02cbff58cf6cacc938fc063eaff35e7b5665a6da81f"
+        }
+      },
+      "checkedAtUTC": "2026-10-18T13:58:29.076085+00:00",
+      "completedAtUTC": "2026-10-18T13:28:30+00:00",
+      "elapsedMinutesAtCompletion": 66.28,
+      "jobs": [
+        {
+          "id": 117674088655,
+          "status": "completed",
+          "conclusion": "success",
+          "startedAtUTC": "2026-10-18T12:22:24Z",
+          "completedAtUTC": "2026-10-18T13:28:30Z",
+          "activeSteps": []
+        }
+      ],
       "localMetadataEvidence": {
-        "path": ".build/cloud-evidence/run-39126993019/observations/20261018T132402Z.json",
-        "bytes": 18603,
-        "sha256": "47813eac5c3793348861c02cbff58cf6cacc938fc063eaff35e7b5665a6da81f"
+        "path": ".build/cloud-evidence/run-39126993019/final-api-metadata.json",
+        "bytes": 19134,
+        "sha256": "5171f24f06d2eebcfbb27c0532fa351b89219b37ccdf9f5030ce703947423fd8"
       }
     },
     {
       "runId": 39128839268,
       "tag": "reader-smoke-b160788",
       "sourceCommit": "b1607881a27135b06d6945af380a19f22dbe1daf",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39128839268",
       "startedAtUTC": "2026-10-18T12:48:36Z",
-      "checkedAtUTC": "2026-10-18T13:24:02.055532+00:00",
-      "elapsedMinutesAtObservation": 35.43,
-      "jobs": [
-        {
-          "id": 117679616108,
-          "status": "in_progress",
-          "conclusion": null,
-          "activeSteps": [
-            {
-              "number": 7,
-              "name": "Execute configuration, source paging, TXT and loopback JSC reader cases",
-              "status": "in_progress",
-              "conclusion": null,
-              "startedAtUTC": "2026-10-18T12:49:34Z"
-            }
-          ]
-        }
-      ],
       "requiredPassingCounts": {
         "configuration": 9,
         "localProduct": 41,
@@ -80,32 +228,345 @@
         "txtUI": 1,
         "onlineUI": 1
       },
-      "artifactAudit": "not_available_while_running",
-      "actualCaseMetadataAudited": false,
+      "artifactAudit": "independently_passed",
+      "actualCaseMetadataAudited": true,
       "firstRealFailure": null,
       "deliveryPolicy": "test_only_no_IPA_distribution",
+      "previousInProgressObservation": {
+        "status": "in_progress",
+        "conclusion": null,
+        "checkedAtUTC": "2026-10-18T13:24:02.055532+00:00",
+        "elapsedMinutesAtObservation": 35.43,
+        "jobs": [
+          {
+            "id": 117679616108,
+            "status": "in_progress",
+            "conclusion": null,
+            "activeSteps": [
+              {
+                "number": 7,
+                "name": "Execute configuration, source paging, TXT and loopback JSC reader cases",
+                "status": "in_progress",
+                "conclusion": null,
+                "startedAtUTC": "2026-10-18T12:49:34Z"
+              }
+            ]
+          }
+        ],
+        "localMetadataEvidence": {
+          "path": ".build/cloud-evidence/run-39128839268/observations/20261018T132402Z.json",
+          "bytes": 18607,
+          "sha256": "3b36b422c9cc7426852b7ab32f4aac3d3faffc63c35f19db7d0db38e00086993"
+        }
+      },
+      "checkedAtUTC": "2026-10-18T14:02:44.269085+00:00",
+      "completedAtUTC": "2026-10-18T13:54:05+00:00",
+      "elapsedMinutesAtCompletion": 65.48,
+      "jobs": [
+        {
+          "id": 117679616108,
+          "status": "completed",
+          "conclusion": "success",
+          "startedAtUTC": "2026-10-18T12:48:43Z",
+          "completedAtUTC": "2026-10-18T13:54:05Z",
+          "activeSteps": []
+        }
+      ],
       "localMetadataEvidence": {
-        "path": ".build/cloud-evidence/run-39128839268/observations/20261018T132402Z.json",
-        "bytes": 18607,
-        "sha256": "3b36b422c9cc7426852b7ab32f4aac3d3faffc63c35f19db7d0db38e00086993"
+        "path": ".build/cloud-evidence/run-39128839268/final-api-metadata.json",
+        "bytes": 19138,
+        "sha256": "b5c6fca0058794e96bfb834705e87213f3e54ecc1728f743f510eb6a0af95d62"
+      },
+      "auditedAtUTC": "2026-10-18T14:02:44.269085+00:00",
+      "independentAudit": {
+        "path": ".build/cloud-evidence/run-39128839268/independent-evidence-audit.json",
+        "bytes": 21505,
+        "sha256": "219de757da6c59c86f1d398d1e3649cf3d89ea01757b1f3c2467daa3547f05b9"
+      },
+      "artifact": {
+        "id": 12138354988,
+        "name": "reader-smoke-evidence",
+        "path": ".build/cloud-evidence/run-39128839268/reader-smoke-evidence.zip",
+        "bytes": 6513787,
+        "sha256": "399533b8e404f57cf69ea62d07025417c719f7c719244afb7725876beffb84f3",
+        "apiBytesAndHashMatched": true,
+        "zipMembers": 366,
+        "allExtractedArtifactFilesByteIdentical": true
+      },
+      "actualPassingCounts": {
+        "cloudkit": 9,
+        "local-product": 41,
+        "paging": 12,
+        "txt-ui": 1,
+        "online-ui": 1
+      },
+      "actualTotalPassingCases": 64,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "expectedFailures": 0,
+      "actualFontCases": [
+        {
+          "identifier": "ReaderFontCatalogTests/bundledFontsAreRegisteredWithLicensedResources()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "ReaderFontCatalogTests/bundledSelectionsReachGlobalAndReaderFontResolvers()",
+          "testStatus": "Success"
+        }
+      ],
+      "actualCachedTXTCases": [
+        {
+          "identifier": "CachedBookTXTExportTests/partialExportUsesValidatedCacheInTOCOrder()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "CachedBookTXTExportTests/completeExportPreservesChinese()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "CachedBookTXTExportTests/plainTextExportsWithoutHTMLInterpretation()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "CachedBookTXTExportTests/emptyExportDoesNotCreateEmptyBook()",
+          "testStatus": "Success"
+        }
+      ],
+      "actualRemoteLibraryCases": [
+        {
+          "identifier": "RemoteLibraryHTTPTests/feedRequestCountAndErrors()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/opds2ContentTypes()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/identifyingUserAgent()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/authenticationScope()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/redirectScope()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/mutationRedirectScope()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/mutationDirectOrigin()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/rangeStreaming()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/rangeFailureClassification()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/loginPageDoesNotTriggerDownload()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/malformedPartialResponse()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/searchDescription()",
+          "testStatus": "Success"
+        },
+        {
+          "identifier": "RemoteLibraryHTTPTests/coverSessionCache()",
+          "testStatus": "Success"
+        }
+      ],
+      "wire": {
+        "schemaVersion": 1,
+        "fixture": "reader-book-source-smoke-v1",
+        "passed": true,
+        "runId": "60cbcb46-7f2f-4fc5-948a-43e5dcde96cf",
+        "origin": "http://localhost:18769",
+        "baseURL": "http://localhost:18769/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf",
+        "requestCount": 6,
+        "routeCounts": {
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/sources.json": 1,
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/search": 1,
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/book.html": 1,
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/toc.html": 1,
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/chapter0.html": 1,
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/chapter1.html": 1
+        },
+        "responseSHA256": {
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/sources.json": "c0ce42d04f8b66c79d8114a7eae643b0cac17f74c82cbe6470cef1c659b3a936",
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/search": "eb4e530aed3df96b07a5c863905f89f33f6b1f94be38b1f0b79c972a550d9317",
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/book.html": "168381047ed881e57d11fe634b10e2025743c5fcd344a9cc4cff9d5e938c7a87",
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/toc.html": "ba071633d4b37bf9cf817547ad27520d86825f03224f43b1f30860517d68a2eb",
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/chapter0.html": "f4b6e84ccf295a57831f7c5f7d0e2d05d4b40c94d930b69c57da5c2fac004663",
+          "/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/chapter1.html": "9a568c170246bac2f0672e1ff942f1829f2ff0519a8e73944db9ff153435d2b8"
+        },
+        "provesJVMCompatibility": false,
+        "deviceValidationPassed": false
+      },
+      "fixtureProcess": {
+        "schemaVersion": 1,
+        "sourceCommit": "b1607881a27135b06d6945af380a19f22dbe1daf",
+        "startedAt": "2026-10-18T13:46:37.534568+00:00",
+        "completedAt": "2026-10-18T13:53:20.561228+00:00",
+        "fixturePID": 61776,
+        "ready": {
+          "baseURL": "http://localhost:18769/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf",
+          "bookTitle": "OnlineSmoke Book 60cbcb46-7f2f-4fc5-948a-43e5dcde96cf",
+          "fixture": "reader-book-source-smoke-v1",
+          "origin": "http://localhost:18769",
+          "query": "OnlineSmoke",
+          "runId": "60cbcb46-7f2f-4fc5-948a-43e5dcde96cf",
+          "schemaVersion": 1,
+          "sourceName": "Online Smoke Source 60cbcb46-7f2f-4fc5-948a-43e5dcde96cf",
+          "sourceURL": "http://localhost:18769/fixture/60cbcb46-7f2f-4fc5-948a-43e5dcde96cf/sources.json"
+        },
+        "commandExitCode": 0,
+        "fixtureStopped": true,
+        "issue": null,
+        "deviceValidationPassed": false,
+        "deliveredIPAExecuted": false
+      },
+      "visualAndAccessibilityAudit": {
+        "selectedScreenshotsVisuallyInspected": true,
+        "screenshotFiles": [
+          {
+            "path": ".build/cloud-evidence/run-39128839268/artifact/attachments/online-ui-online-04-first-jsc-transformed-coretext-page.png",
+            "bytes": 314916,
+            "sha256": "0bd8f94469caecc56c76765b78c7018c8c55ff2e4ad5ae1f78dbaf9827bc05ba"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39128839268/artifact/attachments/online-ui-online-05-selected-second-jsc-transformed-page.png",
+            "bytes": 493390,
+            "sha256": "5b8d0c9d52aea713ea41b86123e4e7b8d380b753232f1271c69be4429a0de9c0"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39128839268/artifact/attachments/online-ui-online-06-returned-to-real-bookshelf.png",
+            "bytes": 332876,
+            "sha256": "17a36ffaa309b2a9c63c70916963859877ee1c863935923232c1a7c4db2f2d2d"
+          },
+          {
+            "path": ".build/cloud-evidence/run-39128839268/artifact/attachments/txt-ui-05-restored-target-chapter.png",
+            "bytes": 307022,
+            "sha256": "caf539ef55d170035ddb0ef31c3929b4aea37247dfe435a63881ae2c977049d7"
+          }
+        ],
+        "firstAndSecondTransformedBodiesVisible": true,
+        "returnedBookshelfHasOneOnlineRowAndExistingTXTRow": true,
+        "restoredTXTTargetChapterAndBodyVisible": true,
+        "attachmentManifest": {
+          "path": ".build/cloud-evidence/run-39128839268/artifact/attachment-manifest.json",
+          "bytes": 12328,
+          "sha256": "19adc420101f602bc13f52e7f70342f412bbcdd1e83c0ffc0743954246d8e5d0"
+        }
+      },
+      "independentDefaultIdentity": {
+        "strictSourceProjectRecordVerified": true,
+        "replacementCount": 0,
+        "identifiersAlreadyIndependent": true,
+        "projectSourceSHA256": "b1c85ad750b4874f6ba5415649b2a6272d29438a3fe3f6561089f03cee342342",
+        "trackedOverlays": [
+          "Info.plist"
+        ],
+        "actualSimulatorBundleIdentifier": "local.zhoujianjia.legado-reader"
+      },
+      "acceptanceBoundary": {
+        "debugSimulatorOnly": true,
+        "jvmIntegratedIntoReading": false,
+        "deliveredIPAExecuted": false,
+        "physicalDeviceValidationPassed": false,
+        "realBookSourcesValidated": false,
+        "fullLegadoParityEstablished": false,
+        "testOnlyNoIPADistribution": true,
+        "sourceIncludesBrandingAndPlainTXTAuthorityFix": true,
+        "brandingAboutPageAndHomeIconVisuallyValidated": false
       }
     }
   ],
   "acceptanceBoundary": {
-    "actualSwiftCompilationClaimed": false,
-    "fontsRegisteredOnSimulatorClaimed": false,
-    "cachedTXTExportTestsClaimed": false,
-    "readingUIClaimed": false,
+    "actualSwiftCompilationClaimed": true,
+    "fontsRegisteredOnSimulatorClaimed": true,
+    "cachedTXTExportTestsClaimed": true,
+    "readingUIClaimed": true,
     "realBookSourcesValidated": false,
     "physicalDeviceValidationPassed": false,
     "fullLegadoParityEstablished": false,
-    "IPAForDistributionProducedByTheseSmokeRuns": false
+    "IPAForDistributionProducedByTheseSmokeRuns": false,
+    "JVMMainJSOrNativeCoreCompatibilityValidatedByTheseTests": false,
+    "cachedTXTFileExportSharingUITested": false,
+    "newBrandAboutPageAndHomeIconVisuallyValidated": false
   },
-  "notes": [
+  "historical5aAcceptance": {
+    "sourceCommit": "5a272190fda65fa7ebababc919f0399c71f2b459",
+    "verdict": "independently_passed_for_historical_source_only",
+    "configurationCases": 9,
+    "localProductCases": 27,
+    "paginationCases": 12,
+    "TXTReaderUICases": 1,
+    "onlineReaderUICases": 1,
+    "totalActualPassingCases": 50,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "expectedFailures": 0,
+    "fontRegistrationAndResolverCases": 2,
+    "cachedTXTExportCases": 3,
+    "loopbackBusinessRequests": 6,
+    "actualSwiftCompilationAndDebugSimulatorExecution": true,
+    "currentBrandingOrLaterTXTAuthorityFixValidated": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "physicalDeviceValidationPassed": false,
+    "deliveredIPAExecuted": false,
+    "transferredToB160788": false
+  },
+  "currentB160Acceptance": {
+    "sourceCommit": "b1607881a27135b06d6945af380a19f22dbe1daf",
+    "verdict": "independently_passed_for_declared_debug_simulator_scope",
+    "configurationCases": 9,
+    "localProductCases": 41,
+    "paginationCases": 12,
+    "TXTReaderUICases": 1,
+    "onlineReaderUICases": 1,
+    "totalActualPassingCases": 64,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "expectedFailures": 0,
+    "fontRegistrationAndResolverCases": 2,
+    "cachedTXTExportCases": 4,
+    "rawTXTAuthorityRegressionPassed": true,
+    "remoteLibraryHTTPCases": 13,
+    "loopbackBusinessRequests": 6,
+    "actualSwiftCompilationAndDebugSimulatorExecution": true,
+    "projectAlreadyIndependentWithoutOverlay": true,
+    "newBrandAboutPageAndHomeIconVisuallyValidated": false,
+    "JVMMainJSOrNativeCoreCompatibilityValidated": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "physicalDeviceValidationPassed": false,
+    "deliveredIPAExecuted": false,
+    "borrowedHistorical5aCases": false
+  },
+  "previousPendingNotes": [
     "This observation records workflow metadata only, not a compilation or test verdict.",
     "Step 7 includes five sequential XCTest groups and initial dependency compilation; an in-progress step does not identify its internal current phase.",
     "Live job logs were unavailable during the previous read; repeated log-404 polling was stopped.",
     "The old 5a27219 run is preserved only as historical evidence. The b160788 smoke runs the branded local product, not a releasable IPA.",
     "Distribution and private-source packaging remain outside these smoke results."
+  ],
+  "notes": [
+    "The branded b160788 source independently passed 64 actual XCTest cases: 9 configuration, 41 local product, 12 pagination, 1 TXT reader UI and 1 loopback JSC reader UI.",
+    "The 5a27219 source independently passed its own 50 historical cases; its results were not transferred to the current source.",
+    "Artifact ZIP bytes/API digests, original xcresult case metadata and exact summaries were independently audited.",
+    "The raw loopback trace and its attached copy each contain exactly six completed business requests with matching fixed response bytes and hashes.",
+    "Selected rendered pages, returned bookshelf, restored TXT chapter and their accessibility attachments were inspected.",
+    "This is Debug Simulator evidence of the JavaScriptCore/CoreText reader and local product services. It does not execute or validate a Release IPA, physical device, native JVM compatibility or real-site book sources.",
+    "No IPA was produced for distribution by these smoke jobs; source redistribution and native runtime work remain separate requirements."
   ]
 }
