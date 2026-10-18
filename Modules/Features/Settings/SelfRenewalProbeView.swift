@@ -43,7 +43,7 @@ struct SelfRenewalProbeView: View {
     var body: some View {
         List {
             Section {
-                ThemedLabeledContent(title: localized("自續簽狀態"), value: localized("尚未驗證"))
+                ThemedLabeledContent(localized("自續簽狀態"), value: localized("尚未驗證"))
                     .accessibilityIdentifier("self_renewal_unverified")
                 Button {
                     runIdentifier = UUID()
@@ -72,7 +72,7 @@ struct SelfRenewalProbeView: View {
                 Section {
                     ForEach(report.attempts, id: \.address.rawValue) { attempt in
                         ThemedLabeledContent(
-                            title: endpoint(attempt), value: localized(outcomeKey(attempt.outcome))
+                            endpoint(attempt), value: localized(outcomeKey(attempt.outcome))
                         )
                         .accessibilityIdentifier(attempt.address == .ipv4
                                                  ? "self_renewal_attempt_ipv4" : "self_renewal_attempt_ipv6")
