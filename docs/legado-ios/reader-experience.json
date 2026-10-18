@@ -36,7 +36,7 @@
     "importURLSchemesPreserved": "passed",
     "noJVMOrProvisioningPayload": "passed",
     "physicalDeviceReading": "pending user trial",
-    "simulatorReadingSmoke": "pending; first attempt failed while compiling an existing unrelated test expression, before executing tests"
+    "simulatorReadingSmoke": "pending after two existing-test compilation failures; selected configuration/UI cases have not executed"
   },
   "trialScope": [
     "Local TXT and EPUB import, bookshelf and native reading",
@@ -51,17 +51,31 @@
     "Widget and ShareExtension are compiled and embedded; their shared-group functionality depends on signing capabilities and remains unvalidated."
   ],
   "fullFeatureParityEstablished": false,
-  "simulatorSmokeInitialAttempt": {
-    "sourceCommit": "6af471799bfb128c19d5cb78e03357844e79158f",
-    "runId": 39078893326,
-    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39078893326",
-    "artifactId": 12118598117,
-    "artifactZipSHA256": "801976caa9a472f9a31f8788b23c1b338204540906a522108369c3a21ae5a88b",
-    "portableSmokeGuardTests": 7,
-    "status": "failed_before_test_execution",
-    "failure": "Swift could not type-check the long HTML fixture expression in BrowserViewportSessionTests.swift:67. No selected unit or UI tests executed.",
-    "configurationTestsExecuted": 0,
-    "readerUITestsExecuted": 0,
-    "repair": "Split the fixture into explicitly typed intermediate values without changing any of its 24 generated HTML blocks. A fresh cloud run is required."
-  }
+  "simulatorSmokeAttempts": [
+    {
+      "sourceCommit": "6af471799bfb128c19d5cb78e03357844e79158f",
+      "runId": 39078893326,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39078893326",
+      "artifactId": 12118598117,
+      "artifactZipSHA256": "801976caa9a472f9a31f8788b23c1b338204540906a522108369c3a21ae5a88b",
+      "portableSmokeGuardTests": 7,
+      "status": "failed_before_test_execution",
+      "failure": "Swift could not type-check the long HTML fixture expression in BrowserViewportSessionTests.swift:67. No selected unit or UI tests executed.",
+      "configurationTestsExecuted": 0,
+      "readerUITestsExecuted": 0,
+      "repair": "Split the fixture into explicitly typed intermediate values without changing any of its 24 generated HTML blocks. A fresh cloud run is required."
+    },
+    {
+      "sourceCommit": "696a843758cddaf4a8d249ccec68514ca99f0e1c",
+      "runId": 39080848863,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39080848863",
+      "artifactId": 12118793405,
+      "artifactZipSHA256": "9b2935c0af75bb337f12bb6b905f06cc77a5279fcc08da0d8b943c73e9afb1cf",
+      "status": "failed_before_test_execution",
+      "configurationTestsExecuted": 0,
+      "readerUITestsExecuted": 0,
+      "failure": "Two SVGCoverFixtureTests timeout closures attempted to return non-Sendable PageFragments across an isolation boundary. The previous BrowserViewport expression error is absent.",
+      "repair": "Keep PageFragments on MainActor and return only the original nil/non-nil boolean through the Sendable timeout helper; preserve existing assertions and deadlines."
+    }
+  ]
 }

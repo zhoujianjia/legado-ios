@@ -5,7 +5,7 @@ import UIKit
 
 @MainActor
 struct SVGCoverFixtureTests {
-    static func timeout<T: Sendable>(nanos: UInt64, _ body: @escaping @Sendable () async throws -> T) async throws -> T {
+    static func timeout<T: Sendable>(nanos: UInt64, _ body: @escaping @MainActor @Sendable () async throws -> T) async throws -> T {
         try await withThrowingTaskGroup(of: T.self) { group in
             group.addTask { try await body() }
             group.addTask {
@@ -158,11 +158,11 @@ struct SVGCoverFixtureTests {
         }
         print("SPINE0 steps=\(steps)")
         // Now the full session path (the one the engine uses).
-        let firstPage: PageFragments? = try await Self.timeout(nanos: 8_000_000_000) {
-            try await s.layoutNextPage()
+        let hasFirstPage: Bool = try await Self.timeout(nanos: 8_000_000_000) {
+            try await s.layoutNextPage() != nil
         }
-        print("SPINE0-SESSION firstPage=\(firstPage != nil) pages=\(s.completedPages.count)")
-        #expect(firstPage == nil)  // empty cover: no content → nil is CORRECT
+        print("SPINE0-SESSION firstPage=\(hasFirstPage) pages=\(s.completedPages.count)")
+        #expect(!hasFirstPage)  // empty cover: no content → nil is CORRECT
     }
 
     @Test func svgChapterFinishCompletes() async throws {
@@ -184,10 +184,10 @@ struct SVGCoverFixtureTests {
             html: html, cssTexts: [], config: config, imageLoader: { _ in nil }, generation: 1
         )
         // First page must complete within 3s (task-race timeout).
-        let firstPage: PageFragments? = try await Self.timeout(nanos: 3_000_000_000) {
-            try await session.layoutNextPage()
+        let hasFirstPage: Bool = try await Self.timeout(nanos: 3_000_000_000) {
+            try await session.layoutNextPage() != nil
         }
-        #expect(firstPage != nil)
+        #expect(hasFirstPage)
         // Finish must complete within 3s too.
         _ = try await Self.timeout(nanos: 3_000_000_000) {
             try await session.finish()
