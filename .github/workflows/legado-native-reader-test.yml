@@ -1,0 +1,81 @@
+name: Legado Native Main-App Product Chain
+
+on:
+  push:
+    tags:
+      - 'legado-native-reader-test-*'
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  native-reader:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build and audit this checkout's ordinary production runtime
+        run: |
+          mkdir -p .build/ci-logs .build/native-reader-test
+          python -B scripts/reader-experience/native-smoke-tools.py validate-tag
+          bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon test runtimeJar runtimeSmoke 2>&1 | tee .build/ci-logs/native-reader-jvm.log
+          python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/native-reader-test/ordinary-jar.json
+      - name: Restore only the audited native interpreter
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -B scripts/reader-experience/native-smoke-tools.py restore
+      - name: Prepare the Simulator payload and synthetic local application
+        run: |
+          test "$(uname -m)" = arm64
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcodebuild -version > .build/native-reader-test/xcode-version.log
+          xcrun simctl bootstatus "$(bash scripts/sim.sh udid)" -b > .build/native-reader-test/simulator-boot.log 2>&1
+          python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime
+          python -B scripts/reader-experience/native-smoke-tools.py prepare
+      - name: Execute the actual main-app JVM reading chain and cancellation
+        run: |
+          unset LEGADO_RUNTIME_SOURCE_ONLY
+          ARGS=(
+            -configuration Debug -onlyUsePackageVersionsFromResolvedFile
+            CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_IDENTITY=-
+            CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGN_ENTITLEMENTS=
+            GATEWAY_BASE_URL= YUEDU_LOCAL_EXPERIENCE=YES IPHONEOS_DEPLOYMENT_TARGET=18.0
+            'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS'
+          )
+          bash scripts/xctest.sh -l .build/native-reader-test/native-product-chain.log -t 2700 -- \
+            "${ARGS[@]}" -resultBundlePath .build/native-reader-test/native-product-chain.xcresult \
+            -only-testing:'yuedu appTests/LegadoNativeMainJSReaderTests'
+          xcrun xcresulttool get test-results summary --path .build/native-reader-test/native-product-chain.xcresult > .build/native-reader-test/summary.json
+          xcodebuild -project Yuedu-Reader.xcodeproj -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > .build/native-reader-test/build-settings.json
+          APP=$(python3 -c 'import json; from pathlib import Path; s=[i["buildSettings"] for i in json.load(open(".build/native-reader-test/build-settings.json")) if i.get("target")=="yuedu app"]; assert len(s)==1; print(Path(s[0]["TARGET_BUILD_DIR"])/s[0]["FULL_PRODUCT_NAME"])')
+          python -B scripts/legado-ios/verify-native-exports.py --executable "$APP/YueduReader" --report .build/native-reader-test/native-exports.json
+          python -B scripts/reader-experience/native-smoke-tools.py result
+      - name: Retain actual test results, payload provenance and failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-native-main-app-product-chain
+          path: |
+            .build/ci-logs/
+            .build/native-reader-test/
+            Packages/LegadoRuntime/jvm/build/test-results/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
