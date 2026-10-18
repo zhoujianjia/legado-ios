@@ -74,3 +74,5 @@
 用户希望一个阅读器在首次配置后自行续签，日常不依赖电脑或其他配套 App。此项列为独立可行性验证，**当前未实现，也未承诺满足上述条件**，不另设用户版本。现成 SideStore 路径仍依赖另外安装的 LocalDevVPN；直接复制续签代码并不能解决安装通道及权限问题。[SideStore 配置要求](https://docs.sidestore.io/docs/installation/prerequisites)、[Apple 能力与签名限制](https://developer.apple.com/help/account/reference/supported-capabilities-ios/)
 
 接入主版本前，必须先在当前免费签名、未越狱设备上证明：电脑关闭、无其他配套 App 时能够联网续签并覆盖安装自身，重开后已有书源、书籍和进度保留；再验证后台触发、失败重试及到期恢复。到期显示、提醒、打开外部工具和模拟的成功结果均不算完成自续签。系统后台任务的执行时机受 iOS 控制，不能承诺精确执行。[Apple 后台执行说明](https://developer.apple.com/documentation/backgroundtasks/choosing-background-strategies-for-your-app)
+
+当前新增一个手动启动的只读连接探针，入口为“设置 → 高级 → 自续签验证”：限时检查本机两个固定 lockdown 入口，可导出不包含账号、配对记录及书源的报告。它不执行签名或安装；当前仍需 Xcode 编译、模拟器测试和真机验证。固定入口不可达也不能排除所有其他安装通道。具体范围、上游版本锁和后续验收见[自续签研究记录](self-renewal-research.json)。

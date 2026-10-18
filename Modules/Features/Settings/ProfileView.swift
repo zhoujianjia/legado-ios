@@ -184,6 +184,12 @@ struct SettingsView: View {
                     // ── Advanced ──
                     Section(header: Text(localized("進階")).foregroundStyle(DSColor.textSecondary)) {
                         NavigationLink {
+                            SelfRenewalProbeView()
+                        } label: {
+                            SettingsRowLabel(localized("自續簽驗證"), systemImage: "network")
+                        }
+                        .accessibilityIdentifier("settings_self_renewal_probe")
+                        NavigationLink {
                             LegadoRuntimeProbeView()
                         } label: {
                             Label(localized("Legado 核心驗證"), systemImage: "testtube.2")

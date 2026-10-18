@@ -349,6 +349,8 @@ struct LiveChapterFetcher: ChapterFetching {
 struct AppDependencies {
     /// Owns the opt-in migration probe; production source sessions remain unchanged.
     var legadoPrototype = LegadoPrototypeProbeService()
+    /// Stateless read-only transport diagnostic; no connection is opened at initialization.
+    var selfRenewalTransportProbe = SelfRenewalTransportProbe()
     var webContentFetcher: WebContentFetching
     var bookSourceFetcher: BookSourceFetching
     var chapterFetcher: ChapterFetching

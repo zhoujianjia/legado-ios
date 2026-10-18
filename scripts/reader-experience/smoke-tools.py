@@ -40,10 +40,12 @@ def source_sha():
     return source
 
 
-def validate_tag():
+def validate_tag(tag_prefix="reader-smoke-"):
+    if tag_prefix not in ("reader-smoke-", "reader-renewal-"):
+        raise ValueError("Unsupported isolated Simulator test tag prefix")
     source = source_sha()
-    if os.environ.get("GITHUB_SHA") != source or os.environ.get("GITHUB_REF_NAME") != "reader-smoke-" + source[:7]:
-        raise ValueError("Expected reader-smoke-<current SHA7> and matching checkout")
+    if os.environ.get("GITHUB_SHA") != source or os.environ.get("GITHUB_REF_NAME") != tag_prefix + source[:7]:
+        raise ValueError("Expected " + tag_prefix + "<current SHA7> and matching checkout")
     return source
 
 
@@ -77,8 +79,10 @@ def overlay_info(path, record_path, source_commit=None):
     return record
 
 
-def prepare(directory):
-    source = validate_tag()
+def prepare(directory, tag_prefix="reader-smoke-"):
+    # Retain the zero-argument default used by the existing private smoke
+    # adapters; an additional protocol must explicitly opt into its own tag.
+    source = validate_tag() if tag_prefix == "reader-smoke-" else validate_tag(tag_prefix)
     if git("status", "--porcelain", "--untracked-files=no"):
         raise ValueError("Smoke preparation requires a clean tracked source checkout")
     directory = config.checked_path(directory)
@@ -91,7 +95,10 @@ def prepare(directory):
             raise ValueError("Source bytes differ from HEAD before smoke overlay: " + path)
     synthetic = config.stage(REPO / "GoogleService-Info.plist")
     project = config.overlay_project(REPO / config.PROJECT, directory / "project-overlay.json")
-    info = overlay_info(REPO / INFO, directory / "info-overlay.json")
+    if tag_prefix == "reader-renewal-":
+        info = overlay_info(REPO / INFO, directory / "info-overlay.json", source_commit=source)
+    else:
+        info = overlay_info(REPO / INFO, directory / "info-overlay.json")
     audit = {"schemaVersion": 1, "sourceCommit": source, "preparedAt": datetime.now(timezone.utc).isoformat(),
              "expectedTrackedChanges": sorted({INFO} | ({config.PROJECT} if project["expectedTrackedOverlay"] else set())),
              "projectOverlay": project, "infoOverlay": info,
@@ -200,9 +207,11 @@ def read_json(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="phase", required=True)
-    commands.add_parser("validate-tag")
+    validation = commands.add_parser("validate-tag")
+    validation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-"), default="reader-smoke-")
     preparation = commands.add_parser("prepare")
     preparation.add_argument("--directory", type=Path, required=True)
+    preparation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-"), default="reader-smoke-")
     verify = commands.add_parser("verify-summary")
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--expected", type=int, required=True)
@@ -212,9 +221,9 @@ def main():
     args = parser.parse_args()
     try:
         if args.phase == "validate-tag":
-            value = {"sourceCommit": validate_tag()}
+            value = {"sourceCommit": validate_tag(args.tag_prefix)}
         elif args.phase == "prepare":
-            value = prepare(args.directory)
+            value = prepare(args.directory, tag_prefix=args.tag_prefix)
         elif args.phase == "verify-summary":
             value = verify_summary(read_json(args.summary), args.expected)
         else:

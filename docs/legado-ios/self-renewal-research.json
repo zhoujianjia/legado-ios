@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "status": "read-only-prototype-awaiting-xcode-and-device-validation",
+  "product": "single-reader",
+  "requiredConditions": {
+    "freeApplePersonalTeam": true,
+    "nonJailbrokenIPhone": true,
+    "jitRequired": false,
+    "computerAllowedForInitialSetupOnly": true,
+    "computerRequiredForRegularRenewal": false,
+    "companionAppRequired": false,
+    "existingBooksSourcesAndProgressMustSurvive": true
+  },
+  "acceptance": {
+    "iphoneTransportVerified": false,
+    "pairedSessionVerified": false,
+    "freshProfileAndSigningVerified": false,
+    "sameIdentityReplacementInstallVerified": false,
+    "coldLaunchAndDataPreservationVerified": false,
+    "unattendedRenewalVerified": false,
+    "expiryRecoveryVerified": false
+  },
+  "implementedExperiment": {
+    "service": "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+    "screen": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+    "entry": "Settings / Advanced / Self-renewal verification",
+    "manualStartRequired": true,
+    "endpoints": ["127.0.0.1:62078", "[::1]:62078"],
+    "request": "length-prefixed lockdown QueryType only",
+    "timeoutSecondsPerEndpoint": 3,
+    "maximumReplyBytes": 16384,
+    "arbitraryHostInput": false,
+    "export": "user-shared local JSON with normalized errors and no raw server reply",
+    "operationsNotPerformed": ["TLS", "StartSession", "Pair", "Apple login", "signing", "installation"],
+    "coverage": "partial: fixed loopback lockdown endpoints only",
+    "negativeResultExcludesOtherTransports": false,
+    "successfulQueryProvesRenewal": false
+  },
+  "verification": {
+    "windowsPortableProbeGuards": {"passed": 10},
+    "windowsExistingSmokeGuards": {"passed": 12},
+    "windowsSwiftSyntaxParse": {"files": 6, "passed": true, "isTypeCheck": false},
+    "localizationKeyParity": {"languages": 5, "passed": true},
+    "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml",
+    "intendedSimulatorCases": {"unit": 8, "ui": 1},
+    "simulatorExecution": "pending",
+    "physicalDeviceExecution": "not-performed",
+    "ipaDelivery": "not-performed"
+  },
+  "upstreamSourceLocks": [
+    {"repository": "SideStore/SideStore", "commit": "d97ec133719d79916675bdaf722b82a8d091d545", "license": "AGPL-3.0"},
+    {"repository": "SideStore/minimuxer", "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909", "license": "AGPL-3.0", "relationship": "exact SideStore gitlink"},
+    {"repository": "SideStore/idevice", "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76", "license": "MIT", "relationship": "actual minimuxer dependency release v0.1.68-ss-3e55c84"},
+    {"repository": "jkcoxson/LocalDevVPN", "commit": "af3fd697803ada4ac2b8d518358f5ab0a534844c", "relationship": "outer packet-tunnel route, not embedded"}
+  ],
+  "findings": [
+    "The documented SideStore route uses a separate VPN app; it does not satisfy the single-app requirement.",
+    "Apple's capability table does not list Network Extensions or Personal VPN for free Apple Developer provisioning; copying the packet-tunnel extension is not a verified solution.",
+    "The actual idevice dependency also has a userspace CDTunnel adapter. Its ordinary outer TCP connection and authenticated same-device protocol still require device evidence.",
+    "RemotePairing's initial, TLS, RSD and service ports can be discovered or negotiated dynamically. Fixed-port refusal cannot establish a universal impossibility result.",
+    "No supported free-team direct installation API was established. Private symbol existence is not evidence of usable installation permission.",
+    "iOS schedules background tasks; even a future working foreground renewal path would not establish reliable unattended renewal."
+  ],
+  "sourceReuse": {
+    "upstreamSigningOrInstallationCodeAdded": false,
+    "upstreamDependencyAdded": false,
+    "appleCredentialsOrPairingRecordsRead": false,
+    "realDeviceIdentifiersExported": false
+  },
+  "primaryReferences": [
+    "https://docs.sidestore.io/docs/installation/prerequisites",
+    "https://developer.apple.com/help/account/reference/supported-capabilities-ios/",
+    "https://developer.apple.com/documentation/backgroundtasks/choosing-background-strategies-for-your-app",
+    "https://developer.apple.com/documentation/marketplacekit/applibrary",
+    "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
+    "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+    "https://github.com/jkcoxson/LocalDevVPN/blob/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift"
+  ],
+  "nextGates": [
+    "Compile and run the exact eight service tests and one UI test in Xcode Simulator, retaining raw xcresult evidence.",
+    "Deliver a source-free diagnostic build through a permitted private channel and inspect a real iPhone report without a debugger.",
+    "If needed, evaluate bounded discovery of only this device's own network endpoint; do not infer all transports from loopback results.",
+    "Only after transport is demonstrated, validate an authenticated session, signing, replacement installation, cold launch and preserved data.",
+    "Validate background triggering, failure retry and expiry recovery separately before claiming automatic self-renewal."
+  ]
+}

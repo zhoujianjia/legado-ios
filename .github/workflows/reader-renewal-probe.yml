@@ -1,0 +1,67 @@
+name: Local Reader Renewal Probe Tests
+
+on:
+  push:
+    tags:
+      - 'reader-renewal-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-renewal-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  probe:
+    runs-on: macos-15
+    timeout-minutes: 80
+    env:
+      LEGADO_RUNTIME_SOURCE_ONLY: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify the exact source tag and portable evidence guards
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-probe-tools.py validate-tag
+          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-existing-guards.log
+          python -B scripts/reader-experience/test-renewal-probe-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-guards.log
+          ruby scripts/check_localizations.rb
+          bash -n scripts/reader-experience/renewal-probe-tests.sh
+      - name: Select the installed toolchain and Simulator
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
+      - name: Execute only eight probe unit cases and one probe UI case
+        run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
+      - name: Preserve probe test evidence without application binaries
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-probe-evidence
+          path: |
+            .build/reader-renewal-probe/
+            .build/ci-logs/reader-renewal*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the limited acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This source-only Debug Simulator workflow selects exactly eight SelfRenewalTransportProbeTests and one SelfRenewalProbeUITests case. Actual xcresult summaries require the fixed counts, zero failures and zero skips; test nodes must match the fixed method identities. It does not repeat the 64-case reader smoke suite.
+          Unit network cases inject owned temporary loopback listeners. UI diagnostics observe Simulator endpoints only. Passing validates bounded read-only probing, redaction, cancellation and the export interface; it does not establish iPhone service reachability, independent installation, signing, self-renewal or unattended background operation. No Apple account or real pairing file is used. Computer-powered-off and absence-of-companion-app conditions remain unmeasured.
+          Exact source hashes, audited local-mode Info/project overlays, synthetic cloud configuration, final build settings, logs, xcresult bundles and UI attachments are retained. The existing independent app identifiers require zero project replacements when already present. LEGADO_RUNTIME_SOURCE_ONLY=1 excludes the experimental JVM. No device archive, IPA or main-app binary is generated for distribution or uploaded by this workflow.
+          TEXT
