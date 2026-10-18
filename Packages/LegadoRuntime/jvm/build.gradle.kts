@@ -20,17 +20,15 @@ kotlin { jvmToolchain(21) }
 dependencies {
     api("org.htmlunit:htmlunit-core-js:5.3.0-legado.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
-    implementation("com.squareup.okio:okio-jvm:3.9.1")
+    implementation("com.squareup.okio:okio-jvm:3.17.0")
+    implementation("com.squareup.okhttp3:okhttp-jvm:5.4.0")
+    implementation("org.brotli:dec:0.1.2")
     implementation("com.google.code.gson:gson:2.13.2")
     implementation("org.jsoup:jsoup:1.23.2")
     implementation("com.jayway.jsonpath:json-path:3.0.0")
     implementation("cn.wanghaomiao:JsoupXpath:2.5.3")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains:annotations:26.0.2")
-    // These are confined to opt-in diagnostic payloads. Normal runtimeClasspath
-    // keeps its existing Okio version and has no OkHttp client dependency.
-    testImplementation("com.squareup.okhttp3:okhttp-jvm:5.4.0")
-    testImplementation("com.squareup.okio:okio-jvm:3.17.0")
 }
 
 tasks.test { useJUnit(); maxHeapSize = "512m" }
@@ -95,6 +93,10 @@ val runtimeJar by tasks.registering(Jar::class) {
     from("../vendor/LICENSE") { into("META-INF/licenses/legado") }
     from("../vendor/licenses") { into("META-INF/licenses") }
     from("../vendor/manifest.json") { into("META-INF/legado-provenance") }
+    from("../vendor/probe/licenses") { into("META-INF/licenses/jvm-http") }
+    from("../vendor/runtime-http/licenses") { into("META-INF/licenses/jvm-http") }
+    from("../vendor/runtime-http/manifest.json") { into("META-INF/legado-provenance/runtime-http") }
+    from("../vendor/runtime-http/resolved-dependencies.json") { into("META-INF/legado-provenance/runtime-http") }
     if (includeEngineTests) {
         // These are third-party test-runtime notices, not user-archive provenance.
         val junit = payloadDependencies.get().files.single { it.name == "junit-4.13.2.jar" }

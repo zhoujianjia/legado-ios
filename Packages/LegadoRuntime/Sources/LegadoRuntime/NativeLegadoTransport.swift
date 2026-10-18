@@ -72,6 +72,9 @@ internal final class NativeLegadoTransport: LegadoRuntimeTransport, @unchecked S
         }
     }
     func createSession(_ source: String) throws -> String { try strings([source]) { LGRCreateSession($0[0]) } }
+    func createSession(_ source: String, optionsJSON: String) throws -> String {
+        try strings([source, optionsJSON]) { LGRCreateSessionWithOptions($0[0], $0[1]) }
+    }
     func execute(_ session: String, _ task: String, _ operation: String, _ request: String) throws -> String {
         try strings([session, task, operation, request]) { LGRExecute($0[0], $0[1], $0[2], $0[3]) }
     }

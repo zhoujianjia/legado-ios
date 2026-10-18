@@ -355,6 +355,7 @@ LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapM
 // Each invocation gets its own JNIEnv and local frame. No JNIEnv crosses a Swift queue.
 static LGRResult invoke(int method, LGRString *arguments, int count) {
     @autoreleasepool {
+        if (method < 0 || method > 4 || count < 0 || count > 4) return resultText(@"Invalid JNI invocation", 7);
         pthread_mutex_lock(&startupLock);
         BOOL ready = runtimeReady && facade != NULL;
         pthread_mutex_unlock(&startupLock);
@@ -391,9 +392,17 @@ static LGRResult invoke(int method, LGRString *arguments, int count) {
             if (!values[i].l && !failure) failure = @"Invalid UTF-8 input or allocation failure";
             if (failure) break;
         }
-        jmethodID methods[] = {createMethod, executeMethod, cancelMethod, closeMethod};
-        const char *beforeStages[] = {"invoke.createSession.before", "invoke.execute.before", "invoke.cancel.before", "invoke.closeSession.before"};
-        const char *afterStages[] = {"invoke.createSession.after", "invoke.execute.after", "invoke.cancel.after", "invoke.closeSession.after"};
+        // Resolve the new overload only when requested. Old clients and pinned
+        // payloads can still use the original one-argument session API.
+        jmethodID configuredCreate = NULL;
+        if (!failure && method == 4) {
+            configuredCreate = (*env)->GetStaticMethodID(env, facade, "createSession", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+            failure = exceptionText(env);
+            if (!configuredCreate && !failure) failure = @"Configured session entry point is unavailable";
+        }
+        jmethodID methods[] = {createMethod, executeMethod, cancelMethod, closeMethod, configuredCreate};
+        const char *beforeStages[] = {"invoke.createSession.before", "invoke.execute.before", "invoke.cancel.before", "invoke.closeSession.before", "invoke.configuredSession.before"};
+        const char *afterStages[] = {"invoke.createSession.after", "invoke.execute.after", "invoke.cancel.after", "invoke.closeSession.after", "invoke.configuredSession.after"};
         BOOL diagnosticOK = recordStage(beforeStages[method], failure ? 7 : 0);
         jstring output = failure || !diagnosticOK ? NULL : (jstring)(*env)->CallStaticObjectMethodA(env, facade, methods[method], values);
         if (!failure) failure = exceptionText(env);
@@ -412,6 +421,9 @@ static LGRResult invoke(int method, LGRString *arguments, int count) {
     }
 }
 LGRResult LGRCreateSession(LGRString source) { return invoke(0, &source, 1); }
+LGRResult LGRCreateSessionWithOptions(LGRString source, LGRString options) {
+    LGRString args[] = {source, options}; return invoke(4, args, 2);
+}
 LGRResult LGRExecute(LGRString session, LGRString task, LGRString operation, LGRString request) {
     LGRString args[] = {session, task, operation, request}; return invoke(1, args, 4);
 }
@@ -422,6 +434,7 @@ int32_t LGRBridgeAvailable(void) { return 0; }
 static LGRResult unavailable(void) { return resultText(@"OpenJDK Mobile payload is absent. Build and validate the pinned Zero XCFramework on macOS first.", 1); }
 LGRResult LGRStart(LGRString cp, LGRString home, int32_t heap, LGRHostCallback callback, void *context) { (void)cp; (void)home; (void)heap; (void)callback; (void)context; return unavailable(); }
 LGRResult LGRCreateSession(LGRString source) { (void)source; return unavailable(); }
+LGRResult LGRCreateSessionWithOptions(LGRString source, LGRString options) { (void)source; (void)options; return unavailable(); }
 LGRResult LGRExecute(LGRString session, LGRString task, LGRString op, LGRString request) { (void)session; (void)task; (void)op; (void)request; return unavailable(); }
 LGRResult LGRCancel(LGRString task) { (void)task; return unavailable(); }
 LGRResult LGRCloseSession(LGRString session) { (void)session; return unavailable(); }

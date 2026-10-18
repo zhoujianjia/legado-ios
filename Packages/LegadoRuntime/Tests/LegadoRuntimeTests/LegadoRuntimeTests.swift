@@ -5,8 +5,14 @@ private final class RecordingTransport: LegadoRuntimeTransport, @unchecked Senda
     private let lock = NSLock()
     var started = 0
     var calls: [String] = []
+    private var configuredSources: [(String, String)] = []
+    var sessionOptions: [(String, String)] { lock.withLock { configuredSources } }
     func start(_ configuration: LegadoRuntime.Configuration) throws { lock.withLock { started += 1 } }
     func createSession(_ source: String) throws -> String { "{\"ok\":true,\"sessionId\":\"source-1\"}" }
+    func createSession(_ source: String, optionsJSON: String) throws -> String {
+        lock.withLock { configuredSources.append((source, optionsJSON)) }
+        return "{\"ok\":true,\"sessionId\":\"source-1\"}"
+    }
     func execute(_ session: String, _ task: String, _ operation: String, _ request: String) throws -> String {
         lock.withLock { calls.append(request) }
         return "{\"ok\":true,\"taskId\":\"\(task)\",\"result\":\(request)}"
@@ -132,6 +138,27 @@ private final class BlockingTransport: LegadoRuntimeTransport, @unchecked Sendab
         do { _ = try await runtime.createSession(sourceJSON: "[]"); XCTFail("Expected object validation") }
         catch { XCTAssertEqual((error as? LegadoRuntimeError)?.code, "invalid_json") }
         XCTAssertEqual(transport.started, 0)
+    }
+    func testConfiguredSessionKeepsTransportOptionsOutsideSourceData() async throws {
+        let transport = RecordingTransport()
+        let runtime = LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []), host: UnsupportedLegadoHost(), transport: transport)
+        let source = "{\"bookSourceName\":\"中文😀\",\"mainJs\":\"function search(){return [];}\"}"
+        _ = try await runtime.createSession(sourceJSON: source, options: .init(httpTransport: .jvmOkHttp))
+        let call = try XCTUnwrap(transport.sessionOptions.first)
+        XCTAssertEqual(call.0, source)
+        let options = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(call.1.utf8)) as? [String: String])
+        XCTAssertEqual(options, ["httpTransport": "jvm-okhttp"])
+        XCTAssertEqual(transport.sessionOptions.count, 1)
+    }
+    func testConfiguredSessionCannotSilentlyUseLegacyTransport() async throws {
+        let transport = BlockingTransport()
+        let runtime = LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []), host: UnsupportedLegadoHost(), transport: transport)
+        do {
+            _ = try await runtime.createSession(sourceJSON: "{}", options: .init(httpTransport: .jvmOkHttp))
+            XCTFail("Explicit JVM HTTP selection must not fall back to the legacy transport")
+        } catch {
+            XCTAssertEqual((error as? LegadoRuntimeError)?.code, "unsupported_session_options")
+        }
     }
     func testCancelReachesRuntimeWhileExecuteWorkerIsBlocked() async throws {
         let transport = BlockingTransport()

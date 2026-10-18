@@ -20,6 +20,9 @@ LGRResult LGRSetDiagnosticsDirectory(LGRString directory);
 LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapMB,
                    LGRHostCallback callback, void *context);
 LGRResult LGRCreateSession(LGRString sourceJSON);
+// Options are separate from book-source data. The original one-argument entry
+// remains available for existing platform-host integrations.
+LGRResult LGRCreateSessionWithOptions(LGRString sourceJSON, LGRString optionsJSON);
 LGRResult LGRExecute(LGRString sessionID, LGRString taskID, LGRString operation, LGRString requestJSON);
 LGRResult LGRCancel(LGRString taskID);
 LGRResult LGRCloseSession(LGRString sessionID);

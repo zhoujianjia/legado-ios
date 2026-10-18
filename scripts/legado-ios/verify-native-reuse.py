@@ -58,6 +58,7 @@ JVM_INPUTS = (
     "Packages/LegadoRuntime/vendor/licenses",
     "Packages/LegadoRuntime/vendor/manifest.json",
     "Packages/LegadoRuntime/vendor/probe",
+    "Packages/LegadoRuntime/vendor/runtime-http",
 )
 REQUIRED_GRADLE_TASKS = ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke",
                          "runtimeWireSmoke", "runtimeCpuLoopSmoke", "probeDependencyEvidence"]

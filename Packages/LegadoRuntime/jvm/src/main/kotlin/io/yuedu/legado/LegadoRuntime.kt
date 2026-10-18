@@ -34,14 +34,17 @@ object LegadoRuntime {
     /** Desktop test/embedding hook. iOS uses the NativeHost registered native method. */
     @JvmStatic fun setHostCallback(callback: HostCallback?) { host = callback }
 
-    @JvmStatic fun createSession(sourceJson: String): String = envelope {
+    @JvmStatic fun createSession(sourceJson: String): String = createSession(sourceJson, "{}")
+
+    /** Immutable embedding options are not part of the source or script bindings. */
+    @JvmStatic fun createSession(sourceJson: String, optionsJson: String): String = envelope {
         val source = parseObject(sourceJson)
         require(source["mainJs"]?.takeUnless { it.isJsonNull }?.asString?.isNotBlank() == true ||
             source.has("ruleSearch") || source.has("ruleContent")) {
             "Source requires mainJs or supported declarative rules"
         }
         val id = UUID.randomUUID().toString()
-        sessions[id] = RuntimeSession(id, source)
+        sessions[id] = RuntimeSession(id, source, RuntimeSessionOptions.parse(parseObject(optionsJson)))
         jsonObject("ok" to true, "sessionId" to id)
     }
 
@@ -61,6 +64,7 @@ object LegadoRuntime {
                 if (tasks.putIfAbsent(taskId, task) != null) {
                     throw RuntimeFailure("DUPLICATE_TASK", "taskId is already active")
                 }
+                session.activeTaskCount++
                 synchronized(earlyCancellations) {
                     earlyCancellations.remove(taskId)?.let { cancelledAt ->
                         if (System.currentTimeMillis() - cancelledAt < 60_000) task.job.cancel()
@@ -74,14 +78,14 @@ object LegadoRuntime {
                 cancelHost(current.id)
             }, timeoutMs, TimeUnit.MILLISECONDS)
             val result = executeOperation(current, operation, input)
-            current.job.ensureActiveForRuntime()
+            current.ensureActiveForRuntime()
             return jsonObject("ok" to true, "taskId" to taskId, "result" to result,
                 "metrics" to jsonObject("elapsedMs" to (System.nanoTime() - startedAt) / 1_000_000.0)).toString()
         } catch (error: Exception) {
             val hostFailure = generateSequence(error as Throwable?) { it.cause }
                 .filterIsInstance<RuntimeFailure>().firstOrNull()
             val code = when {
-                task?.timedOut?.get() == true -> "TIMEOUT"
+                task?.let { it.timedOut.get() || System.currentTimeMillis() >= it.deadlineEpochMs } == true -> "TIMEOUT"
                 error is CancellationException || task?.job?.isCancelled == true -> "CANCELLED"
                 hostFailure != null -> hostFailure.code
                 error is IllegalArgumentException || error is JsonParseException -> "INVALID_ARGUMENT"
@@ -90,7 +94,7 @@ object LegadoRuntime {
             return failure(code, hostFailure?.message ?: error.message ?: error.javaClass.simpleName, taskId)
         } finally {
             timeout?.cancel(false)
-            task?.let { if (tasks.remove(taskId, it)) it.job.complete() }
+            task?.let { if (tasks.remove(taskId, it)) { it.rawHttpResponses.clear(); it.job.complete(); it.session.taskFinished() } }
         }
     }
 
@@ -110,11 +114,9 @@ object LegadoRuntime {
         val session = sessions.remove(sessionId) ?: return jsonObject("ok" to true).toString()
         synchronized(session) { session.closed.set(true) }
         tasks.values.filter { it.session === session }.forEach { cancel(it.id) }
-        session.sharedGlobal?.let(ScriptBindings::removeSharedGlobalState)
-        session.variables.clear()
-        session.cache.clear()
-        session.contents.clear()
-        return jsonObject("ok" to true).toString()
+        session.http?.close()
+        val active = session.releaseIfIdle()
+        return jsonObject("ok" to true, "drained" to (active == 0), "activeTasks" to active).toString()
     }
 
     private fun executeOperation(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
@@ -223,19 +225,21 @@ object LegadoRuntime {
     }
 
     private fun dispatchHost(task: RuntimeTask, operation: String, request: JsonObject): JsonObject {
-        task.job.ensureActiveForRuntime()
+        task.ensureActiveForRuntime()
         request.addProperty("deadlineEpochMs", task.deadlineEpochMs)
         request.addProperty("remainingTimeoutMs", (task.deadlineEpochMs - System.currentTimeMillis()).coerceAtLeast(1))
         if (operation == "http.request") task.session.requests.add(request.deepCopy())
         val response = try {
             if (operation == "http.request" && task.diagnosticHttp != null) {
                 task.diagnosticHttp.request(task, request).toString()
+            } else if (operation == "http.request" && task.session.http != null) {
+                task.session.http.request(task, request).toString()
             } else host?.dispatch(task.id, operation, request.toString())
                 ?: NativeHost.dispatch(task.id, operation, request.toString())
         } catch (_: UnsatisfiedLinkError) {
             throw RuntimeFailure("HOST_UNAVAILABLE", "No native host registered for $operation")
         }
-        task.job.ensureActiveForRuntime()
+        task.ensureActiveForRuntime()
         val parsed = parseObject(response)
         if (parsed["ok"]?.isJsonPrimitive == true && !parsed["ok"].asBoolean) {
             val detail = parsed["error"]?.asJsonObject
@@ -253,7 +257,8 @@ object LegadoRuntime {
     }
 }
 
-internal class RuntimeSession(val id: String, val source: JsonObject) {
+internal class RuntimeSession(val id: String, val source: JsonObject,
+                              val options: RuntimeSessionOptions = RuntimeSessionOptions()) {
     val closed = AtomicBoolean(false)
     val sharedGlobal: SharedGlobalStateHandle? = source["jsLib"]
         ?.takeIf { it.isJsonPrimitive && it.asString.isNotBlank() }
@@ -263,11 +268,25 @@ internal class RuntimeSession(val id: String, val source: JsonObject) {
     val cookies = SessionCookies()
     val contents = ConcurrentHashMap<String, String>()
     val requests = java.util.Collections.synchronizedList(mutableListOf<JsonObject>())
+    val http: ProductionHttpTransport? = if (options.usesJvmHttp) ProductionHttpTransport(this) else null
+    var activeTaskCount = 0 // Accessed only while synchronized on this session.
+    private var released = false
+    @Synchronized fun taskFinished() { activeTaskCount--; releaseIfIdle() }
+    @Synchronized fun releaseIfIdle(): Int {
+        if (closed.get() && activeTaskCount == 0 && !released) {
+            released = true
+            sharedGlobal?.let(ScriptBindings::removeSharedGlobalState)
+            variables.clear(); cache.clear(); contents.clear(); cookies.clear()
+        }
+        return activeTaskCount
+    }
 }
 
 internal class RuntimeTask(val id: String, val session: RuntimeSession, val job: kotlinx.coroutines.CompletableJob,
     val deadlineEpochMs: Long, val diagnosticHttp: TaskHttpDispatcher? = null) {
     val timedOut = AtomicBoolean(false)
+    // Never crosses JNI: SourceJavaHost consumes the handle before returning to JS.
+    val rawHttpResponses = ConcurrentHashMap<String, okhttp3.Response>()
 }
 
 internal class RuntimeFailure(val code: String, message: String) : RuntimeException(message)
@@ -288,4 +307,11 @@ internal inline fun envelope(body: () -> JsonObject): String = try { body().toSt
 catch (error: Exception) { failure(if (error is RuntimeFailure) error.code else "INVALID_ARGUMENT", error.message.orEmpty()) }
 internal fun Job.ensureActiveForRuntime() {
     if (!isActive) throw CancellationException("Task cancelled")
+}
+internal fun RuntimeTask.ensureActiveForRuntime() {
+    if (System.currentTimeMillis() >= deadlineEpochMs) {
+        timedOut.set(true)
+        job.cancel(CancellationException("Execution deadline exceeded"))
+    }
+    job.ensureActiveForRuntime()
 }

@@ -22,7 +22,8 @@ internal data class LegadoHttpHeader(val name: String, val value: String)
  * after which OkHttp's BridgeInterceptor inserts its own versioned User-Agent.
  */
 internal object LegadoHttpRequestPreprocessor {
-    fun prepare(url: String, method: String, authored: Map<String, String>, body: String?, charset: String?): JsonObject {
+    fun prepare(url: String, method: String, authored: Map<String, String>, body: String?, charset: String?,
+                materializeBridgeHeaders: Boolean = true): JsonObject {
         val headers = authored.map {
             LegadoHttpHeader(it.key, it.value).also(::validateHeader).let { header -> header.copy(value = header.value.trim()) }
         }.toMutableList()
@@ -44,9 +45,11 @@ internal object LegadoHttpRequestPreprocessor {
             set(headers, "Content-Length", it.bytes.size.toString())
             headers.removeAll { entry -> entry.name.equals("Transfer-Encoding", true) }
         }
-        if (headers.none { it.name.equals("Host", true) }) headers += LegadoHttpHeader("Host", authority(url))
-        if (headers.none { it.name.equals("Accept-Encoding", true) || it.name.equals("Range", true) })
-            headers += LegadoHttpHeader("Accept-Encoding", "gzip")
+        if (materializeBridgeHeaders) {
+            if (headers.none { it.name.equals("Host", true) }) headers += LegadoHttpHeader("Host", authority(url))
+            if (headers.none { it.name.equals("Accept-Encoding", true) || it.name.equals("Range", true) })
+                headers += LegadoHttpHeader("Accept-Encoding", "gzip")
+        }
         if (removeUserAgent) headers += LegadoHttpHeader("User-Agent", "okhttp/5.4.0")
 
         return jsonObject("url" to url, "method" to actualMethod,

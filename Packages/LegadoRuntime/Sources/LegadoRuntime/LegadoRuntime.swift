@@ -14,6 +14,20 @@ public struct LegadoSourceSession: Hashable, Sendable {
     public init(id: String) { self.id = id }
 }
 
+/// Runtime configuration stays separate from imported/exported book-source data.
+public struct LegadoSessionOptions: Encodable, Sendable {
+    public enum HTTPTransport: String, Encodable, Sendable {
+        case platformHost = "platform-host"
+        case jvmOkHttp = "jvm-okhttp"
+    }
+    public let httpTransport: HTTPTransport
+    public let userAgent: String?
+    public init(httpTransport: HTTPTransport, userAgent: String? = nil) {
+        self.httpTransport = httpTransport
+        self.userAgent = userAgent
+    }
+}
+
 public struct LegadoRuntimeDiagnostics: Sendable, Equatable {
     public let nativeBridgePresent: Bool
     public let available: Bool
@@ -100,10 +114,12 @@ public final class LegadoRuntime: @unchecked Sendable {
         return try LegadoSavedDiagnostics.read(directory)
     }
 
-    public func createSession(sourceJSON: String) async throws -> LegadoSourceSession {
+    public func createSession(sourceJSON: String, options: LegadoSessionOptions? = nil) async throws -> LegadoSourceSession {
         try Self.requireJSONObject(sourceJSON)
+        let optionsJSON = try options.map { String(decoding: try JSONEncoder().encode($0), as: UTF8.self) }
         let response = try await work {
             try self.ensureStarted()
+            if let optionsJSON { return try self.transport.createSession(sourceJSON, optionsJSON: optionsJSON) }
             return try self.transport.createSession(sourceJSON)
         }
         let envelope = try Self.envelope(response)
@@ -173,7 +189,14 @@ public final class LegadoRuntime: @unchecked Sendable {
 internal protocol LegadoRuntimeTransport: Sendable {
     func start(_ configuration: LegadoRuntime.Configuration) throws
     func createSession(_ source: String) throws -> String
+    func createSession(_ source: String, optionsJSON: String) throws -> String
     func execute(_ session: String, _ task: String, _ operation: String, _ request: String) throws -> String
     func cancel(_ task: String) throws -> String
     func closeSession(_ session: String) throws -> String
+}
+
+extension LegadoRuntimeTransport {
+    func createSession(_ source: String, optionsJSON: String) throws -> String {
+        throw LegadoRuntimeError(code: "unsupported_session_options", message: "This transport does not support configured sessions")
+    }
 }
