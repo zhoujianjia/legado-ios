@@ -23,18 +23,24 @@ Its Simulator execution and matching physical-device validation remain pending.
 ## Reader experience build
 
 An unsigned full-reader experience is available from
-[run 39054041842](https://github.com/zhoujianjia/legado-ios/actions/runs/39054041842).
+[run 39085769476](https://github.com/zhoujianjia/legado-ios/actions/runs/39085769476),
+version 3.0.0 build 2.
 It retains Yuedu's existing SwiftUI/CoreText UI and JavaScriptCore book-source
 route. It does not integrate the experimental JVM into search or reading.
 [reader-experience.json](reader-experience.json) records the exact source,
 artifact/IPA hashes, device-target compilation and independent package audit.
 The app uses its own bundle identifier and synthetic backend configuration;
 account, CloudKit and subscription backend services are not configured.
-The first package predates a local-mode StoreKit fix: automated reading exposed
-repeated Apple Account prompts from `AppTransaction.shared`. Current source
-disables that build's StoreKit observers and requests, keeps Pro inactive and
-adds a configuration regression. A replacement Release build and fresh reading
-acceptance are pending; the page-visibility assertion is unchanged.
+Automated reading exposed repeated Apple Account prompts from
+`AppTransaction.shared` in the first package. This replacement disables the
+local SubscriptionStore's observers and requests, keeps Pro inactive and adds
+a configuration regression. The Release package passed an independent audit
+of all three device executables, identities, configuration and payload hashes.
+Its Debug Simulator run passed all seven configuration cases and visibly rendered
+the imported TXT first chapter. Directory selection then failed: a center tap
+landed in the plain Button label's transparent Spacer. The label hit-region repair
+requires a fresh build 3; delivered build 2 predates it. The page-visibility and
+persisted-position assertions remain unchanged.
 
 Sign the IPA with the existing Windows installation workflow and try the
 [original TXT sample](fixtures/阅读体验样书.txt) before testing personal book
@@ -47,7 +53,8 @@ deep-link import, search, detail, bookshelf and two-chapter native reader path.
 Its unique loopback source requires a JavaScriptCore transformation to produce
 the visible text, and its independent verdict checks actual HTTP bytes as well
 as one passing UI test. Portable fixture/process checks pass; Simulator UI
-execution remains pending. The delivered Release IPA remains unchanged.
+execution remains pending. The online UI case runs only in Debug Simulator
+and does not execute the delivered Release IPA.
 
 ## Baseline and acceptance inventory
 

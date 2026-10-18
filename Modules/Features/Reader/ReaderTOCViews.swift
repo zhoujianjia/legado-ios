@@ -139,6 +139,7 @@ private struct VerticalTOCColumn: View {
                     style: .continuous
                 )
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -386,6 +387,7 @@ struct ReaderTOCView: View {
             }
             .frame(height: 48)
             .padding(.horizontal, 30)
+            .contentShape(Rectangle())
             .background {
                 if chapter.id == currentChapterID {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)

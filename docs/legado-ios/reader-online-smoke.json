@@ -35,8 +35,17 @@
     "failedCommandExitAndProcessCleanupPreflight": "passed on Windows; no XCTest/UI execution",
     "swiftSyntax": "passed; type checking and runtime execution require cloud Xcode"
   },
-  "simulatorExecution": "pending",
-  "cloudEvidence": null,
+  "simulatorExecution": "not_run_due_to_failed_txt_prerequisite",
+  "cloudEvidence": {
+    "runId": 39085769454,
+    "sourceCommit": "4b648a9bae806a6eb43e012447269a940e67bacf",
+    "artifactId": 12121033216,
+    "artifactZipSHA256": "55aed30e034b4610e415ae12a1db739c864609e97f3794693c2a0a59789bf347",
+    "configurationTestsPassed": 7,
+    "txtUITestsFailed": 1,
+    "onlineUITestsExecuted": 0,
+    "meaning": "The local StoreKit repair allowed the real first TXT chapter to render. Directory-row selection then failed, so the sequential online UI case never ran. No online trace or acceptance is claimed."
+  },
   "configuration": "Debug",
   "deliveredReleaseIPAModified": false,
   "deliveredReleaseIPAExecuted": false,

@@ -28,7 +28,7 @@ BUILD_ARGS=(
   -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader
   -configuration Release -destination 'generic/platform=iOS'
   -onlyUsePackageVersionsFromResolvedFile
-  CURRENT_PROJECT_VERSION=2
+  CURRENT_PROJECT_VERSION=3
   ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS=
   GATEWAY_BASE_URL=
   YUEDU_LOCAL_EXPERIENCE=YES

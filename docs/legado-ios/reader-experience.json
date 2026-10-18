@@ -1,16 +1,17 @@
 {
   "schemaVersion": 1,
   "verifiedOn": "2026-10-18",
-  "sourceCommit": "864da12653d3ee397cea6ef7bc94691b9583900c",
-  "runId": 39054041842,
-  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39054041842",
+  "sourceCommit": "4b648a9bae806a6eb43e012447269a940e67bacf",
+  "runId": 39085769476,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39085769476",
   "cloudBuild": "passed",
-  "artifactId": 12110016162,
-  "artifactZipSHA256": "79475367e082ffdb63eeebf82e815fbe2c7f72ccb1c1051e58f234accde18097",
-  "ipaSHA256": "930aab6e7ed1d64d97d6ccfed0aebe893496eec8a9e99ec2cc4b07d92751e241",
-  "ipaBytes": 47211786,
+  "artifactId": 12121700935,
+  "artifactZipSHA256": "5d87bc7cd14a953551f29f41732f8f7ca6e65faffcca5c36a6293e31fc677655",
+  "ipaSHA256": "6d0027aca73945930fe2917b4813621392063ec7bf60670726ba697ef29faa96",
+  "ipaBytes": 47223052,
+  "manifestSHA256": "96b80df69fad41eb72a704b75dea1dea4ac934820997418650f2cf41ce4d8030",
   "version": "3.0.0",
-  "build": "1",
+  "build": "2",
   "bundleIdentifier": "local.zhoujianjia.legado-reader",
   "platform": "iPhoneOS",
   "architecture": "arm64",
@@ -25,6 +26,7 @@
   "jvmIntegratedIntoReading": false,
   "backendServicesConfigured": false,
   "localCloudKitPolicy": "Explicit local-experience flag disables CloudKit before constructing a CKContainer",
+  "localSubscriptionPolicy": "Explicit local mode disables SubscriptionStore observers and StoreKit requests before initialization; Pro remains inactive. The replacement Release package includes this repair.",
   "checks": {
     "portablePackagingRegressionCases": 15,
     "localizationWorkflow": "passed at this source commit",
@@ -36,7 +38,7 @@
     "importURLSchemesPreserved": "passed",
     "noJVMOrProvisioningPayload": "passed",
     "physicalDeviceReading": "pending user trial",
-    "simulatorReadingSmoke": "Six configuration tests passed; the TXT UI case executed and failed its first visible-page marker assertion."
+    "simulatorReadingSmoke": "Debug Simulator run 39085769454 passed seven configuration tests and rendered the imported TXT first chapter; the UI case then failed after a directory-row center tap did not select the third chapter. The Release IPA is audited separately and has not been executed by this audit."
   },
   "trialScope": [
     "Local TXT and EPUB import, bookshelf and native reading",
@@ -51,6 +53,18 @@
     "Widget and ShareExtension are compiled and embedded; their shared-group functionality depends on signing capabilities and remains unvalidated."
   ],
   "fullFeatureParityEstablished": false,
+  "previousExperienceBuilds": [
+    {
+      "sourceCommit": "864da12653d3ee397cea6ef7bc94691b9583900c",
+      "runId": 39054041842,
+      "artifactId": 12110016162,
+      "artifactZipSHA256": "79475367e082ffdb63eeebf82e815fbe2c7f72ccb1c1051e58f234accde18097",
+      "ipaSHA256": "930aab6e7ed1d64d97d6ccfed0aebe893496eec8a9e99ec2cc4b07d92751e241",
+      "ipaBytes": 47211786,
+      "build": "1",
+      "limitation": "Predates the local SubscriptionStore repair for repeated Apple Account prompts; retained independently of the replacement package."
+    }
+  ],
   "simulatorSmokeAttempts": [
     {
       "sourceCommit": "6af471799bfb128c19d5cb78e03357844e79158f",
@@ -91,7 +105,25 @@
       "readerUITestsPassed": 0,
       "failure": "ReaderLocalSmokeUITests.swift:146: opened book did not satisfy the centered visible LOCAL_READER_SMOKE_OPENING assertion before timeout.",
       "investigation": "Screenshot and app stdout show repeated SpringBoard Apple Account sign-in prompts correlated with SubscriptionStore AppTransaction.shared queries; the shelf click was interrupted before reader navigation. No CoreText rendering failure was established.",
-      "repair": "Explicit local mode now disables StoreKit observation and requests without granting Pro or assigning a fictitious environment; retain the same visible-page assertion and add a seventh configuration regression. A replacement Release build and fresh UI run remain pending."
+      "repair": "Explicit local mode disables SubscriptionStore observation and requests without granting Pro or assigning a fictitious environment; the replacement Release build is independently audited above. Run 39085769454 passes seven configuration tests and visibly renders the first chapter without the previous Apple Account interruption, but exposes the later directory-row issue below."
+    },
+    {
+      "sourceCommit": "4b648a9bae806a6eb43e012447269a940e67bacf",
+      "runId": 39085769454,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39085769454",
+      "artifactId": 12121033216,
+      "artifactZipSHA256": "55aed30e034b4610e415ae12a1db739c864609e97f3794693c2a0a59789bf347",
+      "status": "failed_during_txt_directory_selection",
+      "configurationTestsExecuted": 7,
+      "configurationTestsPassed": 7,
+      "configurationTestsSkipped": 0,
+      "readerUITestsExecuted": 1,
+      "readerUITestsPassed": 0,
+      "onlineUITestsExecuted": 0,
+      "firstChapterVisiblyRendered": true,
+      "failure": "After tapping the third-chapter directory Button, the sheet remained open and the centered LOCAL_READER_SMOKE_RESUME body assertion timed out; persisted-position acceptance was not reached.",
+      "investigation": "The synthesized touch at (220,378) lies inside the row's transparent Spacer between its title and page number. Its plain Button label lacks a contentShape; no chapter jump or dismissal occurred. The first-chapter screenshot proves actual CoreText rendering, and the prior Apple Account interruption is absent.",
+      "repair": "Give the directory Button label an explicit rectangular hit region while preserving the same center tap, body visibility and relaunch assertions. Replacement build 3 and a fresh UI run are required; build 2 above predates this repair."
     }
   ]
 }
