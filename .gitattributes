@@ -1,0 +1,8 @@
+# Preserve audited upstream/reference bytes across Windows and macOS checkouts.
+tools/legado-reference/golden/android-golden.json -text
+Packages/LegadoRuntime/vendor/probe/licenses/** -text
+Packages/LegadoRuntime/vendor/probe/metadata/** -text
+Packages/LegadoRuntime/vendor/probe/resolved-dependencies.json -text
+Packages/LegadoRuntime/vendor/probe/manifest.json -text whitespace=cr-at-eol
+# This is the exact upstream license HTML, including its blank-line spaces.
+Packages/LegadoRuntime/vendor/probe/licenses/okhttp-5.4.0/MPL-2.0.html -whitespace

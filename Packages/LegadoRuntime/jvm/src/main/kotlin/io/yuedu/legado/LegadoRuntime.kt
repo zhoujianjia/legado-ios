@@ -128,6 +128,7 @@ object LegadoRuntime {
         )
         if (operation == "semanticSuite") return EngineSemanticSuite.run(task)
         if (operation == "tlsCapabilityProbe") return TlsCapabilityProbe.run(task)
+        if (operation == "httpWireCapabilityProbe") return HttpWireDiagnosticBridge.run(task, ::executeOperation)
         if (operation == "interopSuite") return runScriptWithContext(task.job) {
             gson.toJsonTree(InteropSemanticSuite.run())
         }
@@ -224,7 +225,9 @@ object LegadoRuntime {
         request.addProperty("remainingTimeoutMs", (task.deadlineEpochMs - System.currentTimeMillis()).coerceAtLeast(1))
         if (operation == "http.request") task.session.requests.add(request.deepCopy())
         val response = try {
-            host?.dispatch(task.id, operation, request.toString())
+            if (operation == "http.request" && task.diagnosticHttp != null) {
+                task.diagnosticHttp.request(task, request).toString()
+            } else host?.dispatch(task.id, operation, request.toString())
                 ?: NativeHost.dispatch(task.id, operation, request.toString())
         } catch (_: UnsatisfiedLinkError) {
             throw RuntimeFailure("HOST_UNAVAILABLE", "No native host registered for $operation")
@@ -260,7 +263,7 @@ internal class RuntimeSession(val id: String, val source: JsonObject) {
 }
 
 internal class RuntimeTask(val id: String, val session: RuntimeSession, val job: kotlinx.coroutines.CompletableJob,
-    val deadlineEpochMs: Long) {
+    val deadlineEpochMs: Long, val diagnosticHttp: TaskHttpDispatcher? = null) {
     val timedOut = AtomicBoolean(false)
 }
 

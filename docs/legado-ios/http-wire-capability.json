@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "scope": "One opt-in fixed HTTP loopback diagnostic. It does not integrate the JVM into the main reader or establish production-source, HTTPS-transport, physical-device or full-G4 compatibility.",
+  "operation": "httpWireCapabilityProbe",
+  "probeBuild": 13,
+  "runtimeDependencies": {
+    "normal": "Existing runtime graph: Okio 3.9.1, no OkHttp or diagnostic helper.",
+    "diagnostic": "Opt-in testRuntimeClasspath: okhttp-jvm 5.4.0, okio-jvm 3.17.0; unchanged Kotlin 2.4.20.",
+    "manifest": "../../Packages/LegadoRuntime/vendor/probe/manifest.json"
+  },
+  "reference": {
+    "runId": 39052290844,
+    "golden": "../../tools/legado-reference/golden/android-golden.json",
+    "goldenSHA256": "f7513d0be00ad44664660a8ff8835ebf158dcd3acbf59e9c9dfd2113ea6851b0",
+    "mainJsSHA256": "731f1f1f743b9bc393ea221a7118ff4a115ffa35947aa40c88ff088bb758a894",
+    "policy": "Preserve original collected golden bytes, source fixture and strict comparator. Only actual loopback origin and authority are canonicalized as in the original harness."
+  },
+  "desktop": {
+    "executionPlatform": "windows-desktop",
+    "junit": {"tests": 100, "failures": 0, "errors": 0, "skipped": 0},
+    "finalWireRegression": {"tests": 8, "failures": 0, "errors": 0, "skipped": 0},
+    "ordinaryAndOptInPackagedSmokePassed": true,
+    "executionMode": "Java 21 -Xint -Xmx128m",
+    "requestsCaptured": 7,
+    "responsesConsumed": 7,
+    "readingChainProjectionDifferenceCount": 0,
+    "topLevelComparatorCorrectlyRejectedDesktopPlatform": true,
+    "isolatedSessionAndTransportCleanupPassed": true,
+    "packagedOperationEnvelopeSHA256": "62143ccaee0b9123249307380eba81e4b6544d92b3dec55af2551058c4d2a7b3",
+    "optInJarSHA256": "28c2664f2a0842e8ce51e2f0e0d11a58c6d63a15d0115e7d065d0d3b54104040"
+  },
+  "acceptance": {
+    "nativeSimulatorPassed": false,
+    "physicalDevicePassed": false,
+    "g4ValidationPassed": false,
+    "status": "Native execution pending; desktop results cannot satisfy native acceptance."
+  },
+  "requiredNativeEvidence": [
+    "Current source, launch PID, report timestamp and Simulator container must authenticate the enclosing report.",
+    "TCP and all four TLS cases with successful cleanup must pass before this diagnostic runs.",
+    "Seven actual raw HTTP request heads and bodies must reproduce the comparable request snapshot exactly.",
+    "Seven consumed response bodies and all ordered header values must equal the peer's retained response bytes.",
+    "The isolated task must retain the parent's absolute deadline and close its session, owned calls, pool, dispatcher and server.",
+    "The unchanged strict comparator must report zero differences against the pinned actual Android reference."
+  ],
+  "implementationBoundaries": [
+    "The dispatcher is scoped only to an isolated diagnostic task; no global host callback or SourceHosts behavior is changed.",
+    "Foreign origins and redirects are rejected; the peer listens only on owned IPv4 loopback.",
+    "Cancellation covers headers and body reads; tests include both cancellation phases and the inherited absolute deadline.",
+    "Duplicate request headers and response header values remain explicit. The pre-existing joined-header behavior of StrResponse remains unchanged."
+  ]
+}

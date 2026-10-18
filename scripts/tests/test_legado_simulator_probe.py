@@ -44,11 +44,11 @@ class SimulatorSourceStampTests(unittest.TestCase):
                 probe.stamp_simulator_source(self.app, invalid)
             self.assertEqual(self.plist.read_bytes(), before)
 
-    def make_run(self, valid_bundle=True, require_native_tcp=False, require_native_tls=False):
+    def make_run(self, valid_bundle=True, require_native_tcp=False, require_native_tls=False, require_native_http_wire=False):
         if not valid_bundle:
             self.plist.write_bytes(plistlib.dumps({**self.info, "CFBundleIdentifier": "wrong.bundle"}))
         run = probe.ProbeRun(self.root, self.root / "evidence", 60, require_native_tcp=require_native_tcp,
-                             require_native_tls=require_native_tls)
+                             require_native_tls=require_native_tls, require_native_http_wire=require_native_http_wire)
         container = self.root / "simulator-data"
         container.mkdir(exist_ok=True)
         calls = []
@@ -157,7 +157,7 @@ class SimulatorSourceStampTests(unittest.TestCase):
                 side_effect=lambda *args: self.write_tcp_report(run, {"passed": True}, nativeTLSProbe=capability)):
             run.run("iPhone")
         self.assertEqual(run.result["status"], "passed")
-        self.assertEqual(run.result["capabilityRequired"], {"nativeTCP": True, "nativeTLS": True})
+        self.assertEqual(run.result["capabilityRequired"], {"nativeTCP": True, "nativeTLS": True, "nativeHTTPWire": False})
         self.assertTrue(run.result["nativeTCPGate"]["passed"])
         self.assertTrue(run.result["nativeTLSGate"]["passed"])
         self.assertEqual(run.result["nativeTLSGate"]["probe"], capability)
@@ -207,6 +207,53 @@ class SimulatorSourceStampTests(unittest.TestCase):
             self.assertEqual(run.result["status"], "failed")
             self.assertFalse(run.result["nativeTLSGate"]["passed"])
             self.assertEqual(run.result["nativeTLSGate"]["probe"], capability)
+
+
+    def http_wire_capability(self):
+        spec = importlib.util.spec_from_file_location("runner_http_wire_synthetic_fixture", SCRIPT.with_name("test-http-wire.py"))
+        fixtures = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(fixtures)
+        return fixtures.synthetic_capability()
+
+    def test_required_native_http_wire_links_raw_bytes_and_requires_original_strict_comparison(self):
+        run, _ = self.make_run(require_native_tcp=True, require_native_tls=True, require_native_http_wire=True)
+        capability = self.http_wire_capability()
+        with patch.object(probe.sys, "platform", "darwin"), patch.object(probe, "wait_for_probe",
+                side_effect=lambda *args: self.write_tcp_report(run, {"passed": True},
+                    nativeTLSProbe=self.tls_capability(), nativeHTTPWireProbe=capability)):
+            run.run("iPhone")
+        self.assertEqual(run.result["status"], "passed")
+        gate = run.result["nativeHTTPWireGate"]
+        self.assertTrue(gate["passed"])
+        self.assertEqual(gate["wireVerification"]["strictComparison"]["differenceCount"], 0)
+        self.assertEqual(gate["reportSHA256"], run.result["nativeTLSGate"]["reportSHA256"])
+        self.assertFalse(gate["wireVerification"]["g4ValidationPassed"])
+        self.assertTrue(Path(gate["comparisonPath"]).is_file())
+
+    def test_missing_or_failed_native_http_wire_never_passes_the_required_gate(self):
+        for capability in (None, {}, {"passed": False, "failure": "native HTTP unavailable"}):
+            run, _ = self.make_run(require_native_http_wire=True)
+            with self.subTest(capability=capability), patch.object(probe.sys, "platform", "darwin"), \
+                    patch.object(probe, "wait_for_probe", side_effect=lambda *args:
+                        self.write_tcp_report(run, None, nativeHTTPWireProbe=capability)):
+                with self.assertRaisesRegex(RuntimeError, "Required native HTTP wire capability failed"):
+                    run.run("iPhone")
+            self.assertFalse(run.result["simulatorValidationPassed"])
+            self.assertFalse(run.result["nativeHTTPWireGate"]["passed"])
+            self.assertEqual(run.result["nativeHTTPWireGate"]["probe"], capability)
+
+    def test_native_http_success_flag_does_not_override_a_real_strict_difference(self):
+        run, _ = self.make_run(require_native_http_wire=True)
+        capability = self.http_wire_capability()
+        capability["readingChain"]["snapshot"]["cache"]["lastKey"] = "changed"
+        with patch.object(probe.sys, "platform", "darwin"), patch.object(probe, "wait_for_probe",
+                side_effect=lambda *args: self.write_tcp_report(run, None, nativeHTTPWireProbe=capability)):
+            with self.assertRaisesRegex(RuntimeError, "strict comparison did not pass"):
+                run.run("iPhone")
+        gate = run.result["nativeHTTPWireGate"]
+        self.assertFalse(gate["passed"])
+        self.assertGreater(gate["wireVerification"]["strictComparison"]["differenceCount"], 0)
+        self.assertTrue(Path(gate["comparisonPath"]).is_file())
 
 
 if __name__ == "__main__":

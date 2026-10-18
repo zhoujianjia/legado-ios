@@ -181,7 +181,24 @@ class NativeFilesTests(unittest.TestCase):
             for name in reuse.REQUIRED_JAR_CLASSES:
                 if name not in omit:
                     output.writestr(name, b"\xca\xfe\xba\xbe" + struct.pack(">HH", minor, version) + b"fixture")
+            for name in reuse.REQUIRED_JAR_RESOURCES:
+                if name not in omit:
+                    output.writestr(name, (HERE.parents[1] / "Packages/LegadoRuntime/jvm/src/test/resources" / name).read_bytes())
         return jar
+
+    def test_original_fixture_resource_missing_or_changed_is_rejected(self):
+        resource = next(iter(reuse.REQUIRED_JAR_RESOURCES))
+        jar = self.jar(omit=(resource,))
+        with self.assertRaisesRegex(ValueError, "locked original fixture resource"):
+            reuse.jar_details(jar)
+        jar = self.jar()
+        with zipfile.ZipFile(jar) as archive:
+            contents = [(item.filename, archive.read(item)) for item in archive.infolist()]
+        with zipfile.ZipFile(jar, "w") as archive:
+            for name, raw in contents:
+                archive.writestr(name, raw + b"unreviewed change" if name == resource else raw)
+        with self.assertRaisesRegex(ValueError, "locked original fixture resource"):
+            reuse.jar_details(jar)
 
     def native(self, release=None):
         native = self.root / "source"

@@ -1,0 +1,609 @@
+{
+  "schemaVersion": 1,
+  "referenceKind": "original-archive-android-instrumentation",
+  "referenceRunId": "e5943568-c5b5-4c97-a81a-e1362a6c52cd",
+  "passed": true,
+  "iosValidationPassed": false,
+  "instrumentationRunner": "androidx.test.runner.AndroidJUnitRunner",
+  "applicationClass": "io.legado.app.App",
+  "applicationMinSdkVersion": 26,
+  "androidApi": 35,
+  "androidRelease": "15",
+  "normalization": "Only the loopback origin and its Host authority are replaced by https://fixture.invalid/fixture.invalid in canonicalTrace. Raw wire bytes are retained separately.",
+  "fixtureSHA256": "731f1f1f743b9bc393ea221a7118ff4a115ffa35947aa40c88ff088bb758a894",
+  "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "testConfiguration": {
+    "Cronet": false,
+    "minimumSdk": "External reference.init.gradle raises only :app from 23 to 26 via androidComponents.finalizeDsl; original Gradle and business source files are unchanged",
+    "sharedScope": "Reading-chain source explicitly supplies the nonblank jsLib shown in sourceInput; the original no-library isolation behavior is tested separately without network requests",
+    "httpServer": "loopback ServerSocket; no HTTP interceptor or native-host replacement"
+  },
+  "scopeIsolationProbe": {
+    "passed": true,
+    "sourceKey": "https://scope-fixture.invalid/e5943568-c5b5-4c97-a81a-e1362a6c52cd",
+    "mainJs": "function touch(){globalThis.calls=(globalThis.calls||0)+1;return globalThis.calls;}",
+    "withoutJsLib": {
+      "jsLib": null,
+      "calls": [
+        {
+          "javaClass": "java.lang.String",
+          "value": "1.0"
+        },
+        {
+          "javaClass": "java.lang.String",
+          "value": "1.0"
+        }
+      ],
+      "evalTypeOfCalls": {
+        "javaClass": "java.lang.String",
+        "value": "undefined"
+      },
+      "evalCalls": {
+        "javaClass": null,
+        "value": null
+      }
+    },
+    "withJsLib": {
+      "jsLib": "/* Legado reference shared scope */",
+      "calls": [
+        {
+          "javaClass": "java.lang.String",
+          "value": "1.0"
+        },
+        {
+          "javaClass": "java.lang.String",
+          "value": "2.0"
+        }
+      ],
+      "evalCalls": {
+        "javaClass": "java.lang.Double",
+        "value": "2.0"
+      },
+      "evalTypeOfCalls": {
+        "javaClass": "java.lang.String",
+        "value": "number"
+      }
+    }
+  },
+  "readingChainSharedCallsRaw": {
+    "javaClass": "java.lang.Double",
+    "value": "1.0"
+  },
+  "canonicalTrace": {
+    "outputs": {
+      "login": {
+        "loginInfo": "{\"name\":\"reader\"}",
+        "loginHeader": "{\"Authorization\":\"Bearer fixture\"}",
+        "variable": "logged-in",
+        "cookie": "sid=fixture"
+      },
+      "search": [
+        {
+          "name": "Fixture",
+          "bookUrl": "https://fixture.invalid/book/1"
+        }
+      ],
+      "details": {
+        "name": "Fixture",
+        "bookUrl": "https://fixture.invalid/book/1",
+        "intro": "Introduction",
+        "tocUrl": "https://fixture.invalid/toc/1"
+      },
+      "toc": [
+        {
+          "index": 0,
+          "title": "One",
+          "url": "https://fixture.invalid/chapter/1",
+          "bookUrl": "https://fixture.invalid/book/1",
+          "baseUrl": "https://fixture.invalid/toc/1"
+        },
+        {
+          "index": 1,
+          "title": "Two",
+          "url": "https://fixture.invalid/chapter/2",
+          "bookUrl": "https://fixture.invalid/book/1",
+          "baseUrl": "https://fixture.invalid/toc/1"
+        }
+      ],
+      "content": "第一章\ncontent one",
+      "batch": {
+        "missingIndexes": [],
+        "cacheBefore": {
+          "https://fixture.invalid/chapter/1": null,
+          "https://fixture.invalid/chapter/2": null
+        },
+        "cacheAfter": {
+          "https://fixture.invalid/chapter/1": "第一章\ncontent one",
+          "https://fixture.invalid/chapter/2": "第二章\ncontent two"
+        }
+      },
+      "state": {
+        "loginInfo": "{\"name\":\"reader\"}",
+        "loginHeader": "{\"Authorization\":\"Bearer fixture\"}",
+        "variable": "logged-in",
+        "lastKey": "书",
+        "cookie": "sid=fixture",
+        "calls": 1
+      }
+    },
+    "steps": [
+      "login.begin",
+      "login.returned",
+      "search.returned",
+      "details.returned",
+      "toc.returned",
+      "content.returned",
+      "batch.returned"
+    ],
+    "exceptions": [],
+    "sourceInput": {
+      "bookSourceUrl": "https://fixture.invalid",
+      "bookSourceName": "Synthetic fixture",
+      "enabledCookieJar": true,
+      "header": "{\"User-Agent\":\"Legado-Reference-Fixture/1\",\"Accept\":\"*/*\",\"Accept-Encoding\":\"identity\",\"Connection\":\"close\"}",
+      "mainJsSHA256": "731f1f1f743b9bc393ea221a7118ff4a115ffa35947aa40c88ff088bb758a894",
+      "jsLib": "/* Legado reference shared scope */"
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "url": "https://fixture.invalid/login",
+        "requestTarget": "/login",
+        "httpVersion": "HTTP/1.1",
+        "headers": [
+          {
+            "name": "User-Agent",
+            "value": "Legado-Reference-Fixture/1"
+          },
+          {
+            "name": "Connection",
+            "value": "close"
+          },
+          {
+            "name": "Accept-Encoding",
+            "value": "identity"
+          },
+          {
+            "name": "Accept",
+            "value": "*/*"
+          },
+          {
+            "name": "Keep-Alive",
+            "value": "300"
+          },
+          {
+            "name": "Connection",
+            "value": "Keep-Alive"
+          },
+          {
+            "name": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "name": "Content-Type",
+            "value": "application/x-www-form-urlencoded; charset=utf-8"
+          },
+          {
+            "name": "Content-Length",
+            "value": "30"
+          },
+          {
+            "name": "Host",
+            "value": "fixture.invalid"
+          }
+        ],
+        "bodyBase64": "bmFtZT1yZWFkZXImcGFzc3dvcmQ9JUU0JUI5JUE2"
+      },
+      {
+        "method": "GET",
+        "url": "https://fixture.invalid/search?key=%E4%B9%A6&page=1",
+        "requestTarget": "/search?key=%E4%B9%A6&page=1",
+        "httpVersion": "HTTP/1.1",
+        "headers": [
+          {
+            "name": "User-Agent",
+            "value": "Legado-Reference-Fixture/1"
+          },
+          {
+            "name": "Connection",
+            "value": "close"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer fixture"
+          },
+          {
+            "name": "Accept-Encoding",
+            "value": "identity"
+          },
+          {
+            "name": "Accept",
+            "value": "*/*"
+          },
+          {
+            "name": "Keep-Alive",
+            "value": "300"
+          },
+          {
+            "name": "Connection",
+            "value": "Keep-Alive"
+          },
+          {
+            "name": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "name": "Host",
+            "value": "fixture.invalid"
+          },
+          {
+            "name": "Cookie",
+            "value": "sid=fixture"
+          }
+        ],
+        "bodyBase64": ""
+      },
+      {
+        "method": "GET",
+        "url": "https://fixture.invalid/book/1",
+        "requestTarget": "/book/1",
+        "httpVersion": "HTTP/1.1",
+        "headers": [
+          {
+            "name": "User-Agent",
+            "value": "Legado-Reference-Fixture/1"
+          },
+          {
+            "name": "Connection",
+            "value": "close"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer fixture"
+          },
+          {
+            "name": "Accept-Encoding",
+            "value": "identity"
+          },
+          {
+            "name": "Accept",
+            "value": "*/*"
+          },
+          {
+            "name": "Keep-Alive",
+            "value": "300"
+          },
+          {
+            "name": "Connection",
+            "value": "Keep-Alive"
+          },
+          {
+            "name": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "name": "Host",
+            "value": "fixture.invalid"
+          },
+          {
+            "name": "Cookie",
+            "value": "sid=fixture"
+          }
+        ],
+        "bodyBase64": ""
+      },
+      {
+        "method": "GET",
+        "url": "https://fixture.invalid/toc/1",
+        "requestTarget": "/toc/1",
+        "httpVersion": "HTTP/1.1",
+        "headers": [
+          {
+            "name": "User-Agent",
+            "value": "Legado-Reference-Fixture/1"
+          },
+          {
+            "name": "Connection",
+            "value": "close"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer fixture"
+          },
+          {
+            "name": "Accept-Encoding",
+            "value": "identity"
+          },
+          {
+            "name": "Accept",
+            "value": "*/*"
+          },
+          {
+            "name": "Keep-Alive",
+            "value": "300"
+          },
+          {
+            "name": "Connection",
+            "value": "Keep-Alive"
+          },
+          {
+            "name": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "name": "Host",
+            "value": "fixture.invalid"
+          },
+          {
+            "name": "Cookie",
+            "value": "sid=fixture"
+          }
+        ],
+        "bodyBase64": ""
+      },
+      {
+        "method": "GET",
+        "url": "https://fixture.invalid/chapter/1",
+        "requestTarget": "/chapter/1",
+        "httpVersion": "HTTP/1.1",
+        "headers": [
+          {
+            "name": "User-Agent",
+            "value": "Legado-Reference-Fixture/1"
+          },
+          {
+            "name": "Connection",
+            "value": "close"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer fixture"
+          },
+          {
+            "name": "Accept-Encoding",
+            "value": "identity"
+          },
+          {
+            "name": "Accept",
+            "value": "*/*"
+          },
+          {
+            "name": "Keep-Alive",
+            "value": "300"
+          },
+          {
+            "name": "Connection",
+            "value": "Keep-Alive"
+          },
+          {
+            "name": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "name": "Host",
+            "value": "fixture.invalid"
+          },
+          {
+            "name": "Cookie",
+            "value": "sid=fixture"
+          }
+        ],
+        "bodyBase64": ""
+      },
+      {
+        "method": "GET",
+        "url": "https://fixture.invalid/chapter/1",
+        "requestTarget": "/chapter/1",
+        "httpVersion": "HTTP/1.1",
+        "headers": [
+          {
+            "name": "User-Agent",
+            "value": "Legado-Reference-Fixture/1"
+          },
+          {
+            "name": "Connection",
+            "value": "close"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer fixture"
+          },
+          {
+            "name": "Accept-Encoding",
+            "value": "identity"
+          },
+          {
+            "name": "Accept",
+            "value": "*/*"
+          },
+          {
+            "name": "Keep-Alive",
+            "value": "300"
+          },
+          {
+            "name": "Connection",
+            "value": "Keep-Alive"
+          },
+          {
+            "name": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "name": "Host",
+            "value": "fixture.invalid"
+          },
+          {
+            "name": "Cookie",
+            "value": "sid=fixture"
+          }
+        ],
+        "bodyBase64": ""
+      },
+      {
+        "method": "GET",
+        "url": "https://fixture.invalid/chapter/2",
+        "requestTarget": "/chapter/2",
+        "httpVersion": "HTTP/1.1",
+        "headers": [
+          {
+            "name": "User-Agent",
+            "value": "Legado-Reference-Fixture/1"
+          },
+          {
+            "name": "Connection",
+            "value": "close"
+          },
+          {
+            "name": "Authorization",
+            "value": "Bearer fixture"
+          },
+          {
+            "name": "Accept-Encoding",
+            "value": "identity"
+          },
+          {
+            "name": "Accept",
+            "value": "*/*"
+          },
+          {
+            "name": "Keep-Alive",
+            "value": "300"
+          },
+          {
+            "name": "Connection",
+            "value": "Keep-Alive"
+          },
+          {
+            "name": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "name": "Host",
+            "value": "fixture.invalid"
+          },
+          {
+            "name": "Cookie",
+            "value": "sid=fixture"
+          }
+        ],
+        "bodyBase64": ""
+      }
+    ]
+  },
+  "rawOriginalModels": {
+    "search": [
+      {
+        "author": "",
+        "bookUrl": "http://127.0.0.1:39695/book/1",
+        "chapterWordCount": -1,
+        "name": "Fixture",
+        "origin": "http://127.0.0.1:39695",
+        "originName": "Synthetic fixture",
+        "originOrder": 0,
+        "respondTime": -1,
+        "time": 1792257391528,
+        "tocUrl": "",
+        "type": 8
+      }
+    ],
+    "details": {
+      "author": "",
+      "bookUrl": "http://127.0.0.1:39695/book/1",
+      "canUpdate": true,
+      "chapterInVolumeIndex": 0,
+      "durChapterIndex": 0,
+      "durChapterPos": 0,
+      "durChapterTime": 1792257391535,
+      "durVolumeIndex": 0,
+      "group": 0,
+      "intro": "Introduction",
+      "lastCheckCount": 0,
+      "lastCheckTime": 1792257391535,
+      "latestChapterTime": 1792257391535,
+      "name": "Fixture",
+      "order": 0,
+      "origin": "http://127.0.0.1:39695",
+      "originName": "Synthetic fixture",
+      "originOrder": 0,
+      "syncTime": 0,
+      "tocUrl": "http://127.0.0.1:39695/toc/1",
+      "totalChapterNum": 0,
+      "type": 8
+    },
+    "toc": [
+      {
+        "baseUrl": "http://127.0.0.1:39695/toc/1",
+        "bookUrl": "http://127.0.0.1:39695/book/1",
+        "index": 0,
+        "isPay": false,
+        "isVip": false,
+        "isVolume": false,
+        "title": "One",
+        "url": "http://127.0.0.1:39695/chapter/1"
+      },
+      {
+        "baseUrl": "http://127.0.0.1:39695/toc/1",
+        "bookUrl": "http://127.0.0.1:39695/book/1",
+        "index": 1,
+        "isPay": false,
+        "isVip": false,
+        "isVolume": false,
+        "title": "Two",
+        "url": "http://127.0.0.1:39695/chapter/2"
+      }
+    ]
+  },
+  "rawWireEvidence": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:39695/login",
+      "rawHeadBase64": "UE9TVCAvbG9naW4gSFRUUC8xLjENClVzZXItQWdlbnQ6IExlZ2Fkby1SZWZlcmVuY2UtRml4dHVyZS8xDQpDb25uZWN0aW9uOiBjbG9zZQ0KQWNjZXB0LUVuY29kaW5nOiBpZGVudGl0eQ0KQWNjZXB0OiAqLyoNCktlZXAtQWxpdmU6IDMwMA0KQ29ubmVjdGlvbjogS2VlcC1BbGl2ZQ0KQ2FjaGUtQ29udHJvbDogbm8tY2FjaGUNCkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVkOyBjaGFyc2V0PXV0Zi04DQpDb250ZW50LUxlbmd0aDogMzANCkhvc3Q6IDEyNy4wLjAuMTozOTY5NQ0KDQo=",
+      "bodyBase64": "bmFtZT1yZWFkZXImcGFzc3dvcmQ9JUU0JUI5JUE2",
+      "rawRequestSHA256": "da8d6f09d154c00ab89da50492d1d4aa07a377f7b7b886cd772de2187bd2e60c"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:39695/search?key=%E4%B9%A6&page=1",
+      "rawHeadBase64": "R0VUIC9zZWFyY2g/a2V5PSVFNCVCOSVBNiZwYWdlPTEgSFRUUC8xLjENClVzZXItQWdlbnQ6IExlZ2Fkby1SZWZlcmVuY2UtRml4dHVyZS8xDQpDb25uZWN0aW9uOiBjbG9zZQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIGZpeHR1cmUNCkFjY2VwdC1FbmNvZGluZzogaWRlbnRpdHkNCkFjY2VwdDogKi8qDQpLZWVwLUFsaXZlOiAzMDANCkNvbm5lY3Rpb246IEtlZXAtQWxpdmUNCkNhY2hlLUNvbnRyb2w6IG5vLWNhY2hlDQpIb3N0OiAxMjcuMC4wLjE6Mzk2OTUNCkNvb2tpZTogc2lkPWZpeHR1cmUNCg0K",
+      "bodyBase64": "",
+      "rawRequestSHA256": "c040c75dfc1a7c8974d09424f9ee9b6b457cda58c27b5b513c5125abcbf711d8"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:39695/book/1",
+      "rawHeadBase64": "R0VUIC9ib29rLzEgSFRUUC8xLjENClVzZXItQWdlbnQ6IExlZ2Fkby1SZWZlcmVuY2UtRml4dHVyZS8xDQpDb25uZWN0aW9uOiBjbG9zZQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIGZpeHR1cmUNCkFjY2VwdC1FbmNvZGluZzogaWRlbnRpdHkNCkFjY2VwdDogKi8qDQpLZWVwLUFsaXZlOiAzMDANCkNvbm5lY3Rpb246IEtlZXAtQWxpdmUNCkNhY2hlLUNvbnRyb2w6IG5vLWNhY2hlDQpIb3N0OiAxMjcuMC4wLjE6Mzk2OTUNCkNvb2tpZTogc2lkPWZpeHR1cmUNCg0K",
+      "bodyBase64": "",
+      "rawRequestSHA256": "dcae899075962b4a206ce2d4cd4ff793c96714b6b1a9d73693ff751c17166a67"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:39695/toc/1",
+      "rawHeadBase64": "R0VUIC90b2MvMSBIVFRQLzEuMQ0KVXNlci1BZ2VudDogTGVnYWRvLVJlZmVyZW5jZS1GaXh0dXJlLzENCkNvbm5lY3Rpb246IGNsb3NlDQpBdXRob3JpemF0aW9uOiBCZWFyZXIgZml4dHVyZQ0KQWNjZXB0LUVuY29kaW5nOiBpZGVudGl0eQ0KQWNjZXB0OiAqLyoNCktlZXAtQWxpdmU6IDMwMA0KQ29ubmVjdGlvbjogS2VlcC1BbGl2ZQ0KQ2FjaGUtQ29udHJvbDogbm8tY2FjaGUNCkhvc3Q6IDEyNy4wLjAuMTozOTY5NQ0KQ29va2llOiBzaWQ9Zml4dHVyZQ0KDQo=",
+      "bodyBase64": "",
+      "rawRequestSHA256": "24fabc9e990ee39bee509b97f9d2d95a86d42247c9b4edffac41fd547f811740"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:39695/chapter/1",
+      "rawHeadBase64": "R0VUIC9jaGFwdGVyLzEgSFRUUC8xLjENClVzZXItQWdlbnQ6IExlZ2Fkby1SZWZlcmVuY2UtRml4dHVyZS8xDQpDb25uZWN0aW9uOiBjbG9zZQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIGZpeHR1cmUNCkFjY2VwdC1FbmNvZGluZzogaWRlbnRpdHkNCkFjY2VwdDogKi8qDQpLZWVwLUFsaXZlOiAzMDANCkNvbm5lY3Rpb246IEtlZXAtQWxpdmUNCkNhY2hlLUNvbnRyb2w6IG5vLWNhY2hlDQpIb3N0OiAxMjcuMC4wLjE6Mzk2OTUNCkNvb2tpZTogc2lkPWZpeHR1cmUNCg0K",
+      "bodyBase64": "",
+      "rawRequestSHA256": "62b81ada8751a037fb44bf802775426d9aa4ee951d0a1b536d7ef8a2a8d52197"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:39695/chapter/1",
+      "rawHeadBase64": "R0VUIC9jaGFwdGVyLzEgSFRUUC8xLjENClVzZXItQWdlbnQ6IExlZ2Fkby1SZWZlcmVuY2UtRml4dHVyZS8xDQpDb25uZWN0aW9uOiBjbG9zZQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIGZpeHR1cmUNCkFjY2VwdC1FbmNvZGluZzogaWRlbnRpdHkNCkFjY2VwdDogKi8qDQpLZWVwLUFsaXZlOiAzMDANCkNvbm5lY3Rpb246IEtlZXAtQWxpdmUNCkNhY2hlLUNvbnRyb2w6IG5vLWNhY2hlDQpIb3N0OiAxMjcuMC4wLjE6Mzk2OTUNCkNvb2tpZTogc2lkPWZpeHR1cmUNCg0K",
+      "bodyBase64": "",
+      "rawRequestSHA256": "62b81ada8751a037fb44bf802775426d9aa4ee951d0a1b536d7ef8a2a8d52197"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:39695/chapter/2",
+      "rawHeadBase64": "R0VUIC9jaGFwdGVyLzIgSFRUUC8xLjENClVzZXItQWdlbnQ6IExlZ2Fkby1SZWZlcmVuY2UtRml4dHVyZS8xDQpDb25uZWN0aW9uOiBjbG9zZQ0KQXV0aG9yaXphdGlvbjogQmVhcmVyIGZpeHR1cmUNCkFjY2VwdC1FbmNvZGluZzogaWRlbnRpdHkNCkFjY2VwdDogKi8qDQpLZWVwLUFsaXZlOiAzMDANCkNvbm5lY3Rpb246IEtlZXAtQWxpdmUNCkNhY2hlLUNvbnRyb2w6IG5vLWNhY2hlDQpIb3N0OiAxMjcuMC4wLjE6Mzk2OTUNCkNvb2tpZTogc2lkPWZpeHR1cmUNCg0K",
+      "bodyBase64": "",
+      "rawRequestSHA256": "4610dad0a8ae9a94bfc5e66731be4f17bc17e1bb1a3dabb68d59b16482dbf019"
+    }
+  ],
+  "physicalOrigin": "http://127.0.0.1:39695",
+  "coverageLimits": "One synthetic mainJs source. Semantic projections are explicit; complete original models and raw HTTP bytes are retained. This does not validate declarative rules, WebView, cancellation, concurrent sources, all host APIs, or iOS execution."
+}

@@ -75,7 +75,17 @@ REQUIRED_JAR_CLASSES = (
     "io/yuedu/legado/InteropSemanticSuite.class",
     "io/yuedu/legado/interop/InteropFixture.class",
     "io/yuedu/legado/MainJsResultMarshaller.class",
+    "io/yuedu/legado/TlsCapabilityProbe.class",
+    "io/yuedu/legado/HttpWireDiagnosticBridge.class",
+    "io/yuedu/legado/OkHttpWireCapabilityProbe.class",
+    "io/yuedu/legado/ReferenceLoopbackFixture.class",
+    "io/yuedu/legado/ProbeOkHttpTransport.class",
+    "okhttp3/OkHttpClient.class",
+    "okio/Buffer.class",
 )
+REQUIRED_JAR_RESOURCES = {
+    "fixtures/main-source.js": "731f1f1f743b9bc393ea221a7118ff4a115ffa35947aa40c88ff088bb758a894",
+}
 MAX_ENTRIES = 120000
 MAX_EXPANDED_BYTES = 2 * 1024 ** 3
 MAX_ENTRY_BYTES = 512 * 1024 ** 2
@@ -189,6 +199,9 @@ def jar_details(jar):
         missing = sorted(set(REQUIRED_JAR_CLASSES) - set(names))
         if missing:
             raise ValueError("Fresh JAR lacks required probe classes: " + ", ".join(missing))
+        for name, expected in REQUIRED_JAR_RESOURCES.items():
+            if name not in names or hashlib.sha256(archive.read(name)).hexdigest() != expected:
+                raise ValueError("Fresh JAR lacks the locked original fixture resource: " + name)
         maximum = 0
         base_maximum = 0
         for item in entries:
@@ -205,7 +218,7 @@ def jar_details(jar):
                     base_maximum = max(base_maximum, major)
     return {"sha256": sha256(jar), "bytes": jar.stat().st_size,
             "maximumClassMajor": maximum, "maximumBaseClassMajor": base_maximum,
-            "requiredClasses": list(REQUIRED_JAR_CLASSES)}
+            "requiredClasses": list(REQUIRED_JAR_CLASSES), "requiredResources": REQUIRED_JAR_RESOURCES}
 
 
 def record_jvm():

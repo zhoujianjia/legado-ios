@@ -12,8 +12,13 @@ After the first TLS attempt aborted in an unimplemented Zero signal-PC hook,
 the bounded [source repair](zero-signal-context.json) was rebuilt for device
 and Simulator. [Run 39083752761](https://github.com/zhoujianjia/legado-ios/actions/runs/39083752761)
 returned all four TLS results with successful cleanup. [TLS evidence](tls-capability.json)
-preserves the earlier failure and current results; real HTTP wire and matching
-physical-device validation remain separate work.
+preserves the earlier failure and current results. The new opt-in
+[HTTP wire diagnostic](http-wire-capability.json) sends seven real OkHttp
+requests using the original mainJs and retains the peer's raw HTTP bytes.
+Windows execution has zero differences under the unchanged Android projection;
+the top-level comparator correctly rejects that desktop execution as iOS evidence.
+Probe 13 requires an independently checked native wire trace as well as TCP/TLS.
+Its Simulator execution and matching physical-device validation remain pending.
 
 ## Reader experience build
 

@@ -153,6 +153,12 @@ actor ProbeRunner {
             } else {
                 nativeTLS = ["passed": false, "skipped": true, "reason": "Native TCP capability did not pass"]
             }
+            let nativeHTTPWire: [String: Any]
+            if nativeTLS["passed"] as? Bool == true {
+                nativeHTTPWire = try await probeNativeHTTPWire(engine, session: session)
+            } else {
+                nativeHTTPWire = ["passed": false, "skipped": true, "reason": "Native TLS capability did not pass"]
+            }
             try Task.checkCancellation()
             closeAttempted = true
             try recordProgress("close_session.begin")
@@ -168,6 +174,7 @@ actor ProbeRunner {
                 "semanticSuite": semanticSuite, "interopSuite": interopSuite, "scopeIsolationProbe": scopeIsolation,
                 "nativeTCPProbe": nativeTCP,
                 "nativeTLSProbe": nativeTLS,
+                "nativeHTTPWireProbe": nativeHTTPWire,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
                 "payloadBytes": try payloadSize([configuration.javaHome, payloadDirectory]),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
@@ -266,6 +273,24 @@ actor ProbeRunner {
         } catch {
             try recordProgress("native_tls.failed", failure: error.localizedDescription)
             return ["passed": false, "loopbackOnly": true, "provesHTTPCompatibility": false,
+                    "failure": error.localizedDescription]
+        }
+    }
+
+    private func probeNativeHTTPWire(_ engine: LegadoRuntime, session: LegadoSourceSession) async throws -> [String: Any] {
+        try recordProgress("native_http_wire.begin")
+        do {
+            guard let report = try result(await call(engine, session, "httpWireCapabilityProbe", ["timeoutMs": 120_000])) as? [String: Any],
+                  report["suite"] as? String == "OkHttpWireCapabilityProbe" else {
+                throw mismatch("JVM HTTP wire capability report is missing")
+            }
+            try recordProgress(report["passed"] as? Bool == true ? "native_http_wire.passed" : "native_http_wire.failed")
+            return report
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            try recordProgress("native_http_wire.failed", failure: error.localizedDescription)
+            return ["passed": false, "loopbackOnly": true, "g4ValidationPassed": false,
                     "failure": error.localizedDescription]
         }
     }

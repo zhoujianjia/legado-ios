@@ -1,4 +1,7 @@
 import java.util.zip.ZipFile
+import java.security.MessageDigest
+import groovy.json.JsonOutput
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
 plugins {
     kotlin("jvm") version "2.4.20"
@@ -24,6 +27,10 @@ dependencies {
     implementation("cn.wanghaomiao:JsoupXpath:2.5.3")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains:annotations:26.0.2")
+    // These are confined to opt-in diagnostic payloads. Normal runtimeClasspath
+    // keeps its existing Okio version and has no OkHttp client dependency.
+    testImplementation("com.squareup.okhttp3:okhttp-jvm:5.4.0")
+    testImplementation("com.squareup.okio:okio-jvm:3.17.0")
 }
 
 tasks.test { useJUnit(); maxHeapSize = "512m" }
@@ -102,10 +109,42 @@ val runtimeJar by tasks.registering(Jar::class) {
             into("META-INF/licenses/engine-suite")
             rename { "hamcrest-core-1.3-LICENSE.txt" }
         }
+        from("../vendor/probe/licenses") { into("META-INF/licenses/http-wire-probe") }
+        from(files("../vendor/probe/manifest.json", "../vendor/probe/resolved-dependencies.json")) {
+            into("META-INF/legado-provenance/http-wire-probe")
+        }
     }
     manifest.attributes["Implementation-Version"] = project.version
     manifest.attributes["Legado-Engine-Version"] = "5.3.0-legado.4"
     manifest.attributes["Legado-Engine-Tests"] = includeEngineTests.toString()
+}
+
+// Reproducible evidence for the opt-in probe, including the unchanged normal
+// graph. No local paths, credentials or Gradle cache locations enter this file.
+tasks.register("probeDependencyEvidence") {
+    doLast {
+        fun graph(configuration: Configuration): Map<String, Any> {
+            val artifacts = configuration.incoming.artifacts.artifacts.map { artifact ->
+                val bytes = artifact.file.readBytes()
+                mapOf("component" to artifact.id.componentIdentifier.displayName,
+                    "file" to artifact.file.name, "bytes" to bytes.size,
+                    "sha256" to MessageDigest.getInstance("SHA-256").digest(bytes)
+                        .joinToString("") { "%02x".format(it.toInt() and 255) })
+            }.sortedBy { it["component"].toString() }
+            val edges = configuration.incoming.resolutionResult.allDependencies
+                .filterIsInstance<ResolvedDependencyResult>().map {
+                    mapOf("from" to it.from.id.displayName, "requested" to it.requested.displayName,
+                        "selected" to it.selected.id.displayName)
+                }.sortedBy { it["from"] + "/" + it["requested"] }
+            return mapOf("artifacts" to artifacts, "edges" to edges)
+        }
+        val evidence = mapOf("schemaVersion" to 1,
+            "normalRuntimeClasspath" to graph(configurations.runtimeClasspath.get()),
+            "diagnosticTestRuntimeClasspath" to graph(configurations.testRuntimeClasspath.get()))
+        layout.buildDirectory.file("reports/http-wire/resolved-dependencies.json").get().asFile.apply {
+            parentFile.mkdirs(); writeText(JsonOutput.prettyPrint(JsonOutput.toJson(evidence)) + "\n")
+        }
+    }
 }
 
 tasks.register<JavaExec>("runtimeSmoke") {
@@ -121,6 +160,15 @@ tasks.register<JavaExec>("runtimeSuiteSmoke") {
     javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) })
     classpath = files(runtimeJar.flatMap { it.archiveFile })
     mainClass.set(layout.projectDirectory.file("src/smoke/java/LegadoSemanticSuiteSmoke.java").asFile.absolutePath)
+    args(if (includeEngineTests) "present" else "absent")
+    jvmArgs("-Xint", "-Xmx128m")
+}
+
+tasks.register<JavaExec>("runtimeWireSmoke") {
+    dependsOn(runtimeJar)
+    javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) })
+    classpath = files(runtimeJar.flatMap { it.archiveFile })
+    mainClass.set(layout.projectDirectory.file("src/smoke/java/LegadoHttpWireSmoke.java").asFile.absolutePath)
     args(if (includeEngineTests) "present" else "absent")
     jvmArgs("-Xint", "-Xmx128m")
 }

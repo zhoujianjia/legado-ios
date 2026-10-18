@@ -7,6 +7,7 @@ device gate, regardless of its result.
 import argparse
 from datetime import datetime, timezone
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -148,7 +149,8 @@ def stamp_simulator_source(app, source_commit):
 
 
 class ProbeRun:
-    def __init__(self, repo, output, timeout_seconds, require_native_tcp=False, require_native_tls=False):
+    def __init__(self, repo, output, timeout_seconds, require_native_tcp=False, require_native_tls=False,
+                 require_native_http_wire=False):
         self.repo = repo
         output.mkdir(parents=True, exist_ok=True)
         self.output_root = output
@@ -163,6 +165,7 @@ class ProbeRun:
         self.launched_at = None
         self.require_native_tcp = require_native_tcp
         self.require_native_tls = require_native_tls
+        self.require_native_http_wire = require_native_http_wire
         self.result = {
             "schemaVersion": 1,
             "startedAt": utc_now(),
@@ -174,7 +177,8 @@ class ProbeRun:
             "evidenceDirectory": str(self.output),
             "lastCheckpoint": None,
             "collectionErrors": [],
-            "capabilityRequired": {"nativeTCP": require_native_tcp, "nativeTLS": require_native_tls},
+            "capabilityRequired": {"nativeTCP": require_native_tcp, "nativeTLS": require_native_tls,
+                                   "nativeHTTPWire": require_native_http_wire},
         }
 
     def command(self, name, argv, timeout=120, enforce_deadline=True):
@@ -280,6 +284,8 @@ class ProbeRun:
             required.append(("TCP", "nativeTCPProbe", "nativeTCPGate"))
         if self.require_native_tls:
             required.append(("TLS", "nativeTLSProbe", "nativeTLSGate"))
+        if self.require_native_http_wire:
+            required.append(("HTTP wire", "nativeHTTPWireProbe", "nativeHTTPWireGate"))
         if not required:
             return
         path = self.container / DIAGNOSTICS_PATH / "exports/LegadoProbe-report.json"
@@ -294,6 +300,8 @@ class ProbeRun:
             self.verify_required_native_tcp(report.get("nativeTCPProbe"), gates["TCP"], path)
         if self.require_native_tls:
             self.verify_required_native_tls(report.get("nativeTLSProbe"), gates["TLS"], path)
+        if self.require_native_http_wire:
+            self.verify_required_native_http_wire(report.get("nativeHTTPWireProbe"), gates["HTTP wire"], path)
 
     def read_current_capability_report(self, path, required, gates):
         label = "/".join(item[0] for item in required)
@@ -348,6 +356,23 @@ class ProbeRun:
             raise RuntimeError("Required native TLS capability failed: " + reason + "; probe: " + detail + "; report: " + str(path))
         gate["passed"] = True
 
+    def verify_required_native_http_wire(self, native, gate, path):
+        try:
+            spec = importlib.util.spec_from_file_location("native_http_wire_validator", Path(__file__).with_name("verify-http-wire.py"))
+            helper = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(helper)
+            verdict = helper.verify(native, self.result["executionPlatform"])
+            gate["wireVerification"] = verdict
+            comparison_path = self.output / "native-http-wire-comparison.json"
+            comparison_path.write_text(json.dumps(verdict, indent=2) + "\n", encoding="utf-8")
+            gate["comparisonPath"] = str(comparison_path)
+            if verdict.get("passed") is not True:
+                raise ValueError("Original Android strict comparison did not pass")
+        except Exception as error:
+            gate["failure"] = type(error).__name__ + ": " + str(error)
+            raise RuntimeError("Required native HTTP wire capability failed: " + gate["failure"] + "; report: " + str(path)) from error
+        gate["passed"] = True
+
     def collect(self):
         if self.container:
             diagnostics = self.container / DIAGNOSTICS_PATH
@@ -393,13 +418,15 @@ def main():
                         help="Fail unless this run's exported report proves native TCP loopback success")
     parser.add_argument("--require-native-tls", action="store_true",
                         help="Fail unless this run's exported report passes all four TLS cases and cleanup")
+    parser.add_argument("--require-native-http-wire", action="store_true",
+                        help="Require real loopback HTTP bytes, cleanup and zero differences against the original Android fixture")
     args = parser.parse_args()
     if not 0 < args.timeout_seconds <= 600:
         parser.error("--timeout-seconds must be greater than zero and at most 600")
     repo = Path(__file__).resolve().parents[2]
     output = (args.output_directory or repo / ".build/ci-logs/simulator-probe").resolve()
     probe = ProbeRun(repo, output, args.timeout_seconds, require_native_tcp=args.require_native_tcp,
-                     require_native_tls=args.require_native_tls)
+                     require_native_tls=args.require_native_tls, require_native_http_wire=args.require_native_http_wire)
     try:
         probe.run(args.device_filter)
     except (Exception, KeyboardInterrupt) as error:
