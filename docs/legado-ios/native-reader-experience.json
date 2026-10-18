@@ -1,0 +1,323 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-18",
+  "recordKind": "native-main-reader-static-build-and-local-source-insertion",
+  "sourceCommit": "ac2ece6728053790d68b73d1dfc5d96c3a16d1cc",
+  "version": "3.0.0",
+  "build": "6",
+  "bundleIdentifier": "local.zhoujianjia.legado-reader",
+  "configuration": "Release",
+  "platform": "iPhoneOS",
+  "architecture": "arm64",
+  "minimumIOS": "18.0",
+  "signed": false,
+  "cloudBuild": {
+    "workflowPath": ".github/workflows/legado-reader.yml",
+    "runId": 39099984816,
+    "jobId": 117594096485,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39099984816",
+    "tag": "reader-legado-ac2ece6",
+    "conclusion": "success",
+    "artifact": {
+      "id": 12126434450,
+      "name": "legado-native-reader-unsigned",
+      "bytes": 91136416,
+      "sha256": "c7ffc63ff6b97f0f460f14f96367c06e245af1fc8c2e6c5ee43b31610f6bb7ae"
+    },
+    "evidenceArtifact": {
+      "id": 12126763529,
+      "name": "legado-native-reader-build-evidence",
+      "bytes": 1479439,
+      "sha256": "35ef5e461c057977e5bc45105b4b8073d6f0f5385d30ca4ff33652db86bde0c3"
+    },
+    "ipa": {
+      "fileName": "YueduReader-experience-unsigned.ipa",
+      "bytes": 96118923,
+      "sha256": "a77f94d44e03ac348653d1988170a1df4acc43aa72c0b1901f96b293bbfd3748"
+    },
+    "buildManifest": {
+      "fileName": "build-manifest.json",
+      "bytes": 6921,
+      "sha256": "64b50a8758fbb14ee890e92b1f8a4345a434e4df9862322dd634769d75859d15"
+    },
+    "privateBookSourcesIncluded": false,
+    "nativeVMRecompiledForThisReader": false,
+    "nativeProducer": {
+      "runID": 39083752761,
+      "sourceSHA": "ce792982a30942e605fc935b733c5b41bef2736a",
+      "runAttempt": 1,
+      "workflowPath": ".github/workflows/legado-ios-prototype.yml",
+      "workflowBlob": "acc22e4f49b24200f75f85b679564b4e8867d28c"
+    },
+    "nativeArtifact": {
+      "id": 12120530642,
+      "name": "legado-zero-source-build",
+      "size_in_bytes": 89898489,
+      "digest": "sha256:6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac"
+    },
+    "nativeInputCheckCount": 7,
+    "allNativeInputObjectsMatched": true
+  },
+  "routesImplementedInSource": {
+    "mainJs": {
+      "engine": "Retained custom HtmlUnit/Rhino 5.3.0-legado.4 on local OpenJDK Mobile Zero",
+      "httpTransport": "Explicit immutable jvm-okhttp session option; OkHttp 5.4.0, Okio 3.17.0 and Brotli 0.1.2",
+      "operations": [
+        "search",
+        "details",
+        "toc",
+        "content"
+      ],
+      "scope": "Text mainJs sources and plain String chapter content; native reading packaging uses escaped text.",
+      "silentJSCFallback": false
+    },
+    "traditionalRules": {
+      "engine": "Existing Yuedu JavaScriptCore implementation",
+      "originalAnalyzeRuleAndAnalyzeUrlMigrated": false,
+      "privateSourcePackMainJsSourceCount": 0
+    },
+    "interface": "Yuedu-derived native SwiftUI/CoreText reader; Legado behavior remains the compatibility baseline."
+  },
+  "staticChecks": {
+    "deviceTargetCompilationPassed": true,
+    "bundleSourceIdentityVersionAndLocalPolicyPassed": true,
+    "mainAndBothExtensionsARM64IOS18Passed": true,
+    "ordinaryJar": {
+      "bytes": 9712434,
+      "sha256": "81d16c7607554c0b87da0c295ea701feb09cb99748713dc4c4bc335e9d7a1c45",
+      "maximumBaseClassMajor": 65,
+      "junitAndProjectTestClassesAbsent": true,
+      "tlsFixtureResourcesAbsent": true,
+      "legitimateXPathNodeTestClassAllowed": true,
+      "originalLegadoLicenseBytesVerified": true,
+      "licenseRecordsComparedWithTrackedVendorBytes": 13,
+      "licenseRecords": [
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "bytes": 426,
+          "sha256": "3f991eff87a6212affed07c2d2cc0a8bb681a72ecefeff54f4915de7b5aa5a52"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "bytes": 16780,
+          "sha256": "ada0787f27b581e024972a18b51db92c8e8508d0f05017d104a1c70a61b59951"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "bytes": 1825,
+          "sha256": "9246f7f820e791b7328d46ba341bb5a2bb08c3e2e1b9d36803ab0c3899e0462f"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "bytes": 3020,
+          "sha256": "c8539fca8905465681c131e79dd58b98e4276702fc6f221b5f98aa91baf6bcf2"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "bytes": 12369,
+          "sha256": "98793632f4e0ebb70c8e81abb7ca29186878caca0f505374b5ff07f64d7998cc"
+        },
+        {
+          "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "bytes": 1450,
+          "sha256": "7979d0f6470ffe8628473d6a6d36d2fae0d280adee341922353d984f4b113cb4"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/MPL-2.0.html",
+          "bytes": 17329,
+          "sha256": "79fefbb5ce750421056e8639e83b055fa97deb02407617d4c0f9d50cfa0cfd32"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/NOTICE-publicsuffix.txt",
+          "bytes": 223,
+          "sha256": "362ad8b05fc7042f86ac08a5747452052fe422d35cd19a36a28da3f42efffa01"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/okio-3.17.0/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/brotli-MIT-LICENSE.txt",
+          "bytes": 1084,
+          "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+        },
+        {
+          "entry": "META-INF/licenses/jvm-http/ICU-release-58-2-LICENSE.txt",
+          "bytes": 19442,
+          "sha256": "2023a2d68dfcdb1f7b7c5dccb96f88aabba112f63f250cb9e533cc64625eff07"
+        }
+      ]
+    },
+    "javaHome": {
+      "matchesPinnedNative12Bytes": true,
+      "fileCount": 17241,
+      "totalBytes": 73995276,
+      "pathAndFileHashDigest": "3efc7463f6c51f74368610eab3bf0355a59f954d7173c065453616d25f97fa3e",
+      "modules": [
+        "java.base",
+        "java.compiler",
+        "java.datatransfer",
+        "java.desktop",
+        "java.instrument",
+        "java.logging",
+        "java.net.http",
+        "java.prefs",
+        "java.sql",
+        "java.transaction.xa",
+        "java.xml",
+        "jdk.charsets",
+        "jdk.unsupported"
+      ],
+      "extraOwnedMarker": ".legado-runtime-home-owner.json"
+    },
+    "dynamicExports": {
+      "independentExportTrieRead": true,
+      "requiredCount": 39,
+      "missingCount": 0,
+      "requiredNames": [
+        "JDK_Canonicalize",
+        "JIMAGE_Open",
+        "JIMAGE_Close",
+        "JIMAGE_FindResource",
+        "JIMAGE_GetResource",
+        "VerifyClassForMajorVersion",
+        "Java_java_lang_Class_registerNatives",
+        "Java_java_lang_ClassLoader_registerNatives",
+        "Java_java_lang_System_registerNatives",
+        "Java_java_lang_Thread_registerNatives",
+        "JNI_OnLoad_net",
+        "JNI_OnLoad_nio",
+        "Java_java_net_InetAddress_isIPv4Available",
+        "Java_java_net_InetAddress_isIPv6Supported",
+        "Java_java_net_Inet4AddressImpl_getLocalHostName",
+        "Java_java_net_Inet4AddressImpl_lookupAllHostAddr",
+        "Java_java_net_Inet4AddressImpl_getHostByAddr",
+        "Java_java_net_Inet4AddressImpl_isReachable0",
+        "Java_java_net_Inet6AddressImpl_getLocalHostName",
+        "Java_java_net_Inet6AddressImpl_lookupAllHostAddr",
+        "Java_java_net_Inet6AddressImpl_getHostByAddr",
+        "Java_java_net_Inet6AddressImpl_isReachable0",
+        "Java_java_net_NetworkInterface_getAll",
+        "Java_java_net_NetworkInterface_getByName0",
+        "Java_java_net_NetworkInterface_getByIndex0",
+        "Java_java_net_NetworkInterface_boundInetAddress0",
+        "Java_java_net_NetworkInterface_getByInetAddress0",
+        "Java_java_net_NetworkInterface_isUp0",
+        "Java_java_net_NetworkInterface_isLoopback0",
+        "Java_java_net_NetworkInterface_supportsMulticast0",
+        "Java_java_net_NetworkInterface_isP2P0",
+        "Java_java_net_NetworkInterface_getMacAddr0",
+        "Java_java_net_NetworkInterface_getMTU0",
+        "Java_java_net_NetworkInterface_init",
+        "Java_sun_net_PortConfig_getLower0",
+        "Java_sun_net_PortConfig_getUpper0",
+        "Java_sun_net_spi_DefaultProxySelector_init",
+        "Java_sun_net_spi_DefaultProxySelector_getSystemProxies",
+        "Java_sun_net_dns_ResolverConfigurationImpl_fallbackDomain0"
+      ]
+    },
+    "independentIPAAudit": {
+      "fileName": "independent-ipa-audit.json",
+      "bytes": 8145,
+      "sha256": "b5b7d70c24b67cd5552fdf3b53740432da28ef3cc8d962e1a3bb7ca3569017ac",
+      "passed": true,
+      "issues": []
+    },
+    "independentBuildEvidenceAudit": {
+      "fileName": "root-build-evidence-audit.json",
+      "bytes": 2026,
+      "sha256": "4ff79a35c779bcc2d5195d1d31791bda757a3908db09b563888ad6186aae9439",
+      "passed": true,
+      "junitTestCases": 121,
+      "uniqueTests": 121,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "scope": "Desktop JVM tests, compiler output and exported-symbol evidence; the separate IPA audit checks actual packaged bytes."
+    },
+    "ordinaryTLSDesktopSmoke": {
+      "passed": true,
+      "caseCount": 4,
+      "fixtureLocation": "Explicit external test-resource classpath; absent from the ordinary reader JAR.",
+      "diagnosticJarContract": "Opt-in engine-tests payload retains the unchanged fixture bytes and four real TLS cases."
+    }
+  },
+  "localSourceInsertion": {
+    "tool": "scripts/reader-experience/bundle-local-sources.py",
+    "performedAfterCloudBuild": true,
+    "bookSourcesUploaded": false,
+    "cloudIPAUnmodified": true,
+    "originalBookSourceBytesPreserved": true,
+    "resourceManifest": {
+      "schemaVersion": 1,
+      "version": "local-sources-4427e33c22d884d0",
+      "sha256": "4427e33c22d884d0fbaaa17fdbb1c580e6dfd141de5bde0b954c61bef61ced9b",
+      "sourceCount": 1331,
+      "bytes": 8669535,
+      "mainJsSourceCount": 0
+    },
+    "originalNonSourceEntriesVerified": 18256,
+    "originalEntryContentBytesPreserved": true,
+    "originalZIPExternalAttributesAndCreatorSystemPreserved": true,
+    "addedEntryCount": 2,
+    "addedResources": [
+      "BuiltInBookSources.json",
+      "BuiltInBookSources.manifest.json"
+    ],
+    "ipa": {
+      "fileName": "LegadoReader-ac2ece6-with-sources.ipa",
+      "bytes": 97112096,
+      "sha256": "bb7b9a817e70e137145651edb1d912fe1aa25e352be03636d9058f4ac8c1fd74"
+    },
+    "packageMetadata": {
+      "fileName": "LegadoReader-ac2ece6-local-package.json",
+      "bytes": 8476,
+      "sha256": "704205703b906d32b1821c5697cb594193c8b9a54dc0d3a5db1492fe7f7610e1"
+    },
+    "independentInsertionAudit": {
+      "fileName": "independent-local-source-insertion-audit.json",
+      "bytes": 1007,
+      "sha256": "e4ed6bbeaf18ef6704ff6410f21a08fb6158d16b8a871d7556982d251885527a",
+      "passed": true
+    }
+  },
+  "validationBoundary": {
+    "runtimeExecutedByTheseAudits": false,
+    "mainJsNativeReadingChainValidated": false,
+    "deliveredIPAExecuted": false,
+    "deviceValidationPassed": false,
+    "physicalDeviceReadingPassed": false,
+    "realBookSourcesValidated": false,
+    "sourceAvailabilityValidated": false,
+    "fullFeatureParityEstablished": false,
+    "fullBookSourceRuntimeParityEstablished": false,
+    "historicalProbeAcceptanceTransferredToThisReader": false
+  },
+  "limits": [
+    "This is an unsigned main reader candidate. Sign the app and both embedded extensions before installation.",
+    "The private pack contains 1,331 traditional sources and zero mainJs sources. Packaging preserves it; availability and compatibility are not established.",
+    "Finite mainJs integration does not migrate original AnalyzeRule/AnalyzeUrl or establish full Legado parity.",
+    "Only plain-text mainJs chapter content is integrated. HTML/media, browser integration and unsupported host operations/options report explicit capability errors.",
+    "Per-source JVM cookies, cache and source variables do not persist across process restarts. In-place script mutations during TOC/content lack a returned-context protocol.",
+    "Local mode disables configured account, CloudKit, subscription and remote backend services. Extension shared-group behavior remains unvalidated.",
+    "Old reader candidates containing TLS fixture resources remain rejected; their immutable failed audits are not overwritten by this record."
+  ],
+  "reverification": [
+    "Download the unsigned and evidence artifacts from the exact run and compare their full ZIP byte counts and SHA-256 values.",
+    "Compare the extracted IPA and build-manifest hashes; inspect the three bundle identities, source labels, flags and ARM64/iOS 18 executable load commands.",
+    "Inspect the ordinary JAR for test classes and TLS fixtures, and compare its provenance and license bytes with the tracked vendor files at the recorded source commit.",
+    "Compare every Java home file with the fixed native producer and read the final executable export trie for all 39 required names.",
+    "For the separate private local package, verify its independent hash and resource hash, and compare every original entry byte and ZIP permission field against the cloud IPA. Do not upload the source content."
+  ]
+}

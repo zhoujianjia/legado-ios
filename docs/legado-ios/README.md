@@ -14,8 +14,16 @@ application is the product requirement.
 | iPhone and iPad presentation | Adapt controls and layouts to each device rather than copying the Android screens. |
 | iOS platform limits | Record the specific difference and its acceptance case; do not silently omit a capability. |
 
-**The currently delivered reader build 3 still uses Yuedu's JavaScriptCore
-parsing route. It is a reader-shell trial, not the integrated Legado reader.**
+**The current unsigned main reader candidate is 3.0.0 build 6 at `ac2ece6`.**
+Its cloud package and separate local 1,331-source insertion passed static audits;
+see [native reader evidence](native-reader-experience.json) and
+[migration status](migration-status.md). Its finite plain-text `mainJs` route uses
+the retained Rhino/JVM core; traditional sources still use the existing JSC
+implementation. The delivered IPA has not been executed or accepted on a device,
+and source availability and full Legado parity remain unverified.
+
+The historical reader build 3 used only Yuedu's JavaScriptCore parsing route.
+It remains reader-shell evidence, not acceptance of the current integrated route.
 The experimental OpenJDK Mobile Zero package separately tests retained
 Java/Kotlin/Rhino behavior. Passing its probes does not establish that normal
 source import, search or chapter loading uses that core.

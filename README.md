@@ -4,7 +4,16 @@ This repository evaluates running the original Legado Java/Kotlin parsing core
 locally inside a native iOS reader using OpenJDK Mobile Zero. It is based on the
 pinned Yuedu source recorded in [the provenance lock](docs/legado-ios/provenance-lock.json).
 
-Version 0.2 build 6 at `78930be` now has a hash-checked physical-iPhone report with
+The current unsigned main reader candidate is **3.0.0 build 6**, source `ac2ece6`,
+for iOS 18+. Its cloud IPA passed independent packaging, license, module-byte and
+native-export audits; a separate local IPA preserves all 1,331 private sources.
+The finite plain-text `mainJs` route uses Rhino/JVM, while traditional sources
+still use the existing JSC implementation. Runtime execution, physical-device
+reading, real-source availability and full Legado parity remain unverified for
+this candidate. See [current reader evidence](docs/legado-ios/native-reader-experience.json)
+and [migration status](docs/legado-ios/migration-status.md).
+
+The separate runtime probe, version 0.2 build 6 at `78930be`, has a hash-checked physical-iPhone report with
 `passed=true` on `iPhone18,3` / iOS 27.0.1: all 25 original engine cases (0 failed,
 0 skipped), JavaBeans, customized semantics and the fixed `mainJs` reading/state
 and cancellation-handshake fixture passed. The earlier termination did not recur;
