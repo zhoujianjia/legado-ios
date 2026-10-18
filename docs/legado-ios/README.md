@@ -33,6 +33,13 @@ retain Yuedu's existing JavaScriptCore implementation and do not establish
 Legado-core acceptance. Traditional-rule parity and the remaining feature
 domains remain separate, required work.
 
+The latest [migration and verification record](migration-status.md) covers
+source commit `0a03309ffef09ff0150a59ed4ef075e3b7f803ef`. Its independently
+downloaded evidence confirms 21 Swift runtime-interface tests and 30 app-data
+tests passed with zero failures or skips. The app tests use injected executors
+without a JVM payload; these results do not pass native end-to-end reading,
+real-source compatibility or the new main app's physical-device acceptance.
+
 The user's 1,331-source file remains on Windows, unchanged and uncommitted.
 Cloud builds exclude it. The local
 [packaging command](../../scripts/reader-experience/bundle-local-sources.py)
@@ -41,6 +48,9 @@ bytes and a hash manifest, and verifies every other bundle file's contents and
 permissions. The first local-mode launch appends missing sources once, preserves
 existing source records and later deletions, and journals the library/marker
 commit for crash recovery. Packaging does not establish live source availability.
+The [migration record](migration-status.md#完整书源只在本地注入) records the
+complete resource's count/hash and the build-before-insertion boundary, without
+publishing its contents, credentials or local location.
 
 The accepted migration gates still apply: a signed iPhone build must start
 without a debugger or JIT, and the original-engine semantics and reading-chain
