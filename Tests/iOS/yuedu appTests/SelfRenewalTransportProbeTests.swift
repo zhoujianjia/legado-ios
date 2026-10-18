@@ -65,7 +65,8 @@ struct SelfRenewalTransportProbeTests {
                 let report = await probe(port)
                 #expect(report.attempts.allSatisfy { $0.outcome == outcome && $0.protocolError == error })
                 #expect(report.attempts.allSatisfy { !$0.lockdownConfirmed && $0.lockdownType == nil })
-                #expect(!String(decoding: try JSONEncoder().encode(report), as: UTF8.self).contains(secret))
+                let json = String(decoding: try JSONEncoder().encode(report), as: UTF8.self)
+                #expect(!json.contains(secret))
                 expectNoRenewalOperations(report)
             }
         }
@@ -184,6 +185,7 @@ private actor QueryTypeProbeTestServer {
     private var deadline: Task<Void, Never>?
     private var stopped = false
     private var stopping = false
+    private var expired = false
 
     init(reply: Reply) throws {
         self.reply = reply
@@ -211,6 +213,8 @@ private actor QueryTypeProbeTestServer {
 
     func waitForRequest() async throws {
         if !observed.isEmpty { return }
+        if expired { throw CocoaError(.fileReadUnknown) }
+        if stopped || stopping { throw CancellationError() }
         try await withCheckedThrowingContinuation { requestWaiter = $0 }
     }
 
@@ -218,6 +222,7 @@ private actor QueryTypeProbeTestServer {
         stopping = true
         deadline?.cancel()
         deadline = nil
+        requestWaiter?.resume(throwing: CancellationError()); requestWaiter = nil
         for connection in connections { connection.cancel() }
         if stopped { return }
         await withCheckedContinuation { continuation in
@@ -234,6 +239,7 @@ private actor QueryTypeProbeTestServer {
             stopped = true
             startWaiter?.resume(throwing: error); startWaiter = nil
             requestWaiter?.resume(throwing: error); requestWaiter = nil
+            stopWaiter?.resume(); stopWaiter = nil
         case .cancelled:
             stopped = true
             startWaiter?.resume(throwing: CancellationError()); startWaiter = nil
@@ -244,6 +250,7 @@ private actor QueryTypeProbeTestServer {
     }
 
     private func fixtureDeadline() {
+        expired = true
         startWaiter?.resume(throwing: CocoaError(.fileReadUnknown)); startWaiter = nil
         requestWaiter?.resume(throwing: CocoaError(.fileReadUnknown)); requestWaiter = nil
     }
