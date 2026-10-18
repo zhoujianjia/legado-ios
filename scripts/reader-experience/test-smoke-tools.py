@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Offline guard tests; these do not execute or claim the Simulator UI smoke."""
 import copy
+from contextlib import redirect_stderr
+import io
 import importlib.util
 from pathlib import Path
 import plistlib
@@ -163,18 +165,41 @@ class SmokeEvidenceTests(unittest.TestCase):
             "FULL_PRODUCT_NAME": app.name}}]
         unit = {"totalTestCount": 7, "passedTests": 7, "failedTests": 0, "skippedTests": 0}
         ui = {**unit, "totalTestCount": 1, "passedTests": 1}
+        paging = {**unit, "totalTestCount": 12, "passedTests": 12}
         with patch.object(smoke, "REPO", self.root), patch.object(smoke, "source_sha", return_value=SOURCE), \
                 patch.object(smoke, "git", side_effect=git):
-            result = smoke.result(audit, settings, unit, ui)
+            result = smoke.result(audit, settings, unit, ui, paging)
             self.assertEqual(result["status"], "passed")
             self.assertFalse(result["deviceValidationPassed"])
             self.assertFalse(result["deliveredIPAExecuted"])
             self.assertFalse(result["paidFeatureOverrides"])
             self.assertEqual(result["configuration"], "Debug")
+            self.assertEqual(result["targetedTests"]["cloudKitAndLocalServicesConfiguration"]["totalTestCount"], 7)
+            self.assertEqual(result["targetedTests"]["searchAutoPaging"]["totalTestCount"], 12)
+            self.assertEqual(result["targetedTests"]["TXTReaderUI"]["totalTestCount"], 1)
+            for key, value in (("totalTestCount", 0), ("totalTestCount", 11), ("totalTestCount", 19),
+                               ("passedTests", 11), ("passedTests", True), ("failedTests", 1),
+                               ("skippedTests", 1), ("skippedTests", None)):
+                with self.subTest(paging=(key, value)), self.assertRaises(ValueError):
+                    smoke.result(audit, settings, unit, ui, {**paging, key: value})
+            for missing in paging:
+                with self.subTest(missingPagingField=missing), self.assertRaises(ValueError):
+                    smoke.result(audit, settings, unit, ui, {key: value for key, value in paging.items() if key != missing})
+            with self.assertRaises(ValueError):
+                smoke.result(audit, settings, unit, ui, None)
             info["YueduLocalExperience"] = False
             self.write(app / "Info.plist", plistlib.dumps(info))
             with self.assertRaisesRegex(ValueError, "local-mode Info"):
-                smoke.result(audit, settings, unit, ui)
+                smoke.result(audit, settings, unit, ui, paging)
+
+    def test_result_cli_requires_the_independent_paging_summary(self):
+        args = ["smoke-tools.py", "result", "--audit", "audit.json", "--settings", "settings.json",
+                "--unit", "configuration.json", "--ui", "txt.json", "--output", "result.json"]
+        with patch.object(smoke.sys, "argv", args), redirect_stderr(io.StringIO()) as errors, \
+                self.assertRaises(SystemExit) as failure:
+            smoke.main()
+        self.assertEqual(failure.exception.code, 2)
+        self.assertIn("--paging", errors.getvalue())
 
 
 if __name__ == "__main__":

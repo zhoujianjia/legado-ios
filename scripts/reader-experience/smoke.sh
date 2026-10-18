@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Target local-mode construction, the real TXT loop and one loopback JSC source.
+# Target local-mode configuration, search paging, TXT and one loopback JSC source.
 set -euo pipefail
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
@@ -31,6 +31,13 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/cloudkit-tests.log" -t 2700 -- \
   -only-testing:'yuedu appTests/AuthAndICloudConfigurationTests'
 xcrun xcresulttool get test-results summary --path "$WORK/cloudkit.xcresult" > "$WORK/cloudkit-summary.json"
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/cloudkit-summary.json" --expected 7
+# Keep paging separate from the seven configuration tests: a skipped or empty
+# SearchAutoPagingTests invocation cannot satisfy either group's count.
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/paging-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/paging.xcresult" \
+  -only-testing:'yuedu appTests/SearchAutoPagingTests'
+xcrun xcresulttool get test-results summary --path "$WORK/paging.xcresult" > "$WORK/paging-summary.json"
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/paging-summary.json" --expected 12
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/txt-ui-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/txt-ui.xcresult" \
   -only-testing:'yuedu appUITests/ReaderLocalSmokeUITests'
@@ -39,7 +46,8 @@ python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/txt-ui-summ
 xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
   -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > "$WORK/build-settings.json"
 python3 "$SCRIPT_DIR/smoke-tools.py" result --audit "$WORK/overlays.json" --settings "$WORK/build-settings.json" \
-  --unit "$WORK/cloudkit-summary.json" --ui "$WORK/txt-ui-summary.json" --output "$WORK/result.json"
+  --unit "$WORK/cloudkit-summary.json" --paging "$WORK/paging-summary.json" \
+  --ui "$WORK/txt-ui-summary.json" --output "$WORK/result.json"
 # Preserve the independent TXT verdict even if this additional source case fails.
 # The fixture process belongs to this invocation; bind/readiness errors never
 # fall back to an existing server. Its requests and cleanup record are retained.

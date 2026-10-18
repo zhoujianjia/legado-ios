@@ -115,7 +115,12 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Resume"].firstMatch.waitForExistence(timeout: 15), "Closing returns to the source detail")
         tapReady(app.navigationBars.buttons.firstMatch, app: app)
         tapReady(app.tabBars.buttons["Library"].firstMatch, app: app)
-        let shelved = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title))
+        let shelf = app.descendants(matching: .any).matching(identifier: "home_book_list")
+        XCTAssertTrue(shelf.firstMatch.waitForExistence(timeout: 20), app.debugDescription)
+        XCTAssertEqual(shelf.count, 1, "The visible bookshelf must have one list")
+        // A row exposes nested accessibility buttons. Count matching book cells,
+        // not both button representations of the same persisted shelf entry.
+        let shelved = shelf.firstMatch.cells.containing(.staticText, identifier: title)
         XCTAssertTrue(shelved.firstMatch.waitForExistence(timeout: 20), "The imported online book must be on the bookshelf.\n\(app.debugDescription)")
         XCTAssertEqual(shelved.count, 1, "The flow must add one shelf copy")
         capture(app, name: "online-06-returned-to-real-bookshelf")

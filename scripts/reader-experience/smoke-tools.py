@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Audit temporary local-mode overlays and require real, non-skipped smoke tests.
 
-This is a Simulator-only Debug test protocol. It never modifies a delivered IPA
-and does not establish Release or physical-device functional acceptance.
+Requires separate configuration (7), source-pagination (12) and TXT UI (1)
+summaries. The loopback-source UI verdict is verified by its independent runner.
+This Simulator-only Debug protocol never modifies a delivered IPA and does not
+establish Release or physical-device functional acceptance.
 """
 import argparse
 from datetime import datetime, timezone
@@ -135,6 +137,8 @@ def require_source_stamp(info, source):
 
 
 def verify_summary(summary, expected):
+    if not isinstance(summary, dict):
+        raise ValueError("xcresult summary must be an object with explicit test counts")
     fields = {name: summary.get(name) for name in ("totalTestCount", "passedTests", "failedTests", "skippedTests")}
     if any(type(value) is not int for value in fields.values()):
         raise ValueError("xcresult summary lacks explicit integer test counts")
@@ -143,7 +147,7 @@ def verify_summary(summary, expected):
     return {"expectedTests": expected, **fields}
 
 
-def result(audit, settings, unit, ui):
+def result(audit, settings, unit, ui, paging):
     review_overlays(audit)
     matches = [item["buildSettings"] for item in settings if item.get("target") == config.MAIN_TARGET]
     if len(matches) != 1:
@@ -164,11 +168,14 @@ def result(audit, settings, unit, ui):
     return {"schemaVersion": 1, "sourceCommit": audit["sourceCommit"], "configuration": "Debug",
             "executionPlatform": "ios-simulator", "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "status": "passed",
-            "targetedTests": {"cloudKitAndLocalServicesConfiguration": verify_summary(unit, 7), "TXTReaderUI": verify_summary(ui, 1)},
+            "targetedTests": {"cloudKitAndLocalServicesConfiguration": verify_summary(unit, 7),
+                              "searchAutoPaging": verify_summary(paging, 12), "TXTReaderUI": verify_summary(ui, 1)},
             "testedApp": str(app), "testedInfoSHA256": config.digest(app / "Info.plist"),
-            "sourceOverlays": audit, "readerRoute": "Existing Yuedu/CoreText local TXT reader",
+            "sourceOverlays": audit, "readerRoute": "Existing Yuedu/CoreText local TXT reader and source search pagination",
             "covered": ["TXT auto-import through LocalBookImportService", "bookshelf entry", "visible CoreText body",
-                        "chapter selection through the real TOC", "shelf progress and selected chapter restored after relaunch"],
+                        "chapter selection through the real TOC", "shelf progress and selected chapter restored after relaunch",
+                        "source HTTP-stub pagination through real HTML parsing and hasMoreRule evaluation",
+                        "first-page false stops paging; true, invalid and unknown/cache verdicts preserve bounded paging"],
             "paidFeatureOverrides": False, "jvmIntegratedIntoReading": False,
             "deliveredIPAExecuted": False, "deviceValidationPassed": False,
             "limitations": ["Debug Simulator test, not execution of the delivered Release IPA.",
@@ -189,8 +196,8 @@ def main():
     verify = commands.add_parser("verify-summary")
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--expected", type=int, required=True)
-    summarize = commands.add_parser("result")
-    for name in ("audit", "settings", "unit", "ui", "output"):
+    summarize = commands.add_parser("result", help="Require independent configuration=7, paging=12 and TXT UI=1 summaries")
+    for name in ("audit", "settings", "unit", "ui", "paging", "output"):
         summarize.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -201,7 +208,8 @@ def main():
         elif args.phase == "verify-summary":
             value = verify_summary(read_json(args.summary), args.expected)
         else:
-            value = result(read_json(args.audit), read_json(args.settings), read_json(args.unit), read_json(args.ui))
+            value = result(read_json(args.audit), read_json(args.settings), read_json(args.unit),
+                           read_json(args.ui), read_json(args.paging))
             config.write_new_json(args.output, value)
         print(json.dumps(value, indent=2))
         return 0
