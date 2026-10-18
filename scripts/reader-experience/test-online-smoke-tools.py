@@ -96,6 +96,23 @@ class OnlineSmokeToolsTests(unittest.TestCase):
         process.kill.assert_called_once()
         self.assertEqual(process.wait.call_count, 2)
 
+    def test_owned_fixture_requests_diagnostics_without_changing_readiness_contract(self):
+        child = Mock(pid=12345)
+        child.poll.return_value = None
+        with patch.object(runner.smoke.config, "checked_path", side_effect=lambda value: value), \
+                patch.object(runner.smoke, "source_sha", return_value=SOURCE), \
+                patch.object(runner.subprocess, "Popen", return_value=child) as spawn, \
+                patch.object(runner, "wait_ready", return_value=READY) as ready, \
+                patch.object(runner.subprocess, "run", return_value=SimpleNamespace(returncode=0)), \
+                patch.object(runner, "read_http_json", return_value=self.trace), \
+                patch.object(runner, "stop", return_value=True):
+            self.assertEqual(runner.run(self.work, ["synthetic-test-command"]), 0)
+            arguments = spawn.call_args.args[0]
+            self.assertIn("--diagnose-startup", arguments)
+            self.assertEqual(arguments[arguments.index("--port") + 1], "18769")
+            ready.assert_called_once_with(child, self.work / "online-fixture-ready.json")
+        self.assertEqual(runner.wait_ready.__defaults__, (15,))
+
 
 if __name__ == "__main__":
     unittest.main()

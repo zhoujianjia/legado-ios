@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import faulthandler
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -261,6 +262,11 @@ def verify_trace(trace, expected_run_id=None):
             "provesJVMCompatibility": False, "deviceValidationPassed": False}
 
 
+def startup_stage(enabled, stage):
+    if enabled:
+        print("online-source-fixture startup stage=" + stage, file=sys.stderr, flush=True)
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv and argv[0] == "verify":
@@ -279,22 +285,42 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--ready-file", type=Path)
+    parser.add_argument("--diagnose-startup", action="store_true",
+                        help="Record startup stages and one bounded pre-readiness stack dump")
     args = parser.parse_args(argv[1:] if argv[:1] == ["serve"] else argv)
-    if not 0 <= args.port <= 65535:
-        parser.error("port must be 0..65535")
-    if args.ready_file and args.ready_file.exists():
-        parser.error("ready file already exists; use a fresh evidence directory")
-    with FixtureServer(args.port) as server:
-        if args.ready_file:
-            publish_ready(args.ready_file, server.info)
-        print(json.dumps(server.info, sort_keys=True), flush=True)
-        def stop(*_):
-            raise KeyboardInterrupt()
-        signal.signal(signal.SIGTERM, stop)
-        try:
-            server.serve_forever(poll_interval=0.2)
-        except KeyboardInterrupt:
-            pass
+    dump_armed = False
+    try:
+        if args.diagnose_startup:
+            startup_stage(True, "main.entered")
+            # Diagnose a blocked constructor/publisher before the owner's existing
+            # 15-second readiness deadline. Never alter that deadline or recover it.
+            faulthandler.dump_traceback_later(8, repeat=False, file=sys.stderr)
+            dump_armed = True
+        if not 0 <= args.port <= 65535:
+            parser.error("port must be 0..65535")
+        if args.ready_file and args.ready_file.exists():
+            parser.error("ready file already exists; use a fresh evidence directory")
+        startup_stage(args.diagnose_startup, "construct.before")
+        with FixtureServer(args.port) as server:
+            startup_stage(args.diagnose_startup, "construct.after")
+            startup_stage(args.diagnose_startup, "ready.publish.before")
+            if args.ready_file:
+                publish_ready(args.ready_file, server.info)
+            startup_stage(args.diagnose_startup, "ready.publish.after")
+            if dump_armed:
+                faulthandler.cancel_dump_traceback_later()
+                dump_armed = False
+            print(json.dumps(server.info, sort_keys=True), flush=True)
+            def stop(*_):
+                raise KeyboardInterrupt()
+            signal.signal(signal.SIGTERM, stop)
+            try:
+                server.serve_forever(poll_interval=0.2)
+            except KeyboardInterrupt:
+                pass
+    finally:
+        if dump_armed:
+            faulthandler.cancel_dump_traceback_later()
     return 0
 
 

@@ -97,7 +97,8 @@ def run(work, command):
     with paths["online-fixture-server.log"].open("xb") as log:
         try:
             process = subprocess.Popen([sys.executable, "-B", str(HERE / "online-source-fixture.py"),
-                                        "--port", "18769", "--ready-file", str(paths["online-fixture-ready.json"])],
+                                        "--port", "18769", "--diagnose-startup",
+                                        "--ready-file", str(paths["online-fixture-ready.json"])],
                                        cwd=REPO, stdout=log, stderr=subprocess.STDOUT)
             ready = wait_ready(process, paths["online-fixture-ready.json"])
             code = subprocess.run(command, cwd=REPO, check=False).returncode

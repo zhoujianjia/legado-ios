@@ -3,11 +3,13 @@
 import base64
 from copy import deepcopy
 import importlib.util
+import io
 import json
 from pathlib import Path
 import tempfile
 import threading
 import unittest
+from unittest.mock import MagicMock, Mock, patch
 from urllib.error import HTTPError
 from urllib.request import Request, build_opener, ProxyHandler
 import uuid
@@ -168,6 +170,71 @@ class OnlineSourceFixtureTests(unittest.TestCase):
         with self.assertRaises(OSError):
             with fixture.FixtureServer(self.server.server_port):
                 self.fail("A running fixture port must never be silently reused")
+
+
+class StartupDiagnosticsTests(unittest.TestCase):
+    def server_context(self):
+        context = MagicMock()
+        server = Mock(info={"fixture": "synthetic"})
+        context.__enter__.return_value = server
+        context.__exit__.return_value = False
+        return context, server
+
+    def test_success_cancels_the_single_startup_dump_before_serving(self):
+        context, server = self.server_context()
+        with tempfile.TemporaryDirectory() as temporary, \
+                patch.object(fixture, "FixtureServer", return_value=context), \
+                patch.object(fixture.faulthandler, "dump_traceback_later") as arm, \
+                patch.object(fixture.faulthandler, "cancel_dump_traceback_later") as cancel, \
+                patch.object(fixture.signal, "signal"), \
+                patch.object(fixture.sys, "stderr", new_callable=io.StringIO) as stderr, \
+                patch.object(fixture.sys, "stdout", new_callable=io.StringIO) as stdout:
+            # publish_ready's atomic/exclusive behavior is tested above with a real file.
+            ready = Path(temporary) / "ready.json"
+            server.info = fixture.metadata("http://localhost:18769", str(uuid.uuid4()))
+            def serve(**_):
+                cancel.assert_called_once_with()
+                self.assertTrue(ready.exists())
+                raise KeyboardInterrupt()
+            server.serve_forever.side_effect = serve
+            self.assertEqual(fixture.main(["--port", "0", "--ready-file", str(ready), "--diagnose-startup"]), 0)
+            arm.assert_called_once_with(8, repeat=False, file=stderr)
+            cancel.assert_called_once_with()
+            self.assertEqual(json.loads(stdout.getvalue()), server.info)
+            self.assertEqual([line.rsplit("=", 1)[1] for line in stderr.getvalue().splitlines()],
+                             ["main.entered", "construct.before", "construct.after",
+                              "ready.publish.before", "ready.publish.after"])
+
+    def test_constructor_and_publisher_failures_cancel_the_startup_dump(self):
+        for failed_phase in ("constructor", "publisher"):
+            with self.subTest(phase=failed_phase), tempfile.TemporaryDirectory() as temporary:
+                context, server = self.server_context()
+                with patch.object(fixture, "FixtureServer", return_value=context) as construct, \
+                        patch.object(fixture, "publish_ready") as publish, \
+                        patch.object(fixture.faulthandler, "dump_traceback_later") as arm, \
+                        patch.object(fixture.faulthandler, "cancel_dump_traceback_later") as cancel, \
+                        patch.object(fixture.sys, "stderr", new_callable=io.StringIO) as stderr:
+                    (construct if failed_phase == "constructor" else publish).side_effect = OSError("synthetic startup failure")
+                    with self.assertRaisesRegex(OSError, "synthetic startup failure"):
+                        fixture.main(["--port", "0", "--ready-file", str(Path(temporary) / "ready.json"), "--diagnose-startup"])
+                    arm.assert_called_once_with(8, repeat=False, file=stderr)
+                    cancel.assert_called_once_with()
+                    self.assertNotIn("stage=ready.publish.after", stderr.getvalue())
+                    server.serve_forever.assert_not_called()
+
+    def test_startup_diagnostics_are_opt_in(self):
+        context, server = self.server_context()
+        server.serve_forever.side_effect = KeyboardInterrupt()
+        with patch.object(fixture, "FixtureServer", return_value=context), \
+                patch.object(fixture.faulthandler, "dump_traceback_later") as arm, \
+                patch.object(fixture.faulthandler, "cancel_dump_traceback_later") as cancel, \
+                patch.object(fixture.signal, "signal"), \
+                patch.object(fixture.sys, "stderr", new_callable=io.StringIO) as stderr, \
+                patch.object(fixture.sys, "stdout", new_callable=io.StringIO):
+            self.assertEqual(fixture.main(["--port", "0"]), 0)
+            arm.assert_not_called()
+            cancel.assert_not_called()
+            self.assertEqual(stderr.getvalue(), "")
 
 
 if __name__ == "__main__":
