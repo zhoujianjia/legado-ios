@@ -33,6 +33,20 @@ jobs:
           python3 -m json.tool .build/dispatch-signals/observed.json > /dev/null
           sw_vers > .build/dispatch-signals/platform.txt
           uname -m >> .build/dispatch-signals/platform.txt
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Check the JNI bridge with the host Objective-C compiler
+        run: |
+          # This checks syntax with real JNI headers. It neither links nor runs
+          # a JVM, and does not replace the iOS Simulator integration test.
+          shasum -a 256 Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m >> .build/dispatch-signals/source-sha256.txt
+          xcrun clang -fsyntax-only -x objective-c -fobjc-arc -DLGR_WITH_OPENJDK=1 \
+            -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/darwin" \
+            -IPackages/LegadoRuntime/Sources/CLegadoJNI/include \
+            Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m \
+            2>&1 | tee .build/dispatch-signals/bridge-host-syntax.log
       - name: Preserve raw signal-mask observations
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

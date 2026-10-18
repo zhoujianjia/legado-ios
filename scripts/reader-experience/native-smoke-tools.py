@@ -29,9 +29,30 @@ def validate_tag():
     return source
 
 
+def prepare(work):
+    source = validate_tag()
+    original_overlay = smoke.overlay_info
+    original_validate = smoke.validate_tag
+
+    def stamped_info(path, record_path):
+        return original_overlay(path, record_path, source_commit=source)
+
+    # This is a private imported module instance. Existing UI/data smoke
+    # protocols retain their unstamped default, including old audit records.
+    try:
+        smoke.validate_tag = validate_tag
+        smoke.overlay_info = stamped_info
+        return smoke.prepare(work)
+    finally:
+        smoke.overlay_info = original_overlay
+        smoke.validate_tag = original_validate
+
+
 def result(work):
     source = validate_tag()
     audit = smoke.read_json(work / "overlays.json")
+    if audit.get("infoOverlay", {}).get("sourceCommitStamped") != source:
+        raise ValueError("Native smoke preparation did not stamp this source checkout")
     smoke.review_overlays(audit)
     settings = smoke.read_json(work / "build-settings.json")
     matches = [item["buildSettings"] for item in settings if item.get("target") == smoke.config.MAIN_TARGET]
@@ -48,6 +69,7 @@ def result(work):
     app = smoke.config.checked_path(Path(actual["TARGET_BUILD_DIR"]) / actual["FULL_PRODUCT_NAME"])
     info = smoke.config.read_info(app)
     smoke.require_local_info(info)
+    smoke.require_source_stamp(info, source)
     if info.get("CFBundleSupportedPlatforms") != ["iPhoneSimulator"]:
         raise ValueError("Expected the actual Simulator application")
     if smoke.read_json(work / "native-exports.json").get("requiredDynamicExportsPresent") is not True:
@@ -55,6 +77,7 @@ def result(work):
     if smoke.read_json(work / "native-restore.json").get("sourceCommit") != source:
         raise ValueError("Native restoration source differs from the tested checkout")
     return {"schemaVersion": 1, "sourceCommit": source, "status": "passed",
+            "sourceCommitStamped": source,
             "executionPlatform": "ios-simulator", "configuration": "Debug",
             "targetedTests": smoke.verify_summary(smoke.read_json(work / "summary.json"), 1),
             "testedApp": str(app), "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
@@ -81,8 +104,7 @@ def main():
         record = packaging.restore()
         smoke.config.write_new_json(work / "native-restore.json", record)
     elif args.phase == "prepare":
-        smoke.validate_tag = validate_tag
-        record = smoke.prepare(work)
+        record = prepare(work)
     else:
         record = result(work)
         smoke.config.write_new_json(work / "result.json", record)

@@ -32,10 +32,11 @@ NATIVE_NAME = re.compile(r"(?:stages\.log|vm-output\.log|hs_err_pid[0-9]+\.log)\
 
 
 def checked(path):
+    requested = str(path)
     path = Path(path).absolute()
     for part in (path, *path.parents):
         if part.is_symlink() or getattr(part, "is_junction", lambda: False)():
-            raise ValueError("Refusing a linked diagnostics path")
+            raise ValueError(f"Refusing a linked diagnostics path: rejectedPart={part}; requestedPath={requested}")
     return path.resolve(strict=False)
 
 
@@ -163,17 +164,21 @@ def collect(udid, output, preparation, source, run=command, home=None):
                             except Exception as error:
                                 record["errors"].append(type(error).__name__ + ": " + str(error))
         record["nativeDiagnosticsDirectoryPresent"] = native.is_dir()
-        home = checked(home or Path.home())
+        home = Path(home or Path.home()).absolute()
         roots = [("host", home / "Library/Logs/DiagnosticReports"),
                  ("simulator", home / "Library/Developer/CoreSimulator/Devices" / udid / "data/Library/Logs/CrashReporter")]
         for label, directory in roots:
-            directory = checked(directory)
-            if directory.is_dir():
-                for path in entries(directory, "YueduReader*.ips"):
-                    try:
-                        copy(path, "crash-reports/" + label + "/" + path.name, label + "-ips", since, crash=True)
-                    except Exception as error:
-                        record["errors"].append(type(error).__name__ + ": " + str(error))
+            origin = label + "-ips"
+            try:
+                directory = checked(directory)
+                if directory.is_dir():
+                    for path in entries(directory, "YueduReader*.ips"):
+                        try:
+                            copy(path, "crash-reports/" + label + "/" + path.name, origin, since, crash=True)
+                        except Exception as error:
+                            record["errors"].append("origin=" + origin + " " + type(error).__name__ + ": " + str(error))
+            except Exception as error:
+                record["errors"].append("origin=" + origin + " " + type(error).__name__ + ": " + str(error))
     except Exception as error:
         # The always step must retain a precise missing-container/log explanation,
         # including failures before installation, without changing the XCTest result.

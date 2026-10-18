@@ -40,6 +40,29 @@ class SmokeEvidenceTests(unittest.TestCase):
         self.assertEqual(info["CFBundleURLTypes"][0]["CFBundleURLSchemes"], [smoke.config.GOOGLE_REVERSED, "yuedu", "legado"])
         self.assertEqual(report["originalSHA256"], smoke.hashlib.sha256(original).hexdigest())
         self.assertEqual(report["overlaySHA256"], smoke.config.digest(path))
+        self.assertNotIn("sourceCommitStamped", report)
+        self.assertNotIn("YueduExperienceSourceCommit", info)
+
+    def test_explicit_source_stamp_binds_full_and_short_sha_in_info_and_record(self):
+        path = self.root / "Info.plist"
+        self.write(path, plistlib.dumps(self.source_info()))
+        report = smoke.overlay_info(path, self.root / "info-overlay.json", source_commit=SOURCE)
+        info = plistlib.loads(path.read_bytes())
+        smoke.require_source_stamp(info, SOURCE)
+        self.assertEqual(report["sourceCommitStamped"], SOURCE)
+        self.assertEqual(info["GitCommitSHA"], SOURCE[:7])
+        self.assertEqual(report["overlaySHA256"], smoke.config.digest(path))
+
+    def test_invalid_source_stamp_is_rejected_before_info_or_record_mutation(self):
+        path = self.root / "Info.plist"
+        original = plistlib.dumps(self.source_info())
+        self.write(path, original)
+        record = self.root / "info-overlay.json"
+        for value in ("", "A" * 40, "a" * 39, "a" * 41, SOURCE + "\n", True):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "full lowercase"):
+                smoke.overlay_info(path, record, source_commit=value)
+            self.assertEqual(path.read_bytes(), original)
+            self.assertFalse(record.exists())
 
     def test_source_overlay_refuses_overwriting_audit_before_mutation(self):
         path = self.root / "Info.plist"
@@ -73,10 +96,10 @@ class SmokeEvidenceTests(unittest.TestCase):
             with patch.dict(smoke.os.environ, {"GITHUB_REF_NAME": "reader-experience-aaaaaaa"}), self.assertRaises(ValueError):
                 smoke.validate_tag()
 
-    def audit_fixture(self):
+    def audit_fixture(self, source_commit=None):
         originals = {smoke.INFO: plistlib.dumps(self.source_info()), smoke.config.PROJECT: b"original project"}
         self.write(self.root / smoke.INFO, originals[smoke.INFO])
-        info = smoke.overlay_info(self.root / smoke.INFO, self.root / "info-overlay.json")
+        info = smoke.overlay_info(self.root / smoke.INFO, self.root / "info-overlay.json", source_commit=source_commit)
         self.write(self.root / smoke.config.PROJECT, b"project overlay")
         project = {"path": smoke.config.PROJECT,
                    "originalSHA256": smoke.hashlib.sha256(originals[smoke.config.PROJECT]).hexdigest(),
@@ -90,6 +113,29 @@ class SmokeEvidenceTests(unittest.TestCase):
                 return originals[args[1].removeprefix("HEAD:")]
             raise AssertionError(args)
         return audit, git
+
+    def test_stamped_review_rejects_record_and_info_source_mismatches(self):
+        audit, git = self.audit_fixture(source_commit=SOURCE)
+        with patch.object(smoke, "REPO", self.root), patch.object(smoke, "source_sha", return_value=SOURCE), \
+                patch.object(smoke, "git", side_effect=git):
+            smoke.review_overlays(audit)
+            altered = copy.deepcopy(audit)
+            altered["infoOverlay"]["sourceCommitStamped"] = "b" * 40
+            with self.assertRaisesRegex(ValueError, "stamp differs"):
+                smoke.review_overlays(altered)
+            path = self.root / smoke.INFO
+            original = path.read_bytes()
+            for key, value in (("YueduExperienceSourceCommit", "b" * 40), ("GitCommitSHA", "b" * 7)):
+                with self.subTest(key=key):
+                    info = plistlib.loads(original)
+                    info[key] = value
+                    self.write(path, plistlib.dumps(info))
+                    altered = copy.deepcopy(audit)
+                    # Still reject a stamp mismatch when the audit's byte digest
+                    # has been rewritten to match those incorrect Info bytes.
+                    altered["infoOverlay"]["overlaySHA256"] = smoke.config.digest(path)
+                    with self.assertRaisesRegex(ValueError, "full and short"):
+                        smoke.review_overlays(altered)
 
     def test_overlay_review_rejects_tampered_source_or_additional_changes(self):
         audit, git = self.audit_fixture()

@@ -45,7 +45,10 @@ def validate_tag():
     return source
 
 
-def overlay_info(path, record_path):
+def overlay_info(path, record_path, source_commit=None):
+    if source_commit is not None and (not isinstance(source_commit, str)
+                                      or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None):
+        raise ValueError("Info source stamp requires a full lowercase source Git SHA")
     path, record_path = config.checked_path(path), config.checked_path(record_path)
     if record_path.exists():
         raise ValueError("Refusing to replace prior Info overlay evidence")
@@ -54,6 +57,9 @@ def overlay_info(path, record_path):
     info.update(config.LOCAL_FLAGS)
     info["GatewayBaseURL"] = ""
     info["GIDClientID"] = config.GOOGLE_CLIENT
+    if source_commit is not None:
+        info["YueduExperienceSourceCommit"] = source_commit
+        info["GitCommitSHA"] = source_commit[:7]
     for entry in info.get("CFBundleURLTypes", []):
         entry["CFBundleURLSchemes"] = [config.GOOGLE_REVERSED if item.startswith("com.googleusercontent.apps.") else item
                                        for item in entry.get("CFBundleURLSchemes", [])]
@@ -62,6 +68,8 @@ def overlay_info(path, record_path):
               "overlaySHA256": hashlib.sha256(replacement).hexdigest(),
               "localFlags": config.LOCAL_FLAGS, "gatewayConfigured": False,
               "upstreamOAuthReplaced": True, "expectedTrackedOverlay": True}
+    if source_commit is not None:
+        record["sourceCommitStamped"] = source_commit
     config.write_new_json(record_path, record)
     path.write_bytes(replacement)
     return record
@@ -103,6 +111,10 @@ def review_overlays(audit):
             raise ValueError("Original smoke overlay bytes differ from source HEAD")
     info = plistlib.loads((REPO / INFO).read_bytes())
     require_local_info(info)
+    if "sourceCommitStamped" in audit["infoOverlay"]:
+        if audit["infoOverlay"]["sourceCommitStamped"] != audit["sourceCommit"]:
+            raise ValueError("Info source stamp differs from its preparation source")
+        require_source_stamp(info, audit["sourceCommit"])
     if plistlib.loads((REPO / "GoogleService-Info.plist").read_bytes()) != config.synthetic_config():
         raise ValueError("Smoke Firebase configuration must remain exactly synthetic")
 
@@ -113,6 +125,13 @@ def require_local_info(info):
             raise ValueError("Missing explicit local-mode Info Boolean: " + name)
     if info.get("GatewayBaseURL") != "" or info.get("GIDClientID") != config.GOOGLE_CLIENT:
         raise ValueError("Smoke host must have an empty gateway and synthetic OAuth identity")
+
+
+def require_source_stamp(info, source):
+    if (not isinstance(source, str) or re.fullmatch(r"[0-9a-f]{40}", source) is None
+            or info.get("YueduExperienceSourceCommit") != source
+            or info.get("GitCommitSHA") != source[:7]):
+        raise ValueError("Info source stamp must match the full and short preparation source SHA")
 
 
 def verify_summary(summary, expected):

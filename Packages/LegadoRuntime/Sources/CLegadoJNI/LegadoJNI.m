@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <signal.h>
 #if __has_feature(objc_arc)
 #define LGR_AUTORELEASE(value) (value)
 #else
@@ -352,6 +353,39 @@ LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapM
         return resultText(failure ?: @"{}", failure ? 4 : 0);
     }
 }
+// Restore the complete post-attach mask before HotSpot detaches and restores
+// its caller's original mask. Nothing here changes another thread or a handler.
+static LGRResult finishInvocation(JNIEnv *env, BOOL attached, BOOL framePushed,
+                                  const sigset_t *entryMask, LGRResult result, BOOL diagnosticOK) {
+    NSString *cleanupFailure = nil;
+    if (framePushed) (*env)->PopLocalFrame(env, NULL);
+    if (entryMask) {
+        BOOL before = recordStage("thread.sigio.restore.before", 0);
+        int restored = pthread_sigmask(SIG_SETMASK, entryMask, NULL);
+        BOOL after = recordStage("thread.sigio.restore.after", restored);
+        diagnosticOK = before && after && diagnosticOK;
+        if (restored != 0) {
+            cleanupFailure = [NSString stringWithFormat:@"Cannot restore worker signal mask (pthread_sigmask=%d)", restored];
+        }
+    }
+    if (attached) {
+        jint detached = (*vm)->DetachCurrentThread(vm);
+        diagnosticOK = recordStage("thread.detached", detached) && diagnosticOK;
+        if (detached != JNI_OK) {
+            NSString *message = @"Cannot detach JVM worker thread after restoring its signal mask";
+            cleanupFailure = cleanupFailure ? [cleanupFailure stringByAppendingFormat:@"; %@", message] : message;
+        }
+    }
+    if (cleanupFailure) { LGRFreeResult(result); result = resultText(cleanupFailure, 6); }
+    // A native thread/mask error must remain explicit even if recording its
+    // diagnostic also failed. Both outcomes are errors, never a Java success.
+    if (!diagnosticOK && result.code != 6) {
+        LGRFreeResult(result);
+        return diagnosticFailureResult();
+    }
+    return result;
+}
+
 // Each invocation gets its own JNIEnv and local frame. No JNIEnv crosses a Swift queue.
 static LGRResult invoke(int method, LGRString *arguments, int count) {
     @autoreleasepool {
@@ -378,11 +412,71 @@ static LGRResult invoke(int method, LGRString *arguments, int count) {
             if (attached) (*vm)->DetachCurrentThread(vm);
             return diagnosticFailureResult();
         }
+        // The pinned Unix NativeThread uses SIGIO to interrupt a socket poll.
+        // HotSpot attach preserves this bit from its caller; dispatch workers
+        // can enter with it blocked. Scope the adjustment to this invocation.
+        sigset_t entryMask;
+        int maskStatus = pthread_sigmask(SIG_BLOCK, NULL, &entryMask);
+        if (maskStatus != 0) {
+            BOOL recorded = recordStage("thread.sigio.query.failed", maskStatus);
+            return finishInvocation(env, attached, NO, NULL,
+                resultText([NSString stringWithFormat:@"Cannot inspect worker signal mask (pthread_sigmask=%d)", maskStatus], 6), recorded);
+        }
+        int blocked = sigismember(&entryMask, SIGIO);
+        if (blocked < 0) {
+            int savedError = errno;
+            BOOL recorded = recordStage("thread.sigio.membership.failed", savedError);
+            return finishInvocation(env, attached, NO, &entryMask,
+                resultText([NSString stringWithFormat:@"Cannot inspect worker SIGIO membership (errno=%d)", savedError], 6), recorded);
+        }
+        if (!recordStage(blocked ? "thread.sigio.entry.blocked" : "thread.sigio.entry.unblocked", 0)) {
+            return finishInvocation(env, attached, NO, &entryMask, diagnosticFailureResult(), NO);
+        }
+        if (blocked) {
+            // Keep SIGIO blocked until the pinned JDK has installed its own
+            // NativeThread handler. GetStaticMethodID initializes this bootstrap
+            // class; do not call threadToSignal or install a bridge-owned handler.
+            if (!recordStage("thread.sigio.handlerInit.before", 0)) {
+                return finishInvocation(env, attached, NO, &entryMask, diagnosticFailureResult(), NO);
+            }
+            jclass nativeThread = (*env)->FindClass(env, "sun/nio/ch/NativeThread");
+            NSString *initializationFailure = exceptionText(env);
+            jmethodID signalMethod = NULL;
+            if (nativeThread && !initializationFailure) {
+                signalMethod = (*env)->GetStaticMethodID(env, nativeThread, "threadToSignal", "()Ljava/lang/Thread;");
+                initializationFailure = exceptionText(env);
+            }
+            if (nativeThread) (*env)->DeleteLocalRef(env, nativeThread);
+            if (!signalMethod && !initializationFailure) initializationFailure = @"NativeThread initialization entry point is unavailable";
+            BOOL initializedRecorded = recordStage("thread.sigio.handlerInit.after", initializationFailure ? 7 : 0);
+            if (initializationFailure || !initializedRecorded) {
+                LGRResult error = initializationFailure ? resultText(initializationFailure, 7) : diagnosticFailureResult();
+                return finishInvocation(env, attached, NO, &entryMask, error, initializedRecorded);
+            }
+            sigset_t interrupt;
+            if (sigemptyset(&interrupt) != 0 || sigaddset(&interrupt, SIGIO) != 0) {
+                int savedError = errno;
+                BOOL recorded = recordStage("thread.sigio.set.failed", savedError);
+                return finishInvocation(env, attached, NO, &entryMask,
+                    resultText([NSString stringWithFormat:@"Cannot prepare worker SIGIO mask (errno=%d)", savedError], 6), recorded);
+            }
+            if (!recordStage("thread.sigio.unblock.before", 0)) {
+                return finishInvocation(env, attached, NO, &entryMask, diagnosticFailureResult(), NO);
+            }
+            maskStatus = pthread_sigmask(SIG_UNBLOCK, &interrupt, NULL);
+            BOOL recorded = recordStage("thread.sigio.unblock.after", maskStatus);
+            if (maskStatus != 0 || !recorded) {
+                LGRResult error = maskStatus != 0
+                    ? resultText([NSString stringWithFormat:@"Cannot unblock worker SIGIO (pthread_sigmask=%d)", maskStatus], 6)
+                    : diagnosticFailureResult();
+                return finishInvocation(env, attached, NO, &entryMask, error, recorded);
+            }
+        }
         if ((*env)->PushLocalFrame(env, 32) < 0) {
             exceptionText(env);
-            recordStage("invoke.localFrame.failed", 9);
-            if (attached) (*vm)->DetachCurrentThread(vm);
-            return resultText(@"Cannot allocate JNI local frame", 9);
+            BOOL recorded = recordStage("invoke.localFrame.failed", 9);
+            return finishInvocation(env, attached, NO, &entryMask,
+                resultText(@"Cannot allocate JNI local frame", 9), recorded);
         }
         jvalue values[4] = {0};
         NSString *failure = nil;
@@ -411,13 +505,7 @@ static LGRResult invoke(int method, LGRString *arguments, int count) {
         if (!failure) failure = exceptionText(env);
         if (!failure && !text) failure = @"Java facade returned a null response";
         LGRResult result = resultText(failure ?: text, failure ? 7 : 0);
-        (*env)->PopLocalFrame(env, NULL);
-        if (attached) {
-            jint detached = (*vm)->DetachCurrentThread(vm);
-            diagnosticOK = recordStage("thread.detached", detached) && diagnosticOK;
-        }
-        if (!diagnosticOK) { LGRFreeResult(result); return diagnosticFailureResult(); }
-        return result;
+        return finishInvocation(env, attached, YES, &entryMask, result, diagnosticOK);
     }
 }
 LGRResult LGRCreateSession(LGRString source) { return invoke(0, &source, 1); }
