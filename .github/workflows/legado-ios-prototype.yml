@@ -129,7 +129,7 @@ jobs:
       - name: Run the native Zero probe in Simulator
         run: python -B scripts/legado-ios/run-simulator-probe.py --require-native-tcp --require-native-tls --require-native-http-wire --require-native-cpu-loop 2>&1 | tee .build/ci-logs/simulator-probe.log
       - name: Save the unsigned probe and its build manifest
-        if: ${{ always() && hashFiles('.build/legado-ios/probe-output/LegadoRuntimeProbe-unsigned.ipa') != '' }}
+        if: ${{ always() && github.event.repository.private == true && hashFiles('.build/legado-ios/probe-output/LegadoRuntimeProbe-unsigned.ipa') != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: legado-probe-unsigned

@@ -40,9 +40,10 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/local-product-tests.log" -t 1200 --
   -only-testing:'yuedu appTests/CachedBookTXTExportTests' \
   -only-testing:'yuedu appTests/UserFontSettingsTests' \
   -only-testing:'yuedu appTests/SubscriptionPublicationTests' \
-  -only-testing:'yuedu appTests/PublicLibraryAvailabilityTests'
+  -only-testing:'yuedu appTests/PublicLibraryAvailabilityTests' \
+  -only-testing:'yuedu appTests/RemoteLibraryHTTPTests'
 xcrun xcresulttool get test-results summary --path "$WORK/local-product.xcresult" > "$WORK/local-product-summary.json"
-python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/local-product-summary.json" --expected 27
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/local-product-summary.json" --expected 41
 # Keep paging separate from configuration and product tests: a skipped or empty
 # SearchAutoPagingTests invocation cannot satisfy either group's count.
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/paging-tests.log" -t 1200 -- \

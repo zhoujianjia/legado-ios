@@ -152,7 +152,6 @@ struct TestFlightMembershipGate: View {
                     } else {
                         Button(localized("登入")) { showsLogin = true }
                     }
-                    Link(localized("開啟 App Store 正式版"), destination: URL(string: "https://apps.apple.com/app/id6772972358")!)
                 }
             }
             .softScrollEdges()

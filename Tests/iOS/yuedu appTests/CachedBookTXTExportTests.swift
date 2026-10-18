@@ -43,7 +43,8 @@ struct CachedBookTXTExportTests {
         let repository = ChapterCacheRepository(rootDirectory: directory.appendingPathComponent("cache"))
         let bookID = UUID()
         let chapter = OnlineChapterRef(index: 0, title: "第一章", url: "https://example.test/0")
-        try save(repository, bookID: bookID, position: 0, chapter: chapter, body: "<p>简体中文正文。</p><p>第二段。<img src=\"https://example.test/cover\"></p>")
+        let html = "<p>简体中文正文。</p><p>第二段。<img src=\"https://example.test/cover\"></p>"
+        try save(repository, bookID: bookID, position: 0, chapter: chapter, body: html, rawHTML: html)
         let result = try await CachedBookTXTExportService.export(
             CachedBookTXTExportRequest(bookID: bookID, title: "测试书", author: "作者", chapters: [chapter]),
             repository: repository, temporaryDirectory: directory
@@ -51,6 +52,30 @@ struct CachedBookTXTExportTests {
         #expect(result.cachedChapterCount == result.totalChapterCount)
         #expect(result.fileURL.lastPathComponent == "测试书.txt")
         #expect(try String(contentsOf: result.fileURL, encoding: .utf8) == "测试书\n作者\n\n第一章\n\n简体中文正文。\n第二段。\n\n")
+    }
+
+    @Test("authoritative plain text preserves literal tags, entities and whitespace")
+    func plainTextExportsWithoutHTMLInterpretation() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let repository = ChapterCacheRepository(rootDirectory: directory.appendingPathComponent("cache"))
+        let bookID = UUID()
+        let chapter = OnlineChapterRef(index: 0, title: "第一章 <literal> &lt;", url: "https://example.test/plain")
+        let body = "  原样保留 <标签> 与 &lt;code&gt;、&amp;。\r\n\t第二行。\n"
+        try save(repository, bookID: bookID, position: 0, chapter: chapter, body: body)
+        let package = try #require(repository.loadChapterPackageSync(
+            bookId: bookID, chapterIndex: 0, expectedSourceURL: chapter.sanitizedContentURL,
+            expectedTOCTitle: chapter.title
+        ))
+        #expect(package.rawHTMLFilename == nil)
+        #expect(package.normalizedHTMLFilename == nil)
+
+        let result = try await CachedBookTXTExportService.export(
+            CachedBookTXTExportRequest(bookID: bookID, title: "Plain", author: "Author", chapters: [chapter]),
+            repository: repository, temporaryDirectory: directory
+        )
+        let expected = "Plain\nAuthor\n\n" + chapter.title + "\n\n" + body + "\n\n"
+        #expect(try Data(contentsOf: result.fileURL) == Data(expected.utf8))
     }
 
     @Test("no readable cache produces an error and leaves no misleading TXT")
@@ -72,13 +97,14 @@ struct CachedBookTXTExportTests {
     }
 
     private func save(
-        _ repository: ChapterCacheRepository, bookID: UUID, position: Int, chapter: OnlineChapterRef, body: String
+        _ repository: ChapterCacheRepository, bookID: UUID, position: Int, chapter: OnlineChapterRef,
+        body: String, rawHTML: String? = nil
     ) throws {
         try repository.saveChapterPackageToCache(ChapterPackage(
             bookId: bookID, chapterIndex: position, sourceURL: chapter.sanitizedContentURL,
             tocTitle: chapter.title, canonicalTitle: chapter.title, content: body,
-            contentChecksum: "", rawHTMLFilename: nil, normalizedHTMLFilename: nil,
+            contentChecksum: "", rawHTMLFilename: rawHTML == nil ? nil : "\(position).raw.html", normalizedHTMLFilename: nil,
             savedAt: Date(), state: .cached, failureReason: nil
-        ), rawHTML: nil, normalizedHTML: nil)
+        ), rawHTML: rawHTML, normalizedHTML: nil)
     }
 }

@@ -74,13 +74,17 @@ enum CachedBookTXTExportService {
                       ),
                       package.state == .cached,
                       !package.content.isEmpty else { continue }
-                let body = ReaderHTMLUtilities.displayText(
-                    fromHTMLFragment: package.content, preservingLineBreaks: true
-                )
+                // mainJs and plain-text cache entries are authoritative text. Their literal
+                // <tags>, entities, indentation and line endings must survive an export.
+                let hasHTMLArtifact = package.rawHTMLFilename != nil || package.normalizedHTMLFilename != nil
+                let body = hasHTMLArtifact
+                    ? ReaderHTMLUtilities.displayText(fromHTMLFragment: package.content, preservingLineBreaks: true)
+                    : package.content
                 guard !body.isEmpty else { continue }
-                let heading = ReaderHTMLUtilities.displayText(
-                    fromHTMLFragment: package.renderTitle.isEmpty ? chapter.title : package.renderTitle
-                )
+                let storedHeading = package.canonicalTitle ?? package.tocTitle ?? chapter.title
+                let heading = hasHTMLArtifact
+                    ? ReaderHTMLUtilities.displayText(fromHTMLFragment: storedHeading)
+                    : storedHeading
                 try handle.write(contentsOf: Data((heading + "\n\n" + body + "\n\n").utf8))
                 cachedCount += 1
             }

@@ -23,7 +23,7 @@ extension RemoteLibraryTransport {
 final class RemoteLibraryHTTPClient: @unchecked Sendable, RemoteLibraryTransport {
     static var userAgent: String {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1"
-        return "Yuedu/\(version) (iOS; +https://yuedureader.com/support)"
+        return "LocalBookshelf/\(version) (iOS; +https://github.com/zhoujianjia/legado-ios)"
     }
 
     let baseURL: URL

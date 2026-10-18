@@ -101,6 +101,11 @@ class ReaderExperienceTests(unittest.TestCase):
             "\tPRODUCT_BUNDLE_IDENTIFIER = " + config.UPSTREAM_BUNDLE + suffix + ";"
             for suffix in ("", ".widget", ".shareextension", ".tests", ".uitests") for _ in range(2)) + "\n").encode()
 
+    def independent_project(self):
+        return self.original_project().replace(
+            ("PRODUCT_BUNDLE_IDENTIFIER = " + config.UPSTREAM_BUNDLE).encode(),
+            ("PRODUCT_BUNDLE_IDENTIFIER = " + config.MAIN_BUNDLE).encode())
+
     def test_stage_generates_only_known_synthetic_configuration(self):
         path = self.root / "GoogleService-Info.plist"
         report = config.stage(path)
@@ -127,6 +132,67 @@ class ReaderExperienceTests(unittest.TestCase):
         self.assertEqual(text.count("PRODUCT_BUNDLE_IDENTIFIER = " + config.MAIN_BUNDLE), 10)
         self.assertIn("// unrelated identifier " + config.UPSTREAM_BUNDLE, text)
         self.assertTrue(record["expectedTrackedOverlay"])
+        self.assertFalse(record["identifiersAlreadyIndependent"])
+
+    def test_independent_project_validates_all_ten_ids_without_rewriting(self):
+        original = self.independent_project()
+        path = self.write(self.root / config.PROJECT, original)
+        before_mtime = path.stat().st_mtime_ns
+        # The audit uses an exclusive text stream. No project write is permitted
+        # when its existing source identity is already the independent family.
+        with patch.object(Path, "write_bytes", side_effect=AssertionError("Unexpected project rewrite")):
+            record = config.overlay_project(path, self.root / "overlay.json")
+        self.assertEqual(path.read_bytes(), original)
+        self.assertEqual(path.stat().st_mtime_ns, before_mtime)
+        self.assertEqual(record["replacementCount"], 0)
+        self.assertTrue(record["identifiersAlreadyIndependent"])
+        self.assertFalse(record["expectedTrackedOverlay"])
+        self.assertEqual(record["originalSHA256"], record["overlaySHA256"])
+        self.assertEqual(len(record["settings"]), 5)
+        self.assertTrue(all(item["before"] == item["after"] and item["count"] == 2 for item in record["settings"]))
+        self.assertFalse(config.review_project_overlay(record, original, path.read_bytes()))
+
+    def test_overlay_rejects_mixed_unknown_duplicate_and_extra_identifiers(self):
+        for original, family, other in (
+                (self.original_project(), config.UPSTREAM_BUNDLE, config.MAIN_BUNDLE),
+                (self.independent_project(), config.MAIN_BUNDLE, config.UPSTREAM_BUNDLE)):
+            marker = ("PRODUCT_BUNDLE_IDENTIFIER = " + family).encode()
+            bad_projects = (
+                original.replace(marker, ("PRODUCT_BUNDLE_IDENTIFIER = " + other).encode(), 1),
+                original.replace(marker + b".tests;", marker + b".unknown;", 1),
+                original.replace(marker + b".tests;", marker + b".widget;", 1),
+                original + marker + b";\n",
+                original.replace(b"PRODUCT_BUNDLE_IDENTIFIER = ", b"PRODUCT_BUNDLE_IDENTIFIER=", 1),
+            )
+            for malformed in bad_projects:
+                with self.subTest(family=family, malformed=malformed):
+                    path = self.write(self.root / config.PROJECT, malformed)
+                    with self.assertRaisesRegex(ValueError, "exactly ten"):
+                        config.overlay_project(path, self.root / "rejected-overlay.json")
+                    self.assertEqual(path.read_bytes(), malformed)
+                    self.assertFalse((self.root / "rejected-overlay.json").exists())
+
+    def test_overlay_review_rejects_forged_profile_counts_hashes_and_actual_bytes(self):
+        for original in (self.original_project(), self.independent_project()):
+            overlaid, record = config.project_overlay(original)
+            self.assertEqual(config.review_project_overlay(record, original, overlaid), record["expectedTrackedOverlay"])
+            altered_values = (
+                ("replacementCount", 0 if record["replacementCount"] else 10),
+                ("replacementCount", False),
+                ("identifiersAlreadyIndependent", not record["identifiersAlreadyIndependent"]),
+                ("expectedTrackedOverlay", not record["expectedTrackedOverlay"]),
+                ("originalSHA256", "0" * 64),
+                ("overlaySHA256", "0" * 64),
+                ("settings", []),
+            )
+            for key, value in altered_values:
+                with self.subTest(key=key, independent=record["identifiersAlreadyIndependent"]), self.assertRaises(ValueError):
+                    config.review_project_overlay({**record, key: value}, original, overlaid)
+            # Updating a record's SHA cannot authorize unrelated project edits.
+            tampered = overlaid + b"// unrelated mutation\n"
+            forged = {**record, "overlaySHA256": config.hashlib.sha256(tampered).hexdigest()}
+            with self.assertRaises(ValueError):
+                config.review_project_overlay(forged, original, tampered)
 
     def test_overlay_rejects_unexpected_count_or_existing_record_without_modifying_project(self):
         original = self.original_project()
@@ -267,6 +333,36 @@ class ReaderExperienceTests(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             config.write_new_json(path, {"second": True})
         self.assertEqual(json.loads(path.read_text()), {"first": True})
+
+    def test_manifest_accepts_unchanged_independent_project_and_rejects_extra_tracked_edits(self):
+        app = self.app()
+        config.finalize(app, SOURCE)
+        ipa = self.write(self.root / "experience.ipa", b"packaged IPA fixture")
+        resolved = self.root / "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+        self.write(resolved, b"locked packages")
+        original = self.independent_project()
+        project = self.write(self.root / config.PROJECT, original)
+        overlay = config.overlay_project(project, self.root / "overlay.json")
+        extra_tracked = False
+        def git_output(args, **kwargs):
+            if "status" in args:
+                return " M Info.plist" if extra_tracked else ""
+            if "diff" in args:
+                return "Info.plist\n" if extra_tracked else ""
+            if "show" in args:
+                return original
+            raise AssertionError(args)
+        with patch.object(config, "REPO", self.root), patch.object(config.subprocess, "check_output", side_effect=git_output):
+            result = config.manifest(app, ipa, config.inspect_settings(self.settings()), SOURCE, "Xcode fixture", overlay)
+            self.assertFalse(result["workingTreeDirty"])
+            self.assertFalse(result["expectedTrackedOverlay"])
+            self.assertEqual(result["trackedChanges"], [])
+            self.assertEqual(result["projectOverlay"]["replacementCount"], 0)
+            self.assertTrue(result["projectOverlay"]["identifiersAlreadyIndependent"])
+            self.assertEqual(result["ipaSHA256"], config.digest(ipa))
+            extra_tracked = True
+            with self.assertRaisesRegex(ValueError, "recorded project"):
+                config.manifest(app, ipa, config.inspect_settings(self.settings()), SOURCE, "Xcode fixture", overlay)
 
 
 if __name__ == "__main__":

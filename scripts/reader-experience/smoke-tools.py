@@ -93,7 +93,8 @@ def prepare(directory):
     project = config.overlay_project(REPO / config.PROJECT, directory / "project-overlay.json")
     info = overlay_info(REPO / INFO, directory / "info-overlay.json")
     audit = {"schemaVersion": 1, "sourceCommit": source, "preparedAt": datetime.now(timezone.utc).isoformat(),
-             "expectedTrackedChanges": sorted(OVERLAYS), "projectOverlay": project, "infoOverlay": info,
+             "expectedTrackedChanges": sorted({INFO} | ({config.PROJECT} if project["expectedTrackedOverlay"] else set())),
+             "projectOverlay": project, "infoOverlay": info,
              "syntheticConfiguration": synthetic, "paidFeatureOverrides": False,
              "deliveredIPAModified": False, "configuration": "Debug"}
     review_overlays(audit)
@@ -104,13 +105,21 @@ def prepare(directory):
 def review_overlays(audit):
     if audit.get("sourceCommit") != source_sha():
         raise ValueError("Smoke source HEAD changed after preparation")
-    if set(git("diff", "--name-only", "HEAD").splitlines()) != OVERLAYS:
+    project = audit["projectOverlay"]
+    if type(project.get("expectedTrackedOverlay")) is not bool:
+        raise ValueError("Project overlay must declare its actual tracked-change state")
+    expected_changes = {INFO} | ({config.PROJECT} if project["expectedTrackedOverlay"] else set())
+    if set(git("diff", "--name-only", "HEAD").splitlines()) != expected_changes:
         raise ValueError("Only the declared source Info/project overlays may change tracked inputs")
+    if "expectedTrackedChanges" in audit and audit["expectedTrackedChanges"] != sorted(expected_changes):
+        raise ValueError("Declared tracked changes differ from the actual project overlay")
     for record in (audit["projectOverlay"], audit["infoOverlay"]):
         if record["path"] not in OVERLAYS or config.digest(REPO / record["path"]) != record["overlaySHA256"]:
             raise ValueError("Working smoke overlay differs from its audit record")
         if hashlib.sha256(git("show", "HEAD:" + record["path"], binary=True)).hexdigest() != record["originalSHA256"]:
             raise ValueError("Original smoke overlay bytes differ from source HEAD")
+    config.review_project_overlay(project, git("show", "HEAD:" + config.PROJECT, binary=True),
+                                  (REPO / config.PROJECT).read_bytes())
     info = plistlib.loads((REPO / INFO).read_bytes())
     require_local_info(info)
     if "sourceCommitStamped" in audit["infoOverlay"]:
@@ -169,7 +178,7 @@ def result(audit, settings, unit, ui, paging, product):
             "executionPlatform": "ios-simulator", "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "status": "passed",
             "targetedTests": {"cloudKitAndLocalServicesConfiguration": verify_summary(unit, 9),
-                              "localProductFeatures": verify_summary(product, 27),
+                              "localProductFeatures": verify_summary(product, 41),
                               "searchAutoPaging": verify_summary(paging, 12), "TXTReaderUI": verify_summary(ui, 1)},
             "testedApp": str(app), "testedInfoSHA256": config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "readerRoute": "Existing Yuedu/CoreText local TXT reader and source search pagination",
@@ -197,7 +206,7 @@ def main():
     verify = commands.add_parser("verify-summary")
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--expected", type=int, required=True)
-    summarize = commands.add_parser("result", help="Require configuration=9, product=27, paging=12 and TXT UI=1 summaries")
+    summarize = commands.add_parser("result", help="Require configuration=9, product=41, paging=12 and TXT UI=1 summaries")
     for name in ("audit", "settings", "unit", "ui", "paging", "product", "output"):
         summarize.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()

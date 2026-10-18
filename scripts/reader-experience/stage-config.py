@@ -98,31 +98,62 @@ def stage(destination):
             "upstreamCredentialsUsed": False}
 
 
+def project_overlay(original):
+    """Derive the exact permitted project bytes without touching the file."""
+    text = original.decode("utf-8")
+    pattern = re.compile(r"(?m)^(?P<prefix>[ \t]*PRODUCT_BUNDLE_IDENTIFIER = )"
+                         + r"(?P<identifier>[^;\r\n]+)(?P<tail>;[ \t]*\r?)$")
+    matches = list(pattern.finditer(text))
+    suffixes = ("", ".widget", ".shareextension", ".tests", ".uitests")
+    upstream_counts = {suffix: sum(item["identifier"] == UPSTREAM_BUNDLE + suffix for item in matches)
+                       for suffix in suffixes}
+    independent_counts = {suffix: sum(item["identifier"] == MAIN_BUNDLE + suffix for item in matches)
+                          for suffix in suffixes}
+    setting_count = len(re.findall(r"(?m)^[ \t]*PRODUCT_BUNDLE_IDENTIFIER\b", text))
+    already_independent = all(count == 2 for count in independent_counts.values())
+    all_upstream = all(count == 2 for count in upstream_counts.values())
+    if len(matches) != 10 or setting_count != 10 or not (already_independent or all_upstream):
+        raise ValueError("Expected exactly ten bundle-ID settings, two per target, all upstream or all independent")
+    if already_independent:
+        overlaid, counts, before_family = original, independent_counts, MAIN_BUNDLE
+    else:
+        overlaid = pattern.sub(lambda item: item["prefix"] + MAIN_BUNDLE
+                               + item["identifier"][len(UPSTREAM_BUNDLE):] + item["tail"], text).encode("utf-8")
+        counts, before_family = upstream_counts, UPSTREAM_BUNDLE
+    record = {"schemaVersion": 1, "path": PROJECT, "replacementCount": 0 if already_independent else 10,
+              "identifiersAlreadyIndependent": already_independent,
+              "originalSHA256": hashlib.sha256(original).hexdigest(),
+              "overlaySHA256": hashlib.sha256(overlaid).hexdigest(), "expectedTrackedOverlay": not already_independent,
+              "settings": [{"before": before_family + suffix, "after": MAIN_BUNDLE + suffix, "count": count}
+                           for suffix, count in counts.items()],
+              "scope": "Only PRODUCT_BUNDLE_IDENTIFIER settings; entitlements and other identifiers are unchanged in source."}
+    return overlaid, record
+
+
+def review_project_overlay(record, original_bytes, project_bytes):
+    """Verify source identity, record fields and actual bytes for both profiles."""
+    if not isinstance(record, dict):
+        raise ValueError("Project overlay record must be an object")
+    expected_bytes, expected_record = project_overlay(original_bytes)
+    for key, expected in expected_record.items():
+        if type(record.get(key)) is not type(expected) or record[key] != expected:
+            raise ValueError("Project overlay record differs from source identity: " + key)
+    if project_bytes != expected_bytes:
+        raise ValueError("Working project differs from its exact recorded source overlay")
+    return expected_record["expectedTrackedOverlay"]
+
+
 def overlay_project(project, report_path):
-    """Change only ten bundle-ID settings in this disposable build checkout."""
+    """Validate ten independent IDs, or replace exactly ten upstream settings."""
     project, report_path = checked_path(project), checked_path(report_path)
     if report_path.exists():
         raise ValueError("Refusing to overwrite an existing project overlay record")
     original = project.read_bytes()
-    text = original.decode("utf-8")
-    pattern = re.compile(r"(?m)^(?P<prefix>[ \t]*PRODUCT_BUNDLE_IDENTIFIER = )"
-                         + re.escape(UPSTREAM_BUNDLE)
-                         + r"(?P<suffix>(?:\.[A-Za-z0-9_]+)*)(?P<tail>;[ \t]*\r?)$")
-    matches = list(pattern.finditer(text))
-    counts = {suffix: sum(item["suffix"] == suffix for item in matches)
-              for suffix in ("", ".widget", ".shareextension", ".tests", ".uitests")}
-    if len(matches) != 10 or any(count != 2 for count in counts.values()):
-        raise ValueError("Expected exactly ten original bundle-ID settings, two per target")
-    overlaid = pattern.sub(lambda item: item["prefix"] + MAIN_BUNDLE + item["suffix"] + item["tail"], text).encode("utf-8")
-    record = {"schemaVersion": 1, "path": PROJECT, "replacementCount": len(matches),
-              "originalSHA256": hashlib.sha256(original).hexdigest(),
-              "overlaySHA256": hashlib.sha256(overlaid).hexdigest(), "expectedTrackedOverlay": True,
-              "settings": [{"before": UPSTREAM_BUNDLE + suffix, "after": MAIN_BUNDLE + suffix, "count": count}
-                           for suffix, count in counts.items()],
-              "scope": "Only PRODUCT_BUNDLE_IDENTIFIER settings; entitlements and other identifiers are unchanged in source."}
+    overlaid, record = project_overlay(original)
     # Write the audit record first; failure must not leave an unrecorded overlay.
     write_new_json(report_path, record)
-    project.write_bytes(overlaid)
+    if overlaid != original:
+        project.write_bytes(overlaid)
     return record
 
 
@@ -320,19 +351,15 @@ def manifest(app, ipa, settings, source, xcode, overlay, with_jvm=False):
             raise ValueError("Packaged version differs from the actual main target build settings")
     dirty = bool(subprocess.check_output(["git", "-C", str(REPO), "status", "--porcelain"], text=True).strip())
     tracked = subprocess.check_output(["git", "-C", str(REPO), "diff", "--name-only", "HEAD"], text=True).splitlines()
-    if tracked != [PROJECT] or not dirty:
-        raise ValueError("Expected only the recorded project bundle-ID overlay as a tracked change")
-    if (overlay.get("path") != PROJECT or overlay.get("replacementCount") != 10
-            or overlay.get("expectedTrackedOverlay") is not True
-            or digest(REPO / PROJECT) != overlay.get("overlaySHA256")):
-        raise ValueError("Working project does not match its recorded ten-setting overlay")
     original = subprocess.check_output(["git", "-C", str(REPO), "show", "HEAD:" + PROJECT])
-    if hashlib.sha256(original).hexdigest() != overlay.get("originalSHA256"):
-        raise ValueError("Original project overlay hash does not match source HEAD")
+    has_project_overlay = review_project_overlay(overlay, original, (REPO / PROJECT).read_bytes())
+    expected_tracked = [PROJECT] if has_project_overlay else []
+    if tracked != expected_tracked or (has_project_overlay and not dirty):
+        raise ValueError("Expected exactly the recorded project bundle-ID overlay as a tracked change")
     resolved = REPO / "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
     return {"schemaVersion": 1, "artifactKind": "legado-mainjs-reader-prototype" if with_jvm else "yuedu-local-reader-experience", "createdAt": utc_now(),
             "sourceCommit": source, "workingTreeDirty": dirty, "version": info["CFBundleShortVersionString"],
-            "expectedTrackedOverlay": True, "trackedChanges": tracked, "projectOverlay": overlay,
+            "expectedTrackedOverlay": has_project_overlay, "trackedChanges": tracked, "projectOverlay": overlay,
             "build": info["CFBundleVersion"], "bundleIdentifier": info["CFBundleIdentifier"],
             "displayName": info.get("CFBundleDisplayName", info.get("CFBundleName")),
             "configuration": "Release", "architecture": "arm64", "platform": "iPhoneOS", "minimumIOS": "18.0" if with_jvm else "17.0",

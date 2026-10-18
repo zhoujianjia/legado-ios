@@ -1,21 +1,14 @@
 ---
 layout: default
-title: Yuedu Reader Engineering
+title: 本地书架
 ---
 
-# Yuedu Reader Engineering
+# 本地书架
 
-Developer notes about building a native iOS reader with SwiftUI, CoreText, EPUB, RSS, and CJK typography.
+独立的 iOS 本地阅读器，与 Legado、Yuedu Reader 官方无关，也未获其背书。
 
-[Atom feed]({{ site.baseurl }}/feed.xml)
+功能、安装方式和兼容边界见[项目 README](https://github.com/zhoujianjia/legado-ios/blob/main/README.md)。目前没有本项目的 App Store、付费会员或官方 TestFlight 服务。
 
-## Legal
+[源码与许可说明](legal.html) · [本地版本数据流](privacy.html)
 
-- [Privacy Policy]({{ site.baseurl }}/privacy.html)
-- [User Agreement]({{ site.baseurl }}/terms.html)
-- [Paid Service Terms]({{ site.baseurl }}/paid-terms.html)
-
-## Posts
-
-- [Adapting EPUB 3 Features to CoreText in Yuedu Reader]({{ site.baseurl }}/2026/06/08/coretext-epub3-adaptation/)
-- [From WebView to CoreText: Building a Native EPUB Reader for iOS]({{ site.baseurl }}/2026/05/20/from-webview-to-coretext/)
+上游作者与代码来源保留在项目的 LICENSE、NOTICE 和来源记录中。

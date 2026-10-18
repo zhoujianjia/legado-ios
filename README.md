@@ -1,6 +1,6 @@
-# Legado iOS
+# 本地书架
 
-面向 iPhone 和 iPad 的本地阅读器，以 Legado 的书源和功能为兼容目标，采用原生阅读界面。目前是持续完善中的体验版。
+面向 iPhone 和 iPad 的独立本地阅读器，以 Legado 的书源和功能为兼容目标，采用原生阅读界面。目前是体验版，与 Legado、Yuedu Reader 官方无关，也未获其背书；“本地书架”暂作为本项目名称，不表示已完成商标检索。
 
 ## 可以做什么
 
@@ -38,10 +38,12 @@
 
 [功能对照与后续优先级](docs/legado-ios/feature-comparison.md) · [迁移进度](docs/legado-ios/migration-status.md)
 
-私人书源只在本机加入安装包，不提交仓库或上传云端构建。
+私人书源只在本机加入个人安装包，不提交仓库或上传云端构建。亲友分享包默认不携带这份含认证信息、授权情况未逐项确认的私人资源。
 
 ## 开发与来源
 
 Windows 可以整理源码和运行 JVM 测试；iOS 编译使用 Mac / Xcode 或仓库的 macOS Actions。构建说明见[开发文档](docs/legado-ios/cloud-build.md)。
 
 阅读界面与部分服务基于 [Yuedu Reader](https://github.com/CHANG-JUI-LIN/Yuedu-reader)，兼容基准为本机锁定的 Legado 源码。保留各部分原有许可证及署名，详见 [LICENSE](LICENSE)、[源码来源锁定](docs/legado-ios/provenance-lock.json)和[字体来源与许可](Resources/ReaderFonts/ReaderFonts-provenance.json)。
+
+本项目没有获得上游品牌素材使用许可，当前源码使用另行绘制的图标。给亲友提供 IPA 同样需要附带许可、修改说明及对应源码；MPL、Legado GPL 代码和 JDK 的义务分别核对，不把整个安装包简单视为“只有 MPL”。[分发核对记录](docs/legado-ios/redistribution-notes.md)完成前不公开分发 JVM 安装包。历史提交和旧构建产物仍需另行处理。

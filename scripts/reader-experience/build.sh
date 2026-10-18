@@ -36,7 +36,7 @@ BUILD_ARGS=(
   -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader
   -configuration Release -destination 'generic/platform=iOS'
   -onlyUsePackageVersionsFromResolvedFile
-  CURRENT_PROJECT_VERSION=8
+  CURRENT_PROJECT_VERSION=9
   IPHONEOS_DEPLOYMENT_TARGET="$MIN_IOS"
   ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS=
   GATEWAY_BASE_URL=
@@ -71,23 +71,25 @@ python3 "$SCRIPT_DIR/stage-config.py" manifest \
   --output "$OUTPUT/build-manifest.json" "${RUNTIME_ARGS[@]}"
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
 cat > "$OUTPUT/README.txt" <<'TEXT'
-Legado iOS 阅读原型（unsigned）
+本地书架（unsigned，独立修改版）
 
 本包将有限的 mainJs 书源流程接到本地 Rhino/JVM，正文使用原生 CoreText 阅读器。
 传统规则书源仍使用现有 JavaScriptCore 实现，尚未证明完整 Legado 兼容。
 build-manifest.json 记录了实际来源、普通 JVM JAR、内置书源资源和 IPA 的哈希。
-本包最低 iOS 18。账户、云服务和订阅后端未配置；使用合成配置并禁用遥测及 CloudKit。
+本包最低 iOS 18。应用账号、会员、遥测及 CloudKit 关闭；不提供上游官方服务。
+本项目与 Legado、Yuedu Reader 官方无关，也未获其背书。许可证和源码义务分别按组件核对。
+小范围分享同样需要许可和对应源码；当前完整 JVM 包的再分发核验未完成，请勿直接转发旧包。
 编译打包不代表真机运行或全部书源验收。安装前须自行签名主 App 和嵌入组件。
 TEXT
 else
 cat > "$OUTPUT/README.txt" <<'TEXT'
-Yuedu 本地阅读体验版（unsigned）
+本地书架（unsigned，独立修改版）
 
-本包提供现有 Yuedu 界面、CoreText 阅读器和 JavaScriptCore 书源流程。
-体验版使用独立 App 标识，不覆盖原版 Yuedu；构建清单记录了打包时的十处标识覆盖。
+本包提供 CoreText 阅读器和 JavaScriptCore 书源流程，原生界面基于 Yuedu Reader。
+本项目与原项目官方无关，也未获其背书。工程默认使用独立 App 标识；构建清单记录实际是否需要标识覆盖。
 实验性 JVM 尚未接入阅读主流程；本包不代表 Legado 全功能已迁移。
 可安装后尝试导入本地书、导入书源和搜索阅读；本轮只证明编译打包，未逐项验收这些功能。
-使用合成配置，账户、云服务和订阅验证不可用；本地模式禁用遥测及 CloudKit。
+应用账号、会员、遥测及 CloudKit 关闭；使用合成配置，不提供上游官方服务。
 
 安装前须自行签名主 App、嵌入扩展及所需框架；App Group/iCloud 等能力取决于签名授权。
 请保留 build-manifest.json 以核对版本、来源 SHA 和 IPA SHA256。

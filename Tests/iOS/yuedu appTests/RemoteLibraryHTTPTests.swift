@@ -47,7 +47,7 @@ struct RemoteLibraryHTTPTests {
     @Test func identifyingUserAgent() async throws {
         let client = fixtureClient()
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1"
-        let expected = "Yuedu/\(version) (iOS; +https://yuedureader.com/support)"
+        let expected = "LocalBookshelf/\(version) (iOS; +https://github.com/zhoujianjia/legado-ios)"
         LibraryHTTPProtocol.handler = { request in
             #expect(request.value(forHTTPHeaderField: "User-Agent") == expected)
             return (200, [:], Data("book".utf8))

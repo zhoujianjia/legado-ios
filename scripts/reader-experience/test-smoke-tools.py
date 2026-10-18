@@ -98,23 +98,38 @@ class SmokeEvidenceTests(unittest.TestCase):
             with patch.dict(smoke.os.environ, {"GITHUB_REF_NAME": "reader-experience-aaaaaaa"}), self.assertRaises(ValueError):
                 smoke.validate_tag()
 
-    def audit_fixture(self, source_commit=None):
-        originals = {smoke.INFO: plistlib.dumps(self.source_info()), smoke.config.PROJECT: b"original project"}
+    def audit_fixture(self, source_commit=None, already_independent=False):
+        family = smoke.config.MAIN_BUNDLE if already_independent else smoke.config.UPSTREAM_BUNDLE
+        original_project = "\n".join("PRODUCT_BUNDLE_IDENTIFIER = " + family + suffix + ";"
+                                     for suffix in ("", ".widget", ".shareextension", ".tests", ".uitests")
+                                     for _ in range(2)).encode()
+        originals = {smoke.INFO: plistlib.dumps(self.source_info()), smoke.config.PROJECT: original_project}
         self.write(self.root / smoke.INFO, originals[smoke.INFO])
         info = smoke.overlay_info(self.root / smoke.INFO, self.root / "info-overlay.json", source_commit=source_commit)
-        self.write(self.root / smoke.config.PROJECT, b"project overlay")
-        project = {"path": smoke.config.PROJECT,
-                   "originalSHA256": smoke.hashlib.sha256(originals[smoke.config.PROJECT]).hexdigest(),
-                   "overlaySHA256": smoke.config.digest(self.root / smoke.config.PROJECT)}
+        self.write(self.root / smoke.config.PROJECT, original_project)
+        project = smoke.config.overlay_project(self.root / smoke.config.PROJECT, self.root / "project-overlay.json")
         self.write(self.root / "GoogleService-Info.plist", plistlib.dumps(smoke.config.synthetic_config()))
         audit = {"sourceCommit": SOURCE, "projectOverlay": project, "infoOverlay": info}
         def git(*args, binary=False):
             if args[0] == "diff":
-                return "\n".join(sorted(smoke.OVERLAYS))
+                return "\n".join(sorted({smoke.INFO} | ({smoke.config.PROJECT} if project["expectedTrackedOverlay"] else set())))
             if args[0] == "show":
                 return originals[args[1].removeprefix("HEAD:")]
             raise AssertionError(args)
         return audit, git
+
+    def test_independent_source_ids_require_no_project_mutation_and_no_fake_overlay(self):
+        audit, git = self.audit_fixture(already_independent=True)
+        project = audit["projectOverlay"]
+        self.assertEqual(project["replacementCount"], 0)
+        self.assertEqual(project["originalSHA256"], project["overlaySHA256"])
+        with patch.object(smoke, "REPO", self.root), patch.object(smoke, "source_sha", return_value=SOURCE), \
+                patch.object(smoke, "git", side_effect=git):
+            smoke.review_overlays(audit)
+            altered = copy.deepcopy(audit)
+            altered["projectOverlay"]["replacementCount"] = 10
+            with self.assertRaisesRegex(ValueError, "source identity"):
+                smoke.review_overlays(altered)
 
     def test_stamped_review_rejects_record_and_info_source_mismatches(self):
         audit, git = self.audit_fixture(source_commit=SOURCE)
@@ -166,7 +181,7 @@ class SmokeEvidenceTests(unittest.TestCase):
         unit = {"totalTestCount": 9, "passedTests": 9, "failedTests": 0, "skippedTests": 0}
         ui = {**unit, "totalTestCount": 1, "passedTests": 1}
         paging = {**unit, "totalTestCount": 12, "passedTests": 12}
-        product = {**unit, "totalTestCount": 27, "passedTests": 27}
+        product = {**unit, "totalTestCount": 41, "passedTests": 41}
         with patch.object(smoke, "REPO", self.root), patch.object(smoke, "source_sha", return_value=SOURCE), \
                 patch.object(smoke, "git", side_effect=git):
             result = smoke.result(audit, settings, unit, ui, paging, product)
@@ -176,7 +191,7 @@ class SmokeEvidenceTests(unittest.TestCase):
             self.assertFalse(result["paidFeatureOverrides"])
             self.assertEqual(result["configuration"], "Debug")
             self.assertEqual(result["targetedTests"]["cloudKitAndLocalServicesConfiguration"]["totalTestCount"], 9)
-            self.assertEqual(result["targetedTests"]["localProductFeatures"]["totalTestCount"], 27)
+            self.assertEqual(result["targetedTests"]["localProductFeatures"]["totalTestCount"], 41)
             self.assertEqual(result["targetedTests"]["searchAutoPaging"]["totalTestCount"], 12)
             self.assertEqual(result["targetedTests"]["TXTReaderUI"]["totalTestCount"], 1)
             for key, value in (("totalTestCount", 0), ("totalTestCount", 11), ("totalTestCount", 19),

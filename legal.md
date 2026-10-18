@@ -1,29 +1,16 @@
 ---
 layout: default
-title: Legal
-description: User agreement and paid service terms for Yuedu Reader.
+title: 源码与许可说明
 ---
 
-<p><img src="{{ site.baseurl }}/Resources/Assets.xcassets/YueduLogo.imageset/YueduLogo.png" alt="Yuedu Reader logo" width="96" style="border-radius:20px"></p>
+# 源码与许可说明
 
-# 閱讀 Yuedu Reader 法律文件
+本地书架是独立修改版本，与 Legado、Yuedu Reader 官方无关，也未获其背书。上游名称仅用于准确说明代码来源。
 
-最後更新：2026 年 6 月 30 日
+本项目保留 [MPL-2.0 原文](https://github.com/zhoujianjia/legado-ios/blob/main/LICENSE)、[原作者与第三方声明](https://github.com/zhoujianjia/legado-ios/blob/main/NOTICE)及各组件独立许可证。GPL 解析代码、OpenJDK 和字体不能笼统归为 MPL；完整组合的分发结论仍待核对。
 
-- [使用者協議]({{ site.baseurl }}/terms.html)
-- [付費服務條款]({{ site.baseurl }}/paid-terms.html)
-- [隱私權政策]({{ site.baseurl }}/privacy.html)
+每份可分享安装包须提供对应版本的源码链接和许可说明；应用“关于”页会优先使用安装包记录的提交。没有来源提交时的 main 链接不能证明与该二进制对应。
 
-使用閱讀（Yuedu Reader）前，請閱讀並理解以上文件。若你不同意相關條款，請停止使用 App 或相關功能。
+[分发核对记录](https://github.com/zhoujianjia/legado-ios/blob/main/docs/legado-ios/redistribution-notes.md) · [字体许可](https://github.com/zhoujianjia/legado-ios/blob/main/Resources/ReaderFonts/ReaderFonts-provenance.json)
 
----
-
-# Yuedu Reader Legal Documents
-
-Last updated: June 30, 2026
-
-- [User Agreement]({{ site.baseurl }}/terms.html#en)
-- [Paid Service Terms]({{ site.baseurl }}/paid-terms.html#en)
-- [Privacy Policy]({{ site.baseurl }}/privacy.html#en)
-
-Before using Yuedu Reader, please read and understand these documents. If you do not agree, stop using the app or the relevant features.
+上游品牌素材未被视为开源代码的一部分，本项目已开始替换当前树中的名称、图标与截图。历史 Git 对象和旧云端构建记录不因替换当前文件而消失。
