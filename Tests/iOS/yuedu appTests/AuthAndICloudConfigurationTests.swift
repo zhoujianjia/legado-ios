@@ -13,6 +13,48 @@ struct AuthAndICloudConfigurationTests {
         #expect(!ReaderExperienceConfiguration.isLocalExperience(in: ["YueduLocalExperience": "true"]))
         #expect(ReaderExperienceConfiguration.isLocalExperience(in: ["YueduLocalExperience": true]))
         #expect(ReaderExperienceConfiguration.cloudKitEnabled == !ReaderExperienceConfiguration.isLocalExperience)
+        #expect(ReaderExperienceConfiguration.storeKitEnabled(in: nil))
+        #expect(ReaderExperienceConfiguration.storeKitEnabled(in: [:]))
+        #expect(ReaderExperienceConfiguration.storeKitEnabled(in: ["YueduLocalExperience": false]))
+        #expect(ReaderExperienceConfiguration.storeKitEnabled(in: ["YueduLocalExperience": "true"]))
+        #expect(!ReaderExperienceConfiguration.storeKitEnabled(in: ["YueduLocalExperience": true]))
+        #expect(ReaderExperienceConfiguration.storeKitEnabled == !ReaderExperienceConfiguration.isLocalExperience)
+    }
+
+    @Test("disabled StoreKit resolves without observing or requesting Apple services")
+    @MainActor
+    func disabledStoreKitDoesNotStartAutomaticWork() async {
+        let rememberedEnvironment = UserDefaults.standard.string(forKey: "subscription_running_environment")
+        // Keep observeTransactions at its production default: the capability
+        // itself must prevent the listener and launch task from being created.
+        let store = SubscriptionStore(storeKitEnabled: false)
+        #expect(store.hasResolvedEntitlements)
+        #expect(!store.isProActive)
+        #expect(store.products.isEmpty)
+        #expect(store.purchasedProductIDs.isEmpty)
+
+        await Task.yield()
+        await store.loadProducts()
+        await store.reloadProductsIfStorefrontChanged()
+        await store.refreshEntitlements()
+        await store.refreshAllEntitlements()
+        await store.authenticationDidChange(isAuthenticated: true)
+        await store.authenticationDidChange(isAuthenticated: false)
+        await store.restore()
+        await store.redeemOfferCode(in: nil)
+
+        #expect(store.hasResolvedEntitlements)
+        #expect(store.products.isEmpty)
+        #expect(store.purchasedProductIDs.isEmpty)
+        #expect(!store.storeKitIsProActive)
+        #expect(!store.accountIsProActive)
+        #expect(!store.iCloudIsProActive)
+        #expect(!store.isProActive)
+        #expect(!store.isLoadingProducts)
+        #expect(!store.isPurchasing)
+        #expect(!store.isRestoring)
+        #expect(!store.isRedeemingOfferCode)
+        #expect(UserDefaults.standard.string(forKey: "subscription_running_environment") == rememberedEnvironment)
     }
 
     @Test("disabled CloudKit sync constructs safely and rejects remote work")

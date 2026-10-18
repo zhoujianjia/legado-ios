@@ -145,7 +145,7 @@ def result(audit, settings, unit, ui):
     return {"schemaVersion": 1, "sourceCommit": audit["sourceCommit"], "configuration": "Debug",
             "executionPlatform": "ios-simulator", "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "status": "passed",
-            "targetedTests": {"cloudKitConfiguration": verify_summary(unit, 6), "TXTReaderUI": verify_summary(ui, 1)},
+            "targetedTests": {"cloudKitAndLocalServicesConfiguration": verify_summary(unit, 7), "TXTReaderUI": verify_summary(ui, 1)},
             "testedApp": str(app), "testedInfoSHA256": config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "readerRoute": "Existing Yuedu/CoreText local TXT reader",
             "covered": ["TXT auto-import through LocalBookImportService", "bookshelf entry", "visible CoreText body",

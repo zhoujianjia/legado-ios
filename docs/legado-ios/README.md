@@ -6,12 +6,14 @@ compatibility prototype. It does not establish full Legado parity or replace the
 production JavaScriptCore parser. The accepted migration gate requires a signed
 iPhone build to start without a debugger or JIT before full feature migration.
 
-The core now has a passing Simulator TCP loopback and a zero-difference strict
-comparison for one synthetic mainJs reading chain. The subsequent TLS attempt
-aborted in an unimplemented Zero signal-PC hook, before returning TLS results.
-The bounded [source repair](zero-signal-context.json) requires a fresh native
-build and the same four TLS cases; [TLS evidence](tls-capability.json) keeps the
-passing desktop results separate from the failed Simulator attempt.
+The core now has passing Simulator TCP and four-case TLS loopbacks, plus a
+zero-difference strict comparison for one synthetic mainJs reading chain.
+After the first TLS attempt aborted in an unimplemented Zero signal-PC hook,
+the bounded [source repair](zero-signal-context.json) was rebuilt for device
+and Simulator. [Run 39083752761](https://github.com/zhoujianjia/legado-ios/actions/runs/39083752761)
+returned all four TLS results with successful cleanup. [TLS evidence](tls-capability.json)
+preserves the earlier failure and current results; real HTTP wire and matching
+physical-device validation remain separate work.
 
 ## Reader experience build
 
@@ -23,6 +25,11 @@ route. It does not integrate the experimental JVM into search or reading.
 artifact/IPA hashes, device-target compilation and independent package audit.
 The app uses its own bundle identifier and synthetic backend configuration;
 account, CloudKit and subscription backend services are not configured.
+The first package predates a local-mode StoreKit fix: automated reading exposed
+repeated Apple Account prompts from `AppTransaction.shared`. Current source
+disables that build's StoreKit observers and requests, keeps Pro inactive and
+adds a configuration regression. A replacement Release build and fresh reading
+acceptance are pending; the page-visibility assertion is unchanged.
 
 Sign the IPA with the existing Windows installation workflow and try the
 [original TXT sample](fixtures/阅读体验样书.txt) before testing personal book

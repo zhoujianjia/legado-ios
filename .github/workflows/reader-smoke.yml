@@ -61,7 +61,7 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This run targets the existing six-test configuration suite (including disabled CloudKit construction) and one real TXT reader UI test. Exact nonzero passing counts and zero skips are required.
+          This run targets seven configuration tests (the original six plus the local StoreKit regression) and one real TXT reader UI test. Exact nonzero passing counts and zero skips are required.
           Source Info/project overlays establish isolated local mode before the test host first starts; their original and overlaid hashes are retained. The TXT test imports through the existing DEBUG hook, selects a chapter, closes, removes the import input and relaunches to verify persisted progress/body. Screenshots and accessibility trees are attached to the UI xcresult.
           One additional UI test imports a unique loopback book source through the real deep link, searches, opens details, adds the book, and reads two chapters through JavaScriptCore rules and CoreText. It requires exactly one passing test and zero skips, plus the owned server's complete request/response trace. Its verdict is saved separately from TXT acceptance.
           This is a Debug Simulator check of the existing Yuedu reader. It does not modify or execute the delivered Release IPA, validate the Files picker or real-site sources, or pass physical-device/full-Legado gates.

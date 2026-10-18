@@ -36,7 +36,7 @@
     "importURLSchemesPreserved": "passed",
     "noJVMOrProvisioningPayload": "passed",
     "physicalDeviceReading": "pending user trial",
-    "simulatorReadingSmoke": "pending after two existing-test compilation failures; selected configuration/UI cases have not executed"
+    "simulatorReadingSmoke": "Six configuration tests passed; the TXT UI case executed and failed its first visible-page marker assertion."
   },
   "trialScope": [
     "Local TXT and EPUB import, bookshelf and native reading",
@@ -76,6 +76,22 @@
       "readerUITestsExecuted": 0,
       "failure": "Two SVGCoverFixtureTests timeout closures attempted to return non-Sendable PageFragments across an isolation boundary. The previous BrowserViewport expression error is absent.",
       "repair": "Keep PageFragments on MainActor and return only the original nil/non-nil boolean through the Sendable timeout helper; preserve existing assertions and deadlines."
+    },
+    {
+      "sourceCommit": "c211264b0777a6d84353bbbfba9faf99cb947779",
+      "runId": 39082689522,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39082689522",
+      "artifactId": 12120392143,
+      "artifactZipSHA256": "019193184ae83a72d84092df9404a34f2eeac6a1dd3e0425019af6aa89b77213",
+      "status": "failed_during_txt_ui_execution",
+      "configurationTestsExecuted": 6,
+      "configurationTestsPassed": 6,
+      "configurationTestsSkipped": 0,
+      "readerUITestsExecuted": 1,
+      "readerUITestsPassed": 0,
+      "failure": "ReaderLocalSmokeUITests.swift:146: opened book did not satisfy the centered visible LOCAL_READER_SMOKE_OPENING assertion before timeout.",
+      "investigation": "Screenshot and app stdout show repeated SpringBoard Apple Account sign-in prompts correlated with SubscriptionStore AppTransaction.shared queries; the shelf click was interrupted before reader navigation. No CoreText rendering failure was established.",
+      "repair": "Explicit local mode now disables StoreKit observation and requests without granting Pro or assigning a fictitious environment; retain the same visible-page assertion and add a seventh configuration regression. A replacement Release build and fresh UI run remain pending."
     }
   ]
 }

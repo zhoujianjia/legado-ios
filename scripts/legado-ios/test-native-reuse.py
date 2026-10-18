@@ -99,6 +99,11 @@ class NativeIdentityTests(unittest.TestCase):
                 reuse.source_inputs(CURRENT)
 
     def test_successful_fixed_producer_and_artifact(self):
+        self.assertEqual((reuse.BASELINE_RUN, reuse.BASELINE_SHA, reuse.BASELINE_ARTIFACT,
+                          reuse.BASELINE_BYTES, reuse.BASELINE_DIGEST, reuse.SOURCE_WORKFLOW_BLOB),
+                         (39083752761, "ce792982a30942e605fc935b733c5b41bef2736a", 12120530642,
+                          89898489, "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+                          "acc22e4f49b24200f75f85b679564b4e8867d28c"))
         self.assertEqual(reuse.native_source(FakeAPI())["artifact"]["id"], reuse.BASELINE_ARTIFACT)
 
     def test_wrong_source_workflow_or_failed_producer_rejected(self):
@@ -106,14 +111,14 @@ class NativeIdentityTests(unittest.TestCase):
                            ("status", "in_progress"), ("conclusion", "failure")):
             api = FakeAPI()
             api.state[key] = value
-            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "pinned build-6"):
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "pinned native producer"):
                 reuse.native_source(api)
 
     def test_wrong_pinned_artifact_id_digest_or_size_rejected(self):
         for key, value in (("id", 1), ("size_in_bytes", 1), ("digest", "sha256:" + "0" * 64)):
             api = FakeAPI()
             api.inventory[0][key] = value
-            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "audited build-6"):
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "audited native producer"):
                 reuse.native_source(api)
 
     def test_duplicate_expired_missing_digest_or_foreign_artifact_rejected(self):

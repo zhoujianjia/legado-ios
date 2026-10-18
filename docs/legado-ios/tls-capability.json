@@ -140,20 +140,142 @@
     "timingScope": "Includes diagnostic setup and cleanup; not a reader performance benchmark."
   },
   "iosSimulator": {
-    "status": "failed_native_abort_before_results",
-    "runId": 39081663847,
-    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39081663847",
-    "sourceCommit": "07c68b30263ded257fef7fbab0cc88d122ab4d3d",
-    "probeBuild": 11,
-    "failure": "Zero ucontext_get_pc hit ShouldNotCall() at prepared os_bsd_zero.cpp:92; original signal and TLS case are not established.",
-    "completeTLSReportReturned": false,
-    "preflightReportSHA256": "fd3d090d0d35502c5caf69e6713a1030bf2b23059ac7c7b5c26264b61598df01",
-    "hsErrSHA256": "327dc937ee3ae466da2a09a9866dd941206b35977f634949b153b667f4df815e",
-    "logsArtifactId": 12119855695,
-    "logsArtifactSHA256": "6ef5ce1ec9c07d936b51cb17339da117c139ab8ad1379f5c98197f62d7d9f848",
-    "nativeExportCheck": "39 present",
+    "status": "passed",
+    "runId": 39083752761,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39083752761",
+    "sourceCommit": "ce792982a30942e605fc935b733c5b41bef2736a",
+    "probeBuild": 12,
+    "freshNativeBuild": "Both device and Simulator slices rebuilt from pinned sources with the bounded signal-context repair",
+    "reportSHA256": "81a5ce77edbbbd1800123d51832e16f858d0f6a2d0072cdb656e21f13cf8754d",
+    "reportBytes": 65587,
+    "completeTLSReportReturned": true,
+    "nativeTCPPassed": true,
+    "nativeExportCheck": "39 dynamic exports independently present",
     "sourceOnlySwiftTests": 19,
-    "freshNativeSourceBuild": "required; see zero-signal-context.json"
+    "tlsResult": {
+      "cases": [
+        {
+          "applicationRoundtrip": true,
+          "cipherSuite": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+          "classification": "ACCEPTED",
+          "clientFailure": [],
+          "elapsedMilliseconds": 634.444166,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "expected": "ACCEPTED",
+          "name": "trusted-tls12",
+          "negotiatedProtocol": "TLSv1.2",
+          "passed": true,
+          "peerCertificateSHA256": "f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10",
+          "peerHost": "localhost",
+          "protocol": "TLSv1.2",
+          "serverFailure": [],
+          "trustAnchorSHA256": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08"
+        },
+        {
+          "applicationRoundtrip": true,
+          "cipherSuite": "TLS_AES_256_GCM_SHA384",
+          "classification": "ACCEPTED",
+          "clientFailure": [],
+          "elapsedMilliseconds": 458.814584,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "expected": "ACCEPTED",
+          "name": "trusted-tls13",
+          "negotiatedProtocol": "TLSv1.3",
+          "passed": true,
+          "peerCertificateSHA256": "f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10",
+          "peerHost": "localhost",
+          "protocol": "TLSv1.3",
+          "serverFailure": [],
+          "trustAnchorSHA256": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08"
+        },
+        {
+          "applicationRoundtrip": false,
+          "classification": "CERTIFICATE_CHAIN_REJECTED",
+          "clientFailure": [
+            {
+              "message": "(certificate_unknown) PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target",
+              "type": "javax.net.ssl.SSLHandshakeException"
+            },
+            {
+              "message": "PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target",
+              "type": "sun.security.validator.ValidatorException"
+            },
+            {
+              "message": "unable to find valid certification path to requested target",
+              "type": "sun.security.provider.certpath.SunCertPathBuilderException"
+            }
+          ],
+          "elapsedMilliseconds": 374.990292,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "expected": "CERTIFICATE_CHAIN_REJECTED",
+          "name": "untrusted-ca",
+          "passed": true,
+          "peerHost": "localhost",
+          "protocol": "TLSv1.3",
+          "serverFailure": [
+            {
+              "message": "Socket closed",
+              "type": "java.net.SocketException"
+            }
+          ],
+          "trustAnchorSHA256": "c7e734a9fc9cc0c07346315745226756b32d3dadd92e46cef9986c1d5440604e"
+        },
+        {
+          "applicationRoundtrip": false,
+          "classification": "HOSTNAME_REJECTED",
+          "clientFailure": [
+            {
+              "message": "(certificate_unknown) No subject alternative DNS name matching wrong.invalid found.",
+              "type": "javax.net.ssl.SSLHandshakeException"
+            },
+            {
+              "message": "No subject alternative DNS name matching wrong.invalid found.",
+              "type": "java.security.cert.CertificateException"
+            }
+          ],
+          "elapsedMilliseconds": 289.693708,
+          "endpointIdentificationAlgorithm": "HTTPS",
+          "expected": "HOSTNAME_REJECTED",
+          "name": "wrong-host",
+          "passed": true,
+          "peerHost": "wrong.invalid",
+          "protocol": "TLSv1.3",
+          "serverFailure": [
+            {
+              "message": "Socket closed",
+              "type": "java.net.SocketException"
+            }
+          ],
+          "trustAnchorSHA256": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08"
+        }
+      ],
+      "cleanup": {
+        "errors": [],
+        "serverStopped": true,
+        "timerStopped": true
+      },
+      "deadlineExceeded": false,
+      "fixtureSHA256": {
+        "server-localhost.der": "f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10",
+        "server-private-key.pk8": "685632b4576a8bb80f4cf1fb15e567c03ec4ae638120338e90ebd58529fe929f",
+        "test-ca.der": "fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08",
+        "unrelated-ca.der": "c7e734a9fc9cc0c07346315745226756b32d3dadd92e46cef9986c1d5440604e"
+      },
+      "loopbackOnly": true,
+      "passed": true,
+      "provesHTTPCompatibility": false,
+      "suite": "TlsCapabilityProbe",
+      "totalMilliseconds": 8680.15675
+    },
+    "logsArtifactId": 12120526938,
+    "logsArtifactSHA256": "0718f147b4191d4d176fd124f4166ef58e08b1c4eb7e64fd41384472c758954b",
+    "nativeArtifactId": 12120530642,
+    "nativeArtifactBytes": 89898489,
+    "nativeArtifactSHA256": "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+    "probeIPAArtifactId": 12120347375,
+    "probeIPAArtifactSHA256": "5af75dc5038fbe19f28ed835b1811be6e7f86e202af423aab3b092dde2c5598b",
+    "probeIPASHA256": "d2098e535cf66cd38e0ae629a1703809efee774e4672a66f5f5d460c8f805b6b",
+    "timingScope": "Includes TLS setup and cleanup on Simulator; not a reader or physical-device performance benchmark."
   },
   "physicalDevice": {
     "status": "pending"
@@ -163,5 +285,23 @@
     "No original OkHttp/HTTP, redirect, gzip or wire behavior proof.",
     "In-flight network cancellation remains unverified.",
     "Fixed public fixture certificates have bounded validity and must not be used as production identities."
+  ],
+  "previousSimulatorAttempts": [
+    {
+      "status": "failed_native_abort_before_results",
+      "runId": 39081663847,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39081663847",
+      "sourceCommit": "07c68b30263ded257fef7fbab0cc88d122ab4d3d",
+      "probeBuild": 11,
+      "failure": "Zero ucontext_get_pc hit ShouldNotCall() at prepared os_bsd_zero.cpp:92; original signal and TLS case are not established.",
+      "completeTLSReportReturned": false,
+      "preflightReportSHA256": "fd3d090d0d35502c5caf69e6713a1030bf2b23059ac7c7b5c26264b61598df01",
+      "hsErrSHA256": "327dc937ee3ae466da2a09a9866dd941206b35977f634949b153b667f4df815e",
+      "logsArtifactId": 12119855695,
+      "logsArtifactSHA256": "6ef5ce1ec9c07d936b51cb17339da117c139ab8ad1379f5c98197f62d7d9f848",
+      "nativeExportCheck": "39 present",
+      "sourceOnlySwiftTests": 19,
+      "freshNativeSourceBuild": "required; see zero-signal-context.json"
+    }
   ]
 }

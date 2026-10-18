@@ -62,6 +62,7 @@ final class SubscriptionStore: ObservableObject {
     /// So the stored value is an OFFLINE FALLBACK, never a reason to skip the
     /// read. Apple is asked on every launch and its answer wins.
     private func resolveRunningEnvironment() async {
+        guard storeKitEnabled else { return }
         do {
             let result = try await AppTransaction.shared
             guard case .verified(let appTransaction) = result else { return }
@@ -139,6 +140,7 @@ final class SubscriptionStore: ObservableObject {
 
     // MARK: - Private
 
+    private let storeKitEnabled: Bool
     private var updatesListenerTask: Task<Void, Never>?
     private var loadedStorefrontID: String?
     private var productLoadGeneration = 0
@@ -168,7 +170,18 @@ final class SubscriptionStore: ObservableObject {
     private var permanentBindFailureProductIDs: Set<String> = []
 
     /// Tests can exercise publication without starting StoreKit/network observers.
-    init(observeTransactions: Bool = true) {
+    init(
+        observeTransactions: Bool = true,
+        storeKitEnabled: Bool = ReaderExperienceConfiguration.storeKitEnabled
+    ) {
+        self.storeKitEnabled = storeKitEnabled
+        // This distribution has no App Store receipt or products. In particular,
+        // AppTransaction.shared can repeatedly present an Apple Account prompt.
+        // Resolve the empty state before creating observers or launch tasks.
+        guard storeKitEnabled else {
+            hasResolvedEntitlements = true
+            return
+        }
         #if DEBUG
         // `-debug-force-pro`: a simulator launch has no StoreKit configuration, so this is
         // the only way to look at Pro-only screens there (e.g. Apple Books' action row with
@@ -254,6 +267,7 @@ final class SubscriptionStore: ObservableObject {
     // MARK: - Product loading
 
     func loadProducts() async {
+        guard storeKitEnabled else { return }
         Self.subscriptionLog.notice("Products load requested")
         let storefront = await Storefront.current
         await loadProducts(forStorefrontID: storefront?.id, forceReload: false)
@@ -269,6 +283,7 @@ final class SubscriptionStore: ObservableObject {
     /// fed itself about 5,000 times a second until the system killed the app some 90
     /// seconds after launch, on every launch from Xcode.
     func reloadProductsIfStorefrontChanged() async {
+        guard storeKitEnabled else { return }
         // Never loaded: the paywall loads them, for the storefront current then.
         guard let loadedStorefrontID else { return }
         guard let currentID = await Storefront.current?.id,
@@ -277,6 +292,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     private func loadProducts(forStorefrontID storefrontID: String?, forceReload: Bool) async {
+        guard storeKitEnabled else { return }
         guard forceReload || SubscriptionProductReloadPolicy.shouldReload(
             loadedProductCount: products.count,
             expectedProductCount: ProProduct.allCases.count,
@@ -336,6 +352,10 @@ final class SubscriptionStore: ObservableObject {
 
     @discardableResult
     func purchaseForSignedInAccount(_ product: Product) async -> Bool {
+        guard storeKitEnabled else {
+            lastErrorMessage = localized("購買失敗，請稍後再試")
+            return false
+        }
         guard accountService.isAuthenticated else {
             lastErrorMessage = localized("請先登入後再綁定會員")
             return false
@@ -356,6 +376,10 @@ final class SubscriptionStore: ObservableObject {
 
     @discardableResult
     private func purchase(_ product: Product, accountToken: UUID?) async -> Bool {
+        guard storeKitEnabled else {
+            lastErrorMessage = localized("購買失敗，請稍後再試")
+            return false
+        }
         guard !isPurchasing else { return false }
         isPurchasing = true
         lastErrorMessage = nil
@@ -410,6 +434,10 @@ final class SubscriptionStore: ObservableObject {
     /// Presents Apple's offer-code sheet, then synchronizes any entitlement
     /// created by the redemption with StoreKit and the signed-in Yuedu account.
     func redeemOfferCode(in scene: UIWindowScene?) async {
+        guard storeKitEnabled else {
+            lastErrorMessage = localized("目前無法開啟優惠碼兌換，請稍後再試")
+            return
+        }
         switch SubscriptionOfferCodeRedemptionPolicy.action(
             isRedeeming: isRedeemingOfferCode,
             hasWindowScene: scene != nil
@@ -441,6 +469,10 @@ final class SubscriptionStore: ObservableObject {
 
     /// Restores by syncing with the App Store, then re-reading entitlements.
     func restore() async {
+        guard storeKitEnabled else {
+            lastErrorMessage = localized("沒有找到可恢復的訂閱")
+            return
+        }
         guard !isRestoring else { return }
         isRestoring = true
         lastErrorMessage = nil
@@ -467,6 +499,7 @@ final class SubscriptionStore: ObservableObject {
 
     /// Recomputes the entitlement from `Transaction.currentEntitlements`.
     func refreshEntitlements() async {
+        guard storeKitEnabled else { return }
         // Every entitlement path funnels through here, including purchase and the
         // `Transaction.updates` listener. The environment must be resolved before
         // `mirrorToICloud` writes, or an unresolved suffix would file a TestFlight
@@ -512,6 +545,7 @@ final class SubscriptionStore: ObservableObject {
 
     /// Call only after Firebase has been configured (app active/auth callbacks).
     func refreshAllEntitlements() async {
+        guard storeKitEnabled else { return }
         let expectedUID = FirebaseAuthManager.shared.uid
         await resolveRunningEnvironment()
         seedAccountEntitlementFromCache()
@@ -607,6 +641,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     func authenticationDidChange(isAuthenticated: Bool) async {
+        guard storeKitEnabled else { return }
         if !isAuthenticated {
             accountIsProActive = false
             accountProductIDs = nil
@@ -645,6 +680,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     private func bindCurrentStoreKitEntitlementsToAccount() async {
+        guard storeKitEnabled else { return }
         let expectedUID = FirebaseAuthManager.shared.uid
         var didFailBinding = false
         for await result in Transaction.currentEntitlements {
@@ -740,6 +776,7 @@ final class SubscriptionStore: ObservableObject {
     /// never affect the reader, and Firebase may not be configured yet at
     /// early launch — guarded.
     private func reportEntitlementDrop(storeKit: Bool, account: Bool, iCloud: Bool) {
+        guard storeKitEnabled else { return }
         let now = Date()
         if let last = lastDropReportDate, now.timeIntervalSince(last) < 300 { return }
         lastDropReportDate = now

@@ -9,6 +9,14 @@ enum ReaderExperienceConfiguration {
 
     static var cloudKitEnabled: Bool { !isLocalExperience }
 
+    static var storeKitEnabled: Bool {
+        storeKitEnabled(in: Bundle.main.infoDictionary)
+    }
+
+    static func storeKitEnabled(in infoDictionary: [String: Any]?) -> Bool {
+        !isLocalExperience(in: infoDictionary)
+    }
+
     static func isLocalExperience(in infoDictionary: [String: Any]?) -> Bool {
         infoDictionary?["YueduLocalExperience"] as? Bool ?? false
     }

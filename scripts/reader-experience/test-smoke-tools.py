@@ -115,7 +115,7 @@ class SmokeEvidenceTests(unittest.TestCase):
             "CONFIGURATION": "Debug", "SWIFT_VERSION": "5.0", "PLATFORM_NAME": "iphonesimulator",
             "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(app.parent),
             "FULL_PRODUCT_NAME": app.name}}]
-        unit = {"totalTestCount": 6, "passedTests": 6, "failedTests": 0, "skippedTests": 0}
+        unit = {"totalTestCount": 7, "passedTests": 7, "failedTests": 0, "skippedTests": 0}
         ui = {**unit, "totalTestCount": 1, "passedTests": 1}
         with patch.object(smoke, "REPO", self.root), patch.object(smoke, "source_sha", return_value=SOURCE), \
                 patch.object(smoke, "git", side_effect=git):

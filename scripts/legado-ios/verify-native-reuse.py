@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a fresh JVM payload with one audited, immutable build-6 native runtime.
+"""Build a fresh JVM payload with one audited, immutable native runtime.
 
 This protocol is separate from verify-runtime-reuse.py: the old replay still
 requires an unchanged JVM tree. No old JVM payload is downloaded or restored.
@@ -39,13 +39,15 @@ def load(name, path):
 
 replay = load("native_reuse_helpers", HERE / "verify-runtime-reuse.py")
 verifier = load("native_reuse_validator", HERE / "verify-runtime.py")
-BASELINE_RUN = 39044188251
-BASELINE_SHA = "78930beee13f2fa739cfbc178793d1c25ad6cf9f"
-BASELINE_ARTIFACT = 12104908951
-BASELINE_DIGEST = "59b72f07996e1b510018be0ee390ee7a1608074d7eb8923b87d84dd5b55682d8"
-BASELINE_BYTES = 89898165
+# Probe 12: source-built Zero with the audited Darwin signal-PC accessors.
+# Historical physical-device results remain tied to their own original builds.
+BASELINE_RUN = 39083752761
+BASELINE_SHA = "ce792982a30942e605fc935b733c5b41bef2736a"
+BASELINE_ARTIFACT = 12120530642
+BASELINE_DIGEST = "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac"
+BASELINE_BYTES = 89898489
 SOURCE_WORKFLOW = ".github/workflows/legado-ios-prototype.yml"
-SOURCE_WORKFLOW_BLOB = "55965ba4b8e99feeb2e6e188eb160355f6f00784"
+SOURCE_WORKFLOW_BLOB = "acc22e4f49b24200f75f85b679564b4e8867d28c"
 CURRENT_WORKFLOW = ".github/workflows/legado-ios-core-update.yml"
 NATIVE_NAME = "legado-zero-source-build"
 JVM_NAME = "legado-jvm-payload"
@@ -112,7 +114,7 @@ def source_inputs(current):
         checks.append({"path": path, "sourceObject": before, "currentObject": after,
                        "matches": before == after})
     if not all(item["matches"] for item in checks):
-        raise ValueError("Native inputs differ from build 6; a fresh native build is required")
+        raise ValueError("Native inputs differ from the pinned native producer; a fresh native build is required")
     if replay.git("rev-parse", f"{BASELINE_SHA}:{SOURCE_WORKFLOW}") != SOURCE_WORKFLOW_BLOB:
         raise ValueError("Pinned native producer workflow blob differs")
     return checks
@@ -153,11 +155,11 @@ def native_source(api):
     if (state.get("head_sha") != BASELINE_SHA or state.get("path") != SOURCE_WORKFLOW
             or state.get("name") != "Legado iOS Prototype" or state.get("status") != "completed"
             or state.get("conclusion") != "success"):
-        raise ValueError("Native source run is not the successful, pinned build-6 workflow")
+        raise ValueError("Native source run is not the successful, pinned native producer workflow")
     artifact = checked_artifact(api, BASELINE_RUN, BASELINE_SHA, NATIVE_NAME)
     if (artifact["id"] != BASELINE_ARTIFACT or artifact["size_in_bytes"] != BASELINE_BYTES
             or artifact["digest"] != "sha256:" + BASELINE_DIGEST):
-        raise ValueError("Native artifact does not match the audited build-6 ID, size and digest")
+        raise ValueError("Native artifact does not match the audited native producer ID, size and digest")
     return {"runID": BASELINE_RUN, "sourceSHA": BASELINE_SHA, "runAttempt": state.get("run_attempt"),
             "workflowPath": SOURCE_WORKFLOW, "workflowBlob": SOURCE_WORKFLOW_BLOB,
             "runURL": state.get("html_url"), "artifact": artifact}
@@ -350,8 +352,8 @@ def native_inventory(root):
 
 
 def native_bytecode_compatibility(home, maximum_base_major):
-    # The authenticated build-6 exploded JavaHome has no release file:
-    # build-zero.sh copies that optional image metadata only when it exists.
+    # The historical build-6 exploded JavaHome had no release file.
+    # build-zero.sh copies this optional image metadata only when it exists.
     # Its own java.base bytecode supplies a conservative compatibility ceiling;
     # this is not a measurement of the running VM's java.version property.
     relative = "modules/java.base/java/lang/Object.class"

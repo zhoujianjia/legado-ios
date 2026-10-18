@@ -30,7 +30,7 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/cloudkit-tests.log" -t 2700 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/cloudkit.xcresult" \
   -only-testing:'yuedu appTests/AuthAndICloudConfigurationTests'
 xcrun xcresulttool get test-results summary --path "$WORK/cloudkit.xcresult" > "$WORK/cloudkit-summary.json"
-python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/cloudkit-summary.json" --expected 6
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/cloudkit-summary.json" --expected 7
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/txt-ui-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/txt-ui.xcresult" \
   -only-testing:'yuedu appUITests/ReaderLocalSmokeUITests'

@@ -1,7 +1,8 @@
 name: Legado iOS Core Update
 
 # This independently rebuilds the current JVM/App and reuses only the audited
-# build-6 native artifact. The stricter legacy replay workflow stays unchanged.
+# source-built Probe 12 native artifact from run 39083752761. The stricter legacy
+# replay workflow stays unchanged.
 on:
   push:
     tags:
@@ -154,7 +155,7 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
-          This run rebuilds the current JVM payload and iOS app. It reuses only the fixed, audited build-6 native runtime after checking producer identity, all six native inputs, the actual artifact ZIP digest/size and its extracted layout.
+          This run rebuilds the current JVM payload and iOS app. It reuses only the fixed, audited Probe 12 native runtime from run 39083752761 after checking producer identity, all seven native inputs, the actual artifact ZIP digest/size and its extracted layout.
           See `native-reuse.json` for the separate native producer and fresh JVM provenance. The native runtime was not recompiled in this run. The legacy replay workflow and its stricter JVM input closure are unchanged.
           Compilation, export checks and the current synthetic fixture in Simulator provide evidence for this combination. Historical physical-device results cannot pass newly changed JVM code; a matching iPhone/iPad report remains required. Sign the unsigned IPA separately before installing.
           SUMMARY

@@ -5,20 +5,25 @@ develop and test the portable Legado core. A manually triggered GitHub Actions
 macOS runner can build the native prototype; the iPhone or iPad is still needed
 for installation and actual runtime validation. No Mac SSH connection is needed.
 
-The current source adds a bounded Darwin ARM64 signal-PC repair after the
-first iOS TLS attempt reached an unimplemented Zero hook. It requires a fresh
-native runtime: use the **Legado iOS Prototype** workflow and a
-`legado-probe-<source SHA7>` tag. The workflow rebuilds both native slices and
-requires the existing TCP plus all four TLS cases. See
+The bounded Darwin ARM64 signal-PC repair passed a fresh dual-slice native
+build in [run 39083752761](https://github.com/zhoujianjia/legado-ios/actions/runs/39083752761).
+Probe build 12 returned successful TCP and all four TLS results on Simulator,
+including certificate-chain and hostname rejection and complete worker cleanup.
+Use the **Legado iOS Prototype** workflow with a `legado-probe-<source SHA7>` tag
+whenever a native input changes. It rebuilds both native slices and requires
+the same TCP and TLS gates. See
 [zero-signal-context.json](zero-signal-context.json) for the source hashes and
-[tls-capability.json](tls-capability.json) for the failed attempt and its limits.
+[tls-capability.json](tls-capability.json) for both attempts and their limits.
 
 The separate [Core Update workflow](../../.github/workflows/legado-ios-core-update.yml)
 uses `legado-core-<source SHA7>` only when its accepted native producer matches
-all seven native inputs. Its original build6 baseline cannot supply the new
-signal repair and is deliberately rejected for the current source. Accepting a
-new producer requires explicit digest, source and layout verification after its
-fresh build; the old artifact is never treated as patched. The older replay
+all seven native inputs. Its fixed producer is now the verified source build
+at `ce792982a30942e605fc935b733c5b41bef2736a` from run 39083752761;
+artifact `12120530642` has SHA256
+`6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac`.
+The ZIP bytes, both Java homes, ARM64 objects, source and workflow identity were
+checked before accepting it. The original build6 artifact does not contain the
+repair and is not reused for this source. The older replay
 also requires the same JVM inputs. All physical-device gates remain separate.
 
 See [cloud-validation.json](cloud-validation.json) for observed cloud runs,

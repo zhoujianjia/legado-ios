@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "scope": "A reached Zero platform stub, not a diagnosed TLS algorithm failure. A fresh native build is required.",
+  "scope": "Bounded repair of a reached Zero platform stub; fresh dual-slice native build and four-case Simulator TLS gate passed. The original triggering signal remains unestablished.",
   "failedRun": 39081663847,
   "failedSource": "07c68b30263ded257fef7fbab0cc88d122ab4d3d",
   "lastCheckpoint": "execute.begin tlsCapabilityProbe",
@@ -28,9 +28,15 @@
     "WXTestsIncludingExactSuccessor": 6,
     "nativeReuseGuards": 28,
     "realPinnedPipeline": "WX then signal matches complete expected hash; repeating both is a no-write operation",
-    "nativeCompilation": "pending fresh full source build",
-    "simulatorTLS": "pending same four-case gate",
-    "physicalDeviceTLS": "pending"
+    "nativeCompilation": "passed for device and Simulator in run 39083752761",
+    "simulatorTLS": "all four cases passed, cleanup stopped both workers with no errors",
+    "physicalDeviceTLS": "pending",
+    "actualBinaryInspection": "Both static ARM64 objects contain changed PC getter/setter load/store/return instructions; no old native binary was patched"
   },
-  "diagnosticChange": "Fixed TLS phase identifiers are flushed to Simulator stderr to locate a later native abort; no private key or source payload is logged."
+  "diagnosticChange": "Fixed TLS phase identifiers are flushed to Simulator stderr to locate a later native abort; no private key or source payload is logged.",
+  "successfulRun": 39083752761,
+  "successfulSource": "ce792982a30942e605fc935b733c5b41bef2736a",
+  "successfulReportSHA256": "81a5ce77edbbbd1800123d51832e16f858d0f6a2d0072cdb656e21f13cf8754d",
+  "nativeArtifactSHA256": "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+  "probeIPASHA256": "d2098e535cf66cd38e0ae629a1703809efee774e4672a66f5f5d460c8f805b6b"
 }
