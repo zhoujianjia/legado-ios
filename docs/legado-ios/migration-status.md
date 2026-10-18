@@ -31,7 +31,7 @@
 | 内置书源安装 | 资源及清单读取、哈希和解码在现有工作队列执行。首次仅追加缺失 URL，保留已有记录的身份、规则、分组及启用配置；同一版本完成后，用户删除的源不会因重启恢复。日志与持久标记区分失败和成功，写盘失败不标完成。 |
 | 库文件保护 | 读入失败不能冒充空库，不清空内存或覆盖原文件；失败期间阻止后续保存，成功重载后解除保护。中断恢复使用安装事务标记，遇到无法安全判断的用户修改停止自动导入。临时测试目录默认不自动安装资源。 |
 
-传统规则源目前仍使用 Yuedu 的 JSC 路线。JVM 中的有限 `DeclarativeSource` 和尚未接入的静态替换内核，不代表原版 `AnalyzeRule`／`AnalyzeUrl` 已迁移；依赖边界、已知 JSONPath 差异和首批原版对照输入见[传统规则接入清单](traditional-rule-integration.md)。
+传统规则源目前仍使用 Yuedu 的 JSC 路线。JVM 的有限 `DeclarativeSource` 已接入非 URL 标量选择与静态替换，28 条结果同原版 Android 比较为零差异；完整桌面回归为 135 项唯一测试、无失败／错误／跳过。这不代表原版 `AnalyzeRule`／`AnalyzeUrl` 已完整迁移，新片段尚未在 iOS JVM 上运行，也未进入当前已交付 build 6。依赖边界和后续链路见[传统规则接入清单](traditional-rule-integration.md)，逐项证据见[标量片段移植比较](scalar-selector-port.json)。
 
 ## 最新实际测试：21＋30
 

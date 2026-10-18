@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-18",
+  "recordKind": "finite-static-scalar-port-desktop-comparison",
+  "sourceCommit": "a46bcb644a9f6947568e2c6076c61f215d79db0a",
+  "originalAndroidEvidence": "scalar-selector-reference.json",
+  "originalGolden": {
+    "path": "Packages/LegadoRuntime/jvm/src/test/resources/fixtures/android-scalar-selector-golden.json",
+    "bytes": 20226,
+    "sha256": "f7f56a6ebeeb381d997335230f6030cb730130e7669887bc7e0130e7e592c3b7"
+  },
+  "executionPlatform": "windows-jdk21",
+  "productionAndFocusedTestFiles": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/StaticScalarSelectorRule.kt",
+      "bytes": 3648,
+      "sha256": "1fcd89e729b5d41a2e5dbdbb7a51d93b4c5659d262df007d233ff4d9b5577f01"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/DeclarativeSource.kt",
+      "bytes": 7250,
+      "sha256": "5a94601c26b69a57578898928ad2e7ca7510389eeb7c6acccfc98e114209522d"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/StaticRuleReplacement.kt",
+      "bytes": 2984,
+      "sha256": "597faf81a11b5b86a5a71910d375b68b7dca841b3644ba65b2f318870da55620"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/StaticScalarSelectorRuleTest.kt",
+      "bytes": 7833,
+      "sha256": "b87e5eac00345f802a218a725daa19d851e83be3e16f30c1ad02427b68296420"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/DeclarativeScalarSelectorTest.kt",
+      "bytes": 6637,
+      "sha256": "01f37d1172ebebe69e8507c9d907ec6bcab3f2641da083e914a4b3db09fb7176"
+    }
+  ],
+  "comparison": {
+    "observationsCompared": 28,
+    "differences": 0,
+    "exactStringAndJavaClassCompared": true,
+    "outputTrimOrComparatorProjectionUsed": false,
+    "realElementAndJXNodeContextsUsed": true
+  },
+  "focusedTests": [
+    {
+      "class": "io.yuedu.legado.DeclarativeScalarSelectorTest",
+      "name": "listTransformsAndCaptureListScalarTransformsRemainUnsupported",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.DeclarativeScalarSelectorTest",
+      "name": "urlRulesIncludingChapterUrlAndUrlTemplatesNeverUseTheScalarTransform",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.DeclarativeScalarSelectorTest",
+      "name": "nonUrlScalarTransformsReachAllFourExistingDeclarativeReadingStages",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+      "name": "explicitCssModeRetainsComplexSelectorsAndAtSignsInsideAttributes",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+      "name": "nonStringJsonAndNonNodeHtmlContextsDoNotCoerceToStrings",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+      "name": "replacementCaptureReferencesRemainAllowedAndSelectedWhitespaceIsUntouched",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+      "name": "malformedJsonConstructionDoesNotBecomeAMissingValueReplacement",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+      "name": "dynamicImplicitRegexCaptureAndEmptyRulesAreExplicitlyUnsupported",
+      "failed": false,
+      "skipped": false
+    },
+    {
+      "class": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+      "name": "bothScalarOverloadsMatchAll28UnmodifiedOriginalAndroidObservations",
+      "failed": false,
+      "skipped": false
+    }
+  ],
+  "fullRegression": {
+    "tests": 135,
+    "uniqueTests": 135,
+    "classes": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "rawXML": [
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.legado.app.JsEngineCapabilitiesTest.xml",
+        "bytes": 3610,
+        "sha256": "4bec336451ae590b4fda2fd01c386ac2d7c661698af9e848b51e971a6348ad25"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSonPathErrorPolicyTest.xml",
+        "bytes": 1435,
+        "sha256": "798b97a76d4cfea077f9fe995bbdc7e1d138f67c84ea4b0c2383f55790849104"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSoupDomTest.xml",
+        "bytes": 1503,
+        "sha256": "2f53209066026c3dde8dbb3935df4009ab32045d3d397aa357d95878db79c834"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.CpuLoopCapabilityProbeTest.xml",
+        "bytes": 952,
+        "sha256": "7ba9eef9374df18024e56506b58080f55af520750844a840e894114618638014"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.DeclarativeScalarSelectorTest.xml",
+        "bytes": 819,
+        "sha256": "9eaf8f183094e3c9bd17502037c94343f1688f729efc9468b50433c06346c702"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.DeclarativeSourceTest.xml",
+        "bytes": 749,
+        "sha256": "208631d3d4b474816f6a12a6003a0d4f34955b8ad61c9dada21a56ed1d3e96ff"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.InteropSemanticSuiteTest.xml",
+        "bytes": 875,
+        "sha256": "5f17189b163963d5228629a9183a2e0a8d3d27c8b26d997b0341ea75c9987cbb"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.LegadoRuntimeTest.xml",
+        "bytes": 1863,
+        "sha256": "be1975ba63d206d20e49f1d88c909776a94c9d734243ac63dcd89dbb0eda3f71"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.MainJsFacadeTest.xml",
+        "bytes": 1041,
+        "sha256": "5e0849af3045006b9bf7b054d3f2d5305e6dfef83eaaeeb41f4da0e2ee617d75"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.MainJsResultMarshallerTest.xml",
+        "bytes": 3537,
+        "sha256": "df3453edc92108995b075aed10a07ed6a831185c9acb8ba4db86283ff4c6c132"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.MainJsScopeTest.xml",
+        "bytes": 886,
+        "sha256": "2eeec7aed6d5f78b6b343f0cb2f2f7683ad384f7818b819b8b53547208bcc491"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.OkHttpWireCapabilityProbeTest.xml",
+        "bytes": 1538,
+        "sha256": "8862bf5e01b81e39c891fc9eb9bcde463881903e83852cc5ca2f4ad6b2b8c49d"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.ProductionHttpTransportTest.xml",
+        "bytes": 2270,
+        "sha256": "d0437449a2cd0eed53330e2bee0063b296b2ba19cd68710550575dd5b26a5a08"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.SourceHttpSemanticsTest.xml",
+        "bytes": 1653,
+        "sha256": "3557925e7401ee607923d9150fbbf63822b0d135c0be1db275faf66487e327b6"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.StaticRuleReplacementTest.xml",
+        "bytes": 1102,
+        "sha256": "467d07604e05c2cbaae8968bfc8583a85d82108636ef36ce996ec12eb470cc90"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.StaticScalarSelectorRuleTest.xml",
+        "bytes": 1281,
+        "sha256": "bb1048e818819ab1705988055e864cc554e77d93c1c0bed3dc47eabcef319435"
+      },
+      {
+        "path": ".build/ci-logs/scalar-rule-dependencies/full-junit/TEST-io.yuedu.legado.TlsCapabilityProbeTest.xml",
+        "bytes": 1931,
+        "sha256": "3572f17abf9fcc4fb3bf1bcaaf2f2fb8cb64723e8d7e67a77562ade8fb8105fe"
+      }
+    ]
+  },
+  "ordinaryJar": {
+    "path": ".build/ci-logs/scalar-rule-dependencies/final-ordinary-legado-runtime.jar",
+    "bytes": 10065948,
+    "sha256": "17608bb2316a126b137a3552831bb1aa4ebb0797314e1a46c1cae594c14bcccb"
+  },
+  "diagnosticJar": {
+    "profile": "includeEngineTests=true",
+    "sha256": "dd1c3f68748c60028f341bcb563b5956be0a1aaf75bf04104cef996b6ac48e25",
+    "bytes": 10740467,
+    "maximumBaseClassMajor": 65,
+    "requiredDiagnosticClassesVerified": true,
+    "scalarClassReleaseBytesMatched": true,
+    "fourVersionedLicensesMatched": true,
+    "scalarMavenVersionsMatched": true,
+    "currentGraphsAndProvenanceMatched": true,
+    "intentionalDiagnosticGoldenMatched": true,
+    "packagedOriginalEngineTestsPassed": 25,
+    "packagedInteropTestsPassed": 28,
+    "packagedTLSTestsPassed": 4,
+    "javaBeansPassed": true,
+    "executionPlatform": "windows-jdk21-Xint",
+    "iosValidationPassed": false
+  },
+  "validationRecords": {
+    "full-junit-audit.json": {
+      "path": ".build/ci-logs/scalar-rule-dependencies/full-junit-audit.json",
+      "bytes": 404,
+      "sha256": "486d18185c02606989396391d9f5d6750daef67d51376c0874abc8c73039665b"
+    },
+    "root-independent-audit.json": {
+      "path": ".build/ci-logs/scalar-rule-dependencies/root-independent-audit.json",
+      "bytes": 704,
+      "sha256": "ced542b074fec84677c4670c3732e3f83d6373cb9d5524924a015ce24fb8e938"
+    },
+    "final-ordinary-jar-audit.json": {
+      "path": ".build/ci-logs/scalar-rule-dependencies/final-ordinary-jar-audit.json",
+      "bytes": 690,
+      "sha256": "d876a84d9a0cfc9b28583634f15af696b59767216021f8688b23b8d8b2b6bd3c"
+    },
+    "native-static-packaging-audit.json": {
+      "path": ".build/ci-logs/scalar-rule-dependencies/native-static-packaging-audit.json",
+      "bytes": 2295,
+      "sha256": "7c43124994133f5d3df4680162f44f96ebb031ce9a5700115a8c244a0f2c6173"
+    },
+    "slice-validation-summary.json": {
+      "path": ".build/ci-logs/scalar-rule-dependencies/slice-validation-summary.json",
+      "bytes": 1022,
+      "sha256": "0d1035bb83a89045a455811fc585edfa2eb7b49cfb2d4048507624baed25b53e"
+    }
+  },
+  "dependencyProvenance": "../../Packages/LegadoRuntime/vendor/scalar-rules/manifest.json",
+  "boundaries": {
+    "reader6IncludesThisChange": false,
+    "traditionalSourcesRoutedToJVMInMainApp": false,
+    "iosExecutionVerified": false,
+    "deviceValidationPassed": false,
+    "allPrivateSourcesValidated": false,
+    "fullAnalyzeRuleMigrated": false,
+    "fullAnalyzeUrlMigrated": false,
+    "fullFeatureParityEstablished": false
+  },
+  "supportedSlice": "Explicit @CSS: (String/Element), @XPath: (String/JXNode) and @Json: (String) selectors with nonempty selector/pattern; non-URL scalar selection, retained replacement kernel, nullable handling and final Commons Text HTML4 unescape.",
+  "excludedSlice": [
+    "URL and list/element transformations",
+    "Implicit selector modes",
+    "Empty selectors or patterns",
+    "Dynamic JS, variables and embedded expressions",
+    "Capture-list selection and unobserved cross-kind contexts"
+  ],
+  "notes": [
+    "The immutable original Android report is unchanged; this separate record contains the new desktop port comparison.",
+    "The fixed four-step facade test uses synthetic host responses and proves dispatcher wiring, not real HTTP/iOS reading acceptance.",
+    "Versioned dependencies and four raw license/NOTICE files are pinned. Original external POM bytes retain upstream whitespace.",
+    "Ordinary JAR content/permissions match the earlier validated assembly; its final archive hash differs only because nine directory/MANIFEST timestamps changed after diagnostic assembly.",
+    "Native layout and bytecode checks are static; the seven original native build inputs were unchanged."
+  ]
+}

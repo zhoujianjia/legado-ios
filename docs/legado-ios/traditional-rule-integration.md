@@ -14,8 +14,8 @@
 | 部分 | 当前事实 |
 | --- | --- |
 | 六个底层解析文件 | `jvm/src/main/kotlin/io/legado/app/model/analyzeRule/` 已有 `RuleAnalyzer`、`AnalyzeByJSoup`、`AnalyzeByXPath`、`AnalyzeByJSonPath`、`AnalyzeByRegex`、`SourceHtmlParser`。原始文件及 SHA 存于 `vendor/manifest.json`。 |
-| `DeclarativeSource` | 是有限编排原型；支持部分静态请求及 CSS/XPath/JSONPath/正则。明确拒绝字段 `@js:`、`<js>`、`<webJs>`、`##`、`@put:`、`@get:`、`{{…}}`，动态 URL 也未迁移。 |
-| `StaticRuleReplacement` | 只覆盖空选择器静态标量替换，明确未连接 `DeclarativeSource`。不能据此声称完整 `AnalyzeRule` 已迁移。 |
+| `DeclarativeSource` | 是有限编排原型；支持部分静态请求及 CSS/XPath/JSONPath/正则。非 URL 标量字段的显式 `@CSS:`／`@XPath:`／`@Json:` 选择器已接入有限 `##` 替换；URL、元素／列表及动态规则仍明确拒绝，动态 URL 也未迁移。 |
+| `StaticRuleReplacement`／`StaticScalarSelectorRule` | 原静态替换内核经新的有限标量 helper 接入 `DeclarativeSource`；保留 nullable 结果、替换及末尾 HTML4 unescape 顺序。完整 `AnalyzeRule` 尚未迁移，主 App 传统源仍走 JSC。 |
 | `SourceJavaHost` | 是有限宿主适配器；部分 `java.get/head/post`、动态 header/URL、proxy 等明确返回 unsupported，不能替代原版全部 `JsExtensions`。 |
 
 上述仓库路径均以 `Packages/LegadoRuntime/` 为前缀。现有 `DeclarativeSourceTest` 仅证明固定 CSS 四步链路、几个底层解析调用及 unsupported 错误，不证明真实书源可用。
@@ -69,7 +69,17 @@ onError?.invoke(e) ?: e.printOnDebug()
 
 这些是原版公开 API 的实测结果，**不构成 36 项 port 零差异**。本次聚焦测试只将缺失／无效路径的 `||` 后备两个 case 在 `getString` 与 `getStringList` 的 4 条非空结果同原观测比较，值与 Java 结果类型均一致；这些结果不需要公开入口额外归一化。其余 32 条没有进行 port 比对，尤其不能将底层 helper 的可空结果或混合列表直接等同于公开 API。原 `AnalyzeRule` 在公开入口还包含 null／元素收尾处理，不能用比较器静默补值或归一化 helper 输出来宣称一致。本次仅修复上述三处生产 catch，没有迁移完整 `AnalyzeRule`，也没有读取私人书源；iOS、真机、G4、完整书源兼容及全功能验收均保持未通过。
 
-## 首批可独立验证的链路
+## 已验证的有限标量选择与替换
+
+原版 [Android run 39111502457](https://github.com/zhoujianjia/legado-ios/actions/runs/39111502457) 针对 14 个固定输入，分别执行 `AnalyzeRule.getString(rule, false)` 和默认 `getString(rule)`，实际取得 28 条 String 结果，0 项 API 异常或采集失败。原 XML 的 1 项测试通过且无跳过；六个原解析文件、全部 2,747 个源码快照、输入和 run UUID 已核对。20,226 字节原报告逐字节冻结为 [android-scalar-selector-golden.json](../../Packages/LegadoRuntime/jvm/src/test/resources/fixtures/android-scalar-selector-golden.json)，SHA-256 为 `f7f56a6ebeeb381d997335230f6030cb730130e7669887bc7e0130e7e592c3b7`；完整来源见[原版观测记录](scalar-selector-reference.json)。
+
+实现提交 `a46bcb644a9f6947568e2c6076c61f215d79db0a` 只开放非 URL 标量字段中有非空选择器、非空 pattern 的显式 `@CSS:`／`@XPath:`／`@Json:` 片段。规则外层按原逻辑 ASCII trim，选择器单独 trim，pattern／replacement 不另行 trim。CSS 前缀继续交原 helper 决定模式；CSS 缺失返回 null 时跳过替换，XPath／JSON 的非 null 空串仍执行 `^$` 替换，最后才按开关进行一次 HTML4 unescape。使用原版 `commons-text:1.13.1`，其实际 POM 引入 `commons-lang3:3.17.0`；两个库的版本、四份原 LICENSE／NOTICE、当前依赖图和严格校验信息见[依赖来源](../../Packages/LegadoRuntime/vendor/scalar-rules/manifest.json)。原版 Android 完整 resolved graph 未测量，不把外部 Maven 哈希归为用户 ZIP 提供。
+
+Windows JDK 21 已逐条严格比较上述 28 条 String 和 Java 类型，差异为 0，未在比较器中 trim、补空或投影结果；上下文使用真实 String／Element／JXNode。9 项新增测试同时验证 URL／列表／动态规则拒绝、复杂 CSS 模式、异常边界，以及四个既有业务入口中的非 URL 替换和四次固定宿主请求。完整回归为 135 项唯一测试，失败、错误、跳过均为 0。普通与 opt-in JAR 分别组装，普通包中无新测试类、golden、JUnit 或 TLS fixture；新增依赖的类、版本信息、许可证和 provenance 字节也已核对。[移植比较记录](scalar-selector-port.json)保留对应源码及原始 XML／包哈希。
+
+隐式模式、URL 处理、元素／列表变形、空选择器／pattern、JS／状态指令和捕获列表不属于这次片段。此修改尚未在 iOS JVM 上执行，未进入已交付 build 6，也未将主 App 的传统源改路由到 JVM；不能据此声称全部 1,331 源、完整 `AnalyzeRule`／`AnalyzeUrl` 或 G4 已通过。
+
+## 后续可独立验证的链路
 
 1. **静态完整阅读链路**：固定响应的搜索 → 详情 → 目录 → 正文，分别使用 CSS、XPath、JSONPath、正则；覆盖 `&&/||/%%`、索引、`text/textNodes/html`、`##` 替换、实体、重定向基址和相对 URL。保留原 selector → 结果转换 → 替换的顺序，不能只测单个 helper。
 2. **传统规则中的 JS 与状态**：同一链路加入字段 `@js:`、`{{…}}`、`@put/@get`、捕获组、Java 字符串／集合；覆盖 URL JS、页码分支、动态 header 和 POST 编码。记录每步变量、Cookie、异常和缓存变化，验证并发会话隔离。
