@@ -1,0 +1,96 @@
+name: Legado Original Stateful Traditional Rule Observations
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'legado-traditional-stateful-reference-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legado-traditional-stateful-reference-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  original-traditional-stateful:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Validate observation guards and stage the sanitized original source
+        run: |
+          mkdir -p .build/ci-logs/traditional-stateful-reference
+          python -B scripts/legado-reference/test-traditional-stateful-reference.py -v 2>&1 | tee .build/ci-logs/traditional-stateful-reference/observation-guard-tests.log
+          python -B scripts/legado-reference/test-prepare-reference.py -v 2>&1 | tee .build/ci-logs/traditional-stateful-reference/preparation-tests.log
+          python -B scripts/legado-reference/test-run-reference.py -v 2>&1 | tee .build/ci-logs/traditional-stateful-reference/common-driver-tests.log
+          python -B scripts/legado-reference/prepare-reference.py stage --snapshot-directory Packages/LegadoRuntime/vendor/android-reference --destination .build/legado-traditional-stateful-reference/source
+          python -B scripts/legado-reference/run-traditional-stateful-reference.py stage
+      - name: Install the required Android SDK command-line tools
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          cmdline-tools-version: '15859902'
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - name: Verify Android SDK and the existing emulator acceleration node
+        run: |
+          command -v sdkmanager
+          test -c /dev/kvm
+          sudo chmod 0666 /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+      - name: Compile the original application and independent stateful observer
+        run: |
+          bash .build/legado-traditional-stateful-reference/source/gradlew -p .build/legado-traditional-stateful-reference/source --no-daemon --max-workers=2 \
+            -I "$GITHUB_WORKSPACE/.build/legado-traditional-stateful-reference/source/reference.init.gradle" \
+            -Dorg.gradle.jvmargs='-Xmx4g -Dfile.encoding=UTF-8' \
+            :app:assembleAppDebug :app:assembleAppDebugAndroidTest --stacktrace \
+            2>&1 | tee .build/ci-logs/traditional-stateful-reference/build.log
+      - name: Observe the fixture-declared original stateful steps
+        uses: reactivecircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808 # v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 300
+          disable-animations: true
+          script: python -B scripts/legado-reference/run-traditional-stateful-reference.py execute
+      - name: Preserve original observations and raw XML, including partial failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-original-traditional-stateful-observations
+          path: |
+            .build/ci-logs/traditional-stateful-reference/
+            .build/legado-traditional-stateful-reference/source/app/build/outputs/androidTest-results/
+            .build/legado-traditional-stateful-reference/source/app/build/reports/androidTests/
+            .build/legado-traditional-stateful-reference/source/app/build/outputs/logs/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the observation boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          This isolated original-Android producer observes fourteen public fixed scenarios with fifty-six ordered steps (forty-seven public API calls and nine setup/mutations). Counts are derived from the reviewed input fixture. Declared AnalyzeRule, source, RuleData, Book and BookChapter objects survive all ordered steps in their scenario; shared and isolated source/global scopes are explicit. No fresh-per-observation reset is applied.
+          Raw String values, exact numeric Java types, real Element outerHTML, ordinary API exceptions with causes, variable maps and serialized model strings are retained without trimming or port projection. Setter/setup/serialization/VM/Linkage failures cannot become completed API exceptions. Object identity hashes and actual Java reference-equality checks are per-run diagnostic metadata, separated from semantic state and never compared across processes.
+          The original Application and AndroidJUnitRunner execute with the existing explicit minSdk26 test overlay. Nineteen source/test/asset pins and all 2,747 sanitized snapshot files are verified; the current run UUID remains in source/model URLs. Raw JUnit XML must identify this exact single test with no failure or skip. Cleanup touches only declared keys and source scopes, never global caches.
+          One case reuses the original array-normalization input. Two issue1180 cases adapt original asset content/replacement rules into direct low-level AnalyzeRule calls; they do not claim complete BookContent formatting, pagination or browser behavior. Remaining cases are labeled synthetic inputs. No private source or HTTP endpoint is used.
+          Completion establishes observations only. Existing mainJs and 18/36/28 suites are unchanged. Port comparison, iOS, physical-device, G4, compatibility and full-feature acceptance remain false.
+          SUMMARY

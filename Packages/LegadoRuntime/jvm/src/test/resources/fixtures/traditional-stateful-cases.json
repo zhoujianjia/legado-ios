@@ -1,0 +1,995 @@
+{
+  "schemaVersion": 1,
+  "suite": "TraditionalStatefulRuleObservation",
+  "caseSetVersion": "legado-traditional-stateful-public-v1",
+  "apis": [
+    "getString-unescape-false",
+    "getString-default",
+    "getString-content-default",
+    "getElements"
+  ],
+  "originTemplate": "https://traditional-stateful.invalid/{runId}/{scenarioId}/{sourceId}/",
+  "apiExceptionPolicy": "Only java.lang.Exception from the selected public API is an outcome. Setup, mutations, snapshots, serialization and Error failures fail observation.",
+  "stepPolicy": "Reuse each declared original AnalyzeRule and model object for ordered steps; no reset between steps. API exceptions continue to the next explicit step.",
+  "sourceProvenance": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "files": [
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "fileSHA256": "5441d6d00064059519add3e5a81d85b1776f575bd0e5d30f3b5763d90af9e8a9"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/RuleData.kt",
+        "fileSHA256": "ff9a0782fb27dfa69f8e914d2738afd6a14cbe77b6fe0d646c4c091f652fd311"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/RuleDataInterface.kt",
+        "fileSHA256": "4cec4e15b2769f9e1daf03e933a8198d5650a6053f023d499bee3e856ad4db56"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSoup.kt",
+        "fileSHA256": "9889421f76a8fda62b0b874e70d0535f2b781b59a9c84fa797af695a9f8cccfa"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByXPath.kt",
+        "fileSHA256": "b6ee22cc3242313f8d5e3758dc93ff06891eeec7b3ab9ee9267ebac11145d842"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSonPath.kt",
+        "fileSHA256": "ee5ee9ebc95b4f5d6e2d459d6f727fccd10a6bd6a36ce872547f6cee5684109d"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/data/entities/Book.kt",
+        "fileSHA256": "b737391f3eec2404314212490f0efd7e9f18c114b51aaf9f4566c8f41cfe4338"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/data/entities/BaseBook.kt",
+        "fileSHA256": "a27896e273ec222f1bfa626067e8827632868e5182022c18d179749bb87448b2"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/data/entities/BookChapter.kt",
+        "fileSHA256": "2725ee89235677b28e8d4cf1e9ae847212e7524a9b418f7c0a195a4114bdabbd"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/data/entities/BaseSource.kt",
+        "fileSHA256": "080160e06a23fdfc7f4dbe5975a370473eee5d13ad0638b46aa2075276516243"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/data/entities/BookSource.kt",
+        "fileSHA256": "6f2e9b400f2417dc17e19969c386607097bc00c2dbde3e03ba8cad23811c8a3d"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/help/source/BaseSourceExtensions.kt",
+        "fileSHA256": "96f90ee5e8919a6763cd7fa9c9bbaa08f7c279e437828f607bff0389f56dccce"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/SharedJsScope.kt",
+        "fileSHA256": "9bb5bc9d4e39bd788a68605f04287f4079b7dbb1c75510aba24b8cdacd97016e"
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/help/JsExtensions.kt",
+        "fileSHA256": "b587bd35e58898a0197abedb352a2acbe8c1a3c5c24573d77d2b7a98b6d7be6c"
+      },
+      {
+        "path": "modules/rhino/src/main/java/com/script/rhino/RhinoScriptEngine.kt",
+        "fileSHA256": "4a5d5d95a825046ef773518ddf927c12795f97300357afe4b05b8ecf610513d4"
+      },
+      {
+        "path": "modules/rhino/src/main/java/com/script/ScriptBindings.kt",
+        "fileSHA256": "21ef4a04db05695463af9051f7c5457f67654c5c1d354f048e626fc295926b9c"
+      },
+      {
+        "path": "app/src/test/java/io/legado/app/model/analyzeRule/AnalyzeRuleElementsNormalizationTest.kt",
+        "fileSHA256": "355d38a19ade40c26b7560b5765d24c30d8ca249a883ac0fc48ac4c376536556"
+      },
+      {
+        "path": "app/src/androidTest/java/io/legado/app/model/webBook/SourceContentCompatibilityTest.kt",
+        "fileSHA256": "de739d7d4ee89af57f946853b3b6f6b56939a9ead1419ea43abbd1d31361cb9c"
+      },
+      {
+        "path": "app/src/androidTest/assets/issue1180-content-rules.json",
+        "fileSHA256": "bf290c4fb3e428c269b27004c7e57a6d079befba92f28859332e17e4e82a32fa"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "scenarioId": "original-javascript-array-normalization",
+      "provenance": {
+        "kind": "original-test-input",
+        "file": "app/src/test/java/io/legado/app/model/analyzeRule/AnalyzeRuleElementsNormalizationTest.kt",
+        "method": "javascriptArrayResultsBecomeUsableElementLists",
+        "adaptation": "Original public call and content unchanged; returned element Java types are additionally observed."
+      },
+      "sources": [],
+      "data": [],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": null,
+          "sourceId": null,
+          "chapterId": null,
+          "content": "ignored"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "array",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getElements",
+          "rule": "@js:[1, null, 2]"
+        }
+      ]
+    },
+    {
+      "scenarioId": "issue1180-textnodes-low-level",
+      "provenance": {
+        "kind": "adapted-original-test-input",
+        "file": "app/src/androidTest/java/io/legado/app/model/webBook/SourceContentCompatibilityTest.kt",
+        "method": "originalTextNodeAndReplacementRulesRetainChapterContent",
+        "asset": "app/src/androidTest/assets/issue1180-content-rules.json",
+        "assetIndex": 0,
+        "adaptation": "Two direct AnalyzeRule String calls only, with the original asset rules and fixed HTML. No BookContent formatting, next-page fetching or final normalization is claimed."
+      },
+      "sources": [],
+      "data": [],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": null,
+          "sourceId": null,
+          "chapterId": null,
+          "content": "<div class=\"chapter_content\">您现在阅读的是<a href=\"https://www.303wx.com\">303文学<a/>www.303wx.com提供的《示例》<br>正文第一段<br>正文第二段<br>【请收藏 303文学 303wx.com】</div>"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "select",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": ".chapter_content@textNodes##"
+        },
+        {
+          "stepId": "replace",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-content-default",
+          "rule": "##【请收藏 303文学 303wx.com】|.*www.303wx.com.*|您现在阅读的是##",
+          "contentFromStep": "select"
+        }
+      ]
+    },
+    {
+      "scenarioId": "issue1180-base64-low-level",
+      "provenance": {
+        "kind": "adapted-original-test-input",
+        "file": "app/src/androidTest/java/io/legado/app/model/webBook/SourceContentCompatibilityTest.kt",
+        "method": "originalJavascriptBase64AndBookNameReplacementRulesRetainContent",
+        "asset": "app/src/androidTest/assets/issue1180-content-rules.json",
+        "assetIndex": 1,
+        "adaptation": "Original Base64.NO_WRAP-equivalent UTF-8 input and asset content/replaceRegex; two direct AnalyzeRule calls only. No BookContent formatting or browser fallback is claimed."
+      },
+      "sources": [
+        {
+          "id": "s",
+          "jsLib": null,
+          "variables": {}
+        }
+      ],
+      "data": [
+        {
+          "id": "b",
+          "kind": "book",
+          "name": "测试书籍",
+          "variables": {}
+        }
+      ],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": "b",
+          "sourceId": "s",
+          "chapterId": null,
+          "content": "<script>var content='PHA+5q2j5paH56ys5LiA5q61PC9wPjxwPuato+aWh+esrOS6jOautTwvcD48cD7llpzmrKLmtYvor5XkuabnsY08L3A+';</script>"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "decode",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "<js>\nvar bes = result.match(/PHA\\+[A-Za-z0-9+\\/]+={0,2}/g);\n//java.log(String(bes))\nif (!bes) {\n    var ml = java.webView(null,baseUrl,null);\n    var txt = java.getString(\"#txt@html\");\n    java.longToast(\"正文解密失败，转为webView动态加载。\");\n} else {\nvar result = [];\nfor (var i = 0; i < bes.length; i++) {\n    // 遍历数组，使用阅读内置Base64解码方法\n    var bsej = java.base64Decode(bes[i]);\n    var txtt = String(bsej);\n    result.push(txtt);\n      }\nvar txt = result.join('\\n');\n}\ntxt;\n</js>"
+        },
+        {
+          "stepId": "replace",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-content-default",
+          "rule": "##本小章还未完.*精彩内容！|(喜欢|请大家收藏.*){{book.name}}|小主.*后面更精彩！|这章没有.*继续阅读！",
+          "contentFromStep": "decode"
+        }
+      ]
+    },
+    {
+      "scenarioId": "implicit-css-replacement-js-repeated",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "implicit-css-replacement-js-repeated"
+      },
+      "sources": [],
+      "data": [
+        {
+          "id": "d",
+          "kind": "rule-data",
+          "name": "",
+          "variables": {}
+        }
+      ],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": "d",
+          "sourceId": null,
+          "chapterId": null,
+          "content": "<article><b>ab12</b></article>"
+        }
+      ],
+      "observedKeys": [
+        "calls"
+      ],
+      "steps": [
+        {
+          "stepId": "first",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "tag.b@text##([0-9]+)##[$1]@js:java.put(\"calls\",String(Number(java.get(\"calls\")||0)+1));String(result)+\"|\"+java.get(\"calls\")"
+        },
+        {
+          "stepId": "second",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-default",
+          "rule": "tag.b@text##([0-9]+)##[$1]@js:java.put(\"calls\",String(Number(java.get(\"calls\")||0)+1));String(result)+\"|\"+java.get(\"calls\")"
+        }
+      ]
+    },
+    {
+      "scenarioId": "inline-book-expression-cached-rule",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "inline-book-expression-cached-rule"
+      },
+      "sources": [],
+      "data": [
+        {
+          "id": "b",
+          "kind": "book",
+          "name": "Book42",
+          "variables": {}
+        }
+      ],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": "b",
+          "sourceId": null,
+          "chapterId": null,
+          "content": "<p>Book42 tail</p>"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "first",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "tag.p@text##{{book.name}}##{{\"R\"+(1+1)}}"
+        },
+        {
+          "stepId": "rename",
+          "kind": "setup",
+          "action": "setBookName",
+          "dataId": "b",
+          "value": "tail"
+        },
+        {
+          "stepId": "same-cached-rule",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "tag.p@text##{{book.name}}##{{\"R\"+(1+1)}}"
+        }
+      ]
+    },
+    {
+      "scenarioId": "js-library-recursive-get-string",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "js-library-recursive-get-string"
+      },
+      "sources": [
+        {
+          "id": "s",
+          "jsLib": "function readValue(){return this.java.getString(\"$.value\",false);}",
+          "variables": {}
+        }
+      ],
+      "data": [],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": null,
+          "sourceId": "s",
+          "chapterId": null,
+          "content": "{\"value\":\"raw12\",\"other\":\"v\"}"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "library-this-java",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:String(readValue())"
+        },
+        {
+          "stepId": "direct-java",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:String(java.getString(\"$.value\",false))+\"|\"+String(result)"
+        },
+        {
+          "stepId": "inline-selector",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "{{$.value}}"
+        }
+      ]
+    },
+    {
+      "scenarioId": "recursive-get-elements-real-nodes",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "recursive-get-elements-real-nodes"
+      },
+      "sources": [],
+      "data": [],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": null,
+          "sourceId": null,
+          "chapterId": null,
+          "content": "<b>A</b><b>B</b>"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "direct-nodes",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getElements",
+          "rule": "tag.b"
+        },
+        {
+          "stepId": "recursive-nodes",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getElements",
+          "rule": "@js:java.getElements(\"tag.b\")"
+        },
+        {
+          "stepId": "recursive-size-text",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:String(java.getElements(\"tag.b\").size())+\"|\"+String(java.getElements(\"tag.b\").get(1).text())"
+        }
+      ]
+    },
+    {
+      "scenarioId": "ruledata-local-empty-and-false-put",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "ruledata-local-empty-and-false-put"
+      },
+      "sources": [
+        {
+          "id": "s",
+          "jsLib": null,
+          "variables": {
+            "k": "source",
+            "huge": "source-sentinel"
+          }
+        }
+      ],
+      "data": [
+        {
+          "id": "d",
+          "kind": "rule-data",
+          "name": "",
+          "variables": {
+            "k": "data"
+          }
+        }
+      ],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": "d",
+          "sourceId": "s",
+          "chapterId": null,
+          "content": "ignored"
+        }
+      ],
+      "observedKeys": [
+        "k",
+        "directHuge",
+        "huge"
+      ],
+      "steps": [
+        {
+          "stepId": "data-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{k}"
+        },
+        {
+          "stepId": "set-local",
+          "kind": "setup",
+          "action": "setLocal",
+          "instanceId": "a",
+          "key": "k",
+          "value": "local"
+        },
+        {
+          "stepId": "local-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{k}"
+        },
+        {
+          "stepId": "empty-local",
+          "kind": "setup",
+          "action": "setLocal",
+          "instanceId": "a",
+          "key": "k",
+          "value": ""
+        },
+        {
+          "stepId": "empty-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{k}"
+        },
+        {
+          "stepId": "put-masked",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:java.put(\"k\",\"written\");java.get(\"k\")"
+        },
+        {
+          "stepId": "false-put-return",
+          "kind": "setup",
+          "action": "putVariable",
+          "target": "data",
+          "targetId": "d",
+          "key": "directHuge",
+          "value": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        },
+        {
+          "stepId": "false-elvis-no-source-fallback",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:java.put(\"huge\",Array(10002).join(\"H\"));String(java.get(\"huge\").length)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "chapter-book-source-priority",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "chapter-book-source-priority"
+      },
+      "sources": [
+        {
+          "id": "s",
+          "jsLib": null,
+          "variables": {
+            "k": "source",
+            "bookName": "source-fake",
+            "title": "source-fake",
+            "written": "source-original"
+          }
+        }
+      ],
+      "data": [
+        {
+          "id": "b",
+          "kind": "book",
+          "name": "Actual Book",
+          "variables": {
+            "k": "book",
+            "bookName": "book-fake",
+            "written": "book-original"
+          }
+        }
+      ],
+      "chapters": [
+        {
+          "id": "c",
+          "bookId": "b",
+          "title": "Chapter One",
+          "variables": {
+            "k": "chapter",
+            "title": "chapter-fake"
+          }
+        }
+      ],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": "b",
+          "sourceId": "s",
+          "chapterId": "c",
+          "content": "ignored"
+        }
+      ],
+      "observedKeys": [
+        "k",
+        "bookName",
+        "title",
+        "written"
+      ],
+      "steps": [
+        {
+          "stepId": "chapter-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{k}"
+        },
+        {
+          "stepId": "empty-chapter",
+          "kind": "setup",
+          "action": "putVariable",
+          "target": "chapter",
+          "targetId": "c",
+          "key": "k",
+          "value": ""
+        },
+        {
+          "stepId": "book-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{k}"
+        },
+        {
+          "stepId": "empty-book",
+          "kind": "setup",
+          "action": "putVariable",
+          "target": "data",
+          "targetId": "b",
+          "key": "k",
+          "value": ""
+        },
+        {
+          "stepId": "source-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{k}"
+        },
+        {
+          "stepId": "reserved-book-name",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{bookName}"
+        },
+        {
+          "stepId": "reserved-title",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{title}"
+        },
+        {
+          "stepId": "local-reserved",
+          "kind": "setup",
+          "action": "setLocal",
+          "instanceId": "a",
+          "key": "bookName",
+          "value": "local-book-name"
+        },
+        {
+          "stepId": "local-reserved-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{bookName}"
+        },
+        {
+          "stepId": "put-precedence",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:java.put(\"written\",\"chapter-write\");java.get(\"written\")"
+        }
+      ]
+    },
+    {
+      "scenarioId": "put-without-state-target",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "put-without-state-target"
+      },
+      "sources": [],
+      "data": [],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": null,
+          "sourceId": null,
+          "chapterId": null,
+          "content": "ignored"
+        }
+      ],
+      "observedKeys": [
+        "k"
+      ],
+      "steps": [
+        {
+          "stepId": "put-return",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:java.put(\"k\",\"value\")"
+        },
+        {
+          "stepId": "read-after-put",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{k}"
+        }
+      ]
+    },
+    {
+      "scenarioId": "set-content-preserves-state-invalidates-selectors",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "set-content-preserves-state-invalidates-selectors"
+      },
+      "sources": [],
+      "data": [
+        {
+          "id": "d",
+          "kind": "rule-data",
+          "name": "",
+          "variables": {}
+        }
+      ],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": "d",
+          "sourceId": null,
+          "chapterId": null,
+          "content": "<b>first</b><i>X</i>"
+        }
+      ],
+      "observedKeys": [
+        "picked"
+      ],
+      "steps": [
+        {
+          "stepId": "first-put",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@put:{\"picked\":\"tag.b@text\"}tag.i@text"
+        },
+        {
+          "stepId": "first-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{picked}"
+        },
+        {
+          "stepId": "new-content",
+          "kind": "setup",
+          "action": "setContent",
+          "instanceId": "a",
+          "content": "<b>second</b><i>Y</i>"
+        },
+        {
+          "stepId": "same-rule-new-content",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@put:{\"picked\":\"tag.b@text\"}tag.i@text"
+        },
+        {
+          "stepId": "second-read",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{picked}"
+        }
+      ]
+    },
+    {
+      "scenarioId": "explicit-source-global-sharing-and-isolation",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "explicit-source-global-sharing-and-isolation"
+      },
+      "sources": [
+        {
+          "id": "no-a",
+          "jsLib": null,
+          "variables": {}
+        },
+        {
+          "id": "no-b",
+          "jsLib": null,
+          "variables": {}
+        },
+        {
+          "id": "shared-a",
+          "jsLib": "/* stateful reference shared scope */",
+          "variables": {}
+        },
+        {
+          "id": "shared-b",
+          "jsLib": "/* stateful reference shared scope */",
+          "variables": {}
+        }
+      ],
+      "data": [],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "n1",
+          "dataId": null,
+          "sourceId": "no-a",
+          "chapterId": null,
+          "content": "ignored"
+        },
+        {
+          "id": "n2",
+          "dataId": null,
+          "sourceId": "no-a",
+          "chapterId": null,
+          "content": "ignored"
+        },
+        {
+          "id": "n3",
+          "dataId": null,
+          "sourceId": "no-b",
+          "chapterId": null,
+          "content": "ignored"
+        },
+        {
+          "id": "s1",
+          "dataId": null,
+          "sourceId": "shared-a",
+          "chapterId": null,
+          "content": "ignored"
+        },
+        {
+          "id": "s2",
+          "dataId": null,
+          "sourceId": "shared-a",
+          "chapterId": null,
+          "content": "ignored"
+        },
+        {
+          "id": "s3",
+          "dataId": null,
+          "sourceId": "shared-b",
+          "chapterId": null,
+          "content": "ignored"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "no-lib-first",
+          "kind": "call",
+          "instanceId": "n1",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        },
+        {
+          "stepId": "no-lib-same-instance",
+          "kind": "call",
+          "instanceId": "n1",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        },
+        {
+          "stepId": "no-lib-second-instance",
+          "kind": "call",
+          "instanceId": "n2",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        },
+        {
+          "stepId": "no-lib-other-source",
+          "kind": "call",
+          "instanceId": "n3",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        },
+        {
+          "stepId": "shared-first",
+          "kind": "call",
+          "instanceId": "s1",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        },
+        {
+          "stepId": "shared-same-instance",
+          "kind": "call",
+          "instanceId": "s1",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        },
+        {
+          "stepId": "shared-second-instance",
+          "kind": "call",
+          "instanceId": "s2",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        },
+        {
+          "stepId": "shared-other-source",
+          "kind": "call",
+          "instanceId": "s3",
+          "api": "getString-unescape-false",
+          "rule": "@js:globalThis.n=(globalThis.n||0)+1;String(globalThis.n)"
+        }
+      ]
+    },
+    {
+      "scenarioId": "regex-mode-persists-after-set-content",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "regex-mode-persists-after-set-content"
+      },
+      "sources": [],
+      "data": [],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": null,
+          "sourceId": null,
+          "chapterId": null,
+          "content": "<b>x12</b>"
+        },
+        {
+          "id": "fresh",
+          "dataId": null,
+          "sourceId": null,
+          "chapterId": null,
+          "content": "<b>next34</b>"
+        }
+      ],
+      "observedKeys": [],
+      "steps": [
+        {
+          "stepId": "regex-elements",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getElements",
+          "rule": ":(\\d+)"
+        },
+        {
+          "stepId": "same-instance-selector",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "tag.b@text"
+        },
+        {
+          "stepId": "new-content",
+          "kind": "setup",
+          "action": "setContent",
+          "instanceId": "a",
+          "content": "<b>next34</b>"
+        },
+        {
+          "stepId": "after-set-content-selector",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "tag.b@text"
+        },
+        {
+          "stepId": "fresh-instance-selector",
+          "kind": "call",
+          "instanceId": "fresh",
+          "api": "getString-unescape-false",
+          "rule": "tag.b@text"
+        }
+      ]
+    },
+    {
+      "scenarioId": "exception-preserves-earlier-put",
+      "provenance": {
+        "kind": "synthetic-public-input",
+        "purpose": "exception-preserves-earlier-put"
+      },
+      "sources": [],
+      "data": [
+        {
+          "id": "d",
+          "kind": "rule-data",
+          "name": "",
+          "variables": {}
+        }
+      ],
+      "chapters": [],
+      "instances": [
+        {
+          "id": "a",
+          "dataId": "d",
+          "sourceId": null,
+          "chapterId": null,
+          "content": "ignored"
+        }
+      ],
+      "observedKeys": [
+        "beforeThrow"
+      ],
+      "steps": [
+        {
+          "stepId": "throw-after-write",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@js:java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\")"
+        },
+        {
+          "stepId": "read-after-exception",
+          "kind": "call",
+          "instanceId": "a",
+          "api": "getString-unescape-false",
+          "rule": "@get:{beforeThrow}"
+        }
+      ]
+    }
+  ]
+}
