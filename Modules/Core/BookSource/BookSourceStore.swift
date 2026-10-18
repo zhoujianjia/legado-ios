@@ -694,17 +694,28 @@ class BookSourceStore: ObservableObject {
     static func parseSources(_ json: String) -> [BookSource]? {
         guard let data = json.data(using: .utf8) else { return nil }
         let decoder = JSONDecoder()
-        do {
-            let root = try JSONSerialization.jsonObject(with: data)
-            // BookSource tolerates absent fields, so an envelope would otherwise
-            // decode successfully as an empty source and discard its real rows.
-            if let dictionary = root as? [String: Any], let rows = dictionary["bookSources"] {
-                guard rows is [Any] else { return nil }
-                return try decoder.decode([BookSource].self, from: JSONSerialization.data(withJSONObject: rows))
+        struct SourceObject: Decodable {
+            let sources: [BookSource]
+            private enum Keys: String, CodingKey { case bookSources }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: Keys.self)
+                if container.contains(.bookSources) {
+                    sources = try container.decode([BookSource].self, forKey: .bookSources)
+                } else {
+                    sources = [try BookSource(from: decoder)]
+                }
             }
-            if root is [Any] { return try decoder.decode([BookSource].self, from: data) }
-            guard root is [String: Any] else { return nil }
-            return [try decoder.decode(BookSource.self, from: data)]
+        }
+        do {
+            // Inspect only the prefix. Large arrays and backup envelopes decode
+            // directly, without materializing and re-encoding an Any object tree.
+            if json.first(where: { !$0.isWhitespace && $0 != "\u{FEFF}" }) == "[" {
+                return try decoder.decode([BookSource].self, from: data)
+            }
+            // BookSource tolerates absent fields; inspect the envelope key before
+            // asking it to decode, so a backup cannot become an empty source.
+            return try decoder.decode(SourceObject.self, from: data).sources
         } catch {
             AppLogger.cache("Book source import JSON could not be parsed", error: error)
             return nil

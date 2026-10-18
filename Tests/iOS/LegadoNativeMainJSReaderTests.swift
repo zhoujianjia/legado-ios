@@ -26,7 +26,8 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
 
         let runID = UUID().uuidString.lowercased()
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("NativeMainJS-\(runID)", isDirectory: true)
-        let bookID = UUID()
+        var readingBook = ReadingBook(title: "Native Book", source: "native-mainjs-fixture", contentFilename: "")
+        let bookID = readingBook.id
         let server = try NativeReaderLoopbackServer(runID: runID)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let initialService = LegadoMainJSSourceService(contextDirectory: directory, operationTimeout: 45)
@@ -85,10 +86,32 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
             stages["contentTwo"] = try Self.json(second)
             try check(first.content == "LEGADO_NATIVE_RAW_ONE", "E4X/Java marker for chapter one differs")
             try check(second.content == "LEGADO_NATIVE_RAW_TWO", "E4X/Java marker for chapter two differs")
-            let xhtml = try XCTUnwrap(fetcher.loadNormalizedChapterHTMLSync(bookId: bookID, chapterIndex: 0,
-                expectedSourceURL: persistedTOC.chapters[0].url, expectedTOCTitle: persistedTOC.chapters[0].title))
-            stages["normalizedXHTML"] = xhtml
-            try check(xhtml.contains(first.content), "The native reader artifact must contain the JVM result")
+            try check(first.rawHTMLFilename == nil && first.normalizedHTMLFilename == nil
+                && second.rawHTMLFilename == nil && second.normalizedHTMLFilename == nil,
+                "Plain JVM text must not claim source HTML artifacts")
+            readingBook.title = detail.name
+            readingBook.source = source.bookSourceUrl
+            readingBook.isOnline = true
+            readingBook.bookSourceId = source.id
+            readingBook.bookInfoURL = detail.bookURL
+            readingBook.tocURL = persistedTOC.tocURL
+            readingBook.runtimeVariables = persistedTOC.runtimeVariables
+            readingBook.onlineChapters = persistedTOC.chapters
+            let requestsBeforeReader = server.snapshot.requests.count
+            let reader = OnlineChapterContentService(book: readingBook, store: nil)
+            let payload = try await reader.payload(at: 0, policy: .cacheOnly)
+            try check(payload.plainText == first.content && payload.title == persistedTOC.chapters[0].title
+                && payload.sourceHref == persistedTOC.chapters[0].url,
+                "The actual cache-only reader payload must preserve the JVM content and chapter identity")
+            guard case .html(let xhtml) = payload.body else {
+                throw NativeReaderTestError.failed("The native reader must wrap cached JVM text as XHTML")
+            }
+            stages["readerCacheOnlyXHTML"] = xhtml
+            stages["readerCacheOnlyPlainText"] = payload.plainText
+            try check(xhtml.contains("<article id=\"reader-content\">") && xhtml.contains(first.content),
+                "The actual reader XHTML must contain the JVM result")
+            try check(server.snapshot.requests.count == requestsBeforeReader,
+                "The cache-only reader must not issue an additional HTTP request")
 
             let headersSent = expectation(description: "Fixture wrote headers and a partial body")
             let peerClosed = expectation(description: "Cancelled native client closes the held TCP connection")
