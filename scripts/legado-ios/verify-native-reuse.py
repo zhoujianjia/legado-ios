@@ -57,7 +57,10 @@ JVM_INPUTS = (
     "Packages/LegadoRuntime/vendor/LICENSE",
     "Packages/LegadoRuntime/vendor/licenses",
     "Packages/LegadoRuntime/vendor/manifest.json",
+    "Packages/LegadoRuntime/vendor/probe",
 )
+REQUIRED_GRADLE_TASKS = ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke",
+                         "runtimeWireSmoke", "runtimeCpuLoopSmoke", "probeDependencyEvidence"]
 FRAMEWORK = "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework"
 HOMES = {platform: f".build/legado-ios/{platform}-static/java-home"
          for platform in ("device", "simulator")}
@@ -80,6 +83,8 @@ REQUIRED_JAR_CLASSES = (
     "io/yuedu/legado/OkHttpWireCapabilityProbe.class",
     "io/yuedu/legado/ReferenceLoopbackFixture.class",
     "io/yuedu/legado/ProbeOkHttpTransport.class",
+    "io/yuedu/legado/CpuLoopDiagnosticBridge.class",
+    "io/yuedu/legado/CpuLoopCapabilityProbe.class",
     "okhttp3/OkHttpClient.class",
     "okio/Buffer.class",
 )
@@ -232,7 +237,7 @@ def record_jvm():
               "workflowPath": CURRENT_WORKFLOW,
               "workflowBlob": replay.git("rev-parse", f"{current}:{CURRENT_WORKFLOW}"),
               "inputs": jvm_inputs(current), "includeEngineTests": True,
-              "completedGradleTasks": ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke"],
+              "completedGradleTasks": REQUIRED_GRADLE_TASKS,
               "jar": jar_details(replay.safe_path(REPO / JAR_PATH)),
               "deviceValidationPassed": False}
     manifest.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
@@ -443,7 +448,7 @@ def verify_fresh_jvm(record):
             or manifest.get("workflowBlob") != replay.git("rev-parse", f"{record['currentSHA']}:{CURRENT_WORKFLOW}")
             or manifest.get("inputs") != record["jvmInputs"]
             or manifest.get("includeEngineTests") is not True
-            or manifest.get("completedGradleTasks") != ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke"]):
+            or manifest.get("completedGradleTasks") != REQUIRED_GRADLE_TASKS):
         raise ValueError("Fresh JVM provenance does not match this run and its current source inputs")
     details = jar_details(jar)
     if details != manifest.get("jar"):

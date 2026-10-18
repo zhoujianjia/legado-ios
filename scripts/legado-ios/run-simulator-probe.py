@@ -150,7 +150,7 @@ def stamp_simulator_source(app, source_commit):
 
 class ProbeRun:
     def __init__(self, repo, output, timeout_seconds, require_native_tcp=False, require_native_tls=False,
-                 require_native_http_wire=False):
+                 require_native_http_wire=False, require_native_cpu_loop=False):
         self.repo = repo
         output.mkdir(parents=True, exist_ok=True)
         self.output_root = output
@@ -166,6 +166,7 @@ class ProbeRun:
         self.require_native_tcp = require_native_tcp
         self.require_native_tls = require_native_tls
         self.require_native_http_wire = require_native_http_wire
+        self.require_native_cpu_loop = require_native_cpu_loop
         self.result = {
             "schemaVersion": 1,
             "startedAt": utc_now(),
@@ -178,7 +179,7 @@ class ProbeRun:
             "lastCheckpoint": None,
             "collectionErrors": [],
             "capabilityRequired": {"nativeTCP": require_native_tcp, "nativeTLS": require_native_tls,
-                                   "nativeHTTPWire": require_native_http_wire},
+                                   "nativeHTTPWire": require_native_http_wire, "nativeCPULoop": require_native_cpu_loop},
         }
 
     def command(self, name, argv, timeout=120, enforce_deadline=True):
@@ -286,6 +287,8 @@ class ProbeRun:
             required.append(("TLS", "nativeTLSProbe", "nativeTLSGate"))
         if self.require_native_http_wire:
             required.append(("HTTP wire", "nativeHTTPWireProbe", "nativeHTTPWireGate"))
+        if self.require_native_cpu_loop:
+            required.append(("CPU loop", "nativeCPULoopProbe", "nativeCPULoopGate"))
         if not required:
             return
         path = self.container / DIAGNOSTICS_PATH / "exports/LegadoProbe-report.json"
@@ -302,6 +305,8 @@ class ProbeRun:
             self.verify_required_native_tls(report.get("nativeTLSProbe"), gates["TLS"], path)
         if self.require_native_http_wire:
             self.verify_required_native_http_wire(report.get("nativeHTTPWireProbe"), gates["HTTP wire"], path)
+        if self.require_native_cpu_loop:
+            self.verify_required_native_cpu_loop(report.get("nativeCPULoopProbe"), gates["CPU loop"], path)
 
     def read_current_capability_report(self, path, required, gates):
         label = "/".join(item[0] for item in required)
@@ -373,6 +378,21 @@ class ProbeRun:
             raise RuntimeError("Required native HTTP wire capability failed: " + gate["failure"] + "; report: " + str(path)) from error
         gate["passed"] = True
 
+    def verify_required_native_cpu_loop(self, native, gate, path):
+        try:
+            spec = importlib.util.spec_from_file_location("native_cpu_loop_validator", Path(__file__).with_name("verify-cpu-loop.py"))
+            helper = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(helper)
+            verdict = helper.verify(native)
+            gate["cpuVerification"] = verdict
+            evidence_path = self.output / "native-cpu-loop-verification.json"
+            evidence_path.write_text(json.dumps(verdict, indent=2) + "\n", encoding="utf-8")
+            gate["verificationPath"] = str(evidence_path)
+        except Exception as error:
+            gate["failure"] = type(error).__name__ + ": " + str(error)
+            raise RuntimeError("Required native CPU loop capability failed: " + gate["failure"] + "; report: " + str(path)) from error
+        gate["passed"] = True
+
     def collect(self):
         if self.container:
             diagnostics = self.container / DIAGNOSTICS_PATH
@@ -420,13 +440,16 @@ def main():
                         help="Fail unless this run's exported report passes all four TLS cases and cleanup")
     parser.add_argument("--require-native-http-wire", action="store_true",
                         help="Require real loopback HTTP bytes, cleanup and zero differences against the original Android fixture")
+    parser.add_argument("--require-native-cpu-loop", action="store_true",
+                        help="Require positively sampled CPU execution before public cancellation/deadline and successful worker/session cleanup")
     args = parser.parse_args()
     if not 0 < args.timeout_seconds <= 600:
         parser.error("--timeout-seconds must be greater than zero and at most 600")
     repo = Path(__file__).resolve().parents[2]
     output = (args.output_directory or repo / ".build/ci-logs/simulator-probe").resolve()
     probe = ProbeRun(repo, output, args.timeout_seconds, require_native_tcp=args.require_native_tcp,
-                     require_native_tls=args.require_native_tls, require_native_http_wire=args.require_native_http_wire)
+                     require_native_tls=args.require_native_tls, require_native_http_wire=args.require_native_http_wire,
+                     require_native_cpu_loop=args.require_native_cpu_loop)
     try:
         probe.run(args.device_filter)
     except (Exception, KeyboardInterrupt) as error:

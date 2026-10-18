@@ -172,3 +172,12 @@ tasks.register<JavaExec>("runtimeWireSmoke") {
     args(if (includeEngineTests) "present" else "absent")
     jvmArgs("-Xint", "-Xmx128m")
 }
+
+tasks.register<JavaExec>("runtimeCpuLoopSmoke") {
+    dependsOn(runtimeJar)
+    javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(21)) })
+    classpath = files(runtimeJar.flatMap { it.archiveFile })
+    mainClass.set(layout.projectDirectory.file("src/smoke/java/LegadoCpuLoopSmoke.java").asFile.absolutePath)
+    args(if (includeEngineTests) "present" else "absent")
+    jvmArgs("-Xint", "-Xmx128m")
+}

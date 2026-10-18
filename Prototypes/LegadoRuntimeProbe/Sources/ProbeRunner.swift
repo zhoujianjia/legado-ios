@@ -159,6 +159,12 @@ actor ProbeRunner {
             } else {
                 nativeHTTPWire = ["passed": false, "skipped": true, "reason": "Native TLS capability did not pass"]
             }
+            let nativeCPULoop: [String: Any]
+            if nativeHTTPWire["passed"] as? Bool == true {
+                nativeCPULoop = try await probeNativeCPULoop(engine, session: session)
+            } else {
+                nativeCPULoop = ["passed": false, "skipped": true, "reason": "Native HTTP wire capability did not pass"]
+            }
             try Task.checkCancellation()
             closeAttempted = true
             try recordProgress("close_session.begin")
@@ -175,6 +181,7 @@ actor ProbeRunner {
                 "nativeTCPProbe": nativeTCP,
                 "nativeTLSProbe": nativeTLS,
                 "nativeHTTPWireProbe": nativeHTTPWire,
+                "nativeCPULoopProbe": nativeCPULoop,
                 "startupAndSessionMilliseconds": startupAndSessionMS, "totalMilliseconds": milliseconds(since: started),
                 "payloadBytes": try payloadSize([configuration.javaHome, payloadDirectory]),
                 "memoryBefore": memoryBefore, "memoryAfter": memory(), "steps": measurements,
@@ -291,6 +298,24 @@ actor ProbeRunner {
         } catch {
             try recordProgress("native_http_wire.failed", failure: error.localizedDescription)
             return ["passed": false, "loopbackOnly": true, "g4ValidationPassed": false,
+                    "failure": error.localizedDescription]
+        }
+    }
+
+    private func probeNativeCPULoop(_ engine: LegadoRuntime, session: LegadoSourceSession) async throws -> [String: Any] {
+        try recordProgress("native_cpu_loop.begin")
+        do {
+            guard let report = try result(await call(engine, session, "cpuLoopCapabilityProbe", ["timeoutMs": 90_000])) as? [String: Any],
+                  report["suite"] as? String == "CpuLoopCapabilityProbe" else {
+                throw mismatch("JVM CPU loop capability report is missing")
+            }
+            try recordProgress(report["passed"] as? Bool == true ? "native_cpu_loop.passed" : "native_cpu_loop.failed")
+            return report
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            try recordProgress("native_cpu_loop.failed", failure: error.localizedDescription)
+            return ["passed": false, "interpreted": true, "fixtureOnly": true, "g4ValidationPassed": false,
                     "failure": error.localizedDescription]
         }
     }

@@ -30,10 +30,43 @@
     "optInJarSHA256": "28c2664f2a0842e8ce51e2f0e0d11a58c6d63a15d0115e7d065d0d3b54104040"
   },
   "acceptance": {
-    "nativeSimulatorPassed": false,
+    "nativeSimulatorPassed": true,
     "physicalDevicePassed": false,
     "g4ValidationPassed": false,
-    "status": "Native execution pending; desktop results cannot satisfy native acceptance."
+    "status": "One authenticated Simulator execution passed all fixed HTTP wire checks and strict Android comparison; matching physical-device and complete-G4 validation remain pending."
+  },
+  "nativeSimulator": {
+    "runId": 39086917909,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39086917909",
+    "sourceCommit": "768bc074778a87110d1ba93e0b3840e9f8341ad1",
+    "executionPlatform": "ios-simulator",
+    "portableJUnit": {"tests": 100, "failures": 0, "errors": 0, "skipped": 0},
+    "logArtifactId": 12121059898,
+    "logArtifactSHA256": "5abdb62d451d9b4c8abf974685ce43f178a044a0df39e8f8386c14342ac1b498",
+    "reportSHA256": "1d6da34e1f8c4e41595c34d38fae4a5dffca15d72a6c4b457893f2e863a96105",
+    "reportBytes": 124277,
+    "launchAndCheckpointPID": 54891,
+    "launchedAtUnix": 1792288290.5647302,
+    "checkpointRecordedAtUnix": 1792288316.11569,
+    "tcpPassed": true,
+    "tlsCasesPassed": 4,
+    "requestsCaptured": 7,
+    "responsesConsumed": 7,
+    "strictComparisonDifferenceCount": 0,
+    "httpMilliseconds": 1684.137583,
+    "cleanup": "Dispatcher, listener, active socket, server worker and isolated session all stopped or closed; active calls and pooled connections are zero; errors are empty.",
+    "timingScope": "One fixed diagnostic run including evidence collection and cleanup, not a production-reader performance percentile."
+  },
+  "deviceTargetPackage": {
+    "artifactId": 12122120053,
+    "artifactZipSHA256": "f3e88d4dcfdd9ab795ef4fa9b7731d33fb2d25b6bd75def231c82422168649a3",
+    "ipaSHA256": "cc57c6d5cfbb5aef0a671db505c6e68c170191e91f312b624d1c51fc5d295e35",
+    "ipaBytes": 49899658,
+    "jarSHA256": "2bc1e1d08ab9c9ba64aee19a6eeec79cfe1c2efccde724b50cd01ef2b8dd99c0",
+    "independentAuditPassed": true,
+    "audit": "Actual ARM64 iPhoneOS executable, thirteen modules, thirty-nine exports, suites/HTTP classes, fixed mainJs/TLS resources and packaged provenance/license hashes verified.",
+    "signed": false,
+    "physicalDeviceExecuted": false
   },
   "requiredNativeEvidence": [
     "Current source, launch PID, report timestamp and Simulator container must authenticate the enclosing report.",

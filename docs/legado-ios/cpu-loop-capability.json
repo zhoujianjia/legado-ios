@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "scope": "Two fixed interpreted CPU-loop stability cases; this does not establish full stability, physical-device, reader-feature or G4 acceptance.",
+  "operation": "cpuLoopCapabilityProbe",
+  "probeBuild": 14,
+  "implementation": {
+    "ordinaryPayload": "Small reflection bridge only; the test helper is absent and the operation explicitly returns CPU_LOOP_PROBE_NOT_PACKAGED.",
+    "diagnosticPayload": "Opt-in helper uses actual public createSession/execute/cancel/closeSession APIs and the original unchanged Rhino engine/job observer.",
+    "workload": "Complete 16384 JavaScript iterations with checksum 402644992, publish a unique nonblocking signal, then run arithmetic forever without further host or Java calls.",
+    "cpuProof": "After the signal, independently sample the actual worker in Interpreter.interpretLoop with no signal, NativeJavaMethod, SourceJavaHost or dispatchHost frames. Signal arrival alone never passes.",
+    "deadline": "Each child retains its own original public RuntimeTask deadline and is rejected if that actual deadline exceeds the parent. Parent cancellation propagates through public cancel; public execute deadline semantics are unchanged.",
+    "recovery": "Require distinct CANCELLED and TIMEOUT envelopes, context exit and a successful public evaluate returning 42 on the same owned worker, followed by session close and worker termination."
+  },
+  "desktop": {
+    "executionPlatform": "windows-desktop",
+    "junit": {"tests": 104, "failures": 0, "errors": 0, "skipped": 0},
+    "newJUnitCases": 4,
+    "packagedSmokeMode": "Java 21 -Xint -Xmx128m",
+    "ordinaryHelperAbsencePassed": true,
+    "packagedCasesPassed": ["public-cancel", "absolute-deadline"],
+    "httpWireRegressionPassed": true,
+    "packagedOperationEnvelopeSHA256": "d3f4ef31b9a62a0ab15aac9a8f9adeb71ca8640033ff9ac9a48e3f25bd7c1265",
+    "optInJarSHA256": "686f9bd09f1a546a8d254e63d2a59edb28cd36a23f77b89cb0869ca13c299ce8",
+    "independentEvidenceGuardPassed": true
+  },
+  "nativeAcceptance": {
+    "simulatorPassed": false,
+    "physicalDevicePassed": false,
+    "fullStabilityGatePassed": false,
+    "status": "Native execution pending; desktop validation does not satisfy an iOS acceptance gate."
+  },
+  "requiredEvidence": [
+    "Authenticate enclosing source, platform, launch PID and checkpoint time before checking the CPU result.",
+    "Require exactly one public-cancel and one absolute-deadline case with distinct UUID signals, task/session/recovery identifiers and original public envelopes.",
+    "Require actual iteration/checksum evidence, a later positive interpreter stack sample and public cancellation after that sample.",
+    "Reject a host-handshake-only stack or substituted explicit cancellation for the natural deadline case.",
+    "Verify every child deadline, same-worker recovery, context exit, isolated session close, worker stop and empty owned workload registry."
+  ],
+  "limitations": [
+    "The registryEmpty field covers this diagnostic's owned workload registry; it does not claim every global runtime registry is empty.",
+    "The existing host-handshake cancellation case remains unchanged and is separate evidence.",
+    "Network/browser cancellation, sustained sessions, concurrency coverage and physical-device performance still need separate validation."
+  ]
+}

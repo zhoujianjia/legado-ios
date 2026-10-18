@@ -44,11 +44,13 @@ class SimulatorSourceStampTests(unittest.TestCase):
                 probe.stamp_simulator_source(self.app, invalid)
             self.assertEqual(self.plist.read_bytes(), before)
 
-    def make_run(self, valid_bundle=True, require_native_tcp=False, require_native_tls=False, require_native_http_wire=False):
+    def make_run(self, valid_bundle=True, require_native_tcp=False, require_native_tls=False, require_native_http_wire=False,
+                 require_native_cpu_loop=False):
         if not valid_bundle:
             self.plist.write_bytes(plistlib.dumps({**self.info, "CFBundleIdentifier": "wrong.bundle"}))
         run = probe.ProbeRun(self.root, self.root / "evidence", 60, require_native_tcp=require_native_tcp,
-                             require_native_tls=require_native_tls, require_native_http_wire=require_native_http_wire)
+                             require_native_tls=require_native_tls, require_native_http_wire=require_native_http_wire,
+                             require_native_cpu_loop=require_native_cpu_loop)
         container = self.root / "simulator-data"
         container.mkdir(exist_ok=True)
         calls = []
@@ -157,7 +159,7 @@ class SimulatorSourceStampTests(unittest.TestCase):
                 side_effect=lambda *args: self.write_tcp_report(run, {"passed": True}, nativeTLSProbe=capability)):
             run.run("iPhone")
         self.assertEqual(run.result["status"], "passed")
-        self.assertEqual(run.result["capabilityRequired"], {"nativeTCP": True, "nativeTLS": True, "nativeHTTPWire": False})
+        self.assertEqual(run.result["capabilityRequired"], {"nativeTCP": True, "nativeTLS": True, "nativeHTTPWire": False, "nativeCPULoop": False})
         self.assertTrue(run.result["nativeTCPGate"]["passed"])
         self.assertTrue(run.result["nativeTLSGate"]["passed"])
         self.assertEqual(run.result["nativeTLSGate"]["probe"], capability)
@@ -254,6 +256,50 @@ class SimulatorSourceStampTests(unittest.TestCase):
         self.assertFalse(gate["passed"])
         self.assertGreater(gate["wireVerification"]["strictComparison"]["differenceCount"], 0)
         self.assertTrue(Path(gate["comparisonPath"]).is_file())
+
+
+    def cpu_loop_capability(self):
+        spec = importlib.util.spec_from_file_location("runner_cpu_loop_synthetic_fixture", SCRIPT.with_name("test-cpu-loop.py"))
+        fixtures = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(fixtures)
+        return fixtures.synthetic_capability()
+
+    def test_required_cpu_loop_checks_real_samples_distinct_outcomes_and_cleanup(self):
+        run, _ = self.make_run(require_native_cpu_loop=True)
+        capability = self.cpu_loop_capability()
+        with patch.object(probe.sys, "platform", "darwin"), patch.object(probe, "wait_for_probe",
+                side_effect=lambda *args: self.write_tcp_report(run, None, nativeCPULoopProbe=capability)):
+            run.run("iPhone")
+        gate = run.result["nativeCPULoopGate"]
+        self.assertTrue(gate["passed"])
+        self.assertEqual(gate["cpuVerification"]["casesVerified"], 2)
+        self.assertFalse(gate["cpuVerification"]["fullStabilityGatePassed"])
+        self.assertTrue(Path(gate["verificationPath"]).is_file())
+
+    def test_missing_failed_or_host_only_cpu_evidence_cannot_satisfy_the_gate(self):
+        host_only = self.cpu_loop_capability()
+        host_only["cases"][0]["cpuSample"]["stack"].append("io.yuedu.legado.SourceJavaHost.connect(Host.kt:1)")
+        for capability in (None, {}, {"passed": False, "failure": "CPU signal never reached"}, host_only):
+            run, _ = self.make_run(require_native_cpu_loop=True)
+            with self.subTest(capability=capability), patch.object(probe.sys, "platform", "darwin"), \
+                    patch.object(probe, "wait_for_probe", side_effect=lambda *args:
+                        self.write_tcp_report(run, None, nativeCPULoopProbe=capability)):
+                with self.assertRaisesRegex(RuntimeError, "Required native CPU loop capability failed"):
+                    run.run("iPhone")
+            self.assertFalse(run.result["simulatorValidationPassed"])
+            self.assertFalse(run.result["nativeCPULoopGate"]["passed"])
+
+    def test_complete_cpu_evidence_from_another_source_or_process_is_rejected(self):
+        for override in ({"sourceCommit": "b" * 40}, {"probeProgress": {}},
+                         {"probeProgress": {"probe-progress.json": {"executionPlatform": "ios-simulator",
+                             "processIdentifier": 999, "recordedAt": 1}}}):
+            run, _ = self.make_run(require_native_cpu_loop=True)
+            with self.subTest(override=override), patch.object(probe.sys, "platform", "darwin"), \
+                    patch.object(probe, "wait_for_probe", side_effect=lambda *args:
+                        self.write_tcp_report(run, None, nativeCPULoopProbe=self.cpu_loop_capability(), **override)):
+                with self.assertRaisesRegex(RuntimeError, "Required native CPU loop report"):
+                    run.run("iPhone")
+            self.assertFalse(run.result["nativeCPULoopGate"]["passed"])
 
 
 if __name__ == "__main__":

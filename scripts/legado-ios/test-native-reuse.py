@@ -136,6 +136,10 @@ class NativeIdentityTests(unittest.TestCase):
             inputs = reuse.jvm_inputs(CURRENT)
         self.assertIn("Packages/LegadoRuntime/vendor/maven", [item["path"] for item in inputs])
         self.assertIn("Packages/LegadoRuntime/vendor/manifest.json", [item["path"] for item in inputs])
+        self.assertIn("Packages/LegadoRuntime/vendor/probe", [item["path"] for item in inputs])
+        with patch.object(reuse.replay, "git", return_value=" M Packages/LegadoRuntime/vendor/probe/manifest.json"):
+            with self.assertRaisesRegex(ValueError, "uncommitted"):
+                reuse.jvm_inputs(CURRENT)
 
     def test_fresh_artifact_requires_current_run_and_workflow_identity(self):
         api = FakeAPI()
@@ -392,7 +396,8 @@ class NativeFilesTests(unittest.TestCase):
         manifest = {"schemaVersion": 1, "sourceSHA": CURRENT, "repository": record["repository"], "runID": 123,
                     "workflowPath": reuse.CURRENT_WORKFLOW, "workflowBlob": "c" * 40,
                     "inputs": record["jvmInputs"], "includeEngineTests": True,
-                    "completedGradleTasks": ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke"],
+                    "completedGradleTasks": ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke",
+                                             "runtimeWireSmoke", "runtimeCpuLoopSmoke", "probeDependencyEvidence"],
                     "jar": reuse.jar_details(jar)}
         self.write(reuse.JVM_MANIFEST, json.dumps(manifest).encode())
         return record, manifest
@@ -402,7 +407,8 @@ class NativeFilesTests(unittest.TestCase):
         with patch.object(reuse.replay, "git", return_value="c" * 40):
             self.assertEqual(reuse.verify_fresh_jvm(record)["producer"]["sourceSHA"], CURRENT)
             for key, value in (("runID", 1), ("sourceSHA", reuse.BASELINE_SHA), ("inputs", []),
-                               ("includeEngineTests", False)):
+                               ("includeEngineTests", False),
+                               ("completedGradleTasks", ["test", "runtimeJar", "runtimeSmoke", "runtimeSuiteSmoke"])):
                 changed = {**manifest, key: value}
                 self.write(reuse.JVM_MANIFEST, json.dumps(changed).encode())
                 with self.subTest(key=key), self.assertRaisesRegex(ValueError, "provenance"):

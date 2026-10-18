@@ -17,8 +17,18 @@ preserves the earlier failure and current results. The new opt-in
 requests using the original mainJs and retains the peer's raw HTTP bytes.
 Windows execution has zero differences under the unchanged Android projection;
 the top-level comparator correctly rejects that desktop execution as iOS evidence.
-Probe 13 requires an independently checked native wire trace as well as TCP/TLS.
-Its Simulator execution and matching physical-device validation remain pending.
+[Probe 13 run 39086917909](https://github.com/zhoujianjia/legado-ios/actions/runs/39086917909)
+then passed the mandatory native TCP/TLS/HTTP gates: seven real requests and
+responses, zero strict differences, successful cleanup and authenticated source,
+PID and timestamp. Its device-target IPA passed an independent package audit;
+matching physical-device execution remains pending.
+
+The next [CPU-loop diagnostic](cpu-loop-capability.json) distinguishes actual
+interpreter execution from the earlier host handshake. Desktop tests positively
+sample a CPU loop before public cancellation or the natural deadline, preserve
+the distinct original errors and recover on the same worker. All 104 JVM tests
+and the opt-in packaged CPU/HTTP smokes pass. Probe 14 requires this additional
+native evidence; its Simulator and physical-device execution remain pending.
 
 ## Reader experience build
 

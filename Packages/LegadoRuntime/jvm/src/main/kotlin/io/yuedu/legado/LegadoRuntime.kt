@@ -129,6 +129,9 @@ object LegadoRuntime {
         if (operation == "semanticSuite") return EngineSemanticSuite.run(task)
         if (operation == "tlsCapabilityProbe") return TlsCapabilityProbe.run(task)
         if (operation == "httpWireCapabilityProbe") return HttpWireDiagnosticBridge.run(task, ::executeOperation)
+        if (operation == "cpuLoopCapabilityProbe" || operation == "cpuLoopWorkload") {
+            return CpuLoopDiagnosticBridge.run(task, operation, input)
+        }
         if (operation == "interopSuite") return runScriptWithContext(task.job) {
             gson.toJsonTree(InteropSemanticSuite.run())
         }
