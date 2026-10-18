@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "suite": "JsonPathRuleObservation",
+  "caseSetVersion": "legado-jsonpath-public-v1",
+  "apis": [
+    "getString",
+    "getStringList",
+    "getElements"
+  ],
+  "sourceProvenance": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "files": [
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "fileSHA256": "5441d6d00064059519add3e5a81d85b1776f575bd0e5d30f3b5763d90af9e8a9",
+        "anchors": [
+          "getStringList:205-285",
+          "getString:308-376",
+          "getElements:453-501",
+          "getAnalyzeByJSonPath:168-174"
+        ]
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSonPath.kt",
+        "fileSHA256": "ee5ee9ebc95b4f5d6e2d459d6f727fccd10a6bd6a36ce872547f6cee5684109d",
+        "anchors": [
+          "getString:34-71",
+          "getStringList:74-126",
+          "getList:132-174"
+        ]
+      },
+      {
+        "path": "app/src/main/java/io/legado/app/model/analyzeRule/RuleAnalyzer.kt",
+        "fileSHA256": "74ab0152bce9d5e014cc69d9c6974cbb093d8353200f1452066f7d05102265a7",
+        "anchors": [
+          "splitRule:165-306",
+          "innerRule:308-376"
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "caseId": "scalar-unicode-newline",
+      "jsonText": "{\"name\":\"书名\\n🙂\"}",
+      "rule": "$.name"
+    },
+    {
+      "caseId": "missing-path",
+      "jsonText": "{\"name\":\"present\"}",
+      "rule": "$.missing"
+    },
+    {
+      "caseId": "invalid-balanced-path",
+      "jsonText": "{\"items\":[{\"name\":\"item\"}]}",
+      "rule": "$.items[?]"
+    },
+    {
+      "caseId": "explicit-null",
+      "jsonText": "{\"name\":null}",
+      "rule": "$.name"
+    },
+    {
+      "caseId": "mixed-list",
+      "jsonText": "{\"items\":[\"line\\n🙂\",2,true,null,{\"x\":\"object\"}]}",
+      "rule": "$.items[*]"
+    },
+    {
+      "caseId": "empty-list",
+      "jsonText": "{\"items\":[]}",
+      "rule": "$.items[*]"
+    },
+    {
+      "caseId": "object-result",
+      "jsonText": "{\"item\":{\"nested\":1,\"empty\":null}}",
+      "rule": "$.item"
+    },
+    {
+      "caseId": "or-missing-fallback",
+      "jsonText": "{\"name\":\"fallback\"}",
+      "rule": "$.missing||$.name"
+    },
+    {
+      "caseId": "or-invalid-fallback",
+      "jsonText": "{\"name\":\"fallback\",\"items\":[]}",
+      "rule": "$.items[?]||$.name"
+    },
+    {
+      "caseId": "and-lists",
+      "jsonText": "{\"a\":[\"a1\",\"a2\"],\"b\":[\"b1\"]}",
+      "rule": "$.a&&$.b"
+    },
+    {
+      "caseId": "interleave-unequal-lists",
+      "jsonText": "{\"a\":[\"a1\"],\"b\":[\"b1\",\"b2\"]}",
+      "rule": "$.a%%$.b"
+    },
+    {
+      "caseId": "balanced-filter-inner-and",
+      "jsonText": "{\"items\":[{\"name\":\"skip\",\"active\":true,\"rank\":1},{\"name\":\"kept\",\"active\":true,\"rank\":2},{\"name\":\"inactive\",\"active\":false,\"rank\":3}]}",
+      "rule": "$.items[?(@.active == true && @.rank >= 2)].name"
+    }
+  ]
+}
