@@ -47,7 +47,7 @@ struct BookSourceSearchFanOut {
         var outcome: SearchSourceOutcome
         /// Books not already handed to `onBatch`.
         var books: [OnlineBook]
-        /// The source's own `hasMoreRule` verdict for a later page; nil when unknown.
+        /// The source's own `hasMoreRule` verdict for this page; nil when unknown.
         var hasMore: Bool?
         var elapsedMs: Double
     }
@@ -143,7 +143,8 @@ struct BookSourceSearchFanOut {
                 let outcome: SearchSourceOutcome = result.failure != nil
                     ? .failedAsEmpty
                     : (result.books.isEmpty ? .empty : .results)
-                return Answer(outcome: outcome, books: result.streamed ? [] : result.books, hasMore: nil, elapsedMs: elapsedMs)
+                return Answer(outcome: outcome, books: result.streamed ? [] : result.books,
+                              hasMore: result.hasMore, elapsedMs: elapsedMs)
             }
         } catch is TimeoutError {
             return Answer(outcome: .timedOut, books: [], hasMore: nil, elapsedMs: elapsed(since: startedAt))

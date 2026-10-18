@@ -660,8 +660,11 @@ class SearchAggregator: ObservableObject {
                     await self.mergeBatch(answer.books, source: source, query: q, generation: generation)
                     self.internalProgress.completed += 1
                     self.completedSourceIds.insert(sourceId)
-                    // A page 1 without books has no page 2 worth asking for.
-                    if answer.outcome == .results { self.pagedSourceIds.insert(sourceId) }
+                    // A source's explicit last-page verdict wins even when page 1
+                    // contains books. Unknown verdicts keep the existing heuristics.
+                    if answer.outcome == .results, answer.hasMore != false {
+                        self.pagedSourceIds.insert(sourceId)
+                    }
                     self.answerTally.count(answer.outcome)
                     if answer.outcome == .failedAsEmpty { self.internalProgress.failedAsEmpty += 1 }
                     // Phase 0b: a failure the fetcher reported as "no results" still

@@ -115,6 +115,8 @@ extension BookSourceFetcher {
         /// Set when the native path failed and reported the failure as no results. Nil for
         /// cache hits and the JS runtime, whose errors are thrown.
         var failure: BookSourceSearchFailure? = nil
+        /// The native page's own verdict. Cache hits and JS runtime paths remain unknown.
+        var hasMore: Bool? = nil
     }
 
     /// - Parameters:
@@ -149,11 +151,28 @@ extension BookSourceFetcher {
         onHasMore: ((Bool?) -> Void)? = nil,
         failureMode: BookSourceSearchFailureMode = .emptyResult
     ) async throws -> BookSourceSearchOutcome {
+        try await searchPageOutcome(
+            query: query, in: source, page: page, earlyFilter: earlyFilter,
+            evaluateHasMore: onHasMore != nil, onHasMore: onHasMore, failureMode: failureMode
+        ).outcome
+    }
+
+    /// Returns the verdict with the books rather than transporting it through a
+    /// mutable capture in a callback from the source-script worker.
+    private func searchPageOutcome(
+        query: String,
+        in source: BookSource,
+        page: Int = 1,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)? = nil,
+        evaluateHasMore: Bool,
+        onHasMore: ((Bool?) -> Void)? = nil,
+        failureMode: BookSourceSearchFailureMode = .emptyResult
+    ) async throws -> (outcome: BookSourceSearchOutcome, hasMore: Bool?) {
         if source.isJsSource {
             var books = try await mainJSService.search(query: query, page: page, source: source)
             if let earlyFilter { books = books.filter { earlyFilter($0.name, $0.author) } }
             onHasMore?(nil)
-            return BookSourceSearchOutcome(books: books)
+            return (BookSourceSearchOutcome(books: books), nil)
         }
         guard !source.searchUrl.isEmpty else { throw FetchError.noSearchURL }
         let cacheDays = GlobalSettings.shared.searchCacheDays
@@ -164,8 +183,8 @@ extension BookSourceFetcher {
             days: cacheDays
         ) {
             onHasMore?(nil)
-            guard let earlyFilter else { return BookSourceSearchOutcome(books: cached) }
-            return BookSourceSearchOutcome(books: cached.filter { earlyFilter($0.name, $0.author) })
+            guard let earlyFilter else { return (BookSourceSearchOutcome(books: cached), nil) }
+            return (BookSourceSearchOutcome(books: cached.filter { earlyFilter($0.name, $0.author) }), nil)
         }
 
         if source.shouldUseLegadoRuntimeFetch(for: source.searchUrl) {
@@ -188,7 +207,7 @@ extension BookSourceFetcher {
                     days: cacheDays
                 )
             }
-            return BookSourceSearchOutcome(books: filtered)
+            return (BookSourceSearchOutcome(books: filtered), nil)
         }
 
         let requestSpec = source.renderSearchRequest(query: query, page: page)
@@ -222,7 +241,7 @@ extension BookSourceFetcher {
                 throw error
             case .reportedAsEmpty(let failure):
                 Self.logReportedAsEmpty(failure, source: source, host: url.host, mode: failureMode)
-                return .failed(failure)
+                return (.failed(failure), nil)
             }
         }
 
@@ -237,24 +256,30 @@ extension BookSourceFetcher {
             onHasMore?(false)
             let failure = BookSourceSearchFailure.parse(error.localizedDescription)
             Self.logReportedAsEmpty(failure, source: source, host: url.host, mode: failureMode)
-            return .failed(failure)
+            return (.failed(failure), false)
         }
 
-        if let onHasMore {
+        let hasMore: Bool?
+        if evaluateHasMore {
             let hasMoreRule = source.ruleSearch.hasMoreRule
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             if !hasMoreRule.isEmpty {
-                onHasMore(await SourceScriptThread.run {
-                    BookSourceSession.session(for: source).withBridge {
-                        $0.evaluateHasMoreRule(hasMoreRule, html: html)
+                hasMore = await SourceScriptThread.run {
+                    SourcePerfTrace.span("search.hasMoreRule", "main=\(Thread.isMainThread) bytes=\(html.utf8.count)") {
+                        BookSourceSession.session(for: source).withBridge {
+                            $0.evaluateHasMoreRule(hasMoreRule, html: html)
+                        }
                     }
-                })
+                }
             } else if books.isEmpty {
                 // Legado's blank-rule fallback: an empty list page means no more.
-                onHasMore(false)
+                hasMore = false
             } else {
-                onHasMore(nil)
+                hasMore = nil
             }
+            onHasMore?(hasMore)
+        } else {
+            hasMore = nil
         }
 
         let filtered = Self.filterSearchResultsByCheckKeyWord(
@@ -267,7 +292,7 @@ extension BookSourceFetcher {
                 days: cacheDays
             )
         }
-        return BookSourceSearchOutcome(books: filtered)
+        return (BookSourceSearchOutcome(books: filtered), hasMore)
     }
 
     /// One line per failed source, so a source that keeps failing can be found in the log
@@ -299,12 +324,10 @@ extension BookSourceFetcher {
         in source: BookSource,
         page: Int
     ) async throws -> (books: [OnlineBook], hasMore: Bool?) {
-        var hasMore: Bool? = nil
-        let books = try await search(
-            query: query, in: source, page: page,
-            onHasMore: { hasMore = $0 }
+        let result = try await searchPageOutcome(
+            query: query, in: source, page: page, evaluateHasMore: true
         )
-        return (books, hasMore)
+        return (result.outcome.books, result.hasMore)
     }
 
     func searchStreaming(
@@ -346,8 +369,9 @@ extension BookSourceFetcher {
             return SearchStreamingOutcome(books: filtered, streamed: outcome.streamed)
         }
 
-        let outcome = try await searchOutcome(query: query, in: source)
-        return SearchStreamingOutcome(books: outcome.books, streamed: false, failure: outcome.failure)
+        let result = try await searchPageOutcome(query: query, in: source, evaluateHasMore: true)
+        return SearchStreamingOutcome(books: result.outcome.books, streamed: false,
+                                      failure: result.outcome.failure, hasMore: result.hasMore)
     }
 
     /// Legado compatible: filter search results by checkKeyWord (keep only items matching keyword in title/author)

@@ -46,6 +46,86 @@ struct SearchAutoPagingTests {
         #expect(aggregator.results.count == 9)
     }
 
+    @Test("an explicit first-page false verdict stops even with books")
+    func firstPageFalseStopsPaging() async {
+        let site = PagingSite(pages: nil, hasMoreRule: "@js:false")
+        let aggregator = SearchAggregator(fetcher: site.fetcher, device: FakeDevice().conditions)
+        defer { site.clearCache() }
+
+        aggregator.search(query: site.query, sources: [site.source])
+        await finished(aggregator)
+
+        #expect(site.pagesAsked == [1])
+        #expect(aggregator.results.count == 3)
+    }
+
+    @Test("a true first-page verdict allows the next page")
+    func firstPageTrueKeepsPaging() async {
+        let site = PagingSite(pages: 1, hasMoreRule: "@js:result.indexOf('<li') >= 0")
+        let aggregator = SearchAggregator(fetcher: site.fetcher, device: FakeDevice().conditions)
+        defer { site.clearCache() }
+
+        aggregator.search(query: site.query, sources: [site.source])
+        await finished(aggregator)
+
+        #expect(site.pagesAsked == [1, 2])
+        #expect(aggregator.results.count == 3)
+    }
+
+    @Test("an invalid hasMore rule stays unknown and retains bounded paging")
+    func invalidRuleDoesNotInventAnExhaustedVerdict() async {
+        let site = PagingSite(pages: 1, hasMoreRule: "@js:(")
+        let aggregator = SearchAggregator(fetcher: site.fetcher, device: FakeDevice().conditions)
+        defer { site.clearCache() }
+
+        aggregator.search(query: site.query, sources: [site.source])
+        await finished(aggregator)
+
+        #expect(site.pagesAsked == [1, 2])
+        #expect(aggregator.results.count == 3)
+    }
+
+    @Test("cached books have an unknown verdict, not a replayed false rule")
+    func cachedFirstPageRetainsUnknownPaging() async throws {
+        let site = PagingSite(pages: 1, hasMoreRule: "@js:false")
+        let previousCacheDays = GlobalSettings.shared.searchCacheDays
+        GlobalSettings.shared.searchCacheDays = 1
+        defer {
+            site.clearCache()
+            GlobalSettings.shared.searchCacheDays = previousCacheDays
+        }
+        let first = try await site.fetcher.searchPage(query: site.query, in: site.source, page: 1)
+        #expect(first.hasMore == false)
+        #expect(first.books.count == 3)
+        SearchResultCache.shared.waitForPendingWritesForTesting()
+        let cached = try await site.fetcher.searchStreaming(query: site.query, in: site.source) { _ in }
+        #expect(cached.hasMore == nil)
+        #expect(cached.books.count == 3)
+        #expect(site.pagesAsked == [1])
+
+        let aggregator = SearchAggregator(fetcher: site.fetcher, device: FakeDevice().conditions)
+        aggregator.search(query: site.query, sources: [site.source])
+        await finished(aggregator)
+
+        #expect(site.pagesAsked == [1, 2], "unknown cached page 1 retains the existing next-page heuristic")
+    }
+
+    @Test("the public onHasMore callback still reports exactly one native verdict")
+    func publicCallbackReportsTheSameVerdictOnce() async throws {
+        let site = PagingSite(pages: nil, hasMoreRule: "@js:false")
+        defer { site.clearCache() }
+        let (reports, continuation) = AsyncStream<Bool?>.makeStream()
+        let books = try await site.fetcher.search(query: site.query, in: site.source,
+                                                onHasMore: { @Sendable value in _ = continuation.yield(value) })
+        continuation.finish()
+        var values: [Bool?] = []
+        for await value in reports { values.append(value) }
+
+        #expect(values == [false])
+        #expect(books.count == 3)
+        #expect(site.pagesAsked == [1])
+    }
+
     @Test("a source that never runs dry stops at page 10")
     func stopsAtTen() async {
         let site = PagingSite(pages: nil)
@@ -125,7 +205,7 @@ private struct PagingSite {
     let source: BookSource
     let fetcher = BookSourceFetcher(webFetcher: WebFetcher(session: PagingStubURLProtocol.session()))
 
-    init(pages: Int?) {
+    init(pages: Int?, hasMoreRule: String = "") {
         var source = BookSource()
         source.bookSourceName = host
         source.bookSourceUrl = "https://\(host)"
@@ -133,6 +213,7 @@ private struct PagingSite {
         source.ruleSearch.bookList = "li.book"
         source.ruleSearch.name = "a@text"
         source.ruleSearch.bookUrl = "a@href"
+        source.ruleSearch.hasMoreRule = hasMoreRule
         self.source = source
         PagingStubURLProtocol.serve(host: host, pages: pages, title: query)
     }
