@@ -9,6 +9,16 @@ import XCTest
 final class LegadoNativeMainJSReaderTests: XCTestCase {
     func testNativeMainJSProductReadingChain() async throws {
         executionTimeAllowance = 180
+        // This single synthetic suite starts the process JVM. Never enable trace
+        // for an ordinary app launch or change a JVM already running in-process.
+        let previousTrace = getenv("LEGADO_RUNTIME_TASK_TRACE").map { String(cString: $0) }
+        guard setenv("LEGADO_RUNTIME_TASK_TRACE", "1", 1) == 0 else {
+            throw NativeReaderTestError.failed("Cannot enable synthetic task trace")
+        }
+        defer {
+            if let previousTrace { setenv("LEGADO_RUNTIME_TASK_TRACE", previousTrace, 1) }
+            else { unsetenv("LEGADO_RUNTIME_TASK_TRACE") }
+        }
         let diagnostics = await Task.detached { LegadoRuntime.diagnose() }.value
         let required: Bool
         #if LEGADO_REQUIRE_NATIVE_MAINJS
@@ -40,6 +50,8 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
             "runID": runID, "processID": ProcessInfo.processInfo.processIdentifier,
             "startedAtEpochSeconds": Date().timeIntervalSince1970, "nativeBridgePresent": diagnostics.nativeBridgePresent,
             "nativePayloadAvailable": diagnostics.available, "requiredPayload": required,
+            "timingObserverEffect": "Synchronous trace serialization, locks and native fsync are included in measured execution/cancellation latency. Diagnostic timings differ from an untraced run; these events alone do not establish the cause.",
+            "taskTraceInterpretation": "http.cancel.before/after observe cancellation propagation. http.finished.callCancelled follows unconditional cleanup and is not propagation evidence. Missing stages are not attributed automatically to either tracing or business execution.",
             "readerUIRendered": false, "deviceValidationPassed": false, "g4ValidationPassed": false]
         #if targetEnvironment(simulator)
         report["executionPlatform"] = "ios-simulator"
@@ -121,6 +133,7 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
             await fulfillment(of: [headersSent], timeout: 15)
             let held = server.snapshot.heldHeadersSent
             let cancelledAt = Date()
+            report["cancelRequestedAtEpochMs"] = cancelledAt.timeIntervalSince1970 * 1000
             task.cancel()
             let outcome = await task.result
             pending = nil
@@ -134,10 +147,12 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
             }
             let cancellationMilliseconds = Date().timeIntervalSince(cancelledAt) * 1000
             report["cancellationMilliseconds"] = cancellationMilliseconds
+            // Always consume this expectation, including when the unchanged
+            // latency gate below fails; peer-close timing is retained separately.
+            await fulfillment(of: [peerClosed], timeout: 10)
             // Prevent a broken cancel that merely waits for the 45-second task deadline
             // from being mistaken for successful cancellation.
             try check(cancellationMilliseconds < 15_000, "Native cancellation waited for its natural deadline")
-            await fulfillment(of: [peerClosed], timeout: 10)
             try check(server.snapshot.heldPeerClosed, "Held native connection did not report peer EOF/reset")
             let recovery = try await fetcher.fetchChapterPackage(ref: persistedTOC.chapters[0], bookId: bookID, source: source)
             stages["recovery"] = try Self.json(recovery)
@@ -192,6 +207,58 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
         report["stages"] = stages
         report["wire"] = try JSONSerialization.jsonObject(with: JSONEncoder().encode(finalTrace))
         report["cleanup"] = cleanup
+        do {
+            let saved = try await Task.detached { try LegadoRuntime.savedDiagnostics() }.value
+            let names = ["current/native-task-events.jsonl", "current/runtime-events.jsonl"]
+            var evidence: [String: String] = [:]
+            for name in names { if let value = saved[name] { evidence[name] = value } }
+            report["taskTrace"] = evidence
+            report["taskTraceSwitchSetBeforeTestOperations"] = true
+            let nativeTraceFault = saved["current/stages.log"].map {
+                $0.contains("stage=task.trace.limit") || $0.contains("stage=task.trace.write.failed")
+            } ?? false
+            let jvmTraceFault = evidence["current/runtime-events.jsonl"]?.contains("\"stage\":\"trace.limit\"") == true || (saved["current/vm-output.log"].map {
+                $0.contains("LEGADO_TASK_TRACE_OPEN_FAILED") || $0.contains("LEGADO_TASK_TRACE_WRITE_FAILED") || $0.contains("LEGADO_TASK_TRACE_LIMIT")
+            } ?? false)
+            report["taskTraceObservedFailureMarkerPresent"] = nativeTraceFault || jvmTraceFault
+            if evidence.count != names.count || evidence.values.contains(where: { $0.isEmpty || $0.contains("[truncated:") }) {
+                report["taskTraceFilesReadable"] = false
+                if problem == nil { problem = NativeReaderTestError.failed("Opt-in task trace is missing or truncated") }
+            } else {
+                var eventCounts: [String: [String: Int]] = [:]
+                var stagePresence: [String: [String: Bool]] = [:]
+                let nativeStages = ["execute.before", "execute.result", "cancel.before", "cancel.result"]
+                let jvmStages = ["execute.registered", "execute.finished", "cancel.lookup", "job.cancel.before", "job.cancel.after",
+                    "deadline.fired", "deadline.cancel.after", "http.registered", "http.execute.before", "http.headers",
+                    "http.body.before", "http.body.after", "http.cancel.before", "http.cancel.after", "http.finished", "trace.limit"]
+                for (name, value) in evidence {
+                    let known = name == names[0] ? nativeStages : jvmStages
+                    var counts = Dictionary(uniqueKeysWithValues: known.map { ($0, 0) })
+                    counts["unknown"] = 0
+                    for line in value.split(separator: "\n") {
+                        guard let object = try JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any],
+                              let stage = object["stage"] as? String, object["taskId"] is String else {
+                            throw NativeReaderTestError.failed("Invalid bounded task trace event")
+                        }
+                        counts[known.contains(stage) ? stage : "unknown", default: 0] += 1
+                    }
+                    eventCounts[name] = counts
+                    stagePresence[name] = Dictionary(uniqueKeysWithValues: known.map { ($0, counts[$0, default: 0] > 0) })
+                }
+                report["taskTraceEventCounts"] = eventCounts
+                report["taskTraceStagePresence"] = stagePresence
+                // File readability is separate from proving every intended
+                // event was persisted; JVM stderr is also retained by XCTest.
+                report["taskTraceFilesReadable"] = true
+                if (nativeTraceFault || jvmTraceFault) && problem == nil {
+                    problem = NativeReaderTestError.failed("Opt-in task trace has an observed failure or limit marker")
+                }
+            }
+        } catch {
+            report["taskTraceFilesReadable"] = false
+            report["taskTraceReadFailed"] = true
+            if problem == nil { problem = error }
+        }
         report["status"] = problem == nil ? "passed" : "failed"
         report["completedAtEpochSeconds"] = Date().timeIntervalSince1970
         report["errors"] = problem.map { [String(describing: $0)] } ?? []
@@ -261,6 +328,8 @@ private final class NativeReaderLoopbackServer: @unchecked Sendable {
         let errors: [String]
         let heldHeadersSent: Bool
         let heldPeerClosed: Bool
+        let heldHeadersAtEpochMs: Double?
+        let heldPeerClosedAtEpochMs: Double?
         let listenerCancelled: Bool
         let activeConnections: Int
     }
@@ -276,6 +345,8 @@ private final class NativeReaderLoopbackServer: @unchecked Sendable {
     private var holdNext = false
     private var heldHeaders = false
     private var peerClosed = false
+    private var heldHeadersAtEpochMs: Double?
+    private var heldPeerClosedAtEpochMs: Double?
     private var cancelled = false
     private var stopping = false
     private var readyCallback: (() -> Void)?
@@ -291,7 +362,9 @@ private final class NativeReaderLoopbackServer: @unchecked Sendable {
     }
     var snapshot: Snapshot {
         lock.withLock { Snapshot(requests: requests, errors: errors, heldHeadersSent: heldHeaders,
-            heldPeerClosed: peerClosed, listenerCancelled: cancelled, activeConnections: connections.count) }
+            heldPeerClosed: peerClosed, heldHeadersAtEpochMs: heldHeadersAtEpochMs,
+            heldPeerClosedAtEpochMs: heldPeerClosedAtEpochMs,
+            listenerCancelled: cancelled, activeConnections: connections.count) }
     }
     func readyBaseURL() throws -> String {
         try lock.withLock {
@@ -431,6 +504,7 @@ private final class NativeReaderLoopbackServer: @unchecked Sendable {
                     self.requests[entry.0].completeResponseWritten = !entry.1
                     guard entry.1 else { return nil }
                     self.heldHeaders = true
+                    self.heldHeadersAtEpochMs = Date().timeIntervalSince1970 * 1000
                     let value = self.headersCallback; self.headersCallback = nil; return value
                 }
                 if entry.1 { self.monitorPeer(connection, id: id); callback?() }
@@ -455,6 +529,7 @@ private final class NativeReaderLoopbackServer: @unchecked Sendable {
         let callback = lock.withLock { () -> (() -> Void)? in
             guard heldConnection == id, !stopping else { return nil }
             peerClosed = true
+            heldPeerClosedAtEpochMs = Date().timeIntervalSince1970 * 1000
             let value = peerCallback; peerCallback = nil; return value
         }
         callback?()

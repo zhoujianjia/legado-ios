@@ -1,11 +1,12 @@
 import Foundation
 
 internal enum LegadoSavedDiagnostics {
-    // Read at most 448 KiB across both attempts, plus truncation notices. Keep the fatal
+    // Read at most 704 KiB across both attempts, plus truncation notices. Keep the fatal
     // header/native frames and the tail containing VM options/runtime details.
     static let stageLimit = 32 * 1024
     static let outputLimit = 64 * 1024
     static let fatalLimit = 128 * 1024
+    static let taskTraceLimit = 64 * 1024
 
     static func read(_ root: URL) throws -> [String: String] {
         var reports: [String: String] = [:]
@@ -25,7 +26,9 @@ internal enum LegadoSavedDiagnostics {
             }
             let fatal = files.filter { $0.lastPathComponent.hasPrefix("hs_err_pid") && $0.pathExtension == "log" }
                 .sorted { $0.lastPathComponent < $1.lastPathComponent }.last
-            for (name, limit) in [("stages.log", stageLimit), ("vm-output.log", outputLimit), (fatal?.lastPathComponent ?? "", fatalLimit)] where !name.isEmpty {
+            for (name, limit) in [("stages.log", stageLimit), ("vm-output.log", outputLimit),
+                                  ("native-task-events.jsonl", taskTraceLimit), ("runtime-events.jsonl", taskTraceLimit),
+                                  (fatal?.lastPathComponent ?? "", fatalLimit)] where !name.isEmpty {
                 guard let file = files.first(where: { $0.lastPathComponent == name }) else { continue }
                 let attributes = try file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
                 guard attributes.isRegularFile == true, attributes.isSymbolicLink != true else {

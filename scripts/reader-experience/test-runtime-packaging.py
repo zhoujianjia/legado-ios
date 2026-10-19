@@ -90,6 +90,8 @@ class OrdinaryJarGuardTests(unittest.TestCase):
                      "io/yuedu/legado/StaticScalarSelectorRuleTest.class",
                      "io/yuedu/legado/DeclarativeScalarSelectorTest.class",
                      "io/yuedu/legado/OriginalAnalyzeRuleTest.class",
+                     "io/yuedu/legado/RuntimeTaskTraceTest.class",
+                     "io/yuedu/legado/RuntimeTaskTraceTest$Companion.class",
                      "fixtures/android-scalar-selector-golden.json"):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
                 jar = self.jar(directory, [name])

@@ -28,7 +28,9 @@ spec.loader.exec_module(config)
 MAX_FILE_BYTES = 16 * 1024 * 1024
 MAX_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_FILES = 64
-NATIVE_NAME = re.compile(r"(?:stages\.log|vm-output\.log|hs_err_pid[0-9]+\.log)\Z")
+NATIVE_NAME = re.compile(r"(?:stages\.log|vm-output\.log|native-task-events\.jsonl|runtime-events\.jsonl|hs_err_pid[0-9]+\.log)\Z")
+TASK_TRACE_NAMES = frozenset(("native-task-events.jsonl", "runtime-events.jsonl"))
+MAX_TASK_TRACE_BYTES = 64 * 1024
 
 
 def checked(path):
@@ -48,16 +50,17 @@ def command(arguments):
     return result.stdout.strip()
 
 
-def read_bounded(path):
+def read_bounded(path, limit=None):
+    limit = MAX_FILE_BYTES if limit is None else min(limit, MAX_FILE_BYTES)
     path = checked(path)
     descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
     with os.fdopen(descriptor, "rb") as stream:
         before = os.fstat(stream.fileno())
-        if not stat.S_ISREG(before.st_mode) or before.st_size > MAX_FILE_BYTES:
+        if not stat.S_ISREG(before.st_mode) or before.st_size > limit:
             raise ValueError("Diagnostics input is not a bounded regular file")
-        data = stream.read(MAX_FILE_BYTES + 1)
+        data = stream.read(limit + 1)
         after = os.fstat(stream.fileno())
-    if (len(data) > MAX_FILE_BYTES or len(data) != before.st_size
+    if (len(data) > limit or len(data) != before.st_size
             or (before.st_ino, before.st_size, before.st_mtime_ns)
             != (after.st_ino, after.st_size, after.st_mtime_ns)):
         raise ValueError("Diagnostics file changed while being collected")
@@ -115,7 +118,9 @@ def collect(udid, output, preparation, source, run=command, home=None):
             raise ValueError("Diagnostics file-count limit exceeded")
         if checked(path).stat().st_size > MAX_TOTAL_BYTES - total:
             raise ValueError("Diagnostics aggregate limit exceeded before read")
-        data, details = read_bounded(path)
+        if path.name in TASK_TRACE_NAMES and checked(path).stat().st_size > MAX_TASK_TRACE_BYTES:
+            raise ValueError("Task trace exceeds its independent 64 KiB limit")
+        data, details = read_bounded(path, MAX_TASK_TRACE_BYTES if path.name in TASK_TRACE_NAMES else None)
         if details.st_mtime < since or details.st_mtime > time.time() + 60:
             record["skipped"].append({"origin": origin, "name": path.name, "reason": "outside-run-time-bound"})
             return

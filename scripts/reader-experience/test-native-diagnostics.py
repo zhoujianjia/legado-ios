@@ -75,6 +75,23 @@ class CollectorChecks(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             self.run_collection()
 
+    def test_only_exact_task_trace_names_are_copied(self):
+        for name in c.TASK_TRACE_NAMES:
+            (self.native / name).write_text('{"stage":"cancel.lookup","found":true}\n')
+        for name in ("runtime-events.jsonl.extra", "private-events.jsonl", "native-task-events.json"):
+            (self.native / name).write_text("DO_NOT_COPY")
+        result = self.run_collection()
+        copied = {entry["path"].split("/")[-1] for entry in result["files"]}
+        self.assertTrue(c.TASK_TRACE_NAMES <= copied)
+        self.assertFalse(any("private-events" in name or name.endswith(".extra") for name in copied))
+
+    def test_task_trace_has_its_own_64_kib_limit(self):
+        (self.native / "runtime-events.jsonl").write_bytes(b"x" * (c.MAX_TASK_TRACE_BYTES + 1))
+        result = self.run_collection()
+        self.assertEqual(result["collectionStatus"], "partial")
+        self.assertFalse(any(entry["path"].endswith("runtime-events.jsonl") for entry in result["files"]))
+        self.assertTrue(any("independent 64 KiB" in error for error in result["errors"]))
+
     def test_old_crash_rejected(self):
         os.utime(self.ips, (self.since - 60, self.since - 60))
         result = self.run_collection()

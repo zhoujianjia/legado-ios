@@ -67,6 +67,21 @@ private final class BlockingTransport: LegadoRuntimeTransport, @unchecked Sendab
         XCTAssertEqual(first["current/hs_err_pid123.log"], "fatal header")
         XCTAssertEqual(try LegadoRuntime.savedDiagnostics(configuration: configuration), first)
     }
+
+    func testSavedTaskTracesUseOnlyFixedNamesAndIndependentBounds() throws {
+        let root = try diagnosticsFolder()
+        let current = root.appendingPathComponent("current", isDirectory: true)
+        try FileManager.default.createDirectory(at: current, withIntermediateDirectories: true)
+        try Data("{\"stage\":\"cancel.result\"}\n".utf8).write(to: current.appendingPathComponent("native-task-events.jsonl"))
+        try Data(repeating: 120, count: LegadoSavedDiagnostics.taskTraceLimit + 100).write(to: current.appendingPathComponent("runtime-events.jsonl"))
+        try Data("DO_NOT_READ".utf8).write(to: current.appendingPathComponent("arbitrary-events.jsonl"))
+        let reports = try LegadoSavedDiagnostics.read(root)
+        XCTAssertEqual(reports.count, 2)
+        XCTAssertTrue(reports["current/native-task-events.jsonl"]?.contains("cancel.result") == true)
+        let bounded = try XCTUnwrap(reports["current/runtime-events.jsonl"])
+        XCTAssertTrue(bounded.contains("[truncated:"))
+        XCTAssertLessThan(bounded.utf8.count, LegadoSavedDiagnostics.taskTraceLimit + 256)
+    }
     func testLargeFatalLogRetainsHeaderAndTailWithinReadLimit() throws {
         let root = try diagnosticsFolder()
         let current = root.appendingPathComponent("current", isDirectory: true)

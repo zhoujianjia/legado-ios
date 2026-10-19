@@ -90,15 +90,27 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
             if (budget <= 0) { task.ensureActiveForRuntime(); throw SocketTimeoutException("Task deadline exceeded before HTTP request") }
             call.timeout().timeout(minOf(input["timeoutMs"]?.asLong ?: 60_000L, budget), TimeUnit.MILLISECONDS)
             active.add(call)
-            val cancellation = task.job.invokeOnCompletion(onCancelling = true, invokeImmediately = true) { call.cancel() }
+            val callId = System.identityHashCode(call)
+            RuntimeTaskTrace.event(TaskTraceStage.HTTP_REGISTERED, task, callId, callCancelled = call.isCanceled())
+            val cancellation = task.job.invokeOnCompletion(onCancelling = true, invokeImmediately = true) {
+                RuntimeTaskTrace.event(TaskTraceStage.HTTP_CANCEL_BEFORE, task, callId, callCancelled = call.isCanceled())
+                var completed = false
+                try { call.cancel(); completed = true }
+                finally { RuntimeTaskTrace.event(TaskTraceStage.HTTP_CANCEL_AFTER, task, callId, callCancelled = call.isCanceled(), completed = completed) }
+            }
             try {
                 task.ensureActiveForRuntime()
                 if (stopped.get()) { call.cancel(); throw IOException("HTTP transport is closed") }
+                RuntimeTaskTrace.event(TaskTraceStage.HTTP_EXECUTE_BEFORE, task, callId)
                 call.execute().use { response ->
+                    RuntimeTaskTrace.event(TaskTraceStage.HTTP_HEADERS, task, callId)
                     if (!response.isSuccessful && response.code !in 300..399 && retries > 0) {
                         retries--
                     } else {
-                        val payload = response.body.bytes()
+                        RuntimeTaskTrace.event(TaskTraceStage.HTTP_BODY_BEFORE, task, callId)
+                        var completed = false
+                        val payload = try { response.body.bytes().also { completed = true } }
+                        finally { RuntimeTaskTrace.event(TaskTraceStage.HTTP_BODY_AFTER, task, callId, callCancelled = call.isCanceled(), completed = completed) }
                         task.ensureActiveForRuntime()
                         val grouped = JsonObject().apply {
                             response.headers.names().forEach { name -> add(name, JsonArray().apply { response.headers.values(name).forEach { add(it) } }) }
@@ -114,6 +126,7 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
                 task.ensureActiveForRuntime(); throw error
             } finally {
                 cancellation.dispose(); call.cancel(); active.remove(call)
+                RuntimeTaskTrace.event(TaskTraceStage.HTTP_FINISHED, task, callId, callCancelled = call.isCanceled())
             }
         }
     }

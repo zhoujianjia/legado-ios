@@ -40,6 +40,12 @@ static BOOL diagnosticsStarted;
 static int diagnosticsFD = -1;
 static FILE *diagnosticsVMOutput;
 static int diagnosticsVMOutputError;
+static int taskTraceFD = -1;
+static size_t taskTraceBytes;
+static size_t taskTraceEvents;
+static BOOL taskTraceStopped;
+static const size_t taskTraceByteLimit = 64 * 1024;
+static const size_t taskTraceEventLimit = 256;
 
 // JNI's documented vfprintf hook. Keep the original destination and copy the
 // va_list before each consumer. This uses C I/O only, including on a fatal path.
@@ -112,6 +118,16 @@ static NSString *beginDiagnostics(void) {
     }
     if (![manager createDirectoryAtPath:current withIntermediateDirectories:NO attributes:nil error:&error]) goto failed;
     diagnosticsCurrent = [current copy];
+    const char *trace = getenv("LEGADO_RUNTIME_TASK_TRACE");
+    if (trace && strcmp(trace, "1") == 0) {
+        NSString *tracePath = [current stringByAppendingPathComponent:@"native-task-events.jsonl"];
+        taskTraceFD = open(tracePath.fileSystemRepresentation, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC | O_NOFOLLOW, 0600);
+        if (taskTraceFD < 0) {
+            diagnosticsFailure = [[NSString stringWithFormat:@"Cannot open opt-in task trace (errno=%d)", errno] copy];
+            pthread_mutex_unlock(&diagnosticsLock);
+            return diagnosticsFailure;
+        }
+    }
     stagePath = [current stringByAppendingPathComponent:@"stages.log"];
     diagnosticsFD = open(stagePath.fileSystemRepresentation, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0600);
     if (diagnosticsFD < 0) {
@@ -172,6 +188,65 @@ static BOOL recordStage(const char *stage, int32_t code) {
 
 static LGRResult diagnosticFailureResult(void) {
     return resultText(diagnosticsFailure ?: @"Cannot persist JVM diagnostics", 10);
+}
+
+// Diagnostic-only, fixed schema. Arbitrary caller task strings and JVM payloads
+// never enter the file. The app-generated UUID joins this with the JVM trace.
+static void recordTaskResult(const char *stage, NSString *task, NSString *response) {
+    if (taskTraceFD < 0) return;
+    NSUUID *identifier = [task isKindOfClass:NSString.class] ? LGR_AUTORELEASE([[NSUUID alloc] initWithUUIDString:task]) : nil;
+    NSString *safeTask = identifier ? identifier.UUIDString.lowercaseString : @"redacted";
+    NSDictionary *envelope = nil;
+    // Diagnostics must not make an unbounded second copy of a large chapter.
+    BOOL oversized = response.length > 256 * 1024;
+    if (response && !oversized) {
+        NSData *data = [response dataUsingEncoding:NSUTF8StringEncoding];
+        id decoded = [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL];
+        if ([decoded isKindOfClass:NSDictionary.class]) envelope = decoded;
+    }
+    NSMutableDictionary *event = [NSMutableDictionary dictionaryWithDictionary:@{
+        @"schemaVersion": @1, @"stage": [NSString stringWithUTF8String:stage], @"taskId": safeTask,
+        @"epochMs": @((long long)(NSDate.date.timeIntervalSince1970 * 1000)),
+        @"responsePresent": @(response != nil), @"responseOversized": @(oversized), @"envelopeValid": @(envelope != nil)
+    }];
+    uint64_t threadID = 0;
+    pthread_threadid_np(NULL, &threadID);
+    event[@"nativeThreadId"] = @(threadID);
+    if ([envelope[@"ok"] isKindOfClass:NSNumber.class]) event[@"ok"] = envelope[@"ok"];
+    if ([envelope[@"cancelled"] isKindOfClass:NSNumber.class]) event[@"cancelled"] = envelope[@"cancelled"];
+    if ([envelope[@"taskId"] isKindOfClass:NSString.class]) event[@"taskMatches"] = @([envelope[@"taskId"] isEqualToString:task]);
+    id detail = envelope[@"error"];
+    id code = [detail isKindOfClass:NSDictionary.class] ? detail[@"code"] : nil;
+    if (code) {
+        NSSet *codes = [NSSet setWithArray:@[@"CANCELLED", @"TIMEOUT", @"SCRIPT_ERROR", @"INVALID_ARGUMENT",
+            @"UNKNOWN_SESSION", @"DUPLICATE_TASK", @"UNSUPPORTED_CAPABILITY", @"HOST_UNAVAILABLE"]];
+        event[@"errorCode"] = [codes containsObject:code] ? code : @"OTHER";
+    }
+    pthread_mutex_lock(&diagnosticsLock);
+    int traceError = 0;
+    BOOL limited = NO;
+    event[@"sequence"] = @(taskTraceEvents);
+    NSData *json = [NSJSONSerialization dataWithJSONObject:event options:NSJSONWritingSortedKeys error:NULL];
+    if (!taskTraceStopped && json && taskTraceEvents < taskTraceEventLimit && json.length + 1 <= taskTraceByteLimit - taskTraceBytes) {
+        NSMutableData *line = [NSMutableData dataWithData:json];
+        [line appendBytes:"\n" length:1];
+        size_t offset = 0;
+        while (offset < line.length) {
+            ssize_t written = write(taskTraceFD, (const uint8_t *)line.bytes + offset, line.length - offset);
+            if (written < 0 && errno == EINTR) continue;
+            if (written <= 0) { taskTraceStopped = YES; traceError = errno ? errno : EIO; break; }
+            offset += (size_t)written;
+        }
+        taskTraceBytes += offset;
+        taskTraceEvents++;
+        if (fsync(taskTraceFD) != 0) { taskTraceStopped = YES; traceError = errno ? errno : EIO; }
+    } else if (!taskTraceStopped) {
+        taskTraceStopped = YES;
+        limited = YES;
+    }
+    pthread_mutex_unlock(&diagnosticsLock);
+    if (traceError) recordStage("task.trace.write.failed", traceError);
+    if (limited) recordStage("task.trace.limit", 0);
 }
 
 #if defined(LGR_WITH_OPENJDK)
@@ -274,7 +349,8 @@ LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapM
         NSString *homeOption = [@"-Djava.home=" stringByAppendingString:home];
         NSString *heapOption = [NSString stringWithFormat:@"-Xmx%dm", maximumHeapMB];
         NSString *errorOption = diagnosticsCurrent ? [@"-XX:ErrorFile=" stringByAppendingString:[diagnosticsCurrent stringByAppendingPathComponent:@"hs_err_pid%p.log"]] : nil;
-        JavaVMOption options[7] = {0};
+        NSString *taskTraceOption = taskTraceFD >= 0 ? [@"-Dio.yuedu.legado.taskTrace=" stringByAppendingString:[diagnosticsCurrent stringByAppendingPathComponent:@"runtime-events.jsonl"]] : nil;
+        JavaVMOption options[8] = {0};
         options[0].optionString = (char *)cpOption.UTF8String;
         options[1].optionString = (char *)homeOption.UTF8String;
         options[2].optionString = (char *)heapOption.UTF8String;
@@ -285,8 +361,9 @@ LGRResult LGRStart(LGRString classPath, LGRString javaHome, int32_t maximumHeapM
             options[6].optionString = "vfprintf";
             options[6].extraInfo = (void *)diagnosticsVfprintf;
         }
+        if (taskTraceOption) options[7].optionString = (char *)taskTraceOption.UTF8String;
         JavaVMInitArgs args = {0};
-        args.version = JNI_VERSION_1_8; args.nOptions = errorOption ? 7 : 5; args.options = options; args.ignoreUnrecognized = JNI_FALSE;
+        args.version = JNI_VERSION_1_8; args.nOptions = taskTraceOption ? 8 : (errorOption ? 7 : 5); args.options = options; args.ignoreUnrecognized = JNI_FALSE;
         JNIEnv *env = NULL;
 #if TARGET_OS_IPHONE
         if (!recordStage("loadfunctions.before", 0)) { pthread_mutex_unlock(&startupLock); return diagnosticFailureResult(); }
@@ -498,12 +575,14 @@ static LGRResult invoke(int method, LGRString *arguments, int count) {
         const char *beforeStages[] = {"invoke.createSession.before", "invoke.execute.before", "invoke.cancel.before", "invoke.closeSession.before", "invoke.configuredSession.before"};
         const char *afterStages[] = {"invoke.createSession.after", "invoke.execute.after", "invoke.cancel.after", "invoke.closeSession.after", "invoke.configuredSession.after"};
         BOOL diagnosticOK = recordStage(beforeStages[method], failure ? 7 : 0);
+        if (method == 1 || method == 2) recordTaskResult(method == 1 ? "execute.before" : "cancel.before", decode(arguments[method == 1 ? 1 : 0]), nil);
         jstring output = failure || !diagnosticOK ? NULL : (jstring)(*env)->CallStaticObjectMethodA(env, facade, methods[method], values);
         if (!failure) failure = exceptionText(env);
         diagnosticOK = recordStage(afterStages[method], failure ? 7 : 0) && diagnosticOK;
         NSString *text = failure || !diagnosticOK ? nil : fromJava(env, output);
         if (!failure) failure = exceptionText(env);
         if (!failure && !text) failure = @"Java facade returned a null response";
+        if (method == 1 || method == 2) recordTaskResult(method == 1 ? "execute.result" : "cancel.result", decode(arguments[method == 1 ? 1 : 0]), failure ? nil : text);
         LGRResult result = resultText(failure ?: text, failure ? 7 : 0);
         return finishInvocation(env, attached, YES, &entryMask, result, diagnosticOK);
     }

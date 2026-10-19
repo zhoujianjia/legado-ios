@@ -17,6 +17,8 @@ import org.htmlunit.corejs.javascript.ScriptableObject
 
 /** Synchronous JNI facade. Call execute on a worker thread; cancel is safe on another thread. */
 object LegadoRuntime {
+    // Force opt-in trace configuration before executing any source code.
+    private val taskTrace = RuntimeTaskTrace
     private val sessions = ConcurrentHashMap<String, RuntimeSession>()
     private val tasks = ConcurrentHashMap<String, RuntimeTask>()
     private val earlyCancellations = object : LinkedHashMap<String, Long>(64, 0.75f, true) {
@@ -72,9 +74,12 @@ object LegadoRuntime {
                 }
             }
             val current = task
+            taskTrace.event(TaskTraceStage.EXECUTE_REGISTERED, current)
             timeout = deadlines.schedule({
                 current.timedOut.set(true)
-                current.job.cancel(CancellationException("Execution deadline exceeded"))
+                taskTrace.event(TaskTraceStage.DEADLINE_FIRED, current)
+                try { current.job.cancel(CancellationException("Execution deadline exceeded")) }
+                finally { taskTrace.event(TaskTraceStage.DEADLINE_CANCEL_AFTER, current) }
                 cancelHost(current.id)
             }, timeoutMs, TimeUnit.MILLISECONDS)
             val result = executeOperation(current, operation, input)
@@ -94,6 +99,7 @@ object LegadoRuntime {
             return failure(code, hostFailure?.message ?: error.message ?: error.javaClass.simpleName, taskId)
         } finally {
             timeout?.cancel(false)
+            task?.let { taskTrace.event(TaskTraceStage.EXECUTE_FINISHED, it) }
             task?.let { if (tasks.remove(taskId, it)) { it.rawHttpResponses.clear(); it.job.complete(); it.session.taskFinished() } }
         }
     }
@@ -105,7 +111,12 @@ object LegadoRuntime {
             if (active == null) earlyCancellations[taskId] = System.currentTimeMillis()
             active
         }
-        task?.job?.cancel(CancellationException("Cancelled by caller"))
+        taskTrace.lookup(taskId, task != null)
+        task?.let {
+            taskTrace.event(TaskTraceStage.JOB_CANCEL_BEFORE, it)
+            try { it.job.cancel(CancellationException("Cancelled by caller")) }
+            finally { taskTrace.event(TaskTraceStage.JOB_CANCEL_AFTER, it) }
+        }
         if (task != null) cancelHost(taskId)
         return jsonObject("ok" to true, "taskId" to taskId, "cancelled" to (task != null)).toString()
     }

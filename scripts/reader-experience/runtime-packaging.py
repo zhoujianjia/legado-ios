@@ -31,7 +31,7 @@ PROJECT_TEST_CLASSES = (
     *("io/yuedu/legado/" + name for name in (
         "CpuLoopCapabilityProbeTest", "DeclarativeSourceTest", "InteropSemanticSuiteTest", "LegadoRuntimeTest",
         "MainJsFacadeTest", "MainJsResultMarshallerTest", "MainJsScopeTest", "OkHttpWireCapabilityProbeTest",
-        "ProductionHttpTransportTest", "SourceHttpSemanticsTest", "StaticRuleReplacementTest", "TlsCapabilityProbeTest",
+        "ProductionHttpTransportTest", "RuntimeTaskTraceTest", "SourceHttpSemanticsTest", "StaticRuleReplacementTest", "TlsCapabilityProbeTest",
         "StaticScalarSelectorRuleTest", "DeclarativeScalarSelectorTest", "OriginalAnalyzeRuleTest")),
 )
 
