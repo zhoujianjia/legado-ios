@@ -253,7 +253,7 @@
     "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
-    "Preserve the negative fixed-endpoint build10 report and record any separately supplied computer/USB/VPN context; do not repeat the identical probe solely for build11.",
+    "Preserve the negative fixed-endpoint build10 report and separately supplied computer-on/USB-connected/no-VPN/no-SideStore context; do not repeat the identical probe solely for build11 or claim computer-independent renewal.",
     "Evaluate bounded alternate same-device transport/discovery from locked primary implementations; do not infer all transports from this fixed-loopback failure.",
     "Only after transport is demonstrated, validate an authenticated session, signing, replacement installation, cold launch and preserved data.",
     "Validate background triggering, failure retry and expiry recovery separately before claiming automatic self-renewal."
@@ -284,9 +284,17 @@
       "code": 1
     },
     "specificDenialMechanismEstablished": false,
-    "computerUSBVPNAndCompanionContext": "Not measured in original report; optional user clarification pending.",
+    "computerUSBVPNAndCompanionContext": "Original report did not measure these conditions. User reports computer on, USB connected, no active VPN and no SideStore; other companion apps not established.",
     "unchangedBuild11ProbeMustNotBeTreatedAsFix": true,
-    "automaticSelfRenewalVerified": false
+    "automaticSelfRenewalVerified": false,
+    "userReportedRunContext": {
+      "source": "User reply on 2026-10-19; not automatically measured by the app.",
+      "computerPoweredOn": true,
+      "USBConnected": true,
+      "VPNActive": false,
+      "SideStorePresent": false,
+      "otherCompanionApps": "notEstablished"
+    }
   },
   "nextTransportSlice": {
     "record": "self-renewal-alternate-transport-followup.json",

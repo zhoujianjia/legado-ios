@@ -153,8 +153,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "After the independently reviewed actual test-target compiler repair, submit one source-only checkpoint; preserve its source-specific actual results. No renewal or full compatibility acceptance follows from the Release package.",
-      "alreadyRunningTasks": "Run 39254382770/source c009a49 completed with a test-target compiler failure before any iOS tests; original artifact independently hash-verified and retained. Its minimal repair is applied; no passing iOS verdict. Release build11/source ccdddd3 compiled independently."
+      "nextPlannedCheckpoint": "Repaired reader-smoke-52059d0/source 52059d00e1e9c5ee6552acc6fc1f74c32b4e545f is submitted once. Preserve its actual result; do not issue another tag merely to check status.",
+      "alreadyRunningTasks": "Run 39262540685/source 52059d0 submitted for the reviewed actual test-target compiler repair; in_progress at one bounded read, no iOS acceptance. Prior run 39254382770/source c009a49 failed test-target compilation; original evidence retained. Release build11/source ccdddd3 independently compiled and delivered."
     },
     "nextReadyBatch": [
       "source-schema",
@@ -722,7 +722,7 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "用户已提供 build 10 的设备只读报告，两个固定本机入口都在 connecting 阶段超时，TCP 未建立、收到 0 字节，故该通道未验证通过。build 11 无书源主阅读器已完成 Release 编译、独立字节核验并交付，但探针源码相同，不要求相同条件重复测试。配对、签名及覆盖安装仍未实现，完整自动续签未验证。",
+        "currentState": "用户已提供 build 10 设备报告：电脑开机、USB 连接、手机无 VPN／SideStore（运行条件由用户另行说明，原报告未自动测量）；两个固定本机入口在 connecting 阶段超时，TCP 未建立且收到 0 字节。build 11 Release 已编译、独立核验并交付，但探针源码相同，无需相同条件重测。配对、签名及覆盖安装未实现，完整自动续签未验证。",
         "remainingWork": [
           "不收集真实秘密，先记录有界传输候选、认证状态机、发现边界、超时取消和诊断协议。",
           "真机可用后先证明电脑关闭、无伴侣App的同设备认证安装传输；固定端点失败不能排除所有传输，QueryType成功也不是安装成功。",
@@ -3610,7 +3610,7 @@
     },
     "self-renewal-device-fixed-endpoint-negative": {
       "path": "docs/legado-ios/self-renewal-device-transport-build10.json",
-      "scope": "User-provided build 10 report: both fixed loopback endpoints timed out while connecting, zero response bytes; no authenticated session, signing, installation or renewal. Runtime computer/USB/VPN context remains unmeasured unless separately supplied."
+      "scope": "Build10 fixed-loopback timeout before TCP, no response or renewal operations. User separately reports computer on, USB connected, no active VPN and no SideStore; original report did not measure context, and other companion apps are not established."
     },
     "self-renewal-bounded-alternate-transport-source-followup": {
       "path": "docs/legado-ios/self-renewal-alternate-transport-followup.json",

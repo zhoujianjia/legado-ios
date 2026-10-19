@@ -27,7 +27,10 @@
       "tcpConnected": false,
       "receivedByteCount": 0,
       "lockdownConfirmed": false,
-      "lastWaitingError": {"domain": "posix", "code": 1}
+      "lastWaitingError": {
+        "domain": "posix",
+        "code": 1
+      }
     },
     {
       "endpoint": "[::1]:62078",
@@ -37,7 +40,10 @@
       "tcpConnected": false,
       "receivedByteCount": 0,
       "lockdownConfirmed": false,
-      "lastWaitingError": {"domain": "posix", "code": 1}
+      "lastWaitingError": {
+        "domain": "posix",
+        "code": 1
+      }
     }
   ],
   "context": {
@@ -45,7 +51,8 @@
     "companionAppsAbsent": "notMeasured",
     "USBState": "notRecorded",
     "VPNState": "notRecorded",
-    "userClarificationRequested": true
+    "userClarificationRequested": true,
+    "userClarificationReceived": true
   },
   "interpretationZh": "本次两个固定本机入口都未建立 TCP、没有收到字节，未确认 lockdown 服务；不能据此判定所有安装通道都不可用。",
   "errorInterpretation": {
@@ -55,7 +62,15 @@
     "primaryErrorCodeReference": "https://github.com/apple/darwin-xnu/blob/main/bsd/sys/errno.h",
     "primaryWaitingStateReference": "https://developer.apple.com/documentation/network/nwconnection/state-swift.enum"
   },
-  "operationsNotAttempted": ["TLS", "session", "pairing", "Apple account access", "signing", "installation", "dynamic remote-pairing discovery"],
+  "operationsNotAttempted": [
+    "TLS",
+    "session",
+    "pairing",
+    "Apple account access",
+    "signing",
+    "installation",
+    "dynamic remote-pairing discovery"
+  ],
   "build11Relationship": {
     "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
     "sixProbeProductAndTestInputsByteIdentical": true,
@@ -64,7 +79,7 @@
   },
   "nextWork": [
     "Preserve this negative fixed-endpoint result; do not repeat unchanged fixed-port tests merely with a new build number.",
-    "Record the user-reported computer, USB and VPN/companion conditions separately from the unchanged original report.",
+    "Use the separately reported computer-on, USB-connected, no-VPN and no-SideStore context; no computer-independent transport or renewal acceptance follows.",
     "Evaluate bounded same-device alternate transport/discovery from locked primary implementations; no universal success or impossibility claim follows from this report.",
     "Require an actual authenticated transport before implementing or accepting profile renewal, signing, replacement install, data preservation, unattended scheduling and expiry recovery."
   ],
@@ -72,5 +87,14 @@
   "automaticSelfRenewalImplemented": false,
   "automaticSelfRenewalVerified": false,
   "unattendedRenewalVerified": false,
-  "expiryRecoveryVerified": false
+  "expiryRecoveryVerified": false,
+  "userReportedRunContext": {
+    "source": "User reply on 2026-10-19; not automatically measured by the app.",
+    "computerPoweredOn": true,
+    "USBConnected": true,
+    "VPNActive": false,
+    "SideStorePresent": false,
+    "otherCompanionApps": "notEstablished"
+  },
+  "contextBoundary": "Original report fields remain notMeasured/notRecorded. The separately supplied context is user-reported; no claim that all possible companion apps were enumerated."
 }
