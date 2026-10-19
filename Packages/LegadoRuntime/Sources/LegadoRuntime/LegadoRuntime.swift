@@ -67,7 +67,6 @@ public final class LegadoRuntime: @unchecked Sendable {
     private let host: any LegadoPlatformHost
     private let startupLock = NSLock()
     private var started = false
-    private let workers = DispatchQueue(label: "io.yuedu.legado.runtime", qos: .userInitiated, attributes: .concurrent)
 
     public init(configuration: Configuration, host: any LegadoPlatformHost = UnsupportedLegadoHost()) {
         self.configuration = configuration; self.host = host; self.transport = NativeLegadoTransport(host: host)
@@ -142,7 +141,7 @@ public final class LegadoRuntime: @unchecked Sendable {
             return response
         } onCancel: {
             // A different worker must deliver cancel while an execute worker is inside Rhino.
-            self.workers.async {
+            self.enqueue {
                 do { try self.ensureStarted(); _ = try self.transport.cancel(taskID) }
                 catch { Self.logger.error("Could not deliver runtime cancellation: \(error.localizedDescription, privacy: .public)") }
             }
@@ -168,8 +167,16 @@ public final class LegadoRuntime: @unchecked Sendable {
     }
     private func work<T: Sendable>(_ action: @escaping @Sendable () throws -> T) async throws -> T {
         try await withCheckedThrowingContinuation { continuation in
-            workers.async { continuation.resume(with: Result(catching: action)) }
+            enqueue { continuation.resume(with: Result(catching: action)) }
         }
+    }
+    private func enqueue(_ action: @escaping @Sendable () -> Void) {
+        // Darwin workqueue threads can reject the pthread signal that the JVM
+        // needs to interrupt socket I/O. Each invocation owns a regular thread;
+        // cancellation must be able to enter while another invocation blocks.
+        let thread = Thread(block: action)
+        thread.qualityOfService = .userInitiated
+        thread.start()
     }
     internal struct Envelope: Decodable { let ok: Bool; let sessionId: String?; let error: LegadoRuntimeError? }
     internal static func envelope(_ json: String) throws -> Envelope {
