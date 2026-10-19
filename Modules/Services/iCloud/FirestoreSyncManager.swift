@@ -393,7 +393,7 @@ final class FirestoreSyncManager: ObservableObject {
         }
 
         if let positions = try await fetchEnvelopes(CoreTextReadingPosition.self, at: userRef.collection("readingPositions")) {
-            JSONFileReadingPositionStore.replacePositionsFromSync(positions)
+            await JSONFileReadingPositionStore.replacePositionsFromSync(positions)
         }
 
         let mergedSources = try await pullCollection(

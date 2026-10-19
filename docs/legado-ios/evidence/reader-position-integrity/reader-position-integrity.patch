@@ -1,0 +1,639 @@
+diff --git a/.github/workflows/reader-smoke.yml b/.github/workflows/reader-smoke.yml
+index eafbffb..c77653b 100644
+--- a/.github/workflows/reader-smoke.yml
++++ b/.github/workflows/reader-smoke.yml
+@@ -71,7 +71,7 @@ jobs:
+         run: |
+           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+           This run independently targets nine configuration tests, 50 local-product methods with 68 passing executions, twelve SearchAutoPagingTests, and one real TXT reader UI test. Every group requires its exact passing count and zero failures/skips. The product group exercises account-free feature availability without purchased entitlements, actual font bytes/licensing/UIFont registration, validated cache-only UTF-8 export including literal plain-text preservation, simplified UI, zero upstream Aozora catalog requests and the existing 13-case remote-library HTTP suite after the independent User-Agent change. Nine new font transaction methods contribute 27 executions on owned files: injected-registry copy/metadata/registration/deletion faults, rollback/recovery, concurrent mutation rejection, completion after cancellation, unsafe paths and repair of an already missing file, plus default CoreText operations for a never-registered missing URL. These do not prove real CoreText rollback of a previously registered missing file or crash atomicity. The single serialized UserFontSettingsTests suite grows from 15/15 to 24/42. The product gate also checks the exact source method identities and every parameterized execution leaf. Separate result bundles, summaries, raw test trees and logs are retained.
+-          An independent position group requires 13 unique methods and 23 passing executions: five real-file persistence/fault-injection cases, twelve scroll restoration executions across TXT/Markdown/online plain text/online HTML, and six TXT reindex migration executions. The top-level xcresult summary counts methods; the selected device/configuration counts executions, and both gates require zero failures/skips. It retains its own raw tests tree and summary; this is not a physical-device storage or performance claim.
++          An independent position group requires 18 unique methods and 28 passing executions: ten real-file persistence/fault-injection/admitted-order cases, twelve scroll restoration executions across TXT/Markdown/online plain text/online HTML, and six TXT reindex migration executions. Held writes cover cancellation, cross-instance saves, flush/load ordering, failure followed by success, directory recreation and sync-import no-echo behavior. The top-level xcresult summary counts methods; the selected device/configuration counts executions, and both gates require zero failures/skips. It retains its own raw tests tree and summary; this is not a physical-device storage or performance claim.
+           The paging group exercises HTTP stubs through the existing HTML parser and source-script session: an explicit false verdict on page one prevents page two; true, invalid/unknown and cached-page verdicts keep the established bounded paging rules. The public onHasMore callback contract, device pacing and pause/resume regressions remain covered. This is not a live-site or native-JVM network acceptance claim.
+           Source Info/project overlays establish isolated local mode before the test host first starts; their original and overlaid hashes are retained. The TXT test imports through the existing DEBUG hook, selects a chapter, closes, removes the import input and relaunches to verify persisted progress/body. Screenshots and accessibility trees are attached to the UI xcresult.
+           The same TXT UI method now opens the real quick-reader panel, checks announced font-size changes and actual brightness percentages at both endpoints, restores those settings and dismisses the native sheet before continuing the persisted-reading check. Simulator accessibility evidence does not establish physical-device VoiceOver behavior.
+diff --git a/Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift b/Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift
+index c023859..d2f1ebe 100644
+--- a/Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift
++++ b/Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift
+@@ -1,6 +1,6 @@
+ import Foundation
+ 
+-struct CoreTextReadingPosition: Codable, Equatable {
++struct CoreTextReadingPosition: Codable, Equatable, Sendable {
+     let spineIndex: Int
+     let charOffset: Int
+     /// A place inside a translation (整章翻譯): how far into the translation that hangs off
+diff --git a/Modules/Core/ReaderCore/ReadingPositionStore.swift b/Modules/Core/ReaderCore/ReadingPositionStore.swift
+index 8d4f41c..113ea33 100644
+--- a/Modules/Core/ReaderCore/ReadingPositionStore.swift
++++ b/Modules/Core/ReaderCore/ReadingPositionStore.swift
+@@ -8,9 +8,21 @@ protocol ReadingPositionStore: AnyObject, Sendable {
+ }
+ 
+ final class JSONFileReadingPositionStore: ReadingPositionStore {
++    struct Submission: Sendable {
++        enum Kind: Sendable, Equatable { case save, load, flush, syncReplacement }
++        let sequence: UInt64
++        let kind: Kind
++        let bookId: String?
++        let position: CoreTextReadingPosition?
++    }
++
++    // All instances, including the sync importer, use one admission order. The
++    // actor never performs file work: a held writer cannot block new admissions.
++    private static let fileJobs = ReadingPositionFileJobs()
+     private let baseURL: URL
+     private let writeData: @Sendable (Data, URL) throws -> Void
+     private let onSave: @Sendable (CoreTextReadingPosition, String) -> Void
++    private let onSubmit: @Sendable (Submission) -> Void
+ 
+     init(
+         baseURL: URL = StorageLocations.readingPosition,
+@@ -23,11 +35,15 @@ final class JSONFileReadingPositionStore: ReadingPositionStore {
+             Task { @MainActor in
+                 FirestoreSyncManager.shared.scheduleReadingPositionPush(position, for: bookId)
+             }
+-        }
++        },
++        // Small synchronous observation of actual admission, used by owned-file
++        // regressions. Observers must not do I/O or wait for a worker.
++        onSubmit: @escaping @Sendable (Submission) -> Void = { _ in }
+     ) {
+         self.baseURL = baseURL
+         self.writeData = writeData
+         self.onSave = onSave
++        self.onSubmit = onSubmit
+     }
+ 
+     private func fileURL(for bookId: String) -> URL {
+@@ -35,19 +51,30 @@ final class JSONFileReadingPositionStore: ReadingPositionStore {
+     }
+ 
+     func save(_ position: CoreTextReadingPosition, for bookId: String) async {
+-        do {
+-            try writePosition(position, for: bookId)
+-            onSave(position, bookId)
+-            AppLogger.cache("[ProgressTrace][PositionStore] save bookId=\(bookId) spine=\(position.spineIndex) charOffset=\(position.charOffset)")
+-        } catch {
+-            AppLogger.error("[ProgressTrace][PositionStore] save failed", error: error, context: ["bookId": bookId])
++        let job = await Self.fileJobs.submit(.save, bookId: bookId, position: position, onSubmit: onSubmit) { [self] in
++            do {
++                try writePosition(position, for: bookId)
++                onSave(position, bookId)
++                AppLogger.cache("[ProgressTrace][PositionStore] save bookId=\(bookId) spine=\(position.spineIndex) charOffset=\(position.charOffset)")
++            } catch {
++                AppLogger.error("[ProgressTrace][PositionStore] save failed", error: error, context: ["bookId": bookId])
++            }
+         }
++        // Once admitted, a write completes even if its calling task is cancelled.
++        // Dropping an already committed result must not drop its success signal.
++        await job.value
+     }
+ 
+     func load(for bookId: String) async -> CoreTextReadingPosition? {
+-        loadSync(for: bookId)
++        let job = await Self.fileJobs.submit(.load, bookId: bookId, onSubmit: onSubmit) { [self] in
++            loadSync(for: bookId)
++        }
++        return await job.value
+     }
+ 
++    // An immediate atomic-file snapshot, without waiting for admitted jobs. A
++    // caller needing read-after-write must first await save/flush (TXT migration
++    // does so). This entry must never synchronously wait on the worker from main.
+     func loadSync(for bookId: String) -> CoreTextReadingPosition? {
+         let data: Data
+         do {
+@@ -72,17 +99,31 @@ final class JSONFileReadingPositionStore: ReadingPositionStore {
+     }
+ 
+     func flush(for bookId: String) async {
++        let barrier = await Self.fileJobs.submit(.flush, bookId: bookId, onSubmit: onSubmit) { }
++        await barrier.value
+     }
+ 
+-    static func replacePositionsFromSync(_ positions: [String: CoreTextReadingPosition]) {
++    static func replacePositionsFromSync(_ positions: [String: CoreTextReadingPosition]) async {
+         let store = JSONFileReadingPositionStore()
+-        for (bookId, position) in positions {
+-            do {
+-                try store.writePosition(position, for: bookId)
+-            } catch {
+-                AppLogger.error("[ProgressTrace][PositionStore] sync replacement failed", error: error, context: ["bookId": bookId])
++        await store.applySyncedPositions(positions)
++    }
++
++    // Same use case with the existing owned-root/writeData dependencies. This
++    // keeps sync import and its failure/order regressions on the single writer.
++    func applySyncedPositions(_ positions: [String: CoreTextReadingPosition]) async {
++        let job = await Self.fileJobs.submit(.syncReplacement, onSubmit: onSubmit) { [self] in
++            SourcePerfTrace.span("reader.position.syncReplacement", "main=\(Thread.isMainThread) positions=\(positions.count)") {
++                for (bookId, position) in positions {
++                    do {
++                        try writePosition(position, for: bookId)
++                    } catch {
++                        AppLogger.error("[ProgressTrace][PositionStore] sync replacement failed", error: error, context: ["bookId": bookId])
++                    }
++                }
+             }
+         }
++        // Preserve the existing no-onSave sync behavior to avoid a push loop.
++        await job.value
+     }
+ 
+     /// Completion means the atomic write has finished. TXT index migration relies
+@@ -97,3 +138,30 @@ final class JSONFileReadingPositionStore: ReadingPositionStore {
+         }
+     }
+ }
++
++/// Orders actual admissions, not the creation of unrelated calling Tasks. Actor
++/// scheduling is not FIFO; once accepted, each detached job awaits its predecessor
++/// before doing synchronous I/O. No file work or synchronous worker wait happens
++/// in this actor, so test-held writes leave admission and flush observation live.
++private actor ReadingPositionFileJobs {
++    private var tail: Task<Void, Never>?
++    private var sequence: UInt64 = 0
++
++    func submit<Result: Sendable>(
++        _ kind: JSONFileReadingPositionStore.Submission.Kind,
++        bookId: String? = nil,
++        position: CoreTextReadingPosition? = nil,
++        onSubmit: @Sendable (JSONFileReadingPositionStore.Submission) -> Void,
++        operation: @escaping @Sendable () -> Result
++    ) -> Task<Result, Never> {
++        let previous = tail
++        let job = Task.detached(priority: .utility) {
++            if let previous { await previous.value }
++            return operation()
++        }
++        tail = Task.detached(priority: .utility) { _ = await job.value }
++        sequence &+= 1
++        onSubmit(.init(sequence: sequence, kind: kind, bookId: bookId, position: position))
++        return job
++    }
++}
+diff --git a/Modules/Services/iCloud/FirestoreSyncManager.swift b/Modules/Services/iCloud/FirestoreSyncManager.swift
+index ef46409..69caed0 100644
+--- a/Modules/Services/iCloud/FirestoreSyncManager.swift
++++ b/Modules/Services/iCloud/FirestoreSyncManager.swift
+@@ -393,7 +393,7 @@ final class FirestoreSyncManager: ObservableObject {
+         }
+ 
+         if let positions = try await fetchEnvelopes(CoreTextReadingPosition.self, at: userRef.collection("readingPositions")) {
+-            JSONFileReadingPositionStore.replacePositionsFromSync(positions)
++            await JSONFileReadingPositionStore.replacePositionsFromSync(positions)
+         }
+ 
+         let mergedSources = try await pullCollection(
+diff --git a/scripts/reader-experience/smoke.sh b/scripts/reader-experience/smoke.sh
+index cfb77e9..ccb2967 100644
+--- a/scripts/reader-experience/smoke.sh
++++ b/scripts/reader-experience/smoke.sh
+@@ -52,7 +52,7 @@ python3 "$SCRIPT_DIR/smoke-tools.py" verify-local-product --summary "$WORK/local
+ # Check actual position files, cold scroll restoration and the TXT migration
+ # journal contract independently of the unchanged local-product verdict.
+ # Counts include the four content variants and interrupted migration arguments:
+-# 5 persistence cases + 12 scroll executions + 6 migration executions = 23.
++# 10 persistence/order cases + 12 scroll executions + 6 migration executions = 28.
+ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reading-position-tests.log" -t 1200 -- \
+   "${ARGS[@]}" -resultBundlePath "$WORK/reading-position.xcresult" \
+   -only-testing:'yuedu appTests/ReadingPositionStorePersistenceTests' \
+@@ -60,7 +60,7 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reading-position-tests.log" -t 1200
+   -only-testing:'yuedu appTests/TXTReaderIndexMigrationTests'
+ xcrun xcresulttool get test-results summary --path "$WORK/reading-position.xcresult" > "$WORK/reading-position-summary.json"
+ xcrun xcresulttool get test-results tests --path "$WORK/reading-position.xcresult" > "$WORK/reading-position-tests.json"
+-python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reading-position-summary.json" --expected 13 --expected-executions 23
++python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reading-position-summary.json" --expected 18 --expected-executions 28
+ # Keep paging separate from configuration and product tests: a skipped or empty
+ # SearchAutoPagingTests invocation cannot satisfy either group's count.
+ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/paging-tests.log" -t 1200 -- \
+diff --git a/scripts/reader-experience/test-smoke-tools.py b/scripts/reader-experience/test-smoke-tools.py
+index 8922666..29a46af 100644
+--- a/scripts/reader-experience/test-smoke-tools.py
++++ b/scripts/reader-experience/test-smoke-tools.py
+@@ -139,16 +139,23 @@ class SmokeEvidenceTests(unittest.TestCase):
+             smoke.verify_summary(summary, 6, 6)
+ 
+     def test_execution_gate_rejects_missing_extra_skipped_or_failed_device_runs(self):
+-        good = {"totalTestCount": 13, "passedTests": 13, "failedTests": 0, "skippedTests": 0,
++        good = {"totalTestCount": 18, "passedTests": 18, "failedTests": 0, "skippedTests": 0,
+                 "expectedFailures": 0, "devicesAndConfigurations": [
+-                    {"passedTests": 23, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+-        self.assertEqual(smoke.verify_summary(good, 13, 23)["expectedExecutions"], 23)
++                    {"passedTests": 28, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
++        self.assertEqual(smoke.verify_summary(good, 18, 28)["expectedExecutions"], 28)
+         invalid = []
++        # Old 13/23 evidence cannot accept the new five owned ordering cases.
++        # Also reject each stale half of the method/execution count pair.
++        for methods, executions in ((13, 23), (13, 28), (18, 23)):
++            changed = copy.deepcopy(good)
++            changed["totalTestCount"] = changed["passedTests"] = methods
++            changed["devicesAndConfigurations"][0]["passedTests"] = executions
++            invalid.append(changed)
+         for value in (None, [], good["devicesAndConfigurations"] * 2, [None]):
+             changed = copy.deepcopy(good)
+             changed["devicesAndConfigurations"] = value
+             invalid.append(changed)
+-        for key, value in (("passedTests", 22), ("passedTests", True), ("failedTests", 1),
++        for key, value in (("passedTests", 27), ("passedTests", 29), ("passedTests", True), ("failedTests", 1),
+                            ("skippedTests", 1), ("expectedFailures", 1), ("expectedFailures", None)):
+             changed = copy.deepcopy(good)
+             changed["devicesAndConfigurations"][0][key] = value
+@@ -158,7 +165,7 @@ class SmokeEvidenceTests(unittest.TestCase):
+         invalid.append(changed)
+         for summary in invalid:
+             with self.subTest(summary=summary), self.assertRaises(ValueError):
+-                smoke.verify_summary(summary, 13, 23)
++                smoke.verify_summary(summary, 18, 28)
+ 
+     def test_local_product_source_inventory_binds_the_single_serialized_font_suite(self):
+         inventory = self.product_sources()
+diff --git a/Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift b/Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift
+new file mode 100644
+index 0000000..ad78fdc
+--- /dev/null
++++ b/Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift	
+@@ -0,0 +1,382 @@
++import Foundation
++import XCTest
++@testable import yuedu_app
++
++// One existing XCTest class and selection. No second position store, timing
++// delays, real library files or cloud notifications are involved.
++extension ReadingPositionStorePersistenceTests {
++    func testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled() async throws {
++        try await withPositionScenario { scenario in
++            let store = scenario.makeStore()
++            try await scenario.saveSeed(using: store)
++            let first = scenario.start { await store.save(scenario.held, for: "book") }
++            try await scenario.wait(scenario.writer.started)
++            let latestSubmitted = scenario.admissions.expect(.save, position: scenario.latest)
++            let latest = scenario.start { await store.save(scenario.latest, for: "book") }
++            try await scenario.wait(latestSubmitted)
++            let flushSubmitted = scenario.admissions.expect(.flush)
++            let flush = scenario.start { await store.flush(for: "book") }
++            try await scenario.wait(flushSubmitted)
++
++            // loadSync is an immediate atomic snapshot, not a wait for the held
++            // write. Cancellation after admission cannot abandon that write.
++            let duringWrite = await Task.detached { store.loadSync(for: "book") }.value
++            XCTAssertEqual(duringWrite, scenario.seed)
++            XCTAssertFalse(latest.finished.didFire)
++            XCTAssertFalse(flush.finished.didFire)
++            first.task.cancel()
++            scenario.writer.open()
++            try await scenario.wait(first.finished, latest.finished, flush.finished)
++
++            let reopened = scenario.makeStore()
++            let restored = await Task.detached { reopened.loadSync(for: "book") }.value
++            XCTAssertEqual(restored, scenario.latest)
++            XCTAssertEqual(scenario.successes.positions, [scenario.seed, scenario.held, scenario.latest])
++            XCTAssertEqual(scenario.writer.attemptedPositions, [scenario.seed, scenario.held, scenario.latest])
++            XCTAssertEqual(scenario.admissions.snapshots.map(\.kind), [.save, .save, .save, .flush])
++            XCTAssertTrue(scenario.admissions.strictlyIncreasingSequences)
++            XCTAssertFalse(scenario.writer.wasCalledOnMain)
++        }
++    }
++
++    func testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits() async throws {
++        try await withPositionScenario { scenario in
++            let firstStore = scenario.makeStore()
++            let secondStore = scenario.makeStore()
++            try await scenario.saveSeed(using: firstStore)
++            let first = scenario.start { await firstStore.save(scenario.held, for: "book") }
++            try await scenario.wait(scenario.writer.started)
++            let latestSubmitted = scenario.admissions.expect(.save, position: scenario.latest)
++            let latest = scenario.start { await secondStore.save(scenario.latest, for: "book") }
++            try await scenario.wait(latestSubmitted)
++            let value = PositionResult()
++            let loadSubmitted = scenario.admissions.expect(.load)
++            let load = scenario.start { value.record(await secondStore.load(for: "book")) }
++            try await scenario.wait(loadSubmitted)
++            let flushSubmitted = scenario.admissions.expect(.flush)
++            let flush = scenario.start { await firstStore.flush(for: "book") }
++            try await scenario.wait(flushSubmitted)
++
++            XCTAssertFalse(load.finished.didFire)
++            XCTAssertFalse(flush.finished.didFire)
++            scenario.writer.open()
++            try await scenario.wait(first.finished, latest.finished, load.finished, flush.finished)
++            XCTAssertEqual(value.position, scenario.latest)
++            XCTAssertEqual(scenario.successes.positions, [scenario.seed, scenario.held, scenario.latest])
++            XCTAssertEqual(scenario.admissions.snapshots.map(\.kind), [.save, .save, .save, .load, .flush])
++            XCTAssertTrue(scenario.admissions.strictlyIncreasingSequences)
++            XCTAssertFalse(scenario.writer.wasCalledOnMain)
++        }
++    }
++
++    func testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave() async throws {
++        try await withPositionScenario(failHeldWrite: true) { scenario in
++            let store = scenario.makeStore()
++            try await scenario.saveSeed(using: store)
++            let before = try await scenario.fileBytes()
++            let failed = scenario.start { await store.save(scenario.held, for: "book") }
++            try await scenario.wait(scenario.writer.started)
++            let latestSubmitted = scenario.admissions.expect(.save, position: scenario.latest)
++            let latest = scenario.start { await store.save(scenario.latest, for: "book") }
++            try await scenario.wait(latestSubmitted)
++            let duringWrite = try await scenario.fileBytes()
++            XCTAssertEqual(duringWrite, before)
++            scenario.writer.open()
++            try await scenario.wait(failed.finished, latest.finished)
++            let flush = scenario.start { await store.flush(for: "book") }
++            try await scenario.wait(flush.finished)
++
++            let restored = await Task.detached { store.loadSync(for: "book") }.value
++            XCTAssertTrue(scenario.writer.didUseFault)
++            XCTAssertEqual(restored, scenario.latest)
++            XCTAssertEqual(scenario.successes.positions, [scenario.seed, scenario.latest])
++            XCTAssertEqual(scenario.writer.failedPositions, [scenario.held])
++            XCTAssertEqual(scenario.writer.attemptedPositions, [scenario.seed, scenario.held, scenario.latest])
++            XCTAssertFalse(scenario.writer.wasCalledOnMain)
++        }
++    }
++
++    func testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave() async throws {
++        try await withPositionScenario { scenario in
++            let store = scenario.makeStore()
++            try await scenario.saveSeed(using: store)
++            let failed = scenario.start { await store.save(scenario.held, for: "book") }
++            try await scenario.wait(scenario.writer.started)
++            let directory = scenario.directory
++            try await Task.detached { try FileManager.default.removeItem(at: directory) }.value
++            let latestSubmitted = scenario.admissions.expect(.save, position: scenario.latest)
++            let latest = scenario.start { await store.save(scenario.latest, for: "book") }
++            try await scenario.wait(latestSubmitted)
++            scenario.writer.open()
++            try await scenario.wait(failed.finished, latest.finished)
++            let flush = scenario.start { await store.flush(for: "book") }
++            try await scenario.wait(flush.finished)
++
++            let reopened = scenario.makeStore()
++            let restored = await Task.detached { reopened.loadSync(for: "book") }.value
++            XCTAssertEqual(restored, scenario.latest)
++            XCTAssertEqual(scenario.writer.failedPositions, [scenario.held])
++            XCTAssertEqual(scenario.successes.positions, [scenario.seed, scenario.latest])
++            XCTAssertEqual(scenario.writer.attemptedPositions, [scenario.seed, scenario.held, scenario.latest])
++            XCTAssertFalse(scenario.writer.wasCalledOnMain)
++        }
++    }
++
++    func testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave() async throws {
++        try await withPositionScenario { scenario in
++            let store = scenario.makeStore()
++            let importingStore = scenario.makeStore()
++            try await scenario.saveSeed(using: store)
++            let first = scenario.start { await store.save(scenario.held, for: "book") }
++            try await scenario.wait(scenario.writer.started)
++            let syncPosition = CoreTextReadingPosition(spineIndex: 8, charOffset: 320, translationOffset: 17)
++            let syncSubmitted = scenario.admissions.expect(.syncReplacement)
++            let sync = scenario.start { await importingStore.applySyncedPositions(["book": syncPosition]) }
++            try await scenario.wait(syncSubmitted)
++            let latestSubmitted = scenario.admissions.expect(.save, position: scenario.latest)
++            let latest = scenario.start { await store.save(scenario.latest, for: "book") }
++            try await scenario.wait(latestSubmitted)
++            let flushSubmitted = scenario.admissions.expect(.flush)
++            let flush = scenario.start { await importingStore.flush(for: "book") }
++            try await scenario.wait(flushSubmitted)
++            XCTAssertFalse(sync.finished.didFire)
++            XCTAssertFalse(flush.finished.didFire)
++            scenario.writer.open()
++            try await scenario.wait(first.finished, sync.finished, latest.finished, flush.finished)
++
++            let restored = await Task.detached { store.loadSync(for: "book") }.value
++            XCTAssertEqual(restored, scenario.latest)
++            XCTAssertEqual(scenario.writer.attemptedPositions, [scenario.seed, scenario.held, syncPosition, scenario.latest])
++            XCTAssertEqual(scenario.successes.positions, [scenario.seed, scenario.held, scenario.latest])
++            XCTAssertEqual(scenario.admissions.snapshots.map(\.kind), [.save, .save, .syncReplacement, .save, .flush])
++            XCTAssertTrue(scenario.admissions.strictlyIncreasingSequences)
++            XCTAssertFalse(scenario.writer.wasCalledOnMain)
++        }
++    }
++}
++
++@MainActor
++private func withPositionScenario(
++    failHeldWrite: Bool = false,
++    body: @MainActor (PositionScenario) async throws -> Void
++) async throws {
++    let scenario = PositionScenario(failHeldWrite: failHeldWrite)
++    do {
++        try await body(scenario)
++        await scenario.cleanUp()
++    } catch {
++        await scenario.cleanUp()
++        throw error
++    }
++}
++
++@MainActor
++private final class PositionScenario {
++    let root: URL
++    let directory: URL
++    let seed = CoreTextReadingPosition(spineIndex: 1, charOffset: 28, translationOffset: 5)
++    let held: CoreTextReadingPosition
++    let latest = CoreTextReadingPosition(spineIndex: 3, charOffset: 144, translationOffset: 23)
++    let writer: HeldPositionWriter
++    let successes = PositionSuccessLog()
++    let admissions = PositionAdmissionLog()
++    private var actions: [PositionAction] = []
++
++    init(failHeldWrite: Bool) {
++        let root = FileManager.default.temporaryDirectory
++            .appendingPathComponent("ReadingPositionWriteOrderingTests-\(UUID().uuidString)", isDirectory: true)
++        self.root = root
++        directory = root.appendingPathComponent("positions", isDirectory: true)
++        let held = CoreTextReadingPosition(spineIndex: 2, charOffset: 56, translationOffset: 11)
++        self.held = held
++        writer = HeldPositionWriter(heldPosition: held, failHeldWrite: failHeldWrite)
++    }
++
++    func makeStore() -> JSONFileReadingPositionStore {
++        let writer = writer, successes = successes, admissions = admissions
++        return JSONFileReadingPositionStore(baseURL: directory,
++            writeData: { try writer.write($0, to: $1) },
++            onSave: { successes.record($0, bookId: $1) },
++            onSubmit: { admissions.record($0) })
++    }
++
++    func start(_ operation: @escaping @MainActor () async -> Void) -> PositionAction {
++        let finished = PositionSignal("position action finished")
++        let action = PositionAction(task: Task { await operation(); finished.fire() }, finished: finished)
++        actions.append(action)
++        return action
++    }
++
++    func wait(_ signals: PositionSignal...) async throws {
++        // Explicit failure deadline, not a settle delay. Every successful wait
++        // ends on the real admission, writer entry or operation completion.
++        let result = await XCTWaiter.fulfillment(of: signals.map(\.expectation), timeout: 5)
++        XCTAssertEqual(result, .completed)
++        guard result == .completed else { throw PositionScenarioFailure.signalDeadline }
++    }
++
++    func saveSeed(using store: JSONFileReadingPositionStore) async throws {
++        let seed = seed
++        let save = start { await store.save(seed, for: "book") }
++        try await wait(save.finished)
++    }
++
++    func fileBytes() async throws -> Data {
++        let file = directory.appendingPathComponent("book.json", isDirectory: false)
++        return try await Task.detached { try Data(contentsOf: file) }.value
++    }
++
++    func cleanUp() async {
++        writer.open()
++        actions.forEach { $0.task.cancel() }
++        // No uncancellable/unbounded cleanup task: if a real ordering regression
++        // strands a job, report it and retain this owned directory for diagnosis.
++        let result = await XCTWaiter.fulfillment(of: actions.map(\.finished.expectation), timeout: 5)
++        guard result == .completed else {
++            XCTFail("Position jobs did not drain after releasing the owned writer; fixture retained")
++            return
++        }
++        let root = root
++        do {
++            try await Task.detached {
++                if FileManager.default.fileExists(atPath: root.path) {
++                    try FileManager.default.removeItem(at: root)
++                }
++            }.value
++        } catch { XCTFail("Owned progress fixture cleanup failed: \(error)") }
++    }
++}
++
++private enum PositionScenarioFailure: Error { case signalDeadline, unexpectedMainThread }
++private struct PositionAction {
++    let task: Task<Void, Never>
++    let finished: PositionSignal
++}
++
++private final class PositionSignal: @unchecked Sendable {
++    private let label: String
++    private let lock = NSLock()
++    private var fired = false
++    private var waiting: [XCTestExpectation] = []
++    init(_ label: String) { self.label = label }
++    // XCTest expectations cannot be waited on more than once. Each caller gets
++    // its own expectation for the same recorded event, including cleanup.
++    var expectation: XCTestExpectation {
++        let expectation = XCTestExpectation(description: label)
++        let alreadyFired = lock.withLock {
++            if fired { return true }
++            waiting.append(expectation)
++            return false
++        }
++        if alreadyFired { expectation.fulfill() }
++        return expectation
++    }
++    var didFire: Bool { lock.withLock { fired } }
++    func fire() {
++        let ready: [XCTestExpectation] = lock.withLock {
++            guard !fired else { return [] }
++            fired = true
++            let ready = waiting
++            waiting.removeAll()
++            return ready
++        }
++        ready.forEach { $0.fulfill() }
++    }
++}
++
++private final class PositionAdmissionLog: @unchecked Sendable {
++    typealias Submission = JSONFileReadingPositionStore.Submission
++    private let lock = NSLock()
++    private var values: [Submission] = []
++    private var waiting: [(Submission.Kind, CoreTextReadingPosition?, PositionSignal)] = []
++    var snapshots: [Submission] { lock.withLock { values } }
++    var strictlyIncreasingSequences: Bool {
++        let values = snapshots.map(\.sequence)
++        return zip(values, values.dropFirst()).allSatisfy { pair in pair.0 < pair.1 }
++    }
++    func expect(_ kind: Submission.Kind, position: CoreTextReadingPosition? = nil) -> PositionSignal {
++        let signal = PositionSignal("position job admitted")
++        let existing = lock.withLock {
++            if values.contains(where: { $0.kind == kind && $0.position == position }) { return true }
++            waiting.append((kind, position, signal))
++            return false
++        }
++        if existing { signal.fire() }
++        return signal
++    }
++    func record(_ submission: Submission) {
++        let ready: [PositionSignal] = lock.withLock {
++            values.append(submission)
++            let ready = waiting.filter { $0.0 == submission.kind && $0.1 == submission.position }.map { $0.2 }
++            waiting.removeAll { $0.0 == submission.kind && $0.1 == submission.position }
++            return ready
++        }
++        ready.forEach { $0.fire() }
++    }
++}
++
++private final class PositionSuccessLog: @unchecked Sendable {
++    private let lock = NSLock()
++    private var values: [CoreTextReadingPosition] = []
++    var positions: [CoreTextReadingPosition] { lock.withLock { values } }
++    func record(_ position: CoreTextReadingPosition, bookId: String) {
++        XCTAssertEqual(bookId, "book")
++        lock.withLock { values.append(position) }
++    }
++}
++
++private final class PositionResult: @unchecked Sendable {
++    private let lock = NSLock()
++    private var value: CoreTextReadingPosition?
++    var position: CoreTextReadingPosition? { lock.withLock { value } }
++    func record(_ position: CoreTextReadingPosition?) { lock.withLock { value = position } }
++}
++
++/// Blocks only the detached file operation; admission, the test MainActor and
++/// every signal waiter remain live. The test opens this gate even on failure.
++private final class HeldPositionWriter: @unchecked Sendable {
++    let started = PositionSignal("held writer entered")
++    private let heldPosition: CoreTextReadingPosition
++    private let failHeldWrite: Bool
++    private let condition = NSCondition()
++    private var opened = false
++    private let lock = NSLock()
++    private var attempts: [CoreTextReadingPosition] = []
++    private var failures: [CoreTextReadingPosition] = []
++    private var usedFault = false
++    private var calledOnMain = false
++    var attemptedPositions: [CoreTextReadingPosition] { lock.withLock { attempts } }
++    var failedPositions: [CoreTextReadingPosition] { lock.withLock { failures } }
++    var didUseFault: Bool { lock.withLock { usedFault } }
++    var wasCalledOnMain: Bool { lock.withLock { calledOnMain } }
++
++    init(heldPosition: CoreTextReadingPosition, failHeldWrite: Bool) {
++        self.heldPosition = heldPosition
++        self.failHeldWrite = failHeldWrite
++    }
++    func write(_ data: Data, to url: URL) throws {
++        let position = try JSONDecoder().decode(CoreTextReadingPosition.self, from: data)
++        lock.withLock { attempts.append(position); calledOnMain = calledOnMain || Thread.isMainThread }
++        guard !Thread.isMainThread else {
++            XCTFail("Position writer ran on main; refusing to block the test's signal waiter")
++            throw PositionScenarioFailure.unexpectedMainThread
++        }
++        if position == heldPosition {
++            started.fire()
++            condition.lock()
++            while !opened { condition.wait() }
++            condition.unlock()
++        }
++        do {
++            if position == heldPosition && failHeldWrite {
++                lock.withLock { usedFault = true }
++                throw CocoaError(.fileWriteOutOfSpace)
++            }
++            try data.write(to: url, options: .atomic)
++        } catch {
++            lock.withLock { failures.append(position) }
++            throw error
++        }
++    }
++    func open() { condition.lock(); opened = true; condition.broadcast(); condition.unlock() }
++}

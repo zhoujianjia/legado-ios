@@ -158,7 +158,6 @@
     },
     "nextReadyBatch": [
       "source-schema",
-      "reading-position-write-integrity",
       "reading-performance-and-prefetch",
       "local-formats",
       "license-and-source-closure"
@@ -166,7 +165,6 @@
     "readinessMeaningZh": "readiness 指本包下一步实际动作是否具备条件；准备、可靠性修复和独立协议夹具可先行。ready 不表示原 dependsOn 或阶段出口已验收，不允许因此切换产品路由或声明完整兼容。有依赖的包仍明确列出 readyPreparation；真机及外部决定不阻塞其他独立工作。",
     "readyQueue": [
       "plan-and-evidence-refresh",
-      "reading-position-write-integrity",
       "reading-performance-and-prefetch",
       "license-and-source-closure",
       "runtime-core",
@@ -183,7 +181,8 @@
       "reading-quick-panel-accessibility",
       "backup-webdav",
       "automatic-renewal-feasibility",
-      "reading-experience-design"
+      "reading-experience-design",
+      "reading-position-write-integrity"
     ],
     "deferredQueue": [],
     "currentDeviceCandidate": {
@@ -353,20 +352,22 @@
       "existingEvidence": [
         "reader-smoke",
         "feature-comparison",
-        "reader-smoke-history"
+        "reader-smoke-history",
+        "reading-position-write-integrity-integration"
       ],
       "execution": {
         "summaryZh": "阅读位置写盘及并发顺序",
-        "currentState": "现有 JSONFileReadingPositionStore 已重建目录、原子写入后才通知并保留坏文件；历史两次云测的 13 方法／23 次执行通过。并发 save 的最新写入顺序、调用方错误传播和自动重试尚未全部实现或证明，不能从单次写盘回归推断完成。",
+        "currentState": "现有位置服务已准备共享短 actor 接纳与后台有序 Task 链，save／async load／flush 和 Firestore sync 导入使用同一顺序；成功写后才 onSave，sync 导入不回推。顺序指实际 admitted order，不是 Task 创建顺序或较大章号。新增 5 个自有 held-write 回归，原 selector 的新门槛为 18 方法／28 计划执行；portable 24 与 4 Swift 文件 grammar screen 已通过，主树 7 文件及相同 guard 已由 root 独立验证。历史两次 13／23 保留各自旧源码事实；本批 Swift／iOS／实际故障复现尚未执行，不能记为 S1 或功能完成。",
         "remainingWork": [
-          "用受控 writeData 故障与阻塞信号覆盖两个并发 save、先失败后成功和目录被删后重建。",
-          "只有复现真实顺序问题后才改现有 store；不另建进度存储，不凭故障测试引入无边界重试。",
-          "验证 save→flush→loadSync 和真实重开读同一 spineIndex／charOffset；明确调用者何时知道写盘失败。"
+          "在相关集中源码检查点实际编译及执行 reading-position 18／28，保存原始 summary、tests tree、日志、source 与环境；核对新增 5 方法身份，零失败／跳过／expected failure。",
+          "实际验证接纳后取消、跨实例 save／async load／flush、失败后成功、删除目录重建、sync 不回推及既有坏字节保护；准备夹具和源码交错反例不算运行复现。",
+          "真实读者重开及最终签名包前后台／冷启动连续性仍分开验收。现协议继续日志＋Void，未新增 throws／自动重试；TXT 迁移仍在 save／flush 后显式读盘验证。"
         ],
-        "nextAction": "在现有注入 writeData 上补两个并发保存的确定性顺序与故障回归，先固定期望和真实旧文件字节。",
-        "readiness": "ready",
+        "nextAction": "复用相关阶段集中 reader-smoke，在固定源码上验收 reading-position 18 方法／28 执行及原始方法叶集；相同输入 portable 结果复用，不为 5 条回归单独触发云测。",
+        "readiness": "awaiting-cloud",
         "readyPreparation": [
-          "复用临时目录、现有 JSON codec 与 onSave 完成信号。"
+          "只读核对冻结证据及源码 hash，准备保留实际 SDK、runtime、destination、source 与 xcresult 原始结果。",
+          "继续其他 ready 包或其独立准备；原依赖和阶段出口不因本批准备代码／portable 通过而改变。"
         ],
         "acceptance": [
           "失败不清空旧进度、不错误通知持久化成功；后续成功可重开恢复。",
@@ -374,7 +375,11 @@
         ],
         "evidence": [
           "Modules/Core/ReaderCore/ReadingPositionStore.swift",
-          "docs/legado-ios/previous-reader-smoke-audit.json"
+          "docs/legado-ios/previous-reader-smoke-audit.json",
+          "docs/legado-ios/reading-position-integrity-batch.json",
+          "docs/legado-ios/evidence/reader-position-integrity/reader-position-integrity-review.json",
+          "docs/legado-ios/evidence/reader-position-integrity/reader-position-independent-review.json",
+          "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift"
         ],
         "deferredHardware": [
           "最终签名包的前后台和冷启动进度连续性。"
@@ -3632,6 +3637,10 @@
     "user-font-transaction-integration": {
       "path": "docs/legado-ios/user-font-transaction-batch.json",
       "scope": "Reviewed existing user-font service import/replace/delete transaction and strict local-product 50-method/68-planned-execution gate; actual portable 24+16 and eight-file grammar screen only. Swift/iOS/CoreText execution pending, no full S2 or device acceptance."
+    },
+    "reading-position-write-integrity-integration": {
+      "path": "docs/legado-ios/reading-position-integrity-batch.json",
+      "scope": "Reviewed admitted-order position worker and five owned regressions; 18 methods/28 planned executions, actual portable 24 and four-file grammar screen only. Swift/iOS and full S1/device acceptance pending; historical 13/23 unchanged."
     }
   },
   "retainedExistingWork": [

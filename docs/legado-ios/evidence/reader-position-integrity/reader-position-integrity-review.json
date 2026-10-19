@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "kind": "source-only-reading-position-ordering-preparation",
+  "observedAtUTC": "2026-10-19T15:17:03.081893+00:00",
+  "baseCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+  "mainHEADObserved": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "mainSourceAndToolsStillMatchBaseline": true,
+  "mainComparisonNormalizesLineEndings": true,
+  "sourceLevelDefects": {
+    "baselineSource": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-baseline-store.swift",
+    "baselineSHA256": "86426b0987a2075fa0b855396b2a636eb658af08f76eaddc9e5e1a5e2eb9428d",
+    "evidence": "Original save performs synchronous writeData directly in concurrent async calls; flush has an empty body; sync replacement bypasses any shared ordering.",
+    "allowedInterleavingCounterexample": [
+      "A enters injected writeData and is held before atomic write",
+      "B writes its newer position and completes",
+      "flush returns without waiting for A",
+      "A is released and can overwrite B with the older position"
+    ],
+    "SwiftRuntimeCounterexampleExecuted": false,
+    "meaning": "Source-derived ordering counterexample and prepared native regression; not an executed Swift reproduction."
+  },
+  "implementationContract": [
+    "One shared actor only admits jobs, assigns a monotonic observed sequence and links each detached job to its predecessor; no synchronous file work or wait runs in admission.",
+    "Order means actual admitted order, not Task creation, wall-clock call order, actor FIFO or greatest chapter/offset.",
+    "save, async load, flush and sync replacement share the same process-local worker chain across store instances and books; flush waits for all predecessor jobs, with no retries or coalescing.",
+    "Atomic write, success callback and success log occur in the same ordered job. Failed writes retain the existing log-only Void API and emit no onSave; later jobs still run.",
+    "Accepted writes are detached from caller cancellation and finish their matching success/failure handling.",
+    "Firestore's sole existing sync-import caller awaits the same writer; sync replacement intentionally never onSave/echoes a cloud push.",
+    "Existing JSON path/codec and spineIndex/charOffset/translationOffset semantics are unchanged; the value type gains only Sendable."
+  ],
+  "preparedRegression": {
+    "selector": "yuedu appTests/ReadingPositionStorePersistenceTests",
+    "newMethods": [
+      "testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled",
+      "testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits",
+      "testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave",
+      "testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave",
+      "testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave"
+    ],
+    "newMethodCount": 5,
+    "newExecutionCount": 5,
+    "wholePersistenceClassMethods": 10,
+    "wholePersistenceClassExecutions": 10,
+    "historicalPositionGroup": {
+      "methods": 13,
+      "executions": 23
+    },
+    "newPositionGroup": {
+      "methods": 18,
+      "executions": 28
+    },
+    "countMeaning": "Source method/planned execution inventory only; no new Swift/iOS execution.",
+    "signals": "Actual admission snapshots, injected writer entry and operation completion; explicit 5s failure deadlines, no settle sleeps.",
+    "cleanup": "Always release owned gate; bounded 5s drain, retain owned directory if jobs do not finish. A main-thread writer regression throws before blocking.",
+    "cloudNotifications": "All owned stores inject callbacks; no real Firestore or user library access."
+  },
+  "localChecks": {
+    "smokeToolsPythonMethodsPassed": 24,
+    "swiftGrammarScreen": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-swift-syntax-screen.json",
+    "swiftGrammarScreenSHA256": "a730d1bdbf56bf8fd16adeffcba7817b14c8d39e17533c297282df2d45f672dc",
+    "commands": [
+      {
+        "name": "head",
+        "command": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\head.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\head.stderr.txt",
+        "stdoutSHA256": "2d308b5c8bf60a1fd62579e37a971ea904e654bbefa7bfc8107d0a5a6cc4ff45",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "changed-paths",
+        "command": [
+          "git",
+          "diff",
+          "--name-only"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\changed-paths.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\changed-paths.stderr.txt",
+        "stdoutSHA256": "3304ebf2ee6521a1e342dcf590622668835ef9169b05ed1992afb9371fb1edb5",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "diff-check",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\diff-check.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\diff-check.stderr.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "smoke-tools-tests",
+        "command": [
+          "C:\\Python312\\python.exe",
+          "scripts/reader-experience/test-smoke-tools.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\smoke-tools-tests.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\smoke-tools-tests.stderr.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "61c0ad668e865218a1ad298e779c8efdfdabca46501abc404b1f091415f070fa"
+      },
+      {
+        "name": "bash-syntax",
+        "command": [
+          "D:\\app\\Git\\bin\\bash.exe",
+          "-n",
+          "scripts/reader-experience/smoke.sh"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\bash-syntax.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\bash-syntax.stderr.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "new-file-patch",
+        "command": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\new-file-patch.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\new-file-patch.stderr.txt",
+        "stdoutSHA256": "6107fc243ddbf00f376550f20f6146c6b744dfeb7455e15accc8d672b355b2a6",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "patch-reverse-check",
+        "command": [
+          "git",
+          "apply",
+          "--reverse",
+          "--check",
+          "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\reader-position-integrity.patch"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\patch-reverse-check.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\patch-reverse-check.stderr.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "patch-forward-main-check",
+        "command": [
+          "git",
+          "apply",
+          "--check",
+          "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\reader-position-integrity.patch"
+        ],
+        "cwd": "F:\\yuedu-reader",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": true,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\patch-forward-main-check.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-integrity-validation\\patch-forward-main-check.stderr.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "sourceCountsAndUnchangedGroupsChecked": true
+  },
+  "integration": {
+    "smokeSameThreeSelectors": true,
+    "positionGate": "18 methods / 28 executions",
+    "guardRejectsHistoricalAndMixedCounts": [
+      "13/23",
+      "13/28",
+      "18/23",
+      "18/27",
+      "18/29"
+    ],
+    "smokeToolsImplementationUnchanged": true,
+    "otherGroupsAndRenewalProtocolUnchanged": true
+  },
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\reader-position-integrity.patch",
+    "bytes": 36318,
+    "sha256": "1195ff60bad7226f5e6a3d8c4c174b40f2fc888a9395848fd1eba2caea10415d",
+    "forwardAndReverseCheckPassed": true
+  },
+  "files": [
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "bytes": 6133,
+      "sha256": "4e7d2a454531b3a50e23c5787b4f708b222b62035b9cd529e477917525b41136"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "bytes": 7976,
+      "sha256": "8a3e8aecdf41f757e813ec77fc5adc8665c3e4a415d60f239180e46e174bdd2f"
+    },
+    {
+      "path": "Modules/Services/iCloud/FirestoreSyncManager.swift",
+      "bytes": 32036,
+      "sha256": "5ef6c257834b520e865413d51e3b28527cc29668699e657593bdd12bb50668f1"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "bytes": 18767,
+      "sha256": "9964c23181d32269189e88218635e37e70341d2a6bddaa40cc00146891c41275"
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "bytes": 13910,
+      "sha256": "c8db2d3071c664ef195a1152fb5320e5b99a544aa2132d10e545e658c91440d0"
+    },
+    {
+      "path": "scripts/reader-experience/test-smoke-tools.py",
+      "bytes": 29111,
+      "sha256": "aa33bc68207760666e9ba6d1605062a092e912e840bc44440085be1be875639b"
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "bytes": 11683,
+      "sha256": "3156678af23c9a64a230cda59c1ee3b3bf876f20a4e677d0265544bb347d95e5"
+    }
+  ],
+  "limits": [
+    "Windows has no Swift/Apple SDK execution in this batch. Grammar, source invariants and Python guard tests are not typecheck, native regression or feature completion.",
+    "loadSync retains synchronous caller-thread read/decode and immediate atomic old/new snapshot semantics, never waits for pending jobs; await save/flush first when read-after-write is required.",
+    "The default onSave still schedules an independent MainActor cloud task. This batch orders callback invocation, not all later network/cloud push execution.",
+    "The shared chain serializes all store instances/books; queueing latency and throughput are not measured and no performance gain is claimed.",
+    "Failure remains log-only and Void under the existing protocol; no new throwing API, retained-dirty retry or automatic recovery loop is introduced. TXT migration continues its explicit post-flush disk verification.",
+    "Sync import remains per-file writes, no multi-file or crash/power-loss atomicity; remote-fetch stale-snapshot conflict protection and external/process writes are out of scope.",
+    "Cold reopen is tested only by newly constructed owned stores in prepared regressions. Actual reader UI, signed-device background/cold-launch continuity and hardware acceptance remain pending."
+  ],
+  "swiftCompilationExecuted": false,
+  "iosTestsExecuted": false,
+  "cloudTriggered": false,
+  "privateSourcesRead": false,
+  "committedOrPushed": false,
+  "featureComplete": false,
+  "independentReviewRecord": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\reader-position-independent-review.json"
+}

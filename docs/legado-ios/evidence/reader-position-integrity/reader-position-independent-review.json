@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-19T15:19:02.687488+00:00",
+  "reviewer": "/root/renewal_independent_review",
+  "status": "source-review-complete-no-unresolved-blocking-findings",
+  "baselineSourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree",
+  "files": [
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "sha256": "8a3e8aecdf41f757e813ec77fc5adc8665c3e4a415d60f239180e46e174bdd2f",
+      "bytes": 7976
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "sha256": "4e7d2a454531b3a50e23c5787b4f708b222b62035b9cd529e477917525b41136",
+      "bytes": 6133
+    },
+    {
+      "path": "Modules/Services/iCloud/FirestoreSyncManager.swift",
+      "sha256": "5ef6c257834b520e865413d51e3b28527cc29668699e657593bdd12bb50668f1",
+      "bytes": 32036
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "sha256": "9964c23181d32269189e88218635e37e70341d2a6bddaa40cc00146891c41275",
+      "bytes": 18767
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "sha256": "c8db2d3071c664ef195a1152fb5320e5b99a544aa2132d10e545e658c91440d0",
+      "bytes": 13910
+    },
+    {
+      "path": "scripts/reader-experience/test-smoke-tools.py",
+      "sha256": "aa33bc68207760666e9ba6d1605062a092e912e840bc44440085be1be875639b",
+      "bytes": 29111
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "sha256": "3156678af23c9a64a230cda59c1ee3b3bf876f20a4e677d0265544bb347d95e5",
+      "bytes": 11683
+    }
+  ],
+  "productionFindings": [],
+  "reviewedInvariants": [
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "lines": [
+        21,
+        53,
+        68,
+        101,
+        113,
+        146,
+        157,
+        158,
+        159,
+        162,
+        164
+      ],
+      "result": "One private static actor accepts all instances and all four asynchronous operation kinds. Its submit body has no await; each detached job explicitly awaits its captured predecessor tail before synchronous I/O. Order is actual admission, independent of actor FIFO or caller Task construction. onSubmit is a bounded synchronous observation, not a guarantee that a worker has not already started."
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "lines": [
+        53,
+        56,
+        57,
+        58,
+        59,
+        65
+      ],
+      "result": "Atomic persistence, onSave and success logging execute within the same ordered job. A thrown file failure logs without onSave and normally resolves the nonthrowing job, allowing later jobs. An admitted detached job completes its success/failure handling even if the caller is cancelled."
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "lines": [
+        68,
+        78,
+        101,
+        102,
+        103
+      ],
+      "result": "Async load runs unchanged read/decode in the detached worker. The admitted no-op flush awaits the same chain and is a real completion barrier for admitted predecessors. loadSync remains direct synchronous caller I/O with no wait on pending jobs."
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "lines": [
+        106,
+        113,
+        114,
+        115,
+        116,
+        118,
+        120,
+        125,
+        126
+      ],
+      "result": "Default sync replacement and owned-root helper share the same worker. A batch is one ordered operation, catches per-file failures, traces main state/count, and deliberately omits onSave to preserve Firestore pull without push echo."
+    },
+    {
+      "path": "Modules/Services/iCloud/FirestoreSyncManager.swift",
+      "lines": [
+        396
+      ],
+      "result": "Exactly one existing production caller changes solely by awaiting replacement completion."
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "lines": [
+        3
+      ],
+      "result": "Byte comparison proves the sole model change is Sendable; stored Int/optional Int values and Codable JSON remain unchanged."
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "lines": [
+        78,
+        131,
+        132,
+        133,
+        136,
+        137
+      ],
+      "result": "Function-body comparison proves unchanged loadSync and writePosition. Atomic writes and per-write directory creation remain. No new GCD queue, storage index/cache, main synchronous worker wait or try? was added."
+    },
+    {
+      "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "lines": [
+        134,
+        135,
+        136,
+        362,
+        363
+      ],
+      "result": "Tests/iOS remains the synchronized root for yuedu appTests with no test-source exclusion. The new file extends the existing @MainActor XCTest class without requiring project per-file references."
+    }
+  ],
+  "testReview": {
+    "originalPersistenceFileUnchanged": true,
+    "originalMethods": [
+      "testSavingRecreatesAReadingPositionDirectoryRemovedAfterInitialization",
+      "testFailedWritePreservesPreviousFileAndDoesNotPublishASuccess",
+      "testCorruptProgressIsPreservedAndNeverPublishedAsASuccess",
+      "testCompletedSaveIsRestoredByANewStoreIncludingTranslationOffset",
+      "testMissingProgressDoesNotCreateOrPublishAReplacement"
+    ],
+    "addedMethods": [
+      "testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled",
+      "testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits",
+      "testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave",
+      "testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave",
+      "testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave"
+    ],
+    "persistenceMethodsAfterIntegration": 10,
+    "coverage": "Owned real files and held writes cover cancellation, cross-instance order, async read/flush barriers, failed atomic write followed by success, directory removal/recreation, cold store reopen and sync-import no echo. Readiness uses recorded admission, writer entry and completion signals. Five-second waits are failure deadlines; no settle sleeps/yields are used.",
+    "cleanup": "Cleanup opens the gate, cancels caller wrappers and waits at most five seconds for real completion. Every signal supplies a fresh expectation, and the owned directory is retained on failed drain.",
+    "resolvedFinding": {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "lines": [
+        250,
+        360,
+        361,
+        362,
+        364,
+        367
+      ],
+      "issue": "A nonfatal main assertion followed by NSCondition.wait would block the MainActor under the exact off-main regression being tested.",
+      "resolution": "The fixture now fails and throws unexpectedMainThread before the blocking gate if called on main."
+    }
+  },
+  "toolingReview": {
+    "positionSelectorsUnchanged": true,
+    "positionMethods": 18,
+    "positionExecutions": 28,
+    "inventory": "10 persistence/order methods/executions + 3 scroll methods/12 executions + 5 migration methods/6 executions.",
+    "narrowDiff": "smoke.sh changes only position commentary and 13/23 to 18/28. Workflow changes only its position summary paragraph. The portable gate test rejects stale 13/23, mixed 13/28 and 18/23, 27/29 execution counts, missing/duplicate devices, bool counts, failures/skips/expected failures.",
+    "unchangedVerified": [
+      "scripts/reader-experience/smoke-tools.py",
+      "scripts/reader-experience/renewal-probe-tools.py",
+      "scripts/reader-experience/renewal-probe-tests.sh",
+      ".github/workflows/reader-renewal-probe.yml",
+      "Yuedu-Reader.xcodeproj/project.pbxproj"
+    ],
+    "independentPortableRun": {
+      "command": "python scripts/reader-experience/test-smoke-tools.py",
+      "exitCode": 0,
+      "tests": 24,
+      "result": "OK",
+      "reportedDurationSeconds": 0.257
+    },
+    "independentDiffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    "implementerRawEvidenceIndependentlyHashChecked": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\reader-position-integrity-review.json",
+    "grammarRecord": {
+      "path": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\position-swift-syntax-screen.json",
+      "sha256": "a730d1bdbf56bf8fd16adeffcba7817b14c8d39e17533c297282df2d45f672dc",
+      "allFourFileHashesCurrent": true,
+      "meaning": "Tree-sitter grammar screen only; not Swift typecheck."
+    },
+    "patch": {
+      "path": "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\reader-position-integrity.patch",
+      "sha256": "1195ff60bad7226f5e6a3d8c4c174b40f2fc888a9395848fd1eba2caea10415d",
+      "bytes": 36318
+    }
+  },
+  "boundaries": [
+    "Order starts at actual actor admission; concurrent Task creation or wall-clock calls are not FIFO contracts.",
+    "Flush is a process-local barrier for admitted predecessors, including other books/stores. No crash durability, fsync or multi-file atomicity is established.",
+    "Existing files under the default atomic writer yield old or new complete loadSync snapshots without waiting. Missing, deleted or corrupt files preserve the previous nil/log behavior. loadSync itself still performs synchronous I/O on its caller.",
+    "Default onSave still schedules an independent MainActor Task: ordered worker callbacks do not establish FIFO of later cloud scheduling, debounce or network pushes.",
+    "Remote fetch staleness, merge conflict policy and external/process writes are outside this batch.",
+    "The admission observer must remain short and nonblocking. Production defaults to no-op; owned test observation records locked snapshots and fulfills signals.",
+    "The shared chain serializes all stores/books. Throughput, latency and physical-device smoothness have not been measured.",
+    "Static checks and portable tests do not prove Swift type correctness, Apple SDK compilation, XCTest runtime success or hardware storage/background behavior."
+  ],
+  "unresolvedBlockingFindings": [],
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "iOSTestsExecuted": 0,
+  "CIQueriedOrTriggered": false,
+  "trackedCodeModifiedByReviewer": false
+}

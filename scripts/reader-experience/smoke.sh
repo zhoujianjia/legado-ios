@@ -52,7 +52,7 @@ python3 "$SCRIPT_DIR/smoke-tools.py" verify-local-product --summary "$WORK/local
 # Check actual position files, cold scroll restoration and the TXT migration
 # journal contract independently of the unchanged local-product verdict.
 # Counts include the four content variants and interrupted migration arguments:
-# 5 persistence cases + 12 scroll executions + 6 migration executions = 23.
+# 10 persistence/order cases + 12 scroll executions + 6 migration executions = 28.
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reading-position-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/reading-position.xcresult" \
   -only-testing:'yuedu appTests/ReadingPositionStorePersistenceTests' \
@@ -60,7 +60,7 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reading-position-tests.log" -t 1200
   -only-testing:'yuedu appTests/TXTReaderIndexMigrationTests'
 xcrun xcresulttool get test-results summary --path "$WORK/reading-position.xcresult" > "$WORK/reading-position-summary.json"
 xcrun xcresulttool get test-results tests --path "$WORK/reading-position.xcresult" > "$WORK/reading-position-tests.json"
-python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reading-position-summary.json" --expected 13 --expected-executions 23
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reading-position-summary.json" --expected 18 --expected-executions 28
 # Keep paging separate from configuration and product tests: a skipped or empty
 # SearchAutoPagingTests invocation cannot satisfy either group's count.
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/paging-tests.log" -t 1200 -- \

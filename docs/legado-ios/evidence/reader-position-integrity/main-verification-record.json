@@ -1,0 +1,122 @@
+{
+  "sourceFilesMatchFrozenReview": true,
+  "files": [
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "bytes": 6133,
+      "sha256": "4e7d2a454531b3a50e23c5787b4f708b222b62035b9cd529e477917525b41136"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "bytes": 7976,
+      "sha256": "8a3e8aecdf41f757e813ec77fc5adc8665c3e4a415d60f239180e46e174bdd2f"
+    },
+    {
+      "path": "Modules/Services/iCloud/FirestoreSyncManager.swift",
+      "bytes": 32036,
+      "sha256": "5ef6c257834b520e865413d51e3b28527cc29668699e657593bdd12bb50668f1"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "bytes": 18767,
+      "sha256": "9964c23181d32269189e88218635e37e70341d2a6bddaa40cc00146891c41275"
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "bytes": 13910,
+      "sha256": "c8db2d3071c664ef195a1152fb5320e5b99a544aa2132d10e545e658c91440d0"
+    },
+    {
+      "path": "scripts/reader-experience/test-smoke-tools.py",
+      "bytes": 29111,
+      "sha256": "aa33bc68207760666e9ba6d1605062a092e912e840bc44440085be1be875639b"
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "bytes": 11683,
+      "sha256": "3156678af23c9a64a230cda59c1ee3b3bf876f20a4e677d0265544bb347d95e5"
+    }
+  ],
+  "portableSmokeGuardMethodsPassed": 24,
+  "actualSwiftCompilationOrIOSTestsExecuted": false,
+  "commands": [
+    {
+      "name": "smoke-guards",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-smoke-tools.py"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\smoke-guards.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\smoke-guards.stderr",
+        "bytes": 128,
+        "sha256": "1953e258d4ebf4398964473ac7a113007cb44d192950936449a846a56693fcd0"
+      }
+    },
+    {
+      "name": "bash-syntax",
+      "command": [
+        "D:\\app\\Git\\bin\\bash.exe",
+        "-n",
+        "scripts/reader-experience/smoke.sh"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\bash-syntax.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\bash-syntax.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\diff-check.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\diff-check.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "reverse-patch",
+      "command": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "F:\\yuedu-reader\\.build\\reader-position-integrity-worktree\\.build\\reader-position-integrity.patch"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\reverse-patch.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": ".build\\renewal-discovery\\position-main-verification\\reverse-patch.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ]
+}

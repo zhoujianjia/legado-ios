@@ -1,6 +1,6 @@
 import Foundation
 
-struct CoreTextReadingPosition: Codable, Equatable {
+struct CoreTextReadingPosition: Codable, Equatable, Sendable {
     let spineIndex: Int
     let charOffset: Int
     /// A place inside a translation (整章翻譯): how far into the translation that hangs off

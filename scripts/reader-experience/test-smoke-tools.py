@@ -139,16 +139,23 @@ class SmokeEvidenceTests(unittest.TestCase):
             smoke.verify_summary(summary, 6, 6)
 
     def test_execution_gate_rejects_missing_extra_skipped_or_failed_device_runs(self):
-        good = {"totalTestCount": 13, "passedTests": 13, "failedTests": 0, "skippedTests": 0,
+        good = {"totalTestCount": 18, "passedTests": 18, "failedTests": 0, "skippedTests": 0,
                 "expectedFailures": 0, "devicesAndConfigurations": [
-                    {"passedTests": 23, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
-        self.assertEqual(smoke.verify_summary(good, 13, 23)["expectedExecutions"], 23)
+                    {"passedTests": 28, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+        self.assertEqual(smoke.verify_summary(good, 18, 28)["expectedExecutions"], 28)
         invalid = []
+        # Old 13/23 evidence cannot accept the new five owned ordering cases.
+        # Also reject each stale half of the method/execution count pair.
+        for methods, executions in ((13, 23), (13, 28), (18, 23)):
+            changed = copy.deepcopy(good)
+            changed["totalTestCount"] = changed["passedTests"] = methods
+            changed["devicesAndConfigurations"][0]["passedTests"] = executions
+            invalid.append(changed)
         for value in (None, [], good["devicesAndConfigurations"] * 2, [None]):
             changed = copy.deepcopy(good)
             changed["devicesAndConfigurations"] = value
             invalid.append(changed)
-        for key, value in (("passedTests", 22), ("passedTests", True), ("failedTests", 1),
+        for key, value in (("passedTests", 27), ("passedTests", 29), ("passedTests", True), ("failedTests", 1),
                            ("skippedTests", 1), ("expectedFailures", 1), ("expectedFailures", None)):
             changed = copy.deepcopy(good)
             changed["devicesAndConfigurations"][0][key] = value
@@ -158,7 +165,7 @@ class SmokeEvidenceTests(unittest.TestCase):
         invalid.append(changed)
         for summary in invalid:
             with self.subTest(summary=summary), self.assertRaises(ValueError):
-                smoke.verify_summary(summary, 13, 23)
+                smoke.verify_summary(summary, 18, 28)
 
     def test_local_product_source_inventory_binds_the_single_serialized_font_suite(self):
         inventory = self.product_sources()
