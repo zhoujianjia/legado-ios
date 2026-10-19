@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "scope": "Desktop diagnostic control only; does not revise the frozen per-scenario comparison or product/environment isolation.",
+  "runtimeJarSHA256": "718773a1f4809fc1b05813d085a412cf7ffeb93db8ab10f30f5e3d889e93f349",
+  "runtimeSourceCommit": "4e0df35837f9588163f5a5d8d34f4304a3cbe66c",
+  "fixtureSHA256": "a7e0b23bc73c1a32c6d99466aebad25eee8e3c227e12e4d98efccb53d0008ddf",
+  "originalReferenceSHA256": "339802f01476cc61a004617bc8d14996c3eb0140fbdb1ea73ee05d56be6cdf38",
+  "baselineSummary": {
+    "scenarios": 14,
+    "steps": 56,
+    "calls": 47,
+    "exactRawAPICallMatches": 46,
+    "beforeAfterStateMatches": 112,
+    "rawDifferenceCount": 442,
+    "rawDifferenceClassifications": {
+      "execution-platform-report-metadata": 8,
+      "per-process-identity-hash-diagnostic": 432,
+      "scenario-semantic-raw-difference": 2
+    },
+    "sourceCounter": 47,
+    "cryptoSourceRegistrations": 11
+  },
+  "controlSummary": {
+    "scenarios": 14,
+    "steps": 56,
+    "calls": 47,
+    "exactRawAPICallMatches": 47,
+    "beforeAfterStateMatches": 112,
+    "rawDifferenceCount": 440,
+    "rawDifferenceClassifications": {
+      "execution-platform-report-metadata": 8,
+      "per-process-identity-hash-diagnostic": 432
+    },
+    "sourceCounter": 37,
+    "cryptoSourceRegistrations": 1
+  },
+  "onlyExperimentalChange": "One RuleEnvironment survives the complete 14-scenario replay and closes in its final block; declared source/model/instance cleanup and every rule/ordered call remain unchanged.",
+  "finding": "The original SharedJsScope retains compiled CryptoJS for the process. A new port environment per scenario registers the same CryptoJS source eleven times rather than once. The extra ten registrations explain the two raw exception script-name differences.",
+  "sourceTextSequenceProof": {
+    "sourceHashSequenceEqualAfterRemovingOnlyRedundantCryptoRegistrations": true,
+    "removedOnlyCryptoSourceNames": [
+      "<script-4>",
+      "<script-8>",
+      "<script-11>",
+      "<script-15>",
+      "<script-20>",
+      "<script-24>",
+      "<script-28>",
+      "<script-31>",
+      "<script-34>",
+      "<script-45>"
+    ],
+    "baselineCounter": 47,
+    "controlCounter": 37,
+    "controlResultSHA256": "65a2ed9a22b479cbeb17b38fd08e98c0718b42a01bf1bcf7e941a78ec87cf8b9",
+    "sourceTextBytesChanged": false,
+    "sourceNamesRemainRawAndNaturallyRenumbered": true
+  },
+  "unchanged": {
+    "frozenJAR": true,
+    "engineCounterImplementation": true,
+    "rulesAndCalls": true,
+    "productCodeAndStateIsolation": true,
+    "trackedRegressionTool": true,
+    "rawOutputsNotNormalized": true
+  },
+  "evidence": {
+    "controlResult": {
+      "path": ".build/stateful-environment-control-20261019/control-result.json",
+      "sha256": "65a2ed9a22b479cbeb17b38fd08e98c0718b42a01bf1bcf7e941a78ec87cf8b9"
+    },
+    "sourceSequenceAudit": {
+      "path": ".build/stateful-environment-control-20261019/source-sequence-audit.json",
+      "sha256": "d514625219ec1ab26311202f32ef58476a16e650f929c0d9e30849af5483ff78"
+    },
+    "rawFiles": {
+      ".build/stateful-environment-control-20261019/baseline-full-raw-differences.json": {
+        "bytes": 109549,
+        "sha256": "cd913d0e65576c8eaae46c74cd77a63d5b524c465128bc1bbce950a6469242ed"
+      },
+      ".build/stateful-environment-control-20261019/baseline-observed.json": {
+        "bytes": 558798,
+        "sha256": "a5f1fc3f70d6dd5215dbcbd579d357c376042005b2e5785fc7ad0dd141fc4f0c"
+      },
+      ".build/stateful-environment-control-20261019/baseline-registrations.json": {
+        "bytes": 10356,
+        "sha256": "111cb5238b086c41c4a46a996bfcfe917c56c9a821e3951cdb61cfb326877df9"
+      },
+      ".build/stateful-environment-control-20261019/baseline-run.log": {
+        "bytes": 189,
+        "sha256": "21a52d1e1611076f6869f99d04ee1d7193b3cf49560fc25dcf6a0427aad15089"
+      },
+      ".build/stateful-environment-control-20261019/build.gradle.kts": {
+        "bytes": 216,
+        "sha256": "fb76ec77fccfd44be8f7d279351f3ad06389427b9a3e6746fcae72e0a26d7037"
+      },
+      ".build/stateful-environment-control-20261019/compile.log": {
+        "bytes": 5846,
+        "sha256": "ad523f6c3134351ac98107c079bfaa7935778d68a03916b7983a4e996c29c551"
+      },
+      ".build/stateful-environment-control-20261019/control-full-raw-differences.json": {
+        "bytes": 108820,
+        "sha256": "52b83df9041a9b806ce83d0a1ba62650fb8b6785c8162f1805910517c84d5334"
+      },
+      ".build/stateful-environment-control-20261019/control-observed.json": {
+        "bytes": 558835,
+        "sha256": "8ebeb8d80b8677b0bff51e8882155c235dd6b012c641cf365dce9bfbcbf98f48"
+      },
+      ".build/stateful-environment-control-20261019/control-registrations.json": {
+        "bytes": 8195,
+        "sha256": "e69f7d09446fd9d0d66e5d9e2c010910abf77ada8dc5b8af9ad36fa3b1fd6daa"
+      },
+      ".build/stateful-environment-control-20261019/control-run.log": {
+        "bytes": 189,
+        "sha256": "21a52d1e1611076f6869f99d04ee1d7193b3cf49560fc25dcf6a0427aad15089"
+      },
+      ".build/stateful-environment-control-20261019/environment-lifecycle-only.diff": {
+        "bytes": 2422,
+        "sha256": "43477c71a2041a136fb1e762fb0acbad3c44465b2f782995b95d550ff9783e62"
+      },
+      ".build/stateful-environment-control-20261019/original-harness-adaptations.diff": {
+        "bytes": 9863,
+        "sha256": "7b8d5bd53cbeb0d9baae5fa547cf8258a8bf34ca3d1985530cefdbb37b568955"
+      },
+      ".build/stateful-environment-control-20261019/preparation.json": {
+        "bytes": 794,
+        "sha256": "33e8c0b56572aa810916bf4ede2275c385feb3c34b041140b41861b4aa5172bb"
+      },
+      ".build/stateful-environment-control-20261019/run-control.py": {
+        "bytes": 6210,
+        "sha256": "dd0423c82bfb596749a300f9291b3ea53483f44ea298084bb7f33b2c89f9c88a"
+      },
+      ".build/stateful-environment-control-20261019/settings.gradle.kts": {
+        "bytes": 48,
+        "sha256": "43b9e41398ed7de6bf6e32131b54eef12e8d534c2c2dc2be93f5e5b5f417f4f4"
+      }
+    }
+  },
+  "limitations": [
+    "The control intentionally changes harness environment lifetime; it is not the unchanged tracked-tool acceptance run.",
+    "Identity hashes and platform metadata retain 440 raw differences. The 47 exact API matches are a named subset of those complete observations.",
+    "Do not globalize product state/cache/cookies to make diagnostic labels match. Any immutable compiled-code sharing requires its own isolation and concurrency checks.",
+    "Traditional reader routing, iOS, persistence and full Legado behaviour remain outside this experiment."
+  ],
+  "acceptance": {
+    "diagnosticDifferenceExplainedByControl": true,
+    "originalFrozenComparisonOverwritten": false,
+    "productChanged": false,
+    "fullCompatibilityEstablished": false,
+    "iosValidationPassed": false,
+    "deviceValidationPassed": false
+  }
+}
