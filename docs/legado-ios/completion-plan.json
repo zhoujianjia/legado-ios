@@ -153,8 +153,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Submit the reviewed position, font, source-schema observer and actual SDK fixture repair as one fixed-source stage checkpoint, with separate reader-smoke and renewal diagnostic results. Continue independent ready development. Do not repeat the Release package for a test-only repair; any reuse requires unchanged relevant source proof, actual test results and independent package/source audits.",
-      "alreadyRunningTasks": "Renewal run 39272841721/source a76d380 completed with one prefetch fixture initialization compiler error and zero iOS executions; Debug Simulator main-app compile/link evidence and the minimal local-host repair are retained. Release run 39272843081/source a76d380 and font smoke 39274456679/source ccafee5 were last observed in_progress at 2026-10-19T15:40Z. The font source contains the same fixture defect, which is a source risk rather than an observed font result. Delivered build11 remains ccdddd3; no build12 acceptance yet."
+      "nextPlannedCheckpoint": "The reviewed position, font, source-schema observer and actual SDK fixture repair were submitted together as source 1a87f6d: reader-smoke 39281083749 and renewal 39281084369. Read their actual results and continue ready development. Launch/memory and UMD preparation are subsequent work, excluded from C. Do not repeat Release for a test-only repair; reuse requires unchanged relevant bytes, actual tests and independent package/source audits.",
+      "alreadyRunningTasks": "Bounded receipt at 2026-10-19T16:09:10Z: C reader-smoke 39281083749 and renewal 39281084369 were both queued. Release A 39272843081/source a76d380 had run/job top-level in_progress but all fifteen job steps completed/success; this contradictory snapshot is preserved without Release success or artifact acceptance. See evidence/stage-checkpoint-1a87f6d/current-observation.json; status is limited to that receipt, not a freshness guarantee. Font B actually failed test-target compilation after six production font files and main-app links; zero iOS executions. A renewal failure and minimal fixture repair 1347c24 remain preserved. Delivered build11 is ccdddd3; build12 not accepted."
     },
     "nextReadyBatch": [
       "reading-performance-and-prefetch",
@@ -530,13 +530,13 @@
       ],
       "execution": {
         "summaryZh": "字体、夜间阅读与无障碍",
-        "currentState": "现有 UserFontStorageManager／GlobalSettings 已完成后台字体导入、同 PostScript 替换与删除的进程内失败事务，文件、注册失败保留旧状态或恢复材料，记录及对应选择在同一 guard 内发布。已修复 Files 外部删除旧字体后不能删记录或重导入的回归；只有原路径属性读取明确 ENOENT 可缺省，后续 recovery-copy 错误仍失败。local-product 严格源码／实际叶集门禁已接入：50 方法／68 计划执行，字体同一串行 Suite 24／42，其中新增 9／27。已有实际 portable 24＋16 通过及 8 Swift 文件 grammar screen；尚无本批 Swift／iOS／真实 CoreText 执行。其余阅读矩阵仍未验收，不能据此完成 S2。",
+        "currentState": "字体文件与注册失败事务已实现并独审；ccafee5 的真实 Xcode 26.2 Debug arm64 Simulator 日志记录六个生产文件编译、主 App module 与 executable/debug-dylib 链接。测试目标被预取夹具初始化错误阻断，所有 iOS 用例实际执行 0，不能推断字体运行或 CoreText 回滚通过。该最小测试修复已进入集中源码 1a87f6d，reader-smoke 39281083749 于 15:53 UTC 首次观察 queued；字体 24／42、local-product 50／68 仍待真实叶集验收。便携及 grammar 历史结果保留；其余阅读矩阵仍未验收。",
         "remainingWork": [
           "在本批固定源码的集中 reader-smoke 检查点实际编译及执行 local-product 50／68，保留原始 summary、tests 叶集、日志、环境及 source；独立核对字体 24／42。",
           "默认 Operations missing-URL 用例只准备了真实调用链，尚未运行；需验证 CoreText 双 scope／同 PostScript 替换失败后旧注册恢复、in-use／权限及缺失 URL 行为，不推断已注册后丢失字体 cache 已获验证。",
           "继续现有字体预览、间距、面板、viewport 的渲染、五语／读屏顺序、夜间／增强对比度、旋转与 iPad 窗口变化后的语义锚点矩阵；普通 selection／theme 在 await 期间不锁定，userFonts JSON／UserDefaults 和删除数组发布仍在主线程。"
         ],
-        "nextAction": "按原阶段策略集中验证已审字体批的实际 Swift 编译与 local-product 50 方法／68 执行，保存 source-bound xcresult 原始叶集；期间可独立准备现有阅读 UI／锚点矩阵，不追加重复外观或字体系统。",
+        "nextAction": "读取已提交的 1a87f6d 整批 reader-smoke 实际结果，独立核对字体 24／42 与 local-product 50／68；失败只修复实际问题，不把生产编译、注入故障或默认 Operations 准备等同真实 CoreText 验收。",
         "readiness": "awaiting-cloud",
         "readyPreparation": [
           "复用现有 SourcePerfTrace 的 main／bytes 和固定自有故障 fixture 审阅原始输出；不把 portable 或 grammar screen 当作 CoreText／iOS 通过。",
@@ -558,7 +558,9 @@
           "docs/legado-ios/user-font-transaction-batch.json",
           "docs/legado-ios/evidence/reader-font-transaction/reader-font-integration-review.json",
           "docs/legado-ios/evidence/reader-font-transaction/font-integration-independent-review.json",
-          "Tests/iOS/yuedu appTests/UserFontTransactionTests.swift"
+          "Tests/iOS/yuedu appTests/UserFontTransactionTests.swift",
+          "docs/legado-ios/evidence/reader-smoke-ccafee5/failure-summary.json",
+          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json"
         ],
         "deferredHardware": [
           "实体屏幕与 VoiceOver 体验",
@@ -730,13 +732,13 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "固定入口的原设备报告与另行补充的运行条件已保留。动态发现探针已有两次真实 Xcode 26.2 Debug arm64 Simulator 主 App 编译／链接证据；最新 a76d380 的测试目标因预取夹具初始化时闭包捕获未完成 self 失败，iOS 用例执行仍为 0。已最小改为捕获 local host，独立审查及 grammar screen 通过，尚待实际重编。8 秒截止、地址归属／scope／TTL 复核与零 TCP 业务帧等已实现范围不升级为传输或自动续签成功。",
+        "currentState": "固定入口的原设备报告与另行补充的运行条件已保留。动态发现探针已有两次真实 Xcode 26.2 Debug arm64 Simulator 主 App 编译／链接证据；最新 a76d380 的测试目标因预取夹具初始化时闭包捕获未完成 self 失败，iOS 用例执行仍为 0。已最小改为捕获 local host，独立审查及 grammar screen 通过，尚待实际重编。8 秒截止、地址归属／scope／TTL 复核与零 TCP 业务帧等已实现范围不升级为传输或自动续签成功。 修复已包含于集中源码 1a87f6d；独立 renewal 39281084369 于 15:53 UTC 首次观察 queued，8／13／1 尚无实际通过结果。固定 a76d380 Release 与更新字体、进度、schema 的集中测试分开记账；交付 build11 不变。",
         "remainingWork": [
           "不收集真实秘密，先记录有界传输候选、认证状态机、发现边界、超时取消和诊断协议。",
           "真机可用后先证明电脑关闭、无伴侣App的同设备认证安装传输；固定端点失败不能排除所有传输，QueryType成功也不是安装成功。",
           "仅传输门槛成立后开始profile／签名、同身份安全替换、冷启和数据保留，随后独立验证允许触发、过期恢复和有限重试。"
         ],
-        "nextAction": "将已审测试初始化修复与相关整批改动集中做 source-only 验证，实际核对旧 8／动态发现 13／UI 1 的原始结果；Release 产物另作精确来源及包审计，全部成立后才交付新通道诊断包。",
+        "nextAction": "读取已提交的 1a87f6d renewal 实际旧 8／动态发现 13／UI 1 的原始叶集；另核对 a76d380 Release 成品与来源，只有相关代码字节未变证明、实际测试与独立成品审计均成立，才复用并交付诊断包。",
         "readiness": "awaiting-cloud",
         "readyPreparation": [
           "审查只读探针长度、超时、取消、错误归一化和不导出原reply的边界，复用已有证据。",
@@ -759,7 +761,8 @@
           "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
           "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
           "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
-          "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json"
+          "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json",
+          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json"
         ],
         "deferredHardware": [
           "同设备认证transport、profile／签名、替换安装、冷启数据、无人值守与过期恢复全部暂缓真机，不要求用户执行。"
@@ -934,13 +937,13 @@
       ],
       "execution": {
         "summaryZh": "书源字段、默认值及导入导出",
-        "currentState": "40 条合法公有原 getter／默认 Gson／显式 serializeNulls 参考已接入现有模型的观察器；另已准备 13 个未知字段夹具，调用现有导入、编辑、导出与 writer 链，尚未执行。新增独立 3 方法诊断组要求实际叶身份、319 条观察与 916 个快照、source／环境／原始日志绑定。主树已保留 position 18／28；便携 reference 8、collector 19、smoke 24、renewal 16 及 Bash／actionlint／diff 检查已有原件。Swift／SDK 实际执行和真实观察仍为 0；源码推导 24 差异／16 选定字段相等只是预测，既有 19／50 preservation 与完整书源兼容继续分开。",
+        "currentState": "40 条合法公有原 getter／默认 Gson／显式 serializeNulls 参考已接入现有模型的观察器；另已准备 13 个未知字段夹具，调用现有导入、编辑、导出与 writer 链，尚未执行。新增独立 3 方法诊断组要求实际叶身份、319 条观察与 916 个快照、source／环境／原始日志绑定。主树已保留 position 18／28；便携 reference 8、collector 19、smoke 24、renewal 16 及 Bash／actionlint／diff 检查已有原件。Swift／SDK 实际执行和真实观察仍为 0；源码推导 24 差异／16 选定字段相等只是预测，既有 19／50 preservation 与完整书源兼容继续分开。 该观察器已随集中源码 1a87f6d 提交 reader-smoke 39281083749，15:53 UTC 首次观察 queued；此处仅记提交，不产生真实观察或兼容验收。",
         "remainingWork": [
           "在下一次整批 source-only 检查点实际编译并执行 3 方法，保留零失败／跳过／expected failure 的 summary、精确 tests tree、原始 -l log 与 source／环境；完整采集 280＋39＝319 条观察和 760＋156＝916 个快照。",
           "依据真实差异逐项设计生产字段保存修复；区分 absent／null／empty／whitespace、原 getter、默认 Gson 与 serializeNulls 诊断策略，保持 1e3 原字面量、Unicode 及未知字段经原链路保存。诊断采集成功且 selectedContractsMatch=false 不算兼容通过。",
           "继续完整字段审计与顶层／嵌套投影、group／id、URL 和编辑保留验收；不另建第二 BookSource 模型，不以这五个 getter、13 个夹具或 19／50 证明完整 schema／规则执行兼容。"
         ],
-        "nextAction": "在相关整批源码检查点取得实际 319 条／916 快照及原始证据，再依据差异修复生产保存语义；复用未变的便携结果，不为归档或本包单独重复触发云测。",
+        "nextAction": "读取已提交整批 1a87f6d 的 3 方法诊断组，取得实际 319 条／916 快照及 source-bound 原始证据，再据真实差异修复生产保存语义；不为归档或本包单独重触发云测。",
         "readiness": "awaiting-cloud",
         "readyPreparation": [
           "只读核对固定公有参考、观察器、收集器及原始 artifact；准备真实 SDK／Simulator／source 的采集绑定。",
@@ -962,7 +965,8 @@
           "docs/legado-ios/source-schema-reference-batch.json",
           "docs/legado-ios/evidence/source-schema-reference/source-schema-v3-independent-review.json",
           "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-preparation-v3.json",
-          "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift"
+          "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json"
         ],
         "deferredHardware": [
           "最终签名App手动导入、编辑、导出、覆盖升级与重启，确认源/分组/用户修改不丢；不内置源。"
@@ -3650,6 +3654,18 @@
     "source-schema-reference-integration": {
       "path": "docs/legado-ios/source-schema-reference-batch.json",
       "scope": "Reviewed public original40/unknown13 diagnostic observer and closed xcresult collection gates; actual portable8/19/24/16 only, planned3 methods/319 rows/916 snapshots. Swift observations0; compatibility remains unaccepted."
+    },
+    "stage-checkpoint-1a87f6d": {
+      "path": "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+      "scope": "Initial source/tag/workflow-bound submission observation only; no later cloud status, passing iOS execution or compatibility acceptance."
+    },
+    "font-B-actual-SDK-failure": {
+      "path": "docs/legado-ios/evidence/reader-smoke-ccafee5/failure-summary.json",
+      "scope": "Six production font files compiled and main-app module/link steps recorded; unrelated test-target compiler failure, zero iOS executions."
+    },
+    "stage-checkpoint-1a87f6d-bounded-observation": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/current-observation.json",
+      "scope": "Saved 16:09 UTC API receipt only: C queued and contradictory A run/job versus successful steps. No terminal Release verdict, artifact query or test acceptance."
     }
   },
   "retainedExistingWork": [

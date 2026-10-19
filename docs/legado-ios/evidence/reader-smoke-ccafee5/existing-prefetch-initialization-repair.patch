@@ -1,0 +1,14 @@
+diff --git a/Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift b/Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift
+index d1ec256..5b9cd12 100644
+--- a/Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift	
++++ b/Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift	
+@@ -253,7 +253,8 @@ private struct PrefetchScenarioFixture {
+ 
+     init(chapterCount: Int) {
+         self.chapterCount = chapterCount
+-        host = "prefetch-\(UUID().uuidString.lowercased()).example.com"
++        let host = "prefetch-\(UUID().uuidString.lowercased()).example.com"
++        self.host = host
+         var source = BookSource(bookSourceUrl: "https://\(host)", bookSourceName: "Owned prefetch fixture")
+         source.ruleContent.content = "#content@text"
+         self.source = source

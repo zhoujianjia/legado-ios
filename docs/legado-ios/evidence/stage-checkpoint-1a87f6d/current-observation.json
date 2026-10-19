@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "kind": "bounded-cloud-observation-conflict-not-a-verdict",
+  "sourceCheckpoint": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "recordedAtUTC": "2026-10-19T16:10:37.763900+00:00",
+  "observationWindowUTC": {
+    "first": "2026-10-19T16:09:09.999887+00:00",
+    "last": "2026-10-19T16:09:10.125736+00:00"
+  },
+  "initialRecordsReplaced": false,
+  "laterStatusQueried": false,
+  "interpretation": "This record describes only the API bytes received during the saved16:09UTC bounded read. It does not establish a later or cache-fresh state.",
+  "runs": [
+    {
+      "kind": "releaseA",
+      "runID": 39272843081,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39272843081",
+      "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+      "status": "in_progress",
+      "conclusion": null,
+      "observedAtUTC": "2026-10-19T16:09:09.999887+00:00",
+      "sourceTagWorkflowBindingVerified": true
+    },
+    {
+      "kind": "smokeC",
+      "runID": 39281083749,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281083749",
+      "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+      "status": "queued",
+      "conclusion": null,
+      "observedAtUTC": "2026-10-19T16:09:10.125736+00:00",
+      "sourceTagWorkflowBindingVerified": true
+    },
+    {
+      "kind": "renewalC",
+      "runID": 39281084369,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369",
+      "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+      "status": "queued",
+      "conclusion": null,
+      "observedAtUTC": "2026-10-19T16:09:10.011110+00:00",
+      "sourceTagWorkflowBindingVerified": true
+    }
+  ],
+  "releaseAConflict": {
+    "runTopLevelStatus": "in_progress",
+    "jobTopLevelStatus": "in_progress",
+    "sameResponseStepCount": 15,
+    "sameResponseAllStepsCompletedSuccessfully": true,
+    "lastStep": {
+      "number": 23,
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T15:38:00Z",
+      "completed_at": "2026-10-19T15:38:02Z"
+    },
+    "conflict": true,
+    "releaseSuccessInferred": false,
+    "artifactListQueried": false,
+    "artifactDownloaded": false,
+    "reason": "The requested terminal-run condition was not met. Completed steps alone are not a Release run verdict. No extra query was made to resolve the inconsistency."
+  },
+  "rawEvidence": [
+    {
+      "source": ".build/renewal-discovery/reader-C-bounded-20261019T160855Z-ae89de97-index.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-index.json",
+      "bytes": 2276,
+      "sha256": "b3bc26a9a402eb4de91df1077d9ef95fcdf78b9fc9474bb0187d526fc1d1ce58"
+    },
+    {
+      "source": ".build/renewal-discovery/reader-C-bounded-20261019T160855Z-ae89de97-evidence-manifest.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-evidence-manifest.json",
+      "bytes": 8370,
+      "sha256": "9c6800ee37449cb4a1b56a7077e2b50cf61deedb9a22872c83340e90bc6c850d"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-a76d380/reader-C-bounded-20261019T160855Z-ae89de97-reader-run.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-reader-run.json",
+      "bytes": 12462,
+      "sha256": "7c7c6be2aca02ef0d56e07491bd3636b723f63cd30433b9620b70359d583b5f9"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-a76d380/reader-C-bounded-20261019T160855Z-ae89de97-reader-jobs.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-reader-jobs.json",
+      "bytes": 3889,
+      "sha256": "989f1525e7465633cb53a3da51dda6967c4ae721c02a9667b342cdf29c447e22"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-a76d380/reader-C-bounded-20261019T160855Z-ae89de97-reader-inspection.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-reader-inspection.json",
+      "bytes": 539,
+      "sha256": "8038c19cf25444c1d2cedc36da39b0d9e1f5630d938a67c4cb94824d9b634e86"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-1a87f6d/reader-C-bounded-20261019T160855Z-ae89de97-smokeC-run.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-smokeC-run.json",
+      "bytes": 12477,
+      "sha256": "debe4aec7d7a54f61ec9e14c11960724fd341001b9f30fd96c1959229c1f8ea7"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-1a87f6d/reader-C-bounded-20261019T160855Z-ae89de97-smokeC-jobs.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-smokeC-jobs.json",
+      "bytes": 881,
+      "sha256": "2d1cba7fe6c4837d7e8eb2403b08a7eab11a8c509036eaaa2e338702113a3b4d"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-1a87f6d/reader-C-bounded-20261019T160855Z-ae89de97-smokeC-inspection.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-smokeC-inspection.json",
+      "bytes": 528,
+      "sha256": "5af2b9e699515aa7e64902734189acd3c09ed9af0258a7227760093d102607d3"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-1a87f6d/reader-C-bounded-20261019T160855Z-ae89de97-renewalC-run.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-renewalC-run.json",
+      "bytes": 12494,
+      "sha256": "d46e32ab5a9a0009f720635f6f93153208df051055c4c3825ca9109802e016ca"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-1a87f6d/reader-C-bounded-20261019T160855Z-ae89de97-renewalC-jobs.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-renewalC-jobs.json",
+      "bytes": 891,
+      "sha256": "1175d6961cdccd76c35c8f3275b723ee3d03a993ab5471f91d0e9bcf27f90e55"
+    },
+    {
+      "source": ".build/renewal-discovery/cloud-1a87f6d/reader-C-bounded-20261019T160855Z-ae89de97-renewalC-inspection.json",
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/bounded-20261019T160855Z-ae89de97/reader-C-bounded-20261019T160855Z-ae89de97-renewalC-inspection.json",
+      "bytes": 530,
+      "sha256": "0a89e50c96fa3cd22c7aef2d8b10cb1fa5d90f631dc1be24cf375bc7237a4136"
+    }
+  ],
+  "pollingPerformed": false,
+  "extraCIOrTagMutation": false,
+  "oldRenewalAOrFontBQueried": false,
+  "canonicalModified": false,
+  "possibleCacheDiagnosticNextRead": {
+    "executed": false,
+    "scope": "One future separately authorized bounded round only; do not perform automatic retries or poll.",
+    "request": "GET each relevant runs/<run_id> and runs/<run_id>/jobs once, with an independently unique observation=<UTC>-<UUID> query parameter for that round. Retain exact requested URL and response body bytes; keep the same source/tag/workflow validation.",
+    "headers": "Retain HTTP status, final response URL, observation receive UTC and response Date/Age/Cache-Control/Expires/ETag/Last-Modified/Vary/X-GitHub-Request-Id/X-Cache/Via when present. Explicitly record absent headers. Request Cache-Control:no-cache and Pragma:no-cache; do not infer they guarantee freshness.",
+    "comparison": "Compare header/cache indicators and immutable source binding against both raw response levels; preserve any contradiction as unresolved. Only a terminal run response may authorize artifact enumeration under the existing rule.",
+    "limits": "A unique query or Date header alone cannot prove the underlying run state is fresh. Do not fabricate a terminal result, substitute jobs step success for run conclusion, add a second round, or automatically download artifacts."
+  }
+}

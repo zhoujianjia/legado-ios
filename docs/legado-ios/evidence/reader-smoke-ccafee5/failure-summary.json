@@ -1,0 +1,404 @@
+{
+  "schemaVersion": 1,
+  "kind": "actual-font-B-source-specific-SDK-failure",
+  "recordedAtUTC": "2026-10-19T15:58:24.815320+00:00",
+  "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "tag": "reader-smoke-ccafee5",
+  "runID": 39274456679,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39274456679",
+  "runStatus": "completed",
+  "runConclusion": "failure",
+  "actualIOSTestExecutions": 0,
+  "reasonForZero": "The first configuration invocation failed while compiling the complete test target; testing was cancelled because the build failed. No test-count summary is present; zero is not a fabricated xcresult passedTests field.",
+  "testSummaryFilesInArtifact": [],
+  "testSummaryFabricated": false,
+  "uniqueCompilerDiagnosticCount": 1,
+  "compilerErrorLineOccurrences": 24,
+  "rawMessageOccurrencesIncludingFinalSummaryEcho": 25,
+  "diagnostic": {
+    "file": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+    "line": 266,
+    "column": 54,
+    "message": "constant 'self.book' captured by a closure before being initialized",
+    "rawDiagnosticLines": [
+      28838,
+      28849,
+      28860,
+      28871,
+      28882,
+      28893,
+      28904,
+      28915,
+      28926,
+      28937,
+      28948,
+      28959,
+      28970,
+      28981,
+      28992,
+      29003,
+      29014,
+      29025,
+      29036,
+      29047,
+      29058,
+      29069,
+      29080,
+      29091
+    ]
+  },
+  "fontProductionSwiftEvidence": {
+    "sixReviewedSourceFilesMatchGitCommit": true,
+    "files": [
+      {
+        "path": "Modules/Features/Reader/ReaderSettingsView.swift",
+        "sha256": "08eb0a39dc346f8bab2930708c718892e12d11c780622a67fb44638e3b0acad0",
+        "bytes": 39582,
+        "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+        "actualAppCompileHeaderLine": 22607
+      },
+      {
+        "path": "Modules/Features/Reader/ReaderView.swift",
+        "sha256": "947c18609ed739cee17d1fb4ca59b863b1284ed71d2f161585541ea7c9711195",
+        "bytes": 151211,
+        "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+        "actualAppCompileHeaderLine": 22675
+      },
+      {
+        "path": "Modules/Features/Settings/GlobalFontSettingsView.swift",
+        "sha256": "7b81d910e0e46b2cfeca2541eb34857f89cb4f965e0532780b174df7dc99de50",
+        "bytes": 6466,
+        "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+        "actualAppCompileHeaderLine": 22049
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/GlobalSettings.swift",
+        "sha256": "30d78596f34c52ab2144a73fb096ce83d1019a4fec13da94619e67e137b1a3f0",
+        "bytes": 197689,
+        "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+        "actualAppCompileHeaderLine": 23412
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/QiThemeImportService.swift",
+        "sha256": "e76f978c426f940de4e508ecb3a8f997580970b21b91f8d7c119f14be53d2308",
+        "bytes": 24903,
+        "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+        "actualAppCompileHeaderLine": 23420
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/UserFontStorageManager.swift",
+        "sha256": "86177206c82dfd1cb3ff36679b679ac02fb655a81d3a0943da31359dc1c3c496",
+        "bytes": 16519,
+        "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+        "actualAppCompileHeaderLine": 23452
+      }
+    ],
+    "actualDebugSimulatorAppCompileStepsRecorded": true,
+    "actualModuleEmissionAndCopyHeaders": [
+      {
+        "line": 20324,
+        "header": "SwiftEmitModule normal arm64 Emitting\\ module\\ for\\ yuedu_app (in target 'yuedu app' from project 'Yuedu-Reader')"
+      },
+      {
+        "line": 20326,
+        "header": "EmitSwiftModule normal arm64 (in target 'yuedu app' from project 'Yuedu-Reader')"
+      },
+      {
+        "line": 21151,
+        "header": "Copy /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/yuedu_app.swiftmodule/arm64-apple-ios-simulator.swiftmodule /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Intermediates.noindex/Yuedu-Reader.build/Debug-iphonesimulator/yuedu\\ app.build/Objects-normal/arm64/yuedu_app.swiftmodule (in target 'yuedu app' from project 'Yuedu-Reader')"
+      }
+    ],
+    "actualAppLinkSteps": [
+      {
+        "outputName": "YueduReader.debug.dylib",
+        "headerLine": 25383,
+        "commandLine": 25385,
+        "target": "arm64-apple-ios17.0-simulator",
+        "sdk": "/Applications/Xcode_26.2.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk",
+        "commandSHA256": "2268effb04a5308feec3879990dde8e3ce9518af36370c16ca74c92f78bebea0"
+      },
+      {
+        "outputName": "YueduReader",
+        "headerLine": 25392,
+        "commandLine": 25394,
+        "target": "arm64-apple-ios17.0-simulator",
+        "sdk": "/Applications/Xcode_26.2.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk",
+        "commandSHA256": "a7b2b3a92ee19a3fe487e2bab96a8e0faa82cafc4b73db685291208826360e85"
+      }
+    ],
+    "appTargetDiagnosticErrorsObserved": 0,
+    "interpretation": "The six production files were compiled for the actual Debug Simulator app, its module was emitted/copied, and executable/debug-dylib link commands ran before the unrelated test-target compiler failure. This records build/link evidence only; no executable artifact or runtime behavior is certified by a log."
+  },
+  "unexecuted": {
+    "fontSuitePlannedMethods": 24,
+    "fontSuitePlannedExecutions": 42,
+    "fontSuiteExecuted": 0,
+    "localProductPlannedMethods": 50,
+    "localProductPlannedExecutions": 68,
+    "localProductExecuted": 0,
+    "configurationTestsExecuted": 0,
+    "otherIOSGroupsExecuted": 0,
+    "CoreTextRegistrationRollbackVerified": false,
+    "defaultOperationsMissingURLBehaviorVerified": false,
+    "fullFontAcceptance": false
+  },
+  "existingMinimalRepair": {
+    "commit": "1347c24e2c117398e7b5ca17315bbff6c73e86e1",
+    "commitURL": "https://github.com/zhoujianjia/legado-ios/commit/1347c24e2c117398e7b5ca17315bbff6c73e86e1",
+    "file": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+    "fileURL": "https://github.com/zhoujianjia/legado-ios/blob/1347c24e2c117398e7b5ca17315bbff6c73e86e1/Tests/iOS/yuedu%20appTests/ReaderPrefetchScenarioTests.swift#L254",
+    "failedSourceSHA256": "160c859b388de9ea83d0ba37b917f108771715f43d98e1b39a80b45bd538ed28",
+    "repairedSourceSHA256": "d7f8aae20ccc2e662fc03b9db2d4c3366e7b5c7c46af5f51c5cef99a00266c1e",
+    "change": "Bind host as a local value and assign self.host before the chapter map; retain fixture semantics.",
+    "newCExecutionAccepted": false
+  },
+  "artifact": {
+    "id": 12199046122,
+    "bytes": 950802,
+    "sha256": "bbf9afde9b07ccd7abc4d32b2d86cd862e144587dbecfcdbecca8e008446db09",
+    "githubDigestMatched": true,
+    "originalZIPPreserved": true,
+    "safeExclusiveMaterialization": ".build/b12-87c36ea09f",
+    "zipEntries": [
+      {
+        "path": "ci-logs/completion-plan-tools.log",
+        "bytes": 1575,
+        "compressedBytes": 392,
+        "CRC32": "1cd79ce0"
+      },
+      {
+        "path": "ci-logs/reader-online-tools.log",
+        "bytes": 1362,
+        "compressedBytes": 354,
+        "CRC32": "94d281c7"
+      },
+      {
+        "path": "ci-logs/reader-online-fixture.log",
+        "bytes": 2050,
+        "compressedBytes": 529,
+        "CRC32": "0e70031e"
+      },
+      {
+        "path": "ci-logs/completion-plan.json",
+        "bytes": 8022,
+        "compressedBytes": 1955,
+        "CRC32": "b8f66374"
+      },
+      {
+        "path": "ci-logs/reader-smoke-tools.log",
+        "bytes": 4221,
+        "compressedBytes": 834,
+        "CRC32": "a1340c54"
+      },
+      {
+        "path": "ci-logs/reader-smoke-xcode.log",
+        "bytes": 31,
+        "compressedBytes": 33,
+        "CRC32": "4044e859"
+      },
+      {
+        "path": "ci-logs/reader-smoke.log",
+        "bytes": 3784,
+        "compressedBytes": 390,
+        "CRC32": "2e362c01"
+      },
+      {
+        "path": "ci-logs/reader-stage-baseline-tools.log",
+        "bytes": 3387,
+        "compressedBytes": 729,
+        "CRC32": "e8269fd5"
+      },
+      {
+        "path": "reader-smoke/boot-status.log",
+        "bytes": 13548,
+        "compressedBytes": 913,
+        "CRC32": "6e29a3f9"
+      },
+      {
+        "path": "reader-smoke/cloudkit-tests.log",
+        "bytes": 7602925,
+        "compressedBytes": 328250,
+        "CRC32": "106fea32"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~09RQzyHNquLARQBgONQ8a__QxO6BT8FRM8khsL0evoIIETpA5NAvJ7qnxEco0ZwBYoKLhxQThIC224YCRN896A==",
+        "bytes": 97,
+        "compressedBytes": 102,
+        "CRC32": "537984e6"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~0tezxQaGL_9kcPo6MUgRDmpqljPHq8I5EtQez2_CYiOUHjy7feN5KWZDprZvwU0fDLf9i7-vfD7QfKkdWUdrpA==",
+        "bytes": 6435,
+        "compressedBytes": 6440,
+        "CRC32": "505ce601"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+        "bytes": 40,
+        "compressedBytes": 42,
+        "CRC32": "5cfe91f3"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~5SODOkDjZMKe1TjegX-xRdFV9tts3qnsmjfzzxOUx7QRRXIfSU_XQVgPSxkFW9UoUzAcIPQWwVU_drqvqLA3Tw==",
+        "bytes": 595067,
+        "compressedBytes": 595252,
+        "CRC32": "c959bdfe"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~DAlqxRbvCq8AWqBQBiFIqCvlMEZsBrizC8QCos1KlGrt7eNJT4mIKkljQ4WJy0uVsoLu9K9I6TnYtZ4lpnMYHQ==",
+        "bytes": 293,
+        "compressedBytes": 298,
+        "CRC32": "1e56c82f"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~_VhPh389NJ4QhSiqoP3Uo6ql_Kh07kzsIVm_NOpHxJdZafhA5JBv-9xv_bKr7X9mhZo1dJpDlN8L5X_r5oRMJg==",
+        "bytes": 118,
+        "compressedBytes": 109,
+        "CRC32": "222b69c4"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~i8w-7OH3m9z2zyWlP11FNGiVSHbghdvQGYrLzWMpEHRkYl7ORsRBTe2VV-5XXzy0t00COmOu81uQ4_SIS3WGKg==",
+        "bytes": 36,
+        "compressedBytes": 38,
+        "CRC32": "403bb56c"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/data.0~yFNDBfw__JsIJ1xezbSWDKaVyZZ8AqPVi9YA7W93pEGIDC5ZE6kxW-MLk0CwN9Rf6kW2cwZ_o16zx0aNn1M6Qw==",
+        "bytes": 416,
+        "compressedBytes": 421,
+        "CRC32": "470188ba"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~09RQzyHNquLARQBgONQ8a__QxO6BT8FRM8khsL0evoIIETpA5NAvJ7qnxEco0ZwBYoKLhxQThIC224YCRN896A==",
+        "bytes": 1,
+        "compressedBytes": 3,
+        "CRC32": "d202ef8d"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~0tezxQaGL_9kcPo6MUgRDmpqljPHq8I5EtQez2_CYiOUHjy7feN5KWZDprZvwU0fDLf9i7-vfD7QfKkdWUdrpA==",
+        "bytes": 331,
+        "compressedBytes": 336,
+        "CRC32": "d49f9076"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+        "bytes": 1,
+        "compressedBytes": 3,
+        "CRC32": "d202ef8d"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~5SODOkDjZMKe1TjegX-xRdFV9tts3qnsmjfzzxOUx7QRRXIfSU_XQVgPSxkFW9UoUzAcIPQWwVU_drqvqLA3Tw==",
+        "bytes": 1,
+        "compressedBytes": 3,
+        "CRC32": "d202ef8d"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~_VhPh389NJ4QhSiqoP3Uo6ql_Kh07kzsIVm_NOpHxJdZafhA5JBv-9xv_bKr7X9mhZo1dJpDlN8L5X_r5oRMJg==",
+        "bytes": 67,
+        "compressedBytes": 72,
+        "CRC32": "4dfbcdfd"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~i8w-7OH3m9z2zyWlP11FNGiVSHbghdvQGYrLzWMpEHRkYl7ORsRBTe2VV-5XXzy0t00COmOu81uQ4_SIS3WGKg==",
+        "bytes": 67,
+        "compressedBytes": 72,
+        "CRC32": "fd3ac26a"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~DAlqxRbvCq8AWqBQBiFIqCvlMEZsBrizC8QCos1KlGrt7eNJT4mIKkljQ4WJy0uVsoLu9K9I6TnYtZ4lpnMYHQ==",
+        "bytes": 1,
+        "compressedBytes": 3,
+        "CRC32": "d202ef8d"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Data/refs.0~yFNDBfw__JsIJ1xezbSWDKaVyZZ8AqPVi9YA7W93pEGIDC5ZE6kxW-MLk0CwN9Rf6kW2cwZ_o16zx0aNn1M6Qw==",
+        "bytes": 1,
+        "compressedBytes": 3,
+        "CRC32": "d202ef8d"
+      },
+      {
+        "path": "reader-smoke/cloudkit.xcresult/Info.plist",
+        "bytes": 715,
+        "compressedBytes": 404,
+        "CRC32": "9d0b1fa1"
+      },
+      {
+        "path": "reader-smoke/info-overlay.json",
+        "bytes": 622,
+        "compressedBytes": 370,
+        "CRC32": "1064a5bc"
+      },
+      {
+        "path": "reader-smoke/overlays.json",
+        "bytes": 2553,
+        "compressedBytes": 968,
+        "CRC32": "c58dd994"
+      },
+      {
+        "path": "reader-smoke/prepare.log",
+        "bytes": 2553,
+        "compressedBytes": 968,
+        "CRC32": "c58dd994"
+      },
+      {
+        "path": "reader-smoke/project-overlay.json",
+        "bytes": 1215,
+        "compressedBytes": 413,
+        "CRC32": "fb07d5ee"
+      },
+      {
+        "path": "reader-smoke/xcode-version.log",
+        "bytes": 31,
+        "compressedBytes": 33,
+        "CRC32": "4044e859"
+      },
+      {
+        "path": "reader-smoke-fixture-preflight/online-fixture-process.json",
+        "bytes": 895,
+        "compressedBytes": 401,
+        "CRC32": "4e1c9994"
+      },
+      {
+        "path": "reader-smoke-fixture-preflight/online-fixture-ready.json",
+        "bytes": 478,
+        "compressedBytes": 209,
+        "CRC32": "10c03ca9"
+      },
+      {
+        "path": "reader-smoke-fixture-preflight/online-fixture-server.log",
+        "bytes": 762,
+        "compressedBytes": 273,
+        "CRC32": "ce0bd8de"
+      },
+      {
+        "path": "reader-smoke-fixture-preflight/online-fixture-trace.json",
+        "bytes": 533,
+        "compressedBytes": 227,
+        "CRC32": "ecdffb27"
+      }
+    ],
+    "xcresultDataMembersKeptOnlyInOriginalZIP": [
+      "reader-smoke/cloudkit.xcresult/Data/data.0~09RQzyHNquLARQBgONQ8a__QxO6BT8FRM8khsL0evoIIETpA5NAvJ7qnxEco0ZwBYoKLhxQThIC224YCRN896A==",
+      "reader-smoke/cloudkit.xcresult/Data/data.0~0tezxQaGL_9kcPo6MUgRDmpqljPHq8I5EtQez2_CYiOUHjy7feN5KWZDprZvwU0fDLf9i7-vfD7QfKkdWUdrpA==",
+      "reader-smoke/cloudkit.xcresult/Data/data.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+      "reader-smoke/cloudkit.xcresult/Data/data.0~5SODOkDjZMKe1TjegX-xRdFV9tts3qnsmjfzzxOUx7QRRXIfSU_XQVgPSxkFW9UoUzAcIPQWwVU_drqvqLA3Tw==",
+      "reader-smoke/cloudkit.xcresult/Data/data.0~DAlqxRbvCq8AWqBQBiFIqCvlMEZsBrizC8QCos1KlGrt7eNJT4mIKkljQ4WJy0uVsoLu9K9I6TnYtZ4lpnMYHQ==",
+      "reader-smoke/cloudkit.xcresult/Data/data.0~_VhPh389NJ4QhSiqoP3Uo6ql_Kh07kzsIVm_NOpHxJdZafhA5JBv-9xv_bKr7X9mhZo1dJpDlN8L5X_r5oRMJg==",
+      "reader-smoke/cloudkit.xcresult/Data/data.0~i8w-7OH3m9z2zyWlP11FNGiVSHbghdvQGYrLzWMpEHRkYl7ORsRBTe2VV-5XXzy0t00COmOu81uQ4_SIS3WGKg==",
+      "reader-smoke/cloudkit.xcresult/Data/data.0~yFNDBfw__JsIJ1xezbSWDKaVyZZ8AqPVi9YA7W93pEGIDC5ZE6kxW-MLk0CwN9Rf6kW2cwZ_o16zx0aNn1M6Qw==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~09RQzyHNquLARQBgONQ8a__QxO6BT8FRM8khsL0evoIIETpA5NAvJ7qnxEco0ZwBYoKLhxQThIC224YCRN896A==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~0tezxQaGL_9kcPo6MUgRDmpqljPHq8I5EtQez2_CYiOUHjy7feN5KWZDprZvwU0fDLf9i7-vfD7QfKkdWUdrpA==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~5SODOkDjZMKe1TjegX-xRdFV9tts3qnsmjfzzxOUx7QRRXIfSU_XQVgPSxkFW9UoUzAcIPQWwVU_drqvqLA3Tw==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~_VhPh389NJ4QhSiqoP3Uo6ql_Kh07kzsIVm_NOpHxJdZafhA5JBv-9xv_bKr7X9mhZo1dJpDlN8L5X_r5oRMJg==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~i8w-7OH3m9z2zyWlP11FNGiVSHbghdvQGYrLzWMpEHRkYl7ORsRBTe2VV-5XXzy0t00COmOu81uQ4_SIS3WGKg==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~DAlqxRbvCq8AWqBQBiFIqCvlMEZsBrizC8QCos1KlGrt7eNJT4mIKkljQ4WJy0uVsoLu9K9I6TnYtZ4lpnMYHQ==",
+      "reader-smoke/cloudkit.xcresult/Data/refs.0~yFNDBfw__JsIJ1xezbSWDKaVyZZ8AqPVi9YA7W93pEGIDC5ZE6kxW-MLk0CwN9Rf6kW2cwZ_o16zx0aNn1M6Qw=="
+    ],
+    "xcresultInfoPlistMaterialized": true
+  },
+  "limits": "No font24/42, local-product50/68 or other iOS gate passes. Actual Debug app compilation does not establish CoreText/default Operations behavior, Release/device acceptance or source-schema compatibility.",
+  "testsRerunDuringArchival": false,
+  "networkUsedDuringArchival": false,
+  "canonicalOrSourceEdited": false
+}

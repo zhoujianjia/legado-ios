@@ -1,0 +1,424 @@
+{
+  "schemaVersion": 1,
+  "kind": "one-bounded-initial-C-and-old-reader-font-read",
+  "observedAtUTC": "2026-10-19T15:54:30.269958+00:00",
+  "initialC": {
+    "expectedSourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "workflowReads": [
+      {
+        "kind": "smoke",
+        "expectedSourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+        "expectedTag": "reader-smoke-1a87f6d",
+        "expectedWorkflow": ".github/workflows/reader-smoke.yml",
+        "queryURL": "https://api.github.com/repos/zhoujianjia/legado-ios/actions/workflows/reader-smoke.yml/runs?head_sha=1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06&per_page=10",
+        "requestCount": 1,
+        "matchingRunCount": 1,
+        "run": {
+          "id": 39281083749,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281083749",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+          "head_branch": "reader-smoke-1a87f6d",
+          "path": ".github/workflows/reader-smoke.yml",
+          "event": "push",
+          "created_at": "2026-10-19T15:51:26Z",
+          "updated_at": "2026-10-19T15:51:26Z",
+          "run_attempt": 1
+        },
+        "errors": [],
+        "sourceTagWorkflowBound": true,
+        "rawAPI": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-1a87f6d\\initial-smoke-source-query.json",
+          "bytes": 12513,
+          "sha256": "d5e32b02b94cbd1c1956ae687dddd4dfb8fb535bd11593cd2b77bf2607087f9b"
+        },
+        "observedAtUTC": "2026-10-19T15:53:03.961152+00:00"
+      },
+      {
+        "kind": "renewal",
+        "expectedSourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+        "expectedTag": "reader-renewal-1a87f6d",
+        "expectedWorkflow": ".github/workflows/reader-renewal-probe.yml",
+        "queryURL": "https://api.github.com/repos/zhoujianjia/legado-ios/actions/workflows/reader-renewal-probe.yml/runs?head_sha=1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06&per_page=10",
+        "requestCount": 1,
+        "matchingRunCount": 1,
+        "run": {
+          "id": 39281084369,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+          "head_branch": "reader-renewal-1a87f6d",
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "event": "push",
+          "created_at": "2026-10-19T15:51:27Z",
+          "updated_at": "2026-10-19T15:51:27Z",
+          "run_attempt": 1
+        },
+        "errors": [],
+        "sourceTagWorkflowBound": true,
+        "rawAPI": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-1a87f6d\\initial-renewal-source-query.json",
+          "bytes": 12530,
+          "sha256": "753a23f07cad244bd659d118fc9433c64af192bc2a96920d2bf384ac5e54bc0c"
+        },
+        "observedAtUTC": "2026-10-19T15:53:04.095385+00:00"
+      }
+    ],
+    "observedAtUTC": "2026-10-19T15:53:04.096385+00:00",
+    "pollingPerformed": false,
+    "CIOrTagMutationPerformed": false,
+    "renewalARead": false
+  },
+  "readerA": {
+    "kind": "reader",
+    "runID": 39272843081,
+    "expectedSourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "artifacts": [],
+    "errors": [],
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39272843081",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "status": "in_progress",
+    "conclusion": null,
+    "jobs": [
+      {
+        "name": "reader",
+        "status": "in_progress",
+        "conclusion": null,
+        "activeOrFailedSteps": [
+          {
+            "name": "Compile and package the actual main application with the local JVM",
+            "status": "in_progress",
+            "conclusion": null
+          }
+        ]
+      }
+    ],
+    "observedAtUTC": "2026-10-19T15:53:05.189733+00:00"
+  },
+  "fontB": {
+    "kind": "font",
+    "runID": 39274456679,
+    "expectedSourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "artifacts": [
+      {
+        "id": 12199046122,
+        "name": "reader-smoke-evidence",
+        "bytes": 950802,
+        "sha256": "bbf9afde9b07ccd7abc4d32b2d86cd862e144587dbecfcdbecca8e008446db09",
+        "githubArtifactDigestMatched": true,
+        "archivePath": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-ccafee5\\reader-font-bounded-20261019T155251Z-bc225286-font-reader-smoke-evidence.zip",
+        "extractedRoot": "F:\\yuedu-reader\\.build\\b12-87c36ea09f",
+        "uncompressedBytes": 8254234,
+        "auditEntryPoints": []
+      }
+    ],
+    "errors": [],
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39274456679",
+    "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "name": "smoke",
+        "status": "completed",
+        "conclusion": "failure",
+        "activeOrFailedSteps": [
+          {
+            "name": "Execute existing smoke groups and the batch-end reader experience checks",
+            "status": "in_progress",
+            "conclusion": null
+          }
+        ]
+      }
+    ],
+    "observedAtUTC": "2026-10-19T15:53:12.454311+00:00"
+  },
+  "rawAPIAndInspectionEvidence": [
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-1a87f6d\\initial-inspection.json",
+      "bytes": 2906,
+      "sha256": "9ee56011bdca00799cc90a4f59046cffc65460266f59a4452671ce015cd67041"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\reader-font-bounded-20261019T155251Z-bc225286-index.json",
+      "bytes": 2577,
+      "sha256": "7bfc0ddd43b240afb976661870ac0d91aba82a3eb699f28ce247bea4a5287dd0"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-1a87f6d\\initial-smoke-source-query.json",
+      "bytes": 12513,
+      "sha256": "d5e32b02b94cbd1c1956ae687dddd4dfb8fb535bd11593cd2b77bf2607087f9b"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-1a87f6d\\initial-renewal-source-query.json",
+      "bytes": 12530,
+      "sha256": "753a23f07cad244bd659d118fc9433c64af192bc2a96920d2bf384ac5e54bc0c"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-a76d380\\reader-font-bounded-20261019T155251Z-bc225286-reader-run.json",
+      "bytes": 12462,
+      "sha256": "7c7c6be2aca02ef0d56e07491bd3636b723f63cd30433b9620b70359d583b5f9"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-a76d380\\reader-font-bounded-20261019T155251Z-bc225286-reader-jobs.json",
+      "bytes": 3456,
+      "sha256": "167897c4b5a6d956dbcc1dfca45746f773036c2588adaec46c236105aebc52b0"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-a76d380\\reader-font-bounded-20261019T155251Z-bc225286-reader-inspection.json",
+      "bytes": 718,
+      "sha256": "22e3b01326312344bd7fc358d5e60ce64f7d748446900d7b2cb1a07022af52c2"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-ccafee5\\reader-font-bounded-20261019T155251Z-bc225286-font-run.json",
+      "bytes": 12472,
+      "sha256": "518ec7d985406651564409f5866f3e09cd44c5e14c3dfdbb41d9f087d893abc1"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-ccafee5\\reader-font-bounded-20261019T155251Z-bc225286-font-jobs.json",
+      "bytes": 2909,
+      "sha256": "32164f8eea2d5238aa57b780fde7a1b3720af5f06c0f16dd0623e65b18ec6d5c"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-ccafee5\\reader-font-bounded-20261019T155251Z-bc225286-font-inspection.json",
+      "bytes": 1249,
+      "sha256": "366eb339f7c2c8ab3990543f6a5b872ab7aa954fb0258c4aa49869c9d8dc0e03"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-ccafee5\\reader-font-bounded-20261019T155251Z-bc225286-font-artifacts.json",
+      "bytes": 741,
+      "sha256": "8c4e08d7cfee764271a4a16c60cf312b909e40da2ac252da6a7ec3e9963dcd36"
+    }
+  ],
+  "fontArtifactArchive": {
+    "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\cloud-ccafee5\\reader-font-bounded-20261019T155251Z-bc225286-font-reader-smoke-evidence.zip",
+    "bytes": 950802,
+    "sha256": "bbf9afde9b07ccd7abc4d32b2d86cd862e144587dbecfcdbecca8e008446db09"
+  },
+  "fontExtractedFiles": [
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\completion-plan-tools.log",
+      "bytes": 1575,
+      "sha256": "cec8a1762319df93c0125ebb21bb20ababd8a8abdad486472a2b1cbd25e6d408"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\completion-plan.json",
+      "bytes": 8022,
+      "sha256": "074fd70cb3b7a54b6f4c07354e96743291a35fee333549047e9ce8dbf51882b6"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\reader-online-fixture.log",
+      "bytes": 2050,
+      "sha256": "75dafbc7cd44654c91495f5d781172b3e24b8ffaacc0e5829c101e02b7bb2647"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\reader-online-tools.log",
+      "bytes": 1362,
+      "sha256": "8610f541c551ad973c5bf71e38445ced0e061bd06740b0f921d4cb60e0f51245"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\reader-smoke-tools.log",
+      "bytes": 4221,
+      "sha256": "cfe1f1344625e4df6fd0bdf2a52faef00006daa31f5e34ee801ef86027b67ee0"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\reader-smoke-xcode.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\reader-smoke.log",
+      "bytes": 3784,
+      "sha256": "818e30f1c79b516709805b93189eb51eaa1dc2e7fa08c6ff9fe208a6612404c4"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\reader-stage-baseline-tools.log",
+      "bytes": 3387,
+      "sha256": "2c7072f844407dcd0d4ab876957be4561ac11c40b23366afafea6be45e767e7e"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\boot-status.log",
+      "bytes": 13548,
+      "sha256": "6b3d237e55aed64c263bd5783d5099f03aa11f9d6aecfca504b8636950fc6c13"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit-tests.log",
+      "bytes": 7602925,
+      "sha256": "d423fa8b989d956188573bb66188135e6bc03fe5589d627c1e11d82d5bf63eda"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~09RQzyHNquLARQBgONQ8a__QxO6BT8FRM8khsL0evoIIETpA5NAvJ7qnxEco0ZwBYoKLhxQThIC224YCRN896A==",
+      "bytes": 97,
+      "sha256": "2055b6842a6a6921fa2a70c90effecbd6c0f670e21206aef5b85e958ec4be206"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~0tezxQaGL_9kcPo6MUgRDmpqljPHq8I5EtQez2_CYiOUHjy7feN5KWZDprZvwU0fDLf9i7-vfD7QfKkdWUdrpA==",
+      "bytes": 6435,
+      "sha256": "a208f967ac21a158d193a5a607ffb895e8033ea77f1091c93a117ba606ab45e1"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+      "bytes": 40,
+      "sha256": "96faa45c2b54e05553291e5b8ec90e59f6e7b23a908ca31153ec52d6b5f9f65b"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~5SODOkDjZMKe1TjegX-xRdFV9tts3qnsmjfzzxOUx7QRRXIfSU_XQVgPSxkFW9UoUzAcIPQWwVU_drqvqLA3Tw==",
+      "bytes": 595067,
+      "sha256": "d0e3678ac154830027eb8990d2ec693fd80553d6ca98ac477645f5b0171a368f"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~_VhPh389NJ4QhSiqoP3Uo6ql_Kh07kzsIVm_NOpHxJdZafhA5JBv-9xv_bKr7X9mhZo1dJpDlN8L5X_r5oRMJg==",
+      "bytes": 118,
+      "sha256": "a36f2623943d5e29373ee44ac935a3577736232fb8946e6748858ae69b8d89c3"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~DAlqxRbvCq8AWqBQBiFIqCvlMEZsBrizC8QCos1KlGrt7eNJT4mIKkljQ4WJy0uVsoLu9K9I6TnYtZ4lpnMYHQ==",
+      "bytes": 293,
+      "sha256": "754fccb0fcea70ff9ff937c1d0972288f730ba85c6d804716719669c76e9a6c1"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~i8w-7OH3m9z2zyWlP11FNGiVSHbghdvQGYrLzWMpEHRkYl7ORsRBTe2VV-5XXzy0t00COmOu81uQ4_SIS3WGKg==",
+      "bytes": 36,
+      "sha256": "dba2e19680e43e4cd5c024fa5cd08ed6ace54bd2fc89900ce9a78dabc2cb7c45"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\data.0~yFNDBfw__JsIJ1xezbSWDKaVyZZ8AqPVi9YA7W93pEGIDC5ZE6kxW-MLk0CwN9Rf6kW2cwZ_o16zx0aNn1M6Qw==",
+      "bytes": 416,
+      "sha256": "de6a53c05eed84bb15ef19fa2293b3ee905a62df751d78718dbba53cee5ca37c"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~09RQzyHNquLARQBgONQ8a__QxO6BT8FRM8khsL0evoIIETpA5NAvJ7qnxEco0ZwBYoKLhxQThIC224YCRN896A==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~0tezxQaGL_9kcPo6MUgRDmpqljPHq8I5EtQez2_CYiOUHjy7feN5KWZDprZvwU0fDLf9i7-vfD7QfKkdWUdrpA==",
+      "bytes": 331,
+      "sha256": "af951840670bdd29106b1df9bbce1347ec34a36bbc7802a52b3554bee110565e"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~5SODOkDjZMKe1TjegX-xRdFV9tts3qnsmjfzzxOUx7QRRXIfSU_XQVgPSxkFW9UoUzAcIPQWwVU_drqvqLA3Tw==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~_VhPh389NJ4QhSiqoP3Uo6ql_Kh07kzsIVm_NOpHxJdZafhA5JBv-9xv_bKr7X9mhZo1dJpDlN8L5X_r5oRMJg==",
+      "bytes": 67,
+      "sha256": "fd9c3978825f77bea046ef99232c47eb43a7bbadd91a16560bd3ccfbb200cd95"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~DAlqxRbvCq8AWqBQBiFIqCvlMEZsBrizC8QCos1KlGrt7eNJT4mIKkljQ4WJy0uVsoLu9K9I6TnYtZ4lpnMYHQ==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~i8w-7OH3m9z2zyWlP11FNGiVSHbghdvQGYrLzWMpEHRkYl7ORsRBTe2VV-5XXzy0t00COmOu81uQ4_SIS3WGKg==",
+      "bytes": 67,
+      "sha256": "47ea98074719540ce86a2aae8840c43f78e7673d97c5237cb5f893f49480881f"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Data\\refs.0~yFNDBfw__JsIJ1xezbSWDKaVyZZ8AqPVi9YA7W93pEGIDC5ZE6kxW-MLk0CwN9Rf6kW2cwZ_o16zx0aNn1M6Qw==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit.xcresult\\Info.plist",
+      "bytes": 715,
+      "sha256": "2b8bbafe3d08d2e992b1b5d9062fd56adf8398e74c9524d0edf6a35c8483a024"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\info-overlay.json",
+      "bytes": 622,
+      "sha256": "ede46ce36b4a9bd381def4d94154bc9fa849a9cfb7fe7e7bcd8e6ebd4884ef32"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\overlays.json",
+      "bytes": 2553,
+      "sha256": "b9cb9f4c841e7d803fbcf2baddbc9d15a302bc247c874d14f5ecece385de8f3e"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\prepare.log",
+      "bytes": 2553,
+      "sha256": "b9cb9f4c841e7d803fbcf2baddbc9d15a302bc247c874d14f5ecece385de8f3e"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\project-overlay.json",
+      "bytes": 1215,
+      "sha256": "b26e7c3407760c4776260bcbec6855a776003053cd684f259ab112ecd3d483f2"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\xcode-version.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke-fixture-preflight\\online-fixture-process.json",
+      "bytes": 895,
+      "sha256": "1ef241aa3082dc6a3764058fd6b2e73dc824fb53ef0e4cc2b506de1296077f66"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke-fixture-preflight\\online-fixture-ready.json",
+      "bytes": 478,
+      "sha256": "c555008cfaac664c1305a1826976c2b7aee1e4e09c60142fa2624c1b2560d5e2"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke-fixture-preflight\\online-fixture-server.log",
+      "bytes": 762,
+      "sha256": "8c5b6af46531d58449211248f718544f82fe8a9035862d1440fe86c23707143c"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke-fixture-preflight\\online-fixture-trace.json",
+      "bytes": 533,
+      "sha256": "7874bcd68f716af92baca7927279c0dfdde8e1aa08ad4106e0b7a878f4ca29f4"
+    }
+  ],
+  "keyFailureLogs": [
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\reader-smoke\\cloudkit-tests.log",
+      "bytes": 7602925,
+      "sha256": "d423fa8b989d956188573bb66188135e6bc03fe5589d627c1e11d82d5bf63eda"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\b12-87c36ea09f\\ci-logs\\reader-smoke.log",
+      "bytes": 3784,
+      "sha256": "818e30f1c79b516709805b93189eb51eaa1dc2e7fa08c6ff9fe208a6612404c4"
+    }
+  ],
+  "localFailureObservation": {
+    "path": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+    "line": 266,
+    "message": "constant 'self.book' captured by a closure before being initialized",
+    "scope": "Original ccafee5 fixture; root has separately fixed local host capture in C. No C outcome inferred."
+  },
+  "algorithmBinding": {
+    "copiedBoundedReader": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\read-reader-font-bounded-20261019T155251Z-bc225286.py",
+      "bytes": 6403,
+      "sha256": "2201869bc3207e5ced5c35f8477a0688a364d86a820236ade7a9d7ebb93a351f"
+    },
+    "originalBoundedReader": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\read-reader-font-bounded-20261019T154014Z-4a451577.py",
+      "bytes": 6403,
+      "sha256": "2201869bc3207e5ced5c35f8477a0688a364d86a820236ade7a9d7ebb93a351f"
+    },
+    "frozenNetworkAndZipHelper": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\read-after-font-checkpoint.py",
+      "bytes": 6644,
+      "sha256": "39f2256d17aa67cb69c68d1412f4a9c1d49a148dca6d8ae6dd9e30314342ad56"
+    },
+    "copyBytesIdentical": true
+  },
+  "pollingPerformed": false,
+  "extraTagsOrCIMutations": false,
+  "renewalAReadOrDownloaded": false,
+  "readerAArtifactsQueriedWhileNonterminal": false,
+  "sourceOrCanonicalEdited": false,
+  "boundedNetworkReadComplete": true
+}

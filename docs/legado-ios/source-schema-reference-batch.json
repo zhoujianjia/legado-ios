@@ -3,7 +3,7 @@
   "recordedOn": "2026-10-19",
   "workpackageId": "source-schema",
   "stageId": "s3-jvm-rules-http",
-  "status": "reviewed-diagnostic-observer-awaiting-cloud",
+  "status": "reviewed-diagnostic-observer-submitted-awaiting-actual-cloud-observations",
   "说明": "仅归档已审观察器、收集门及既有便携原件；未新增生产 schema 修复，未取得 Swift 真实差异。",
   "allNonDeviceWorkComplete": false,
   "automaticSelfRenewalImplemented": false,
@@ -672,5 +672,21 @@
     "onlySourceSchemaStateEvidenceQueuesChanged": true,
     "cloudPoliciesAndFourFalseFlagsUnchanged": true
   },
-  "nextAction": "在相关整批源码检查点取得实际 319 条／916 快照及原始证据，再依据差异修复生产保存语义；复用未变的便携结果，不为归档或本包单独重复触发云测。"
+  "nextAction": "在相关整批源码检查点取得实际 319 条／916 快照及原始证据，再依据差异修复生产保存语义；复用未变的便携结果，不为归档或本包单独重复触发云测。",
+  "submittedStageCheckpoint": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "observedAtUTC": "2026-10-19T15:53:04.096385+00:00",
+    "observationRecord": {
+      "path": "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+      "bytes": 3670,
+      "sha256": "e99def1cfd673323eb736044c514e1e938e3dad75dcd4ffc0e1e58ae1fb50f2d"
+    },
+    "readerSmokeRunId": 39281083749,
+    "renewalRunId": 39281084369,
+    "statusAtSavedInitialObservation": "queued",
+    "statusIsNotClaimedCurrent": true,
+    "passedCasesOrSchemaObservationsAccepted": false,
+    "fixedAReleaseRebuilt": false,
+    "excludesSubsequentLaunchMemoryAndUMDPreparation": true
+  }
 }

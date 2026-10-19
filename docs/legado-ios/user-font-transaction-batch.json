@@ -3,7 +3,7 @@
   "recordedOn": "2026-10-19",
   "stageId": "s2-reading-experience",
   "workpackageId": "reading-experience-design",
-  "status": "implemented-reviewed-awaiting-source-specific-ios-execution",
+  "status": "actual-Debug-Simulator-production-compile-recorded-test-target-failed-successor-submitted",
   "说明": "只归档已存在的字节固定证据及本批代码／测试定义；准备和 portable 通过不是 Swift／iOS／真机验收。",
   "stageComplete": false,
   "allNonDeviceWorkComplete": false,
@@ -431,5 +431,44 @@
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       }
     ]
+  },
+  "actualFontSourceSDKCheckpoint": {
+    "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "runID": 39274456679,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39274456679",
+    "conclusion": "failure",
+    "record": {
+      "path": "docs/legado-ios/evidence/reader-smoke-ccafee5/failure-summary.json",
+      "bytes": 16861,
+      "sha256": "bb30392738363922340aed970b4fd61fe5ea9bae5f32708c756c99381d454495"
+    },
+    "manifest": {
+      "path": "docs/legado-ios/evidence/reader-smoke-ccafee5/evidence-manifest.json",
+      "bytes": 9223,
+      "sha256": "2f947be1d453751c24b9b1daec6bf1293d593d0de597248b90099757933279e6"
+    },
+    "sixProductionFilesCompiledForDebugSimulator": true,
+    "mainAppModuleAndExecutableDebugDylibLinkStepsRecorded": true,
+    "actualFontTestExecutions": 0,
+    "actualAllIOSTestExecutions": 0,
+    "failure": "A prefetch test fixture captures incompletely initialized self; one compiler diagnostic repeated 24 times, repaired in 1347c24. No font runtime result is inferred.",
+    "preparationTimeClaimsRetainedAsHistorical": true,
+    "CoreTextRuntimeOrReleaseOrDeviceAcceptance": false
+  },
+  "submittedSuccessorStageCheckpoint": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "observedAtUTC": "2026-10-19T15:53:04.096385+00:00",
+    "observationRecord": {
+      "path": "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+      "bytes": 3670,
+      "sha256": "e99def1cfd673323eb736044c514e1e938e3dad75dcd4ffc0e1e58ae1fb50f2d"
+    },
+    "readerSmokeRunId": 39281083749,
+    "renewalRunId": 39281084369,
+    "statusAtSavedInitialObservation": "queued",
+    "statusIsNotClaimedCurrent": true,
+    "passedCasesOrSchemaObservationsAccepted": false,
+    "fixedAReleaseRebuilt": false,
+    "excludesSubsequentLaunchMemoryAndUMDPreparation": true
   }
 }
