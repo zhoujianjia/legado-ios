@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "scope": "Original Android observations only. The retained coordinator port has not been compared against this stateful corpus.",
+  "sourceCommit": "963249fc6775693aba94d60cb0e89042400375ca",
+  "runId": 39118004844,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39118004844",
+  "jobId": 117647631176,
+  "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "artifact": {
+    "id": 12133720505,
+    "bytes": 1096647,
+    "sha256": "02fb37a7f125b0e2d9956ebf0428f4b2689d07c261c84c01462c3accc6dda995"
+  },
+  "frozenReport": {
+    "path": "docs/legado-ios/fixtures/android-traditional-stateful-golden.json",
+    "bytes": 557107,
+    "sha256": "339802f01476cc61a004617bc8d14996c3eb0140fbdb1ea73ee05d56be6cdf38",
+    "byteIdenticalToDownloadedOriginalReport": true
+  },
+  "independentAudit": {
+    "path": ".build/cloud-evidence/run-39118004844/independent-review-20261019.json",
+    "bytes": 23687,
+    "sha256": "f877d22986fc9054f2c9e486d5b20f481fa8686fff1f89359d1aba789dddcad4"
+  },
+  "inputFixtureSHA256": "a7e0b23bc73c1a32c6d99466aebad25eee8e3c227e12e4d98efccb53d0008ddf",
+  "referenceRunId": "f3c545ac-e702-4409-ac99-61a90db617a0",
+  "originalFilesVerified": 2747,
+  "sourceTestAssetPinsVerified": 19,
+  "rawJUnitXML": [
+    {
+      "path": "app/build/outputs/androidTest-results/connected/debug/flavors/app/TEST-emulator-5554 - 15-_app-app.xml",
+      "sha256": "c0cb367361e60b7a4e19b4844f6c2612a8e7ea2d03ad572e8e56af7175954c0a"
+    }
+  ],
+  "actualOriginalResults": {
+    "instrumentationTests": 1,
+    "instrumentationFailures": 0,
+    "instrumentationErrors": 0,
+    "instrumentationSkips": 0,
+    "scenarios": 14,
+    "orderedSteps": 56,
+    "publicAPICalls": 47,
+    "returnedObservations": 46,
+    "ordinaryAPIExceptions": 1,
+    "setupMutationSteps": 9
+  },
+  "semantics": {
+    "keepsOriginalObjectInstancesAcrossOrderedSteps": true,
+    "keepsRawStringsAndNumericJavaTypes": true,
+    "keepsRealElementOuterHTML": true,
+    "keepsVariableMapsAndSerializedModelStrings": true,
+    "objectIdentityHashesArePerRunDiagnosticsOnly": true,
+    "doesNotNormalizePortOutput": true,
+    "syntheticInputOnly": true,
+    "privateSourcesRead": false
+  },
+  "acceptance": {
+    "originalObservationComplete": true,
+    "portComparisonPerformed": false,
+    "iosValidationPassed": false,
+    "deviceValidationPassed": false,
+    "compatibilityValidationPassed": false,
+    "g4ValidationPassed": false,
+    "fullFeatureParityEstablished": false
+  },
+  "nextGate": "Run the same ordered scenarios through retained public AnalyzeRule APIs, preserving object lifetimes and comparing outputs, Java types, exception causes and state side effects. Report differences before expanding the reading route."
+}
