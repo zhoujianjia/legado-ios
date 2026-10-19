@@ -105,7 +105,7 @@
     "smokeShellSyntax": "passed_with_Git_Bash_bash_n",
     "gitDiffCheck": "passed"
   },
-  "nextCheckpoint": "Repaired source-only checkpoint submitted once; retain and inspect its actual source-specific result at the next meaningful milestone. The separate ccdddd3 Release package has already been delivered.",
+  "nextCheckpoint": "A new bounded discovery implementation/source 6b3a3bd has one source-only diagnostic CI submitted. The historical reader smoke failed test-target compilation before execution; its direct-module import repair is applied and will be included with any actual new SDK failures in the next coherent checkpoint. Build11 remains the delivered ccdddd3 package.",
   "newIPAProduced": false,
   "privateSourceAccessed": false,
   "physicalDeviceValidated": false,
@@ -125,7 +125,13 @@
     "repeatedPollingPerformed": false,
     "iosAcceptanceEstablished": false,
     "triggerReason": "Actual preceding test-target compile failure; minimal reviewed repair. Not a retry merely to check status.",
-    "boundary": "Source-only Debug Simulator checkpoint. No new IPA; delivered build11 remains fixed ccdddd3. No passing test verdict from in-progress status."
+    "boundary": "Source-only Debug Simulator checkpoint. No new IPA; delivered build11 remains fixed ccdddd3. No passing test verdict from in-progress status.",
+    "actualCompletedResult": {
+      "status": "completed",
+      "conclusion": "failure",
+      "observedExecutedIOSTestCases": 0,
+      "record": "docs/legado-ios/evidence/reader-smoke-52059d0/benchmark-import-repair.json"
+    }
   },
   "testTargetCompileRepair": {
     "record": "docs/legado-ios/evidence/reader-smoke-c009a49/reader-test-compile-repair.json",
@@ -163,5 +169,14 @@
       "iosTestExecutions": 0,
       "timestampMeaning": "Review of retained completed-run metadata; no additional API polling."
     }
-  ]
+  ],
+  "additionalTestTargetCompileRepair": {
+    "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+    "change": "Import YueduCoreText directly, the defining module of the writingMode horizontal enum case used in measurement metadata.",
+    "assertionsAndFixturesChanged": false,
+    "sourceAfterSHA256": "ec28742b38ef65fce9502081c2d0df7e8cd4e864b3a7d08edc0da6c0fa481683",
+    "independentlyReviewed": true,
+    "actualSwiftRecompilationPassed": false,
+    "iOSTestExecutionPassed": false
+  }
 }

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "runID": 39262540685,
+  "sourceCommit": "52059d00e1e9c5ee6552acc6fc1f74c32b4e545f",
+  "conclusion": "failure",
+  "artifact": {
+    "name": "reader-smoke-evidence",
+    "sha256": "94dd0131507f38a348eaaadda27157b092a4e675896cdcc63a2fc32183e116d7",
+    "bytes": 924815,
+    "verifiedGitHubArtifactDigest": true,
+    "extractedRoot": "F:\\yuedu-reader\\.build\\renewal-discovery\\previous-smoke\\after-discovery-stage-reader-smoke-evidence"
+  },
+  "xcodeVersion": "Xcode 26.2\nBuild version 17C52",
+  "failedTarget": "yuedu appTests",
+  "firstAttemptedGroup": "cloudkit",
+  "xcodebuildExitCode": 65,
+  "testExecutionStatus": "cancelled-before-execution-because-test-target-build-failed",
+  "observedExecutedIOSTestCases": 0,
+  "xcresultTestSummaryPresent": false,
+  "uniqueCompilerDiagnostics": [
+    "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift:70:57: error: enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'"
+  ],
+  "diagnosticOccurrences": 24,
+  "portableTestLogs": [
+    {
+      "path": "ci-logs/completion-plan-tools.log",
+      "testCounts": [
+        9
+      ],
+      "OKMarkers": 1
+    },
+    {
+      "path": "ci-logs/reader-online-fixture.log",
+      "testCounts": [
+        12
+      ],
+      "OKMarkers": 1
+    },
+    {
+      "path": "ci-logs/reader-online-tools.log",
+      "testCounts": [
+        7
+      ],
+      "OKMarkers": 1
+    },
+    {
+      "path": "ci-logs/reader-smoke-tools.log",
+      "testCounts": [
+        14
+      ],
+      "OKMarkers": 1
+    },
+    {
+      "path": "ci-logs/reader-stage-baseline-tools.log",
+      "testCounts": [
+        20
+      ],
+      "OKMarkers": 1
+    }
+  ],
+  "evidence": [
+    {
+      "path": "reader-smoke/cloudkit-tests.log",
+      "sha256": "7fa35821359216073dce0ec4fb1c3c23ccde980b35c213efbe3a89a5b244ad99"
+    },
+    {
+      "path": "ci-logs/reader-smoke.log",
+      "sha256": "96818d9b75ff1d189b5d852768737d54465f8f6db88a2f5f7590ea4764d8de32"
+    },
+    {
+      "path": "reader-smoke/overlays.json",
+      "sha256": "ad629eb080f6c1b9f0be6367023707cf5e87b683016adc03905e2c3f64535c46"
+    }
+  ],
+  "newDiscoverySourceCompilationOrTestsEstablished": false,
+  "trackedFilesModified": false,
+  "CITriggered": false
+}

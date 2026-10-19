@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 import Testing
 import UIKit
+import YueduCoreText
 @testable import yuedu_app
 
 /// Deterministic stage measurements. No live websites or persistent user content are modified.

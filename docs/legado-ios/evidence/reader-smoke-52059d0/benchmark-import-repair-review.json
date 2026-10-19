@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "status": "source-review-passed-no-sdk-execution",
+  "reviewedBaselineCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+  "repair": {
+    "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+    "addedLine": "import YueduCoreText",
+    "originalSHA256": "4824a9ed383601ca062a25e3a0c8827e2bcae2c03f61292e8ed16be13f57f491",
+    "repairedSHA256": "ec28742b38ef65fce9502081c2d0df7e8cd4e864b3a7d08edc0da6c0fa481683",
+    "onlyOneImportLineAddedAfterNewlineNormalization": true,
+    "allExistingAssertionsFixturesParametersAndMeasurementBodyUnchanged": true
+  },
+  "moduleOwnership": {
+    "package": "YueduCoreText",
+    "version": "0.9.0",
+    "revision": "4435da336372471ca92c9e6bdfa4496c165eda02",
+    "enum": "ReaderWritingMode",
+    "member": "horizontal",
+    "renderSettingsProperty": "Modules/Services/LibraryStore/Models.swift:897",
+    "primarySources": [
+      {
+        "repositoryRevision": "4435da336372471ca92c9e6bdfa4496c165eda02",
+        "path": "Package.swift",
+        "url": "https://raw.githubusercontent.com/CHANG-JUI-LIN/YueduCoreText/4435da336372471ca92c9e6bdfa4496c165eda02/Package.swift",
+        "sha256": "87456c20b1069da8480315166b544eb81e0b0e149e7d55380a1aaa9223c56c0e",
+        "bytes": 1050
+      },
+      {
+        "repositoryRevision": "4435da336372471ca92c9e6bdfa4496c165eda02",
+        "path": "Sources/YueduCoreText/PublicAPI/ReaderWritingMode.swift",
+        "url": "https://raw.githubusercontent.com/CHANG-JUI-LIN/YueduCoreText/4435da336372471ca92c9e6bdfa4496c165eda02/Sources/YueduCoreText/PublicAPI/ReaderWritingMode.swift",
+        "sha256": "496b9507bab4ac56bfb998cf78bd65781106c5a2d462283679137c6968c2cfcc",
+        "bytes": 192
+      }
+    ]
+  },
+  "existingLinkageConfiguration": {
+    "mainAppLinksYueduCoreTextProduct": true,
+    "unitTestTargetDependsOnMainApp": true,
+    "unitTestBundleLoaderAndTestHostConfiguredInDebugAndRelease": true,
+    "unitTestFrameworksPhaseDirectYueduCoreTextEntry": false,
+    "unitTestFrameworksPhaseHasYueduCoreTextTypography": true,
+    "interpretation": "The existing hosted-test linkage imports the already linked main-app module. This source fix requires no new package or project linkage change; actual post-fix linking has not run here."
+  },
+  "staticSiblingScreen": {
+    "scope": "Explicit ReaderWritingMode identifier references without a direct YueduCoreText import in unit-test Swift files",
+    "filesWithDirectModuleImport": 152,
+    "additionalConfirmedMissingImports": [],
+    "inferredDotMemberExpressionsAreNotACompleteStaticCompilerSubstitute": true
+  },
+  "blockingFindings": [],
+  "sdkCompilationExecuted": false,
+  "postRepairLinkExecutionVerified": false,
+  "testsExecuted": 0,
+  "CIQueriedOrTriggered": false,
+  "trackedFilesModifiedByReviewer": false
+}

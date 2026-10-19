@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "sourceCommitWithFailure": "52059d00e1e9c5ee6552acc6fc1f74c32b4e545f",
+  "runId": 39262540685,
+  "status": "actual-test-target-compiler-failure-minimal-repair-applied-awaiting-Apple-SDK",
+  "diagnostic": [
+    "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift:70:57: error: enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'"
+  ],
+  "diagnosticOccurrences": 24,
+  "failedIOSTests": null,
+  "observedExecutedIOSTestCases": 0,
+  "repair": {
+    "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+    "change": "Import YueduCoreText directly, the defining module of the writingMode horizontal enum case used in measurement metadata.",
+    "assertionsAndFixturesChanged": false,
+    "sourceAfterSHA256": "ec28742b38ef65fce9502081c2d0df7e8cd4e864b3a7d08edc0da6c0fa481683",
+    "independentlyReviewed": true,
+    "actualSwiftRecompilationPassed": false,
+    "iOSTestExecutionPassed": false
+  },
+  "boundary": "Twenty-four repeated compiler diagnostics are not twenty-four failing tests. Test target compilation stopped before any iOS case ran. Portable guards are separate. The newer discovery source was not part of this historical run.",
+  "retainedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/reader-smoke-52059d0/result-summary.json",
+      "sha256": "3687e534ba4366787e6502e8486b27f7f32e517f769c462a38333e432e6821f3"
+    },
+    {
+      "path": "docs/legado-ios/evidence/reader-smoke-52059d0/run.json",
+      "sha256": "cbd30cec0a7a5ca82bb71c994c560f35a87af1f0538410483f77c73c860cacfd"
+    },
+    {
+      "path": "docs/legado-ios/evidence/reader-smoke-52059d0/reader-smoke-evidence.zip",
+      "sha256": "94dd0131507f38a348eaaadda27157b092a4e675896cdcc63a2fc32183e116d7"
+    },
+    {
+      "path": "docs/legado-ios/evidence/reader-smoke-52059d0/benchmark-import-repair-review.json",
+      "sha256": "4abd763fd6b5c7ba130ab3f91a55d506c17456e3175f28ef9a2b9716e3e3c02c"
+    }
+  ]
+}
