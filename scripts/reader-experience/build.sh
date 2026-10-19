@@ -76,7 +76,7 @@ python3 "$SCRIPT_DIR/stage-config.py" manifest \
   --output "$OUTPUT/build-manifest.json" "${RUNTIME_ARGS[@]}"
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
 cat > "$OUTPUT/README.txt" <<'TEXT'
-本地书架（unsigned，独立修改版）
+阅读（unsigned，独立修改版）
 
 本包将有限的 mainJs 书源流程接到本地 Rhino/JVM，正文使用原生 CoreText 阅读器。
 传统规则书源仍使用现有 JavaScriptCore 实现，尚未证明完整 Legado 兼容。
@@ -90,7 +90,7 @@ build-manifest.json 记录了实际来源、普通 JVM JAR、书源资源未打�
 TEXT
 else
 cat > "$OUTPUT/README.txt" <<'TEXT'
-本地书架（unsigned，独立修改版）
+阅读（unsigned，独立修改版）
 
 这是用于验证 CoreText 阅读器和 JavaScriptCore 书源流程的构建配置，不另设用户发行版本。
 本包不内置书源；原生界面基于 Yuedu Reader。
