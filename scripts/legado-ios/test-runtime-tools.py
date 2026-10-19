@@ -49,7 +49,7 @@ class SymbolKeeperTests(unittest.TestCase):
 class RuntimeToolsTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
-        self.root = Path(self.temporary.name)
+        self.root = Path(self.temporary.name).resolve()
         self.java_home = self.root / "source-java-home"
         modules = json.loads((HERE / "runtime-lock.json").read_text(encoding="utf-8"))["requiredModules"]
         for module in modules:

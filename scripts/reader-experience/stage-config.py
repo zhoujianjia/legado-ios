@@ -226,6 +226,12 @@ def no_jvm_payload(app):
 
 
 def verify_jvm_payload(app):
+    # Notices are separately owned App resources; native Java-home/JAR identity
+    # and the seven fixed producer inputs remain independent of this inventory.
+    notice_spec = importlib.util.spec_from_file_location("reader_packaged_notices", Path(__file__).with_name("runtime-notices.py"))
+    notices = importlib.util.module_from_spec(notice_spec)
+    notice_spec.loader.exec_module(notices)
+    notice_validation = notices.verify(checked_path(app / "LegadoRuntime/Notices"))
     script = REPO / "scripts/legado-ios/verify-runtime.py"
     spec = importlib.util.spec_from_file_location("reader_packaged_runtime", script)
     validator = importlib.util.module_from_spec(spec)
@@ -245,7 +251,9 @@ def verify_jvm_payload(app):
         raise ValueError("Packaged JVM JAR differs from this run's freshly built ordinary JAR")
     if staging.get("sourcePins") != json.loads((REPO / "scripts/legado-ios/runtime-lock.json").read_bytes()):
         raise ValueError("Packaged runtime pin differs from this checkout")
-    return {"validation": validation, "jar": packaging.inspect_jar(jar)}
+    if staging.get("runtimeNotices") != notice_validation:
+        raise ValueError("Packaged runtime notices differ from their staging manifest")
+    return {"validation": validation, "jar": packaging.inspect_jar(jar), "notices": notice_validation}
 
 
 def finalize(app, source, with_jvm=False):

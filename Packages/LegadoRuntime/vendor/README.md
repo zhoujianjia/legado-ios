@@ -1,6 +1,6 @@
 # Legado compatibility baseline
 
-These files are copied without modification from `F:\legado-master.zip`.
+The Legado reference files in the root `manifest.json` are copied without modification from `F:\legado-master.zip`.
 Archive SHA-256: `724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd`.
 `manifest.json` records each vendored file's original archive path and SHA-256.
 
@@ -20,3 +20,10 @@ replaces the two AndroidX bounded caches with a synchronized JVM cache, replaces
 The class shutter additionally hides new embedding internals. It retains the
 original runtime semantics and does not replace the custom engine with a generic
 Rhino release.
+
+`openjdk-notices` is a separate import from the immutable OpenJDK Mobile,
+ios-tools and libffi source pins. It preserves original legal materials, module
+source candidates and the native build's archive composition. See its manifest
+and `docs/legado-ios/runtime-notices.md` at the repository root. This import is
+not part of the Legado archive provenance and does not establish complete
+corresponding dependency source or a license-combination/distribution verdict.

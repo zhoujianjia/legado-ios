@@ -1,0 +1,738 @@
+{
+  "schemaVersion": 1,
+  "kind": "locked-upstream-runtime-notice-materials",
+  "sourcePins": {
+    "openjdkMobile": {
+      "repository": "https://github.com/openjdk/mobile.git",
+      "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+    },
+    "iosTools": {
+      "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+      "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+    },
+    "libffi": {
+      "version": "3.5.2",
+      "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+      "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+    },
+    "requiredModules": [
+      "java.base",
+      "java.xml",
+      "java.desktop",
+      "java.datatransfer",
+      "java.prefs",
+      "java.logging",
+      "jdk.charsets",
+      "java.compiler",
+      "java.instrument",
+      "java.net.http",
+      "java.sql",
+      "java.transaction.xa",
+      "jdk.unsupported"
+    ]
+  },
+  "openjdkSrcTree": {
+    "gitTree": "6b2e33d25b3bd639cd8f1c949adc176268332538",
+    "recursiveTreeEntryCount": 25803,
+    "truncated": false
+  },
+  "moduleCoverage": [
+    {
+      "module": "java.base",
+      "legalSourceCandidates": [
+        "openjdk/src/java.base/share/legal/c-libutl.md",
+        "openjdk/src/java.base/share/legal/cldr.md",
+        "openjdk/src/java.base/share/legal/gcc.md",
+        "openjdk/src/java.base/share/legal/icu.md",
+        "openjdk/src/java.base/share/legal/public_suffix.md",
+        "openjdk/src/java.base/share/legal/siphash.md",
+        "openjdk/src/java.base/share/legal/unicode.md",
+        "openjdk/src/java.base/share/legal/zlib.md",
+        "openjdk/src/java.base/windows/legal/wepoll.md"
+      ],
+      "ownLegalDirectoryPresent": true,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.xml",
+      "legalSourceCandidates": [
+        "openjdk/src/java.xml/share/legal/bcel.md",
+        "openjdk/src/java.xml/share/legal/dom.md",
+        "openjdk/src/java.xml/share/legal/jcup.md",
+        "openjdk/src/java.xml/share/legal/schema10part1.md",
+        "openjdk/src/java.xml/share/legal/schema10part2.md",
+        "openjdk/src/java.xml/share/legal/xalan.md",
+        "openjdk/src/java.xml/share/legal/xerces.md",
+        "openjdk/src/java.xml/share/legal/xhtml10.md",
+        "openjdk/src/java.xml/share/legal/xhtml10schema.md",
+        "openjdk/src/java.xml/share/legal/xhtml11.md",
+        "openjdk/src/java.xml/share/legal/xhtml11schema.md",
+        "openjdk/src/java.xml/share/legal/xmlspec.md",
+        "openjdk/src/java.xml/share/legal/xmlxsd.md"
+      ],
+      "ownLegalDirectoryPresent": true,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.desktop",
+      "legalSourceCandidates": [
+        "openjdk/src/java.desktop/share/legal/colorimaging.md",
+        "openjdk/src/java.desktop/share/legal/freetype.md",
+        "openjdk/src/java.desktop/share/legal/giflib.md",
+        "openjdk/src/java.desktop/share/legal/harfbuzz.md",
+        "openjdk/src/java.desktop/share/legal/jpeg.md",
+        "openjdk/src/java.desktop/share/legal/lcms.md",
+        "openjdk/src/java.desktop/share/legal/libpng.md",
+        "openjdk/src/java.desktop/share/legal/mesa3d.md",
+        "openjdk/src/java.desktop/unix/legal/pipewire.md",
+        "openjdk/src/java.desktop/unix/legal/xwd.md"
+      ],
+      "ownLegalDirectoryPresent": true,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.datatransfer",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.prefs",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.logging",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "jdk.charsets",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.compiler",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.instrument",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.net.http",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.sql",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "java.transaction.xa",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    },
+    {
+      "module": "jdk.unsupported",
+      "legalSourceCandidates": [],
+      "ownLegalDirectoryPresent": false,
+      "emptyEntryMeaning": "No module-local legal source files exist at the locked source revision; common root notices and source headers are separate."
+    }
+  ],
+  "staticArchiveComposition": [
+    {
+      "archive": "libjvm.a",
+      "sourceGroup": "HotSpot",
+      "upstreamDirectories": [
+        "src/hotspot"
+      ],
+      "noticeGroups": [
+        "openjdk-root"
+      ],
+      "additionalInput": "ios-tools-symbol-keeper"
+    },
+    {
+      "archive": "libjava.a",
+      "sourceGroup": "java.base",
+      "upstreamDirectories": [
+        "src/java.base"
+      ],
+      "noticeGroups": [
+        "openjdk-root",
+        "java.base"
+      ]
+    },
+    {
+      "archive": "libzip.a",
+      "sourceGroup": "java.base",
+      "upstreamDirectories": [
+        "src/java.base"
+      ],
+      "noticeGroups": [
+        "openjdk-root",
+        "java.base"
+      ]
+    },
+    {
+      "archive": "libverify.a",
+      "sourceGroup": "java.base",
+      "upstreamDirectories": [
+        "src/java.base"
+      ],
+      "noticeGroups": [
+        "openjdk-root",
+        "java.base"
+      ]
+    },
+    {
+      "archive": "libnet.a",
+      "sourceGroup": "java.base",
+      "upstreamDirectories": [
+        "src/java.base"
+      ],
+      "noticeGroups": [
+        "openjdk-root",
+        "java.base"
+      ]
+    },
+    {
+      "archive": "libnio.a",
+      "sourceGroup": "java.base",
+      "upstreamDirectories": [
+        "src/java.base"
+      ],
+      "noticeGroups": [
+        "openjdk-root",
+        "java.base"
+      ]
+    },
+    {
+      "archive": "libjimage.a",
+      "sourceGroup": "java.base",
+      "upstreamDirectories": [
+        "src/java.base"
+      ],
+      "noticeGroups": [
+        "openjdk-root",
+        "java.base"
+      ]
+    },
+    {
+      "archive": "libffi.a",
+      "sourceGroup": "libffi",
+      "noticeGroups": [
+        "libffi"
+      ]
+    }
+  ],
+  "additionalNativeInputs": [
+    {
+      "id": "ios-tools-symbol-keeper",
+      "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+      "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14",
+      "path": "openjdk-ext/src/hotspot/symbol_keeper.cpp",
+      "gitBlob": "7da4a185442e50412e72ae5cc41c6e4c4198822a",
+      "bytes": 88109,
+      "originalSHA256": "db8636b8e24cbd4420a9de5f92cdeaa1fc18a15d6153ac4262084af3f404bee2",
+      "preparedSHA256": "ef1f9744e430af5ef3dc71bc26764d01fc996b43617cc60a38a0fc12f7ff635f",
+      "adaptationScript": "scripts/legado-ios/prepare-symbol-keeper.py",
+      "integration": "Copied into mobile/src/hotspot/os/bsd/symbol_keeper.cpp and compiled into libjvm.a.",
+      "upstreamRootLicenseText": "GNU AFFERO GENERAL PUBLIC LICENSE, Version 3",
+      "licenseNotice": "ios-tools/LICENSE",
+      "effectiveLicenseApplicationReviewed": false
+    }
+  ],
+  "files": [
+    {
+      "path": "ios-tools/LICENSE",
+      "component": "ios-tools",
+      "upstreamRepository": "https://github.com/openjdk-mobile/ios-tools",
+      "upstreamCommit": "2f0a489b48cdb13901185be051004f7a9c23bf14",
+      "upstreamPath": "LICENSE",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk-mobile/ios-tools/2f0a489b48cdb13901185be051004f7a9c23bf14/LICENSE",
+      "gitBlob": "0ad25db4bd1d86c452db3f9602ccdbe172438f52",
+      "bytes": 34523,
+      "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
+    },
+    {
+      "path": "libffi/LICENSE",
+      "component": "libffi",
+      "sourceURL": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+      "sourceArchiveSHA256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc",
+      "archivePath": "libffi-3.5.2/LICENSE",
+      "bytes": 1132,
+      "sha256": "d5699fa516968e3a1550e6c902b7441c78856f2603d61bedd0b0662a26655366"
+    },
+    {
+      "path": "openjdk/ADDITIONAL_LICENSE_INFO",
+      "component": "openjdk-root",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "ADDITIONAL_LICENSE_INFO",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/ADDITIONAL_LICENSE_INFO",
+      "gitBlob": "ff700cd09f6ea0cc497f68169fd5c210bdaa7c2b",
+      "bytes": 2114,
+      "sha256": "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916"
+    },
+    {
+      "path": "openjdk/ASSEMBLY_EXCEPTION",
+      "component": "openjdk-root",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "ASSEMBLY_EXCEPTION",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/ASSEMBLY_EXCEPTION",
+      "gitBlob": "429666664e9ff5029d51dc7f807e1ec9eff2dd9f",
+      "bytes": 1514,
+      "sha256": "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33"
+    },
+    {
+      "path": "openjdk/LICENSE",
+      "component": "openjdk-root",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "LICENSE",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/LICENSE",
+      "gitBlob": "8b400c7ab81b7b18baff3f81d597f5e511883134",
+      "bytes": 19274,
+      "sha256": "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726"
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/c-libutl.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/c-libutl.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/c-libutl.md",
+      "gitBlob": "8bc98806825f58b159b6d8b369fff17ebb420f0a",
+      "bytes": 1556,
+      "sha256": "bef40679922d6fdfb7e4ddb223ad6722300f6054ba737bbf6188d60fcec517f9",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/cldr.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/cldr.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/cldr.md",
+      "gitBlob": "7423d3492f5fbe8dd26883840f2dc7fe6c7f1f22",
+      "bytes": 8792,
+      "sha256": "aa042321478126d6e72b2e34d6ace5a29304860456715e0db392de00de408faa",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/gcc.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/gcc.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/gcc.md",
+      "gitBlob": "b78ca12caa94565709826ac6ea91153ca507b69b",
+      "bytes": 128099,
+      "sha256": "589e34f142cdf7d1430daa573e61c2e3dd0330c9eb5a2c00d4a98b3a4450810b",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/icu.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/icu.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/icu.md",
+      "gitBlob": "634fea70d922bb0724db184517c26c935e358bd3",
+      "bytes": 4147,
+      "sha256": "00b1690cca67b46a04f324d34c586f9c4d7f9abf9a37e87d08c638c5b1d27b42",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/public_suffix.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/public_suffix.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/public_suffix.md",
+      "gitBlob": "26ab8a69a23fd3a25ddd78112f0f275ce8189406",
+      "bytes": 17783,
+      "sha256": "861de1e4992a7d28f1de25c73cd50d26a94779ebd749c0643fecfa56442c3429",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/siphash.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/siphash.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/siphash.md",
+      "gitBlob": "a1183acf2b0d6dbcde6fcb381c46e64269a03864",
+      "bytes": 8256,
+      "sha256": "5a792b5a74ad2a5f3d6a7ad8b7a841116e58a772c18bc6e392320a365b222c76",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/unicode.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/unicode.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/unicode.md",
+      "gitBlob": "a1009c70c1c95470d583c3608b51354a97157be2",
+      "bytes": 15098,
+      "sha256": "b39cac524df86958b952b894111fd4bccd44f2f38c7b4df86b9fc43fdd421d6b",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/share/legal/zlib.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/share/legal/zlib.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/share/legal/zlib.md",
+      "gitBlob": "c729c4248d481f1150c28ddcd166816d6fe61ec9",
+      "bytes": 1010,
+      "sha256": "c9c70c36a1f0325e8788771906202d42ba6ab4205caca44ec0f665707e83226b",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.base/windows/legal/wepoll.md",
+      "component": "java.base",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.base/windows/legal/wepoll.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.base/windows/legal/wepoll.md",
+      "gitBlob": "f2d954486eabe590cd0aa5b2c1c828a61bd57844",
+      "bytes": 1454,
+      "sha256": "3ac2992770080453b98c42afa807ba4b2c1738ef756b92a55c645f55e7df48f0",
+      "platformSourceDirectory": "windows",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/colorimaging.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/colorimaging.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/colorimaging.md",
+      "gitBlob": "eeb9932e1377f7c063279e0f1d341177f689660e",
+      "bytes": 167,
+      "sha256": "04d61e3e8e71dd452ebe52008af5378d9f6640d14578aeb515dc5375973b0189",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/freetype.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/freetype.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/freetype.md",
+      "gitBlob": "0c972d0fa994a07d77fcd1b6505f7f8198e8c912",
+      "bytes": 30570,
+      "sha256": "e1f43089a3d7f846ac72709ba3f5e3dfe4a07955cbb1f5b580c3c41cf93792dd",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/giflib.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/giflib.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/giflib.md",
+      "gitBlob": "6ca2dbbbf1db0b6ddd941a044fb1568f587b98ab",
+      "bytes": 1689,
+      "sha256": "206aab89ec75968e48a6a1ed6df7d8b9bfb7aea12cbe4c9345d93e5d97460a25",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/harfbuzz.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/harfbuzz.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/harfbuzz.md",
+      "gitBlob": "448de3faee1a93c5154271ce33fdb8d0bd7a925f",
+      "bytes": 3629,
+      "sha256": "5ec7cba7f8e7fc3a089213140aab6fa1b3bd5bf8a91bf8bddb3b8d315fc5f7d0",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/jpeg.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/jpeg.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/jpeg.md",
+      "gitBlob": "479d7a3ba90418927f6db7c19c401cd377dc6f78",
+      "bytes": 3474,
+      "sha256": "c1dfb9719a71ad9f861f8728550542d681e25c8ef40e6393606e6e2a0c1d653a",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/lcms.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/lcms.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/lcms.md",
+      "gitBlob": "b2ea686eee0632168344f79dcc6263baba04e1a3",
+      "bytes": 2655,
+      "sha256": "6d409e73a4ce3c25479b4fb01d05fe79c0458bcd1dccc07f72d3e211d64ac8ce",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/libpng.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/libpng.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/libpng.md",
+      "gitBlob": "4c17a52a7ef2bd735c1d9d9bc9871b052569e680",
+      "bytes": 7519,
+      "sha256": "f73afb394792f3aeecd959e89487603677a430e56b44eba596d8b572accfd540",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/share/legal/mesa3d.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/share/legal/mesa3d.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/share/legal/mesa3d.md",
+      "gitBlob": "cdaa1acb2930bff36dce3622b207ed8d9dc40290",
+      "bytes": 5732,
+      "sha256": "63f4e6f75caebbccb95d903fb43e46ac7111b3624d0a34f146b276d7d9e7b152",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/unix/legal/pipewire.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/unix/legal/pipewire.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/unix/legal/pipewire.md",
+      "gitBlob": "8275928e2715016441ba70cb276e566c880cf764",
+      "bytes": 1479,
+      "sha256": "56a8fb1652c70ac204d13bb52ca4d678162e7d21a97d10209c2a633de8082de0",
+      "platformSourceDirectory": "unix",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.desktop/unix/legal/xwd.md",
+      "component": "java.desktop",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.desktop/unix/legal/xwd.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.desktop/unix/legal/xwd.md",
+      "gitBlob": "f3c53278db6d44698c24e1b453a9026c8ec85d9b",
+      "bytes": 1348,
+      "sha256": "1d4ffa93c87f35084b02a7aa90a21084b4019db4fe1003c2e5ce775b4a384f59",
+      "platformSourceDirectory": "unix",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/bcel.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/bcel.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/bcel.md",
+      "gitBlob": "b64fc3640d4a215c34acdcc73c0d26ee431e602f",
+      "bytes": 11196,
+      "sha256": "cd578186ad93de46cca29ec8ace2b11f9da751987f3f140e6095c528596cc8c1",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/dom.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/dom.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/dom.md",
+      "gitBlob": "4fe80935ed184e2fbced1752ac14cc8d2057a3cf",
+      "bytes": 3761,
+      "sha256": "6686e8877667584a3a7c07344baadca1a03e29f677162d87c3c0811e990d1148",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/jcup.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/jcup.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/jcup.md",
+      "gitBlob": "bc566b7d2dbd9746f1085f1d19c70e57cb9654ca",
+      "bytes": 1448,
+      "sha256": "8d5dcfdf50455a3c34c753a98f21e953248af200415a9084e3f102cb6c43b8bf",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/schema10part1.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/schema10part1.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/schema10part1.md",
+      "gitBlob": "bd7498b9e4727abc26f90998ed305a913cba2f3f",
+      "bytes": 2138,
+      "sha256": "b220f891e5bfa3aa4b2a4b34dfab53a291553c2ae0fd0b15a4cb1116d4e97770",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/schema10part2.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/schema10part2.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/schema10part2.md",
+      "gitBlob": "601b06db18be73457567a0e3d01430635db324a6",
+      "bytes": 2136,
+      "sha256": "2350e35e91866d5ee5bd7ee7c303b3e424bbca335d36c71452588aac494eaa3e",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xalan.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xalan.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xalan.md",
+      "gitBlob": "3e2019063b6f41f5e0be389ff54da83faa0eddc7",
+      "bytes": 13477,
+      "sha256": "02bd013fc3f438dbb8fa41fa57888177e015efa6431d37fce6e794c6f353a6a1",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xerces.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xerces.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xerces.md",
+      "gitBlob": "ad01181b8b4335c5b0be9e386070d9ea9d8f780c",
+      "bytes": 11848,
+      "sha256": "4a6bf6b367193ee68681cb2d9fed30ffc5d62dd2d477bd62e0271707d71b3244",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xhtml10.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xhtml10.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xhtml10.md",
+      "gitBlob": "765584b6c38188d98c47ea36d37adfe85e7cf4e8",
+      "bytes": 2634,
+      "sha256": "9a5cde47073ca80cf59127891420f4aed603eb65070738ad027bb19e76fb9319",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xhtml10schema.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xhtml10schema.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xhtml10schema.md",
+      "gitBlob": "b63856875516366276730d1b84577ebebfc71786",
+      "bytes": 7521,
+      "sha256": "7bc51d884aaae6ef27551ee78d404ba3116356790da3d06b665679eb2e1cc002",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xhtml11.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xhtml11.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xhtml11.md",
+      "gitBlob": "eafd55a9c16c4b8639cb8a164bcd8061dcafbc9b",
+      "bytes": 3258,
+      "sha256": "4f99a390896f0f55a0b78376de89bfd2ac845713de85e67e37f884b77e0c3122",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xhtml11schema.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xhtml11schema.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xhtml11schema.md",
+      "gitBlob": "c7a2f0efda4f47698c1395846de5979d578cac4b",
+      "bytes": 3224,
+      "sha256": "8cd69b1392e286538008f4cb003f85caea3a375c619e697813d820b69857cf74",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xmlspec.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xmlspec.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xmlspec.md",
+      "gitBlob": "bfb7d4f6ed380fcf54f70e9a8a862630203fa79f",
+      "bytes": 2719,
+      "sha256": "afec263bf5dc67697ee33734ee243f86a878161335ef6298273e4041673b0544",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    },
+    {
+      "path": "openjdk/src/java.xml/share/legal/xmlxsd.md",
+      "component": "java.xml",
+      "upstreamRepository": "https://github.com/openjdk/mobile",
+      "upstreamCommit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb",
+      "upstreamPath": "src/java.xml/share/legal/xmlxsd.md",
+      "sourceURL": "https://raw.githubusercontent.com/openjdk/mobile/c1ed06aaef34c8dccf71e236d1ffa20918a77cfb/src/java.xml/share/legal/xmlxsd.md",
+      "gitBlob": "b752b10da2927dedbe7cdb7c2bb280b258e784d1",
+      "bytes": 1951,
+      "sha256": "498a5fec63509a8f3949983bb6878ac5c95aaf1d5e3679272d93314371aa0211",
+      "platformSourceDirectory": "share",
+      "selection": "Unfiltered upstream module legal candidate; inclusion does not assert that this component is linked or applies on iOS."
+    }
+  ],
+  "coverage": {
+    "allRequiredModuleLegalSourceCandidatesEnumerated": true,
+    "rootNoticesIncluded": true,
+    "allStaticArchiveGroupsListed": true,
+    "nativeObjectAndHeaderLicenseReviewComplete": false,
+    "correspondingDependencySourceClosureEstablished": false,
+    "componentLicenseCombinationReviewed": false,
+    "redistributionClearanceEstablished": false
+  },
+  "scope": "Original notice materials, module-source candidate inventory and build-script archive composition only. Preserves all platform candidates (including Windows, Unix and GCC texts) without claiming they are selected, linked, or applicable on iOS. HotSpot/source-header review, ios-tools symbol_keeper license applicability, other dependencies and corresponding-source completeness remain separate reviews."
+}

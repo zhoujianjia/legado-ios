@@ -17,6 +17,7 @@ RUNTIME_ARGS=()
 MIN_IOS=17.0
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
   unset LEGADO_RUNTIME_SOURCE_ONLY
+  python3 "$SCRIPT_DIR/runtime-notices.py" verify --directory "$REPO_DIR/Resources/LegadoRuntime/Notices"
   RUNTIME_ARGS+=(--with-jvm)
   MIN_IOS=18.0
 else
