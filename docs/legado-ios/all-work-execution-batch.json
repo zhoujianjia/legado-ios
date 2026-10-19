@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-10-19",
+  "timeZone": "Asia/Shanghai",
+  "kind": "existing-plan-execution-and-restore-integrity-batch",
+  "auditedSourceCommit": "5616e76978938c9d89938a05f19d2b5abc40a751",
+  "requestZh": "除了书源兼容，逐项核清其余未完成工作，完善原有计划并执行。",
+  "canonicalPlan": "docs/legado-ios/completion-plan.json",
+  "scope": {
+    "stages": 8,
+    "workpackages": 33,
+    "featureDomains": 64,
+    "newParallelPlanCreated": false,
+    "originalOwnershipAndDependencyGraphsRetained": true,
+    "plannedDoesNotMeanNoImplementation": true,
+    "executionFields": [
+      "summaryZh",
+      "currentState",
+      "remainingWork",
+      "nextAction",
+      "readiness",
+      "readyPreparation",
+      "acceptance",
+      "evidence",
+      "deferredHardware",
+      "verificationBoundary"
+    ]
+  },
+  "unfinishedAreasZh": [
+    "基础可靠性：进度并发写入、原协调器接线后的取消及普通产品桥生命周期；快捷面板本次 iOS 验收。",
+    "阅读体验：字体文件事务、夜间与辅助功能、长章与图片锚点、旋转／分屏、冷启动和峰值内存测量。",
+    "原核心兼容：schema 默认值与无损往返、传统规则与 URL／HTTP、持久状态、完整阅读链路、登录及宿主；有限 mainJS 扩展。",
+    "书库和文件：统计及分组重开、离线中断／清理冲突、换源、本地格式损坏用例；UMD／MOBI 尚未实现。",
+    "批注和备份：加工正文锚点、字典原规则、完整／选择性／加密备份与 WebDAV 错误保护。",
+    "扩展能力：五类源分流、RSS 原规则、HTTP 朗读、音频／视频、段评协议与动作。",
+    "编辑与服务：原核心调试／脱敏、LAN／HTTP／编辑器／WebSocket／MCP、持久 Cron 与前台补跑、导入及系统回跳。",
+    "交付：对应源码和许可材料闭合、无书源最终候选；手机自续签安装通道仍未证明。"
+  ],
+  "currentImplementation": {
+    "priority": "P0",
+    "workpackage": "backup-webdav",
+    "problem": "Existing restore writes downloaded bytes before validating JSON, swallows several transfer/decode failures and may report success after a partial restore.",
+    "status": "code_and_tests_reviewed_pending_swift_and_ios_execution",
+    "requiredBehavior": [
+      "Validate manifest and every present component before changing existing destination files; explicit 404 is the only optional absence.",
+      "Propagate authentication, transfer and decode errors; no-data backup must fail.",
+      "Coordinate existing store writers asynchronously; reject new edits after the prepare/pause boundary and publish only validated committed values. Download-phase overwrite semantics remain as before.",
+      "Copy originals to owned temporary recovery files, rollback ordinary commit failures including a writer that changes bytes then throws, and retain recovery material if rollback fails."
+    ],
+    "boundary": "Current native three-file backup only; no crash/kill cross-file atomicity, full/encrypted backup or full original backup compatibility is claimed. Swift/iOS execution is pending.",
+    "focusedTests": {
+      "path": "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
+      "methods": 12,
+      "parameterizedExecutions": 27,
+      "actualExecutionPassed": false,
+      "scope": "Owned injected three-file transactions plus the real BookStore writer boundary; manifest conflict choices. Source/Replace production leases, cancellation and real WebDAV servers remain unexecuted."
+    },
+    "preservedBehavior": [
+      "Modern stripped backups reuse the existing locked TOC sidecar reader for chapter summaries before staging.",
+      "Legacy inline chapter bytes remain in staged metadata until the existing writer flushes their sidecar before migrating the metadata; no sidecar crash transaction is claimed.",
+      "TXT bookmark migration rejects the active restore writer boundary.",
+      "Pending manifest conflict does not show a success alert; conflict-resolution errors reach the existing error UI.",
+      "No source, cache, position or parser route was duplicated or switched."
+    ]
+  },
+  "actualCloudFailure": {
+    "runId": 39249523428,
+    "sourceCommit": "274790090474b146313fa6f9e64678a5a9f20fed",
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39249523428",
+    "status": "completed",
+    "conclusion": "failure",
+    "portableGuardTestsPassed": [
+      20,
+      14,
+      7,
+      12
+    ],
+    "compilationPassed": false,
+    "iosTestExecutionEstablished": false,
+    "failure": "ContentRule and ReviewRule helper signatures could not resolve synthesized CodingKeys; six diagnostics of this one kind.",
+    "repair": "Declare explicit CodingKeys containing all 13 ContentRule and 31 ReviewRule stored JSON fields. Existing preservation tests remain unchanged; actual Swift compilation awaits the next related checkpoint.",
+    "rawCheckpoint": "docs/legado-ios/evidence/reader-smoke-2747900/checkpoint.json",
+    "rawArtifactZIP": "docs/legado-ios/evidence/reader-smoke-2747900/reader-smoke-evidence.zip",
+    "zipSHA256": "ee1f976bcdd2111b9f831dfcc77bb23ad3ea6a6ba0386a3b55611a1c2dcde594",
+    "zipDigestMatchesGitHub": true,
+    "rawPathMapping": "Paths beginning .build/all-work-plan/cloud/artifact/ in the preserved checkpoint map to entries relative to the root of the retained original ZIP. This record does not rewrite original checkpoint or archive bytes.",
+    "repeatedPollingPerformed": false
+  },
+  "localVerification": {
+    "planGuard": "passed_8_stages_33_packages_64_domains_33_execution_instructions",
+    "planGuardNegativeRegressions": "nine_passed_after_execution_update",
+    "portableLocalization": "five_languages_3703_keys_each_no_duplicates; canonical macOS checker pending cloud",
+    "swiftCompilationExecutedLocally": false,
+    "iosTestsExecutedLocally": false,
+    "planGuardResult": "docs/legado-ios/evidence/all-work-execution/plan-check.json",
+    "planGuardRegressionLog": "docs/legado-ios/evidence/all-work-execution/plan-guard-tests.log",
+    "scope": "Portable structure and localization only; Swift compile and iOS behavior remain pending.",
+    "swiftEnumCoverage": "13 ContentRule and 31 ReviewRule stored fields match explicit CodingKeys; static check only",
+    "codingKeysResult": "docs/legado-ios/evidence/all-work-execution/coding-keys-static-check.json",
+    "independentPlanReview": "Original 8-stage/33-package dependency edges and 64 owner mappings unchanged; ready scope and unimplemented boundaries independently reviewed.",
+    "restoreCodeReview": "Process-local rollback, queue boundary, TOC and legacy data preservation reviewed; no local Swift compiler or runtime acceptance.",
+    "webdavStaticReview": "docs/legado-ios/evidence/all-work-execution/webdav-static-review.json",
+    "localizationResult": "docs/legado-ios/evidence/all-work-execution/localization-check.json",
+    "actionlint": "passed_for_changed_reader_smoke_workflow",
+    "smokeShellSyntax": "passed_with_Git_Bash_bash_n",
+    "gitDiffCheck": "passed"
+  },
+  "nextCheckpoint": "After the related restore fix, compiler repair and focused tests are reviewed, push one source-only reader-smoke checkpoint; retain all group results independently and continue ready work without repeated cloud polling.",
+  "newIPAProduced": false,
+  "privateSourceAccessed": false,
+  "physicalDeviceValidated": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

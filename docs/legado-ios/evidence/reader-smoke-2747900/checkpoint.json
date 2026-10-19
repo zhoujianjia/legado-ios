@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "observedAtUTC": "2026-10-19T12:30:11.006799+00:00",
+  "repository": "zhoujianjia/legado-ios",
+  "runId": 39249523428,
+  "sourceCommit": "274790090474b146313fa6f9e64678a5a9f20fed",
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39249523428",
+  "status": "completed",
+  "conclusion": "failure",
+  "runAttempt": 1,
+  "runCreatedAtUTC": "2026-10-19T12:06:46Z",
+  "runUpdatedAtUTC": "2026-10-19T12:20:42Z",
+  "boundedCheck": {
+    "runMetadataReads": 1,
+    "jobsReads": 1,
+    "artifactsReads": 1,
+    "pollingPerformed": false,
+    "workflowTriggered": false,
+    "tagPushed": false
+  },
+  "metadataEvidence": [
+    {
+      "path": ".build/all-work-plan/cloud/run-response.json",
+      "bytes": 12475,
+      "sha256": "7132301eb09d4fcb117b8c28ed5b8048cc71a8424ce5e5ea80cf5878fa50953d"
+    },
+    {
+      "path": ".build/all-work-plan/cloud/jobs-connector-response.json",
+      "bytes": 2434,
+      "sha256": "f0be62926071060c9f486f7847eb8ebd828efce48b93d7a64f7950ba6b729a4e"
+    },
+    {
+      "path": ".build/all-work-plan/cloud/artifacts-connector-response.json",
+      "bytes": 844,
+      "sha256": "c9939dcd1d0014d57fbd1ad0479d567168ea96cabab2db0962e8bf7db30b2a6b"
+    }
+  ],
+  "metadataBoundary": "Run JSON is the connector-returned UTF-8 REST content. Jobs/artifacts files preserve normalized connector results; they are not claimed to be original HTTP transport bytes.",
+  "jobs": [
+    {
+      "id": 118049600649,
+      "name": "smoke",
+      "status": "completed",
+      "conclusion": "failure",
+      "run_id": 39249523428,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Verify the source tag and portable smoke evidence guards",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Check owned fixture readiness and cleanup before Xcode work",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Select the installed toolchain and Simulator",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Execute existing smoke groups and the batch-end reader experience checks",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 7
+        },
+        {
+          "name": "Preserve screenshots, accessibility trees, results and failure logs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "State the exact acceptance boundary",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        }
+      ]
+    }
+  ],
+  "artifact": {
+    "id": 12185483287,
+    "name": "reader-smoke-evidence",
+    "githubDigest": "sha256:ee1f976bcdd2111b9f831dfcc77bb23ad3ea6a6ba0386a3b55611a1c2dcde594",
+    "githubSizeBytes": 712410,
+    "downloadedZIP": {
+      "path": ".build/all-work-plan/cloud/reader-smoke-39249523428.zip",
+      "bytes": 712410,
+      "sha256": "ee1f976bcdd2111b9f831dfcc77bb23ad3ea6a6ba0386a3b55611a1c2dcde594"
+    },
+    "digestVerified": true,
+    "sourceCommitVerified": true,
+    "extractedRoot": ".build/all-work-plan/cloud/artifact",
+    "fileManifest": [
+      {
+        "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-online-fixture.log",
+        "bytes": 2050,
+        "sha256": "c3793d389716fee2c6770725e53274bbe664ff2392e0d79ef2583289e2236d3b"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-online-tools.log",
+        "bytes": 1362,
+        "sha256": "7b81340df87d0c7745da9128213da7059209aeb9644fadde2179537303ffbb0e"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-smoke-tools.log",
+        "bytes": 2421,
+        "sha256": "c88a429c1e58069094665099750768b370c713754caa2e1a163bb8fd62170887"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-smoke-xcode.log",
+        "bytes": 31,
+        "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-smoke.log",
+        "bytes": 838,
+        "sha256": "00ff3a7b31b3db5e09e0515da42b64c473b90c291fdf84dac127eda8ff5978d4"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-stage-baseline-tools.log",
+        "bytes": 3387,
+        "sha256": "b4dd01b19b0a895c89739fcc6d229227b79dcef27fc96cbca600010199b09544"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/boot-status.log",
+        "bytes": 12221,
+        "sha256": "4bdcec52c4182c44196d70520514e99dcbd22320d2a844f6f84fc230c4405066"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit-tests.log",
+        "bytes": 6393350,
+        "sha256": "b36d29aff512e30190b90d0903e735577d7832184a9200fbcf53c49f4a792ee4"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+        "bytes": 40,
+        "sha256": "96faa45c2b54e05553291e5b8ec90e59f6e7b23a908ca31153ec52d6b5f9f65b"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~48-lpErBfjOTLZWYn52-OX9bdv2Uy5kU5GiwPfAFlkMpl_zXGuYwrDrw14ym-rEQxLWgB2zjNjxBBo1y3SY49A==",
+        "bytes": 292,
+        "sha256": "683c1d9f44fc0ee3fb03178c16616dcaef93cb9349050f3bab0e1d4be61b83ba"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~b8UZ5dVQ8fY4Cj5_PywSICLpGd_MATNPNTMoRnBIquNB5hHKX4GRnoU-S1TkkPku3V5i1lj6B09xWEYwiI7yhA==",
+        "bytes": 36,
+        "sha256": "dba2e19680e43e4cd5c024fa5cd08ed6ace54bd2fc89900ce9a78dabc2cb7c45"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~h0aI78KnsuWdZnIVIwefOird3YLjR3sdO-gNiDc9lz2FRvvA7tIfYa1f0qqV9Pztl_aFk_gbyTnRyxGZurERSQ==",
+        "bytes": 118,
+        "sha256": "a0b81bcd73f08bebe9c8188437758573273a05a4a5e47f7cf920764953a9b25e"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~Lhx4jHhzGS1Xg8G19HFXfEUUXHV18vjyPr2_0nOIlpA67lIvzEQ----JWMRFj1OHM9zH5Y2J8927Nobho_MUcA==",
+        "bytes": 97,
+        "sha256": "7b5bfa7ba55cd422da20bd6517566c8093a03f28d2f2c4366f1cbbdd68725968"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~MM67iC1ncQf4YjoZO8rbE7m-zRj3N2mBLD_bYJNG4p0pK112ROVZa0Akh4_zhIuVLP2AS02LRS5hCPpltoGbyg==",
+        "bytes": 419,
+        "sha256": "cf679eb221c7da8065bda5714d8c9c86bdfe72ad53ab0eb85add808808331bdc"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~u0y8cI_hqZLBpz957hW5zqjNPgnWS48EUdsWj48kgylYN_C4MUipp-rAMO1HbxRZBPDawSjVLQT1IK5Z1Ylrow==",
+        "bytes": 464998,
+        "sha256": "8b27851b715e5637b89c82f3506b504b4475600f82bb28bc9fd5d3b6338f9fd1"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/data.0~Zi3ftb2Ip2JqjB7gF-ViSXD9j67XoGI93QsX4kKKs5Or5ScXbYyT3xX_M5aq6Uwo9b6QSbqN62mspNGrA5H_Pg==",
+        "bytes": 3412,
+        "sha256": "dc3daaa78bb24a2a60415ef81058867bdc20707614ca2e7534ee97557d43b536"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+        "bytes": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~48-lpErBfjOTLZWYn52-OX9bdv2Uy5kU5GiwPfAFlkMpl_zXGuYwrDrw14ym-rEQxLWgB2zjNjxBBo1y3SY49A==",
+        "bytes": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~b8UZ5dVQ8fY4Cj5_PywSICLpGd_MATNPNTMoRnBIquNB5hHKX4GRnoU-S1TkkPku3V5i1lj6B09xWEYwiI7yhA==",
+        "bytes": 67,
+        "sha256": "ca57448b3d67d0fe73ee57dc80b98d503c0c0e03292a78baadb5d105523b698a"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~h0aI78KnsuWdZnIVIwefOird3YLjR3sdO-gNiDc9lz2FRvvA7tIfYa1f0qqV9Pztl_aFk_gbyTnRyxGZurERSQ==",
+        "bytes": 67,
+        "sha256": "1f132eafd82bcf283093419b95e029ba540bfa45999aaac5bfeb9787d40e2878"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~Lhx4jHhzGS1Xg8G19HFXfEUUXHV18vjyPr2_0nOIlpA67lIvzEQ----JWMRFj1OHM9zH5Y2J8927Nobho_MUcA==",
+        "bytes": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~MM67iC1ncQf4YjoZO8rbE7m-zRj3N2mBLD_bYJNG4p0pK112ROVZa0Akh4_zhIuVLP2AS02LRS5hCPpltoGbyg==",
+        "bytes": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~u0y8cI_hqZLBpz957hW5zqjNPgnWS48EUdsWj48kgylYN_C4MUipp-rAMO1HbxRZBPDawSjVLQT1IK5Z1Ylrow==",
+        "bytes": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Data/refs.0~Zi3ftb2Ip2JqjB7gF-ViSXD9j67XoGI93QsX4kKKs5Or5ScXbYyT3xX_M5aq6Uwo9b6QSbqN62mspNGrA5H_Pg==",
+        "bytes": 331,
+        "sha256": "6d38c99c21200582c104854025f020eca1d8b9b83bc74ca2a8b7d189a86d7179"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit.xcresult/Info.plist",
+        "bytes": 715,
+        "sha256": "ffc5a33b1f979d7c31d54cecf7f135ae3e330eea89cc31056b1e2b15011feca4"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/info-overlay.json",
+        "bytes": 622,
+        "sha256": "b34168eec1470c5da8d26b8c81696c6a4a16d33eed5378ce3d104599c76b64ce"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/overlays.json",
+        "bytes": 2553,
+        "sha256": "490cb340e75a416038e053ab273b2715e55df08b50074b446920fe6731d03aef"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/prepare.log",
+        "bytes": 2553,
+        "sha256": "490cb340e75a416038e053ab273b2715e55df08b50074b446920fe6731d03aef"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/project-overlay.json",
+        "bytes": 1215,
+        "sha256": "daa9dd1a71e96615dbaee7c67de108f93d6821f5cf337e3b4b5d73f961413e79"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke/xcode-version.log",
+        "bytes": 31,
+        "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke-fixture-preflight/online-fixture-process.json",
+        "bytes": 895,
+        "sha256": "f60b2cb2503a0d8fb86826ff506a09624fc9df626faa2b1a3a43d7df9f9645bd"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke-fixture-preflight/online-fixture-ready.json",
+        "bytes": 478,
+        "sha256": "144e440c56dbe967027cd2ce1cfb35955b4d074e3af9e8b94c93f207930e526a"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke-fixture-preflight/online-fixture-server.log",
+        "bytes": 762,
+        "sha256": "566470fa917cb7f48d5d55468f427c4eb81879ff5b8440827acd09016cd438d0"
+      },
+      {
+        "path": ".build/all-work-plan/cloud/artifact/reader-smoke-fixture-preflight/online-fixture-trace.json",
+        "bytes": 533,
+        "sha256": "14ea11e4df2b49a48e5ea1b90102f3059cd05edd47fcb46c575c3ce8acdb91a4"
+      }
+    ]
+  },
+  "portablePreflight": {
+    "passed": true,
+    "groups": [
+      {
+        "suiteLog": {
+          "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-stage-baseline-tools.log",
+          "bytes": 3387,
+          "sha256": "b4dd01b19b0a895c89739fcc6d229227b79dcef27fc96cbca600010199b09544"
+        },
+        "passed": 20,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "scope": "Portable Python guard tests only; not App tests."
+      },
+      {
+        "suiteLog": {
+          "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-smoke-tools.log",
+          "bytes": 2421,
+          "sha256": "c88a429c1e58069094665099750768b370c713754caa2e1a163bb8fd62170887"
+        },
+        "passed": 14,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "scope": "Portable Python guard tests only; not App tests."
+      },
+      {
+        "suiteLog": {
+          "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-online-tools.log",
+          "bytes": 1362,
+          "sha256": "7b81340df87d0c7745da9128213da7059209aeb9644fadde2179537303ffbb0e"
+        },
+        "passed": 7,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "scope": "Portable Python guard tests only; not App tests."
+      },
+      {
+        "suiteLog": {
+          "path": ".build/all-work-plan/cloud/artifact/ci-logs/reader-online-fixture.log",
+          "bytes": 2050,
+          "sha256": "c3793d389716fee2c6770725e53274bbe664ff2392e0d79ef2583289e2236d3b"
+        },
+        "passed": 12,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "scope": "Portable Python guard tests only; not App tests."
+      }
+    ],
+    "ownedFixturePreflightPassed": true
+  },
+  "iosIntegration": {
+    "xcodeVersion": "26.2",
+    "xcodeBuild": "17C52",
+    "sdkObservedInCompilerLog": "iPhoneSimulator26.2.sdk",
+    "destination": "id=4C675116-265D-488F-BFFA-836A4545674C",
+    "simulatorNameFromBootLog": "iPhone 17 Pro Max",
+    "runtimeVersionEstablished": false,
+    "configuration": "Debug",
+    "xcodeInvoked": true,
+    "compilationPassed": false,
+    "wrapperExitCode": 65,
+    "failedFirstGroup": "cloudkit",
+    "verdict": "** TEST FAILED **",
+    "testExecutionEstablished": false,
+    "rawSummaryAvailable": false,
+    "actualMethodCount": null,
+    "actualExecutionCount": null,
+    "actualFailureOrSkipTestCountsEstablished": false,
+    "compilerDiagnostics": [
+      "/Users/runner/work/legado-ios/legado-ios/Modules/Core/BookSource/BookSource.swift:209:51: error: cannot find type 'CodingKeys' in scope",
+      "/Users/runner/work/legado-ios/legado-ios/Modules/Core/BookSource/BookSource.swift:209:94: error: cannot find type 'CodingKeys' in scope",
+      "/Users/runner/work/legado-ios/legado-ios/Modules/Core/BookSource/BookSource.swift:220:80: error: cannot find type 'CodingKeys' in scope",
+      "/Users/runner/work/legado-ios/legado-ios/Modules/Core/BookSource/BookSource.swift:356:51: error: cannot find type 'CodingKeys' in scope",
+      "/Users/runner/work/legado-ios/legado-ios/Modules/Core/BookSource/BookSource.swift:356:94: error: cannot find type 'CodingKeys' in scope",
+      "/Users/runner/work/legado-ios/legado-ios/Modules/Core/BookSource/BookSource.swift:367:70: error: cannot find type 'CodingKeys' in scope"
+    ],
+    "uniqueDiagnosticKind": "cannot find type 'CodingKeys' in scope",
+    "diagnosticLocations": [
+      "BookSource.swift:209:51",
+      "BookSource.swift:209:94",
+      "BookSource.swift:220:80",
+      "BookSource.swift:356:51",
+      "BookSource.swift:356:94",
+      "BookSource.swift:367:70"
+    ],
+    "rawBuildLog": {
+      "path": ".build/all-work-plan/cloud/artifact/reader-smoke/cloudkit-tests.log",
+      "bytes": 6393350,
+      "sha256": "b36d29aff512e30190b90d0903e735577d7832184a9200fbcf53c49f4a792ee4"
+    },
+    "partialXCResult": "reader-smoke/cloudkit.xcresult",
+    "subsequentGroupsExecuted": false,
+    "readerStagePerformanceMeasured": false
+  },
+  "interpretation": "The macOS temporary-root fixture correction passed its 20 portable guards. The run reached source-specific Xcode compilation and failed in ContentRule/ReviewRule helper signatures referring to unavailable synthesized CodingKeys. No new iOS test or timing acceptance is established; later groups were not reached.",
+  "nextAction": "Declare explicit CodingKeys for ContentRule and ReviewRule while preserving every stored JSON key; review the actual compiler failure before a related checkpoint rerun. This observation itself did not modify source or trigger a rerun.",
+  "physicalDeviceValidated": false,
+  "newIPAProduced": false,
+  "fullStageAccepted": false
+}

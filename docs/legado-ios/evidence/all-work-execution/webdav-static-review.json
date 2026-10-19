@@ -1,0 +1,66 @@
+{
+  "kind": "source-only-independent-static-check",
+  "selector": "yuedu appTests/WebDAVRestoreIntegrityTests",
+  "methodCount": 12,
+  "plannedExecutionCount": 27,
+  "executionCountMeaning": "Source-derived Swift Testing parameter expansion; not observed executions.",
+  "methods": {
+    "malformedBackupDoesNotWrite": 4,
+    "transportErrorsAreNotMissingFiles": 4,
+    "missingAllDataFails": 2,
+    "legacyPartialBackupRestoresPresentFile": 3,
+    "failedAttemptIsIncludedInRollback": 6,
+    "originalCopyFailureDoesNotStartCommit": 1,
+    "failedRollbackPreservesRecoveryMaterial": 1,
+    "successfulBatchPublishesCommittedValues": 1,
+    "subsequentRestoreRecoversWithoutImplicitRetry": 1,
+    "manifestConflictRequiresChoice": 2,
+    "pausedEditConflictsAndKeepsLocalProgress": 1,
+    "localSummaryAndTXTWriterRespectBoundary": 1
+  },
+  "swiftCompiled": false,
+  "iosTestsExecuted": false,
+  "cloudTriggered": false,
+  "privateSourcesAccessed": false,
+  "passedChecks": [
+    "12 method declarations match planned selectors",
+    "27 parameter-expanded executions derived",
+    "8 workpackages in audit",
+    "reviewed source files exist and have no trailing whitespace",
+    "new transaction and suite contain no try? or timing sleeps"
+  ],
+  "coverageLimits": [
+    "Injected three-file transaction and real isolated BookStore pause/barrier",
+    "Live shared BookSourceStore/ReplaceRuleStore boundary not executed",
+    "Cancellation and real WebDAV interoperability untested",
+    "Overwrite accepts local snapshot at writer prepare after download; version protection starts at prepare",
+    "No power-loss, kill or cross-file crash atomicity claim",
+    "No performance or memory improvement claim"
+  ],
+  "files": [
+    {
+      "path": "Modules/Services/WebDAV/WebDAVRestoreTransaction.swift",
+      "sha256": "a6340681111e439bf6e66de56b1e43b3ce98402e3c54fa17169a000580f0e773"
+    },
+    {
+      "path": "Modules/Services/WebDAV/WebDAVManager.swift",
+      "sha256": "93a88acf6efda4c1b9de07f5764e0806d08eecd64601e9ba8f3c3ad15c94f636"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "sha256": "9e715fcc026454c20265719089c61b57a4e9f8be83318401efecdccb9f8195a1"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceStore.swift",
+      "sha256": "d87ff6800b49de00addd4559f0bc5129fe604b69cd1d03406b80d380f1ccbfc1"
+    },
+    {
+      "path": "Modules/Core/Replace/ReplaceRuleStore.swift",
+      "sha256": "ba2676ece25b19775fbc2676b48ac106d6b54429716551dc6008190ced066607"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
+      "sha256": "d7e39fe70b9e4e876f085502941858946a8285d051dd5f79b94270d345d9ec1a"
+    }
+  ]
+}

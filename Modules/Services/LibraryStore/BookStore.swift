@@ -203,6 +203,8 @@ class BookStore: ObservableObject, BookProvider {
     /// Set when the shelf file could not be read, or did not decode and could not be copied
     /// aside. Writing would replace the only copy of data nobody has seen.
     private var metadataWritesBlocked = false
+    private var validatedRestorePausesWrites = false
+    private var metadataWriteDeferredByRestore = false
     private var lastPersistedPositionSnapshots: [UUID: PersistedPositionSnapshot] = [:]
     private var lastPersistedPositionSaveUptimeByBook: [UUID: TimeInterval] = [:]
 
@@ -2469,6 +2471,10 @@ class BookStore: ObservableObject, BookProvider {
     private static let metadataSaveMaximumDelay: TimeInterval = 10
 
     private func saveMeta() {
+        if validatedRestorePausesWrites {
+            metadataWriteDeferredByRestore = true
+            return
+        }
         saveWorkItem?.cancel()
         saveGeneration += 1
         let generation = saveGeneration
@@ -2670,11 +2676,46 @@ class BookStore: ObservableObject, BookProvider {
         }
     }
 
+    /// A short WebDAV boundary on this store's existing writer. Call on main,
+    /// then await queuedWritesLanded() before copying the old on-disk files.
+    @MainActor
+    func beginValidatedRestoreWrites() throws -> UInt64 {
+        guard !validatedRestorePausesWrites else { throw CocoaError(.fileLocking) }
+        flushPendingMetadataSave()
+        cancelPendingMetadataSave()
+        validatedRestorePausesWrites = true
+        metadataWriteDeferredByRestore = false
+        // Old writes may have completed before their main-thread note callback.
+        // Their bytes land before the barrier; their old bookkeeping must not
+        // replace the restored shelf's newer persisted-file baseline afterwards.
+        lastAppliedPersistSequence = persistSequence
+        return mutationRevision
+    }
+
+    @MainActor
+    func applyValidatedRestoreShelf(_ restored: [ReadingBook], persistedData: Data) {
+        cancelPendingMetadataSave()
+        books = restored
+        metadataWritesBlocked = false
+        lastAppliedPersistSequence = persistSequence
+        markMetadataPersisted(persistedData, records: records)
+    }
+
+    @MainActor
+    func finishValidatedRestoreWrites() {
+        validatedRestorePausesWrites = false
+        if metadataWriteDeferredByRestore {
+            metadataWriteDeferredByRestore = false
+            saveMeta()
+        }
+    }
+
     /// Reindexing changes the meaning of chapter numbers. Publish bookmark changes
     /// only after their full metadata snapshot is durably written, and reject edits
     /// made while the migration was measuring source/rendered correspondence.
     @MainActor
     func commitTXTBookmarks(bookId: UUID, original: [Bookmark], migrated: [Bookmark]) throws {
+        guard !validatedRestorePausesWrites else { throw CocoaError(.fileLocking) }
         guard let index = records.firstIndex(where: { $0.id == bookId }),
               records[index].bookmarks == original || records[index].bookmarks == migrated else {
             throw TXTLocationMigration.Failure.missingSourceIdentity
@@ -2811,6 +2852,10 @@ class BookStore: ObservableObject, BookProvider {
     }
 
     private func persist(_ input: MetadataWriteInput, inBackground: Bool) {
+        if validatedRestorePausesWrites {
+            metadataWriteDeferredByRestore = true
+            return
+        }
         persistSequence &+= 1
         let sequence = persistSequence
         if inBackground {
@@ -2991,15 +3036,9 @@ class BookStore: ObservableObject, BookProvider {
         // A shelf without the summary has its lists on disk all the same: a backup restored
         // over it never carries the summary (`strippedForSync`), and a build from before it
         // drops the fields when it rewrites the file.
-        var repaired = records
-        var didRepair = false
-        for index in repaired.indices where repaired[index].totalChapterNum == nil {
-            let bookID = repaired[index].id
-            guard chapterStore.hasStoredList(for: bookID),
-                  let chapters = chapterStore.chapters(for: bookID) else { continue }
-            repaired[index].applyChapterSummary(from: chapters)
-            didRepair = true
-        }
+        let result = restoringStoredChapterSummaries(in: records)
+        let repaired = result.books
+        let didRepair = result.didRepair
         if didRepair { records = repaired }
         recordsLoadedCompletely = complete
         if complete {
@@ -3010,6 +3049,27 @@ class BookStore: ObservableObject, BookProvider {
         if didRepair || chapterStore.hasUnwrittenChanges { saveMetaImmediately() }
         // Phase 3a-2: the covers the filler gave copies with none, for the shelf.
         Task { @MainActor [weak self] in await self?.refreshFilledCovers() }
+    }
+
+    /// Uses the same locked sidecar reader as startup, on the restore worker.
+    /// Sync backups omit summaries; keep the local TOC's summary before staging.
+    func preparingValidatedRestoreShelf(_ incoming: [ReadingBook]) -> [ReadingBook] {
+        SourcePerfTrace.span("webdav.restore.books.prepare", "books=\(incoming.count) main=\(Thread.isMainThread)") {
+            restoringStoredChapterSummaries(in: incoming).books
+        }
+    }
+
+    private func restoringStoredChapterSummaries(in incoming: [ReadingBook]) -> (books: [ReadingBook], didRepair: Bool) {
+        var repaired = incoming
+        var didRepair = false
+        for index in repaired.indices where repaired[index].totalChapterNum == nil {
+            let bookID = repaired[index].id
+            guard chapterStore.hasList(for: bookID),
+                  let chapters = chapterStore.chapters(for: bookID) else { continue }
+            repaired[index].applyChapterSummary(from: chapters)
+            didRepair = true
+        }
+        return (repaired, didRepair)
     }
 
     /// Whether the shelf is known to be complete: the file decoded, or there is no shelf

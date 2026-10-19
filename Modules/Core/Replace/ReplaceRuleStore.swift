@@ -10,7 +10,12 @@ final class ReplaceRuleStore: ObservableObject {
 
     static let shared = ReplaceRuleStore()
 
-    @Published private(set) var rules: [ReplaceRule] = []
+    @Published private(set) var rules: [ReplaceRule] = [] {
+        didSet { mutationRevision &+= 1 }
+    }
+    private(set) var mutationRevision: UInt64 = 0
+    private var validatedRestorePausesWrites = false
+    private var writeDeferredByRestore = false
 
     private let fileURL: URL
 
@@ -149,8 +154,54 @@ final class ReplaceRuleStore: ObservableObject {
     }
 
     private func save() {
-        guard let data = try? JSONEncoder().encode(rules) else { return }
-        try? data.write(to: fileURL, options: .atomic)
+        if validatedRestorePausesWrites {
+            writeDeferredByRestore = true
+            return
+        }
+        do { try Self.writeRules(rules, to: fileURL) }
+        catch { AppLogger.sync("Replace rules could not be persisted", level: .error) }
+    }
+
+    @MainActor
+    func beginValidatedRestoreWrites() throws -> UInt64 {
+        guard !validatedRestorePausesWrites else { throw CocoaError(.fileLocking) }
+        validatedRestorePausesWrites = true
+        writeDeferredByRestore = false
+        return mutationRevision
+    }
+
+    @MainActor
+    func applyValidatedRestoreRules(_ restored: [ReplaceRule]) {
+        rules = restored
+    }
+
+    @MainActor
+    func finishValidatedRestoreWrites() async {
+        // A genuine edit while the writer was paused is persisted off main.
+        // Repeat only for a newer mutation, never to retry a failed disk write.
+        while writeDeferredByRestore {
+            writeDeferredByRestore = false
+            let snapshot = rules
+            let revision = mutationRevision
+            let destination = fileURL
+            do {
+                try await WebDAVRestoreTransaction.offMain {
+                    try SourcePerfTrace.span("webdav.restore.rules.resume", "count=\(snapshot.count) main=\(Thread.isMainThread)") {
+                        try Self.writeRules(snapshot, to: destination)
+                    }
+                }
+            } catch {
+                AppLogger.sync("Replace-rule edits could not be persisted after restore", level: .error)
+                writeDeferredByRestore = true
+                break
+            }
+            if mutationRevision != revision { writeDeferredByRestore = true }
+        }
+        validatedRestorePausesWrites = false
+    }
+
+    private static func writeRules(_ snapshot: [ReplaceRule], to destination: URL) throws {
+        try JSONEncoder().encode(snapshot).write(to: destination, options: .atomic)
     }
 
     // MARK: - Presets

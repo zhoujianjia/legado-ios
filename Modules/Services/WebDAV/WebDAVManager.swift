@@ -19,11 +19,11 @@ enum WebDAVError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL:           return "伺服器網址格式無效"
-        case .authenticationFailed: return "認證失敗，請確認帳號和密碼"
-        case .connectionFailed(let code): return "連線失敗（HTTP \(code)）"
-        case .noData:               return "伺服器未返回資料"
-        case .fileNotFound:         return "雲端找不到備份檔案"
+        case .invalidURL:           return localized("伺服器網址格式無效")
+        case .authenticationFailed: return localized("認證失敗，請確認帳號和密碼")
+        case .connectionFailed(let code): return String(format: localized("連線失敗（HTTP %d）"), code)
+        case .noData:               return localized("伺服器未返回資料")
+        case .fileNotFound:         return localized("雲端找不到備份檔案")
         }
     }
 }
@@ -49,17 +49,19 @@ struct SyncConflict {
 final class WebDAVManager: ObservableObject {
 
     static let shared = WebDAVManager()
+    private let defaults: UserDefaults
+    private let restoreEnvironment: WebDAVRestoreEnvironment?
 
     // MARK: Settings (persisted to UserDefaults)
 
     @Published var serverUrl: String {
-        didSet { UserDefaults.standard.set(serverUrl, forKey: "webdav_url") }
+        didSet { defaults.set(serverUrl, forKey: "webdav_url") }
     }
     @Published var username: String {
-        didSet { UserDefaults.standard.set(username, forKey: "webdav_username") }
+        didSet { defaults.set(username, forKey: "webdav_username") }
     }
     @Published var password: String {
-        didSet { UserDefaults.standard.set(password, forKey: "webdav_password") }
+        didSet { defaults.set(password, forKey: "webdav_password") }
     }
 
     // MARK: State
@@ -68,7 +70,7 @@ final class WebDAVManager: ObservableObject {
     @Published var lastSyncDate: Date? {
         didSet {
             if let date = lastSyncDate {
-                UserDefaults.standard.set(date, forKey: "webdav_last_sync")
+                defaults.set(date, forKey: "webdav_last_sync")
             }
         }
     }
@@ -79,11 +81,11 @@ final class WebDAVManager: ObservableObject {
     // MARK: Private
 
     /// Unique per-device ID stored in UserDefaults on first generation.
-    private static var deviceId: String {
+    private var deviceId: String {
         let key = "sync_device_id"
-        if let id = UserDefaults.standard.string(forKey: key) { return id }
+        if let id = defaults.string(forKey: key) { return id }
         let id = UUID().uuidString
-        UserDefaults.standard.set(id, forKey: key)
+        defaults.set(id, forKey: key)
         return id
     }
 
@@ -110,11 +112,13 @@ final class WebDAVManager: ObservableObject {
 
     // MARK: Initialization
 
-    private init() {
-        serverUrl    = UserDefaults.standard.string(forKey: "webdav_url") ?? ""
-        username     = UserDefaults.standard.string(forKey: "webdav_username") ?? ""
-        password     = UserDefaults.standard.string(forKey: "webdav_password") ?? ""
-        lastSyncDate = UserDefaults.standard.object(forKey: "webdav_last_sync") as? Date
+    init(defaults: UserDefaults = .standard, restoreEnvironment: WebDAVRestoreEnvironment? = nil) {
+        self.defaults = defaults
+        self.restoreEnvironment = restoreEnvironment
+        serverUrl    = defaults.string(forKey: "webdav_url") ?? ""
+        username     = defaults.string(forKey: "webdav_username") ?? ""
+        password     = defaults.string(forKey: "webdav_password") ?? ""
+        lastSyncDate = defaults.object(forKey: "webdav_last_sync") as? Date
     }
 
     /// Bind the live bookshelf so `restore()` can refresh it in place. Call once
@@ -134,6 +138,10 @@ final class WebDAVManager: ObservableObject {
     /// `retryOnConnectionFailure(true)` recovers from. Safe to delete once the
     /// WebDAV server in use stops dropping idle keep-alive connections.
     private func send(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        try await Self.sendRequest(request)
+    }
+
+    private static func sendRequest(_ request: URLRequest) async throws -> (Data, URLResponse) {
         do {
             return try await Self.session.data(for: request)
         } catch {
@@ -200,7 +208,7 @@ final class WebDAVManager: ObservableObject {
         // 4. manifest.json (for conflict detection)
         let deviceName = await MainActor.run { UIDevice.current.name }
         let manifest = SyncManifest(
-            deviceId: Self.deviceId,
+            deviceId: deviceId,
             deviceName: deviceName,
             backupDate: Date(),
             appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
@@ -249,59 +257,88 @@ final class WebDAVManager: ObservableObject {
     // MARK: - Private Restore Implementation
 
     private func performRestore(skipConflictCheck: Bool) async throws {
-        await setSync(true, message: "還原中…")
-        defer { Task { @MainActor in self.isSyncing = false } }
-
-        // ── Conflict Detection ──────────────────────────────────────────────────────
-        if !skipConflictCheck {
-            if let manifestData = try? await get(path: "/yuedu/manifest.json"),
-               let remote = try? JSONDecoder().decode(SyncManifest.self, from: manifestData) {
-                let isOtherDevice = remote.deviceId != Self.deviceId
-                // Local has synced before → cloud may be an older backup from another device,
-                // potentially overwriting newer local data.
-                if isOtherDevice, let localSync = lastSyncDate {
-                    await MainActor.run {
-                        self.pendingConflict = SyncConflict(remote: remote, localLastSync: localSync)
-                        self.statusMessage = "偵測到衝突，請選擇要使用哪個版本"
-                    }
-                    return
+        // Freeze mutable UI configuration once. The worker never reads these
+        // Published values, credentials or the live stores from a background task.
+        let (configuration, environment) = try await MainActor.run {
+            guard !isSyncing else { throw CocoaError(.fileLocking) }
+            isSyncing = true
+            statusMessage = localized("還原中…")
+            let configuration = WebDAVRestoreConfiguration(serverURL: serverUrl,
+                authorization: authHeader, deviceID: deviceId, lastSyncDate: lastSyncDate)
+            return (configuration, restoreEnvironment ?? liveRestoreEnvironment())
+        }
+        var prepared: WebDAVRestoreTransaction.Prepared?
+        var lease: WebDAVRestoreWriterLease?
+        do {
+            let downloaded = try await WebDAVRestoreTransaction.offMain {
+                try await WebDAVRestoreTransaction.prepare(configuration: configuration, environment: environment)
+            }
+            prepared = downloaded
+            if !skipConflictCheck, let remote = downloaded.manifest,
+               remote.deviceId != configuration.deviceID, let localSync = configuration.lastSyncDate {
+                await MainActor.run {
+                    pendingConflict = SyncConflict(remote: remote, localLastSync: localSync)
+                    statusMessage = localized("偵測到衝突，請選擇要使用哪個版本")
+                    isSyncing = false
+                }
+                await WebDAVRestoreTransaction.cleanUpOffMain(downloaded.directory)
+                return
+            }
+            try Task.checkCancellation()
+            let writerLease = try await environment.prepareStores(downloaded.payload)
+            lease = writerLease
+            try await WebDAVRestoreTransaction.offMain {
+                try await WebDAVRestoreTransaction.commit(downloaded, environment: environment, lease: writerLease) {
+                    guard writerLease.isCurrent() else { throw WebDAVRestoreFailure.commitFailed }
+                    environment.publish(downloaded.payload)
                 }
             }
-        }
-
-        // ── Perform Restore ─────────────────────────────────────────────────────────
-        let libDir  = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
-
-        if let sourcesData = try? await get(path: "/yuedu/book_sources.json") {
-            try sourcesData.write(to: StorageLocations.bookSourcesFile, options: .atomic)
-            if let decoded = try? JSONDecoder().decode([BookSource].self, from: sourcesData) {
-                await MainActor.run { BookSourceStore.shared.sources = decoded }
+            await writerLease.finish()
+            lease = nil
+            await WebDAVRestoreTransaction.cleanUpOffMain(downloaded.directory)
+            await MainActor.run {
+                if downloaded.payload.books != nil { defaults.removeObject(forKey: "yd_books_meta") }
+                lastSyncDate = Date()
+                statusMessage = localized("還原成功")
+                isSyncing = false
             }
+        } catch {
+            if let lease { await lease.finish() }
+            // Failed rollback intentionally retains the owned recovery directory.
+            let preserveRecovery: Bool
+            if let failure = error as? WebDAVRestoreFailure, case .rollbackFailed = failure { preserveRecovery = true }
+            else { preserveRecovery = false }
+            if let prepared, !preserveRecovery {
+                await WebDAVRestoreTransaction.cleanUpOffMain(prepared.directory)
+            }
+            let presented: Error
+            if error is WebDAVRestoreFailure || error is WebDAVError || error is URLError || error is CancellationError {
+                presented = error
+            } else {
+                // File-system errors may include an internal staging pathname.
+                presented = WebDAVRestoreFailure.commitFailed
+            }
+            await MainActor.run {
+                isSyncing = false
+                statusMessage = presented.localizedDescription
+            }
+            throw presented
         }
+    }
 
-        if let booksData = try? await get(path: "/yuedu/books.json") {
-            try booksData.write(to: StorageLocations.booksMetadataFile, options: .atomic)
-            // Clean up any legacy UserDefaults entry from before the file migration.
-            UserDefaults.standard.removeObject(forKey: "yd_books_meta")
-        }
-
-        if let rulesData = try? await get(path: "/yuedu/replace_rules.json") {
-            let url = libDir.appendingPathComponent("replace_rules.json")
-            try rulesData.write(to: url, options: .atomic)
-        }
-
-        // Reload the in-memory stores from the just-restored files so the
-        // bookshelf and replace-rule list update live, mirroring the iCloud
-        // restore path. Book sources were already reloaded above.
-        await MainActor.run {
-            boundBookStore?.reloadFromDisk()
-            ReplaceRuleStore.shared.reloadFromDisk()
-        }
-
-        await MainActor.run {
-            self.lastSyncDate = Date()
-            self.statusMessage = "還原成功"
-        }
+    @MainActor
+    private func liveRestoreEnvironment() -> WebDAVRestoreEnvironment {
+        let boundary = WebDAVRestoreStoreBoundary(bookStore: boundBookStore)
+        let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        return WebDAVRestoreEnvironment(destinations: [
+            .sources: StorageLocations.bookSourcesFile,
+            .books: StorageLocations.booksMetadataFile,
+            .rules: library.appendingPathComponent("replace_rules.json"),
+        ], temporaryRoot: FileManager.default.temporaryDirectory,
+           transport: { try await Self.sendRequest($0) },
+           prepareBooks: { [boundBookStore] in boundBookStore?.preparingValidatedRestoreShelf($0) ?? $0 },
+           prepareStores: { try await boundary.prepare($0) },
+           publish: { boundary.publish($0) })
     }
 
     // MARK: - Private HTTP Methods
@@ -363,29 +400,6 @@ final class WebDAVManager: ObservableObject {
             throw error
         } catch {
             AppLogger.sync("PUT \(path) \(data.count)B failed: \(String(describing: (error as? URLError)?.code)) \(error.localizedDescription)", level: .error)
-            throw error
-        }
-    }
-
-    /// GET: Download data from the specified path.
-    private func get(path: String) async throws -> Data {
-        var request = try makeRequest(path: path)
-        request.httpMethod = "GET"
-
-        do {
-            let (data, response) = try await send(request)
-            guard let http = response as? HTTPURLResponse else { throw WebDAVError.noData }
-            AppLogger.sync("GET \(path) → \(http.statusCode) \(data.count)B", level: .notice)
-            if http.statusCode == 401 { throw WebDAVError.authenticationFailed }
-            if http.statusCode == 404 { throw WebDAVError.fileNotFound }
-            if !(200...299).contains(http.statusCode) {
-                throw WebDAVError.connectionFailed(http.statusCode)
-            }
-            return data
-        } catch let error as WebDAVError {
-            throw error
-        } catch {
-            AppLogger.sync("GET \(path) failed: \(String(describing: (error as? URLError)?.code)) \(error.localizedDescription)", level: .error)
             throw error
         }
     }

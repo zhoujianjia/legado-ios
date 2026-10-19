@@ -183,6 +183,11 @@ struct ContentRule: Codable {
     var contentBatch: String?
     var maxBatchSize: Int?
 
+    enum CodingKeys: String, CodingKey {
+        case content, subContent, title, nextContentUrl, webJs, sourceRegex, replaceRegex
+        case imageStyle, imageDecode, payAction, callBackJs, contentBatch, maxBatchSize
+    }
+
     init() {}
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -316,6 +321,15 @@ struct ReviewRule: Codable {
     var replyNameRule: String?
     var replyBadgeRule: String?
     var replyContentRule: String?
+
+    enum CodingKeys: String, CodingKey {
+        case review, reviewUrl, avatarRule, contentRule, postTimeRule, reviewQuoteUrl
+        case voteUpUrl, voteDownUrl, postReviewUrl, postQuoteUrl, deleteUrl, enabled
+        case reviewSummaryUrl, summaryListRule, summaryParagraphIndexRule, summaryParagraphDataRule, summaryCountRule
+        case reviewDetailUrl, reviewDetailNextPageUrl, detailListRule, detailIdRule
+        case detailAvatarRule, detailNameRule, detailBadgeRule, detailContentRule
+        case replyListRule, replyIdRule, replyAvatarRule, replyNameRule, replyBadgeRule, replyContentRule
+    }
 
     init() {}
     init(from decoder: Decoder) throws {

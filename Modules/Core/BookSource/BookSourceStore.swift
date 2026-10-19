@@ -1052,6 +1052,10 @@ class BookSourceStore: ObservableObject {
     /// edit, each holding its own snapshot of the library. Now the queue writes whatever
     /// snapshot is newest when it gets there; edits that land meanwhile only replace it.
     private func save() {
+        if validatedRestorePausesWrites {
+            writeDeferredByRestore = true
+            return
+        }
         if let error = loadError {
             AppLogger.cache("BookSourceStore preserved an unreadable library instead of replacing it", error: error)
             return
@@ -1070,6 +1074,39 @@ class BookSourceStore: ObservableObject {
     }
 
     private let pendingWrite = PendingSourceWrite()
+    private var validatedRestorePausesWrites = false
+    private var writeDeferredByRestore = false
+
+    @MainActor
+    func beginValidatedRestoreWrites() throws -> Int {
+        guard !validatedRestorePausesWrites else { throw CocoaError(.fileLocking) }
+        validatedRestorePausesWrites = true
+        writeDeferredByRestore = false
+        // Keep the pre-boundary snapshot queued: the async drain makes the
+        // recovery copy include the latest already-requested local save.
+        return mutationRevision
+    }
+
+    static func queuedWritesLanded() async {
+        await withCheckedContinuation { continuation in
+            persistQueue.async { continuation.resume() }
+        }
+    }
+
+    @MainActor
+    func applyValidatedRestoreSources(_ restored: [BookSource]) {
+        loadState.withLock { $0.readError = nil }
+        sources = restored
+    }
+
+    @MainActor
+    func finishValidatedRestoreWrites() {
+        validatedRestorePausesWrites = false
+        if writeDeferredByRestore {
+            writeDeferredByRestore = false
+            save()
+        }
+    }
 
     /// How much encoded JSON is gathered before it goes to the file.
     private static let libraryWriteChunkBytes = 1 << 20

@@ -138,12 +138,25 @@ xcrun xcresulttool get test-results tests --path "$WORK/source-schema.xcresult" 
 schema_count_status=0
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/source-schema-summary.json" \
   --expected 19 --expected-executions 50 > "$WORK/source-schema-result.json" || schema_count_status=$?
-# Collect all three new groups before enforcing their independent verdicts, so
+# Owned three-file WebDAV restore faults are independent from rule compatibility.
+# 12 methods / 27 executions; real BookStore writer coordination is included.
+restore_test_status=0
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/webdav-restore-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/webdav-restore.xcresult" \
+  -only-testing:'yuedu appTests/WebDAVRestoreIntegrityTests' || restore_test_status=$?
+restore_artifact_status=0
+xcrun xcresulttool get test-results summary --path "$WORK/webdav-restore.xcresult" > "$WORK/webdav-restore-summary.json" || restore_artifact_status=$?
+xcrun xcresulttool get test-results tests --path "$WORK/webdav-restore.xcresult" > "$WORK/webdav-restore-tests.json" || restore_artifact_status=$?
+restore_count_status=0
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/webdav-restore-summary.json" \
+  --expected 12 --expected-executions 27 > "$WORK/webdav-restore-result.json" || restore_count_status=$?
+# Collect all four new groups before enforcing their independent verdicts, so
 # an incomplete baseline cannot hide supply/schema evidence. Earlier gates and
 # the TXT/loopback acceptance protocols keep their established behavior.
 [[ $reader_test_status == 0 && $reader_artifact_status == 0 && $reader_baseline_status == 0 && $reader_count_status == 0 \
    && $supply_test_status == 0 && $supply_artifact_status == 0 && $supply_count_status == 0 \
-   && $schema_test_status == 0 && $schema_artifact_status == 0 && $schema_count_status == 0 ]]
+   && $schema_test_status == 0 && $schema_artifact_status == 0 && $schema_count_status == 0 \
+   && $restore_test_status == 0 && $restore_artifact_status == 0 && $restore_count_status == 0 ]]
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/txt-ui-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/txt-ui.xcresult" \
   -only-testing:'yuedu appUITests/ReaderLocalSmokeUITests'

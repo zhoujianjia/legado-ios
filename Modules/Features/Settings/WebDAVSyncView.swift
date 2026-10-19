@@ -39,10 +39,16 @@ struct WebDAVSyncView: View {
         }
         .alert(localized("偵測到備份衝突"), isPresented: $showConflictAlert) {
             Button(localized("使用雲端備份"), role: .destructive) {
-                Task { try? await manager.resolveConflict(keepRemote: true) }
+                Task {
+                    do { try await manager.resolveConflict(keepRemote: true) }
+                    catch { presentError(error) }
+                }
             }
             Button(localized("保留本地資料"), role: .cancel) {
-                Task { try? await manager.resolveConflict(keepRemote: false) }
+                Task {
+                    do { try await manager.resolveConflict(keepRemote: false) }
+                    catch { presentError(error) }
+                }
             }
         } message: {
             if let c = manager.pendingConflict {
@@ -185,6 +191,7 @@ struct WebDAVSyncView: View {
         do {
             try await manager.restore()
             await MainActor.run {
+                guard manager.pendingConflict == nil else { return }
                 alertTitle   = localized("還原成功")
                 alertMessage = localized("資料已還原，書庫與替換規則已即時更新")
                 showAlert    = true
