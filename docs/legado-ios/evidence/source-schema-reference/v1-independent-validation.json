@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "observedAtUTC": "2026-10-19T15:24:35.842181+00:00",
+  "kind": "independent-owned-synthetic-comparator-checks-not-Swift-or-device-evidence",
+  "checks": [
+    {
+      "name": "zero-observations",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "missing-original-row",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "missing-unknown-row",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "duplicate-original-row",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "duplicate-unknown-row",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "changed-route-duplicates-known-row",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "missing-unknown-stored-stage",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "extra-malformed-stage",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "empty-log",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "unrelated-log",
+      "passed": true,
+      "expected": "reject-incomplete-or-malformed-collection"
+    },
+    {
+      "name": "raw-exponent-kept-without-float",
+      "passed": true
+    },
+    {
+      "name": "complete-numeric-mismatch-stays-complete-but-not-matching",
+      "passed": true
+    }
+  ],
+  "commands": [
+    {
+      "name": "portable-eight",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\scripts\\reader-experience\\test-rule-defaults-reference.py"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "stdout": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\portable-eight.stdout.txt",
+      "stderr": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\portable-eight.stderr.txt"
+    },
+    {
+      "name": "synthetic-mismatch-cli",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\scripts\\reader-experience\\rule-defaults-reference.py",
+        "--log",
+        "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\owned-synthetic-mismatch-not-device.log",
+        "--output",
+        "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\owned-synthetic-mismatch-result.json"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "stdout": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\synthetic-mismatch-cli.stdout.txt",
+      "stderr": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\synthetic-mismatch-cli.stderr.txt"
+    }
+  ],
+  "portableMethods": 8,
+  "syntheticRows": 319,
+  "selectedGetterSnapshots": 760,
+  "unknownSnapshots": 156,
+  "mismatchCLIExitCode": 1,
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "iOSTestsExecuted": 0
+}

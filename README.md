@@ -28,7 +28,9 @@
 
 开发诊断包通过 Actions 临时提供下载，保留一天，随包提供准确提交的源码快照和构建清单。现有 JVM 体验版需要 iOS / iPadOS 18 或更新版本；手机中已有的书源、书籍和阅读数据不删除。
 
-build 10 已编译并核对，IPA、对应源码和清单已放入本机下载目录，见[构建记录](docs/legado-ios/native-reader-experience-build10.json)。通过 iloader 使用原 Apple ID 覆盖安装；不要先卸载旧版。首次安装和信任设置见[安装说明](docs/legado-ios/windows-install.md)。IPA 需要自行签名。“设置 → 高级 → 自续签验证”目前仅作手动连接检查和报告导出，自动续签尚未实现。
+最新已交付的是 build 11，IPA、对应源码和清单已放入本机下载目录，见[构建记录](docs/legado-ios/native-reader-experience-build11.json)。使用原签名工具、Apple ID 和 Bundle ID 映射签名并覆盖安装，不要先卸载旧版。首次安装和信任设置见[安装说明](docs/legado-ios/windows-install.md)。IPA 需要自行签名。“设置 → 高级 → 自续签验证”目前仅作手动连接检查和报告导出，自动续签尚未实现。
+
+当前源码中的动态服务发现、字体文件事务和阅读进度保存顺序修复仍在集成验证；它们不属于已交付的 build 11。书源字段对照继续按[执行计划](docs/legado-ios/completion-plan.json)推进，尚未建立完整兼容结论。
 
 ## 兼容性与边界
 

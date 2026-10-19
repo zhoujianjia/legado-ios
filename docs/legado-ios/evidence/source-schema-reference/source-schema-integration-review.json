@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "kind": "read-only-source-schema-observer-ci-integration-review",
+  "observedAtUTC": "2026-10-19T15:24:39.570548+00:00",
+  "baseCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "status": "implementation-gates-identified-not-integrated-or-executed",
+  "preparation": {
+    "path": ".build/source-schema-reference-preparation.json",
+    "bytes": 8087,
+    "sha256": "8afae40381d743da047d56c8c4b80e8f5517afd0a9ee2ab73e989bcf50915538"
+  },
+  "frozenPatch": {
+    "path": ".build/source-schema-reference.patch",
+    "bytes": 44153,
+    "sha256": "b3715ab5b5c95612f2eb739bfbb9eec5220552885067199b1632506adb7ba83e"
+  },
+  "frozenObserverInputsUnchanged": true,
+  "observerInputs": [
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+      "bytes": 13463,
+      "sha256": "f2d6235ad3f9bf5148a892ecb2ee5d9125a1a79696499c9d1353afde48ee75fd"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl",
+      "bytes": 8226,
+      "sha256": "214b64e5712d1406b8a01441971c20660ec21439968224bdfda6286518470ebc"
+    },
+    {
+      "path": "scripts/reader-experience/rule-defaults-reference.py",
+      "bytes": 13588,
+      "sha256": "6baed7563556eb9aec6a5e2ad03497672201fd7da9f0640fb0dd5c6565a360bc"
+    },
+    {
+      "path": "scripts/reader-experience/test-rule-defaults-reference.py",
+      "bytes": 7127,
+      "sha256": "7885eb55e08316731271294d08bfc49db6f677ca5a0bc8c3d0186ff6351038e6"
+    }
+  ],
+  "pipelineInputs": [
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "bytes": 11510,
+      "sha256": "8c617d1baebd1e027caf10638a283a90561487eb166580a9bea63704545eeaf7"
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "bytes": 13903,
+      "sha256": "056f26669be40d8479e102719e4969331ef0ff08bdaf068fd1c711f65cb2634f"
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "bytes": 27428,
+      "sha256": "2eb319c2d9ca73692e618e1bffe00b1142e35784e7cd140ad037869006a2620e"
+    },
+    {
+      "path": "scripts/reader-experience/reader-stage-baseline.py",
+      "bytes": 17073,
+      "sha256": "56580b42ce989cb66b83845368e576adc6384c1f76edec6ac9ed1e35cd3a53d6"
+    },
+    {
+      "path": "scripts/xctest.sh",
+      "bytes": 7631,
+      "sha256": "fc3b9a2c45506b07d75945c571866396ad02f4cbe12f7125b3e930ef5b180da2"
+    },
+    {
+      "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "bytes": 55791,
+      "sha256": "41d7f969a72e37fd9d634b5a192e7c28dae469c859877e09e2d9ccb59848d0e7"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSource.swift",
+      "bytes": 46931,
+      "sha256": "682cdd47ee99602a49c8b9389e049ad2b9c3b2e827b4a8e354485243a7a30c2f"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceImportOptions.swift",
+      "bytes": 5959,
+      "sha256": "189ca105fe505287073622b5a5ed726498c961febe9d008cac69fa755d3ab464"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceStore.swift",
+      "bytes": 55607,
+      "sha256": "d87ff6800b49de00addd4559f0bc5129fe604b69cd1d03406b80d380f1ccbfc1"
+    }
+  ],
+  "checkpointReuse": {
+    "runnerAndProtocolReusable": true,
+    "protocol": "Existing reader-smoke-* source-tag workflow, macos-15, dynamically selected Xcode/Simulator, LEGADO_RUNTIME_SOURCE_ONLY=1, existing isolated local-mode prepare/overlays and XCTest wrapper.",
+    "oldCheckpointAcceptsNewObserver": false,
+    "reason": "Current source-schema selection is only ContentRule/ReviewRule/mainJs preservation (19 methods/50 executions). The four new files are not part of the bound base commit and BookSourceRuleDefaultsReferenceTests is not selected. Neither an older green run nor compilation of another source revision establishes these observations.",
+    "nextRun": "One future consolidated source-only checkpoint must include the reviewed observer patch and integration gates. Keep existing group selections/counts unchanged; add an independent group before the batch combined gate and UI tests. Do not rerun or query any current CI for this review."
+  },
+  "minimalIntegrationChanges": [
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "change": "Add the 8 portable comparator guard tests to preflight and an explicit observer-only acceptance-boundary summary. Existing always-upload of .build/reader-smoke already retains all proposed group files; no new workflow/runner/tag family or release artifact is needed."
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "change": "Add dedicated rule-defaults-reference.xcresult, -tests.log, -summary.json, -tests.json and -result.json. Reuse ARGS and scripts/xctest.sh; explicitly select only yuedu appTests/BookSourceRuleDefaultsReferenceTests. Retain raw result/log even when the wrapper, extraction or comparison fails; enforce collection status at the existing batch-end gate after collecting all independent groups."
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py plus its portable guard tests, or a separate small observer integration collector",
+      "change": "Add a fail-closed actual-execution gate: verify_summary(summary,3,3), exactly the three expected Passed leaf identities, no additional/duplicate/failed/skipped/expected-failure leaves, no parameter children, and wrapper exit status 0. Count-only verification is insufficient. Bind current source/overlays/environment and hashes to the raw xcresult summary/tree/log and comparison report."
+    },
+    {
+      "path": "observer integration collector",
+      "change": "Invoke the frozen comparator with mandatory --log <actual new-group -l log> and --output <fresh comparison.json>. Require a new parseable report with schemaVersion=1, observationLogProvided=true, fixtureContractsValidated=true, observationCollectionComplete=true and the exact matrix counts. Cross-check its log SHA256 and fixture/helper/observer hashes. Refuse an existing output/result bundle to prevent accepting a prior run."
+    }
+  ],
+  "proposedInvocation": [
+    "bash \"$REPO_DIR/scripts/xctest.sh\" -l \"$WORK/rule-defaults-reference-tests.log\" -t 1200 -- \"${ARGS[@]}\" -resultBundlePath \"$WORK/rule-defaults-reference.xcresult\" -only-testing:'yuedu appTests/BookSourceRuleDefaultsReferenceTests'",
+    "xcrun xcresulttool get test-results summary --path \"$WORK/rule-defaults-reference.xcresult\" > \"$WORK/rule-defaults-reference-summary.json\"",
+    "xcrun xcresulttool get test-results tests --path \"$WORK/rule-defaults-reference.xcresult\" > \"$WORK/rule-defaults-reference-tests.json\"",
+    "python3 \"$SCRIPT_DIR/rule-defaults-reference.py\" --log \"$WORK/rule-defaults-reference-tests.log\" --output \"$WORK/rule-defaults-reference-comparison.json\""
+  ],
+  "executionGate": {
+    "methods": 3,
+    "executions": 3,
+    "failures": 0,
+    "skips": 0,
+    "expectedFailures": 0,
+    "expectedLeaves": [
+      "BookSourceRuleDefaultsReferenceTests/originalReferenceContracts()",
+      "BookSourceRuleDefaultsReferenceTests/observeCurrentSwiftRepresentation()",
+      "BookSourceRuleDefaultsReferenceTests/observeUnknownFieldRoutes()"
+    ],
+    "treeAdapter": "Reuse the local-product exact identity walker pattern; allow only its known optional yuedu appTests/ prefix. New unparameterized methods must have no Arguments children. Preserve actual SDK tests-tree evidence; never infer identity from a synthetic fixture or summary count alone."
+  },
+  "collectionGate": {
+    "originalReferenceIdentities": 40,
+    "originalRoutesPerIdentity": 7,
+    "originalObservationRows": 280,
+    "selectedGetterSnapshots": 760,
+    "forwardUnknownFixtures": 13,
+    "unknownRoutesPerIdentity": 3,
+    "unknownObservationRows": 39,
+    "forwardUnknownSnapshots": 156,
+    "observationRows": 319,
+    "totalSnapshots": 916,
+    "exactStages": "Direct original route: decoded-rule only. Each other original route: imported, edited, export-reloaded. Each unknown route: imported, edited, export-reloaded, stored-reloaded. Exact identity/route/stage validation already exists in the frozen comparator.",
+    "logSource": "scripts/xctest.sh redirects actual xcodebuild stdout/stderr to its -l file. The outer reader-smoke.log tee receives wrapper summaries, not the complete SOURCE_RULE_DEFAULTS_SWIFT rows. Feed the dedicated raw -l log to the comparator. Existing reader-stage capture uses the same approach.",
+    "missingPrintFallback": "If the real SDK does not forward these print rows into xcodebuild output, treat that run as incomplete. Export the actual test console/stdout from that same xcresult using supported xcresulttool output and bind that raw input; do not synthesize rows, fall back to fixture-only mode, or accept an empty log."
+  },
+  "statusSeparation": {
+    "fixtureOnlyIsNotObservation": "Without --log the frozen CLI intentionally returns 0 for fixture validation and emits observationLogProvided=false with no selectedContractsMatch. The new integration gate must reject this as execution/observation evidence.",
+    "exitOneIsAmbiguous": "A complete comparison with actual differences writes a fresh report then exits 1. Malformed/incomplete input also exits nonzero, often without a report. Preserve exit status/stdout/stderr; require complete fresh report and exact matrix plus passing actual XCTest before classifying observed-differences. Never blanket-ignore exit 1.",
+    "observerAcceptance": "Collection status may be complete while selectedContractsMatch=false. Use an explicit observed-differences status with compatibilityAccepted=false; do not label it parity passed, skip, KnownIssue or expected failure. Any structural/test/provenance failure must fail the collection gate. If selected compatibility is an acceptance criterion, propagate selectedContractsMatch=false as a failed criterion rather than weakening it.",
+    "representationBoundary": "Only five selected original getter/default-Gson fields and 13 project unknown-preservation cases are compared. serializeNulls remains an explicit diagnostic variant. Nullable/empty callback runtime eligibility is separate from wire retention. Full source-schema compatibility remains false."
+  },
+  "sourceAndEnvironmentBinding": "Reuse same-run overlays.json/source SHA, build-settings.json, xcode-version and reader-stage-environment.json inputs. Keep actual Debug Swift language/concurrency settings, SDK, Simulator runtime build/destination and source hashes; verify current observer/comparator/13-case fixture and four pinned original fixtures match the reviewed committed checkpoint. The comparator supplied-text provenance flags alone do not attest compilation or iOS execution.",
+  "riskReview": [
+    {
+      "area": "actor and access",
+      "assessment": "No definite blocker from source inspection: the suite is serialized, uses existing internal Codable types through @testable import, and calls unannotated static parseSources/writeLibrary plus importEditableJSON/importParse. It does not touch BookSourceStore.shared, GlobalSettings or UIKit. Private helper types are used only inside nonparameterized test methods. Actual app Swift5 and approachable-concurrency test-target macro/type checking are still unperformed; grammar success is not SDK compilation."
+    },
+    {
+      "area": "test membership",
+      "assessment": "Tests/iOS is an existing PBXFileSystemSynchronizedRootGroup associated with yuedu appTests; the new Swift file should join that target without a pbxproj edit. Require actual three identities in xcresult to prove inclusion; source presence is insufficient."
+    },
+    {
+      "area": "fixture paths",
+      "assessment": "Four parents from Tests/iOS/yuedu appTests/<file>.swift reach repository root. This relies on #filePath resolving to the same checked-out path still readable by the Simulator process, as existing host-file fixtures do; add a pre-Xcode fixture readability/hash check and let thrown Swift loads fail. It is not a device/bundle resource design and must not be accepted as physical-device execution. No fabricated fallback path."
+    },
+    {
+      "area": "fixture safety",
+      "assessment": "Inputs are public pinned fixtures or owned .invalid sources; unknown storage uses a uniquely owned temporary directory with deferred cleanup. No private source files or network fixture server is required."
+    }
+  ],
+  "changesMade": {
+    "trackedFiles": false,
+    "frozenFourFiles": false,
+    "ciHooks": false,
+    "production": false,
+    "commitsOrPushes": false
+  },
+  "actualExecution": {
+    "swiftSDKCompile": false,
+    "iOSTests": false,
+    "ciTriggered": false,
+    "ciQueried": false,
+    "newTestsOrHelpersRunDuringThisReview": false,
+    "realSwiftObservationRows": 0
+  },
+  "nextAction": "Root can implement these minimal gates in one future consolidated source-only batch after accepting the frozen patch; this read-only review neither schedules nor triggers that run."
+}

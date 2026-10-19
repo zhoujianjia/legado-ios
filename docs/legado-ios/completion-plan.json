@@ -153,11 +153,10 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Submit one repaired source-only renewal checkpoint and one requested build12 Release candidate from the same fixed source. Retain their separate results; accept no package before actual tests and independent package/source audits. Continue the separate font transaction batch while cloud work runs.",
-      "alreadyRunningTasks": "Discovery run 39267868623/source 6b3a3bd completed: Debug Simulator app compiled and linked, but a test fixture expression exceeded the compiler type-check budget; iOS cases executed=0. Minimal typed-fixture and historical benchmark-import repairs are source-reviewed. Delivered build11 remains ccdddd3; no build12 acceptance yet."
+      "nextPlannedCheckpoint": "Submit the reviewed position, font, source-schema observer and actual SDK fixture repair as one fixed-source stage checkpoint, with separate reader-smoke and renewal diagnostic results. Continue independent ready development. Do not repeat the Release package for a test-only repair; any reuse requires unchanged relevant source proof, actual test results and independent package/source audits.",
+      "alreadyRunningTasks": "Renewal run 39272841721/source a76d380 completed with one prefetch fixture initialization compiler error and zero iOS executions; Debug Simulator main-app compile/link evidence and the minimal local-host repair are retained. Release run 39272843081/source a76d380 and font smoke 39274456679/source ccafee5 were last observed in_progress at 2026-10-19T15:40Z. The font source contains the same fixture defect, which is a source risk rather than an observed font result. Delivered build11 remains ccdddd3; no build12 acceptance yet."
     },
     "nextReadyBatch": [
-      "source-schema",
       "reading-performance-and-prefetch",
       "local-formats",
       "license-and-source-closure"
@@ -168,7 +167,6 @@
       "reading-performance-and-prefetch",
       "license-and-source-closure",
       "runtime-core",
-      "source-schema",
       "traditional-rules",
       "url-http",
       "reader-layout",
@@ -182,7 +180,8 @@
       "backup-webdav",
       "automatic-renewal-feasibility",
       "reading-experience-design",
-      "reading-position-write-integrity"
+      "reading-position-write-integrity",
+      "source-schema"
     ],
     "deferredQueue": [],
     "currentDeviceCandidate": {
@@ -930,21 +929,22 @@
         "content-rule-schema",
         "review-rule-schema-followup",
         "rule-schema-field-audit",
-        "original-rule-defaults-reference"
+        "original-rule-defaults-reference",
+        "source-schema-reference-integration"
       ],
       "execution": {
         "summaryZh": "书源字段、默认值及导入导出",
-        "currentState": "ContentRule三字段与ReviewRule三十原字段已进入既有Swift模型，mainJS保留已有定向覆盖；这不解决旧safeString将absent/null归为空串、callBackJs空串归nil，以及新可选文本不支持原Gson非String转换的差异。 40条原getter/serializer基线已准确区分null、空串、空白、true、1e3及容器文本化；尚未与Swift逐条运行对比。固定CodingKeys仍丢未知字段，RowUi/ExploreKind/FlexChildStyle只是部分投影，不能称整体schema无损。 2747900 实际云编译发现解码辅助函数无法引用隐式 CodingKeys；本批显式列全两结构字段，编译及 19 方法／50 执行仍待复验。",
+        "currentState": "40 条合法公有原 getter／默认 Gson／显式 serializeNulls 参考已接入现有模型的观察器；另已准备 13 个未知字段夹具，调用现有导入、编辑、导出与 writer 链，尚未执行。新增独立 3 方法诊断组要求实际叶身份、319 条观察与 916 个快照、source／环境／原始日志绑定。主树已保留 position 18／28；便携 reference 8、collector 19、smoke 24、renewal 16 及 Bash／actionlint／diff 检查已有原件。Swift／SDK 实际执行和真实观察仍为 0；源码推导 24 差异／16 选定字段相等只是预测，既有 19／50 preservation 与完整书源兼容继续分开。",
         "remainingWork": [
-          "ContentRule三字段与ReviewRule三十原字段已进入既有Swift模型，mainJS保留已有定向覆盖；这不解决旧safeString将absent/null归为空串、callBackJs空串归nil，以及新可选文本不支持原Gson非String转换的差异。 40条原getter/serializer基线已准确区分null、空串、空白、true、1e3及容器文本化；尚未与Swift逐条运行对比。固定CodingKeys仍丢未知字段，RowUi/ExploreKind/FlexChildStyle只是部分投影，不能称整体schema无损。",
-          "1. 把既有40条原输入/输出直接用作Swift差异回归，首批明确五个原字段的absent/null/empty/whitespace与标量/容器转换差异，不在比较器补空、trim或重编码1e3。",
-          "2. 先在现有模型/serializer定义导入原wire数据与运行时/界面默认值的边界，再逐字段修复；若保留未知字段，必须在既有序列化路径实现明确策略，禁止另建第二套BookSource模型。",
-          "3. 扩展原字段清单到源顶层开关/默认值、primary URL、groups、id、双编码rule与投影字段；统一跑真实import→rawJSON editor→export→writeLibrary→reload，并核对源编辑时钟与身份。"
+          "在下一次整批 source-only 检查点实际编译并执行 3 方法，保留零失败／跳过／expected failure 的 summary、精确 tests tree、原始 -l log 与 source／环境；完整采集 280＋39＝319 条观察和 760＋156＝916 个快照。",
+          "依据真实差异逐项设计生产字段保存修复；区分 absent／null／empty／whitespace、原 getter、默认 Gson 与 serializeNulls 诊断策略，保持 1e3 原字面量、Unicode 及未知字段经原链路保存。诊断采集成功且 selectedContractsMatch=false 不算兼容通过。",
+          "继续完整字段审计与顶层／嵌套投影、group／id、URL 和编辑保留验收；不另建第二 BookSource 模型，不以这五个 getter、13 个夹具或 19／50 证明完整 schema／规则执行兼容。"
         ],
-        "nextAction": "1. 把既有40条原输入/输出直接用作Swift差异回归，首批明确五个原字段的absent/null/empty/whitespace与标量/容器转换差异，不在比较器补空、trim或重编码1e3。",
-        "readiness": "ready",
+        "nextAction": "在相关整批源码检查点取得实际 319 条／916 快照及原始证据，再依据差异修复生产保存语义；复用未变的便携结果，不为归档或本包单独重复触发云测。",
+        "readiness": "awaiting-cloud",
         "readyPreparation": [
-          "立即将40条原基线接成Swift红测并审查顶层默认值/投影契约；与URL/规则原向量采集可并行。"
+          "只读核对固定公有参考、观察器、收集器及原始 artifact；准备真实 SDK／Simulator／source 的采集绑定。",
+          "可继续其他独立准备；新增诊断组不完成 schema 工作包、S3 阶段或完整 Legado 兼容。"
         ],
         "acceptance": [
           "五个原getter的40条向量逐项比较值、缺省/键存在与导出形状；默认Gson与serializeNulls诊断变体分开，不擅自把后者当产品导出策略。",
@@ -958,7 +958,11 @@
           "docs/legado-ios/content-rule-schema-preservation.json",
           "docs/legado-ios/review-rule-schema-followup.json",
           "docs/legado-ios/rule-schema-field-audit.json",
-          "docs/legado-ios/original-rule-defaults-reference.json"
+          "docs/legado-ios/original-rule-defaults-reference.json",
+          "docs/legado-ios/source-schema-reference-batch.json",
+          "docs/legado-ios/evidence/source-schema-reference/source-schema-v3-independent-review.json",
+          "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-preparation-v3.json",
+          "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift"
         ],
         "deferredHardware": [
           "最终签名App手动导入、编辑、导出、覆盖升级与重启，确认源/分组/用户修改不丢；不内置源。"
@@ -3642,6 +3646,10 @@
     "reading-position-write-integrity-integration": {
       "path": "docs/legado-ios/reading-position-integrity-batch.json",
       "scope": "Reviewed admitted-order position worker and five owned regressions; 18 methods/28 planned executions, actual portable 24 and four-file grammar screen only. Swift/iOS and full S1/device acceptance pending; historical 13/23 unchanged."
+    },
+    "source-schema-reference-integration": {
+      "path": "docs/legado-ios/source-schema-reference-batch.json",
+      "scope": "Reviewed public original40/unknown13 diagnostic observer and closed xcresult collection gates; actual portable8/19/24/16 only, planned3 methods/319 rows/916 snapshots. Swift observations0; compatibility remains unaccepted."
     }
   },
   "retainedExistingWork": [

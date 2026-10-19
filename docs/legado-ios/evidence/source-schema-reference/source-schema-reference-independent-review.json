@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-source-only-schema-reference-observer-review",
+  "reviewer": "/root/renewal_independent_review",
+  "reviewedAtUTC": "2026-10-19T15:26:25.534446+00:00",
+  "status": "review-complete-no-unresolved-blocking-source-findings",
+  "worktree": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree",
+  "baselineSourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "reviewedPatch": {
+    "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference.patch",
+    "bytes": 44153,
+    "sha256": "b3715ab5b5c95612f2eb739bfbb9eec5220552885067199b1632506adb7ba83e",
+    "reverseApplyCheckPassed": true
+  },
+  "reviewedPreparation": {
+    "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-preparation.json",
+    "bytes": 8087,
+    "sha256": "8afae40381d743da047d56c8c4b80e8f5517afd0a9ee2ab73e989bcf50915538"
+  },
+  "reviewedFiles": [
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+      "bytes": 13463,
+      "sha256": "f2d6235ad3f9bf5148a892ecb2ee5d9125a1a79696499c9d1353afde48ee75fd"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl",
+      "bytes": 8226,
+      "sha256": "214b64e5712d1406b8a01441971c20660ec21439968224bdfda6286518470ebc"
+    },
+    {
+      "path": "scripts/reader-experience/rule-defaults-reference.py",
+      "bytes": 13588,
+      "sha256": "6baed7563556eb9aec6a5e2ad03497672201fd7da9f0640fb0dd5c6565a360bc"
+    },
+    {
+      "path": "scripts/reader-experience/test-rule-defaults-reference.py",
+      "bytes": 7127,
+      "sha256": "7885eb55e08316731271294d08bfc49db6f677ca5a0bc8c3d0186ff6351038e6"
+    }
+  ],
+  "allPreparationReviewedInputAndFrozenEvidenceHashesMatched": true,
+  "trackedWorktreeDiffEmpty": true,
+  "findings": [],
+  "sourceReview": [
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+      "lines": [
+        9,
+        12,
+        45,
+        80,
+        157,
+        173,
+        188,
+        208,
+        215,
+        216,
+        217
+      ],
+      "area": "Swift type/access/isolation",
+      "assessment": "No definite source-level type-access or actor blocker identified. The nonparameterized serialized suite uses existing internal app Codable types via @testable, and calls unannotated internal static parseSources/writeLibrary plus the existing importEditableJSON/importParse conformance. The upstream identity TocRule intentionally decodes the app TOCRule. NullableText handles actual null/text values, confirmed against every frozen dictionary value. Private helpers never cross a public/parameterized test boundary. Source review and tree-sitter are not Swift macro/typechecking or actor-runtime acceptance."
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+      "lines": [
+        81,
+        111,
+        112,
+        113,
+        116,
+        124,
+        125,
+        126
+      ],
+      "area": "filePath and frozen evidence",
+      "assessment": "Exactly four parent deletions from Tests/iOS/yuedu appTests/<file>.swift resolve the repository root. Four original evidence SHA256 values match both frozen preparation and actual bytes. Fixture paths are repository source paths, with no fallback to another input. Real Simulator execution still must establish that the compiled #filePath checkout remains readable; this is not a physical-device or bundle-resource fixture design."
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+      "lines": [
+        46,
+        54,
+        56,
+        61,
+        69,
+        72,
+        79,
+        85,
+        92,
+        93,
+        102,
+        105
+      ],
+      "area": "matrix and collection reliability",
+      "assessment": "Five models times eight forms produce 40 exact reference identities. Each emits one direct-rule observation and three import shapes for each of two rule encodings: 280 original rows with 40*(1+6*3)=760 snapshots. Thirteen unknown cases are exactly root plus six rule models times object/string encodings; three shapes yield 39 rows with 156 snapshots. Expected totals are 319 unique rows and 916 snapshots. A thrown import/decode/writer error prevents completion; a later comparison must reject the resulting partial log."
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+      "lines": [
+        86,
+        87,
+        88,
+        89,
+        94,
+        95,
+        98,
+        99,
+        100
+      ],
+      "area": "owned writer and side effects",
+      "assessment": "The observer calls static parsing and explicit writeLibrary([edited],to:ownedFile), never BookSourceStore.shared, a real library URL, StorageLocations or GlobalSettings. Its sole destination is owned-library.json inside a unique system-temporary RuleUnknownObservation-UUID directory, removed by defer. The existing writer creates/replaces only its explicit destination and a sibling temporary file. All source URLs are public synthetic .invalid data; no rule is executed and no network or private source file is needed."
+    },
+    {
+      "path": "scripts/reader-experience/rule-defaults-reference.py",
+      "lines": [
+        31,
+        44,
+        51,
+        54,
+        59,
+        69,
+        98,
+        100,
+        107,
+        124,
+        125,
+        128,
+        129,
+        165,
+        175,
+        176
+      ],
+      "area": "wire-preserving comparison",
+      "assessment": "Inner source, expected and observed model JSON use parse_int/parse_float=RawNumber, tagged before str handling. Raw 1e3 remains a number token distinct from numeric 1000, string 1e3, boolean, null or absent. String equality does not trim or normalize Unicode. Swift input construction carries the frozen inputValueJSON directly; NullableText equality is UTF-8 byte equality. serializeNulls remains a separate original diagnostic, while app output is compared against the default-Gson selected field."
+    },
+    {
+      "path": "scripts/reader-experience/rule-defaults-reference.py",
+      "lines": [
+        134,
+        137,
+        139,
+        142,
+        146,
+        147,
+        148,
+        152,
+        153,
+        154,
+        156,
+        159,
+        162,
+        183
+      ],
+      "area": "empty/missing/duplicate/malformed observations",
+      "assessment": "The expected identity/route set is complete and closed. Empty/unrelated logs, missing original or unknown rows, duplicate original or unknown rows, unrelated/changed routes, missing/reordered/extra stages, duplicate JSON keys and nonfinite JSON cannot become collectionComplete. Exact snapshot envelopes and stages are required, then found must equal the entire expected set."
+    },
+    {
+      "path": "scripts/reader-experience/rule-defaults-reference.py",
+      "lines": [
+        184,
+        185,
+        186,
+        197,
+        202,
+        203,
+        204,
+        207,
+        209,
+        215
+      ],
+      "area": "collection versus expected differences",
+      "assessment": "The three Swift methods collect/validate shapes without a parity assertion, KnownIssue or skip. The separate comparator can report collectionComplete=true with selectedContractsMatch=false and exit1. Without --log it returns fixture validation only, with observationLogProvided=false and no collection verdict. A complete difference report and an incomplete/error exit may both use nonzero status; future integration must validate the fresh report plus actual passing 3/3 identities rather than blanket-ignore exit1. The static predicted difference table is not a real Swift observation or compatibility acceptance."
+    }
+  ],
+  "independentValidation": {
+    "record": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\validation.json",
+    "sha256": "6e79f2784faed14ad2dc5a7ab70335e51ac45a8d2716f2a048ab3c2a7015edd8",
+    "portableUnitMethods": 8,
+    "additionalOwnedSyntheticChecks": 12,
+    "rawLogs": [
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\portable-eight.stdout.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\portable-eight.stderr.txt",
+        "sha256": "984beee796f01bb931cdf5236736df2b653d339e63f5c9f389e640ccb177df16",
+        "bytes": 111
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\synthetic-mismatch-cli.stdout.txt",
+        "sha256": "d92edd94a4fafc6df19835af65a9acc91ad75a5f104f0b8bc399e213f7822ea2",
+        "bytes": 258
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-independent-validation\\synthetic-mismatch-cli.stderr.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      }
+    ],
+    "meaning": "All additional observations are owned synthetic comparator probes, explicitly labelled not-device. A complete 319-row synthetic numeric mismatch produced collectionComplete=true, selectedContractsMatch=false, differenceCount=1 and CLI exit1; this proves status separation, not Swift behavior.",
+    "grammarRecord": {
+      "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-reference-swift-grammar.json",
+      "sha256": "481df74ccd4b557372a431f79b642f67e23cb587dd2e1ee74f1d0a50db12b958",
+      "sourceHashMatched": true,
+      "meaning": "Author tree-sitter grammar screen independently bound to current reviewed source; no Swift typecheck."
+    }
+  },
+  "integrationConditions": [
+    "Require actual Apple SDK compilation, three exact passing unparameterized suite leaf identities, zero skipped/failed/expected-failure results, source/build/overlay metadata and fresh raw xcresult.",
+    "Use the dedicated xctest.sh -l raw test log, not the outer wrapper tee summary. Missing emitted rows must fail collection; no synthetic/frozen-result fallback may fill them.",
+    "Bind current observer/helper/unknown fixture and four original fixture hashes to the same run. Supplied text logs alone never attest iOS execution.",
+    "Keep complete observed-differences distinct from collection failure and parity acceptance. Fixture-only mode, an old CI checkpoint, empty output or a blanket ignored exit1 cannot satisfy observation acceptance.",
+    "This scope covers only five selected getter/default-Gson fields and thirteen forward-unknown cases; whole schema, runtime rule semantics, callback eligibility and source compatibility remain unaccepted."
+  ],
+  "unresolvedBlockingFindings": [],
+  "frozenFilesModified": false,
+  "mainTrackedFilesModified": false,
+  "CIQueriedOrTriggered": false,
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "iOSTestsExecuted": 0,
+  "realSwiftObservationRows": 0,
+  "fullSourceSchemaCompatibilityEstablished": false
+}

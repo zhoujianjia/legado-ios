@@ -1,0 +1,987 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "method": "Static inspection of the bound Swift decoder branches compared with forty actual original observations. Not Swift execution.",
+  "sourcePredictedDifferentCases": 24,
+  "sourcePredictedEqualSelectedCases": 16,
+  "actualSwiftObservationRows": 0,
+  "selectedRepresentationComparisonsOnly": true,
+  "fullSourceSchemaCompatibilityEstablished": false,
+  "cases": [
+    {
+      "identity": "BookInfoRule/absent",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "absent",
+      "inputHasField": false,
+      "inputValueJSON": "<absent>",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "BookInfoRule/array",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "array",
+      "inputHasField": true,
+      "inputValueJSON": "[true,1e3,\"子正文 é\\r\\n\"]",
+      "originalGetter": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "BookInfoRule/boolean",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "boolean",
+      "inputHasField": true,
+      "inputValueJSON": "true",
+      "originalGetter": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "BookInfoRule/empty",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "empty",
+      "inputHasField": true,
+      "inputValueJSON": "\"\"",
+      "originalGetter": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": ""
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "BookInfoRule/null",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "null",
+      "inputHasField": true,
+      "inputValueJSON": "null",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "BookInfoRule/number-exponent",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "number-exponent",
+      "inputHasField": true,
+      "inputValueJSON": "1e3",
+      "originalGetter": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "swiftSourcePrediction": "numeric String produced through Int/Double; exact formatting remains unobserved",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString reads numeric values rather than preserving the original number lexeme",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "BookInfoRule/object",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "object",
+      "inputHasField": true,
+      "inputValueJSON": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}",
+      "originalGetter": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "BookInfoRule/whitespace",
+      "model": "BookInfoRule",
+      "field": "init",
+      "getter": "getInit",
+      "form": "whitespace",
+      "inputHasField": true,
+      "inputValueJSON": "\" \\t\\r\\n  \"",
+      "originalGetter": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/absent",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "absent",
+      "inputHasField": false,
+      "inputValueJSON": "<absent>",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "nil",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/array",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "array",
+      "inputHasField": true,
+      "inputValueJSON": "[true,1e3,\"子正文 é\\r\\n\"]",
+      "originalGetter": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "swiftSourcePrediction": "nil",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/boolean",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "boolean",
+      "inputHasField": true,
+      "inputValueJSON": "true",
+      "originalGetter": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/empty",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "empty",
+      "inputHasField": true,
+      "inputValueJSON": "\"\"",
+      "originalGetter": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": ""
+      },
+      "swiftSourcePrediction": "nil",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "callBackJs empty-to-nil normalization",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/null",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "null",
+      "inputHasField": true,
+      "inputValueJSON": "null",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "nil",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/number-exponent",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "number-exponent",
+      "inputHasField": true,
+      "inputValueJSON": "1e3",
+      "originalGetter": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "swiftSourcePrediction": "numeric String produced through Int/Double; exact formatting remains unobserved",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString reads numeric values rather than preserving the original number lexeme",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/object",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "object",
+      "inputHasField": true,
+      "inputValueJSON": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}",
+      "originalGetter": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "swiftSourcePrediction": "nil",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ContentRule/whitespace",
+      "model": "ContentRule",
+      "field": "callBackJs",
+      "getter": "getCallBackJs",
+      "form": "whitespace",
+      "inputHasField": true,
+      "inputValueJSON": "\" \\t\\r\\n  \"",
+      "originalGetter": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/absent",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "absent",
+      "inputHasField": false,
+      "inputValueJSON": "<absent>",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/array",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "array",
+      "inputHasField": true,
+      "inputValueJSON": "[true,1e3,\"子正文 é\\r\\n\"]",
+      "originalGetter": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/boolean",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "boolean",
+      "inputHasField": true,
+      "inputValueJSON": "true",
+      "originalGetter": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/empty",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "empty",
+      "inputHasField": true,
+      "inputValueJSON": "\"\"",
+      "originalGetter": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": ""
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/null",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "null",
+      "inputHasField": true,
+      "inputValueJSON": "null",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/number-exponent",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "number-exponent",
+      "inputHasField": true,
+      "inputValueJSON": "1e3",
+      "originalGetter": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "swiftSourcePrediction": "numeric String produced through Int/Double; exact formatting remains unobserved",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString reads numeric values rather than preserving the original number lexeme",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/object",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "object",
+      "inputHasField": true,
+      "inputValueJSON": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}",
+      "originalGetter": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "ExploreRule/whitespace",
+      "model": "ExploreRule",
+      "field": "bookList",
+      "getter": "getBookList",
+      "form": "whitespace",
+      "inputHasField": true,
+      "inputValueJSON": "\" \\t\\r\\n  \"",
+      "originalGetter": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/absent",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "absent",
+      "inputHasField": false,
+      "inputValueJSON": "<absent>",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/array",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "array",
+      "inputHasField": true,
+      "inputValueJSON": "[true,1e3,\"子正文 é\\r\\n\"]",
+      "originalGetter": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/boolean",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "boolean",
+      "inputHasField": true,
+      "inputValueJSON": "true",
+      "originalGetter": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/empty",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "empty",
+      "inputHasField": true,
+      "inputValueJSON": "\"\"",
+      "originalGetter": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": ""
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/null",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "null",
+      "inputHasField": true,
+      "inputValueJSON": "null",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/number-exponent",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "number-exponent",
+      "inputHasField": true,
+      "inputValueJSON": "1e3",
+      "originalGetter": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "swiftSourcePrediction": "numeric String produced through Int/Double; exact formatting remains unobserved",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString reads numeric values rather than preserving the original number lexeme",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/object",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "object",
+      "inputHasField": true,
+      "inputValueJSON": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}",
+      "originalGetter": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "SearchRule/whitespace",
+      "model": "SearchRule",
+      "field": "checkKeyWord",
+      "getter": "getCheckKeyWord",
+      "form": "whitespace",
+      "inputHasField": true,
+      "inputValueJSON": "\" \\t\\r\\n  \"",
+      "originalGetter": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/absent",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "absent",
+      "inputHasField": false,
+      "inputValueJSON": "<absent>",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/array",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "array",
+      "inputHasField": true,
+      "inputValueJSON": "[true,1e3,\"子正文 é\\r\\n\"]",
+      "originalGetter": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "[true,1e3,\"子正文 é\\r\\n\"]"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/boolean",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "boolean",
+      "inputHasField": true,
+      "inputValueJSON": "true",
+      "originalGetter": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "true"
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/empty",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "empty",
+      "inputHasField": true,
+      "inputValueJSON": "\"\"",
+      "originalGetter": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": ""
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": ""
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/null",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "null",
+      "inputHasField": true,
+      "inputValueJSON": "null",
+      "originalGetter": {
+        "kind": "null"
+      },
+      "originalDefaultGsonField": {
+        "kind": "absent"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "null"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString drops nullable key state into the nonoptional empty String",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/number-exponent",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "number-exponent",
+      "inputHasField": true,
+      "inputValueJSON": "1e3",
+      "originalGetter": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "1e3"
+      },
+      "swiftSourcePrediction": "numeric String produced through Int/Double; exact formatting remains unobserved",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString reads numeric values rather than preserving the original number lexeme",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/object",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "object",
+      "inputHasField": true,
+      "inputValueJSON": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}",
+      "originalGetter": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": "{\"nested\":\"子正文 é\\r\\n\",\"number\":1e3}"
+      },
+      "swiftSourcePrediction": "empty String",
+      "sourcePredictedRepresentationDifference": true,
+      "reason": "safeString has no container-to-text conversion",
+      "swiftRuntimeObserved": false
+    },
+    {
+      "identity": "TocRule/whitespace",
+      "model": "TocRule",
+      "field": "chapterList",
+      "getter": "getChapterList",
+      "form": "whitespace",
+      "inputHasField": true,
+      "inputValueJSON": "\" \\t\\r\\n  \"",
+      "originalGetter": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalDefaultGsonField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "originalSerializeNullsDiagnosticField": {
+        "kind": "string",
+        "value": " \t\r\n  "
+      },
+      "swiftSourcePrediction": "exact String",
+      "sourcePredictedRepresentationDifference": false,
+      "reason": "no selected getter/default-field difference predicted from this branch",
+      "swiftRuntimeObserved": false
+    }
+  ],
+  "unknownFieldScope": "Thirteen independent public synthetic locations/shapes are prepared for observation; no blanket loss/retention claim is made before execution.",
+  "rawJSONHelperSearch": "No rawJSON/rawJson/unknownFields/additionalFields/extraFields storage/helper was found in the bound BookSource files or source-editor path. This finding is tied to exact ccafee5 inputs, not an assertion about another revision.",
+  "importPathCorrection": "The bound parseSources already decodes arrays and SourceObject backup envelopes directly. No Any-tree re-encoding gap is asserted for that parser.",
+  "runtimeVsWire": "ContentRule.callBackJs nil and empty both disable the existing callback under SourceCallBackService.isListening and runCallBack guards. Losing a present empty key is still a wire representation difference; these observations do not execute callbacks or alter eligibility policy.",
+  "serializeNullsPolicy": "Only the explicit original diagnostic clone. Default original Gson omits nullable null; no application serializeNulls export policy is inferred."
+}

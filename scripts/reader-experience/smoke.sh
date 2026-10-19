@@ -155,13 +155,42 @@ xcrun xcresulttool get test-results tests --path "$WORK/webdav-restore.xcresult"
 restore_count_status=0
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/webdav-restore-summary.json" \
   --expected 12 --expected-executions 27 > "$WORK/webdav-restore-result.json" || restore_count_status=$?
-# Collect all four new groups before enforcing their independent verdicts, so
+# Observe the forty public original cases and thirteen unknown-field fixtures.
+# This independent 3/3 group collects 319 rows / 916 snapshots. Complete wire
+# differences are diagnostic evidence; they never pass source compatibility.
+reference_prepare_status=0
+python3 "$SCRIPT_DIR/collect-rule-defaults-reference.py" prepare \
+  --audit "$WORK/overlays.json" --environment "$WORK/reader-stage-environment.json" \
+  --output "$WORK/rule-defaults-reference-preparation.json" \
+  > "$WORK/rule-defaults-reference-prepare.log" 2>&1 || reference_prepare_status=$?
+reference_test_status=0
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/rule-defaults-reference-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/rule-defaults-reference.xcresult" \
+  -only-testing:'yuedu appTests/BookSourceRuleDefaultsReferenceTests' || reference_test_status=$?
+reference_artifact_status=0
+xcrun xcresulttool get test-results summary --path "$WORK/rule-defaults-reference.xcresult" > "$WORK/rule-defaults-reference-summary.json" || reference_artifact_status=$?
+xcrun xcresulttool get test-results tests --path "$WORK/rule-defaults-reference.xcresult" > "$WORK/rule-defaults-reference-tests.json" || reference_artifact_status=$?
+reference_collection_status=0
+python3 "$SCRIPT_DIR/collect-rule-defaults-reference.py" collect \
+  --audit "$WORK/overlays.json" --environment "$WORK/reader-stage-environment.json" \
+  --preparation "$WORK/rule-defaults-reference-preparation.json" \
+  --log "$WORK/rule-defaults-reference-tests.log" --test-exit-status "$reference_test_status" \
+  --summary "$WORK/rule-defaults-reference-summary.json" --tests "$WORK/rule-defaults-reference-tests.json" \
+  --result-bundle "$WORK/rule-defaults-reference.xcresult" --raw "$WORK/rule-defaults-reference-raw.log" \
+  --comparison "$WORK/rule-defaults-reference-comparison.json" \
+  --comparator-stdout "$WORK/rule-defaults-reference-comparator.stdout.log" \
+  --comparator-stderr "$WORK/rule-defaults-reference-comparator.stderr.log" \
+  --output "$WORK/rule-defaults-reference-result.json" \
+  > "$WORK/rule-defaults-reference-collection.log" 2>&1 || reference_collection_status=$?
+# Collect all independent groups before enforcing their verdicts, so
 # an incomplete baseline cannot hide supply/schema evidence. Earlier gates and
 # the TXT/loopback acceptance protocols keep their established behavior.
 [[ $reader_test_status == 0 && $reader_artifact_status == 0 && $reader_baseline_status == 0 && $reader_count_status == 0 \
    && $supply_test_status == 0 && $supply_artifact_status == 0 && $supply_count_status == 0 \
    && $schema_test_status == 0 && $schema_artifact_status == 0 && $schema_count_status == 0 \
-   && $restore_test_status == 0 && $restore_artifact_status == 0 && $restore_count_status == 0 ]]
+   && $restore_test_status == 0 && $restore_artifact_status == 0 && $restore_count_status == 0 \
+   && $reference_prepare_status == 0 && $reference_test_status == 0 \
+   && $reference_artifact_status == 0 && $reference_collection_status == 0 ]]
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/txt-ui-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/txt-ui.xcresult" \
   -only-testing:'yuedu appUITests/ReaderLocalSmokeUITests'

@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 2,
+  "kind": "isolated-public-source-schema-observer-ci-integration-preparation",
+  "observedAtUTC": "2026-10-19T15:32:52.695286+00:00",
+  "baseCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "worktree": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree",
+  "status": "prepared-for-independent-review-real-SDK-and-CI-not-run",
+  "oldEvidencePreserved": [
+    {
+      "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference.patch",
+      "bytes": 44153,
+      "sha256": "b3715ab5b5c95612f2eb739bfbb9eec5220552885067199b1632506adb7ba83e"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-preparation.json",
+      "bytes": 8087,
+      "sha256": "8afae40381d743da047d56c8c4b80e8f5517afd0a9ee2ab73e989bcf50915538"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-independent-review.json",
+      "bytes": 11314,
+      "sha256": "eaac69bfca947951ab925f880859ec89abdd14cd094d1a9012ebb701f85f7d04"
+    }
+  ],
+  "frozenFourInputsUnchanged": true,
+  "changedPaths": [
+    "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+    "Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl",
+    "scripts/reader-experience/rule-defaults-reference.py",
+    "scripts/reader-experience/test-rule-defaults-reference.py",
+    "scripts/reader-experience/collect-rule-defaults-reference.py",
+    "scripts/reader-experience/test-collect-rule-defaults-reference.py",
+    "scripts/reader-experience/smoke.sh",
+    ".github/workflows/reader-smoke.yml"
+  ],
+  "changedFiles": [
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+      "bytes": 13463,
+      "sha256": "f2d6235ad3f9bf5148a892ecb2ee5d9125a1a79696499c9d1353afde48ee75fd"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl",
+      "bytes": 8226,
+      "sha256": "214b64e5712d1406b8a01441971c20660ec21439968224bdfda6286518470ebc"
+    },
+    {
+      "path": "scripts/reader-experience/rule-defaults-reference.py",
+      "bytes": 13588,
+      "sha256": "6baed7563556eb9aec6a5e2ad03497672201fd7da9f0640fb0dd5c6565a360bc"
+    },
+    {
+      "path": "scripts/reader-experience/test-rule-defaults-reference.py",
+      "bytes": 7127,
+      "sha256": "7885eb55e08316731271294d08bfc49db6f677ca5a0bc8c3d0186ff6351038e6"
+    },
+    {
+      "path": "scripts/reader-experience/collect-rule-defaults-reference.py",
+      "bytes": 15341,
+      "sha256": "fbe88ae2025e299dd2521fdc32923947be0438f5b6e30a7e2dc5aa35e71160e0"
+    },
+    {
+      "path": "scripts/reader-experience/test-collect-rule-defaults-reference.py",
+      "bytes": 14930,
+      "sha256": "1f40b46b55e6ba65e510d0d9df06436b1fd6399ef8d8203c4fd5b2c490bb8027"
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "bytes": 16189,
+      "sha256": "69a75da8062a740f34ff8f44a01d8ca5b375b0bbc15269644293c2b8e53cb1b5"
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "bytes": 12950,
+      "sha256": "adf36db25ac4ea3e5e2751682180a749d7e314d8916212946ea67a7258160d6c"
+    }
+  ],
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2.patch",
+    "bytes": 85840,
+    "sha256": "0fb4d5292ddd6b9e3eada444e56e189813d6b90700f7d70095bb9efd19c3816a"
+  },
+  "readOnlyApplyChecks": [
+    {
+      "name": "reverse",
+      "exitCode": 0,
+      "trackedWorktreeMutated": false
+    },
+    {
+      "name": "forward-base-index",
+      "exitCode": 0,
+      "trackedWorktreeMutated": false
+    }
+  ],
+  "integration": {
+    "existingSourceOnlyRunnerReused": true,
+    "workflowArtifactPathsUnchanged": true,
+    "existingPreservationMethods": 19,
+    "existingPreservationExecutions": 50,
+    "newGroupMethods": 3,
+    "newGroupExecutions": 3,
+    "failuresAllowed": 0,
+    "skipsAllowed": 0,
+    "expectedFailuresAllowed": 0,
+    "exactMethodIdentities": [
+      "BookSourceRuleDefaultsReferenceTests/originalReferenceContracts()",
+      "BookSourceRuleDefaultsReferenceTests/observeCurrentSwiftRepresentation()",
+      "BookSourceRuleDefaultsReferenceTests/observeUnknownFieldRoutes()"
+    ],
+    "originalReferenceIdentities": 40,
+    "originalObservationRows": 280,
+    "unknownFixtures": 13,
+    "unknownObservationRows": 39,
+    "totalObservationRows": 319,
+    "getterSnapshots": 760,
+    "unknownSnapshots": 156,
+    "totalSnapshots": 916,
+    "sourceBinding": "prepare and collect require unchanged committed checkpoint bytes for observer, helpers, fixtures, relevant production models, workflow and runner; reuse and revalidate same-run overlay/source/Debug Simulator environment input digests.",
+    "executionBinding": "Wrapper exit0, explicit3/3 summary with0fail/skip/expectedFailures, exact unique Passed unparameterized actual xcresult leaf IDs, original bundle Info.plist, retained raw summary/tree/log SHA256.",
+    "collectionMode": "Dedicated collect command requires --log, summary, tests, result bundle, preparation, source/environment evidence and wrapper exit status. Fixture-only comparator exit0 cannot satisfy it. Raw marker bytes survive validation failure.",
+    "comparisonExit1": "Only complete independently replayed319-row/916-snapshot comparison with selectedContractsMatch=false and nonzero actual differences can classify CLI exit1 as observed-differences. The CLI actual status/stdout/stderr are preserved. Missing report, unexplained nonzero, empty/duplicate/malformed/unrelated rows or invalid XCTest/provenance fail collection.",
+    "acceptance": "Diagnostic collection can succeed with selectedContractsMatch=false; compatibilityAccepted and fullSourceSchemaCompatibilityEstablished remain false. No KnownIssue, skip or expected-failure fallback.",
+    "batchOrder": "New group is after existing WebDAV collection and before the combined gate/UI. Preparation, wrapper, artifact extraction and collection statuses all join the combined gate; earlier reader/supply/schema/restore groups are collected first."
+  },
+  "actualValidation": {
+    "referencePortableGuards": 8,
+    "newCollectionPortableGuards": 16,
+    "allPortableEvidenceSynthetic": true,
+    "commands": [
+      {
+        "name": "reference-guards",
+        "command": [
+          "C:\\Python312\\python.exe",
+          "-B",
+          "scripts/reader-experience/test-rule-defaults-reference.py",
+          "-v"
+        ],
+        "exitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\reference-guards.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\reference-guards.stderr.txt"
+      },
+      {
+        "name": "collection-guards",
+        "command": [
+          "C:\\Python312\\python.exe",
+          "-B",
+          "scripts/reader-experience/test-collect-rule-defaults-reference.py",
+          "-v"
+        ],
+        "exitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\collection-guards.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\collection-guards.stderr.txt"
+      },
+      {
+        "name": "bash-syntax",
+        "command": [
+          "D:/app/Git/bin/bash.exe",
+          "-n",
+          "scripts/reader-experience/smoke.sh"
+        ],
+        "exitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\bash-syntax.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\bash-syntax.stderr.txt"
+      },
+      {
+        "name": "diff-check",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\diff-check.stdout.txt",
+        "stderr": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\diff-check.stderr.txt"
+      }
+    ],
+    "logs": [
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\bash-syntax.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\bash-syntax.stdout.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\collection-guards.stderr.txt",
+        "bytes": 2814,
+        "sha256": "fd5d3b0878ba2b38229bd84977ce90e107e901f9af351e3bf3ccfbb564795f19"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\collection-guards.stdout.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\commands.json",
+        "bytes": 1958,
+        "sha256": "66e89fdf164eb8be94b151203946ba3917640dce97c3d1a602d6d084977b5847"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\diff-check.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\diff-check.stdout.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\patch-forward-base-index.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\patch-forward-base-index.stdout.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\patch-reverse.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\patch-reverse.stdout.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\reference-guards.stderr.txt",
+        "bytes": 1429,
+        "sha256": "a48ceadc707b95a329de7b98a54bd510d00552c3a1a88be4131ab42f0bc7fb15"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\source-schema-reference-worktree\\.build\\source-schema-reference-v2-validation\\reference-guards.stdout.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "bashSyntaxPassed": true,
+    "diffCheckPassed": true,
+    "existingSmoke24AndRenewal16TestsEdited": false,
+    "existingSmoke24AndRenewal16Rerun": false
+  },
+  "unchangedBoundaries": {
+    "frozen4Files": true,
+    "productionSchema": true,
+    "existingPreservation19_50": true,
+    "existingPosition13_23": true,
+    "localProduct50_68": true,
+    "mainWorktree": true,
+    "mainPlanDocs": true,
+    "oldPatchAndPreparation": true
+  },
+  "swiftCompilationExecuted": false,
+  "iOSTestsExecuted": false,
+  "actualSwiftObservationRows": 0,
+  "ciTriggeredOrQueried": false,
+  "committedOrPushed": false,
+  "privateSourceFilesAccessed": false,
+  "nextAcceptance": [
+    "Independent review the complete v2 patch and evidence gates; root applies/merges into the next consolidated source-only checkpoint.",
+    "Run actual SDK compilation and3 selected observer methods; collect original raw -l log and xcresult. Missing print output is a failed collection, not a fixture-only fallback.",
+    "Read selectedContractsMatch/differences independently from collection success; neither this preparation nor a diagnostic green workflow establishes full source compatibility."
+  ]
+}

@@ -1,0 +1,1196 @@
+diff --git a/Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift b/Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift
+new file mode 100644
+index 0000000..0cc918d
+--- /dev/null
++++ b/Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift	
+@@ -0,0 +1,220 @@
++import CryptoKit
++import Foundation
++import Testing
++@testable import yuedu_app
++
++/// Collects the existing model's real values for a separate comparison report.
++/// A passing observer means collection completed, never original-rule parity.
++/// Intentionally excluded from the established zero-failure smoke selection.
++@Suite("Original rule defaults: fixture contracts and observation only", .serialized)
++struct BookSourceRuleDefaultsReferenceTests {
++    @Test("the forty public original getter/default-Gson/serializeNulls observations remain distinct")
++    func originalReferenceContracts() throws {
++        let rows = try referenceRows()
++        #expect(rows.count == 40)
++        #expect(Set(rows.map(\.identity)).count == 40)
++        for model in RuleModel.allCases {
++            #expect(Set(rows.filter { $0.model == model.rawValue }.map(\.form)) == Set(Self.forms))
++        }
++        for row in rows {
++            #expect(row.inputHasField == (row.form != "absent"))
++            #expect(row.getterReturnType == "java.lang.String")
++            switch row.getterValue {
++            case .null:
++                #expect(row.defaultGson[row.field] == nil)
++                #expect(row.serializeNullsGson[row.field] == .null)
++            case .text(let value):
++                #expect(row.defaultGson[row.field]?.bytes == Data(value.utf8))
++                #expect(row.serializeNullsGson[row.field]?.bytes == Data(value.utf8))
++            }
++            if row.form == "number-exponent" {
++                #expect(row.inputValueJSON == "1e3")
++                #expect(row.getterValue.bytes == Data("1e3".utf8))
++            }
++            if row.form == "object" || row.form == "array" {
++                #expect(row.getterValue.bytes == Data(row.inputValueJSON.utf8))
++            }
++            if row.form == "empty" { #expect(row.getterValue.bytes == Data()) }
++            if row.form == "whitespace" {
++                #expect(row.getterValue.bytes == Data(" \t\r\n\u{2003} ".utf8))
++            }
++        }
++    }
++
++    @Test("observe actual Swift getters and each real import/editor/export route without declaring parity")
++    func observeCurrentSwiftRepresentation() throws {
++        for row in try referenceRows() {
++            let model = try #require(RuleModel(rawValue: row.model))
++            let rawRule = row.inputHasField
++                ? "{" + (try quoted(row.field)) + ":" + row.inputValueJSON + "}"
++                : "{}"
++            // inputValueJSON came from the locked Gson JsonElement. Never parse
++            // and re-encode it through Any/Double: the 1e3 token is intentional.
++            let direct = try model.decodeRule(Data(rawRule.utf8))
++            try emit(Observation(kind: "originalRule", identity: row.identity, route: "direct-rule",
++                snapshots: [Snapshot(stage: "decoded-rule", getterValue: .init(direct.getter), encodedJSON: direct.json)]))
++            for doubleEncoded in [false, true] {
++                let ruleWire = doubleEncoded ? try quoted(rawRule) : rawRule
++                let sourceJSON = "{\"id\":\"00000000-0000-0000-0000-000000000040\","
++                    + "\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://rule-defaults.invalid\","
++                    + (try quoted(model.sourceKey)) + ":" + ruleWire + "}"
++                for shape in ImportShape.allCases {
++                    let imported = try #require(BookSourceStore.parseSources(shape.wrap(sourceJSON))?.first)
++                    let editedJSON = try editKnownName(imported.importEditableJSON)
++                    let edited = try #require(BookSource.importParse(editedJSON: editedJSON))
++                    let restored = try #require(try JSONDecoder().decode([BookSource].self,
++                        from: JSONEncoder().encode([edited])).first)
++                    #expect(imported.id == edited.id && edited.id == restored.id)
++                    #expect(edited.bookSourceName == "Public original fixture edited")
++                    let snapshots = try [("imported", imported), ("edited", edited), ("export-reloaded", restored)].map { stage, source in
++                        Snapshot(stage: stage, getterValue: .init(model.getter(source)), encodedJSON: try model.encodedRule(source))
++                    }
++                    try emit(Observation(kind: "originalRule", identity: row.identity,
++                        route: shape.rawValue + (doubleEncoded ? ":string-rule" : ":object-rule"), snapshots: snapshots))
++                }
++            }
++        }
++    }
++
++    @Test("observe unknown fields through the original import/editor/export/writer chain")
++    func observeUnknownFieldRoutes() throws {
++        let fixtureURL = Self.root.appendingPathComponent("Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl")
++        let rows = try String(contentsOf: fixtureURL, encoding: .utf8).split(separator: "\n").map {
++            try JSONDecoder().decode(UnknownRow.self, from: Data($0.utf8))
++        }
++        #expect(rows.count == 13 && Set(rows.map(\.identity)).count == 13)
++        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("RuleUnknownObservation-\(UUID().uuidString)")
++        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
++        defer {
++            do { try FileManager.default.removeItem(at: directory) }
++            catch { Issue.record("Could not remove owned reference directory: \(error)") }
++        }
++        for row in rows {
++            for shape in ImportShape.allCases {
++                let imported = try #require(BookSourceStore.parseSources(shape.wrap(row.sourceJSON))?.first)
++                let edited = try #require(BookSource.importParse(editedJSON: try editKnownName(imported.importEditableJSON)))
++                let exported = try JSONEncoder().encode([edited])
++                let restored = try #require(try JSONDecoder().decode([BookSource].self, from: exported).first)
++                let file = directory.appendingPathComponent("owned-library.json")
++                try BookSourceStore.writeLibrary([edited], to: file)
++                let stored = try #require(try JSONDecoder().decode([BookSource].self, from: Data(contentsOf: file)).first)
++                #expect(imported.id == edited.id && edited.id == restored.id && restored.id == stored.id)
++                let snapshots = try [("imported", imported), ("edited", edited), ("export-reloaded", restored), ("stored-reloaded", stored)].map { stage, source in
++                    Snapshot(stage: stage, getterValue: .null, encodedJSON: try json(source))
++                }
++                try emit(Observation(kind: "unknownField", identity: row.identity, route: shape.rawValue, snapshots: snapshots))
++            }
++        }
++    }
++
++    private static let forms = ["absent", "null", "empty", "whitespace", "boolean", "number-exponent", "object", "array"]
++    private static var root: URL {
++        URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
++            .deletingLastPathComponent().deletingLastPathComponent()
++    }
++    private func referenceRows() throws -> [ReferenceRow] {
++        let files = [
++            ("rule-defaults-original-cases.json", "78cb973cc7fb97a8bdb32ff13c202c31e1d6c0966c31428c4faf101c01dc1f44"),
++            ("rule-defaults-original-results.jsonl", "467bbfe63a14a0f99acfb8e90a40391fdd43077cee5a67b09de52d0e162c931f"),
++            ("rule-defaults-original-probe.kt", "f0f01a42b4fc70e4e1972e2516eb8a9d509bf437fa06b96c41d63698718524d1"),
++            ("rule-defaults-original-provenance.json", "a37cc35b48e234dbea0a48bd39d7980df4cb9b0684ba3b5d7a671bdbf65cbf0e"),
++        ]
++        var result: [ReferenceRow] = []
++        for (name, expected) in files {
++            let data = try Data(contentsOf: Self.root.appendingPathComponent("docs/legado-ios/fixtures/" + name))
++            let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
++            #expect(digest == expected, "The original reference evidence must remain frozen")
++            if name.hasSuffix("results.jsonl") {
++                result = try String(decoding: data, as: UTF8.self).split(separator: "\n").map {
++                    try JSONDecoder().decode(ReferenceRow.self, from: Data($0.utf8))
++                }
++            }
++        }
++        return result
++    }
++    private func quoted(_ value: String) throws -> String { try json(value) }
++    private func json<T: Encodable>(_ value: T) throws -> String {
++        let encoder = JSONEncoder()
++        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
++        return String(decoding: try encoder.encode(value), as: UTF8.self)
++    }
++    private func editKnownName(_ raw: String) throws -> String {
++        let from = try quoted("Public original fixture"), to = try quoted("Public original fixture edited")
++        #expect(raw.components(separatedBy: from).count == 2)
++        return raw.replacingOccurrences(of: from, with: to)
++    }
++    private func emit(_ observation: Observation) throws {
++        print("SOURCE_RULE_DEFAULTS_SWIFT " + (try json(observation)))
++    }
++
++    private enum ImportShape: String, CaseIterable {
++        case single, array, envelope
++        func wrap(_ source: String) -> String {
++            switch self { case .single: return source; case .array: return "[" + source + "]"
++            case .envelope: return "{\"bookSources\":[" + source + "]}" }
++        }
++    }
++    private enum RuleModel: String, CaseIterable {
++        case search = "SearchRule", explore = "ExploreRule", bookInfo = "BookInfoRule", toc = "TocRule", content = "ContentRule"
++        var sourceKey: String {
++            switch self { case .search: return "ruleSearch"; case .explore: return "ruleExplore"
++            case .bookInfo: return "ruleBookInfo"; case .toc: return "ruleToc"; case .content: return "ruleContent" }
++        }
++        func getter(_ source: BookSource) -> String? {
++            switch self { case .search: return source.ruleSearch.checkKeyWord; case .explore: return source.ruleExplore.bookList
++            case .bookInfo: return source.ruleBookInfo.initScript; case .toc: return source.ruleToc.chapterList
++            case .content: return source.ruleContent.callBackJs }
++        }
++        func encodedRule(_ source: BookSource) throws -> String {
++            switch self { case .search: return try encode(source.ruleSearch); case .explore: return try encode(source.ruleExplore)
++            case .bookInfo: return try encode(source.ruleBookInfo); case .toc: return try encode(source.ruleToc)
++            case .content: return try encode(source.ruleContent) }
++        }
++        func decodeRule(_ data: Data) throws -> (getter: String?, json: String) {
++            let decoder = JSONDecoder()
++            switch self {
++            case .search: let value = try decoder.decode(SearchRule.self, from: data); return (value.checkKeyWord, try encode(value))
++            case .explore: let value = try decoder.decode(ExploreRule.self, from: data); return (value.bookList, try encode(value))
++            case .bookInfo: let value = try decoder.decode(BookInfoRule.self, from: data); return (value.initScript, try encode(value))
++            case .toc: let value = try decoder.decode(TOCRule.self, from: data); return (value.chapterList, try encode(value))
++            case .content: let value = try decoder.decode(ContentRule.self, from: data); return (value.callBackJs, try encode(value))
++            }
++        }
++        private func encode<T: Encodable>(_ value: T) throws -> String {
++            let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
++            return String(decoding: try encoder.encode(value), as: UTF8.self)
++        }
++    }
++    private enum NullableText: Codable, Equatable {
++        case null, text(String)
++        init(_ value: String?) { self = value.map(Self.text) ?? .null }
++        init(from decoder: Decoder) throws {
++            let container = try decoder.singleValueContainer()
++            self = container.decodeNil() ? .null : .text(try container.decode(String.self))
++        }
++        func encode(to encoder: Encoder) throws {
++            var container = encoder.singleValueContainer()
++            switch self { case .null: try container.encodeNil(); case .text(let value): try container.encode(value) }
++        }
++        var bytes: Data? { if case .text(let value) = self { return Data(value.utf8) }; return nil }
++        static func == (lhs: Self, rhs: Self) -> Bool {
++            switch (lhs, rhs) {
++            case (.null, .null): return true
++            case (.text(let left), .text(let right)): return Data(left.utf8) == Data(right.utf8)
++            default: return false
++            }
++        }
++    }
++    private struct ReferenceRow: Decodable {
++        let model: String, field: String, getter: String, form: String
++        let inputHasField: Bool, inputValueJSON: String, getterReturnType: String
++        let getterValue: NullableText
++        let defaultGson: [String: NullableText], serializeNullsGson: [String: NullableText]
++        var identity: String { model + "/" + form }
++    }
++    private struct UnknownRow: Decodable { let identity: String, sourceJSON: String }
++    private struct Snapshot: Encodable { let stage: String, getterValue: NullableText, encodedJSON: String }
++    private struct Observation: Encodable {
++        let kind: String, identity: String, route: String, snapshots: [Snapshot]
++    }
++}
+diff --git a/Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl b/Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl
+new file mode 100644
+index 0000000..68ac86d
+--- /dev/null
++++ b/Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl	
+@@ -0,0 +1,13 @@
++{"identity":"root","containerKey":null,"unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"xPublicFutureField\":{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"SearchRule:object-rule","containerKey":"ruleSearch","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleSearch\":{\"checkKeyWord\":\"owned@text\",\"xPublicFutureField\":{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}}}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"SearchRule:string-rule","containerKey":"ruleSearch","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleSearch\":\"{\\\"checkKeyWord\\\":\\\"owned@text\\\",\\\"xPublicFutureField\\\":{\\\"null\\\":null,\\\"flag\\\":true,\\\"number\\\":1e3,\\\"text\\\":\\\" \\\\t\\\\r\\\\n\\\\u2003 \\\"}}\"}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"ExploreRule:object-rule","containerKey":"ruleExplore","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleExplore\":{\"bookList\":\"owned@text\",\"xPublicFutureField\":{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}}}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"ExploreRule:string-rule","containerKey":"ruleExplore","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleExplore\":\"{\\\"bookList\\\":\\\"owned@text\\\",\\\"xPublicFutureField\\\":{\\\"null\\\":null,\\\"flag\\\":true,\\\"number\\\":1e3,\\\"text\\\":\\\" \\\\t\\\\r\\\\n\\\\u2003 \\\"}}\"}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"BookInfoRule:object-rule","containerKey":"ruleBookInfo","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleBookInfo\":{\"init\":\"owned@text\",\"xPublicFutureField\":{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}}}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"BookInfoRule:string-rule","containerKey":"ruleBookInfo","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleBookInfo\":\"{\\\"init\\\":\\\"owned@text\\\",\\\"xPublicFutureField\\\":{\\\"null\\\":null,\\\"flag\\\":true,\\\"number\\\":1e3,\\\"text\\\":\\\" \\\\t\\\\r\\\\n\\\\u2003 \\\"}}\"}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"TocRule:object-rule","containerKey":"ruleToc","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleToc\":{\"chapterList\":\"owned@text\",\"xPublicFutureField\":{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}}}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"TocRule:string-rule","containerKey":"ruleToc","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleToc\":\"{\\\"chapterList\\\":\\\"owned@text\\\",\\\"xPublicFutureField\\\":{\\\"null\\\":null,\\\"flag\\\":true,\\\"number\\\":1e3,\\\"text\\\":\\\" \\\\t\\\\r\\\\n\\\\u2003 \\\"}}\"}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"ContentRule:object-rule","containerKey":"ruleContent","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleContent\":{\"content\":\"owned@text\",\"xPublicFutureField\":{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}}}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"ContentRule:string-rule","containerKey":"ruleContent","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleContent\":\"{\\\"content\\\":\\\"owned@text\\\",\\\"xPublicFutureField\\\":{\\\"null\\\":null,\\\"flag\\\":true,\\\"number\\\":1e3,\\\"text\\\":\\\" \\\\t\\\\r\\\\n\\\\u2003 \\\"}}\"}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"ReviewRule:object-rule","containerKey":"ruleReview","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleReview\":{\"reviewUrl\":\"owned@text\",\"xPublicFutureField\":{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}}}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
++{"identity":"ReviewRule:string-rule","containerKey":"ruleReview","unknownKey":"xPublicFutureField","sourceJSON":"{\"id\":\"00000000-0000-0000-0000-000000000041\",\"bookSourceName\":\"Public original fixture\",\"bookSourceUrl\":\"https://unknown-rule-defaults.invalid\",\"ruleReview\":\"{\\\"reviewUrl\\\":\\\"owned@text\\\",\\\"xPublicFutureField\\\":{\\\"null\\\":null,\\\"flag\\\":true,\\\"number\\\":1e3,\\\"text\\\":\\\" \\\\t\\\\r\\\\n\\\\u2003 \\\"}}\"}","expectedValueJSON":"{\"null\":null,\"flag\":true,\"number\":1e3,\"text\":\" \\t\\r\\n\\u2003 \"}","scope":"Public synthetic forward-field observation only; no original Gson unknown-field guarantee."}
+diff --git a/scripts/reader-experience/rule-defaults-reference.py b/scripts/reader-experience/rule-defaults-reference.py
+new file mode 100644
+index 0000000..043f1bb
+--- /dev/null
++++ b/scripts/reader-experience/rule-defaults-reference.py
+@@ -0,0 +1,219 @@
++#!/usr/bin/env python3
++"""Compare selected public original getters with separately collected Swift logs.
++
++Fixture validation is not Swift execution. The observer deliberately has no
++parity assertion, KnownIssue or skip: only this separate report compares values.
++This helper is not connected to the existing zero-failure CI acceptance groups.
++"""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++from pathlib import Path
++import sys
++
++REPO = Path(__file__).resolve().parents[2]
++MARKER = "SOURCE_RULE_DEFAULTS_SWIFT "
++MODELS = {"SearchRule": ("checkKeyWord", "getCheckKeyWord"), "ExploreRule": ("bookList", "getBookList"),
++          "BookInfoRule": ("init", "getInit"), "TocRule": ("chapterList", "getChapterList"),
++          "ContentRule": ("callBackJs", "getCallBackJs")}
++FORMS = ("absent", "null", "empty", "whitespace", "boolean", "number-exponent", "object", "array")
++ROUTES = ("direct-rule", *(shape + ":" + kind for shape in ("single", "array", "envelope")
++                          for kind in ("object-rule", "string-rule")))
++FROZEN = {"rule-defaults-original-cases.json": "78cb973cc7fb97a8bdb32ff13c202c31e1d6c0966c31428c4faf101c01dc1f44",
++          "rule-defaults-original-results.jsonl": "467bbfe63a14a0f99acfb8e90a40391fdd43077cee5a67b09de52d0e162c931f",
++          "rule-defaults-original-probe.kt": "f0f01a42b4fc70e4e1972e2516eb8a9d509bf437fa06b96c41d63698718524d1",
++          "rule-defaults-original-provenance.json": "a37cc35b48e234dbea0a48bd39d7980df4cb9b0684ba3b5d7a671bdbf65cbf0e"}
++UNKNOWN = "Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl"
++
++
++class RawNumber(str):
++    """A JSON number lexeme, never parsed through a binary float."""
++
++
++def require(condition, message):
++    if not condition:
++        raise ValueError(message)
++
++
++def sha(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def strict_json(text, *, numbers=False):
++    def pairs(entries):
++        value = {}
++        for key, item in entries:
++            require(key not in value, "Duplicate JSON key: " + key)
++            value[key] = item
++        return value
++    def constant(value):
++        raise ValueError("Non-JSON constant: " + value)
++    options = {"object_pairs_hook": pairs, "parse_constant": constant}
++    if numbers:
++        options.update(parse_int=RawNumber, parse_float=RawNumber)
++    return json.loads(text, **options)
++
++
++def tagged(value):
++    if isinstance(value, RawNumber): return {"kind": "number", "rawToken": str(value)}
++    if value is None: return {"kind": "null"}
++    if type(value) is bool: return {"kind": "boolean", "value": value}
++    if type(value) is str: return {"kind": "string", "value": value}
++    if type(value) is list: return {"kind": "array", "values": [tagged(item) for item in value]}
++    if type(value) is dict: return {"kind": "object", "values": {key: tagged(item) for key, item in sorted(value.items())}}
++    raise ValueError("Unexpected parsed JSON value type")
++
++
++def projection(container, key):
++    require(type(container) is dict, "Expected an encoded JSON object")
++    return {"kind": "absent"} if key not in container else tagged(container[key])
++
++
++def load_references(repo=REPO):
++    directory = repo / "docs/legado-ios/fixtures"
++    evidence = []
++    for name, expected in FROZEN.items():
++        data = (directory / name).read_bytes()
++        require(sha(data) == expected, "Frozen original evidence changed: " + name)
++        evidence.append({"path": str((directory / name).relative_to(repo)), "bytes": len(data), "sha256": expected})
++    cases = strict_json((directory / "rule-defaults-original-cases.json").read_text(encoding="utf-8"), numbers=True)
++    rows = [strict_json(line) for line in (directory / "rule-defaults-original-results.jsonl").read_text(encoding="utf-8").splitlines()]
++    require(type(cases) is list and len(cases) == len(rows) == 40, "The original reference must contain exactly forty cases")
++    expected_ids = {model + "/" + form for model in MODELS for form in FORMS}
++    indexed = {}
++    inputs = {}
++    for item in cases:
++        identity = item["model"] + "/" + item["form"]
++        require(identity not in inputs, "Duplicate original input identity")
++        inputs[identity] = item
++    for row in rows:
++        identity = row["model"] + "/" + row["form"]
++        require(identity in expected_ids and identity not in indexed, "Unexpected or duplicate original observation")
++        require((row["field"], row["getter"]) == MODELS[row["model"]], "Original getter/field mapping changed")
++        require(type(row["inputHasField"]) is bool and row["inputHasField"] == (row["form"] != "absent"), "Original key presence differs")
++        require(row["getterReturnType"] == "java.lang.String", "Original getter is not nullable String")
++        require(row["getterValue"] is None or type(row["getterValue"]) is str, "Original getter has an unexpected type")
++        raw = inputs[identity]["rule"]
++        if row["inputHasField"]:
++            require(tagged(raw[row["field"]]) == tagged(strict_json(row["inputValueJSON"], numbers=True)), "Raw wire token differs from original case")
++        else:
++            require(row["field"] not in raw and row["inputValueJSON"] == "<absent>", "Absent wire form changed")
++        getter = row["getterValue"]
++        expected = {"kind": "absent"} if getter is None else tagged(getter)
++        require(projection(row["defaultGson"], row["field"]) == expected, "Default Gson must omit nullable null, without erasing empty text")
++        require(projection(row["serializeNullsGson"], row["field"]) == tagged(getter), "serializeNulls is a distinct explicit diagnostic")
++        if row["form"] == "number-exponent":
++            require(row["inputValueJSON"] == getter == "1e3", "Original exponent lexeme changed")
++        if row["form"] in ("object", "array"):
++            require(getter == row["inputValueJSON"], "Original container-to-String conversion changed")
++        if row["form"] == "whitespace": require(getter.encode() == " \t\r\n\u2003 ".encode(), "Original whitespace changed")
++        if row["form"] == "empty": require(getter == "", "Empty text became missing")
++        indexed[identity] = row
++    require(set(inputs) == set(indexed) == expected_ids, "Original model/form coverage differs")
++    return indexed, evidence
++
++
++def load_unknown(repo=REPO):
++    data = (repo / UNKNOWN).read_bytes()
++    rows = [strict_json(line) for line in data.decode("utf-8").splitlines()]
++    require(len(rows) == 13 and len({row["identity"] for row in rows}) == 13, "Unknown-field fixture matrix differs")
++    indexed = {}
++    for row in rows:
++        source = strict_json(row["sourceJSON"], numbers=True)
++        expected = tagged(strict_json(row["expectedValueJSON"], numbers=True))
++        container = source if row["containerKey"] is None else source[row["containerKey"]]
++        if type(container) is str: container = strict_json(container, numbers=True)
++        require(projection(container, row["unknownKey"]) == expected, "Unknown-field source fixture does not contain its declared value")
++        require(expected["values"]["number"] == {"kind": "number", "rawToken": "1e3"}, "Unknown number token changed")
++        indexed[row["identity"]] = row
++    return indexed, {"path": UNKNOWN, "bytes": len(data), "sha256": sha(data)}
++
++
++def parse_observations(log):
++    require(len(log.encode("utf-8")) <= 64 * 1024**2, "Observation log exceeds bounded size")
++    observations = []
++    for line in log.splitlines():
++        if MARKER not in line: continue
++        require(line.count(MARKER) == 1, "Ambiguous observation marker")
++        raw = line.split(MARKER, 1)[1]
++        require(len(raw.encode("utf-8")) <= 256 * 1024, "Observation row exceeds bounded size")
++        observations.append(strict_json(raw))
++    return observations
++
++
++def compare_observations(reference, unknown, observations):
++    expected = {("originalRule", identity, route) for identity in reference for route in ROUTES}
++    expected.update(("unknownField", identity, route) for identity in unknown for route in ("single", "array", "envelope"))
++    found, differences = set(), []
++    reference_snapshots = unknown_snapshots = 0
++    for row in observations:
++        require(type(row) is dict and set(row) == {"kind", "identity", "route", "snapshots"}, "Unexpected observation envelope")
++        key = (row["kind"], row["identity"], row["route"])
++        require(key in expected and key not in found, "Unexpected or duplicate observation identity/route")
++        found.add(key)
++        stages = ["decoded-rule"] if row["route"] == "direct-rule" else ["imported", "edited", "export-reloaded"]
++        if row["kind"] == "unknownField": stages.append("stored-reloaded")
++        snapshots = row["snapshots"]
++        require(type(snapshots) is list and [item.get("stage") for item in snapshots if type(item) is dict] == stages,
++                "Missing, reordered or malformed observation stages")
++        for item in snapshots:
++            require(type(item) is dict and set(item) == {"stage", "getterValue", "encodedJSON"}, "Unexpected observation snapshot")
++            require(item["getterValue"] is None or type(item["getterValue"]) is str, "Swift getter must be nullable String")
++            require(type(item["encodedJSON"]) is str, "Encoded model JSON must remain raw text")
++            encoded = strict_json(item["encodedJSON"], numbers=True)
++            require(type(encoded) is dict, "Encoded snapshot must be an object")
++            if row["kind"] == "originalRule":
++                original = reference[row["identity"]]
++                pairs = (("getterValue", tagged(original["getterValue"]), tagged(item["getterValue"])),
++                         ("defaultGsonField", projection(original["defaultGson"], original["field"]), projection(encoded, original["field"])))
++                reference_snapshots += 1
++            else:
++                original = unknown[row["identity"]]
++                container = encoded if original["containerKey"] is None else encoded.get(original["containerKey"], {})
++                if type(container) is str: container = strict_json(container, numbers=True)
++                pairs = (("forwardUnknownField", tagged(strict_json(original["expectedValueJSON"], numbers=True)),
++                          projection(container, original["unknownKey"])),)
++                unknown_snapshots += 1
++            for contract, wanted, actual in pairs:
++                if wanted != actual:
++                    differences.append({"kind": row["kind"], "identity": row["identity"], "route": row["route"],
++                                        "stage": item["stage"], "contract": contract, "expected": wanted, "actual": actual})
++    require(found == expected, "Observation collection is incomplete")
++    return {"observationCollectionComplete": True, "observationRows": len(found), "selectedGetterSnapshots": reference_snapshots,
++            "forwardUnknownSnapshots": unknown_snapshots, "selectedContractsMatch": not differences, "differenceCount": len(differences),
++            "differences": differences, "fullSourceSchemaCompatibilityEstablished": False,
++            "scope": "Five selected original getters and their selected default-Gson fields; forward unknown-field cases are a separate project preservation contract. Whole-model serializers/rule execution are not accepted.",
++            "serializeNullsPolicy": "Validated only as an explicit original diagnostic fixture. Never used as the app export expectation.",
++            "runtimeSemantics": "Nullable/empty/whitespace representation differences are reported; callback execution eligibility and other rule execution behavior are not inferred."}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--log", type=Path, help="Actual separately retained observer stdout; without it, validate fixture contracts only")
++    parser.add_argument("--output", type=Path, required=True)
++    args = parser.parse_args()
++    require(not args.output.exists(), "Refusing to overwrite prior evidence")
++    reference, evidence = load_references()
++    unknown, unknown_evidence = load_unknown()
++    result = {"schemaVersion": 1, "originalReferenceRows": len(reference), "forwardUnknownFixtures": len(unknown),
++              "frozenOriginalEvidence": evidence, "forwardUnknownEvidence": unknown_evidence,
++              "fixtureContractsValidated": True, "observationLogProvided": args.log is not None,
++              "swiftCompilationAttested": False, "iosRuntimeExecutionAttested": False,
++              "fullSourceSchemaCompatibilityEstablished": False}
++    if args.log is not None:
++        raw = args.log.read_bytes()
++        result.update(compare_observations(reference, unknown, parse_observations(raw.decode("utf-8"))))
++        result["observationLog"] = {"path": str(args.log), "bytes": len(raw), "sha256": sha(raw),
++                                    "provenance": "Supplied text log only. Bind actual XCTest/source/build evidence separately; text alone does not attest execution."}
++    args.output.parent.mkdir(parents=True, exist_ok=True)
++    with args.output.open("x", encoding="utf-8", newline="\n") as stream:
++        json.dump(result, stream, ensure_ascii=False, indent=2); stream.write("\n")
++    print(json.dumps({"fixtureContractsValidated": True, "observationLogProvided": args.log is not None,
++                      "selectedContractsMatch": result.get("selectedContractsMatch"), "output": str(args.output)}))
++    return 0 if args.log is None or result["selectedContractsMatch"] else 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/scripts/reader-experience/test-rule-defaults-reference.py b/scripts/reader-experience/test-rule-defaults-reference.py
+new file mode 100644
+index 0000000..e751377
+--- /dev/null
++++ b/scripts/reader-experience/test-rule-defaults-reference.py
+@@ -0,0 +1,125 @@
++#!/usr/bin/env python3
++"""Portable comparison guards only; all observer rows here are synthetic."""
++import copy
++import importlib.util
++import json
++from pathlib import Path
++import unittest
++
++HERE = Path(__file__).resolve().parent
++spec = importlib.util.spec_from_file_location("rule_reference_guard_tests", HERE / "rule-defaults-reference.py")
++reference = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(reference)
++
++
++class RuleReferenceGuards(unittest.TestCase):
++    def setUp(self):
++        self.original, self.evidence = reference.load_references()
++        self.unknown, _ = reference.load_unknown()
++
++    def synthetic_observations(self):
++        # Shapes only. Never emit these as a retained actual Swift log.
++        result = []
++        for identity, row in self.original.items():
++            for route in reference.ROUTES:
++                stages = ["decoded-rule"] if route == "direct-rule" else ["imported", "edited", "export-reloaded"]
++                result.append({"kind": "originalRule", "identity": identity, "route": route, "snapshots": [
++                    {"stage": stage, "getterValue": row["getterValue"], "encodedJSON": json.dumps(row["defaultGson"], ensure_ascii=False)}
++                    for stage in stages]})
++        for identity, row in self.unknown.items():
++            for route in ("single", "array", "envelope"):
++                result.append({"kind": "unknownField", "identity": identity, "route": route, "snapshots": [
++                    {"stage": stage, "getterValue": None, "encodedJSON": row["sourceJSON"]}
++                    for stage in ("imported", "edited", "export-reloaded", "stored-reloaded")]})
++        return result
++
++    def compare(self, observations):
++        return reference.compare_observations(self.original, self.unknown, observations)
++
++    def test_frozen_reference_contracts_keep_all_forty_wire_forms(self):
++        self.assertEqual(len(self.original), 40)
++        self.assertEqual(len(self.evidence), 4)
++        self.assertEqual(len(self.unknown), 13)
++        for model in reference.MODELS:
++            absent = self.original[model + "/absent"]
++            null = self.original[model + "/null"]
++            empty = self.original[model + "/empty"]
++            field = absent["field"]
++            self.assertNotIn(field, absent["defaultGson"])
++            self.assertNotIn(field, null["defaultGson"])
++            self.assertIsNone(absent["serializeNullsGson"][field])
++            self.assertEqual(empty["defaultGson"][field], "")
++            self.assertEqual(self.original[model + "/number-exponent"]["getterValue"], "1e3")
++
++    def test_complete_synthetic_shape_matches_selected_contracts_only(self):
++        checked = self.compare(self.synthetic_observations())
++        self.assertTrue(checked["selectedContractsMatch"])
++        self.assertEqual(checked["observationRows"], 319)
++        self.assertEqual(checked["selectedGetterSnapshots"], 760)
++        self.assertEqual(checked["forwardUnknownSnapshots"], 156)
++        self.assertFalse(checked["fullSourceSchemaCompatibilityEstablished"])
++
++    def test_incomplete_duplicate_unrelated_or_changed_routes_are_rejected(self):
++        observations = self.synthetic_observations()
++        for mutate in (lambda rows: rows.pop(), lambda rows: rows.append(copy.deepcopy(rows[0])),
++                       lambda rows: rows[0].update(identity="SearchRule/not-a-case"),
++                       lambda rows: rows[0].update(route="some-other-import"),
++                       lambda rows: rows[0].update(snapshots=[]),
++                       lambda rows: rows[1]["snapshots"].reverse()):
++            changed = copy.deepcopy(observations)
++            mutate(changed)
++            with self.subTest(mutate=mutate), self.assertRaises(ValueError): self.compare(changed)
++
++    def test_exponent_string_rewrite_is_a_real_difference(self):
++        observations = self.synthetic_observations()
++        row = next(row for row in observations if row["identity"] == "ContentRule/number-exponent")
++        row["snapshots"][0]["getterValue"] = "1000"
++        result = self.compare(observations)
++        self.assertFalse(result["selectedContractsMatch"])
++        self.assertEqual(result["differenceCount"], 1)
++        self.assertEqual(result["differences"][0]["contract"], "getterValue")
++
++    def test_whitespace_and_unicode_are_compared_without_trimming_or_normalizing(self):
++        observations = self.synthetic_observations()
++        row = next(row for row in observations if row["identity"] == "SearchRule/whitespace")
++        row["snapshots"][0]["getterValue"] = row["snapshots"][0]["getterValue"].strip()
++        self.assertFalse(self.compare(observations)["selectedContractsMatch"])
++        self.assertNotEqual(reference.tagged("e\u0301"), reference.tagged("\u00e9"))
++
++    def test_default_gson_and_explicit_serialize_nulls_are_not_conflated(self):
++        observations = self.synthetic_observations()
++        row = next(row for row in observations if row["identity"] == "ContentRule/absent")
++        row["snapshots"][0]["encodedJSON"] = '{"callBackJs":null}'
++        checked = self.compare(observations)
++        self.assertEqual(checked["differenceCount"], 1)
++        self.assertEqual(checked["differences"][0]["expected"], {"kind": "absent"})
++        self.assertEqual(checked["differences"][0]["actual"], {"kind": "null"})
++
++    def test_unknown_field_loss_and_numeric_lexeme_changes_are_observed(self):
++        for replacement in (None, "1000", '"1e3"'):
++            observations = self.synthetic_observations()
++            row = next(row for row in observations if row["kind"] == "unknownField" and row["identity"] == "root")
++            if replacement is None:
++                raw = reference.strict_json(row["snapshots"][0]["encodedJSON"])
++                raw.pop("xPublicFutureField")
++                row["snapshots"][0]["encodedJSON"] = json.dumps(raw)
++            else:
++                row["snapshots"][0]["encodedJSON"] = row["snapshots"][0]["encodedJSON"].replace('"number":1e3', '"number":' + replacement)
++            checked = self.compare(observations)
++            self.assertFalse(checked["selectedContractsMatch"])
++            self.assertEqual(checked["differenceCount"], 1)
++            self.assertEqual(checked["differences"][0]["contract"], "forwardUnknownField")
++
++    def test_parser_rejects_duplicate_keys_non_json_and_malformed_snapshots(self):
++        for raw in ('{"kind":1,"kind":2}', '{"number":NaN}'):
++            with self.assertRaises(ValueError): reference.strict_json(raw)
++        for changed in ({"stage": "decoded-rule", "getterValue": 1, "encodedJSON": "{}"},
++                        {"stage": "decoded-rule", "getterValue": None, "encodedJSON": "[]"},
++                        {"stage": "decoded-rule", "getterValue": None, "encodedJSON": "{", "extra": True}):
++            observations = self.synthetic_observations()
++            observations[0]["snapshots"] = [changed]
++            with self.subTest(changed=changed), self.assertRaises(ValueError): self.compare(observations)
++        self.assertEqual(reference.parse_observations("unrelated log only"), [])
++
++
++if __name__ == "__main__": unittest.main()
+diff --git a/scripts/reader-experience/collect-rule-defaults-reference.py b/scripts/reader-experience/collect-rule-defaults-reference.py
+new file mode 100644
+index 0000000..cf1021a
+--- /dev/null
++++ b/scripts/reader-experience/collect-rule-defaults-reference.py
+@@ -0,0 +1,256 @@
++#!/usr/bin/env python3
++"""Require actual XCTest/source evidence for the independent observation group.
++
++The frozen comparison CLI also supports fixture-only validation. This collector
++has no such fallback: collect requires a real group log, summary, test tree and
++result bundle. Complete representation differences remain diagnostic evidence,
++never a passing compatibility claim. Portable tests supply synthetic evidence.
++"""
++import argparse
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import sys
++
++
++HERE = Path(__file__).resolve().parent
++REPO = HERE.parents[1]
++
++
++def module(name, filename):
++    spec = importlib.util.spec_from_file_location(name, HERE / filename)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++reference = module("rule_collection_reference", "rule-defaults-reference.py")
++stage = module("rule_collection_stage", "reader-stage-baseline.py")
++smoke = stage.smoke
++config = smoke.config
++METHODS = tuple("BookSourceRuleDefaultsReferenceTests/" + name + "()" for name in (
++    "originalReferenceContracts", "observeCurrentSwiftRepresentation", "observeUnknownFieldRoutes"))
++SOURCE_FILES = (
++    "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift", reference.UNKNOWN,
++    "scripts/reader-experience/rule-defaults-reference.py",
++    "scripts/reader-experience/test-rule-defaults-reference.py",
++    "scripts/reader-experience/collect-rule-defaults-reference.py",
++    "scripts/reader-experience/test-collect-rule-defaults-reference.py",
++    "scripts/reader-experience/smoke.sh", ".github/workflows/reader-smoke.yml",
++    "Modules/Core/BookSource/BookSource.swift",
++    "Modules/Core/BookSource/BookSourceImportOptions.swift",
++    "Modules/Core/BookSource/BookSourceStore.swift",
++    *("docs/legado-ios/fixtures/" + name for name in reference.FROZEN),
++)
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def evidence(path):
++    raw = path.read_bytes()
++    return {"path": str(path.absolute()), "bytes": len(raw), "sha256": digest(raw)}
++
++
++def object_json(path):
++    return reference.strict_json(path.read_text(encoding="utf-8"))
++
++
++def source_provenance():
++    inputs = {}
++    for name in SOURCE_FILES:
++        raw = config.checked_path(REPO / name).read_bytes()
++        reference.require(raw == smoke.git("show", "HEAD:" + name, binary=True),
++                          "Observer source differs from committed checkpoint: " + name)
++        inputs[name] = {"sha256": digest(raw), "bytes": len(raw)}
++    # Pin the actual simple, unparameterized declarations as well as their bytes.
++    text = (REPO / SOURCE_FILES[0]).read_text(encoding="utf-8")
++    import re
++    declared = re.findall(r"^\s*func (\w+)\(\) throws \{", text, re.MULTILINE)
++    reference.require(tuple("BookSourceRuleDefaultsReferenceTests/" + name + "()" for name in declared) == METHODS
++                      and len(re.findall(r"^\s*@Test\b", text, re.MULTILINE)) == 3,
++                      "Observer source method inventory changed")
++    return inputs
++
++
++def validate_binding(audit_path, environment_path):
++    audit = object_json(audit_path)
++    smoke.review_overlays(audit)
++    environment = stage.validate_environment(object_json(environment_path))
++    reference.require(environment["sourceCommit"] == audit["sourceCommit"] == smoke.source_sha(),
++                      "Observer environment/source checkpoint mismatch")
++    reference.require(environment["sourceFiles"] == stage.source_provenance(),
++                      "Shared environment source changed after capture")
++    for item in environment["inputEvidence"].values():
++        reference.require(digest(config.checked_path(Path(item["path"])).read_bytes()) == item["sha256"],
++                          "Shared environment input changed after capture")
++    reference.require(environment["inputEvidence"]["audit"]["sha256"] == digest(audit_path.read_bytes()),
++                      "Observer uses a different overlay audit")
++    return environment
++
++
++def verify_execution(summary, tree, test_exit_status):
++    reference.require(type(test_exit_status) is int and test_exit_status == 0, "Observer XCTest wrapper failed")
++    counts = smoke.verify_summary(summary, 3, 3)
++    reference.require(type(tree) is dict and type(tree.get("testNodes")) is list, "Missing actual xcresult tests tree")
++    found = set()
++
++    def visit(node):
++        reference.require(type(node) is dict, "Malformed observer test node")
++        children = node.get("children", [])
++        reference.require(type(children) is list, "Malformed observer test children")
++        reference.require(node.get("result") not in ("Failed", "Skipped", "Expected Failure")
++                          and node.get("nodeType") != "Arguments", "Failed/skipped or parameterized observer node")
++        if node.get("nodeType") == "Test Case":
++            name = node.get("nodeIdentifier")
++            reference.require(type(name) is str, "Observer test leaf lacks method identity")
++            identity = name.removeprefix("yuedu appTests/")
++            reference.require(identity in METHODS and identity not in found and node.get("result") == "Passed"
++                              and not children, "Unexpected/duplicate/failed/skipped observer test leaf: " + name)
++            found.add(identity)
++        elif not children:
++            reference.require(node.get("nodeType") not in ("Arguments", "Failure Message"),
++                              "Unexpected observer execution leaf")
++        for child in children:
++            visit(child)
++    for node in tree["testNodes"]:
++        visit(node)
++    reference.require(found == set(METHODS), "Missing observer test methods")
++    return {"counts": counts, "passedMethodIdentities": sorted(found)}
++
++
++def prepare(audit_path, environment_path, output):
++    reference.require(not output.exists(), "Refusing to overwrite observer preparation")
++    environment = validate_binding(audit_path, environment_path)
++    originals, _ = reference.load_references()
++    unknown, _ = reference.load_unknown()
++    value = {"schemaVersion": 1, "kind": "rule-defaults-observer-preparation",
++             "sourceCommit": environment["sourceCommit"], "sourceInputs": source_provenance(),
++             "environment": evidence(environment_path), "audit": evidence(audit_path),
++             "expectedMethodIdentities": list(METHODS), "originalReferenceRows": len(originals),
++             "forwardUnknownFixtures": len(unknown), "swiftExecutionPerformedByPreparation": False}
++    config.write_new_json(output, value)
++    return value
++
++
++def verify_comparison(comparison, computed, original_evidence, unknown_evidence, log_path, exit_status):
++    reference.require(type(comparison) is dict, "Missing comparison report")
++    for name, expected in {"schemaVersion": 1, "originalReferenceRows": 40, "forwardUnknownFixtures": 13,
++                           "observationRows": 319, "selectedGetterSnapshots": 760, "forwardUnknownSnapshots": 156}.items():
++        reference.require(type(comparison.get(name)) is int and comparison[name] == expected,
++                          "Missing or invalid collection count/schema: " + name)
++    for name in ("fixtureContractsValidated", "observationLogProvided", "observationCollectionComplete"):
++        reference.require(comparison.get(name) is True, "Collection cannot use fixture-only or incomplete output")
++    reference.require(comparison.get("frozenOriginalEvidence") == original_evidence
++                      and comparison.get("forwardUnknownEvidence") == unknown_evidence,
++                      "Comparison fixture provenance changed")
++    for key, expected in computed.items():
++        reference.require(comparison.get(key) == expected, "Comparison differs from raw observations: " + key)
++    raw = log_path.read_bytes()
++    reference.require(comparison.get("observationLog") == {
++        "path": str(log_path), "bytes": len(raw), "sha256": digest(raw),
++        "provenance": "Supplied text log only. Bind actual XCTest/source/build evidence separately; text alone does not attest execution."},
++        "Comparison raw log digest/path mismatch")
++    match = comparison.get("selectedContractsMatch")
++    difference_count = comparison.get("differenceCount")
++    reference.require(type(match) is bool and type(difference_count) is int
++                      and ((exit_status == 0 and match and difference_count == 0)
++                           or (exit_status == 1 and not match and difference_count > 0)),
++                      "Comparator exit status is not explained by complete observed differences")
++    reference.require(comparison.get("fullSourceSchemaCompatibilityEstablished") is False,
++                      "Whole schema compatibility must not be accepted")
++
++
++def collect(args):
++    # Preserve original marker bytes before enforcing failures, like the existing
++    # reader-stage collector. These are diagnostic raw rows, never synthetic fixes.
++    paths = (args.raw, args.output, args.comparison, args.comparator_stdout, args.comparator_stderr)
++    inputs = (args.log, args.summary, args.tests, args.audit, args.environment, args.preparation,
++              args.result_bundle / "Info.plist")
++    reference.require(len({path.resolve() for path in paths}) == len(paths)
++                      and not {path.resolve() for path in paths}.intersection(path.resolve() for path in inputs),
++                      "Collection outputs must be distinct from each other and inputs")
++    for path in paths:
++        config.checked_path(path)
++        reference.require(not path.exists(), "Refusing to overwrite prior observer evidence: " + str(path))
++    raw = args.log.read_bytes()
++    args.raw.parent.mkdir(parents=True, exist_ok=True)
++    args.raw.write_bytes(b"".join(line for line in raw.splitlines(keepends=True) if reference.MARKER.encode() in line))
++    execution = verify_execution(object_json(args.summary), object_json(args.tests), args.test_exit_status)
++    reference.require(args.result_bundle.is_dir() and (args.result_bundle / "Info.plist").is_file(),
++                      "Missing original observer xcresult bundle")
++    prepared = object_json(args.preparation)
++    environment = validate_binding(args.audit, args.environment)
++    reference.require(type(prepared) is dict and prepared.get("schemaVersion") == 1
++                      and prepared.get("kind") == "rule-defaults-observer-preparation"
++                      and prepared.get("sourceCommit") == environment["sourceCommit"]
++                      and prepared.get("sourceInputs") == source_provenance()
++                      and prepared.get("expectedMethodIdentities") == list(METHODS)
++                      and type(prepared.get("originalReferenceRows")) is int and prepared["originalReferenceRows"] == 40
++                      and type(prepared.get("forwardUnknownFixtures")) is int and prepared["forwardUnknownFixtures"] == 13
++                      and prepared.get("environment") == evidence(args.environment)
++                      and prepared.get("audit") == evidence(args.audit),
++                      "Observer source/environment changed since preparation")
++    originals, original_evidence = reference.load_references()
++    unknown, unknown_evidence = reference.load_unknown()
++    computed = reference.compare_observations(originals, unknown, reference.parse_observations(raw.decode("utf-8")))
++    input_evidence = [evidence(path) for path in inputs]
++    # Keep the original CLI contract and its actual exit1 on differences. Only a
++    # full independently revalidated report can classify that exit as diagnostic.
++    process = subprocess.run([sys.executable, "-B", str(HERE / "rule-defaults-reference.py"),
++                              "--log", str(args.log), "--output", str(args.comparison)], capture_output=True)
++    args.comparator_stdout.write_bytes(process.stdout)
++    args.comparator_stderr.write_bytes(process.stderr)
++    reference.require(args.log.read_bytes() == raw and input_evidence == [evidence(path) for path in inputs]
++                      and source_provenance() == prepared["sourceInputs"],
++                      "Observer inputs changed during collection")
++    comparison = object_json(args.comparison)
++    verify_comparison(comparison, computed, original_evidence, unknown_evidence, args.log, process.returncode)
++    result = {"schemaVersion": 1, "status": "observed-differences" if not comparison["selectedContractsMatch"]
++              else "collected-selected-contracts-match", "collectionPassed": True,
++              "selectedContractsMatch": comparison["selectedContractsMatch"], "compatibilityAccepted": False,
++              "fullSourceSchemaCompatibilityEstablished": False, "sourceCommit": environment["sourceCommit"],
++              "sourceInputs": prepared["sourceInputs"], "environment": environment,
++              "testExecutionGate": execution, "testWrapperExitStatus": args.test_exit_status,
++              "comparatorExitStatus": process.returncode, "observationRows": 319,
++              "originalObservationRows": 280, "unknownObservationRows": 39,
++              "selectedGetterSnapshots": 760, "forwardUnknownSnapshots": 156, "totalSnapshots": 916,
++              "differenceCount": comparison["differenceCount"],
++              "evidence": {name: evidence(path) for name, path in (
++                  ("preparation", args.preparation), ("audit", args.audit), ("environment", args.environment),
++                  ("summary", args.summary), ("tests", args.tests), ("log", args.log), ("rawRows", args.raw),
++                  ("comparison", args.comparison), ("comparatorStdout", args.comparator_stdout),
++                  ("comparatorStderr", args.comparator_stderr), ("xcresultInfo", args.result_bundle / "Info.plist"))},
++              "resultBundle": str(args.result_bundle), "physicalDeviceAccepted": False,
++              "scope": "Actual XCTest collection gate plus five selected getter/default-Gson fields and thirteen unknown-preservation fixtures. Representation differences remain diagnostic; full model/rule execution parity is not established."}
++    config.write_new_json(args.output, result)
++    return result
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    sub = parser.add_subparsers(dest="phase", required=True)
++    preparation = sub.add_parser("prepare")
++    collection = sub.add_parser("collect", help="Require actual collection; fixture-only validation cannot satisfy this mode")
++    for command in (preparation, collection):
++        for name in ("audit", "environment", "output"):
++            command.add_argument("--" + name, type=Path, required=True)
++    for name in ("preparation", "log", "summary", "tests", "result-bundle", "raw", "comparison",
++                 "comparator-stdout", "comparator-stderr"):
++        collection.add_argument("--" + name, type=Path, required=True)
++    collection.add_argument("--test-exit-status", type=int, required=True)
++    args = parser.parse_args()
++    try:
++        result = prepare(args.audit, args.environment, args.output) if args.phase == "prepare" else collect(args)
++        print(json.dumps(result, ensure_ascii=False, indent=2))
++        return 0
++    except (ValueError, OSError, KeyError, TypeError) as error:
++        print(f"{type(error).__name__}: {error}", file=sys.stderr)
++        return 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/scripts/reader-experience/test-collect-rule-defaults-reference.py b/scripts/reader-experience/test-collect-rule-defaults-reference.py
+new file mode 100644
+index 0000000..00ee16e
+--- /dev/null
++++ b/scripts/reader-experience/test-collect-rule-defaults-reference.py
+@@ -0,0 +1,257 @@
++#!/usr/bin/env python3
++"""Portable gate tests using owned SYNTHETIC logs/xcresult shapes, never iOS evidence."""
++import copy
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++from types import SimpleNamespace
++import unittest
++from unittest.mock import patch
++
++
++HERE = Path(__file__).resolve().parent
++
++
++def load(name, filename):
++    spec = importlib.util.spec_from_file_location(name, HERE / filename)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++collector = load("rule_collection_guard_tests", "collect-rule-defaults-reference.py")
++fixtures = load("rule_collection_synthetic_shapes", "test-rule-defaults-reference.py")
++baseline_fixtures = load("rule_collection_synthetic_environment", "test-reader-stage-baseline.py")
++
++
++class RuleCollectionGuards(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory(prefix="synthetic-rule-collection-")
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        shape = fixtures.RuleReferenceGuards()
++        shape.setUp()
++        self.rows = shape.synthetic_observations()
++        self.args = SimpleNamespace(**{name: self.root / (name + ".json") for name in (
++            "audit", "environment", "preparation", "log", "summary", "tests", "raw", "comparison", "output",
++            "comparator_stdout", "comparator_stderr")}, result_bundle=self.root / "synthetic.xcresult", test_exit_status=0)
++        self.args.result_bundle.mkdir()
++        (self.args.result_bundle / "Info.plist").write_bytes(b"Synthetic shape only; never a real xcresult")
++        self.summary = {"totalTestCount": 3, "passedTests": 3, "failedTests": 0, "skippedTests": 0,
++                        "expectedFailures": 0, "devicesAndConfigurations": [
++                            {"passedTests": 3, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
++        self.tree = {"testNodes": [{"nodeType": "Test Plan", "result": "Passed", "children": [
++            {"nodeType": "Test Case", "nodeIdentifier": name, "result": "Passed"} for name in collector.METHODS]}]}
++        self.environment = {"sourceCommit": "a" * 40, "syntheticFixture": True}
++        self.sources = {"synthetic-owned-input": {"sha256": "b" * 64, "bytes": 1}}
++        for name, value in (("audit", {"sourceCommit": "a" * 40}), ("environment", self.environment),
++                            ("summary", self.summary), ("tests", self.tree)):
++            self.write_json(getattr(self.args, name), value)
++        self.write_rows(self.rows)
++        self.binding = patch.object(collector, "validate_binding", return_value=self.environment)
++        self.source = patch.object(collector, "source_provenance", return_value=self.sources)
++        self.binding.start()
++        self.source.start()
++        self.addCleanup(self.binding.stop)
++        self.addCleanup(self.source.stop)
++        collector.prepare(self.args.audit, self.args.environment, self.args.preparation)
++
++    def write_json(self, path, value):
++        path.write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
++
++    def write_rows(self, rows):
++        self.args.log.write_text("Synthetic fixture only\n" + "".join(
++            collector.reference.MARKER + json.dumps(row, ensure_ascii=False) + "\n" for row in rows), encoding="utf-8")
++
++    def clear_outputs(self):
++        for name in ("raw", "output", "comparison", "comparator_stdout", "comparator_stderr"):
++            path = getattr(self.args, name)
++            if path.exists(): path.unlink()
++
++    def cases(self, tree):
++        return tree["testNodes"][0]["children"]
++
++    def test_complete_synthetic_collection_retains_exact_counts_and_digests(self):
++        result = collector.collect(self.args)
++        self.assertTrue(result["collectionPassed"])
++        self.assertTrue(result["selectedContractsMatch"])
++        self.assertFalse(result["compatibilityAccepted"])
++        self.assertEqual(result["comparatorExitStatus"], 0)
++        self.assertEqual((result["observationRows"], result["totalSnapshots"]), (319, 916))
++        self.assertEqual(result["testExecutionGate"]["passedMethodIdentities"], sorted(collector.METHODS))
++        self.assertEqual(result["evidence"]["log"], collector.evidence(self.args.log))
++        self.assertEqual(result["evidence"]["tests"], collector.evidence(self.args.tests))
++
++    def test_complete_differences_keep_real_cli_exit_one_and_false_match(self):
++        self.rows[0]["snapshots"][0]["getterValue"] = "owned difference"
++        self.write_rows(self.rows)
++        result = collector.collect(self.args)
++        self.assertTrue(result["collectionPassed"])
++        self.assertEqual(result["status"], "observed-differences")
++        self.assertFalse(result["selectedContractsMatch"])
++        self.assertFalse(result["compatibilityAccepted"])
++        self.assertEqual(result["comparatorExitStatus"], 1)
++        self.assertGreater(result["differenceCount"], 0)
++        self.assertFalse(collector.object_json(self.args.comparison)["selectedContractsMatch"])
++
++    def test_empty_missing_duplicate_unknown_and_malformed_observations_fail(self):
++        for mutate in (lambda rows: rows.clear(), lambda rows: rows.pop(),
++                       lambda rows: rows.append(copy.deepcopy(rows[0])),
++                       lambda rows: rows[0].update(identity="not-an-original-case"),
++                       lambda rows: rows[0].update(kind="unknown-kind"),
++                       lambda rows: rows[0].update(snapshots=[])):
++            self.clear_outputs()
++            rows = copy.deepcopy(self.rows)
++            mutate(rows)
++            self.write_rows(rows)
++            with self.subTest(mutate=mutate), self.assertRaises(ValueError): collector.collect(self.args)
++            self.assertTrue(self.args.raw.exists())
++            self.assertFalse(self.args.output.exists())
++
++    def test_missing_summary_tree_or_bundle_is_never_collection_success(self):
++        for name in ("summary", "tests"):
++            path = getattr(self.args, name)
++            original = path.read_bytes()
++            path.unlink()
++            with self.subTest(name=name), self.assertRaises(OSError): collector.collect(self.args)
++            self.clear_outputs()
++            path.write_bytes(original)
++        (self.args.result_bundle / "Info.plist").unlink()
++        with self.assertRaisesRegex(ValueError, "xcresult"): collector.collect(self.args)
++
++    def test_explicit_method_and_execution_counts_reject_missing_false_skipped_and_expected_failure(self):
++        for key, value in (("totalTestCount", 0), ("passedTests", True), ("failedTests", 1),
++                           ("skippedTests", 1), ("expectedFailures", 1), ("devicesAndConfigurations", [])):
++            changed = copy.deepcopy(self.summary)
++            changed[key] = value
++            with self.subTest(key=key), self.assertRaises(ValueError): collector.verify_execution(changed, self.tree, 0)
++        changed = copy.deepcopy(self.summary)
++        changed["devicesAndConfigurations"][0]["passedTests"] = 2
++        with self.assertRaises(ValueError): collector.verify_execution(changed, self.tree, 0)
++        with self.assertRaises(ValueError): collector.verify_execution(self.summary, self.tree, 1)
++
++    def test_exact_actual_leaf_gate_rejects_omitted_duplicate_wrong_failed_skipped_and_arguments(self):
++        for mutate in (lambda cases: cases.pop(), lambda cases: cases.append(copy.deepcopy(cases[0])),
++                       lambda cases: cases[0].update(nodeIdentifier="OtherSuite/sameCount()"),
++                       lambda cases: cases[0].update(result="Skipped"), lambda cases: cases[0].update(result="Failed"),
++                       lambda cases: cases[0].update(children=[{"nodeType": "Arguments", "result": "Passed"}])):
++            tree = copy.deepcopy(self.tree)
++            mutate(self.cases(tree))
++            with self.subTest(mutate=mutate), self.assertRaises(ValueError): collector.verify_execution(self.summary, tree, 0)
++        tree = copy.deepcopy(self.tree)
++        for case in self.cases(tree): case["nodeIdentifier"] = "yuedu appTests/" + case["nodeIdentifier"]
++        self.assertEqual(len(collector.verify_execution(self.summary, tree, 0)["passedMethodIdentities"]), 3)
++
++    def test_source_environment_or_preparation_changes_are_rejected(self):
++        for key, value in (("sourceCommit", "c" * 40), ("sourceInputs", {}), ("expectedMethodIdentities", [])):
++            prepared = collector.object_json(self.args.preparation)
++            original = self.args.preparation.read_bytes()
++            prepared[key] = value
++            self.write_json(self.args.preparation, prepared)
++            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "changed since preparation"):
++                collector.collect(self.args)
++            self.clear_outputs()
++            self.args.preparation.write_bytes(original)
++        self.args.environment.write_text("{}", encoding="utf-8")
++        with self.assertRaisesRegex(ValueError, "changed since preparation"): collector.collect(self.args)
++
++    def test_fixture_only_report_cannot_satisfy_required_collection(self):
++        def fixture_only(*unused, **ignored):
++            self.write_json(self.args.comparison, {"schemaVersion": 1, "fixtureContractsValidated": True,
++                                                  "observationLogProvided": False})
++            return subprocess.CompletedProcess([], 0, b"fixture-only", b"")
++        with patch.object(collector.subprocess, "run", side_effect=fixture_only), self.assertRaises(ValueError):
++            collector.collect(self.args)
++        self.assertFalse(self.args.output.exists())
++
++    def test_exit_one_without_complete_report_is_not_diagnostic_success(self):
++        with patch.object(collector.subprocess, "run", return_value=subprocess.CompletedProcess([], 1, b"", b"failure")), \
++                self.assertRaises(OSError): collector.collect(self.args)
++        self.assertEqual(self.args.comparator_stderr.read_bytes(), b"failure")
++        self.assertFalse(self.args.output.exists())
++
++    def test_exit_status_must_agree_with_actual_comparison(self):
++        run = subprocess.run
++        def changed_status(*args, **kwargs):
++            result = run(*args, **kwargs)
++            result.returncode = 1  # Actual synthetic matching report requires zero.
++            return result
++        with patch.object(collector.subprocess, "run", side_effect=changed_status), self.assertRaisesRegex(ValueError, "exit status"):
++            collector.collect(self.args)
++
++    def test_raw_log_digest_and_comparison_replay_cannot_be_changed(self):
++        run = subprocess.run
++        def changed_report(*args, **kwargs):
++            result = run(*args, **kwargs)
++            report = collector.object_json(self.args.comparison)
++            report["observationLog"]["sha256"] = "0" * 64
++            self.write_json(self.args.comparison, report)
++            return result
++        with patch.object(collector.subprocess, "run", side_effect=changed_report), self.assertRaisesRegex(ValueError, "digest"):
++            collector.collect(self.args)
++
++    def test_prior_evidence_is_never_overwritten(self):
++        original = self.args.preparation.read_bytes()
++        with self.assertRaises(ValueError): collector.prepare(self.args.audit, self.args.environment, self.args.preparation)
++        self.assertEqual(self.args.preparation.read_bytes(), original)
++        self.args.output.write_bytes(b"old evidence")
++        with self.assertRaises(ValueError): collector.collect(self.args)
++        self.assertEqual(self.args.output.read_bytes(), b"old evidence")
++
++    def test_mid_collection_input_changes_and_output_aliases_are_rejected(self):
++        run = subprocess.run
++        def changed_log(*args, **kwargs):
++            result = run(*args, **kwargs)
++            self.args.log.write_bytes(self.args.log.read_bytes() + b"changed after comparison\n")
++            return result
++        with patch.object(collector.subprocess, "run", side_effect=changed_log), self.assertRaisesRegex(ValueError, "during collection"):
++            collector.collect(self.args)
++        self.clear_outputs()
++        self.args.raw = self.args.log
++        original = self.args.log.read_bytes()
++        with self.assertRaisesRegex(ValueError, "distinct"): collector.collect(self.args)
++        self.assertEqual(self.args.log.read_bytes(), original)
++
++    def test_real_environment_validator_rejects_wrong_source_digest_and_configuration(self):
++        self.binding.stop()
++        fixture = baseline_fixtures.ReaderStageBaselineTests()
++        fixture.root = self.root
++        environment = fixture.environment()
++        for item in environment["inputEvidence"].values(): Path(item["path"]).write_bytes(b"input bytes")
++        environment["inputEvidence"]["audit"] = {"path": str(self.args.audit),
++                                                   "sha256": collector.digest(self.args.audit.read_bytes())}
++        self.write_json(self.args.environment, environment)
++        with patch.object(collector.smoke, "review_overlays"), \
++                patch.object(collector.smoke, "source_sha", return_value="a" * 40), \
++                patch.object(collector.stage, "source_provenance", return_value=baseline_fixtures.SOURCES):
++            self.assertEqual(collector.validate_binding(self.args.audit, self.args.environment), environment)
++            for key, value in (("sourceCommit", "c" * 40), ("configuration", "Release")):
++                changed = copy.deepcopy(environment)
++                changed[key] = value
++                self.write_json(self.args.environment, changed)
++                with self.subTest(key=key), self.assertRaises(ValueError):
++                    collector.validate_binding(self.args.audit, self.args.environment)
++            self.write_json(self.args.environment, environment)
++            Path(environment["inputEvidence"]["settings"]["path"]).write_bytes(b"modified settings")
++            with self.assertRaisesRegex(ValueError, "input changed"):
++                collector.validate_binding(self.args.audit, self.args.environment)
++        self.binding.start()
++
++    def test_source_bytes_must_equal_committed_checkpoint(self):
++        self.source.stop()
++        with patch.object(collector.smoke, "git", return_value=b"not the source"):
++            with self.assertRaisesRegex(ValueError, "differs from committed"): collector.source_provenance()
++        self.source.start()
++
++    def test_collect_cli_requires_log_and_actual_execution_inputs(self):
++        process = subprocess.run([sys.executable, "-B", str(HERE / "collect-rule-defaults-reference.py"),
++                                  "collect", "--output", str(self.root / "no-log.json")], capture_output=True)
++        self.assertNotEqual(process.returncode, 0)
++        self.assertIn(b"--log", process.stderr)
++        self.assertFalse((self.root / "no-log.json").exists())
++
++
++if __name__ == "__main__": unittest.main()
+diff --git a/.github/workflows/reader-smoke.yml b/.github/workflows/reader-smoke.yml
+index eafbffb..0706f9e 100644
+--- a/.github/workflows/reader-smoke.yml
++++ b/.github/workflows/reader-smoke.yml
+@@ -36,6 +36,8 @@ jobs:
+           python -B scripts/reader-experience/check-completion-plan.py --require-execution --output .build/ci-logs/completion-plan.json
+           python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-smoke-tools.log
+           python -B scripts/reader-experience/test-reader-stage-baseline.py -v 2>&1 | tee .build/ci-logs/reader-stage-baseline-tools.log
++          python -B scripts/reader-experience/test-rule-defaults-reference.py -v 2>&1 | tee .build/ci-logs/rule-defaults-reference-tools.log
++          python -B scripts/reader-experience/test-collect-rule-defaults-reference.py -v 2>&1 | tee .build/ci-logs/rule-defaults-collection-tools.log
+           python -B scripts/reader-experience/test-online-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-online-tools.log
+           python -B scripts/reader-experience/test-online-source-fixture.py -v 2>&1 | tee .build/ci-logs/reader-online-fixture.log
+           bash -n scripts/reader-experience/smoke.sh
+@@ -80,6 +82,7 @@ jobs:
+           A separate reader-supply-scenarios group requires three unique methods and six passing executions with zero failures, skips or expected failures. One prefetch method runs synthetic 20/100-chapter libraries through ten distant jumps using owned held URLProtocol responses and retains actual request/queue peaks, ordering, cancellation and recovery observations as READER_PREFETCH_SCENARIO log rows. Two modern-cache methods run four cases: replacement-body, empty-body and invalid-UTF-8 variants preserve their package/meta evidence for validation, and a chapter-entry path exercises one recovery fetch followed by verified cache reuse. This group also runs before UI smoke and keeps its own xcresult, raw summary/tests/log and count result. These fixtures do not establish live-site behavior, a changed production prefetch policy or device performance.
+           A source-schema group independently requires nineteen unique methods and fifty passing executions with zero failures, skips or expected failures: ContentRule preservation 6/23, ReviewRule preservation 7/21 and existing mainJs preservation regressions 6/6. It retains ContentRule subContent/contentBatch/nullable maxBatchSize, all thirty original ReviewRule fields, and existing mainJs text through import, raw JSON editing, export and storage, with default, signed 32-bit boundary, malformed-input and session-clock cases. Its xcresult, summary, tests tree, log and count result are separate. This proves only the selected preservation contracts when these tests actually execute; it does not implement batch chapter or paragraph-review execution, full source-schema parity or original-core product routing.
+           A separate WebDAV restore group requires twelve unique methods and twenty-seven passing executions with zero failures, skips or expected failures. It uses owned files/defaults and injected transport/install faults to verify all-present-file prevalidation, explicit-404 legacy absence, transfer/auth errors, no-data rejection, rollback including an already-mutated failed target, originally absent targets, retained disk recovery material after rollback failure, one later explicit retry, successful publication and rule deduplication, manifest conflict choices, and the real BookStore writer pause/drain/edit conflict plus local TOC/TXT migration boundary. This does not execute the live source/replace-store lease chain, full/encrypted backup, crash/power-loss recovery, WebDAV server interoperability or physical-device storage. It retains its own xcresult, raw summary/tests/log and count gate. All four new groups collect their evidence before their combined gate ahead of TXT UI; a failed group is never counted as passed.
++          A separate original-rule diagnostic observer requires exactly three passing source method identities, three executions, and zero failures, skips or expected failures. It collects forty public original cases across seven routes (280 rows / 760 snapshots), plus thirteen unknown-field fixtures across three import shapes (39 rows / 156 snapshots). The collection gate requires all 319 unique rows and 916 snapshots, committed source and frozen fixture hashes, same-run Debug Simulator environment, original xcresult summary/tree and the dedicated raw xcodebuild log digest. Empty, missing, duplicate, unrelated or malformed observations fail collection; fixture-only validation cannot satisfy this gate. Complete representation differences are retained as observed-differences with selectedContractsMatch=false and the comparison CLI's actual exit 1; successful diagnostic collection does not count as source compatibility. Existing nineteen/fifty preservation acceptance remains separate. The original log, raw rows, comparison, CLI stdout/stderr, preparation and collection result remain in the existing evidence artifact even on failure.
+           The selected reader-stage method measures fixed 10K/100K fixtures across five iterations and five stages. Its collector requires exactly 50 unique READER_ARCH_BENCH records, validates finite timing/output values, independently reconstructed fixture hashes and byte counts, and the 390x844 / 18pt / 1.5 line-height / 8pt paragraph style. It retains original log lines, fixture/benchmark/helper/collector source hashes, source commit, actual Debug build settings, Xcode/SDK/Simulator runtime build and destination evidence. Ten fixture/stage summaries report five-sample median/max observations; failed or skipped Swift assertions cannot be accepted by the timing collector. Raw metric lines survive invalid/incomplete captures without a passing baseline result.
+           This is an in-process Debug Simulator baseline. It does not measure cold app startup, tap-to-visible, real HTTP, prefetch, peak process memory, battery or physical-device performance; five observations are not p95, and no speedup is established without a comparable earlier baseline. The separate source-session benchmark remains excluded.
+           This is a Debug Simulator check of the existing Yuedu reader. It does not modify or execute the delivered Release IPA, validate the Files picker or real-site sources, or pass physical-device/full-Legado gates.
+diff --git a/scripts/reader-experience/smoke.sh b/scripts/reader-experience/smoke.sh
+index cfb77e9..a9a8dde 100644
+--- a/scripts/reader-experience/smoke.sh
++++ b/scripts/reader-experience/smoke.sh
+@@ -155,13 +155,42 @@ xcrun xcresulttool get test-results tests --path "$WORK/webdav-restore.xcresult"
+ restore_count_status=0
+ python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/webdav-restore-summary.json" \
+   --expected 12 --expected-executions 27 > "$WORK/webdav-restore-result.json" || restore_count_status=$?
+-# Collect all four new groups before enforcing their independent verdicts, so
++# Observe the forty public original cases and thirteen unknown-field fixtures.
++# This independent 3/3 group collects 319 rows / 916 snapshots. Complete wire
++# differences are diagnostic evidence; they never pass source compatibility.
++reference_prepare_status=0
++python3 "$SCRIPT_DIR/collect-rule-defaults-reference.py" prepare \
++  --audit "$WORK/overlays.json" --environment "$WORK/reader-stage-environment.json" \
++  --output "$WORK/rule-defaults-reference-preparation.json" \
++  > "$WORK/rule-defaults-reference-prepare.log" 2>&1 || reference_prepare_status=$?
++reference_test_status=0
++bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/rule-defaults-reference-tests.log" -t 1200 -- \
++  "${ARGS[@]}" -resultBundlePath "$WORK/rule-defaults-reference.xcresult" \
++  -only-testing:'yuedu appTests/BookSourceRuleDefaultsReferenceTests' || reference_test_status=$?
++reference_artifact_status=0
++xcrun xcresulttool get test-results summary --path "$WORK/rule-defaults-reference.xcresult" > "$WORK/rule-defaults-reference-summary.json" || reference_artifact_status=$?
++xcrun xcresulttool get test-results tests --path "$WORK/rule-defaults-reference.xcresult" > "$WORK/rule-defaults-reference-tests.json" || reference_artifact_status=$?
++reference_collection_status=0
++python3 "$SCRIPT_DIR/collect-rule-defaults-reference.py" collect \
++  --audit "$WORK/overlays.json" --environment "$WORK/reader-stage-environment.json" \
++  --preparation "$WORK/rule-defaults-reference-preparation.json" \
++  --log "$WORK/rule-defaults-reference-tests.log" --test-exit-status "$reference_test_status" \
++  --summary "$WORK/rule-defaults-reference-summary.json" --tests "$WORK/rule-defaults-reference-tests.json" \
++  --result-bundle "$WORK/rule-defaults-reference.xcresult" --raw "$WORK/rule-defaults-reference-raw.log" \
++  --comparison "$WORK/rule-defaults-reference-comparison.json" \
++  --comparator-stdout "$WORK/rule-defaults-reference-comparator.stdout.log" \
++  --comparator-stderr "$WORK/rule-defaults-reference-comparator.stderr.log" \
++  --output "$WORK/rule-defaults-reference-result.json" \
++  > "$WORK/rule-defaults-reference-collection.log" 2>&1 || reference_collection_status=$?
++# Collect all independent groups before enforcing their verdicts, so
+ # an incomplete baseline cannot hide supply/schema evidence. Earlier gates and
+ # the TXT/loopback acceptance protocols keep their established behavior.
+ [[ $reader_test_status == 0 && $reader_artifact_status == 0 && $reader_baseline_status == 0 && $reader_count_status == 0 \
+    && $supply_test_status == 0 && $supply_artifact_status == 0 && $supply_count_status == 0 \
+    && $schema_test_status == 0 && $schema_artifact_status == 0 && $schema_count_status == 0 \
+-   && $restore_test_status == 0 && $restore_artifact_status == 0 && $restore_count_status == 0 ]]
++   && $restore_test_status == 0 && $restore_artifact_status == 0 && $restore_count_status == 0 \
++   && $reference_prepare_status == 0 && $reference_test_status == 0 \
++   && $reference_artifact_status == 0 && $reference_collection_status == 0 ]]
+ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/txt-ui-tests.log" -t 1200 -- \
+   "${ARGS[@]}" -resultBundlePath "$WORK/txt-ui.xcresult" \
+   -only-testing:'yuedu appUITests/ReaderLocalSmokeUITests'
