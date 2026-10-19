@@ -6,7 +6,9 @@
 
 暂缓真机测试期间，后续源码已保留原 `AnalyzeRule` 的有限协调器切片，修复缓存类型冲突、inline JS 库分类及关闭后的宿主调用；153 项桌面回归通过，见[对应源码与证据](original-rule-coordinator-port.json)。另已实际完成[47 次有状态调用对照](stateful-port-reference/2026-10-19/record.json)：46 个返回值和全部前后状态一致，一次异常保留两处脚本编号差异，不计为全部兼容；[工具](../../scripts/legado-ios/stateful-port-reference/README.md)可用于后续回归。普通阅读的传统规则仍走原有 JSC 路由。运行时声明文件的[独立打包校验](runtime-notices.md)也已补齐；这不代表整体许可核验完成。
 
-最新源码 `f73f0ae` 的[主 App 模拟器验证](native-worker-thread-fix.json)已通过：真实 JVM 完成固定 `mainJs` 搜索、详情、目录、两章正文和缓存读取，取消耗时 **48.008 毫秒**，原 JNI 返回 `CANCELLED`，第七次恢复请求成功。157 项 JVM、16 项 Swift 接口测试及缓存回归的 6 个方法／8 个执行实例也全部通过。缓存修复拒绝正文与已存校验值不符的迁移，同时保留无校验值旧缓存的升级能力。[前轮 60.207 秒的失败报告](native-cancel-task-trace.json)保留。本轮未生成新 iPhone IPA，也未完成真机或全部真实书源验收。
+源码 `f73f0ae` 的[主 App 模拟器验证](native-worker-thread-fix.json)已通过：真实 JVM 完成固定 `mainJs` 搜索、详情、目录、两章正文和缓存读取，取消耗时 **48.008 毫秒**，原 JNI 返回 `CANCELLED`，第七次恢复请求成功。157 项 JVM、16 项 Swift 接口测试及缓存回归的 6 个方法／8 个执行实例也全部通过。缓存修复拒绝正文与已存校验值不符的迁移，同时保留无校验值旧缓存的升级能力。[前轮 60.207 秒的失败报告](native-cancel-task-trace.json)保留。
+
+后续源码 `c47169d` 已完成[SDK 清理与共享解析环境验证](sdk-and-rule-scope-validation.json)：移除 16 项无引用的直接 SDK 链接，修复迁移层不同脚本库初始化互相阻塞的问题。云端 163 项 JVM、16 项 Swift 接口、9 项配置、41 项本地产品、缓存 8 个执行实例和原生固定链路均通过；本轮取消为 **48.767 毫秒**，恢复请求成功。传统规则阅读路由仍是 JSC。本轮没有新 iPhone IPA、真机验收或全部真实书源兼容结论。
 
 ## 功能对照
 
@@ -63,7 +65,7 @@
 
 本轮源码已落实：本地分发关闭 App 账号、StoreKit、上游反馈和 CloudKit；会员状态保持未购买，本地阅读能力另行开放。默认公版库隐藏，旧首页公版栏目因没有可用提供者而不发起请求；青空目录服务在本地模式只读已有缓存，即使旧书籍详情调用强制刷新也不访问上游或写检查时间。官方 AI 推荐从提供者注册和栏目选择中移除，用户自行配置的 AI 助手、模块、RSS、WebDAV 及书源网页登录继续保留。中文界面使用简体翻译。**独立品牌源码已通过 Debug Simulator 的 64 项实际验证，包括字体、缓存 TXT 与基础阅读链路；build 10 的 Release 构建、无书源检查及 IPA 独立静态审计已通过，新版真机验收仍待完成。**详见[当前验证记录](local-product-validation.json)和[build 10 构建证据](native-reader-experience-build10.json)。上游 SDK 源码/依赖尚未全部物理删除，不能据此声称包体已经精简。
 
-另已完成[直接链接的 SDK 清单](unused-sdk-linkage-review.json)：16 个 Firebase／Google 产品没有找到直接源码引用，可供后续逐项尝试解除链接；7 个产品仍有实际引用。此轮未改动工程或依赖锁，也没有测得包体和启动速度收益；解除链接仍须编译及启动验证。
+根据此前[直接链接的 SDK 清单](unused-sdk-linkage-review.json)，源码 `c47169d` 已解除 16 个 Firebase／Google 产品的直接链接，并通过 Debug Simulator 编译和测试宿主启动验证；7 个有实际引用的产品及原依赖锁保留。详情见[本轮验证](sdk-and-rule-scope-validation.json)。这不等于所有传递依赖已经消失，也没有测得包体和启动速度收益。
 
 ## 能否完美兼容书源
 

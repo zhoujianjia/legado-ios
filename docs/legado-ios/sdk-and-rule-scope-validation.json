@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "sourceCommit": "c47169df8dfe0ffd5a5fb67ed17eb8bf0c26b89d",
+  "status": "verified-desktop-regressions-and-main-app-debug-simulator-validation",
+  "scope": "Two finite changes only: remove sixteen unused direct main-target SPM product links, and isolate retained traditional-rule scope creation by key. No reader-route expansion, device package, self-signing or full-feature claim.",
+  "sdkLinkage": {
+    "project": "Yuedu-Reader.xcodeproj/project.pbxproj",
+    "beforeSHA256": "b1c85ad750b4874f6ba5415649b2a6272d29438a3fe3f6561089f03cee342342",
+    "afterSHA256": "b62e6224e08aef9fe45e3b44dddc0f2e68bc2bbc5aa9e5995b5f1afbb96736bc",
+    "removedDirectProducts": [
+      "GoogleSignInSwift",
+      "FirebaseAnalytics",
+      "FirebaseAnalyticsCore",
+      "FirebaseAnalyticsIdentitySupport",
+      "FirebaseAppCheck",
+      "FirebaseAppDistribution-Beta",
+      "FirebaseAuthCombine-Community",
+      "FirebaseDatabase",
+      "FirebaseFirestoreCombine-Community",
+      "FirebaseFunctionsCombine-Community",
+      "FirebaseInstallations",
+      "FirebaseMLModelDownloader",
+      "FirebaseMessaging",
+      "FirebasePerformance",
+      "FirebaseRemoteConfig",
+      "FirebaseStorageCombine-Community"
+    ],
+    "removedProductCount": 16,
+    "retainedUsedProductCount": 7,
+    "packageReferencesAndResolvedLockPreserved": true,
+    "onlyExpectedPBXObjectsAndListsChanged": true,
+    "unreferencedCandidateBaseline": "unused-sdk-linkage-review.json",
+    "structuralAudit": {
+      "path": ".build/sdk-linkage-cleanup-20261019/structural-audit.json",
+      "bytes": 16528,
+      "sha256": "5adadeb8493d31c847f1604d60bd890267d570b0f03f7f82fa70794ec9659d27"
+    },
+    "exactGitObjectAudit": {
+      "path": ".build/cloud-evidence/run-39227758666/review-plan/sdk-linkage-git-audit.json",
+      "bytes": 1756,
+      "sha256": "0bd5f77f4772bc836db70d6e3d697c24016b169a711096795687cd84449e5c5b"
+    },
+    "allTransitiveSDKsRemoved": false,
+    "packageSizeOrPerformanceBenefitMeasured": false
+  },
+  "ruleScopeFix": {
+    "rootCause": "An environment-wide synchronized monitor covered CryptoJS and untrusted library evaluation; a blocked library prevented an unrelated key from initializing.",
+    "implementation": "Creation is serialized per library key or owner/thread identity. The shared environment monitor protects metadata only; reference-counted creation-lock registrations are removed in finally. Compilation remains environment-owned and publication checks the environment is open.",
+    "readerRoutingChanged": false,
+    "nativeInterpreterRebuilt": false,
+    "globalStateLifetimeChanged": false,
+    "actualDesktopRed": {
+      "methods": 1,
+      "failures": 1,
+      "failureType": "java.util.concurrent.TimeoutException"
+    },
+    "actualDesktopGreen": {
+      "methods": 24,
+      "newConcurrencyMethods": 6,
+      "existingCoordinatorMethods": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "review": {
+      "path": ".build/rule-scope-concurrency-review/review-result.json",
+      "bytes": 4924,
+      "sha256": "62314d66ebffb2f6f8388d290ebc0d964f77f50ff6f3c000acc878b4fff7b8e5"
+    },
+    "sourceAndManifestAudit": {
+      "path": ".build/cloud-evidence/run-39227758666/rule-scope-review/local-source-and-manifest-audit.json",
+      "bytes": 3891,
+      "sha256": "955f981aeed537a4eedd43af22c3cb4e4314f9c1055bd4b7c7922aab7c3373e6"
+    },
+    "redEvidenceBoundary": "The prior production snapshot is preserved; the complete first red test-source file was not separately frozen, so exact historical red-binary reconstruction is not claimed.",
+    "sameKeyWaitingCancellationValidated": false,
+    "sameAnalyzeRuleConcurrentUseValidated": false,
+    "coordinatorExecutedOnIOS": false
+  },
+  "ordinaryLocalPackaging": {
+    "sha256": "6b18bc73140f595dfb8e6a5012e7de62c71c581f7b1dce3cd400f17f91ac637b",
+    "bytes": 10259307,
+    "maximumBaseClassMajor": 65,
+    "requiredClasses": [
+      "io/yuedu/legado/LegadoRuntime.class",
+      "io/yuedu/legado/NativeHost.class",
+      "io/yuedu/legado/ProductionHttpTransport.class",
+      "io/yuedu/legado/RuntimeSessionOptions.class",
+      "io/yuedu/legado/StaticScalarSelectorRule.class",
+      "org/htmlunit/corejs/javascript/Context.class",
+      "okhttp3/OkHttpClient.class",
+      "org/brotli/dec/BrotliInputStream.class",
+      "org/apache/commons/text/StringEscapeUtils.class",
+      "org/apache/commons/lang3/StringUtils.class",
+      "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+      "io/legado/app/data/entities/Book.class",
+      "io/legado/app/data/entities/BookChapter.class",
+      "io/legado/app/data/entities/BookSource.class"
+    ],
+    "testClassesIncluded": false,
+    "inspection": {
+      "path": ".build/rule-scope-concurrency-review/ordinary-jar-inspection.json",
+      "bytes": 902,
+      "sha256": "0c04e091604184b8e0d276d9421c67a537c4fee1b954478113194ebde7bc2d95"
+    },
+    "newTestAndGateExcluded": true,
+    "packagedManifestMatchesSourceBytes": true
+  },
+  "statefulRegression": {
+    "measurement": {
+      "path": ".build/stateful-port-reference/c47169d/measurement-result.json",
+      "bytes": 34061,
+      "sha256": "3464bf14f91ca36dffcb6388da802162e057a72658e7e9a39fc4270192d42ad6"
+    },
+    "independentAudit": {
+      "path": ".build/cloud-evidence/run-39227758666/rule-scope-review/stateful-new-versus-frozen-audit.json",
+      "bytes": 2788,
+      "sha256": "d8589c02e3dbcc10ffb76abf5a3db3bfc64a682de329aa5b633cccb697d4d599"
+    },
+    "scenarios": 14,
+    "orderedSteps": 56,
+    "apiCalls": 47,
+    "matchingTypedReturns": 46,
+    "matchingMutations": 9,
+    "matchingBeforeAfterSnapshots": 112,
+    "completeRawDifferenceCount": 442,
+    "unchangedKnownExceptionMessageDifferences": 2,
+    "allDeclaredAPICallsRawMatch": false,
+    "priorFullComparisonPreserved": true,
+    "meaning": "The same typed/state outcomes and the same two script-number exception differences as the earlier frozen baseline; not a zero-difference compatibility result."
+  },
+  "cloudValidation": {
+    "runID": 39227758666,
+    "sourceCommit": "c47169df8dfe0ffd5a5fb67ed17eb8bf0c26b89d",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39227758666",
+    "status": "passed-independently-audited-raw-tests",
+    "singlePreparedMainAppBuild": true,
+    "expected": {
+      "JVMUniqueMethods": 163,
+      "JVMXMLFiles": 20,
+      "sourceOnlySwiftMethods": 16,
+      "configurationMethods": 9,
+      "localProductMethods": 41,
+      "cacheUniqueMethods": 6,
+      "cacheExecutionInstances": 8,
+      "nativeFixedChainMethods": 1
+    },
+    "nativeCancellationMaximumMilliseconds": 15000,
+    "operationDeadlineMilliseconds": 45000,
+    "requiredWireRequests": 7,
+    "separateResultsRequired": true,
+    "realBookSourcesValidated": false,
+    "readerUIRendered": false,
+    "jobID": 117978121409,
+    "artifact": {
+      "id": 12177081818,
+      "bytes": 2713897,
+      "sha256": "f19ba7f6652d6b87a2e658e5b0e9f95fa809180b7c91f7ca26357c1b68b70f30"
+    },
+    "actual": {
+      "JVMXMLFiles": 20,
+      "JVMUniqueMethods": 163,
+      "newConcurrencyMethods": 6,
+      "sourceOnlySwiftMethods": 16,
+      "configurationMethods": 9,
+      "localProductMethods": 41,
+      "cacheUniqueMethods": 6,
+      "cacheExecutionInstances": 8,
+      "nativeFixedChainMethods": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "nativeObserved": {
+      "cancellationMilliseconds": 48.76697063446045,
+      "executionErrorCode": "CANCELLED",
+      "deadlineFired": false,
+      "actualRequests": 7,
+      "completeResponses": 6,
+      "heldResponses": 1,
+      "recoveryPassed": true,
+      "allSixCleanupChecksPassed": true,
+      "coordinatorExecutedOnIOS": false
+    },
+    "rawEvidence": [
+      {
+        "path": "docs/legado-ios/fixtures/ios-native-sdk-c47169d.json",
+        "bytes": 45442,
+        "sha256": "fee8c1e317b507d867f0e247370aee1afe9367a72cbba781410cd9e3a418475a"
+      },
+      {
+        "path": "docs/legado-ios/fixtures/ios-configuration-c47169d.json",
+        "bytes": 5931,
+        "sha256": "cd631b1b7c91fe0c66f64e83bf9b9a631667fefb0445fafd4bd5f402dc1f2d28"
+      },
+      {
+        "path": "docs/legado-ios/fixtures/ios-local-product-c47169d.json",
+        "bytes": 22199,
+        "sha256": "66d6bded8ffadd24142b2fdd0aceb8422ce2046f6c783974ab3cdfcb37cde5cf"
+      },
+      {
+        "path": "docs/legado-ios/fixtures/rule-scope-concurrency-c47169d.xml",
+        "bytes": 1339,
+        "sha256": "c6425e44f6b123a8e20cd283891db535a8e7356a066505782329bb95e5fe075c"
+      }
+    ],
+    "independentAudits": [
+      {
+        "path": ".build/cloud-evidence/run-39227758666/independent-native-audit.json",
+        "bytes": 124278,
+        "sha256": "475d90ef08a9a69c06eb279028c102e46319f793bb67ef57383e877679d74435"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39227758666/independent-artifact-envelope-audit.json",
+        "bytes": 123877,
+        "sha256": "ec675186967a6e5584277c17377a584e428034e36a7d61dd83dc20e099d12bb1"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39227758666/review-plan/independent-local-product-audit.json",
+        "bytes": 26954,
+        "sha256": "221c8a7a5a0512a4bba06e2d04b4a54604f5d53bc08d672c6562c10a6513363e"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39227758666/rule-scope-review/actual-cloud-jvm-audit.json",
+        "bytes": 58052,
+        "sha256": "8d5d8635c40adcfcb34e66116d767626dac7898126a1870e7b6d68328b4b413a"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39227758666/cache-and-build-independent-review-v2.json",
+        "bytes": 16835,
+        "sha256": "13243206c187334908f22a14b7a2e9f5cb3c2071861893dce2abd47bfa8d50cd"
+      }
+    ],
+    "metadata": [
+      {
+        "path": ".build/cloud-evidence/run-39227758666/run-metadata.json",
+        "bytes": 12493,
+        "sha256": "f3fd0979fc621560161e490f6586c29a9c2acc5776c1b02e92be9d3580068e58"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39227758666/jobs-metadata.json",
+        "bytes": 3718,
+        "sha256": "8c72f8be9d54ff4ff71bd147020557b09032b34311e9af74463931861cf87653"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39227758666/artifacts-metadata.json",
+        "bytes": 770,
+        "sha256": "117c275de995907e70c045ef5c5368b56e157a803c6f02b72276945604e6f2a9"
+      }
+    ],
+    "builtTargetsObserved": [
+      "yuedu app",
+      "Yuedu-Reader Widget",
+      "Yuedu-Reader ShareExtension",
+      "yuedu appTests",
+      "yuedu appUITests"
+    ],
+    "testHostActuallyLaunched": true,
+    "uiTestsExecuted": false,
+    "extensionFunctionalityExecuted": false,
+    "appOrCloudJARBytesIndependentlyAudited": false,
+    "producerJarReport": {
+      "sha256": "7c465b5118f5f3ab18bcad44e928d67f3c3088e8162953b8502cc3142d29cca0",
+      "bytes": 10259307,
+      "maximumBaseClassMajor": 65,
+      "requiredClasses": [
+        "io/yuedu/legado/LegadoRuntime.class",
+        "io/yuedu/legado/NativeHost.class",
+        "io/yuedu/legado/ProductionHttpTransport.class",
+        "io/yuedu/legado/RuntimeSessionOptions.class",
+        "io/yuedu/legado/StaticScalarSelectorRule.class",
+        "org/htmlunit/corejs/javascript/Context.class",
+        "okhttp3/OkHttpClient.class",
+        "org/brotli/dec/BrotliInputStream.class",
+        "org/apache/commons/text/StringEscapeUtils.class",
+        "org/apache/commons/lang3/StringUtils.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/legado/app/data/entities/Book.class",
+        "io/legado/app/data/entities/BookChapter.class",
+        "io/legado/app/data/entities/BookSource.class"
+      ],
+      "testClassesIncluded": false
+    },
+    "producerNoticeReportMatchesPinnedManifest": true
+  },
+  "limitations": [
+    "Same-key scope initialization remains serialized; prompt cancellation while waiting on that intrinsic monitor is not established.",
+    "Close rejects later publication but does not itself stop arbitrary already-running host calls; AnalyzeRule instances remain worker-confined.",
+    "Traditional reader sources still use the existing JSC route. The retained coordinator is not routed through AnalyzeUrl or the product reader.",
+    "The unchanged raw stateful comparison still has two exception script-name differences; no original data or comparison normalization was changed.",
+    "Direct product linkage removal is not proof that transitive SDK binaries disappear, and no size or performance improvement was measured.",
+    "No physical-device, Release IPA, standalone renewal or complete license/source-closure acceptance follows from this work.",
+    "Debug Simulator XCTest-host logs contain main-thread stall records without an active instrumented span. All matching records from the four test logs are preserved; their causes and production/device impact are not established, and no SDK-related performance gain or regression is inferred."
+  ],
+  "acceptance": {
+    "desktopScopeRegressionPassed": true,
+    "sdkCloudCompileAndStartupPassed": true,
+    "cloudLocalProductRegressionPassed": true,
+    "cloudNativeFixedChainPassed": true,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false
+  },
+  "testedSourceFiles": {
+    ".github/workflows/legado-native-reader-test.yml": {
+      "bytes": 10240,
+      "sha256": "e4dfe5a019e714e4eef0f700db5d62e637b6c1f23b09a007601e4864d26aed70"
+    },
+    "Yuedu-Reader.xcodeproj/project.pbxproj": {
+      "bytes": 55693,
+      "sha256": "b62e6224e08aef9fe45e3b44dddc0f2e68bc2bbc5aa9e5995b5f1afbb96736bc"
+    },
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt": {
+      "bytes": 8261,
+      "sha256": "bff85b0b7bdd66b0f0d6367bbfd5f2528af3ee6c400ab74897689df9b8f27ec3"
+    },
+    "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleScopesConcurrencyTest.kt": {
+      "bytes": 11229,
+      "sha256": "db05491b0f758ab4a0ec899ff594be633f6fc400f6f1f3df4b51c5734e607ab8"
+    },
+    "Packages/LegadoRuntime/vendor/original-rule/manifest.json": {
+      "bytes": 17961,
+      "sha256": "f2420afd8a49ec052b8000cd17074fe870b51540f08ec9b73fc7e09af40804c6"
+    }
+  },
+  "diagnosticObservations": {
+    "scope": "Raw Debug Simulator XCTest-host logs. A launch phase label does not establish a production/device launch benchmark or attribute a cause.",
+    "cause": "unresolved",
+    "attributedToSDKChange": false,
+    "performanceImprovementEstablished": false,
+    "matchingLogRecords": [
+      {
+        "file": "configuration.log",
+        "line": 3226,
+        "milliseconds": 1738,
+        "rawLine": "2026-10-19 09:35:39.504151+0000 YueduReader[75704:190244] [MainThreadMonitor] ⟐ main thread blocked 1738 ms · during no instrumented span · phase launch"
+      },
+      {
+        "file": "configuration.log",
+        "line": 3243,
+        "milliseconds": 4972,
+        "rawLine": "2026-10-19 09:35:47.731287+0000 YueduReader[75704:190244] [MainThreadMonitor] ⟐ main thread blocked 4972 ms · during no instrumented span · phase inactive"
+      },
+      {
+        "file": "local-product-regressions.log",
+        "line": 2760,
+        "milliseconds": 1871,
+        "rawLine": "2026-10-19 09:38:54.722731+0000 YueduReader[85269:213943] [MainThreadMonitor] ⟐ main thread blocked 1871 ms · during no instrumented span · phase launch"
+      },
+      {
+        "file": "local-product-regressions.log",
+        "line": 2769,
+        "milliseconds": 4928,
+        "rawLine": "2026-10-19 09:38:59.729139+0000 YueduReader[85269:213943] [MainThreadMonitor] ⟐ main thread blocked 4928 ms · during no instrumented span · phase launch"
+      },
+      {
+        "file": "cache-regressions.log",
+        "line": 2756,
+        "milliseconds": 2027,
+        "rawLine": "2026-10-19 09:41:40.288498+0000 YueduReader[94248:236468] [MainThreadMonitor] ⟐ main thread blocked 2027 ms · during no instrumented span · phase launch"
+      },
+      {
+        "file": "cache-regressions.log",
+        "line": 2765,
+        "milliseconds": 4886,
+        "rawLine": "2026-10-19 09:41:45.193482+0000 YueduReader[94248:236468] [MainThreadMonitor] ⟐ main thread blocked 4886 ms · during no instrumented span · phase launch"
+      },
+      {
+        "file": "native-product-chain.log",
+        "line": 2755,
+        "milliseconds": 1976,
+        "rawLine": "2026-10-19 09:44:39.130107+0000 YueduReader[4373:259763] [MainThreadMonitor] ⟐ main thread blocked 1976 ms · during no instrumented span · phase launch"
+      },
+      {
+        "file": "native-product-chain.log",
+        "line": 2764,
+        "milliseconds": 3329,
+        "rawLine": "2026-10-19 09:44:42.540236+0000 YueduReader[4373:259763] [MainThreadMonitor] ⟐ main thread blocked 3329 ms · during no instrumented span · phase launch"
+      }
+    ]
+  }
+}

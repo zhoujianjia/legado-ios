@@ -28,7 +28,11 @@ build 9 使用源码 `903e90a`，相关 Swift、资源、Info、工程和测试�
 
 源码 `f73f0ae` 的[主 App 模拟器重测](native-worker-thread-fix.json)已实际通过：固定 `mainJs` 源的搜索、详情、目录、两章正文、缓存读取、阻塞网络取消及第七次恢复请求均有原始报告。取消 **48.008 毫秒**，JNI 返回 `CANCELLED`，未触发 45 秒操作期限，保持原 15 秒取消门槛。另有 157 项 JVM、16 项 Swift 接口和缓存的 6 个方法／8 个执行实例全部通过。缓存修复拒绝损坏正文覆盖旧校验值，保留原文件及无校验值旧缓存的正常升级。没有生成新版 IPA，自动续签也未实现。已交付 build 10 的字节及其历史验收范围保持原记录。
 
-37 份固定来源的运行时声明材料已接入统一打包校验；本轮云端成功执行了最终测试 App 的校验，producer 报告与固定清单一致，但本次 artifact 未直接包含 App 或 JAR 字节，不能称为独立成品审计。见[材料与边界](runtime-notices.md)、[本地验证](runtime-notices-validation.json)及[本轮结果](native-worker-thread-fix.json)。另外已整理[16 个未找到直接引用的 SDK 候选](unused-sdk-linkage-review.json)，没有删除依赖或测得体积收益。
+37 份固定来源的运行时声明材料已接入统一打包校验；云端成功执行了最终测试 App 的校验，producer 报告与固定清单一致，但 artifact 未直接包含 App 或 JAR 字节，不能称为独立成品审计。见[材料与边界](runtime-notices.md)、[本地验证](runtime-notices-validation.json)及[本轮结果](native-worker-thread-fix.json)。
+
+源码 `c47169d` 已解除此前清单中 16 项未使用 SDK 的直接链接，保留 7 个现用产品、全部 package references 和原依赖锁。另修复原协调器迁移层的跨库初始化阻塞：环境锁只保护元数据，脚本初始化按库或 owner/thread key 串行；关闭环境后不再发布新 scope。桌面相关 24 项通过，固定 47 次有状态调用的结果与此前相同，原两处脚本编号差异保留。传统书源尚未切换阅读路由，同键等待期间的及时取消也未验收。
+
+该提交的单次云测已完成并独立核对原始结果：163 项 JVM、16 项 Swift 接口、9 项配置、41 项本地产品、缓存 6 个方法／8 个实例及原生固定链路全部通过。主 App、Widget、分享扩展及测试目标均构建成功，测试宿主实际启动；扩展功能运行和阅读 UI 未因此计为通过。原生取消 48.767 毫秒，保持原 15 秒／45 秒及 7 次请求门槛。无新 IPA、真机、自动续签、全部书源兼容或体积／性能收益结论，详见[SDK 与共享环境验证](sdk-and-rule-scope-validation.json)。
 
 ## 历史本地体验包：3.0.0 build 7
 

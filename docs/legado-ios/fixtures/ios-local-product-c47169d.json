@@ -1,0 +1,381 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
+      "deviceName" : "iPhone 17 Pro Max",
+      "modelName" : "iPhone 17 Pro Max",
+      "osBuildNumber" : "23C54",
+      "osVersion" : "26.2",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "name" : "partial export preserves TOC order and excludes stale, missing and volume entries",
+                  "nodeIdentifier" : "CachedBookTXTExportTests/partialExportUsesValidatedCacheInTOCOrder()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/CachedBookTXTExportTests/partialExportUsesValidatedCacheInTOCOrder()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "complete export is UTF-8 and contains every cached chapter",
+                  "nodeIdentifier" : "CachedBookTXTExportTests/completeExportPreservesChinese()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/CachedBookTXTExportTests/completeExportPreservesChinese()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "authoritative plain text preserves literal tags, entities and whitespace",
+                  "nodeIdentifier" : "CachedBookTXTExportTests/plainTextExportsWithoutHTMLInterpretation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/CachedBookTXTExportTests/plainTextExportsWithoutHTMLInterpretation()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "no readable cache produces an error and leaves no misleading TXT",
+                  "nodeIdentifier" : "CachedBookTXTExportTests/emptyExportDoesNotCreateEmptyBook()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/CachedBookTXTExportTests/emptyExportDoesNotCreateEmptyBook()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Cached book TXT export",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/CachedBookTXTExportTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "name" : "countriesAndColdStart()",
+                  "nodeIdentifier" : "PublicLibraryAvailabilityTests/countriesAndColdStart()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/PublicLibraryAvailabilityTests/countriesAndColdStart()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "runningUpdates()",
+                  "nodeIdentifier" : "PublicLibraryAvailabilityTests/runningUpdates()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/PublicLibraryAvailabilityTests/runningUpdates()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Public library storefront availability",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/PublicLibraryAvailabilityTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "name" : "bundled font and license bytes match provenance, and iOS registers real Chinese faces",
+                  "nodeIdentifier" : "ReaderFontCatalogTests/bundledFontsAreRegisteredWithLicensedResources()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/ReaderFontCatalogTests/bundledFontsAreRegisteredWithLicensedResources()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "bundled font selection is accepted without importing files or claiming membership",
+                  "nodeIdentifier" : "ReaderFontCatalogTests/bundledSelectionsReachGlobalAndReaderFontResolvers()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/ReaderFontCatalogTests/bundledSelectionsReachGlobalAndReaderFontResolvers()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Bundled Chinese reader fonts",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/ReaderFontCatalogTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "name" : "localChineseUsesActualSimplifiedTranslations()",
+                  "nodeIdentifier" : "ReaderLocalProductTests/localChineseUsesActualSimplifiedTranslations()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/ReaderLocalProductTests/localChineseUsesActualSimplifiedTranslations()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "disabledBuiltInsStayHiddenAcrossStorefrontChanges()",
+                  "nodeIdentifier" : "ReaderLocalProductTests/disabledBuiltInsStayHiddenAcrossStorefrontChanges()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/ReaderLocalProductTests/disabledBuiltInsStayHiddenAcrossStorefrontChanges()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "disabledRemoteCatalogKeepsCacheWithoutFetchingOrStamping()",
+                  "nodeIdentifier" : "ReaderLocalProductTests/disabledRemoteCatalogKeepsCacheWithoutFetchingOrStamping()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/ReaderLocalProductTests/disabledRemoteCatalogKeepsCacheWithoutFetchingOrStamping()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Local reader product",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/ReaderLocalProductTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "name" : "feedRequestCountAndErrors()",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/feedRequestCountAndErrors()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/feedRequestCountAndErrors()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "OPDS 2 responses, including plain application/json, reach the JSON parser",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/opds2ContentTypes()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/opds2ContentTypes()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "identifyingUserAgent()",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/identifyingUserAgent()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/identifyingUserAgent()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "Basic and Digest challenges use configured credentials only on their origin",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/authenticationScope()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/authenticationScope()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "Cross-origin redirects strip credentials and cookies",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/redirectScope()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/redirectScope()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "mutations reject redirects without replaying bytes or changing POST into GET",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/mutationRedirectScope()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/mutationRedirectScope()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "mutating requests cannot send bodies directly to a different origin",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/mutationDirectOrigin()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/mutationDirectOrigin()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "Readium receives only the requested range and preserves its response",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/rangeStreaming()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/rangeStreaming()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "Range refusal is distinct from authentication errors",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/rangeFailureClassification()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/rangeFailureClassification()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "a 200 login page is not a range-refusal full-download trigger",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/loginPageDoesNotTriggerDownload()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/loginPageDoesNotTriggerDownload()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "malformed 206 must not publish or cache a different byte slice",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/malformedPartialResponse()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/malformedPartialResponse()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "OpenSearch description shares the configured transport and preserves query structure",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/searchDescription()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/searchDescription()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "Authenticated cover sessions reuse decoding and isolate memory cache",
+                  "nodeIdentifier" : "RemoteLibraryHTTPTests/coverSessionCache()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests/coverSessionCache()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Remote library HTTP",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/RemoteLibraryHTTPTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "name" : "repeatedFreeStatusDoesNotInvalidateSubscribers()",
+                  "nodeIdentifier" : "SubscriptionPublicationTests/repeatedFreeStatusDoesNotInvalidateSubscribers()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SubscriptionPublicationTests/repeatedFreeStatusDoesNotInvalidateSubscribers()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "recomputingTheSameEntitlementDoesNotRepublishIt()",
+                  "nodeIdentifier" : "SubscriptionPublicationTests/recomputingTheSameEntitlementDoesNotRepublishIt()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SubscriptionPublicationTests/recomputingTheSameEntitlementDoesNotRepublishIt()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "SubscriptionPublicationTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SubscriptionPublicationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "name" : "font import reads real TrueType metadata",
+                  "nodeIdentifier" : "UserFontSettingsTests/fontImportReadsRealTrueTypeMetadata()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/fontImportReadsRealTrueTypeMetadata()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "re-importing a font replaces its file instead of piling up copies",
+                  "nodeIdentifier" : "UserFontSettingsTests/reimportingFontReplacesItsFile()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/reimportingFontReplacesItsFile()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "launch cleanup removes copies superseded by a listed font and keeps the rest",
+                  "nodeIdentifier" : "UserFontSettingsTests/launchCleanupRemovesSupersededCopies()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/launchCleanupRemovesSupersededCopies()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "1s",
+                  "durationInSeconds" : 1,
+                  "name" : "TXT builder uses selected reader font",
+                  "nodeIdentifier" : "UserFontSettingsTests/txtBuilderUsesSelectedReaderFont()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/txtBuilderUsesSelectedReaderFont()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "Reflowable EPUB exposes user-selected font",
+                  "nodeIdentifier" : "UserFontSettingsTests/epubPipelineExposesUserSelectedFont()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/epubPipelineExposesUserSelectedFont()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "Online books and EPUB expose user-selected font",
+                  "nodeIdentifier" : "UserFontSettingsTests/onlineBooksAndEPUBExposeUserSelectedFont()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/onlineBooksAndEPUBExposeUserSelectedFont()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "EPUB selected font overrides author family before measurement and restores defaults",
+                  "nodeIdentifier" : "UserFontSettingsTests/epubFontOverrideAndRestoration()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/epubFontOverrideAndRestoration()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "online HTML chapters use selected reader font as default",
+                  "nodeIdentifier" : "UserFontSettingsTests/onlineHTMLChaptersUseSelectedReaderFontAsDefault()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/onlineHTMLChaptersUseSelectedReaderFontAsDefault()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "online TXT fallback uses selected reader font",
+                  "nodeIdentifier" : "UserFontSettingsTests/onlineTXTFallbackUsesSelectedReaderFont()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/onlineTXTFallbackUsesSelectedReaderFont()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "regular-only custom font keeps its face and gains synthetic bold in TXT",
+                  "nodeIdentifier" : "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldInTXT()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldInTXT()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "regular-only custom font gains synthetic bold for online HTML strong text",
+                  "nodeIdentifier" : "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldForOnlineHTML()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldForOnlineHTML()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "native bold face does not receive synthetic stroke",
+                  "nodeIdentifier" : "UserFontSettingsTests/nativeBoldFaceDoesNotReceiveSyntheticStroke()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/nativeBoldFaceDoesNotReceiveSyntheticStroke()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "global font import selects only the app interface font",
+                  "nodeIdentifier" : "UserFontSettingsTests/globalFontImportDoesNotChangeReaderSelection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/globalFontImportDoesNotChangeReaderSelection()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "reader font import does not change the app interface font",
+                  "nodeIdentifier" : "UserFontSettingsTests/readerFontImportDoesNotChangeGlobalSelection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/readerFontImportDoesNotChangeGlobalSelection()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "deleting a shared font clears every selection that references it",
+                  "nodeIdentifier" : "UserFontSettingsTests/deletingSharedFontClearsGlobalAndReaderSelections()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests/deletingSharedFontClearsGlobalAndReaderSelections()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "User reader fonts",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/UserFontSettingsTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "yuedu appTests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests",
+          "nodeType" : "Unit test bundle",
+          "result" : "Passed"
+        }
+      ],
+      "name" : "Yuedu-Reader",
+      "nodeType" : "Test Plan",
+      "result" : "Passed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}
