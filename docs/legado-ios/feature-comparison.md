@@ -4,7 +4,7 @@
 
 当前已交付到 Windows 的安装包为不内置书源的 build 10，包含独立品牌、字体、缓存 TXT 导出与只读续签连接验证；实际 IPA 和对应 Git 源码已核对。用户此前确认 build 6 在 iPhone 上能看到书源、搜索并打开正文。**这份旧版反馈不等于 build 10 已获真机验收，也不等于 1,331 个书源都可用。**详见 [build 10 记录](native-reader-experience-build10.json)和 [build 6 真机反馈](native-reader-experience.json)。自动续签仍未实现。
 
-暂缓真机测试期间，后续源码已保留原 `AnalyzeRule` 的有限协调器切片，修复缓存类型冲突、inline JS 库分类及关闭后的宿主调用；153 项桌面回归通过，见[对应源码与证据](original-rule-coordinator-port.json)。另已实际完成[47 次有状态调用对照](stateful-port-reference/2026-10-19/record.json)：46 个返回值和全部前后状态一致，一次异常保留两处脚本编号差异，不计为全部兼容；[工具](../../scripts/legado-ios/stateful-port-reference/README.md)可用于后续回归。普通阅读的传统规则仍走原有 JSC 路由。运行时声明文件的[独立打包校验](runtime-notices.md)也已补齐；这不代表整体许可核验完成。网络取消仅新增默认关闭的[观测与模拟器重测](native-cancel-task-trace.json)，尚未宣布修复。以上后续代码尚未生成新的 iPhone IPA。
+暂缓真机测试期间，后续源码已保留原 `AnalyzeRule` 的有限协调器切片，修复缓存类型冲突、inline JS 库分类及关闭后的宿主调用；153 项桌面回归通过，见[对应源码与证据](original-rule-coordinator-port.json)。另已实际完成[47 次有状态调用对照](stateful-port-reference/2026-10-19/record.json)：46 个返回值和全部前后状态一致，一次异常保留两处脚本编号差异，不计为全部兼容；[工具](../../scripts/legado-ios/stateful-port-reference/README.md)可用于后续回归。普通阅读的传统规则仍走原有 JSC 路由。运行时声明文件的[独立打包校验](runtime-notices.md)也已补齐；这不代表整体许可核验完成。[集成模拟器重测](native-cancel-task-trace.json)实际通过 157 项 JVM 和 4 项诊断读取测试；主 App 已到达正文与缓存阅读，但取消仍耗时 60.207 秒，唯一产品用例失败，第七次恢复请求未尝试。观测已确认取消命中，仍待解决取消后的本地正文读取等待。以上后续代码尚未生成新的 iPhone IPA。
 
 ## 功能对照
 

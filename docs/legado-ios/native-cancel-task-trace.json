@@ -54,7 +54,7 @@
     "recoveryRequestRequired": true
   },
   "cloudProductRevalidation": {
-    "status": "in-progress",
+    "status": "completed-failed-cancellation-latency",
     "physicalDeviceRequired": false,
     "iosCancellationFixEstablished": false,
     "sourceCommit": "2f515e04f00213364fe20047ec3eb33d9bccb669",
@@ -63,7 +63,360 @@
     "jobId": 117851452763,
     "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39187012421",
     "startedAtUTC": "2026-10-19T01:48:17Z",
-    "scope": "Integrated current ordinary JVM, pinned native VM, staged notices, four targeted saved-diagnostics Swift tests and the existing single product cancellation/recovery chain."
+    "scope": "Integrated current ordinary JVM, pinned native VM, staged notices, four targeted saved-diagnostics Swift tests and the existing single product cancellation/recovery chain.",
+    "completedAtUTC": "2026-10-19T02:37:45Z",
+    "artifact": {
+      "id": 12159733129,
+      "bytes": 2314159,
+      "sha256": "98c65aaf8d1ae03b8e264783e90f1c3d65841639cba0a1c800856d775f7cf080",
+      "expiresAtUTC": "2026-10-26T02:37:18Z"
+    },
+    "actualTests": {
+      "jvmXMLFiles": 19,
+      "uniqueJVMMethodsPassed": 157,
+      "jvmFailuresErrorsSkips": 0,
+      "savedDiagnosticsSPMMethodsPassed": 4,
+      "productMethodsExecuted": 1,
+      "productFailures": 1,
+      "productSkips": 0
+    },
+    "rawProductReport": {
+      "path": "docs/legado-ios/fixtures/ios-native-cancel-2f515e0.json",
+      "bytes": 40617,
+      "sha256": "9d3b603132b89834e61659432b6fa0149d447ae0aa8f0f4f80f671b9f26ad074",
+      "source": "Original xcresult report attachment; invocation/case/summary/payload reference chain independently decoded."
+    },
+    "productResult": {
+      "status": "failed",
+      "runID": "7b78148b-268c-4985-836f-900046dba97e",
+      "cancellationMilliseconds": 60206.72297477722,
+      "swiftError": "Swift.CancellationError",
+      "jvmError": "TIMEOUT",
+      "actualWireRequests": 6,
+      "recoveryRequestAttempted": false,
+      "cleanup": {
+        "connectionsDrained": true,
+        "initialSessionCloseReturned": true,
+        "listenerCancelled": true,
+        "pendingTaskFinished": true,
+        "readerSessionCloseReturned": true,
+        "temporaryContextsRemoved": true
+      },
+      "errors": [
+        "failed(\"Native cancellation waited for its natural deadline\")"
+      ]
+    },
+    "heldTaskObservation": {
+      "taskID": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+      "jvmEvents": [
+        {
+          "schemaVersion": 1,
+          "sequence": 40,
+          "epochMs": 1792377314149,
+          "elapsedNs": 3393785833,
+          "stage": "execute.registered",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": false,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 41,
+          "epochMs": 1792377314164,
+          "elapsedNs": 3409043791,
+          "stage": "http.registered",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": false,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640,
+          "callCancelled": false
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 42,
+          "epochMs": 1792377314165,
+          "elapsedNs": 3409398125,
+          "stage": "http.execute.before",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": false,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 43,
+          "epochMs": 1792377314167,
+          "elapsedNs": 3411920041,
+          "stage": "http.headers",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": false,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 44,
+          "epochMs": 1792377314168,
+          "elapsedNs": 3412345416,
+          "stage": "http.body.before",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": false,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 45,
+          "epochMs": 1792377314171,
+          "elapsedNs": 3415598791,
+          "stage": "cancel.lookup",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 35,
+          "found": true
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 46,
+          "epochMs": 1792377314171,
+          "elapsedNs": 3415973625,
+          "stage": "job.cancel.before",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 35,
+          "jobCancelled": false,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 47,
+          "epochMs": 1792377314173,
+          "elapsedNs": 3418199416,
+          "stage": "http.cancel.before",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 35,
+          "jobCancelled": true,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640,
+          "callCancelled": false
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 48,
+          "epochMs": 1792377314174,
+          "elapsedNs": 3418710833,
+          "stage": "http.cancel.after",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 35,
+          "jobCancelled": true,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640,
+          "callCancelled": true,
+          "completed": true
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 49,
+          "epochMs": 1792377314175,
+          "elapsedNs": 3419689875,
+          "stage": "job.cancel.after",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 35,
+          "jobCancelled": true,
+          "timedOut": false,
+          "deadlineEpochMs": 1792377359148
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 50,
+          "epochMs": 1792377359167,
+          "elapsedNs": 48411981666,
+          "stage": "deadline.fired",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 16,
+          "jobCancelled": true,
+          "timedOut": true,
+          "deadlineEpochMs": 1792377359148
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 51,
+          "epochMs": 1792377359173,
+          "elapsedNs": 48417631208,
+          "stage": "deadline.cancel.after",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 16,
+          "jobCancelled": true,
+          "timedOut": true,
+          "deadlineEpochMs": 1792377359148
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 52,
+          "epochMs": 1792377374197,
+          "elapsedNs": 63442043125,
+          "stage": "http.body.after",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": true,
+          "timedOut": true,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640,
+          "callCancelled": true,
+          "completed": false
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 53,
+          "epochMs": 1792377374201,
+          "elapsedNs": 63445591500,
+          "stage": "http.finished",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": true,
+          "timedOut": true,
+          "deadlineEpochMs": 1792377359148,
+          "callId": 2003886640,
+          "callCancelled": true
+        },
+        {
+          "schemaVersion": 1,
+          "sequence": 54,
+          "epochMs": 1792377374257,
+          "elapsedNs": 63501437000,
+          "stage": "execute.finished",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "javaThreadId": 33,
+          "jobCancelled": true,
+          "timedOut": true,
+          "deadlineEpochMs": 1792377359148
+        }
+      ],
+      "jniEvents": [
+        {
+          "envelopeValid": 0,
+          "epochMs": 1792377314148,
+          "nativeThreadId": 330719,
+          "responseOversized": false,
+          "responsePresent": 0,
+          "schemaVersion": 1,
+          "sequence": 10,
+          "stage": "execute.before",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06"
+        },
+        {
+          "envelopeValid": 0,
+          "epochMs": 1792377314171,
+          "nativeThreadId": 330576,
+          "responseOversized": false,
+          "responsePresent": 0,
+          "schemaVersion": 1,
+          "sequence": 11,
+          "stage": "cancel.before",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06"
+        },
+        {
+          "cancelled": true,
+          "envelopeValid": 1,
+          "epochMs": 1792377314184,
+          "nativeThreadId": 330576,
+          "ok": true,
+          "responseOversized": false,
+          "responsePresent": 1,
+          "schemaVersion": 1,
+          "sequence": 12,
+          "stage": "cancel.result",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "taskMatches": true
+        },
+        {
+          "envelopeValid": 1,
+          "epochMs": 1792377374259,
+          "errorCode": "TIMEOUT",
+          "nativeThreadId": 330719,
+          "ok": false,
+          "responseOversized": false,
+          "responsePresent": 1,
+          "schemaVersion": 1,
+          "sequence": 13,
+          "stage": "execute.result",
+          "taskId": "18d8b253-5b6c-4977-a39d-9ef611d9ff06",
+          "taskMatches": true
+        }
+      ]
+    },
+    "traceEvidence": {
+      "native": {
+        "bytes": 3297,
+        "sha256": "81b3188b20477d6fa7cad79c8d4a77b9d3b25591044b400594377066a759947a",
+        "events": 14
+      },
+      "jvm": {
+        "bytes": 14631,
+        "sha256": "395bebda9c957ba1204a1ebf760fc24db4e1b2bcebbbdebdc28ec6b028e13e98",
+        "events": 55
+      },
+      "reportCopiesMatchCollectorFiles": true,
+      "readable": true,
+      "observableFailureMarkerPresent": false
+    },
+    "taskTraceIndependentAudit": {
+      "path": ".build/cloud-evidence/run-39187012421/independent-task-trace-audit.json",
+      "sha256": "570dc0ba6f5e0ad05931f9c2ef1855274f197e2e1921c0e77625a4815e651c29"
+    },
+    "integratedIndependentAudit": {
+      "path": ".build/cloud-evidence/run-39187012421/independent-native-evidence-audit.json",
+      "bytes": 46626,
+      "sha256": "84095d013795be543206b15ce7c4eb4571e98f48d16dfcc1bd6f7695b195234e",
+      "actualXCResultCaseAndAttachmentOriginChainVerified": true,
+      "extractedArtifactFilesByteVerified": 82,
+      "projectOverlayCount": 0,
+      "requiredExportsFoundInRawLog": 39,
+      "nativeProducerInputsUnchanged": 7,
+      "portableMethodsExecuted": 73,
+      "portableMethodsPassed": 72,
+      "portableMethodsSkipped": 1,
+      "skip": "Windows junction creation test is not applicable on macOS; the actual file-symlink rejection test passed.",
+      "noticeGuardMethodsExecuted": 15,
+      "noticeGuardMethodsPassed": 14,
+      "stagingGuardMethodsPassed": 21
+    },
+    "nativeProducerIdentityAudit": {
+      "path": ".build/cloud-evidence/run-39187012421/independent-native-producer-identity-audit.json",
+      "bytes": 1706,
+      "sha256": "7ec84e796cd887601dbc816ddce38d2bd6180e9ffe932253fc93a9da9de3f05a",
+      "independentMachOOrNativeArchiveReaudit": false
+    },
+    "diagnosticsCollection": {
+      "status": "partial",
+      "nativeFilesCollected": 4,
+      "simulatorCrashReportPathLinkedAndRejected": true,
+      "absenceOfCrashReportsEstablished": false
+    },
+    "packagingBoundary": {
+      "ordinaryJARBytesIndependentlyReaudited": false,
+      "builtAppNoticesBytesIndependentlyReaudited": false,
+      "postSuccessRuntimeResultProduced": false,
+      "stageGuardPassDoesNotEstablishFinalAppNoticesValidation": true
+    },
+    "interpretation": [
+      "The caller task was found, Job cancellation ran, and the matching Call.cancel completed in 0.511417ms; cancellation delivery is established for this observation.",
+      "The server observed peer EOF about 6.448ms after Swift requested cancellation, while the client body read did not exit until about 60 seconds.",
+      "The body read exited 60023.332292ms after Call.cancel completed, and the pre-return JNI envelope was TIMEOUT rather than the outer Swift CancellationError.",
+      "The original 15-second assertion stopped the case before the seventh recovery request; recovery was not attempted, rather than independently observed to fail.",
+      "The next investigation concerns the exchange/socket/poll interval after Call.cancel. Worker native/Java stacks, actual signal delivery and raw Socket.close exceptions were not collected, so no specific kernel/JDK cause is established."
+    ]
   },
   "acceptance": {
     "iosCancellationFixed": false,

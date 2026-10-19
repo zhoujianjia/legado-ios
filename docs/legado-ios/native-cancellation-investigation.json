@@ -456,6 +456,19 @@
     "fullFeatureParityEstablished": false,
     "scope": "This separate Probe regression exercises packaged original semantics, TLS, a synthetic HTTP wire chain and CPU cancellation/deadline. It does not complete the actual main-App held-response cancellation/recovery test or establish real-source compatibility."
   },
+  "subsequentTaskTraceObservation": {
+    "recordedOn": "2026-10-19",
+    "record": "native-cancel-task-trace.json",
+    "runId": 39187012421,
+    "sourceCommit": "2f515e04f00213364fe20047ec3eb33d9bccb669",
+    "status": "failed-cancellation-latency",
+    "cancellationMilliseconds": 60206.72297477722,
+    "matchingTaskAndCallCancellationObserved": true,
+    "preReturnJNIErrorCode": "TIMEOUT",
+    "recoveryRequestAttempted": false,
+    "specificNativeWaitRootCauseEstablished": false,
+    "priorRawReportsAndTheirAcceptanceScopesUnchanged": true
+  },
   "validationBoundary": {
     "macosCommandLineObservationIsIOSProof": false,
     "deliveredReader6IPAExecuted": false,
