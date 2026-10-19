@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "scope": "Default-off synthetic cancellation observation, not an iOS cancellation fix.",
+  "implementationCommit": "dd8a22d3d78bde7887a0e9da2306ea7b3f8f02d2",
+  "reviewedTopicCommits": {
+    "notices": "7679f2475955d320ea370fc2647b7a78e964f1a1",
+    "trace": "e2cf644ee5ae1e381c7c8d78d824a8541d8eb2f6"
+  },
+  "sourceMergeExceptions": {
+    "gitattributes": "Both immutable-byte attribute sets retained.",
+    "ordinaryJarTestDenylist": "OriginalAnalyzeRuleTest and RuntimeTaskTraceTest, including nested trace-test classes, both retained; six merged packaging guards rerun and passed."
+  },
+  "localEvidence": {
+    "path": "F:\\legado-cancel\\.build\\native-cancel-task-trace\\validation.json",
+    "sha256": "dac89f8464ee21943876fbee84dd633c453b53f1ee0168a3a7393e7c0fdd6026"
+  },
+  "desktopTests": {
+    "traceWriterMethods": 4,
+    "productionTransportMethods": 12,
+    "failed": 0,
+    "skipped": 0,
+    "explicitTraceEnabledIndependentProcessMethods": 1,
+    "enabledTraceEvents": 25,
+    "enabledTraceBytes": 6437
+  },
+  "portableGuards": {
+    "nativeDiagnostics": 16,
+    "nativeSmokeProvenance": 3,
+    "ordinaryPackaging": 6,
+    "passed": true
+  },
+  "traceLimits": {
+    "defaultEnabled": false,
+    "embeddingEnvironmentSwitch": "LEGADO_RUNTIME_TASK_TRACE=1 before the first JVM startup",
+    "files": [
+      "current/native-task-events.jsonl",
+      "current/runtime-events.jsonl"
+    ],
+    "maximumBytesPerFile": 65536,
+    "maximumEventsPerFile": 256,
+    "containsURLsHeadersScriptsBodiesOrRawMessages": false
+  },
+  "interpretationLimits": [
+    "Synchronous trace writes and fsync can perturb the measured cancellation latency; these are observation-enabled timings.",
+    "Readable JSON and absent observable failure markers do not establish full trace capture; missing stages require interpretation.",
+    "http.finished callCancelled is sampled after unconditional cleanup and is not proof of cancellation propagation.",
+    "A Swift CancellationError does not establish the JVM outcome; inspect the pre-return JNI envelope and matched task/Call stages."
+  ],
+  "unchangedProductGates": {
+    "maximumCancellationMilliseconds": 15000,
+    "sourceOperationDeadlineMilliseconds": 45000,
+    "requiredActualWireRequests": 7,
+    "recoveryRequestRequired": true
+  },
+  "cloudProductRevalidation": {
+    "status": "not-started",
+    "physicalDeviceRequired": false,
+    "iosCancellationFixEstablished": false
+  },
+  "acceptance": {
+    "iosCancellationFixed": false,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false
+  }
+}
