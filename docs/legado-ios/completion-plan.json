@@ -3,6 +3,78 @@
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-19",
   "timeZone": "Asia/Shanghai",
+  "简体中文执行说明": {
+    "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
+    "当前状态": "计划与首批代码已保存；168 项 JVM 回归通过，iOS 集成结论仍待取得。已改为阶段集中验证，不再轮询等待构建而停下开发。全部无需真机的工作尚未完成。",
+    "实施顺序": [
+      {
+        "阶段": 1,
+        "内容": "基础可靠性",
+        "交付": "进度写入保护、同键规则等待取消、阅读快捷面板辅助功能，以及可追踪任务清单。",
+        "验收": "写盘故障、真实重开恢复、取消与关闭通知、字号和亮度操作的固定用例通过。"
+      },
+      {
+        "阶段": 2,
+        "内容": "阅读体验",
+        "交付": "完善字体选择与预览、排版预设、夜间阅读、无障碍和 iPad 自适应；只修改已确认的缺口。",
+        "验收": "换字体、旋转、分页与滚动切换、分屏改变宽度后，仍保留同一段文字的阅读锚点；性能改动有前后测量。"
+      },
+      {
+        "阶段": 3,
+        "内容": "传统规则与请求语义",
+        "交付": "补齐原 AnalyzeRule、AnalyzeUrl 及其实体与网络接口。",
+        "验收": "固定输入对照原版请求字节、输出及 Java 类型、异常、变量、Cookie 和缓存变化，保留差异。"
+      },
+      {
+        "阶段": 4,
+        "内容": "完整阅读链路与宿主",
+        "交付": "将原核心接入搜索、发现、详情、目录和正文；补齐状态持久化、书源网页登录和平台宿主。",
+        "验收": "固定多页和批量内容链路、重启状态、并发隔离、超时取消通过后再接产品路由。"
+      },
+      {
+        "阶段": 5,
+        "内容": "书库、文件与备份",
+        "交付": "验证离线、换源、书签笔记、WebDAV 与备份恢复；补齐 UMD/MOBI，并验收现有 TXT/EPUB/PDF。",
+        "验收": "合法与损坏文件、中文编码、往返导入导出和中断恢复均有用例；失败不覆盖无法确认的旧数据。"
+      },
+      {
+        "阶段": 6,
+        "内容": "扩展阅读能力",
+        "交付": "逐项完善 RSS、系统/HTTP 朗读、音频、漫画、文件源、视频及段评。",
+        "验收": "固定协议与界面流程分别通过；实际声音路由、锁屏、画中画等设备行为单列待测。"
+      },
+      {
+        "阶段": 7,
+        "内容": "编辑、服务与任务",
+        "交付": "源编辑调试、日志、局域网、HTTP/Web 编辑器/WebSocket、13 个 MCP 工具，以及任务持久化与前台补跑。",
+        "验收": "请求、响应、错误、副作用、连接关闭及前台生命周期逐项验证；不承诺后台常驻和精确 Cron。"
+      },
+      {
+        "阶段": 8,
+        "内容": "交付材料与最终候选",
+        "交付": "无书源候选包、准确对应源码、依赖与补丁材料、许可清单和简短真机待测表。",
+        "验收": "实际成品字节与不可变源码对应；明确 MPL/GPL/Classpath/AGPL 及源码闭包未决项，不能用测试代替权利核验。"
+      }
+    ],
+    "阅读体验重点": [
+      "保留两款已有授权中文字体和自定义字体导入，先检查现有预览和预设是否满足需要。",
+      "切章、换字体、旋转及分页/滚动切换保持文字锚点，不用会变化的全书页码定位。",
+      "检查夜间对比度、字号、触控目标、减少动态效果与读屏信息。",
+      "适配 iPad 分屏和横竖屏，避免正文或操作项被裁切。",
+      "离线恢复和按需预取复用现有下载及缓存服务，取消过时任务。",
+      "启动、长章排版和内存先测量再优化，不凭代码观感宣称更快。"
+    ],
+    "继续保留": "简体界面、账号与会员入口清理、独立品牌、缓存 TXT 导出、已有字体及全部用户书籍/书源/进度。书源自身的登录验证继续保留。",
+    "自续签边界": "目前只有只读连接探针。免费账号、只装阅读器且无需日常电脑的安装通道尚未证明可行；通道、实际签名覆盖安装、后台及到期恢复必须独立验收，不计为已完成。",
+    "完成口径": "逐工作包保存真实证据；电脑或模拟器通过只完成对应范围，不换算为全功能、全部书源或真机完成率。",
+    "开发与验证节奏": [
+      "先按依赖顺序完成同一阶段的相关优化，再集中进行一次云端编译和集成验证。",
+      "开发过程中保留廉价静态检查和相关局部回归，尽早发现问题。",
+      "云端运行不阻塞已具备条件的开发；不为每个小改动创建构建标签。",
+      "阶段检查与最终候选包检查分开，已有且未受影响的通过证据直接复用。",
+      "没有新改动、真实失败或未解决疑点时，不重复启动构建。"
+    ]
+  },
   "baseline": {
     "sourceCommit": "dccfbec9f50c5b40259e2db9131fdb4a69410628",
     "featureCatalog": "docs/legado-ios/feature-catalog.json",
@@ -64,10 +136,18 @@
         ]
       }
     ],
-    "schedulingRule": "A workpackage may start after its explicit workpackage dependencies are met; stage dependencies define integration checkpoints, not a reason to idle independent work.",
-    "validationRule": "Run focused regressions after final related edits; batch compatible cloud checks in one ordinary payload/build, retain raw reports, and do not repeat unchanged passing checks without a new concern.",
-    "progressRule": "Report the bounded batch, evidence, unresolved limits and next checkpoint; do not silently open an unbounded new cloud loop.",
-    "terminalNonDeviceState": "All implementable desktop/Simulator tasks verified, external/device-dependent feasibility decisions explicit, one audited source-free candidate and concise deferred checklist. Do not mark the full feature domains complete while required evidence is missing."
+    "schedulingRule": "Implement related workpackages in their dependency order. Reviewed dependency code/contracts may unblock implementation within the same stage while integration evidence is pending. Cloud execution does not block other ready development. Switching the product rule engine and release integration still require their existing compatibility and safety gates.",
+    "validationRule": "During development run inexpensive static checks and the smallest relevant local regression after related edits. Collect the reviewed changes for one stage and run cloud iOS compilation/integration once at that stage checkpoint. Reuse unchanged passing evidence; only new changes, actual failures or unresolved concerns justify another run. Each major subsystem keeps its own checkpoint rather than deferring every check until project completion.",
+    "progressRule": "Report implementation progress, local checks, pending integration and the next stage checkpoint separately. Do not spend an active development turn repeatedly waiting for a cloud build; a passing local check does not imply iOS acceptance.",
+    "terminalNonDeviceState": "All implementable desktop/Simulator tasks verified, external/device-dependent feasibility decisions explicit, one audited source-free candidate and concise deferred checklist. Do not mark the full feature domains complete while required evidence is missing.",
+    "cloudTriggerPolicy": {
+      "createOrPushBuildTagsOnlyAtStageCheckpoint": true,
+      "triggerForEachSmallChange": false,
+      "waitForCloudBeforeContinuingReadyDevelopment": false,
+      "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
+      "nextPlannedCheckpoint": "s2-reading-experience: consolidate progress, appearance/anchors, accessibility and adaptive reader changes before integration.",
+      "alreadyRunningTasks": "Retain their actual results when available; do not claim cancellation or acceptance, and do not start replacement runs merely to poll status."
+    }
   },
   "stages": [
     {
@@ -411,6 +491,7 @@
         "license-and-source-closure"
       ],
       "desktopSimulatorAcceptance": [
+        "Batch related changes at stage checkpoints. Run one cloud integration build after the batch is reviewed, reuse unaffected passing evidence, and reserve final candidate packaging/audit for delivery readiness. Cloud waiting must not block ready implementation work.",
         "After related edits settle, run the smallest relevant checks; share one prepared native payload and one iOS build across compatible groups.",
         "Run broader ordinary-JAR native and UI acceptance when new integration requires it; do not repeatedly run unchanged suites or launch duplicate cloud builds.",
         "Keep the existing native cancellation 15-second gate, 45-second operation deadline and seven actual wire requests unless the product contract itself changes with documented justification.",

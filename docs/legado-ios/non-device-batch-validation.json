@@ -1,0 +1,259 @@
+{
+  "schemaVersion": 1,
+  "status": "desktop-verified-simulator-verdict-pending-stage-batched-development",
+  "sourceCommit": "3a32c6af4814a35e44b0aa7d4f36f45b5cfd900b",
+  "plan": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "stages": 8,
+    "workpackages": 33,
+    "featureDomains": 64,
+    "allNonDeviceWorkComplete": false
+  },
+  "changes": {
+    "positionPersistence": "Recreate the owned directory before an atomic write; publish successful saves only after completed disk writes; log read/write/decode failures and preserve corrupt bytes. Per-call JSON codecs replace shared codec instances.",
+    "positionContractPreserved": "save -> flush -> loadSync observes a finished write; no optimistic cache or fire-and-forget disk write introduced.",
+    "quickReaderAccessibility": "Font actions expose current points; brightness announces its actual percent rather than normalized slider range; decorative suns are hidden. Visible layout and control behavior are unchanged.",
+    "scopeWaiting": "Same-key condition wait is notified by Job cancellation and environment close. Scripts/host calls execute outside short monitors, retaining reentrancy and creation-registration cleanup."
+  },
+  "sourceFiles": [
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "bytes": 4434,
+      "sha256": "86426b0987a2075fa0b855396b2a636eb658af08f76eaddc9e5e1a5e2eb9428d"
+    },
+    {
+      "path": "Modules/Features/Reader/ReaderQuickThemePanelView.swift",
+      "bytes": 26123,
+      "sha256": "1b6ae5991ffe5952b5d5a1f8debe88e95f4bd1d3b304e468d2bcaa2d6bafc124"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+      "bytes": 6844,
+      "sha256": "b6b7d964fb24e439bee7d00be35c680e7d0d0c9b980e5501b99d86351e973abd"
+    },
+    {
+      "path": "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+      "bytes": 13813,
+      "sha256": "f57e996e7925a0de1b56adac87a1e8b2752bfb79d03d47d2fd5999b80d9ce204"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
+      "bytes": 10658,
+      "sha256": "4797805205b64dd4eae16a70c48e83bbb7de8ef8a31d0c31fbcc3a45452b2d83"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleScopesConcurrencyTest.kt",
+      "bytes": 21860,
+      "sha256": "fc92eac853fa798da549cec36a27d0b07bb5a2815333b6f82dc6adeea5daa3cb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 18060,
+      "sha256": "7cf9ff4eb2c6c88e2d12845322d9a7976494846b6b77d10ec39d1a2dd37b4d46"
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "bytes": 6122,
+      "sha256": "63f38c592fc18ffbf2c81e2e294c21a7de58170324d87c34fc6d16827f198b79"
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "bytes": 5463,
+      "sha256": "ed67ac6062098e2cd3b364144928d1e5a8b0279931825f96d88b203c3ba8eb78"
+    }
+  ],
+  "desktop": {
+    "jvm": {
+      "files": 20,
+      "counts": {
+        "tests": 168,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "uniqueCases": 168,
+      "manifestLineEndings": "restored-original-CRLF",
+      "manifestSHA256": "7cf9ff4eb2c6c88e2d12845322d9a7976494846b6b77d10ec39d1a2dd37b4d46"
+    },
+    "fullRegression": {
+      "path": ".build/rule-scope-wait-cancellation/full-regression.json",
+      "bytes": 642,
+      "sha256": "61cb48e3f2a1719c6191afd39ab59116021e522c577f09d362dcf87f29aa4ebd"
+    },
+    "concurrencyRedGreen": {
+      "path": ".build/rule-scope-wait-cancellation/verification.json",
+      "bytes": 9425,
+      "sha256": "2e72f7e73e4028c476cc1184eb202f992e160f7540b60b8fe68aebe8272e04b0"
+    },
+    "actualRedFailures": [
+      "Cancelled same-library waiter remained blocked until its initializer returned.",
+      "Closed environment left same-library waiter blocked until its initializer returned.",
+      "Already-cancelled Job consumed an already-cached scope without throwing cancellation; the uncached case was not the failing assertion."
+    ],
+    "focusedGreenMethods": 29,
+    "newConcurrencyMethods": 5,
+    "finalPackaging": {
+      "path": ".build/rule-scope-wait-cancellation/final-packaging.json",
+      "bytes": 607,
+      "sha256": "1b4bdc52c644d70fb09db982b01c0ab0d3292507d283debdeb5ebf5a8adc3b26"
+    },
+    "ordinaryJar": {
+      "path": ".build/rule-scope-wait-cancellation/ordinary-jar.json",
+      "bytes": 902,
+      "sha256": "f968b567949aaf55e8e9ca78f39b6d34d68c540e17c8ef1b825ac0f42ad851de"
+    },
+    "statefulReplay": {
+      "measurement": {
+        "path": ".build/stateful-port-reference/3a32c6a/measurement-result.json",
+        "bytes": 34061,
+        "sha256": "898cbfd10406504a101f09cbc3072dbc8d6d7be5cd11f5ea4e14a6c4094e564c"
+      },
+      "executed": {
+        "scenarioCount": 14,
+        "orderedSteps": 56,
+        "apiCalls": 47,
+        "returnObservations": 46,
+        "ordinaryExceptionObservations": 1,
+        "allDeclaredStepsObserved": true,
+        "observationFailures": 0
+      },
+      "comparison": {
+        "fullRawTreeExactlyMatches": false,
+        "fullRawDifferenceCount": 442,
+        "differenceClassifications": {
+          "execution-platform-report-metadata": 8,
+          "per-process-identity-hash-diagnostic": 432,
+          "scenario-semantic-raw-difference": 2
+        },
+        "rawScenarioSemanticDifferenceCount": 2,
+        "apiOutcomeActualExceptionExactlyMatching": 46,
+        "apiOutcomeActualExceptionDifferent": 1,
+        "returnedTypedValuesExactlyMatching": 46,
+        "setupMutationStepsExactlyMatching": 9,
+        "beforeAndAfterStateSnapshotsExactlyMatching": 112,
+        "beforeAndAfterStateSnapshotCount": 112,
+        "declaredObjectIdentityStableWithinEveryScenario": true,
+        "rawScenarioSemanticDifferences": [
+          {
+            "path": "/scenarios/13/steps/0/exception/cause/message",
+            "reference": "Error: fixture throw (<script-37>#1)",
+            "port": "Error: fixture throw (<script-47>#1)",
+            "difference": "raw-value",
+            "classification": "scenario-semantic-raw-difference"
+          },
+          {
+            "path": "/scenarios/13/steps/0/exception/message",
+            "reference": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-37> at line number 1",
+            "port": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-47> at line number 1",
+            "difference": "raw-value",
+            "classification": "scenario-semantic-raw-difference"
+          }
+        ]
+      },
+      "unchangedVersusPreviousPort": {
+        "path": ".build/rule-scope-wait-cancellation/stateful-comparison.json",
+        "bytes": 218,
+        "sha256": "22605851cf2bff690fbf29b36b7329fc39440e2f288180fff9fc8e4417f810c5"
+      },
+      "allDeclaredAPICallsRawMatch": false
+    },
+    "scopeConcurrencyRawFixture": {
+      "path": "docs/legado-ios/fixtures/rule-scope-wait-3a32c6a.xml",
+      "bytes": 2132,
+      "sha256": "12deefb327d02fa277f46da9dba7ffbdb2e6f968a96cf65b214b47ed6b913d64",
+      "methods": 11,
+      "failures": 0,
+      "skipped": 0
+    }
+  },
+  "cloud": {
+    "runID": 39238550557,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39238550557",
+    "jobID": 118013480378,
+    "sourceCommit": "44eee1c18098ac67d9dbed88f389bc97d9d7274c",
+    "tag": "reader-smoke-44eee1c",
+    "status": "in_progress",
+    "configuration": "Debug iOS Simulator; source-only runtime interface, JSC/CoreText reader",
+    "expectedExecutions": {
+      "configuration": 9,
+      "localProduct": 41,
+      "positionPersistenceAndRestoration": 23,
+      "searchPaging": 12,
+      "txtReaderUI": 1,
+      "loopbackSourceReaderUI": 1
+    },
+    "actualAcceptance": false,
+    "nativeJVMExecuted": false,
+    "physicalDeviceExecuted": false,
+    "expectedUniqueMethods": {
+      "configuration": 9,
+      "localProduct": 41,
+      "positionPersistenceAndRestoration": 13,
+      "searchPaging": 12,
+      "txtReaderUI": 1,
+      "loopbackSourceReaderUI": 1
+    },
+    "validationCorrection": {
+      "commit": "44eee1c18098ac67d9dbed88f389bc97d9d7274c",
+      "ordinaryMethodCountGatePreserved": true,
+      "singleDeviceExecutionCountGateAdded": true,
+      "expectedMethods": 13,
+      "expectedExecutions": 23,
+      "portableGuardTestsPassed": 14,
+      "actualFrozenParameterizedSummaryUsed": "docs/legado-ios/fixtures/ios-cache-summary-f73f0ae.json",
+      "applicationAndTestSourceBytesUnchanged": true
+    }
+  },
+  "limits": [
+    "Traditional product reading still uses JSC; no AnalyzeUrl/WebBook integration or complete host/persistence migration is established.",
+    "Rule-scope changes have desktop evidence, not native iOS coordinator execution.",
+    "Position save remains a nonthrowing protocol; caller-visible errors, automatic retry and latest-writer ordering are not implemented by this change.",
+    "Simulator accessibility is not physical-device VoiceOver or physical brightness acceptance.",
+    "No package-size, startup, memory, battery or smoothness improvement is claimed.",
+    "No new IPA has been generated or delivered in this batch; historical build10 bytes and acceptance remain unchanged.",
+    "License combination and complete corresponding-source obligations remain unresolved, including ios-tools AGPL/native-object applicability."
+  ],
+  "acceptance": {
+    "desktopScopeRegression": true,
+    "ordinaryJarPackaging": true,
+    "simulatorPositionAndReaderChecks": false,
+    "physicalDeviceValidation": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "allNonDeviceWorkComplete": false,
+    "legalRedistributionClearanceEstablished": false
+  },
+  "priorCloudAttempts": [
+    {
+      "runID": 39235837329,
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39235837329",
+      "jobID": 118004564969,
+      "sourceCommit": "3a32c6af4814a35e44b0aa7d4f36f45b5cfd900b",
+      "tag": "reader-smoke-3a32c6a",
+      "status": "in_progress",
+      "configuration": "Debug iOS Simulator; source-only runtime interface, JSC/CoreText reader",
+      "expectedExecutions": {
+        "configuration": 9,
+        "localProduct": 41,
+        "positionPersistenceAndRestoration": 23,
+        "searchPaging": 12,
+        "txtReaderUI": 1,
+        "loopbackSourceReaderUI": 1
+      },
+      "actualAcceptance": false,
+      "nativeJVMExecuted": false,
+      "physicalDeviceExecuted": false,
+      "knownValidationScriptError": "The command required 23 top-level methods instead of 13 methods and 23 device executions. Actual application results must be read separately; no success claim is made."
+    }
+  ],
+  "validationToolsCommit": "44eee1c18098ac67d9dbed88f389bc97d9d7274c",
+  "executionPolicyUpdate": {
+    "reason": "User requested sequential implementation with consolidated validation rather than waiting for builds after small changes.",
+    "policy": "Stage-batched cloud integration with inexpensive local checks during implementation.",
+    "localPollingStopped": true,
+    "remoteRunsCancelled": false,
+    "newBuildTriggeredForPolicyChange": false,
+    "simulatorAcceptanceStillPending": true,
+    "remoteRunsCompletionEstablished": false
+  }
+}
