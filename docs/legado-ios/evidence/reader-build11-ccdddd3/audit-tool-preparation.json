@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+  "expectedBuild": "11",
+  "snapshotRecordSHA256": "b2dd0da7094ec3c067d73f15e0a5890932553361e975d658883d4338c5beca4d",
+  "gitSnapshotFileCount": 2827,
+  "declaredJVMSuites": 20,
+  "declaredJVMMethods": 168,
+  "templateSHA256": {
+    "audit-build10.py": "ef30da7389f7a6581feef6355ea904646bf292d6dfd653888c5f2178b1df8ae3",
+    "audit-build10-extra.py": "6dbd3adc02414b5957b36a117c3472410a9df8fb55f9550e7dc67afa04c9fa3d"
+  },
+  "trustedHostWorkerSHA256": "29644a0daf9a88336c2c90f1b855c1984e47168e4f05fdf8598af4714e2564ed",
+  "preparedTools": [
+    {
+      "path": "audit-build11.py",
+      "sha256": "eab24404f809eaadbeff6eb7b2a60d1e9c9dfea244ac2d630c728da204b2faa4"
+    },
+    {
+      "path": "audit-build11-extra.py",
+      "sha256": "0d12c867737317bf900a5e69566cce25212b5521efd692c0df4e00ad3fcad9db"
+    },
+    {
+      "path": "audit-source-zip.py",
+      "sha256": "07af8964c0eb22c1790e3fbe0e54bc0367db933f7c9ff4ccd38381bd79f802ff"
+    }
+  ],
+  "changedFrozenEvidence": false,
+  "networkAccessed": false,
+  "artifactsAudited": false,
+  "signingOrInstallationAttempted": false,
+  "nextCommands": [
+    [
+      "python",
+      "-B",
+      "F:\\yuedu-reader\\.build\\renewal-delivery\\build11-preflight\\audit-build11.py",
+      "--ipa",
+      "<new IPA>",
+      "--manifest",
+      "<new build-manifest.json>",
+      "--source",
+      "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+      "--output",
+      "<fresh core audit output.json>"
+    ],
+    [
+      "python",
+      "-B",
+      "F:\\yuedu-reader\\.build\\renewal-delivery\\build11-preflight\\audit-build11-extra.py",
+      "--ipa",
+      "<new IPA>",
+      "--manifest",
+      "<new build-manifest.json>",
+      "--evidence",
+      "<extracted new build evidence>",
+      "--output",
+      "<fresh resources/XML audit output.json>"
+    ],
+    [
+      "python",
+      "-B",
+      "F:\\yuedu-reader\\.build\\renewal-delivery\\build11-preflight\\audit-source-zip.py",
+      "--zip",
+      "<new LocalBookshelf-source.zip>",
+      "--output",
+      "<fresh source ZIP audit output.json>"
+    ]
+  ],
+  "toolPreparationAmendments": [
+    {
+      "scope": "Prepared local Build11 tools only; no frozen Build10 evidence changed.",
+      "reason": "Read PNG IHDR after optional CgBI, verify every bounded chunk CRC, and bind source ZIP to exact verified Git snapshot.",
+      "previousPreparedTools": [
+        {
+          "path": "audit-build11.py",
+          "sha256": "eab24404f809eaadbeff6eb7b2a60d1e9c9dfea244ac2d630c728da204b2faa4"
+        },
+        {
+          "path": "audit-build11-extra.py",
+          "sha256": "babe0370661af186e0b1b6df23eacdfa10da3def28486accb984e0fed57dd545"
+        }
+      ]
+    }
+  ],
+  "pngDimensionsMethod": "Bounded PNG chunk walk through optional CgBI; IHDR dimensions and every chunk CRC verified; no pixel decode.",
+  "preparedToolSelfChecks": {
+    "png": {
+      "path": "png-helper-selfcheck.json",
+      "passed": true,
+      "realCgBIIcons": 2,
+      "ordinaryPNG": 1,
+      "malformedRejected": 7
+    },
+    "sourceZIP": {
+      "positive": "source-tool-selfcheck.json",
+      "positivePassed": true,
+      "negative": "source-tool-reject-old-commit.json",
+      "wrongCommitRejected": true
+    },
+    "scope": "Local helper checks only; not acceptance of the new cloud-built IPA or source ZIP."
+  }
+}

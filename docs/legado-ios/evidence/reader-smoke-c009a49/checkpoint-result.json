@@ -1,0 +1,101 @@
+{
+  "kind": "bounded-read-existing-smoke-evidence-checkpoint",
+  "runId": 39254382770,
+  "runUrl": "https://github.com/zhoujianjia/legado-ios/actions/runs/39254382770",
+  "headSHA": "c009a490f4315dc23c74605a26b023e30e3deac0",
+  "headBranch": "reader-smoke-c009a49",
+  "workflowStatus": "completed",
+  "workflowConclusion": "failure",
+  "artifact": {
+    "id": 12189021104,
+    "name": "reader-smoke-evidence",
+    "bytes": 953884,
+    "sha256": "b6f73991e2d898bbe045d192cd7a29873612c1e36d72f83af13ae816ac5680af",
+    "githubDigestVerified": true
+  },
+  "xcode": "Xcode 26.2\nBuild version 17C52",
+  "failedStage": "first selected cloudkit iOS test-group compilation",
+  "xcodebuildExitStatus": 65,
+  "uniqueCompilerDiagnostics": [
+    {
+      "sourcePath": "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
+      "line": 81,
+      "column": 26,
+      "message": "cannot convert value of type 'any KeyPath<EnvironmentValues, Bool> & Sendable' to expected argument type 'WritableKeyPath<EnvironmentValues, Bool>'",
+      "rawLogFirstLine": 29363
+    },
+    {
+      "sourcePath": "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
+      "line": 99,
+      "column": 25,
+      "message": "generic parameter 'T' could not be inferred",
+      "rawLogFirstLine": 29367
+    },
+    {
+      "sourcePath": "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
+      "line": 135,
+      "column": 48,
+      "message": "implicit use of 'self' in closure; use 'self.' to make capture semantics explicit",
+      "rawLogFirstLine": 29373
+    },
+    {
+      "sourcePath": "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
+      "line": 142,
+      "column": 48,
+      "message": "implicit use of 'self' in closure; use 'self.' to make capture semantics explicit",
+      "rawLogFirstLine": 29376
+    }
+  ],
+  "iosTestExecutions": 0,
+  "iosPassedTests": 0,
+  "iosTestsSkippedDueToCompileFailure": true,
+  "xcresult": {
+    "path": "extracted/reader-smoke/cloudkit.xcresult",
+    "rootObjectDecoded": "xcresult-decoded\\data.0~QeQIYnhzR5lQOjKzkVNVlbpWozoYkfdwUYIVJrDKmVqD18AnbWspx-VKWVgrjK6M5dk9tJd88G0MPOmDjTbnZg==.decoded",
+    "buildStatus": "failed",
+    "buildErrorCount": 4,
+    "actionStatus": "cancelled",
+    "actionErrorCount": 1,
+    "warningCount": 95,
+    "testPlanRunSummaries": "empty",
+    "emptySummaryObject": "xcresult-decoded\\data.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==.decoded",
+    "decoder": "Python zstandard frame decompression, preserving xcresult native typed record text; no xcresulttool executed"
+  },
+  "portablePythonResults": [
+    {
+      "log": "extracted\\ci-logs\\completion-plan-tools.log",
+      "executed": 9,
+      "status": "passed"
+    },
+    {
+      "log": "extracted\\ci-logs\\reader-online-fixture.log",
+      "executed": 12,
+      "status": "passed"
+    },
+    {
+      "log": "extracted\\ci-logs\\reader-online-tools.log",
+      "executed": 7,
+      "status": "passed"
+    },
+    {
+      "log": "extracted\\ci-logs\\reader-smoke-tools.log",
+      "executed": 14,
+      "status": "passed"
+    },
+    {
+      "log": "extracted\\ci-logs\\reader-stage-baseline-tools.log",
+      "executed": 20,
+      "status": "passed"
+    }
+  ],
+  "sourceBoundaries": [
+    "This evidence applies only to c009a490f4315dc23c74605a26b023e30e3deac0.",
+    "It does not establish a result for ccdddd3 Release build 11, the detached font patch or any repaired test source.",
+    "No new CI was triggered and no workflow rerun or polling was performed."
+  ],
+  "availableEvidence": "Original ZIP, GitHub metadata, extracted raw logs, complete native xcresult and independently decompressed native record bytes retained in this directory.",
+  "missingEvidence": [
+    "No iOS per-test result summary was generated because test-target compilation failed.",
+    "No successful full test-build verdict or test execution is inferred from portable Python checks."
+  ]
+}

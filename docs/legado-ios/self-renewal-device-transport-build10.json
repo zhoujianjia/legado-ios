@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "user-provided-read-only-device-transport-report",
+  "recordedOn": "2026-10-19",
+  "appBuild": "10",
+  "appVersion": "3.0.0",
+  "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
+  "reportedExecutionEnvironment": "device",
+  "reportedOperatingSystem": "Version 27.0.1 (Build 24A446)",
+  "reportedStartedAt": "2026-10-19T13:16:14Z",
+  "reportedFinishedAt": "2026-10-19T13:16:21Z",
+  "input": {
+    "bytes": 1654,
+    "sha256": "9fa49141cd4d7b6968355391682929633414a03e34381567029205deb269c50b",
+    "originalPreservedLocally": true,
+    "originalUploaded": false,
+    "localEvidenceDirectory": ".build/renewal-delivery/device-report-build10",
+    "reportContractAndKnownBuildSourcePairChecked": true,
+    "cryptographicDeviceAttestation": false
+  },
+  "attempts": [
+    {
+      "endpoint": "127.0.0.1:62078",
+      "outcome": "timedOut",
+      "phase": "connecting",
+      "elapsedMilliseconds": 3158.0779166652064,
+      "tcpConnected": false,
+      "receivedByteCount": 0,
+      "lockdownConfirmed": false,
+      "lastWaitingError": {"domain": "posix", "code": 1}
+    },
+    {
+      "endpoint": "[::1]:62078",
+      "outcome": "timedOut",
+      "phase": "connecting",
+      "elapsedMilliseconds": 3197.0403749983234,
+      "tcpConnected": false,
+      "receivedByteCount": 0,
+      "lockdownConfirmed": false,
+      "lastWaitingError": {"domain": "posix", "code": 1}
+    }
+  ],
+  "context": {
+    "computerPoweredOff": "notMeasured",
+    "companionAppsAbsent": "notMeasured",
+    "USBState": "notRecorded",
+    "VPNState": "notRecorded",
+    "userClarificationRequested": true
+  },
+  "interpretationZh": "本次两个固定本机入口都未建立 TCP、没有收到字节，未确认 lockdown 服务；不能据此判定所有安装通道都不可用。",
+  "errorInterpretation": {
+    "POSIX1": "EPERM / Operation not permitted",
+    "observedAs": "lastWaitingError, not a terminal networkError; the final outcome is the probe deadline timeout.",
+    "specificDenialMechanismEstablished": false,
+    "primaryErrorCodeReference": "https://github.com/apple/darwin-xnu/blob/main/bsd/sys/errno.h",
+    "primaryWaitingStateReference": "https://developer.apple.com/documentation/network/nwconnection/state-swift.enum"
+  },
+  "operationsNotAttempted": ["TLS", "session", "pairing", "Apple account access", "signing", "installation", "dynamic remote-pairing discovery"],
+  "build11Relationship": {
+    "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+    "sixProbeProductAndTestInputsByteIdentical": true,
+    "reinstallingBuild11AloneIsNotAConnectionFix": true,
+    "repeatUnderIdenticalConditionsRequested": false
+  },
+  "nextWork": [
+    "Preserve this negative fixed-endpoint result; do not repeat unchanged fixed-port tests merely with a new build number.",
+    "Record the user-reported computer, USB and VPN/companion conditions separately from the unchanged original report.",
+    "Evaluate bounded same-device alternate transport/discovery from locked primary implementations; no universal success or impossibility claim follows from this report.",
+    "Require an actual authenticated transport before implementing or accepting profile renewal, signing, replacement install, data preservation, unattended scheduling and expiry recovery."
+  ],
+  "iphoneTransportVerified": false,
+  "automaticSelfRenewalImplemented": false,
+  "automaticSelfRenewalVerified": false,
+  "unattendedRenewalVerified": false,
+  "expiryRecoveryVerified": false
+}

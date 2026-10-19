@@ -107,7 +107,10 @@
     "completionMeasure": "Observable feature/protocol/data/runtime contracts with source-specific evidence; test counts and source counts are not completion percentages.",
     "unsupportedBehavior": "Return explicit capability/error information; do not fabricate successful empty results or silently switch rule engines.",
     "backgroundBoundary": "Foreground services and system-permitted scheduling only; do not promise persistent servers or precise background Cron.",
-    "legalBoundary": "Preserve original license partitions, attribution and source obligations; this plan is implementation/material work, not legal advice or a clearance determination."
+    "legalBoundary": "Preserve original license partitions, attribution and source obligations; this plan is implementation/material work, not legal advice or a clearance determination.",
+    "userRequestedDeviceVerificationScopes": [
+      "self-renewal-read-only-transport"
+    ]
   },
   "execution": {
     "immediateBatch": [
@@ -150,8 +153,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Reader-smoke-c009a49/source c009a490f4315dc23c74605a26b023e30e3deac0 was submitted once for the reviewed restore and compiler-fix batch. Preserve its actual result when available; no replacement run or new tag merely to check status.",
-      "alreadyRunningTasks": "Run 39254382770/source c009a49 was in_progress at one bounded read after push; no passing verdict established. Previous run 39249523428/source 2747900 failed compilation before iOS tests; its verified original artifact is retained."
+      "nextPlannedCheckpoint": "After the independently reviewed actual test-target compiler repair, submit one source-only checkpoint; preserve its source-specific actual results. No renewal or full compatibility acceptance follows from the Release package.",
+      "alreadyRunningTasks": "Run 39254382770/source c009a49 completed with a test-target compiler failure before any iOS tests; original artifact independently hash-verified and retained. Its minimal repair is applied; no passing iOS verdict. Release build11/source ccdddd3 compiled independently."
     },
     "nextReadyBatch": [
       "source-schema",
@@ -184,7 +187,14 @@
     ],
     "deferredQueue": [
       "automatic-renewal-feasibility"
-    ]
+    ],
+    "currentDeviceCandidate": {
+      "userRequestedOn": "2026-10-19",
+      "scopeZh": "用户主动要求真机续签验证；现阶段仅交付只读连接检查，其他真机待测边界不变。",
+      "record": "docs/legado-ios/native-reader-experience-build11.json",
+      "build": "11",
+      "fullAutomaticRenewalImplemented": false
+    }
   },
   "stages": [
     {
@@ -455,7 +465,7 @@
       ],
       "execution": {
         "summaryZh": "快捷面板字号和亮度读屏",
-        "currentState": "当前字号、亮度百分比、原生关闭和端点手势修正已有实现。2747900 云测在 BookSource.swift 编译失败，未执行任何 iOS 测试；显式 CodingKeys 修复已写，TXT 的准确 5%／100%、字体与重开锚点仍待下一集中检查点。",
+        "currentState": "快捷面板字号、亮度读屏、原生关闭和端点手势修正已有实现；c009a49 云测在快捷面板测试文件编译失败，尚未执行 iOS 测试。已移除对只读 Reduce Motion 系统环境的非法写入，并显式捕获递归闭包 self，保留两个测试及全部断言；实际重编与 TXT UI 验收仍待相关检查点。",
         "remainingWork": [
           "核对当前源码实际 TXT UI 和辅助树结果，保留失败、截图和重开锚点。",
           "最大辅助字号、五语和原生关闭可达性随阅读阶段集中验收；VoiceOver 实机独立保留。"
@@ -472,7 +482,9 @@
         "evidence": [
           "Modules/Features/Reader/ReaderQuickThemePanelView.swift",
           "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
-          "docs/legado-ios/review-rule-schema-followup.json"
+          "docs/legado-ios/review-rule-schema-followup.json",
+          "docs/legado-ios/evidence/reader-smoke-c009a49/checkpoint-result.json",
+          "docs/legado-ios/evidence/reader-smoke-c009a49/reader-test-compile-repair.json"
         ],
         "deferredHardware": [
           "VoiceOver 实际朗读与实体屏幕亮度体验。"
@@ -710,13 +722,13 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "只有手动只读QueryType loopback探针；历史Simulator八单元／一UI只验证探针。未证明同设备认证传输、新profile、签名、同身份替换安装或无人值守续签。",
+        "currentState": "用户已提供 build 10 的设备只读报告，两个固定本机入口都在 connecting 阶段超时，TCP 未建立、收到 0 字节，故该通道未验证通过。build 11 无书源主阅读器已完成 Release 编译、独立字节核验并交付，但探针源码相同，不要求相同条件重复测试。配对、签名及覆盖安装仍未实现，完整自动续签未验证。",
         "remainingWork": [
           "不收集真实秘密，先记录有界传输候选、认证状态机、发现边界、超时取消和诊断协议。",
           "真机可用后先证明电脑关闭、无伴侣App的同设备认证安装传输；固定端点失败不能排除所有传输，QueryType成功也不是安装成功。",
           "仅传输门槛成立后开始profile／签名、同身份安全替换、冷启和数据保留，随后独立验证允许触发、过期恢复和有限重试。"
         ],
-        "nextAction": "现在只补传输假设、状态机、凭据保护和失败门槛；signer集成仍未开始，不要求用户安装或运行真机探针。",
+        "nextAction": "依据已锁定上游的动态 _remotepairing._tcp 发现路径，准备有界只读发现与本机数值地址归属过滤，先做取消、超时、地址变更和报告脱敏的夹具测试，再单独验证 Apple SDK 与设备可达性；认证传输成立后才推进签名与覆盖安装，不以新包号代替通道修复。",
         "readiness": "deferred-device",
         "readyPreparation": [
           "审查只读探针长度、超时、取消、错误归一化和不导出原reply的边界，复用已有证据。",
@@ -730,7 +742,10 @@
         "evidence": [
           "docs/legado-ios/self-renewal-research.json",
           "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
-          "docs/legado-ios/native-reader-experience-build10.json"
+          "docs/legado-ios/native-reader-experience-build10.json",
+          "docs/legado-ios/native-reader-experience-build11.json",
+          "docs/legado-ios/self-renewal-device-transport-build10.json",
+          "docs/legado-ios/self-renewal-alternate-transport-followup.json"
         ],
         "deferredHardware": [
           "同设备认证transport、profile／签名、替换安装、冷启数据、无人值守与过期恢复全部暂缓真机，不要求用户执行。"
@@ -1671,7 +1686,7 @@
       ],
       "execution": {
         "summaryZh": "备份范围与 WebDAV 恢复保护",
-        "currentState": "恢复保护及 12 方法／27 执行的自有故障用例已写入源码：先验证所有存在文件、协调既有 writer、提交错误回滚、冲突不假报成功，保留本地 TOC／legacy inline 数据。尚未通过 Swift 编译及实际 iOS 执行；现有备份仍只有书源、书架、替换规则三文件，完整／选择性／加密与原版备份协议未完成。",
+        "currentState": "恢复保护及 12 方法／27 执行的自有故障用例已写入源码：先验证文件、协调既有 writer、提交错误回滚、冲突不假报成功并保留 TOC／legacy inline 数据。产品代码已在 ccdddd3 的 build 11 Release 编译通过；c009a49 测试目标因快捷面板测试编译失败，恢复用例实际执行仍为 0。该测试编译修复已集成，等待相关检查点重编执行；完整／选择性／加密与原版备份协议未完成。",
         "remainingWork": [
           "集中运行新增 12／27 用例，核对真实 xcresult、零失败／跳过和原始日志；测试定义与只读代码审查不能代替执行。",
           "扩展取消、重开和实际 Source／Replace writer lease 集成；本批 injected 事务及 BookStore writer 用例不等于三 store 全面验证。",
@@ -1700,7 +1715,9 @@
           "Tests/iOS/yuedu appTests/BookChapterStorageTests.swift",
           "Modules/Services/WebDAV/WebDAVRestoreTransaction.swift",
           "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
-          "Modules/Features/Settings/WebDAVSyncView.swift"
+          "Modules/Features/Settings/WebDAVSyncView.swift",
+          "docs/legado-ios/evidence/reader-smoke-c009a49/checkpoint-result.json",
+          "docs/legado-ios/native-reader-experience-build11.json"
         ],
         "deferredHardware": [
           "真实个人服务器认证/网络切换",
@@ -3582,6 +3599,22 @@
     "reader-smoke-2747900-failure": {
       "path": "docs/legado-ios/evidence/reader-smoke-2747900/checkpoint.json",
       "scope": "Actual source 2747900 run 39249523428: portable guards passed; Swift compilation failed before any iOS tests. Original artifact ZIP retained with verified GitHub digest; pending history is not acceptance."
+    },
+    "reader-smoke-c009a49-actual-failure": {
+      "path": "docs/legado-ios/evidence/reader-smoke-c009a49/checkpoint-result.json",
+      "scope": "Source-bound original artifact digest verified; four test-target compiler diagnostics, zero iOS executions. Repaired source needs actual recompilation."
+    },
+    "reader-build11-device-candidate": {
+      "path": "docs/legado-ios/native-reader-experience-build11.json",
+      "scope": "User-requested unsigned build 11 ordinary-JVM reader; actual Release compilation and independent package/source audits. Contains only read-only self-renewal transport probe; no device/signing/installation/automatic-renewal acceptance."
+    },
+    "self-renewal-device-fixed-endpoint-negative": {
+      "path": "docs/legado-ios/self-renewal-device-transport-build10.json",
+      "scope": "User-provided build 10 report: both fixed loopback endpoints timed out while connecting, zero response bytes; no authenticated session, signing, installation or renewal. Runtime computer/USB/VPN context remains unmeasured unless separately supplied."
+    },
+    "self-renewal-bounded-alternate-transport-source-followup": {
+      "path": "docs/legado-ios/self-renewal-alternate-transport-followup.json",
+      "scope": "Nine source references checked against locked Git blobs; bounded same-device RemotePairing discovery proposal. No SDK integration, network scan, device transport or renewal implementation accepted."
     }
   },
   "retainedExistingWork": [

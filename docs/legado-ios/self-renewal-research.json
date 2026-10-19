@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "simulator-verified-read-only-prototype-awaiting-device-transport",
+  "status": "device-fixed-endpoint-transport-negative-candidate-delivered",
   "product": "single-reader",
   "requiredConditions": {
     "freeApplePersonalTeam": true,
@@ -72,8 +72,8 @@
     "simulatorRunURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39146602853",
     "simulatorSourceTag": "reader-renewal-97d9f0f",
     "xcresultFormatReference": "https://chromium.googlesource.com/chromium/src/+/a8420d0c885e1d5dc4643994e1957595636afd8d/ios/build/bots/scripts/xcode_log_parser.py#898",
-    "physicalDeviceExecution": "not-performed",
-    "ipaDelivery": "unsigned-build10-copied-to-local-Downloads-after-independent-static-audit",
+    "physicalDeviceExecution": "user-provided-build10-report-reviewed-both-fixed-endpoints-timed-out-before-TCP",
+    "ipaDelivery": "unsigned-build11-copied-to-local-Downloads-after-independent-static-audit",
     "priorAttempts": [
       {
         "commit": "502ad353f19f1cc92b18fde21536d305c335df22",
@@ -177,7 +177,17 @@
       "sha256": "0dd9dc9c4888b06ddc7d9033a0cae1980d5e9bfa6e282aac30f5e84468222ddf"
     },
     "uiObservation": "Both fixed Simulator loopback endpoints timed out; Unverified and the export entry remain visible. This is not an iPhone transport result.",
-    "evidenceLimit": "The complete built Info.plist was not uploaded, so its producer-reported testedInfoSHA256 cannot be independently recalculated. Source overlay reconstruction and all nine retained evidence hashes match."
+    "evidenceLimit": "The complete built Info.plist was not uploaded, so its producer-reported testedInfoSHA256 cannot be independently recalculated. Source overlay reconstruction and all nine retained evidence hashes match.",
+    "physicalDeviceEvidence": {
+      "record": "self-renewal-device-transport-build10.json",
+      "inputSHA256": "9fa49141cd4d7b6968355391682929633414a03e34381567029205deb269c50b",
+      "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
+      "build": "10",
+      "reportedExecutionEnvironment": "device",
+      "cryptographicDeviceAttestation": false,
+      "fixedEndpointTransportGatePassed": false,
+      "otherTransportsExcluded": false
+    }
   },
   "upstreamSourceLocks": [
     {
@@ -243,8 +253,8 @@
     "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
-    "Deliver the authorized temporary source-free diagnostic build and inspect a real iPhone report without a debugger.",
-    "If needed, evaluate bounded discovery of only this device's own network endpoint; do not infer all transports from loopback results.",
+    "Preserve the negative fixed-endpoint build10 report and record any separately supplied computer/USB/VPN context; do not repeat the identical probe solely for build11.",
+    "Evaluate bounded alternate same-device transport/discovery from locked primary implementations; do not infer all transports from this fixed-loopback failure.",
     "Only after transport is demonstrated, validate an authenticated session, signing, replacement installation, cold launch and preserved data.",
     "Validate background triggering, failure retry and expiry recovery separately before claiming automatic self-renewal."
   ],
@@ -252,20 +262,63 @@
     "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed."
   ],
   "nextDeviceCandidate": {
-    "build": "10",
-    "status": "ready-for-signing-and-device-report",
+    "build": "11",
+    "status": "delivered_unsigned_same_probe_as_negative_build10_report",
+    "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39255216718",
+    "record": "native-reader-experience-build11.json",
     "builtInSources": false,
-    "publicIPAUploadEnabled": true,
-    "privateArtifactChannelRequiredByCurrentPolicy": false,
-    "temporaryPublicUploadAuthorized": true,
-    "artifactRetentionDays": 1,
-    "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
-    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39178530335",
-    "record": "native-reader-experience-build10.json",
     "IPAIndependentlyAudited": true,
-    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-594fd21-unsigned.ipa",
-    "ipaSHA256": "6db01f77340ffb37d7989b70fa1ffe7cef8e9453be2da96b235cf6c5f4711f8c",
+    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-unsigned.ipa",
+    "ipaSHA256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f",
     "signedOrInstalled": false,
-    "automaticSelfRenewalImplemented": false
+    "automaticSelfRenewalImplemented": false,
+    "equivalentBuild10Report": "self-renewal-device-transport-build10.json",
+    "repeatUnchangedProbeUnderSameConditionsRequested": false
+  },
+  "latestDeviceReport": {
+    "record": "self-renewal-device-transport-build10.json",
+    "outcome": "Both fixed loopback endpoints timed out in connecting, TCP not established, zero response bytes.",
+    "lastWaitingError": {
+      "domain": "posix",
+      "code": 1
+    },
+    "specificDenialMechanismEstablished": false,
+    "computerUSBVPNAndCompanionContext": "Not measured in original report; optional user clarification pending.",
+    "unchangedBuild11ProbeMustNotBeTreatedAsFix": true,
+    "automaticSelfRenewalVerified": false
+  },
+  "nextTransportSlice": {
+    "record": "self-renewal-alternate-transport-followup.json",
+    "sourceReferencesChecked": 9,
+    "scope": "Bounded single-service discovery, validated same-device numeric destinations, TCP-open only; no protocol payload, credentials or pairing input.",
+    "implementationPerformed": false,
+    "SDKOrDeviceValidationPerformed": false
+  },
+  "previousDeviceCandidates": [
+    {
+      "build": "10",
+      "status": "user-report-received-fixed-endpoint-transport-negative",
+      "builtInSources": false,
+      "publicIPAUploadEnabled": true,
+      "privateArtifactChannelRequiredByCurrentPolicy": false,
+      "temporaryPublicUploadAuthorized": true,
+      "artifactRetentionDays": 1,
+      "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39178530335",
+      "record": "native-reader-experience-build10.json",
+      "IPAIndependentlyAudited": true,
+      "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-594fd21-unsigned.ipa",
+      "ipaSHA256": "6db01f77340ffb37d7989b70fa1ffe7cef8e9453be2da96b235cf6c5f4711f8c",
+      "signedOrInstalled": false,
+      "automaticSelfRenewalImplemented": false,
+      "deviceReport": "self-renewal-device-transport-build10.json"
+    }
+  ],
+  "currentUserRequest": {
+    "requestedOn": "2026-10-19",
+    "deviceVerificationExplicitlyAuthorized": true,
+    "scope": "Read-only transport diagnostic only; no implemented automatic renewal to test.",
+    "record": "native-reader-experience-build11.json"
   }
 }

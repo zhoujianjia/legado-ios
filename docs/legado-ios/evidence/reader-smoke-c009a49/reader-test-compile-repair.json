@@ -1,0 +1,76 @@
+{
+  "kind": "source-only-reader-quick-theme-test-compile-repair",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-test-compile-repair-worktree",
+  "worktreeBaseSHA": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+  "triggeringFailedRun": {
+    "id": 39254382770,
+    "sourceSHA": "c009a490f4315dc23c74605a26b023e30e3deac0",
+    "originalTestFileMatchesRepairBase": true,
+    "originalTestFileSHA256": "87ab3c47e76962b822f9f9789c4cc668ae6c13699dd36ca70a23d58fa85ec037"
+  },
+  "onlyChangedSourcePath": "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
+  "patchedFileSHA256": "610c88f8fb796a76f63d7d03f4825c97ee25a13b56a3aea2d286c3a70353a9b2",
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\renewal-delivery\\c009-smoke-checkpoint\\reader-quick-theme-panel-test-compile-repair.patch",
+    "bytes": 1965,
+    "sha256": "0b19287c4be14916a6b6cb5269f33f1d5d21f3b20ca921cdb6bd1a9b647ffacd"
+  },
+  "diagnosticResolutions": [
+    {
+      "originalLine": 81,
+      "action": "Remove the attempted environment override of read-only accessibilityReduceMotion; keep maximum Dynamic Type and all geometry assertions. Existing scroll/dismiss calls remain explicitly nonanimated.",
+      "definition": "var accessibilityReduceMotion: Bool { get }",
+      "primarySource": "https://developer.apple.com/documentation/swiftui/environmentvalues/accessibilityreducemotion"
+    },
+    {
+      "originalLine": 99,
+      "action": "Leave XCTUnwrap unchanged; this generic inference diagnostic follows the invalid root-view modifier. Removal of the invalid modifier restores the concrete root-view expression; actual Swift recompilation remains required.",
+      "classification": "dependent inference diagnostic, not validated by compilation"
+    },
+    {
+      "originalLine": 135,
+      "action": "Use self.navigationController(in:) in the escaping lazy.compactMap recursive closure."
+    },
+    {
+      "originalLine": 142,
+      "action": "Use self.verticalScrollView(in:) in the escaping lazy.compactMap recursive closure."
+    }
+  ],
+  "checksPassed": [
+    "git diff --check",
+    "patch reverse --check in repair worktree",
+    "patch forward --check against untouched main test file",
+    "exactly one modified source path",
+    "both existing test methods retained",
+    "all XCTest assertion, unwrap, screenshot and fulfillment call counts retained",
+    "maximum Dynamic Type override retained",
+    "no cast to a writable system keypath and no custom environment key added"
+  ],
+  "testMethodCount": 2,
+  "swiftCompilationExecuted": false,
+  "iosTestsExecuted": false,
+  "cloudTriggered": false,
+  "mainTrackedSourceOrDocsEdited": false,
+  "limits": [
+    "This repair has not been compiled or run on iOS.",
+    "Removing the unsupported environment write does not simulate or validate the system Reduce Motion preference.",
+    "The c009 original test-target build failure is distinct from ccdddd3 Release package compilation and from any future repaired test run."
+  ],
+  "independentSpotReview": {
+    "reviewer": "/root/prefetch_scenarios",
+    "outcome": "no_additional_confirmed_blocker",
+    "scope": "Read-only review of the one-file diff, original cloud diagnostics, Apple getter definition and unchanged assertions.",
+    "swiftCompilationExecuted": false,
+    "iosTestsExecuted": false,
+    "countsBeforeAndAfter": {
+      "testMethods": 2,
+      "XCTAssertCalls": 13,
+      "XCTUnwrapCalls": 7,
+      "fulfillmentCalls": 3,
+      "screenshotRelatedOccurrences": 3,
+      "animatedFalseCalls": 3
+    },
+    "patchedFileSHA256": "610c88f8fb796a76f63d7d03f4825c97ee25a13b56a3aea2d286c3a70353a9b2",
+    "limit": "The line-99 generic diagnostic is reasonably attributed to the invalid root expression; only an actual Swift test-target rebuild can establish its resolution."
+  }
+}

@@ -3,13 +3,13 @@
   "recordKind": "requested-reader-build11-for-device-renewal-transport-check",
   "recordedOn": "2026-10-19",
   "requestZh": "用户要求打包，在真机验证自动续签；已说明当前仅实现只读连接检查。",
-  "status": "preparing_cloud_device_build",
+  "status": "downloaded_independently_audited_and_delivered_unsigned_device_candidate",
   "version": "3.0.0",
   "build": "11",
   "bundleIdentifier": "local.zhoujianjia.legado-reader",
   "minimumIOS": "18.0",
   "packageKind": "single-current-main-reader-with-ordinary-JVM",
-  "sourceCommit": null,
+  "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
   "workflow": ".github/workflows/legado-reader.yml",
   "requestedDeviceScope": {
     "userAuthorizedDeviceValidation": true,
@@ -19,7 +19,9 @@
     "automaticSelfRenewalImplemented": false,
     "successfulQueryProvesRenewal": false,
     "negativeResultExcludesOtherTransports": false,
-    "nextAfterDeviceReport": "Inspect transport evidence first; authenticated session, fresh profile, signing, replacement installation, cold launch/data preservation and unattended scheduling each require separate implementation and evidence."
+    "nextAfterDeviceReport": "Inspect transport evidence first; authenticated session, fresh profile, signing, replacement installation, cold launch/data preservation and unattended scheduling each require separate implementation and evidence.",
+    "equivalentBuild10Report": "docs/legado-ios/self-renewal-device-transport-build10.json",
+    "repeatUnchangedProbeUnderSameConditionsRequested": false
   },
   "packagingPolicy": {
     "builtInBookSources": false,
@@ -39,18 +41,243 @@
     "testedSource": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
     "simulatorServiceCasesPassed": 8,
     "simulatorUICasesPassed": 1,
-    "unchangedProbeEvidenceReused": "Verify exact relevant source bytes before delivery; prior Simulator evidence never implies device or full-renewal acceptance."
+    "unchangedProbeEvidenceReused": "Six exact probe, settings/dependency entry and test files are byte-identical to 97d9f0f; prior eight-unit/one-UI evidence reused only for that unchanged Simulator scope.",
+    "byteComparisonRecord": "docs/legado-ios/evidence/reader-build11-ccdddd3/unchanged-probe-sources.json"
   },
   "delivery": {
-    "artifactDownloaded": false,
-    "IPAIndependentlyAudited": false,
+    "artifactDownloaded": true,
+    "IPAIndependentlyAudited": true,
     "signedOrInstalled": false,
-    "deliveredToUser": false
+    "deliveredToUser": true,
+    "deliveryMeaning": "Exact independently audited bytes copied to Downloads; signing, installation, device receipt and self-renewal not performed.",
+    "localFiles": [
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-unsigned.ipa",
+        "bytes": 106379578,
+        "sha256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f"
+      },
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-manifest.json",
+        "bytes": 9681,
+        "sha256": "a9f3f06d776e1eee36db6dd7c07bc9a01e75bf2b36a21ec9c54e079cc6eda28d"
+      },
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-source-ccdddd3.zip",
+        "bytes": 41202065,
+        "sha256": "bb5948f56d7741349ca2e4b6ac489656d8c0073251426228a1819e8509b71ba0"
+      },
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-README.txt",
+        "bytes": 1500,
+        "sha256": "6f2ccf8cfc6cd3c0720a1da2e6dcc572c0b241d3b047a907494ea4fe6b03fc9d"
+      }
+    ]
   },
   "acceptance": {
-    "releaseCompilationPassed": false,
+    "releaseCompilationPassed": true,
     "physicalDeviceValidationPassed": false,
     "selfRenewalVerified": false,
     "fullLegadoCompatibilityEstablished": false
-  }
+  },
+  "cloudBuild": {
+    "runId": 39255216718,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39255216718",
+    "tag": "reader-legado-ccdddd3",
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-19T13:36:08Z"
+  },
+  "artifacts": [
+    {
+      "name": "legado-native-reader-build-evidence",
+      "artifactID": 12191101646,
+      "bytes": 1251367,
+      "sha256": "c5381f7f5b12927c07c2b16ca8ec297f7e7236c386267536dd4f535bb78a2144",
+      "githubDigestMatched": true,
+      "zip": "F:\\yuedu-reader\\.build\\renewal-delivery\\build11-cloud\\legado-native-reader-build-evidence.zip",
+      "extractedRoot": "F:\\yuedu-reader\\.build\\renewal-delivery\\build11-cloud\\legado-native-reader-build-evidence"
+    },
+    {
+      "name": "legado-native-reader-unsigned",
+      "artifactID": 12191556300,
+      "bytes": 141820093,
+      "sha256": "6090bd0d2bc4f7b13aa1ac7b01c9cbeca133515191f63081336135b2510a5837",
+      "githubDigestMatched": true,
+      "zip": "F:\\yuedu-reader\\.build\\renewal-delivery\\build11-cloud\\legado-native-reader-unsigned.zip",
+      "extractedRoot": "F:\\yuedu-reader\\.build\\renewal-delivery\\build11-cloud\\legado-native-reader-unsigned"
+    }
+  ],
+  "verifiedResults": {
+    "ipaSHA256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f",
+    "ipaBytes": 106379578,
+    "buildManifestSHA256": "a9f3f06d776e1eee36db6dd7c07bc9a01e75bf2b36a21ec9c54e079cc6eda28d",
+    "ordinaryJVMTests": {
+      "xmlFiles": 20,
+      "uniqueCases": 168,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "suites": [
+        {
+          "name": "io.legado.app.JsEngineCapabilitiesTest",
+          "testcases": 25,
+          "xmlSHA256": "e0739305933da5f81ac79f14cde44c2b0b7660be31d662a611c62ebbce4c7ecb"
+        },
+        {
+          "name": "io.legado.app.model.analyzeRule.AnalyzeByJSonPathErrorPolicyTest",
+          "testcases": 5,
+          "xmlSHA256": "51b7c0a8d747889481a9d1e73c96429aa566134fd98948524ddc880a56189f63"
+        },
+        {
+          "name": "io.legado.app.model.analyzeRule.AnalyzeByJSoupDomTest",
+          "testcases": 7,
+          "xmlSHA256": "2c93fd3323ecec94d31c4bfb4255400227994aa7666483df03c30095054e20ad"
+        },
+        {
+          "name": "io.yuedu.legado.CpuLoopCapabilityProbeTest",
+          "testcases": 4,
+          "xmlSHA256": "ac29599e23ac5128c3cd37ffb6cf2c001988de99017186b8510887450e6831fa"
+        },
+        {
+          "name": "io.yuedu.legado.DeclarativeScalarSelectorTest",
+          "testcases": 3,
+          "xmlSHA256": "c2fb96c4b06ca219e37c36ba5d36b26d7c1f26a9df30a57c54b916078d9a82a1"
+        },
+        {
+          "name": "io.yuedu.legado.DeclarativeSourceTest",
+          "testcases": 3,
+          "xmlSHA256": "43f8c01e7fa68ac65bf6e065a5add59b206d343f70911560d174ff20277c14e5"
+        },
+        {
+          "name": "io.yuedu.legado.InteropSemanticSuiteTest",
+          "testcases": 4,
+          "xmlSHA256": "fa5d46975140448578254d31646880b5565bc3a0452b89ba7f4c1587e79a2e85"
+        },
+        {
+          "name": "io.yuedu.legado.LegadoRuntimeTest",
+          "testcases": 11,
+          "xmlSHA256": "b0f5acdfd55917f87c46cf3c5b9917d2c9fee03c43b45a0b7911b990e31dcb98"
+        },
+        {
+          "name": "io.yuedu.legado.MainJsFacadeTest",
+          "testcases": 5,
+          "xmlSHA256": "780dd81555eecc06309b469ee053f8ab7c95e4af87cd93c1fa3bae2934d6224c"
+        },
+        {
+          "name": "io.yuedu.legado.MainJsResultMarshallerTest",
+          "testcases": 21,
+          "xmlSHA256": "95b90994d1d99689d16e4bac0cdc3ed1b8e3bcaadd12e20e0174c20f0e23d139"
+        },
+        {
+          "name": "io.yuedu.legado.MainJsScopeTest",
+          "testcases": 4,
+          "xmlSHA256": "e789bd517f3db5c59c6b79dc565d468f42fc6d9fb52eb023728ed087cd6bd131"
+        },
+        {
+          "name": "io.yuedu.legado.OkHttpWireCapabilityProbeTest",
+          "testcases": 8,
+          "xmlSHA256": "c8132da3cc3821d6d1c1e2430a4d7be0b57ed8ec599ab1e132cfe68b88ec38d8"
+        },
+        {
+          "name": "io.yuedu.legado.OriginalAnalyzeRuleTest",
+          "testcases": 18,
+          "xmlSHA256": "c6e43fdb2e620734d417c9c78bab0febde0f925236d37a5425df92880e550431"
+        },
+        {
+          "name": "io.yuedu.legado.OriginalRuleScopesConcurrencyTest",
+          "testcases": 11,
+          "xmlSHA256": "203c7067bc3cd37c72075282f351a3cff821bf839fe40b2e7c66baeb06f1a394"
+        },
+        {
+          "name": "io.yuedu.legado.ProductionHttpTransportTest",
+          "testcases": 12,
+          "xmlSHA256": "4483ae87ea4d0e7a827d9e1a5864d27b5cb5b8a9e087097eba8fba92d2557a4f"
+        },
+        {
+          "name": "io.yuedu.legado.RuntimeTaskTraceTest",
+          "testcases": 4,
+          "xmlSHA256": "a8592d6176c0f945754955fd989ed07faa633d77ce1ecc56b16db6de3b6fd376"
+        },
+        {
+          "name": "io.yuedu.legado.SourceHttpSemanticsTest",
+          "testcases": 9,
+          "xmlSHA256": "b0170c4af603b0f246730f1d6fde7354f3b756cfd8ca10cf8a652025a9d1d99f"
+        },
+        {
+          "name": "io.yuedu.legado.StaticRuleReplacementTest",
+          "testcases": 5,
+          "xmlSHA256": "d20ba13fdadde84192915871b35649c06518107dbf40f94215a46be7a9e0e153"
+        },
+        {
+          "name": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+          "testcases": 6,
+          "xmlSHA256": "827f9a4d98a45f54e07c316d8d73d06f710edba1d4fa7b9a9ad962e6366a65f8"
+        },
+        {
+          "name": "io.yuedu.legado.TlsCapabilityProbeTest",
+          "testcases": 3,
+          "xmlSHA256": "82fd907d4fb31d5edb746febc8491b60d532560a8a2fa769810d5dddef1d8e4b"
+        }
+      ],
+      "meaning": "Actual XML records exactly match the declared methods in the bound Git source; not iOS or compatibility acceptance."
+    },
+    "exactGitSourceArchiveAuditPassed": true,
+    "sourceArchive": {
+      "schemaVersion": 1,
+      "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+      "passed": true,
+      "sourceArchiveByteAuditPassed": true,
+      "licenseOrDependencySourceClosureEstablished": false,
+      "signingOrDeviceExecutionPerformed": false,
+      "scope": "Exact tracked Git archive bytes; external dependency source closure remains separate.",
+      "issues": [],
+      "archivePath": ".build\\renewal-delivery\\build11-cloud\\legado-native-reader-unsigned\\.build\\reader-experience\\output\\LocalBookshelf-source.zip",
+      "archiveBytes": 41202065,
+      "archiveSHA256": "bb5948f56d7741349ca2e4b6ac489656d8c0073251426228a1819e8509b71ba0",
+      "snapshotRecordSHA256": "b2dd0da7094ec3c067d73f15e0a5890932553361e975d658883d4338c5beca4d",
+      "zipCommentMatchesCommit": true,
+      "gitTree": "b6b19b231d3f9f7f2e75c4d14b161fccab5ce9a6",
+      "fileCount": 2827,
+      "directoryCount": 399,
+      "uncompressedFileBytes": 108747059,
+      "pathAndFileSHA256Digest": "96ec29f02b54dc676f14c9b16d23886a553fd14c6da3491f9933bf314591f6ff",
+      "allFileBytesAndGitBlobsMatched": true,
+      "unsafeAndDuplicatePathsAbsent": true
+    },
+    "deviceOrAutomaticRenewalAcceptance": false
+  },
+  "independentAudits": [
+    {
+      "path": "docs/legado-ios/evidence/reader-build11-ccdddd3/independent-ipa-audit.json",
+      "bytes": 9804,
+      "sha256": "da804f0455731ac0cf73949cc15d06d3cf40d4944583f9e541fe60af28137274"
+    },
+    {
+      "path": "docs/legado-ios/evidence/reader-build11-ccdddd3/independent-resources-jvm-audit.json",
+      "bytes": 14515,
+      "sha256": "e30490da7acfe832eb445862237aeba4b1e7deda336a4e33f1cefa4b2918281b"
+    },
+    {
+      "path": "docs/legado-ios/evidence/reader-build11-ccdddd3/independent-source-archive-audit.json",
+      "bytes": 1081,
+      "sha256": "b04e43e9e22006af8f506ab79a405973d21afbdbd3530765ef84995a1ea12521"
+    }
+  ],
+  "retainedBuildEvidence": {
+    "path": "docs/legado-ios/evidence/reader-build11-ccdddd3/legado-native-reader-build-evidence.zip",
+    "bytes": 1251367,
+    "sha256": "c5381f7f5b12927c07c2b16ca8ec297f7e7236c386267536dd4f535bb78a2144",
+    "githubArtifactDigestMatched": true
+  },
+  "retainedBuildManifest": {
+    "path": "docs/legado-ios/evidence/reader-build11-ccdddd3/build-manifest.json",
+    "bytes": 9681,
+    "sha256": "a9f3f06d776e1eee36db6dd7c07bc9a01e75bf2b36a21ec9c54e079cc6eda28d"
+  },
+  "auditToolPreparation": {
+    "path": "docs/legado-ios/evidence/reader-build11-ccdddd3/audit-tool-preparation.json",
+    "bytes": 3379,
+    "sha256": "9f3785eade8b689a33f78844ac02d16270856487111bcd0beaa4eb356b196c71"
+  },
+  "sourceBoundary": "Release IPA and source ZIP remain exactly ccdddd3. Later device-report documentation and the test-only compiler repair are excluded from this fixed package."
 }

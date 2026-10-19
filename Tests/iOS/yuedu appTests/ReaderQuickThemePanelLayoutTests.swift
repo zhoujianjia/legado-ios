@@ -78,7 +78,8 @@ final class ReaderQuickThemePanelLayoutTests: XCTestCase {
                 onSelectPageTurnOption: { _ in }, onStartAutoRead: {}, onCustomize: {}
             )
             .environment(\.dynamicTypeSize, .accessibility5)
-            .environment(\.accessibilityReduceMotion, true)
+            // Reduce Motion is a read-only system preference. Scrolling and
+            // dismissal below are explicitly nonanimated.
             .onPreferenceChange(ReaderQuickPanelBottomActionFrameKey.self) { frame in
                 bottomActionFrame = frame
                 if !reportedBottomActionVisible, let visibleViewport,
@@ -132,14 +133,14 @@ final class ReaderQuickThemePanelLayoutTests: XCTestCase {
 
     private func navigationController(in root: UIViewController) -> UINavigationController? {
         if let navigation = root as? UINavigationController { return navigation }
-        return root.children.lazy.compactMap { navigationController(in: $0) }.first
+        return root.children.lazy.compactMap { self.navigationController(in: $0) }.first
     }
 
     private func verticalScrollView(in view: UIView) -> UIScrollView? {
         if let scroll = view as? UIScrollView,
            scroll.contentSize.height > 0,
            scroll.contentSize.width <= scroll.bounds.width + 1 { return scroll }
-        return view.subviews.lazy.compactMap { verticalScrollView(in: $0) }.first
+        return view.subviews.lazy.compactMap { self.verticalScrollView(in: $0) }.first
     }
 
     private func attachScreenshot(_ window: UIWindow, name: String) {

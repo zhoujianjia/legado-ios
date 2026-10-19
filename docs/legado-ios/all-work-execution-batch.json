@@ -105,7 +105,7 @@
     "smokeShellSyntax": "passed_with_Git_Bash_bash_n",
     "gitDiffCheck": "passed"
   },
-  "nextCheckpoint": "After the related restore fix, compiler repair and focused tests are reviewed, push one source-only reader-smoke checkpoint; retain all group results independently and continue ready work without repeated cloud polling.",
+  "nextCheckpoint": "Actual test-target compiler failure repaired and independently reviewed; validate the repaired test target and existing restore/schema suites in one source-only checkpoint. Release build11 is separately bound to unchanged ccdddd3.",
   "newIPAProduced": false,
   "privateSourceAccessed": false,
   "physicalDeviceValidated": false,
@@ -118,12 +118,34 @@
     "sourceTag": "reader-smoke-c009a49",
     "runId": 39254382770,
     "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39254382770",
-    "statusAtLastBoundedRead": "in_progress",
-    "conclusionAtLastBoundedRead": null,
-    "observedAtUTC": "2026-10-19T12:44:54.920983+00:00",
-    "sourceSpecificReadsAfterPush": 1,
+    "statusAtLastBoundedRead": "completed",
+    "conclusionAtLastBoundedRead": "failure",
+    "observedAtUTC": "2026-10-19T13:39:34.035736+00:00",
+    "sourceSpecificReadsAfterPush": 2,
     "repeatedPollingPerformed": false,
     "iosAcceptanceEstablished": false,
-    "boundary": "Source-only Debug Simulator checkpoint. Later documentation-only commits do not change its actual c009a49 source or establish a passing result. No IPA produced."
+    "boundary": "Source c009a49 failed first test-target build before any iOS execution; retained ZIP digest verified. Distinct from ccdddd3 Release build11.",
+    "completedEvidence": "docs/legado-ios/evidence/reader-smoke-c009a49/checkpoint-result.json",
+    "iosTestExecutions": 0,
+    "timestampMeaning": "Review of retained completed-run metadata; no additional API polling."
+  },
+  "testTargetCompileRepair": {
+    "record": "docs/legado-ios/evidence/reader-smoke-c009a49/reader-test-compile-repair.json",
+    "appliedToMainWorkingTree": true,
+    "sourcePath": "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
+    "change": "Remove invalid write to read-only Reduce Motion system environment; make recursive lazy closure self captures explicit. Existing two tests and all assertions retained.",
+    "independentlyReviewed": true,
+    "actualSwiftRecompilationPassed": false,
+    "iosTestExecutionPassed": false
+  },
+  "separateRequestedDevicePackage": {
+    "record": "docs/legado-ios/native-reader-experience-build11.json",
+    "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+    "releaseProductCompilationPassed": true,
+    "ordinaryJVMXMLCasesPassed": 168,
+    "deliveredUnsignedToDownloads": true,
+    "iosTestTargetAcceptance": false,
+    "sourceBoundary": "Separate user-requested ccdddd3 package, not the original c009a49 source-only test artifact.",
+    "renewalImplementedOrVerified": false
   }
 }

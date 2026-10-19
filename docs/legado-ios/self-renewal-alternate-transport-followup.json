@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "status": "bounded-source-followup-complete-no-transport-implementation-or-device-execution",
+  "sourceLocks": {
+    "SideStore/SideStore": "d97ec133719d79916675bdaf722b82a8d091d545",
+    "SideStore/minimuxer": "12be70dc2627307a16bfd2dc7a009080d5bec909",
+    "SideStore/idevice": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
+    "jkcoxson/LocalDevVPN": "af3fd697803ada4ac2b8d518358f5ab0a534844c"
+  },
+  "trigger": {
+    "reportSummary": "docs/legado-ios/self-renewal-device-transport-build10.json",
+    "reportedFixedEndpointResult": "Both loopback lockdown connects timed out before TCP readiness; no bytes received.",
+    "interpretation": "This closes only the tested fixed-endpoint experiment for the recorded conditions. The waiting POSIX code is not a proven denial mechanism or proof against every transport.",
+    "build11ProbeChanged": false,
+    "repeatUnchangedBuild11ProbeRequired": false
+  },
+  "recommendedSmallestSlice": {
+    "name": "bounded-same-device-RemotePairing-discovery-and-connect-only",
+    "implementationLocation": "Extend the existing original Network.framework diagnostic service with a separate discovery stage; do not vendor upstream implementation.",
+    "steps": [
+      "Capture a bounded numeric snapshot of the current device interface addresses, preserving IPv6 scope identifiers, without exporting those addresses.",
+      "Browse only _remotepairing._tcp in local. with a fixed overall deadline and result cap. Do not enumerate all service types, publish a host service, or send custom multicast packets.",
+      "Resolve candidate service addresses and SRV port through a DNS-SD resolver before creating TCP connections. NWBrowser loopback metadata is a hint, not an ownership proof.",
+      "Accept only valid numeric unicast addresses equal to addresses on the captured local non-VPN interface snapshot, or explicitly classified loopback. Reject unknown hosts, peer routes, wildcard, multicast and broadcast values. Preserve and validate IPv6 link-local scope. Do not substitute a peer or fallback address.",
+      "Revalidate address ownership immediately before connecting; use only the numeric approved address and discovered port, never the service hostname or unresolved service endpoint. Stop if the interface snapshot changed or no candidate is provably local.",
+      "Attempt only a bounded TCP open to those approved same-device candidates, then close without sending an application frame. Never send lockdown QueryType to a RemotePairing listener.",
+      "Export counts, candidate origin category, stage, deadline outcome and normalized errors only. Distinguish discovery unavailable, no same-device candidate, resolution failure, connect waiting, connect timeout and actual TCP-ready. Keep renewalProven and all TLS/session/pair/account/sign/install flags false."
+    ],
+    "proposedBoundsNotMeasuredDeviceFacts": {
+      "overallDeadlineSeconds": 8,
+      "maximumDiscoveryResultsExamined": 8,
+      "maximumApprovedNumericEndpoints": 4,
+      "maximumParallelConnects": 1,
+      "perConnectDeadlineSeconds": 2,
+      "applicationPayloadBytesSent": 0
+    },
+    "requiredNewDependency": null,
+    "requiresVPNOrCompanionApp": false,
+    "requiresCredentialsOrPairingInput": false,
+    "startsAdvertisingOrPairing": false,
+    "usesPortScan": false,
+    "guessesFixedRemotePairingPort": false,
+    "evidenceMeaning": "A TCP-ready result establishes only a reachable local address and discovered port. Service identity, same-daemon identity and an authenticated usable transport remain unverified.",
+    "inferenceBoundary": "Local address equality establishes the destination locality under the current interface snapshot, not cryptographic peer identity. A local proxy or system routing behavior is not excluded."
+  },
+  "sourceOnlyVerification": {
+    "canPrepareAndTestWithoutPhone": true,
+    "pureSelectionFixtureCases": [
+      "only declared service type and valid SRV ports are accepted",
+      "a loopback hint plus a nonlocal resolved address is rejected",
+      "a same-device candidate is never replaced by another LAN service",
+      "IPv4 and IPv6 canonicalization and scoped link-local equality",
+      "wildcard, broadcast, multicast, empty, malformed and oversized input rejection",
+      "DNS rebinding or interface ownership change before connect yields no connect",
+      "bounded duplicate results, removals, result cap, deadline and cancellation races",
+      "connection waiting remains distinct from ready or terminal failed",
+      "report redaction excludes names, addresses, TXT and raw payloads"
+    ],
+    "SDKFixtureTests": "Inject discovery, interface snapshot, resolver, clock and TCP adapters. Test single completion, teardown and late callbacks on the existing iOS Simulator test target; simulator tests are not local-network privacy or device acceptance.",
+    "DNSResolverSDKBoundary": "The chosen system DNS-SD resolver and numeric-address adapter still need compile/link and availability checks against the actual iOS SDK and deployment target. Windows source inspection cannot establish their runtime availability or behavior on this iOS version; same-device discovery and local-network privacy require a physical device.",
+    "testsExecutedByThisInvestigation": 0,
+    "WindowsCanEstablishAppleNetworkFrameworkBehavior": false,
+    "sourceInspectionCanProveSameDeviceTransportWorks": false
+  },
+  "devicePrerequisitesAndUnknowns": [
+    "A future foreground probe needs its exact Bonjour service in NSBonjourServices and an appropriate localized NSLocalNetworkUsageDescription. No such plist change was made here.",
+    "Bonjour browsing and resolution require the local-network privilege. Permission state, denial and no advertisement must not be inferred from an empty result alone.",
+    "Whether this iOS version advertises its own RemotePairing service to a sandboxed app, and whether its SRV addresses can be proven local without pairing input, is unknown.",
+    "Whether direct TCP to the discovered same-device endpoint can become ready without a VPN, companion app or computer is unknown; the supplied fixed lockdown report did not test this.",
+    "Even if discovery and TCP pass, read-only authentication needs a separately bounded design and an existing locally provisioned pairing record. Do not read a pairing record merely to make this discovery stage run.",
+    "No source inspection, simulator fixture or bare TCP result proves fresh provisioning, signing, replacement installation, preserved data or unattended/expiry recovery."
+  ],
+  "applePrimaryReference": {
+    "url": "https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy",
+    "facts": "Specific Bonjour browsing/resolution requires local-network access, NSBonjourServices and a usage description. Browsing all types or arbitrary multicast has additional entitlement requirements, so this proposal does neither. Simulator does not support local-network privacy; test that behavior on a device. A waiting state is not an established denial cause for the existing report."
+  },
+  "sourceEvidence": [
+    {
+      "repository": "SideStore/SideStore",
+      "commit": "d97ec133719d79916675bdaf722b82a8d091d545",
+      "path": "SideStore/Core/DeviceApi/MinimuxerWrapper.swift",
+      "lineRangeOneBased": [
+        60,
+        78
+      ],
+      "sourceURL": "https://github.com/SideStore/SideStore/blob/d97ec133719d79916675bdaf722b82a8d091d545/SideStore/Core/DeviceApi/MinimuxerWrapper.swift",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/SideStore/d97ec133719d79916675bdaf722b82a8d091d545/SideStore/Core/DeviceApi/MinimuxerWrapper.swift",
+      "localPath": ".build/self-renewal-research/SideStore--SideStore/d97ec133719d79916675bdaf722b82a8d091d545/SideStore/Core/DeviceApi/MinimuxerWrapper.swift",
+      "bytes": 23211,
+      "sha256": "47c6905c6ba307f9a98c0768b2e52075c2b11629a7568dd76c27d5cabdd2f5bf",
+      "gitBlobSHA1": "9dfb2c5d9f8a52efc34b9dbefb4447712ee88587",
+      "matchesLockedTree": true,
+      "finding": "The RemotePairing endpoint port is discovered through Bonjour. Loopback is a preferred candidate, not a mandatory restriction. User override and last-discovered values also exist at lines 22-30."
+    },
+    {
+      "repository": "SideStore/SideStore",
+      "commit": "d97ec133719d79916675bdaf722b82a8d091d545",
+      "path": "SideStore/Core/Bonjour/BonjourDiscoveryManager.swift",
+      "lineRangeOneBased": [
+        761,
+        893
+      ],
+      "sourceURL": "https://github.com/SideStore/SideStore/blob/d97ec133719d79916675bdaf722b82a8d091d545/SideStore/Core/Bonjour/BonjourDiscoveryManager.swift",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/SideStore/d97ec133719d79916675bdaf722b82a8d091d545/SideStore/Core/Bonjour/BonjourDiscoveryManager.swift",
+      "localPath": ".build/renewal-delivery/alternate-transport-primary-source/SideStore/Core/Bonjour/BonjourDiscoveryManager.swift",
+      "bytes": 38344,
+      "sha256": "92c385763783767e51788547a938826dd6c839716273a0cac650107a027b4ee9",
+      "gitBlobSHA1": "a88db900eeb1b4f362b80250fc79dc1eb82caf4e",
+      "matchesLockedTree": true,
+      "finding": "The one-shot resolver browses one requested type but falls back from a loopback-preferred candidate to any matched service at line 806. It initiates NWConnection before any local-address ownership check and accepts path information in both ready and waiting. This helper cannot be reused as a strict same-device transport gate."
+    },
+    {
+      "repository": "SideStore/SideStore",
+      "commit": "d97ec133719d79916675bdaf722b82a8d091d545",
+      "path": "AltStore/Info.plist",
+      "lineRangeOneBased": [
+        94,
+        167
+      ],
+      "sourceURL": "https://github.com/SideStore/SideStore/blob/d97ec133719d79916675bdaf722b82a8d091d545/AltStore/Info.plist",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/SideStore/d97ec133719d79916675bdaf722b82a8d091d545/AltStore/Info.plist",
+      "localPath": ".build/renewal-delivery/alternate-transport-primary-source/AltStore/Info.plist",
+      "bytes": 8817,
+      "sha256": "3ed6c52f049772db353cc90cf9e3b51584b1d593804b3d7d7b322da6fa3cef54",
+      "gitBlobSHA1": "868efe81e61393ccab1b6538e7f18439570aebdb",
+      "matchesLockedTree": true,
+      "finding": "The application declares RemotePairing Bonjour service types and a local-network usage description. Its broad service list is not needed for a single-service probe."
+    },
+    {
+      "repository": "SideStore/minimuxer",
+      "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909",
+      "path": "Common/MinimuxerConstants.swift",
+      "lineRangeOneBased": [
+        12,
+        42
+      ],
+      "sourceURL": "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/Common/MinimuxerConstants.swift",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/minimuxer/12be70dc2627307a16bfd2dc7a009080d5bec909/Common/MinimuxerConstants.swift",
+      "localPath": ".build/self-renewal-research/SideStore--minimuxer/12be70dc2627307a16bfd2dc7a009080d5bec909/Common/MinimuxerConstants.swift",
+      "bytes": 2802,
+      "sha256": "73cbce4167032c48aa8d3386be9a7064365706c12d4876c6e44286c7f0821448",
+      "gitBlobSHA1": "3fb18a884d3f076d17b556220957395ba942d0e0",
+      "matchesLockedTree": true,
+      "finding": "49152 is a default RemotePairing port, while _remotepairing._tcp. is the daemon discovery service type. Neither the default port nor its presence proves reachability on this iPhone."
+    },
+    {
+      "repository": "SideStore/minimuxer",
+      "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909",
+      "path": "DeviceGateway/Package.swift",
+      "lineRangeOneBased": [
+        35,
+        45
+      ],
+      "sourceURL": "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/Package.swift",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/minimuxer/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/Package.swift",
+      "localPath": ".build/self-renewal-research/SideStore--minimuxer/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/Package.swift",
+      "bytes": 3414,
+      "sha256": "574aa20bd89e739a07483c704ffdb845147715f0066d8c4c524b520ff904c85f",
+      "gitBlobSHA1": "e71fb03ee32be8a92320b2c7cc7550bd5d4c6f57",
+      "matchesLockedTree": true,
+      "finding": "The exact IDevice binary target references release v0.1.68-ss-3e55c84 and its package checksum. This is the actual lower-level revision, not an assumed current idevice branch."
+    },
+    {
+      "repository": "SideStore/minimuxer",
+      "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909",
+      "path": "DeviceGateway/idevice/IdeviceGateway.swift",
+      "lineRangeOneBased": [
+        242,
+        302
+      ],
+      "sourceURL": "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/minimuxer/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
+      "localPath": ".build/self-renewal-research/SideStore--minimuxer/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
+      "bytes": 116257,
+      "sha256": "812ea4d876c09a05e17a8ef2581915678508e0622a527d37d7f85cb248e457e8",
+      "gitBlobSHA1": "e9310d0236e244813ce945236bdb99af2582f649",
+      "matchesLockedTree": true,
+      "finding": "The normal RemotePairing tunnel path uses an existing RP pairing file and passes pair_if_needed=false. It is an authenticated step beyond discovery or a bare TCP connection."
+    },
+    {
+      "repository": "SideStore/idevice",
+      "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
+      "path": "ffi/src/tunnel_provider.rs",
+      "lineRangeOneBased": [
+        280,
+        369
+      ],
+      "sourceURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/idevice/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+      "localPath": ".build/self-renewal-research/SideStore--idevice/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+      "bytes": 17395,
+      "sha256": "433f26938c71820dce1361e9ca934531695391c1a566b5163fef3e67dbf59f58",
+      "gitBlobSHA1": "b6e135deab94c774b2fc307974925326932f739f",
+      "matchesLockedTree": true,
+      "finding": "Raw RemotePairing uses a direct TCP stream and RpPairingSocket, then invokes authenticated connection and tunnel creation. A lockdown QueryType frame is not the protocol for this service."
+    },
+    {
+      "repository": "SideStore/idevice",
+      "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
+      "path": "ffi/src/tunnel_provider.rs",
+      "lineRangeOneBased": [
+        34,
+        74
+      ],
+      "sourceURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+      "rawURL": "https://raw.githubusercontent.com/SideStore/idevice/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+      "localPath": ".build/self-renewal-research/SideStore--idevice/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+      "bytes": 17395,
+      "sha256": "433f26938c71820dce1361e9ca934531695391c1a566b5163fef3e67dbf59f58",
+      "gitBlobSHA1": "b6e135deab94c774b2fc307974925326932f739f",
+      "matchesLockedTree": true,
+      "finding": "After authentication, the TLS tunnel listener port is negotiated; RSD port and internal addressing come from the tunnel handshake. An outer TCP success alone proves none of those later steps."
+    },
+    {
+      "repository": "jkcoxson/LocalDevVPN",
+      "commit": "af3fd697803ada4ac2b8d518358f5ab0a534844c",
+      "path": "TunnelProv/PacketTunnelProvider.swift",
+      "lineRangeOneBased": [
+        21,
+        95
+      ],
+      "sourceURL": "https://github.com/jkcoxson/LocalDevVPN/blob/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift",
+      "rawURL": "https://raw.githubusercontent.com/jkcoxson/LocalDevVPN/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift",
+      "localPath": ".build/self-renewal-research/jkcoxson--LocalDevVPN/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift",
+      "bytes": 3895,
+      "sha256": "e33a81e807f266c7889e911a99d5ae58cea1f67de2da32093c4c24f30518edc6",
+      "gitBlobSHA1": "8a36937b3efd5770e01bd943a804b8cdb63763cb",
+      "matchesLockedTree": true,
+      "finding": "The VPN implementation configures NEPacketTunnelProvider routes and swaps and reinjects packetFlow packets. Copying its peer-address defaults would not establish an equivalent direct route."
+    }
+  ],
+  "investigationActions": {
+    "publicPrimaryFilesFetched": 2,
+    "networkOrDeviceScanPerformed": false,
+    "userCredentialsOrPairingRecordsRead": false,
+    "privateSourceJSONRead": false,
+    "trackedFilesModified": false,
+    "UIOrDependenciesAdded": false,
+    "commitPushOrCITriggered": false,
+    "build11SourceModified": false
+  },
+  "completionClaims": {
+    "automaticSelfRenewalImplemented": false,
+    "sameDeviceTransportVerified": false,
+    "pairedSessionVerified": false,
+    "signingVerified": false,
+    "installationVerified": false
+  }
+}
