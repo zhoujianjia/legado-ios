@@ -2,10 +2,11 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-19",
+  "activeBatchRecord": "docs/legado-ios/reading-comfort-batch.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
-    "当前状态": "计划与首批代码已保存；168 项 JVM 回归通过，iOS 集成结论仍待取得。已改为阶段集中验证，不再轮询等待构建而停下开发。全部无需真机的工作尚未完成。",
+    "当前状态": "阅读体验批次正在实施：字体字形预览、间距预设、大字快捷面板及真实窗口尺寸输入已写入源码，并补充回归用例；iOS 编译和执行尚待统一验证。上一批 168 项 JVM 回归通过。继续按阶段集中验证，不轮询等待构建；全部无需真机的工作尚未完成。",
     "实施顺序": [
       {
         "阶段": 1,
@@ -160,7 +161,7 @@
     {
       "id": "s2-reading-experience",
       "title": "Reading comfort, anchors, adaptive layout and measured performance",
-      "status": "planned",
+      "status": "in_progress",
       "dependsOn": [
         "s1-integrity-plan"
       ],
@@ -337,7 +338,7 @@
       "id": "reading-experience-design",
       "kind": "cross-domain",
       "stageId": "s2-reading-experience",
-      "status": "planned",
+      "status": "in_progress",
       "ownedFeatureIds": [],
       "relatedFeatureIds": [
         "reader.layout",
@@ -370,7 +371,7 @@
       "id": "reading-performance-and-prefetch",
       "kind": "cross-domain",
       "stageId": "s2-reading-experience",
-      "status": "planned",
+      "status": "in_progress",
       "ownedFeatureIds": [],
       "relatedFeatureIds": [
         "reader.layout",
@@ -759,7 +760,7 @@
       "id": "reader-layout",
       "kind": "domain-owner",
       "stageId": "s2-reading-experience",
-      "status": "planned",
+      "status": "in_progress",
       "ownedFeatureIds": [
         "reader.layout",
         "reader.page-turn"

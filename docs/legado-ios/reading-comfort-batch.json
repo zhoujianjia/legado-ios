@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-10-19",
+  "stageId": "s2-reading-experience",
+  "baseCommit": "d97b90bde5a5abb5f1b331fcb47f1a80f12264c7",
+  "status": "implemented-reviewed-pending-ios-integration",
+  "说明": "本记录覆盖阅读体验的一批源码改动和静态审查；不是 iOS 编译、模拟器运行、真机验收或全阶段完成记录。",
+  "stageComplete": false,
+  "allNonDeviceWorkComplete": false,
+  "builtInBookSources": false,
+  "automaticSelfRenewalImplemented": false,
+  "changes": [
+    {
+      "id": "font-preview",
+      "problem": "旧字体菜单只有名称，选择前看不到字形。",
+      "implementation": "在同一设置导航栈内用一个原生 Picker 展示系统默认、现有两款内置字体和用户字体的字形样文；复用现有导入、删除和作用域存储。缺失字体禁用并说明；原书字体的实际字形以正文为准。",
+      "newFontAssets": false,
+      "files": [
+        "Modules/Features/Reader/ReaderFontSelectionView.swift",
+        "Modules/Features/Reader/ReaderSettingsView.swift",
+        "Modules/SharedUI/DesignSystem/DesignTokens.swift"
+      ]
+    },
+    {
+      "id": "spacing-presets",
+      "problem": "开始阅读时需要逐项调整间距；新预设还必须避免覆盖延迟保存中的字号等编辑。",
+      "implementation": "紧凑、均衡、宽松三个稀疏预设只定义行距、字距、段距。ReaderConfig 提交尚未回写的现有编辑并调用同一设置 writer，遵守逐字段全局／主题作用域；即使存储已匹配也同步编辑器并使旧延迟任务失效。手动微调后显示自定义。",
+      "newSettingsStore": false,
+      "files": [
+        "Modules/Core/ReaderCore/Customization/ReaderSpacingPreset.swift",
+        "Modules/Features/Reader/ReaderSettingsView.swift",
+        "Targets/Yuedu/SharedApp/GlobalSettings.swift",
+        "Targets/Yuedu/SharedApp/AppearanceThemeReadingApplier.swift"
+      ]
+    },
+    {
+      "id": "quick-panel-accessibility",
+      "problem": "快捷面板只能拖动关闭，固定横排和背景卡在辅助大字下可能挤压内容。",
+      "implementation": "提供原生关闭按钮；按实际导航占用调整面板高度；窄屏及辅助字号纵排，背景卡随字级缩放，移除翻页名称的强制文字缩小，字号上下限禁用对应按钮。保留既有亮度百分比、读屏信息和减少动态效果策略。",
+      "files": [
+        "Modules/Features/Reader/ReaderQuickThemePanelView.swift"
+      ]
+    },
+    {
+      "id": "actual-viewport",
+      "problem": "按设备方向交换窗口宽高，无法可靠表示 iPad 分屏和台前调度中的阅读器边界。",
+      "implementation": "一个可取消的 UIKit 边界观察器替代方向猜测和旧尺寸 preference；合并最新布局、使用最新闭包、忽略无效和重复尺寸、离窗或销毁取消。继续使用同一布局刷新和语义锚点路径。",
+      "newPaginationOrPositionStore": false,
+      "files": [
+        "Modules/Features/Reader/ReaderViewportSizeObserver.swift",
+        "Modules/Features/Reader/ReaderView.swift",
+        "Modules/Features/Reader/ReaderPreferenceKeys.swift"
+      ]
+    }
+  ],
+  "review": {
+    "independentReviewPerformed": true,
+    "fixedFindings": [
+      "Preset application preserves pending ReaderConfig edits and supersedes stale pending spacing even when persisted values already match.",
+      "Scope tests initialize their paragraph-spacing baseline; publication tests restore sparse custom-theme data.",
+      "Viewport tests explicitly retain their windows across awaits and add a real SwiftUI background hosting scenario.",
+      "Large-text panel test waits for the actual final action frame and checks full viewport containment."
+    ]
+  },
+  "localChecks": {
+    "gitDiffCheck": "passed",
+    "portableLocalizationScan": {
+      "status": "passed",
+      "languages": [
+        "zh-Hant",
+        "zh-Hans",
+        "en",
+        "ja",
+        "ko"
+      ],
+      "keysPerLanguage": 3698,
+      "newKeysPerLanguage": 9,
+      "duplicateKeys": 0,
+      "changedSwiftFilesScanned": 14,
+      "method": "Lex all five Localizable.strings tables, compare key sets, require nonempty new values, check changed Swift literal localized calls.",
+      "canonicalMacOSPlutilAndRubyCheckExecuted": false
+    },
+    "iosCompilationExecuted": false,
+    "iosTestsExecuted": false,
+    "newCloudBuildTriggered": false,
+    "newIPAGenerated": false
+  },
+  "preparedNewTests": {
+    "methodCount": 14,
+    "executionStatus": "not-run",
+    "cases": [
+      "Three preset scope/preservation/custom-selection cases in ReadingSettingsScopeTests.",
+      "Three actual preset-entry publication/pending-edit cases in ReaderSettingsPublicationTests.",
+      "Six viewport component lifecycle, resize and cancellation cases.",
+      "One real UIHostingController background/container resize case.",
+      "One maximum accessibility text / Reduce Motion / reachable final-action panel case."
+    ]
+  },
+  "prefetchAndPerformanceReview": {
+    "productionPrefetchChanged": false,
+    "performanceImprovementClaimed": false,
+    "existingGuards": [
+      "Only a current-ready chapter advances the window; each center requests the next two and previous two chapters with priority differences.",
+      "Same-chapter deduplication, jump priority upgrade, generation isolation and exit cancellation exist; downloads are kept independent.",
+      "Actual cached package reads validate modern body checksums and preserve corrupt legacy cache evidence."
+    ],
+    "unverifiedBoundaries": [
+      "Lightweight cached-state detection can skip prewarming a corrupt modern body; entering the chapter performs full validation and on-demand recovery. A complete user-path reproduction is still needed.",
+      "Four requests per center is not a global in-flight bound across repeated distant jumps. Existing queueing policy must be measured before changing it.",
+      "Font import/delete still inherits synchronous file work from the existing service; this batch does not claim to improve its latency."
+    ],
+    "baselineCollection": {
+      "status": "not-run",
+      "test": "ReaderArchitectureBenchmarkTests.readerStageLatency",
+      "fixtures": [
+        "plain-10k: at least 10240 UTF-16 units",
+        "plain-100k: at least 102400 UTF-16 units"
+      ],
+      "renderSizePoints": [
+        390,
+        844
+      ],
+      "fontSizePoints": 18,
+      "lineHeightMultiple": 1.5,
+      "paragraphSpacingPoints": 8,
+      "iterationsPerFixture": 5,
+      "stages": [
+        "document.first",
+        "document.reuse",
+        "page.first",
+        "page.full",
+        "scroll.ready"
+      ],
+      "expectedMetricRows": 50,
+      "retain": [
+        "raw READER_ARCH_BENCH rows",
+        "source commit",
+        "fixture hash",
+        "Xcode/SDK/runtime",
+        "destination",
+        "Debug configuration",
+        "median and maximum by fixture and stage"
+      ],
+      "acceptance": "All output coverage/revision/readiness assertions must pass. First capture is descriptive; do not set a speedup verdict without a comparable prior measurement. Use five samples as median/max observations, not p95 or a device latency guarantee.",
+      "excludes": [
+        "real HTTP",
+        "prefetch concurrency",
+        "tap-to-visible",
+        "cold app startup",
+        "peak process memory",
+        "battery",
+        "physical-device performance"
+      ]
+    },
+    "nextMeasurementScenarios": [
+      "Use isolated synthetic 20/100-chapter fixtures with owned held responses and ten distant jumps; retain peak active/queued jobs, request order, cancellation and recovery.",
+      "Tamper only a temporary modern-cache body after a valid write, preserve package/meta, and verify both lightweight status and actual chapter-entry validation/recovery before selecting a fix.",
+      "Define startup and peak-memory collection separately; the single-chapter stage benchmark does not satisfy those acceptance gates."
+    ]
+  },
+  "pendingIntegration": {
+    "workflow": ".github/workflows/reader-smoke.yml",
+    "entryPoint": "scripts/reader-experience/smoke.sh",
+    "newIndependentGroup": {
+      "expectedMethods": 60,
+      "expectedExecutions": 62,
+      "expectedFailuresSkipsAndExpectedFailures": 0,
+      "resultBundle": ".build/reader-smoke/reader-experience.xcresult",
+      "summary": ".build/reader-smoke/reader-experience-summary.json",
+      "testsTree": ".build/reader-smoke/reader-experience-tests.json",
+      "countGateResult": ".build/reader-smoke/reader-experience-result.json"
+    },
+    "configurationChecks": [
+      "Git Bash bash -n passed",
+      "YAML parsing passed",
+      "source selector counts reviewed as 60 methods and 62 executions"
+    ],
+    "triggerPolicy": "One stage checkpoint after related changes are reviewed; no tag is pushed during this implementation batch.",
+    "reuseExistingGroups": [
+      "ReaderFontCatalogTests",
+      "UserFontSettingsTests",
+      "ContinuousScrollRestoreTests",
+      "ReaderLocalSmokeUITests"
+    ],
+    "require": [
+      "actual source-specific compilation",
+      "zero failures/skips/expected failures",
+      "method and execution counts verified independently",
+      "raw xcresult summary/tests/logs",
+      "canonical localization check"
+    ],
+    "manualSimulatorReview": [
+      "font previews and selection, including missing/publication fonts",
+      "font import first-level presentation and deletion",
+      "largest Dynamic Type and VoiceOver order",
+      "theme/night contrast and native sheet close",
+      "font/spacing/mode changes and same text anchor",
+      "iPad resize and split-view controls"
+    ]
+  },
+  "deferredDeviceValidation": [
+    "Physical font comfort, actual night brightness/contrast and VoiceOver behavior.",
+    "Actual iPad multitasking/rotation, gestures and reading anchor stability.",
+    "Long-session responsiveness, memory pressure, thermal and battery behavior."
+  ],
+  "reviewedFileSHA256": {
+    ".github/workflows/reader-smoke.yml": "6adec96c97dfaa1b4016f03032ee90cea801b633c5e50b03ffe477f063610318",
+    "Modules/Core/ReaderCore/Customization/ReaderSpacingPreset.swift": "4c3f973ca45847cab3ea4d97977a0b295bf7e6f7b52f52827b3275165cb37f86",
+    "Modules/Features/Reader/ReaderFontSelectionView.swift": "b9befee9541732dc7a0aee052cf2f1e5c9a27c8ab7741ad48e4c84ebee87957d",
+    "Modules/Features/Reader/ReaderPreferenceKeys.swift": "cf803a6f41f5c01b37b97da90295218c2792a471555eb003ebe256ca8bcbe9ed",
+    "Modules/Features/Reader/ReaderQuickThemePanelView.swift": "7c05e86273fd90a1f643da8e47055a52e6c351ad6830bbf86334d15ec9bbd964",
+    "Modules/Features/Reader/ReaderSettingsView.swift": "25177ade70ef71c4c772d7a0b5478ffc0cd8b3fbe9fd4227f682e06c3029fbbf",
+    "Modules/Features/Reader/ReaderView.swift": "4c2b58bf036da08742a759c109d0bf91c2594d3e9b44b95dc43da3e746c1ce95",
+    "Modules/Features/Reader/ReaderViewportSizeObserver.swift": "70b3fe998f2fa52ca8248bbc7f3f25270370cfe4b95b26b000f84144a0faf6d5",
+    "Modules/SharedUI/DesignSystem/DesignTokens.swift": "7763c41e5315e2da7c31c6b28a2a58a4eea1d7b036126f835073bef1bb51e735",
+    "Resources/en.lproj/Localizable.strings": "f45f9b9b002b65a74e04f2895626b04175feb390e992993c5531a6eeea242ab6",
+    "Resources/ja.lproj/Localizable.strings": "dd870a8b5b363a1d80254de61f007a479709c410db421cda9c92df76fb3c3a41",
+    "Resources/ko.lproj/Localizable.strings": "b7ecb7a70dd0fe5261a0391f676c0225a6d3d4add52996bba6f699fb81bd96f4",
+    "Resources/zh-Hans.lproj/Localizable.strings": "de4cee976ff238f9c2f1b2cfd2fcfbd3779cd626a804c682bb0a822b2ad30534",
+    "Resources/zh-Hant.lproj/Localizable.strings": "60fb98ae2a9e4cdb2a2b54bd2cb75728559ff05b1ba1b35b129689ca7d2ec44a",
+    "Targets/Yuedu/SharedApp/AppearanceThemeReadingApplier.swift": "c06a6c31c2fa393604f792bfa4ffe385e0f3d224d49996a8bba2465f90f3f583",
+    "Targets/Yuedu/SharedApp/GlobalSettings.swift": "8a90dbd53012eab911948034c0f0ab4704cac26634dcf07f327945432792d7e8",
+    "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift": "87ab3c47e76962b822f9f9789c4cc668ae6c13699dd36ca70a23d58fa85ec037",
+    "Tests/iOS/yuedu appTests/ReaderSettingsPublicationTests.swift": "3580c076d442e936e886a0d274ab7c72f2fd9f7a1e8a7257439c6407d5ed88f0",
+    "Tests/iOS/yuedu appTests/ReaderViewportSizeObserverTests.swift": "94bd488387e8f108c3b9f45a8daecb85a0e1065ef854905cfab54563fc6f8e19",
+    "Tests/iOS/yuedu appTests/ReadingSettingsScopeTests.swift": "5e47dd4947a9ca3a719563d7f0cad536147360bd0537b7b19fc73320ca9a85a9",
+    "scripts/reader-experience/smoke.sh": "9f2be7bbacc4ea492d71fec298841226bdd9a1b8de559f06c02611b91210e823"
+  }
+}

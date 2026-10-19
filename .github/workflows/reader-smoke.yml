@@ -47,7 +47,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-smoke-xcode.log
-      - name: Execute configuration, position persistence, source paging and reader cases
+      - name: Execute existing smoke groups and the batch-end reader experience checks
         env:
           LEGADO_RUNTIME_SOURCE_ONLY: '1'
         run: bash scripts/reader-experience/smoke.sh 2>&1 | tee .build/ci-logs/reader-smoke.log
@@ -73,5 +73,7 @@ jobs:
           Source Info/project overlays establish isolated local mode before the test host first starts; their original and overlaid hashes are retained. The TXT test imports through the existing DEBUG hook, selects a chapter, closes, removes the import input and relaunches to verify persisted progress/body. Screenshots and accessibility trees are attached to the UI xcresult.
           The same TXT UI method now opens the real quick-reader panel, checks announced font-size changes and actual brightness percentages at both endpoints, restores those settings and dismisses the native sheet before continuing the persisted-reading check. Simulator accessibility evidence does not establish physical-device VoiceOver behavior.
           One additional UI test imports a unique loopback book source through the real deep link, searches, opens details, adds the book, and reads two chapters through JavaScriptCore rules and CoreText. It requires exactly one passing test and zero skips, plus the owned server's complete request/response trace. Its verdict is saved separately from TXT acceptance.
+          A final reader-experience group requires 60 unique methods and 62 passing executions, with zero failures, skips or expected failures at either level. It covers nine settings-publication methods (including pending editor edits and repeated preset selection), twenty per-field scope methods, two real presented quick-panel layout/accessibility-size methods, six viewport observer methods and one SwiftUI hosting/resize method, ten layout-import methods, six settings-export methods, two live-style methods executed in paged and scroll modes (four executions), three restore/commit offset methods, and the single readerStageLatency benchmark method. Its xcresult, raw summary, raw tests tree, log and independent count-gate result are retained; this does not change any earlier group's acceptance or repeat the font and cold-scroll suites already selected above.
+          The selected reader-stage method measures fixed 10K/100K fixtures across five iterations and five stages, producing 50 READER_ARCH_BENCH rows in its future raw log. It collects a Debug Simulator baseline only: no timing has been measured until that method actually runs, and the result does not establish a speed improvement, device performance or the separate source-session benchmark.
           This is a Debug Simulator check of the existing Yuedu reader. It does not modify or execute the delivered Release IPA, validate the Files picker or real-site sources, or pass physical-device/full-Legado gates.
           TEXT

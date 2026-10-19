@@ -34,6 +34,8 @@ extension GlobalSettings {
         case theme
         /// The user importing a file into their setup: an edit like any other.
         case userImport
+        /// A built-in preset is a user edit, with the same scope and sync rules.
+        case userPreset
     }
 
     /// v2 since the default became 跟隨主題 (2026-09-29).
@@ -371,7 +373,7 @@ extension GlobalSettings {
         _ reading: AppearanceThemeReadingSettings,
         origin: ReadingSettingsWriteOrigin
     ) throws {
-        let stamps = origin == .userImport
+        let stamps = origin != .theme
         var changed = false
         func assign<Value: Equatable>(_ path: ReferenceWritableKeyPath<GlobalSettings, Value>, _ value: Value?) {
             guard let value, self[keyPath: path] != value else { return }
@@ -386,7 +388,7 @@ extension GlobalSettings {
                 AppLogger.error("⟐ reading setup: header/footer layout not stored", context: [
                     "origin": "\(origin)",
                 ])
-                if origin == .userImport { throw ReaderOverlayLayoutPersistenceError.writeFailed }
+                if stamps { throw ReaderOverlayLayoutPersistenceError.writeFailed }
             }
         }
 

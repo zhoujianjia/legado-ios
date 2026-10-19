@@ -363,6 +363,69 @@ struct ReadingSettingsScopeTests {
 
     // MARK: - Files
 
+    @Test func aSpacingPresetPreservesEveryUnrelatedReadingSetting() throws {
+        let settings = GlobalSettings.shared
+        let fixture = Fixture(settings)
+        defer { fixture.restore() }
+        fixture.reset()
+
+        settings.readerFontSize = 32
+        settings.readerFontBold = true
+        settings.pageMarginH = 35
+        settings.pageMarginTop = 27
+        settings.scrollMode = true
+        ReaderConfig.shared.syncFromGlobalSettings()
+        let before = settings.currentReadingSettingsSnapshot()
+
+        let patch = ReaderSpacingPreset.relaxed.readingSettings
+        try settings.writeReadingSettings(patch, origin: .userPreset)
+
+        #expect(settings.currentReadingSettingsSnapshot() == before.overlaid(with: patch))
+        #expect(Double(ReaderConfig.shared.lineHeightMultiple) == patch.lineHeightMultiple)
+        #expect(Double(ReaderConfig.shared.paragraphSpacingMultiplier) == patch.paragraphSpacingMultiplier)
+        #expect(ReaderConfig.shared.fontSize == 32)
+    }
+
+    @Test func aSpacingPresetHonorsTheScopeOfEachField() throws {
+        let settings = GlobalSettings.shared
+        let fixture = Fixture(settings)
+        defer { fixture.restore() }
+        fixture.reset()
+        settings.paragraphSpacingMultiplier = 0.6
+        fixture.forgetEdits()
+        settings.setReadingSettingsScope(.global, for: .lineSpacing)
+        let originalGlobal = settings.globalReadingSettings
+
+        let patch = ReaderSpacingPreset.relaxed.readingSettings
+        try settings.writeReadingSettings(patch, origin: .userPreset)
+
+        #expect(settings.globalReadingSettings.lineHeightMultiple == patch.lineHeightMultiple)
+        #expect(settings.globalReadingSettings.letterSpacing == originalGlobal.letterSpacing)
+        #expect(settings.globalReadingSettings.paragraphSpacingMultiplier == originalGlobal.paragraphSpacingMultiplier)
+        #expect(settings.themeReadingSettings(themeID: defaultID)?.lineHeightMultiple == nil)
+        #expect(settings.themeReadingSettings(themeID: defaultID)?.letterSpacing == patch.letterSpacing)
+        #expect(settings.themeReadingSettings(themeID: defaultID)?.paragraphSpacingMultiplier == patch.paragraphSpacingMultiplier)
+    }
+
+    @Test func aManualSpacingAdjustmentIsNotReportedAsAPreset() throws {
+        let settings = GlobalSettings.shared
+        let fixture = Fixture(settings)
+        defer { fixture.restore() }
+        fixture.reset()
+        try settings.writeReadingSettings(ReaderSpacingPreset.balanced.readingSettings, origin: .userPreset)
+
+        func currentPreset() -> ReaderSpacingPreset? {
+            ReaderSpacingPreset.matching(
+                lineHeightMultiple: settings.lineHeightMultiple,
+                letterSpacing: settings.letterSpacing,
+                paragraphSpacingMultiplier: settings.paragraphSpacingMultiplier
+            )
+        }
+        #expect(currentPreset() == .balanced)
+        settings.letterSpacing += 0.5
+        #expect(currentPreset() == nil)
+    }
+
     @Test func anExportedThemeLeavesItsReadingValuesBehind() {
         var extras = AppearanceThemeExtras()
         extras.tabIconSize = 30

@@ -80,6 +80,10 @@ struct ReaderSettingsView: View {
                         textSection
                     }
 
+                    if supportsSpacing {
+                        spacingPresetSection
+                    }
+
                     if supportsSpacing || supportsLineHeight {
                         layoutSection
                     }
@@ -322,102 +326,75 @@ struct ReaderSettingsView: View {
     }
 
     private var fontSelector: some View {
-        HStack(spacing: DSSpacing.sm) {
-            Menu {
-                Button {
-                    settings.selectedReaderFontPostScript = nil
-                } label: {
-                    Label(defaultFontName, systemImage: settings.selectedReaderFontPostScript == nil ? "checkmark" : "f.cursive")
-                }
-
-                Section(localized("內建閱讀字體")) {
-                    ForEach(ReaderFontCatalog.bundledFonts) { font in
-                        Button {
-                            settings.selectedReaderFontPostScript = font.postScriptName
-                        } label: {
-                            Label(
-                                localized(font.titleKey),
-                                systemImage: settings.selectedReaderFontPostScript == font.postScriptName ? "checkmark" : "f.cursive"
-                            )
-                        }
-                    }
-                }
-
-                if !settings.userFonts.isEmpty {
-                    Divider()
-                    Section {
-                        ForEach(settings.userFonts, id: \.id) { font in
-                            Button {
-                                settings.selectedReaderFontPostScript = font.postScriptName
-                            } label: {
-                                Label(
-                                    font.displayName,
-                                    systemImage: settings.selectedReaderFontPostScript == font.postScriptName ? "checkmark" : "f.cursive"
-                                )
-                            }
-                        }
-                    } header: {
-                        Text(localized("已匯入字體"))
-                            .foregroundStyle(DSColor.textSecondary)
-                    }
-
-                    Menu(localized("刪除字體")) {
-                        ForEach(settings.userFonts, id: \.id) { font in
-                            Button(role: .destructive) {
-                                settings.deleteUserFont(font)
-                            } label: {
-                                Label(font.displayName, systemImage: "trash")
-                            }
-                        }
-                    }
-                }
-
-                if !ReaderSettingsPresentationPolicy.requiresFirstLevelImporter {
-                    Divider()
-                    Button {
+        NavigationLink {
+            ReaderFontSelectionView(
+                selection: $settings.selectedReaderFontPostScript,
+                defaultFontName: defaultFontName,
+                usesPublicationFontDefault: usesPublicationFontDefault,
+                userFonts: settings.userFonts,
+                onImport: {
+                    if ReaderSettingsPresentationPolicy.requiresFirstLevelImporter {
+                        onOpenFontImporter()
+                    } else {
                         showingFontImporter = true
-                    } label: {
-                        Label(localized("匯入字體..."), systemImage: "plus")
                     }
-                }
-            } label: {
-                LabeledContent {
-                    HStack(spacing: DSSpacing.xs) {
-                        Text(currentFontName)
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(DSFont.footnote)
-                            .accessibilityHidden(true)
-                    }
-                    .foregroundStyle(DSColor.textSecondary)
-                } label: {
-                    SettingsRowLabel(
-                        localized(ReadingSettingsScopeItem.font.titleKey),
-                        systemImage: ReadingSettingsScopeItem.font.systemImage
-                    )
-                }
-            }
-            .buttonStyle(.plain)
-
-            if ReaderSettingsPresentationPolicy.requiresFirstLevelImporter {
-                Button {
-                    onOpenFontImporter()
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel(localized("匯入字體..."))
-            }
+                },
+                onDelete: { font in settings.deleteUserFont(font) }
+            )
+        } label: {
+            SettingsValueLabel(
+                title: localized(ReadingSettingsScopeItem.font.titleKey),
+                systemImage: ReadingSettingsScopeItem.font.systemImage,
+                value: currentFontName
+            )
         }
     }
 
     // MARK: - 排版
 
-    /// Spacing and the three body margins, together: they are all "how the text sits on
-    /// the page", and they used to be two sections with two different ways to reset.
-    ///
-    /// 上下邊距 means the same thing in both modes. It used to not: paged mode took its
-    /// vertical margin from the header/footer layout's hand-tuned "content reservation"
-    /// while scroll mode used `pageMarginV`. The bars' heights are known now, so the
-    /// margin no longer has to absorb them.
+    /// A sparse edit through the same scoped writer as manual settings and imports.
+    private var spacingPresetSection: some View {
+        Section {
+            Picker(selection: Binding<ReaderSpacingPreset?>(
+                get: {
+                    ReaderSpacingPreset.matching(
+                        lineHeightMultiple: Double(readerConfig.lineHeightMultiple),
+                        letterSpacing: Double(readerConfig.letterSpacing),
+                        paragraphSpacingMultiplier: Double(readerConfig.paragraphSpacingMultiplier)
+                    )
+                },
+                set: { preset in
+                    guard let preset else { return }
+                    do {
+                        try readerConfig.applySpacingPreset(preset)
+                    } catch {
+                        AppLogger.error("Reading spacing preset could not be applied", error: error)
+                        layoutImportAlert = LayoutImportAlert(
+                            titleKey: "Reader.SpacingPreset.Failed",
+                            message: error.localizedDescription
+                        )
+                    }
+                }
+            )) {
+                Text(localized("Reader.SpacingPreset.Custom"))
+                    .tag(Optional<ReaderSpacingPreset>.none)
+                    .disabled(true)
+                ForEach(ReaderSpacingPreset.allCases) { preset in
+                    Text(localized(preset.titleKey)).tag(Optional(preset))
+                }
+            } label: {
+                SettingsRowLabel(localized("Reader.SpacingPreset.Title"), systemImage: "line.3.horizontal")
+            }
+            .pickerStyle(.menu)
+            .accessibilityIdentifier("reader_spacing_preset")
+        } footer: {
+            Text(localized("Reader.SpacingPreset.Help")).dsSectionFooter()
+        }
+        .interfaceSectionSurface()
+    }
+
+    /// Spacing and body margins share the existing reset action. Vertical margins
+    /// have the same meaning in paged and scroll modes; bar heights are separate.
     private var layoutSection: some View {
         Section {
             if allowsVerticalWritingMode {

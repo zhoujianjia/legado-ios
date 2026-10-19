@@ -83,3 +83,26 @@ python3 "$SCRIPT_DIR/run-online-smoke.py" run --work "$WORK" -- \
 xcrun xcresulttool get test-results summary --path "$WORK/online-ui.xcresult" > "$WORK/online-ui-summary.json"
 python3 "$SCRIPT_DIR/run-online-smoke.py" result --work "$WORK" \
   --summary "$WORK/online-ui-summary.json" --output "$WORK/online-result.json"
+# Batch-end reader comfort checks reuse the same prepared host and incremental
+# build. Keep this result independent from every unchanged acceptance group above.
+# Methods/executions: publications 9/9 + scope 20/20 + panel 2/2 + viewport 6/6
+# + viewport hosting 1/1 + layout import 10/10 + export 6/6 + live style 2/4
+# + restore/commit offsets 3/3 + reader-stage baseline 1/1 = 60/62.
+# The single Swift Testing method selector follows the existing selector form in
+# docs/browser-layout/extraction/commands.md. No source-session benchmark is run.
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reader-experience-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/reader-experience.xcresult" \
+  -only-testing:'yuedu appTests/ReaderSettingsPublicationTests' \
+  -only-testing:'yuedu appTests/ReadingSettingsScopeTests' \
+  -only-testing:'yuedu appTests/ReaderQuickThemePanelLayoutTests' \
+  -only-testing:'yuedu appTests/ReaderViewportSizeObserverTests' \
+  -only-testing:'yuedu appTests/ReaderViewportSizeObserverHostingTests' \
+  -only-testing:'yuedu appTests/ReaderLayoutPresetImporterTests' \
+  -only-testing:'yuedu appTests/ReaderSettingsExportTests' \
+  -only-testing:'yuedu appTests/ReaderLiveStyleRefreshTests' \
+  -only-testing:'yuedu appTests/ScrollOffsetEquivalenceTests' \
+  -only-testing:'yuedu appTests/ReaderArchitectureBenchmarkTests/readerStageLatency'
+xcrun xcresulttool get test-results summary --path "$WORK/reader-experience.xcresult" > "$WORK/reader-experience-summary.json"
+xcrun xcresulttool get test-results tests --path "$WORK/reader-experience.xcresult" > "$WORK/reader-experience-tests.json"
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reader-experience-summary.json" \
+  --expected 60 --expected-executions 62 > "$WORK/reader-experience-result.json"

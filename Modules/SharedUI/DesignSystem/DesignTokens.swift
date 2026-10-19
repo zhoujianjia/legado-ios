@@ -198,6 +198,10 @@ enum DSFont {
     static var callout: Font { GlobalAppTypography.font(.callout) }
     /// Body (17pt)
     static var body: Font { GlobalAppTypography.font(.body) }
+    /// A reader-face sample that follows the system's text-size accessibility setting.
+    static func readerFontPreview(postScriptName: String?) -> Font {
+        GlobalAppTypography.font(.body, postScriptName: postScriptName)
+    }
     /// Body bold
     static var bodyBold: Font { GlobalAppTypography.font(.body, weight: .semibold) }
     /// Headline (17pt bold)

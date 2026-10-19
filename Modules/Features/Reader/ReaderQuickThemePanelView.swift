@@ -58,6 +58,11 @@ struct ReaderQuickThemePanelView: View {
 
     @Bindable private var settings = GlobalSettings.shared
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .subheadline) private var pageTurnMenuWidth = DSLayout.readerQuickPanelTopMenuWidth
+    @ScaledMetric(relativeTo: .caption) private var backgroundTileWidth = DSLayout.readerQuickPanelBackgroundTileWidth
+    @ScaledMetric(relativeTo: .caption) private var backgroundTileHeight = DSLayout.readerQuickPanelReadingBackgroundTileHeight
     /// The saved-background page pushed in this panel's own navigation.
     @State private var backgroundEditor: ReaderBackgroundEditorRoute?
     /// Measured height of the panel's own content, so the sheet is exactly as tall
@@ -65,6 +70,7 @@ struct ReaderQuickThemePanelView: View {
     /// row whenever the content came out shorter than the constant.
     @State private var contentHeight = DSLayout.readerQuickPanelSheetHeight
     @State private var bottomSafeAreaInset: CGFloat = 0
+    @State private var navigationInset: CGFloat = 0
 
     private let minFontSize = GlobalSettings.readerFontSizeRange.lowerBound
     private let maxFontSize = GlobalSettings.readerFontSizeRange.upperBound
@@ -106,16 +112,30 @@ struct ReaderQuickThemePanelView: View {
                 contentHeight = height
             }
             .scrollBounceBehavior(.basedOnSize)
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                // Scroll views can either occupy the safe area or start below
+                // it. Count the native top chrome once in either layout.
+                max(0, max(proxy.safeAreaInsets.top, proxy.frame(in: .named(ReaderQuickPanelCoordinateSpace.panel)).minY))
+            } action: { navigationInset = $0 }
             // This panel supplies its own bottom padding. Let the scroll viewport
             // use the whole sheet instead of reserving another home-indicator band.
             .ignoresSafeArea(.container, edges: .bottom)
             .frame(maxWidth: DSLayout.readableCompactWidth, alignment: .topLeading)
             .frame(maxWidth: .infinity, alignment: .top)
             .pageBackgroundToolbar(for: .settings)
-            // No title bar and no close button: the panel is a short sheet the
-            // reader flicks away, and a navigation chrome on top of it ate height
-            // the controls could use.
-            .toolbar(.hidden, for: .navigationBar)
+            .navigationTitle(localized("Themes & Settings"))
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { dismiss() } label: {
+                        Label(localized("關閉"), systemImage: "xmark")
+                            .labelStyle(.iconOnly)
+                            .frame(minWidth: DSLayout.minimumTapTarget, minHeight: DSLayout.minimumTapTarget)
+                    }
+                    .accessibilityIdentifier("reader_quick_close")
+                }
+            }
             .navigationDestination(item: $backgroundEditor) { route in
                 ReaderCustomBackgroundEditorView(
                     original: route.backgroundID.flatMap(settings.readerCustomBackground(id:)),
@@ -132,6 +152,7 @@ struct ReaderQuickThemePanelView: View {
                 )
             }
         }
+        .coordinateSpace(name: ReaderQuickPanelCoordinateSpace.panel)
         .background {
             GeometryReader { proxy in
                 Color.clear.preference(
@@ -143,14 +164,13 @@ struct ReaderQuickThemePanelView: View {
         .onPreferenceChange(ReaderQuickPanelSafeAreaBottomKey.self) {
             bottomSafeAreaInset = $0
         }
-        // The grabber is the only way out now that the title bar is gone, so the
-        // sheet must stay draggable and the indicator visible.
         // A height detent excludes the bottom safe area, which UIKit adds back.
-        // Our measurement already includes the panel's complete bottom padding.
+        // Include the actual navigation inset rather than assuming a toolbar
+        // height; system chrome can change with the OS and accessibility settings.
         // The saved-background page is a whole form, not a row of controls: the panel
         // opens to full height while it is up, and goes back to fitting its content.
         .presentationDetents(backgroundEditor == nil
-            ? [.height(max(DSLayout.minimumTapTarget, contentHeight - bottomSafeAreaInset))]
+            ? [.height(max(DSLayout.minimumTapTarget, contentHeight + navigationInset - bottomSafeAreaInset))]
             : [.large])
         .presentationDragIndicator(.visible)
     }
@@ -161,10 +181,27 @@ struct ReaderQuickThemePanelView: View {
     /// apart with the page-turn style behind an icon-only `Menu` — a glyph that
     /// never said which style was active.
     private var typeAndPageTurnRow: some View {
-        HStack(spacing: DSSpacing.md) {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                stackedTypeAndPageTurnControls
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: DSSpacing.md) {
+                        fontSizeStepper
+                            .frame(minWidth: DSLayout.minimumTapTarget * 2 + DSSpacing.xxl)
+                        pageTurnMenu
+                            .frame(width: pageTurnMenuWidth)
+                    }
+                    stackedTypeAndPageTurnControls
+                }
+            }
+        }
+    }
+
+    private var stackedTypeAndPageTurnControls: some View {
+        VStack(spacing: DSSpacing.md) {
             fontSizeStepper
             pageTurnMenu
-                .frame(width: DSLayout.readerQuickPanelTopMenuWidth)
         }
     }
 
@@ -231,8 +268,8 @@ struct ReaderQuickThemePanelView: View {
         } label: {
             HStack(spacing: DSSpacing.xs) {
                 Text(localized(pageTurnTitleKey(for: pageTurnOption)))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
                 Image(systemName: "chevron.down")
                     .font(DSFont.footnote)
                     .accessibilityHidden(true)
@@ -252,17 +289,19 @@ struct ReaderQuickThemePanelView: View {
     /// One half of the A / A stepper. `.buttonRepeatBehavior(.enabled)` makes
     /// press-and-hold keep stepping, matching Apple Books.
     private func fontSizeStepButton(_ delta: CGFloat, textFont: Font, accessibilityKey: String) -> some View {
-        Button {
+        let atLimit = delta < 0 ? fontSize <= minFontSize : fontSize >= maxFontSize
+        return Button {
             adjustFontSize(delta)
         } label: {
             Text("A")
                 .font(textFont)
-                .foregroundStyle(DSColor.textPrimary)
+                .foregroundStyle(atLimit ? DSColor.textDisabled : DSColor.textPrimary)
                 .frame(maxWidth: .infinity, minHeight: DSLayout.readerQuickPanelTopControlHeight)
                 .contentShape(Rectangle())
         }
         .buttonStyle(QuickPanelSegmentButtonStyle())
         .buttonRepeatBehavior(.enabled)
+        .disabled(atLimit)
         .accessibilityIdentifier(delta < 0 ? "reader_quick_font_decrease" : "reader_quick_font_increase")
         .accessibilityLabel(localized(accessibilityKey))
         .accessibilityValue(String(format: localized("ReaderOverlay.Format.Points"), Int(fontSize)))
@@ -315,14 +354,14 @@ struct ReaderQuickThemePanelView: View {
                 HStack(spacing: DSSpacing.md) {
                     ForEach(ReaderTheme.allCases, id: \.self) { background in
                         readingBackgroundButton(background, resolution: resolution)
-                            .frame(width: DSLayout.readerQuickPanelBackgroundTileWidth)
+                            .frame(width: backgroundTileWidth)
                     }
                     ForEach(settings.readerCustomBackgrounds) { background in
                         savedBackgroundButton(background, resolution: resolution)
-                            .frame(width: DSLayout.readerQuickPanelBackgroundTileWidth)
+                            .frame(width: backgroundTileWidth)
                     }
                     newBackgroundButton
-                        .frame(width: DSLayout.readerQuickPanelBackgroundTileWidth)
+                        .frame(width: backgroundTileWidth)
                 }
                 .padding(.vertical, DSSpacing.xs)
                 .padding(.horizontal, 2)
@@ -433,10 +472,12 @@ struct ReaderQuickThemePanelView: View {
                         .accessibilityHidden(true)
                     Text(localized("自定義"))
                         .font(DSFont.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.center)
                 }
                 .foregroundStyle(DSColor.textPrimary)
             }
-            .frame(height: DSLayout.readerQuickPanelReadingBackgroundTileHeight)
+            .frame(height: backgroundTileHeight)
             .overlay(
                 RoundedRectangle(cornerRadius: DSRadius.xxl, style: .continuous)
                     .stroke(DSColor.separator, lineWidth: 1)
@@ -466,7 +507,7 @@ struct ReaderQuickThemePanelView: View {
                     .resizable()
                     .scaledToFill()
                     .frame(maxWidth: .infinity)
-                    .frame(height: DSLayout.readerQuickPanelReadingBackgroundTileHeight)
+                    .frame(height: backgroundTileHeight)
                     .clipped()
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)
@@ -491,7 +532,7 @@ struct ReaderQuickThemePanelView: View {
                     .accessibilityHidden(true)
             }
         }
-        .frame(height: DSLayout.readerQuickPanelReadingBackgroundTileHeight)
+        .frame(height: backgroundTileHeight)
         .clipShape(RoundedRectangle(cornerRadius: DSRadius.xxl, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: DSRadius.xxl, style: .continuous))
         .overlay(
@@ -512,18 +553,32 @@ struct ReaderQuickThemePanelView: View {
     /// puts it, and until now this app had no entry for it at all: the controller
     /// and its panel were both complete, but nothing ever set `showAutoReadPanel`.
     private var quickActionRow: some View {
-        HStack(spacing: DSSpacing.md) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: DSSpacing.md))
+            : AnyLayout(HStackLayout(spacing: DSSpacing.md))
+        return layout {
             Button {
                 onStartAutoRead()
             } label: {
                 Label(localized("自動閱讀"), systemImage: "play.fill")
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .buttonStyle(QuickPanelActionButtonStyle())
 
             Button(action: onCustomize) {
                 Label(localized("Customize"), systemImage: "gear")
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .buttonStyle(QuickPanelActionButtonStyle())
+            .accessibilityIdentifier("reader_quick_customize")
+            .background {
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: ReaderQuickPanelBottomActionFrameKey.self,
+                        value: proxy.frame(in: .global)
+                    )
+                }
+            }
         }
     }
 
@@ -553,6 +608,19 @@ struct ReaderQuickThemePanelView: View {
     }
 
 
+}
+
+private enum ReaderQuickPanelCoordinateSpace: Hashable {
+    case panel
+}
+
+/// The final control's actual frame, distinct from the scroll view's content
+/// extent. Layout hosts can check that the entire action remains reachable.
+struct ReaderQuickPanelBottomActionFrameKey: PreferenceKey {
+    static var defaultValue: CGRect { .null }
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
 }
 
 /// Full-width quick-panel action button: darkens and gently compresses while

@@ -4,6 +4,135 @@ import XCTest
 
 @MainActor
 final class ReaderSettingsPublicationTests: XCTestCase {
+    func testSpacingPresetPreservesPendingReaderEdits() throws {
+        let settings = GlobalSettings.shared
+        let config = ReaderConfig.shared
+        let original = settings.currentReadingSettingsSnapshot()
+        let originalThemes = settings.customAppearanceThemes
+        let stores = ReadingSettingsStoresSnapshot()
+        defer {
+            do {
+                try settings.writeReadingSettings(original, origin: .theme)
+            } catch {
+                XCTFail("Could not restore reading settings: \(error)")
+            }
+            settings.customAppearanceThemes = originalThemes
+            stores.restore()
+            config.syncFromGlobalSettings()
+        }
+
+        var baseline = ReaderSpacingPreset.balanced.readingSettings
+        baseline.fontSize = 18
+        baseline.pageMarginH = 24
+        baseline.pageMarginV = 16
+        baseline.footerBottomPadding = 9
+        baseline.footerTextGap = 3
+        baseline.isBold = false
+        try settings.writeReadingSettings(baseline, origin: .theme)
+        config.syncFromGlobalSettings()
+
+        config.fontSize = 26
+        config.pageMarginH = 38
+        config.pageMarginV = 22
+        config.footerBottomPadding = 12
+        config.footerTextGap = 7
+        config.readerFontBold = true
+        var pendingTitle = config.chapterTitleStyle
+        pendingTitle.bottomSpacing += 5
+        config.chapterTitleStyle = pendingTitle
+
+        // No run-loop advance: the existing layout/title debounce has not fired.
+        XCTAssertEqual(settings.readerFontSize, 18)
+        XCTAssertEqual(settings.pageMarginH, 24)
+        XCTAssertFalse(settings.readerFontBold)
+        XCTAssertNotEqual(settings.chapterTitleStyle, pendingTitle)
+
+        try config.applySpacingPreset(.relaxed)
+
+        XCTAssertEqual(settings.readerFontSize, 26)
+        XCTAssertEqual(config.fontSize, 26)
+        XCTAssertEqual(settings.pageMarginH, 38)
+        XCTAssertEqual(config.pageMarginH, 38)
+        XCTAssertEqual(settings.pageMarginV, 22)
+        XCTAssertEqual(config.pageMarginV, 22)
+        XCTAssertEqual(settings.footerBottomPadding, 12)
+        XCTAssertEqual(config.footerBottomPadding, 12)
+        XCTAssertEqual(settings.footerTextGap, 7)
+        XCTAssertEqual(config.footerTextGap, 7)
+        XCTAssertTrue(settings.readerFontBold)
+        XCTAssertTrue(config.readerFontBold)
+        XCTAssertEqual(settings.chapterTitleStyle, pendingTitle)
+        XCTAssertEqual(config.chapterTitleStyle, pendingTitle)
+        XCTAssertEqual(ReaderSpacingPreset.matching(
+            lineHeightMultiple: Double(config.lineHeightMultiple),
+            letterSpacing: Double(config.letterSpacing),
+            paragraphSpacingMultiplier: Double(config.paragraphSpacingMultiplier)
+        ), .relaxed)
+    }
+
+    func testStoredSpacingPresetImmediatelySupersedesPendingSpacingEdits() throws {
+        let settings = GlobalSettings.shared
+        let config = ReaderConfig.shared
+        let original = settings.currentReadingSettingsSnapshot()
+        let originalThemes = settings.customAppearanceThemes
+        let stores = ReadingSettingsStoresSnapshot()
+        defer {
+            do {
+                try settings.writeReadingSettings(original, origin: .theme)
+            } catch {
+                XCTFail("Could not restore reading settings: \(error)")
+            }
+            settings.customAppearanceThemes = originalThemes
+            stores.restore()
+            config.syncFromGlobalSettings()
+        }
+
+        try settings.writeReadingSettings(ReaderSpacingPreset.balanced.readingSettings, origin: .userPreset)
+        config.syncFromGlobalSettings()
+        let stored = settings.currentReadingSettingsSnapshot()
+        config.lineHeightMultiple = 1.85
+        config.letterSpacing = 2
+        config.paragraphSpacingMultiplier = 1.5
+        XCTAssertEqual(settings.currentReadingSettingsSnapshot(), stored)
+
+        let recorder = ObservationRecorder { settings.currentReadingSettingsSnapshot() }
+        defer { recorder.cancel() }
+        try config.applySpacingPreset(.balanced)
+
+        XCTAssertEqual(settings.currentReadingSettingsSnapshot(), stored)
+        XCTAssertEqual(recorder.changeCount, 0,
+                       "Matching persisted values must not be written again just to repair the live editor")
+        XCTAssertEqual(ReaderSpacingPreset.matching(
+            lineHeightMultiple: Double(config.lineHeightMultiple),
+            letterSpacing: Double(config.letterSpacing),
+            paragraphSpacingMultiplier: Double(config.paragraphSpacingMultiplier)
+        ), .balanced, "The selected preset must reach the editor before the call returns")
+    }
+
+    func testReapplyingSpacingPresetDoesNotPublishAnotherConfigUpdate() throws {
+        let settings = GlobalSettings.shared
+        let config = ReaderConfig.shared
+        let original = settings.currentReadingSettingsSnapshot()
+        let originalThemes = settings.customAppearanceThemes
+        let stores = ReadingSettingsStoresSnapshot()
+        defer {
+            do {
+                try settings.writeReadingSettings(original, origin: .theme)
+            } catch {
+                XCTFail("Could not restore reading settings: \(error)")
+            }
+            settings.customAppearanceThemes = originalThemes
+            stores.restore()
+            ReaderConfig.shared.syncFromGlobalSettings()
+        }
+        try config.applySpacingPreset(.compact)
+        var publications = 0
+        let token = config.objectWillChange.sink { publications += 1 }
+        try config.applySpacingPreset(.compact)
+        XCTAssertEqual(publications, 0)
+        withExtendedLifetime(token) {}
+    }
+
     func testChangedThemeAppliesOnceAndIdenticalThemeDoesNotRepublish() throws {
         let original = ReaderPreferences.current()
         defer { original.apply() }

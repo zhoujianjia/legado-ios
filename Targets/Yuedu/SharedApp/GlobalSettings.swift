@@ -373,6 +373,28 @@ final class ReaderConfig: ObservableObject {
         updates.set(\.theme, ReaderTheme.loadPersisted(), field: "theme")
     }
 
+    /// Apply from the live editor, whose layout/title changes have a debounced
+    /// write-back. Committing those values with the preset prevents a full reload
+    /// from discarding a just-edited type size or margin. A reload is required even
+    /// when the stored preset already matches, to invalidate stale pending edits.
+    func applySpacingPreset(_ preset: ReaderSpacingPreset) throws {
+        var live = AppearanceThemeReadingSettings()
+        live.fontSize = Double(fontSize)
+        live.lineHeightMultiple = Double(lineHeightMultiple)
+        live.letterSpacing = Double(letterSpacing)
+        live.paragraphSpacingMultiplier = Double(paragraphSpacingMultiplier)
+        live.pageMarginH = Double(pageMarginH)
+        live.pageMarginV = Double(pageMarginV)
+        live.footerBottomPadding = Double(footerBottomPadding)
+        live.footerTextGap = Double(footerTextGap)
+        live.isBold = readerFontBold
+        live.chapterTitleStyle = chapterTitleStyle
+        try GlobalSettings.shared.writeReadingSettings(
+            live.overlaid(with: preset.readingSettings), origin: .userPreset
+        )
+        syncFromGlobalSettings()
+    }
+
     private func setupBindings() {
         $pageMarginTop.combineLatest($pageMarginBottom)
             .dropFirst()

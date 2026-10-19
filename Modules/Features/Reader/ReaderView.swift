@@ -815,30 +815,6 @@ struct ReaderView: View {
         )
     }
 
-    /// Recomputes the reader viewport from the foreground window on a device rotation and drives the
-    /// normal relayout path. Needed because SwiftUI doesn't re-evaluate the reader's geometry on
-    /// rotation, so the `.background` GeometryReader preference never fires. The window's two
-    /// dimensions are stable; only their order changes with orientation, and `interfaceOrientation`
-    /// is already correct when this notification fires — so we order them by it (the raw
-    /// `window.bounds` may still report the pre-rotation order at this instant).
-    func applyRotatedViewportIfNeeded() {
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first,
-              let window = scene.windows.first(where: { $0.isKeyWindow }) ?? scene.windows.first
-        else { return }
-        let bounds = window.bounds.size
-        let longSide = max(bounds.width, bounds.height)
-        let shortSide = min(bounds.width, bounds.height)
-        guard longSide > 1 else { return }
-        let size = scene.interfaceOrientation.isLandscape
-            ? CGSize(width: longSide, height: shortSide)
-            : CGSize(width: shortSide, height: longSide)
-        guard abs(size.width - readerViewportSize.width) > 0.5
-            || abs(size.height - readerViewportSize.height) > 0.5
-        else { return }
-        handleReaderViewportSizeChange(size)
-    }
-
     func handleReaderViewportSizeChange(_ newSize: CGSize) {
         guard newSize.width > 1, newSize.height > 1 else { return }
 
@@ -1951,9 +1927,9 @@ struct ReaderView: View {
                 Color.clear
                     .preference(key: ReaderSafeAreaTopKey.self, value: g.safeAreaInsets.top)
                     .preference(key: ReaderSafeAreaBottomKey.self, value: g.safeAreaInsets.bottom)
-                    .preference(key: ReaderViewportSizeKey.self, value: g.size)
             }
         )
+        .background(ReaderViewportSizeObserver(onSizeChange: handleReaderViewportSizeChange))
         .onPreferenceChange(ReaderSafeAreaTopKey.self) {
             readerSafeAreaTop = max($0, windowSafeTop)
         }
@@ -1961,9 +1937,6 @@ struct ReaderView: View {
             // An event handler is the correct place to consult UIKit; the getter
             // the bars call must not.
             readerSafeAreaBottom = max($0, windowSafeBottom)
-        }
-        .onPreferenceChange(ReaderViewportSizeKey.self) { newSize in
-            handleReaderViewportSizeChange(newSize)
         }
         // Everything the bars show, in one Equatable value: the clock ticking, the
         // battery moving, a theme or style edit, the safe area settling. Any of
@@ -1982,15 +1955,6 @@ struct ReaderView: View {
         .sensoryFeedback(trigger: bookmarkToast?.id) { _, _ in
             guard let toast = bookmarkToast else { return nil }
             return toast.isAdded ? .success : .impact(weight: .light)
-        }
-        // iPad rotation fix: SwiftUI does NOT re-evaluate the reader's geometry on rotation, so the
-        // `.background` GeometryReader / `onPreferenceChange` above never fires and the spread mode
-        // stays frozen (single/double only switches on a fresh reader entry). The device-orientation
-        // notification DOES fire reliably; derive the settled viewport from the window's two
-        // dimensions ordered by the (already-updated) interface orientation, and drive the same
-        // relayout path the in-app single/double toggle uses.
-        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-            applyRotatedViewportIfNeeded()
         }
         .animation(DSAnimation.standard, value: chapters.isEmpty)
         .statusBarHidden(
