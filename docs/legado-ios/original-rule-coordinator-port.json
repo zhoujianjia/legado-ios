@@ -345,7 +345,19 @@
     }
   ],
   "frozenOriginalStatefulReference": "traditional-stateful-reference.json",
-  "statefulPortComparisonPerformed": false,
+  "statefulPortComparisonPerformed": true,
+  "statefulPortComparison": {
+    "record": "stateful-port-reference/2026-10-19/record.json",
+    "platform": "desktop-JDK21",
+    "orderedStepsObserved": 56,
+    "publicAPICallsObserved": 47,
+    "exactReturnedTypedValues": 46,
+    "exactBeforeAndAfterStateSnapshots": 112,
+    "exceptionCallsWithRawMessageDifferences": 1,
+    "rawExceptionMessageDifferences": 2,
+    "allAPICallsRawMatch": false,
+    "iosValidationPassed": false
+  },
   "acceptance": {
     "readerRouteChanged": false,
     "iosValidationPassed": false,
@@ -354,7 +366,7 @@
     "fullFeatureParityEstablished": false
   },
   "remaining": [
-    "Run the fixed ordered Android stateful corpus against this retained public API without output projection.",
+    "Investigate the raw dynamic-script identifier differences retained by the fixed ordered stateful comparison; do not normalize them into a pass.",
     "Verify shared-scope concurrency, cancellation and persistence before routing real traditional sources.",
     "Port remaining typed entity ABI, AnalyzeUrl, login/browser, batch content and host capabilities."
   ]

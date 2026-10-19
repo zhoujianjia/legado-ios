@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "scope": "Actual new tracked-tool desktop replay of the fixed public Android stateful corpus through an explicitly pinned ordinary runtime JAR. Not iOS, G4, full-source or product-route acceptance.",
+  "toolDirectory": "scripts/legado-ios/stateful-port-reference",
+  "runtimeSourceCommit": "4e0df35837f9588163f5a5d8d34f4304a3cbe66c",
+  "runtimeJar": {
+    "bytes": 10243667,
+    "sha256": "718773a1f4809fc1b05813d085a412cf7ffeb93db8ab10f30f5e3d889e93f349"
+  },
+  "embeddedOriginalRuleProvenance": {
+    "entry": "META-INF/legado-provenance/original-rule/manifest.json",
+    "bytes": 17694,
+    "sha256": "f31d2b4232340607cc1a023e4b5910d733b038ff523d7781c75d027f5983396e"
+  },
+  "portedCommittedSourcesByteVerified": 13,
+  "runtimeClassOriginsAndBytesVerified": 14,
+  "runtimeClasspathExtraProductOrTestDirectories": [],
+  "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "originalAndroidReference": {
+    "path": "docs/legado-ios/fixtures/android-traditional-stateful-golden.json",
+    "bytes": 557107,
+    "sha256": "339802f01476cc61a004617bc8d14996c3eb0140fbdb1ea73ee05d56be6cdf38"
+  },
+  "fixture": {
+    "path": "Packages/LegadoRuntime/jvm/src/test/resources/fixtures/traditional-stateful-cases.json",
+    "bytes": 40242,
+    "sha256": "a7e0b23bc73c1a32c6d99466aebad25eee8e3c227e12e4d98efccb53d0008ddf"
+  },
+  "actualExecution": {
+    "ranNewTrackedDriver": true,
+    "ignoredOutputDirectory": ".build/stateful-port-reference/run-20261019-tracked-tool-3",
+    "compileTasksActuallyExecuted": 2,
+    "mainProjectGradleTasksInvoked": [],
+    "exitCode": 0,
+    "javaVersion": "openjdk version \"21.0.12.1\" 2026-08-18 LTS\r\nOpenJDK Runtime Environment Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS)\r\nOpenJDK 64-Bit Server VM Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS, mixed mode, sharing)\r\n",
+    "observations": {
+      "scenarioCount": 14,
+      "orderedSteps": 56,
+      "apiCalls": 47,
+      "returnObservations": 46,
+      "ordinaryExceptionObservations": 1,
+      "allDeclaredStepsObserved": true,
+      "observationFailures": 0
+    },
+    "comparison": {
+      "fullRawTreeExactlyMatches": false,
+      "fullRawDifferenceCount": 442,
+      "differenceClassifications": {
+        "execution-platform-report-metadata": 8,
+        "per-process-identity-hash-diagnostic": 432,
+        "scenario-semantic-raw-difference": 2
+      },
+      "rawScenarioSemanticDifferenceCount": 2,
+      "apiOutcomeActualExceptionExactlyMatching": 46,
+      "apiOutcomeActualExceptionDifferent": 1,
+      "returnedTypedValuesExactlyMatching": 46,
+      "setupMutationStepsExactlyMatching": 9,
+      "beforeAndAfterStateSnapshotsExactlyMatching": 112,
+      "beforeAndAfterStateSnapshotCount": 112,
+      "declaredObjectIdentityStableWithinEveryScenario": true,
+      "rawScenarioSemanticDifferences": [
+        {
+          "path": "/scenarios/13/steps/0/exception/cause/message",
+          "reference": "Error: fixture throw (<script-37>#1)",
+          "port": "Error: fixture throw (<script-47>#1)",
+          "difference": "raw-value",
+          "classification": "scenario-semantic-raw-difference"
+        },
+        {
+          "path": "/scenarios/13/steps/0/exception/message",
+          "reference": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-37> at line number 1",
+          "port": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-47> at line number 1",
+          "difference": "raw-value",
+          "classification": "scenario-semantic-raw-difference"
+        }
+      ]
+    },
+    "acceptance": {
+      "observationComplete": true,
+      "allDeclaredAPICallsRawMatch": false,
+      "compatibilityValidationPassed": false,
+      "iosValidationPassed": false,
+      "deviceValidationPassed": false,
+      "g4ValidationPassed": false,
+      "fullFeatureParityEstablished": false
+    }
+  },
+  "publicEvidence": {
+    "port-observed.json": {
+      "path": "docs/legado-ios/stateful-port-reference/2026-10-19/port-observed.json",
+      "bytes": 558764,
+      "sha256": "cf2b54ea5788acfe88e700f3107dbc3ad39fbb1b9de92fb068a7c319ce4200d6"
+    },
+    "full-raw-differences.json": {
+      "path": "docs/legado-ios/stateful-port-reference/2026-10-19/full-raw-differences.json",
+      "bytes": 116025,
+      "sha256": "153cafc14b4ff9d6334ef3d2bc4fd22d003142318c8d2e3e38fcb249cc3a81ff"
+    },
+    "measurement-result.json": {
+      "path": "docs/legado-ios/stateful-port-reference/2026-10-19/measurement-result.json",
+      "bytes": 34061,
+      "sha256": "81f0784f362db8bc693fc3ecab2c737d3a4e37714a8297e74917b2f7a82961f3"
+    },
+    "class-origins.json": {
+      "path": "docs/legado-ios/stateful-port-reference/2026-10-19/class-origins.json",
+      "bytes": 2604,
+      "sha256": "8868d7b92862df8345d2f44447498680c8125a89216d68fa171efdff384717e4"
+    },
+    "guard-checks.json": {
+      "path": "docs/legado-ios/stateful-port-reference/2026-10-19/guard-checks.json",
+      "bytes": 2112,
+      "sha256": "18db4eec8fb827ce8790e1bab518749b9a75d1bb704f557604605a914eb8a7a8"
+    }
+  },
+  "localRawEvidence": {
+    "compile.log": {
+      "path": ".build/stateful-port-reference/run-20261019-tracked-tool-3/compile.log",
+      "bytes": 3901,
+      "sha256": "4b64a1ce5dcd206b5953fd35759a074a7070e1eb22006988894733066e224767"
+    },
+    "run.log": {
+      "path": ".build/stateful-port-reference/run-20261019-tracked-tool-3/run.log",
+      "bytes": 189,
+      "sha256": "21a52d1e1611076f6869f99d04ee1d7193b3cf49560fc25dcf6a0427aad15089"
+    },
+    "execution-environment.json": {
+      "path": ".build/stateful-port-reference/run-20261019-tracked-tool-3/execution-environment.json",
+      "bytes": 6976,
+      "sha256": "327f3bafb694ac5fddd71dca105db1d81622294ea1c52d0df8c395f7c680a195"
+    },
+    "measurement-preparation.json": {
+      "path": ".build/stateful-port-reference/run-20261019-tracked-tool-3/measurement-preparation.json",
+      "bytes": 4391,
+      "sha256": "38b66d1fe5a67e2e81658854ea35392bd36287f2054a8e000e9b54eb266477aa"
+    },
+    "harness-adaptations.diff": {
+      "path": ".build/stateful-port-reference/run-20261019-tracked-tool-3/harness-adaptations.diff",
+      "bytes": 9863,
+      "sha256": "7b8d5bd53cbeb0d9baae5fa547cf8258a8bf34ca3d1985530cefdbb37b568955"
+    },
+    "class-origins.log": {
+      "path": ".build/stateful-port-reference/run-20261019-tracked-tool-3/class-origins.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "toolFiles": {
+    "compare.py": {
+      "path": "scripts/legado-ios/stateful-port-reference/compare.py",
+      "bytes": 10283,
+      "sha256": "997da3247a7a2f1b2455fd03ba6e0f51cb98765e2e5c3768506f157b77aa2546"
+    },
+    "harness-adaptations.patch": {
+      "path": "scripts/legado-ios/stateful-port-reference/harness-adaptations.patch",
+      "bytes": 9863,
+      "sha256": "7b8d5bd53cbeb0d9baae5fa547cf8258a8bf34ca3d1985530cefdbb37b568955"
+    },
+    "README.md": {
+      "path": "scripts/legado-ios/stateful-port-reference/README.md",
+      "bytes": 2586,
+      "sha256": "5e5f48f38da5d4652f2bfc7f0df97d4b2f3431a1fb6b954210c387c96cd66534"
+    },
+    "run.py": {
+      "path": "scripts/legado-ios/stateful-port-reference/run.py",
+      "bytes": 16020,
+      "sha256": "072a7ae30dddee7be6518a017922f9e9ea6d649dd068dc662ccde4df261785e2"
+    }
+  },
+  "knownDifferencesPolicy": "All 442 raw-tree differences retained. The 432 cross-process identity hashes and 8 platform metadata values are classified explicitly, never removed from raw output. The remaining 2 raw exception-message differences count as 1 non-matching API call; script identifiers are not normalized.",
+  "guardChecks": {
+    "actualRefusalChecks": 8,
+    "existingOutputRejectedWithoutByteChanges": true,
+    "incorrectJarSHARejectedWithoutCreatingOutput": true,
+    "runEntryRejectsPythonDashOAndPYTHONOPTIMIZE1BeforeCreatingOutput": true,
+    "compareEntryRejectsPythonDashOAndPYTHONOPTIMIZE1BeforeCreatingOutput": true,
+    "independentCompareRejectsExistingFullRawDifferencesBeforeWriting": true,
+    "independentCompareRejectsExistingMeasurementResultBeforeWriting": true,
+    "tool2AndTool3RawOutputBytesUnchangedDuringGuards": true
+  },
+  "preliminaryFailedAttempt": {
+    "ignoredOutputDirectory": ".build/stateful-port-reference/run-20261019-tracked-tool-1",
+    "failure": "Relative Gradle executable failed after changing to the isolated output directory.",
+    "correction": "Resolve the chosen Gradle executable to an absolute path before running it.",
+    "failurePreserved": true,
+    "subsequentEvidenceCameFromNewFreshOutputDirectory": true,
+    "executionRecord": {
+      "path": ".build/stateful-port-reference/run-20261019-tracked-tool-1/execution-environment.json",
+      "bytes": 4769,
+      "sha256": "4a7ad79cebd882dd49b9b1846b979ee4170da191af451962de8bb446df4b2168"
+    }
+  },
+  "previousExploratoryRun": {
+    "path": ".build/stateful-port-measurement/measurement-result.json",
+    "sha256": "e969cdcc671a55348789db30df7790fb457887f84281b3712173e1453eccf835",
+    "notUsedToClaimNewToolExecution": true
+  },
+  "limitations": [
+    "Desktop JDK21 observation, not iOS/Zero/device validation.",
+    "The port has finite entity/host ABI; no Room/persistent cache/network/browser/batch or product reading route is covered by this fixture.",
+    "Any raw exception-message difference remains a failing exact comparison, including a dynamic script identifier; no normalization is applied.",
+    "Same object references are checked throughout each process; identityHashCode integers necessarily belong to different Android/JVM processes and are not semantic compatibility values.",
+    "This observation tool is not a full-feature, iOS, device or G4 compatibility result."
+  ],
+  "priorSuccessfulTrackedToolRuns": [
+    {
+      "ignoredOutputDirectory": ".build/stateful-port-reference/run-20261019-tracked-tool-2",
+      "wasActualTrackedToolExecution": true,
+      "measurementResult": {
+        "path": ".build/stateful-port-reference/run-20261019-tracked-tool-2/measurement-result.json",
+        "bytes": 34061,
+        "sha256": "356a1497185c5bbd46f08afb54b28e8c9a9cb13b7b859ef4284caa6676008802"
+      },
+      "portObserved": {
+        "path": ".build/stateful-port-reference/run-20261019-tracked-tool-2/port-observed.json",
+        "bytes": 558764,
+        "sha256": "cf2b54ea5788acfe88e700f3107dbc3ad39fbb1b9de92fb068a7c319ce4200d6"
+      },
+      "fullRawDifferences": {
+        "path": ".build/stateful-port-reference/run-20261019-tracked-tool-2/full-raw-differences.json",
+        "bytes": 116025,
+        "sha256": "153cafc14b4ff9d6334ef3d2bc4fd22d003142318c8d2e3e38fcb249cc3a81ff"
+      },
+      "executionRecord": {
+        "path": ".build/stateful-port-reference/run-20261019-tracked-tool-2/execution-environment.json",
+        "bytes": 6975,
+        "sha256": "1802abc6381f952020d5f9c0511ec3439fe47bf90553ae856b487b631cce1fd4"
+      },
+      "priorPublishedRecord": {
+        "path": ".build/stateful-port-reference/run-20261019-tracked-tool-2/published-record-before-tool3.json",
+        "bytes": 9732,
+        "sha256": "546d5b4fb89ab065b1939c6686401d28083ec6341b243553af1b7b7f224afc17"
+      },
+      "retainedWithoutReplacingTool2RawEvidence": true,
+      "reasonForNewRun": "Add explicit rejection of optimized Python in both entries and reject independent comparator report overwrite."
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "checks": [
+    {
+      "name": "existing-driver-output",
+      "exitCode": 1,
+      "stderr": "ValueError: Output directory already exists; refusing to overwrite evidence\n",
+      "expectedRefusalObserved": true
+    },
+    {
+      "name": "wrong-jar-pin",
+      "exitCode": 1,
+      "stderr": "ValueError: Runtime JAR identity differs\n",
+      "expectedRefusalObserved": true
+    },
+    {
+      "name": "run.py--O",
+      "exitCode": 1,
+      "stderr": "ValueError: Optimized Python disables required input assertions; use Python without -O/PYTHONOPTIMIZE\n",
+      "expectedRefusalObserved": true
+    },
+    {
+      "name": "run.py-PYTHONOPTIMIZE=1",
+      "exitCode": 1,
+      "stderr": "ValueError: Optimized Python disables required input assertions; use Python without -O/PYTHONOPTIMIZE\n",
+      "expectedRefusalObserved": true
+    },
+    {
+      "name": "compare.py--O",
+      "exitCode": 1,
+      "stderr": "ValueError: Optimized Python disables required input assertions; use Python without -O/PYTHONOPTIMIZE\n",
+      "expectedRefusalObserved": true
+    },
+    {
+      "name": "compare.py-PYTHONOPTIMIZE=1",
+      "exitCode": 1,
+      "stderr": "ValueError: Optimized Python disables required input assertions; use Python without -O/PYTHONOPTIMIZE\n",
+      "expectedRefusalObserved": true
+    },
+    {
+      "name": "compare-existing-full-raw-differences.json",
+      "exitCode": 1,
+      "stderr": "Output report already exists; refusing to overwrite evidence: full-raw-differences.json\n",
+      "expectedRefusalObserved": true
+    },
+    {
+      "name": "compare-existing-measurement-result.json",
+      "exitCode": 1,
+      "stderr": "Output report already exists; refusing to overwrite evidence: measurement-result.json\n",
+      "expectedRefusalObserved": true
+    }
+  ],
+  "existingTool2AndTool3EvidenceBytesUnchanged": true,
+  "rejectedInputOutputDirectoryCreated": false,
+  "optimizedRunAndCompareEntriesRejectedBeforeOutputCreation": true,
+  "bothIndependentComparatorReportCollisionChecksPassed": true
+}

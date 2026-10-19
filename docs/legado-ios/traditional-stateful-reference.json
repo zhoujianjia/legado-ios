@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "recordedOn": "2026-10-19",
-  "scope": "Original Android observations only. The retained coordinator port has not been compared against this stateful corpus.",
+  "scope": "Original Android observations only. The acceptance flags describe reference capture; a subsequent desktop port comparison is recorded separately below.",
   "sourceCommit": "963249fc6775693aba94d60cb0e89042400375ca",
   "runId": 39118004844,
   "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39118004844",
@@ -64,5 +64,13 @@
     "g4ValidationPassed": false,
     "fullFeatureParityEstablished": false
   },
-  "nextGate": "Run the same ordered scenarios through retained public AnalyzeRule APIs, preserving object lifetimes and comparing outputs, Java types, exception causes and state side effects. Report differences before expanding the reading route."
+  "subsequentPortComparison": {
+    "record": "stateful-port-reference/2026-10-19/record.json",
+    "performed": true,
+    "platform": "desktop-JDK21",
+    "allAPICallsRawMatch": false,
+    "exceptionCallsWithRawMessageDifferences": 1,
+    "iosValidationPassed": false
+  },
+  "nextGate": "Investigate the retained raw exception-message differences and verify platform, cancellation, concurrency and persistence boundaries before expanding the reading route."
 }

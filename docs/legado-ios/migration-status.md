@@ -22,7 +22,7 @@ build 9 使用源码 `903e90a`，相关 Swift、资源、Info、工程和测试�
 
 源码 `594fd21` 的 build 10 已通过 Release 真机目标构建，并下载核对实际无书源 IPA、两个字体及许可、13 个原生模块、39 个导出和普通 JAR；云端 135 项 JVM 测试零失败／跳过。随附源码 ZIP 的 2,649 个文件逐字节匹配该提交，不含本机未提交研究或私人书源。IPA、源码、清单与说明已保存到 `C:\Users\ZJJ\Downloads`，见[build 10 记录](native-reader-experience-build10.json)。此轮临时公开产物保留一天；本包仍需自行签名，尚无 build 10 真机验收，也尚未实现自动续签。
 
-2026-10-19 在暂缓真机测试期间，后续源码保留了未接入阅读路由的原 `AnalyzeRule` 协调器切片，修复同名文本／二进制缓存、块状 JS 库分类及关闭后的宿主调用；完整桌面回归 153 项通过，见[协调器记录](original-rule-coordinator-port.json)。原版有状态观察已独立冻结，尚未完成移植对照。另补齐 37 份固定来源的运行时声明材料并接入统一打包校验，见[材料与边界](runtime-notices.md)及[本地验证](runtime-notices-validation.json)。网络取消仅增加默认关闭的脱敏观测，待[集成模拟器验证](native-cancel-task-trace.json)；不宣称已修复 iOS 取消，不构建新版 IPA，也不代表自动续签完成。已交付 build 10 的字节及其历史验收范围保持原记录。
+2026-10-19 在暂缓真机测试期间，后续源码保留了未接入阅读路由的原 `AnalyzeRule` 协调器切片，修复同名文本／二进制缓存、块状 JS 库分类及关闭后的宿主调用；完整桌面回归 153 项通过，见[协调器记录](original-rule-coordinator-port.json)。原版有状态观察已独立冻结，并用[可重复运行工具](../../scripts/legado-ios/stateful-port-reference/README.md)实际重放 47 次调用：46 个返回值、9 次状态修改和 112 个前后状态快照一致；一次异常的两处原文仍有脚本编号差异，未计为全部兼容。见[完整对照记录](stateful-port-reference/2026-10-19/record.json)。另补齐 37 份固定来源的运行时声明材料并接入统一打包校验，见[材料与边界](runtime-notices.md)及[本地验证](runtime-notices-validation.json)。网络取消仅增加默认关闭的脱敏观测，待[集成模拟器验证](native-cancel-task-trace.json)；不宣称已修复 iOS 取消，不构建新版 IPA，也不代表自动续签完成。已交付 build 10 的字节及其历史验收范围保持原记录。
 
 ## 历史本地体验包：3.0.0 build 7
 

@@ -1,0 +1,939 @@
+{
+  "schemaVersion": 1,
+  "measurementKind": "frozen-JAR-stateful-port-desktop-JVM-replay",
+  "originalReferenceRunId": "f3c545ac-e702-4409-ac99-61a90db617a0",
+  "ordinaryRuntimeJarSHA256": "718773a1f4809fc1b05813d085a412cf7ffeb93db8ab10f30f5e3d889e93f349",
+  "inputFixtureSHA256": "a7e0b23bc73c1a32c6d99466aebad25eee8e3c227e12e4d98efccb53d0008ddf",
+  "referenceSHA256": "339802f01476cc61a004617bc8d14996c3eb0140fbdb1ea73ee05d56be6cdf38",
+  "portObservedSHA256": "cf2b54ea5788acfe88e700f3107dbc3ad39fbb1b9de92fb068a7c319ce4200d6",
+  "fullRawDifferencesSHA256": "153cafc14b4ff9d6334ef3d2bc4fd22d003142318c8d2e3e38fcb249cc3a81ff",
+  "executed": {
+    "scenarioCount": 14,
+    "orderedSteps": 56,
+    "apiCalls": 47,
+    "returnObservations": 46,
+    "ordinaryExceptionObservations": 1,
+    "allDeclaredStepsObserved": true,
+    "observationFailures": 0
+  },
+  "comparison": {
+    "fullRawTreeExactlyMatches": false,
+    "fullRawDifferenceCount": 442,
+    "differenceClassifications": {
+      "execution-platform-report-metadata": 8,
+      "per-process-identity-hash-diagnostic": 432,
+      "scenario-semantic-raw-difference": 2
+    },
+    "rawScenarioSemanticDifferenceCount": 2,
+    "apiOutcomeActualExceptionExactlyMatching": 46,
+    "apiOutcomeActualExceptionDifferent": 1,
+    "returnedTypedValuesExactlyMatching": 46,
+    "setupMutationStepsExactlyMatching": 9,
+    "beforeAndAfterStateSnapshotsExactlyMatching": 112,
+    "beforeAndAfterStateSnapshotCount": 112,
+    "declaredObjectIdentityStableWithinEveryScenario": true,
+    "rawScenarioSemanticDifferences": [
+      {
+        "path": "/scenarios/13/steps/0/exception/cause/message",
+        "reference": "Error: fixture throw (<script-37>#1)",
+        "port": "Error: fixture throw (<script-47>#1)",
+        "difference": "raw-value",
+        "classification": "scenario-semantic-raw-difference"
+      },
+      {
+        "path": "/scenarios/13/steps/0/exception/message",
+        "reference": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-37> at line number 1",
+        "port": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-47> at line number 1",
+        "difference": "raw-value",
+        "classification": "scenario-semantic-raw-difference"
+      }
+    ]
+  },
+  "method": {
+    "runsOnlyFixedPublicFixture": true,
+    "usesFrozenOrdinaryJarWithoutProductCodeRecompilation": true,
+    "originalRulesOrStepOrderModified": false,
+    "separateGradleProjectAndBuildDirectory": true,
+    "AndroidEntryAndCleanupAdaptationsDocumented": "harness-adaptations.diff",
+    "oneRuleEnvironmentPerScenarioExplicitlyInjectedAtPortConstructors": true,
+    "sameOriginalReferenceRunIdRetainedForLiteralURLComparison": true,
+    "allRawDifferencesRetained": true,
+    "stringsTrimmedOrNormalized": false,
+    "exceptionMessagesNormalized": false,
+    "missingFieldsSynthesized": false,
+    "identityHashCodesRetainedAndComparedAsPerProcessDiagnostics": true,
+    "identityHashesExcludedFromNamedSemanticCountsOnlyPerOriginalHarnessContract": true,
+    "platformMetadataExcludedFromNamedScenarioSemanticCounts": true
+  },
+  "limitations": [
+    "Desktop JDK21 observation, not iOS/Zero/device validation.",
+    "The port has finite entity/host ABI; no Room/persistent cache/network/browser/batch or product reading route is covered by this fixture.",
+    "Any raw exception-message difference remains a failing exact comparison, including a dynamic script identifier; no normalization is applied.",
+    "Same object references are checked throughout each process; identityHashCode integers necessarily belong to different Android/JVM processes and are not semantic compatibility values.",
+    "This observation tool is not a full-feature, iOS, device or G4 compatibility result."
+  ],
+  "acceptance": {
+    "observationComplete": true,
+    "allDeclaredAPICallsRawMatch": false,
+    "compatibilityValidationPassed": false,
+    "iosValidationPassed": false,
+    "deviceValidationPassed": false,
+    "g4ValidationPassed": false,
+    "fullFeatureParityEstablished": false
+  },
+  "scenarios": [
+    {
+      "scenarioId": "original-javascript-array-normalization",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "array",
+          "kind": "call",
+          "api": "getElements",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "issue1180-textnodes-low-level",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "select",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "replace",
+          "kind": "call",
+          "api": "getString-content-default",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "issue1180-base64-low-level",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "decode",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "replace",
+          "kind": "call",
+          "api": "getString-content-default",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "implicit-css-replacement-js-repeated",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "first",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "second",
+          "kind": "call",
+          "api": "getString-default",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "inline-book-expression-cached-rule",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "first",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "rename",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "same-cached-rule",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "js-library-recursive-get-string",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "library-this-java",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "direct-java",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "inline-selector",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "recursive-get-elements-real-nodes",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "direct-nodes",
+          "kind": "call",
+          "api": "getElements",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "recursive-nodes",
+          "kind": "call",
+          "api": "getElements",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "recursive-size-text",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "ruledata-local-empty-and-false-put",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "data-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "set-local",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "local-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "empty-local",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "empty-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "put-masked",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "false-put-return",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "false-elvis-no-source-fallback",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "chapter-book-source-priority",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "chapter-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "empty-chapter",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "book-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "empty-book",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "source-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "reserved-book-name",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "reserved-title",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "local-reserved",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "local-reserved-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "put-precedence",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "put-without-state-target",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "put-return",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "read-after-put",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "set-content-preserves-state-invalidates-selectors",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "first-put",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "first-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "new-content",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "same-rule-new-content",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "second-read",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "explicit-source-global-sharing-and-isolation",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "no-lib-first",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "no-lib-same-instance",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "no-lib-second-instance",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "no-lib-other-source",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "shared-first",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "shared-same-instance",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "shared-second-instance",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "shared-other-source",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "regex-mode-persists-after-set-content",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 0,
+      "steps": [
+        {
+          "stepId": "regex-elements",
+          "kind": "call",
+          "api": "getElements",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "same-instance-selector",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "new-content",
+          "kind": "setup",
+          "api": null,
+          "apiInvoked": false,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "after-set-content-selector",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        },
+        {
+          "stepId": "fresh-instance-selector",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    },
+    {
+      "scenarioId": "exception-preserves-earlier-put",
+      "observationCompleted": true,
+      "setupCompleted": true,
+      "cleanupCompleted": true,
+      "retainsSameDeclaredObjectsAcrossOrderedSteps": true,
+      "initialSemanticStateExactlyMatches": true,
+      "initialPutReturnsExactlyMatch": true,
+      "rawSemanticDifferenceCount": 2,
+      "steps": [
+        {
+          "stepId": "throw-after-write",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": false,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": [
+            {
+              "path": "/scenarios/13/steps/0/exception/cause/message",
+              "reference": "Error: fixture throw (<script-37>#1)",
+              "port": "Error: fixture throw (<script-47>#1)",
+              "difference": "raw-value",
+              "classification": "scenario-semantic-raw-difference"
+            },
+            {
+              "path": "/scenarios/13/steps/0/exception/message",
+              "reference": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-37> at line number 1",
+              "port": "Error: fixture throw\nSource context:\n> 1: java.put(\"beforeThrow\",\"written\");throw new Error(\"fixture throw\") in <script-47> at line number 1",
+              "difference": "raw-value",
+              "classification": "scenario-semantic-raw-difference"
+            }
+          ]
+        },
+        {
+          "stepId": "read-after-exception",
+          "kind": "call",
+          "api": "getString-unescape-false",
+          "apiInvoked": true,
+          "completed": true,
+          "rawOutcomeActualExceptionExactlyMatch": true,
+          "beforeStateExactlyMatches": true,
+          "afterStateExactlyMatches": true,
+          "rawSemanticDifferences": []
+        }
+      ]
+    }
+  ],
+  "evidenceFiles": {
+    "src/main/kotlin/io/legado/app/reference/TraditionalStatefulGoldenTest.kt": {
+      "bytes": 21876,
+      "sha256": "10b448a1814f8fab0920c724c405defae59b2c28db1a350718478ced0f66bf4c"
+    },
+    "src/main/java/RuntimeClassOrigins.java": {
+      "bytes": 1342,
+      "sha256": "1f8e1f15019f3bdd029069ea0319cbb57f9c3925ee89e8cf14d3890acf18dc37"
+    },
+    "settings.gradle.kts": {
+      "bytes": 48,
+      "sha256": "43b9e41398ed7de6bf6e32131b54eef12e8d534c2c2dc2be93f5e5b5f417f4f4"
+    },
+    "build.gradle.kts": {
+      "bytes": 216,
+      "sha256": "fb76ec77fccfd44be8f7d279351f3ad06389427b9a3e6746fcae72e0a26d7037"
+    },
+    "harness-adaptations.diff": {
+      "bytes": 9863,
+      "sha256": "7b8d5bd53cbeb0d9baae5fa547cf8258a8bf34ca3d1985530cefdbb37b568955"
+    },
+    "measurement-preparation.json": {
+      "bytes": 4391,
+      "sha256": "38b66d1fe5a67e2e81658854ea35392bd36287f2054a8e000e9b54eb266477aa"
+    },
+    "compile.log": {
+      "bytes": 3901,
+      "sha256": "4b64a1ce5dcd206b5953fd35759a074a7070e1eb22006988894733066e224767"
+    },
+    "run.log": {
+      "bytes": 189,
+      "sha256": "21a52d1e1611076f6869f99d04ee1d7193b3cf49560fc25dcf6a0427aad15089"
+    },
+    "port-observed.json": {
+      "bytes": 558764,
+      "sha256": "cf2b54ea5788acfe88e700f3107dbc3ad39fbb1b9de92fb068a7c319ce4200d6"
+    },
+    "full-raw-differences.json": {
+      "bytes": 116025,
+      "sha256": "153cafc14b4ff9d6334ef3d2bc4fd22d003142318c8d2e3e38fcb249cc3a81ff"
+    },
+    "class-origins.json": {
+      "bytes": 2604,
+      "sha256": "8868d7b92862df8345d2f44447498680c8125a89216d68fa171efdff384717e4"
+    },
+    "class-origins.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "execution-environment.json": {
+      "bytes": 6976,
+      "sha256": "327f3bafb694ac5fddd71dca105db1d81622294ea1c52d0df8c395f7c680a195"
+    }
+  }
+}

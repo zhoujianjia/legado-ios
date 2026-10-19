@@ -1,0 +1,148 @@
+--- original-Android-harness
++++ frozen-port-harness
+@@ -1,24 +1,19 @@
+ package io.legado.app.reference
+ 
+-import android.os.Build
+-import androidx.test.platform.app.InstrumentationRegistry
+ import com.google.gson.JsonObject
+ import com.google.gson.JsonParser
+ import com.script.rhino.RhinoScriptEngine
+ import io.legado.app.data.entities.Book
+ import io.legado.app.data.entities.BookChapter
+ import io.legado.app.data.entities.BookSource
+-import io.legado.app.help.CacheManager
+-import io.legado.app.help.source.clearSharedGlobalState
++import io.yuedu.legado.originalrule.RuleEnvironment
+ import io.legado.app.model.analyzeRule.AnalyzeRule
+ import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setChapter
+ import io.legado.app.model.analyzeRule.RuleData
+ import io.legado.app.model.analyzeRule.RuleDataInterface
+-import io.legado.app.utils.GSON
++import com.google.gson.Gson
+ import org.htmlunit.corejs.javascript.Context
+ import org.jsoup.nodes.Element
+-import org.junit.Assert.assertTrue
+-import org.junit.Test
+ import java.io.File
+ import java.security.MessageDigest
+ import java.util.IdentityHashMap
+@@ -26,21 +21,15 @@
+ 
+ /** Original objects and public APIs only. Fixture-declared instances survive ordered steps. */
+ class TraditionalStatefulGoldenTest {
+-    @Test
+-    fun observeOriginalStatefulTraditionalRules() {
+-        val instrumentation = InstrumentationRegistry.getInstrumentation()
+-        val context = instrumentation.targetContext
+-        val arguments = InstrumentationRegistry.getArguments()
+-        val runId = arguments.getString("referenceRunId")
++    fun observeOriginalStatefulTraditionalRules(args: Array<String>) {
++        val runId: String? = args[0]
+         val rows = arrayListOf<Map<String, Any?>>()
+         val report = linkedMapOf<String, Any?>(
+             "schemaVersion" to 1, "suite" to SUITE, "caseSetVersion" to VERSION,
+-            "referenceKind" to "original-archive-android-instrumentation", "referenceRunId" to runId,
+-            "originalArchiveSHA256" to arguments.getString("archiveSHA256"),
+-            "applicationClass" to context.applicationContext.javaClass.name,
+-            "applicationMinSdkVersion" to context.applicationInfo.minSdkVersion,
+-            "androidApi" to Build.VERSION.SDK_INT, "androidRelease" to Build.VERSION.RELEASE,
+-            "instrumentationRunner" to "androidx.test.runner.AndroidJUnitRunner",
++            "referenceKind" to "frozen-port-desktop-jvm-measurement", "referenceRunId" to runId,
++            "originalArchiveSHA256" to ARCHIVE,
++            "portRuntimeJarSHA256" to args[3],
++            "measurementPlatform" to (System.getProperty("os.name") + "-desktop-JDK" + Runtime.version().feature()),
+             "passedMeaning" to "All fixture-declared ordered steps observed; ordinary API exceptions are outcomes, never port acceptance.",
+             "scope" to "Original AnalyzeRule/RuleData/models/Rhino; fixed public inputs only. Two issue1180 cases are adapted low-level observations, not BookContent coverage.",
+             "passed" to false, "total" to 0, "executed" to 0, "failed" to 0,
+@@ -52,10 +41,7 @@
+         var fatal: Error? = null
+         try {
+             require(runId != null && UUID.fromString(runId).toString() == runId) { "Canonical referenceRunId required" }
+-            require(arguments.getString("archiveSHA256") == ARCHIVE) { "Original archive identity differs" }
+-            require(context.applicationContext.javaClass.name == "io.legado.app.App") { "Original Application required" }
+-            require(context.applicationInfo.minSdkVersion == 26) { "Reference minSdk override differs" }
+-            val fixtureBytes = instrumentation.context.assets.open(ASSET).use { it.readBytes() }
++            val fixtureBytes = File(args[1]).readBytes()
+             require(sha256(fixtureBytes) == FIXTURE_SHA256) { "Reviewed stateful fixture bytes differ" }
+             val fixture = JsonParser.parseString(fixtureBytes.toString(Charsets.UTF_8)).asJsonObject
+             require(fixture["schemaVersion"].asInt == 1 && fixture.text("suite") == SUITE && fixture.text("caseSetVersion") == VERSION)
+@@ -168,15 +154,16 @@
+             report["failure"] = exception(error)
+             if (error is Error) fatal = error
+         } finally {
+-            val output = File(context.filesDir, REPORT)
++            val output = File(args[2])
+             output.parentFile?.let { require(it.isDirectory || it.mkdirs()) { "Cannot create observation directory" } }
+             output.writeText(GSON.newBuilder().serializeNulls().setPrettyPrinting().create().toJson(report), Charsets.UTF_8)
+         }
+         fatal?.let { throw it }
+-        assertTrue("Original stateful observation incomplete; inspect $REPORT", report["passed"] == true)
++        check(report["passed"] == true) { "Port observation incomplete; inspect ${args[2]}" }
+     }
+ 
+     private class ScenarioState(private val runId: String, private val input: JsonObject) {
++        private val environment = RuleEnvironment()
+         val sources = linkedMapOf<String, BookSource>()
+         val data = linkedMapOf<String, RuleDataInterface>()
+         val chapters = linkedMapOf<String, BookChapter>()
+@@ -191,7 +178,7 @@
+             for (item in input.getAsJsonArray("sources")) {
+                 val definition = item.asJsonObject
+                 val id = definition.text("id")
+-                val source = BookSource(bookSourceUrl = origin(id), bookSourceName = "Stateful reference $id", jsLib = definition.optionalText("jsLib"))
++                val source = BookSource(environment = environment, bookSourceUrl = origin(id), bookSourceName = "Stateful reference $id", jsLib = definition.optionalText("jsLib"))
+                 sources[id] = source
+                 definition.getAsJsonObject("variables").entrySet().forEach { (key, value) ->
+                     initialPuts.add(mapOf("target" to "source", "targetId" to id, "key" to key, "returned" to typed(source.put(key, value.asString))))
+@@ -202,7 +189,7 @@
+                 val id = definition.text("id")
+                 val model: RuleDataInterface = when (definition.text("kind")) {
+                     "rule-data" -> RuleData()
+-                    "book" -> Book(bookUrl = origin("models") + id, origin = sources.values.firstOrNull()?.bookSourceUrl ?: origin("models"), name = definition.text("name"))
++                    "book" -> Book(environment = environment, bookUrl = origin("models") + id, origin = sources.values.firstOrNull()?.bookSourceUrl ?: origin("models"), name = definition.text("name"))
+                     else -> error("Unknown original model kind")
+                 }
+                 data[id] = model
+@@ -214,7 +201,7 @@
+                 val definition = item.asJsonObject
+                 val id = definition.text("id")
+                 val book = data.getValue(definition.text("bookId")) as Book
+-                val chapter = BookChapter(bookUrl = book.bookUrl, url = origin("chapters") + id, baseUrl = origin("chapters"), title = definition.text("title"))
++                val chapter = BookChapter(environment = environment, bookUrl = book.bookUrl, url = origin("chapters") + id, baseUrl = origin("chapters"), title = definition.text("title"))
+                 chapters[id] = chapter
+                 definition.getAsJsonObject("variables").entrySet().forEach { (key, value) ->
+                     initialPuts.add(mapOf("target" to "chapter", "targetId" to id, "key" to key, "returned" to typed(chapter.putVariable(key, value.asString))))
+@@ -222,7 +209,7 @@
+             }
+             for (item in input.getAsJsonArray("instances")) {
+                 val definition = item.asJsonObject
+-                val original = AnalyzeRule(definition.optionalText("dataId")?.let { data.getValue(it) }, definition.optionalText("sourceId")?.let { sources.getValue(it) })
++                val original = AnalyzeRule(definition.optionalText("dataId")?.let { data.getValue(it) }, definition.optionalText("sourceId")?.let { sources.getValue(it) }, environment = environment)
+                 definition.optionalText("chapterId")?.let { original.setChapter(chapters.getValue(it)) }
+                 original.setContent(definition.text("content"), origin("base"))
+                 instances[definition.text("id")] = original
+@@ -282,9 +269,11 @@
+             data.values.forEach { value -> (keys + value.variableMap.keys).distinct().forEach { key -> attempt { value.putVariable(key, null) } } }
+             chapters.values.forEach { value -> (keys + value.variableMap.keys).distinct().forEach { key -> attempt { value.putVariable(key, null) } } }
+             sources.values.forEach { source ->
+-                keys.forEach { key -> attempt { CacheManager.delete("v_${source.bookSourceUrl}_$key") } }
+-                attempt { source.clearSharedGlobalState() }
+-            }
++                keys.forEach { key -> attempt { environment.cache.delete("v_${source.bookSourceUrl}_$key") } }
++                attempt { source.refreshJSLib() }
++            }
++            instances.values.forEach { value -> attempt { value.close() } }
++            attempt { environment.close() }
+             return mapOf("completed" to failures.isEmpty(), "errors" to failures,
+                 "sourceURLs" to sources.values.map { it.bookSourceUrl }, "keys" to keys,
+                 "globalCacheCleared" to false, "sourceSharedStateRemoved" to failures.isEmpty())
+@@ -292,6 +281,8 @@
+     }
+ 
+     companion object {
++        private val GSON = Gson()
++        @JvmStatic fun main(args: Array<String>) = TraditionalStatefulGoldenTest().observeOriginalStatefulTraditionalRules(args)
+         const val SUITE = "TraditionalStatefulRuleObservation"
+         const val VERSION = "legado-traditional-stateful-public-v1"
+         const val ASSET = "legado-reference/traditional-stateful-cases.json"

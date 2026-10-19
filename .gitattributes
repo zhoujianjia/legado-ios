@@ -13,5 +13,9 @@ Packages/LegadoRuntime/vendor/runtime-http/** -text
 Packages/LegadoRuntime/vendor/original-rule/** -text -whitespace
 Packages/LegadoRuntime/jvm/src/main/resources/io/yuedu/legado/originalrule/** -text -whitespace
 docs/legado-ios/fixtures/android-traditional-stateful-golden.json -text
+# Frozen stateful measurements preserve their actual platform line endings and hashes.
+docs/legado-ios/stateful-port-reference/** -text whitespace=cr-at-eol
+# Unified-diff context prefixes on empty lines are part of this exact harness patch.
+scripts/legado-ios/stateful-port-reference/harness-adaptations.patch -text -whitespace
 # Immutable upstream notice bytes, including original whitespace and manifest fingerprint.
 Packages/LegadoRuntime/vendor/openjdk-notices/** -text -whitespace
