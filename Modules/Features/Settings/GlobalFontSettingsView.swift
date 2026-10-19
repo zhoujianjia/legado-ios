@@ -83,7 +83,7 @@ struct GlobalFontSettingsView: View {
         )
         .alert(item: $importError) { error in
             Alert(
-                title: Text(localized("字體匯入失敗")),
+                title: Text(localized(error.titleKey)),
                 message: Text(error.message),
                 dismissButton: .default(Text(localized("確定")))
             )
@@ -97,8 +97,11 @@ struct GlobalFontSettingsView: View {
             presenting: fontToDelete
         ) { font in
             Button(localized("刪除"), role: .destructive) {
-                settings.deleteUserFont(font)
                 fontToDelete = nil
+                Task {
+                    do { try await settings.deleteUserFont(font) }
+                    catch { importError = GlobalFontImportError(message: error.localizedDescription, titleKey: "操作失敗") }
+                }
             }
             Button(localized("取消"), role: .cancel) {
                 fontToDelete = nil
@@ -143,6 +146,10 @@ struct GlobalFontSettingsView: View {
     ]
 
     private func handleImport(_ result: Result<[URL], Error>) {
+        Task { await importFont(result) }
+    }
+
+    private func importFont(_ result: Result<[URL], Error>) async {
         do {
             guard let url = try result.get().first else { return }
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
@@ -151,7 +158,7 @@ struct GlobalFontSettingsView: View {
                     url.stopAccessingSecurityScopedResource()
                 }
             }
-            try settings.importGlobalFont(from: url)
+            try await settings.importGlobalFont(from: url)
         } catch {
             importError = GlobalFontImportError(message: error.localizedDescription)
         }
@@ -161,6 +168,7 @@ struct GlobalFontSettingsView: View {
 private struct GlobalFontImportError: Identifiable {
     let id = UUID()
     let message: String
+    var titleKey = "字體匯入失敗"
 }
 
 #Preview {

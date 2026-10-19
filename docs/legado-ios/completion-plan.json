@@ -159,7 +159,6 @@
     "nextReadyBatch": [
       "source-schema",
       "reading-position-write-integrity",
-      "reading-experience-design",
       "reading-performance-and-prefetch",
       "local-formats",
       "license-and-source-closure"
@@ -168,7 +167,6 @@
     "readyQueue": [
       "plan-and-evidence-refresh",
       "reading-position-write-integrity",
-      "reading-experience-design",
       "reading-performance-and-prefetch",
       "license-and-source-closure",
       "runtime-core",
@@ -184,7 +182,8 @@
     "awaitingEvidenceQueue": [
       "reading-quick-panel-accessibility",
       "backup-webdav",
-      "automatic-renewal-feasibility"
+      "automatic-renewal-feasibility",
+      "reading-experience-design"
     ],
     "deferredQueue": [],
     "currentDeviceCandidate": {
@@ -522,20 +521,22 @@
         "font-provenance",
         "local-product",
         "reader-smoke",
-        "reader-supply-measurements"
+        "reader-supply-measurements",
+        "user-font-transaction-integration"
       ],
       "execution": {
         "summaryZh": "字体、夜间阅读与无障碍",
-        "currentState": "字体预览、三档间距、原生关闭、大字号快捷面板及真实 viewport 已有源码与新增用例；仍缺当前源码的实际渲染、五语/读屏顺序、夜间与增强对比度以及窗口变化后的文字锚点验收。字体导入/删除继续同步经过 GlobalSettings 调用文件复制、字体元数据读取、注销和删除，不能把本批 UI 完善算成该 I/O 已解决。",
+        "currentState": "现有 UserFontStorageManager／GlobalSettings 已完成后台字体导入、同 PostScript 替换与删除的进程内失败事务，文件、注册失败保留旧状态或恢复材料，记录及对应选择在同一 guard 内发布。已修复 Files 外部删除旧字体后不能删记录或重导入的回归；只有原路径属性读取明确 ENOENT 可缺省，后续 recovery-copy 错误仍失败。local-product 严格源码／实际叶集门禁已接入：50 方法／68 计划执行，字体同一串行 Suite 24／42，其中新增 9／27。已有实际 portable 24＋16 通过及 8 Swift 文件 grammar screen；尚无本批 Swift／iOS／真实 CoreText 执行。其余阅读矩阵仍未验收，不能据此完成 S2。",
         "remainingWork": [
-          "字体预览、三档间距、原生关闭、大字号快捷面板及真实 viewport 已有源码与新增用例；仍缺当前源码的实际渲染、五语/读屏顺序、夜间与增强对比度以及窗口变化后的文字锚点验收。字体导入/删除继续同步经过 GlobalSettings 调用文件复制、字体元数据读取、注销和删除，不能把本批 UI 完善算成该 I/O 已解决。",
-          "先在现有 UserFontStorageManager 和 GlobalSettings 之间建立异步导入/替换/删除事务，保留原 writer 和第一层 importer；文件处理在后台、完成后一次发布，失败保留旧记录和选择。随后将现有字体、面板与 viewport 测试放同一源码检查点执行并保存实际截图/辅助功能树。"
+          "在本批固定源码的集中 reader-smoke 检查点实际编译及执行 local-product 50／68，保留原始 summary、tests 叶集、日志、环境及 source；独立核对字体 24／42。",
+          "默认 Operations missing-URL 用例只准备了真实调用链，尚未运行；需验证 CoreText 双 scope／同 PostScript 替换失败后旧注册恢复、in-use／权限及缺失 URL 行为，不推断已注册后丢失字体 cache 已获验证。",
+          "继续现有字体预览、间距、面板、viewport 的渲染、五语／读屏顺序、夜间／增强对比度、旋转与 iPad 窗口变化后的语义锚点矩阵；普通 selection／theme 在 await 期间不锁定，userFonts JSON／UserDefaults 和删除数组发布仍在主线程。"
         ],
-        "nextAction": "先在现有 UserFontStorageManager 和 GlobalSettings 之间建立异步导入/替换/删除事务，保留原 writer 和第一层 importer；文件处理在后台、完成后一次发布，失败保留旧记录和选择。随后将现有字体、面板与 viewport 测试放同一源码检查点执行并保存实际截图/辅助功能树。",
-        "readiness": "ready",
+        "nextAction": "按原阶段策略集中验证已审字体批的实际 Swift 编译与 local-product 50 方法／68 执行，保存 source-bound xcresult 原始叶集；期间可独立准备现有阅读 UI／锚点矩阵，不追加重复外观或字体系统。",
+        "readiness": "awaiting-cloud",
         "readyPreparation": [
-          "在现有字体服务注入自有 root/文件操作与注册 seam，加入失败保留旧字体和主线程无文件处理的回归；先记录 SourcePerfTrace 的 main/bytes，不宣称提速。",
-          "复用 UserFontSettingsTests、ReaderQuickThemePanelLayoutTests、ReaderViewportSizeObserverTests 和 ReaderLiveStyleRefreshTests，补足夜间/增强对比度/真实旋转与分屏矩阵；不另造外观或分页系统。"
+          "复用现有 SourcePerfTrace 的 main／bytes 和固定自有故障 fixture 审阅原始输出；不把 portable 或 grammar screen 当作 CoreText／iOS 通过。",
+          "继续复用 ReaderQuickThemePanelLayoutTests、ReaderViewportSizeObserverTests 和 ReaderLiveStyleRefreshTests 准备夜间／增强对比度／真实旋转与分屏矩阵，保留现有第一层 importer。"
         ],
         "acceptance": [
           "合法/损坏字体、同 PostScript 重导入、删除被两处选中的字体、写盘/注册失败均有固定临时目录用例；失败不丢旧字体，重复操作不积累副本。",
@@ -549,7 +550,11 @@
           "Tests/iOS/yuedu appTests/UserFontSettingsTests.swift",
           "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
           "Tests/iOS/yuedu appTests/ReaderViewportSizeObserverTests.swift",
-          "Tests/iOS/yuedu appTests/ReaderSettingsPublicationTests.swift"
+          "Tests/iOS/yuedu appTests/ReaderSettingsPublicationTests.swift",
+          "docs/legado-ios/user-font-transaction-batch.json",
+          "docs/legado-ios/evidence/reader-font-transaction/reader-font-integration-review.json",
+          "docs/legado-ios/evidence/reader-font-transaction/font-integration-independent-review.json",
+          "Tests/iOS/yuedu appTests/UserFontTransactionTests.swift"
         ],
         "deferredHardware": [
           "实体屏幕与 VoiceOver 体验",
@@ -3623,6 +3628,10 @@
     "self-renewal-dynamic-discovery-implementation": {
       "path": "docs/legado-ios/self-renewal-dynamic-discovery-batch.json",
       "scope": "Implemented bounded original diagnostic; Debug Simulator production app compiled and linked in 6b3a3bd. Test target failed before execution; 13 Swift discovery cases remain unexecuted, test-only repair prepared. Sixteen portable evidence guards and twenty-five report contract guards passed. No phone, authentication or renewal acceptance."
+    },
+    "user-font-transaction-integration": {
+      "path": "docs/legado-ios/user-font-transaction-batch.json",
+      "scope": "Reviewed existing user-font service import/replace/delete transaction and strict local-product 50-method/68-planned-execution gate; actual portable 24+16 and eight-file grammar screen only. Swift/iOS/CoreText execution pending, no full S2 or device acceptance."
     }
   },
   "retainedExistingWork": [

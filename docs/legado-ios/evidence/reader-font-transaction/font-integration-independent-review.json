@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-static-font-transaction-and-smoke-integration-review",
+  "observedAtUTC": "2026-10-19T14:50:03.617121+00:00",
+  "baseCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree",
+  "reviewMode": "Static source/diff review plus verification of existing evidence hashes; reviewer did not execute Swift, iOS, or portable test suites.",
+  "verdict": "no_unresolved_blocking_findings_in_final_static_review",
+  "unresolvedBlockingFindings": [],
+  "resolvedBlockingFindings": [
+    {
+      "id": "font-stale-record-after-external-file-removal",
+      "severity": "P2",
+      "trigger": "A file managed in Documents/fonts is removed through Files while its persisted UserFontInfo remains.",
+      "initialProblem": "The initial patch rejected both deletion of the stale record and same-name reimport with ENOENT, removing the previous self-repair paths.",
+      "resolution": "Only pre-copy attributes lookup can establish original absence using explicit Cocoa/POSIX missing-file domains/codes. Copy-stage ENOENT still aborts. Missing-file size lookup is allowed to contribute zero bytes. The CoreText fileNotFound allowance independently checks that exact URL is absent; permission/in-use and other metadata errors still fail.",
+      "sourceCases": [
+        "UserFontSettingsTests/missingOldFilesCanBeRepaired(reimport:)",
+        "UserFontSettingsTests/recoveryCopyMissingErrorStillAborts()",
+        "UserFontSettingsTests/defaultRegistryCanRemoveAnAlreadyMissingFont()"
+      ],
+      "status": "source_fix_and_regression_cases_reviewed_runtime_execution_pending"
+    }
+  ],
+  "reviewedContracts": {
+    "rollbackAndBytes": "Existing regular files are backed up before unregister/removal. Attempted unregister is tracked before invocation; failures after removal restore bytes before re-registration. Rollback failure retains owned hidden recovery copies and throws. Originally absent files are not manufactured during rollback.",
+    "recordAndSelectionPublication": "Import/delete await the detached synchronous worker and publish records plus the requested matching selection in one guarded MainActor turn only after success. Failures do not execute that publication.",
+    "registrationScopes": "Registration retains persistent-then-process behavior. Checked unregistration visits persistent and process, tolerating notRegistered/unsupportedScope and narrowly confirmed missing URLs; the source does not ignore in-use or permission failures.",
+    "securityScopeAndCancellation": "The three direct document-import UI routes retain security access across await and stop it in defer. Qi font staging/removal is awaited off main. Cancellation before a settings mutation starts rejects; after the detached transaction starts its result is awaited so a commit cannot be dropped.",
+    "suiteOwnership": "New methods extend the existing @MainActor UserFontSettingsTests with one serialized suite. A second independently serialized font suite was not introduced. The selected ReaderFontCatalog selection method is synchronous and restores its changes without an await.",
+    "rawExecutionGate": "The local-product gate requires exact selected method identifiers, method/container Passed results, one selected device/configuration, explicit zero skips/failures/expected failures, and unique nonempty Passed Arguments leaves with exact per-method execution counts. Summary counts alone cannot pass.",
+    "sourceAndWorkflowBinding": "The selected source signatures, argument declarations, one font-suite ownership/serialization, method/execution inventory, smoke invocation, CLI result path, and narrowly updated workflow summary agree."
+  },
+  "selectionCountsArePlannedNotExecuted": true,
+  "sourceSelection": {
+    "oldFontSuite": {
+      "methods": 15,
+      "executions": 15
+    },
+    "originalFrozenFontSuite": {
+      "methods": 21,
+      "executions": 38
+    },
+    "newFontMethods": {
+      "methods": 9,
+      "executions": 27
+    },
+    "finalFontSuite": {
+      "methods": 24,
+      "executions": 42
+    },
+    "oldLocalProduct": {
+      "methods": 41,
+      "executions": 41
+    },
+    "initialRequestedLocalProduct": {
+      "methods": 47,
+      "executions": 64
+    },
+    "finalLocalProduct": {
+      "methods": 50,
+      "executions": 68
+    }
+  },
+  "defaultCoreTextCase": {
+    "method": "UserFontSettingsTests/defaultRegistryCanRemoveAnAlreadyMissingFont()",
+    "usesDefaultProductionOperations": true,
+    "path": "GlobalSettings.deleteUserFont -> UserFontStorageManager.deleteThrowing -> unregisterFontChecked",
+    "ownsTemporaryDirectoryAndURL": true,
+    "urlPreviouslyRegisteredWithCoreText": false,
+    "actualIOSTestExecuted": false,
+    "limitation": "This prepared case reaches the production implementation rather than fake unregister. No current result proves which CoreText error each scope returns, coverage of a particular error branch, or restoration of a previously registered missing-file cache."
+  },
+  "existingPortableEvidence": {
+    "reviewerReranTests": false,
+    "implementerReportedSmokeGuardTests": 24,
+    "implementerReportedRenewalAdapterTests": 16,
+    "logs": [
+      {
+        "name": "head",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\head.stdout.txt",
+            "sha256": "79956a55947c857ba1364de930619c6ba1bcffe1bac977044de14bd416e6a1da",
+            "bytes": 41
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\head.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          }
+        }
+      },
+      {
+        "name": "changed-paths",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\changed-paths.stdout.txt",
+            "sha256": "297d9cd3a872e73295b5db6235e1c3495cb75196b46cf8196e21744ea7d06e74",
+            "bytes": 504
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\changed-paths.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          }
+        }
+      },
+      {
+        "name": "diff-check",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\diff-check.stdout.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\diff-check.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          }
+        }
+      },
+      {
+        "name": "smoke-tools-tests",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\smoke-tools-tests.stdout.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\smoke-tools-tests.stderr.txt",
+            "sha256": "a734a6a80443b263dd25148153144812bcb5008131df40e08f844d221253b4ab",
+            "bytes": 128
+          }
+        }
+      },
+      {
+        "name": "renewal-probe-tools-tests",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\renewal-probe-tools-tests.stdout.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\renewal-probe-tools-tests.stderr.txt",
+            "sha256": "741908e65b1513a1d95106cb7d14fb144a526ca0a6bc3fb3bde6b76f250f01bb",
+            "bytes": 120
+          }
+        }
+      },
+      {
+        "name": "bash-syntax",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\bash-syntax.stdout.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\bash-syntax.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          }
+        }
+      },
+      {
+        "name": "local-product-source",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\local-product-source.stdout.txt",
+            "sha256": "2a26aca4cbffbe0a481e859ce6d650929a63e82ed658480b8b168729d695c6dd",
+            "bytes": 5262
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\local-product-source.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          }
+        }
+      },
+      {
+        "name": "patch-reverse-check",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\patch-reverse-check.stdout.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\patch-reverse-check.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          }
+        }
+      },
+      {
+        "name": "patch-forward-main-check",
+        "implementerExitCode": 0,
+        "existingLogsHashVerifiedByReviewer": true,
+        "logs": {
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\patch-forward-main-check.stdout.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-integration-validation\\patch-forward-main-check.stderr.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          }
+        }
+      }
+    ]
+  },
+  "grammarScreen": {
+    "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\font-swift-syntax-screen.json",
+    "sha256": "1e4f12f7d1f12915d6cf1874ffea0e40eb29504afa66d2a2a00ba24285782076",
+    "files": 8,
+    "passed": true,
+    "SwiftTypecheckPerformed": false
+  },
+  "remainingAcceptanceAndDisclosedLimits": [
+    "Real Swift/Apple SDK compilation and the selected Simulator test methods/execution leaves remain required; no iOS result is asserted by this review.",
+    "Fault-injection registry tests prove their owned transaction/publication contracts only. Production CoreText scopes/in-use failures, actual missing-URL codes and previously registered missing-file caches require runtime evidence.",
+    "The busy guard serializes import/delete and the Qi font call. Ordinary theme and selection setters remain available during awaits; an explicitly requested successful import selects its requested scope on completion.",
+    "userFonts didSet still encodes JSON and writes UserDefaults on main; delete still filters records on main. Size/main traces disclose these costs; this is not a claim that all font work moved off main or that UI latency improved.",
+    "Startup registration/duplicate cleanup and synchronous low-level callers retain their earlier context.",
+    "No preference/files/CoreText crash atomicity, external Files writer coordination, power-loss guarantee, automatic recovery UI, or universal registration rollback is established.",
+    "Synthetic guard fixtures and replay of an older xcresult schema are not font/iOS executions.",
+    "This source batch is separate from the previously fixed diagnostic build12 source and does not alter any delivered IPA."
+  ],
+  "primaryReferences": [
+    {
+      "title": "Apple Core Text CTFontManagerError",
+      "url": "https://developer.apple.com/documentation/coretext/ctfontmanagererror",
+      "use": "CoreText defines distinct missing-file, not-registered, unsupported-scope, in-use and permissions failures; documentation does not establish the actual result returned by this unexecuted case."
+    }
+  ],
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\reader-font-integration.patch",
+    "sha256": "bff9a8ee5266537643c796e2e0dc8f386c2bdc580729d75c61179a997d2c1310",
+    "bytes": 94155
+  },
+  "implementerRecord": {
+    "path": "F:\\yuedu-reader\\.build\\reader-font-integration-worktree\\.build\\reader-font-integration-review.json",
+    "sha256": "b2f3ebaa450f9ca48a0bfa2e0880209153d57db67501d12300b9394091151dc6"
+  },
+  "files": [
+    {
+      "path": "Modules/Features/Reader/ReaderSettingsView.swift",
+      "sha256": "08eb0a39dc346f8bab2930708c718892e12d11c780622a67fb44638e3b0acad0",
+      "bytes": 39582
+    },
+    {
+      "path": "Modules/Features/Reader/ReaderView.swift",
+      "sha256": "947c18609ed739cee17d1fb4ca59b863b1284ed71d2f161585541ea7c9711195",
+      "bytes": 151211
+    },
+    {
+      "path": "Modules/Features/Settings/GlobalFontSettingsView.swift",
+      "sha256": "7b81d910e0e46b2cfeca2541eb34857f89cb4f965e0532780b174df7dc99de50",
+      "bytes": 6466
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/GlobalSettings.swift",
+      "sha256": "30d78596f34c52ab2144a73fb096ce83d1019a4fec13da94619e67e137b1a3f0",
+      "bytes": 197689
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/QiThemeImportService.swift",
+      "sha256": "e76f978c426f940de4e508ecb3a8f997580970b21b91f8d7c119f14be53d2308",
+      "bytes": 24903
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/UserFontStorageManager.swift",
+      "sha256": "86177206c82dfd1cb3ff36679b679ac02fb655a81d3a0943da31359dc1c3c496",
+      "bytes": 16519
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/UserFontSettingsTests.swift",
+      "sha256": "1d820808060d4286389fe643d40f60186eeac0e4a1c9046d540624baa0bfd260",
+      "bytes": 21340
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/UserFontTransactionTests.swift",
+      "sha256": "a41a39b523a733c4d6668bc88d0ae6dce3c887e37bd73bca731849e23b3320c3",
+      "bytes": 17940
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "sha256": "056f26669be40d8479e102719e4969331ef0ff08bdaf068fd1c711f65cb2634f",
+      "bytes": 13903
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "sha256": "2eb319c2d9ca73692e618e1bffe00b1142e35784e7cd140ad037869006a2620e",
+      "bytes": 27428
+    },
+    {
+      "path": "scripts/reader-experience/test-smoke-tools.py",
+      "sha256": "7e1585b905a4bfb491029c115d0414ea605c47019dc9a6385d0ec9a5d73caeae",
+      "bytes": 28641
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "sha256": "8c617d1baebd1e027caf10638a283a90561487eb166580a9bea63704545eeaf7",
+      "bytes": 11510
+    }
+  ],
+  "mainWorktreeModifiedByReviewer": false,
+  "fontOrToolSourcesModifiedByReviewer": false,
+  "workflowOrCITriggeredByReviewer": false,
+  "signingInstallationOrDeviceExecutionPerformed": false,
+  "swiftCompilationExecutedByReviewer": false,
+  "iosTestsExecutedByReviewer": false,
+  "releaseOrDeviceAcceptanceEstablished": false
+}

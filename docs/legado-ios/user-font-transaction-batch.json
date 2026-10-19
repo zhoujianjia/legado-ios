@@ -1,0 +1,435 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "stageId": "s2-reading-experience",
+  "workpackageId": "reading-experience-design",
+  "status": "implemented-reviewed-awaiting-source-specific-ios-execution",
+  "说明": "只归档已存在的字节固定证据及本批代码／测试定义；准备和 portable 通过不是 Swift／iOS／真机验收。",
+  "stageComplete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "sourceBinding": {
+    "patchBaseCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+    "integratingHEADObserved": "a76d380fdc108db83be68961905ee49edd209571",
+    "observedHEADIsNotClaimedToContainUncommittedFontChanges": true,
+    "workingTree12FilesMatchFrozenReviewByteHashes": true,
+    "files": [
+      {
+        "path": "Modules/Features/Reader/ReaderSettingsView.swift",
+        "sha256": "08eb0a39dc346f8bab2930708c718892e12d11c780622a67fb44638e3b0acad0",
+        "bytes": 39582
+      },
+      {
+        "path": "Modules/Features/Reader/ReaderView.swift",
+        "sha256": "947c18609ed739cee17d1fb4ca59b863b1284ed71d2f161585541ea7c9711195",
+        "bytes": 151211
+      },
+      {
+        "path": "Modules/Features/Settings/GlobalFontSettingsView.swift",
+        "sha256": "7b81d910e0e46b2cfeca2541eb34857f89cb4f965e0532780b174df7dc99de50",
+        "bytes": 6466
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/GlobalSettings.swift",
+        "sha256": "30d78596f34c52ab2144a73fb096ce83d1019a4fec13da94619e67e137b1a3f0",
+        "bytes": 197689
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/QiThemeImportService.swift",
+        "sha256": "e76f978c426f940de4e508ecb3a8f997580970b21b91f8d7c119f14be53d2308",
+        "bytes": 24903
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/UserFontStorageManager.swift",
+        "sha256": "86177206c82dfd1cb3ff36679b679ac02fb655a81d3a0943da31359dc1c3c496",
+        "bytes": 16519
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/UserFontSettingsTests.swift",
+        "sha256": "1d820808060d4286389fe643d40f60186eeac0e4a1c9046d540624baa0bfd260",
+        "bytes": 21340
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/UserFontTransactionTests.swift",
+        "sha256": "a41a39b523a733c4d6668bc88d0ae6dce3c887e37bd73bca731849e23b3320c3",
+        "bytes": 17940
+      },
+      {
+        "path": "scripts/reader-experience/smoke.sh",
+        "sha256": "056f26669be40d8479e102719e4969331ef0ff08bdaf068fd1c711f65cb2634f",
+        "bytes": 13903
+      },
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "sha256": "2eb319c2d9ca73692e618e1bffe00b1142e35784e7cd140ad037869006a2620e",
+        "bytes": 27428
+      },
+      {
+        "path": "scripts/reader-experience/test-smoke-tools.py",
+        "sha256": "7e1585b905a4bfb491029c115d0414ea605c47019dc9a6385d0ec9a5d73caeae",
+        "bytes": 28641
+      },
+      {
+        "path": ".github/workflows/reader-smoke.yml",
+        "sha256": "8c617d1baebd1e027caf10638a283a90561487eb166580a9bea63704545eeaf7",
+        "bytes": 11510
+      }
+    ]
+  },
+  "excludedFixedCandidate": {
+    "build": "12",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "fontBatchBelongsToThisCandidate": false
+  },
+  "implementation": [
+    "复用唯一字体存储服务、GlobalSettings 和既有持久化；后台复制、元数据、CoreText 注册／注销、删除，失败恢复旧字节与注册，回滚失败保留自有恢复目录。",
+    "所有异步 import／delete／Qi font 操作共用 busy guard；字体记录及本次请求对应选择在同一 guarded MainActor turn 发布，文件提交后取消不会丢弃结果。",
+    "文件名只接受 fonts 目录内 basename；仅原路径属性读取明确 ENOENT 允许缺失旧文件，后续 copy ENOENT 及其他 I/O 错误拒绝。已覆盖缺失记录删除与同名字体重导入源码回归。",
+    "新旧字体测试属于同一个 UserFontSettingsTests serialized Suite；smoke 以真实方法身份与每个参数 execution 叶集验收，保留其他 groups 与 renewal 协议。"
+  ],
+  "preparedIOSSelection": {
+    "oldFontSuite": {
+      "methods": 15,
+      "executions": 15
+    },
+    "originalFrozenFontSuite": {
+      "methods": 21,
+      "executions": 38
+    },
+    "newFontMethods": {
+      "methods": 9,
+      "executions": 27
+    },
+    "finalFontSuite": {
+      "methods": 24,
+      "executions": 42
+    },
+    "oldLocalProduct": {
+      "methods": 41,
+      "executions": 41
+    },
+    "initialRequestedLocalProduct": {
+      "methods": 47,
+      "executions": 64
+    },
+    "finalLocalProduct": {
+      "methods": 50,
+      "executions": 68
+    }
+  },
+  "preparedCountsMeaning": "finalLocalProduct=50/68、finalFontSuite=24/42、newFontMethods=9/27 均为源码方法／计划执行，不是已运行数量；旧41与初稿47/64历史不覆盖。",
+  "preparedMethodExecutionInventory": {
+    "CachedBookTXTExportTests/completeExportPreservesChinese()": 1,
+    "CachedBookTXTExportTests/emptyExportDoesNotCreateEmptyBook()": 1,
+    "CachedBookTXTExportTests/partialExportUsesValidatedCacheInTOCOrder()": 1,
+    "CachedBookTXTExportTests/plainTextExportsWithoutHTMLInterpretation()": 1,
+    "PublicLibraryAvailabilityTests/countriesAndColdStart()": 1,
+    "PublicLibraryAvailabilityTests/runningUpdates()": 1,
+    "ReaderFontCatalogTests/bundledFontsAreRegisteredWithLicensedResources()": 1,
+    "ReaderFontCatalogTests/bundledSelectionsReachGlobalAndReaderFontResolvers()": 1,
+    "ReaderLocalProductTests/disabledBuiltInsStayHiddenAcrossStorefrontChanges()": 1,
+    "ReaderLocalProductTests/disabledRemoteCatalogKeepsCacheWithoutFetchingOrStamping()": 1,
+    "ReaderLocalProductTests/localChineseUsesActualSimplifiedTranslations()": 1,
+    "RemoteLibraryHTTPTests/authenticationScope()": 1,
+    "RemoteLibraryHTTPTests/coverSessionCache()": 1,
+    "RemoteLibraryHTTPTests/feedRequestCountAndErrors()": 1,
+    "RemoteLibraryHTTPTests/identifyingUserAgent()": 1,
+    "RemoteLibraryHTTPTests/loginPageDoesNotTriggerDownload()": 1,
+    "RemoteLibraryHTTPTests/malformedPartialResponse()": 1,
+    "RemoteLibraryHTTPTests/mutationDirectOrigin()": 1,
+    "RemoteLibraryHTTPTests/mutationRedirectScope()": 1,
+    "RemoteLibraryHTTPTests/opds2ContentTypes()": 1,
+    "RemoteLibraryHTTPTests/rangeFailureClassification()": 1,
+    "RemoteLibraryHTTPTests/rangeStreaming()": 1,
+    "RemoteLibraryHTTPTests/redirectScope()": 1,
+    "RemoteLibraryHTTPTests/searchDescription()": 1,
+    "SubscriptionPublicationTests/recomputingTheSameEntitlementDoesNotRepublishIt()": 1,
+    "SubscriptionPublicationTests/repeatedFreeStatusDoesNotInvalidateSubscribers()": 1,
+    "UserFontSettingsTests/defaultRegistryCanRemoveAnAlreadyMissingFont()": 1,
+    "UserFontSettingsTests/deletingSharedFontClearsGlobalAndReaderSelections()": 1,
+    "UserFontSettingsTests/epubFontOverrideAndRestoration()": 1,
+    "UserFontSettingsTests/epubPipelineExposesUserSelectedFont()": 1,
+    "UserFontSettingsTests/failedDeletePreservesLibrary()": 1,
+    "UserFontSettingsTests/failedImportPreservesLibrary(fault:global:)": 12,
+    "UserFontSettingsTests/fontImportReadsRealTrueTypeMetadata()": 1,
+    "UserFontSettingsTests/globalFontImportDoesNotChangeReaderSelection()": 1,
+    "UserFontSettingsTests/heldImportHasOnePublicationBoundary(cancelFirst:)": 2,
+    "UserFontSettingsTests/invalidNamesAreRejected(name:)": 6,
+    "UserFontSettingsTests/launchCleanupRemovesSupersededCopies()": 1,
+    "UserFontSettingsTests/missingOldFilesCanBeRepaired(reimport:)": 2,
+    "UserFontSettingsTests/nativeBoldFaceDoesNotReceiveSyntheticStroke()": 1,
+    "UserFontSettingsTests/onlineBooksAndEPUBExposeUserSelectedFont()": 1,
+    "UserFontSettingsTests/onlineHTMLChaptersUseSelectedReaderFontAsDefault()": 1,
+    "UserFontSettingsTests/onlineTXTFallbackUsesSelectedReaderFont()": 1,
+    "UserFontSettingsTests/readerFontImportDoesNotChangeGlobalSelection()": 1,
+    "UserFontSettingsTests/recoveryCopyMissingErrorStillAborts()": 1,
+    "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldForOnlineHTML()": 1,
+    "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldInTXT()": 1,
+    "UserFontSettingsTests/reimportingFontReplacesItsFile()": 1,
+    "UserFontSettingsTests/rollbackFailureRetainsMaterials()": 1,
+    "UserFontSettingsTests/successPublishesOneCommittedFont()": 1,
+    "UserFontSettingsTests/txtBuilderUsesSelectedReaderFont()": 1
+  },
+  "localChecksAlreadyExecuted": {
+    "smokeToolsPythonMethodsPassed": 24,
+    "renewalAdapterPythonMethodsPassed": 16,
+    "newTestsRerunByThisRecorder": false,
+    "swiftGrammarScreen": {
+      "files": 8,
+      "passed": true,
+      "SwiftTypecheckPerformed": false
+    },
+    "gitBashSyntaxAndPatchForwardReverseChecks": "previously passed; original raw logs archived",
+    "actualIOSTestExecutionsInThisFontBatch": 0,
+    "swiftCompilationExecuted": false,
+    "iosTestsExecuted": false,
+    "coreTextRuntimeExecuted": false
+  },
+  "defaultCoreTextCasePrepared": "defaultRegistryCanRemoveAnAlreadyMissingFont uses ownedDirectory with default Operations. Its URL was never registered; the source case has not run on iOS and does not validate previously registered missing-file caches.",
+  "guardScope": "The MainActor busy guard serializes/rejects import/delete/Qi font operations and keeps records plus the matching selection publication in one guarded turn. It does not lock normal selection setters or theme edits during worker awaits; successful explicit imports select their requested scope at completion.",
+  "limits": [
+    "Separate font follow-up based on 6b3a3bd; excluded from the fixed a76d380 build12 candidate. The archived reviews retain their original preparation-time wording.",
+    "Real Swift/Apple SDK compilation, CoreText dual-scope/in-use/absent-URL behavior and iOS execution remain pending.",
+    "userFonts didSet still JSON-encodes and writes UserDefaults on main; delete still removes array entries on main. Both publications have size/main traces; no constant-cost/performance improvement claim.",
+    "Already missing files have no old bytes from which to reconstruct a font; rollback preserves that original absence and makes no system-font-cache restoration claim.",
+    "Startup duplicate cleanup/register and synchronous low-level test APIs retain their prior execution context.",
+    "No atomic transaction across preferences, process crash, external Files edits or power loss.",
+    "Fault cases use an injected registry; one default-Operations missing-URL case is prepared for a later Simulator run. No real CoreText result is claimed.",
+    "Fixture xcresult trees are synthetic. The archived cache tree replay proves schema handling only, never font runtime success.",
+    "All other smoke groups and renewal protocol inputs remain unchanged; historical 41-test product evidence is not overwritten."
+  ],
+  "independentStaticReview": {
+    "unresolvedBlockingFindings": [],
+    "runtimeAcceptanceEstablished": false
+  },
+  "retainedEvidence": [
+    {
+      "source": ".build/reader-font-integration-worktree/.build/reader-font-integration-review.json",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/reader-font-integration-review.json",
+      "sha256": "b2f3ebaa450f9ca48a0bfa2e0880209153d57db67501d12300b9394091151dc6",
+      "bytes": 23177,
+      "kind": "implementer-review"
+    },
+    {
+      "source": ".build/renewal-discovery/font-integration-independent-review.json",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/font-integration-independent-review.json",
+      "sha256": "ed98c6ed6b5d2221ed160627c6e39b498a03453186d69e6f05feac31c849b532",
+      "bytes": 17159,
+      "kind": "independent-static-review"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/reader-font-integration.patch",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/reader-font-integration.patch",
+      "sha256": "bff9a8ee5266537643c796e2e0dc8f386c2bdc580729d75c61179a997d2c1310",
+      "bytes": 94155,
+      "kind": "frozen-apply-patch"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-swift-syntax-screen.json",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/font-swift-syntax-screen.json",
+      "sha256": "1e4f12f7d1f12915d6cf1874ffea0e40eb29504afa66d2a2a00ba24285782076",
+      "bytes": 1740,
+      "kind": "grammar-screen-not-typecheck"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/head.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/head.stdout.txt",
+      "sha256": "79956a55947c857ba1364de930619c6ba1bcffe1bac977044de14bd416e6a1da",
+      "bytes": 41,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/head.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/head.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/changed-paths.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/changed-paths.stdout.txt",
+      "sha256": "297d9cd3a872e73295b5db6235e1c3495cb75196b46cf8196e21744ea7d06e74",
+      "bytes": 504,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/changed-paths.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/changed-paths.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/diff-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/diff-check.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/diff-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/diff-check.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/smoke-tools-tests.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/smoke-tools-tests.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/smoke-tools-tests.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/smoke-tools-tests.stderr.txt",
+      "sha256": "a734a6a80443b263dd25148153144812bcb5008131df40e08f844d221253b4ab",
+      "bytes": 128,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/renewal-probe-tools-tests.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/renewal-probe-tools-tests.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/renewal-probe-tools-tests.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/renewal-probe-tools-tests.stderr.txt",
+      "sha256": "741908e65b1513a1d95106cb7d14fb144a526ca0a6bc3fb3bde6b76f250f01bb",
+      "bytes": 120,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/bash-syntax.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/bash-syntax.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/bash-syntax.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/bash-syntax.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/local-product-source.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/local-product-source.stdout.txt",
+      "sha256": "2a26aca4cbffbe0a481e859ce6d650929a63e82ed658480b8b168729d695c6dd",
+      "bytes": 5262,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/local-product-source.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/local-product-source.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/patch-reverse-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/patch-reverse-check.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/patch-reverse-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/patch-reverse-check.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/patch-forward-main-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/patch-forward-main-check.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    },
+    {
+      "source": ".build/reader-font-integration-worktree/.build/font-integration-validation/patch-forward-main-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-font-transaction/patch-forward-main-check.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "raw-portable-command-log"
+    }
+  ],
+  "historicalEvidencePreservedSHA256": {
+    "docs/legado-ios/reading-comfort-batch.json": "730ee0cc9ad95f69e4c53e7aeef036aa744bf398038ce67713c2e643c2b0edcb",
+    "docs/legado-ios/local-product-validation.json": "04a2ad2ccb0207b0c39b5e6d4595d2b4c5e4ad2d8513de5b9c4935909a3dacb6"
+  },
+  "canonicalPlanMutation": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "beforeSHA256": "bbece545e951babb2a4859ea06a44c48ae2c6a19aef1b3ce3415b977b1739356",
+    "afterSHA256": "b123d10eaf1ca9adbdafdef11764ee98f21334a22a61129aaf4ea7bbb8134f0a",
+    "stageCount": 8,
+    "workpackageCount": 33,
+    "featureDomainCount": 64,
+    "ownershipAndDependenciesUnchanged": true,
+    "activeCloudPoliciesUnchanged": true,
+    "existingCheckerResult": "docs/legado-ios/evidence/reader-font-transaction/plan-check.json",
+    "scope": "Only existing font package execution/evidence and its ready/awaiting queues; no feature or stage acceptance."
+  },
+  "recorderActions": {
+    "gitCommitOrPush": false,
+    "cloudTriggered": false,
+    "privateSourcesRead": false,
+    "IPAOrDeviceActions": false
+  },
+  "additionalMainWorktreeVerification": {
+    "portableSmokeGuardTestsPassed": 24,
+    "portableRenewalAdapterTestsPassed": 16,
+    "shellSyntaxPassed": true,
+    "gitDiffCheckPassed": true,
+    "actualSwiftCompilationOrIOSTestExecution": false,
+    "CoreTextCaseSpellingAndIOSPlatformDeclarationsConfirmed": true,
+    "CoreTextCaseNumericValuesOrExactMinimumIOSConfirmed": false,
+    "retainedEvidence": [
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/font-coretext-sdk-primary-check.json",
+        "sha256": "4b859009a35d04d106688167eb2edf222da231bce366e69ce0d2bbf61ed8379e"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/record.json",
+        "sha256": "59a732596a3f8709530f745f4433bf64af838af51674c1fe35a35712ca87b2ff"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/renewal-adapter-guards.stderr",
+        "sha256": "68ee284de8be5bc067b892d565c2c7afb2a1442220aca57f00c4e675b1d82194"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/renewal-adapter-guards.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/smoke-guards.stderr",
+        "sha256": "c5f7af4d31e296e8e5462a18d87f822a6f2044371af2a1353b5543b6e9fdc496"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/smoke-guards.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/smoke-shell-syntax.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-font-transaction/main-worktree-checks/smoke-shell-syntax.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  }
+}

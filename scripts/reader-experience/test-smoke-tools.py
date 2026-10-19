@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Offline guard tests; these do not execute or claim the Simulator UI smoke."""
 import copy
-from contextlib import redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 import io
 import importlib.util
+import json
 from pathlib import Path
 import plistlib
 import tempfile
@@ -31,6 +32,32 @@ class SmokeEvidenceTests(unittest.TestCase):
     def source_info(self):
         return {"CFBundleURLTypes": [{"CFBundleURLSchemes": ["com.googleusercontent.apps.old", "yuedu", "legado"]}],
                 "GatewayBaseURL": "https://upstream.invalid", "GIDClientID": "upstream"}
+
+    def product_fixture(self):
+        # Synthetic evidence with the frozen xcresult Test Case/Arguments shape;
+        # never label these fixtures as actual font/iOS test executions.
+        summary = {"totalTestCount": 50, "passedTests": 50, "failedTests": 0, "skippedTests": 0,
+                   "expectedFailures": 0, "devicesAndConfigurations": [
+                       {"passedTests": 68, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+        cases = []
+        for identity, executions in sorted(smoke.LOCAL_PRODUCT_EXECUTIONS.items()):
+            node = {"nodeType": "Test Case", "nodeIdentifier": identity, "result": "Passed"}
+            if executions != 1:
+                node["children"] = [{"nodeType": "Arguments", "name": "owned-fixture-" + str(index), "result": "Passed"}
+                                    for index in range(executions)]
+            cases.append(node)
+        tree = {"testNodes": [{"nodeType": "Test Plan", "result": "Passed", "children": [
+            {"nodeType": "Unit test bundle", "result": "Passed", "children": cases}]}]}
+        return summary, tree
+
+    def product_sources(self):
+        inventory = smoke.local_product_source_inputs(HERE.parents[1])
+        for record in inventory["sourceInputs"]:
+            self.write(self.root / record["path"], (HERE.parents[1] / record["path"]).read_bytes())
+        return inventory
+
+    def product_cases(self, tree):
+        return tree["testNodes"][0]["children"][0]["children"]
 
     def test_source_info_overlay_is_boolean_and_replaces_only_cloud_configuration(self):
         path = self.root / "Info.plist"
@@ -133,6 +160,168 @@ class SmokeEvidenceTests(unittest.TestCase):
             with self.subTest(summary=summary), self.assertRaises(ValueError):
                 smoke.verify_summary(summary, 13, 23)
 
+    def test_local_product_source_inventory_binds_the_single_serialized_font_suite(self):
+        inventory = self.product_sources()
+        self.assertEqual(smoke.local_product_source_inputs(self.root), inventory)
+        self.assertEqual((inventory["methodCount"], inventory["plannedExecutionCount"]), (50, 68))
+        font = {key: count for key, count in inventory["expectedExecutionsByMethod"].items()
+                if key.startswith("UserFontSettingsTests/")}
+        self.assertEqual((len(font), sum(font.values())), (24, 42))
+        self.assertEqual(len(inventory["sourceInputs"]), 8)
+        self.assertNotIn("UserFontTransactionTests/failedImportPreservesLibrary(fault:global:)", inventory["expectedExecutionsByMethod"])
+
+    def test_source_inventory_rejects_method_ownership_serialization_and_argument_drift(self):
+        self.product_sources()
+        directory = self.root / "Tests/iOS/yuedu appTests"
+        transaction = directory / "UserFontTransactionTests.swift"
+        settings = directory / "UserFontSettingsTests.swift"
+        mutations = [
+            (transaction, "func failedImportPreservesLibrary(", "func substitutedImportTest("),
+            (transaction, "fault: FontFault", "wrongLabel: FontFault"),
+            (transaction, "fault: FontFault", "fault: String"),
+            (transaction, "extension UserFontSettingsTests {", "@Suite(.serialized) struct UserFontTransactionTests {"),
+            (transaction, "case copyCandidate, metadata, copyOriginal, unregister, register, removeAfterMutation",
+             "case copyCandidate, metadata, copyOriginal, unregister, register"),
+            (transaction, "arguments: [false, true]", "arguments: [false, false]"),
+            (transaction, "arguments: [false, true]", "arguments: [0, 1]"),
+            (transaction, '"../outside.ttf", "/outside.ttf"', '"../outside.ttf", "owned.ttf"'),
+            (settings, '.serialized', '.timeLimit(.minutes(1))'),
+            (settings, "struct UserFontSettingsTests {", "struct SomeOtherFontTests {"),
+        ]
+        for path, old, new in mutations:
+            original = path.read_text(encoding="utf-8")
+            self.assertIn(old, original)
+            try:
+                path.write_text(original.replace(old, new, 1), encoding="utf-8")
+                with self.subTest(old=old, new=new), self.assertRaises(ValueError):
+                    smoke.local_product_source_inputs(self.root)
+            finally:
+                path.write_text(original, encoding="utf-8")
+        original = transaction.read_text(encoding="utf-8")
+        for suffix in ("\n@Test func failedDeletePreservesLibrary() {}\n", "\n@Test(\n func unsupportedDeclaration() {}\n"):
+            try:
+                transaction.write_text(original + suffix, encoding="utf-8")
+                with self.subTest(suffix=suffix), self.assertRaises(ValueError):
+                    smoke.local_product_source_inputs(self.root)
+            finally:
+                transaction.write_text(original, encoding="utf-8")
+        transaction.unlink()
+        with self.assertRaises(FileNotFoundError):
+            smoke.local_product_source_inputs(self.root)
+
+    def test_local_product_requires_exact_source_method_identities_and_argument_counts(self):
+        summary, tree = self.product_fixture()
+        checked = smoke.verify_local_product(summary, tree)
+        self.assertEqual((checked["expectedTests"], checked["expectedExecutions"]), (50, 68))
+        self.assertEqual(len(checked["passedCaseIdentifiers"]), 50)
+        self.assertEqual(sum(checked["passedExecutionsByMethod"].values()), 68)
+        # The actual Xcode identifier may include this known target prefix.
+        for node in self.product_cases(tree):
+            node["nodeIdentifier"] = "yuedu appTests/" + node["nodeIdentifier"]
+        self.assertEqual(smoke.verify_local_product(summary, tree)["passedCaseIdentifiers"], checked["passedCaseIdentifiers"])
+
+    def test_argument_walker_replays_the_actual_frozen_xcresult_schema(self):
+        # This old cache fixture proves only the JSON walker schema, not font
+        # behavior. It cannot satisfy the new local-product selection.
+        tree = smoke.read_json(HERE.parents[1] / "docs/legado-ios/fixtures/ios-cache-tests-f73f0ae.json")
+        archived = {
+            "ChapterCacheMigrationTests/packageLoaderUpgradesDownloadedLegacyChapter()": 1,
+            "ChapterCacheMigrationTests/corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState:)": 2,
+            "ChapterCacheMigrationTests/legacyBodyWithoutChecksumRemainsUpgradeable(hasCachedState:)": 2,
+            "ChapterCacheRepositoryWriteTests/emptyContentRejected()": 1,
+            "ChapterCacheRepositoryWriteTests/bodyFailurePropagates()": 1,
+            "ChapterCacheRepositoryWriteTests/writeIsReloadable()": 1,
+        }
+        with patch.object(smoke, "LOCAL_PRODUCT_EXECUTIONS", archived):
+            checked = smoke.verify_local_product_cases(tree)
+        self.assertEqual((len(checked["passedCaseIdentifiers"]), sum(checked["passedExecutionsByMethod"].values())), (6, 8))
+        with self.assertRaises(ValueError):
+            smoke.verify_local_product_cases(tree)
+
+    def test_local_product_rejects_green_wrong_duplicate_or_missing_method_cases(self):
+        _, tree = self.product_fixture()
+        mutations = [lambda cases: cases.pop(),
+                     lambda cases: cases.append(copy.deepcopy(cases[0])),
+                     lambda cases: cases[0].update(nodeIdentifier="SomeOtherTests/looksGreen()"),
+                     lambda cases: cases[0].update(nodeIdentifier="wrong target/" + cases[0]["nodeIdentifier"]),
+                     lambda cases: cases[0].update(nodeIdentifier=True),
+                     lambda cases: cases[0].pop("nodeIdentifier"),
+                     lambda cases: cases[0].update(result="Skipped"),
+                     lambda cases: cases[0].update(result="Failed"),
+                     lambda cases: cases[0].update(children=[{"nodeType": "Arguments", "name": "extra", "result": "Passed"}])]
+        for mutation in mutations:
+            changed = copy.deepcopy(tree)
+            mutation(self.product_cases(changed))
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                smoke.verify_local_product_cases(changed)
+        # Same method count, but a duplicate replaces a missing intended method.
+        changed = copy.deepcopy(tree)
+        cases = self.product_cases(changed)
+        cases[1] = copy.deepcopy(cases[0])
+        with self.assertRaises(ValueError):
+            smoke.verify_local_product_cases(changed)
+
+    def test_local_product_rejects_missing_extra_duplicate_skipped_or_failed_argument_leaves(self):
+        _, tree = self.product_fixture()
+        def arguments(value):
+            return next(node["children"] for node in self.product_cases(value) if node.get("children"))
+        mutations = [lambda leaves: leaves.pop(),
+                     lambda leaves: leaves.append(copy.deepcopy(leaves[0])),
+                     lambda leaves: leaves[0].update(name=leaves[1]["name"]),
+                     lambda leaves: leaves[0].update(name=""),
+                     lambda leaves: leaves[0].update(result="Skipped"),
+                     lambda leaves: leaves[0].update(result="Failed"),
+                     lambda leaves: leaves[0].update(nodeType="Test Case"),
+                     lambda leaves: leaves[0].update(children=[{}])]
+        for mutation in mutations:
+            changed = copy.deepcopy(tree)
+            mutation(arguments(changed))
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                smoke.verify_local_product_cases(changed)
+        changed = copy.deepcopy(tree)
+        cases = {node["nodeIdentifier"]: node for node in self.product_cases(changed)}
+        imports = cases["UserFontSettingsTests/failedImportPreservesLibrary(fault:global:)"]["children"]
+        cancel = cases["UserFontSettingsTests/heldImportHasOnePublicationBoundary(cancelFirst:)"]["children"]
+        cancel.append(imports.pop())  # total stays 68; per-method coverage changed.
+        with self.assertRaises(ValueError):
+            smoke.verify_local_product_cases(changed)
+
+    def test_local_product_rejects_malformed_test_trees(self):
+        for tree in ({}, {"testNodes": None}, {"testNodes": [None]},
+                     {"testNodes": [{"nodeType": "Test Plan", "children": True}]},
+                     {"testNodes": [{"nodeType": "Unknown"}]},
+                     {"testNodes": [{"nodeType": "Test Plan", "result": "Skipped"}]}):
+            with self.subTest(tree=tree), self.assertRaises(ValueError):
+                smoke.verify_local_product_cases(tree)
+
+    def test_local_product_summary_cannot_substitute_old_counts_or_hide_execution_failures(self):
+        summary, tree = self.product_fixture()
+        bad = []
+        for total in (41, 47, 49, 51):
+            bad.append({**summary, "totalTestCount": total, "passedTests": total})
+        for key, value in (("passedTests", 47), ("passedTests", 64), ("passedTests", 67), ("passedTests", True),
+                           ("failedTests", 1), ("skippedTests", 1), ("expectedFailures", 1)):
+            changed = copy.deepcopy(summary)
+            changed["devicesAndConfigurations"][0][key] = value
+            bad.append(changed)
+        bad.append({key: value for key, value in summary.items() if key != "devicesAndConfigurations"})
+        for changed in bad:
+            with self.subTest(summary=changed), self.assertRaises(ValueError):
+                smoke.verify_local_product(changed, tree)
+
+    def test_local_product_cli_requires_the_test_tree_and_emits_source_identities(self):
+        summary, tree = self.product_fixture()
+        summary_path, tree_path = self.root / "summary.json", self.root / "tests.json"
+        self.write(summary_path, json.dumps(summary).encode())
+        self.write(tree_path, json.dumps(tree).encode())
+        argv = ["smoke-tools.py", "verify-local-product", "--summary", str(summary_path), "--tests", str(tree_path)]
+        with patch.object(smoke.sys, "argv", argv), redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(smoke.main(), 0)
+        self.assertEqual(len(json.loads(output.getvalue())["passedCaseIdentifiers"]), 50)
+        with patch.object(smoke.sys, "argv", argv[:-2]), redirect_stderr(io.StringIO()) as errors, self.assertRaises(SystemExit):
+            smoke.main()
+        self.assertIn("--tests", errors.getvalue())
+
     def audit_fixture(self, source_commit=None, already_independent=False):
         family = smoke.config.MAIN_BUNDLE if already_independent else smoke.config.UPSTREAM_BUNDLE
         original_project = "\n".join("PRODUCT_BUNDLE_IDENTIFIER = " + family + suffix + ";"
@@ -216,36 +405,40 @@ class SmokeEvidenceTests(unittest.TestCase):
         unit = {"totalTestCount": 9, "passedTests": 9, "failedTests": 0, "skippedTests": 0}
         ui = {**unit, "totalTestCount": 1, "passedTests": 1}
         paging = {**unit, "totalTestCount": 12, "passedTests": 12}
-        product = {**unit, "totalTestCount": 41, "passedTests": 41}
+        product, product_tests = self.product_fixture()
+        self.product_sources()
         with patch.object(smoke, "REPO", self.root), patch.object(smoke, "source_sha", return_value=SOURCE), \
                 patch.object(smoke, "git", side_effect=git):
-            result = smoke.result(audit, settings, unit, ui, paging, product)
+            result = smoke.result(audit, settings, unit, ui, paging, product, product_tests)
             self.assertEqual(result["status"], "passed")
             self.assertFalse(result["deviceValidationPassed"])
             self.assertFalse(result["deliveredIPAExecuted"])
             self.assertFalse(result["paidFeatureOverrides"])
             self.assertEqual(result["configuration"], "Debug")
             self.assertEqual(result["targetedTests"]["cloudKitAndLocalServicesConfiguration"]["totalTestCount"], 9)
-            self.assertEqual(result["targetedTests"]["localProductFeatures"]["totalTestCount"], 41)
+            self.assertEqual(result["targetedTests"]["localProductFeatures"]["totalTestCount"], 50)
+            self.assertEqual(result["targetedTests"]["localProductFeatures"]["expectedExecutions"], 68)
             self.assertEqual(result["targetedTests"]["searchAutoPaging"]["totalTestCount"], 12)
             self.assertEqual(result["targetedTests"]["TXTReaderUI"]["totalTestCount"], 1)
             for key, value in (("totalTestCount", 0), ("totalTestCount", 11), ("totalTestCount", 19),
                                ("passedTests", 11), ("passedTests", True), ("failedTests", 1),
                                ("skippedTests", 1), ("skippedTests", None)):
                 with self.subTest(paging=(key, value)), self.assertRaises(ValueError):
-                    smoke.result(audit, settings, unit, ui, {**paging, key: value}, product)
+                    smoke.result(audit, settings, unit, ui, {**paging, key: value}, product, product_tests)
             for missing in paging:
                 with self.subTest(missingPagingField=missing), self.assertRaises(ValueError):
-                    smoke.result(audit, settings, unit, ui, {key: value for key, value in paging.items() if key != missing}, product)
+                    smoke.result(audit, settings, unit, ui, {key: value for key, value in paging.items() if key != missing}, product, product_tests)
             with self.assertRaises(ValueError):
-                smoke.result(audit, settings, unit, ui, None, product)
+                smoke.result(audit, settings, unit, ui, None, product, product_tests)
             for change in ({"totalTestCount": 0}, {"passedTests": 26}, {"skippedTests": 1}, {"failedTests": 1}):
                 with self.subTest(product=change), self.assertRaises(ValueError):
-                    smoke.result(audit, settings, unit, ui, paging, {**product, **change})
+                    smoke.result(audit, settings, unit, ui, paging, {**product, **change}, product_tests)
+            with self.assertRaises(ValueError):
+                smoke.result(audit, settings, unit, ui, paging, product, None)
             info["YueduLocalExperience"] = False
             self.write(app / "Info.plist", plistlib.dumps(info))
             with self.assertRaisesRegex(ValueError, "local-mode Info"):
-                smoke.result(audit, settings, unit, ui, paging, product)
+                smoke.result(audit, settings, unit, ui, paging, product, product_tests)
 
     def test_result_cli_requires_the_independent_paging_summary(self):
         args = ["smoke-tools.py", "result", "--audit", "audit.json", "--settings", "settings.json",
@@ -255,6 +448,14 @@ class SmokeEvidenceTests(unittest.TestCase):
             smoke.main()
         self.assertEqual(failure.exception.code, 2)
         self.assertIn("--paging", errors.getvalue())
+
+    def test_result_cli_requires_local_product_method_evidence(self):
+        args = ["smoke-tools.py", "result", "--audit", "audit.json", "--settings", "settings.json",
+                "--unit", "configuration.json", "--ui", "txt.json", "--paging", "paging.json",
+                "--product", "product.json", "--output", "result.json"]
+        with patch.object(smoke.sys, "argv", args), redirect_stderr(io.StringIO()) as errors, self.assertRaises(SystemExit):
+            smoke.main()
+        self.assertIn("--product-tests", errors.getvalue())
 
 
 if __name__ == "__main__":

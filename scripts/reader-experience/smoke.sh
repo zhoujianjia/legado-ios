@@ -33,6 +33,9 @@ xcrun xcresulttool get test-results summary --path "$WORK/cloudkit.xcresult" > "
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/cloudkit-summary.json" --expected 9
 # Product changes have their own exact gate: account policy, real bundled fonts,
 # cache-only TXT output, simplified UI and disabled upstream library requests.
+# The same serialized font suite grows from 15/15 to 24/42; the complete group
+# grows from 41/41 to 50 methods/68 executions. Inventory is source-only evidence.
+python3 "$SCRIPT_DIR/smoke-tools.py" local-product-source > "$WORK/local-product-source.json"
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/local-product-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/local-product.xcresult" \
   -only-testing:'yuedu appTests/ReaderLocalProductTests' \
@@ -43,7 +46,9 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/local-product-tests.log" -t 1200 --
   -only-testing:'yuedu appTests/PublicLibraryAvailabilityTests' \
   -only-testing:'yuedu appTests/RemoteLibraryHTTPTests'
 xcrun xcresulttool get test-results summary --path "$WORK/local-product.xcresult" > "$WORK/local-product-summary.json"
-python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/local-product-summary.json" --expected 41
+xcrun xcresulttool get test-results tests --path "$WORK/local-product.xcresult" > "$WORK/local-product-tests.json"
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-local-product --summary "$WORK/local-product-summary.json" \
+  --tests "$WORK/local-product-tests.json" > "$WORK/local-product-result.json"
 # Check actual position files, cold scroll restoration and the TXT migration
 # journal contract independently of the unchanged local-product verdict.
 # Counts include the four content variants and interrupted migration arguments:
@@ -164,7 +169,8 @@ xcrun xcresulttool get test-results summary --path "$WORK/txt-ui.xcresult" > "$W
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/txt-ui-summary.json" --expected 1
 python3 "$SCRIPT_DIR/smoke-tools.py" result --audit "$WORK/overlays.json" --settings "$WORK/build-settings.json" \
   --unit "$WORK/cloudkit-summary.json" --paging "$WORK/paging-summary.json" \
-  --ui "$WORK/txt-ui-summary.json" --product "$WORK/local-product-summary.json" --output "$WORK/result.json"
+  --ui "$WORK/txt-ui-summary.json" --product "$WORK/local-product-summary.json" \
+  --product-tests "$WORK/local-product-tests.json" --output "$WORK/result.json"
 # Preserve the independent TXT verdict even if this additional source case fails.
 # The fixture process belongs to this invocation; bind/readiness errors never
 # fall back to an existing server. Its requests and cleanup record are retained.

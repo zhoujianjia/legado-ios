@@ -29,14 +29,14 @@ struct UserFontSettingsTests {
     /// again — used to drop the old list entry but leave its file behind: a device
     /// reached 1 GB of identical copies in `Documents/fonts`.
     @Test("re-importing a font replaces its file instead of piling up copies")
-    func reimportingFontReplacesItsFile() throws {
+    func reimportingFontReplacesItsFile() async throws {
         let settings = GlobalSettings.shared
         let previousFonts = settings.userFonts
         let fixtureURL = Self.ahemFixtureURL
         let before = try Self.fontFiles()
 
-        let first = try settings.importUserFont(from: fixtureURL)
-        let second = try settings.importUserFont(from: fixtureURL)
+        let first = try await settings.importUserFont(from: fixtureURL)
+        let second = try await settings.importUserFont(from: fixtureURL)
         defer {
             UserFontStorageManager.shared.delete(second)
             settings.userFonts = previousFonts
@@ -53,7 +53,12 @@ struct UserFontSettingsTests {
     func launchCleanupRemovesSupersededCopies() throws {
         let manager = UserFontStorageManager.shared
         let listed = try manager.importFont(fileURL: Self.ahemFixtureURL)
-        let orphan = try manager.importFont(fileURL: Self.ahemFixtureURL)
+        // Model the old build's unlisted duplicate directly. A new import must
+        // now reject failed/duplicate registration rather than report success.
+        let orphan = UserFontInfo(id: UUID(), fileName: "\(UUID().uuidString).ttf",
+            displayName: listed.displayName, familyName: listed.familyName,
+            postScriptName: listed.postScriptName, addedAt: Date())
+        try FileManager.default.copyItem(at: manager.fileURL(for: listed), to: manager.fileURL(for: orphan))
         defer {
             manager.delete(listed)
             manager.delete(orphan)
@@ -352,7 +357,7 @@ struct UserFontSettingsTests {
     }
 
     @Test("global font import selects only the app interface font")
-    func globalFontImportDoesNotChangeReaderSelection() throws {
+    func globalFontImportDoesNotChangeReaderSelection() async throws {
         let settings = GlobalSettings.shared
         let savedFonts = settings.userFonts
         let savedGlobal = settings.selectedGlobalFontPostScript
@@ -371,7 +376,7 @@ struct UserFontSettingsTests {
         }
 
         settings.selectedReaderFontPostScript = "Courier"
-        imported = try settings.importGlobalFont(from: fixtureURL)
+        imported = try await settings.importGlobalFont(from: fixtureURL)
 
         #expect(settings.selectedGlobalFontPostScript == imported?.postScriptName)
         #expect(settings.selectedReaderFontPostScript == "Courier")
@@ -379,7 +384,7 @@ struct UserFontSettingsTests {
     }
 
     @Test("reader font import does not change the app interface font")
-    func readerFontImportDoesNotChangeGlobalSelection() throws {
+    func readerFontImportDoesNotChangeGlobalSelection() async throws {
         let settings = GlobalSettings.shared
         let savedFonts = settings.userFonts
         let savedGlobal = settings.selectedGlobalFontPostScript
@@ -398,7 +403,7 @@ struct UserFontSettingsTests {
         }
 
         settings.selectedGlobalFontPostScript = "ExistingGlobalFont"
-        imported = try settings.importReaderFont(from: fixtureURL)
+        imported = try await settings.importReaderFont(from: fixtureURL)
 
         #expect(settings.selectedReaderFontPostScript == imported?.postScriptName)
         #expect(settings.selectedGlobalFontPostScript == "ExistingGlobalFont")
@@ -406,7 +411,7 @@ struct UserFontSettingsTests {
     }
 
     @Test("deleting a shared font clears every selection that references it")
-    func deletingSharedFontClearsGlobalAndReaderSelections() throws {
+    func deletingSharedFontClearsGlobalAndReaderSelections() async throws {
         let settings = GlobalSettings.shared
         let savedFonts = settings.userFonts
         let savedGlobal = settings.selectedGlobalFontPostScript
@@ -427,7 +432,7 @@ struct UserFontSettingsTests {
         settings.selectedGlobalFontPostScript = imported.postScriptName
         settings.selectedReaderFontPostScript = imported.postScriptName
 
-        settings.deleteUserFont(imported)
+        try await settings.deleteUserFont(imported)
 
         #expect(settings.selectedGlobalFontPostScript == nil)
         #expect(settings.selectedReaderFontPostScript == nil)

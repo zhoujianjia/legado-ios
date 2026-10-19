@@ -27,6 +27,185 @@ spec.loader.exec_module(config)
 INFO = "Info.plist"
 OVERLAYS = {INFO, config.PROJECT}
 
+# This selection is intentionally fixed. Counts alone cannot distinguish the
+# intended font transaction cases from an unrelated all-green invocation.
+LOCAL_PRODUCT_CASES = {
+    "ReaderLocalProductTests": ("localChineseUsesActualSimplifiedTranslations()",
+        "disabledBuiltInsStayHiddenAcrossStorefrontChanges()", "disabledRemoteCatalogKeepsCacheWithoutFetchingOrStamping()"),
+    "ReaderFontCatalogTests": ("bundledFontsAreRegisteredWithLicensedResources()",
+        "bundledSelectionsReachGlobalAndReaderFontResolvers()"),
+    "CachedBookTXTExportTests": ("partialExportUsesValidatedCacheInTOCOrder()", "completeExportPreservesChinese()",
+        "plainTextExportsWithoutHTMLInterpretation()", "emptyExportDoesNotCreateEmptyBook()"),
+    "UserFontSettingsTests": ("fontImportReadsRealTrueTypeMetadata()", "reimportingFontReplacesItsFile()",
+        "launchCleanupRemovesSupersededCopies()", "txtBuilderUsesSelectedReaderFont()",
+        "epubPipelineExposesUserSelectedFont()", "onlineBooksAndEPUBExposeUserSelectedFont()",
+        "epubFontOverrideAndRestoration()", "onlineHTMLChaptersUseSelectedReaderFontAsDefault()",
+        "onlineTXTFallbackUsesSelectedReaderFont()", "regularOnlyCustomFontGainsSyntheticBoldInTXT()",
+        "regularOnlyCustomFontGainsSyntheticBoldForOnlineHTML()", "nativeBoldFaceDoesNotReceiveSyntheticStroke()",
+        "globalFontImportDoesNotChangeReaderSelection()", "readerFontImportDoesNotChangeGlobalSelection()",
+        "deletingSharedFontClearsGlobalAndReaderSelections()", "failedImportPreservesLibrary(fault:global:)",
+        "failedDeletePreservesLibrary()", "successPublishesOneCommittedFont()",
+        "missingOldFilesCanBeRepaired(reimport:)", "recoveryCopyMissingErrorStillAborts()",
+        "defaultRegistryCanRemoveAnAlreadyMissingFont()",
+        "heldImportHasOnePublicationBoundary(cancelFirst:)", "invalidNamesAreRejected(name:)",
+        "rollbackFailureRetainsMaterials()"),
+    "SubscriptionPublicationTests": ("repeatedFreeStatusDoesNotInvalidateSubscribers()",
+        "recomputingTheSameEntitlementDoesNotRepublishIt()"),
+    "PublicLibraryAvailabilityTests": ("countriesAndColdStart()", "runningUpdates()"),
+    "RemoteLibraryHTTPTests": ("feedRequestCountAndErrors()", "opds2ContentTypes()", "identifyingUserAgent()",
+        "authenticationScope()", "redirectScope()", "mutationRedirectScope()", "mutationDirectOrigin()",
+        "rangeStreaming()", "rangeFailureClassification()", "loginPageDoesNotTriggerDownload()",
+        "malformedPartialResponse()", "searchDescription()", "coverSessionCache()"),
+}
+LOCAL_PRODUCT_EXECUTIONS = {suite + "/" + method: 1
+    for suite, methods in LOCAL_PRODUCT_CASES.items() for method in methods}
+LOCAL_PRODUCT_EXECUTIONS.update({
+    "UserFontSettingsTests/failedImportPreservesLibrary(fault:global:)": 12,
+    "UserFontSettingsTests/heldImportHasOnePublicationBoundary(cancelFirst:)": 2,
+    "UserFontSettingsTests/invalidNamesAreRejected(name:)": 6,
+    "UserFontSettingsTests/missingOldFilesCanBeRepaired(reimport:)": 2,
+})
+LOCAL_PRODUCT_METHOD_COUNT = 50
+LOCAL_PRODUCT_EXECUTION_COUNT = 68
+
+
+def local_product_source_inputs(repo=None):
+    """Check the selected, simple @Test declarations, not arbitrary Swift syntax.
+
+    A declaration/argument-shape change fails closed for deliberate review. This
+    is a source inventory; it is never a claim that Swift compiled or executed.
+    """
+    repo = REPO if repo is None else Path(repo)
+    records, found = [], set()
+    pattern = re.compile(r"^[ \t]*@Test(?:\(([^\r\n]*)\))?\s+(?:nonisolated\s+)?func (\w+)\(([^)]*)\)", re.MULTILINE)
+    for suite, expected in LOCAL_PRODUCT_CASES.items():
+        filenames = [suite + ".swift"]
+        if suite == "UserFontSettingsTests":
+            filenames.append("UserFontTransactionTests.swift")
+        actual = set()
+        for filename in filenames:
+            relative = "Tests/iOS/yuedu appTests/" + filename
+            path = repo / relative
+            data = path.read_bytes()
+            text = data.decode("utf-8-sig")
+            if filename == "UserFontTransactionTests.swift":
+                if "extension UserFontSettingsTests {" not in text or "@Suite(" in text:
+                    raise ValueError("Font transactions must extend the same serialized UserFontSettingsTests suite")
+            elif re.search(r"\b(?:struct|class)\s+" + re.escape(suite) + r"\b", text) is None:
+                raise ValueError("Selected source suite declaration is missing: " + suite)
+            if suite == "UserFontSettingsTests" and filename == suite + ".swift":
+                if re.search(r"@Suite\([^\r\n]*\.serialized[^\r\n]*\)", text) is None:
+                    raise ValueError("Font settings and transaction cases require one serialized suite")
+            declarations = pattern.findall(text)
+            if len(declarations) != len(re.findall(r"^[ \t]*@Test\b", text, re.MULTILINE)):
+                raise ValueError("Unsupported or missing selected @Test declaration: " + relative)
+            for attributes, name, parameters in declarations:
+                labels = []
+                for parameter in parameters.split(",") if parameters.strip() else []:
+                    match = re.fullmatch(r"\s*(\w+)\s*:\s*[\w.]+\s*", parameter)
+                    if match is None:
+                        raise ValueError("Unsupported selected test signature: " + name)
+                    labels.append(match[1] + ":")
+                method = name + "(" + "".join(labels) + ")"
+                identity = suite + "/" + method
+                parameter_types = {"failedImportPreservesLibrary": "fault:FontFault,global:Bool",
+                    "heldImportHasOnePublicationBoundary": "cancelFirst:Bool", "invalidNamesAreRejected": "name:String",
+                    "missingOldFilesCanBeRepaired": "reimport:Bool"}
+                if name in parameter_types and re.sub(r"\s+", "", parameters) != parameter_types[name]:
+                    raise ValueError("Font transaction parameter types differ from the fixed source selection")
+                if identity in found:
+                    raise ValueError("Duplicate selected source method: " + identity)
+                found.add(identity)
+                actual.add(method)
+                if "arguments:" in attributes:
+                    arguments = attributes.split("arguments:", 1)[1].strip()
+                    if name == "failedImportPreservesLibrary":
+                        cases = re.search(r"\benum FontFault\b[^\{]*\{\s*case ([^\r\n}]+)", text)
+                        faults = [] if cases is None else [part.strip() for part in cases[1].split(",")]
+                        if (re.sub(r"\s+", "", arguments) != "FontFault.allCases,[false,true]"
+                                or faults != ["copyCandidate", "metadata", "copyOriginal", "unregister", "register", "removeAfterMutation"]):
+                            raise ValueError("Font import fault matrix differs from the fixed 6 x 2 selection")
+                    elif name in ("heldImportHasOnePublicationBoundary", "missingOldFilesCanBeRepaired"):
+                        values = json.loads(arguments)
+                        if (not isinstance(values, list) or any(type(value) is not bool for value in values)
+                                or values != [False, True]):
+                            raise ValueError("Font cancellation arguments differ from the fixed selection")
+                    elif name == "invalidNamesAreRejected":
+                        if json.loads(arguments) != ["../outside.ttf", "/outside.ttf", "folder/font.ttf", "folder\\font.ttf", ".", ".."]:
+                            raise ValueError("Unsafe font filename arguments differ from the fixed selection")
+                    else:
+                        raise ValueError("Unexpected parameterized local-product method: " + identity)
+                elif LOCAL_PRODUCT_EXECUTIONS.get(identity, 1) != 1:
+                    raise ValueError("Parameterized font method lost its arguments: " + identity)
+            records.append({"path": relative, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
+        if actual != set(expected):
+            raise ValueError("Selected source method identities differ for " + suite)
+    if (set(LOCAL_PRODUCT_EXECUTIONS) != found or len(found) != LOCAL_PRODUCT_METHOD_COUNT
+            or sum(LOCAL_PRODUCT_EXECUTIONS.values()) != LOCAL_PRODUCT_EXECUTION_COUNT):
+        raise ValueError("Local-product source method/execution inventory differs from 50/68")
+    return {"methodCount": LOCAL_PRODUCT_METHOD_COUNT, "plannedExecutionCount": LOCAL_PRODUCT_EXECUTION_COUNT,
+            "expectedExecutionsByMethod": dict(sorted(LOCAL_PRODUCT_EXECUTIONS.items())), "sourceInputs": records}
+
+
+def verify_local_product_cases(tree):
+    # Parameter nodes use the actual xcresult schema frozen in
+    # ios-cache-tests-f73f0ae.json: Test Case -> individual Arguments leaves.
+    if not isinstance(tree, dict) or not isinstance(tree.get("testNodes"), list):
+        raise ValueError("Local-product case gate requires xcresult testNodes")
+    found = {}
+
+    def visit(node):
+        if not isinstance(node, dict):
+            raise ValueError("Malformed local-product test node")
+        children = node.get("children", [])
+        if not isinstance(children, list):
+            raise ValueError("Malformed local-product child nodes")
+        kind = node.get("nodeType")
+        if kind == "Test Case":
+            identifier = node.get("nodeIdentifier")
+            if not isinstance(identifier, str):
+                raise ValueError("Local-product test case lacks its source method identifier")
+            parts = identifier.split("/")
+            if len(parts) == 3 and parts[0] == "yuedu appTests":
+                parts = parts[1:]
+            identity = "/".join(parts)
+            expected = LOCAL_PRODUCT_EXECUTIONS.get(identity)
+            if expected is None or identity in found or node.get("result") != "Passed":
+                raise ValueError("Unexpected, duplicate, skipped or failed local-product method: " + identifier)
+            if expected == 1:
+                if children:
+                    raise ValueError("Unexpected execution children for nonparameterized method: " + identity)
+            else:
+                argument_names = []
+                for child in children:
+                    if (not isinstance(child, dict) or child.get("nodeType") != "Arguments"
+                            or child.get("result") != "Passed" or child.get("children", []) != []
+                            or not isinstance(child.get("name"), str) or not child["name"]):
+                        raise ValueError("Malformed, skipped or failed local-product argument execution: " + identity)
+                    argument_names.append(child["name"])
+                if len(argument_names) != expected or len(set(argument_names)) != expected:
+                    raise ValueError("Missing, duplicate or extra local-product argument executions: " + identity)
+            found[identity] = expected
+            return
+        if kind not in ("Test Plan", "Unit test bundle", "Test Suite"):
+            raise ValueError("Unexpected local-product test node type: " + str(kind))
+        if node.get("result", "Passed") != "Passed":
+            raise ValueError("Skipped or failed local-product test container")
+        for child in children:
+            visit(child)
+
+    for node in tree["testNodes"]:
+        visit(node)
+    if found != LOCAL_PRODUCT_EXECUTIONS:
+        raise ValueError("Actual local-product source method identities differ from the fixed selection")
+    return {"passedCaseIdentifiers": sorted(found), "passedExecutionsByMethod": dict(sorted(found.items()))}
+
+
+def verify_local_product(summary, tests, repo=None):
+    counts = verify_summary(summary, LOCAL_PRODUCT_METHOD_COUNT, LOCAL_PRODUCT_EXECUTION_COUNT)
+    sources = local_product_source_inputs(repo)
+    return {**counts, **verify_local_product_cases(tests), "sourceMethodInventory": sources}
+
 
 def git(*args, binary=False):
     value = subprocess.check_output(["git", "-C", str(REPO), *args], text=not binary)
@@ -176,7 +355,7 @@ def verify_summary(summary, expected, expected_executions=None):
     return result
 
 
-def result(audit, settings, unit, ui, paging, product):
+def result(audit, settings, unit, ui, paging, product, product_tests):
     review_overlays(audit)
     matches = [item["buildSettings"] for item in settings if item.get("target") == config.MAIN_TARGET]
     if len(matches) != 1:
@@ -198,7 +377,7 @@ def result(audit, settings, unit, ui, paging, product):
             "executionPlatform": "ios-simulator", "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "status": "passed",
             "targetedTests": {"cloudKitAndLocalServicesConfiguration": verify_summary(unit, 9),
-                              "localProductFeatures": verify_summary(product, 41),
+                              "localProductFeatures": verify_local_product(product, product_tests),
                               "searchAutoPaging": verify_summary(paging, 12), "TXTReaderUI": verify_summary(ui, 1)},
             "testedApp": str(app), "testedInfoSHA256": config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "readerRoute": "Existing Yuedu/CoreText local TXT reader and source search pagination",
@@ -229,8 +408,12 @@ def main():
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--expected", type=int, required=True)
     verify.add_argument("--expected-executions", type=int)
-    summarize = commands.add_parser("result", help="Require configuration=9, product=41, paging=12 and TXT UI=1 summaries")
-    for name in ("audit", "settings", "unit", "ui", "paging", "product", "output"):
+    commands.add_parser("local-product-source", help="Inventory the fixed source selection without running Swift")
+    product = commands.add_parser("verify-local-product", help="Require local-product 50 methods/68 executions and source method identities")
+    product.add_argument("--summary", type=Path, required=True)
+    product.add_argument("--tests", type=Path, required=True)
+    summarize = commands.add_parser("result", help="Require configuration=9, product=50/68, paging=12 and TXT UI=1 summaries")
+    for name in ("audit", "settings", "unit", "ui", "paging", "product", "product-tests", "output"):
         summarize.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -240,9 +423,13 @@ def main():
             value = prepare(args.directory, tag_prefix=args.tag_prefix)
         elif args.phase == "verify-summary":
             value = verify_summary(read_json(args.summary), args.expected, args.expected_executions)
+        elif args.phase == "local-product-source":
+            value = local_product_source_inputs()
+        elif args.phase == "verify-local-product":
+            value = verify_local_product(read_json(args.summary), read_json(args.tests))
         else:
             value = result(read_json(args.audit), read_json(args.settings), read_json(args.unit),
-                           read_json(args.ui), read_json(args.paging), read_json(args.product))
+                           read_json(args.ui), read_json(args.paging), read_json(args.product), read_json(args.product_tests))
             config.write_new_json(args.output, value)
         print(json.dumps(value, indent=2))
         return 0

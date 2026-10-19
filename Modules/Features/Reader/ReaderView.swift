@@ -2859,6 +2859,10 @@ struct ReaderView: View {
     }
 
     private func handleReaderFontImport(_ result: Result<[URL], Error>) {
+        Task { await importReaderFont(result) }
+    }
+
+    private func importReaderFont(_ result: Result<[URL], Error>) async {
         do {
             guard let url = try result.get().first else { return }
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
@@ -2867,7 +2871,7 @@ struct ReaderView: View {
                     url.stopAccessingSecurityScopedResource()
                 }
             }
-            try settings.importReaderFont(from: url)
+            try await settings.importReaderFont(from: url)
         } catch {
             readerFontImportError = ReaderFontImportPresentationError(
                 message: error.localizedDescription

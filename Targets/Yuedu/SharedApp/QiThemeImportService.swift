@@ -118,7 +118,7 @@ enum QiThemeImportService {
 
         var readerFontPostScript: String?
         if let font = theme.font {
-            if let installed = installFont(font, readerFontFamilyHint: theme.readerFontFamilyHint,
+            if let installed = await installFont(font, readerFontFamilyHint: theme.readerFontFamilyHint,
                                            settings: settings, outcome: &outcome) {
                 outcome.installedFontName = installed.displayName
                 extras.globalFontPostScript = installed.postScriptName
@@ -419,24 +419,28 @@ enum QiThemeImportService {
         readerFontFamilyHint: String?,
         settings: GlobalSettings,
         outcome: inout Outcome
-    ) -> InstalledFont? {
+    ) async -> InstalledFont? {
         let staging = FileManager.default.temporaryDirectory
             .appendingPathComponent("qitheme-font-\(UUID().uuidString)", isDirectory: true)
-        defer { try? FileManager.default.removeItem(at: staging) }
-        guard (try? FileManager.default.createDirectory(
-            at: staging,
-            withIntermediateDirectories: true
-        )) != nil else {
-            return nil
-        }
-        let fileURL = staging.appendingPathComponent(font.originalFileName, isDirectory: false)
+        let fileURL = staging.appendingPathComponent(URL(fileURLWithPath: font.originalFileName).lastPathComponent, isDirectory: false)
         // Installed into the library but *not* selected — the theme's extras (and, for the
         // reading face, the reading setup) decide when it is in use, so the baselines
         // still capture the user's own choices.
-        guard (try? font.data.write(to: fileURL, options: .atomic)) != nil,
-              let info = try? settings.importUserFont(from: fileURL) else {
+        let info: UserFontInfo
+        do {
+            try await Task.detached(priority: .userInitiated) {
+                try SourcePerfTrace.span("font.pack.stage", "bytes=\(font.data.count) main=\(Thread.isMainThread)") {
+                    try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+                    try font.data.write(to: fileURL, options: .atomic)
+                }
+            }.value
+            info = try await settings.importUserFont(from: fileURL)
+        } catch {
+            await removeFontStaging(staging)
+            AppLogger.error("Appearance pack font installation failed", error: error)
             return nil
         }
+        await removeFontStaging(staging)
         // The reading preset names its own face. When it is the one bundled here, adopt it
         // as the reader font too; when it names a font the pack did not ship, say so rather
         // than silently pointing the reader at the wrong face.
@@ -456,6 +460,13 @@ enum QiThemeImportService {
             postScriptName: info.postScriptName,
             isReaderFont: isReaderFont
         )
+    }
+
+    private static func removeFontStaging(_ staging: URL) async {
+        await Task.detached(priority: .utility) {
+            do { try FileManager.default.removeItem(at: staging) }
+            catch { AppLogger.error("Could not remove appearance font staging directory", error: error) }
+        }.value
     }
 
     /// A chapter-title style can name faces the pack never shipped — 江湖侠客 asks for two

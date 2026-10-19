@@ -1,0 +1,98 @@
+{
+  "methodCount": 50,
+  "plannedExecutionCount": 68,
+  "expectedExecutionsByMethod": {
+    "CachedBookTXTExportTests/completeExportPreservesChinese()": 1,
+    "CachedBookTXTExportTests/emptyExportDoesNotCreateEmptyBook()": 1,
+    "CachedBookTXTExportTests/partialExportUsesValidatedCacheInTOCOrder()": 1,
+    "CachedBookTXTExportTests/plainTextExportsWithoutHTMLInterpretation()": 1,
+    "PublicLibraryAvailabilityTests/countriesAndColdStart()": 1,
+    "PublicLibraryAvailabilityTests/runningUpdates()": 1,
+    "ReaderFontCatalogTests/bundledFontsAreRegisteredWithLicensedResources()": 1,
+    "ReaderFontCatalogTests/bundledSelectionsReachGlobalAndReaderFontResolvers()": 1,
+    "ReaderLocalProductTests/disabledBuiltInsStayHiddenAcrossStorefrontChanges()": 1,
+    "ReaderLocalProductTests/disabledRemoteCatalogKeepsCacheWithoutFetchingOrStamping()": 1,
+    "ReaderLocalProductTests/localChineseUsesActualSimplifiedTranslations()": 1,
+    "RemoteLibraryHTTPTests/authenticationScope()": 1,
+    "RemoteLibraryHTTPTests/coverSessionCache()": 1,
+    "RemoteLibraryHTTPTests/feedRequestCountAndErrors()": 1,
+    "RemoteLibraryHTTPTests/identifyingUserAgent()": 1,
+    "RemoteLibraryHTTPTests/loginPageDoesNotTriggerDownload()": 1,
+    "RemoteLibraryHTTPTests/malformedPartialResponse()": 1,
+    "RemoteLibraryHTTPTests/mutationDirectOrigin()": 1,
+    "RemoteLibraryHTTPTests/mutationRedirectScope()": 1,
+    "RemoteLibraryHTTPTests/opds2ContentTypes()": 1,
+    "RemoteLibraryHTTPTests/rangeFailureClassification()": 1,
+    "RemoteLibraryHTTPTests/rangeStreaming()": 1,
+    "RemoteLibraryHTTPTests/redirectScope()": 1,
+    "RemoteLibraryHTTPTests/searchDescription()": 1,
+    "SubscriptionPublicationTests/recomputingTheSameEntitlementDoesNotRepublishIt()": 1,
+    "SubscriptionPublicationTests/repeatedFreeStatusDoesNotInvalidateSubscribers()": 1,
+    "UserFontSettingsTests/defaultRegistryCanRemoveAnAlreadyMissingFont()": 1,
+    "UserFontSettingsTests/deletingSharedFontClearsGlobalAndReaderSelections()": 1,
+    "UserFontSettingsTests/epubFontOverrideAndRestoration()": 1,
+    "UserFontSettingsTests/epubPipelineExposesUserSelectedFont()": 1,
+    "UserFontSettingsTests/failedDeletePreservesLibrary()": 1,
+    "UserFontSettingsTests/failedImportPreservesLibrary(fault:global:)": 12,
+    "UserFontSettingsTests/fontImportReadsRealTrueTypeMetadata()": 1,
+    "UserFontSettingsTests/globalFontImportDoesNotChangeReaderSelection()": 1,
+    "UserFontSettingsTests/heldImportHasOnePublicationBoundary(cancelFirst:)": 2,
+    "UserFontSettingsTests/invalidNamesAreRejected(name:)": 6,
+    "UserFontSettingsTests/launchCleanupRemovesSupersededCopies()": 1,
+    "UserFontSettingsTests/missingOldFilesCanBeRepaired(reimport:)": 2,
+    "UserFontSettingsTests/nativeBoldFaceDoesNotReceiveSyntheticStroke()": 1,
+    "UserFontSettingsTests/onlineBooksAndEPUBExposeUserSelectedFont()": 1,
+    "UserFontSettingsTests/onlineHTMLChaptersUseSelectedReaderFontAsDefault()": 1,
+    "UserFontSettingsTests/onlineTXTFallbackUsesSelectedReaderFont()": 1,
+    "UserFontSettingsTests/readerFontImportDoesNotChangeGlobalSelection()": 1,
+    "UserFontSettingsTests/recoveryCopyMissingErrorStillAborts()": 1,
+    "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldForOnlineHTML()": 1,
+    "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldInTXT()": 1,
+    "UserFontSettingsTests/reimportingFontReplacesItsFile()": 1,
+    "UserFontSettingsTests/rollbackFailureRetainsMaterials()": 1,
+    "UserFontSettingsTests/successPublishesOneCommittedFont()": 1,
+    "UserFontSettingsTests/txtBuilderUsesSelectedReaderFont()": 1
+  },
+  "sourceInputs": [
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderLocalProductTests.swift",
+      "sha256": "c58c13dc60a473bbd13d083808bf66a5da643b996465371dd00a906d4858b751",
+      "bytes": 3324
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderFontCatalogTests.swift",
+      "sha256": "71782331b5f3862af46ff2cd751d59c685ad3fde2782b6d826467555a3e987d6",
+      "bytes": 3823
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift",
+      "sha256": "949f715b177418b633a1f82a916e8ca8fe8b579c8631a89ee867eb51ffdb8605",
+      "bytes": 6834
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/UserFontSettingsTests.swift",
+      "sha256": "1d820808060d4286389fe643d40f60186eeac0e4a1c9046d540624baa0bfd260",
+      "bytes": 21340
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/UserFontTransactionTests.swift",
+      "sha256": "a41a39b523a733c4d6668bc88d0ae6dce3c887e37bd73bca731849e23b3320c3",
+      "bytes": 17940
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SubscriptionPublicationTests.swift",
+      "sha256": "5aadd498505e8af7b6f732c16d2e514821821931dbf00bbe2195ca7b1fb3b0cc",
+      "bytes": 1727
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/PublicLibraryAvailabilityTests.swift",
+      "sha256": "60677955f5c22e6f3d99396a435189e78c2d875ccf035c8b14db7a1d960bd632",
+      "bytes": 1603
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/RemoteLibraryHTTPTests.swift",
+      "sha256": "5dea44a263c92e4295172c0f9ccd7d2358159b88d3ff40d95a72d12f988b9047",
+      "bytes": 15173
+    }
+  ]
+}

@@ -1576,9 +1576,10 @@ class GlobalSettings {
     }
     var userFonts: [UserFontInfo] {
         didSet {
-            if let data = try? JSONEncoder().encode(userFonts) {
+            do {
+                let data = try JSONEncoder().encode(userFonts)
                 UserDefaults.standard.set(data, forKey: "yd_user_fonts")
-            }
+            } catch { AppLogger.error("Could not persist user font records", error: error) }
         }
     }
 
@@ -3682,50 +3683,94 @@ class GlobalSettings {
     /// is actually in use — selecting here would poison the extras baseline with the
     /// pack's own font before the user's is captured.
     @discardableResult
-    func importUserFont(from url: URL) throws -> UserFontInfo {
-        let info = try UserFontStorageManager.shared.importFont(fileURL: url, replacing: userFonts)
-        userFonts.removeAll { $0.postScriptName == info.postScriptName }
-        userFonts.append(info)
-        userFonts.sort { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
-        return info
+    @MainActor
+    func importUserFont(from url: URL, storage: UserFontStorageManager = .shared) async throws -> UserFontInfo {
+        try await importFont(from: url, storage: storage, selecting: .unchanged)
+    }
+
+    private enum ImportedFontSelection { case unchanged, reader, global }
+
+    @MainActor
+    private func importFont(from url: URL, storage: UserFontStorageManager,
+                            selecting selection: ImportedFontSelection) async throws -> UserFontInfo {
+        guard !fontMutationInProgress else { throw CocoaError(.fileLocking) }
+        try Task.checkCancellation()
+        fontMutationInProgress = true
+        defer { fontMutationInProgress = false }
+        let snapshot = userFonts
+        // Once the worker starts, await its committed result even if the caller
+        // cancels: dropping that result would strand files without their records.
+        let result = try await Task.detached(priority: .userInitiated) {
+            let bytes = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+            return try SourcePerfTrace.span("font.import", "fonts=\(snapshot.count) bytes=\(bytes) main=\(Thread.isMainThread)") {
+                let info = try storage.importFont(fileURL: url, replacing: snapshot)
+                let fonts = (snapshot.filter { $0.postScriptName != info.postScriptName } + [info])
+                    .sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+                return (info, fonts)
+            }
+        }.value
+        SourcePerfTrace.span("font.publish", "fonts=\(result.1.count) main=\(Thread.isMainThread)") {
+            userFonts = result.1
+            switch selection {
+            case .unchanged: break
+            case .reader: selectedReaderFontPostScript = result.0.postScriptName
+            case .global: selectedGlobalFontPostScript = result.0.postScriptName
+            }
+        }
+        return result.0
+    }
+
+    @ObservationIgnored private var fontMutationInProgress = false
+
+    @discardableResult
+    @MainActor
+    func importReaderFont(from url: URL, storage: UserFontStorageManager = .shared) async throws -> UserFontInfo {
+        try await importFont(from: url, storage: storage, selecting: .reader)
     }
 
     @discardableResult
-    func importReaderFont(from url: URL) throws -> UserFontInfo {
-        let info = try importUserFont(from: url)
-        selectedReaderFontPostScript = info.postScriptName
-        return info
-    }
-
-    @discardableResult
-    func importGlobalFont(from url: URL) throws -> UserFontInfo {
-        let info = try importUserFont(from: url)
-        selectedGlobalFontPostScript = info.postScriptName
-        return info
+    @MainActor
+    func importGlobalFont(from url: URL, storage: UserFontStorageManager = .shared) async throws -> UserFontInfo {
+        try await importFont(from: url, storage: storage, selecting: .global)
     }
 
     @MainActor
-    func deleteUserFont(_ font: UserFontInfo) {
-        UserFontStorageManager.shared.delete(font)
-        userFonts.removeAll { $0.id == font.id }
-        if selectedGlobalFontPostScript == font.postScriptName {
-            selectedGlobalFontPostScript = nil
-        }
-        if selectedReaderFontPostScript == font.postScriptName {
-            selectedReaderFontPostScript = nil
-        }
-        var titleStyle = ReaderConfig.shared.chapterTitleStyle
-        var titleStyleChanged = false
-        if titleStyle.numberFontPostScript == font.postScriptName {
-            titleStyle.numberFontPostScript = nil
-            titleStyleChanged = true
-        }
-        if titleStyle.nameFontPostScript == font.postScriptName {
-            titleStyle.nameFontPostScript = nil
-            titleStyleChanged = true
-        }
-        if titleStyleChanged {
-            ReaderConfig.shared.chapterTitleStyle = titleStyle
+    func deleteUserFont(_ font: UserFontInfo, storage: UserFontStorageManager = .shared) async throws {
+        guard !fontMutationInProgress else { throw CocoaError(.fileLocking) }
+        try Task.checkCancellation()
+        fontMutationInProgress = true
+        defer { fontMutationInProgress = false }
+        try await Task.detached(priority: .userInitiated) {
+            let url = try storage.fileURL(for: font)
+            let bytes: Int
+            do { bytes = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0 }
+            catch {
+                guard UserFontStorageManager.isMissingFileError(error) else { throw error }
+                bytes = 0
+            }
+            try SourcePerfTrace.span("font.delete", "fonts=1 bytes=\(bytes) main=\(Thread.isMainThread)") { try storage.deleteThrowing(font) }
+        }.value
+        SourcePerfTrace.span("font.delete.publish", "fonts=\(userFonts.count) main=\(Thread.isMainThread)") {
+            userFonts.removeAll { $0.id == font.id }
+            if selectedGlobalFontPostScript == font.postScriptName {
+                selectedGlobalFontPostScript = nil
+            }
+            if selectedReaderFontPostScript == font.postScriptName {
+                selectedReaderFontPostScript = nil
+            }
+            var titleStyle = ReaderConfig.shared.chapterTitleStyle
+            var titleStyleChanged = false
+            if titleStyle.numberFontPostScript == font.postScriptName {
+                titleStyle.numberFontPostScript = nil
+                titleStyleChanged = true
+            }
+            if titleStyle.nameFontPostScript == font.postScriptName {
+                titleStyle.nameFontPostScript = nil
+                titleStyleChanged = true
+            }
+            if titleStyleChanged {
+                ReaderConfig.shared.chapterTitleStyle = titleStyle
+            }
         }
     }
 

@@ -136,7 +136,7 @@ struct ReaderSettingsView: View {
         .readerStyleImportPresentation(route: $styleImportRoute) { _ in }
         .alert(item: $fontImportError) { error in
             Alert(
-                title: Text(localized("字體匯入失敗")),
+                title: Text(localized(error.titleKey)),
                 message: Text(error.message),
                 dismissButton: .default(Text(localized("確定")))
             )
@@ -339,7 +339,12 @@ struct ReaderSettingsView: View {
                         showingFontImporter = true
                     }
                 },
-                onDelete: { font in settings.deleteUserFont(font) }
+                onDelete: { font in
+                    Task {
+                        do { try await settings.deleteUserFont(font) }
+                        catch { fontImportError = FontImportError(message: error.localizedDescription, titleKey: "操作失敗") }
+                    }
+                }
             )
         } label: {
             SettingsValueLabel(
@@ -911,6 +916,10 @@ struct ReaderSettingsView: View {
     ]
 
     private func handleFontImport(_ result: Result<[URL], Error>) {
+        Task { await importFont(result) }
+    }
+
+    private func importFont(_ result: Result<[URL], Error>) async {
         do {
             guard let url = try result.get().first else { return }
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
@@ -919,7 +928,7 @@ struct ReaderSettingsView: View {
                     url.stopAccessingSecurityScopedResource()
                 }
             }
-            try settings.importReaderFont(from: url)
+            try await settings.importReaderFont(from: url)
         } catch {
             fontImportError = FontImportError(message: error.localizedDescription)
         }
@@ -929,6 +938,7 @@ struct ReaderSettingsView: View {
 private struct FontImportError: Identifiable {
     let id = UUID()
     let message: String
+    var titleKey = "字體匯入失敗"
 }
 
 private struct LayoutImportAlert: Identifiable {
