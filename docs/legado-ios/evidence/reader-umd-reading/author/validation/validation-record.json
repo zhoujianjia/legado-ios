@@ -1,0 +1,146 @@
+{
+  "createdAtUTC": "2026-10-19T16:49:09.168520+00:00",
+  "scope": "portable fixture checks and tree-sitter/source integrity only",
+  "portableTests": {
+    "executed": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "getterIntegrity": {
+    "scope": "portable fixture/reference integrity only",
+    "fixtures": 5,
+    "chapters": 15,
+    "fixtureIntegrityValidated": true,
+    "swiftExecuted": 0,
+    "iOSExecuted": 0,
+    "malformedPolicy": "project strict subset, no original Java malformed outcomes asserted"
+  },
+  "grammarFiles": 5,
+  "grammarPassed": true,
+  "commands": [
+    {
+      "label": "portable",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-umd-fixtures.py",
+        "-v"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\portable.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\portable.stderr",
+        "bytes": 1644,
+        "sha256": "4ea5c29597c4d05bd6a7501694989c40f84426b59127ce704b47761dc5b0be7a"
+      }
+    },
+    {
+      "label": "getters",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/inspect-umd-fixtures.py",
+        "--root",
+        "Tests/iOS/yuedu appTests/Fixtures/UMD"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\getters.stdout",
+        "bytes": 274,
+        "sha256": "f809bf5460aa8a63c6c01fa64fa767e1042c2b378a332d50ee0b5d039befb305"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\getters.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "base-17689fde5a",
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "show",
+        "1fd96156392b231580482606f394219df45141db:Modules/Core/ReaderCore/CoreText/TXTLazyAttributedStringBuilder.swift"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\base-17689fde5a.stdout",
+        "bytes": 9617,
+        "sha256": "8255c2ea889c48c42bac5425ca68c77ea96d66a173529a99e122bab6ed7717cc"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\base-17689fde5a.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "base-6ecd319713",
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "show",
+        "1fd96156392b231580482606f394219df45141db:Modules/Core/EPUB/BookParsing.swift"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\base-6ecd319713.stdout",
+        "bytes": 11290,
+        "sha256": "21ccba61d47895fbfab30e475ac86ca2339c7e4472a90ba00e83d0ff2285d0cf"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\base-6ecd319713.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "base-d9b56d22ff",
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "show",
+        "1fd96156392b231580482606f394219df45141db:Modules/Core/Replace/ReplaceRule.swift"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\base-d9b56d22ff.stdout",
+        "bytes": 915,
+        "sha256": "4fefc3939b7634e9303106730813eae0e854e4fd6a6c41deeefde0abbdf97499"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\base-d9b56d22ff.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "sourceChecks": {
+    "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\source-boundaries.json",
+    "bytes": 6255,
+    "sha256": "69009b88c4d18bcffd5bd0a00b7d8f029562a5c15c3900142cf669dfbb960eca"
+  },
+  "grammar": {
+    "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-validation\\grammar.json",
+    "bytes": 1280,
+    "sha256": "da2342bca9482d0c336e8a3964f18ab569a9313249db36de4119d64728f6361d"
+  },
+  "actualSwiftTypechecks": 0,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTests": 0,
+  "actualIOSTests": 0,
+  "originalJavaRerun": false
+}

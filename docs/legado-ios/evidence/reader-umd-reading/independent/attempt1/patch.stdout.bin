@@ -1,0 +1,561 @@
+diff --git a/Modules/Core/EPUB/BookParsing.swift b/Modules/Core/EPUB/BookParsing.swift
+index eebd2af..bc1e56b 100644
+--- a/Modules/Core/EPUB/BookParsing.swift
++++ b/Modules/Core/EPUB/BookParsing.swift
+@@ -2,7 +2,7 @@ import Foundation
+ 
+ /// Unified chapter model consumed by CoreText layout/render pipeline.
+ /// Any external format parser should normalize into this structure.
+-struct UnifiedChapter: Identifiable, Equatable {
++struct UnifiedChapter: Identifiable, Equatable, Sendable {
+     var id: Int { index }
+     let index: Int
+     let title: String
+diff --git a/Modules/Core/ReaderCore/CoreText/TXTLazyAttributedStringBuilder.swift b/Modules/Core/ReaderCore/CoreText/TXTLazyAttributedStringBuilder.swift
+index d6f633b..6e0f9df 100644
+--- a/Modules/Core/ReaderCore/CoreText/TXTLazyAttributedStringBuilder.swift
++++ b/Modules/Core/ReaderCore/CoreText/TXTLazyAttributedStringBuilder.swift
+@@ -8,6 +8,47 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+     private let mappedTextFile: TXTMappedTextFile?
+     private let mappedChapterIndexes: [TXTMappedChapterIndex]
+     private let parsesAozoraMarkup: Bool
++    private struct LiteralContent {
++        let chapters: [UnifiedChapter]
++        let replacementRules: [ReplaceRule]
++    }
++    private var literalContent: LiteralContent? = nil
++
++    enum LiteralChapterFailure: Error, Equatable {
++        case emptyChapters
++        case invalidChapter
++        case budgetExceeded
++    }
++
++    /// Explicit complete chapter bodies, with an immutable user-rule snapshot.
++    /// Validate before any document can build a duplicate-key TOC dictionary.
++    /// Call on an owned worker for a large input, like UMDReadingPreparation.
++    init(literalChapters: [UnifiedChapter], replacementRules: [ReplaceRule]) throws {
++        var validatedBytes = 0
++        try SourcePerfTrace.span(
++            "txt.literal.validate",
++            "chapters=\(literalChapters.count) bytes=\(validatedBytes) maxBytes=33554432 main=\(Thread.isMainThread)"
++        ) {
++            try Task.checkCancellation()
++            guard !literalChapters.isEmpty else { throw LiteralChapterFailure.emptyChapters }
++            guard literalChapters.count <= 16_384 else { throw LiteralChapterFailure.budgetExceeded }
++            var remainingUnits = 16 * 1_024 * 1_024
++            for (index, chapter) in literalChapters.enumerated() {
++                try Task.checkCancellation()
++                guard chapter.index == index, chapter.sourceHref == String(index),
++                      chapter.paragraphs.count == 1, chapter.title.utf16.prefix(128).count <= 127 else {
++                    throw LiteralChapterFailure.invalidChapter
++                }
++                let count = chapter.paragraphs[0].utf16.prefix(remainingUnits + 1).count
++                guard count <= remainingUnits else { throw LiteralChapterFailure.budgetExceeded }
++                remainingUnits -= count
++                validatedBytes += count * 2
++            }
++            guard remainingUnits < 16 * 1_024 * 1_024 else { throw LiteralChapterFailure.emptyChapters }
++        }
++        self.init(text: "", chapterIndexes: [], parsesAozoraMarkup: false)
++        self.literalContent = LiteralContent(chapters: literalChapters, replacementRules: replacementRules)
++    }
+ 
+     init(text: String, chapterIndexes: [TXTChapterIndex], parsesAozoraMarkup: Bool = true) {
+         self.text = text
+@@ -26,6 +67,7 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+     }
+ 
+     var chapterCount: Int {
++        if let literalContent { return literalContent.chapters.count }
+         if !mappedChapterIndexes.isEmpty {
+             return mappedChapterIndexes.count
+         }
+@@ -33,6 +75,10 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+     }
+ 
+     func chapterTitle(at index: Int) -> String {
++        if let literalContent {
++            guard literalContent.chapters.indices.contains(index) else { return "" }
++            return literalContent.chapters[index].title
++        }
+         if mappedChapterIndexes.indices.contains(index) {
+             return mappedChapterIndexes[index].title
+         }
+@@ -41,6 +87,10 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+     }
+ 
+     func chapterSourceHref(at index: Int) -> String? {
++        if let literalContent {
++            guard literalContent.chapters.indices.contains(index) else { return nil }
++            return literalContent.chapters[index].sourceHref
++        }
+         if mappedChapterIndexes.indices.contains(index) {
+             return mappedChapterIndexes[index].sourceHref
+         }
+@@ -76,13 +126,15 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+         themeTextColor: UIColor,
+         themeBackgroundColor: UIColor
+     ) async throws -> AttributedChapterBuildResult {
++        if literalContent != nil { try Task.checkCancellation() }
+         _ = themeBackgroundColor
+         guard let chapterText = chapterText(at: index, conversion: settings.textConversion) else {
+             throw AttributedStringBuildingError.chapterOutOfRange(index)
+         }
+ 
+         let chapterTitle = chapterTitle(at: index)
+-        let paragraphs = TXTChapterParser.paragraphsForChapterContent(chapterText)
++        let paragraphs = literalContent == nil
++            ? TXTChapterParser.paragraphsForChapterContent(chapterText) : []
+ 
+         let bodyFont = UserReaderFontResolver.bodyFont(size: settings.fontSize, isBold: settings.isBold)
+         let syntheticBoldAttributes = UserReaderFontResolver.syntheticBoldAttributes(
+@@ -119,8 +171,11 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+             letterSpacing: settings.letterSpacing,
+             to: attrStr
+         )
++        if literalContent != nil { try Task.checkCancellation() }
+ 
+-        let body = paragraphs.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) + "\n" }.joined()
++        let body = literalContent == nil
++            ? paragraphs.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) + "\n" }.joined()
++            : chapterText
+         // Historical v5/v6 builders retain source markup only for proven location
+         // migration. Every active reader uses the same Aozora parser and ruby path.
+         let nodes = parsesAozoraMarkup ? AozoraMarkupParser.parse(body).nodes : [.text(body)]
+@@ -137,6 +192,7 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+                 forText: paragraphText
+             )
+         }
++        if literalContent != nil { try Task.checkCancellation() }
+         attrStr.append(renderedBody)
+ 
+         if settings.regexHighlightConfiguration.isEnabled {
+@@ -184,6 +240,7 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+             )
+         }
+ 
++        if literalContent != nil { try Task.checkCancellation() }
+         return AttributedChapterBuildResult(
+             attributedString: attrStr,
+             imagePage: nil,
+@@ -197,13 +254,17 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+     }
+ 
+     func chapterPlainText(at index: Int) async -> String? {
++        if literalContent != nil { return chapterText(at: index) }
+         guard let text = chapterText(at: index), !text.isEmpty else { return nil }
+         return parsesAozoraMarkup ? AozoraMarkupParser.parse(text).plainText : text
+     }
+ 
+     private func chapterText(at index: Int, conversion: TextConversion = .original) -> String? {
+         let rawText: String?
+-        if mappedChapterIndexes.indices.contains(index), let mappedTextFile {
++        if let literalContent {
++            guard literalContent.chapters.indices.contains(index) else { return nil }
++            rawText = literalContent.chapters[index].plainText
++        } else if mappedChapterIndexes.indices.contains(index), let mappedTextFile {
+             rawText = TXTChapterParser.chapterText(mappedTextFile, byteRange: mappedChapterIndexes[index].byteRange)
+         } else if chapterIndexes.indices.contains(index), let text {
+             rawText = TXTChapterParser.chapterText(text, range: chapterIndexes[index].contentRange)
+@@ -217,7 +278,12 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
+         // a selection holds the characters the reader saw, which are the converted ones.
+         result = result.converted(to: conversion)
+ 
+-        let globalRules = ReplaceRuleStore.shared.rules(for: "")
++        let globalRules: [ReplaceRule]
++        if let literalContent {
++            globalRules = literalContent.replacementRules
++        } else {
++            globalRules = ReplaceRuleStore.shared.rules(for: "")
++        }
+         if !globalRules.isEmpty {
+             result = ReplaceRuleEngine.apply(globalRules, to: result)
+         }
+diff --git a/Modules/Core/Replace/ReplaceRule.swift b/Modules/Core/Replace/ReplaceRule.swift
+index 030ec89..6f992af 100644
+--- a/Modules/Core/Replace/ReplaceRule.swift
++++ b/Modules/Core/Replace/ReplaceRule.swift
+@@ -3,7 +3,7 @@ import Foundation
+ /// A user-configurable global replace rule.
+ /// Rules are applied to chapter content after the book-source's own
+ /// `##` replacement rules, providing a user-level ad-filter / content-cleaner.
+-struct ReplaceRule: Identifiable, Codable {
++struct ReplaceRule: Identifiable, Codable, Sendable {
+     var id: String = UUID().uuidString
+ 
+     /// Display name shown in the list.
+diff --git a/Modules/Core/UMD/UMDReadingPreparation.swift b/Modules/Core/UMD/UMDReadingPreparation.swift
+new file mode 100644
+index 0000000..e3c0d1e
+--- /dev/null
++++ b/Modules/Core/UMD/UMDReadingPreparation.swift
+@@ -0,0 +1,79 @@
++import Foundation
++
++/// An in-memory projection for the existing TXT document and builder. It does
++/// not import, register, persist, reindex or open a book in the product.
++enum UMDReadingPreparation {
++    enum Failure: Error, Equatable {
++        case emptyDocument
++        case inconsistentDocument
++        case budgetExceeded
++    }
++
++    struct Limits: Sendable {
++        var utf16Bytes = 32 * 1_024 * 1_024
++        var chapters = 16_384
++    }
++
++    /// A chapter remains one complete paragraph value. Joining a global string
++    /// and using TXT's composed-character ranges could cross a UMD chapter seam.
++    /// Raw byte offsets validate directory identity only; they are never rendered
++    /// CoreTextReadingPosition.charOffset values.
++    static func prepare(
++        _ document: UMDTextDocument,
++        limits: Limits = Limits()
++    ) async throws -> [UnifiedChapter] {
++        try Task.checkCancellation()
++        let worker = Task.detached(priority: .userInitiated) {
++            var validatedBytes = 0
++            return try SourcePerfTrace.span(
++                "umd.reading.prepare",
++                "chapters=\(document.chapters.count) bytes=\(validatedBytes) maxBytes=\(limits.utf16Bytes) main=\(Thread.isMainThread)"
++            ) {
++                try Task.checkCancellation()
++                guard !document.chapters.isEmpty else { throw Failure.emptyDocument }
++                guard limits.utf16Bytes > 0, limits.chapters > 0,
++                      document.chapters.count <= limits.chapters else { throw Failure.budgetExceeded }
++                guard document.metadata.keys.allSatisfy({ (2...9).contains($0) }),
++                      document.metadata.values.allSatisfy({ $0.utf16.prefix(126).count <= 125 }) else {
++                    throw Failure.inconsistentDocument
++                }
++                var result: [UnifiedChapter] = []
++                result.reserveCapacity(document.chapters.count)
++                var offset = 0
++                for (index, chapter) in document.chapters.enumerated() {
++                    try Task.checkCancellation()
++                    let count = chapter.rawUTF16LE.count
++                    guard chapter.rawByteOffset == offset, count % 2 == 0,
++                          chapter.title.utf16.prefix(128).count <= 127 else { throw Failure.inconsistentDocument }
++                    guard count <= limits.utf16Bytes - offset else { throw Failure.budgetExceeded }
++                    // Check the existing decoder's literal projection without
++                    // making another decoded/normalized copy of the whole book.
++                    var units = chapter.text.utf16.makeIterator()
++                    try chapter.rawUTF16LE.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
++                        for byteIndex in stride(from: 0, to: bytes.count, by: 2) {
++                            if byteIndex % 16_384 == 0 { try Task.checkCancellation() }
++                            let raw = UInt16(bytes[byteIndex]) | UInt16(bytes[byteIndex + 1]) << 8
++                            let expected: UInt16 = raw == 0x2029 ? 0x000A : raw
++                            guard units.next() == expected else { throw Failure.inconsistentDocument }
++                        }
++                    }
++                    guard units.next() == nil else { throw Failure.inconsistentDocument }
++                    offset += count // bounded by the remaining budget above
++                    validatedBytes = offset
++                    result.append(UnifiedChapter(index: index, title: chapter.title,
++                                                 paragraphs: [chapter.text], sourceHref: String(index)))
++                }
++                guard offset > 0 else { throw Failure.emptyDocument }
++                try Task.checkCancellation()
++                return result
++            }
++        }
++        return try await withTaskCancellationHandler {
++            let chapters = try await worker.value
++            try Task.checkCancellation()
++            return chapters
++        } onCancel: {
++            worker.cancel()
++        }
++    }
++}
+diff --git a/Tests/iOS/yuedu appTests/UMDReadingPreparationTests.swift b/Tests/iOS/yuedu appTests/UMDReadingPreparationTests.swift
+new file mode 100644
+index 0000000..0ff3a33
+--- /dev/null
++++ b/Tests/iOS/yuedu appTests/UMDReadingPreparationTests.swift	
+@@ -0,0 +1,283 @@
++import Foundation
++import Testing
++import UIKit
++@testable import yuedu_app
++
++@Suite("Unregistered UMD literal reading preparation", .serialized)
++@MainActor
++struct UMDReadingPreparationTests {
++    private static let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
++        .appendingPathComponent("Fixtures/UMD")
++    private static let fixtureIDs = ["chinese-two-chapters", "paragraph-separators", "non-bmp-utf16",
++                                     "multi-chapter-optional-metadata", "cross-compression-blocks"]
++
++    @Test("Five original Java fixtures use the existing document with exact titles and all fifteen bodies")
++    func originalGoldenDocumentsAndDirectory() async throws {
++        for id in Self.fixtureIDs {
++            let folder = Self.root.appendingPathComponent(id)
++            let snapshot = try await UMDBookParser.load(url: folder.appendingPathComponent("fixture.umd"))
++            let golden = try await Task.detached {
++                try JSONDecoder().decode(UMDReadingGolden.self,
++                    from: Data(contentsOf: folder.appendingPathComponent("reader-output.json")))
++            }.value
++            let chapters = try await UMDReadingPreparation.prepare(snapshot.document)
++            try #require(chapters.count == golden.chapters.count)
++            try await Task.detached {
++                let book = ReadingBook(title: snapshot.document.title ?? "", author: snapshot.document.author ?? "",
++                                       contentFilename: "owned-unregistered.umd")
++                let document = TXTBookDocument(book: book, chapters: chapters)
++                #expect(document.metadata.id == book.id)
++                #expect(document.tableOfContents.count == golden.chapters.count)
++                for index in chapters.indices {
++                    let chapter = chapters[index]
++                    let expected = golden.chapters[index]
++                    #expect(chapter.index == index)
++                    #expect(chapter.sourceHref == String(index))
++                    #expect(chapter.paragraphs.count == 1)
++                    #expect(Array(chapter.title.utf16) == Array(expected.title.value.utf16))
++                    #expect(Array(chapter.plainText.utf16) == Array(expected.getContentString.value.utf16))
++                    #expect(snapshot.document.chapters[index].rawByteOffset == expected.offset.value)
++                    #expect(snapshot.document.chapters[index].rawUTF16LE == Data(base64Encoded: expected.rawContent.valueBase64))
++                    #expect(chapter.plainText.utf16.count * 2 == snapshot.document.chapters[index].rawUTF16LE.count)
++                    #expect(document.tableOfContents[index].id == String(index))
++                    #expect(Array(document.tableOfContents[index].title.utf16) == Array(expected.title.value.utf16))
++                    let content = try await document.loadContent(for: String(index))
++                    guard case .text(let text) = content else { Issue.record("Expected the existing TXT text document"); continue }
++                    #expect(Array(text.utf16) == Array(expected.getContentString.value.utf16))
++                }
++            }.value
++        }
++    }
++
++    @Test("Literal mode preserves HTML, Aozora marks, whitespace, empty lines and original CR/LF")
++    func literalBodyAndLegacyControl() async throws {
++        let raw = " \t<p>A &amp; B</p>\r\n\r\n\u{3000}\u{FF5C}\u{6F22}\u{5B57}\u{300A}\u{304B}\u{3093}\u{3058}\u{300B}\u{FF3B}\u{FF03}note\u{FF3D}  \nlast\r\t "
++        let source = try Self.synthetic([raw])
++        let chapters = try await UMDReadingPreparation.prepare(source)
++        let literal = try TXTLazyAttributedStringBuilder(literalChapters: chapters, replacementRules: [])
++        let result = try await literal.buildChapter(at: 0, settings: Self.settings(),
++                                                   themeTextColor: .label, themeBackgroundColor: .systemBackground)
++        #expect(Array(result.attributedString.string.utf16) == Array(raw.utf16))
++        #expect(await literal.chapterPlainText(at: 0) == raw)
++        #expect(result.attributedString.attribute(HTMLAttributedStringBuilder.rubyAnnotationAttribute,
++                                                at: 0, effectiveRange: nil) == nil)
++        // This old initializer still uses the existing paragraph/HTML/Aozora policy.
++        let index = TXTChapterIndex(index: 0, title: "Title 0", contentRange: NSRange(location: 0, length: raw.utf16.count))
++        let legacy = TXTLazyAttributedStringBuilder(text: raw, chapterIndexes: [index])
++        let legacyResult = try await legacy.buildChapter(at: 0, settings: Self.settings(),
++                                                        themeTextColor: .label, themeBackgroundColor: .systemBackground)
++        #expect(legacyResult.attributedString.string != raw)
++        #expect(!legacyResult.attributedString.string.contains("<p>"))
++        #expect(!legacyResult.attributedString.string.contains("\u{FF3B}\u{FF03}"))
++        #expect(legacyResult.attributedString.string.hasSuffix("\n"))
++        #expect(source.chapters[0].text == raw)
++    }
++
++    @Test("Independent chapter strings do not grow across combining, CRLF, ZWJ or regional-indicator seams")
++    func chapterSeamsDoNotMerge() async throws {
++        let bodies = ["e", "\u{0301}", "\r", "\n", "\u{1F469}\u{200D}", "\u{1F4BB}", "\u{1F1E8}", "\u{1F1F3}", "\u{1F600}\u{2029}end"]
++        let source = try Self.synthetic(bodies)
++        let chapters = try await UMDReadingPreparation.prepare(source)
++        let builder = try TXTLazyAttributedStringBuilder(literalChapters: chapters, replacementRules: [])
++        let book = ReadingBook(title: "Seams", author: "Owned", contentFilename: "seams.umd")
++        let document = TXTBookDocument(book: book, chapters: chapters)
++        for index in chapters.indices {
++            let expected = bodies[index].replacingOccurrences(of: "\u{2029}", with: "\n")
++            let content = try await document.loadContent(for: String(index))
++            guard case .text(let text) = content else { Issue.record("Expected TXT chapter"); continue }
++            #expect(Array(text.utf16) == Array(expected.utf16))
++            #expect(builder.chapterTitle(at: index) == "Title \(index)")
++            #expect(builder.chapterSourceHref(at: index) == String(index))
++            #expect(builder.chapterIndex(for: String(index)) == index)
++            let rendered = try await builder.buildChapter(at: index, settings: Self.settings(),
++                                                         themeTextColor: .label, themeBackgroundColor: .systemBackground)
++            #expect(Array(rendered.attributedString.string.utf16) == Array(expected.utf16))
++        }
++        #expect(builder.chapterCount == bodies.count)
++    }
++
++    @Test("Bad offsets, UTF-16 projections, metadata and budgets fail without automatic repair")
++    func rejectsInconsistentProjectionAndBudgets() async throws {
++        let valid = try Self.synthetic(["A", "B"])
++        let first = valid.chapters[0]
++        let second = valid.chapters[1]
++        let invalid: [UMDTextDocument] = [
++            .init(metadata: [:], chapters: []),
++            .init(metadata: [:], chapters: [.init(title: "A", rawByteOffset: 2, rawUTF16LE: first.rawUTF16LE, text: "A")]),
++            .init(metadata: [:], chapters: [first, .init(title: "B", rawByteOffset: Int.max, rawUTF16LE: second.rawUTF16LE, text: "B")]),
++            .init(metadata: [:], chapters: [.init(title: "A", rawByteOffset: 0, rawUTF16LE: Data([0x41]), text: "A")]),
++            .init(metadata: [:], chapters: [.init(title: "A", rawByteOffset: 0, rawUTF16LE: first.rawUTF16LE, text: "B")]),
++            .init(metadata: [:], chapters: [.init(title: "A", rawByteOffset: 0, rawUTF16LE: first.rawUTF16LE, text: "AA")]),
++            .init(metadata: [99: "unknown"], chapters: valid.chapters),
++            .init(metadata: [2: String(repeating: "x", count: 126)], chapters: valid.chapters),
++            .init(metadata: [:], chapters: [.init(title: String(repeating: "x", count: 128), rawByteOffset: 0, rawUTF16LE: first.rawUTF16LE, text: "A")]),
++        ]
++        for input in invalid {
++            await #expect(throws: (any Error).self) { try await UMDReadingPreparation.prepare(input) }
++        }
++        var limits = UMDReadingPreparation.Limits(); limits.utf16Bytes = 3
++        await #expect(throws: UMDReadingPreparation.Failure.budgetExceeded) {
++            try await UMDReadingPreparation.prepare(valid, limits: limits)
++        }
++        limits = .init(); limits.chapters = 1
++        await #expect(throws: UMDReadingPreparation.Failure.budgetExceeded) {
++            try await UMDReadingPreparation.prepare(valid, limits: limits)
++        }
++        limits = .init(); limits.utf16Bytes = 0
++        await #expect(throws: UMDReadingPreparation.Failure.budgetExceeded) {
++            try await UMDReadingPreparation.prepare(valid, limits: limits)
++        }
++        #expect(valid.chapters[1].rawByteOffset == 2)
++    }
++
++    @Test("Literal initializer rejects holes and duplicate IDs; empty chapters remain distinct from missing chapters")
++    func literalMetadataAndEmptyChapter() async throws {
++        let chapters = try await UMDReadingPreparation.prepare(Self.synthetic(["", "body"]))
++        let builder = try TXTLazyAttributedStringBuilder(literalChapters: chapters, replacementRules: [])
++        #expect(await builder.chapterPlainText(at: 0) == "")
++        #expect(await builder.chapterPlainText(at: 2) == nil)
++        let rendered = try await builder.buildChapter(at: 0, settings: Self.settings(),
++                                                     themeTextColor: .label, themeBackgroundColor: .systemBackground)
++        #expect(rendered.attributedString.string.isEmpty)
++        await #expect(throws: AttributedStringBuildingError.chapterOutOfRange(2)) {
++            try await builder.buildChapter(at: 2, settings: Self.settings(),
++                                           themeTextColor: .label, themeBackgroundColor: .systemBackground)
++        }
++        let body = chapters[1]
++        let bad: [[UnifiedChapter]] = [[], [body], [chapters[0], chapters[0]],
++            [.init(index: 0, title: "x", paragraphs: ["body"], sourceHref: nil)],
++            [.init(index: 0, title: "x", paragraphs: ["body"], sourceHref: "1")],
++            [.init(index: 0, title: "x", paragraphs: [], sourceHref: "0")],
++            [.init(index: 0, title: "x", paragraphs: ["body", "other"], sourceHref: "0")],
++            [.init(index: 0, title: String(repeating: "x", count: 128), paragraphs: ["body"], sourceHref: "0")]]
++        for input in bad {
++            #expect(throws: (any Error).self) { try TXTLazyAttributedStringBuilder(literalChapters: input, replacementRules: []) }
++        }
++        await Task.detached {
++            let tooMany = Array(repeating: body, count: 16_385)
++            #expect(throws: TXTLazyAttributedStringBuilder.LiteralChapterFailure.budgetExceeded) {
++                try TXTLazyAttributedStringBuilder(literalChapters: tooMany, replacementRules: [])
++            }
++            let tooLarge = [UnifiedChapter(index: 0, title: "x", paragraphs: [String(repeating: "x", count: 16 * 1_024 * 1_024 + 1)], sourceHref: "0")]
++            #expect(throws: TXTLazyAttributedStringBuilder.LiteralChapterFailure.budgetExceeded) {
++                try TXTLazyAttributedStringBuilder(literalChapters: tooLarge, replacementRules: [])
++            }
++        }.value
++        let book = ReadingBook(title: "Empty", author: "Owned", contentFilename: "empty.umd")
++        let document = TXTBookDocument(book: book, chapters: chapters)
++        let content = try await document.loadContent(for: "0")
++        guard case .text(let text) = content else { Issue.record("Expected legitimate empty text"); return }
++        #expect(text == "")
++        await #expect(throws: BookDocumentError.self) { try await document.loadContent(for: "2") }
++    }
++
++    @Test("Rendered positions are relative to their spine and include an actually rendered title prefix")
++    func positionsUseRenderedSpineAndTitlePrefix() async throws {
++        let marker = "\u{1F600}marker-unique"
++        let body = "before " + marker
++        let source = try Self.synthetic([String(repeating: "a", count: 200), body])
++        let chapters = try await UMDReadingPreparation.prepare(source)
++        let builder = try TXTLazyAttributedStringBuilder(literalChapters: chapters, replacementRules: [])
++        var settings = Self.settings(); settings.chapterTitleStyle.visible = true
++        let result = try await builder.buildChapter(at: 1, settings: settings,
++                                                   themeTextColor: .label, themeBackgroundColor: .systemBackground)
++        let string = result.attributedString.string as NSString
++        let bodyRange = string.range(of: body)
++        let markerRange = string.range(of: marker)
++        try #require(bodyRange.location != NSNotFound)
++        try #require(markerRange.location != NSNotFound)
++        #expect(bodyRange.location > 0)
++        let bodyMarker = (body as NSString).range(of: marker)
++        let position = CoreTextReadingPosition(spineIndex: 1, charOffset: markerRange.location)
++        #expect(position.spineIndex == 1)
++        #expect(position.charOffset == bodyRange.location + bodyMarker.location)
++        #expect(position.charOffset != source.chapters[1].rawByteOffset / 2 + bodyMarker.location)
++        #expect(string.substring(with: markerRange) == marker)
++        #expect(builder.chapterIndex(for: "1") == position.spineIndex)
++        // No reading-position store, disk index, migration or persistence is used.
++    }
++
++    @Test("Explicit rule snapshots and conversion affect rendering without changing the source document")
++    func explicitTransformsPreserveOriginalDocument() async throws {
++        let raw = "\u{6F22}\u{5B57}REMOVE\u{1F600}marker"
++        let source = try Self.synthetic([raw])
++        let chapters = try await UMDReadingPreparation.prepare(source)
++        var rules = [ReplaceRule(name: "Owned", pattern: "REMOVE", replacement: "", isRegex: false)]
++        let builder = try TXTLazyAttributedStringBuilder(literalChapters: chapters, replacementRules: rules)
++        rules[0].replacement = "MUTATED-AFTER-SNAPSHOT"
++        var settings = Self.settings(); settings.textConversion = .toSimplified
++        let result = try await builder.buildChapter(at: 0, settings: settings,
++                                                   themeTextColor: .label, themeBackgroundColor: .systemBackground)
++        let expected = "\u{6C49}\u{5B57}\u{1F600}marker"
++        #expect(Array(result.attributedString.string.utf16) == Array(expected.utf16))
++        #expect(await builder.chapterPlainText(at: 0) == "\u{6F22}\u{5B57}\u{1F600}marker")
++        let rawMarker = (raw as NSString).range(of: "marker")
++        let renderedMarker = (result.attributedString.string as NSString).range(of: "marker")
++        try #require(renderedMarker.location != NSNotFound)
++        let position = CoreTextReadingPosition(spineIndex: 0, charOffset: renderedMarker.location)
++        #expect(position.charOffset != rawMarker.location)
++        #expect(source.chapters[0].text == raw)
++        let book = ReadingBook(title: "Transform", author: "Owned", contentFilename: "transform.umd")
++        let document = TXTBookDocument(book: book, chapters: chapters)
++        let content = try await document.loadContent(for: "0")
++        guard case .text(let text) = content else { Issue.record("Expected original document text"); return }
++        #expect(Array(text.utf16) == Array(raw.utf16))
++    }
++
++    @Test("Cancelled preparation, initializer and render entries fail before producing a result")
++    func cancellationDoesNotReturnPreparedContent() async throws {
++        let source = try Self.synthetic(["body"])
++        let preparing = Task {
++            withUnsafeCurrentTask { $0?.cancel() }
++            return try await UMDReadingPreparation.prepare(source)
++        }
++        await #expect(throws: CancellationError.self) { try await preparing.value }
++        let chapters = try await UMDReadingPreparation.prepare(source)
++        let initializing = Task { @MainActor in
++            withUnsafeCurrentTask { $0?.cancel() }
++            _ = try TXTLazyAttributedStringBuilder(literalChapters: chapters, replacementRules: [])
++        }
++        await #expect(throws: CancellationError.self) { try await initializing.value }
++        let builder = try TXTLazyAttributedStringBuilder(literalChapters: chapters, replacementRules: [])
++        let rendering = Task { @MainActor in
++            withUnsafeCurrentTask { $0?.cancel() }
++            _ = try await builder.buildChapter(at: 0, settings: Self.settings(),
++                                               themeTextColor: .label, themeBackgroundColor: .systemBackground)
++        }
++        await #expect(throws: CancellationError.self) { try await rendering.value }
++    }
++
++    private static func settings() -> ReaderRenderSettings {
++        var settings = EPUBTestFixtures.renderSettings()
++        settings.chapterTitleStyle.visible = false
++        settings.chapterTitleStyle.advancedCSSEnabled = false
++        settings.chapterTitleStyle.topSpacing = 0
++        settings.chapterTitleStyle.bottomSpacing = 0
++        settings.textConversion = .original
++        return settings
++    }
++
++    private static func synthetic(_ bodies: [String]) throws -> UMDTextDocument {
++        var chapters: [UMDTextDocument.Chapter] = []
++        var offset = 0
++        for (index, body) in bodies.enumerated() {
++            let bytes = try #require(body.data(using: .utf16LittleEndian))
++            chapters.append(.init(title: "Title \(index)", rawByteOffset: offset, rawUTF16LE: bytes,
++                                  text: body.replacingOccurrences(of: "\u{2029}", with: "\n")))
++            offset += bytes.count
++        }
++        return UMDTextDocument(metadata: [:], chapters: chapters)
++    }
++}
++
++private struct UMDReadingGolden: Decodable, Sendable {
++    let chapters: [Chapter]
++    struct Value<T: Decodable & Sendable>: Decodable, Sendable { let value: T }
++    struct Chapter: Decodable, Sendable {
++        let title: Value<String>
++        let offset: Value<Int>
++        let rawContent: Raw
++        let getContentString: Value<String>
++        struct Raw: Decodable, Sendable { let valueBase64: String }
++    }
++}

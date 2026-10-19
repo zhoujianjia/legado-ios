@@ -1608,18 +1608,19 @@
       "existingEvidence": [
         "feature-comparison",
         "reader-smoke",
-        "umd-parser-preparation"
+        "umd-parser-preparation",
+        "umd-reading-preparation"
       ],
       "execution": {
         "summaryZh": "本地 TXT／EPUB／PDF 验收及 UMD／MOBI 支持",
-        "currentState": "TXT/EPUB/PDF 继续按既有统一导入及 CoreText/Readium/PDFKit 路径逐项验收。UMD 已在主树准备未注册的 bounded type1 文本 decoder/file parser 与原 Java 自有 5 fixture/15 章 golden；16 文件匹配冻结补丁及独审，原始 ZIP、9 Java 和全部 132 reference members 核验，归档除大 ZIP 外的原字节。author/root portable 12、getter integrity 与 3 文件 grammar screen 通过，但不能累加或当 Swift 验收；11 个 Swift 方法仅 planned，实际 Swift/SDK/iOS 均 0。UMD/MOBI 仍未接入产品 registry/import/reader；checked lease 只有 design0。另有 3 组集中 runner 准备，尚未提交，不在 C1a87f6d 或 ARelease12；本记录不改变它的提交状态或验收。",
+        "currentState": "TXT/EPUB/PDF 继续按既有统一导入及 CoreText/Readium/PDFKit 路径验收。UMD16 的未注册 type1 文本 parser 与原 Java 自有 5 fixture/15 章黄金观察保持不变；其 11 方法已随 D f3e0b15 的集中 source-only smoke 与 memory1/UI1/UMD11 runner 提交，沿用原首次观察，不在本批更新云端状态或接受结果。新增并独审的字面阅读 5 文件在主树匹配冻结字节：复用 UnifiedChapter、TXTBookDocument 和同一 TXT/Node/CoreText 构造器，保留原目录及字面正文，显式用户转换与替换仅影响渲染。新增 8 方法仅 planned，Swift/SDK/iOS 实际均 0；portable12、5 fixture/15 章完整性及 5 文件 grammar 通过不代表 Swift 验收。该 5 文件不在 D 源码内，也未触发新 CI；UMD/MOBI 仍未注册产品导入或阅读路由，checked lease 仍仅 design0。",
         "remainingWork": [
-          "为已准备的 11 个无参数 UMDTextDecoderTests 方法取得固定源码的真实 Apple SDK 编译及精确 11/11 passing leaves；保留原始 xcresult/log，不把 Python fixture walker 或 grammar 当 Swift 执行。",
-          "先实现经审查的最小 shared-writer checked import commit：复用现有 pause/drain，覆盖同文件跨 store/direct writer 与 records revision 冲突，成功前不发布，失败或 CAS rollback 不确定时保留 owned recovery；不新建 GCD 或平行书架，不宣称全局 crash/powerloss 事务。当前只有设计，未实现。",
-          "完成原 .umd 保留、同一 LocalBookImportService/BookParserRegistry 接入及既有 TXT/CoreText 的显式 UMD TOC/relative UTF16 spine 路由，覆盖 WorkTableOfContents、同步 TXT 入口、share/Calibre/iCloud 与关闭重开；禁用 UMD 正文的 Aozora 注记解释，不经标题 regex 重猜目录，不把 raw byte offset 当持久 charOffset。",
-          "UMD 完成真实导入、目录、正文、关闭重开及失败不污染旧书架的验收后再接受该子集；MOBI 仍需合法无 DRM 子集、样本、许可调查与真实 parser/import/reader。TXT/EPUB/PDF 继续合法、损坏、编码、目录、图像与重开的固定回归。"
+          "保留 D 已提交的原 11 方法与集中 runner 的独立源绑定结果；新增 8 个 UMDReadingPreparationTests 方法仍需未来经批准的固定源码 Apple SDK 编译及精确 8/8 真实执行，保留原始 xcresult/log，不以 portable 或 grammar 代替。",
+          "实现并独审最小 shared-writer checked import commit：复用现有 pause/drain，覆盖同文件跨 store/direct writer 与 records revision 冲突，成功前不发布，失败或 CAS rollback 不确定时保留 owned recovery；不新增 GCD 或平行书架，不宣称全局 crash/powerloss 事务。",
+          "在 checked commit 完成后将原 .umd 保留、显式目录和字面正文接入同一 LocalBookImportService/BookParserRegistry 及既有 reader，覆盖目录、同步 TXT 入口、share/Calibre/iCloud 与关闭重开；不得把原 byte offset 当持久 charOffset，不经标题 regex 重猜目录，不静默转 TXT 冒充完整支持。",
+          "真实导入、目录、正文、重开及失败不污染旧书架均验收后再接受 UMD 子集；MOBI 仍需合法无 DRM 子集、样本、许可调查及真实 parser/import/reader。TXT/EPUB/PDF 原有固定回归继续保持。"
         ],
-        "nextAction": "继续 local-formats ready 开发：先审定并实施最小 checked-commit foundation 与显式目录 reader 路由，再挂接 UMD 产品入口；将 11 方法 SDK 验证并入经审批的集中 checkpoint，不为小改触发 CI，不把纯 parser 准备改成已支持，也不把 ready 改为 awaiting。",
+        "nextAction": "继续 local-formats ready 开发：先收敛并实施 checked-commit foundation，再接产品 UMD 路由；复用本次已审字面阅读准备，按阶段合并新增 8 方法的真实 SDK 验证，不为小改触发 CI，不把准备或 D 提交当成通过，也不将 ready 改为 awaiting。",
         "readiness": "ready",
         "readyPreparation": [
           "复用已冻结未注册 decoder/file parser、原 Java 5 fixture/15 getter 与 11 方法精确身份；strict malformed、预算及加密拒绝是项目策略，不伪称原 Java 坏输入异常。",
@@ -1647,7 +1648,13 @@
           "docs/legado-ios/evidence/reader-umd-parser/umd-checked-import-design.json",
           "Modules/Core/UMD/UMDBookParser.swift",
           "Modules/Core/UMD/UMDTextDecoder.swift",
-          "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift"
+          "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift",
+          "docs/legado-ios/umd-reading-preparation-batch.json",
+          "docs/legado-ios/evidence/reader-umd-reading/reader-umd-reading-preparation.json",
+          "docs/legado-ios/evidence/reader-umd-reading/umd-reading-independent-review.json",
+          "docs/legado-ios/evidence/reader-umd-reading/umd-reading-independent-review-correction.json",
+          "Modules/Core/UMD/UMDReadingPreparation.swift",
+          "Tests/iOS/yuedu appTests/UMDReadingPreparationTests.swift"
         ],
         "deferredHardware": [
           "系统文件提供商、共享扩展与安全作用域",
@@ -3730,6 +3737,10 @@
     "stage-checkpoint-f3e0b15": {
       "path": "docs/legado-ios/stage-checkpoint-f3e0b15-initial.json",
       "scope": "Two initial source/tag/workflow observations after coherent source-only submission; no passed case, sample or compatibility acceptance."
+    },
+    "umd-reading-preparation": {
+      "path": "docs/legado-ios/umd-reading-preparation-batch.json",
+      "scope": "Reviewed unregistered UMD literal in-memory reading preparation: exact five sources, old initializers preserved, portable12/fixture5-chapter15/grammar5 only; eight Swift methods planned, SDK/iOS0. Original review retained with its trace finding explicitly withdrawn by correction. Not in source D; product route/checked commit remain ready."
     }
   },
   "retainedExistingWork": [

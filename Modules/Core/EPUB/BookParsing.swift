@@ -2,7 +2,7 @@ import Foundation
 
 /// Unified chapter model consumed by CoreText layout/render pipeline.
 /// Any external format parser should normalize into this structure.
-struct UnifiedChapter: Identifiable, Equatable {
+struct UnifiedChapter: Identifiable, Equatable, Sendable {
     var id: Int { index }
     let index: Int
     let title: String

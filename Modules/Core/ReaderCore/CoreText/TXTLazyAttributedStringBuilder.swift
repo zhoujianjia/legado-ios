@@ -8,6 +8,47 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
     private let mappedTextFile: TXTMappedTextFile?
     private let mappedChapterIndexes: [TXTMappedChapterIndex]
     private let parsesAozoraMarkup: Bool
+    private struct LiteralContent {
+        let chapters: [UnifiedChapter]
+        let replacementRules: [ReplaceRule]
+    }
+    private var literalContent: LiteralContent? = nil
+
+    enum LiteralChapterFailure: Error, Equatable {
+        case emptyChapters
+        case invalidChapter
+        case budgetExceeded
+    }
+
+    /// Explicit complete chapter bodies, with an immutable user-rule snapshot.
+    /// Validate before any document can build a duplicate-key TOC dictionary.
+    /// Call on an owned worker for a large input, like UMDReadingPreparation.
+    init(literalChapters: [UnifiedChapter], replacementRules: [ReplaceRule]) throws {
+        var validatedBytes = 0
+        try SourcePerfTrace.span(
+            "txt.literal.validate",
+            "chapters=\(literalChapters.count) bytes=\(validatedBytes) maxBytes=33554432 main=\(Thread.isMainThread)"
+        ) {
+            try Task.checkCancellation()
+            guard !literalChapters.isEmpty else { throw LiteralChapterFailure.emptyChapters }
+            guard literalChapters.count <= 16_384 else { throw LiteralChapterFailure.budgetExceeded }
+            var remainingUnits = 16 * 1_024 * 1_024
+            for (index, chapter) in literalChapters.enumerated() {
+                try Task.checkCancellation()
+                guard chapter.index == index, chapter.sourceHref == String(index),
+                      chapter.paragraphs.count == 1, chapter.title.utf16.prefix(128).count <= 127 else {
+                    throw LiteralChapterFailure.invalidChapter
+                }
+                let count = chapter.paragraphs[0].utf16.prefix(remainingUnits + 1).count
+                guard count <= remainingUnits else { throw LiteralChapterFailure.budgetExceeded }
+                remainingUnits -= count
+                validatedBytes += count * 2
+            }
+            guard remainingUnits < 16 * 1_024 * 1_024 else { throw LiteralChapterFailure.emptyChapters }
+        }
+        self.init(text: "", chapterIndexes: [], parsesAozoraMarkup: false)
+        self.literalContent = LiteralContent(chapters: literalChapters, replacementRules: replacementRules)
+    }
 
     init(text: String, chapterIndexes: [TXTChapterIndex], parsesAozoraMarkup: Bool = true) {
         self.text = text
@@ -26,6 +67,7 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
     }
 
     var chapterCount: Int {
+        if let literalContent { return literalContent.chapters.count }
         if !mappedChapterIndexes.isEmpty {
             return mappedChapterIndexes.count
         }
@@ -33,6 +75,10 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
     }
 
     func chapterTitle(at index: Int) -> String {
+        if let literalContent {
+            guard literalContent.chapters.indices.contains(index) else { return "" }
+            return literalContent.chapters[index].title
+        }
         if mappedChapterIndexes.indices.contains(index) {
             return mappedChapterIndexes[index].title
         }
@@ -41,6 +87,10 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
     }
 
     func chapterSourceHref(at index: Int) -> String? {
+        if let literalContent {
+            guard literalContent.chapters.indices.contains(index) else { return nil }
+            return literalContent.chapters[index].sourceHref
+        }
         if mappedChapterIndexes.indices.contains(index) {
             return mappedChapterIndexes[index].sourceHref
         }
@@ -76,13 +126,15 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
         themeTextColor: UIColor,
         themeBackgroundColor: UIColor
     ) async throws -> AttributedChapterBuildResult {
+        if literalContent != nil { try Task.checkCancellation() }
         _ = themeBackgroundColor
         guard let chapterText = chapterText(at: index, conversion: settings.textConversion) else {
             throw AttributedStringBuildingError.chapterOutOfRange(index)
         }
 
         let chapterTitle = chapterTitle(at: index)
-        let paragraphs = TXTChapterParser.paragraphsForChapterContent(chapterText)
+        let paragraphs = literalContent == nil
+            ? TXTChapterParser.paragraphsForChapterContent(chapterText) : []
 
         let bodyFont = UserReaderFontResolver.bodyFont(size: settings.fontSize, isBold: settings.isBold)
         let syntheticBoldAttributes = UserReaderFontResolver.syntheticBoldAttributes(
@@ -119,8 +171,11 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
             letterSpacing: settings.letterSpacing,
             to: attrStr
         )
+        if literalContent != nil { try Task.checkCancellation() }
 
-        let body = paragraphs.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) + "\n" }.joined()
+        let body = literalContent == nil
+            ? paragraphs.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) + "\n" }.joined()
+            : chapterText
         // Historical v5/v6 builders retain source markup only for proven location
         // migration. Every active reader uses the same Aozora parser and ruby path.
         let nodes = parsesAozoraMarkup ? AozoraMarkupParser.parse(body).nodes : [.text(body)]
@@ -137,6 +192,7 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
                 forText: paragraphText
             )
         }
+        if literalContent != nil { try Task.checkCancellation() }
         attrStr.append(renderedBody)
 
         if settings.regexHighlightConfiguration.isEnabled {
@@ -184,6 +240,7 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
             )
         }
 
+        if literalContent != nil { try Task.checkCancellation() }
         return AttributedChapterBuildResult(
             attributedString: attrStr,
             imagePage: nil,
@@ -197,13 +254,17 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
     }
 
     func chapterPlainText(at index: Int) async -> String? {
+        if literalContent != nil { return chapterText(at: index) }
         guard let text = chapterText(at: index), !text.isEmpty else { return nil }
         return parsesAozoraMarkup ? AozoraMarkupParser.parse(text).plainText : text
     }
 
     private func chapterText(at index: Int, conversion: TextConversion = .original) -> String? {
         let rawText: String?
-        if mappedChapterIndexes.indices.contains(index), let mappedTextFile {
+        if let literalContent {
+            guard literalContent.chapters.indices.contains(index) else { return nil }
+            rawText = literalContent.chapters[index].plainText
+        } else if mappedChapterIndexes.indices.contains(index), let mappedTextFile {
             rawText = TXTChapterParser.chapterText(mappedTextFile, byteRange: mappedChapterIndexes[index].byteRange)
         } else if chapterIndexes.indices.contains(index), let text {
             rawText = TXTChapterParser.chapterText(text, range: chapterIndexes[index].contentRange)
@@ -217,7 +278,12 @@ struct TXTLazyAttributedStringBuilder: AttributedStringBuilding {
         // a selection holds the characters the reader saw, which are the converted ones.
         result = result.converted(to: conversion)
 
-        let globalRules = ReplaceRuleStore.shared.rules(for: "")
+        let globalRules: [ReplaceRule]
+        if let literalContent {
+            globalRules = literalContent.replacementRules
+        } else {
+            globalRules = ReplaceRuleStore.shared.rules(for: "")
+        }
         if !globalRules.isEmpty {
             result = ReplaceRuleEngine.apply(globalRules, to: result)
         }

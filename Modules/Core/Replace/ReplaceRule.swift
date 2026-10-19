@@ -3,7 +3,7 @@ import Foundation
 /// A user-configurable global replace rule.
 /// Rules are applied to chapter content after the book-source's own
 /// `##` replacement rules, providing a user-level ad-filter / content-cleaner.
-struct ReplaceRule: Identifiable, Codable {
+struct ReplaceRule: Identifiable, Codable, Sendable {
     var id: String = UUID().uuidString
 
     /// Display name shown in the list.

@@ -1,0 +1,157 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\head.stdout",
+        "bytes": 41,
+        "sha256": "737800af9da52a127760ab2edcfb58613fbfda1d93224d2ebac6969b57e95662"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\head.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "diff",
+        "--name-only",
+        "-z"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\paths.stdout",
+        "bytes": 248,
+        "sha256": "49cabb4147c0b70da0dcc4977529150cff1c5225fae5064f3e95acead603c214"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\paths.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "diff",
+        "--check"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\diff-check.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\diff-check.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "diff",
+        "--binary"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\patch.stdout",
+        "bytes": 32714,
+        "sha256": "3441c1517244bd4e6e7eac5f6e0cdd04726796a6fbe90e8f6c8c42075939fcef"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\patch.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "apply",
+        "--check",
+        "--reverse",
+        "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\reader-umd-reading.patch"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\reverse.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\reverse.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "apply",
+        "--check",
+        "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\reader-umd-reading.patch"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\forward-main.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\forward-main.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.longpaths=true",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "exitCode": 0,
+      "stdout": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\main-head.stdout",
+        "bytes": 41,
+        "sha256": "737800af9da52a127760ab2edcfb58613fbfda1d93224d2ebac6969b57e95662"
+      },
+      "stderr": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-reading-worktree\\.build\\umd-reading-patch-checks\\main-head.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "allExitZero": true,
+  "noPatchAppliedToMain": true
+}
