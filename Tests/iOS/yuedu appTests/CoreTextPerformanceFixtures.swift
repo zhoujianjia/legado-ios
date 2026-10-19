@@ -5,7 +5,7 @@ import Testing
 @testable import yuedu_app
 
 enum CoreTextPerformanceFixtures {
-    struct Fixture {
+    struct Fixture: Sendable {
         let id: String
         let html: String
         let minimumTextCharacters: Int
@@ -42,6 +42,21 @@ enum CoreTextPerformanceFixtures {
         ),
         minimumTextCharacters: 102_400,
         minimumElementCount: 400,
+        expectedCSSRuleCount: 0,
+        expectedImageCount: 0,
+        simulatedResourceLatencyMilliseconds: 0
+    )
+
+    // Separate process-memory corpus. Do not add to `all`: the established
+    // renderer/stage fixture inventories and fifty-row protocol stay unchanged.
+    static let plain1M = Fixture(
+        id: "plain-1m",
+        html: document(title: "Plain 1M", body: paragraphs(
+            minimumCharacters: 1_048_576,
+            unit: "讀書使人充實，思考使人深邃，交談使人清醒。"
+        )),
+        minimumTextCharacters: 1_048_576,
+        minimumElementCount: 4_096,
         expectedCSSRuleCount: 0,
         expectedImageCount: 0,
         simulatedResourceLatencyMilliseconds: 0

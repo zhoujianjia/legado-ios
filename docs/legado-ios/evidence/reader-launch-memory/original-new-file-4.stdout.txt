@@ -1,0 +1,237 @@
+diff --git a/scripts/reader-experience/test-reader-launch-memory.py b/scripts/reader-experience/test-reader-launch-memory.py
+new file mode 100644
+index 0000000..98b1753
+--- /dev/null
++++ b/scripts/reader-experience/test-reader-launch-memory.py
+@@ -0,0 +1,231 @@
++#!/usr/bin/env python3
++"""Owned synthetic shape/negative guards only; never Swift/device observations."""
++import copy
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import unittest
++
++HERE = Path(__file__).resolve().parent
++spec = importlib.util.spec_from_file_location("reader_launch_memory_guards", HERE / "reader-launch-memory.py")
++guard = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(guard)
++
++
++def launch_rows():
++    text = "第三章 林間\nLOCAL_READER_SMOKE_RESUME_P0000. first readable text."
++    expected = {"schemaVersion": 1, "boundary": "cpu-layer-submitted-and-ax-readable", "processID": 6000,
++                "processObservationID": "owned-prepare-process", "viewID": "owned-prepare", "viewBindingRevision": 2, "spineIndex": 2, "pageIndex": 0,
++                "pageStartUTF16": 0, "pageLengthUTF16": guard.utf16(text), "documentLengthUTF16": 2048,
++                "pageText": text, "imageSource": "drawn", "submissionUptimeSeconds": 90.0}
++    result = []
++    for iteration in range(5):
++        base = 100.0 + iteration
++        actual = dict(expected, processID=6100 + iteration, viewID="owned-view-%d" % iteration,
++                      processObservationID="owned-process-%d" % iteration,
++                      submissionUptimeSeconds=base + 0.65)
++        row = {"schemaVersion": 1, "kind": "reader-process-launch", "timingProcess": "separate-xctest-ui-runner",
++               "observedProcess": "debug-app-under-ui-automation",
++               "boundary": "launch-request-to-cpu-layer-submitted-and-ax-readable-visible-anchor",
++               "fixturePreparationInsideInterval": False, "originalImportInputRemoved": True,
++               "measuredLaunchImports": False, "systemCachesPurged": False, "deviceCold": False,
++               "gpuPresentationMeasured": False, "improvementEstablished": False,
++               "launchToReadableIncludesAutomationNavigation": True,
++               "runID": "owned-synthetic-launch", "iteration": iteration,
++               "expectedMarker": "LOCAL_READER_SMOKE_RESUME_P0000.",
++               "expectedMarkerUTF16": guard.utf16(text.split("LOCAL_", 1)[0]),
++               "expected": expected, "observed": actual,
++               "timestamps": dict(zip(guard.TIMES, [base + i / 10 for i in (0, 1, 2, 3, 4, 5, 8)])),
++               "complete": True, "terminalPhase": "complete"}
++        row.update(guard.launch_fixture_protocol())
++        result.append(row)
++    return result
++
++
++def memory_row(fixture, iteration, duration=0.029, ticks=(0.0105, 0.0205)):
++    base = 100.0 + iteration
++    events = [{"name": name, "uptimeSeconds": base + duration * i / (len(guard.STAGES) - 1)}
++              for i, name in enumerate(guard.STAGES)]
++    points = [{"kind": "boundary", "phase": event["name"], "beforeUptimeSeconds": event["uptimeSeconds"] + 0.00001,
++               "afterUptimeSeconds": event["uptimeSeconds"] + 0.000011} for event in events]
++    for tick in ticks:
++        phase = [event["name"] for event in events if event["uptimeSeconds"] <= base + tick][-1]
++        points.append({"kind": "periodic", "phase": phase,
++                       "beforeUptimeSeconds": base + tick, "afterUptimeSeconds": base + tick + 0.000001})
++    points.sort(key=lambda point: point["beforeUptimeSeconds"])
++    for index, point in enumerate(points):
++        point.update(footprintBytes=10_000_000 + index * 100, residentBytes=12_000_000 + index * 200,
++                     kernelReturn=0, sufficientReturnCount=True, onMain=False)
++    periodic = [point for point in points if point["kind"] == "periodic"]
++    timeline = [points[0]] + periodic + [points[-1]]
++    measurement = {"processID": 7000, "beginUptimeSeconds": points[0]["beforeUptimeSeconds"],
++                   "endUptimeSeconds": points[-1]["afterUptimeSeconds"], "complete": True, "errors": [],
++                   "periodicSamples": len(periodic), "maximumObservedGapMilliseconds": max(
++                       (b["beforeUptimeSeconds"] - a["beforeUptimeSeconds"]) * 1000 for a, b in zip(timeline, timeline[1:])),
++                   "baselineFootprintBytes": points[0]["footprintBytes"], "baselineResidentBytes": points[0]["residentBytes"],
++                   "sampledPeakFootprintBytes": max(point["footprintBytes"] for point in points),
++                   "sampledPeakResidentBytes": max(point["residentBytes"] for point in points), "points": points, "events": events}
++    minimum = guard.fixture_protocol()[fixture]["fixtureMinimumUTF16"]
++    anchor = ("讀書使人充實，思考使人深邃，交談使人清醒。" * 2)[:32]
++    row = {"schemaVersion": 1, "kind": "reader-process-memory", "processScope": "app-process-with-xctest-loaded",
++           "platform": "ios-simulator", "units": "bytes",
++           "metricMethod": "task_info(TASK_VM_INFO): phys_footprint and resident_size; same snapshot",
++           "nominalIntervalMilliseconds": 10, "maximumAllowedGapMilliseconds": 50,
++           "viewport": [390, 844], "fontSize": 18, "lineHeightMultiple": 1.5, "paragraphSpacing": 8,
++           "fixtureConstructionInsideInterval": False, "baselineIncludesRetainedFixtureHTML": True,
++           "cachesPurged": False, "deviceCold": False, "improvementEstablished": False,
++           "measurementOverheadExcluded": False, "exactKernelPeakClaimed": False,
++           "runID": "owned-synthetic-memory", "fixture": fixture, "iteration": iteration,
++           "outputs": {"documentUTF16": minimum, "firstPages": 1, "fullPages": 100,
++                       "coveredUTF16": minimum, "scrollChunks": 100, "verifiedJumps": 10},
++           "jumps": [{"index": i, "requestedOffsetUTF16": (i + 1) * 1024, "observedSpine": 0,
++                      "observedOffsetUTF16": (i + 1) * 1024, "anchorText": anchor, "anchorLengthUTF16": 32} for i in range(10)],
++           "style": {"fontSize": 18, "lineHeightMultiple": 1.5, "paragraphSpacing": 8, "lineSpacing": 0,
++                     "letterSpacing": 0, "contentInsets": [0, 0, 0, 0], "writingMode": "horizontal"},
++           "measurement": measurement}
++    row.update(guard.fixture_protocol()[fixture])
++    return row
++
++
++def memory_rows():
++    return [memory_row(fixture, iteration) for fixture in guard.fixture_protocol() for iteration in range(5)]
++
++
++def phases(rows):
++    return [{"runID": row["runID"], "fixture": row["fixture"], "iteration": row["iteration"], "event": event}
++            for row in rows for event in row["measurement"]["events"]]
++
++
++class LaunchMemoryShapeGuards(unittest.TestCase):
++    def test_owned_complete_shapes_are_distinct_from_execution_attestation(self):
++        self.assertEqual(len(guard.validate_launch(launch_rows())), 5)
++        rows = memory_rows()
++        self.assertEqual(len(guard.validate_memory(rows, phases(rows))), 10)
++
++    def test_existing_100k_fixture_protocol_is_reused_and_1m_is_separate(self):
++        spec = importlib.util.spec_from_file_location("existing_stage_fixture_protocol", HERE / "reader-stage-baseline.py")
++        old = importlib.util.module_from_spec(spec); spec.loader.exec_module(old)
++        self.assertEqual(guard.fixture_protocol()["plain-100k"], old.fixture_protocol()["plain-100k"])
++        self.assertEqual(set(guard.fixture_protocol()), {"plain-100k", "plain-1m"})
++        self.assertEqual(guard.fixture_protocol()["plain-1m"]["fixtureMinimumUTF16"], 1_048_576)
++
++    def test_launch_requires_exact_five_distinct_samples_and_process_identities(self):
++        for mutation in (lambda rows: rows.pop(), lambda rows: rows.append(copy.deepcopy(rows[0])),
++                         lambda rows: rows[1].update(iteration=0),
++                         lambda rows: rows[1]["observed"].update(processObservationID=rows[0]["observed"]["processObservationID"]),
++                         lambda rows: rows[0]["observed"].update(processObservationID=rows[0]["expected"]["processObservationID"])):
++            rows = launch_rows(); mutation(rows)
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_launch(rows)
++        with self.assertRaises(ValueError): guard.validate_launch([])
++        rows = launch_rows()
++        rows[1]["observed"]["processID"] = rows[0]["observed"]["processID"]
++        self.assertEqual(len(guard.validate_launch(rows)), 5, "PID reuse alone is not process reuse")
++
++    def test_launch_cannot_claim_import_free_device_cold_or_pixels_without_flags(self):
++        for key in ("fixturePreparationInsideInterval", "measuredLaunchImports", "systemCachesPurged", "deviceCold", "gpuPresentationMeasured", "improvementEstablished"):
++            rows = launch_rows(); rows[0][key] = True
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_launch(rows)
++        rows = launch_rows(); rows[0]["originalImportInputRemoved"] = 1
++        with self.assertRaises(ValueError): guard.validate_launch(rows)
++
++    def test_launch_requires_the_actual_utf16_text_range_and_unique_marker(self):
++        for key, value in (("pageStartUTF16", 1), ("pageLengthUTF16", 1), ("pageText", "wrong text"), ("viewBindingRevision", True)):
++            rows = launch_rows(); rows[0]["observed"][key] = value
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_launch(rows)
++        self.assertEqual(guard.utf16("a😀b"), 4)
++        self.assertNotEqual("e\u0301", "é")
++
++    def test_launch_missing_reversed_or_nonfinite_timestamps_fail(self):
++        for value in (True, float("nan"), float("inf"), -1):
++            rows = launch_rows(); rows[0]["timestamps"]["launchRequested"] = value
++            with self.subTest(value=value), self.assertRaises(ValueError): guard.validate_launch(rows)
++        rows = launch_rows(); rows[0]["timestamps"].pop("pageObserved")
++        with self.assertRaises(ValueError): guard.validate_launch(rows)
++
++    def test_memory_requires_exact_two_by_five_matrix(self):
++        for mutation in (lambda rows: rows.pop(), lambda rows: rows.append(copy.deepcopy(rows[0])),
++                         lambda rows: rows[0].update(fixture="plain-10k"), lambda rows: rows[0].update(iteration=True)):
++            rows = memory_rows(); mutation(rows)
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_raw_phase_markers_must_be_complete_unique_and_ordered(self):
++        rows = memory_rows()
++        for mutation in (lambda records: records.pop(), lambda records: records.append(copy.deepcopy(records[0])),
++                         lambda records: records.reverse()):
++            raw = phases(rows); mutation(raw)
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_memory(rows, raw)
++
++    def test_failed_on_main_or_truncated_kernel_queries_cannot_be_peaks(self):
++        for key, value in (("kernelReturn", 5), ("kernelReturn", False), ("sufficientReturnCount", False),
++                           ("onMain", True), ("footprintBytes", -1), ("residentBytes", None)):
++            rows = memory_rows(); rows[0]["measurement"]["points"][0][key] = value
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_missing_periodic_samples_or_false_counts_fail(self):
++        rows = memory_rows()
++        row = rows[0]["measurement"]
++        row["points"] = [point for point in row["points"] if point["kind"] != "periodic"]
++        row["periodicSamples"] = 0
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++        rows = memory_rows(); rows[0]["measurement"]["periodicSamples"] = True
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++        rows = memory_rows()
++        next(point for point in rows[0]["measurement"]["points"] if point["kind"] == "periodic")["phase"] = "baseline"
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_boundary_samples_cannot_hide_a_missed_periodic_gap(self):
++        rows = memory_rows(); rows[0] = memory_row("plain-100k", 0, duration=0.100, ticks=(0.001, 0.098))
++        rows[0]["measurement"]["maximumObservedGapMilliseconds"] = 4
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_baseline_and_peak_must_match_original_raw_points(self):
++        for key in ("baselineFootprintBytes", "baselineResidentBytes", "sampledPeakFootprintBytes", "sampledPeakResidentBytes"):
++            rows = memory_rows(); rows[0]["measurement"][key] += 1
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_incomplete_stages_failed_samples_and_unlanded_jumps_fail(self):
++        for mutation in (lambda row: row["measurement"].update(complete=False),
++                         lambda row: row["measurement"]["events"].pop(),
++                         lambda row: row["jumps"][0].update(observedOffsetUTF16=0),
++                         lambda row: row["style"].update(lineSpacing=False),
++                         lambda row: row["outputs"].update(verifiedJumps=9)):
++            rows = memory_rows(); mutation(rows[0])
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_duplicate_keys_nonfinite_or_empty_text_never_supply_evidence(self):
++        for value in ('{"schemaVersion":1,"schemaVersion":2}', '{"time":NaN}'):
++            with self.assertRaises(ValueError): guard.strict_json(value)
++        self.assertEqual(guard.rows(b"unrelated output only\n", guard.LAUNCH), [])
++
++    def test_cli_retains_a_failure_record_without_attesting_runtime_or_overwriting(self):
++        with tempfile.TemporaryDirectory(prefix="owned-launch-memory-shapes-") as temporary:
++            directory = Path(temporary)
++            launch = directory / "owned-synthetic-launch.log"; memory = directory / "owned-synthetic-memory.log"
++            launch.write_text("\n".join(guard.LAUNCH + json.dumps(row, ensure_ascii=False) for row in launch_rows()) + "\n", encoding="utf-8")
++            rows = memory_rows()
++            memory.write_text("\n".join(guard.PHASE + json.dumps(row) for row in phases(rows)) + "\n" +
++                              "\n".join(guard.MEMORY + json.dumps(row, ensure_ascii=False) for row in rows) + "\n", encoding="utf-8")
++            output = directory / "owned-synthetic-shape-only.json"
++            command = [sys.executable, "-B", str(HERE / "reader-launch-memory.py"), "--launch-log", str(launch), "--memory-log", str(memory), "--output", str(output)]
++            result = subprocess.run(command, capture_output=True)
++            self.assertEqual(result.returncode, 0, result.stderr)
++            report = json.loads(output.read_bytes())
++            self.assertTrue(report["collectionShapeValidated"])
++            self.assertFalse(report["sdkCompilationAttested"])
++            self.assertFalse(report["iOSExecutionAttested"])
++            before = output.read_bytes()
++            self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
++            self.assertEqual(output.read_bytes(), before)
++            launch.write_bytes(b"")
++            command[-1] = str(directory / "failed-shape-only.json")
++            self.assertEqual(subprocess.run(command, capture_output=True).returncode, 1)
++            failed = json.loads(Path(command[-1]).read_bytes())
++            self.assertFalse(failed["collectionShapeValidated"])
++            self.assertFalse(failed["iOSExecutionAttested"])
++
++
++if __name__ == "__main__":
++    unittest.main()

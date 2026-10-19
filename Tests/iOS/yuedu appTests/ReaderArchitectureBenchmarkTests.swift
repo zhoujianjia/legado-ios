@@ -133,7 +133,9 @@ struct ReaderArchitectureBenchmarkTests {
     }
 }
 
-private struct BenchmarkChapterProvider: BookContentProvider {
+// Shared by the separate memory preparation; the existing stage method and its
+// fifty-row protocol are unchanged.
+struct BenchmarkChapterProvider: BookContentProvider {
     let html: String
     let totalChapters = 1
     func chapterTitle(at index: Int) -> String { "Measurement chapter" }

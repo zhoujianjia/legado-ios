@@ -1,0 +1,303 @@
+diff --git a/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift b/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift
+index bdd03a6..e4ddf50 100644
+--- a/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift
++++ b/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift
+@@ -175,6 +175,14 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
+         fallbackBackgroundColor: UIColor = .systemBackground,
+         prerenderedPage: PrerenderedPageSource? = nil
+     ) {
++        #if DEBUG
++        if Self.launchMeasurementEnabled {
++            launchMeasurementBindingRevision &+= 1
++            if launchMeasurementViewID == nil { launchMeasurementViewID = UUID().uuidString }
++            // A recycled view must not expose a previous page's submitted image.
++            accessibilityValue = nil
++        }
++        #endif
+         // The single point where content is bound to a view, so the single place that can
+         // say what this page is *about* to draw. A position guard being green does not
+         // mean the right text is on screen: the view holds a **copy** of the layout, so a
+@@ -593,6 +601,10 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
+     /// `override` only because Swift mirrors `CALayerDelegate` onto `UIView`; UIKit
+     /// does not implement `displayLayer:`, so there is no `super` to call.
+     override func display(_ layer: CALayer) {
++        #if DEBUG
++        let measuredBinding = launchMeasurementBindingRevision
++        let measuredPageIndex = localPageIndex
++        #endif
+         let size = bounds.size
+         guard let layout, localPageIndex < layout.pageRanges.count,
+               size.width > 0, size.height > 0 else {
+@@ -622,8 +634,56 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
+         UIView.performWithoutAnimation {
+             layer.contents = image.cgImage
+         }
++        #if DEBUG
++        if Self.launchMeasurementEnabled, layer.contents != nil,
++           measuredBinding == launchMeasurementBindingRevision,
++           measuredPageIndex == localPageIndex,
++           self.layout?.attributedString === layout.attributedString {
++            publishLaunchMeasurement(layout: layout, pageIndex: measuredPageIndex,
++                                     bindingRevision: measuredBinding,
++                                     imageSource: prerendered === image ? "prerendered" : "drawn")
++        }
++        #endif
+     }
+ 
++    #if DEBUG
++    private static let launchMeasurementEnabled = ProcessInfo.processInfo.arguments.contains("-reader-launch-measurement")
++    private static let launchMeasurementProcessID = UUID().uuidString
++    private var launchMeasurementBindingRevision: UInt64 = 0
++    private var launchMeasurementViewID: String?
++
++    /// Test-only CPU image submission and AX text/range observation. This is not
++    /// a ChapterDocument ContentRevision, GPU presentation or tap-to-photon event.
++    private func publishLaunchMeasurement(layout: CoreTextPaginator.ChapterLayout, pageIndex: Int,
++                                          bindingRevision: UInt64, imageSource: String) {
++        let range = layout.pageRanges[pageIndex]
++        guard range.location >= 0, range.length > 0, range.length <= 16_384,
++              range.location <= layout.attributedString.length - range.length,
++              let viewID = launchMeasurementViewID else { return }
++        let text = layout.attributedString.attributedSubstring(
++            from: NSRange(location: range.location, length: range.length)).string
++        let fields: [String: Any] = [
++            "schemaVersion": 1, "boundary": "cpu-layer-submitted-and-ax-readable",
++            "processID": Int(ProcessInfo.processInfo.processIdentifier),
++            "processObservationID": Self.launchMeasurementProcessID, "viewID": viewID,
++            "viewBindingRevision": bindingRevision, "spineIndex": layout.spineIndex,
++            "pageIndex": pageIndex, "pageStartUTF16": range.location, "pageLengthUTF16": range.length,
++            "documentLengthUTF16": layout.attributedString.length,
++            "pageText": text, "imageSource": imageSource,
++            "submissionUptimeSeconds": ProcessInfo.processInfo.systemUptime
++        ]
++        do {
++            let data = try JSONSerialization.data(withJSONObject: fields, options: [.sortedKeys])
++            // Publishing only after the current binding's image is in layer.contents
++            // prevents configure-time text from satisfying the measurement endpoint.
++            accessibilityIdentifier = "reader_measurement_submitted_page"
++            accessibilityValue = String(decoding: data, as: UTF8.self)
++        } catch {
++            accessibilityValue = nil
++        }
++    }
++    #endif
++
+     override func draw(_ rect: CGRect) {
+         guard
+             let layout,
+diff --git a/Tests/iOS-UI/ReaderLocalSmokeUITests.swift b/Tests/iOS-UI/ReaderLocalSmokeUITests.swift
+index 9c4c08b..b95648d 100644
+--- a/Tests/iOS-UI/ReaderLocalSmokeUITests.swift
++++ b/Tests/iOS-UI/ReaderLocalSmokeUITests.swift
+@@ -3,89 +3,17 @@ import XCTest
+ /// A real local-reader loop, using the existing DEBUG auto-import entry point.
+ /// The second launch has no import argument or original file: restoring the
+ /// chapter must use the book and reading position the app actually persisted.
+-final class ReaderLocalSmokeUITests: XCTestCase {
+-    private var directory: URL!
+-    private var fixture: URL!
+-    private var title: String!
+-    private let targetChapter = "第三章 林間"
+-    private let firstMarker = "LOCAL_READER_SMOKE_OPENING"
+-    private let targetMarker = "LOCAL_READER_SMOKE_RESUME"
+-
+-    override func setUpWithError() throws {
+-        continueAfterFailure = false
+-        executionTimeAllowance = 240
+-        title = "ReaderSmoke-" + UUID().uuidString
+-        directory = FileManager.default.temporaryDirectory.appendingPathComponent(title, isDirectory: true)
+-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+-        fixture = directory.appendingPathComponent("reader-smoke.txt")
+-        let chapters = [
+-            ("第一章 出發", firstMarker),
+-            ("第二章 渡河", "LOCAL_READER_SMOKE_CROSSING"),
+-            (targetChapter, targetMarker),
+-            ("第四章 歸途", "LOCAL_READER_SMOKE_RETURN")
+-        ]
+-        let text = chapters.map { heading, marker in
+-            let paragraph = "\(marker). The traveller follows the path beside the river, records the day's journey, and reads the map before continuing."
+-            return heading + "\n\n" + Array(repeating: paragraph, count: 10).joined(separator: "\n\n")
+-        }.joined(separator: "\n\n")
+-        try Data(text.utf8).write(to: fixture, options: .atomic)
+-    }
+-
+-    override func tearDownWithError() throws {
+-        if let directory, FileManager.default.fileExists(atPath: directory.path) {
+-            try FileManager.default.removeItem(at: directory)
+-        }
+-    }
+-
++final class ReaderLocalSmokeUITests: ReaderLocalTXTScenarioTestCase {
+     @MainActor
+     func testTXTImportTOCAndProgressSurviveRelaunch() throws {
+         let app = XCUIApplication()
+         defer { app.terminate() }
+-        app.launchArguments = launchArguments + [
+-            "-reset-reading-settings", "-auto-import-epub", fixture.path,
+-            "-auto-import-title", title!
+-        ]
+-        app.launch()
+-        openShelf(app)
+-        let imported = shelfBook(app)
+-        XCTAssertTrue(imported.waitForExistence(timeout: 40), "Auto-import must reach the real bookshelf.\n\(app.debugDescription)")
+-        capture(app, name: "01-imported-on-bookshelf")
+-        imported.tap()
+-        waitForVisiblePage(app, marker: firstMarker)
+-        capture(app, name: "02-first-chapter-rendered")
+-
++        launchAndImportTXT(app)
+         let accessibilityReport = try verifyQuickReaderAccessibility(app)
+ 
+-        let contents = showControls(app, identifier: "reader_tool_tableOfContents")
+-        contents.tap()
+-        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", targetChapter)).firstMatch
+-        XCTAssertTrue(chapter.waitForExistence(timeout: 15), "TXT chapter parsing must expose its real contents row.\n\(app.debugDescription)")
+-        XCTAssertTrue(chapter.isHittable, app.debugDescription)
+-        chapter.tap()
+-        waitForVisiblePage(app, marker: targetMarker)
+-        capture(app, name: "03-target-chapter-rendered")
++        selectTXTTargetChapter(app)
+ 
+-        showControls(app, identifier: "reader_back_button").tap()
+-        let before = shelfBook(app)
+-        XCTAssertTrue(before.waitForExistence(timeout: 15), "Closing the reader must return to the shelf")
+-        let progressSaved = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+-            self.progressPercent(before).map { $0 > 0 && $0 < 100 } == true
+-        }, object: nil)
+-        XCTAssertEqual(XCTWaiter.wait(for: [progressSaved], timeout: 15), .completed,
+-                       "The middle chapter must publish nonzero shelf progress.\n\(app.debugDescription)")
+-        let expectedProgress = try XCTUnwrap(progressPercent(before))
+-        capture(app, name: "04-progress-before-relaunch")
+-        // The importer has copied the TXT into its own storage. Removing the
+-        // external fixture and the import launch argument prevents re-import
+-        // from making an empty shelf or lost position appear successful.
+-        try FileManager.default.removeItem(at: fixture)
+-        XCUIDevice.shared.press(.home)
+-        let backgrounded = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+-            app.state == .runningBackground || app.state == .runningBackgroundSuspended
+-        }, object: nil)
+-        XCTAssertEqual(XCTWaiter.wait(for: [backgrounded], timeout: 10), .completed,
+-                       "The normal background save path must run")
+-        app.terminate()
++        let expectedProgress = try persistTXTTargetAndTerminate(app)
+ 
+         app.launchArguments = launchArguments
+         app.launch()
+@@ -194,67 +122,4 @@ final class ReaderLocalSmokeUITests: XCTestCase {
+         center.press(forDuration: 0, thenDragTo: edge)
+     }
+ 
+-    private var launchArguments: [String] {
+-        ["-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+-         "-yd_root_tab_visible_ids", "(bookshelf, settings)", "-bookLayoutIsGrid", "NO",
+-         "-yd_page_turn_style", "滑動", "-yd_scroll_mode", "NO",
+-         "-yd_reader_font_size", "18", "-yd_reader_brightness", "0.4", "-yd_follow_sys_brightness", "NO",
+-         "-yd_appearance_reader_interface", "classic"]
+-    }
+-
+-    @MainActor
+-    private func openShelf(_ app: XCUIApplication) {
+-        let library = app.tabBars.buttons["Library"].firstMatch
+-        XCTAssertTrue(library.waitForExistence(timeout: 30), app.debugDescription)
+-        library.tap()
+-    }
+-
+-    @MainActor
+-    private func shelfBook(_ app: XCUIApplication) -> XCUIElement {
+-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title!)).firstMatch
+-    }
+-
+-    @MainActor
+-    private func progressPercent(_ element: XCUIElement) -> Int? {
+-        let label = element.label
+-        guard let range = label.range(of: #"[0-9]+%"#, options: .regularExpression) else { return nil }
+-        return Int(label[range].dropLast())
+-    }
+-
+-    @MainActor
+-    private func waitForVisiblePage(_ app: XCUIApplication, marker: String) {
+-        let shown = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+-            app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", marker))
+-                .allElementsBoundByIndex.contains { element in
+-                    element.exists && element.isHittable && element.frame.contains(
+-                        CGPoint(x: app.frame.midX, y: app.frame.midY)
+-                    )
+-                }
+-        }, object: nil)
+-        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 45), .completed,
+-                       "The real CoreText page must visibly render \(marker), not a prefetched neighbor.\n\(app.debugDescription)")
+-    }
+-
+-    @MainActor
+-    private func showControls(_ app: XCUIApplication, identifier: String) -> XCUIElement {
+-        let control = app.buttons[identifier].firstMatch
+-        if !control.exists || !control.isHittable {
+-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+-        }
+-        let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"), object: control)
+-        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 10), .completed, app.debugDescription)
+-        return control
+-    }
+-
+-    @MainActor
+-    private func capture(_ app: XCUIApplication, name: String) {
+-        let image = XCTAttachment(screenshot: app.screenshot())
+-        image.name = name
+-        image.lifetime = .keepAlways
+-        add(image)
+-        let tree = XCTAttachment(string: app.debugDescription)
+-        tree.name = name + "-accessibility"
+-        tree.lifetime = .keepAlways
+-        add(tree)
+-    }
+ }
+diff --git a/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift b/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift
+index 25b03c3..f21f8db 100644
+--- a/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift	
++++ b/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift	
+@@ -5,7 +5,7 @@ import Testing
+ @testable import yuedu_app
+ 
+ enum CoreTextPerformanceFixtures {
+-    struct Fixture {
++    struct Fixture: Sendable {
+         let id: String
+         let html: String
+         let minimumTextCharacters: Int
+@@ -47,6 +47,21 @@ enum CoreTextPerformanceFixtures {
+         simulatedResourceLatencyMilliseconds: 0
+     )
+ 
++    // Separate process-memory corpus. Do not add to `all`: the established
++    // renderer/stage fixture inventories and fifty-row protocol stay unchanged.
++    static let plain1M = Fixture(
++        id: "plain-1m",
++        html: document(title: "Plain 1M", body: paragraphs(
++            minimumCharacters: 1_048_576,
++            unit: "讀書使人充實，思考使人深邃，交談使人清醒。"
++        )),
++        minimumTextCharacters: 1_048_576,
++        minimumElementCount: 4_096,
++        expectedCSSRuleCount: 0,
++        expectedImageCount: 0,
++        simulatedResourceLatencyMilliseconds: 0
++    )
++
+     static let cssHeavy50K: Fixture = {
+         let ruleCount = 300
+         let elementCount = 1_000
+diff --git a/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift b/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift
+index 39b456d..6b221c4 100644
+--- a/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift	
++++ b/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift	
+@@ -133,7 +133,9 @@ struct ReaderArchitectureBenchmarkTests {
+     }
+ }
+ 
+-private struct BenchmarkChapterProvider: BookContentProvider {
++// Shared by the separate memory preparation; the existing stage method and its
++// fifty-row protocol are unchanged.
++struct BenchmarkChapterProvider: BookContentProvider {
+     let html: String
+     let totalChapters = 1
+     func chapterTitle(at index: Int) -> String { "Measurement chapter" }

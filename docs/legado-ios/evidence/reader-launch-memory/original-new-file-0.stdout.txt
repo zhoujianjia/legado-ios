@@ -1,0 +1,173 @@
+diff --git a/Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift b/Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift
+new file mode 100644
+index 0000000..e83244b
+--- /dev/null
++++ b/Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift
+@@ -0,0 +1,167 @@
++import CryptoKit
++import XCTest
++
++/// Shared owned-TXT setup and the existing real importer/reader UI actions.
++/// No test method lives here; the established smoke class still contains one.
++class ReaderLocalTXTScenarioTestCase: XCTestCase {
++    var directory: URL!
++    var fixture: URL!
++    var title: String!
++    let targetChapter = "第三章 林間"
++    let firstMarker = "LOCAL_READER_SMOKE_OPENING"
++    let targetMarker = "LOCAL_READER_SMOKE_RESUME"
++    var uniqueParagraphMarkers: Bool { false }
++    private(set) var fixtureSHA256 = ""
++    private(set) var fixtureBytes = 0
++
++    override func setUpWithError() throws {
++        continueAfterFailure = false
++        executionTimeAllowance = 240
++        title = "ReaderSmoke-" + UUID().uuidString
++        directory = FileManager.default.temporaryDirectory.appendingPathComponent(title, isDirectory: true)
++        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
++        fixture = directory.appendingPathComponent("reader-smoke.txt")
++        let chapters = [
++            ("第一章 出發", firstMarker),
++            ("第二章 渡河", "LOCAL_READER_SMOKE_CROSSING"),
++            (targetChapter, targetMarker),
++            ("第四章 歸途", "LOCAL_READER_SMOKE_RETURN")
++        ]
++        let text = chapters.map { heading, marker in
++            let paragraph = "\(marker). The traveller follows the path beside the river, records the day's journey, and reads the map before continuing."
++            return heading + "\n\n" + (0..<10).map { index in
++                uniqueParagraphMarkers ? paragraph.replacingOccurrences(of: marker + ".",
++                    with: marker + String(format: "_P%04d.", index)) : paragraph
++            }.joined(separator: "\n\n")
++        }.joined(separator: "\n\n")
++        let bytes = Data(text.utf8)
++        fixtureSHA256 = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
++        fixtureBytes = bytes.count
++        try bytes.write(to: fixture, options: .atomic)
++    }
++
++    override func tearDownWithError() throws {
++        if let directory, FileManager.default.fileExists(atPath: directory.path) {
++            try FileManager.default.removeItem(at: directory)
++        }
++    }
++
++    @MainActor
++    func launchAndImportTXT(_ app: XCUIApplication, extraArguments: [String] = []) {
++        app.launchArguments = launchArguments + extraArguments + [
++            "-reset-reading-settings", "-auto-import-epub", fixture.path,
++            "-auto-import-title", title!
++        ]
++        app.launch()
++        openShelf(app)
++        let imported = shelfBook(app)
++        XCTAssertTrue(imported.waitForExistence(timeout: 40), "Auto-import must reach the real bookshelf.\n\(app.debugDescription)")
++        capture(app, name: "01-imported-on-bookshelf")
++        imported.tap()
++        waitForVisiblePage(app, marker: firstMarker)
++        capture(app, name: "02-first-chapter-rendered")
++
++    }
++
++    @MainActor
++    func selectTXTTargetChapter(_ app: XCUIApplication) {
++        let contents = showControls(app, identifier: "reader_tool_tableOfContents")
++        contents.tap()
++        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", targetChapter)).firstMatch
++        XCTAssertTrue(chapter.waitForExistence(timeout: 15), "TXT chapter parsing must expose its real contents row.\n\(app.debugDescription)")
++        XCTAssertTrue(chapter.isHittable, app.debugDescription)
++        chapter.tap()
++        waitForVisiblePage(app, marker: targetMarker)
++        capture(app, name: "03-target-chapter-rendered")
++    }
++
++    @MainActor
++    func persistTXTTargetAndTerminate(_ app: XCUIApplication) throws -> Int {
++        showControls(app, identifier: "reader_back_button").tap()
++        let before = shelfBook(app)
++        XCTAssertTrue(before.waitForExistence(timeout: 15), "Closing the reader must return to the shelf")
++        let progressSaved = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
++            self.progressPercent(before).map { $0 > 0 && $0 < 100 } == true
++        }, object: nil)
++        XCTAssertEqual(XCTWaiter.wait(for: [progressSaved], timeout: 15), .completed,
++                       "The middle chapter must publish nonzero shelf progress.\n\(app.debugDescription)")
++        let expectedProgress = try XCTUnwrap(progressPercent(before))
++        capture(app, name: "04-progress-before-relaunch")
++        // The importer has copied the TXT into its own storage. Removing the
++        // external fixture and the import launch argument prevents re-import
++        // from making an empty shelf or lost position appear successful.
++        try FileManager.default.removeItem(at: fixture)
++        XCUIDevice.shared.press(.home)
++        let backgrounded = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
++            app.state == .runningBackground || app.state == .runningBackgroundSuspended
++        }, object: nil)
++        XCTAssertEqual(XCTWaiter.wait(for: [backgrounded], timeout: 10), .completed,
++                       "The normal background save path must run")
++        app.terminate()
++        return expectedProgress
++    }
++
++    var launchArguments: [String] {
++        ["-AppleLanguages", "(en)", "-AppleLocale", "en_US",
++         "-yd_root_tab_visible_ids", "(bookshelf, settings)", "-bookLayoutIsGrid", "NO",
++         "-yd_page_turn_style", "滑動", "-yd_scroll_mode", "NO",
++         "-yd_reader_font_size", "18", "-yd_reader_brightness", "0.4", "-yd_follow_sys_brightness", "NO",
++         "-yd_appearance_reader_interface", "classic"]
++    }
++
++    @MainActor
++    func openShelf(_ app: XCUIApplication) {
++        let library = app.tabBars.buttons["Library"].firstMatch
++        XCTAssertTrue(library.waitForExistence(timeout: 30), app.debugDescription)
++        library.tap()
++    }
++
++    @MainActor
++    func shelfBook(_ app: XCUIApplication) -> XCUIElement {
++        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title!)).firstMatch
++    }
++
++    @MainActor
++    func progressPercent(_ element: XCUIElement) -> Int? {
++        let label = element.label
++        guard let range = label.range(of: #"[0-9]+%"#, options: .regularExpression) else { return nil }
++        return Int(label[range].dropLast())
++    }
++
++    @MainActor
++    func waitForVisiblePage(_ app: XCUIApplication, marker: String) {
++        let shown = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
++            app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", marker))
++                .allElementsBoundByIndex.contains { element in
++                    element.exists && element.isHittable && element.frame.contains(
++                        CGPoint(x: app.frame.midX, y: app.frame.midY)
++                    )
++                }
++        }, object: nil)
++        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 45), .completed,
++                       "The real CoreText page must visibly render \(marker), not a prefetched neighbor.\n\(app.debugDescription)")
++    }
++
++    @MainActor
++    func showControls(_ app: XCUIApplication, identifier: String) -> XCUIElement {
++        let control = app.buttons[identifier].firstMatch
++        if !control.exists || !control.isHittable {
++            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
++        }
++        let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"), object: control)
++        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 10), .completed, app.debugDescription)
++        return control
++    }
++
++    @MainActor
++    func capture(_ app: XCUIApplication, name: String) {
++        let image = XCTAttachment(screenshot: app.screenshot())
++        image.name = name
++        image.lifetime = .keepAlways
++        add(image)
++        let tree = XCTAttachment(string: app.debugDescription)
++        tree.name = name + "-accessibility"
++        tree.lifetime = .keepAlways
++        add(tree)
++    }
++}

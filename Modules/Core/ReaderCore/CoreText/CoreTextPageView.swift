@@ -175,6 +175,14 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         fallbackBackgroundColor: UIColor = .systemBackground,
         prerenderedPage: PrerenderedPageSource? = nil
     ) {
+        #if DEBUG
+        if Self.launchMeasurementEnabled {
+            launchMeasurementBindingRevision &+= 1
+            if launchMeasurementViewID == nil { launchMeasurementViewID = UUID().uuidString }
+            // A recycled view must not expose a previous page's submitted image.
+            accessibilityValue = nil
+        }
+        #endif
         // The single point where content is bound to a view, so the single place that can
         // say what this page is *about* to draw. A position guard being green does not
         // mean the right text is on screen: the view holds a **copy** of the layout, so a
@@ -593,6 +601,10 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
     /// `override` only because Swift mirrors `CALayerDelegate` onto `UIView`; UIKit
     /// does not implement `displayLayer:`, so there is no `super` to call.
     override func display(_ layer: CALayer) {
+        #if DEBUG
+        let measuredBinding = launchMeasurementBindingRevision
+        let measuredPageIndex = localPageIndex
+        #endif
         let size = bounds.size
         guard let layout, localPageIndex < layout.pageRanges.count,
               size.width > 0, size.height > 0 else {
@@ -622,7 +634,55 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         UIView.performWithoutAnimation {
             layer.contents = image.cgImage
         }
+        #if DEBUG
+        if Self.launchMeasurementEnabled, layer.contents != nil,
+           measuredBinding == launchMeasurementBindingRevision,
+           measuredPageIndex == localPageIndex,
+           self.layout?.attributedString === layout.attributedString {
+            publishLaunchMeasurement(layout: layout, pageIndex: measuredPageIndex,
+                                     bindingRevision: measuredBinding,
+                                     imageSource: prerendered === image ? "prerendered" : "drawn")
+        }
+        #endif
     }
+
+    #if DEBUG
+    private static let launchMeasurementEnabled = ProcessInfo.processInfo.arguments.contains("-reader-launch-measurement")
+    private static let launchMeasurementProcessID = UUID().uuidString
+    private var launchMeasurementBindingRevision: UInt64 = 0
+    private var launchMeasurementViewID: String?
+
+    /// Test-only CPU image submission and AX text/range observation. This is not
+    /// a ChapterDocument ContentRevision, GPU presentation or tap-to-photon event.
+    private func publishLaunchMeasurement(layout: CoreTextPaginator.ChapterLayout, pageIndex: Int,
+                                          bindingRevision: UInt64, imageSource: String) {
+        let range = layout.pageRanges[pageIndex]
+        guard range.location >= 0, range.length > 0, range.length <= 16_384,
+              range.location <= layout.attributedString.length - range.length,
+              let viewID = launchMeasurementViewID else { return }
+        let text = layout.attributedString.attributedSubstring(
+            from: NSRange(location: range.location, length: range.length)).string
+        let fields: [String: Any] = [
+            "schemaVersion": 1, "boundary": "cpu-layer-submitted-and-ax-readable",
+            "processID": Int(ProcessInfo.processInfo.processIdentifier),
+            "processObservationID": Self.launchMeasurementProcessID, "viewID": viewID,
+            "viewBindingRevision": bindingRevision, "spineIndex": layout.spineIndex,
+            "pageIndex": pageIndex, "pageStartUTF16": range.location, "pageLengthUTF16": range.length,
+            "documentLengthUTF16": layout.attributedString.length,
+            "pageText": text, "imageSource": imageSource,
+            "submissionUptimeSeconds": ProcessInfo.processInfo.systemUptime
+        ]
+        do {
+            let data = try JSONSerialization.data(withJSONObject: fields, options: [.sortedKeys])
+            // Publishing only after the current binding's image is in layer.contents
+            // prevents configure-time text from satisfying the measurement endpoint.
+            accessibilityIdentifier = "reader_measurement_submitted_page"
+            accessibilityValue = String(decoding: data, as: UTF8.self)
+        } catch {
+            accessibilityValue = nil
+        }
+    }
+    #endif
 
     override func draw(_ rect: CGRect) {
         guard

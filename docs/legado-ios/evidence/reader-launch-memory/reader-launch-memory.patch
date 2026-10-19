@@ -1,0 +1,1609 @@
+diff --git a/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift b/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift
+index bdd03a6..e4ddf50 100644
+--- a/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift
++++ b/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift
+@@ -175,6 +175,14 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
+         fallbackBackgroundColor: UIColor = .systemBackground,
+         prerenderedPage: PrerenderedPageSource? = nil
+     ) {
++        #if DEBUG
++        if Self.launchMeasurementEnabled {
++            launchMeasurementBindingRevision &+= 1
++            if launchMeasurementViewID == nil { launchMeasurementViewID = UUID().uuidString }
++            // A recycled view must not expose a previous page's submitted image.
++            accessibilityValue = nil
++        }
++        #endif
+         // The single point where content is bound to a view, so the single place that can
+         // say what this page is *about* to draw. A position guard being green does not
+         // mean the right text is on screen: the view holds a **copy** of the layout, so a
+@@ -593,6 +601,10 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
+     /// `override` only because Swift mirrors `CALayerDelegate` onto `UIView`; UIKit
+     /// does not implement `displayLayer:`, so there is no `super` to call.
+     override func display(_ layer: CALayer) {
++        #if DEBUG
++        let measuredBinding = launchMeasurementBindingRevision
++        let measuredPageIndex = localPageIndex
++        #endif
+         let size = bounds.size
+         guard let layout, localPageIndex < layout.pageRanges.count,
+               size.width > 0, size.height > 0 else {
+@@ -622,8 +634,56 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
+         UIView.performWithoutAnimation {
+             layer.contents = image.cgImage
+         }
++        #if DEBUG
++        if Self.launchMeasurementEnabled, layer.contents != nil,
++           measuredBinding == launchMeasurementBindingRevision,
++           measuredPageIndex == localPageIndex,
++           self.layout?.attributedString === layout.attributedString {
++            publishLaunchMeasurement(layout: layout, pageIndex: measuredPageIndex,
++                                     bindingRevision: measuredBinding,
++                                     imageSource: prerendered === image ? "prerendered" : "drawn")
++        }
++        #endif
+     }
+ 
++    #if DEBUG
++    private static let launchMeasurementEnabled = ProcessInfo.processInfo.arguments.contains("-reader-launch-measurement")
++    private static let launchMeasurementProcessID = UUID().uuidString
++    private var launchMeasurementBindingRevision: UInt64 = 0
++    private var launchMeasurementViewID: String?
++
++    /// Test-only CPU image submission and AX text/range observation. This is not
++    /// a ChapterDocument ContentRevision, GPU presentation or tap-to-photon event.
++    private func publishLaunchMeasurement(layout: CoreTextPaginator.ChapterLayout, pageIndex: Int,
++                                          bindingRevision: UInt64, imageSource: String) {
++        let range = layout.pageRanges[pageIndex]
++        guard range.location >= 0, range.length > 0, range.length <= 16_384,
++              range.location <= layout.attributedString.length - range.length,
++              let viewID = launchMeasurementViewID else { return }
++        let text = layout.attributedString.attributedSubstring(
++            from: NSRange(location: range.location, length: range.length)).string
++        let fields: [String: Any] = [
++            "schemaVersion": 1, "boundary": "cpu-layer-submitted-and-ax-readable",
++            "processID": Int(ProcessInfo.processInfo.processIdentifier),
++            "processObservationID": Self.launchMeasurementProcessID, "viewID": viewID,
++            "viewBindingRevision": bindingRevision, "spineIndex": layout.spineIndex,
++            "pageIndex": pageIndex, "pageStartUTF16": range.location, "pageLengthUTF16": range.length,
++            "documentLengthUTF16": layout.attributedString.length,
++            "pageText": text, "imageSource": imageSource,
++            "submissionUptimeSeconds": ProcessInfo.processInfo.systemUptime
++        ]
++        do {
++            let data = try JSONSerialization.data(withJSONObject: fields, options: [.sortedKeys])
++            // Publishing only after the current binding's image is in layer.contents
++            // prevents configure-time text from satisfying the measurement endpoint.
++            accessibilityIdentifier = "reader_measurement_submitted_page"
++            accessibilityValue = String(decoding: data, as: UTF8.self)
++        } catch {
++            accessibilityValue = nil
++        }
++    }
++    #endif
++
+     override func draw(_ rect: CGRect) {
+         guard
+             let layout,
+diff --git a/Tests/iOS-UI/ReaderLocalSmokeUITests.swift b/Tests/iOS-UI/ReaderLocalSmokeUITests.swift
+index 9c4c08b..b95648d 100644
+--- a/Tests/iOS-UI/ReaderLocalSmokeUITests.swift
++++ b/Tests/iOS-UI/ReaderLocalSmokeUITests.swift
+@@ -3,89 +3,17 @@ import XCTest
+ /// A real local-reader loop, using the existing DEBUG auto-import entry point.
+ /// The second launch has no import argument or original file: restoring the
+ /// chapter must use the book and reading position the app actually persisted.
+-final class ReaderLocalSmokeUITests: XCTestCase {
+-    private var directory: URL!
+-    private var fixture: URL!
+-    private var title: String!
+-    private let targetChapter = "第三章 林間"
+-    private let firstMarker = "LOCAL_READER_SMOKE_OPENING"
+-    private let targetMarker = "LOCAL_READER_SMOKE_RESUME"
+-
+-    override func setUpWithError() throws {
+-        continueAfterFailure = false
+-        executionTimeAllowance = 240
+-        title = "ReaderSmoke-" + UUID().uuidString
+-        directory = FileManager.default.temporaryDirectory.appendingPathComponent(title, isDirectory: true)
+-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+-        fixture = directory.appendingPathComponent("reader-smoke.txt")
+-        let chapters = [
+-            ("第一章 出發", firstMarker),
+-            ("第二章 渡河", "LOCAL_READER_SMOKE_CROSSING"),
+-            (targetChapter, targetMarker),
+-            ("第四章 歸途", "LOCAL_READER_SMOKE_RETURN")
+-        ]
+-        let text = chapters.map { heading, marker in
+-            let paragraph = "\(marker). The traveller follows the path beside the river, records the day's journey, and reads the map before continuing."
+-            return heading + "\n\n" + Array(repeating: paragraph, count: 10).joined(separator: "\n\n")
+-        }.joined(separator: "\n\n")
+-        try Data(text.utf8).write(to: fixture, options: .atomic)
+-    }
+-
+-    override func tearDownWithError() throws {
+-        if let directory, FileManager.default.fileExists(atPath: directory.path) {
+-            try FileManager.default.removeItem(at: directory)
+-        }
+-    }
+-
++final class ReaderLocalSmokeUITests: ReaderLocalTXTScenarioTestCase {
+     @MainActor
+     func testTXTImportTOCAndProgressSurviveRelaunch() throws {
+         let app = XCUIApplication()
+         defer { app.terminate() }
+-        app.launchArguments = launchArguments + [
+-            "-reset-reading-settings", "-auto-import-epub", fixture.path,
+-            "-auto-import-title", title!
+-        ]
+-        app.launch()
+-        openShelf(app)
+-        let imported = shelfBook(app)
+-        XCTAssertTrue(imported.waitForExistence(timeout: 40), "Auto-import must reach the real bookshelf.\n\(app.debugDescription)")
+-        capture(app, name: "01-imported-on-bookshelf")
+-        imported.tap()
+-        waitForVisiblePage(app, marker: firstMarker)
+-        capture(app, name: "02-first-chapter-rendered")
+-
++        launchAndImportTXT(app)
+         let accessibilityReport = try verifyQuickReaderAccessibility(app)
+ 
+-        let contents = showControls(app, identifier: "reader_tool_tableOfContents")
+-        contents.tap()
+-        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", targetChapter)).firstMatch
+-        XCTAssertTrue(chapter.waitForExistence(timeout: 15), "TXT chapter parsing must expose its real contents row.\n\(app.debugDescription)")
+-        XCTAssertTrue(chapter.isHittable, app.debugDescription)
+-        chapter.tap()
+-        waitForVisiblePage(app, marker: targetMarker)
+-        capture(app, name: "03-target-chapter-rendered")
++        selectTXTTargetChapter(app)
+ 
+-        showControls(app, identifier: "reader_back_button").tap()
+-        let before = shelfBook(app)
+-        XCTAssertTrue(before.waitForExistence(timeout: 15), "Closing the reader must return to the shelf")
+-        let progressSaved = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+-            self.progressPercent(before).map { $0 > 0 && $0 < 100 } == true
+-        }, object: nil)
+-        XCTAssertEqual(XCTWaiter.wait(for: [progressSaved], timeout: 15), .completed,
+-                       "The middle chapter must publish nonzero shelf progress.\n\(app.debugDescription)")
+-        let expectedProgress = try XCTUnwrap(progressPercent(before))
+-        capture(app, name: "04-progress-before-relaunch")
+-        // The importer has copied the TXT into its own storage. Removing the
+-        // external fixture and the import launch argument prevents re-import
+-        // from making an empty shelf or lost position appear successful.
+-        try FileManager.default.removeItem(at: fixture)
+-        XCUIDevice.shared.press(.home)
+-        let backgrounded = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+-            app.state == .runningBackground || app.state == .runningBackgroundSuspended
+-        }, object: nil)
+-        XCTAssertEqual(XCTWaiter.wait(for: [backgrounded], timeout: 10), .completed,
+-                       "The normal background save path must run")
+-        app.terminate()
++        let expectedProgress = try persistTXTTargetAndTerminate(app)
+ 
+         app.launchArguments = launchArguments
+         app.launch()
+@@ -194,67 +122,4 @@ final class ReaderLocalSmokeUITests: XCTestCase {
+         center.press(forDuration: 0, thenDragTo: edge)
+     }
+ 
+-    private var launchArguments: [String] {
+-        ["-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+-         "-yd_root_tab_visible_ids", "(bookshelf, settings)", "-bookLayoutIsGrid", "NO",
+-         "-yd_page_turn_style", "滑動", "-yd_scroll_mode", "NO",
+-         "-yd_reader_font_size", "18", "-yd_reader_brightness", "0.4", "-yd_follow_sys_brightness", "NO",
+-         "-yd_appearance_reader_interface", "classic"]
+-    }
+-
+-    @MainActor
+-    private func openShelf(_ app: XCUIApplication) {
+-        let library = app.tabBars.buttons["Library"].firstMatch
+-        XCTAssertTrue(library.waitForExistence(timeout: 30), app.debugDescription)
+-        library.tap()
+-    }
+-
+-    @MainActor
+-    private func shelfBook(_ app: XCUIApplication) -> XCUIElement {
+-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title!)).firstMatch
+-    }
+-
+-    @MainActor
+-    private func progressPercent(_ element: XCUIElement) -> Int? {
+-        let label = element.label
+-        guard let range = label.range(of: #"[0-9]+%"#, options: .regularExpression) else { return nil }
+-        return Int(label[range].dropLast())
+-    }
+-
+-    @MainActor
+-    private func waitForVisiblePage(_ app: XCUIApplication, marker: String) {
+-        let shown = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+-            app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", marker))
+-                .allElementsBoundByIndex.contains { element in
+-                    element.exists && element.isHittable && element.frame.contains(
+-                        CGPoint(x: app.frame.midX, y: app.frame.midY)
+-                    )
+-                }
+-        }, object: nil)
+-        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 45), .completed,
+-                       "The real CoreText page must visibly render \(marker), not a prefetched neighbor.\n\(app.debugDescription)")
+-    }
+-
+-    @MainActor
+-    private func showControls(_ app: XCUIApplication, identifier: String) -> XCUIElement {
+-        let control = app.buttons[identifier].firstMatch
+-        if !control.exists || !control.isHittable {
+-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+-        }
+-        let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"), object: control)
+-        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 10), .completed, app.debugDescription)
+-        return control
+-    }
+-
+-    @MainActor
+-    private func capture(_ app: XCUIApplication, name: String) {
+-        let image = XCTAttachment(screenshot: app.screenshot())
+-        image.name = name
+-        image.lifetime = .keepAlways
+-        add(image)
+-        let tree = XCTAttachment(string: app.debugDescription)
+-        tree.name = name + "-accessibility"
+-        tree.lifetime = .keepAlways
+-        add(tree)
+-    }
+ }
+diff --git a/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift b/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift
+index 25b03c3..f21f8db 100644
+--- a/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift	
++++ b/Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift	
+@@ -5,7 +5,7 @@ import Testing
+ @testable import yuedu_app
+ 
+ enum CoreTextPerformanceFixtures {
+-    struct Fixture {
++    struct Fixture: Sendable {
+         let id: String
+         let html: String
+         let minimumTextCharacters: Int
+@@ -47,6 +47,21 @@ enum CoreTextPerformanceFixtures {
+         simulatedResourceLatencyMilliseconds: 0
+     )
+ 
++    // Separate process-memory corpus. Do not add to `all`: the established
++    // renderer/stage fixture inventories and fifty-row protocol stay unchanged.
++    static let plain1M = Fixture(
++        id: "plain-1m",
++        html: document(title: "Plain 1M", body: paragraphs(
++            minimumCharacters: 1_048_576,
++            unit: "讀書使人充實，思考使人深邃，交談使人清醒。"
++        )),
++        minimumTextCharacters: 1_048_576,
++        minimumElementCount: 4_096,
++        expectedCSSRuleCount: 0,
++        expectedImageCount: 0,
++        simulatedResourceLatencyMilliseconds: 0
++    )
++
+     static let cssHeavy50K: Fixture = {
+         let ruleCount = 300
+         let elementCount = 1_000
+diff --git a/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift b/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift
+index 39b456d..6b221c4 100644
+--- a/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift	
++++ b/Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift	
+@@ -133,7 +133,9 @@ struct ReaderArchitectureBenchmarkTests {
+     }
+ }
+ 
+-private struct BenchmarkChapterProvider: BookContentProvider {
++// Shared by the separate memory preparation; the existing stage method and its
++// fifty-row protocol are unchanged.
++struct BenchmarkChapterProvider: BookContentProvider {
+     let html: String
+     let totalChapters = 1
+     func chapterTitle(at index: Int) -> String { "Measurement chapter" }
+diff --git a/Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift b/Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift
+new file mode 100644
+index 0000000..e83244b
+--- /dev/null
++++ b/Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift
+@@ -0,0 +1,167 @@
++import CryptoKit
++import XCTest
++
++/// Shared owned-TXT setup and the existing real importer/reader UI actions.
++/// No test method lives here; the established smoke class still contains one.
++class ReaderLocalTXTScenarioTestCase: XCTestCase {
++    var directory: URL!
++    var fixture: URL!
++    var title: String!
++    let targetChapter = "第三章 林間"
++    let firstMarker = "LOCAL_READER_SMOKE_OPENING"
++    let targetMarker = "LOCAL_READER_SMOKE_RESUME"
++    var uniqueParagraphMarkers: Bool { false }
++    private(set) var fixtureSHA256 = ""
++    private(set) var fixtureBytes = 0
++
++    override func setUpWithError() throws {
++        continueAfterFailure = false
++        executionTimeAllowance = 240
++        title = "ReaderSmoke-" + UUID().uuidString
++        directory = FileManager.default.temporaryDirectory.appendingPathComponent(title, isDirectory: true)
++        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
++        fixture = directory.appendingPathComponent("reader-smoke.txt")
++        let chapters = [
++            ("第一章 出發", firstMarker),
++            ("第二章 渡河", "LOCAL_READER_SMOKE_CROSSING"),
++            (targetChapter, targetMarker),
++            ("第四章 歸途", "LOCAL_READER_SMOKE_RETURN")
++        ]
++        let text = chapters.map { heading, marker in
++            let paragraph = "\(marker). The traveller follows the path beside the river, records the day's journey, and reads the map before continuing."
++            return heading + "\n\n" + (0..<10).map { index in
++                uniqueParagraphMarkers ? paragraph.replacingOccurrences(of: marker + ".",
++                    with: marker + String(format: "_P%04d.", index)) : paragraph
++            }.joined(separator: "\n\n")
++        }.joined(separator: "\n\n")
++        let bytes = Data(text.utf8)
++        fixtureSHA256 = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
++        fixtureBytes = bytes.count
++        try bytes.write(to: fixture, options: .atomic)
++    }
++
++    override func tearDownWithError() throws {
++        if let directory, FileManager.default.fileExists(atPath: directory.path) {
++            try FileManager.default.removeItem(at: directory)
++        }
++    }
++
++    @MainActor
++    func launchAndImportTXT(_ app: XCUIApplication, extraArguments: [String] = []) {
++        app.launchArguments = launchArguments + extraArguments + [
++            "-reset-reading-settings", "-auto-import-epub", fixture.path,
++            "-auto-import-title", title!
++        ]
++        app.launch()
++        openShelf(app)
++        let imported = shelfBook(app)
++        XCTAssertTrue(imported.waitForExistence(timeout: 40), "Auto-import must reach the real bookshelf.\n\(app.debugDescription)")
++        capture(app, name: "01-imported-on-bookshelf")
++        imported.tap()
++        waitForVisiblePage(app, marker: firstMarker)
++        capture(app, name: "02-first-chapter-rendered")
++
++    }
++
++    @MainActor
++    func selectTXTTargetChapter(_ app: XCUIApplication) {
++        let contents = showControls(app, identifier: "reader_tool_tableOfContents")
++        contents.tap()
++        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", targetChapter)).firstMatch
++        XCTAssertTrue(chapter.waitForExistence(timeout: 15), "TXT chapter parsing must expose its real contents row.\n\(app.debugDescription)")
++        XCTAssertTrue(chapter.isHittable, app.debugDescription)
++        chapter.tap()
++        waitForVisiblePage(app, marker: targetMarker)
++        capture(app, name: "03-target-chapter-rendered")
++    }
++
++    @MainActor
++    func persistTXTTargetAndTerminate(_ app: XCUIApplication) throws -> Int {
++        showControls(app, identifier: "reader_back_button").tap()
++        let before = shelfBook(app)
++        XCTAssertTrue(before.waitForExistence(timeout: 15), "Closing the reader must return to the shelf")
++        let progressSaved = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
++            self.progressPercent(before).map { $0 > 0 && $0 < 100 } == true
++        }, object: nil)
++        XCTAssertEqual(XCTWaiter.wait(for: [progressSaved], timeout: 15), .completed,
++                       "The middle chapter must publish nonzero shelf progress.\n\(app.debugDescription)")
++        let expectedProgress = try XCTUnwrap(progressPercent(before))
++        capture(app, name: "04-progress-before-relaunch")
++        // The importer has copied the TXT into its own storage. Removing the
++        // external fixture and the import launch argument prevents re-import
++        // from making an empty shelf or lost position appear successful.
++        try FileManager.default.removeItem(at: fixture)
++        XCUIDevice.shared.press(.home)
++        let backgrounded = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
++            app.state == .runningBackground || app.state == .runningBackgroundSuspended
++        }, object: nil)
++        XCTAssertEqual(XCTWaiter.wait(for: [backgrounded], timeout: 10), .completed,
++                       "The normal background save path must run")
++        app.terminate()
++        return expectedProgress
++    }
++
++    var launchArguments: [String] {
++        ["-AppleLanguages", "(en)", "-AppleLocale", "en_US",
++         "-yd_root_tab_visible_ids", "(bookshelf, settings)", "-bookLayoutIsGrid", "NO",
++         "-yd_page_turn_style", "滑動", "-yd_scroll_mode", "NO",
++         "-yd_reader_font_size", "18", "-yd_reader_brightness", "0.4", "-yd_follow_sys_brightness", "NO",
++         "-yd_appearance_reader_interface", "classic"]
++    }
++
++    @MainActor
++    func openShelf(_ app: XCUIApplication) {
++        let library = app.tabBars.buttons["Library"].firstMatch
++        XCTAssertTrue(library.waitForExistence(timeout: 30), app.debugDescription)
++        library.tap()
++    }
++
++    @MainActor
++    func shelfBook(_ app: XCUIApplication) -> XCUIElement {
++        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title!)).firstMatch
++    }
++
++    @MainActor
++    func progressPercent(_ element: XCUIElement) -> Int? {
++        let label = element.label
++        guard let range = label.range(of: #"[0-9]+%"#, options: .regularExpression) else { return nil }
++        return Int(label[range].dropLast())
++    }
++
++    @MainActor
++    func waitForVisiblePage(_ app: XCUIApplication, marker: String) {
++        let shown = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
++            app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", marker))
++                .allElementsBoundByIndex.contains { element in
++                    element.exists && element.isHittable && element.frame.contains(
++                        CGPoint(x: app.frame.midX, y: app.frame.midY)
++                    )
++                }
++        }, object: nil)
++        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 45), .completed,
++                       "The real CoreText page must visibly render \(marker), not a prefetched neighbor.\n\(app.debugDescription)")
++    }
++
++    @MainActor
++    func showControls(_ app: XCUIApplication, identifier: String) -> XCUIElement {
++        let control = app.buttons[identifier].firstMatch
++        if !control.exists || !control.isHittable {
++            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
++        }
++        let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"), object: control)
++        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 10), .completed, app.debugDescription)
++        return control
++    }
++
++    @MainActor
++    func capture(_ app: XCUIApplication, name: String) {
++        let image = XCTAttachment(screenshot: app.screenshot())
++        image.name = name
++        image.lifetime = .keepAlways
++        add(image)
++        let tree = XCTAttachment(string: app.debugDescription)
++        tree.name = name + "-accessibility"
++        tree.lifetime = .keepAlways
++        add(tree)
++    }
++}
+diff --git a/Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift b/Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift
+new file mode 100644
+index 0000000..eed878a
+--- /dev/null
++++ b/Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift
+@@ -0,0 +1,192 @@
++import XCTest
++
++/// Five fresh app processes observed from the separate UI-test runner. Import,
++/// fixture generation and progress setup happen before any measured launch.
++final class ReaderProcessLaunchMeasurementsUITests: ReaderLocalTXTScenarioTestCase {
++    override var uniqueParagraphMarkers: Bool { true }
++
++    @MainActor
++    func testFiveProcessLaunchesToSubmittedReadableTXTAnchor() async throws {
++        executionTimeAllowance = 600
++        let app = XCUIApplication()
++        defer { app.terminate() }
++        let flag = ["-reader-launch-measurement"]
++        let marker = targetMarker + "_P0000."
++        // The same real importer and TOC actions as the existing smoke. This is
++        // setup, not an extra importer or a measured launch iteration.
++        launchAndImportTXT(app, extraArguments: flag)
++        selectTXTTargetChapter(app)
++        let sourceText = try String(contentsOf: fixture, encoding: .utf8)
++        guard sourceText.components(separatedBy: marker).count == 2 else {
++            throw LaunchObservationFailure.invalid("owned input marker must be unique")
++        }
++        let expected = try await submittedPage(app, marker: marker)
++        let expectedProgress = try persistTXTTargetAndTerminate(app)
++        guard !FileManager.default.fileExists(atPath: fixture.path) else {
++            throw LaunchObservationFailure.invalid("original import input still exists")
++        }
++        app.launchArguments = launchArguments + flag
++        let runID = UUID().uuidString
++        var processObservationIDs = Set<String>()
++        var failures: [String] = []
++        for iteration in 0..<5 {
++            var times: [String: Double] = [:]
++            var observed: SubmittedPage?
++            var failure: String?
++            var phase = "terminate"
++            do {
++                times["terminateRequested"] = ProcessInfo.processInfo.systemUptime
++                app.terminate()
++                try await waitFor("app process terminated", timeout: 10) { app.state == .notRunning }
++                times["notRunningObserved"] = ProcessInfo.processInfo.systemUptime
++                phase = "launch"
++                times["launchRequested"] = ProcessInfo.processInfo.systemUptime
++                app.launch()
++                times["launchReturned"] = ProcessInfo.processInfo.systemUptime
++                phase = "shelf"
++                let library = app.tabBars.buttons["Library"].firstMatch
++                try await waitFor("real Library tab", timeout: 30) { library.exists && library.isHittable }
++                library.tap()
++                let book = shelfBook(app)
++                try await waitFor("persisted owned book", timeout: 30) { book.exists && book.isHittable }
++                times["shelfObserved"] = ProcessInfo.processInfo.systemUptime
++                guard progressPercent(book) == expectedProgress else {
++                    throw LaunchObservationFailure.invalid("persisted shelf progress differs")
++                }
++                phase = "readable-anchor"
++                times["bookTapRequested"] = ProcessInfo.processInfo.systemUptime
++                book.tap()
++                let page = try await submittedPage(app, marker: marker)
++                times["pageObserved"] = ProcessInfo.processInfo.systemUptime
++                observed = page
++                guard page.spineIndex == expected.spineIndex,
++                      page.pageStartUTF16 == expected.pageStartUTF16,
++                      page.pageLengthUTF16 == expected.pageLengthUTF16,
++                      page.documentLengthUTF16 == expected.documentLengthUTF16,
++                      Data(page.pageText.utf8) == Data(expected.pageText.utf8),
++                      try markerOffset(page, marker: marker) == markerOffset(expected, marker: marker) else {
++                    throw LaunchObservationFailure.invalid("actual rendered UTF16/text anchor differs")
++                }
++                guard page.processObservationID != expected.processObservationID,
++                      processObservationIDs.insert(page.processObservationID).inserted else {
++                    throw LaunchObservationFailure.invalid("the app process observation identity was reused")
++                }
++                phase = "complete"
++            } catch { failure = String(describing: error) }
++            let row = LaunchObservation(runID: runID, iteration: iteration,
++                fixtureSHA256: fixtureSHA256, fixtureBytes: fixtureBytes,
++                expectedMarker: marker, expectedMarkerUTF16: try markerOffset(expected, marker: marker),
++                expected: expected, observed: observed, timestamps: times,
++                complete: failure == nil, terminalPhase: phase, error: failure)
++            let data = try JSONEncoder().encode(row)
++            print("READER_PROCESS_LAUNCH " + String(decoding: data, as: UTF8.self))
++            let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
++            attachment.name = "process-launch-sample-\(iteration)"
++            attachment.lifetime = .keepAlways
++            add(attachment)
++            if let failure { failures.append("sample \(iteration): \(failure)") }
++            app.terminate()
++        }
++        if !failures.isEmpty { throw LaunchObservationFailure.invalid(failures.joined(separator: "; ")) }
++    }
++
++    @MainActor
++    private func waitFor(_ name: String, timeout: TimeInterval, condition: @escaping () -> Bool) async throws {
++        let signal = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in condition() }, object: nil)
++        // A real state predicate with a failure deadline, never a settle sleep.
++        guard await XCTWaiter.fulfillment(of: [signal], timeout: timeout) == .completed else {
++            throw LaunchObservationFailure.invalid("deadline: " + name)
++        }
++    }
++
++    @MainActor
++    private func submittedPage(_ app: XCUIApplication, marker: String) async throws -> SubmittedPage {
++        var result: SubmittedPage?
++        var malformed: Error?
++        try await waitFor("submitted page, visible body and actual UTF16 anchor", timeout: 45) {
++            for element in app.staticTexts.matching(identifier: "reader_measurement_submitted_page").allElementsBoundByIndex {
++                guard element.exists, element.isHittable,
++                      element.frame.contains(CGPoint(x: app.frame.midX, y: app.frame.midY)),
++                      let value = element.value as? String,
++                      let bytes = value.data(using: .utf8)
++                else { continue }
++                do {
++                    let page = try JSONDecoder().decode(SubmittedPage.self, from: bytes)
++                    guard page.schemaVersion == 1, page.boundary == "cpu-layer-submitted-and-ax-readable",
++                          page.processID > 0, !page.processObservationID.isEmpty,
++                          page.viewBindingRevision > 0, !page.viewID.isEmpty, page.pageIndex >= 0,
++                          page.submissionUptimeSeconds.isFinite, page.submissionUptimeSeconds > 0,
++                          ["drawn", "prerendered"].contains(page.imageSource),
++                          page.pageStartUTF16 >= 0, page.pageLengthUTF16 > 0, page.pageLengthUTF16 <= 16_384,
++                          page.documentLengthUTF16 >= page.pageLengthUTF16,
++                          page.pageLengthUTF16 == page.pageText.utf16.count,
++                          page.pageStartUTF16 <= page.documentLengthUTF16 - page.pageLengthUTF16 else {
++                        throw LaunchObservationFailure.invalid("malformed submitted-page contract")
++                    }
++                    guard page.spineIndex == 2, page.pageText.components(separatedBy: marker).count == 2,
++                          element.label == page.pageText.trimmingCharacters(in: .whitespacesAndNewlines) else { continue }
++                    result = page
++                    return true
++                } catch { malformed = error; return true }
++            }
++            return false
++        }
++        if let malformed { throw malformed }
++        guard let result else { throw LaunchObservationFailure.invalid("missing page snapshot") }
++        return result
++    }
++
++    private func markerOffset(_ page: SubmittedPage, marker: String) throws -> Int {
++        let local = (page.pageText as NSString).range(of: marker)
++        guard local.location != NSNotFound, local.length == marker.utf16.count,
++              local.location + local.length <= page.pageLengthUTF16 else {
++            throw LaunchObservationFailure.invalid("marker is outside actual UTF16 page range")
++        }
++        return page.pageStartUTF16 + local.location
++    }
++}
++
++private enum LaunchObservationFailure: Error { case invalid(String) }
++private struct SubmittedPage: Codable {
++    let schemaVersion: Int
++    let boundary: String
++    let processID: Int
++    let processObservationID: String
++    let viewID: String
++    let viewBindingRevision: UInt64
++    let spineIndex: Int
++    let pageIndex: Int
++    let pageStartUTF16: Int
++    let pageLengthUTF16: Int
++    let documentLengthUTF16: Int
++    let pageText: String
++    let imageSource: String
++    let submissionUptimeSeconds: Double
++}
++private struct LaunchObservation: Encodable {
++    let schemaVersion = 1
++    let kind = "reader-process-launch"
++    let timingProcess = "separate-xctest-ui-runner"
++    let observedProcess = "debug-app-under-ui-automation"
++    let boundary = "launch-request-to-cpu-layer-submitted-and-ax-readable-visible-anchor"
++    let fixturePreparationInsideInterval = false
++    let originalImportInputRemoved = true
++    let measuredLaunchImports = false
++    let systemCachesPurged = false
++    let deviceCold = false
++    let gpuPresentationMeasured = false
++    let launchToReadableIncludesAutomationNavigation = true
++    let improvementEstablished = false
++    let runID: String
++    let iteration: Int
++    let fixtureSHA256: String
++    let fixtureBytes: Int
++    let expectedMarker: String
++    let expectedMarkerUTF16: Int
++    let expected: SubmittedPage
++    let observed: SubmittedPage?
++    let timestamps: [String: Double]
++    let complete: Bool
++    let terminalPhase: String
++    let error: String?
++}
+diff --git a/Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift b/Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift
+new file mode 100644
+index 0000000..d00481e
+--- /dev/null
++++ b/Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift	
+@@ -0,0 +1,382 @@
++import CoreText
++import CryptoKit
++import Darwin
++import Foundation
++import Testing
++import UIKit
++import YueduCoreText
++@testable import yuedu_app
++
++/// Separate preparation, never part of the established fifty stage rows.
++/// These are sampled bytes in the app process with XCTest loaded, not an
++/// ordinary product launch, allocation total or a physical-device memory limit.
++@Suite("Reader process memory observations", .serialized)
++@MainActor
++struct ReaderProcessMemoryMeasurementsTests {
++    @Test("five samples each of the owned 100K and 1M CoreText chapters")
++    func sampleOwnedCoreTextChapters() async throws {
++        // Fixture generation/hashing is outside every memory interval and off
++        // main. The retained fixture strings are included in each baseline.
++        let fixtures = await Task.detached {
++            [CoreTextPerformanceFixtures.plain100K, CoreTextPerformanceFixtures.plain1M].map {
++                let bytes = Data($0.html.utf8)
++                return MemoryFixture(fixture: $0, bytes: bytes.count,
++                    sha256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined())
++            }
++        }.value
++        let settings = EPUBTestFixtures.renderSettings(fontSize: 18, lineHeightMultiple: 1.5, paragraphSpacing: 8)
++        let runID = UUID().uuidString
++        var failures: [String] = []
++        for fixture in fixtures {
++            for iteration in 0..<5 {
++                do { try await sample(fixture, iteration: iteration, runID: runID, settings: settings) }
++                catch { failures.append("\(fixture.fixture.id)/\(iteration): \(error)") }
++            }
++        }
++        // Failed samples still emit their original points/stages. No zero,
++        // skipped iteration or successful rerun replaces a failed measurement.
++        if !failures.isEmpty { throw MemoryMeasurementFailure.invalid(failures.joined(separator: "; ")) }
++    }
++
++    private func sample(_ fixture: MemoryFixture, iteration: Int, runID: String,
++                        settings: ReaderRenderSettings) async throws {
++        let sampler = ReaderProcessMemorySampler(runID: runID, fixture: fixture.fixture.id, iteration: iteration)
++        await sampler.begin()
++        var failure: String?
++        var outputs: [String: Int] = [:]
++        var jumps: [MemoryJump] = []
++        do {
++            try Task.checkCancellation()
++            let size = CGSize(width: 390, height: 844)
++            await sampler.phase("document.begin")
++            let builder = OnlineProviderAttributedStringBuilder(
++                provider: BenchmarkChapterProvider(html: fixture.fixture.html), renderSize: size)
++            let store = ChapterDocumentStore(builder: builder)
++            let request = ChapterDocumentRequest(spineIndex: 0, settings: settings,
++                themeTextColor: settings.textColor, themeBackgroundColor: settings.backgroundColor)
++            let document = try await store.document(for: request)
++            try require(document.attributedString.length >= fixture.fixture.minimumTextCharacters, "short document")
++            outputs["documentUTF16"] = document.attributedString.length
++            await sampler.phase("document.end")
++
++            let paginator = CoreTextPaginator()
++            await sampler.phase("first-page.begin")
++            let first = await paginator.paginateFirstPage(spineIndex: 0, attrStr: document.attributedString,
++                imagePage: document.imagePage, pageBackgroundImage: document.pageBackgroundImage,
++                pageBackgroundColor: document.pageBackgroundColor, anchorOffsets: document.anchorOffsets,
++                renderSize: size, fontSize: settings.fontSize, paragraphSpacing: settings.paragraphSpacing,
++                letterSpacing: settings.letterSpacing, contentInsets: settings.contentInsets,
++                writingMode: settings.writingMode, revision: document.revision)
++            let firstLayout = try #require(first)
++            let firstRange = try #require(firstLayout.pageRanges.first)
++            try require(firstLayout.spineIndex == 0 && firstLayout.attributedString.length == document.attributedString.length
++                        && firstRange.location == 0 && firstRange.length > 0, "missing real first page text")
++            outputs["firstPages"] = firstLayout.pageRanges.count
++            await sampler.phase("first-page.end")
++
++            await sampler.phase("pagination.begin")
++            let full = await paginator.paginate(spineIndex: 0, attrStr: document.attributedString,
++                imagePage: document.imagePage, pageBackgroundImage: document.pageBackgroundImage,
++                pageBackgroundColor: document.pageBackgroundColor, anchorOffsets: document.anchorOffsets,
++                renderSize: size, fontSize: settings.fontSize, paragraphSpacing: settings.paragraphSpacing,
++                letterSpacing: settings.letterSpacing, contentInsets: settings.contentInsets,
++                writingMode: settings.writingMode, revision: document.revision)
++            var covered = 0
++            try require(full.spineIndex == 0 && full.attributedString.length == document.attributedString.length,
++                        "pagination bound to a different document")
++            for range in full.pageRanges {
++                try require(range.location == covered && range.length > 0, "noncontiguous pagination")
++                covered += range.length
++            }
++            try require(covered == document.attributedString.length, "incomplete pagination")
++            outputs["fullPages"] = full.pageRanges.count
++            outputs["coveredUTF16"] = covered
++            await sampler.phase("pagination.end")
++
++            await sampler.phase("scroll.begin")
++            let scroll = CoreTextScrollEngine(builder: builder, renderSettings: settings, chapterDocumentStore: store)
++            await scroll.start(initialChapter: 0,
++                contentWidth: size.width - settings.contentInsets.left - settings.contentInsets.right,
++                viewportExtent: size.height, loadAdjacentChapters: false)
++            try require(scroll.isReady, "scroll not ready")
++            try require(scroll.chunks.reduce(0) { $0 + $1.charRange.length } == covered, "incomplete scroll chunks")
++            outputs["scrollChunks"] = scroll.chunks.count
++            let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
++            let previousKeyWindow = scene.windows.first(where: \.isKeyWindow)
++            let controller = CoreTextCollectionScrollViewController(engine: scroll, axis: .vertical,
++                horizontalInset: settings.contentInsets.left, verticalInset: settings.contentInsets.top,
++                backgroundColor: settings.backgroundColor)
++            let window = UIWindow(windowScene: scene)
++            window.frame = scene.coordinateSpace.bounds
++            let host = UIViewController()
++            window.rootViewController = host
++            window.makeKeyAndVisible()
++            host.addChild(controller)
++            controller.view.autoresizingMask = []
++            controller.view.frame = CGRect(origin: .zero, size: size)
++            host.view.addSubview(controller.view)
++            controller.didMove(toParent: host)
++            defer {
++                window.isHidden = true
++                window.rootViewController = nil
++                previousKeyWindow?.makeKey()
++            }
++            controller.view.layoutIfNeeded()
++            let collection = try #require(controller.view.subviews.compactMap { $0 as? UICollectionView }.first)
++            collection.layoutIfNeeded()
++            try require(collection.bounds.size == size, "actual viewport differs from 390x844")
++            await sampler.phase("scroll.end")
++
++            // Actual existing controller restores and samples its live leading
++            // line. Avoid the final viewport where clamping is expected.
++            let fractions = [85, 5, 75, 15, 65, 25, 55, 35, 45, 10]
++            var offsets: [Int] = []
++            for (jump, fraction) in fractions.enumerated() {
++                try Task.checkCancellation()
++                await sampler.phase("jump.\(jump).begin")
++                let row = (scroll.chunks.count - 1) * fraction / 100
++                guard let chunk = scroll.chunks[row].legacyChunk else {
++                    throw MemoryMeasurementFailure.invalid("expected CoreText legacy chunk")
++                }
++                chunk.materializeFrameIfNeeded()
++                let frame = try #require(chunk.frame)
++                let lines = CTFrameGetLines(frame) as! [CTLine]
++                let offset = CTLineGetStringRange(try #require(lines.first)).location
++                try require(offset >= 0 && offset < document.attributedString.length, "invalid text anchor")
++                controller.setInitialPosition(chapter: 0, charOffset: offset)
++                controller.view.layoutIfNeeded()
++                collection.layoutIfNeeded()
++                let actual = try #require(controller.positionForPersistence())
++                try require(actual.spineIndex == 0 && actual.charOffset == offset, "scroll anchor differs")
++                offsets.append(actual.charOffset)
++                let anchorLength = min(32, document.attributedString.length - offset)
++                let anchorText = (document.attributedString.string as NSString).substring(
++                    with: NSRange(location: offset, length: anchorLength))
++                jumps.append(MemoryJump(index: jump, requestedOffsetUTF16: offset,
++                    observedSpine: actual.spineIndex, observedOffsetUTF16: actual.charOffset,
++                    anchorText: anchorText, anchorLengthUTF16: anchorLength))
++                await sampler.phase("jump.\(jump).end")
++            }
++            try require(Set(offsets).count == 10, "ten jumps must visit distinct text anchors")
++            outputs["verifiedJumps"] = offsets.count
++        } catch { failure = String(describing: error) }
++        let measurement = await sampler.finish(failure: failure)
++        let row = ProcessMemoryObservation(runID: runID, fixture: fixture.fixture.id,
++            iteration: iteration, fixtureSHA256: fixture.sha256, fixtureHTMLBytes: fixture.bytes,
++            fixtureMinimumUTF16: fixture.fixture.minimumTextCharacters, outputs: outputs, jumps: jumps,
++            style: MemoryRenderStyle(fontSize: Double(settings.fontSize), lineHeightMultiple: Double(settings.lineHeightMultiple),
++                paragraphSpacing: Double(settings.paragraphSpacing), lineSpacing: Double(settings.lineSpacing),
++                letterSpacing: Double(settings.letterSpacing), contentInsets: [Double(settings.contentInsets.top),
++                    Double(settings.contentInsets.left), Double(settings.contentInsets.bottom), Double(settings.contentInsets.right)],
++                writingMode: settings.writingMode == .horizontal ? "horizontal" : "nonhorizontal"),
++            measurement: measurement)
++        let data = try await Task.detached { try JSONEncoder().encode(row) }.value
++        print("READER_PROCESS_MEMORY " + String(decoding: data, as: UTF8.self))
++        if !measurement.complete { throw MemoryMeasurementFailure.invalid(measurement.errors.joined(separator: "; ")) }
++    }
++
++    private func require(_ condition: Bool, _ message: String) throws {
++        if !condition { throw MemoryMeasurementFailure.invalid(message) }
++    }
++}
++
++private struct MemoryFixture: Sendable {
++    let fixture: CoreTextPerformanceFixtures.Fixture
++    let bytes: Int
++    let sha256: String
++}
++private enum MemoryMeasurementFailure: Error { case invalid(String) }
++private struct MemoryJump: Encodable, Sendable {
++    let index: Int
++    let requestedOffsetUTF16: Int
++    let observedSpine: Int
++    let observedOffsetUTF16: Int
++    let anchorText: String
++    let anchorLengthUTF16: Int
++}
++private struct MemoryRenderStyle: Encodable, Sendable {
++    let fontSize: Double
++    let lineHeightMultiple: Double
++    let paragraphSpacing: Double
++    let lineSpacing: Double
++    let letterSpacing: Double
++    let contentInsets: [Double]
++    let writingMode: String
++}
++
++private struct ProcessMemoryObservation: Encodable, Sendable {
++    let schemaVersion = 1
++    let kind = "reader-process-memory"
++    let processScope = "app-process-with-xctest-loaded"
++    #if targetEnvironment(simulator)
++    let platform = "ios-simulator"
++    #else
++    let platform = "ios-device-test-host"
++    #endif
++    let units = "bytes"
++    let metricMethod = "task_info(TASK_VM_INFO): phys_footprint and resident_size; same snapshot"
++    let nominalIntervalMilliseconds = 10
++    let maximumAllowedGapMilliseconds = 50
++    let viewport = [390, 844]
++    let fontSize = 18
++    let lineHeightMultiple = 1.5
++    let paragraphSpacing = 8
++    let fixtureConstructionInsideInterval = false
++    let baselineIncludesRetainedFixtureHTML = true
++    let cachesPurged = false
++    let deviceCold = false
++    let improvementEstablished = false
++    let measurementOverheadExcluded = false
++    let exactKernelPeakClaimed = false
++    let runID: String
++    let fixture: String
++    let iteration: Int
++    let fixtureSHA256: String
++    let fixtureHTMLBytes: Int
++    let fixtureMinimumUTF16: Int
++    let outputs: [String: Int]
++    let jumps: [MemoryJump]
++    let style: MemoryRenderStyle
++    let measurement: ReaderProcessMemorySampler.Result
++}
++
++private actor ReaderProcessMemorySampler {
++    struct Point: Encodable, Sendable {
++        let kind: String
++        let phase: String
++        let beforeUptimeSeconds: TimeInterval
++        let afterUptimeSeconds: TimeInterval
++        let footprintBytes: Int64?
++        let residentBytes: Int64?
++        let kernelReturn: Int32
++        let sufficientReturnCount: Bool
++        let onMain: Bool
++    }
++    struct Event: Encodable, Sendable { let name: String; let uptimeSeconds: TimeInterval }
++    private struct RawPhase: Encodable {
++        let runID: String
++        let fixture: String
++        let iteration: Int
++        let event: Event
++    }
++    struct Result: Encodable, Sendable {
++        let processID: Int
++        let beginUptimeSeconds: TimeInterval
++        let endUptimeSeconds: TimeInterval
++        let complete: Bool
++        let errors: [String]
++        let periodicSamples: Int
++        let maximumObservedGapMilliseconds: Double
++        let baselineFootprintBytes: Int64?
++        let baselineResidentBytes: Int64?
++        let sampledPeakFootprintBytes: Int64?
++        let sampledPeakResidentBytes: Int64?
++        let points: [Point]
++        let events: [Event]
++    }
++    private var timer: Task<Void, Never>?
++    private var points: [Point] = []
++    private var events: [Event] = []
++    private var currentPhase = "baseline"
++    private var running = false
++    private var overflowed = false
++    private var phaseEmissionFailed = false
++    private let runID: String
++    private let fixture: String
++    private let iteration: Int
++
++    init(runID: String, fixture: String, iteration: Int) {
++        self.runID = runID
++        self.fixture = fixture
++        self.iteration = iteration
++    }
++
++    func begin() {
++        running = true
++        phase("baseline")
++        let recorder = self
++        timer = Task.detached(priority: .utility) {
++            // Explicit measurement timer, never a delay to let UI/state settle.
++            // Task scheduling is not real-time: retain actual timestamp gaps.
++            while !Task.isCancelled {
++                do { try await Task.sleep(for: .milliseconds(10)) }
++                catch { break }
++                if !(await recorder.periodic()) { break }
++            }
++        }
++    }
++
++    func phase(_ name: String) {
++        currentPhase = name
++        let event = Event(name: name, uptimeSeconds: ProcessInfo.processInfo.systemUptime)
++        events.append(event)
++        capture(kind: "boundary")
++        do {
++            let data = try JSONEncoder().encode(RawPhase(runID: runID, fixture: fixture, iteration: iteration, event: event))
++            print("READER_PROCESS_MEMORY_EVENT " + String(decoding: data, as: UTF8.self))
++        } catch { phaseEmissionFailed = true }
++    }
++
++    private func periodic() -> Bool {
++        guard running else { return false }
++        guard points.count < 12_000 else { overflowed = true; return false }
++        capture(kind: "periodic")
++        return true
++    }
++
++    func finish(failure: String?) async -> Result {
++        phase(failure == nil ? "complete" : "failed")
++        running = false
++        let pending = timer
++        timer = nil
++        pending?.cancel()
++        await pending?.value
++        var errors = failure.map { [$0] } ?? []
++        if overflowed { errors.append("sample-buffer-limit") }
++        if phaseEmissionFailed { errors.append("raw-phase-emission-failed") }
++        if points.contains(where: { $0.kernelReturn != KERN_SUCCESS || !$0.sufficientReturnCount
++            || $0.footprintBytes == nil || $0.residentBytes == nil || $0.onMain }) {
++            errors.append("memory-query-invalid-or-on-main")
++        }
++        let periodic = points.filter { $0.kind == "periodic" }.count
++        if periodic == 0 { errors.append("no-periodic-samples") }
++        // Boundary captures must not conceal a missing periodic sampler. Quality
++        // uses only baseline, periodic ticks and the terminal boundary.
++        let timingPoints = [points[0]] + points.filter { $0.kind == "periodic" } + [points[points.count - 1]]
++        let gaps = zip(timingPoints, timingPoints.dropFirst()).map { pair in
++            max(0, pair.1.beforeUptimeSeconds - pair.0.beforeUptimeSeconds) * 1_000
++        }
++        let maximumGap = gaps.max() ?? 0
++        if maximumGap > 50 { errors.append("sampling-gap-exceeded-50ms") }
++        return Result(processID: Int(ProcessInfo.processInfo.processIdentifier),
++            beginUptimeSeconds: points.first?.beforeUptimeSeconds ?? 0,
++            endUptimeSeconds: points.last?.afterUptimeSeconds ?? 0,
++            complete: errors.isEmpty, errors: errors, periodicSamples: periodic,
++            maximumObservedGapMilliseconds: maximumGap,
++            baselineFootprintBytes: points.first?.footprintBytes, baselineResidentBytes: points.first?.residentBytes,
++            sampledPeakFootprintBytes: points.compactMap(\.footprintBytes).max(),
++            sampledPeakResidentBytes: points.compactMap(\.residentBytes).max(), points: points, events: events)
++    }
++
++    private func capture(kind: String) {
++        let before = ProcessInfo.processInfo.systemUptime
++        var info = task_vm_info_data_t()
++        var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size)
++        let returned = withUnsafeMutablePointer(to: &info) { pointer in
++            pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
++                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
++            }
++        }
++        let footprintEnd = (MemoryLayout<task_vm_info_data_t>.offset(of: \.phys_footprint) ?? Int.max)
++            .addingReportingOverflow(MemoryLayout<mach_vm_size_t>.size)
++        let sufficient = !footprintEnd.overflow && Int(count) * MemoryLayout<natural_t>.size >= footprintEnd.partialValue
++        let valid = returned == KERN_SUCCESS && sufficient
++            && info.phys_footprint > 0 && info.phys_footprint <= UInt64(Int64.max)
++            && info.resident_size > 0 && info.resident_size <= UInt64(Int64.max)
++        points.append(Point(kind: kind, phase: currentPhase, beforeUptimeSeconds: before,
++            afterUptimeSeconds: ProcessInfo.processInfo.systemUptime,
++            footprintBytes: valid ? Int64(info.phys_footprint) : nil,
++            residentBytes: valid ? Int64(info.resident_size) : nil,
++            kernelReturn: returned, sufficientReturnCount: sufficient, onMain: Thread.isMainThread))
++    }
++}
+diff --git a/scripts/reader-experience/reader-launch-memory.py b/scripts/reader-experience/reader-launch-memory.py
+new file mode 100644
+index 0000000..0b4e4c7
+--- /dev/null
++++ b/scripts/reader-experience/reader-launch-memory.py
+@@ -0,0 +1,304 @@
++#!/usr/bin/env python3
++"""Validate separate launch/memory observation shapes, never attest SDK execution.
++
++Run only on retained logs from the two new selections. This does not change the
++existing reader-stage, smoke or release protocols. Actual passing xcresult leaf
++identities, source/build/overlay and Xcode/SDK/runtime metadata must be bound by
++the future runner before anyone accepts these as measured app observations.
++"""
++import argparse
++import hashlib
++import json
++import math
++from pathlib import Path
++import statistics
++
++LAUNCH = "READER_PROCESS_LAUNCH "
++MEMORY = "READER_PROCESS_MEMORY "
++PHASE = "READER_PROCESS_MEMORY_EVENT "
++STAGES = ["baseline", "document.begin", "document.end", "first-page.begin", "first-page.end",
++          "pagination.begin", "pagination.end", "scroll.begin", "scroll.end"] + [
++              "jump.%d.%s" % (i, edge) for i in range(10) for edge in ("begin", "end")] + ["complete"]
++TIMES = ["terminateRequested", "notRunningObserved", "launchRequested", "launchReturned",
++         "shelfObserved", "bookTapRequested", "pageObserved"]
++
++
++def require(value, message):
++    if not value:
++        raise ValueError(message)
++
++
++def integer(value, minimum=0):
++    return type(value) is int and value >= minimum
++
++
++def number(value):
++    return type(value) in (int, float) and math.isfinite(value)
++
++
++def strict_json(text):
++    def pairs(entries):
++        value = {}
++        for key, item in entries:
++            require(key not in value, "duplicate JSON key")
++            value[key] = item
++        return value
++    def constant(value):
++        raise ValueError("nonfinite JSON constant: " + value)
++    return json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
++
++
++def utf16(text):
++    return len(text.encode("utf-16-le")) // 2
++
++
++def rows(raw, marker):
++    require(len(raw) <= 64 * 1024**2, "log exceeds 64MiB")
++    result = []
++    for line in raw.decode("utf-8").splitlines():
++        if marker not in line:
++            continue
++        require(line.count(marker) == 1, "ambiguous row marker")
++        text = line.split(marker, 1)[1]
++        require(len(text.encode("utf-8")) <= 8 * 1024**2, "observation row exceeds 8MiB")
++        value = strict_json(text)
++        require(type(value) is dict, "observation must be an object")
++        result.append(value)
++    return result
++
++
++def fixture_protocol():
++    # Independent reconstruction of the two owned plain fixtures, including the
++    # existing document()/paragraphs() whitespace. No importer/renderer is added.
++    unit = "讀書使人充實，思考使人深邃，交談使人清醒。"
++    paragraph = (unit * ((256 + len(unit) - 1) // len(unit)))[:256]
++    result = {}
++    for identity, title, minimum in (("plain-100k", "Plain 100K", 102_400), ("plain-1m", "Plain 1M", 1_048_576)):
++        body = ("<p>" + paragraph + "</p>\n") * ((minimum + 255) // 256)
++        html = ('<!doctype html>\n<html xmlns="http://www.w3.org/1999/xhtml"\n'
++                '      xmlns:epub="http://www.idpf.org/2007/ops">\n  <head>\n'
++                '    <meta charset="utf-8"/>\n    <title>' + title + '</title>\n'
++                '    \n  </head>\n  <body>' + body + '</body>\n</html>').encode()
++        result[identity] = {"fixtureSHA256": hashlib.sha256(html).hexdigest(),
++                            "fixtureHTMLBytes": len(html), "fixtureMinimumUTF16": minimum}
++    return result
++
++
++def launch_fixture_protocol():
++    chapters = [("第一章 出發", "LOCAL_READER_SMOKE_OPENING"), ("第二章 渡河", "LOCAL_READER_SMOKE_CROSSING"),
++                ("第三章 林間", "LOCAL_READER_SMOKE_RESUME"), ("第四章 歸途", "LOCAL_READER_SMOKE_RETURN")]
++    text = "\n\n".join(title + "\n\n" + "\n\n".join(
++        "%s_P%04d. The traveller follows the path beside the river, records the day's journey, and reads the map before continuing." % (marker, i)
++        for i in range(10)) for title, marker in chapters).encode()
++    return {"fixtureSHA256": hashlib.sha256(text).hexdigest(), "fixtureBytes": len(text)}
++
++
++def literal_flags(row, flags):
++    for key, expected in flags.items():
++        require(row.get(key) is expected, "flag differs: " + key)
++
++
++def page(value, marker):
++    require(type(value) is dict and type(value.get("schemaVersion")) is int and value["schemaVersion"] == 1, "page schema differs")
++    require(value.get("boundary") == "cpu-layer-submitted-and-ax-readable", "page boundary differs")
++    for key in ("processID", "viewBindingRevision", "pageLengthUTF16", "documentLengthUTF16"):
++        require(integer(value.get(key), 1), "invalid page integer: " + key)
++    for key in ("spineIndex", "pageIndex", "pageStartUTF16"):
++        require(integer(value.get(key)), "invalid page integer: " + key)
++    require(value["spineIndex"] == 2 and type(value.get("viewID")) is str and value["viewID"], "page identity differs")
++    require(type(value.get("processObservationID")) is str and value["processObservationID"], "process observation identity missing")
++    text = value.get("pageText")
++    require(type(text) is str and text.count(marker) == 1, "unique visible marker missing")
++    require(utf16(text) == value["pageLengthUTF16"] <= 16_384, "page UTF16 length differs")
++    require(value["pageStartUTF16"] + utf16(text) <= value["documentLengthUTF16"], "page exceeds document")
++    require(value.get("imageSource") in {"drawn", "prerendered"}, "unknown image source")
++    require(number(value.get("submissionUptimeSeconds")) and value["submissionUptimeSeconds"] > 0, "invalid page timestamp")
++    return value["pageStartUTF16"] + utf16(text.split(marker, 1)[0])
++
++
++def validate_launch(values):
++    require(len(values) == 5, "exactly five launch samples required")
++    expected_fixture = launch_fixture_protocol()
++    seen, processes, intervals, run_ids = set(), set(), [], set()
++    expected_page = None
++    for row in values:
++        require(type(row.get("schemaVersion")) is int and row["schemaVersion"] == 1 and row.get("kind") == "reader-process-launch", "launch schema differs")
++        require(integer(row.get("iteration")) and row["iteration"] < 5 and row["iteration"] not in seen, "duplicate/unknown launch iteration")
++        seen.add(row["iteration"])
++        run_ids.add(row.get("runID"))
++        for key, value in expected_fixture.items(): require(row.get(key) == value, "launch fixture differs")
++        require(integer(row.get("fixtureBytes"), 1), "launch fixture byte count invalid")
++        literal_flags(row, {"fixturePreparationInsideInterval": False, "originalImportInputRemoved": True,
++                           "measuredLaunchImports": False, "systemCachesPurged": False, "deviceCold": False,
++                           "gpuPresentationMeasured": False, "improvementEstablished": False,
++                           "launchToReadableIncludesAutomationNavigation": True, "complete": True})
++        require(row.get("terminalPhase") == "complete" and row.get("error") is None, "failed launch sample")
++        require(row.get("timingProcess") == "separate-xctest-ui-runner" and row.get("observedProcess") == "debug-app-under-ui-automation", "launch process scope differs")
++        require(row.get("boundary") == "launch-request-to-cpu-layer-submitted-and-ax-readable-visible-anchor", "launch endpoint differs")
++        marker = "LOCAL_READER_SMOKE_RESUME_P0000."
++        require(row.get("expectedMarker") == marker, "anchor marker differs")
++        expected = row.get("expected")
++        expected_offset = page(expected, marker)
++        if expected_page is None: expected_page = expected
++        require(expected == expected_page, "preparation anchor changed within series")
++        actual = row.get("observed")
++        require(integer(row.get("expectedMarkerUTF16")) and page(actual, marker) == expected_offset == row["expectedMarkerUTF16"], "actual rendered marker offset differs")
++        for key in ("spineIndex", "pageStartUTF16", "pageLengthUTF16", "documentLengthUTF16", "pageText"):
++            require(actual[key] == expected[key], "actual rendered page differs: " + key)
++        require(actual["processObservationID"] != expected["processObservationID"]
++                and actual["processObservationID"] not in processes, "fresh process observation identity missing")
++        processes.add(actual["processObservationID"])
++        times = row.get("timestamps")
++        require(type(times) is dict and set(times) == set(TIMES), "launch timestamps incomplete")
++        require(all(number(times[key]) and times[key] > 0 for key in TIMES), "invalid launch timestamp")
++        ordered = [times[key] for key in TIMES]
++        require(all(b >= a for a, b in zip(ordered, ordered[1:])), "launch timestamps out of order")
++        require(times["launchRequested"] <= actual["submissionUptimeSeconds"] <= times["pageObserved"], "submission is outside fresh process interval")
++        intervals.append({"iteration": row["iteration"], "launchCallMilliseconds": (times["launchReturned"] - times["launchRequested"]) * 1_000,
++                          "launchThroughAutomationToReadableMilliseconds": (times["pageObserved"] - times["launchRequested"]) * 1_000,
++                          "bookTapToObservedReadableMilliseconds": (times["pageObserved"] - times["bookTapRequested"]) * 1_000})
++    require(seen == set(range(5)) and len(run_ids) == 1 and all(type(x) is str and x for x in run_ids), "launch series identity incomplete")
++    return intervals
++
++
++def validate_memory(values, phase_rows):
++    protocol = fixture_protocol()
++    expected = {(fixture, i) for fixture in protocol for i in range(5)}
++    require(len(values) == 10, "exactly ten memory samples required")
++    seen, run_ids, pids, phase_expected, summary = set(), set(), set(), {}, []
++    for row in values:
++        require(type(row.get("schemaVersion")) is int and row["schemaVersion"] == 1 and row.get("kind") == "reader-process-memory", "memory schema differs")
++        key = (row.get("fixture"), row.get("iteration"))
++        require(type(key[1]) is int and key in expected and key not in seen, "duplicate/unknown memory fixture iteration")
++        seen.add(key); run_ids.add(row.get("runID"))
++        for name, value in protocol[key[0]].items(): require(row.get(name) == value, "memory fixture differs")
++        require(integer(row.get("fixtureHTMLBytes"), 1) and integer(row.get("fixtureMinimumUTF16"), 1), "memory fixture count invalid")
++        literal_flags(row, {"fixtureConstructionInsideInterval": False, "baselineIncludesRetainedFixtureHTML": True,
++                           "cachesPurged": False, "deviceCold": False, "improvementEstablished": False,
++                           "measurementOverheadExcluded": False, "exactKernelPeakClaimed": False})
++        require(row.get("processScope") == "app-process-with-xctest-loaded" and row.get("platform") == "ios-simulator", "memory process/platform scope differs")
++        require(row.get("units") == "bytes" and row.get("metricMethod") == "task_info(TASK_VM_INFO): phys_footprint and resident_size; same snapshot", "memory units/method differ")
++        for name, value in {"nominalIntervalMilliseconds": 10, "maximumAllowedGapMilliseconds": 50, "fontSize": 18, "paragraphSpacing": 8}.items():
++            require(type(row.get(name)) is int and row[name] == value, "memory protocol integer differs")
++        require(row.get("viewport") == [390, 844] and all(type(x) is int for x in row["viewport"])
++                and number(row.get("lineHeightMultiple")) and row["lineHeightMultiple"] == 1.5, "render protocol differs")
++        style = row.get("style")
++        require(type(style) is dict, "actual render style missing")
++        for name, value in {"fontSize": 18, "lineHeightMultiple": 1.5, "paragraphSpacing": 8, "lineSpacing": 0, "letterSpacing": 0}.items():
++            require(number(style.get(name)) and style[name] == value, "actual render style differs")
++        require(style.get("writingMode") == "horizontal" and style.get("contentInsets") == [0, 0, 0, 0]
++                and all(number(x) for x in style["contentInsets"]), "actual writing/insets differ")
++        outputs = row.get("outputs")
++        require(type(outputs) is dict and set(outputs) == {"documentUTF16", "firstPages", "fullPages", "coveredUTF16", "scrollChunks", "verifiedJumps"}, "stage output counts incomplete")
++        require(all(integer(value, 1) for value in outputs.values()), "stage output count invalid")
++        require(outputs["documentUTF16"] == outputs["coveredUTF16"] >= protocol[key[0]]["fixtureMinimumUTF16"] and outputs["verifiedJumps"] == 10, "stage output coverage differs")
++        require(outputs["firstPages"] <= outputs["fullPages"] <= outputs["documentUTF16"]
++                and outputs["scrollChunks"] <= outputs["documentUTF16"], "stage output counts impossible")
++        jumps = row.get("jumps")
++        require(type(jumps) is list and len(jumps) == 10, "jump witnesses incomplete")
++        offsets = set()
++        for index, jump in enumerate(jumps):
++            require(type(jump) is dict and type(jump.get("index")) is int and jump["index"] == index, "jump identity differs")
++            offset = jump.get("requestedOffsetUTF16")
++            require(integer(offset) and offset < outputs["documentUTF16"] and offset not in offsets, "jump offset invalid/duplicate")
++            offsets.add(offset)
++            require(type(jump.get("observedSpine")) is int and jump["observedSpine"] == 0
++                    and type(jump.get("observedOffsetUTF16")) is int and jump["observedOffsetUTF16"] == offset, "jump did not land at requested text anchor")
++            require(type(jump.get("anchorText")) is str and integer(jump.get("anchorLengthUTF16"), 1)
++                    and utf16(jump["anchorText"]) == jump["anchorLengthUTF16"] <= 32
++                    and offset + jump["anchorLengthUTF16"] <= outputs["documentUTF16"], "jump UTF16 text witness differs")
++        measurement = row.get("measurement")
++        require(type(measurement) is dict and measurement.get("complete") is True and measurement.get("errors") == [], "memory sample failed/incomplete")
++        require(integer(measurement.get("processID"), 1), "memory PID missing")
++        pids.add(measurement["processID"])
++        points, events = measurement.get("points"), measurement.get("events")
++        require(type(points) is list and 3 <= len(points) <= 12_030 and type(events) is list
++                and [event.get("name") for event in events if type(event) is dict] == STAGES, "points/stages incomplete")
++        for event in events:
++            require(set(event) == {"name", "uptimeSeconds"} and number(event["uptimeSeconds"]), "invalid stage timestamp")
++        require(all(b["uptimeSeconds"] >= a["uptimeSeconds"] for a, b in zip(events, events[1:])), "stage time reversed")
++        previous_end = -1
++        for point in points:
++            require(type(point) is dict and point.get("kind") in {"boundary", "periodic"} and point.get("phase") in STAGES, "invalid point identity")
++            before, after = point.get("beforeUptimeSeconds"), point.get("afterUptimeSeconds")
++            require(number(before) and number(after) and 0 < before <= after and before >= previous_end, "invalid or overlapping point time")
++            previous_end = after
++            require(type(point.get("kernelReturn")) is int and point["kernelReturn"] == 0
++                    and point.get("sufficientReturnCount") is True and point.get("onMain") is False, "failed/on-main kernel memory query")
++            require(integer(point.get("footprintBytes"), 1) and integer(point.get("residentBytes"), 1), "missing memory bytes")
++        boundaries = [point for point in points if point["kind"] == "boundary"]
++        require([point["phase"] for point in boundaries] == STAGES, "stage boundary samples incomplete")
++        require(points[0]["kind"] == points[-1]["kind"] == "boundary"
++                and points[0]["phase"] == "baseline" and points[-1]["phase"] == "complete", "memory endpoint samples missing")
++        for event, point in zip(events, boundaries):
++            require(event["uptimeSeconds"] <= point["beforeUptimeSeconds"], "stage event came after its sample")
++        periodic = [point for point in points if point["kind"] == "periodic"]
++        require(periodic and type(measurement.get("periodicSamples")) is int and measurement["periodicSamples"] == len(periodic), "no/miscounted periodic samples")
++        for point in periodic:
++            active = [event["name"] for event in events if event["uptimeSeconds"] <= point["beforeUptimeSeconds"]]
++            require(active and point["phase"] == active[-1] and point["phase"] != "complete", "periodic sample labelled with the wrong phase")
++        timeline = [points[0]] + periodic + [points[-1]]
++        gaps = [(b["beforeUptimeSeconds"] - a["beforeUptimeSeconds"]) * 1_000 for a, b in zip(timeline, timeline[1:])]
++        maximum_gap = max(gaps)
++        require(maximum_gap <= 50 and number(measurement.get("maximumObservedGapMilliseconds"))
++                and abs(measurement["maximumObservedGapMilliseconds"] - maximum_gap) < 0.00001, "periodic sample gap invalid/missed")
++        require(number(measurement.get("beginUptimeSeconds")) and number(measurement.get("endUptimeSeconds"))
++                and measurement["beginUptimeSeconds"] == points[0]["beforeUptimeSeconds"]
++                and measurement.get("endUptimeSeconds") == points[-1]["afterUptimeSeconds"], "memory interval differs")
++        for metric, title in (("footprintBytes", "Footprint"), ("residentBytes", "Resident")):
++            require(type(measurement.get("baseline" + title + "Bytes")) is int
++                    and measurement["baseline" + title + "Bytes"] == points[0][metric], "baseline differs from raw sample")
++            require(type(measurement.get("sampledPeak" + title + "Bytes")) is int
++                    and measurement["sampledPeak" + title + "Bytes"] == max(point[metric] for point in points), "peak differs from raw points")
++        phase_expected[(row.get("runID"), *key)] = events
++        summary.append({"fixture": key[0], "iteration": key[1], "baselineFootprintBytes": measurement["baselineFootprintBytes"],
++                        "sampledPeakFootprintBytes": measurement["sampledPeakFootprintBytes"],
++                        "baselineResidentBytes": measurement["baselineResidentBytes"], "sampledPeakResidentBytes": measurement["sampledPeakResidentBytes"],
++                        "periodicSamples": len(periodic), "maximumObservedGapMilliseconds": maximum_gap})
++    require(seen == expected and len(run_ids) == len(pids) == 1 and all(type(x) is str and x for x in run_ids), "memory matrix/process series incomplete")
++    emitted = {}
++    for row in phase_rows:
++        require(set(row) == {"runID", "fixture", "iteration", "event"}, "raw phase envelope differs")
++        key = (row["runID"], row["fixture"], row["iteration"])
++        require(type(row["iteration"]) is int and key in phase_expected, "unexpected raw phase sample")
++        emitted.setdefault(key, []).append(row["event"])
++    require(emitted == phase_expected, "raw phase records missing/duplicate/reordered")
++    return summary
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--launch-log", type=Path, required=True)
++    parser.add_argument("--memory-log", type=Path, required=True)
++    parser.add_argument("--output", type=Path, required=True)
++    args = parser.parse_args()
++    require(not args.output.exists(), "refusing to overwrite evidence")
++    result = {"schemaVersion": 1, "collectionShapeValidated": False, "sdkCompilationAttested": False,
++              "iOSExecutionAttested": False, "physicalDeviceMeasured": False, "improvementEstablished": False,
++              "limitations": ["Supplied text alone does not attest execution: bind actual passing new XCTest identities, source/build and SDK/runtime/overlay evidence separately.",
++                              "Launch interval includes UI automation navigation; layer submission and AX visibility are not GPU presentation or tap-to-photon.",
++                              "System/Simulator caches are not cleared. Process-cold is not device-cold.",
++                              "Memory is a sampled app XCTest-host interval, with retained fixtures, recorder buffers, logging and scheduling overhead included; short peaks can be missed.",
++                              "Five observations support median/max descriptions, not p95, production performance improvement or device memory-limit acceptance."], "inputs": {}}
++    try:
++        raw = {}
++        for kind, path in (("launch", args.launch_log), ("memory", args.memory_log)):
++            require(path.stat().st_size <= 64 * 1024**2, "log exceeds 64MiB")
++            raw[kind] = path.read_bytes()
++            result["inputs"][kind] = {"path": str(path), "bytes": len(raw[kind]), "sha256": hashlib.sha256(raw[kind]).hexdigest()}
++        result["launchSamples"] = validate_launch(rows(raw["launch"], LAUNCH))
++        result["memorySamples"] = validate_memory(rows(raw["memory"], MEMORY), rows(raw["memory"], PHASE))
++        result["collectionShapeValidated"] = True
++        result["launchMedianThroughAutomationMilliseconds"] = statistics.median(item["launchThroughAutomationToReadableMilliseconds"] for item in result["launchSamples"])
++        result["launchMaxThroughAutomationMilliseconds"] = max(item["launchThroughAutomationToReadableMilliseconds"] for item in result["launchSamples"])
++    except Exception as error:
++        result["error"] = type(error).__name__ + ": " + str(error)
++    args.output.parent.mkdir(parents=True, exist_ok=True)
++    with args.output.open("x", encoding="utf-8", newline="\n") as stream:
++        json.dump(result, stream, ensure_ascii=False, indent=2); stream.write("\n")
++    print(json.dumps({"output": str(args.output), "collectionShapeValidated": result["collectionShapeValidated"], "sdkCompilationAttested": False, "iOSExecutionAttested": False}))
++    return 0 if result["collectionShapeValidated"] else 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/scripts/reader-experience/test-reader-launch-memory.py b/scripts/reader-experience/test-reader-launch-memory.py
+new file mode 100644
+index 0000000..98b1753
+--- /dev/null
++++ b/scripts/reader-experience/test-reader-launch-memory.py
+@@ -0,0 +1,231 @@
++#!/usr/bin/env python3
++"""Owned synthetic shape/negative guards only; never Swift/device observations."""
++import copy
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import unittest
++
++HERE = Path(__file__).resolve().parent
++spec = importlib.util.spec_from_file_location("reader_launch_memory_guards", HERE / "reader-launch-memory.py")
++guard = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(guard)
++
++
++def launch_rows():
++    text = "第三章 林間\nLOCAL_READER_SMOKE_RESUME_P0000. first readable text."
++    expected = {"schemaVersion": 1, "boundary": "cpu-layer-submitted-and-ax-readable", "processID": 6000,
++                "processObservationID": "owned-prepare-process", "viewID": "owned-prepare", "viewBindingRevision": 2, "spineIndex": 2, "pageIndex": 0,
++                "pageStartUTF16": 0, "pageLengthUTF16": guard.utf16(text), "documentLengthUTF16": 2048,
++                "pageText": text, "imageSource": "drawn", "submissionUptimeSeconds": 90.0}
++    result = []
++    for iteration in range(5):
++        base = 100.0 + iteration
++        actual = dict(expected, processID=6100 + iteration, viewID="owned-view-%d" % iteration,
++                      processObservationID="owned-process-%d" % iteration,
++                      submissionUptimeSeconds=base + 0.65)
++        row = {"schemaVersion": 1, "kind": "reader-process-launch", "timingProcess": "separate-xctest-ui-runner",
++               "observedProcess": "debug-app-under-ui-automation",
++               "boundary": "launch-request-to-cpu-layer-submitted-and-ax-readable-visible-anchor",
++               "fixturePreparationInsideInterval": False, "originalImportInputRemoved": True,
++               "measuredLaunchImports": False, "systemCachesPurged": False, "deviceCold": False,
++               "gpuPresentationMeasured": False, "improvementEstablished": False,
++               "launchToReadableIncludesAutomationNavigation": True,
++               "runID": "owned-synthetic-launch", "iteration": iteration,
++               "expectedMarker": "LOCAL_READER_SMOKE_RESUME_P0000.",
++               "expectedMarkerUTF16": guard.utf16(text.split("LOCAL_", 1)[0]),
++               "expected": expected, "observed": actual,
++               "timestamps": dict(zip(guard.TIMES, [base + i / 10 for i in (0, 1, 2, 3, 4, 5, 8)])),
++               "complete": True, "terminalPhase": "complete"}
++        row.update(guard.launch_fixture_protocol())
++        result.append(row)
++    return result
++
++
++def memory_row(fixture, iteration, duration=0.029, ticks=(0.0105, 0.0205)):
++    base = 100.0 + iteration
++    events = [{"name": name, "uptimeSeconds": base + duration * i / (len(guard.STAGES) - 1)}
++              for i, name in enumerate(guard.STAGES)]
++    points = [{"kind": "boundary", "phase": event["name"], "beforeUptimeSeconds": event["uptimeSeconds"] + 0.00001,
++               "afterUptimeSeconds": event["uptimeSeconds"] + 0.000011} for event in events]
++    for tick in ticks:
++        phase = [event["name"] for event in events if event["uptimeSeconds"] <= base + tick][-1]
++        points.append({"kind": "periodic", "phase": phase,
++                       "beforeUptimeSeconds": base + tick, "afterUptimeSeconds": base + tick + 0.000001})
++    points.sort(key=lambda point: point["beforeUptimeSeconds"])
++    for index, point in enumerate(points):
++        point.update(footprintBytes=10_000_000 + index * 100, residentBytes=12_000_000 + index * 200,
++                     kernelReturn=0, sufficientReturnCount=True, onMain=False)
++    periodic = [point for point in points if point["kind"] == "periodic"]
++    timeline = [points[0]] + periodic + [points[-1]]
++    measurement = {"processID": 7000, "beginUptimeSeconds": points[0]["beforeUptimeSeconds"],
++                   "endUptimeSeconds": points[-1]["afterUptimeSeconds"], "complete": True, "errors": [],
++                   "periodicSamples": len(periodic), "maximumObservedGapMilliseconds": max(
++                       (b["beforeUptimeSeconds"] - a["beforeUptimeSeconds"]) * 1000 for a, b in zip(timeline, timeline[1:])),
++                   "baselineFootprintBytes": points[0]["footprintBytes"], "baselineResidentBytes": points[0]["residentBytes"],
++                   "sampledPeakFootprintBytes": max(point["footprintBytes"] for point in points),
++                   "sampledPeakResidentBytes": max(point["residentBytes"] for point in points), "points": points, "events": events}
++    minimum = guard.fixture_protocol()[fixture]["fixtureMinimumUTF16"]
++    anchor = ("讀書使人充實，思考使人深邃，交談使人清醒。" * 2)[:32]
++    row = {"schemaVersion": 1, "kind": "reader-process-memory", "processScope": "app-process-with-xctest-loaded",
++           "platform": "ios-simulator", "units": "bytes",
++           "metricMethod": "task_info(TASK_VM_INFO): phys_footprint and resident_size; same snapshot",
++           "nominalIntervalMilliseconds": 10, "maximumAllowedGapMilliseconds": 50,
++           "viewport": [390, 844], "fontSize": 18, "lineHeightMultiple": 1.5, "paragraphSpacing": 8,
++           "fixtureConstructionInsideInterval": False, "baselineIncludesRetainedFixtureHTML": True,
++           "cachesPurged": False, "deviceCold": False, "improvementEstablished": False,
++           "measurementOverheadExcluded": False, "exactKernelPeakClaimed": False,
++           "runID": "owned-synthetic-memory", "fixture": fixture, "iteration": iteration,
++           "outputs": {"documentUTF16": minimum, "firstPages": 1, "fullPages": 100,
++                       "coveredUTF16": minimum, "scrollChunks": 100, "verifiedJumps": 10},
++           "jumps": [{"index": i, "requestedOffsetUTF16": (i + 1) * 1024, "observedSpine": 0,
++                      "observedOffsetUTF16": (i + 1) * 1024, "anchorText": anchor, "anchorLengthUTF16": 32} for i in range(10)],
++           "style": {"fontSize": 18, "lineHeightMultiple": 1.5, "paragraphSpacing": 8, "lineSpacing": 0,
++                     "letterSpacing": 0, "contentInsets": [0, 0, 0, 0], "writingMode": "horizontal"},
++           "measurement": measurement}
++    row.update(guard.fixture_protocol()[fixture])
++    return row
++
++
++def memory_rows():
++    return [memory_row(fixture, iteration) for fixture in guard.fixture_protocol() for iteration in range(5)]
++
++
++def phases(rows):
++    return [{"runID": row["runID"], "fixture": row["fixture"], "iteration": row["iteration"], "event": event}
++            for row in rows for event in row["measurement"]["events"]]
++
++
++class LaunchMemoryShapeGuards(unittest.TestCase):
++    def test_owned_complete_shapes_are_distinct_from_execution_attestation(self):
++        self.assertEqual(len(guard.validate_launch(launch_rows())), 5)
++        rows = memory_rows()
++        self.assertEqual(len(guard.validate_memory(rows, phases(rows))), 10)
++
++    def test_existing_100k_fixture_protocol_is_reused_and_1m_is_separate(self):
++        spec = importlib.util.spec_from_file_location("existing_stage_fixture_protocol", HERE / "reader-stage-baseline.py")
++        old = importlib.util.module_from_spec(spec); spec.loader.exec_module(old)
++        self.assertEqual(guard.fixture_protocol()["plain-100k"], old.fixture_protocol()["plain-100k"])
++        self.assertEqual(set(guard.fixture_protocol()), {"plain-100k", "plain-1m"})
++        self.assertEqual(guard.fixture_protocol()["plain-1m"]["fixtureMinimumUTF16"], 1_048_576)
++
++    def test_launch_requires_exact_five_distinct_samples_and_process_identities(self):
++        for mutation in (lambda rows: rows.pop(), lambda rows: rows.append(copy.deepcopy(rows[0])),
++                         lambda rows: rows[1].update(iteration=0),
++                         lambda rows: rows[1]["observed"].update(processObservationID=rows[0]["observed"]["processObservationID"]),
++                         lambda rows: rows[0]["observed"].update(processObservationID=rows[0]["expected"]["processObservationID"])):
++            rows = launch_rows(); mutation(rows)
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_launch(rows)
++        with self.assertRaises(ValueError): guard.validate_launch([])
++        rows = launch_rows()
++        rows[1]["observed"]["processID"] = rows[0]["observed"]["processID"]
++        self.assertEqual(len(guard.validate_launch(rows)), 5, "PID reuse alone is not process reuse")
++
++    def test_launch_cannot_claim_import_free_device_cold_or_pixels_without_flags(self):
++        for key in ("fixturePreparationInsideInterval", "measuredLaunchImports", "systemCachesPurged", "deviceCold", "gpuPresentationMeasured", "improvementEstablished"):
++            rows = launch_rows(); rows[0][key] = True
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_launch(rows)
++        rows = launch_rows(); rows[0]["originalImportInputRemoved"] = 1
++        with self.assertRaises(ValueError): guard.validate_launch(rows)
++
++    def test_launch_requires_the_actual_utf16_text_range_and_unique_marker(self):
++        for key, value in (("pageStartUTF16", 1), ("pageLengthUTF16", 1), ("pageText", "wrong text"), ("viewBindingRevision", True)):
++            rows = launch_rows(); rows[0]["observed"][key] = value
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_launch(rows)
++        self.assertEqual(guard.utf16("a😀b"), 4)
++        self.assertNotEqual("e\u0301", "é")
++
++    def test_launch_missing_reversed_or_nonfinite_timestamps_fail(self):
++        for value in (True, float("nan"), float("inf"), -1):
++            rows = launch_rows(); rows[0]["timestamps"]["launchRequested"] = value
++            with self.subTest(value=value), self.assertRaises(ValueError): guard.validate_launch(rows)
++        rows = launch_rows(); rows[0]["timestamps"].pop("pageObserved")
++        with self.assertRaises(ValueError): guard.validate_launch(rows)
++
++    def test_memory_requires_exact_two_by_five_matrix(self):
++        for mutation in (lambda rows: rows.pop(), lambda rows: rows.append(copy.deepcopy(rows[0])),
++                         lambda rows: rows[0].update(fixture="plain-10k"), lambda rows: rows[0].update(iteration=True)):
++            rows = memory_rows(); mutation(rows)
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_raw_phase_markers_must_be_complete_unique_and_ordered(self):
++        rows = memory_rows()
++        for mutation in (lambda records: records.pop(), lambda records: records.append(copy.deepcopy(records[0])),
++                         lambda records: records.reverse()):
++            raw = phases(rows); mutation(raw)
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_memory(rows, raw)
++
++    def test_failed_on_main_or_truncated_kernel_queries_cannot_be_peaks(self):
++        for key, value in (("kernelReturn", 5), ("kernelReturn", False), ("sufficientReturnCount", False),
++                           ("onMain", True), ("footprintBytes", -1), ("residentBytes", None)):
++            rows = memory_rows(); rows[0]["measurement"]["points"][0][key] = value
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_missing_periodic_samples_or_false_counts_fail(self):
++        rows = memory_rows()
++        row = rows[0]["measurement"]
++        row["points"] = [point for point in row["points"] if point["kind"] != "periodic"]
++        row["periodicSamples"] = 0
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++        rows = memory_rows(); rows[0]["measurement"]["periodicSamples"] = True
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++        rows = memory_rows()
++        next(point for point in rows[0]["measurement"]["points"] if point["kind"] == "periodic")["phase"] = "baseline"
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_boundary_samples_cannot_hide_a_missed_periodic_gap(self):
++        rows = memory_rows(); rows[0] = memory_row("plain-100k", 0, duration=0.100, ticks=(0.001, 0.098))
++        rows[0]["measurement"]["maximumObservedGapMilliseconds"] = 4
++        with self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_baseline_and_peak_must_match_original_raw_points(self):
++        for key in ("baselineFootprintBytes", "baselineResidentBytes", "sampledPeakFootprintBytes", "sampledPeakResidentBytes"):
++            rows = memory_rows(); rows[0]["measurement"][key] += 1
++            with self.subTest(key=key), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_incomplete_stages_failed_samples_and_unlanded_jumps_fail(self):
++        for mutation in (lambda row: row["measurement"].update(complete=False),
++                         lambda row: row["measurement"]["events"].pop(),
++                         lambda row: row["jumps"][0].update(observedOffsetUTF16=0),
++                         lambda row: row["style"].update(lineSpacing=False),
++                         lambda row: row["outputs"].update(verifiedJumps=9)):
++            rows = memory_rows(); mutation(rows[0])
++            with self.subTest(mutation=mutation), self.assertRaises(ValueError): guard.validate_memory(rows, phases(rows))
++
++    def test_duplicate_keys_nonfinite_or_empty_text_never_supply_evidence(self):
++        for value in ('{"schemaVersion":1,"schemaVersion":2}', '{"time":NaN}'):
++            with self.assertRaises(ValueError): guard.strict_json(value)
++        self.assertEqual(guard.rows(b"unrelated output only\n", guard.LAUNCH), [])
++
++    def test_cli_retains_a_failure_record_without_attesting_runtime_or_overwriting(self):
++        with tempfile.TemporaryDirectory(prefix="owned-launch-memory-shapes-") as temporary:
++            directory = Path(temporary)
++            launch = directory / "owned-synthetic-launch.log"; memory = directory / "owned-synthetic-memory.log"
++            launch.write_text("\n".join(guard.LAUNCH + json.dumps(row, ensure_ascii=False) for row in launch_rows()) + "\n", encoding="utf-8")
++            rows = memory_rows()
++            memory.write_text("\n".join(guard.PHASE + json.dumps(row) for row in phases(rows)) + "\n" +
++                              "\n".join(guard.MEMORY + json.dumps(row, ensure_ascii=False) for row in rows) + "\n", encoding="utf-8")
++            output = directory / "owned-synthetic-shape-only.json"
++            command = [sys.executable, "-B", str(HERE / "reader-launch-memory.py"), "--launch-log", str(launch), "--memory-log", str(memory), "--output", str(output)]
++            result = subprocess.run(command, capture_output=True)
++            self.assertEqual(result.returncode, 0, result.stderr)
++            report = json.loads(output.read_bytes())
++            self.assertTrue(report["collectionShapeValidated"])
++            self.assertFalse(report["sdkCompilationAttested"])
++            self.assertFalse(report["iOSExecutionAttested"])
++            before = output.read_bytes()
++            self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
++            self.assertEqual(output.read_bytes(), before)
++            launch.write_bytes(b"")
++            command[-1] = str(directory / "failed-shape-only.json")
++            self.assertEqual(subprocess.run(command, capture_output=True).returncode, 1)
++            failed = json.loads(Path(command[-1]).read_bytes())
++            self.assertFalse(failed["collectionShapeValidated"])
++            self.assertFalse(failed["iOSExecutionAttested"])
++
++
++if __name__ == "__main__":
++    unittest.main()

@@ -1,0 +1,451 @@
+{
+  "schemaVersion": 1,
+  "kind": "isolated-process-launch-and-coretext-memory-measurement-preparation",
+  "observedAtUTC": "2026-10-19T15:57:03.367945+00:00",
+  "baselineSourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+  "status": "prepared-for-independent-review-not-Swift-compiled-or-measured",
+  "changedPaths": [
+    "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+    "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+    "Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift",
+    "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift",
+    "Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift",
+    "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+    "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift",
+    "scripts/reader-experience/reader-launch-memory.py",
+    "scripts/reader-experience/test-reader-launch-memory.py"
+  ],
+  "files": [
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+      "bytes": 131229,
+      "sha256": "0370489a26089778af7dc0a2568e9284b981983ce6a150b0709a59ecb9f8cade"
+    },
+    {
+      "path": "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+      "bytes": 7631,
+      "sha256": "1f9142838a46236600eeb375e1bb2b71b5ca66dd0dfe7607fcc595d61ed9d0ee"
+    },
+    {
+      "path": "Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift",
+      "bytes": 7912,
+      "sha256": "11618885bb65144fe7d4b23b8bab97e0e37215300da7732e17ac54d8477ae963"
+    },
+    {
+      "path": "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift",
+      "bytes": 10129,
+      "sha256": "91f7beed556a12131b977a8d841df02c5c5d4a5373e9852f7518dccc5f4f9a98"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift",
+      "bytes": 15123,
+      "sha256": "5fd725526f69353e5a2cc60d9ed027e29d41a767a0243675be373420b94cdd39"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+      "bytes": 9646,
+      "sha256": "10bc4d7b32d8e18a3cea2fc8e061c8af48e1ac713f5bdd27a4cf5b2ea8227b3f"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift",
+      "bytes": 19749,
+      "sha256": "be25f2748d9ecc1b791119269dba1f90932a36516e22d56659b7b10c6960dafb"
+    },
+    {
+      "path": "scripts/reader-experience/reader-launch-memory.py",
+      "bytes": 21981,
+      "sha256": "e348bd60d3078dc8993da1e0dbc35cc64045d147a9f1f8838200e66ef3ef8249"
+    },
+    {
+      "path": "scripts/reader-experience/test-reader-launch-memory.py",
+      "bytes": 15563,
+      "sha256": "2331f4322ace0c8fd261dbe1aabea52aa8e9a2e865ce108ea498427b6355b8e9"
+    }
+  ],
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\reader-launch-memory.patch",
+    "bytes": 93317,
+    "sha256": "51d40c7aa6bee34753deb838f13db70167c3cd5b29b12281e866bffb6605a647",
+    "forwardMainAndReverseWorktreeChecksPassed": true
+  },
+  "reuse": {
+    "importer": "Existing DEBUG -auto-import-epub routes to LocalBookImportService.importBook; no second importer. Shared test actions only.",
+    "renderer": "Existing OnlineProviderAttributedStringBuilder, BenchmarkChapterProvider, ChapterDocumentStore, CoreTextPaginator, CoreTextScrollEngine and CoreTextCollectionScrollViewController.",
+    "oldSmoke": "Exact one existing method name and same assertion/action order after inlining the three extracted helpers; quick-reader checks and all six selector/page helpers unchanged. Default TXT fixture remains the previous repeated-paragraph bytes; only the new class selects unique paragraph markers.",
+    "production": "Only CoreTextPageView DEBUG branches and an explicit -reader-launch-measurement flag. After removing DEBUG sections and blank lines, the release view source matches baseline."
+  },
+  "preparedSelections": {
+    "launch": {
+      "selector": "yuedu appUITests/ReaderProcessLaunchMeasurementsUITests/testFiveProcessLaunchesToSubmittedReadableTXTAnchor",
+      "methods": 1,
+      "executions": 1,
+      "innerSamples": 5
+    },
+    "memory": {
+      "selector": "yuedu appTests/ReaderProcessMemoryMeasurementsTests/sampleOwnedCoreTextChapters",
+      "methods": 1,
+      "executions": 1,
+      "fixtures": 2,
+      "innerSamplesPerFixture": 5,
+      "innerSamples": 10
+    },
+    "addedToCI": false,
+    "oldTXTSelectionAndCount": 1,
+    "oldReaderStageRows": 50
+  },
+  "launchProtocol": {
+    "fixture": {
+      "fixtureSHA256": "74549292aec35d57bfff367eacd84a6e167225edd1aa2159b0be5b6e8775d94d",
+      "fixtureBytes": 5980
+    },
+    "setupOutsideInterval": true,
+    "importInputRemovedBeforeSamples": true,
+    "processBoundary": "Each sample terminates, awaits real notRunning, then invokes XCUIApplication.launch. Per-process observation UUID distinguishes a new process while allowing legal PID reuse. PID and per-view identity remain raw metadata.",
+    "clock": "Raw ProcessInfo.systemUptime seconds from UI runner for terminate/notRunning/launch requested/launch returned/shelf/book tap/page observed. App submission uptime is retained separately and checked within the corresponding launch interval.",
+    "endpoint": "Current CoreTextPageView captured configure/display binding serial, actual spine/range/page UTF16 text and unique marker; published only after layer.contents assignment and a recheck of captured binding/index/attributed-string identity. XCUI must also observe the current label as hittable at the viewport centre.",
+    "anchorScope": "Page-level actual rendered UTF16 range and marker position; not a direct reading-position JSON/persisted charOffset observation. pageStartUTF16 is never named a persisted position. Existing independent position regressions own that storage contract.",
+    "notClaimed": [
+      "ChapterDocument ContentRevision propagation",
+      "GPU/pixel presentation",
+      "tap-to-photon",
+      "OS/device cache-cold startup",
+      "automatic restore directly into reader without test navigation"
+    ],
+    "timingMeaning": "launchCallMilliseconds times the synchronous XCUI launch API, not the system first-frame metric. Launch-to-readable includes UI automation selecting Library and tapping the persisted owned book. Five recoverable failures retain individual rows; a fatal XCTest/framework abort leaves an incomplete matrix and must fail later collection."
+  },
+  "memoryProtocol": {
+    "fixtures": {
+      "plain-100k": {
+        "fixtureSHA256": "14cb4f035b0986ca492b0d3965558c9f1c0c590e6c35f2f6c8fdf7248d9fbad5",
+        "fixtureHTMLBytes": 310613,
+        "fixtureMinimumUTF16": 102400
+      },
+      "plain-1m": {
+        "fixtureSHA256": "5caa23f0a8c1fd5586ed578e42f28df7dd9b02bf566c61afc45e696a9edd7c9d",
+        "fixtureHTMLBytes": 3178707,
+        "fixtureMinimumUTF16": 1048576
+      }
+    },
+    "fixtureConstructionOutsideInterval": true,
+    "scope": "Current app process with XCTest loaded, Simulator collector only; corpus HTML is retained in baseline. Samples share a process and system/framework caches are not cleared.",
+    "method": "One task_info(TASK_VM_INFO) per point: phys_footprint is the reported Mach footprint-accounting bytes; resident_size is current resident-memory bytes (RSS), distinct from footprint and allocation churn. Kernel failure, insufficient returned count or nonpositive values never become zero/success. Lifetime *_peak fields are not used.",
+    "sampling": "Off-main actor captures baseline, explicit phase boundaries and periodic points. A detached Task requests a 10ms sleep between ticks (a measurement timer, not settling); actual query-before/after uptimes are retained. Sleep scheduling is not real-time or a fixed-rate guarantee.",
+    "quality": "No periodic points, buffer limit, raw phase encoding failure, bad/short kernel response, on-main query, stage failure or an actual baseline/periodic/terminal gap >50ms marks complete=false. Boundary points cannot conceal a missing periodic sampler. All raw points determine baseline and sampled maxima; this is not the exact kernel/global peak.",
+    "stages": [
+      "baseline",
+      "document.begin",
+      "document.end",
+      "first-page.begin",
+      "first-page.end",
+      "pagination.begin",
+      "pagination.end",
+      "scroll.begin",
+      "scroll.end",
+      "jump.0.begin",
+      "jump.0.end",
+      "jump.1.begin",
+      "jump.1.end",
+      "jump.2.begin",
+      "jump.2.end",
+      "jump.3.begin",
+      "jump.3.end",
+      "jump.4.begin",
+      "jump.4.end",
+      "jump.5.begin",
+      "jump.5.end",
+      "jump.6.begin",
+      "jump.6.end",
+      "jump.7.begin",
+      "jump.7.end",
+      "jump.8.begin",
+      "jump.8.end",
+      "jump.9.begin",
+      "jump.9.end",
+      "complete"
+    ],
+    "stageIntegrity": "Document length, real first-page text, complete contiguous full-page coverage, complete scroll character coverage and ten distinct actual controller line anchors are required. Requested/observed spine/offset plus actual UTF16 anchor text are retained for every jump. The existing controller is mounted as a fixed 390x844 child viewport in an owned XCTest-host window, with the previous key window restored on cleanup.",
+    "failureEvidence": "Thirty raw phase events per completed sample are printed as work proceeds; recoverable failures emit partial point/event arrays before the outer test aggregates failure. Fatal process death cannot emit the in-memory point buffer; missing terminal/sample rows and failed XCTest are never accepted.",
+    "overhead": "Fixture HTML, recording buffers, Mach queries, phase logging, timestamps and scheduling all affect the process. Instrumentation overhead is included and is not subtracted. Previous-sample/framework retention and any existing renderer background work are not claimed globally quiescent."
+  },
+  "collectorBoundary": {
+    "name": "reader-launch-memory.py",
+    "expectedLaunchRows": 5,
+    "expectedMemoryRows": 10,
+    "expectedRawMemoryPhaseRows": 300,
+    "statusField": "collectionShapeValidated",
+    "sourceOrExecutionAttested": false,
+    "sameRunRequirement": "Future integration must independently bind exact actual passing new XCTest identities, fresh raw xcresult, committed source/patch hashes, local overlay and actual build settings/Xcode/SDK/Simulator/destination metadata. Supplied logs alone are not SDK or iOS execution evidence.",
+    "failureStatus": "The new collector writes a fresh explicit invalid/incomplete record and exits1 for malformed/missing/duplicate/failed observations. It refuses overwriting prior evidence. It does not alter or replace the old passed collector."
+  },
+  "localChecks": {
+    "portableNewMethodsPassed": 15,
+    "portableExistingStageMethodsPassed": 20,
+    "commands": [
+      {
+        "name": "portable-launch-memory",
+        "command": [
+          "C:\\Python312\\python.exe",
+          "-B",
+          "scripts/reader-experience/test-reader-launch-memory.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\portable-launch-memory.stdout.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\portable-launch-memory.stderr.txt",
+        "stderrSHA256": "3184270de09e077d43933ed44033ab962a7272725e39b181d8d678ebfd428af5"
+      },
+      {
+        "name": "portable-existing-stage-baseline",
+        "command": [
+          "C:\\Python312\\python.exe",
+          "-B",
+          "scripts/reader-experience/test-reader-stage-baseline.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\portable-existing-stage-baseline.stdout.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\portable-existing-stage-baseline.stderr.txt",
+        "stderrSHA256": "b7b7fee5ff595f438400422d42335774a8043d835ba7e0f3eb9acf4d5e14a814"
+      },
+      {
+        "name": "diff-check",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\diff-check.stdout.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\diff-check.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "tracked-diff",
+        "command": [
+          "git",
+          "diff",
+          "--binary"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\tracked-diff.stdout.txt",
+        "stdoutSHA256": "6e1e0a54ac7e3423ea2c18b7104680b21fa8a1e9d51eddf90d28dc1ded5f67ec",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\tracked-diff.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "new-file-0",
+        "command": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-0.stdout.txt",
+        "stdoutSHA256": "12ba026ee126446ad704689053d93fe6bd069fe9e8fe073731201a62a2c5de06",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-0.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "new-file-1",
+        "command": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-1.stdout.txt",
+        "stdoutSHA256": "c9fe423f469140f5878812208c531ef54fd60bd7413c205768235c56b1abd4d7",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-1.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "new-file-2",
+        "command": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-2.stdout.txt",
+        "stdoutSHA256": "eca985c022abd8d5434dfa039819b0a2dedd3ab703131d24cb497dfab8bcba43",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-2.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "new-file-3",
+        "command": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "scripts/reader-experience/reader-launch-memory.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-3.stdout.txt",
+        "stdoutSHA256": "59589e8c6ebede2705b4ceae71d8300484ca3dbdefab996028517e7b8fc38121",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-3.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "new-file-4",
+        "command": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "scripts/reader-experience/test-reader-launch-memory.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-4.stdout.txt",
+        "stdoutSHA256": "d78ae3a0c04f3e0419dc7f6a9c41ad41584b89cadf003fd3f2018f5e326a174b",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\new-file-4.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "patch-reverse-check",
+        "command": [
+          "git",
+          "apply",
+          "--reverse",
+          "--check",
+          "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\reader-launch-memory.patch"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\patch-reverse-check.stdout.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\patch-reverse-check.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "patch-forward-main-check",
+        "command": [
+          "git",
+          "apply",
+          "--check",
+          "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\reader-launch-memory.patch"
+        ],
+        "cwd": "F:\\yuedu-reader",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\patch-forward-main-check.stdout.txt",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-validation\\patch-forward-main-check.stderr.txt",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "sourceInvariantsPassed": true,
+    "unchangedProtocolFiles": [
+      "scripts/reader-experience/reader-stage-baseline.py",
+      "scripts/reader-experience/test-reader-stage-baseline.py",
+      "scripts/reader-experience/smoke.sh",
+      "scripts/reader-experience/smoke-tools.py",
+      ".github/workflows/reader-smoke.yml",
+      "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "Resources/zh-Hant.lproj/Localizable.strings",
+      "Resources/zh-Hans.lproj/Localizable.strings",
+      "Resources/en.lproj/Localizable.strings",
+      "Resources/ja.lproj/Localizable.strings",
+      "Resources/ko.lproj/Localizable.strings"
+    ],
+    "grammar": {
+      "path": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\launch-memory-swift-grammar.json",
+      "sha256": "0ffc288db1e62a5f8ffc5ae5e7a71f8edb459cd9f2bdf8edef6feca46494de4f",
+      "sevenFilesPassed": true,
+      "SwiftTypecheckPerformed": false
+    }
+  },
+  "primarySources": {
+    "index": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\apple-primary\\index.json",
+    "sha256": "3dabea9d440b2e826954f564741af79b51f1091dfe636f0de50b597efe4189f8",
+    "files": [
+      {
+        "path": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\apple-primary\\xcuiapplication-launch.md",
+        "url": "https://developer.apple.com/documentation/xcuiautomation/xcuiapplication/launch().md",
+        "bytes": 1208,
+        "sha256": "a0dfaadd743a1576beaca46f999de6683504fe5dbab61c463fe24142b0690cd6"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\apple-primary\\xcuiapplication-terminate.md",
+        "url": "https://developer.apple.com/documentation/xcuiautomation/xcuiapplication/terminate().md",
+        "bytes": 1088,
+        "sha256": "85c0891754421245829cbe9102fe669ac5516eff8e3176c2e36bc3b8d09af040"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\apple-primary\\xctapplicationlaunchmetric.md",
+        "url": "https://developer.apple.com/documentation/xctest/xctapplicationlaunchmetric.md",
+        "bytes": 2031,
+        "sha256": "da7a36106bb0350bc034b77e2a622dd748f5f1a5582a7eb03dc16c10439659c0"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\apple-primary\\xctmemorymetric.md",
+        "url": "https://developer.apple.com/documentation/xctest/xctmemorymetric.md",
+        "bytes": 1966,
+        "sha256": "fbde0a2ed82995b16a237ea7db04f3b4b21d5cba5aaeac9e4e505e0ac66e2b5f"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\reader-launch-memory-worktree\\.build\\apple-primary\\task_info.h",
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/f6217f891ac0bb64f3d375211650a4c1ff8ca1ea/osfmk/mach/task_info.h",
+        "commit": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+        "bytes": 27248,
+        "sha256": "1c09d3ff0bb37b4c17da286f011c8ceb61962f610bd1304688bec4b90c556b81"
+      }
+    ],
+    "interpretation": "Apple documents launch as synchronous ready-for-events; the separate row measures the call plus later real reader endpoint. XCTApplicationLaunchMetric has a different first-frame/launch-task boundary and is not substituted. XCTMemoryMetric before/after delta does not provide this interval sampled peak. Public XNU task_info.h pins the TASK_VM_INFO resident_size and phys_footprint layout; actual SDK compilation still must verify Swift imports."
+  },
+  "minimalRootIntegrationImpact": [
+    "Apply only this reviewed nine-file patch; it does not touch selectors/workflow/project/package/settings/localizations.",
+    "The old TXT class still has one test; its helper superclass must be built into the same existing synchronized UI-test target. Verify the unchanged old identity/count with actual XCTest after integration.",
+    "A future separately approved measurement invocation must select the two new methods explicitly and retain their own raw logs/results and environment. Do not absorb their samples into old 1 UI or 50 benchmark-row counts.",
+    "Keep process/Simulator test-host CPU/AX/sampled-byte observations distinct from ordinary product, device-cold, GPU presentation and before/after improvements."
+  ],
+  "canonicalPlanChanged": false,
+  "mainTrackedFilesModified": false,
+  "productionRuntimeBehaviorClaimedImproved": false,
+  "allNonDeviceWorkComplete": false,
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "iOSTestsExecuted": 0,
+  "actualLaunchSamples": 0,
+  "actualMemorySamples": 0,
+  "CIQueriedOrTriggered": false,
+  "committedOrPushed": false,
+  "independentReviewPending": true
+}
