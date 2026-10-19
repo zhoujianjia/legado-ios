@@ -98,6 +98,41 @@ class SmokeEvidenceTests(unittest.TestCase):
             with patch.dict(smoke.os.environ, {"GITHUB_REF_NAME": "reader-experience-aaaaaaa"}), self.assertRaises(ValueError):
                 smoke.validate_tag()
 
+    def test_parameterized_summary_separates_method_and_execution_counts(self):
+        # An immutable xcresult from a previous actual run has six methods but
+        # eight executions. Exercise its real schema rather than equating them.
+        frozen = smoke.REPO / "docs/legado-ios/fixtures/ios-cache-summary-f73f0ae.json"
+        summary = smoke.read_json(frozen)
+        checked = smoke.verify_summary(summary, 6, 8)
+        self.assertEqual(checked["expectedTests"], 6)
+        self.assertEqual(checked["deviceExecutionCounts"]["passedTests"], 8)
+        with self.assertRaises(ValueError):
+            smoke.verify_summary(summary, 8, 8)
+        with self.assertRaises(ValueError):
+            smoke.verify_summary(summary, 6, 6)
+
+    def test_execution_gate_rejects_missing_extra_skipped_or_failed_device_runs(self):
+        good = {"totalTestCount": 13, "passedTests": 13, "failedTests": 0, "skippedTests": 0,
+                "expectedFailures": 0, "devicesAndConfigurations": [
+                    {"passedTests": 23, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+        self.assertEqual(smoke.verify_summary(good, 13, 23)["expectedExecutions"], 23)
+        invalid = []
+        for value in (None, [], good["devicesAndConfigurations"] * 2, [None]):
+            changed = copy.deepcopy(good)
+            changed["devicesAndConfigurations"] = value
+            invalid.append(changed)
+        for key, value in (("passedTests", 22), ("passedTests", True), ("failedTests", 1),
+                           ("skippedTests", 1), ("expectedFailures", 1), ("expectedFailures", None)):
+            changed = copy.deepcopy(good)
+            changed["devicesAndConfigurations"][0][key] = value
+            invalid.append(changed)
+        changed = copy.deepcopy(good)
+        changed["expectedFailures"] = 1
+        invalid.append(changed)
+        for summary in invalid:
+            with self.subTest(summary=summary), self.assertRaises(ValueError):
+                smoke.verify_summary(summary, 13, 23)
+
     def audit_fixture(self, source_commit=None, already_independent=False):
         family = smoke.config.MAIN_BUNDLE if already_independent else smoke.config.UPSTREAM_BUNDLE
         original_project = "\n".join("PRODUCT_BUNDLE_IDENTIFIER = " + family + suffix + ";"

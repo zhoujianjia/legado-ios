@@ -152,7 +152,7 @@ def require_source_stamp(info, source):
         raise ValueError("Info source stamp must match the full and short preparation source SHA")
 
 
-def verify_summary(summary, expected):
+def verify_summary(summary, expected, expected_executions=None):
     if not isinstance(summary, dict):
         raise ValueError("xcresult summary must be an object with explicit test counts")
     fields = {name: summary.get(name) for name in ("totalTestCount", "passedTests", "failedTests", "skippedTests")}
@@ -160,7 +160,20 @@ def verify_summary(summary, expected):
         raise ValueError("xcresult summary lacks explicit integer test counts")
     if fields != {"totalTestCount": expected, "passedTests": expected, "failedTests": 0, "skippedTests": 0}:
         raise ValueError("Smoke test count/failure/skip gate failed: " + json.dumps(fields))
-    return {"expectedTests": expected, **fields}
+    result = {"expectedTests": expected, **fields}
+    if expected_executions is not None:
+        # xcresult's top-level count is unique test methods. Parameterized runs
+        # are counted separately in the single selected device/configuration.
+        devices = summary.get("devicesAndConfigurations")
+        if not isinstance(devices, list) or len(devices) != 1 or not isinstance(devices[0], dict):
+            raise ValueError("Execution gate requires exactly one device/configuration")
+        counts = {name: devices[0].get(name) for name in ("passedTests", "failedTests", "skippedTests", "expectedFailures")}
+        if any(type(value) is not int for value in counts.values()) or counts != {
+            "passedTests": expected_executions, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0
+        } or type(summary.get("expectedFailures")) is not int or summary["expectedFailures"] != 0:
+            raise ValueError("Parameterized execution/failure/skip gate failed: " + json.dumps(counts))
+        result.update(expectedExecutions=expected_executions, deviceExecutionCounts=counts)
+    return result
 
 
 def result(audit, settings, unit, ui, paging, product):
@@ -215,6 +228,7 @@ def main():
     verify = commands.add_parser("verify-summary")
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--expected", type=int, required=True)
+    verify.add_argument("--expected-executions", type=int)
     summarize = commands.add_parser("result", help="Require configuration=9, product=41, paging=12 and TXT UI=1 summaries")
     for name in ("audit", "settings", "unit", "ui", "paging", "product", "output"):
         summarize.add_argument("--" + name, type=Path, required=True)
@@ -225,7 +239,7 @@ def main():
         elif args.phase == "prepare":
             value = prepare(args.directory, tag_prefix=args.tag_prefix)
         elif args.phase == "verify-summary":
-            value = verify_summary(read_json(args.summary), args.expected)
+            value = verify_summary(read_json(args.summary), args.expected, args.expected_executions)
         else:
             value = result(read_json(args.audit), read_json(args.settings), read_json(args.unit),
                            read_json(args.ui), read_json(args.paging), read_json(args.product))

@@ -55,7 +55,7 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reading-position-tests.log" -t 1200
   -only-testing:'yuedu appTests/TXTReaderIndexMigrationTests'
 xcrun xcresulttool get test-results summary --path "$WORK/reading-position.xcresult" > "$WORK/reading-position-summary.json"
 xcrun xcresulttool get test-results tests --path "$WORK/reading-position.xcresult" > "$WORK/reading-position-tests.json"
-python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reading-position-summary.json" --expected 23
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reading-position-summary.json" --expected 13 --expected-executions 23
 # Keep paging separate from configuration and product tests: a skipped or empty
 # SearchAutoPagingTests invocation cannot satisfy either group's count.
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/paging-tests.log" -t 1200 -- \
