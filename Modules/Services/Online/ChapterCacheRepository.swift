@@ -426,6 +426,16 @@ struct ChapterCacheRepository: Sendable {
         else { return }
 
         let checksum = cacheChecksum(for: body)
+        // A missing package may be a legacy download or an interrupted write. An
+        // existing checksum still describes the committed body; replacing it with
+        // the current bytes would turn damaged content into a valid cache entry.
+        guard metadata.contentChecksum.isEmpty || metadata.contentChecksum == checksum else {
+            AppLogger.cache("⟐ chapterPackage migration rejected", context: [
+                "index": chapterIndex,
+                "reason": "checksumMismatch",
+            ])
+            return
+        }
 
         // Write upgraded .package.json using the existing body checksum.
         let artifact = ChapterPackageArtifact(
