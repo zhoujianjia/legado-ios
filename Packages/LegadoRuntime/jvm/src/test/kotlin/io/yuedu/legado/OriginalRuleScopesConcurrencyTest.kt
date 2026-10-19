@@ -5,6 +5,7 @@ import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setCoroutineContext
 import io.yuedu.legado.originalrule.RuleEnvironment
 import io.yuedu.legado.originalrule.RulePlatform
 import io.yuedu.legado.originalrule.RuleSource
+import io.yuedu.legado.originalrule.RuleScopes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import org.junit.Assert.assertEquals
@@ -16,10 +17,191 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 
 /** Synthetic port concurrency contracts, not an Android-reference or iOS acceptance claim. */
 class OriginalRuleScopesConcurrencyTest {
+    @Test fun cancellingSameLibraryWaiterDoesNotWaitForOrCancelItsInitializer() {
+        val executor = Executors.newFixedThreadPool(2)
+        val environment = RuleEnvironment()
+        val waiterJob = Job()
+        val waiterRegistered = CountDownLatch(1)
+        val waiterThread = AtomicReference<Thread>()
+        val scopes = observeCreationRegistration(environment, waiterThread, waiterRegistered)
+        RuleScopeInitializationGate.reset()
+        try {
+            val initializer = executor.submit<Any?> { scopes.getScope(BLOCKED_LIBRARY, null) }
+            assertTrue(RuleScopeInitializationGate.entered.await(5, TimeUnit.SECONDS))
+            val waiter = executor.submit<Any?> {
+                waiterThread.set(Thread.currentThread())
+                scopes.getScope(BLOCKED_LIBRARY, waiterJob)
+            }
+            assertTrue("The same-key call entered creation registration", waiterRegistered.await(5, TimeUnit.SECONDS))
+            waiterJob.cancel()
+            val failure = assertThrows(ExecutionException::class.java) { waiter.get(2, TimeUnit.SECONDS) }
+            assertTrue(failure.cause is CancellationException)
+            assertEquals("The unrelated initializer is still held by the actual host gate", 1L, RuleScopeInitializationGate.release.count)
+            assertEquals(1, RuleScopeInitializationGate.calls.get())
+            RuleScopeInitializationGate.release.countDown()
+            val scope = initializer.get(5, TimeUnit.SECONDS)
+            assertTrue(scope === scopes.getScope(BLOCKED_LIBRARY, null))
+            assertEquals("Cancellation must not reinitialize or discard the owner's scope", 1, RuleScopeInitializationGate.calls.get())
+        } finally {
+            waiterJob.cancel()
+            RuleScopeInitializationGate.release.countDown()
+            executor.shutdown()
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS))
+            environment.close()
+            scopes.close()
+            assertCreationRegistrationsReleased(scopes)
+        }
+    }
+
+    @Test fun closingEnvironmentReleasesSameLibraryWaiterBeforeItsInitializerReturns() {
+        val executor = Executors.newFixedThreadPool(2)
+        val environment = RuleEnvironment()
+        val waiterRegistered = CountDownLatch(1)
+        val waiterThread = AtomicReference<Thread>()
+        val scopes = observeCreationRegistration(environment, waiterThread, waiterRegistered)
+        RuleScopeInitializationGate.reset()
+        try {
+            val initializer = executor.submit<Any?> { scopes.getScope(BLOCKED_LIBRARY, null) }
+            assertTrue(RuleScopeInitializationGate.entered.await(5, TimeUnit.SECONDS))
+            val waiter = executor.submit<Any?> {
+                waiterThread.set(Thread.currentThread())
+                scopes.getScope(BLOCKED_LIBRARY, null)
+            }
+            assertTrue("The same-key call entered creation registration", waiterRegistered.await(5, TimeUnit.SECONDS))
+            environment.close()
+            scopes.close()
+            val failure = assertThrows(ExecutionException::class.java) { waiter.get(2, TimeUnit.SECONDS) }
+            assertTrue(failure.cause is IllegalStateException)
+            assertEquals("Original-rule environment is closed", failure.cause?.message)
+            assertEquals("Close cannot release the owner's arbitrary host call", 1L, RuleScopeInitializationGate.release.count)
+            RuleScopeInitializationGate.release.countDown()
+            val initializerFailure = assertThrows(ExecutionException::class.java) { initializer.get(5, TimeUnit.SECONDS) }
+            assertEquals("Original-rule environment is closed", initializerFailure.cause?.message)
+            assertEquals(1, RuleScopeInitializationGate.calls.get())
+        } finally {
+            RuleScopeInitializationGate.release.countDown()
+            executor.shutdown()
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS))
+            environment.close()
+            scopes.close()
+            assertCreationRegistrationsReleased(scopes)
+        }
+    }
+
+    @Test fun alreadyCancelledJobCannotInitializeAnUncachedLibraryOrConsumeACachedScope() {
+        val environment = RuleEnvironment()
+        val job = Job().apply { cancel() }
+        RuleScopeInitializationGate.reset()
+        try {
+            assertThrows(CancellationException::class.java) { environment.scopes.getScope(BLOCKED_LIBRARY, job) }
+            assertEquals(0, RuleScopeInitializationGate.calls.get())
+            val library = "var ready = 19;"
+            val scope = environment.scopes.getScope(library, null)
+            assertThrows(CancellationException::class.java) { environment.scopes.getScope(library, job) }
+            assertTrue(scope === environment.scopes.getScope(library, null))
+        } finally {
+            RuleScopeInitializationGate.release.countDown()
+            environment.close()
+            assertCreationRegistrationsReleased(environment.scopes)
+        }
+    }
+
+    @Test fun cancellationAndCloseNotifyAWaiterAlreadyParkedOnItsCreationCondition() {
+        for (cancel in listOf(true, false)) {
+            val executor = Executors.newFixedThreadPool(2)
+            val environment = RuleEnvironment()
+            val job = Job()
+            val waiterThread = AtomicReference<Thread>()
+            val condition = AtomicReference<java.lang.Object>()
+            val enteringWait = CountDownLatch(1)
+            lateinit var scopes: RuleScopes
+            scopes = RuleScopes {
+                environment.ensureOpen()
+                if (Thread.currentThread() === waiterThread.get()) {
+                    val field = scopes.javaClass.getDeclaredField("libraryCreationLocks").apply { isAccessible = true }
+                    val entries = synchronized(scopes) { (field.get(scopes) as Map<*, *>).values.toList() }
+                    entries.forEach { entry ->
+                        val monitorField = entry!!.javaClass.getDeclaredField("monitor").apply { isAccessible = true }
+                        val monitor = monitorField.get(entry) as java.lang.Object
+                        if (Thread.holdsLock(monitor)) { condition.set(monitor); enteringWait.countDown() }
+                    }
+                }
+            }
+            RuleScopeInitializationGate.reset()
+            try {
+                val initializer = executor.submit<Any?> { scopes.getScope(BLOCKED_LIBRARY, null) }
+                assertTrue(RuleScopeInitializationGate.entered.await(5, TimeUnit.SECONDS))
+                val waiter = executor.submit<Any?> {
+                    waiterThread.set(Thread.currentThread())
+                    scopes.getScope(BLOCKED_LIBRARY, if (cancel) job else null)
+                }
+                assertTrue("The waiter reached the occupied condition", enteringWait.await(5, TimeUnit.SECONDS))
+                // Acquiring the same monitor proves the worker released it through wait().
+                // Keep it while notifying, so neither cancellation nor close can race ahead of parking.
+                synchronized(condition.get()) {
+                    assertEquals(Thread.State.WAITING, waiterThread.get().state)
+                    if (cancel) job.cancel() else { environment.close(); scopes.close() }
+                }
+                val failure = assertThrows(ExecutionException::class.java) { waiter.get(2, TimeUnit.SECONDS) }
+                if (cancel) assertTrue(failure.cause is CancellationException)
+                else assertEquals("Original-rule environment is closed", failure.cause?.message)
+                assertEquals(1L, RuleScopeInitializationGate.release.count)
+                RuleScopeInitializationGate.release.countDown()
+                if (cancel) initializer.get(5, TimeUnit.SECONDS)
+                else assertThrows(ExecutionException::class.java) { initializer.get(5, TimeUnit.SECONDS) }
+                assertEquals(1, RuleScopeInitializationGate.calls.get())
+            } finally {
+                job.cancel()
+                RuleScopeInitializationGate.release.countDown()
+                executor.shutdown()
+                assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS))
+                environment.close()
+                scopes.close()
+                assertCreationRegistrationsReleased(scopes)
+            }
+        }
+    }
+
+    @Test fun sameThreadReentrantLibraryRemovalRetainsTheOriginalMonitorContract() {
+        val executor = Executors.newSingleThreadExecutor()
+        val environment = RuleEnvironment()
+        val library = "Packages.io.yuedu.legado.RuleScopeInitializationGate.runReentrantAction(); var ready=23;"
+        RuleScopeInitializationGate.reset()
+        RuleScopeInitializationGate.reentrantAction = { environment.scopes.remove(library) }
+        try {
+            val scope = executor.submit<Any?> { environment.scopes.getScope(library, null) }.get(2, TimeUnit.SECONDS)
+            assertTrue(scope === environment.scopes.getScope(library, null))
+            assertEquals(1, RuleScopeInitializationGate.calls.get())
+        } finally {
+            executor.shutdown()
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS))
+            RuleScopeInitializationGate.reentrantAction = null
+            environment.close()
+            assertCreationRegistrationsReleased(environment.scopes)
+        }
+    }
+
+    /** Observe the existing open-check seam at creation registration, without a product hook or guessed delay.
+     * The callback runs under the metadata monitor, so close cannot overtake registration after the event. */
+    private fun observeCreationRegistration(environment: RuleEnvironment, worker: AtomicReference<Thread>, registered: CountDownLatch): RuleScopes =
+        RuleScopes {
+            environment.ensureOpen()
+            if (Thread.currentThread() === worker.get() &&
+                Thread.currentThread().stackTrace.any { it.methodName == "withCreationLock" }) registered.countDown()
+        }
+
+    private fun assertCreationRegistrationsReleased(scopes: RuleScopes) {
+        for (name in listOf("libraryCreationLocks", "cryptoCreationLocks")) {
+            val field = scopes.javaClass.getDeclaredField(name).apply { isAccessible = true }
+            assertTrue("All completed/cancelled/closed calls release $name registrations", (field.get(scopes) as Map<*, *>).isEmpty())
+        }
+    }
+
     @Test fun unrelatedLibraryInitializationDoesNotWaitForABlockedLibrary() {
         val executor = Executors.newFixedThreadPool(2)
         val environment = RuleEnvironment()
@@ -196,7 +378,9 @@ object RuleScopeInitializationGate {
     @Volatile var release = CountDownLatch(1)
         private set
     val calls = AtomicInteger()
-    fun reset() { entered = CountDownLatch(1); release = CountDownLatch(1); calls.set(0) }
+    @Volatile var reentrantAction: (() -> Unit)? = null
+    fun reset() { entered = CountDownLatch(1); release = CountDownLatch(1); calls.set(0); reentrantAction = null }
+    @JvmStatic fun runReentrantAction() { calls.incrementAndGet(); requireNotNull(reentrantAction).invoke() }
     @JvmStatic fun awaitRelease() {
         calls.incrementAndGet()
         entered.countDown()

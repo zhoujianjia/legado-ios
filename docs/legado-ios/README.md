@@ -1,5 +1,31 @@
 # Legado iOS: product baseline and prototype status
 
+## Current status and execution plan
+
+The [completion plan](completion-plan.json) tracks all 64 locked Legado feature
+domains, their dependencies, desktop/Simulator acceptance, and deferred device
+checks. The [migration record](migration-status.md) and
+[feature comparison](feature-comparison.md) describe the current product.
+
+The latest delivered, independently inspected unsigned candidate is **build 10**,
+without bundled book sources. Later source `c47169d` passed the bounded desktop
+and main-App Simulator checks recorded in
+[SDK and rule-scope validation](sdk-and-rule-scope-validation.json); it did not
+produce a new IPA. Traditional source reading still uses JSC. Full Legado parity
+and automatic self-renewal are not implemented.
+
+Only one product is maintained. Future packages exclude book sources; existing
+device data and historical local packages are preserved. The source-pack
+insertion procedure described below is historical and must not be used for new
+builds. The [redistribution record](redistribution-notes.md) retains the open
+license and corresponding-source questions.
+
+## Historical prototype notes
+
+The following notes retain their original build and evidence boundaries. Their
+references to a "current" candidate describe that earlier stage, not the current
+product or the execution plan above.
+
 The product target is a fully local iOS reader with the capabilities and
 book-source compatibility of the user's locked `F:/legado-master.zip`.
 The ZIP, pinned by [provenance-lock.json](provenance-lock.json), is the acceptance

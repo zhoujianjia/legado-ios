@@ -47,7 +47,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-smoke-xcode.log
-      - name: Execute configuration, source paging, TXT and loopback JSC reader cases
+      - name: Execute configuration, position persistence, source paging and reader cases
         env:
           LEGADO_RUNTIME_SOURCE_ONLY: '1'
         run: bash scripts/reader-experience/smoke.sh 2>&1 | tee .build/ci-logs/reader-smoke.log
@@ -68,8 +68,10 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This run independently targets nine configuration tests, 41 local-product tests, twelve SearchAutoPagingTests, and one real TXT reader UI test. Every group requires its exact passing count and zero failures/skips. The product group exercises account-free feature availability without purchased entitlements, actual font bytes/licensing/UIFont registration, validated cache-only UTF-8 export including literal plain-text preservation, simplified UI, zero upstream Aozora catalog requests and the existing 13-case remote-library HTTP suite after the independent User-Agent change. Separate result bundles, summaries and logs are retained.
+          An independent position group requires 23 passing executions: five real-file persistence/fault-injection cases, twelve scroll restoration executions across TXT/Markdown/online plain text/online HTML, and six TXT reindex migration executions. It retains its own raw tests tree and summary; this is not a physical-device storage or performance claim.
           The paging group exercises HTTP stubs through the existing HTML parser and source-script session: an explicit false verdict on page one prevents page two; true, invalid/unknown and cached-page verdicts keep the established bounded paging rules. The public onHasMore callback contract, device pacing and pause/resume regressions remain covered. This is not a live-site or native-JVM network acceptance claim.
           Source Info/project overlays establish isolated local mode before the test host first starts; their original and overlaid hashes are retained. The TXT test imports through the existing DEBUG hook, selects a chapter, closes, removes the import input and relaunches to verify persisted progress/body. Screenshots and accessibility trees are attached to the UI xcresult.
+          The same TXT UI method now opens the real quick-reader panel, checks announced font-size changes and actual brightness percentages at both endpoints, restores those settings and dismisses the native sheet before continuing the persisted-reading check. Simulator accessibility evidence does not establish physical-device VoiceOver behavior.
           One additional UI test imports a unique loopback book source through the real deep link, searches, opens details, adds the book, and reads two chapters through JavaScriptCore rules and CoreText. It requires exactly one passing test and zero skips, plus the owned server's complete request/response trace. Its verdict is saved separately from TXT acceptance.
           This is a Debug Simulator check of the existing Yuedu reader. It does not modify or execute the delivered Release IPA, validate the Files picker or real-site sources, or pass physical-device/full-Legado gates.
           TEXT

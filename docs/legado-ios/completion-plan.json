@@ -1,0 +1,2498 @@
+{
+  "schemaVersion": 1,
+  "planKind": "single-reader-non-device-completion-execution-plan",
+  "updatedOn": "2026-10-19",
+  "timeZone": "Asia/Shanghai",
+  "baseline": {
+    "sourceCommit": "dccfbec9f50c5b40259e2db9131fdb4a69410628",
+    "featureCatalog": "docs/legado-ios/feature-catalog.json",
+    "featureDomainCount": 64,
+    "legadoArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "currentTraditionalReaderRoute": "existing JSC; retained original-rule JVM coordinator is not yet routed into product reading",
+    "deliveredCandidateRecord": "docs/legado-ios/native-reader-experience-build10.json"
+  },
+  "status": "in_progress",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "policy": {
+    "singleProduct": true,
+    "builtInBookSources": false,
+    "privateSourcesMayBeReadOrUploaded": false,
+    "preserveExistingUserSourcesBooksAndProgress": true,
+    "deviceValidationCurrentlyDeferred": true,
+    "askUserToInstallOrTestDuringDeferredPeriod": false,
+    "compatibleUIAndServicesMayBeReused": true,
+    "sourceCompatibilityTarget": "Locked original Legado archive; native reading experience may improve beyond original UI.",
+    "completionMeasure": "Observable feature/protocol/data/runtime contracts with source-specific evidence; test counts and source counts are not completion percentages.",
+    "unsupportedBehavior": "Return explicit capability/error information; do not fabricate successful empty results or silently switch rule engines.",
+    "backgroundBoundary": "Foreground services and system-permitted scheduling only; do not promise persistent servers or precise background Cron.",
+    "legalBoundary": "Preserve original license partitions, attribution and source obligations; this plan is implementation/material work, not legal advice or a clearance determination."
+  },
+  "execution": {
+    "immediateBatch": [
+      "plan-and-evidence-refresh",
+      "reading-position-write-integrity",
+      "rule-scope-wait-cancellation",
+      "reading-quick-panel-accessibility"
+    ],
+    "parallelLanes": [
+      {
+        "id": "reader-lane",
+        "initialWorkpackage": "reading-position-write-integrity",
+        "next": [
+          "reader-layout",
+          "reading-experience-design",
+          "reading-performance-and-prefetch"
+        ]
+      },
+      {
+        "id": "runtime-lane",
+        "initialWorkpackage": "rule-scope-wait-cancellation",
+        "next": [
+          "runtime-core",
+          "traditional-rules",
+          "url-http"
+        ]
+      },
+      {
+        "id": "evidence-lane",
+        "initialWorkpackage": "plan-and-evidence-refresh",
+        "next": [
+          "license-and-source-closure"
+        ]
+      }
+    ],
+    "schedulingRule": "A workpackage may start after its explicit workpackage dependencies are met; stage dependencies define integration checkpoints, not a reason to idle independent work.",
+    "validationRule": "Run focused regressions after final related edits; batch compatible cloud checks in one ordinary payload/build, retain raw reports, and do not repeat unchanged passing checks without a new concern.",
+    "progressRule": "Report the bounded batch, evidence, unresolved limits and next checkpoint; do not silently open an unbounded new cloud loop.",
+    "terminalNonDeviceState": "All implementable desktop/Simulator tasks verified, external/device-dependent feasibility decisions explicit, one audited source-free candidate and concise deferred checklist. Do not mark the full feature domains complete while required evidence is missing."
+  },
+  "stages": [
+    {
+      "id": "s1-integrity-plan",
+      "title": "Immediate integrity fixes and task/evidence refresh",
+      "status": "in_progress",
+      "dependsOn": [],
+      "exitCondition": "Four declared immediate workpackages have reviewed code/plan and focused evidence; no new whole-project completion claim."
+    },
+    {
+      "id": "s2-reading-experience",
+      "title": "Reading comfort, anchors, adaptive layout and measured performance",
+      "status": "planned",
+      "dependsOn": [
+        "s1-integrity-plan"
+      ],
+      "exitCondition": "Adopted reading changes pass fixed UI/layout/data scenarios; desktop benchmark methods and limits recorded."
+    },
+    {
+      "id": "s3-jvm-rules-http",
+      "title": "Pinned runtime, complete traditional rules and request semantics",
+      "status": "planned",
+      "dependsOn": [
+        "s1-integrity-plan"
+      ],
+      "exitCondition": "Required parser/URL public contracts compare against original typed values, bytes, errors and side effects."
+    },
+    {
+      "id": "s4-product-core-hosts",
+      "title": "Original product pipeline, persistence, browser/login and host adapters",
+      "status": "planned",
+      "dependsOn": [
+        "s3-jvm-rules-http"
+      ],
+      "exitCondition": "Original traditional route works through ordinary-JAR native App interfaces with restart, isolation and cancellation scenarios; no silent fallback."
+    },
+    {
+      "id": "s5-library-formats-backup",
+      "title": "Durable library, formats, annotations, offline behavior and backup",
+      "status": "planned",
+      "dependsOn": [
+        "s2-reading-experience",
+        "s4-product-core-hosts"
+      ],
+      "exitCondition": "Original-data round trips and user-data-preserving imports/restores work with negative/corrupt/incomplete cases."
+    },
+    {
+      "id": "s6-rss-media-reviews",
+      "title": "Remaining source types, RSS, speech, media and paragraph reviews",
+      "status": "planned",
+      "dependsOn": [
+        "s5-library-formats-backup"
+      ],
+      "exitCondition": "Each protocol is compared with fixed responses and supported native UI; device-only media checks remain deferred."
+    },
+    {
+      "id": "s7-tools-services-tasks",
+      "title": "Editing/logs, LAN and web protocols, MCP and allowed task scheduling",
+      "status": "planned",
+      "dependsOn": [
+        "s4-product-core-hosts",
+        "s5-library-formats-backup",
+        "s6-rss-media-reviews"
+      ],
+      "exitCondition": "Foreground protocol and task lifecycle checks pass with explicit iOS background/platform differences."
+    },
+    {
+      "id": "s8-delivery-readiness",
+      "title": "Final validation, source/license materials, renewal feasibility boundary and delivery",
+      "status": "planned",
+      "dependsOn": [
+        "s2-reading-experience",
+        "s3-jvm-rules-http",
+        "s4-product-core-hosts",
+        "s5-library-formats-backup",
+        "s6-rss-media-reviews",
+        "s7-tools-services-tasks"
+      ],
+      "exitCondition": "All non-device implementable work has source-specific evidence, one audited candidate and a remaining hardware/external-decision checklist. Renewal stays unimplemented until its independent feasibility gate passes."
+    }
+  ],
+  "workpackages": [
+    {
+      "id": "plan-and-evidence-refresh",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Maintain this executable ledger and add current-state corrections to stale docs without rewriting historical audits.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "All 64 feature-catalog IDs have exactly one domain-owner workpackage; task and stage dependencies are acyclic.",
+        "Separate code present, measured desktop behavior, real ordinary-JAR native execution, Simulator UI and device acceptance.",
+        "Update stale claims that the coordinator is uncommitted or current branding unbuilt, preserving historical sourceHEAD, hashes and raw reports."
+      ],
+      "deferredDeviceAcceptance": [],
+      "existingEvidence": [
+        "feature-catalog",
+        "feature-comparison",
+        "migration-status",
+        "redistribution",
+        "redistribution-inventory"
+      ]
+    },
+    {
+      "id": "reading-position-write-integrity",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.bookshelf",
+        "reader.layout",
+        "reader.page-turn"
+      ],
+      "objective": "Fix and directly test reading-position store write integrity before broader reading UX work.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "Inspect the existing store's actual write/read path and repair the root cause within that store.",
+        "Dedicated regression proves required progress updates are not silently lost on persistence failure and that later successful persistence preserves the intended latest position.",
+        "Preserve stable (spineIndex, charOffset) semantics and existing on-disk compatibility; do not add a parallel position store."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify background/foreground and cold-launch progress continuity on the signed final device build."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "feature-comparison"
+      ]
+    },
+    {
+      "id": "rule-scope-wait-cancellation",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "source.shared-state",
+        "host.concurrency",
+        "rules.declarative"
+      ],
+      "objective": "Make waiting on same-key scope initialization cancellation-aware without changing original shared-state semantics.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "Regression enters a real blocked initialization and cancels a second same-key waiter; completion must follow the cancellation signal rather than a settle delay.",
+        "Retain same-key single initialization, independent-key progress, no partial-scope publication, close behavior and creation-lock cleanup.",
+        "Run focused coordinator regressions and reuse the existing exact stateful baseline; preserve disclosed exception-label differences."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify cancellation and resource recovery in ordinary-JAR native product sessions after the completed coordinator is routed into the app."
+      ],
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "stateful-reference",
+        "traditional-integration"
+      ]
+    },
+    {
+      "id": "reading-quick-panel-accessibility",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.layout",
+        "reader.page-turn"
+      ],
+      "objective": "Expose current font size and labeled brightness values to assistive technology in the existing quick reading panel.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "Font-size increase/decrease buttons expose the current displayed font-size value through accessibilityValue.",
+        "The existing brightness slider has a localized accessibility label and a percentage accessibilityValue matching the on-screen state.",
+        "Decorative sun symbols are hidden from accessibility without hiding actual controls.",
+        "Extend the existing TXT reopen UI test method to verify the same current values and retained reading position; reuse the same cloud build and test run.",
+        "This is a bounded accessibility improvement; do not describe additional fonts, new themes or a new reading settings system as implemented."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify VoiceOver speaks the controls, current font size and brightness percentage correctly on final hardware."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product"
+      ]
+    },
+    {
+      "id": "reading-experience-design",
+      "kind": "cross-domain",
+      "stageId": "s2-reading-experience",
+      "status": "planned",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.layout",
+        "reader.page-turn",
+        "reader.bookmarks",
+        "reader.highlights"
+      ],
+      "objective": "Improve comfort and clarity using existing native controls, CoreText rendering and reusable appearance settings.",
+      "dependsOn": [
+        "reading-position-write-integrity",
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Keep the two licensed bundled Chinese fonts and user font import; evaluate a sample-text preview plus font-size/line-spacing presets before adding more font assets or new controls.",
+        "Verify changing font/size/spacing, rotation and page-to-scroll transitions retain the same semantic reading anchor.",
+        "Evaluate low-brightness night reading, high-contrast text, Reduce Motion, VoiceOver labels and large text using native settings.",
+        "Verify iPad split-view width changes, controls and navigation preserve the reading anchor and avoid clipped content.",
+        "Every adopted change names its user problem and includes the smallest meaningful UI/layout evidence; do not add duplicate appearance or pagination systems."
+      ],
+      "deferredDeviceAcceptance": [
+        "Check font comfort, physical screen brightness, real gestures, VoiceOver usability and iPad split-screen reading on hardware."
+      ],
+      "existingEvidence": [
+        "font-provenance",
+        "local-product",
+        "reader-smoke"
+      ]
+    },
+    {
+      "id": "reading-performance-and-prefetch",
+      "kind": "cross-domain",
+      "stageId": "s2-reading-experience",
+      "status": "planned",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.layout",
+        "reader.cache-download",
+        "pipeline.content"
+      ],
+      "objective": "Measure startup, long-chapter navigation and offline/prefetch behavior, then change only the measured bottleneck.",
+      "dependsOn": [
+        "reading-position-write-integrity",
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Define repeatable fixture sizes, build mode, phase spans, metrics and acceptance thresholds before optimization; distinguish Debug XCTest-host stalls from product benchmarks.",
+        "Measure app startup, opening a cached long chapter, chapter switching, repagination and peak memory on fixed fixtures; record before/after with matching environment.",
+        "Evaluate on-demand bounded prefetch and offline recovery through the existing download/cache repository only.",
+        "Cancel obsolete prefetch on source/book changes; distinguish missing cache, corrupted cache and legitimate empty content; do not silently retry an internal parsing error.",
+        "No startup, memory, package-size or smoothness improvement claim without an appropriate before/after measurement."
+      ],
+      "deferredDeviceAcceptance": [
+        "Measure cold/warm startup, sustained scrolling/paging, memory pressure, battery/thermal behavior, network transitions and background behavior on final hardware."
+      ],
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "native-cancel",
+        "reader-smoke",
+        "feature-comparison"
+      ]
+    },
+    {
+      "id": "license-and-source-closure",
+      "kind": "cross-domain",
+      "stageId": "s8-delivery-readiness",
+      "status": "planned",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Complete inspectable release materials and identify unresolved rights/combination decisions without making an unsupported legal-clearance claim.",
+      "dependsOn": [
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Retain MPL, Legado GPLv3-default file partitions, Oracle GPLv2/ClassPath-exception partitions, engine notices and all original modification/source attributions.",
+        "Explicitly inventory the ios-tools AGPLv3 root and injected symbol_keeper.cpp/native-object boundary; do not hide this behind a generic MPL/GPL/ClassPath label.",
+        "Collect exact engine/JDK/native/dependency source versions, all patches and required build/install inputs; verify complete corresponding-source retrieval rather than only hashes and license texts.",
+        "Expand resolved transitive dependency, font, artwork, sample-book/data and static-object/header inventories; source locks alone do not establish rights.",
+        "Check actual final IPA notice/source/brand bytes against the immutable release commit and materials; preserve historical audits as historical.",
+        "Record remaining legal/rights decisions as unresolved when evidence is insufficient; materials completion is distinct from legal redistribution clearance."
+      ],
+      "deferredDeviceAcceptance": [],
+      "existingEvidence": [
+        "redistribution",
+        "redistribution-inventory",
+        "runtime-notices",
+        "runtime-notices-validation",
+        "provenance",
+        "font-provenance",
+        "brand-assets",
+        "build10"
+      ]
+    },
+    {
+      "id": "automatic-renewal-feasibility",
+      "kind": "cross-domain",
+      "stageId": "s8-delivery-readiness",
+      "status": "device_dependent_feasibility",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Keep the phone-only reader self-renewal requirement as an honest transport/install feasibility gate.",
+      "dependsOn": [
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Document current read-only probe behavior and bounded transport hypotheses; a fixed-loopback failure cannot rule out every transport.",
+        "Prepare protocol/state-machine boundaries, bounded discovery design, credential/pairing-data protection, cancellation/timeouts and reproducible diagnostic instructions without collecting real secrets.",
+        "Plan signing/profile freshness, same-identity replacement, crash-safe handover and data-preservation checks without claiming they are implemented.",
+        "Do not integrate a signer or additional AGPL renewal dependency before an authenticated same-device installation transport satisfying the user's single-App/free-team requirement is demonstrated.",
+        "Keep automaticSelfRenewalImplemented false; reminders, expiry display, opening external tools and mocked renewal responses do not satisfy this requirement."
+      ],
+      "deferredDeviceAcceptance": [
+        "On an unmodified free-team signed iPhone, prove a same-device authenticated transport with computer off and no companion App.",
+        "Only after transport succeeds, obtain fresh profile/signature, replace the same App identity, cold launch and verify books/sources/progress survive.",
+        "Separately prove OS-permitted background triggering, bounded failure retry and expiry recovery; iOS scheduling cannot be represented as guaranteed precise execution."
+      ],
+      "existingEvidence": [
+        "renewal-research",
+        "build10"
+      ],
+      "feasibilityEstablished": false,
+      "signerIntegrationAuthorizedByPlanOnlyAfterTransportEvidence": true,
+      "implementationAfterTransport": "gated_not_started",
+      "automaticSelfRenewalImplemented": false
+    },
+    {
+      "id": "cloud-validation-and-final-delivery",
+      "kind": "cross-domain",
+      "stageId": "s8-delivery-readiness",
+      "status": "planned",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Produce one source-free final candidate with exact evidence and a concise remaining device checklist.",
+      "dependsOn": [
+        "reader-layout",
+        "reader-library",
+        "reader-online-storage",
+        "local-formats",
+        "annotations-dictionary",
+        "backup-webdav",
+        "source-type-routing",
+        "rss",
+        "tts",
+        "media",
+        "paragraph-reviews",
+        "source-debug-logs",
+        "lan-web-services",
+        "automatic-tasks",
+        "platform-integration",
+        "reading-experience-design",
+        "reading-performance-and-prefetch",
+        "license-and-source-closure"
+      ],
+      "desktopSimulatorAcceptance": [
+        "After related edits settle, run the smallest relevant checks; share one prepared native payload and one iOS build across compatible groups.",
+        "Run broader ordinary-JAR native and UI acceptance when new integration requires it; do not repeatedly run unchanged suites or launch duplicate cloud builds.",
+        "Keep the existing native cancellation 15-second gate, 45-second operation deadline and seven actual wire requests unless the product contract itself changes with documented justification.",
+        "Independently review raw results and actual final IPA bytes, exclude private sources/credentials/tests, preserve original licenses and supply exact corresponding source/build materials.",
+        "Provide one candidate and one short device checklist; do not ask the user to test during the deferred-device period."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute the deferred per-domain hardware checklist on this exact candidate; carry unresolved renewal feasibility and legal decisions explicitly."
+      ],
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "build10",
+        "migration-status",
+        "runtime-notices"
+      ]
+    },
+    {
+      "id": "runtime-core",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "core.engine",
+        "core.dynamic-semantics",
+        "core.e4x",
+        "core.java-interop"
+      ],
+      "objective": "Verify the pinned interpreter and Java behavior through the ordinary product bridge, preserving original engine semantics.",
+      "dependsOn": [
+        "rule-scope-wait-cancellation"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ]
+    },
+    {
+      "id": "source-schema",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "source.schema"
+      ],
+      "objective": "Complete lossless source schema/model mapping and safe import/export without shipping sources.",
+      "dependsOn": [
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "build10"
+      ]
+    },
+    {
+      "id": "traditional-rules",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "rules.declarative",
+        "rules.css",
+        "rules.xpath",
+        "rules.jsonpath",
+        "rules.regex"
+      ],
+      "objective": "Complete retained AnalyzeRule public entry points and exact typed results, replacements, variables and shared-call scope behavior.",
+      "dependsOn": [
+        "runtime-core",
+        "source-schema"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ]
+    },
+    {
+      "id": "url-http",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "network.requests",
+        "network.http-host"
+      ],
+      "objective": "Retain AnalyzeUrl ordering, original synchronous Java host responses and exact HTTP/network-option semantics.",
+      "dependsOn": [
+        "runtime-core",
+        "source-schema"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "http-wire"
+      ]
+    },
+    {
+      "id": "source-state",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "source.shared-state",
+        "host.concurrency"
+      ],
+      "objective": "Preserve source/book/chapter scope boundaries and persist required JVM variables/cache safely across process restarts.",
+      "dependsOn": [
+        "traditional-rules",
+        "rule-scope-wait-cancellation"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "sdk-scope-validation",
+        "stateful-reference"
+      ]
+    },
+    {
+      "id": "traditional-reading-pipeline",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "pipeline.search",
+        "pipeline.explore",
+        "pipeline.info",
+        "pipeline.toc",
+        "pipeline.content",
+        "pipeline.batch"
+      ],
+      "objective": "Connect original WebBook business orchestration to the existing native services, then select it as the sole validated traditional-source route.",
+      "dependsOn": [
+        "traditional-rules",
+        "url-http",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ]
+    },
+    {
+      "id": "main-js-product",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "source.main-js"
+      ],
+      "objective": "Expand the existing limited text mainJs route without silent JSC fallback or loss of original Java host types.",
+      "dependsOn": [
+        "runtime-core",
+        "url-http",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "native-cancel",
+        "sdk-scope-validation"
+      ]
+    },
+    {
+      "id": "cookie-browser-login",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "network.cookie",
+        "network.browser",
+        "login.legacy",
+        "login.v2"
+      ],
+      "objective": "Bridge JVM cookie/login semantics and WKWebView/forms with cancellable worker waits and persisted authentication state.",
+      "dependsOn": [
+        "url-http",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ]
+    },
+    {
+      "id": "host-adapters",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "host.files-archives",
+        "host.fonts",
+        "host.crypto",
+        "source.events-ui"
+      ],
+      "objective": "Complete required sandbox/file/archive/font/crypto/event adapters, retaining original Java conversions and explicit unsupported errors.",
+      "dependsOn": [
+        "runtime-core",
+        "source-state",
+        "url-http"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ]
+    },
+    {
+      "id": "reader-layout",
+      "kind": "domain-owner",
+      "stageId": "s2-reading-experience",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "reader.layout",
+        "reader.page-turn"
+      ],
+      "objective": "Verify existing CoreText layout and page/scroll modes with stable text anchors and accessible native settings.",
+      "dependsOn": [
+        "reading-position-write-integrity"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product",
+        "font-provenance"
+      ]
+    },
+    {
+      "id": "reader-library",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "reader.bookshelf",
+        "reader.groups",
+        "reader.read-records"
+      ],
+      "objective": "Complete durable library/group/progress/history behavior and original-data mapping without destroying existing data.",
+      "dependsOn": [
+        "reading-position-write-integrity",
+        "source-schema"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ]
+    },
+    {
+      "id": "reader-online-storage",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "reader.change-source",
+        "reader.cache-download",
+        "reader.cleanup"
+      ],
+      "objective": "Complete source-change matching, download/cache lifecycle and original text-processing contracts using the existing repositories.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ]
+    },
+    {
+      "id": "local-formats",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "local.txt",
+        "local.epub",
+        "local.umd",
+        "local.mobi",
+        "local.pdf"
+      ],
+      "objective": "Verify existing TXT/EPUB/PDF and add the currently unsupported UMD/MOBI through the existing import and reading services.",
+      "dependsOn": [
+        "reader-layout",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ]
+    },
+    {
+      "id": "annotations-dictionary",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "reader.bookmarks",
+        "reader.highlights",
+        "reader.highlight-rules",
+        "reader.dictionary"
+      ],
+      "objective": "Preserve annotations on processed text and add original dictionary-rule behavior, using native selection and existing storage.",
+      "dependsOn": [
+        "reader-layout",
+        "reader-library",
+        "traditional-reading-pipeline"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ]
+    },
+    {
+      "id": "backup-webdav",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "sync.backup",
+        "sync.webdav"
+      ],
+      "objective": "Complete original backup mapping, encrypted/selective atomic restore and user-owned WebDAV conflict/retry behavior.",
+      "dependsOn": [
+        "reader-library",
+        "reader-online-storage",
+        "annotations-dictionary",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ]
+    },
+    {
+      "id": "source-type-routing",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "source.five-types"
+      ],
+      "objective": "Route all five source types to supported native workflows and reject unknown/unsupported types explicitly.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "main-js-product"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ]
+    },
+    {
+      "id": "rss",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.rss"
+      ],
+      "objective": "Verify original rule-based RSS import, articles, login, favorites and offline history in existing native RSS services.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "cookie-browser-login",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ]
+    },
+    {
+      "id": "tts",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.tts-system",
+        "extension.tts-http"
+      ],
+      "objective": "Verify sentence/position following and original HTTP TTS requests with native playback and cancellation.",
+      "dependsOn": [
+        "reader-layout",
+        "url-http",
+        "reader-online-storage"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ]
+    },
+    {
+      "id": "media",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.audio",
+        "extension.video"
+      ],
+      "objective": "Complete audio/video source protocols, protected media, playlists, caching, native controls, PiP and required overlays.",
+      "dependsOn": [
+        "source-type-routing",
+        "cookie-browser-login",
+        "reader-online-storage"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ]
+    },
+    {
+      "id": "paragraph-reviews",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.reviews"
+      ],
+      "objective": "Add original traditional/mainJs paragraph review protocols and native anchored pagination/media/actions.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "main-js-product",
+        "annotations-dictionary",
+        "media"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ]
+    },
+    {
+      "id": "source-debug-logs",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.source-editor",
+        "extension.http-logs"
+      ],
+      "objective": "Connect the source editor/debugger to the completed runtime and produce phase-specific diagnostics with authentication redaction.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "main-js-product",
+        "cookie-browser-login"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ]
+    },
+    {
+      "id": "lan-web-services",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "sync.lan",
+        "web.http-api",
+        "web.editor",
+        "web.websocket",
+        "web.mcp"
+      ],
+      "objective": "Complete original foreground LAN/HTTP/editor/WebSocket/MCP contracts and cancellable lifecycle using existing services.",
+      "dependsOn": [
+        "source-debug-logs",
+        "backup-webdav"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ]
+    },
+    {
+      "id": "automatic-tasks",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "tasks.cron"
+      ],
+      "objective": "Retain Cron/task logic, persistence, reentrancy and foreground catch-up; expose only background scheduling the OS permits.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "source-state",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ]
+    },
+    {
+      "id": "platform-integration",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "platform.integration"
+      ],
+      "objective": "Verify native file/URL import, share extension, browser, notifications and return-to-reader mappings without Android-only promises.",
+      "dependsOn": [
+        "source-schema",
+        "local-formats",
+        "cookie-browser-login"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "build10",
+        "sdk-scope-validation"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "core.engine",
+      "behavior": "Custom Rhino interpreted execution",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Start a signed device app without a debugger or JIT; compare values and errors",
+      "desktopSimulatorAcceptance": [
+        "Confirm ordinary payload/JAR/modules and non-JIT interpreter startup in the main App Simulator; compare fixed values/errors with pinned original engine."
+      ],
+      "deferredDeviceAcceptance": [
+        "Cold launch final signed ordinary reader from Home Screen without debugger/JIT and collect current-build report."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "core.dynamic-semantics",
+      "behavior": "Dynamic this, indirect eval, Function and legacy block scope",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Port JsEngineCapabilitiesTest; cached compilation must not retain caller bindings",
+      "desktopSimulatorAcceptance": [
+        "Replay dynamic this/eval/Function, legacy scope and cached-compilation binding vectors in desktop and iOS ordinary JVM without comparator normalization."
+      ],
+      "deferredDeviceAcceptance": [
+        "Repeat semantic subset on final signed hardware interpreter; do not inherit historical Probe evidence."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "core.e4x",
+      "behavior": "E4X XML literals and descendant queries",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Run XML literals and data..item_null.text; compare exact strings",
+      "desktopSimulatorAcceptance": [
+        "Exercise XML literals, descendants and xml module availability through the ordinary product runtime, comparing exact values and errors."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify current-build E4X vectors on signed hardware."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "core.java-interop",
+      "behavior": "Java strings, collections, byte arrays, overloads and exceptions",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check collection iteration, nested classes, detached methods and catchable failures",
+      "desktopSimulatorAcceptance": [
+        "Compare string/collection/byte-array/overload/exception types and host behavior inside JVM; cross JNI only at service-level result boundaries."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify current-build Java object/overload edge cases on hardware."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.schema",
+      "behavior": "Book-source JSON schema, groups, import and export",
+      "ownerWorkpackage": "source-schema",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Round-trip known fields and primary keys; document unknown-field preservation",
+      "desktopSimulatorAcceptance": [
+        "Round-trip all known wire fields, mainJs text, groups, IDs and unknown fields where preservation is promised; reject malformed wrapper objects without creating empty sources."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import/export/upgrade in final signed App without losing manually imported sources or user edits."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "build10"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.five-types",
+      "behavior": "Five source types: text, audio, images, files and video",
+      "ownerWorkpackage": "source-type-routing",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Exercise all five values without silently treating media as text",
+      "desktopSimulatorAcceptance": [
+        "Exercise type values 0-4, native routing and unsupported errors; no file/video/media source may report a false text success."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify hardware-dependent decoding/playback/picker behavior of each supported type."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.main-js",
+      "behavior": "mainJs single-file sources and optional function dispatch",
+      "ownerWorkpackage": "main-js-product",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Run pure-JS search, details, TOC and content; compare missing optional functions",
+      "desktopSimulatorAcceptance": [
+        "Exercise full declared optional function dispatch, original host interfaces, state, errors and all supported result types through ordinary-JAR native product tasks."
+      ],
+      "deferredDeviceAcceptance": [
+        "Exercise user-owned representative mainJs sources on signed App; keep private source content and credentials out of repository and logs."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.shared-state",
+      "behavior": "Independent call scopes with shared per-source state",
+      "ownerWorkpackage": "source-state",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Run concurrent same-source calls and two sources; assert no argument or state leakage",
+      "desktopSimulatorAcceptance": [
+        "Prove per-call bindings with shared per-source state, separate book/chapter storage, source-edit invalidation, persistence and concurrent source isolation."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify kill/relaunch/source editing preserves only intended persistent state and cancellation frees native resources."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "sdk-scope-validation",
+        "stateful-reference"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.declarative",
+      "behavior": "Traditional combined rules, variables, replacements and JS fragments",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare combined rules, variables, empty values and errors on fixed inputs",
+      "desktopSimulatorAcceptance": [
+        "Complete retained AnalyzeRule public string/list/element entry points including dynamic fragments, get/put, Java types, replacements and typed errors against original vectors."
+      ],
+      "deferredDeviceAcceptance": [
+        "Exercise selected original vectors and representative traditional sources through the final signed reader's JVM route."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.css",
+      "behavior": "Jsoup CSS selectors and Java DOM element objects",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare elements, attributes, relative URLs and mixed DOM/JS rules",
+      "desktopSimulatorAcceptance": [
+        "Compare css through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.xpath",
+      "behavior": "XPath extraction",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare nested, attribute and empty XPath selections",
+      "desktopSimulatorAcceptance": [
+        "Compare xpath through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.jsonpath",
+      "behavior": "JSONPath extraction",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare arrays, filtering, nulls and numeric conversion",
+      "desktopSimulatorAcceptance": [
+        "Compare jsonpath through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.regex",
+      "behavior": "Java regex extraction, capture groups and replacements",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare escaping, Unicode, multiline, replacements and zero-width matches",
+      "desktopSimulatorAcceptance": [
+        "Compare regex through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.search",
+      "behavior": "Search pipeline",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare original search request, pagination/options, typed books, variables, Cookie, exceptions and cache effects; then run native App navigation on fixed responses."
+      ],
+      "deferredDeviceAcceptance": [
+        "Search representative user-owned live traditional/mainJs sources and open selected snapshot without navigation stalls."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.explore",
+      "behavior": "Explore lists and filters",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare explore list/filter rules, request order, pagination, typed output and side effects with original fixed fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify user-owned source discovery and filters on phone and iPad."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.info",
+      "behavior": "Book-details pipeline",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare book field merging, original book/source context and errors; preserve native detail sanitization and snapshot routing."
+      ],
+      "deferredDeviceAcceptance": [
+        "Open live details and return to existing reading position on final hardware build."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.toc",
+      "behavior": "TOC and pre-update scripts",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare pagination, duplicates, chapter identities, display order and update scripts with original; verify native selection on fixed fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify large live TOCs, source updates and anchor-preserving chapter navigation."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.content",
+      "behavior": "Chapter content and subsequent pages",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare nextContentUrl, request and processing order, title/body outputs, cache metadata and native cached plain/XHTML payloads with fixed originals."
+      ],
+      "deferredDeviceAcceptance": [
+        "Read representative live chapters, relaunch offline and resume at the same text anchor."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.batch",
+      "behavior": "Batch chapter content",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "planned",
+      "originalAcceptanceContract": "Compare cache writes, missing chapters, cancellation and original request sequence",
+      "desktopSimulatorAcceptance": [
+        "Implement original batch protocol and compare one-call request sequence, per-chapter mapping/cache writes, missing chapters and cancellation; multi-download alone is insufficient."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify a user-owned batch-capable source and interruption/recovery on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.requests",
+      "behavior": "URL templates, methods, bodies, encodings, headers and request options",
+      "ownerWorkpackage": "url-http",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare GET/POST, redirects, non-UTF-8, binary responses and timeouts",
+      "desktopSimulatorAcceptance": [
+        "Compare dynamic URL/header/bodyJs, branch/key/page substitution, charset/query/form/binary bytes, redirects, timeout, retries, DNS and proxy behavior where supported."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify device networking/TLS/proxy/permission mappings and realistic timeout/reachability changes."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "http-wire"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.cookie",
+      "behavior": "CookieJar, script cookies and login state",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare repeated Set-Cookie, domain/path/expiry, overrides and authenticated retry",
+      "desktopSimulatorAcceptance": [
+        "Compare domain/path/expiry, repeated Set-Cookie, script overrides, WebView synchronization, authenticated retry and cross-process persistence."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real cookie/login lifecycle including WebKit data, relaunch and explicit clearing on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.browser",
+      "behavior": "WebView extraction, URL interception and verification browser",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare JS execution, navigation, cancellation, timeout, redirects and returned cookies",
+      "desktopSimulatorAcceptance": [
+        "Exercise navigation interception, JS extraction, redirects, cookies, timeout and cancellation with a fixed local WKWebView site; no main-thread worker wait."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify live verification pages/captcha, foreground/background dismissal and native worker cleanup."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": "Never block the iOS main thread; cancellation must release browser waits.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.http-host",
+      "behavior": "Synchronous ajax/connect/get/post/head host APIs",
+      "ownerWorkpackage": "url-http",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Exercise ajaxAll concurrency, rate limits, response bytes/headers and catchable failures",
+      "desktopSimulatorAcceptance": [
+        "Retain synchronous original Java response types for ajax/connect/get/post/head and ajaxAll; compare raw headers/bytes, concurrency, throttling and catchable failures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify host networking cancellation/recovery and device resource use under representative source scripts."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "http-wire"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "login.legacy",
+      "behavior": "Legacy loginUi, loginUrl and loginCheckJs",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare form/browser success, failure, cancellation and persisted values",
+      "desktopSimulatorAcceptance": [
+        "Compare loginUi/loginUrl/loginCheckJs form, browser, persistence, failure and cancellation with deterministic fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real source login/captcha/relogin in the signed reader; this is independent of removed App accounts."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "login.v2",
+      "behavior": "LoginUiV2 declarative controls and script actions",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Port V2 tests for initial values, actions, persisted values and errors",
+      "desktopSimulatorAcceptance": [
+        "Port original LoginUiV2 controls/actions tests and compare initial values, event order, persisted data and errors in native controls."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify user-owned V2 source interaction, keyboard, browser and cancellation on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.files-archives",
+      "behavior": "File access/download and ZIP, RAR, 7z archives",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare text/binary/charset inputs, corrupt archives and cancellation",
+      "desktopSimulatorAcceptance": [
+        "Map Android paths to the sandbox; compare text/binary/charset operations, ZIP/RAR/7z vectors, corrupt input and cancellation without path escapes."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify file picker/share sandbox grants, available storage failures and large archive interruption on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": "Map Android paths into the iOS application sandbox.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.fonts",
+      "behavior": "TTF glyph queries, obfuscated font replacement and cover decoding",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare fixed obfuscated-font vectors, missing glyphs and cache refresh",
+      "desktopSimulatorAcceptance": [
+        "Compare fixed QueryTTF/glyph and obfuscated-font replacement vectors, cover decoding and refresh/cache behavior with original."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify representative font-obfuscated source text and font resource loading on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.crypto",
+      "behavior": "Encoding, digests and cryptography host APIs",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare Base64/hex/charset, AES/RSA/digest vectors and overloaded calls",
+      "desktopSimulatorAcceptance": [
+        "Compare Base64/hex/charset, AES/RSA/digest vectors and overloaded Java byte/object calls through ordinary JVM."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify current-build required crypto/provider vectors on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.concurrency",
+      "behavior": "Per-source singleFlight, lock and tick coordination",
+      "ownerWorkpackage": "source-state",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check one same-key execution, release after error/cancel and independent sources",
+      "desktopSimulatorAcceptance": [
+        "Verify singleFlight/locks/tick, same-key waiter cancellation, release after error/cancel, independent source progress and closure without publishing stale scope."
+      ],
+      "deferredDeviceAcceptance": [
+        "Stress final native task cancellation, source isolation and sustained resource recovery on hardware."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "sdk-scope-validation",
+        "stateful-reference"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.events-ui",
+      "behavior": "Source event listeners, custom buttons and refresh callbacks",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Test event switches, button actions and book/TOC/content refresh effects",
+      "desktopSimulatorAcceptance": [
+        "Compare original event toggles, custom buttons, refresh side effects and invocation bindings; main-thread UI only with worker-owned rule tasks."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real source button flows and return-to-reading state on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.bookshelf",
+      "behavior": "Bookshelf updates, ordering and reading progress",
+      "ownerWorkpackage": "reader-library",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check add/delete/update/sort, restart and restored progress",
+      "desktopSimulatorAcceptance": [
+        "Verify add/delete/update/sort, failed persistence protection, relaunch reconstruction and source/book identity mapping using temporary stores."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify signed-App upgrade/relaunch preserves books, manually imported sources and latest progress."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.groups",
+      "behavior": "Bookshelf groups and source groups",
+      "ownerWorkpackage": "reader-library",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check multi-group membership, delete/reorder and backup round-trip",
+      "desktopSimulatorAcceptance": [
+        "Compare multi-group membership, ordering, group deletion and original backup round-trip without accidental book deletion."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify group operations and large-library interactions on phone and iPad."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.change-source",
+      "behavior": "Change-source search and chapter matching",
+      "ownerWorkpackage": "reader-online-storage",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Match same-title books and different TOCs while retaining reading position",
+      "desktopSimulatorAcceptance": [
+        "Compare same-title disambiguation and different-TOC matching; retain stable current chapter/text anchor and expose failed/mismatched choices."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify representative live multi-source switches preserve the intended book and position."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.cache-download",
+      "behavior": "Chapter downloads, cache state, resume and retry",
+      "ownerWorkpackage": "reader-online-storage",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check pause/resume/cancel/retry, cache hit and offline restart",
+      "desktopSimulatorAcceptance": [
+        "Verify existing queue pause/resume/cancel/retry, atomic writes, checksum/migration, duplicate requests and offline restart; missing and empty remain distinct."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify airplane-mode reading, interrupted downloads, storage pressure and app relaunch on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.cleanup",
+      "behavior": "Replacement rules and processed chapter text",
+      "ownerWorkpackage": "reader-online-storage",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare title processing, regex cleanup and stored versus displayed text",
+      "desktopSimulatorAcceptance": [
+        "Compare title/body replacement order, regex cleanup, display conversion and original stored-versus-displayed text; never rewrite source scripts or raw text implicitly."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify visually processed text and reading/annotation anchors across setting changes."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.layout",
+      "behavior": "Text layout, fonts, spacing, margins and pagination",
+      "ownerWorkpackage": "reader-layout",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Long chapters, mixed CJK, images and stable anchors after rotation/font changes",
+      "desktopSimulatorAcceptance": [
+        "Verify mixed CJK/images/long chapters, font metrics and text-anchor stability after font/size/spacing, rotation and iPad split-view width changes."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify physical font comfort, actual display/night contrast and long-session layout responsiveness."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product",
+        "font-provenance"
+      ],
+      "platformDifference": "Native font metrics and page breaks can differ; text and position anchors require validation.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.page-turn",
+      "behavior": "Simulation, cover, slide, scroll and no-animation page modes",
+      "ownerWorkpackage": "reader-layout",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Exercise modes, bounds, cancelled gestures, auto page turns and device performance",
+      "desktopSimulatorAcceptance": [
+        "Exercise supported page/cover/slide/scroll/no-animation modes, bounds/cancelled gestures/auto-page and anchor-preserving mode switches with Reduce Motion."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real gesture feel, rotation, animation smoothness and accessibility on phone/iPad."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product",
+        "font-provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.txt",
+      "behavior": "Local TXT import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Valid/corrupt/charset-boundary files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Verify valid/corrupt Chinese encodings, boundary splits, TOC/cover, long input and close/reopen anchors through the existing importer/reader."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import files through native device providers/share and verify reopening large books."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.epub",
+      "behavior": "Local EPUB import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Verify valid/corrupt EPUB, container/TOC/CSS/images and reflow anchors through existing Readium/CoreText paths."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify representative user-owned EPUBs, file access and long reading on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.umd",
+      "behavior": "Local UMD import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "planned",
+      "originalAcceptanceContract": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Add UMD detection/parser/import dispatch with valid/corrupt fixtures, chapter mapping and stable persisted positions."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import and reopen representative user-owned UMD files on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.mobi",
+      "behavior": "Local MOBI import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "planned",
+      "originalAcceptanceContract": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Add lawful locally available MOBI parser/import dispatch with valid/corrupt fixtures, text/images/TOC and stable anchors; document DRM limitations explicitly."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import and reopen representative user-owned supported MOBI files on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.pdf",
+      "behavior": "Local PDF import, outlines and page position",
+      "ownerWorkpackage": "local-formats",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Valid/corrupt files; outlines, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Verify PDFKit import, valid/corrupt PDFs, outlines, cover and page/zoom/position restoration, keeping PDF positioning semantics explicit."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify large/graphic PDF responsiveness, gestures and file-provider access on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": "Use PDFKit for rendering and verify outline/position mapping.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.bookmarks",
+      "behavior": "Bookmarks and chapter positions",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Add/edit/delete/jump and restore backup with stable anchors",
+      "desktopSimulatorAcceptance": [
+        "Compare add/edit/delete/jump and original data round-trip; maintain chapter/text anchors across reflow and replacement settings."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify bookmark reopening and long-press interaction on final hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.highlights",
+      "behavior": "Manual highlights, notes, colors, styles and anchors",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Cross-line/page marks, processed-text anchors, note edit/export/restore",
+      "desktopSimulatorAcceptance": [
+        "Verify cross-line/page selection, note edits/colors/styles/export/restore and processed-text anchor integrity."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real touch selection, accessibility and annotation persistence after hardware lifecycle changes."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.highlight-rules",
+      "behavior": "Automatic highlight rules and rule groups",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Regex/plain rules, group switches, precedence and overlap with manual highlights",
+      "desktopSimulatorAcceptance": [
+        "Compare plain/regex rules, groups, precedence and overlap with manual highlights; verify original data mapping."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify visual precedence and long-book performance with representative rules."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.dictionary",
+      "behavior": "Custom dictionary rules and selected-word lookup",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Lookup, failure/empty results, multiple dictionaries and position retention",
+      "desktopSimulatorAcceptance": [
+        "Add original dictionary-rule network/parser mappings to native selection actions; fixed fixtures cover empty/failure/multi-dictionary and retained position."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify selected-word menu, keyboard/browser transitions and user-configured lookup sources."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.read-records",
+      "behavior": "Reading records, durations and merged backups",
+      "ownerWorkpackage": "reader-library",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Switch books, pause, cross-day, restart and restore without double counting",
+      "desktopSimulatorAcceptance": [
+        "Compare durations/book switching/pause/cross-day/relaunch and merged backup without duplicate accumulation."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual foreground/background/session interruptions and clock boundaries."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.reviews",
+      "behavior": "Traditional and pure-JS paragraph reviews, media and actions",
+      "ownerWorkpackage": "paragraph-reviews",
+      "status": "planned",
+      "originalAcceptanceContract": "Pagination, paragraph anchors, image/video/actions and empty/error responses",
+      "desktopSimulatorAcceptance": [
+        "Compare traditional/mainJs review pagination, paragraph anchors, media/actions and error/empty responses using fixed original fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify user-owned live review source and native media/action interaction."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.rss",
+      "behavior": "Default/rule-based RSS, articles, favorites and read history",
+      "ownerWorkpackage": "rss",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Source import, pagination, full text, login, favorites and offline records",
+      "desktopSimulatorAcceptance": [
+        "Verify RSS/Atom plus original rule-source import, pagination/full text/login/favorites/offline history using fixed feeds."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify live user-configured feeds, system file import and lifecycle recovery."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.tts-system",
+      "behavior": "System TTS, sentence position and page following",
+      "ownerWorkpackage": "tts",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Start/pause/skip/rate, manual page turns, lock screen and audio interruptions",
+      "desktopSimulatorAcceptance": [
+        "Verify deterministic speech-state mapping, sentence anchors, start/pause/skip/rate, manual page interaction and interruption event handling."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual voices, audio route, headset/lock-screen interruption and resumed sentence position."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.tts-http",
+      "behavior": "HTTP TTS and custom endpoints",
+      "ownerWorkpackage": "tts",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Authentication, sentence requests, cache, retry and position synchronization",
+      "desktopSimulatorAcceptance": [
+        "Compare original sentence/audio requests, authentication/charset, cache/retry/cancel and position following using fixed audio endpoints."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real configured endpoint, network interruption, lock-screen playback and actual sentence synchronization."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.audio",
+      "behavior": "Audio-source playback, caching and intro/outro skipping",
+      "ownerWorkpackage": "media",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Playlist, seeking, caching, headset/lock-screen interruptions and resume",
+      "desktopSimulatorAcceptance": [
+        "Verify original playlist/URL/header/cache/seek/intro-outro skip state and native Now Playing mappings with local media fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real audio routes, lock screen/headset interruptions, background audio and resume."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.video",
+      "behavior": "Video sources, episodes, speed, danmaku and floating playback",
+      "ownerWorkpackage": "media",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Header-protected media, episodes, overlays, rate, PiP and restoration",
+      "desktopSimulatorAcceptance": [
+        "Compare episodes/protected headers/speed/danmaku state and native AVPlayer/PiP restoration using local fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual PiP, codecs, media routes, background/foreground and live source playback."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": "Use system PiP; Android arbitrary overlay windows have no direct equivalent.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.source-editor",
+      "behavior": "Source editing, checking and debugging",
+      "ownerWorkpackage": "source-debug-logs",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Import/edit/export, stage logs, error context, cancellation and isolation",
+      "desktopSimulatorAcceptance": [
+        "Verify source import/edit/export/check/debug against completed runtime, stage logs, typed errors and cancellation/isolation with fixed sources."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify large-source editing/keyboard/share and live debug workflows without secret leakage."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.http-logs",
+      "behavior": "HTTP log recording, filters, details and sensitive fields",
+      "ownerWorkpackage": "source-debug-logs",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Recording switch, filters, truncation, redaction and API payload comparison",
+      "desktopSimulatorAcceptance": [
+        "Compare recording/filter/detail/truncation/API payloads and redact cookie/token/authentication data in shared diagnostics."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify on-device recording/export lifecycle and redaction using user-controlled nonsecret fixtures."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "sync.backup",
+      "behavior": "Complete/encrypted backups, selective restore and legacy migration",
+      "ownerWorkpackage": "backup-webdav",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Round-trip sources, shelf, settings, cookies, highlights and history; atomic restore",
+      "desktopSimulatorAcceptance": [
+        "Compare complete/encrypted/selective backup and legacy mappings for sources/shelf/settings/cookies/highlights/history; corrupt/partial restore is atomic and preserves original data."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify backup import/export/share across signed-App reinstall/upgrade without losing existing data."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "sync.webdav",
+      "behavior": "WebDAV backups, progress and remote books",
+      "ownerWorkpackage": "backup-webdav",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Authentication errors, conflicts, replacement, upload/download and cancellation",
+      "desktopSimulatorAcceptance": [
+        "Verify auth errors/conflicts/replacement/upload/download/cancel and original backup/progress contracts with a deterministic local WebDAV server."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real user-owned WebDAV reachability, credentials, lifecycle and recovery."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "sync.lan",
+      "behavior": "LAN backup transfer and migration",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Connect, checksums, disconnect, duplicate import and cancellation",
+      "desktopSimulatorAcceptance": [
+        "Compare checksums/disconnect/duplicate import/cancel and foreground transfer lifecycle with a local peer fixture."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify physical local-network permission, Wi-Fi peers and foreground transfer on phone/iPad."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "Local-network permission and foreground lifetime require device tests.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.http-api",
+      "behavior": "Web book/source/rule/review/log APIs",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare controller methods, status codes, errors and persistent side effects",
+      "desktopSimulatorAcceptance": [
+        "Compare original controller routes/methods/status/errors/access-control and persistent effects in a local foreground harness."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real LAN access/permission and foreground lifetime; no suspended-App server guarantee."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "No availability guarantee while the application is suspended.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.editor",
+      "behavior": "Built-in web editor and help assets",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Browser source editing, save, debug and dependent asset loading",
+      "desktopSimulatorAcceptance": [
+        "Bundle appropriately licensed original assets and compare browser loading, editing/save/debug and dependent resources against foreground APIs."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real browser access from a peer device and app foreground return."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.websocket",
+      "behavior": "Search/source/RSS debug WebSockets",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "planned",
+      "originalAcceptanceContract": "Connect, ordered messages, close, reconnect and task termination",
+      "desktopSimulatorAcceptance": [
+        "Compare ordered source/search/RSS debug messages, connect/close/reconnect/backpressure and termination of associated tasks."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify peer-network interruption/reconnect and foreground/suspend boundary."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.mcp",
+      "behavior": "MCP tools/resources, debug progress and access control",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "planned",
+      "originalAcceptanceContract": "Compare every extracted tool: parameters, errors, progress and side effects",
+      "desktopSimulatorAcceptance": [
+        "Compare all 13 catalogued tools' parameters/results/errors/progress/access-control and side effects using fixed client transcripts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real client interop over permitted device foreground networking; no always-on guarantee."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "Foreground service; no availability guarantee while suspended.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "tasks.cron",
+      "behavior": "Automatic tasks, Cron scheduling, execution and missed runs",
+      "ownerWorkpackage": "automatic-tasks",
+      "status": "planned",
+      "originalAcceptanceContract": "Cron boundaries, restart, missed triggers, cancellation, persistence and reentrancy",
+      "desktopSimulatorAcceptance": [
+        "Compare Cron boundaries/persistence/reentrancy/cancel/missed-trigger policy and explicit foreground catch-up; use injected time, not settle sleeps."
+      ],
+      "deferredDeviceAcceptance": [
+        "Observe BGTaskScheduler behavior and foreground catch-up on hardware; do not promise precise Cron or constant background execution."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "iOS schedules background execution; precise Cron and persistent services cannot be promised.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "platform.integration",
+      "behavior": "Share/open-file/browser/notification and external launch integration",
+      "ownerWorkpackage": "platform-integration",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "File/URL import, script-opened URLs, denied permissions and return to reading",
+      "desktopSimulatorAcceptance": [
+        "Verify file/URL routing, share extension handoff, denied permissions, allowed external URLs/App Intents and retained navigation state in Simulator where supported."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual document providers, share sheets, notification prompts, external Apps and return to reading."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "build10",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": "Android Intents and device identifiers require documented platform mappings.",
+      "fullCompatibilityEstablished": false
+    }
+  ],
+  "existingEvidence": {
+    "feature-comparison": {
+      "path": "docs/legado-ios/feature-comparison.md",
+      "scope": "Current implementation, deliberate product choices and unresolved compatibility boundaries; no whole-project completion claim."
+    },
+    "feature-catalog": {
+      "path": "docs/legado-ios/feature-catalog.json",
+      "scope": "All 64 original feature domains and original acceptance contracts; an inventory, not a measured completion rate."
+    },
+    "migration-status": {
+      "path": "docs/legado-ios/migration-status.md",
+      "scope": "Historical and current source-specific integration evidence; distinguish JSC reader routing, desktop JVM and Simulator native execution."
+    },
+    "traditional-integration": {
+      "path": "docs/legado-ios/traditional-rule-integration.md",
+      "scope": "Limited retained coordinator, required AnalyzeUrl/WebBook integration and unresolved platform seams."
+    },
+    "sdk-scope-validation": {
+      "path": "docs/legado-ios/sdk-and-rule-scope-validation.json",
+      "scope": "c47169d SDK direct-link cleanup and per-key scope creation, actual desktop and main-App Debug Simulator evidence; no new device or full compatibility acceptance."
+    },
+    "coordinator-port": {
+      "path": "docs/legado-ios/original-rule-coordinator-port.json",
+      "scope": "Retained coordinator slice and desktop regression; ordinary JAR inclusion does not establish product routing."
+    },
+    "stateful-reference": {
+      "path": "docs/legado-ios/stateful-port-reference/2026-10-19/record.json",
+      "scope": "Frozen original/port stateful comparison; exact returns/state with two retained exception script-label differences, not all raw calls equal."
+    },
+    "jsonpath-reference": {
+      "path": "docs/legado-ios/jsonpath-public-reference.json",
+      "scope": "Original Android public API observations; compare only the actually ported and executed cases."
+    },
+    "scalar-port": {
+      "path": "docs/legado-ios/scalar-selector-port.json",
+      "scope": "Limited explicit non-URL scalar selector/replacement parity; URL/list/dynamic semantics excluded."
+    },
+    "http-wire": {
+      "path": "docs/legado-ios/http-wire-capability.json",
+      "scope": "Existing bounded original/port wire vectors; not all AnalyzeUrl options or all real sources."
+    },
+    "native-cancel": {
+      "path": "docs/legado-ios/native-worker-thread-fix.json",
+      "scope": "Earlier native fixed mainJs chain, real cancellation and recovery; newer c47169d rerun documented separately."
+    },
+    "local-product": {
+      "path": "docs/legado-ios/local-product-validation.json",
+      "scope": "Actual bounded Debug Simulator product/UI tests, fonts and cached TXT export; no new device acceptance."
+    },
+    "reader-smoke": {
+      "path": "docs/legado-ios/reader-online-smoke.json",
+      "scope": "Fixed online/local text UI scenarios and source-specific limits."
+    },
+    "build10": {
+      "path": "docs/legado-ios/native-reader-experience-build10.json",
+      "scope": "Delivered source-free build10 IPA, exact source and independent static checks; not a device acceptance of new commits."
+    },
+    "device-history": {
+      "path": "docs/legado-ios/device-validation.json",
+      "scope": "Historical standalone runtime report on a user device; do not transfer its acceptance to newly changed code or full product workflows."
+    },
+    "font-provenance": {
+      "path": "Resources/ReaderFonts/ReaderFonts-provenance.json",
+      "scope": "Two existing bundled Chinese font assets, exact provenance and licenses; retain these rather than rebundling unreviewed fonts."
+    },
+    "renewal-research": {
+      "path": "docs/legado-ios/self-renewal-research.json",
+      "scope": "Only manual read-only QueryType probe implemented; single-App free-team transport, signing and replacement installation remain unproven."
+    },
+    "redistribution": {
+      "path": "docs/legado-ios/redistribution-notes.md",
+      "scope": "Historical license partitions, material/brand cleanup and unresolved distribution obligations; contains old statements requiring a dated current-state supplement."
+    },
+    "redistribution-inventory": {
+      "path": "docs/legado-ios/redistribution-inventory.json",
+      "scope": "Historical audit snapshots and hashes; preserve original sourceHEAD and raw evidence rather than silently rewriting them."
+    },
+    "runtime-notices": {
+      "path": "docs/legado-ios/runtime-notices.md",
+      "scope": "37 original notice materials and packaging guards; explicitly not full corresponding source, object-license coverage or license-combination clearance."
+    },
+    "runtime-notices-validation": {
+      "path": "docs/legado-ios/runtime-notices-validation.json",
+      "scope": "Bounded notice staging/guard evidence; not legal clearance."
+    },
+    "provenance": {
+      "path": "docs/legado-ios/provenance-lock.json",
+      "scope": "Locked archive, UI baseline, customized engine and runtime sources; user ZIP identity is not proof of all upstream rights."
+    },
+    "brand-assets": {
+      "path": "Resources/Branding/brand-assets.json",
+      "scope": "Independent generated current branding; not a trademark search or clearance."
+    }
+  },
+  "retainedExistingWork": [
+    {
+      "item": "Independent brand, removed upstream reserved assets/screenshots and simplified README",
+      "existingEvidence": [
+        "brand-assets",
+        "redistribution",
+        "build10"
+      ]
+    },
+    {
+      "item": "Simplified-Chinese UI, local-mode upstream account/membership/purchase/feedback/CloudKit gating; source-site login retained",
+      "existingEvidence": [
+        "feature-comparison",
+        "local-product",
+        "build10"
+      ]
+    },
+    {
+      "item": "Two licensed bundled Chinese fonts, custom font import and cached TXT export",
+      "existingEvidence": [
+        "font-provenance",
+        "local-product",
+        "build10"
+      ]
+    },
+    {
+      "item": "No-source package and existing user data preservation requirements",
+      "existingEvidence": [
+        "build10",
+        "migration-status"
+      ]
+    },
+    {
+      "item": "Removed 16 unused direct SDK product links, retained seven referenced products and unchanged package locks; no measured size/startup benefit claimed",
+      "existingEvidence": [
+        "sdk-scope-validation"
+      ]
+    },
+    {
+      "item": "Pinned runtime and frozen original/port vectors, source-specific native cancellation/recovery and cache regressions",
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "native-cancel",
+        "stateful-reference",
+        "http-wire"
+      ]
+    },
+    {
+      "item": "Read-only renewal probe and its bounded Simulator evidence; no signer or installation function exists",
+      "existingEvidence": [
+        "renewal-research"
+      ]
+    }
+  ],
+  "openDecisions": [
+    {
+      "id": "single-app-free-team-renewal-transport",
+      "status": "requires_device_evidence",
+      "ownerWorkpackage": "automatic-renewal-feasibility",
+      "detail": "Feasibility has not been established. No-computer/no-companion self-install cannot be certified by mock, Simulator or desktop protocol work."
+    },
+    {
+      "id": "license-combination-and-source-obligations",
+      "status": "unresolved_external_review_may_be_required",
+      "ownerWorkpackage": "license-and-source-closure",
+      "detail": "MPL/GPLv3/GPLv2-exception/ios-tools-AGPL boundaries and exact corresponding-source closure need explicit evidence and review; material automation does not itself settle rights."
+    }
+  ],
+  "validation": {
+    "featureCoverageAndDependencyCheck": "passed_once_after_writing",
+    "verifiedFeatureCount": 64,
+    "allCatalogFeatureIdsOwnedExactlyOnce": true,
+    "workpackageDependenciesAcyclic": true,
+    "stageDependenciesAcyclic": true,
+    "referencedEvidenceFilesExist": true,
+    "featureCompletionInferredFromTestCounts": false,
+    "checkScope": "Plan structure, unique ownership, dependency graphs and evidence path existence only; not implementation or feature acceptance."
+  }
+}

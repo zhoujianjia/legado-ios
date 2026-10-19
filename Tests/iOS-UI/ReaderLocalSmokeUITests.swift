@@ -54,6 +54,8 @@ final class ReaderLocalSmokeUITests: XCTestCase {
         waitForVisiblePage(app, marker: firstMarker)
         capture(app, name: "02-first-chapter-rendered")
 
+        let accessibilityReport = try verifyQuickReaderAccessibility(app)
+
         let contents = showControls(app, identifier: "reader_tool_tableOfContents")
         contents.tap()
         let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", targetChapter)).firstMatch
@@ -98,7 +100,8 @@ final class ReaderLocalSmokeUITests: XCTestCase {
             "fixtureTitle": title!, "targetChapter": targetChapter,
             "savedProgressPercent": expectedProgress,
             "originalFixtureRemoved": true, "secondLaunchImports": false,
-            "visibleRestoredBodyMarker": targetMarker
+            "visibleRestoredBodyMarker": targetMarker,
+            "quickReaderAccessibility": accessibilityReport
         ]
         let data = try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
         let evidence = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
@@ -107,10 +110,82 @@ final class ReaderLocalSmokeUITests: XCTestCase {
         add(evidence)
     }
 
+    @MainActor
+    private func verifyQuickReaderAccessibility(_ app: XCUIApplication) throws -> [String: Any] {
+        showControls(app, identifier: "reader_tool_settings").tap()
+        let increase = app.buttons["reader_quick_font_increase"].firstMatch
+        let decrease = app.buttons["reader_quick_font_decrease"].firstMatch
+        XCTAssertTrue(increase.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertEqual(increase.label, "Increase Font Size")
+        XCTAssertEqual(decrease.label, "Decrease Font Size")
+        let originalFontValue = try XCTUnwrap(increase.value as? String)
+        let originalFontSize = try XCTUnwrap(Int(originalFontValue.replacingOccurrences(of: " pt", with: "")))
+        XCTAssertEqual(originalFontValue, "\(originalFontSize) pt")
+        XCTAssertEqual(decrease.value as? String, originalFontValue)
+
+        increase.tap()
+        let increasedValue = "\(originalFontSize + 1) pt"
+        let announcedIncrease = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            increase.value as? String == increasedValue && decrease.value as? String == increasedValue
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [announcedIncrease], timeout: 10), .completed,
+                       "Both font actions must expose the current font size after increasing it.\n\(app.debugDescription)")
+        decrease.tap()
+        let restoredFont = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            increase.value as? String == originalFontValue && decrease.value as? String == originalFontValue
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [restoredFont], timeout: 10), .completed,
+                       "Decreasing must restore the announced font size.\n\(app.debugDescription)")
+
+        let brightness = app.sliders["reader_quick_brightness"].firstMatch
+        XCTAssertTrue(brightness.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(brightness.label, "Brightness")
+        let originalBrightnessValue = try XCTUnwrap(brightness.value as? String)
+        let originalBrightnessPercent = try XCTUnwrap(Double(originalBrightnessValue.replacingOccurrences(of: "%", with: "")))
+        XCTAssertGreaterThanOrEqual(originalBrightnessPercent, 5)
+        XCTAssertLessThanOrEqual(originalBrightnessPercent, 100)
+        brightness.adjust(toNormalizedSliderPosition: 0)
+        let minimumAnnounced = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "5%"), object: brightness)
+        XCTAssertEqual(XCTWaiter.wait(for: [minimumAnnounced], timeout: 5), .completed,
+                       "Minimum slider position means 5% screen brightness, not 0%.\n\(app.debugDescription)")
+        brightness.adjust(toNormalizedSliderPosition: 1)
+        let maximumAnnounced = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "100%"), object: brightness)
+        XCTAssertEqual(XCTWaiter.wait(for: [maximumAnnounced], timeout: 5), .completed, app.debugDescription)
+        for symbol in ["sun.min.fill", "sun.max.fill"] {
+            XCTAssertFalse(app.images[symbol].exists, "Decorative brightness symbols must not be independent accessibility elements")
+        }
+        capture(app, name: "02a-quick-reader-accessibility")
+        brightness.adjust(toNormalizedSliderPosition: CGFloat((originalBrightnessPercent / 100 - 0.05) / 0.95))
+        let restoredBrightness = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            guard let value = brightness.value as? String,
+                  let percent = Double(value.replacingOccurrences(of: "%", with: "")) else { return false }
+            // XCUI drives the real thumb in physical pixels, so restoring an
+            // intermediate value allows one percentage point of drag rounding.
+            return abs(percent - originalBrightnessPercent) <= 1
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [restoredBrightness], timeout: 5), .completed,
+                       "Restore brightness before returning to the book.\n\(app.debugDescription)")
+        let restoredBrightnessValue = try XCTUnwrap(brightness.value as? String)
+
+        // Drag the native sheet down from its visible top row. Continue only
+        // after the controls disappear, rather than assuming its dimming view dismisses it.
+        increase.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98)))
+        XCTAssertTrue(increase.waitForNonExistence(timeout: 10), "The native quick panel must dismiss.\n\(app.debugDescription)")
+        return [
+            "fontSizeBefore": originalFontValue, "fontSizeAfterIncrease": increasedValue,
+            "fontSizeRestored": true, "brightnessLabel": "Brightness",
+            "minimumBrightnessValue": "5%", "maximumBrightnessValue": "100%",
+            "brightnessBefore": originalBrightnessValue, "brightnessRestored": restoredBrightnessValue,
+            "decorativeSymbolsHidden": true
+        ]
+    }
+
     private var launchArguments: [String] {
         ["-AppleLanguages", "(en)", "-AppleLocale", "en_US",
          "-yd_root_tab_visible_ids", "(bookshelf, settings)", "-bookLayoutIsGrid", "NO",
          "-yd_page_turn_style", "滑動", "-yd_scroll_mode", "NO",
+         "-yd_reader_font_size", "18", "-yd_reader_brightness", "0.4", "-yd_follow_sys_brightness", "NO",
          "-yd_appearance_reader_interface", "classic"]
     }
 

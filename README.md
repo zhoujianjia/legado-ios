@@ -34,7 +34,7 @@ build 10 已编译并核对，IPA、对应源码和清单已放入本机下载�
 
 复杂 JS、Java 宿主接口、登录验证、媒体源和批量正文需要分别验证；网站失效、网络限制和反爬也会影响可用性。书源数量不等于兼容通过数量。
 
-[功能对照与后续优先级](docs/legado-ios/feature-comparison.md) · [迁移进度](docs/legado-ios/migration-status.md)
+[功能对照](docs/legado-ios/feature-comparison.md) · [无需真机的执行计划](docs/legado-ios/completion-plan.json) · [迁移进度](docs/legado-ios/migration-status.md)
 
 所有后续构建均不内置书源，不区分个人包或亲友包。书源使用应用内手动导入；过去在本机注入私人书源的做法已停止，原文件不提交仓库、不上传构建或日志，已有设备数据不受影响。
 

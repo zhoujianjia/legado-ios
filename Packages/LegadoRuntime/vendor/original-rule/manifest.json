@@ -130,7 +130,7 @@
     "Cache backing and big-variable storage are owned in-memory data, not Room/filesystem; original text and binary key spaces remain distinct; onlyDisk selects the text backing map, not a physical disk",
     "Cache seconds/typed memory/50 MiB access-order limit and original source cache keys retained",
     "Scopes use original inline-library/CryptoJS algorithms, owner+thread crypto identity and weak 16-entry caches; shared-global state additionally namespaced to the explicit RuleEnvironment lifetime",
-    "Scope creation serializes only matching library or owner/thread keys; metadata locks do not execute scripts, compiled CryptoJS stays environment-owned, and close rejects later publication; prompt cancellation during a same-key monitor wait is not established",
+    "Scope creation serializes only matching library or owner/thread keys with same-thread reentrancy; metadata/condition monitors do not execute scripts, Job cancellation and environment close notify same-key condition waiters, compiled CryptoJS stays environment-owned, and close rejects later publication; arbitrary initializer host calls are not interrupted",
     "No HTTP delegate installed by default; AnalyzeUrl, browser, update-book, batch, RSS and remote/map jsLib are not migrated",
     "Unsupported capability and cancellation exceptions escape ajax error-text recovery",
     "Coroutine context can be supplied explicitly; RuntimeTask/reader routing has not been integrated",
@@ -396,8 +396,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
-      "bytes": 8261,
-      "sha256": "bff85b0b7bdd66b0f0d6367bbfd5f2528af3ee6c400ab74897689df9b8f27ec3"
+      "bytes": 10658,
+      "sha256": "4797805205b64dd4eae16a70c48e83bbb7de8ef8a31d0c31fbcc3a45452b2d83"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",

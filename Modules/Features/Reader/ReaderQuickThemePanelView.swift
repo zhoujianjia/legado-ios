@@ -263,7 +263,9 @@ struct ReaderQuickThemePanelView: View {
         }
         .buttonStyle(QuickPanelSegmentButtonStyle())
         .buttonRepeatBehavior(.enabled)
+        .accessibilityIdentifier(delta < 0 ? "reader_quick_font_decrease" : "reader_quick_font_increase")
         .accessibilityLabel(localized(accessibilityKey))
+        .accessibilityValue(String(format: localized("ReaderOverlay.Format.Points"), Int(fontSize)))
     }
 
     // MARK: - Brightness
@@ -272,6 +274,7 @@ struct ReaderQuickThemePanelView: View {
         HStack(spacing: DSSpacing.md) {
             Image(systemName: "sun.min.fill")
                 .font(DSFont.body)
+                .accessibilityHidden(true)
             Slider(
                 value: Binding(
                     get: { CGFloat(settings.readerBrightness) },
@@ -284,8 +287,14 @@ struct ReaderQuickThemePanelView: View {
                 in: 0.05...1.0
             )
             .tint(DSColor.textPrimary)
+            .accessibilityIdentifier("reader_quick_brightness")
+            .accessibilityLabel(localized("閱讀亮度"))
+            // The slider starts at 5%, so its normalized range fraction is not
+            // the screen brightness. Announce the actual selected value.
+            .accessibilityValue(settings.readerBrightness.formatted(.percent.precision(.fractionLength(0))))
             Image(systemName: "sun.max.fill")
                 .font(DSFont.body)
+                .accessibilityHidden(true)
         }
         .frame(minHeight: DSLayout.minimumTapTarget)
         .foregroundStyle(DSColor.textPrimary)

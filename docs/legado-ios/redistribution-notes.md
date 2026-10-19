@@ -6,6 +6,10 @@
 
 用户已决定只维护一个最终版本，继续现有原生界面与 JVM 原核心兼容路线，不拆分个人与亲友构建。今后安装包均不内置书源，由用户自行导入。手机已有书源、书籍及历史本地包不删除；过去的本地书源注入是历史做法，已停止。
 
+2026-10-19 当前状态补充：下文逐文件表保留最初审计范围，不把历史数量当作当前源码总数。原 `original-rule` 协调器现已提交，相关源码与并发修复见 [SDK 与共享环境验证](sdk-and-rule-scope-validation.json)；独立品牌、字体和无书源包的实际静态核对见 [build 10 记录](native-reader-experience-build10.json)。后续源码尚无新版 IPA 审计。
+
+运行时还需单独核验 ios-tools 根 `LICENSE` 中的 AGPLv3 文本及其注入 HotSpot 的 `symbol_keeper.cpp` 的适用范围，不能只按 MPL、GPL 与 Classpath 例外三类处理。37 份固定声明材料已校验并接入打包，但不等于完成源文件头、实际链接对象或完整对应源码的核对，见[运行时材料与边界](runtime-notices.md)。这些未决项已纳入[执行计划](completion-plan.json)，不会因编译或测试成功自动改为已解决。
+
 逐文件哈希、来源、已编译类样本、截图路径及未解决项见 [机器清单](redistribution-inventory.json)。本次审计未修改任何原许可头、`LICENSE`、`LICENSING.md`、`TRADEMARKS.md`、`NOTICE` 或 Git 历史。
 
 ## 个人使用、亲友分享、公开源码与 IPA

@@ -10,6 +10,10 @@ import org.htmlunit.corejs.javascript.Context
 import org.htmlunit.corejs.javascript.Scriptable
 import org.htmlunit.corejs.javascript.ScriptableObject
 import org.htmlunit.corejs.javascript.VarScope
+import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import java.lang.ref.WeakReference
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -22,7 +26,12 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         override fun hashCode() = 31 * System.identityHashCode(owner) + System.identityHashCode(thread)
         override fun equals(other: Any?) = other is CryptoKey && owner === other.owner && thread === other.thread
     }
-    private class CreationLock(val monitor: Any = Any(), var users: Int = 0)
+    private class CreationLock {
+        val monitor = java.lang.Object()
+        var users = 0 // Protected by the RuleScopes metadata monitor.
+        var owner: Thread? = null // Owner/depth are protected by monitor; scripts run outside it.
+        var depth = 0
+    }
     private val namespace = "originalrule:${UUID.randomUUID()}:"
     private val libraryScopes = object : LinkedHashMap<String, WeakReference<ScriptBindings>>(16, .75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, WeakReference<ScriptBindings>>) = size > 16
@@ -46,6 +55,7 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
 
     fun getScope(jsLib: String?, context: CoroutineContext?): ScriptBindings? {
         ensureOpen()
+        context?.ensureActive()
         if (jsLib.isNullOrBlank()) return null
         // SharedJsScope classifies a map only after parsing succeeds; a valid JS block remains inline.
         val text = jsLib.trim()
@@ -56,7 +66,7 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
             unsupportedRule("remote/map jsLib loading")
         val key = md5(jsLib)
         synchronized(this) { ensureOpen(); libraryScopes[key]?.get() }?.let { return it }
-        return withCreationLock(libraryCreationLocks, key) {
+        return withCreationLock(libraryCreationLocks, key, context) {
             synchronized(this) { ensureOpen(); libraryScopes[key]?.get() }
                 ?: createCryptoScope(context).also { scope ->
                     RhinoScriptEngine.eval(jsLib, scope, context)
@@ -71,9 +81,10 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
 
     fun getCryptoScope(owner: Any, context: CoroutineContext?): ScriptBindings {
         ensureOpen()
+        context?.ensureActive()
         val key = CryptoKey(owner, Thread.currentThread())
         synchronized(this) { ensureOpen(); cryptoScopes[key]?.get() }?.let { return it }
-        return withCreationLock(cryptoCreationLocks, key) {
+        return withCreationLock(cryptoCreationLocks, key, context) {
             synchronized(this) { ensureOpen(); cryptoScopes[key]?.get() }
                 ?: createCryptoScope(context).also {
                     it.globalThis.preventExtensions()
@@ -121,14 +132,48 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
 
     // As in SharedJsScope, only callers creating the same scope share an initialization monitor.
     // Never execute a library while holding the environment-wide cache/handle monitor.
-    private fun <K, T> withCreationLock(locks: MutableMap<K, CreationLock>, key: K, action: () -> T): T {
+    @OptIn(InternalCoroutinesApi::class)
+    private fun <K, T> withCreationLock(locks: MutableMap<K, CreationLock>, key: K,
+                                      context: CoroutineContext? = null, action: () -> T): T {
         val lock = synchronized(this) {
             ensureOpen()
             locks.getOrPut(key) { CreationLock() }.also { it.users++ }
         }
+        var cancellation: DisposableHandle? = null
+        var acquired = false
         return try {
-            synchronized(lock.monitor) { ensureOpen(); action() }
+            // Cancellation only wakes condition waiters. It never interrupts the initializer's
+            // thread or executes under a monitor held by arbitrary JS/host code.
+            cancellation = context?.get(Job)?.invokeOnCompletion(onCancelling = true, invokeImmediately = true) {
+                synchronized(lock.monitor) { lock.monitor.notifyAll() }
+            }
+            synchronized(lock.monitor) {
+                while (lock.owner != null && lock.owner !== Thread.currentThread()) {
+                    ensureOpen()
+                    context?.ensureActive()
+                    try { lock.monitor.wait() }
+                    catch (error: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        context?.ensureActive()
+                        throw error
+                    }
+                }
+                ensureOpen()
+                context?.ensureActive()
+                lock.owner = Thread.currentThread()
+                lock.depth++ // Preserve the previous Java monitor's same-thread reentrancy.
+                acquired = true
+            }
+            action()
         } finally {
+            cancellation?.dispose()
+            if (acquired) synchronized(lock.monitor) {
+                lock.depth--
+                if (lock.depth == 0) {
+                    lock.owner = null
+                    lock.monitor.notifyAll()
+                }
+            }
             synchronized(this) {
                 lock.users--
                 if (lock.users == 0 && locks[key] === lock) locks.remove(key)
@@ -151,9 +196,15 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
     }
 
     @Synchronized fun releaseOwner(owner: Any) { cryptoScopes.keys.removeIf { it.owner === owner } }
-    @Synchronized override fun close() {
-        handles.values.forEach(ScriptBindings::removeSharedGlobalState)
-        handles.clear(); libraryScopes.clear(); cryptoScopes.clear(); compiledCrypto = null
+    override fun close() {
+        val creations = synchronized(this) {
+            handles.values.forEach(ScriptBindings::removeSharedGlobalState)
+            handles.clear(); libraryScopes.clear(); cryptoScopes.clear(); compiledCrypto = null
+            (libraryCreationLocks.values + cryptoCreationLocks.values).distinct()
+        }
+        // RuleEnvironment marks itself closed before calling here. Wake waiters without
+        // holding the metadata monitor and without waiting for an initializer's host call.
+        creations.forEach { lock -> synchronized(lock.monitor) { lock.monitor.notifyAll() } }
     }
 
     private fun md5(value: String): String = MessageDigest.getInstance("MD5")
