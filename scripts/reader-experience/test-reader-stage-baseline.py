@@ -37,7 +37,35 @@ class ReaderStageBaselineTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
-        self.root = Path(temporary.name)
+        # macOS commonly returns /var/folders/... while /var aliases /private/var.
+        # The fixture owns this temporary directory: canonicalize its root before
+        # constructing evidence paths or using it as the mocked source checkout.
+        # Production checked_path must continue rejecting aliased caller inputs.
+        self.root = Path(temporary.name).resolve()
+
+    def test_owned_temporary_fixture_root_is_canonical_for_path_guards(self):
+        self.assertEqual(self.root, self.root.resolve())
+        self.assertEqual(baseline.config.checked_path(self.root), self.root)
+        self.assertFalse(any(path.is_symlink() or getattr(path, "is_junction", lambda: False)()
+                             for path in (self.root, *self.root.parents)))
+
+    def test_aliased_output_and_mock_source_roots_are_still_rejected(self):
+        files = self.collection_files()
+        alias = self.root / "caller-alias"
+        # Exercise each platform's alias signal without requiring Windows link
+        # privileges. Canonicalizing our owned fixture must not weaken the
+        # collector's checks of an untrusted output path or source-checkout root.
+        for kind in ("is_symlink", "is_junction"):
+            original = getattr(Path, kind, lambda path: False)
+            with self.subTest(aliasKind=kind), patch.object(Path, kind,
+                    new=lambda path: path == alias or original(path), create=True):
+                with self.assertRaisesRegex(ValueError, "symlinked"):
+                    baseline.collect(files[0], files[1], alias / "raw.log", *files[3:])
+                self.assertFalse(files[2].exists())
+                self.assertFalse(files[3].exists())
+                self.assertFalse(alias.exists())
+                with patch.object(baseline, "REPO", alias), self.assertRaisesRegex(ValueError, "symlinked"):
+                    baseline.source_provenance()
 
     def write_json(self, name, value):
         path = self.root / name

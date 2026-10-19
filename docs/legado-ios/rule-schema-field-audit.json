@@ -1,0 +1,1384 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-10-19",
+  "stageId": "s3-jvm-rules-http",
+  "workpackage": "source-schema",
+  "status": "source-field-audit-complete-ios-roundtrip-pending",
+  "说明": "锁定用户 ZIP 的全部 10 个 main data/entities/rule 实体／接口逐字段静态核对；原字段、类型、可选性及投影差异分别记录。不是 Swift／iOS 往返执行或完整 Legado schema／规则执行验收。",
+  "sourceCommitAtAudit": "bfebe0ac7bf2764c1ed6d8fd15d8557b7db48fa9",
+  "auditedSourceState": "working tree with uncommitted ReviewRule preservation change; exact input hashes retained below",
+  "lockedArchive": {
+    "path": "F:/legado-master.zip",
+    "bytes": 11178463,
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "mainRuleEntries": 10,
+    "allMainRuleEntryNamesChecked": true
+  },
+  "method": {
+    "original": "Verify whole archive SHA and ten exact entry hashes before declaration inventory; manually inspect source types/defaults and implementation boundaries.",
+    "swift": "Inspect stored declarations, BookInfo init/initScript CodingKeys alias, custom decoder branches, and existing Login/Discover projections; retain file hashes and field lines.",
+    "portableAuditScriptAdded": false,
+    "iosCompilationExecuted": false,
+    "swiftRoundTripExecuted": false,
+    "staticFieldPresenceIsRoundTripAcceptance": false
+  },
+  "reviewedInputs": {
+    "bookSource": {
+      "path": "Modules/Core/BookSource/BookSource.swift",
+      "bytes": 46096,
+      "sha256": "8589cf52595ee6970b4e354c3ddf56e548506d8a28a3e33f8fe4c461d43fb16d"
+    },
+    "discoverItem": {
+      "path": "Modules/Core/RuleEngine/ModernParser/ModernParserBridge.swift",
+      "bytes": 137782,
+      "sha256": "fd973d9a1fe30bb44d736e53ec86deb7c87f83021b0f89f1423fb8609407a800"
+    },
+    "loginField": {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 27871,
+      "sha256": "dc8181ddab06fda535c3a5186e04aba4579d42551f5fad127e968ec07591982a"
+    },
+    "loginStyle": {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginFieldStyle.swift",
+      "bytes": 8462,
+      "sha256": "426ea96aa202f5c3dfd10e1689d1bc3b36ff5ed1116545888d0e5d05cdb7eeae"
+    },
+    "discoverActions": {
+      "path": "Modules/Services/Online/DiscoverQuickActions.swift",
+      "bytes": 7717,
+      "sha256": "125d7f67949ccc6c061c1069bd690676864fff7ab1c0055e996f16795f38d411"
+    },
+    "contentTests": {
+      "path": "Tests/iOS/yuedu appTests/BookSourceContentRulePreservationTests.swift",
+      "bytes": 7729,
+      "sha256": "5496c3f79d452bed28db0fe21f037842d11793abb8cd8acf137e9e50ce04993c"
+    },
+    "reviewTests": {
+      "path": "Tests/iOS/yuedu appTests/BookSourceReviewRulePreservationTests.swift",
+      "bytes": 9354,
+      "sha256": "828392ea24ba02cbc0897bd5e5800c6f6255306564f2765a0bbce1fdcb78d5f0"
+    },
+    "mainJsTests": {
+      "path": "Tests/iOS/yuedu appTests/BookSourceMainJSPreservationTests.swift",
+      "bytes": 8071,
+      "sha256": "aad3d541b741bd73a05ee18dd646b7750544ba67c65a0342a7b2067b7d343973"
+    }
+  },
+  "directRuleModels": [
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/BookInfoRule.kt",
+        "bytes": 1109,
+        "sha256": "d78aaa3b6c8700abf0b20d61e1419f1469ae1b4e67705278b90fe96185fa513d",
+        "fieldCount": 12,
+        "fields": {
+          "init": {
+            "type": "String?",
+            "line": 13
+          },
+          "name": {
+            "type": "String?",
+            "line": 14
+          },
+          "author": {
+            "type": "String?",
+            "line": 15
+          },
+          "intro": {
+            "type": "String?",
+            "line": 16
+          },
+          "kind": {
+            "type": "String?",
+            "line": 17
+          },
+          "lastChapter": {
+            "type": "String?",
+            "line": 18
+          },
+          "updateTime": {
+            "type": "String?",
+            "line": 19
+          },
+          "coverUrl": {
+            "type": "String?",
+            "line": 20
+          },
+          "tocUrl": {
+            "type": "String?",
+            "line": 21
+          },
+          "wordCount": {
+            "type": "String?",
+            "line": 22
+          },
+          "canReName": {
+            "type": "String?",
+            "line": 23
+          },
+          "downloadUrls": {
+            "type": "String?",
+            "line": 24
+          }
+        }
+      },
+      "swiftType": "BookInfoRule",
+      "swiftPath": "Modules/Core/BookSource/BookSource.swift",
+      "swiftDeclaredFields": {
+        "initScript": {
+          "type": "String",
+          "line": 94
+        },
+        "name": {
+          "type": "String",
+          "line": 95
+        },
+        "author": {
+          "type": "String",
+          "line": 96
+        },
+        "coverUrl": {
+          "type": "String",
+          "line": 97
+        },
+        "intro": {
+          "type": "String",
+          "line": 98
+        },
+        "kind": {
+          "type": "String",
+          "line": 99
+        },
+        "wordCount": {
+          "type": "String",
+          "line": 100
+        },
+        "lastChapter": {
+          "type": "String",
+          "line": 101
+        },
+        "updateTime": {
+          "type": "String",
+          "line": 102
+        },
+        "tocUrl": {
+          "type": "String",
+          "line": 103
+        },
+        "canReName": {
+          "type": "String",
+          "line": 104
+        },
+        "downloadUrls": {
+          "type": "String",
+          "line": 105
+        },
+        "ttsDice": {
+          "type": "String",
+          "line": 106
+        }
+      },
+      "jsonKeyAliases": {
+        "init": "initScript"
+      },
+      "originalKeysWithNoSwiftStoredProperty": [],
+      "swiftKeysNotInLockedOriginal": [
+        "ttsDice"
+      ],
+      "nullableOriginalTextMappedToNonoptionalSwiftText": [
+        "init",
+        "name",
+        "author",
+        "intro",
+        "kind",
+        "lastChapter",
+        "updateTime",
+        "coverUrl",
+        "tocUrl",
+        "wordCount",
+        "canReName",
+        "downloadUrls"
+      ],
+      "evidenceLevel": "static source/declaration review only; no iOS round-trip claim"
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/ContentRule.kt",
+        "bytes": 2233,
+        "sha256": "b90944f2dd9314dc5a290449706b3b4d5095db62600c33297402779162c69da7",
+        "fieldCount": 13,
+        "fields": {
+          "content": {
+            "type": "String?",
+            "line": 13
+          },
+          "subContent": {
+            "type": "String?",
+            "line": 14
+          },
+          "title": {
+            "type": "String?",
+            "line": 15
+          },
+          "nextContentUrl": {
+            "type": "String?",
+            "line": 16
+          },
+          "webJs": {
+            "type": "String?",
+            "line": 17
+          },
+          "sourceRegex": {
+            "type": "String?",
+            "line": 18
+          },
+          "replaceRegex": {
+            "type": "String?",
+            "line": 19
+          },
+          "imageStyle": {
+            "type": "String?",
+            "line": 20
+          },
+          "imageDecode": {
+            "type": "String?",
+            "line": 21
+          },
+          "payAction": {
+            "type": "String?",
+            "line": 22
+          },
+          "callBackJs": {
+            "type": "String?",
+            "line": 24
+          },
+          "contentBatch": {
+            "type": "String?",
+            "line": 25
+          },
+          "maxBatchSize": {
+            "type": "Int?",
+            "line": 26
+          }
+        }
+      },
+      "swiftType": "ContentRule",
+      "swiftPath": "Modules/Core/BookSource/BookSource.swift",
+      "swiftDeclaredFields": {
+        "content": {
+          "type": "String",
+          "line": 167
+        },
+        "subContent": {
+          "type": "String?",
+          "line": 170
+        },
+        "title": {
+          "type": "String",
+          "line": 171
+        },
+        "nextContentUrl": {
+          "type": "String",
+          "line": 172
+        },
+        "webJs": {
+          "type": "String",
+          "line": 173
+        },
+        "sourceRegex": {
+          "type": "String",
+          "line": 174
+        },
+        "replaceRegex": {
+          "type": "String",
+          "line": 175
+        },
+        "imageStyle": {
+          "type": "String",
+          "line": 176
+        },
+        "imageDecode": {
+          "type": "String",
+          "line": 177
+        },
+        "payAction": {
+          "type": "String",
+          "line": 178
+        },
+        "callBackJs": {
+          "type": "String?",
+          "line": 182
+        },
+        "contentBatch": {
+          "type": "String?",
+          "line": 183
+        },
+        "maxBatchSize": {
+          "type": "Int?",
+          "line": 184
+        }
+      },
+      "jsonKeyAliases": {},
+      "originalKeysWithNoSwiftStoredProperty": [],
+      "swiftKeysNotInLockedOriginal": [],
+      "nullableOriginalTextMappedToNonoptionalSwiftText": [
+        "content",
+        "title",
+        "nextContentUrl",
+        "webJs",
+        "sourceRegex",
+        "replaceRegex",
+        "imageStyle",
+        "imageDecode",
+        "payAction"
+      ],
+      "evidenceLevel": "static source/declaration review only; no iOS round-trip claim"
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/ExploreRule.kt",
+        "bytes": 1138,
+        "sha256": "f1d681306351643bba37f2ff5e1fc6a164075199bbd2d3ac73c0a426fdcc0941",
+        "fieldCount": 10,
+        "fields": {
+          "bookList": {
+            "type": "String?",
+            "line": 13
+          },
+          "name": {
+            "type": "String?",
+            "line": 14
+          },
+          "author": {
+            "type": "String?",
+            "line": 15
+          },
+          "intro": {
+            "type": "String?",
+            "line": 16
+          },
+          "kind": {
+            "type": "String?",
+            "line": 17
+          },
+          "lastChapter": {
+            "type": "String?",
+            "line": 18
+          },
+          "updateTime": {
+            "type": "String?",
+            "line": 19
+          },
+          "bookUrl": {
+            "type": "String?",
+            "line": 20
+          },
+          "coverUrl": {
+            "type": "String?",
+            "line": 21
+          },
+          "wordCount": {
+            "type": "String?",
+            "line": 22
+          }
+        }
+      },
+      "swiftType": "ExploreRule",
+      "swiftPath": "Modules/Core/BookSource/BookSource.swift",
+      "swiftDeclaredFields": {
+        "bookList": {
+          "type": "String",
+          "line": 251
+        },
+        "name": {
+          "type": "String",
+          "line": 252
+        },
+        "author": {
+          "type": "String",
+          "line": 253
+        },
+        "intro": {
+          "type": "String",
+          "line": 254
+        },
+        "kind": {
+          "type": "String",
+          "line": 255
+        },
+        "lastChapter": {
+          "type": "String",
+          "line": 256
+        },
+        "updateTime": {
+          "type": "String",
+          "line": 257
+        },
+        "bookUrl": {
+          "type": "String",
+          "line": 258
+        },
+        "coverUrl": {
+          "type": "String",
+          "line": 259
+        },
+        "wordCount": {
+          "type": "String",
+          "line": 260
+        },
+        "hasMoreRule": {
+          "type": "String",
+          "line": 263
+        }
+      },
+      "jsonKeyAliases": {},
+      "originalKeysWithNoSwiftStoredProperty": [],
+      "swiftKeysNotInLockedOriginal": [
+        "hasMoreRule"
+      ],
+      "nullableOriginalTextMappedToNonoptionalSwiftText": [
+        "bookList",
+        "name",
+        "author",
+        "intro",
+        "kind",
+        "lastChapter",
+        "updateTime",
+        "bookUrl",
+        "coverUrl",
+        "wordCount"
+      ],
+      "evidenceLevel": "static source/declaration review only; no iOS round-trip claim"
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/ReviewRule.kt",
+        "bytes": 2468,
+        "sha256": "b7c7cba14785c2755c538d4e246b6d6e22c374837845af616ef9f7c25bb5609b",
+        "fieldCount": 30,
+        "fields": {
+          "reviewUrl": {
+            "type": "String?",
+            "line": 10
+          },
+          "avatarRule": {
+            "type": "String?",
+            "line": 11
+          },
+          "contentRule": {
+            "type": "String?",
+            "line": 12
+          },
+          "postTimeRule": {
+            "type": "String?",
+            "line": 13
+          },
+          "reviewQuoteUrl": {
+            "type": "String?",
+            "line": 14
+          },
+          "voteUpUrl": {
+            "type": "String?",
+            "line": 17
+          },
+          "voteDownUrl": {
+            "type": "String?",
+            "line": 18
+          },
+          "postReviewUrl": {
+            "type": "String?",
+            "line": 19
+          },
+          "postQuoteUrl": {
+            "type": "String?",
+            "line": 20
+          },
+          "deleteUrl": {
+            "type": "String?",
+            "line": 21
+          },
+          "enabled": {
+            "type": "Boolean",
+            "line": 22
+          },
+          "reviewSummaryUrl": {
+            "type": "String?",
+            "line": 23
+          },
+          "summaryListRule": {
+            "type": "String?",
+            "line": 24
+          },
+          "summaryParagraphIndexRule": {
+            "type": "String?",
+            "line": 25
+          },
+          "summaryParagraphDataRule": {
+            "type": "String?",
+            "line": 26
+          },
+          "summaryCountRule": {
+            "type": "String?",
+            "line": 27
+          },
+          "reviewDetailUrl": {
+            "type": "String?",
+            "line": 28
+          },
+          "reviewDetailNextPageUrl": {
+            "type": "String?",
+            "line": 29
+          },
+          "detailListRule": {
+            "type": "String?",
+            "line": 30
+          },
+          "detailIdRule": {
+            "type": "String?",
+            "line": 31
+          },
+          "detailAvatarRule": {
+            "type": "String?",
+            "line": 32
+          },
+          "detailNameRule": {
+            "type": "String?",
+            "line": 33
+          },
+          "detailBadgeRule": {
+            "type": "String?",
+            "line": 34
+          },
+          "detailContentRule": {
+            "type": "String?",
+            "line": 35
+          },
+          "replyListRule": {
+            "type": "String?",
+            "line": 36
+          },
+          "replyIdRule": {
+            "type": "String?",
+            "line": 37
+          },
+          "replyAvatarRule": {
+            "type": "String?",
+            "line": 38
+          },
+          "replyNameRule": {
+            "type": "String?",
+            "line": 39
+          },
+          "replyBadgeRule": {
+            "type": "String?",
+            "line": 40
+          },
+          "replyContentRule": {
+            "type": "String?",
+            "line": 41
+          }
+        }
+      },
+      "swiftType": "ReviewRule",
+      "swiftPath": "Modules/Core/BookSource/BookSource.swift",
+      "swiftDeclaredFields": {
+        "review": {
+          "type": "String",
+          "line": 286
+        },
+        "reviewUrl": {
+          "type": "String?",
+          "line": 289
+        },
+        "avatarRule": {
+          "type": "String?",
+          "line": 290
+        },
+        "contentRule": {
+          "type": "String?",
+          "line": 291
+        },
+        "postTimeRule": {
+          "type": "String?",
+          "line": 292
+        },
+        "reviewQuoteUrl": {
+          "type": "String?",
+          "line": 293
+        },
+        "voteUpUrl": {
+          "type": "String?",
+          "line": 294
+        },
+        "voteDownUrl": {
+          "type": "String?",
+          "line": 295
+        },
+        "postReviewUrl": {
+          "type": "String?",
+          "line": 296
+        },
+        "postQuoteUrl": {
+          "type": "String?",
+          "line": 297
+        },
+        "deleteUrl": {
+          "type": "String?",
+          "line": 298
+        },
+        "enabled": {
+          "type": "Bool",
+          "line": 299
+        },
+        "reviewSummaryUrl": {
+          "type": "String?",
+          "line": 300
+        },
+        "summaryListRule": {
+          "type": "String?",
+          "line": 301
+        },
+        "summaryParagraphIndexRule": {
+          "type": "String?",
+          "line": 302
+        },
+        "summaryParagraphDataRule": {
+          "type": "String?",
+          "line": 303
+        },
+        "summaryCountRule": {
+          "type": "String?",
+          "line": 304
+        },
+        "reviewDetailUrl": {
+          "type": "String?",
+          "line": 305
+        },
+        "reviewDetailNextPageUrl": {
+          "type": "String?",
+          "line": 306
+        },
+        "detailListRule": {
+          "type": "String?",
+          "line": 307
+        },
+        "detailIdRule": {
+          "type": "String?",
+          "line": 308
+        },
+        "detailAvatarRule": {
+          "type": "String?",
+          "line": 309
+        },
+        "detailNameRule": {
+          "type": "String?",
+          "line": 310
+        },
+        "detailBadgeRule": {
+          "type": "String?",
+          "line": 311
+        },
+        "detailContentRule": {
+          "type": "String?",
+          "line": 312
+        },
+        "replyListRule": {
+          "type": "String?",
+          "line": 313
+        },
+        "replyIdRule": {
+          "type": "String?",
+          "line": 314
+        },
+        "replyAvatarRule": {
+          "type": "String?",
+          "line": 315
+        },
+        "replyNameRule": {
+          "type": "String?",
+          "line": 316
+        },
+        "replyBadgeRule": {
+          "type": "String?",
+          "line": 317
+        },
+        "replyContentRule": {
+          "type": "String?",
+          "line": 318
+        }
+      },
+      "jsonKeyAliases": {},
+      "originalKeysWithNoSwiftStoredProperty": [],
+      "swiftKeysNotInLockedOriginal": [
+        "review"
+      ],
+      "nullableOriginalTextMappedToNonoptionalSwiftText": [],
+      "evidenceLevel": "static source/declaration review only; no iOS round-trip claim"
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/SearchRule.kt",
+        "bytes": 1146,
+        "sha256": "cf4973f893fc91b414bc19d93d4faa6dba808a6878d188789b689a4c6773aba9",
+        "fieldCount": 11,
+        "fields": {
+          "checkKeyWord": {
+            "type": "String?",
+            "line": 14
+          },
+          "bookList": {
+            "type": "String?",
+            "line": 15
+          },
+          "name": {
+            "type": "String?",
+            "line": 16
+          },
+          "author": {
+            "type": "String?",
+            "line": 17
+          },
+          "intro": {
+            "type": "String?",
+            "line": 18
+          },
+          "kind": {
+            "type": "String?",
+            "line": 19
+          },
+          "lastChapter": {
+            "type": "String?",
+            "line": 20
+          },
+          "updateTime": {
+            "type": "String?",
+            "line": 21
+          },
+          "bookUrl": {
+            "type": "String?",
+            "line": 22
+          },
+          "coverUrl": {
+            "type": "String?",
+            "line": 23
+          },
+          "wordCount": {
+            "type": "String?",
+            "line": 24
+          }
+        }
+      },
+      "swiftType": "SearchRule",
+      "swiftPath": "Modules/Core/BookSource/BookSource.swift",
+      "swiftDeclaredFields": {
+        "checkKeyWord": {
+          "type": "String",
+          "line": 60
+        },
+        "bookList": {
+          "type": "String",
+          "line": 61
+        },
+        "name": {
+          "type": "String",
+          "line": 62
+        },
+        "author": {
+          "type": "String",
+          "line": 63
+        },
+        "coverUrl": {
+          "type": "String",
+          "line": 64
+        },
+        "intro": {
+          "type": "String",
+          "line": 65
+        },
+        "bookUrl": {
+          "type": "String",
+          "line": 66
+        },
+        "wordCount": {
+          "type": "String",
+          "line": 67
+        },
+        "lastChapter": {
+          "type": "String",
+          "line": 68
+        },
+        "updateTime": {
+          "type": "String",
+          "line": 69
+        },
+        "kind": {
+          "type": "String",
+          "line": 70
+        },
+        "hasMoreRule": {
+          "type": "String",
+          "line": 73
+        }
+      },
+      "jsonKeyAliases": {},
+      "originalKeysWithNoSwiftStoredProperty": [],
+      "swiftKeysNotInLockedOriginal": [
+        "hasMoreRule"
+      ],
+      "nullableOriginalTextMappedToNonoptionalSwiftText": [
+        "checkKeyWord",
+        "bookList",
+        "name",
+        "author",
+        "intro",
+        "kind",
+        "lastChapter",
+        "updateTime",
+        "bookUrl",
+        "coverUrl",
+        "wordCount"
+      ],
+      "evidenceLevel": "static source/declaration review only; no iOS round-trip claim"
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/TocRule.kt",
+        "bytes": 947,
+        "sha256": "effce50998e428af679448814c2c9ad393cac0f1fd400aac44e2cd67e806f407",
+        "fieldCount": 10,
+        "fields": {
+          "preUpdateJs": {
+            "type": "String?",
+            "line": 10
+          },
+          "chapterList": {
+            "type": "String?",
+            "line": 11
+          },
+          "chapterName": {
+            "type": "String?",
+            "line": 12
+          },
+          "chapterUrl": {
+            "type": "String?",
+            "line": 13
+          },
+          "formatJs": {
+            "type": "String?",
+            "line": 14
+          },
+          "isVolume": {
+            "type": "String?",
+            "line": 15
+          },
+          "isVip": {
+            "type": "String?",
+            "line": 16
+          },
+          "isPay": {
+            "type": "String?",
+            "line": 17
+          },
+          "updateTime": {
+            "type": "String?",
+            "line": 18
+          },
+          "nextTocUrl": {
+            "type": "String?",
+            "line": 19
+          }
+        }
+      },
+      "swiftType": "TOCRule",
+      "swiftPath": "Modules/Core/BookSource/BookSource.swift",
+      "swiftDeclaredFields": {
+        "preUpdateJs": {
+          "type": "String",
+          "line": 134
+        },
+        "chapterList": {
+          "type": "String",
+          "line": 135
+        },
+        "chapterName": {
+          "type": "String",
+          "line": 136
+        },
+        "chapterUrl": {
+          "type": "String",
+          "line": 137
+        },
+        "formatJs": {
+          "type": "String",
+          "line": 138
+        },
+        "isVolume": {
+          "type": "String",
+          "line": 139
+        },
+        "isVip": {
+          "type": "String",
+          "line": 140
+        },
+        "isPay": {
+          "type": "String",
+          "line": 141
+        },
+        "updateTime": {
+          "type": "String",
+          "line": 142
+        },
+        "nextTocUrl": {
+          "type": "String",
+          "line": 143
+        }
+      },
+      "jsonKeyAliases": {},
+      "originalKeysWithNoSwiftStoredProperty": [],
+      "swiftKeysNotInLockedOriginal": [],
+      "nullableOriginalTextMappedToNonoptionalSwiftText": [
+        "preUpdateJs",
+        "chapterList",
+        "chapterName",
+        "chapterUrl",
+        "formatJs",
+        "isVolume",
+        "isVip",
+        "isPay",
+        "updateTime",
+        "nextTocUrl"
+      ],
+      "evidenceLevel": "static source/declaration review only; no iOS round-trip claim"
+    }
+  ],
+  "supportingRuleEntitiesAndProjections": [
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/BookListRule.kt",
+        "bytes": 350,
+        "sha256": "480f72f845d042fb4d00eeb16a5028b0f9546e70cf182d9bd222e2d77e1b758d",
+        "fieldCount": 10,
+        "fields": {
+          "bookList": {
+            "type": "String?",
+            "line": 7
+          },
+          "name": {
+            "type": "String?",
+            "line": 8
+          },
+          "author": {
+            "type": "String?",
+            "line": 9
+          },
+          "intro": {
+            "type": "String?",
+            "line": 10
+          },
+          "kind": {
+            "type": "String?",
+            "line": 11
+          },
+          "lastChapter": {
+            "type": "String?",
+            "line": 12
+          },
+          "updateTime": {
+            "type": "String?",
+            "line": 13
+          },
+          "bookUrl": {
+            "type": "String?",
+            "line": 14
+          },
+          "coverUrl": {
+            "type": "String?",
+            "line": 15
+          },
+          "wordCount": {
+            "type": "String?",
+            "line": 16
+          }
+        }
+      },
+      "swiftTypes": [
+        "SearchRule",
+        "ExploreRule"
+      ],
+      "swiftPath": "Modules/Core/BookSource/BookSource.swift",
+      "differences": [
+        "Original interface has ten fields repeated by the two Swift Codable structs. No separate wire object or Swift protocol is needed for field presence; null/default and execution parity remain unproven."
+      ]
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/ExploreKind.kt",
+        "bytes": 1311,
+        "sha256": "5a1d570b0a4af0e35d9a0a581bc34644e1a334543792b1baed6cbe164abb1ef3",
+        "fieldCount": 8,
+        "fields": {
+          "title": {
+            "type": "String",
+            "line": 7
+          },
+          "url": {
+            "type": "String?",
+            "line": 8
+          },
+          "type": {
+            "type": "String",
+            "line": 9
+          },
+          "action": {
+            "type": "String?",
+            "line": 10
+          },
+          "chars": {
+            "type": "Array<String?>?",
+            "line": 11
+          },
+          "default": {
+            "type": "String?",
+            "line": 12
+          },
+          "viewName": {
+            "type": "String?",
+            "line": 13
+          },
+          "style": {
+            "type": "FlexChildStyle?",
+            "line": 14
+          }
+        }
+      },
+      "swiftType": "ModernParserBridge.DiscoverItem",
+      "swiftPath": "Modules/Core/RuleEngine/ModernParser/ModernParserBridge.swift",
+      "swiftDeclaredFields": {
+        "title": {
+          "type": "String?",
+          "line": 1982
+        },
+        "url": {
+          "type": "String?",
+          "line": 1983
+        },
+        "style": {
+          "type": "[String: String]?",
+          "line": 1984
+        },
+        "type": {
+          "type": "String?",
+          "line": 1985
+        },
+        "action": {
+          "type": "String?",
+          "line": 1986
+        },
+        "chars": {
+          "type": "[String]?",
+          "line": 1987
+        },
+        "default": {
+          "type": "String?",
+          "line": 1988
+        },
+        "viewName": {
+          "type": "String?",
+          "line": 1989
+        }
+      },
+      "differences": [
+        "All eight original key names occur in DiscoverItem, but this is a parsed category/cache projection.",
+        "Original title:String defaults to empty and type:String defaults to url; Swift stores both as String? and does not materialize those defaults in its decoder.",
+        "Original chars:Array<String?>? allows null elements; Swift [String]? rejects a null-containing array as a whole, producing nil via try? decode.",
+        "Original style:FlexChildStyle? has typed Float/Boolean/String values and defaults; Swift [String:String]? normalizes scalar values to strings, so original types/defaults are not retained.",
+        "BookSource.exploreUrl remains raw source text. Its storage boundary differs from parsed DiscoverItem cache normalization."
+      ]
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/RowUi.kt",
+        "bytes": 1356,
+        "sha256": "6fbb4ff6536336e1deda8c1a7e069e6ac820b5e86b38cb3af0fe16e472a55ed8",
+        "fieldCount": 12,
+        "fields": {
+          "name": {
+            "type": "String",
+            "line": 4
+          },
+          "type": {
+            "type": "String",
+            "line": 5
+          },
+          "action": {
+            "type": "String?",
+            "line": 6
+          },
+          "chars": {
+            "type": "Array<String?>?",
+            "line": 7
+          },
+          "default": {
+            "type": "String?",
+            "line": 8
+          },
+          "viewName": {
+            "type": "String?",
+            "line": 9
+          },
+          "style": {
+            "type": "FlexChildStyle?",
+            "line": 10
+          },
+          "key": {
+            "type": "String?",
+            "line": 11
+          },
+          "hint": {
+            "type": "String?",
+            "line": 12
+          },
+          "value": {
+            "type": "String?",
+            "line": 13
+          },
+          "options": {
+            "type": "List<String>?",
+            "line": 14
+          },
+          "countdown": {
+            "type": "Int?",
+            "line": 15
+          }
+        }
+      },
+      "swiftType": "LoginField",
+      "swiftPath": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "swiftDeclaredFields": {
+        "name": {
+          "type": "String",
+          "line": 46
+        },
+        "type": {
+          "type": "LoginFieldType",
+          "line": 47
+        },
+        "action": {
+          "type": "String?",
+          "line": 48
+        },
+        "options": {
+          "type": "[String]",
+          "line": 49
+        },
+        "defaultValue": {
+          "type": "String?",
+          "line": 50
+        },
+        "style": {
+          "type": "LoginFieldStyle?",
+          "line": 52
+        },
+        "viewName": {
+          "type": "String?",
+          "line": 54
+        }
+      },
+      "mapping": {
+        "name": "name (nonempty required)",
+        "type": "LoginFieldType",
+        "action": "action",
+        "chars": "options",
+        "default": "defaultValue",
+        "viewName": "viewName",
+        "style": "LoginFieldStyle"
+      },
+      "originalKeysNotConsumedByLoginParser": [
+        "key",
+        "hint",
+        "value",
+        "options",
+        "countdown"
+      ],
+      "differences": [
+        "Swift options is populated from original chars, not the original options:List<String>? key.",
+        "Original type label is absent in LoginFieldType; parseLoginUiResult maps that unsupported kind to text.",
+        "Original nullable chars are converted into display strings by LoginManager.stringArray, not retained as nullable elements.",
+        "Original empty/missing name defaults to empty text; Swift discards that row.",
+        "BookSource.loginUi remains raw source text; projection gaps do not establish that those raw JSON bytes are removed on source export. LoginField is not a Codable representation of RowUi."
+      ]
+    },
+    {
+      "original": {
+        "entry": "legado-master/app/src/main/java/io/legado/app/data/entities/rule/FlexChildStyle.kt",
+        "bytes": 1111,
+        "sha256": "701a36240c09d9b2d0f0c6dfd8a7e395f8da4e06cd07ce0eee2c80930ef4088c",
+        "fieldCount": 6,
+        "fields": {
+          "layout_flexGrow": {
+            "type": "Float",
+            "line": 7
+          },
+          "layout_flexShrink": {
+            "type": "Float",
+            "line": 8
+          },
+          "layout_alignSelf": {
+            "type": "String",
+            "line": 9
+          },
+          "layout_flexBasisPercent": {
+            "type": "Float",
+            "line": 10
+          },
+          "layout_wrapBefore": {
+            "type": "Boolean",
+            "line": 11
+          },
+          "layout_justifySelf": {
+            "type": "String",
+            "line": 13
+          }
+        }
+      },
+      "swiftType": "LoginFieldStyle",
+      "swiftPath": "Modules/Core/RuleEngine/ModernParser/Login/LoginFieldStyle.swift",
+      "swiftDeclaredFields": {
+        "cols": {
+          "type": "Int?",
+          "line": 24
+        },
+        "rows": {
+          "type": "Int?",
+          "line": 26
+        },
+        "basisPercent": {
+          "type": "Double?",
+          "line": 28
+        },
+        "flexGrow": {
+          "type": "Double?",
+          "line": 30
+        },
+        "wrapBefore": {
+          "type": "Bool",
+          "line": 32
+        },
+        "justifySelf": {
+          "type": "String?",
+          "line": 34
+        }
+      },
+      "mapping": {
+        "layout_flexGrow": "flexGrow:Double?",
+        "layout_flexBasisPercent": "basisPercent:Double?",
+        "layout_wrapBefore": "wrapBefore:Bool",
+        "layout_justifySelf": "justifySelf:String?"
+      },
+      "originalKeysNotConsumedByLoginStyleParser": [
+        "layout_flexShrink",
+        "layout_alignSelf"
+      ],
+      "swiftKeysNotInLockedOriginal": [
+        "cols",
+        "rows"
+      ],
+      "differences": [
+        "Original Float/default values become optional Double hints, except wrapBefore directly retains a false default.",
+        "The native 12-column grid approximates Flexbox hints; it is not Android Flexbox layout parity.",
+        "DiscoverItem separately carries style names as scalar strings. Dictionary key presence does not mean the native login layout applies those properties."
+      ]
+    }
+  ],
+  "sharedDifferences": [
+    {
+      "id": "optional-text-normalization",
+      "scope": [
+        "SearchRule",
+        "ExploreRule",
+        "BookInfoRule",
+        "TocRule",
+        "ContentRule existing nonoptional text"
+      ],
+      "detail": "Original String? defaults null; existing Swift safeString normalizes absent/null/unhandled values to empty text and accepts some scalar values as text. The original registered StringJsonDeserializer also converts arrays/objects to JSON text, while safeString drops those shapes. Field-name presence does not establish original null/default or decoder parity."
+    },
+    {
+      "id": "outer-rule-normalization",
+      "detail": "Original registered rule adapters accept an object or primitive serialized JSON, and null/unsupported outer values can remain null. Swift decodeRule accepts an object or JSON string, then BookSource substitutes default nonoptional rule structs when absent/null/unusable. Swift exports can therefore include default rule objects and empty/default fields."
+    },
+    {
+      "id": "content-optionals",
+      "detail": "subContent/contentBatch/maxBatchSize are now carried. Valid optional text and signed Int32 numeric/string/fraction forms are retained; malformed fields are isolated, and outside-Int32 values are dropped rather than Gson overflow wrapping. See content-rule-schema-preservation.json."
+    },
+    {
+      "id": "callback-empty-normalization",
+      "detail": "ContentRule.callBackJs uses safeString then empty->nil. Explicit empty original text therefore becomes absent, unlike original nullable String retaining empty distinct from null."
+    },
+    {
+      "id": "review-preservation-pending",
+      "detail": "Reviewed working tree declares all 29 original nullable strings plus enabled:Bool=false, retaining the existing Swift-only review:String. Swift strict String decoding logs and omits scalar/object/array text values that the original registered StringJsonDeserializer converts to text (primitive.asString or object/array JSON). This is a disclosed difference, not full decoder parity; these nonstring forms were source-inspected, not run by this audit."
+    },
+    {
+      "id": "no-rule-execution-claim",
+      "detail": "These models and this audit do not execute sub-content, batch content, paragraph-review HTTP/scripts or original-core product routes."
+    }
+  ],
+  "independentReview": {
+    "reviewRuleFieldsComparedToLockedEntry": 30,
+    "missingFields": [],
+    "finding": "No definite omitted field, type, enabled/null-default or Swift macro issue found. The strict optional text decoder deliberately drops scalar/object/array forms accepted by original StringJsonDeserializer; this source-level difference remains explicit and is not an executed cross-runtime acceptance result.",
+    "preparedReviewTests": {
+      "selector": "BookSourceReviewRulePreservationTests",
+      "methods": 7,
+      "executions": 21,
+      "executed": false
+    }
+  },
+  "preparedRelatedAcceptance": {
+    "sourceSchemaGroup": {
+      "methods": 19,
+      "executions": 50,
+      "status": "not-run"
+    },
+    "suites": [
+      {
+        "selector": "BookSourceContentRulePreservationTests",
+        "methods": 6,
+        "executions": 23
+      },
+      {
+        "selector": "BookSourceReviewRulePreservationTests",
+        "methods": 7,
+        "executions": 21
+      },
+      {
+        "selector": "BookSourceMainJSPreservationTests",
+        "methods": 6,
+        "executions": 6
+      }
+    ],
+    "mainJsReuseReason": "Nested ReviewRule Codable changes participate in the same BookSource import/edit/export/store/content-comparison snapshot. Reuse deterministic existing mainJs preservation/session-clock tests; do not run unrelated full JVM tests."
+  },
+  "fullSourceSchemaCompatibilityEstablished": false,
+  "allNonDeviceWorkComplete": false,
+  "nextEvidence": [
+    "Run selected source-specific Swift round-trip suites after macOS preflight passes.",
+    "Keep raw loginUi/exploreUrl storage acceptance separate from parsed LoginField/DiscoverItem projection compatibility.",
+    "Define original reference fixtures for null/default/scalar cases before changing other legacy field semantics."
+  ],
+  "originalDecoderSource": {
+    "entry": "legado-master/app/src/main/java/io/legado/app/utils/GsonExtensions.kt",
+    "bytes": 9683,
+    "sha256": "f1150a4f0d11f911dc3c32394144e954a6ca609cd6ab668c458bca3113a31379",
+    "sourceInspectedBehavior": "INITIAL_GSON registers StringJsonDeserializer: primitive -> asString, null -> null, object/array -> JsonElement.toString(). This is source inspection; not an executed scalar/object/array reference fixture in this audit.",
+    "sourceLines": [
+      33,
+      40,
+      140,
+      147,
+      148,
+      149,
+      150
+    ]
+  }
+}

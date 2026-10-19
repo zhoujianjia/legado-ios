@@ -71,8 +71,16 @@
   ],
   "limits": [
     "No Swift/iOS compilation or execution on Windows; all 23 Swift executions await the source-specific cloud check.",
-    "Malformed optional fields are logged and omitted while other rule fields survive; original Gson rejects the malformed rule.",
+    "Malformed batch sizes are logged and omitted while other rule fields survive; original Gson rejects the malformed rule.",
     "Original Gson Int overflow can wrap; this decoder explicitly drops values outside Int32 range. This is a disclosed protective difference, not full parity.",
-    "No new evaluator, host, parser route or source store is introduced; traditional product reading still uses JSC."
-  ]
+    "No new evaluator, host, parser route or source store is introduced; traditional product reading still uses JSC.",
+    "Original Gson StringJsonDeserializer converts non-string scalars and stringifies objects/arrays; these new optional text fields preserve String/null only and log/drop other forms. Numeric lexical text is not emulated."
+  ],
+  "integrationAttempt": {
+    "sourceCommit": "bfebe0ac7bf2764c1ed6d8fd15d8557b7db48fa9",
+    "runID": 39248315539,
+    "status": "portable-preflight-failed-before-ios",
+    "swiftExecutions": 0
+  },
+  "successorBatch": "docs/legado-ios/review-rule-schema-followup.json"
 }

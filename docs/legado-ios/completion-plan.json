@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-19",
-  "activeBatchRecord": "docs/legado-ios/reader-supply-measurement-batch.json",
+  "activeBatchRecord": "docs/legado-ios/review-rule-schema-followup.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
-    "当前状态": "已核对两次旧云测原件：进度等已执行组通过；第二次 TXT UI 亮度端点拖动未到 5%，已修测试手势并保留严格门槛。本批补齐 20／100 章十次远跳、现代损坏缓存与 50 条性能基线的严格采集；新 iOS 代码待阶段集中验证，不宣称 S2 或全部无需真机工作完成。 同批补齐原版三个 ContentRule 字段的往返保留，并用锁定源码执行 17 项 Kotlin/Gson 观察；Swift 6 方法／23 执行仍待云测，批量规则执行能力未实现。",
+    "当前状态": "bfebe0a 集中云测在 macOS 便携测试的临时目录别名处失败，尚未进入 Xcode；失败日志与准确源码已保留。目录夹具修复后 20 项工具检查通过。继续补齐原版 ReviewRule 30 字段的往返保留，原版 Kotlin/Gson 15 项观察通过；三套相关书源 Swift 回归合计 19 方法／50 执行仍待修复后的集中云测。S2 阅读体验、预取／缓存与 50 条性能基线也待同次 iOS 验证，全部无需真机任务、完整兼容与段评执行均未完成。",
     "实施顺序": [
       {
         "阶段": 1,
@@ -146,7 +146,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "s2-reading-experience: consolidate progress, appearance/anchors, accessibility and adaptive reader changes before integration.",
+      "nextPlannedCheckpoint": "Corrected consolidated reader/source-schema checkpoint after actual bfebe0a portable-preflight failure; source-only Debug, not a release tag.",
       "alreadyRunningTasks": "Retain their actual results when available; do not claim cancellation or acceptance, and do not start replacement runs merely to poll status."
     }
   },
@@ -563,7 +563,9 @@
         "feature-comparison",
         "migration-status",
         "build10",
-        "content-rule-schema"
+        "content-rule-schema",
+        "review-rule-schema-followup",
+        "rule-schema-field-audit"
       ]
     },
     {
@@ -2515,6 +2517,14 @@
     "content-rule-schema": {
       "path": "docs/legado-ios/content-rule-schema-preservation.json",
       "scope": "Three original ContentRule fields retained in Swift, original Kotlin/Gson observations preserved; new 6/23 Swift acceptance pending, explicit malformed/overflow differences remain."
+    },
+    "review-rule-schema-followup": {
+      "path": "docs/legado-ios/review-rule-schema-followup.json",
+      "scope": "Original 30 ReviewRule fields carried through the existing Swift model; original Gson observations and focused fixture-path guard fix, pending exact corrected Simulator source."
+    },
+    "rule-schema-field-audit": {
+      "path": "docs/legado-ios/rule-schema-field-audit.json",
+      "scope": "Pinned original/Swift field and projection inventory; static field presence does not prove null/coercion/roundtrip compatibility."
     }
   },
   "retainedExistingWork": [

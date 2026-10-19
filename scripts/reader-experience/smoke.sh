@@ -123,18 +123,21 @@ xcrun xcresulttool get test-results tests --path "$WORK/reader-supply-scenarios.
 supply_count_status=0
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reader-supply-scenarios-summary.json" \
   --expected 3 --expected-executions 6 > "$WORK/reader-supply-scenarios-result.json" || supply_count_status=$?
-# Preserve the three original content-rule fields through the existing import /
+# Preserve original content/review fields and guard the existing mainJs import /
 # storage / sharing paths. This is schema preservation, not rule execution.
+# Content 6/23 + review 7/21 + existing mainJs regression 6/6 = 19/50.
 schema_test_status=0
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/source-schema-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/source-schema.xcresult" \
-  -only-testing:'yuedu appTests/BookSourceContentRulePreservationTests' || schema_test_status=$?
+  -only-testing:'yuedu appTests/BookSourceContentRulePreservationTests' \
+  -only-testing:'yuedu appTests/BookSourceReviewRulePreservationTests' \
+  -only-testing:'yuedu appTests/BookSourceMainJSPreservationTests' || schema_test_status=$?
 schema_artifact_status=0
 xcrun xcresulttool get test-results summary --path "$WORK/source-schema.xcresult" > "$WORK/source-schema-summary.json" || schema_artifact_status=$?
 xcrun xcresulttool get test-results tests --path "$WORK/source-schema.xcresult" > "$WORK/source-schema-tests.json" || schema_artifact_status=$?
 schema_count_status=0
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/source-schema-summary.json" \
-  --expected 6 --expected-executions 23 > "$WORK/source-schema-result.json" || schema_count_status=$?
+  --expected 19 --expected-executions 50 > "$WORK/source-schema-result.json" || schema_count_status=$?
 # Collect all three new groups before enforcing their independent verdicts, so
 # an incomplete baseline cannot hide supply/schema evidence. Earlier gates and
 # the TXT/loopback acceptance protocols keep their established behavior.

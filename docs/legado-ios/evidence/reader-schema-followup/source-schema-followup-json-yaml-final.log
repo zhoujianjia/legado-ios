@@ -1,0 +1,4 @@
+command=["C:\\Python312\\python.exe", "-B", "-c", "import json,yaml; from pathlib import Path; w=yaml.safe_load(Path('.github/workflows/reader-smoke.yml').read_text(encoding='utf-8')); a=json.loads(Path('docs/legado-ios/rule-schema-field-audit.json').read_text(encoding='utf-8')); assert len(w['jobs']['smoke']['steps'])==8; assert len(a['directRuleModels'])==6 and len(a['supportingRuleEntitiesAndProjections'])==4; assert a['preparedRelatedAcceptance']['sourceSchemaGroup']['executions']==50; print('workflow YAML and 10-entity audit JSON parsed')"]
+inputSHA256={".github/workflows/reader-smoke.yml": "997b4fb629040ff16172812fc5a3a5c97cdb7bfee8535c2ba69dd190f35bf1df", "docs/legado-ios/rule-schema-field-audit.json": "0e9a765e0bad4badd10e9fe1ed711bb8a89c27e4d70c356837c52fef5af04f27"}
+exit=0
+workflow YAML and 10-entity audit JSON parsed

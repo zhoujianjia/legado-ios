@@ -3,7 +3,7 @@
   "updatedOn": "2026-10-19",
   "baseCommit": "3d047be61918c1431107f674a22b514613e308ae",
   "stageId": "s2-reading-experience",
-  "status": "implemented-reviewed-pending-ios-integration",
+  "status": "implemented-reviewed-cloud-preflight-failed-before-ios",
   "说明": "本批补充固定预取、现代损坏缓存与性能证据采集；测试代码和便携工具已审查，不把准备好的 iOS 用例当成执行通过。",
   "stageComplete": false,
   "allNonDeviceWorkComplete": false,
@@ -110,7 +110,7 @@
       "environment",
       "median/max"
     ],
-    "cloudTriggered": false,
+    "cloudTriggered": true,
     "iosCompilationExecuted": false,
     "iosTestsExecuted": false,
     "sourceSchema": {
@@ -291,5 +291,45 @@
     "Traditional rules remain on JSC; no complete AnalyzeRule/AnalyzeUrl/WebBook or host migration is claimed.",
     "Self renewal, legal source closure, release candidate and device acceptance remain incomplete."
   ],
-  "relatedIndependentWork": "docs/legado-ios/content-rule-schema-preservation.json"
+  "relatedIndependentWork": "docs/legado-ios/content-rule-schema-preservation.json",
+  "sourceCommit": "bfebe0ac7bf2764c1ed6d8fd15d8557b7db48fa9",
+  "checkpointSubmission": {
+    "runID": 39248315539,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39248315539",
+    "sourceCommit": "bfebe0ac7bf2764c1ed6d8fd15d8557b7db48fa9",
+    "tag": "reader-smoke-bfebe0a",
+    "status": "completed",
+    "conclusion": "failure",
+    "failurePhase": "portable-tool-preflight-before-Xcode",
+    "artifactID": 12184666168,
+    "archiveSHA256": "2e8fcb10e40ac95ab767bc3fb0b514f8a2224417ca3d6be25d17fde4fb44c57c",
+    "rawEvidence": [
+      {
+        "path": "docs/legado-ios/evidence/reader-smoke-bfebe0a/reader-smoke-tools.log",
+        "bytes": 2421,
+        "sha256": "056c58e6934046c8c2df8d5a0fde272141beac5447960187b90cc04c1953b65f"
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-smoke-bfebe0a/reader-stage-baseline-tools.log",
+        "bytes": 10918,
+        "sha256": "67c692abbe55f7933f99430b4bc3ae6666957f8f31e2117f5ae904ea89cb3ba8"
+      }
+    ],
+    "observedGuards": {
+      "smokeTools": {
+        "methods": 14,
+        "passed": 14
+      },
+      "baselineTools": {
+        "methods": 18,
+        "failures": 6,
+        "errors": 2
+      }
+    },
+    "cause": "The baseline test fixture did not canonicalize the macOS /var temporary-directory alias. The existing symlink-path guard rejected its fixture output and mocked source root.",
+    "iosCompilationExecuted": false,
+    "iosTestsExecuted": false,
+    "fixStatus": "Owned test root canonicalized; 20 focused portable guards passed locally. This failed source remains failed; acceptance requires the corrected source checkpoint."
+  },
+  "successorBatch": "docs/legado-ios/review-rule-schema-followup.json"
 }

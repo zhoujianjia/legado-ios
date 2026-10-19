@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-10-19",
+  "baseCommit": "bfebe0ac7bf2764c1ed6d8fd15d8557b7db48fa9",
+  "status": "implemented-reviewed-pending-corrected-checkpoint",
+  "stageId": "s3-jvm-rules-http",
+  "workpackage": "source-schema",
+  "说明": "在已确认的字段丢失问题上继续现有模型，保留原版 ReviewRule 29 个可选文字字段和 enabled；同时修正前次 macOS 便携测试夹具路径。原始失败与字段保留的执行能力边界分开记录。",
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "automaticSelfRenewalImplemented": false,
+  "legalRedistributionClearanceEstablished": false,
+  "previousBatch": "docs/legado-ios/reader-supply-measurement-batch.json",
+  "previousCheckpoint": {
+    "sourceCommit": "bfebe0ac7bf2764c1ed6d8fd15d8557b7db48fa9",
+    "runID": 39248315539,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39248315539",
+    "conclusion": "failure",
+    "phase": "portable-tests-before-Xcode",
+    "iosCompilationExecuted": false,
+    "iosTestsExecuted": false,
+    "cause": "Unresolved /var temporary fixture paths tripped the existing symlink guard; 18 baseline guard tests had six failures/two errors. The independent 14 smoke guard tests passed."
+  },
+  "changes": [
+    {
+      "id": "review-rule-wire-fields",
+      "implementation": "The existing ReviewRule carries all 29 original String? fields plus enabled=false. Keep legacy review; round-trip valid original strings, blank/null, Unicode and line endings through the existing importer/editor/export/store writer. Unsupported field forms log only fixed field names/reasons.",
+      "originalFieldCount": 30,
+      "legacyFieldPreserved": "review",
+      "paragraphReviewExecutionImplemented": false,
+      "scriptBindingChanged": false,
+      "productRouteChanged": false,
+      "swiftTests": {
+        "methods": 7,
+        "executions": 21,
+        "executed": false
+      },
+      "originalKotlinGsonObservation": {
+        "cases": 15,
+        "passed": true,
+        "rawEvidence": [
+          {
+            "path": "docs/legado-ios/fixtures/review-rule-original-probe.kt",
+            "bytes": 819,
+            "sha256": "9dbabb732d9b27a5053a66a6b7602075d93eaafdeeff08967df48ede253dac5f"
+          },
+          {
+            "path": "docs/legado-ios/fixtures/review-rule-original-cases.json",
+            "bytes": 6657,
+            "sha256": "04fbb27687352118ffdbea6609216a56e39ad45d022cec69aeefbab81be1ffef"
+          },
+          {
+            "path": "docs/legado-ios/fixtures/review-rule-original-results.jsonl",
+            "bytes": 4631,
+            "sha256": "e8d96030dea7fa537f6c96a826942bab5303a41592b5c0422253d9e9ecdb4d15"
+          },
+          {
+            "path": "docs/legado-ios/fixtures/review-rule-original-provenance.json",
+            "bytes": 9514,
+            "sha256": "af5896d2d1837e7d3d5c8a6c2e96b589c966f5aaf51219b69f0ca2d6f256544d"
+          }
+        ],
+        "scope": "Original sources and Gson on desktop with only platform-only Parcelable/Parcelize stubs. These observations do not execute Swift or the Android application.",
+        "initialFixtureLimit": "The first 15-case populated fixture contained literal question marks in place of intended CJK. Retained unchanged; it establishes no CJK or non-string-field observation.",
+        "supplement": {
+          "cases": 7,
+          "passed": true,
+          "rawEvidence": [
+            {
+              "path": "docs/legado-ios/fixtures/review-rule-original-unicode-cases.json",
+              "bytes": 5401,
+              "sha256": "84dd8c458cf2992ecf968107212854c989704605c23fefab37655abdd08da062"
+            },
+            {
+              "path": "docs/legado-ios/fixtures/review-rule-original-unicode-probe.kt",
+              "bytes": 1699,
+              "sha256": "ef5eae020ab153d9ea3986712c137135373ac7ea09795a40c7b5f9909704ac2e"
+            },
+            {
+              "path": "docs/legado-ios/fixtures/review-rule-original-unicode-results.jsonl",
+              "bytes": 6695,
+              "sha256": "86ca4558f941a777b66f8f7860248ffe3a8de8e6abb88bc999cb121877f5444e"
+            },
+            {
+              "path": "docs/legado-ios/fixtures/review-rule-original-unicode-provenance.json",
+              "bytes": 9904,
+              "sha256": "7521f42c10daca07a57180beec955b85062244d63faa31ff096eb300fd4f7278"
+            }
+          ],
+          "scope": "Two identical CJK/decomposed/CRLF payloads through UTF-8 and escaped JSON, plus Boolean/integer/exponent/object/array reviewUrl conversion. Preserve typed Java input/output and numeric lexical text; no Swift execution.",
+          "original15InputsResultsProvenanceUnchanged": true
+        }
+      }
+    },
+    {
+      "id": "canonical-owned-tool-test-fixture",
+      "implementation": "Resolve the owned TemporaryDirectory root before creating output paths or mocking the source checkout; match the established smoke-test fixture pattern. The production path/symlink protections are unchanged. Two added regressions verify canonical owned paths and rejection of both symlink/junction signals for output/source roots.",
+      "productionPathProtectionChanged": false,
+      "localGuardMethodsPassed": 20,
+      "rawLog": {
+        "path": "docs/legado-ios/evidence/reader-schema-followup/reader-stage-baseline-tools-temp-path-fix.log",
+        "bytes": 3412,
+        "sha256": "8da6191e8893774d7cee31cb4a7bb3ffb529369df4f6398a558c2e4092dec1d2"
+      }
+    },
+    {
+      "id": "adjacent-schema-regression",
+      "implementation": "Select the existing six mainJs preservation tests alongside content-rule and review-rule cases because the shared BookSource Codable snapshot changed. Keep independent reader-experience and supply gates unchanged.",
+      "sourceSchemaMethods": 19,
+      "sourceSchemaExecutions": 50
+    }
+  ],
+  "schemaFieldAudit": "docs/legado-ios/rule-schema-field-audit.json",
+  "preparedIntegration": {
+    "workflow": ".github/workflows/reader-smoke.yml",
+    "entryPoint": "scripts/reader-experience/smoke.sh",
+    "readerExperience": {
+      "methods": 60,
+      "executions": 62
+    },
+    "readerSupplyScenarios": {
+      "methods": 3,
+      "executions": 6
+    },
+    "sourceSchema": {
+      "methods": 19,
+      "executions": 50,
+      "selectors": [
+        "BookSourceContentRulePreservationTests",
+        "BookSourceReviewRulePreservationTests",
+        "BookSourceMainJSPreservationTests"
+      ]
+    },
+    "configuration": "Debug Simulator, source-only; no native JVM or Release IPA acceptance",
+    "failuresSkipsExpectedFailuresAllowed": 0,
+    "newTriggerReason": "A new source checkpoint after an observed preflight failure and the reviewed related schema batch; no rerun of unchanged successful whole JVM suites.",
+    "cloudTriggered": false,
+    "iosCompilationExecuted": false,
+    "iosTestsExecuted": false
+  },
+  "reviewedInputs": [
+    {
+      "path": "Modules/Core/BookSource/BookSource.swift",
+      "bytes": 46096,
+      "sha256": "8589cf52595ee6970b4e354c3ddf56e548506d8a28a3e33f8fe4c461d43fb16d"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceReviewRulePreservationTests.swift",
+      "bytes": 9354,
+      "sha256": "828392ea24ba02cbc0897bd5e5800c6f6255306564f2765a0bbce1fdcb78d5f0"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceContentRulePreservationTests.swift",
+      "bytes": 7729,
+      "sha256": "5496c3f79d452bed28db0fe21f037842d11793abb8cd8acf137e9e50ce04993c"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceMainJSPreservationTests.swift",
+      "bytes": 8071,
+      "sha256": "aad3d541b741bd73a05ee18dd646b7750544ba67c65a0342a7b2067b7d343973"
+    },
+    {
+      "path": "scripts/reader-experience/test-reader-stage-baseline.py",
+      "bytes": 16344,
+      "sha256": "f895d69f1fb7333dcde9c9d536d42e29426b011b913c6b299ac3bbbd0659d807"
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "bytes": 12338,
+      "sha256": "b5cd7c30ab4a09c637b5069b7dddf8357c44cb8358828b81a5b634063372d383"
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "bytes": 9696,
+      "sha256": "997b4fb629040ff16172812fc5a3a5c97cdb7bfee8535c2ba69dd190f35bf1df"
+    }
+  ],
+  "localChecks": {
+    "baselineGuards": {
+      "methodsPassed": 20,
+      "log": {
+        "path": "docs/legado-ios/evidence/reader-schema-followup/reader-stage-baseline-tools-temp-path-fix.log",
+        "bytes": 3412,
+        "sha256": "8da6191e8893774d7cee31cb4a7bb3ffb529369df4f6398a558c2e4092dec1d2"
+      }
+    },
+    "canonicalMacOSLocalizationExecutedForThisSource": false,
+    "iosCompilationExecuted": false,
+    "iosTestsExecuted": false,
+    "portableLocalization": {
+      "check": "portable-strings-and-changed-swift-literals",
+      "status": "passed",
+      "languages": [
+        "zh-Hant",
+        "zh-Hans",
+        "en",
+        "ja",
+        "ko"
+      ],
+      "keysPerLanguage": 3698,
+      "newKeysPerLanguage": 9,
+      "changedSwiftFilesChecked": 2,
+      "preexistingDuplicateCounts": {
+        "zh-Hant": 0,
+        "zh-Hans": 0,
+        "en": 0,
+        "ja": 0,
+        "ko": 0
+      },
+      "canonicalMacOSLocalizationCheckExecuted": false,
+      "iosCompilationOrTestsExecuted": false
+    },
+    "workflowAndShell": [
+      {
+        "path": "docs/legado-ios/evidence/reader-schema-followup/source-schema-followup-actionlint.log",
+        "exitCode": 0,
+        "sha256": "cc7bedd6d2b642d7b803e102873cf074e362e105aa36bf6fcf2f35bb17047150",
+        "inputSHA256": {
+          ".github/workflows/reader-smoke.yml": "997b4fb629040ff16172812fc5a3a5c97cdb7bfee8535c2ba69dd190f35bf1df"
+        }
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-schema-followup/source-schema-followup-bash-syntax.log",
+        "exitCode": 0,
+        "sha256": "b07d11bad5c8007b6fb1b94b3b1face81344c2a1d26d3154a0e14c2920b8374f",
+        "inputSHA256": {
+          "scripts/reader-experience/smoke.sh": "b5cd7c30ab4a09c637b5069b7dddf8357c44cb8358828b81a5b634063372d383"
+        }
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-schema-followup/source-schema-followup-json-yaml-final.log",
+        "exitCode": 0,
+        "sha256": "c12d5c9c3ccdc85dcc1e4be80a4f0cd729647481d62bad78672d4dae8db2222f",
+        "inputSHA256": {
+          ".github/workflows/reader-smoke.yml": "997b4fb629040ff16172812fc5a3a5c97cdb7bfee8535c2ba69dd190f35bf1df",
+          "docs/legado-ios/rule-schema-field-audit.json": "0e9a765e0bad4badd10e9fe1ed711bb8a89c27e4d70c356837c52fef5af04f27"
+        }
+      },
+      {
+        "path": "docs/legado-ios/evidence/reader-schema-followup/source-schema-followup-diff-check-final.log",
+        "exitCode": 0,
+        "sha256": "e78b771f078c60853fefd9fc5098177c490c76ba56629cab7b366b52ee2973ff",
+        "inputSHA256": {
+          "scripts/reader-experience/smoke.sh": "b5cd7c30ab4a09c637b5069b7dddf8357c44cb8358828b81a5b634063372d383",
+          ".github/workflows/reader-smoke.yml": "997b4fb629040ff16172812fc5a3a5c97cdb7bfee8535c2ba69dd190f35bf1df",
+          "scripts/reader-experience/test-reader-stage-baseline.py": "f895d69f1fb7333dcde9c9d536d42e29426b011b913c6b299ac3bbbd0659d807",
+          "docs/legado-ios/rule-schema-field-audit.json": "0e9a765e0bad4badd10e9fe1ed711bb8a89c27e4d70c356837c52fef5af04f27"
+        }
+      }
+    ],
+    "planStructure": {
+      "stages": 8,
+      "workpackages": 33,
+      "featureDomains": 64,
+      "ownedExactlyOnce": true,
+      "dependenciesAcyclic": true,
+      "evidencePathsExist": 28
+    },
+    "independentReview": {
+      "status": "reviewed-no-confirmed-code-blocker",
+      "scope": "ReviewRule field set/defaults and 7/21 tests, unchanged paragraph-review binding, and test-only canonical root with alias protections retained. Unicode/raw-fixture limitation was disclosed and independently supplemented.",
+      "iosCompilationExecuted": false,
+      "iosTestsExecuted": false
+    }
+  },
+  "limits": [
+    "Wire-field retention is not paragraph-review execution, batch content, Java host binding or complete source-schema compatibility.",
+    "Original Gson StringJsonDeserializer converts non-string scalars and stringifies objects/arrays. The new optional text fields preserve String/null only; other forms become nil with a diagnostic. Numeric lexical forms such as 1e3 are not emulated.",
+    "Malformed enabled numbers/containers preserve false and other rule fields in Swift while original Gson rejects the rule. Unknown enabled strings decode false in both; Swift additionally logs a reason.",
+    "ContentRule drops integers outside the signed 32-bit range rather than reproducing original Gson overflow wrapping.",
+    "Earlier Search/Explore/BookInfo/Toc nullable-text normalization, unknown field handling and login/discovery UI projections remain separate schema acceptance work.",
+    "Large-library memory and decode costs of the wider schema are not measured; no startup, memory or smoothness improvement is claimed.",
+    "Cloud results must be audited for the exact submitted source. No new iOS test is counted as passed until its result exists."
+  ]
+}

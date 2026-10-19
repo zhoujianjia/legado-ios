@@ -282,12 +282,109 @@ struct ExploreRule: Codable {
 // MARK: - Review Rules (Legado ReviewRule)
 
 struct ReviewRule: Codable {
+    /// Legacy Yuedu field retained for existing stored sources.
     var review: String = ""
+    /// Original wire fields are carried through import, editing and export only.
+    /// Preserving them does not implement the source's paragraph-review protocol.
+    var reviewUrl: String?
+    var avatarRule: String?
+    var contentRule: String?
+    var postTimeRule: String?
+    var reviewQuoteUrl: String?
+    var voteUpUrl: String?
+    var voteDownUrl: String?
+    var postReviewUrl: String?
+    var postQuoteUrl: String?
+    var deleteUrl: String?
+    var enabled: Bool = false
+    var reviewSummaryUrl: String?
+    var summaryListRule: String?
+    var summaryParagraphIndexRule: String?
+    var summaryParagraphDataRule: String?
+    var summaryCountRule: String?
+    var reviewDetailUrl: String?
+    var reviewDetailNextPageUrl: String?
+    var detailListRule: String?
+    var detailIdRule: String?
+    var detailAvatarRule: String?
+    var detailNameRule: String?
+    var detailBadgeRule: String?
+    var detailContentRule: String?
+    var replyListRule: String?
+    var replyIdRule: String?
+    var replyAvatarRule: String?
+    var replyNameRule: String?
+    var replyBadgeRule: String?
+    var replyContentRule: String?
 
     init() {}
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         review = c.safeString(forKey: .review)
+        reviewUrl = Self.decodeOptionalText(.reviewUrl, from: c)
+        avatarRule = Self.decodeOptionalText(.avatarRule, from: c)
+        contentRule = Self.decodeOptionalText(.contentRule, from: c)
+        postTimeRule = Self.decodeOptionalText(.postTimeRule, from: c)
+        reviewQuoteUrl = Self.decodeOptionalText(.reviewQuoteUrl, from: c)
+        voteUpUrl = Self.decodeOptionalText(.voteUpUrl, from: c)
+        voteDownUrl = Self.decodeOptionalText(.voteDownUrl, from: c)
+        postReviewUrl = Self.decodeOptionalText(.postReviewUrl, from: c)
+        postQuoteUrl = Self.decodeOptionalText(.postQuoteUrl, from: c)
+        deleteUrl = Self.decodeOptionalText(.deleteUrl, from: c)
+        enabled = Self.decodeEnabled(from: c)
+        reviewSummaryUrl = Self.decodeOptionalText(.reviewSummaryUrl, from: c)
+        summaryListRule = Self.decodeOptionalText(.summaryListRule, from: c)
+        summaryParagraphIndexRule = Self.decodeOptionalText(.summaryParagraphIndexRule, from: c)
+        summaryParagraphDataRule = Self.decodeOptionalText(.summaryParagraphDataRule, from: c)
+        summaryCountRule = Self.decodeOptionalText(.summaryCountRule, from: c)
+        reviewDetailUrl = Self.decodeOptionalText(.reviewDetailUrl, from: c)
+        reviewDetailNextPageUrl = Self.decodeOptionalText(.reviewDetailNextPageUrl, from: c)
+        detailListRule = Self.decodeOptionalText(.detailListRule, from: c)
+        detailIdRule = Self.decodeOptionalText(.detailIdRule, from: c)
+        detailAvatarRule = Self.decodeOptionalText(.detailAvatarRule, from: c)
+        detailNameRule = Self.decodeOptionalText(.detailNameRule, from: c)
+        detailBadgeRule = Self.decodeOptionalText(.detailBadgeRule, from: c)
+        detailContentRule = Self.decodeOptionalText(.detailContentRule, from: c)
+        replyListRule = Self.decodeOptionalText(.replyListRule, from: c)
+        replyIdRule = Self.decodeOptionalText(.replyIdRule, from: c)
+        replyAvatarRule = Self.decodeOptionalText(.replyAvatarRule, from: c)
+        replyNameRule = Self.decodeOptionalText(.replyNameRule, from: c)
+        replyBadgeRule = Self.decodeOptionalText(.replyBadgeRule, from: c)
+        replyContentRule = Self.decodeOptionalText(.replyContentRule, from: c)
+    }
+
+    private static func decodeOptionalText(_ key: CodingKeys, from c: KeyedDecodingContainer<CodingKeys>) -> String? {
+        do {
+            return try c.decodeIfPresent(String.self, forKey: key)
+        } catch {
+            AppLogger.parse("Review rule optional field rejected", context: [
+                "field": key.rawValue, "reason": "expectedString",
+            ])
+            return nil
+        }
+    }
+
+    private static func decodeEnabled(from c: KeyedDecodingContainer<CodingKeys>) -> Bool {
+        do {
+            return try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+        } catch {
+            // Gson also accepts a boolean string; inspect that supported wire form.
+        }
+        do {
+            if let value = try c.decodeIfPresent(String.self, forKey: .enabled) {
+                switch value.lowercased() {
+                case "true": return true
+                case "false": return false
+                default: break
+                }
+            }
+        } catch {
+            // Neither supported wire form matched. Keep the original disabled default.
+        }
+        AppLogger.parse("Review rule field rejected", context: [
+            "field": "enabled", "reason": "expectedBoolean",
+        ])
+        return false
     }
 }
 
