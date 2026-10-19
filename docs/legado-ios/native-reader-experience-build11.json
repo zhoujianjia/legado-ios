@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "requested-reader-build11-for-device-renewal-transport-check",
+  "recordedOn": "2026-10-19",
+  "requestZh": "用户要求打包，在真机验证自动续签；已说明当前仅实现只读连接检查。",
+  "status": "preparing_cloud_device_build",
+  "version": "3.0.0",
+  "build": "11",
+  "bundleIdentifier": "local.zhoujianjia.legado-reader",
+  "minimumIOS": "18.0",
+  "packageKind": "single-current-main-reader-with-ordinary-JVM",
+  "sourceCommit": null,
+  "workflow": ".github/workflows/legado-reader.yml",
+  "requestedDeviceScope": {
+    "userAuthorizedDeviceValidation": true,
+    "entryZh": "设置 → 高级 → 自续签验证 → 开始连接验证",
+    "operation": "Manual, length-prefixed lockdown QueryType at fixed 127.0.0.1/[::1]:62078 only; local normalized JSON export.",
+    "signingOrInstallationPerformedByApp": false,
+    "automaticSelfRenewalImplemented": false,
+    "successfulQueryProvesRenewal": false,
+    "negativeResultExcludesOtherTransports": false,
+    "nextAfterDeviceReport": "Inspect transport evidence first; authenticated session, fresh profile, signing, replacement installation, cold launch/data preservation and unattended scheduling each require separate implementation and evidence."
+  },
+  "packagingPolicy": {
+    "builtInBookSources": false,
+    "privateSourcesReadOrUploaded": false,
+    "applicationIdentityChanged": false,
+    "existingUserDataMustSurvive": true,
+    "temporaryPublicDiagnosticUpload": "Existing user-authorized one-day artifact, including exact Git source snapshot; no new release publication."
+  },
+  "localPreflight": {
+    "stageConfigRegressionsPassed": 23,
+    "actionlintPassed": true,
+    "buildShellSyntaxPassed": true,
+    "swiftCompilationExecutedLocally": false
+  },
+  "priorProbeEvidence": {
+    "record": "docs/legado-ios/self-renewal-research.json",
+    "testedSource": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
+    "simulatorServiceCasesPassed": 8,
+    "simulatorUICasesPassed": 1,
+    "unchangedProbeEvidenceReused": "Verify exact relevant source bytes before delivery; prior Simulator evidence never implies device or full-renewal acceptance."
+  },
+  "delivery": {
+    "artifactDownloaded": false,
+    "IPAIndependentlyAudited": false,
+    "signedOrInstalled": false,
+    "deliveredToUser": false
+  },
+  "acceptance": {
+    "releaseCompilationPassed": false,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalVerified": false,
+    "fullLegadoCompatibilityEstablished": false
+  }
+}
