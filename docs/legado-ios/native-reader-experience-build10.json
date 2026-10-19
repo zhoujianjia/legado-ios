@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordKind": "reader-build10-cloud-build-in-progress",
+  "recordKind": "reader-build10-downloaded-and-independently-audited-unsigned-IPA",
   "recordedOn": "2026-10-19",
   "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
   "version": "3.0.0",
@@ -11,8 +11,11 @@
     "runId": 39178530335,
     "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39178530335",
     "tag": "reader-legado-594fd21",
-    "statusAtObservation": "in_progress",
-    "conclusion": null
+    "statusAtObservation": "completed",
+    "conclusion": "success",
+    "jobId": 117826163336,
+    "completedAt": "2026-10-19T00:38:23Z",
+    "toolchain": "Xcode 26.2 / iPhoneOS 26.2 SDK / Swift 5 language mode"
   },
   "priorSimulatorEvidence": {
     "record": "self-renewal-research.json",
@@ -32,19 +35,125 @@
     "authorized": true,
     "policy": "distribution-policy.json",
     "artifactRetentionDays": 1,
-    "exactGitSourceArchivePlanned": true,
-    "licenseClearanceEstablished": false
+    "exactGitSourceArchivePlanned": false,
+    "licenseClearanceEstablished": false,
+    "exactGitSourceArchiveIncluded": true,
+    "artifacts": [
+      {
+        "id": 12156775922,
+        "name": "legado-native-reader-unsigned",
+        "bytes": 140750780,
+        "sha256": "c3ff9a368bcc9a7bc0bab7f940ec65f0680837da0f93828351cd222e3aed592a",
+        "expiresAt": "2026-10-20T00:38:09Z"
+      },
+      {
+        "id": 12156726035,
+        "name": "legado-native-reader-build-evidence",
+        "bytes": 1492652,
+        "sha256": "fb8df3b01dec44a2414d5b2a7de7e8d45dd8b71cafd41649cbf5f3403fc5f096",
+        "expiresAt": "2026-10-26T00:38:16Z"
+      }
+    ]
   },
   "delivery": {
-    "artifactDownloaded": false,
-    "IPAIndependentlyAudited": false,
+    "artifactDownloaded": true,
+    "IPAIndependentlyAudited": true,
     "signedOrInstalled": false,
-    "deliveredToUser": false
+    "deliveredToUser": true,
+    "deliveryMeaning": "Exact verified bytes copied to the local Downloads folder; no signing, phone installation or receipt confirmation.",
+    "localFiles": [
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-594fd21-unsigned.ipa",
+        "bytes": 106644947,
+        "sha256": "6db01f77340ffb37d7989b70fa1ffe7cef8e9453be2da96b235cf6c5f4711f8c"
+      },
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-source-594fd21.zip",
+        "bytes": 39821195,
+        "sha256": "c0176f792ea208f44f968ece1da26f7ecb2a7c91e5c481e6cc843aba884b3105"
+      },
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-manifest.json",
+        "bytes": 7128,
+        "sha256": "7d25ec51d58b56619c0a4cbe7fb7229e99c62a1ff8ff3991b22aedf49669efd4"
+      },
+      {
+        "path": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-README.txt",
+        "bytes": 1049,
+        "sha256": "cb5f50bd662afaaafd7994dafffb02fa5a898461103639c7ba46bfcd5351651d"
+      }
+    ]
   },
   "acceptance": {
-    "releaseCompilationPassed": false,
+    "releaseCompilationPassed": true,
     "physicalDeviceValidationPassed": false,
     "selfRenewalVerified": false,
     "fullLegadoCompatibilityEstablished": false
-  }
+  },
+  "independentAudits": [
+    {
+      "path": ".build/cloud-evidence/run-39178530335/independent-ipa-audit.json",
+      "bytes": 9576,
+      "sha256": "ae988a026ef31ce389786d8fa7e9c980168861ea47e520f30df405e72ed303db"
+    },
+    {
+      "path": ".build/cloud-evidence/run-39178530335/independent-resources-jvm-audit.json",
+      "bytes": 9111,
+      "sha256": "5a22b4fff0197191c37b29d8761596acd14688e3964edac0e537d9ee6a048239"
+    },
+    {
+      "path": ".build/cloud-evidence/run-39178530335/independent-icon-dimension-addendum.json",
+      "bytes": 6678,
+      "sha256": "8d34152f153fe4b37a7dff3567735334d41674554c43b45c56e4b14808bb1823"
+    },
+    {
+      "path": ".build/cloud-evidence/run-39178530335/independent-source-archive-audit.json",
+      "bytes": 8670,
+      "sha256": "6fcf18485208192934e15a7959e70524f0c345348a4f223f9e60dff1582505e4"
+    }
+  ],
+  "auditAnnotationCorrection": "The resources report used an invalid fixed PNG dimension offset for CgBI icons. Its unchanged original values are superseded only for icon dimensions by the separate CRC-checked IHDR addendum; actual icons are 120x120 and 152x152. No acceptance gate changed.",
+  "verifiedResults": {
+    "ipaBytes": 106644947,
+    "ipaSHA256": "6db01f77340ffb37d7989b70fa1ffe7cef8e9453be2da96b235cf6c5f4711f8c",
+    "manifestSHA256": "7d25ec51d58b56619c0a4cbe7fb7229e99c62a1ff8ff3991b22aedf49669efd4",
+    "ordinaryJAR": {
+      "bytes": 10065948,
+      "sha256": "f65519a47535ed5ff6c3632f5ba585ea9fda6acc47afa37245dccc75f3856b5e",
+      "testClassesIncluded": false
+    },
+    "ordinaryJVMTests": {
+      "suites": 17,
+      "uniqueCases": 135,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0
+    },
+    "packagingTests": {
+      "stageConfig": 23,
+      "localSourcePackaging": 7,
+      "runtimePackaging": 6
+    },
+    "nativeModuleCount": 13,
+    "requiredNativeDynamicExports": 39,
+    "projectReplacements": 0,
+    "bundledBookSources": false,
+    "bundledFonts": 2,
+    "fontAndLicenseBytesMatchCommit": true,
+    "sourceArchive": {
+      "bytes": 39821195,
+      "sha256": "c0176f792ea208f44f968ece1da26f7ecb2a7c91e5c481e6cc843aba884b3105",
+      "gitBlobFiles": 2649,
+      "comparedFileBytes": 104724717,
+      "exactGitSnapshotPassed": true,
+      "dependencySourceClosureEstablished": false
+    }
+  },
+  "remaining": [
+    "Sign and cover-install using the original Apple ID and installer, then inspect the real-phone read-only report.",
+    "Implement and separately prove paired transport, profile renewal, signing, replacement install and data preservation before claiming self-renewal.",
+    "Unattended triggering and expiry recovery are unproven.",
+    "Native blocked-network cancellation/recovery and full Legado feature/runtime compatibility remain incomplete.",
+    "Component-license combination and full corresponding dependency source closure remain under review."
+  ]
 }

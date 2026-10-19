@@ -1,8 +1,8 @@
 # 当前功能与 Legado 对照
 
-更新：2026-10-18。功能基准为用户提供的 `legado-master.zip`，SHA-256 为 `724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd`。原版逐项源码位置和验收条件见 [64 项功能清单](feature-matrix.md)，本页整理当前产品取舍，不能替代逐项兼容验收。
+更新：2026-10-19。功能基准为用户提供的 `legado-master.zip`，SHA-256 为 `724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd`。原版逐项源码位置和验收条件见 [64 项功能清单](feature-matrix.md)，本页整理当前产品取舍，不能替代逐项兼容验收。
 
-当前已交付到 Windows 的安装包为 build 7；它通过了云端构建和静态检查，另有 Debug Simulator 的文本阅读测试。用户已确认 build 6 在 iPhone 上能看到内置书源、搜索并打开正文。**这份反馈不等于 build 7 已获真机验收，也不等于 1,331 个书源都可用。**详见 [build 7 记录](native-reader-experience-build7.json)和 [build 6 真机反馈](native-reader-experience.json)。
+当前已交付到 Windows 的安装包为不内置书源的 build 10，包含独立品牌、字体、缓存 TXT 导出与只读续签连接验证；实际 IPA 和对应 Git 源码已核对。用户此前确认 build 6 在 iPhone 上能看到书源、搜索并打开正文。**这份旧版反馈不等于 build 10 已获真机验收，也不等于 1,331 个书源都可用。**详见 [build 10 记录](native-reader-experience-build10.json)和 [build 6 真机反馈](native-reader-experience.json)。自动续签仍未实现。
 
 ## 功能对照
 
@@ -10,7 +10,7 @@
 
 | 功能及原版清单 ID | 当前 iOS 情况 | 接下来保留或补齐什么 | 实现与证据 |
 | --- | --- | --- | --- |
-| 书源导入、导出、分组、编辑（`source.schema`） | 已有实现；1,331 个私人书源在本机原样打包，用户确认首次打开可见。 | 保留；验证往返导入、删除后不复活、升级保留用户修改。 | [书源存储](../../Modules/Core/BookSource/BookSourceStore.swift)、[安装与数据保护记录](migration-status.md) |
+| 书源导入、导出、分组、编辑（`source.schema`） | 已有实现；历史 build 6 本地加入的 1,331 个私人书源曾确认首次打开可见。所有后续包不内置书源。 | 保留已导入数据；验证往返导入、删除后不复活、升级保留用户修改。 | [书源存储](../../Modules/Core/BookSource/BookSourceStore.swift)、[安装与数据保护记录](migration-status.md) |
 | 搜索→详情→目录→正文（`pipeline.search/info/toc/content`） | 传统规则走 JSC。用户确认 build 6 基本可读；固定响应的 Simulator 阅读闭环已通过。 | 最高优先级；保证失败可重试、切章和阅读位置稳定。 | [搜索](../../Modules/Core/BookSource/BookSourceFetcher+Search.swift)、[正文](../../Modules/Core/BookSource/BookSourceFetcher+Chapter.swift)、[UI 验证](reader-online-smoke.json) |
 | 发现和分类（`pipeline.explore`） | 已有规则发现页面，尚无完整真实书源验收。 | 保留书源自己的发现入口，简化无关推荐。 | [发现请求](../../Modules/Core/BookSource/BookSourceFetcher+Discover.swift) |
 | CSS、XPath、JSONPath、正则及组合规则（`rules.*`） | 已有 Swift/JSC 解析实现；它们与原版 JVM 库存在行为差异。 | 按真实失败源补齐，并继续原版固定输入对照。 | [规则解析](../../Modules/Core/RuleEngine/ModernParser/RuleAnalyzer.swift)、[传统规则迁移边界](traditional-rule-integration.md) |
@@ -25,10 +25,10 @@
 | 换源及目录位置匹配（`reader.change-source`） | 已有换源代码，未取得真实多源位置匹配验收。 | 保留；同名异书、不同章节数量和失效源要能安全回退。 | [阅读器换源](../../Modules/Features/Reader/ReaderView+SourceChange.swift)、[章节匹配](../../Modules/Services/Online/ChapterAlignment.swift) |
 | 下载、缓存、离线阅读（`reader.cache-download`） | 已有下载队列和章节缓存；尚无用户断网、重启、连续阅读验收。 | 高优先级；区分“缓存缺失”和“正文为空”，支持失败重试。 | [离线下载](../../Modules/Services/Offline/OfflineDownloadManager.swift)、[正文缓存](../../Modules/Services/Online/ChapterCacheRepository.swift) |
 | 净化替换、繁简转换（`reader.cleanup`） | 已有替换引擎和显示转换。 | 保留；默认简体界面，不改写用户书源脚本和原始正文。 | [替换引擎](../../Modules/Core/Replace/ReplaceRuleEngine.swift)、[文字转换](../../Modules/Core/Replace/TextConversion+Apply.swift) |
-| 排版、字体、间距、主题、翻页（`reader.layout/page-turn`） | 已有 CoreText 阅读器、排版和交互设置；本轮源码新增中文字体，尚未在新版包验收。 | 优先改善中文字体、夜间阅读、长章稳定性、换字体后位置保持。 | [CoreText 阅读器](../../Modules/Core/ReaderCore/CoreText/)、[阅读设置](../../Modules/Features/Reader/ReaderSettingsView.swift)、[字体目录](../../Targets/Yuedu/SharedApp/ReaderFontCatalog.swift) |
+| 排版、字体、间距、主题、翻页（`reader.layout/page-turn`） | 已有 CoreText 阅读器、排版和交互设置；新增两款中文字体已通过模拟器注册及 build 10 字体、许可和注册路径核对，真机待验收。 | 优先改善中文字体、夜间阅读、长章稳定性、换字体后位置保持。 | [CoreText 阅读器](../../Modules/Core/ReaderCore/CoreText/)、[阅读设置](../../Modules/Features/Reader/ReaderSettingsView.swift)、[字体目录](../../Targets/Yuedu/SharedApp/ReaderFontCatalog.swift) |
 | 本地 TXT、EPUB、PDF（`local.txt/epub/pdf`） | 已有统一导入入口；TXT Simulator 阅读验证通过，其他格式尚非本项目的完整验收。 | 保留；验证中文编码、目录、图片和重开位置。 | [文件导入](../../Modules/Services/LibraryStore/LocalBookImportService.swift)、[PDF](../../Modules/Core/PDF/LocalPDFArchive.swift)、[UI 验证](reader-online-smoke.json) |
 | 本地 UMD、MOBI（`local.umd/mobi`） | 当前统一导入允许列表和分派中没有这两类。 | 明确列为未支持，后续按需求补齐。 | [导入格式与分派](../../Modules/Services/LibraryStore/LocalBookImportService.swift) |
-| 导出 TXT | 本轮新增缓存正文导出服务及界面入口，尚未打包验收；不自动获取未下载章节。 | 保留并让入口容易找到；不完整缓存要清楚提示。 | [TXT 导出服务](../../Modules/Services/Online/CachedBookTXTExportService.swift)、[导出界面](../../Modules/Features/BookDetail/CachedBookTXTExportView.swift) |
+| 导出 TXT | 缓存正文导出服务及界面入口已通过模拟器测试并包含于 build 10，真机待验收；不自动获取未下载章节。 | 保留并让入口容易找到；不完整缓存要清楚提示。 | [TXT 导出服务](../../Modules/Services/Online/CachedBookTXTExportService.swift)、[导出界面](../../Modules/Features/BookDetail/CachedBookTXTExportView.swift) |
 | 书签、高亮、笔记、规则高亮（`reader.bookmarks/highlights/highlight-rules`） | 已有原生实现；与原版数据格式、处理后文字锚点未完成对照。 | 保留，去掉付费门槛；跨页选区、编辑和重开应不丢位置。 | [书签](../../Modules/Features/Reader/ReaderBookmarkListView.swift)、[批注存储](../../Modules/Core/ReaderCore/CoreText/CoreTextAnnotationStore.swift)、[规则高亮](../../Modules/Core/ReaderCore/CoreText/RegexHighlightEngine.swift) |
 | 自定义字典与阅读记录（`reader.dictionary/read-records`） | 已有选区交互、阅读统计；没有证明可直接使用原版自定义字典规则。 | 保留本地统计；Legado 字典协议独立补齐。 | [选区交互](../../Modules/Core/ReaderCore/CoreText/TextSelectionInteractor.swift)、[阅读统计](../../Modules/Services/Stats/ReadingStats.swift)、[原版清单](feature-matrix.md) |
 | 段评（`extension.reviews`） | 未接入并验收原版段评协议；本地段落笔记不等于网站段评。 | 延后，避免在界面冒充已有。 | [原版清单](feature-matrix.md) |
@@ -57,7 +57,7 @@
 
 公版库的实际来源可以核查：Gutenberg 目录直接使用 `www.gutenberg.org/ebooks.opds/`，见 [PublicLibrary.swift](../../Modules/Services/PublicLibrary/PublicLibrary.swift)；青空文库是日文书库，其目录清单由 `yuedureader.com/catalogs/aozora/v1/manifest.json` 提供，正文下载来自青空文库，见 [AozoraCatalogStore.swift](../../Modules/Services/PublicLibrary/AozoraCatalogStore.swift)及 [下载服务](../../Modules/Services/PublicLibrary/AozoraLibraryDownloadService.swift)。**界面是繁体，不代表这些库的正文都是繁体。**目前没有默认内置“好读”之类中文繁体书库的代码证据，不能仅凭名称猜测用户所指的某一私人书源。
 
-本轮源码已落实：本地分发关闭 App 账号、StoreKit、上游反馈和 CloudKit；会员状态保持未购买，本地阅读能力另行开放。默认公版库隐藏，旧首页公版栏目因没有可用提供者而不发起请求；青空目录服务在本地模式只读已有缓存，即使旧书籍详情调用强制刷新也不访问上游或写检查时间。官方 AI 推荐从提供者注册和栏目选择中移除，用户自行配置的 AI 助手、模块、RSS、WebDAV 及书源网页登录继续保留。中文界面使用简体翻译。**独立品牌源码已通过 Debug Simulator 的 64 项实际验证，包括字体、缓存 TXT 与基础阅读链路；build 9 的 Release 构建及无书源检查也已通过，IPA 独立审计与新版真机验收仍待完成。**详见[当前验证记录](local-product-validation.json)和[build 9 构建证据](native-reader-experience-build9.json)。上游 SDK 源码/依赖尚未全部物理删除，不能据此声称包体已经精简。
+本轮源码已落实：本地分发关闭 App 账号、StoreKit、上游反馈和 CloudKit；会员状态保持未购买，本地阅读能力另行开放。默认公版库隐藏，旧首页公版栏目因没有可用提供者而不发起请求；青空目录服务在本地模式只读已有缓存，即使旧书籍详情调用强制刷新也不访问上游或写检查时间。官方 AI 推荐从提供者注册和栏目选择中移除，用户自行配置的 AI 助手、模块、RSS、WebDAV 及书源网页登录继续保留。中文界面使用简体翻译。**独立品牌源码已通过 Debug Simulator 的 64 项实际验证，包括字体、缓存 TXT 与基础阅读链路；build 10 的 Release 构建、无书源检查及 IPA 独立静态审计已通过，新版真机验收仍待完成。**详见[当前验证记录](local-product-validation.json)和[build 10 构建证据](native-reader-experience-build10.json)。上游 SDK 源码/依赖尚未全部物理删除，不能据此声称包体已经精简。
 
 ## 能否完美兼容书源
 
@@ -67,7 +67,7 @@
 
 另外，源站关闭、规则过期、登录失效、验证码、付费内容、地区和网络限制，即使 Android 原版也不必然能读取。验收应分别记录“源站在原版是否可用”和“相同输入在 iOS 是否等价”，不给失效网站算作已解决或已兼容。
 
-下一步先稳定文字阅读：简体界面、去掉账号会员、易找的导出、中文字体、缓存与重启恢复。兼容工作选择实际失败书源，在本地保存最小固定响应，对照请求字节、输出、变量、Cookie、异常和缓存副作用；私人书源、固定认证值和完整安装包继续只留本机。
+下一步先验证新版文字阅读：简体界面、账号会员清理、TXT 导出、中文字体、缓存与重启恢复。兼容工作选择实际失败书源，在本地保存最小固定响应，对照请求字节、输出、变量、Cookie、异常和缓存副作用；私人书源、固定认证值及含私源的历史安装包继续只留本机。当前无书源诊断包按用户临时授权公开保留一天，许可核验仍未完成。
 
 ## iOS 自续签研究目标
 
