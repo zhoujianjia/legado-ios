@@ -212,6 +212,14 @@ static void recordTaskResult(const char *stage, NSString *task, NSString *respon
     uint64_t threadID = 0;
     pthread_threadid_np(NULL, &threadID);
     event[@"nativeThreadId"] = @(threadID);
+    // A zero signal checks whether this exact worker can be targeted without
+    // sending a signal or replacing a handler. Unblocking SIGIO alone does not
+    // establish that Darwin permits pthread_kill on a dispatch workqueue thread.
+    event[@"signalPermissionProbeReturnCode"] = @(pthread_kill(pthread_self(), 0));
+    sigset_t observedMask;
+    int maskProbe = pthread_sigmask(SIG_BLOCK, NULL, &observedMask);
+    event[@"signalMaskProbeReturnCode"] = @(maskProbe);
+    if (maskProbe == 0) event[@"sigioBlocked"] = @(sigismember(&observedMask, SIGIO) == 1);
     if ([envelope[@"ok"] isKindOfClass:NSNumber.class]) event[@"ok"] = envelope[@"ok"];
     if ([envelope[@"cancelled"] isKindOfClass:NSNumber.class]) event[@"cancelled"] = envelope[@"cancelled"];
     if ([envelope[@"taskId"] isKindOfClass:NSString.class]) event[@"taskMatches"] = @([envelope[@"taskId"] isEqualToString:task]);

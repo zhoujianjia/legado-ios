@@ -33,6 +33,16 @@ jobs:
           python3 -m json.tool .build/dispatch-signals/observed.json > /dev/null
           sw_vers > .build/dispatch-signals/platform.txt
           uname -m >> .build/dispatch-signals/platform.txt
+      - name: Compare directed SIGIO delivery to a dispatch worker and an ordinary pthread
+        run: |
+          # This short-lived CLI owns its signal handler and changes its masks.
+          # It does not run a JVM or change the reader's signal handling.
+          shasum -a 256 scripts/legado-ios/dispatch-signal-delivery.c >> .build/dispatch-signals/source-sha256.txt
+          xcrun clang -std=c11 -fblocks -Wall -Wextra -Werror scripts/legado-ios/dispatch-signal-delivery.c \
+            -o .build/dispatch-signals/observe-delivery 2>&1 | tee .build/dispatch-signals/delivery-compile.log
+          .build/dispatch-signals/observe-delivery \
+            2> >(tee .build/dispatch-signals/delivery.stderr.log >&2) | tee .build/dispatch-signals/delivery-observed.json
+          python3 -m json.tool .build/dispatch-signals/delivery-observed.json > /dev/null
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
