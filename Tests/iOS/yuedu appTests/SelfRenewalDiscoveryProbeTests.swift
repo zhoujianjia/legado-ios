@@ -178,25 +178,39 @@ struct SelfRenewalDiscoveryProbeTests {
     @Test func enforcesBudgetsAndPreservesDistinctFailures() async throws {
         let id = UUID()
         let local = v4([192, 168, 7, 23])
-        for events: [SelfRenewalDiscoveryEvent] in [
-            (0..<9).map { _ in .found(UUID()) } + [.windowEnded],
-            [.found(id)] + (0..<33).map { _ in .resolved(id, endpoint(local)) } + [.windowEnded],
-            [.found(id)] + (1...5).map { .resolved(id, endpoint(local, port: UInt16(64_000 + $0))) } + [.windowEnded],
-        ] {
+        // Keep each bounded fixture concrete: a nested map/array-concatenation
+        // expression exceeds the Xcode 26.2 test target's type-checking budget.
+        var serviceEvents: [SelfRenewalDiscoveryEvent] = []
+        for _ in 0..<9 { serviceEvents.append(.found(UUID())) }
+        serviceEvents.append(.windowEnded)
+        var addressEvents: [SelfRenewalDiscoveryEvent] = [.found(id)]
+        let repeatedEndpoint = endpoint(local)
+        for _ in 0..<33 { addressEvents.append(.resolved(id, repeatedEndpoint)) }
+        addressEvents.append(.windowEnded)
+        var endpointEvents: [SelfRenewalDiscoveryEvent] = [.found(id)]
+        for offset in 1...5 {
+            let port = UInt16(64_000 + offset)
+            endpointEvents.append(.resolved(id, endpoint(local, port: port)))
+        }
+        endpointEvents.append(.windowEnded)
+        for events in [serviceEvents, addressEvents, endpointEvents] {
             let fixture = try fixture(events: events)
-            #expect(await run(fixture).remotePairingDiscovery?.outcome == .limitExceeded)
+            let report = await run(fixture)
+            #expect(report.remotePairingDiscovery?.outcome == .limitExceeded)
             #expect(fixture.state().destinations.isEmpty)
         }
         let dns = SelfRenewalTransportNetworkError(.dns(-65570))
-        for (events, expected): ([SelfRenewalDiscoveryEvent], SelfRenewalDiscoveryOutcome) in [
+        let failureScenarios: [([SelfRenewalDiscoveryEvent], SelfRenewalDiscoveryOutcome)] = [
             ([.ready, .windowEnded], .discoveryTimedOut),
             ([.waiting(dns), .windowEnded], .discoveryUnavailable),
             ([.failed(dns)], .discoveryUnavailable),
             ([.found(id), .resolutionFailed(dns), .windowEnded], .resolutionFailed),
             ([.found(id), .resolved(id, endpoint(local)), .removed(id), .resolutionFailed(dns), .windowEnded], .resolutionFailed),
-        ] {
+        ]
+        for (events, expected) in failureScenarios {
             let fixture = try fixture(events: events)
-            #expect(await run(fixture).remotePairingDiscovery?.outcome == expected)
+            let report = await run(fixture)
+            #expect(report.remotePairingDiscovery?.outcome == expected)
             #expect(fixture.state().destinations.isEmpty)
         }
     }

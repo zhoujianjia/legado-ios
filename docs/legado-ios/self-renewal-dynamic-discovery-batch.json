@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "recordedOn": "2026-10-19",
-  "sourceCommit": null,
-  "status": "implemented-and-source-reviewed-awaiting-Apple-SDK-verification",
+  "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+  "status": "Debug-Simulator-app-compiled-and-linked-test-target-repair-awaiting-reverification",
   "trigger": "Build10 fixed-loopback report timed out before TCP; user separately reports computer on, USB connected, no VPN and no SideStore.",
   "implementation": {
     "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
@@ -44,11 +44,14 @@
       "UI": 1
     },
     "newDiscoverySwiftTestsExecuted": false,
-    "AppleSDKCompilationPassed": false,
-    "AppleSDKLinkPassed": false,
+    "AppleSDKCompilationPassed": true,
+    "AppleSDKLinkPassed": true,
     "physicalDeviceDynamicDiscoveryExecuted": false,
     "serviceIdentityVerified": false,
-    "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation."
+    "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation.",
+    "AppleSDKAcceptanceScope": "Xcode 26.2/17C52 Debug arm64 iOS Simulator main app: production files compiled, main executable and debug dylib linked. Test target failed before any iOS test execution. No Release/device build acceptance.",
+    "reportInspectorSyntheticTestsPassed": 25,
+    "oldDeviceReportSchemaCompatibilityPassed": true
   },
   "retainedReviews": [
     {
@@ -70,7 +73,7 @@
   ],
   "plannedDeviceCandidate": {
     "build": "12",
-    "status": "awaiting-source-only-Simulator-checkpoint",
+    "status": "awaiting-repaired-Simulator-checkpoint-and-actual-Release-audit",
     "delivered": false
   },
   "automaticSelfRenewalImplemented": false,
@@ -81,5 +84,53 @@
     "https://developer.apple.com/documentation/technotes/tn3151-choosing-the-right-networking-api",
     "https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy",
     "https://github.com/apple-oss-distributions/mDNSResponder/blob/d4658af3f5f291311c6aee4210aa6d39bda82bbe/mDNSShared/dns_sd.h"
+  ],
+  "actualCloudCheckpoint": {
+    "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+    "runId": 39267868623,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39267868623",
+    "conclusion": "failure",
+    "actualIOSTestExecutions": 0,
+    "failure": [
+      "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift:181:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+    ],
+    "record": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/actual-sdk-failure-summary.json",
+    "repair": "Replace only the nested test fixture map/array concatenations with typed bounded event arrays and append loops; bind failure-scenario tuples separately and await reports before assertions. All 13 methods and all assertions retained. The benchmark direct-module import repair is also included in the next checkpoint.",
+    "postRepairSwiftCompilationPassed": false,
+    "newProductionFilesChangedByRepair": false
+  },
+  "additionalEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/actual-sdk-failure-summary.json",
+      "sha256": "1895adfc2d84165f62f1a1b325ac5338344fe9a5635e8bfd50fb1eba411d3dd6"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/reader-renewal-probe-evidence.zip",
+      "sha256": "8c45283fd03af5729e572835dd217cd5b9c7eea798e9bb389c6f7e33b285c845"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/repair-syntax-screen.json",
+      "sha256": "caf7a3edfc050fd2321aa2e8c1de93e75ef02e7025e22f7eef3bd8ae7b81ba8d"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/report-inspector-tools.zip",
+      "sha256": "de20cce95511cd37a62ab4f02c63a5b9a0f6c2df963ffe912e639c5b9c96ea92"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/report-inspector-validation.json",
+      "sha256": "bb6dfb2ad39b5f2cc9e84897d61e04136c51d17974d9084d2fd99c9e938c179f"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/run.json",
+      "sha256": "d60f06861ae117d6b3a7d9eaca80d88d2b6ebf27eb6841c4fc13ae98a8706a2b"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/schema1-compatibility.json",
+      "sha256": "12cbedd47174407aca5573714d2937e456395ae57355dac441387b4302f8de69"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/typecheck-budget-repair-review.json",
+      "sha256": "054d29ce8fab0a9a59f3685b6ff40eedc23ec12c023138ed9776efdc62b64b5e"
+    }
   ]
 }

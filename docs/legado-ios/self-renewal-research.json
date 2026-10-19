@@ -384,5 +384,21 @@
     "build": "12",
     "status": "awaiting-source-only-Simulator-checkpoint",
     "delivered": false
+  },
+  "currentDiscoveryCloudCheckpoint": {
+    "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+    "runId": 39267868623,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39267868623",
+    "conclusion": "failure",
+    "actualIOSTestExecutions": 0,
+    "failure": [
+      "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift:181:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+    ],
+    "record": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/actual-sdk-failure-summary.json",
+    "repair": "Replace only the nested test fixture map/array concatenations with typed bounded event arrays and append loops; bind failure-scenario tuples separately and await reports before assertions. All 13 methods and all assertions retained. The benchmark direct-module import repair is also included in the next checkpoint.",
+    "postRepairSwiftCompilationPassed": false,
+    "newProductionFilesChangedByRepair": false,
+    "mainAppDebugSimulatorCompiledAndLinked": true,
+    "automaticSelfRenewalVerified": false
   }
 }

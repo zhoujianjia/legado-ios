@@ -105,7 +105,7 @@
     "smokeShellSyntax": "passed_with_Git_Bash_bash_n",
     "gitDiffCheck": "passed"
   },
-  "nextCheckpoint": "A new bounded discovery implementation/source 6b3a3bd has one source-only diagnostic CI submitted. The historical reader smoke failed test-target compilation before execution; its direct-module import repair is applied and will be included with any actual new SDK failures in the next coherent checkpoint. Build11 remains the delivered ccdddd3 package.",
+  "nextCheckpoint": "The bounded discovery main app compiled and linked in Debug Simulator, but test-target compilation stopped before execution. Submit the source-reviewed typed-fixture and benchmark import repairs together, and prepare the requested build12 candidate from that same fixed source. Font transactions remain a separate prepared/reviewed batch; no complete non-device acceptance is claimed.",
   "newIPAProduced": false,
   "privateSourceAccessed": false,
   "physicalDeviceValidated": false,
@@ -178,5 +178,21 @@
     "independentlyReviewed": true,
     "actualSwiftRecompilationPassed": false,
     "iOSTestExecutionPassed": false
+  },
+  "latestDiagnosticCheckpoint": {
+    "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+    "runId": 39267868623,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39267868623",
+    "conclusion": "failure",
+    "actualIOSTestExecutions": 0,
+    "failure": [
+      "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift:181:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+    ],
+    "record": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/actual-sdk-failure-summary.json",
+    "repair": "Replace only the nested test fixture map/array concatenations with typed bounded event arrays and append loops; bind failure-scenario tuples separately and await reports before assertions. All 13 methods and all assertions retained. The benchmark direct-module import repair is also included in the next checkpoint.",
+    "postRepairSwiftCompilationPassed": false,
+    "newProductionFilesChangedByRepair": false,
+    "mainAppDebugSimulatorCompiledAndLinked": true,
+    "automaticSelfRenewalVerified": false
   }
 }

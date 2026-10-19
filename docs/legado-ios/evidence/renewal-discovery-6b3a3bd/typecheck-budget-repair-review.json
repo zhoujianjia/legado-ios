@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "status": "static-equivalence-review-passed-swift-not-executed",
+  "reviewedBaselineCommit": "7390fe8d8e3de7f67d3d165ce6b7c18422f1df4e",
+  "path": "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+  "beforeSHA256": "0ad91c2003222241dcfab1962f2fa3fa17e783af6a0c55f09dc45db8eeb2fcad",
+  "afterSHA256": "7a7a873a30db6ea7933fdaaea89dc724ca24522cde138830f9a7e75c0cb67400",
+  "onlyChangedFunction": "enforcesBudgetsAndPreservesDistinctFailures",
+  "allSourceOutsideFunctionIdenticalAfterNewlineNormalization": true,
+  "allThirteenMethodIdentitiesAndOrderUnchanged": [
+    "acceptsOnlyOwnedAddresses",
+    "rejectsNonUnicastAndMalformedAddresses",
+    "scopedIPv6NeedsExactInterface",
+    "rejectsBroadcastAndExcludedInterfaces",
+    "snapshotsDetectRelevantTopologyChanges",
+    "connectsOnlyAfterClosedWindowAndKeepsReportRedacted",
+    "removalsAndExpiredRecordsCannotConnect",
+    "incompleteOrOverflowedDiscoveryNeverConnects",
+    "revalidatesOwnershipAndTTLBeforeEachConnection",
+    "cancellationAndGlobalDeadlineCloseAllWork",
+    "enforcesBudgetsAndPreservesDistinctFailures",
+    "retainsSchemaOneReportCompatibility",
+    "tcpAdapterConnectsAndClosesWithoutSendingPayload"
+  ],
+  "assertions": {
+    "unchangedSourceAssertionsAfterAwaitHoisting": [
+      "report.remotePairingDiscovery?.outcome == .limitExceeded",
+      "fixture.state().destinations.isEmpty",
+      "report.remotePairingDiscovery?.outcome == expected",
+      "fixture.state().destinations.isEmpty"
+    ],
+    "sourceAssertExpressions": 4,
+    "sourceDerivedLoopAssertionEvaluations": 16,
+    "executedAssertionsByThisReview": 0
+  },
+  "budgetFixtureEquivalence": [
+    {
+      "name": "service limit",
+      "foundEvents": 9,
+      "terminalEvent": "windowEnded",
+      "equivalence": "The map and explicit loop both create nine UUID service generations in order."
+    },
+    {
+      "name": "resolved-address limit",
+      "foundEvents": 1,
+      "resolvedEvents": 33,
+      "endpointPort": 64099,
+      "endpointExpiryUptime": 2000,
+      "terminalEvent": "windowEnded",
+      "equivalence": "The unchanged pure helper returns the same value for every previous call; reusing its immutable result preserves all thirty-three events."
+    },
+    {
+      "name": "approved-endpoint limit",
+      "foundEvents": 1,
+      "resolvedEvents": 5,
+      "orderedPorts": [
+        64001,
+        64002,
+        64003,
+        64004,
+        64005
+      ],
+      "terminalEvent": "windowEnded",
+      "equivalence": "The loop preserves the same ordered offsets, UInt16 conversion and distinct endpoint values."
+    }
+  ],
+  "failureFixtureLiteralBytesUnchanged": true,
+  "failureScenariosPreserved": 5,
+  "failureScenarioSource": "([.ready, .windowEnded], .discoveryTimedOut),\n            ([.waiting(dns), .windowEnded], .discoveryUnavailable),\n            ([.failed(dns)], .discoveryUnavailable),\n            ([.found(id), .resolutionFailed(dns), .windowEnded], .resolutionFailed),\n            ([.found(id), .resolved(id, endpoint(local)), .removed(id), .resolutionFailed(dns), .windowEnded], .resolutionFailed),",
+  "productionFilesUnchanged": [
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+      "unchangedFromHEAD": true,
+      "sha256": "6f6e2728040c6327b96d2ef948e562937dcf356753ecdbbd0a72dbfd3296dc0c"
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+      "unchangedFromHEAD": true,
+      "sha256": "7c46967d7e9c1d4330abbb98dd9383610597eeb1cca9b3807127445fb9394bf0"
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+      "unchangedFromHEAD": true,
+      "sha256": "da8339177b721d17f82e11a54316bf9a05b800b84ad611ff434152240c8015c5"
+    }
+  ],
+  "purpose": "Reduce compiler type-inference and macro-expression complexity without changing events, fixture ownership, expected outcomes or zero-connect checks.",
+  "blockingFindings": [],
+  "SDKCompilationExecuted": false,
+  "testsExecuted": 0,
+  "CIQueriedOrTriggered": false,
+  "trackedFilesModifiedByReviewer": false,
+  "doesNotClaimCompilerRepairVerifiedUntilActualSDKRun": true
+}

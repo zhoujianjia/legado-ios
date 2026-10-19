@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "status": "owned-synthetic-contract-tests-passed-not-device-evidence",
+  "sourceContractWorkspaceCommit": "7390fe8d8e3de7f67d3d165ce6b7c18422f1df4e",
+  "sourceContractFiles": [
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+      "bytes": 12818,
+      "sha256": "10f3ddfaddb05672dcd21eb0cb6274349d88a37bed4c292e3ecc7727c2c4ff08"
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+      "bytes": 5664,
+      "sha256": "6f6e2728040c6327b96d2ef948e562937dcf356753ecdbbd0a72dbfd3296dc0c"
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+      "bytes": 17086,
+      "sha256": "7c46967d7e9c1d4330abbb98dd9383610597eeb1cca9b3807127445fb9394bf0"
+    },
+    {
+      "path": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+      "bytes": 10813,
+      "sha256": "b6aa5a899524beed343ef5944cc1cfce0f38fc5a178cf877f1816c89253c6243"
+    }
+  ],
+  "toolFiles": [
+    {
+      "path": ".build/renewal-discovery/report-inspector/inspect-device-report.py",
+      "bytes": 21479,
+      "sha256": "61cc1b5f81f393eb68297f57b0fdbdf78988290560f1447021b3687f15ba88ee"
+    },
+    {
+      "path": ".build/renewal-discovery/report-inspector/test-inspect-device-report.py",
+      "bytes": 22182,
+      "sha256": "7c7d558b197b76e616f4ddca6d54c18ef6e09f699088e48bce028e084a5439d8"
+    },
+    {
+      "path": ".build/renewal-discovery/report-inspector/schema1-frozen.py",
+      "bytes": 13187,
+      "sha256": "fcc1d82ec99af4ce4a576cce9e2992f0099b7da0f3c7f8933dd018178890bd8b"
+    },
+    {
+      "path": ".build/renewal-discovery/report-inspector/README.txt",
+      "bytes": 2513,
+      "sha256": "86e6ca44a0845cd0c02e1de35f426b9f4593d6940f5696fdd6abc4576de3a1df"
+    }
+  ],
+  "checksActuallyExecuted": {
+    "command": "python -B .build/renewal-discovery/report-inspector/test-inspect-device-report.py -v",
+    "passedTestMethods": 25,
+    "failedTestMethods": 0,
+    "skippedTestMethods": 0
+  },
+  "originalInspectorAnd23TestsUnchanged": [
+    {
+      "path": ".build/renewal-delivery/inspect-device-report.py",
+      "sha256": "fcc1d82ec99af4ce4a576cce9e2992f0099b7da0f3c7f8933dd018178890bd8b",
+      "bytes": 13187
+    },
+    {
+      "path": ".build/renewal-delivery/test-inspect-device-report.py",
+      "sha256": "98250c02927f449be1f5e8e830b7e1d1fb947eebfeee498e444ba8a4d349115a",
+      "bytes": 12575
+    }
+  ],
+  "schemaOneKnownBuildSourceRegistryUnchanged": true,
+  "schemaTwoBuildOrSourceHardcoded": false,
+  "provenanceRequirement": "Explicit manifest plus an expected SHA256 obtained from an independent delivery audit; matching report build/source/version declarations. A schema check alone never establishes provenance.",
+  "reviewPoints": [
+    "One explicitly selected report path; no Downloads scan or credential/pairing-record lookup.",
+    "Strict deep report field whitelists, duplicate-key/non-finite rejection, 64 KiB limit, exact bool/int handling and fixed false flags.",
+    "Counts preserve actual first-overflow values 9 and 33, and one in-flight TCP attempt during global timeout or cancellation.",
+    "Phase/outcome/count/attempt ordering follows the current state machine; no speculative permission, VPN, peer identity or renewal conclusions.",
+    "Unavailable/invalid/digest-mismatched manifest remains schema-only; a valid mismatched build/source/version manifest is rejected.",
+    "An external digest is a caller trust input. Its independent origin and actual device/delivery history are not attested by this tool.",
+    "JSON exponent overflow such as 1e400 is rejected by the parser, in addition to NaN/Infinity literals and invalid elapsed fields."
+  ],
+  "realDeviceReportReadByThisTask": false,
+  "deviceExecuted": false,
+  "SDKExecuted": false,
+  "CIQueriedOrTriggered": false,
+  "applicationOrTrackedFilesModified": false,
+  "build12DeliveredOrTestedClaim": false,
+  "automaticSelfRenewalVerified": false,
+  "rootIndependentReview": {
+    "scope": "Main validation branches and compatibility with the actual build-11 manifest shape",
+    "blockingFindingsReported": [],
+    "subsequentChange": "Explicit non-finite JSON exponent rejection, covered by the final passing synthetic suite"
+  }
+}
