@@ -75,9 +75,24 @@ jobs:
           xcodebuild -project Yuedu-Reader.xcodeproj -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > .build/native-reader-test/build-settings.json
           APP=$(python3 -c 'import json; from pathlib import Path; s=[i["buildSettings"] for i in json.load(open(".build/native-reader-test/build-settings.json")) if i.get("target")=="yuedu app"]; assert len(s)==1; print(Path(s[0]["TARGET_BUILD_DIR"])/s[0]["FULL_PRODUCT_NAME"])')
           python -B scripts/legado-ios/verify-native-exports.py --executable "$APP/YueduReader" --report .build/native-reader-test/native-exports.json
-          # Retain both independent regressions even if one fails. The native
-          # chain keeps its own one-case summary and original cancellation gates.
+          # Reuse the same prepared app for independent local-product checks.
+          # Run the native chain last so its current diagnostics are retained;
+          # it keeps its own one-case summary and original cancellation gates.
           set +e
+          bash scripts/xctest.sh -l .build/native-reader-test/configuration.log -t 900 -- \
+            "${ARGS[@]}" -resultBundlePath .build/native-reader-test/configuration.xcresult \
+            -only-testing:'yuedu appTests/AuthAndICloudConfigurationTests'
+          CONFIGURATION_STATUS=$?
+          bash scripts/xctest.sh -l .build/native-reader-test/local-product-regressions.log -t 1200 -- \
+            "${ARGS[@]}" -resultBundlePath .build/native-reader-test/local-product-regressions.xcresult \
+            -only-testing:'yuedu appTests/ReaderLocalProductTests' \
+            -only-testing:'yuedu appTests/ReaderFontCatalogTests' \
+            -only-testing:'yuedu appTests/CachedBookTXTExportTests' \
+            -only-testing:'yuedu appTests/UserFontSettingsTests' \
+            -only-testing:'yuedu appTests/SubscriptionPublicationTests' \
+            -only-testing:'yuedu appTests/PublicLibraryAvailabilityTests' \
+            -only-testing:'yuedu appTests/RemoteLibraryHTTPTests'
+          LOCAL_PRODUCT_STATUS=$?
           bash scripts/xctest.sh -l .build/native-reader-test/cache-regressions.log -t 900 -- \
             "${ARGS[@]}" -resultBundlePath .build/native-reader-test/cache-regressions.xcresult \
             -only-testing:'yuedu appTests/ChapterCacheMigrationTests' \
@@ -87,18 +102,47 @@ jobs:
             "${ARGS[@]}" -resultBundlePath .build/native-reader-test/native-product-chain.xcresult \
             -only-testing:'yuedu appTests/LegadoNativeMainJSReaderTests'
           NATIVE_STATUS=$?
-          set -e
-          if [[ -d .build/native-reader-test/cache-regressions.xcresult ]]; then
-            xcrun xcresulttool get test-results summary --path .build/native-reader-test/cache-regressions.xcresult > .build/native-reader-test/cache-summary.json
-            xcrun xcresulttool get test-results tests --path .build/native-reader-test/cache-regressions.xcresult > .build/native-reader-test/cache-tests.json
-          fi
-          if [[ -d .build/native-reader-test/native-product-chain.xcresult ]]; then
-            xcrun xcresulttool get test-results summary --path .build/native-reader-test/native-product-chain.xcresult > .build/native-reader-test/summary.json
-          fi
+          # Export every available group's evidence before evaluating verdicts.
+          # Missing bundles and failed exports remain failures, not empty passes.
+          export_test_results() {
+            local bundle="$1" summary="$2" tests="$3"
+            if [[ ! -d "$bundle" ]]; then
+              echo "Missing test result bundle: $bundle" >&2
+              return 1
+            fi
+            xcrun xcresulttool get test-results summary --path "$bundle" > "$summary"
+            local summary_status=$?
+            xcrun xcresulttool get test-results tests --path "$bundle" > "$tests"
+            local tests_status=$?
+            [[ $summary_status == 0 && $tests_status == 0 ]]
+          }
+          export_test_results .build/native-reader-test/configuration.xcresult \
+            .build/native-reader-test/configuration-summary.json .build/native-reader-test/configuration-tests.json
+          CONFIGURATION_EXPORT_STATUS=$?
+          export_test_results .build/native-reader-test/local-product-regressions.xcresult \
+            .build/native-reader-test/local-product-summary.json .build/native-reader-test/local-product-tests.json
+          LOCAL_PRODUCT_EXPORT_STATUS=$?
+          export_test_results .build/native-reader-test/cache-regressions.xcresult \
+            .build/native-reader-test/cache-summary.json .build/native-reader-test/cache-tests.json
+          CACHE_EXPORT_STATUS=$?
+          export_test_results .build/native-reader-test/native-product-chain.xcresult \
+            .build/native-reader-test/summary.json .build/native-reader-test/native-tests.json
+          NATIVE_EXPORT_STATUS=$?
+          python -B scripts/reader-experience/smoke-tools.py verify-summary \
+            --summary .build/native-reader-test/configuration-summary.json --expected 9
+          CONFIGURATION_COUNT_STATUS=$?
+          python -B scripts/reader-experience/smoke-tools.py verify-summary \
+            --summary .build/native-reader-test/local-product-summary.json --expected 41
+          LOCAL_PRODUCT_COUNT_STATUS=$?
+          NATIVE_RESULT_STATUS=1
           if [[ $NATIVE_STATUS == 0 ]]; then
             python -B scripts/reader-experience/native-smoke-tools.py result
+            NATIVE_RESULT_STATUS=$?
           fi
-          [[ $CACHE_STATUS == 0 && $NATIVE_STATUS == 0 ]]
+          set -e
+          [[ $CONFIGURATION_STATUS == 0 && $LOCAL_PRODUCT_STATUS == 0 && $CACHE_STATUS == 0 && $NATIVE_STATUS == 0 \
+            && $CONFIGURATION_EXPORT_STATUS == 0 && $LOCAL_PRODUCT_EXPORT_STATUS == 0 && $CACHE_EXPORT_STATUS == 0 && $NATIVE_EXPORT_STATUS == 0 \
+            && $CONFIGURATION_COUNT_STATUS == 0 && $LOCAL_PRODUCT_COUNT_STATUS == 0 && $NATIVE_RESULT_STATUS == 0 ]]
       - name: Preserve this Simulator run's JVM diagnostics and crash reports
         if: ${{ always() && hashFiles('.build/native-reader-test/overlays.json') != '' }}
         run: python -B scripts/reader-experience/collect-native-diagnostics.py --udid "$(bash scripts/sim.sh udid)"

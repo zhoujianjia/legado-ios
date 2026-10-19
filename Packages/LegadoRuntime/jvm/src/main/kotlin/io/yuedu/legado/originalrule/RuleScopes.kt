@@ -22,6 +22,7 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         override fun hashCode() = 31 * System.identityHashCode(owner) + System.identityHashCode(thread)
         override fun equals(other: Any?) = other is CryptoKey && owner === other.owner && thread === other.thread
     }
+    private class CreationLock(val monitor: Any = Any(), var users: Int = 0)
     private val namespace = "originalrule:${UUID.randomUUID()}:"
     private val libraryScopes = object : LinkedHashMap<String, WeakReference<ScriptBindings>>(16, .75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, WeakReference<ScriptBindings>>) = size > 16
@@ -30,8 +31,11 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<CryptoKey, WeakReference<ScriptBindings>>) = size > 16
     }
     private val handles = hashMapOf<String, SharedGlobalStateHandle>()
+    private val libraryCreationLocks = hashMapOf<String, CreationLock>()
+    private val cryptoCreationLocks = hashMapOf<CryptoKey, CreationLock>()
     private val secureRandom = SecureRandom()
-    private var compiledCrypto: CompiledScript? = null
+    private val cryptoCompileLock = Any()
+    @Volatile private var compiledCrypto: CompiledScript? = null
 
     @Synchronized fun sharedHandle(source: BaseSource?): SharedGlobalStateHandle? {
         ensureOpen()
@@ -40,7 +44,7 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         return handles.getOrPut(key) { ScriptBindings.getSharedGlobalStateHandle(namespace + key) }
     }
 
-    @Synchronized fun getScope(jsLib: String?, context: CoroutineContext?): ScriptBindings? {
+    fun getScope(jsLib: String?, context: CoroutineContext?): ScriptBindings? {
         ensureOpen()
         if (jsLib.isNullOrBlank()) return null
         // SharedJsScope classifies a map only after parsing succeeds; a valid JS block remains inline.
@@ -51,32 +55,39 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         if (text.startsWith("http://", true) || text.startsWith("https://", true) || isMap)
             unsupportedRule("remote/map jsLib loading")
         val key = md5(jsLib)
-        libraryScopes[key]?.get()?.let { return it }
-        return createCryptoScope(context).also { scope ->
-            RhinoScriptEngine.eval(jsLib, scope, context)
-            scope.globalThis.preventExtensions()
-            libraryScopes[key] = WeakReference(scope)
+        synchronized(this) { ensureOpen(); libraryScopes[key]?.get() }?.let { return it }
+        return withCreationLock(libraryCreationLocks, key) {
+            synchronized(this) { ensureOpen(); libraryScopes[key]?.get() }
+                ?: createCryptoScope(context).also { scope ->
+                    RhinoScriptEngine.eval(jsLib, scope, context)
+                    scope.globalThis.preventExtensions()
+                    synchronized(this) {
+                        ensureOpen()
+                        libraryScopes[key] = WeakReference(scope)
+                    }
+                }
         }
     }
 
-    @Synchronized fun getCryptoScope(owner: Any, context: CoroutineContext?): ScriptBindings {
+    fun getCryptoScope(owner: Any, context: CoroutineContext?): ScriptBindings {
         ensureOpen()
         val key = CryptoKey(owner, Thread.currentThread())
-        cryptoScopes[key]?.get()?.let { return it }
-        return createCryptoScope(context).also {
-            it.globalThis.preventExtensions()
-            cryptoScopes[key] = WeakReference(it)
+        synchronized(this) { ensureOpen(); cryptoScopes[key]?.get() }?.let { return it }
+        return withCreationLock(cryptoCreationLocks, key) {
+            synchronized(this) { ensureOpen(); cryptoScopes[key]?.get() }
+                ?: createCryptoScope(context).also {
+                    it.globalThis.preventExtensions()
+                    synchronized(this) {
+                        ensureOpen()
+                        cryptoScopes[key] = WeakReference(it)
+                    }
+                }
         }
     }
 
     private fun createCryptoScope(context: CoroutineContext?): ScriptBindings {
         val scope = RhinoScriptEngine.getRuntimeScope(ScriptBindings())
-        val script = compiledCrypto ?: run {
-            val text = javaClass.getResourceAsStream("/io/yuedu/legado/originalrule/cryptojs.min.js")
-                ?.use { it.readBytes().toString(Charsets.UTF_8) }
-                ?: throw IllegalStateException("Required original CryptoJS resource is missing")
-            RhinoScriptEngine.compile(text).also { compiledCrypto = it }
-        }
+        val script = getCompiledCrypto()
         script.eval(scope, context)
         val function = object : BaseFunction() {
             override fun call(cx: Context, callScope: VarScope, thisObj: Scriptable, args: Array<Any>): Any = secureRandom.nextInt().toDouble()
@@ -93,12 +104,50 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         return scope
     }
 
-    @Synchronized fun remove(jsLib: String?) {
+    private fun getCompiledCrypto(): CompiledScript {
+        compiledCrypto?.let { return it }
+        return synchronized(cryptoCompileLock) {
+            ensureOpen()
+            compiledCrypto ?: run {
+                val text = javaClass.getResourceAsStream("/io/yuedu/legado/originalrule/cryptojs.min.js")
+                    ?.use { it.readBytes().toString(Charsets.UTF_8) }
+                    ?: throw IllegalStateException("Required original CryptoJS resource is missing")
+                RhinoScriptEngine.compile(text).also { script ->
+                    synchronized(this) { ensureOpen(); compiledCrypto = script }
+                }
+            }
+        }
+    }
+
+    // As in SharedJsScope, only callers creating the same scope share an initialization monitor.
+    // Never execute a library while holding the environment-wide cache/handle monitor.
+    private fun <K, T> withCreationLock(locks: MutableMap<K, CreationLock>, key: K, action: () -> T): T {
+        val lock = synchronized(this) {
+            ensureOpen()
+            locks.getOrPut(key) { CreationLock() }.also { it.users++ }
+        }
+        return try {
+            synchronized(lock.monitor) { ensureOpen(); action() }
+        } finally {
+            synchronized(this) {
+                lock.users--
+                if (lock.users == 0 && locks[key] === lock) locks.remove(key)
+            }
+        }
+    }
+
+    fun remove(jsLib: String?) {
         ensureOpen()
         if (jsLib.isNullOrBlank()) return
-        val prefix = md5(jsLib) + ":"
-        libraryScopes.remove(md5(jsLib))
-        handles.keys.filter { it.startsWith(prefix) }.forEach { handles.remove(it)?.let(ScriptBindings::removeSharedGlobalState) }
+        val key = md5(jsLib)
+        val prefix = "$key:"
+        withCreationLock(libraryCreationLocks, key) {
+            synchronized(this) {
+                ensureOpen()
+                libraryScopes.remove(key)
+                handles.keys.filter { it.startsWith(prefix) }.forEach { handles.remove(it)?.let(ScriptBindings::removeSharedGlobalState) }
+            }
+        }
     }
 
     @Synchronized fun releaseOwner(owner: Any) { cryptoScopes.keys.removeIf { it.owner === owner } }
