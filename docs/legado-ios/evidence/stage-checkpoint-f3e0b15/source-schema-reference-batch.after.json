@@ -1,0 +1,764 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "workpackageId": "source-schema",
+  "stageId": "s3-jvm-rules-http",
+  "status": "diagnostic-observer-consolidated-smoke-preflight-failed-actual-observations-zero",
+  "说明": "仅归档已审观察器、收集门及既有便携原件；未新增生产 schema 修复，未取得 Swift 真实差异。",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "compatibilityAccepted": false,
+  "actualSwiftObservationRows": 0,
+  "SwiftCompilationExecuted": false,
+  "iOSTestsExecuted": false,
+  "plannedObservation": {
+    "methods": 3,
+    "executions": 3,
+    "originalCases": 40,
+    "unknownFixtures": 13,
+    "originalRows": 280,
+    "unknownRows": 39,
+    "totalRows": 319,
+    "totalSnapshots": 916
+  },
+  "sourcePrediction": {
+    "different": 24,
+    "selectedEqual": 16,
+    "runtimeObservation": false,
+    "table": "docs/legado-ios/evidence/source-schema-reference/source-derived-difference-table.json"
+  },
+  "sourceBinding": {
+    "patchBase": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "integratingHEADObserved": "1347c24e2c117398e7b5ca17315bbff6c73e86e1",
+    "HEADIsNotAcceptanceForUncommittedChanges": true,
+    "frozenEightFiles": [
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+        "bytes": 13463,
+        "sha256": "f2d6235ad3f9bf5148a892ecb2ee5d9125a1a79696499c9d1353afde48ee75fd"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl",
+        "bytes": 8226,
+        "sha256": "214b64e5712d1406b8a01441971c20660ec21439968224bdfda6286518470ebc"
+      },
+      {
+        "path": "scripts/reader-experience/rule-defaults-reference.py",
+        "bytes": 13588,
+        "sha256": "6baed7563556eb9aec6a5e2ad03497672201fd7da9f0640fb0dd5c6565a360bc"
+      },
+      {
+        "path": "scripts/reader-experience/test-rule-defaults-reference.py",
+        "bytes": 7127,
+        "sha256": "7885eb55e08316731271294d08bfc49db6f677ca5a0bc8c3d0186ff6351038e6"
+      },
+      {
+        "path": "scripts/reader-experience/collect-rule-defaults-reference.py",
+        "bytes": 15369,
+        "sha256": "d96f349a9ef3bc8d3e8cb2c52d3a94ddc967131a7504e63c317d50c854c46998"
+      },
+      {
+        "path": "scripts/reader-experience/test-collect-rule-defaults-reference.py",
+        "bytes": 17205,
+        "sha256": "6f5b2f49048224ebc320deacd704a2ba3008ebb1b10a22723a2ce1529e61e1fd"
+      },
+      {
+        "path": "scripts/reader-experience/smoke.sh",
+        "bytes": 16189,
+        "sha256": "69a75da8062a740f34ff8f44a01d8ca5b375b0bbc15269644293c2b8e53cb1b5"
+      },
+      {
+        "path": ".github/workflows/reader-smoke.yml",
+        "bytes": 12950,
+        "sha256": "adf36db25ac4ea3e5e2751682180a749d7e314d8916212946ea67a7258160d6c"
+      }
+    ],
+    "mainEightFiles": [
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+        "bytes": 13463,
+        "sha256": "f2d6235ad3f9bf5148a892ecb2ee5d9125a1a79696499c9d1353afde48ee75fd"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/RuleDefaultsReference/unknown-field-cases.jsonl",
+        "bytes": 8226,
+        "sha256": "214b64e5712d1406b8a01441971c20660ec21439968224bdfda6286518470ebc"
+      },
+      {
+        "path": "scripts/reader-experience/rule-defaults-reference.py",
+        "bytes": 13588,
+        "sha256": "6baed7563556eb9aec6a5e2ad03497672201fd7da9f0640fb0dd5c6565a360bc"
+      },
+      {
+        "path": "scripts/reader-experience/test-rule-defaults-reference.py",
+        "bytes": 7127,
+        "sha256": "7885eb55e08316731271294d08bfc49db6f677ca5a0bc8c3d0186ff6351038e6"
+      },
+      {
+        "path": "scripts/reader-experience/collect-rule-defaults-reference.py",
+        "bytes": 15369,
+        "sha256": "d96f349a9ef3bc8d3e8cb2c52d3a94ddc967131a7504e63c317d50c854c46998"
+      },
+      {
+        "path": "scripts/reader-experience/test-collect-rule-defaults-reference.py",
+        "bytes": 17205,
+        "sha256": "6f5b2f49048224ebc320deacd704a2ba3008ebb1b10a22723a2ce1529e61e1fd"
+      },
+      {
+        "path": "scripts/reader-experience/smoke.sh",
+        "bytes": 16196,
+        "sha256": "cc0d121a0243046664f7ccf82b10697d1cdeb24a6862a2aad8ed4c3f501beb83"
+      },
+      {
+        "path": ".github/workflows/reader-smoke.yml",
+        "bytes": 13123,
+        "sha256": "033551ea58b15a3fdb593613c703213fcaafdfa06a6e52a844a1955fe8a569e7"
+      }
+    ],
+    "onlyAllowedUpstreamDeltas": [
+      "position comment 10+12+6=28",
+      "position gate18/28",
+      "position workflow paragraph from9c99957"
+    ],
+    "historical13_23OnlyInFrozenPreparationContext": true
+  },
+  "comparisonBoundary": "Complete representation differences are diagnostic collection success with selectedContractsMatch=false and CLI exit1 retained. Empty/missing/duplicate/unknown or malformed observations, tree/count/provenance failures fail collection. Fixture-only validation never satisfies CI collection. Neither outcome establishes full schema parity.",
+  "rootMainChecksAlreadyExecuted": [
+    {
+      "group": "reference",
+      "portableMethods": 8,
+      "exitCode": 0
+    },
+    {
+      "group": "collection",
+      "portableMethods": 19,
+      "exitCode": 0
+    },
+    {
+      "group": "smoke",
+      "portableMethods": 24,
+      "exitCode": 0
+    },
+    {
+      "group": "renewal",
+      "portableMethods": 16,
+      "exitCode": 0
+    },
+    {
+      "group": "shell",
+      "portableMethods": null,
+      "exitCode": 0
+    },
+    {
+      "group": "workflow",
+      "portableMethods": null,
+      "exitCode": 0
+    },
+    {
+      "group": "diff",
+      "portableMethods": null,
+      "exitCode": 0
+    }
+  ],
+  "testsRerunByRecorder": false,
+  "retainedEvidence": [
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference.patch",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-reference.patch",
+      "bytes": 44153,
+      "sha256": "b3715ab5b5c95612f2eb739bfbb9eec5220552885067199b1632506adb7ba83e",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-preparation.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-preparation.json",
+      "bytes": 8087,
+      "sha256": "8afae40381d743da047d56c8c4b80e8f5517afd0a9ee2ab73e989bcf50915538",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-independent-review.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-independent-review.json",
+      "bytes": 11314,
+      "sha256": "eaac69bfca947951ab925f880859ec89abdd14cd094d1a9012ebb701f85f7d04",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2.patch",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-v2.patch",
+      "bytes": 85840,
+      "sha256": "0fb4d5292ddd6b9e3eada444e56e189813d6b90700f7d70095bb9efd19c3816a",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-preparation-v2.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-preparation-v2.json",
+      "bytes": 13206,
+      "sha256": "b338d9ec0aaea8689f6f5e9adbb0bfcd667aa737493439576ded43a536e39954",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3.patch",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-v3.patch",
+      "bytes": 88180,
+      "sha256": "35b75b6a6bffbec397a8d67369ecf240a71fa815377df36d52fc96093b21498c",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-preparation-v3.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-preparation-v3.json",
+      "bytes": 11070,
+      "sha256": "89f1c71ab5f0f4b29293b44749bfaff7aa458dbe1b6f7e1dc6362d5116cd7f62",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-derived-difference-table.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-derived-difference-table.json",
+      "bytes": 32282,
+      "sha256": "72d921dd21442d0d72693c0f03cb4d7e5b01ff1aefee88ae5fd6e6fd9ff1f118",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-reference-fixture-check.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-reference-fixture-check.json",
+      "bytes": 1348,
+      "sha256": "ac3886f4edba90609df0a2679c22c5b8eaa0541d01cb86f56b0343d9499d1fee",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-reference-swift-grammar.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-reference-swift-grammar.json",
+      "bytes": 453,
+      "sha256": "481df74ccd4b557372a431f79b642f67e23cb587dd2e1ee74f1d0a50db12b958",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-integration-review.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-integration-review.json",
+      "bytes": 12905,
+      "sha256": "12740ba4a667d1a4005932cfcecc64d4c7d5631595170c9e7d95902873bd4e74",
+      "kind": "frozen-preparation-or-review"
+    },
+    {
+      "source": ".build/renewal-discovery/source-schema-v3-independent-review.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/source-schema-v3-independent-review.json",
+      "bytes": 17136,
+      "sha256": "04b2c1285d312f36246e41af9b33008cc69de7bf2b6fdddd7952e638750c112b",
+      "kind": "final-independent-v3-review"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-independent-validation/validation.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-independent-validation.json",
+      "bytes": 3568,
+      "sha256": "6e79f2784faed14ad2dc5a7ab70335e51ac45a8d2716f2a048ab3c2a7015edd8",
+      "kind": "synthetic-independent-validation"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-independent-validation/portable-eight.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-independent-portable-eight.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "synthetic-independent-raw-log"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-independent-validation/portable-eight.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-independent-portable-eight.stderr.txt",
+      "bytes": 111,
+      "sha256": "984beee796f01bb931cdf5236736df2b653d339e63f5c9f389e640ccb177df16",
+      "kind": "synthetic-independent-raw-log"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-independent-validation/synthetic-mismatch-cli.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-independent-synthetic-mismatch-cli.stdout.txt",
+      "bytes": 258,
+      "sha256": "d92edd94a4fafc6df19835af65a9acc91ad75a5f104f0b8bc399e213f7822ea2",
+      "kind": "synthetic-independent-raw-log"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-independent-validation/synthetic-mismatch-cli.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-independent-synthetic-mismatch-cli.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "synthetic-independent-raw-log"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/patch-forward-main-stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-patch-forward-main-stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-read-only-apply-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/patch-forward-main-stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-patch-forward-main-stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-read-only-apply-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/patch-reverse-stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-patch-reverse-stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-read-only-apply-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/patch-reverse-stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v1-patch-reverse-stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-read-only-apply-check"
+    },
+    {
+      "source": "docs/legado-ios/fixtures/rule-defaults-original-cases.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/original-rule-defaults-original-cases.json",
+      "bytes": 4881,
+      "sha256": "78cb973cc7fb97a8bdb32ff13c202c31e1d6c0966c31428c4faf101c01dc1f44",
+      "kind": "public-original-reference-not-current-Swift"
+    },
+    {
+      "source": "docs/legado-ios/fixtures/rule-defaults-original-results.jsonl",
+      "path": "docs/legado-ios/evidence/source-schema-reference/original-rule-defaults-original-results.jsonl",
+      "bytes": 22015,
+      "sha256": "467bbfe63a14a0f99acfb8e90a40391fdd43077cee5a67b09de52d0e162c931f",
+      "kind": "public-original-reference-not-current-Swift"
+    },
+    {
+      "source": "docs/legado-ios/fixtures/rule-defaults-original-probe.kt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/original-rule-defaults-original-probe.kt",
+      "bytes": 2386,
+      "sha256": "f0f01a42b4fc70e4e1972e2516eb8a9d509bf437fa06b96c41d63698718524d1",
+      "kind": "public-original-reference-not-current-Swift"
+    },
+    {
+      "source": "docs/legado-ios/fixtures/rule-defaults-original-provenance.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/original-rule-defaults-original-provenance.json",
+      "bytes": 14127,
+      "sha256": "a37cc35b48e234dbea0a48bd39d7980df4cb9b0684ba3b5d7a671bdbf65cbf0e",
+      "kind": "public-original-reference-not-current-Swift"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/bash-syntax.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-bash-syntax.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/bash-syntax.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-bash-syntax.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/collection-guards.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-collection-guards.stderr.txt",
+      "bytes": 2814,
+      "sha256": "fd5d3b0878ba2b38229bd84977ce90e107e901f9af351e3bf3ccfbb564795f19",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/collection-guards.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-collection-guards.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/commands.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-commands.json",
+      "bytes": 1958,
+      "sha256": "66e89fdf164eb8be94b151203946ba3917640dce97c3d1a602d6d084977b5847",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/diff-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-diff-check.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/diff-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-diff-check.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/patch-forward-base-index.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-patch-forward-base-index.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/patch-forward-base-index.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-patch-forward-base-index.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/patch-reverse.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-patch-reverse.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/patch-reverse.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-patch-reverse.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/reference-guards.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-reference-guards.stderr.txt",
+      "bytes": 1429,
+      "sha256": "a48ceadc707b95a329de7b98a54bd510d00552c3a1a88be4131ab42f0bc7fb15",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v2-validation/reference-guards.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v2-reference-guards.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/collection-guards.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-collection-guards.stderr.txt",
+      "bytes": 3402,
+      "sha256": "1c3c7b7672e93be46aeab4ba89bada0b41c0b087d2b4079748c4e2266397ddaf",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/collection-guards.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-collection-guards.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/commands.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-commands.json",
+      "bytes": 216,
+      "sha256": "bf96a0b4a338ab4c200d07228f883117a62040b10f7d90db53a0cb7ad64ab4db",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/diff-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-diff-check.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/diff-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-diff-check.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/patch-forward-base-index.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-patch-forward-base-index.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/patch-forward-base-index.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-patch-forward-base-index.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/patch-reverse.stderr.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-patch-reverse.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/patch-reverse.stdout.txt",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-patch-reverse.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/source-schema-reference-worktree/.build/source-schema-reference-v3-validation/root-counterexamples-replay.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/v3-root-counterexamples-replay.json",
+      "bytes": 404,
+      "sha256": "e982f1f4afa197670e6008abf6705a9d1f8680b15ef6c5c43598c0a6ad0c6ba1",
+      "kind": "portable-or-read-only-check"
+    },
+    {
+      "source": ".build/renewal-discovery/source-collector-v2-negative.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-v2-counterexamples.json",
+      "bytes": 4669,
+      "sha256": "a74535ff6f149e48fa25bcbb48577ce66574fe38d153fde879ec7cd6163468ed",
+      "kind": "historical-synthetic-v2-defect"
+    },
+    {
+      "source": ".build/renewal-discovery/check-source-collector-v2-negative.py",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-v2-counterexamples.py",
+      "bytes": 1858,
+      "sha256": "1ced6d3c0bc6b6670357d6d2d69cb80b4b36b182363793df8b0a905ecc873c88",
+      "kind": "historical-synthetic-probe-not-run"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/reference.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-reference.json",
+      "bytes": 668,
+      "sha256": "712ef723023ea2308f9bf5e19f8b2dd0510e2090089e0d7aa12b948b889042be",
+      "kind": "root-main-existing-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/reference.stdout",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-reference.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/reference.stderr",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-reference.stderr",
+      "bytes": 111,
+      "sha256": "ebd4c4641d8e8f1995547f4a02bf46a2e5ab9dbe9c145cf0978fcc2874ab4f3e",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/collection.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-collection.json",
+      "bytes": 679,
+      "sha256": "6768c5c4c607508657e3f84132ccfab0e8075f8e1d396c4aed135dd29c824cd2",
+      "kind": "root-main-existing-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/collection.stdout",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-collection.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/collection.stderr",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-collection.stderr",
+      "bytes": 123,
+      "sha256": "3008375b571fad6ce8e6b04b93504b54cde2390642b558f29374471b65e050f9",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/smoke.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-smoke.json",
+      "bytes": 649,
+      "sha256": "65d9be9c37e5cfdfaa3b2cb709e07746c3cd7b8393585b9727fbb6772f8641ad",
+      "kind": "root-main-existing-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/smoke.stdout",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-smoke.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/smoke.stderr",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-smoke.stderr",
+      "bytes": 128,
+      "sha256": "02475eb5012799dbf884e22e1cabfd0026100bc9f671c176342198262f939e46",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/renewal.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-renewal.json",
+      "bytes": 661,
+      "sha256": "c44fef63e2546b6bb7f8be7a9fc1826ef643522304767309638070c0887ff450",
+      "kind": "root-main-existing-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/renewal.stdout",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-renewal.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/renewal.stderr",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-renewal.stderr",
+      "bytes": 120,
+      "sha256": "5de4219e4a8b16302fddc2f6cda951c569ac1235c941adf1bee7e73a1805d330",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/shell.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-shell.json",
+      "bytes": 640,
+      "sha256": "a2e3bf073a51dd88dc0031224dfa286cb1d47682e432b29368e46c3a6557e8fc",
+      "kind": "root-main-existing-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/shell.stdout",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-shell.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/shell.stderr",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-shell.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/workflow.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-workflow.json",
+      "bytes": 661,
+      "sha256": "855eca3ef6c3796bbcc3df3e9eb83e4150eae4d2d381502e87c529eaf4b8b7fb",
+      "kind": "root-main-existing-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/workflow.stdout",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-workflow.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/workflow.stderr",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-workflow.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/diff.json",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-diff.json",
+      "bytes": 589,
+      "sha256": "eaaab7c328c51c08af22e58600467970931b98036c2ae4593cd7b803be5c7c8f",
+      "kind": "root-main-existing-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/diff.stdout",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-diff.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/schema-main-verification/diff.stderr",
+      "path": "docs/legado-ios/evidence/source-schema-reference/root-main-diff.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-raw-log"
+    }
+  ],
+  "canonicalPlanMutation": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "beforeSHA256": "0dfbef74155fd521deb83ef52826d382a93a8635fd93567bd0d0f3e6e110fbc7",
+    "afterSHA256": "4215927ad393426df7d48ed8bcf05065b4942707c3da95c1495e6ee48ec5ccc9",
+    "stageCount": 8,
+    "workpackageCount": 33,
+    "featureDomainCount": 64,
+    "onlySourceSchemaStateEvidenceQueuesChanged": true,
+    "cloudPoliciesAndFourFalseFlagsUnchanged": true
+  },
+  "nextAction": "在相关整批源码检查点取得实际 319 条／916 快照及原始证据，再依据差异修复生产保存语义；复用未变的便携结果，不为归档或本包单独重复触发云测。",
+  "submittedStageCheckpoint": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "observedAtUTC": "2026-10-19T15:53:04.096385+00:00",
+    "observationRecord": {
+      "path": "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+      "bytes": 3670,
+      "sha256": "e99def1cfd673323eb736044c514e1e938e3dad75dcd4ffc0e1e58ae1fb50f2d"
+    },
+    "readerSmokeRunId": 39281083749,
+    "renewalRunId": 39281084369,
+    "statusAtSavedInitialObservation": "queued",
+    "statusIsNotClaimedCurrent": true,
+    "passedCasesOrSchemaObservationsAccepted": false,
+    "fixedAReleaseRebuilt": false,
+    "excludesSubsequentLaunchMemoryAndUMDPreparation": true
+  },
+  "actualConsolidatedSmokePreflightFailure": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "runID": 39281083749,
+    "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281083749",
+    "conclusion": "failure",
+    "failedStage": "portable guards before Xcode",
+    "PythonSetUpErrors": 19,
+    "SwiftOrIOSTestExecutions": 0,
+    "compilerDiagnostics": 0,
+    "XcodeStepsSkipped": true,
+    "record": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/failure-record.json",
+      "bytes": 2992,
+      "sha256": "2a30c4f20f646ec472b5dabd6d517c95a01fc5784353b1bb57847d3005550421"
+    },
+    "minimalTestRootFixReview": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/test-root-fix-independent-review.json",
+      "bytes": 8204,
+      "sha256": "e5769bc50115e08f855205e68d88f72ca0498d54e0ec9a40bee5faf9851b5e57"
+    },
+    "productionPathGuardUnchanged": true,
+    "portableTestIdentitiesUnchanged": 19,
+    "rootPortable19Passed": true,
+    "rootPortableRawLogRetained": false,
+    "rootPortableResultIsToolReportedOnly": true,
+    "MacOSTemporaryPathAndAncestryMeasured": false,
+    "specificOSAliasCauseIsInferenceOnly": true,
+    "successorStageNotSubmittedByThisRecord": true
+  },
+  "submittedStageDCheckpoint": {
+    "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+    "record": {
+      "path": "docs/legado-ios/stage-checkpoint-f3e0b15-initial.json",
+      "bytes": 2673,
+      "sha256": "48f1b29b7de0dbbadb35fe63f94dce942ef7c0f701a51932b7697dfba65122e9"
+    },
+    "tagsPushed": true,
+    "runs": [
+      {
+        "name": "smoke",
+        "workflow": ".github/workflows/reader-smoke.yml",
+        "tag": "reader-smoke-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697059,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697059",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:45Z"
+        }
+      },
+      {
+        "name": "measurements",
+        "workflow": ".github/workflows/reader-measurements.yml",
+        "tag": "reader-measurements-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697993,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697993",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:46Z"
+        }
+      }
+    ],
+    "passedCasesOrSamplesAccepted": false,
+    "originalResultsRemainSourceBound": true
+  }
+}

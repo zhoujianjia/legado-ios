@@ -259,11 +259,13 @@
   "otherRunnerPreparation": {
     "UMDMethodsPlanned": 11,
     "runnerGroupsPlanned": 3,
-    "submitted": false,
+    "submitted": true,
     "includedInC": false,
     "includedInARelease12": false,
     "note": "Separate concentrated measurement/diagnostic runner preparation; this parser archive does not implement, submit or accept it.",
-    "runnerCodePresent": true
+    "runnerCodePresent": true,
+    "submissionRecord": "docs/legado-ios/stage-checkpoint-f3e0b15-initial.json",
+    "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842"
   },
   "retainedEvidence": [
     {
@@ -1653,5 +1655,48 @@
     "privateSourcesRead": false,
     "originalZIPRemoved": false,
     "deviceOrPackageActions": false
+  },
+  "submittedStageDCheckpoint": {
+    "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+    "record": {
+      "path": "docs/legado-ios/stage-checkpoint-f3e0b15-initial.json",
+      "bytes": 2673,
+      "sha256": "48f1b29b7de0dbbadb35fe63f94dce942ef7c0f701a51932b7697dfba65122e9"
+    },
+    "tagsPushed": true,
+    "runs": [
+      {
+        "name": "smoke",
+        "workflow": ".github/workflows/reader-smoke.yml",
+        "tag": "reader-smoke-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697059,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697059",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:45Z"
+        }
+      },
+      {
+        "name": "measurements",
+        "workflow": ".github/workflows/reader-measurements.yml",
+        "tag": "reader-measurements-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697993,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697993",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:46Z"
+        }
+      }
+    ],
+    "passedCasesOrSamplesAccepted": false,
+    "originalResultsRemainSourceBound": true
   }
 }

@@ -1,0 +1,966 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "stageId": "s2-reading-experience",
+  "workpackageId": "reading-performance-and-prefetch",
+  "status": "submitted-source-only-checkpoint-awaiting-actual-native-evidence",
+  "说明": "归档独立 runner 代码、原始 portable 与静态独审；已有旧 UI/A 编译资料只提供实际结构和 Debug 命名来源。本批尚未提交云测，不构成新 Swift/SDK/XCTest、UMD 产品导入、启动/内存或整阶段验收。",
+  "stageComplete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "sourceBinding": {
+    "patchBaseCommit": "9e4656128e202a0324dda3e8ad97a3c028d37499",
+    "integratingHEADObserved": "1fd96156392b231580482606f394219df45141db",
+    "HEADNotUsedAsAcceptanceCommitForUncommittedChanges": true,
+    "eightMainFilesMatchFrozenReviewedByteHashes": true,
+    "files": [
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+      },
+      {
+        "path": "scripts/reader-experience/test-smoke-tools.py",
+        "bytes": 29734,
+        "sha256": "2222861c18ee769bb8b6f64f6ea7f7ce1792d5641e9044bc8fbd65917e9c21ae"
+      },
+      {
+        "path": "scripts/reader-experience/collect-reader-measurements.py",
+        "bytes": 24035,
+        "sha256": "8f56850e3117b6eb1119731dcb0054452d66a24f86e86106ae06f168f6c96bc0"
+      },
+      {
+        "path": "scripts/reader-experience/test-collect-reader-measurements.py",
+        "bytes": 28782,
+        "sha256": "f75c39591ca2c2f6d8df21771974bfc3cf3dd093545abc926c55cd41ff7624c1"
+      },
+      {
+        "path": "scripts/reader-experience/reader-measurements.sh",
+        "bytes": 6412,
+        "sha256": "7887fa3693a8df09a21dabfaf32831e5fec37b09e9cf130d26e522c6b8969445"
+      },
+      {
+        "path": ".github/workflows/reader-measurements.yml",
+        "bytes": 4291,
+        "sha256": "eab73a4055afe0dc081469b130ee3441872da3ba3f9732804741e9626d751fe6"
+      },
+      {
+        "path": "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json",
+        "bytes": 984,
+        "sha256": "422b43e5e6f671d84b115864216ba33cb3b47c8df25b7d78ffd4cfd623dc34ec"
+      },
+      {
+        "path": "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json",
+        "bytes": 1775,
+        "sha256": "5868bc2b0c9cb43ae465e4ea5a03292c13fb47bc125bc43fc0d3a65042c7cbde"
+      }
+    ],
+    "performanceNineMainFileHashesPreserved": [
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+        "bytes": 131229,
+        "sha256": "0370489a26089778af7dc0a2568e9284b981983ce6a150b0709a59ecb9f8cade"
+      },
+      {
+        "path": "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+        "bytes": 7631,
+        "sha256": "1f9142838a46236600eeb375e1bb2b71b5ca66dd0dfe7607fcc595d61ed9d0ee"
+      },
+      {
+        "path": "Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift",
+        "bytes": 7912,
+        "sha256": "11618885bb65144fe7d4b23b8bab97e0e37215300da7732e17ac54d8477ae963"
+      },
+      {
+        "path": "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift",
+        "bytes": 10129,
+        "sha256": "91f7beed556a12131b977a8d841df02c5c5d4a5373e9852f7518dccc5f4f9a98"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift",
+        "bytes": 15123,
+        "sha256": "5fd725526f69353e5a2cc60d9ed027e29d41a767a0243675be373420b94cdd39"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+        "bytes": 9646,
+        "sha256": "10bc4d7b32d8e18a3cea2fc8e061c8af48e1ac713f5bdd27a4cf5b2ea8227b3f"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift",
+        "bytes": 19749,
+        "sha256": "be25f2748d9ecc1b791119269dba1f90932a36516e22d56659b7b10c6960dafb"
+      },
+      {
+        "path": "scripts/reader-experience/reader-launch-memory.py",
+        "bytes": 21981,
+        "sha256": "e348bd60d3078dc8993da1e0dbc35cc64045d147a9f1f8838200e66ef3ef8249"
+      },
+      {
+        "path": "scripts/reader-experience/test-reader-launch-memory.py",
+        "bytes": 15563,
+        "sha256": "2331f4322ace0c8fd261dbe1aabea52aa8e9a2e865ce108ea498427b6355b8e9"
+      }
+    ],
+    "UMDSixteenMainFileHashesPreserved": [
+      {
+        "path": "Modules/Core/UMD/UMDBookParser.swift",
+        "bytes": 2998,
+        "sha256": "00d903a2b1e994ca6124db9d14079986d34485c9b783a4073972434a49a00ea9"
+      },
+      {
+        "path": "Modules/Core/UMD/UMDTextDecoder.swift",
+        "bytes": 12942,
+        "sha256": "4c9f55d7e2eaa7fc97a26cce973be0d18291292b7d3cb57dd6d653a73be42c8f"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/fixture.umd",
+        "bytes": 261,
+        "sha256": "5d01e2919f769d6b8e77122df64833d34a4397f2dd74de5a5c4640f2189909b3"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/reader-output.json",
+        "bytes": 1530,
+        "sha256": "b1e7ccb87c1be6ba2f8a4a7103e4d68e6767c821c139725f9e89c84632ec310a"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/fixture.umd",
+        "bytes": 439,
+        "sha256": "2044ddc9c93c2be81e542ed59f8786a338bd3d01c880918be9977c383ec0ee22"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/reader-output.json",
+        "bytes": 276943,
+        "sha256": "58ea25c4dcc488de09404900db60e9ba3c7ec53a26c9d9c60c4dff0e1aa61dd4"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/fixture.umd",
+        "bytes": 293,
+        "sha256": "e242825d04a0a8411611a1c425ea6942b35c93baf1ea212447faa832e6009cc4"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/reader-output.json",
+        "bytes": 2528,
+        "sha256": "b0415da7a95182e08d3c24dcb9ec2f9559859d94e06f95cbd72d5d6050acd6f6"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/fixture.umd",
+        "bytes": 253,
+        "sha256": "18fc7b41d99ff8dca0fd50490aa6cfdfb319ed688a07e4f14050c5fa8c771a2c"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/reader-output.json",
+        "bytes": 1477,
+        "sha256": "1530f0733037cf23a10b685da9daf6453ee16ed3d6da767f4e332336a352b38d"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/fixture.umd",
+        "bytes": 244,
+        "sha256": "da0ace6f13013d6da36cce47beaed845eb450e3de1ac0756e0656f469b5f4056"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/reader-output.json",
+        "bytes": 1734,
+        "sha256": "2d41a1a581167d3f12aee85e69b3a6a7d364454e79ed87b7dd5c8698903454a5"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/provenance.json",
+        "bytes": 2100,
+        "sha256": "e77c071c9f821ae63dfd14d233a627b9cc6c9061e9ab2de864699f513194a2c4"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift",
+        "bytes": 12530,
+        "sha256": "8125bc6eea3663d36265db6d5babcd5d7a49d64bbf75450e89c5873899e0f8de"
+      },
+      {
+        "path": "scripts/reader-experience/inspect-umd-fixtures.py",
+        "bytes": 8749,
+        "sha256": "50085899d263769f0e10ffc75b0c69254865506914f0e72169ec94ec513a2812"
+      },
+      {
+        "path": "scripts/reader-experience/test-umd-fixtures.py",
+        "bytes": 5197,
+        "sha256": "4ce7266f51a4fbb1a8e9d7d5b05735c5d7ddd79873e4981d4e192cdbd73458be"
+      }
+    ],
+    "sourceInputsPlanned": 38,
+    "checkpointCSource": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "includedInC": false,
+    "includedInARelease12": false
+  },
+  "preparedSelections": {
+    "memory": {
+      "methods": 1,
+      "executions": 1,
+      "innerSamples": 10,
+      "fixtures": 2,
+      "iterationsPerFixture": 5,
+      "rawPhaseRows": 300
+    },
+    "launch": {
+      "methods": 1,
+      "executions": 1,
+      "innerSamples": 5
+    },
+    "umd": {
+      "methods": 11,
+      "executions": 11,
+      "pureParserOnly": true
+    }
+  },
+  "bindingContract": [
+    "Fresh shared prepare(tag_prefix=reader-measurements-) first creates reviewed source-stamped Info/project local overlays. Only then capture environment and source preparation; all other selected source bytes must match committed HEAD before and after collection.",
+    "Reuse stage capture-environment only. Bind actual Debug settings, Xcode/SDK/Simulator runtime/UDID, raw input digests, source commit, current CI run/attempt and built local/synthetic Simulator app metadata/source stamp/executable digest. Explicit ENABLE_DEBUG_DYLIB YES additionally requires the real nonempty executable-basename.debug.dylib and its hash; NO records no main debug payload. An optional declared derived path must match if present, and its original absence stays null. Re-read the complete tested-host identity after collection. No fifty-row stage execution or proof of instruction execution from hashes is implied.",
+    "Three original dedicated xcodebuild -l logs, result bundles, summaries and modern tests trees are independently gated. Exact 1/1, 1/1 and 11/11, no extra/duplicate/parameterized/failed/skipped/expected-failure cases. Every leaf must descend from the unique selected target bundle; unit/UI cannot borrow the other's bundle type.",
+    "Original shape helper remains unchanged and shape-only; execution validation additionally requires actual wrapper/export success and original XCTest source identities. Raw measurement marker bytes survive failed/incomplete collection. Source/environment/artifact/log drift cannot leave a successful group.",
+    "All recoverable groups run and retain evidence before combined final failure. Initial unsafe local-overlay preparation does not launch any host. Fatal abort/deadline may leave incomplete artifacts, never success or synthetic replacement."
+  ],
+  "CIProtocolPrepared": {
+    "workflow": ".github/workflows/reader-measurements.yml",
+    "tagPrefix": "reader-measurements-",
+    "artifact": "reader-measurements-evidence",
+    "jobDeadlineMinutes": 80,
+    "executionStepDeadlineMinutes": 70,
+    "wrapperDeadlineSeconds": {
+      "memoryIncludingInitialCompilation": 2700,
+      "launch": 900,
+      "umd": 300
+    },
+    "submittedOrTriggered": false,
+    "existingSmokeWorkflowChanged": false,
+    "includeHiddenFiles": true,
+    "retentionDays": 7,
+    "uploadScope": [
+      ".build/ci-logs",
+      ".build/reader-measurements"
+    ]
+  },
+  "measurementCloudSubmission": {
+    "runnerCodePresent": true,
+    "selectorsAddedToCI": true,
+    "submitted": true,
+    "newRunID": 39289697993,
+    "newTag": "reader-measurements-f3e0b15",
+    "awaitingEvidenceIsNotSubmission": true,
+    "submissionRecord": "docs/legado-ios/stage-checkpoint-f3e0b15-initial.json",
+    "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842"
+  },
+  "UMDBoundary": {
+    "pureParserMethodsPlanned": 11,
+    "actualSwiftExecutions": 0,
+    "productImportSupported": false,
+    "localFormatsReadinessAndQueuesUnchanged": true
+  },
+  "localChecksAlreadyExecuted": {
+    "authorV1PortableCollectorMethods": 20,
+    "authorV2PortableCollectorMethods": 22,
+    "authorSharedSmokeMethods": 24,
+    "authorSharedStageMethods": 20,
+    "uniqueOriginalAuthorRawLogs": 54,
+    "sameChecksNotAccumulated": true,
+    "v2Shared24Stage20BashReuseOriginalV1Logs": true,
+    "authorBashSyntaxAndActionlintPassed": true,
+    "shellcheckExecuted": false,
+    "rootMainVerification": {
+      "provenance": "root-tool-reported-only-no-new-raw-retained",
+      "reportedPortableMethods": {
+        "collector": 22,
+        "shared": 24,
+        "stage": 20
+      },
+      "reportedBashSyntaxExitCode": 0,
+      "reportedDiffCheckExitCode": 0,
+      "newRawEvidenceAvailable": false,
+      "rawEvidenceFabricated": false,
+      "reportMustNotBePromotedToHashVerifiedRaw": true
+    },
+    "testsRerunByRecorder": false,
+    "SwiftTypecheckPerformed": false,
+    "AppleSDKCompilationPerformed": false,
+    "iOSTestsExecuted": 0,
+    "actualLaunchSamples": 0,
+    "actualMemorySamples": 0,
+    "actualRawMemoryPhaseRows": 0,
+    "actualUMDSwiftExecutions": 0
+  },
+  "historicalProtocol": {
+    "oldTXTMethods": 1,
+    "existingStagePortableMethods": 20,
+    "existingMetricRows": 50,
+    "oldTXTOrStageSelectionsRunByNewRunner": false,
+    "newExpectedExecutions": {
+      "memory": 1,
+      "launch": 1,
+      "umd": 11
+    },
+    "innerSamplesPlanned": {
+      "launch": 5,
+      "memory": 10
+    },
+    "rawMemoryPhaseRowsPlanned": 300
+  },
+  "resolvedFindings": [
+    {
+      "id": "selected-target-bundle-containment",
+      "originalNegative": {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\measurement-runner-preliminary-containment-negative.json",
+        "bytes": 4176,
+        "sha256": "6144500f71a0344982c9498b2042581b80fff20249318e7235ea634031d6f4ba"
+      },
+      "frozenReplay": {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\reader-measurements-runner-independent-validation\\containment-replay.json",
+        "bytes": 851,
+        "sha256": "acaf09f3a1be7987c3a03687a5fabf4215775f67d8098027497d21eb63696723"
+      },
+      "resolution": "Every case must descend from the selected bundle; nested test plans/bundles are rejected. The original counterexample now throws the precise required ValueError. New portable method preserves both the external-leaf and nested-plan counterexamples."
+    },
+    {
+      "id": "hidden-owned-evidence-upload",
+      "reportedBy": "/root",
+      "resolution": "Pinned upload action receives include-hidden-files:true for both owned .build paths and retention7. Existing workflow scope/action pin unchanged. This is explicit artifact configuration, not a claim of observed upload loss in prior runs."
+    },
+    {
+      "id": "actual-main-debug-code-payload",
+      "reportedBy": "/root",
+      "resolution": "Actual ENABLE_DEBUG_DYLIB must be explicit YES/NO. YES requires a real nonempty executable-basename.debug.dylib plus hash, validating an optional declared path while preserving original absence as null. NO records no main debug payload. Complete host identity is re-read after collection; changed payload with unchanged stub cannot leave validated flags.",
+      "actualPortableCoverageReadAndLogsVerified": [
+        "test_debug_dylib_mode_requires_real_nonempty_payload_and_preserves_no_mode",
+        "test_debug_payload_mutated_during_collection_cannot_leave_a_passing_record"
+      ],
+      "scope": "Synthetic owned file identity/negative tests, not a new SDK build or proof the hashed instructions executed."
+    }
+  ],
+  "historicalSourceContext": {
+    "UIReference": {
+      "runID": 39146602853,
+      "sourceCommit": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
+      "originalRelativeDirectory": ".build/cloud-evidence/run-39146602853/artifact/reader-renewal-probe",
+      "newFixturePaths": [
+        "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json",
+        "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json"
+      ],
+      "purpose": "Unmodified modern UI test tree/summary structure, not execution of the new launch method.",
+      "knownContainerTypes": [
+        "Test Plan",
+        "UI test bundle",
+        "Test Suite",
+        "Test Case"
+      ]
+    },
+    "debugReference": "docs/legado-ios/evidence/reader-measurements-runner/debug-payload-historical-reference.json",
+    "officialPinnedActionMetadataURL": "https://raw.githubusercontent.com/actions/upload-artifact/cf430e030ddbb5b0abf93d22962f4752f3646cd9/action.yml",
+    "officialActionDefaultFalseCheckProvenance": "root-reported exact pinned action.yml read; this preparation contains URL only, no invented local download",
+    "historicalInputsAreNotNewSelectorExecution": true
+  },
+  "retainedEvidence": [
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-runner.patch",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner.patch",
+      "bytes": 65960,
+      "sha256": "1da20a58629e888ab6b430c22d68e3500158dbce9379b0c0ab52e2516c3d191f",
+      "kind": "frozen-original-preparation"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-runner-preparation.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-preparation.json",
+      "bytes": 23684,
+      "sha256": "48e6d3de388ff7cfa5a760fa885c08d90a0c2a7f02a40b268b094b6909f06bd6",
+      "kind": "frozen-original-preparation"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-runner-v2.patch",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-v2.patch",
+      "bytes": 72760,
+      "sha256": "11e578fc44104e10b168320b0c8ebd766ab4d46294e7f40203a381df1798197f",
+      "kind": "frozen-original-preparation"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-runner-preparation-v2.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-preparation-v2.json",
+      "bytes": 26207,
+      "sha256": "99a2fada7ec2f1bdd6dd4811655cd38e0a920c0716780208f5cc591784dcc4f6",
+      "kind": "frozen-original-preparation"
+    },
+    {
+      "source": ".build/renewal-discovery/reader-measurements-runner-independent-review.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-independent-review.json",
+      "bytes": 13331,
+      "sha256": "a7fd3f15f060132b49cc996ca772313199674cd98534759786d3822b6f5dac87",
+      "kind": "independent-static-review"
+    },
+    {
+      "source": ".build/renewal-discovery/measurement-runner-preliminary-containment-negative.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/measurement-runner-preliminary-containment-negative.json",
+      "bytes": 4176,
+      "sha256": "6144500f71a0344982c9498b2042581b80fff20249318e7235ea634031d6f4ba",
+      "kind": "original-synthetic-counterexample"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/portable-collection.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-portable-collection.stdout",
+      "bytes": 1626,
+      "sha256": "884db3db18085d5462a0cfc8410fd5218605c8e73214f3e76abb44fcee4588b6",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/portable-collection.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-portable-collection.stderr",
+      "bytes": 3664,
+      "sha256": "fce313c961c8b1b9e488f251a76ad2901beea10c44bbb5f14604b3cc7f375e4d",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/portable-shared-smoke.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-portable-shared-smoke.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/portable-shared-smoke.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-portable-shared-smoke.stderr",
+      "bytes": 4250,
+      "sha256": "6af6fe7c9f3c6daa0fb9cf09839f9c8ee4bb0919e06c86319a61455d31a1b910",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/portable-shared-stage.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-portable-shared-stage.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/portable-shared-stage.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-portable-shared-stage.stderr",
+      "bytes": 3412,
+      "sha256": "5318e2cebb0b36cc0bd1dd32b37688d14ac24448060981e1afb22967da20c4fc",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/bash-syntax.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-bash-syntax.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/bash-syntax.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-bash-syntax.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/actionlint.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-actionlint.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/actionlint.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-actionlint.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/diff-check.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-diff-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/diff-check.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-diff-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/tracked-patch.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-tracked-patch.stdout",
+      "bytes": 3785,
+      "sha256": "8ea66f18c31a05e643b5c4b798bf3302a9eb95c258b1ead4dcafea71063ed9a0",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/tracked-patch.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-tracked-patch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-0.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-0.stdout",
+      "bytes": 22979,
+      "sha256": "1aa2d90ce99bd46c3382d086f02346787f693aaad80fb3ed16fb84f2db36b469",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-0.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-0.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-1.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-1.stdout",
+      "bytes": 24416,
+      "sha256": "369199a0ce8b7b70f6f59b8ebd3804081091ed7f2a4412d6955b9e8b16c68492",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-1.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-2.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-2.stdout",
+      "bytes": 6753,
+      "sha256": "a62e879b7849599af3ff335183e80e19bff61ca7cedd8cbc3ee815961b8f3a9f",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-2.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-3.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-3.stdout",
+      "bytes": 4549,
+      "sha256": "4cb98bba7d8a922e326e9190ccc166e77b721b3a005601db5526537d82bf8a59",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-3.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-4.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-4.stdout",
+      "bytes": 1341,
+      "sha256": "e853f576b913be2e80b0d642175fb0dd268d90f4838432ce3384a4f5716adb5b",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-4.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-4.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-5.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-5.stdout",
+      "bytes": 2137,
+      "sha256": "af78fd3deba26a7dc1b403fe866257529df464028ae945c792eab3c56f986df3",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/new-file-5.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-new-file-5.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/reverse-patch-check.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-reverse-patch-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/reverse-patch-check.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-reverse-patch-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/forward-main-check.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-forward-main-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation/forward-main-check.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v1-forward-main-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/portable-collection.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-portable-collection.stdout",
+      "bytes": 1795,
+      "sha256": "7e0188eec47c446e8bb144f6cc09faae98fc2fe688588c0d246c91d474270e9c",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/portable-collection.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-portable-collection.stderr",
+      "bytes": 4052,
+      "sha256": "c67121ec55a39a804fb4990867276b9a1d8d977a445aa6671b7547d7e76acc22",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/actionlint.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-actionlint.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/actionlint.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-actionlint.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/diff-check.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-diff-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/diff-check.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-diff-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/tracked-patch.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-tracked-patch.stdout",
+      "bytes": 3785,
+      "sha256": "8ea66f18c31a05e643b5c4b798bf3302a9eb95c258b1ead4dcafea71063ed9a0",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/tracked-patch.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-tracked-patch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-0.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-0.stdout",
+      "bytes": 24677,
+      "sha256": "900d67758a5ed85d233539bd91de09041ceedf9ae5226ca33c55a75070e91d23",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-0.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-0.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-1.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-1.stdout",
+      "bytes": 29481,
+      "sha256": "88671dad02f2237efac7f89a65dfd63d262e4bb51f16c501330d3ad7374c0ce5",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-1.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-2.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-2.stdout",
+      "bytes": 6753,
+      "sha256": "a62e879b7849599af3ff335183e80e19bff61ca7cedd8cbc3ee815961b8f3a9f",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-2.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-3.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-3.stdout",
+      "bytes": 4586,
+      "sha256": "9ecaefb9655bddebc923aae0fbce6ab0dad8d3babb42d9737277e92ce9a1ae3c",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-3.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-3.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-4.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-4.stdout",
+      "bytes": 1341,
+      "sha256": "e853f576b913be2e80b0d642175fb0dd268d90f4838432ce3384a4f5716adb5b",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-4.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-4.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-5.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-5.stdout",
+      "bytes": 2137,
+      "sha256": "af78fd3deba26a7dc1b403fe866257529df464028ae945c792eab3c56f986df3",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/new-file-5.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-new-file-5.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/reverse-patch-check.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-reverse-patch-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/reverse-patch-check.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-reverse-patch-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/forward-main-check.stdout",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-forward-main-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/reader-measurements-validation-v2/forward-main-check.stderr",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/author-v2-forward-main-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "author-original-portable-or-static-raw"
+    },
+    {
+      "source": ".build/renewal-discovery/reader-measurements-runner-independent-validation/identity-check.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/independent-identity-check.json",
+      "bytes": 42307,
+      "sha256": "70d35d2d170a8f23249155a43e3b186e7522cee4c758a5b7bde894bc3e35d645",
+      "kind": "independent-original-validation"
+    },
+    {
+      "source": ".build/renewal-discovery/review-measurements-runner-v2.py",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/review-measurements-runner-v2.py",
+      "bytes": 6682,
+      "sha256": "fcf2c9c77c93b0f0bb92b42647dbe8c1a776ad0d1106c784c4fea2c22d54274a",
+      "kind": "independent-original-validation"
+    },
+    {
+      "source": ".build/renewal-discovery/review-measurements-runner.py",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/review-measurements-runner.py",
+      "bytes": 14624,
+      "sha256": "71f5e0c084c5fabf55966f7e45b434bddba6c0bdbd3814bc8900686ad8686cfc",
+      "kind": "independent-original-validation"
+    },
+    {
+      "source": ".build/renewal-discovery/reader-measurements-runner-independent-validation/containment-replay.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/independent-containment-replay.json",
+      "bytes": 851,
+      "sha256": "acaf09f3a1be7987c3a03687a5fabf4215775f67d8098027497d21eb63696723",
+      "kind": "independent-counterexample-replay"
+    },
+    {
+      "source": ".build/cloud-evidence/run-39146602853/artifact/reader-renewal-probe/ui-tests.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/historical-ui-tests.json",
+      "bytes": 1775,
+      "sha256": "5868bc2b0c9cb43ae465e4ea5a03292c13fb47bc125bc43fc0d3a65042c7cbde",
+      "kind": "historical-original-ui-structure-only"
+    },
+    {
+      "source": ".build/cloud-evidence/run-39146602853/artifact/reader-renewal-probe/ui-summary.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/historical-ui-summary.json",
+      "bytes": 984,
+      "sha256": "422b43e5e6f671d84b115864216ba33cb3b47c8df25b7d78ffd4cfd623dc34ec",
+      "kind": "historical-original-ui-structure-only"
+    },
+    {
+      "source": ".build/reader-measurements-runner-worktree/.build/debug-payload-historical-reference.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/debug-payload-historical-reference.json",
+      "bytes": 2285,
+      "sha256": "9cb38e97570f5ca112d10721b598dde93c08b6775b013d01dadfa98ccb2aede4",
+      "kind": "historical-debug-naming-reference"
+    },
+    {
+      "source": ".build/apc-bccc1ab2-ren/reader-renewal-probe/unit-tests.log",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/historical-A-unit-tests.log",
+      "bytes": 7977592,
+      "sha256": "ac83cbfd99a9dc3e52b11bae46665331c062838af3ec347b21afb2f4c5bd6b63",
+      "kind": "original-A-actual-compile-link-log-not-new-tests"
+    },
+    {
+      "source": ".build/cloud-evidence/run-39146602853/artifact/reader-renewal-probe/build-settings.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/historical-ui-build-settings.json",
+      "bytes": 43761,
+      "sha256": "dc7a9690c0e3fc5714eaf13e418ef73ddfbc4f2be9ed113f099a842e3266ad56",
+      "kind": "historical-original-debug-build-settings"
+    },
+    {
+      "source": ".build/reader-umd-worktree/.build/reader-umd-parser-preparation.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/reader-umd-parser-preparation.json",
+      "bytes": 20445,
+      "sha256": "f5ffb5197a5ae2e346f15bb123c53278b7bd5da4a17cc8ebd78706b8996a6040",
+      "kind": "existing-reviewed-umd-source-inventory"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/reader-launch-memory-preparation.json",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/reader-launch-memory-preparation.json",
+      "bytes": 24441,
+      "sha256": "f5704e40f106c5256cedeebcac878036cf68bec1741bd4e7a2535c6efd97e961",
+      "kind": "existing-reviewed-perf-source-inventory"
+    },
+    {
+      "source": ".build/renewal-discovery/record-reader-measurements-runner-integration.py",
+      "path": "docs/legado-ios/evidence/reader-measurements-runner/record-reader-measurements-runner-integration.py",
+      "bytes": 32175,
+      "sha256": "6bd37fd22f74f3932898d4cb4af9c978685a8d815c04dde6c79741c88ebecbb6",
+      "kind": "executed-recorder-source"
+    }
+  ],
+  "historicalEvidencePreservedSHA256": {
+    "docs/legado-ios/reading-comfort-batch.json": "730ee0cc9ad95f69e4c53e7aeef036aa744bf398038ce67713c2e643c2b0edcb",
+    "docs/legado-ios/reader-supply-measurement-batch.json": "f5ac93fc62c336142fb69969b822768550bcd926dbc100dbe6a98ff1a6301e16",
+    "docs/legado-ios/previous-reader-smoke-audit.json": "ad94143ef08f7520c3894047c844fae4e7ab1a0ee6391a79898be4d6b51da5ba",
+    "docs/legado-ios/local-product-validation.json": "04a2ad2ccb0207b0c39b5e6d4595d2b4c5e4ad2d8513de5b9c4935909a3dacb6",
+    "scripts/reader-experience/smoke.sh": "cc0d121a0243046664f7ccf82b10697d1cdeb24a6862a2aad8ed4c3f501beb83",
+    ".github/workflows/reader-smoke.yml": "033551ea58b15a3fdb593613c703213fcaafdfa06a6e52a844a1955fe8a569e7",
+    "scripts/reader-experience/reader-stage-baseline.py": "56580b42ce989cb66b83845368e576adc6384c1f76edec6ac9ed1e35cd3a53d6",
+    "scripts/reader-experience/test-reader-stage-baseline.py": "f895d69f1fb7333dcde9c9d536d42e29426b011b913c6b299ac3bbbd0659d807"
+  },
+  "limits": [
+    "No Swift/Apple SDK compilation, actual XCTest, launch or memory measurements ran in this preparation. Portable positive records use explicit owned synthetic mocks, never SDK evidence.",
+    "A future source checkpoint must contain the separately reviewed UMD16 and these runner8 paths before source_provenance can pass; the isolated baseline deliberately contains neither a fake parser nor a copied UMD implementation in this patch.",
+    "Launch CPU/AX after automation is not device-cold or GPU presentation. Memory is sampled in an XCTest host including overhead; short peaks may be missed, and a fixed child viewport may be clipped by a small scene.",
+    "UMD11 is pure parser/owned-original-fixture acceptance only, no registry/importer/product support, MOBI, cover, DRM, hardware or legal clearance.",
+    "No whole-stage completion, performance improvement, automatic renewal or compatibility claim follows from these checks."
+  ],
+  "documentMutations": {
+    "docs/legado-ios/completion-plan.json": {
+      "beforeSHA256": "010165ebeb6a46d46c6bc321e657550a0cbee7271032c48a85ceeec594ec04f0",
+      "afterSHA256": "909c6d566b4f057dfac97ac80c6ef3de0934c70095860ca592494c5bac8fc0e5",
+      "beforeSnapshot": "docs/legado-ios/evidence/reader-measurements-runner/completion-plan.before.json",
+      "afterSnapshot": "docs/legado-ios/evidence/reader-measurements-runner/completion-plan.after.json"
+    },
+    "docs/legado-ios/reader-launch-memory-batch.json": {
+      "beforeSHA256": "42a49a94ce0f8fbfd0333b6786655ba7bac20b0cd7de5c29bb44f0ef950fee61",
+      "afterSHA256": "b81b097789b4b1b5069ad5737937e110bb7f0a96537309dc206119e67a69b74c",
+      "beforeSnapshot": "docs/legado-ios/evidence/reader-measurements-runner/reader-launch-memory-batch.before.json",
+      "afterSnapshot": "docs/legado-ios/evidence/reader-measurements-runner/reader-launch-memory-batch.after.json"
+    },
+    "docs/legado-ios/umd-parser-preparation-batch.json": {
+      "beforeSHA256": "6f1d94a67038e2a7041d8873bf84327f1499ce250686a8367b49af99f9c842b6",
+      "afterSHA256": "74f6d775c25fad244cc8bb814afbf88ea4844efb69ab32ba10ef790eda46b3ca",
+      "beforeSnapshot": "docs/legado-ios/evidence/reader-measurements-runner/umd-parser-preparation-batch.before.json",
+      "afterSnapshot": "docs/legado-ios/evidence/reader-measurements-runner/umd-parser-preparation-batch.after.json"
+    }
+  },
+  "canonicalPlanMutation": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "beforeSHA256": "010165ebeb6a46d46c6bc321e657550a0cbee7271032c48a85ceeec594ec04f0",
+    "afterSHA256": "909c6d566b4f057dfac97ac80c6ef3de0934c70095860ca592494c5bac8fc0e5",
+    "stageCount": 8,
+    "workpackageCount": 33,
+    "featureDomainCount": 64,
+    "allFourGlobalFlagsRemainFalse": true,
+    "existingCheckerResult": "docs/legado-ios/evidence/reader-measurements-runner/plan-check.json",
+    "allQueuesCloudPolicyDependenciesOwnersOtherPackagesUnchanged": true,
+    "onlyPerformanceExecutionAndNewEvidenceReferenceChanged": true
+  },
+  "recorderActions": {
+    "gitMutation": false,
+    "networkOrCIQueriedOrTriggered": false,
+    "privateSourcesRead": false,
+    "testsRerun": false,
+    "latestCanonicalReadAtExecution": true,
+    "multiDocumentCrashAtomicityClaimed": false,
+    "COrAResultReclassified": false,
+    "AReleaseRebuilt": false
+  },
+  "submittedStageDCheckpoint": {
+    "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+    "record": {
+      "path": "docs/legado-ios/stage-checkpoint-f3e0b15-initial.json",
+      "bytes": 2673,
+      "sha256": "48f1b29b7de0dbbadb35fe63f94dce942ef7c0f701a51932b7697dfba65122e9"
+    },
+    "tagsPushed": true,
+    "runs": [
+      {
+        "name": "smoke",
+        "workflow": ".github/workflows/reader-smoke.yml",
+        "tag": "reader-smoke-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697059,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697059",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:45Z"
+        }
+      },
+      {
+        "name": "measurements",
+        "workflow": ".github/workflows/reader-measurements.yml",
+        "tag": "reader-measurements-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697993,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697993",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:46Z"
+        }
+      }
+    ],
+    "passedCasesOrSamplesAccepted": false,
+    "originalResultsRemainSourceBound": true
+  }
+}

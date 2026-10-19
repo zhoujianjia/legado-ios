@@ -1,0 +1,483 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "stageId": "s1-integrity-plan",
+  "workpackageId": "reading-position-write-integrity",
+  "status": "implemented-reviewed-consolidated-smoke-preflight-failed-ios-evidence-pending",
+  "说明": "本记录归档已存在的冻结证据和 root 主树 portable 验证；不是 Swift／iOS／运行故障复现／真机验收，也不完成 S1。",
+  "stageComplete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "sourceBinding": {
+    "patchBaseCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "integratingHEADObserved": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "HEADNotUsedAsAcceptanceCommitForUncommittedChanges": true,
+    "mainSevenFilesMatchFrozenReviewByteHashes": true,
+    "files": [
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+        "bytes": 6133,
+        "sha256": "4e7d2a454531b3a50e23c5787b4f708b222b62035b9cd529e477917525b41136"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+        "bytes": 7976,
+        "sha256": "8a3e8aecdf41f757e813ec77fc5adc8665c3e4a415d60f239180e46e174bdd2f"
+      },
+      {
+        "path": "Modules/Services/iCloud/FirestoreSyncManager.swift",
+        "bytes": 32036,
+        "sha256": "5ef6c257834b520e865413d51e3b28527cc29668699e657593bdd12bb50668f1"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+        "bytes": 18767,
+        "sha256": "9964c23181d32269189e88218635e37e70341d2a6bddaa40cc00146891c41275"
+      },
+      {
+        "path": "scripts/reader-experience/smoke.sh",
+        "bytes": 13910,
+        "sha256": "c8db2d3071c664ef195a1152fb5320e5b99a544aa2132d10e545e658c91440d0"
+      },
+      {
+        "path": "scripts/reader-experience/test-smoke-tools.py",
+        "bytes": 29111,
+        "sha256": "aa33bc68207760666e9ba6d1605062a092e912e840bc44440085be1be875639b"
+      },
+      {
+        "path": ".github/workflows/reader-smoke.yml",
+        "bytes": 11683,
+        "sha256": "3156678af23c9a64a230cda59c1ee3b3bf876f20a4e677d0265544bb347d95e5"
+      }
+    ],
+    "fixedFontCCafee5AndBuild12DoNotContainThisPositionFollowup": true
+  },
+  "sourceLevelDefects": {
+    "baselineSource": "docs/legado-ios/evidence/reader-position-integrity/position-baseline-store.swift",
+    "baselineSHA256": "86426b0987a2075fa0b855396b2a636eb658af08f76eaddc9e5e1a5e2eb9428d",
+    "evidence": "Original save performs synchronous writeData directly in concurrent async calls; flush has an empty body; sync replacement bypasses any shared ordering.",
+    "allowedInterleavingCounterexample": [
+      "A enters injected writeData and is held before atomic write",
+      "B writes its newer position and completes",
+      "flush returns without waiting for A",
+      "A is released and can overwrite B with the older position"
+    ],
+    "SwiftRuntimeCounterexampleExecuted": false,
+    "meaning": "Source-derived ordering counterexample and prepared native regression; not an executed Swift reproduction."
+  },
+  "implementationContract": [
+    "One shared actor only admits jobs, assigns a monotonic observed sequence and links each detached job to its predecessor; no synchronous file work or wait runs in admission.",
+    "Order means actual admitted order, not Task creation, wall-clock call order, actor FIFO or greatest chapter/offset.",
+    "save, async load, flush and sync replacement share the same process-local worker chain across store instances and books; flush waits for all predecessor jobs, with no retries or coalescing.",
+    "Atomic write, success callback and success log occur in the same ordered job. Failed writes retain the existing log-only Void API and emit no onSave; later jobs still run.",
+    "Accepted writes are detached from caller cancellation and finish their matching success/failure handling.",
+    "Firestore's sole existing sync-import caller awaits the same writer; sync replacement intentionally never onSave/echoes a cloud push.",
+    "Existing JSON path/codec and spineIndex/charOffset/translationOffset semantics are unchanged; the value type gains only Sendable."
+  ],
+  "historicalActualPositionGroups": [
+    {
+      "sourceCommit": "3a32c6af4814a35e44b0aa7d4f36f45b5cfd900b",
+      "runID": 39235837329,
+      "group": "reading-position",
+      "methods": 13,
+      "executions": 23,
+      "failures": 0,
+      "skips": 0,
+      "expectedFailures": 0,
+      "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39235837329-reading-position-summary.json",
+      "sha256": "914084a43019db3f7ba840398cb034b38f4c351597fb272b85eb26d6ef040f7c"
+    },
+    {
+      "sourceCommit": "44eee1c18098ac67d9dbed88f389bc97d9d7274c",
+      "runID": 39238550557,
+      "group": "reading-position",
+      "methods": 13,
+      "executions": 23,
+      "failures": 0,
+      "skips": 0,
+      "expectedFailures": 0,
+      "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39238550557-reading-position-summary.json",
+      "sha256": "532e46c88687f2e34ebe740fd2090100fb34ab4103ea2968d674a63c98d20c4f"
+    }
+  ],
+  "preparedRegression": {
+    "selector": "yuedu appTests/ReadingPositionStorePersistenceTests",
+    "newMethods": [
+      "testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled",
+      "testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits",
+      "testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave",
+      "testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave",
+      "testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave"
+    ],
+    "newMethodCount": 5,
+    "newExecutionCount": 5,
+    "wholePersistenceClassMethods": 10,
+    "wholePersistenceClassExecutions": 10,
+    "historicalPositionGroup": {
+      "methods": 13,
+      "executions": 23
+    },
+    "newPositionGroup": {
+      "methods": 18,
+      "executions": 28
+    },
+    "countMeaning": "Source method/planned execution inventory only; no new Swift/iOS execution.",
+    "signals": "Actual admission snapshots, injected writer entry and operation completion; explicit 5s failure deadlines, no settle sleeps.",
+    "cleanup": "Always release owned gate; bounded 5s drain, retain owned directory if jobs do not finish. A main-thread writer regression throws before blocking.",
+    "cloudNotifications": "All owned stores inject callbacks; no real Firestore or user library access."
+  },
+  "plannedCounts": {
+    "persistence": {
+      "methods": 10,
+      "executions": 10
+    },
+    "scroll": {
+      "methods": 3,
+      "executions": 12
+    },
+    "txtMigration": {
+      "methods": 5,
+      "executions": 6
+    },
+    "group": {
+      "methods": 18,
+      "executions": 28
+    },
+    "newMethods": 5,
+    "newExecutions": 5
+  },
+  "countsMeaning": "18／28 是源码方法／计划执行；旧两次 13／23 是各自源码实际结果。实现者、reviewer 和 root 各自通过的 portable 24 不累加为 48／72，不推断 Swift／iOS 通过。",
+  "localChecksAlreadyExecuted": {
+    "portableSmokeGuardMethodsPassed": 24,
+    "separateRootMainValidationPassed": true,
+    "grammarSwiftFiles": 4,
+    "grammarIsNotTypecheck": true,
+    "noTestsRerunByRecorder": true,
+    "actualNewIOSTestExecutions": 0,
+    "swiftCompilationExecuted": false,
+    "iosTestsExecuted": false
+  },
+  "rootMainVerificationRecord": "docs/legado-ios/evidence/reader-position-integrity/main-verification-record.json",
+  "retainedEvidence": [
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/reader-position-integrity-review.json",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/reader-position-integrity-review.json",
+      "sha256": "ffca8b6b53125033a19f763dfc885e56175886da381401424ffc7131005a1560",
+      "bytes": 14267,
+      "kind": "frozen-reviewed-evidence"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/reader-position-independent-review.json",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/reader-position-independent-review.json",
+      "sha256": "6ce36727170fbbeb5cfc3a178b666a6c87ff4970604c1e91c5518e79fb2de92a",
+      "bytes": 10422,
+      "kind": "frozen-reviewed-evidence"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/reader-position-integrity.patch",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/reader-position-integrity.patch",
+      "sha256": "1195ff60bad7226f5e6a3d8c4c174b40f2fc888a9395848fd1eba2caea10415d",
+      "bytes": 36318,
+      "kind": "frozen-reviewed-evidence"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-swift-syntax-screen.json",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/position-swift-syntax-screen.json",
+      "sha256": "a730d1bdbf56bf8fd16adeffcba7817b14c8d39e17533c297282df2d45f672dc",
+      "bytes": 1072,
+      "kind": "frozen-reviewed-evidence"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-baseline-store.swift",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/position-baseline-store.swift",
+      "sha256": "86426b0987a2075fa0b855396b2a636eb658af08f76eaddc9e5e1a5e2eb9428d",
+      "bytes": 4434,
+      "kind": "original-source-not-runtime-reproduction"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/head.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/head.stdout.txt",
+      "sha256": "2d308b5c8bf60a1fd62579e37a971ea904e654bbefa7bfc8107d0a5a6cc4ff45",
+      "bytes": 41,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/head.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/head.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/changed-paths.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/changed-paths.stdout.txt",
+      "sha256": "3304ebf2ee6521a1e342dcf590622668835ef9169b05ed1992afb9371fb1edb5",
+      "bytes": 281,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/changed-paths.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/changed-paths.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/diff-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/diff-check.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/diff-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/diff-check.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/smoke-tools-tests.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/smoke-tools-tests.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/smoke-tools-tests.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/smoke-tools-tests.stderr.txt",
+      "sha256": "61c0ad668e865218a1ad298e779c8efdfdabca46501abc404b1f091415f070fa",
+      "bytes": 128,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/bash-syntax.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/bash-syntax.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/bash-syntax.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/bash-syntax.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/new-file-patch.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/new-file-patch.stdout.txt",
+      "sha256": "6107fc243ddbf00f376550f20f6146c6b744dfeb7455e15accc8d672b355b2a6",
+      "bytes": 19442,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/new-file-patch.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/new-file-patch.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/patch-reverse-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/patch-reverse-check.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/patch-reverse-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/patch-reverse-check.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/patch-forward-main-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/patch-forward-main-check.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/reader-position-integrity-worktree/.build/position-integrity-validation/patch-forward-main-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/patch-forward-main-check.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "original-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/record.json",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-verification-record.json",
+      "sha256": "ff03244427bbe8342a9920a354bb1a3d657b9bac2e9a01f14ae92ed008f16f5b",
+      "bytes": 4069,
+      "kind": "root-main-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/smoke-guards.stdout",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-smoke-guards.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/smoke-guards.stderr",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-smoke-guards.stderr",
+      "sha256": "1953e258d4ebf4398964473ac7a113007cb44d192950936449a846a56693fcd0",
+      "bytes": 128,
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/bash-syntax.stdout",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-bash-syntax.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/bash-syntax.stderr",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-bash-syntax.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/diff-check.stdout",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-diff-check.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/diff-check.stderr",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-diff-check.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/reverse-patch.stdout",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-reverse-patch.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/position-main-verification/reverse-patch.stderr",
+      "path": "docs/legado-ios/evidence/reader-position-integrity/main-reverse-patch.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "root-main-portable-raw-log"
+    }
+  ],
+  "historicalEvidencePreservedSHA256": {
+    "docs/legado-ios/previous-reader-smoke-audit.json": "ad94143ef08f7520c3894047c844fae4e7ab1a0ee6391a79898be4d6b51da5ba",
+    "docs/legado-ios/reading-comfort-batch.json": "730ee0cc9ad95f69e4c53e7aeef036aa744bf398038ce67713c2e643c2b0edcb",
+    "docs/legado-ios/local-product-validation.json": "04a2ad2ccb0207b0c39b5e6d4595d2b4c5e4ad2d8513de5b9c4935909a3dacb6",
+    "docs/legado-ios/evidence/reader-smoke-history/39235837329-reading-position-summary.json": "914084a43019db3f7ba840398cb034b38f4c351597fb272b85eb26d6ef040f7c",
+    "docs/legado-ios/evidence/reader-smoke-history/39238550557-reading-position-summary.json": "532e46c88687f2e34ebe740fd2090100fb34ab4103ea2968d674a63c98d20c4f"
+  },
+  "limits": [
+    "Windows has no Swift/Apple SDK execution in this batch. Grammar, source invariants and Python guard tests are not typecheck, native regression or feature completion.",
+    "loadSync retains synchronous caller-thread read/decode and immediate atomic old/new snapshot semantics, never waits for pending jobs; await save/flush first when read-after-write is required.",
+    "The default onSave still schedules an independent MainActor cloud task. This batch orders callback invocation, not all later network/cloud push execution.",
+    "The shared chain serializes all store instances/books; queueing latency and throughput are not measured and no performance gain is claimed.",
+    "Failure remains log-only and Void under the existing protocol; no new throwing API, retained-dirty retry or automatic recovery loop is introduced. TXT migration continues its explicit post-flush disk verification.",
+    "Sync import remains per-file writes, no multi-file or crash/power-loss atomicity; remote-fetch stale-snapshot conflict protection and external/process writes are out of scope.",
+    "Cold reopen is tested only by newly constructed owned stores in prepared regressions. Actual reader UI, signed-device background/cold-launch continuity and hardware acceptance remain pending."
+  ],
+  "archivedPreparationContext": "冻结 review 中 main matches baseline 是其准备时事实，原字节保留；此新记录按已由 root 集成的当前 7 文件验证，不把正常 apply 当冲突。",
+  "canonicalPlanMutation": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "beforeSHA256": "b123d10eaf1ca9adbdafdef11764ee98f21334a22a61129aaf4ea7bbb8134f0a",
+    "afterSHA256": "8efc009ace0cb1f7778fcd48374d2344b3e61003d181313eda7198dee5ed6b51",
+    "stageCount": 8,
+    "workpackageCount": 33,
+    "featureDomainCount": 64,
+    "ownershipDependenciesAndOtherPackagesUnchanged": true,
+    "allFourGlobalFlagsRemainFalse": true,
+    "allActiveCloudPoliciesUnchanged": true,
+    "existingCheckerResult": "docs/legado-ios/evidence/reader-position-integrity/plan-check.json"
+  },
+  "recorderActions": {
+    "gitMutation": false,
+    "CITriggered": false,
+    "privateSourcesRead": false,
+    "deviceOrPackageActions": false,
+    "garbledPlanningJSONUsed": false
+  },
+  "actualConsolidatedSmokePreflightFailure": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "runID": 39281083749,
+    "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281083749",
+    "conclusion": "failure",
+    "failedStage": "portable guards before Xcode",
+    "PythonSetUpErrors": 19,
+    "SwiftOrIOSTestExecutions": 0,
+    "compilerDiagnostics": 0,
+    "XcodeStepsSkipped": true,
+    "record": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/failure-record.json",
+      "bytes": 2992,
+      "sha256": "2a30c4f20f646ec472b5dabd6d517c95a01fc5784353b1bb57847d3005550421"
+    },
+    "minimalTestRootFixReview": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/test-root-fix-independent-review.json",
+      "bytes": 8204,
+      "sha256": "e5769bc50115e08f855205e68d88f72ca0498d54e0ec9a40bee5faf9851b5e57"
+    },
+    "productionPathGuardUnchanged": true,
+    "portableTestIdentitiesUnchanged": 19,
+    "rootPortable19Passed": true,
+    "rootPortableRawLogRetained": false,
+    "rootPortableResultIsToolReportedOnly": true,
+    "MacOSTemporaryPathAndAncestryMeasured": false,
+    "specificOSAliasCauseIsInferenceOnly": true,
+    "successorStageNotSubmittedByThisRecord": true
+  },
+  "submittedStageDCheckpoint": {
+    "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+    "record": {
+      "path": "docs/legado-ios/stage-checkpoint-f3e0b15-initial.json",
+      "bytes": 2673,
+      "sha256": "48f1b29b7de0dbbadb35fe63f94dce942ef7c0f701a51932b7697dfba65122e9"
+    },
+    "tagsPushed": true,
+    "runs": [
+      {
+        "name": "smoke",
+        "workflow": ".github/workflows/reader-smoke.yml",
+        "tag": "reader-smoke-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697059,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697059",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:45Z"
+        }
+      },
+      {
+        "name": "measurements",
+        "workflow": ".github/workflows/reader-measurements.yml",
+        "tag": "reader-measurements-f3e0b15",
+        "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+        "sourceTagWorkflowBound": true,
+        "run": {
+          "id": 39289697993,
+          "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697993",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-19T16:55:35Z",
+          "updated_at": "2026-10-19T16:55:46Z"
+        }
+      }
+    ],
+    "passedCasesOrSamplesAccepted": false,
+    "originalResultsRemainSourceBound": true
+  }
+}
