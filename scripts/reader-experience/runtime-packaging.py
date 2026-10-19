@@ -22,6 +22,8 @@ REQUIRED = ("io/yuedu/legado/LegadoRuntime.class", "io/yuedu/legado/NativeHost.c
             "io/yuedu/legado/StaticScalarSelectorRule.class", "org/htmlunit/corejs/javascript/Context.class",
             "okhttp3/OkHttpClient.class", "org/brotli/dec/BrotliInputStream.class",
             "org/apache/commons/text/StringEscapeUtils.class", "org/apache/commons/lang3/StringUtils.class")
+REQUIRED += ("io/legado/app/model/analyzeRule/AnalyzeRule.class", "io/legado/app/data/entities/Book.class",
+             "io/legado/app/data/entities/BookChapter.class", "io/legado/app/data/entities/BookSource.class")
 PROJECT_TEST_CLASSES = (
     "io/legado/app/JsEngineCapabilitiesTest",
     "io/legado/app/model/analyzeRule/AnalyzeByJSoupDomTest",
@@ -30,12 +32,16 @@ PROJECT_TEST_CLASSES = (
         "CpuLoopCapabilityProbeTest", "DeclarativeSourceTest", "InteropSemanticSuiteTest", "LegadoRuntimeTest",
         "MainJsFacadeTest", "MainJsResultMarshallerTest", "MainJsScopeTest", "OkHttpWireCapabilityProbeTest",
         "ProductionHttpTransportTest", "SourceHttpSemanticsTest", "StaticRuleReplacementTest", "TlsCapabilityProbeTest",
-        "StaticScalarSelectorRuleTest", "DeclarativeScalarSelectorTest")),
+        "StaticScalarSelectorRuleTest", "DeclarativeScalarSelectorTest", "OriginalAnalyzeRuleTest")),
 )
 
 
 def scalar_manifest():
     return json.loads((REPO / "Packages/LegadoRuntime/vendor/scalar-rules/manifest.json").read_bytes())
+
+
+def original_rule_manifest():
+    return json.loads((REPO / "Packages/LegadoRuntime/vendor/original-rule/manifest.json").read_bytes())
 
 
 def inspect_jar(jar):
@@ -81,6 +87,26 @@ def inspect_jar(jar):
             if (hashlib.sha256(expected).hexdigest() != item["sha256"]
                     or item["jarEntry"] not in names or archive.read(item["jarEntry"]) != expected):
                 raise ValueError("Packaged scalar-rule Maven version metadata differs from its pinned release bytes")
+        original = REPO / "Packages/LegadoRuntime/vendor/original-rule"
+        original_origin = original_rule_manifest()
+        entry = "META-INF/legado-provenance/original-rule/manifest.json"
+        if entry not in names or archive.read(entry) != (original / "manifest.json").read_bytes():
+            raise ValueError("Packaged original-rule provenance differs from this source checkout")
+        for item in original_origin["portedSources"]:
+            if native.sha256(REPO / item["path"]) != item["sha256"]:
+                raise ValueError("Original-rule port source differs from its recorded bytes")
+        for item in original_origin["requiredRuntimeClasses"]:
+            if item["path"] not in names:
+                raise ValueError("Packaged original-rule class is missing")
+        for item in original_origin["runtimeResources"]:
+            if item["path"] not in names or hashlib.sha256(archive.read(item["path"])).hexdigest() != item["sha256"]:
+                raise ValueError("Packaged original-rule resource differs from its original bytes")
+        for item in original_origin["licenseFiles"]:
+            expected = (original / item["path"]).read_bytes()
+            entry = "META-INF/licenses/original-rule/" + item["path"].removeprefix("licenses/")
+            if (hashlib.sha256(expected).hexdigest() != item["sha256"]
+                    or entry not in names or archive.read(entry) != expected):
+                raise ValueError("Packaged original-rule license differs from its original bytes")
         origin = json.loads((REPO / "Packages/LegadoRuntime/vendor/runtime-http/manifest.json").read_bytes())
         for source in origin["encodingSources"]:
             actual = REPO / "Packages/LegadoRuntime" / source["portedPath"]

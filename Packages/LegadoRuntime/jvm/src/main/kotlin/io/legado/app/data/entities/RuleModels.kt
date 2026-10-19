@@ -1,0 +1,130 @@
+package io.legado.app.data.entities
+
+import io.legado.app.model.analyzeRule.RuleDataInterface
+import io.yuedu.legado.originalrule.*
+import com.script.buildScriptBindings
+import com.script.ScriptBindings
+import com.script.rhino.RhinoScriptEngine
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+
+/** Java-bean rule model, not the Android Book/Room entity or its application methods. */
+class Book(
+    @Transient internal val environment: RuleEnvironment,
+    override var name: String = "",
+    override var author: String = "",
+    override var bookUrl: String = "",
+    var tocUrl: String = "",
+    var origin: String = "loc_book",
+    override var kind: String? = null,
+    override var wordCount: String? = null,
+    override var variable: String? = null,
+    override var infoHtml: String? = null,
+    override var tocHtml: String? = null,
+) : BaseBook {
+    @delegate:Transient override val variableMap: HashMap<String, String> by lazy {
+        GSON.fromJsonObject<HashMap<String, String>>(variable).getOrNull() ?: hashMapOf()
+    }
+    override fun putVariable(key: String, value: String?): Boolean {
+        environment.ensureOpen()
+        return super.putVariable(key, value)
+    }
+    override fun hashCode(): Int = bookUrl.hashCode()
+    override fun equals(other: Any?): Boolean = other is Book && other.bookUrl == bookUrl
+    override fun putBigVariable(key: String, value: String?) = environment.state.putBook(bookUrl, key, value)
+    override fun getBigVariable(key: String): String? = environment.state.getBook(bookUrl, key)
+    override fun putCustomVariable(value: String?) { putVariable("custom", value) }
+    override fun getCustomVariable(): String = getVariable("custom")
+    override fun getKindList(): List<String> = arrayListOf<String>().apply {
+        wordCount?.takeIf(String::isNotBlank)?.let(::add)
+        kind?.let { addAll(it.splitNotBlank(",", "\n")) }
+    }
+}
+
+/** BookChapter:42–66/101–125 field defaults and variable semantics, without persistence/UI. */
+data class BookChapter(
+    @Transient internal val environment: RuleEnvironment,
+    var url: String = "",
+    var title: String = "",
+    var isVolume: Boolean = false,
+    var baseUrl: String = "",
+    var bookUrl: String = "",
+    var index: Int = 0,
+    var isVip: Boolean = false,
+    var isPay: Boolean = false,
+    var resourceUrl: String? = null,
+    var tag: String? = null,
+    var wordCount: String? = null,
+    var start: Long? = null,
+    var end: Long? = null,
+    var startFragmentId: String? = null,
+    var endFragmentId: String? = null,
+    var variable: String? = null,
+    var imgUrl: String? = null,
+) : RuleDataInterface {
+    @delegate:Transient override val variableMap: HashMap<String, String> by lazy {
+        GSON.fromJsonObject<HashMap<String, String>>(variable).getOrNull() ?: hashMapOf()
+    }
+    override fun putVariable(key: String, value: String?): Boolean {
+        environment.ensureOpen()
+        if (super.putVariable(key, value)) variable = GSON.toJson(variableMap)
+        return true
+    }
+    override fun putBigVariable(key: String, value: String?) = environment.state.putChapter(bookUrl, url, key, value)
+    override fun getBigVariable(key: String): String? = environment.state.getChapter(bookUrl, url, key)
+    override fun hashCode(): Int = url.hashCode()
+    override fun equals(other: Any?): Boolean = other is BookChapter && other.url == url
+    fun primaryStr(): String = bookUrl + url
+    fun update(): Nothing = unsupportedRule("BookChapter persistence")
+}
+
+/** BaseSource's source/cache namespace and eval binding core; not a full BookSource entity. */
+class BookSource(
+    @Transient internal val environment: RuleEnvironment,
+    var bookSourceUrl: String = "",
+    var bookSourceName: String = "",
+    override var jsLib: String? = null,
+    override var header: String? = null,
+    override var enabledCookieJar: Boolean? = true,
+    override var concurrentRate: String? = null,
+) : BaseSource {
+    override fun getKey(): String = bookSourceUrl
+    override fun getTag(): String = bookSourceName
+    override fun getSource(): BookSource = this
+    override fun getRuleEnvironment(): RuleEnvironment = environment
+    override fun getRuleCoroutineContext(): CoroutineContext = EmptyCoroutineContext
+    override fun put(key: String, value: String): String {
+        environment.cache.put("v_${getKey()}_${key}", value)
+        return value
+    }
+    override fun get(key: String): String = environment.cache.get("v_${getKey()}_${key}") ?: ""
+    fun setVariable(value: String?) = putVariable(value)
+    fun putVariable(value: String?) {
+        val key = "sourceVariable_${getKey()}"
+        if (value == null) environment.cache.delete(key) else environment.cache.put(key, value)
+    }
+    fun getVariable(): String = environment.cache.get("sourceVariable_${getKey()}") ?: ""
+    fun getLoginHeader(): String? = environment.cache.get("loginHeader_${getKey()}")
+    fun putLoginHeader(value: String) {
+        val map = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
+        (map?.get("Cookie") ?: map?.get("cookie"))?.let { environment.cookie.replaceCookie(getKey(), it) }
+        environment.cache.put("loginHeader_${getKey()}", value)
+    }
+    fun removeLoginHeader() { environment.cache.delete("loginHeader_${getKey()}"); environment.cookie.removeCookie(getKey()) }
+    fun getLoginInfo(): Nothing = unsupportedRule("source login-info encryption/storage")
+    fun putLoginInfo(value: String): Nothing = unsupportedRule("source login-info encryption/storage")
+    fun refreshJSLib() { environment.scopes.remove(jsLib) }
+    override fun ajax(url: Any): String? = connect(url.toString()).body()
+    fun evalJS(js: String, bindingsConfig: ScriptBindings.() -> Unit = {}): Any? {
+        environment.ensureOpen()
+        val bindings = buildScriptBindings {
+            it["java"] = this; it["source"] = this; it["sourceApi"] = this
+            it["baseUrl"] = getKey(); it["cookie"] = environment.cookie; it["cache"] = environment.cache
+            it.apply(bindingsConfig)
+        }
+        val shared = environment.scopes.getScope(jsLib, null)
+            ?: environment.scopes.getCryptoScope(this, null)
+        bindings.chainTo(shared, environment.scopes.sharedHandle(this))
+        return RhinoScriptEngine.eval(js, bindings)
+    }
+}

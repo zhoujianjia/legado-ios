@@ -52,6 +52,8 @@ class NativeIdentityTests(unittest.TestCase):
         scalar = "Packages/LegadoRuntime/vendor/scalar-rules"
         self.assertIn(scalar, reuse.JVM_INPUTS)
         self.assertNotIn(scalar, reuse.replay.NATIVE_INPUTS)
+        self.assertIn("Packages/LegadoRuntime/vendor/original-rule", reuse.JVM_INPUTS)
+        self.assertNotIn("Packages/LegadoRuntime/vendor/original-rule", reuse.replay.NATIVE_INPUTS)
         self.assertEqual(len(reuse.replay.NATIVE_INPUTS), 7)
         def git(*args):
             if args[0] == "status":

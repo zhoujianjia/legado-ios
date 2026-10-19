@@ -85,11 +85,21 @@ Windows JDK 21 已逐条严格比较上述 28 条 String 和 Java 类型，差�
 2. **传统规则中的 JS 与状态**：同一链路加入字段 `@js:`、`{{…}}`、`@put/@get`、捕获组、Java 字符串／集合；覆盖 URL JS、页码分支、动态 header 和 POST 编码。记录每步变量、Cookie、异常和缓存变化，验证并发会话隔离。
 3. **原业务编排**：目录分页／重复章节、正文 `nextContentUrl`／净化、登录和浏览器取消；再进入批量正文、字体及扩展功能。前两步通过不能替代这些范围。
 
-优先复用 ZIP 中 `app/src/test/java/io/legado/app/` 的现成输入：
+优先复用 ZIP 中已有测试的输入（以下路径相对于 `app/src/`）：
 
-- `model/webBook/SourceContentCompatibilityTest.kt`：文本节点、替换、JS/Base64、章节身份及目录显示顺序。
-- `model/analyzeRule/AnalyzeRuleElementsNormalizationTest.kt`：元素结果归一化。
-- `model/analyzeRule/AnalyzeByJSoupDomTest.kt`：DOM／选择器兼容行为。
-- `model/analyzeRule/AnalyzeUrlLoginHeaderContractTest.kt`、`AnalyzeUrlNetworkOptionsTest.kt`：登录头域与网络选项。
+- `androidTest/java/io/legado/app/model/webBook/SourceContentCompatibilityTest.kt`：文本节点、替换、JS/Base64、章节身份及目录显示顺序。
+- `test/java/io/legado/app/model/analyzeRule/AnalyzeRuleElementsNormalizationTest.kt`：元素结果归一化。
+- `test/java/io/legado/app/model/analyzeRule/AnalyzeByJSoupDomTest.kt`：DOM／选择器兼容行为。
+- `test/java/io/legado/app/model/analyzeRule/AnalyzeUrlLoginHeaderContractTest.kt`、同目录的 `AnalyzeUrlNetworkOptionsTest.kt`：登录头域与网络选项。
 
 每组均以锁定 Android 原实现产生 golden，再比较 iOS JVM 的请求字节、完整输出、变量、Cookie、异常与缓存变化。新建合成向量应标明来源和覆盖范围，不能把相同自制 helper 的两次输出当作原版一致性证明。
+
+## 未接入阅读路由的原协调器切片
+
+原 `AnalyzeRule` 协调器及有限 Java 实体接口目前保留在独立的 JVM 切片中，普通 JAR 会包含这些类；`DeclarativeSource`、`mainJs` 和主 App 的传统规则阅读路由没有调用该协调器。缓存和大变量仍由显式 `RuleEnvironment` 提供内存存储，不代表 Android 的 Room／文件持久化，也不是完整实体 ABI。
+
+2026-10-19 新增三项回归，先在旧实现取得三项实际失败，再验证最小修复：字符串与二进制缓存保留原版独立 key 空间；只有解析成功的 JSON map 才按未支持的 map 库处理，合法块状 inline JS 正常执行；关闭协调器后，其宿主调用不能进入仍开放的共享环境。前两项依据锁定原源码行为，第三项验证移植层生命周期约定，均不是本次新采集的 Android golden。
+
+Windows JDK 21 本轮强制执行完整 JVM 回归，实际为 18 份 XML、153 个唯一测试方法，失败／错误／跳过均为 0；原协调器测试类包含 18 个方法，其中已有两项继续循环比较冻结的 28 条标量和 36 条 JSONPath 原版观察值。原始红／绿日志和 XML 保存在本地忽略目录 `.build/traditional-coordinator-review/`，没有将其他状态语料自动算作本切片通过。
+
+有状态原版语料的 port 对照、全局 scope 创建锁的并发与取消、持久化、`AnalyzeUrl`、Cookie／浏览器、批量正文及完整实体接口仍需独立验收。以上桌面回归不证明 iOS 执行、真实书源或全功能兼容，也没有改变当前阅读路由。

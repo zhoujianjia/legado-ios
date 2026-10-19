@@ -108,6 +108,8 @@ val runtimeJar by tasks.registering(Jar::class) {
     from(files("../vendor/scalar-rules/manifest.json", "../vendor/scalar-rules/resolved-dependencies.json")) {
         into("META-INF/legado-provenance/scalar-rules")
     }
+    from("../vendor/original-rule/licenses") { into("META-INF/licenses/original-rule") }
+    from("../vendor/original-rule/manifest.json") { into("META-INF/legado-provenance/original-rule") }
     if (includeEngineTests) {
         // These are third-party test-runtime notices, not user-archive provenance.
         val junit = payloadDependencies.get().files.single { it.name == "junit-4.13.2.jar" }

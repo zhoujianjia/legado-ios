@@ -27,6 +27,10 @@ class OrdinaryJarGuardTests(unittest.TestCase):
         self.manifest_patch = patch.object(packaging, "scalar_manifest", return_value=self.scalar)
         self.manifest_patch.start()
         self.addCleanup(self.manifest_patch.stop)
+        self.original = packaging.original_rule_manifest()
+        original_patch = patch.object(packaging, "original_rule_manifest", return_value=self.original)
+        original_patch.start()
+        self.addCleanup(original_patch.stop)
 
     def jar(self, directory, extras, overrides=None, missing=()):
         path = Path(directory) / "synthetic-header-check.jar"
@@ -46,6 +50,14 @@ class OrdinaryJarGuardTests(unittest.TestCase):
             contents["META-INF/licenses/scalar-rules/" + item["path"].removeprefix("licenses/")] = (vendor / "scalar-rules" / item["path"]).read_bytes()
         for item in self.scalar["packagedJarMetadata"]:
             contents[item["jarEntry"]] = (vendor / "scalar-rules" / item["path"]).read_bytes()
+        original = vendor / "original-rule"
+        contents["META-INF/legado-provenance/original-rule/manifest.json"] = (original / "manifest.json").read_bytes()
+        for item in self.original["requiredRuntimeClasses"]:
+            contents[item["path"]] = header
+        for item in self.original["runtimeResources"]:
+            contents[item["path"]] = (packaging.REPO / "Packages/LegadoRuntime/jvm/src/main/resources" / item["path"]).read_bytes()
+        for item in self.original["licenseFiles"]:
+            contents["META-INF/licenses/original-rule/" + item["path"].removeprefix("licenses/")] = (original / item["path"]).read_bytes()
         for name in extras:
             contents[name] = header if name.endswith(".class") else b"public test fixture"
         contents.update(overrides or {})
@@ -77,6 +89,7 @@ class OrdinaryJarGuardTests(unittest.TestCase):
                      "io/legado/app/model/analyzeRule/AnalyzeByJSonPathErrorPolicyTest.class",
                      "io/yuedu/legado/StaticScalarSelectorRuleTest.class",
                      "io/yuedu/legado/DeclarativeScalarSelectorTest.class",
+                     "io/yuedu/legado/OriginalAnalyzeRuleTest.class",
                      "fixtures/android-scalar-selector-golden.json"):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
                 jar = self.jar(directory, [name])
