@@ -220,7 +220,7 @@ def source_sha():
 
 
 def validate_tag(tag_prefix="reader-smoke-"):
-    if tag_prefix not in ("reader-smoke-", "reader-renewal-"):
+    if tag_prefix not in ("reader-smoke-", "reader-renewal-", "reader-measurements-"):
         raise ValueError("Unsupported isolated Simulator test tag prefix")
     source = source_sha()
     if os.environ.get("GITHUB_SHA") != source or os.environ.get("GITHUB_REF_NAME") != tag_prefix + source[:7]:
@@ -274,7 +274,7 @@ def prepare(directory, tag_prefix="reader-smoke-"):
             raise ValueError("Source bytes differ from HEAD before smoke overlay: " + path)
     synthetic = config.stage(REPO / "GoogleService-Info.plist")
     project = config.overlay_project(REPO / config.PROJECT, directory / "project-overlay.json")
-    if tag_prefix == "reader-renewal-":
+    if tag_prefix in ("reader-renewal-", "reader-measurements-"):
         info = overlay_info(REPO / INFO, directory / "info-overlay.json", source_commit=source)
     else:
         info = overlay_info(REPO / INFO, directory / "info-overlay.json")
@@ -400,10 +400,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="phase", required=True)
     validation = commands.add_parser("validate-tag")
-    validation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-"), default="reader-smoke-")
+    validation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-", "reader-measurements-"), default="reader-smoke-")
     preparation = commands.add_parser("prepare")
     preparation.add_argument("--directory", type=Path, required=True)
-    preparation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-"), default="reader-smoke-")
+    preparation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-", "reader-measurements-"), default="reader-smoke-")
     verify = commands.add_parser("verify-summary")
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--expected", type=int, required=True)

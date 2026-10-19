@@ -1,0 +1,102 @@
+{
+  "kind": "one-owned-synthetic-gate-negative-before-freeze",
+  "observedAtUTC": "2026-10-19T16:29:11.092448+00:00",
+  "source": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\scripts\\reader-experience\\collect-reader-measurements.py",
+  "sourceSHA256": "c85b2318a6a8f62a62c24cb57e4b0ca10d5bdd49ff4fd37c632bb0efb8e60756",
+  "SwiftOrXCTestExecuted": false,
+  "existing19SuiteRerun": false,
+  "mutatedTree": {
+    "testNodes": [
+      {
+        "nodeType": "Test Plan",
+        "result": "Passed",
+        "children": [
+          {
+            "nodeType": "Unit test bundle",
+            "name": "yuedu appTests",
+            "result": "Passed",
+            "children": [
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/matchesOriginalJavaFixtures()",
+                "result": "Passed"
+              }
+            ]
+          },
+          {
+            "nodeType": "Test Suite",
+            "result": "Passed",
+            "children": [
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/rejectsEveryTruncatedPrefix()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/rejectsImagesKeysAndUnknownSections()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/rejectsInvalidLengthsAndEndMarker()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/rejectsInvalidChapterOffsets()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/rejectsInvalidUTF16AndSurrogateBoundary()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/rejectsCorruptedZlibAndUnconsumedTail()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/rejectsMismatchedRecordIdentity()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/enforcesAllBudgets()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/observesCancellation()",
+                "result": "Passed"
+              },
+              {
+                "nodeType": "Test Case",
+                "nodeIdentifier": "UMDTextDecoderTests/fileParserRetainsSnapshotAndEnforcesInputBudget()",
+                "result": "Passed"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "actualReturnedAcceptedMethods": [
+    "UMDTextDecoderTests/enforcesAllBudgets()",
+    "UMDTextDecoderTests/fileParserRetainsSnapshotAndEnforcesInputBudget()",
+    "UMDTextDecoderTests/matchesOriginalJavaFixtures()",
+    "UMDTextDecoderTests/observesCancellation()",
+    "UMDTextDecoderTests/rejectsCorruptedZlibAndUnconsumedTail()",
+    "UMDTextDecoderTests/rejectsEveryTruncatedPrefix()",
+    "UMDTextDecoderTests/rejectsImagesKeysAndUnknownSections()",
+    "UMDTextDecoderTests/rejectsInvalidChapterOffsets()",
+    "UMDTextDecoderTests/rejectsInvalidLengthsAndEndMarker()",
+    "UMDTextDecoderTests/rejectsInvalidUTF16AndSurrogateBoundary()",
+    "UMDTextDecoderTests/rejectsMismatchedRecordIdentity()"
+  ],
+  "outsideTargetBundleLeaves": 10,
+  "unexpectedlyAccepted": true,
+  "interpretation": "Exact method set and one matching target bundle are insufficient unless every unqualified Test Case is inside that bundle. This is synthetic gate verification, not an actual xcresult failure."
+}

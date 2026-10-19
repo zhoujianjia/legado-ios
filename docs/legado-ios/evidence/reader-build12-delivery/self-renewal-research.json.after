@@ -1,0 +1,453 @@
+{
+  "schemaVersion": 1,
+  "status": "dynamic-discovery-Simulator-verified-build12-delivered-device-report-pending",
+  "product": "single-reader",
+  "requiredConditions": {
+    "freeApplePersonalTeam": true,
+    "nonJailbrokenIPhone": true,
+    "jitRequired": false,
+    "computerAllowedForInitialSetupOnly": true,
+    "computerRequiredForRegularRenewal": false,
+    "companionAppRequired": false,
+    "existingBooksSourcesAndProgressMustSurvive": true
+  },
+  "acceptance": {
+    "iphoneTransportVerified": false,
+    "pairedSessionVerified": false,
+    "freshProfileAndSigningVerified": false,
+    "sameIdentityReplacementInstallVerified": false,
+    "coldLaunchAndDataPreservationVerified": false,
+    "unattendedRenewalVerified": false,
+    "expiryRecoveryVerified": false
+  },
+  "implementedExperiment": {
+    "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+    "policy": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+    "native": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+    "UI": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+    "flow": "Opt-in NWBrowser for one service; DNS-SD resolve/address APIs without candidate connection; exact local numeric ownership and TTL; TCP open and close without application frames.",
+    "bonjourType": "_remotepairing._tcp",
+    "bonjourDomain": "local.",
+    "overallDeadlineSeconds": 8,
+    "discoveryWindowSeconds": 3,
+    "maximumServices": 8,
+    "maximumResolvedAddressCallbacks": 32,
+    "maximumApprovedEndpoints": 4,
+    "maximumConcurrentConnections": 1,
+    "maximumTCPDeadlineSeconds": 2,
+    "DNSQueriesMayBeSent": true,
+    "TCPApplicationPayloadBytesSent": 0,
+    "currentUIRepeatsLegacyFixedPortProbe": false,
+    "legacySchemaOneReadCompatibilityRetained": true,
+    "reportSchemaVersion": 2,
+    "entry": "Settings / Advanced / Self-renewal verification",
+    "manualStartRequired": true,
+    "operationsNotPerformed": [
+      "TLS",
+      "session",
+      "pairing",
+      "Apple login",
+      "signing",
+      "installation"
+    ],
+    "successfulTCPProvesServiceOrRenewal": false,
+    "negativeResultExcludesOtherTransports": false
+  },
+  "verification": {
+    "portableEvidenceGuardTestsPassed": 16,
+    "independentSourceReviewCompleted": true,
+    "plannedSimulatorCases": {
+      "legacyUnit": 8,
+      "discovery": 13,
+      "UI": 1
+    },
+    "newDiscoverySwiftTestsExecuted": true,
+    "AppleSDKCompilationPassed": true,
+    "AppleSDKLinkPassed": true,
+    "physicalDeviceDynamicDiscoveryExecuted": false,
+    "serviceIdentityVerified": false,
+    "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation.",
+    "record": "self-renewal-dynamic-discovery-batch.json",
+    "physicalDeviceExecution": "New dynamic discovery not executed; prior build10 fixed-endpoint report remains separately recorded.",
+    "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml",
+    "AppleSDKAcceptanceScope": "Actual fixed C Debug arm64 Simulator app/test build and selected 8/13/UI1. A Release has separate static audits and explicit narrow diagnostic mapping; no whole-App or physical-device runtime acceptance.",
+    "reportInspectorSyntheticTestsPassed": 25,
+    "oldDeviceReportSchemaCompatibilityPassed": true,
+    "actualSimulatorCasesPassed": {
+      "legacyUnit": 8,
+      "discovery": 13,
+      "UI": 1
+    }
+  },
+  "upstreamSourceLocks": [
+    {
+      "repository": "SideStore/SideStore",
+      "commit": "d97ec133719d79916675bdaf722b82a8d091d545",
+      "license": "AGPL-3.0"
+    },
+    {
+      "repository": "SideStore/minimuxer",
+      "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909",
+      "license": "AGPL-3.0",
+      "relationship": "exact SideStore gitlink"
+    },
+    {
+      "repository": "SideStore/idevice",
+      "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
+      "license": "MIT",
+      "relationship": "actual minimuxer dependency release v0.1.68-ss-3e55c84"
+    },
+    {
+      "repository": "jkcoxson/LocalDevVPN",
+      "commit": "af3fd697803ada4ac2b8d518358f5ab0a534844c",
+      "relationship": "outer packet-tunnel route, not embedded"
+    }
+  ],
+  "findings": [
+    "The documented SideStore route uses a separate VPN app; it does not satisfy the single-app requirement.",
+    "Apple's capability table does not list Network Extensions or Personal VPN for free Apple Developer provisioning; copying the packet-tunnel extension is not a verified solution.",
+    "The actual idevice dependency also has a userspace CDTunnel adapter. Its ordinary outer TCP connection and authenticated same-device protocol still require device evidence.",
+    "RemotePairing's initial, TLS, RSD and service ports can be discovered or negotiated dynamically. Fixed-port refusal cannot establish a universal impossibility result.",
+    "No supported free-team direct installation API was established. Private symbol existence is not evidence of usable installation permission.",
+    "iOS schedules background tasks; even a future working foreground renewal path would not establish reliable unattended renewal."
+  ],
+  "sourceReuse": {
+    "upstreamSigningOrInstallationCodeAdded": false,
+    "upstreamDependencyAdded": false,
+    "appleCredentialsOrPairingRecordsRead": false,
+    "realDeviceIdentifiersExported": false
+  },
+  "alternateOTATransport": {
+    "repository": "claration/feather",
+    "commit": "7078b053c0af262809a48e4d3898d42b0d35fedf",
+    "wikiCommit": "2ecb8e822fd47e5dc942f82df381c0dcd7517077",
+    "sourceInspectionOnly": true,
+    "freePersonalTeamOTAInstallation": "unknown-no-primary-passing-evidence",
+    "documentedProvisioning": "Apple Distribution certificate with Ad Hoc profile",
+    "selfUpdate": "locked Feather Server implementation rejects its own bundle ID; this does not establish an OS-wide prohibition",
+    "appleDocumentedSelfUpdate": "in-house HTTPS OTA can be opened from the app; this is not evidence for free Personal Team or an app-hosted server surviving replacement",
+    "profileRenewalProvidedByOTATransport": false,
+    "unattendedOperationProven": false,
+    "integrationPerformed": false
+  },
+  "primaryReferences": [
+    "https://docs.sidestore.io/docs/installation/prerequisites",
+    "https://developer.apple.com/help/account/reference/supported-capabilities-ios/",
+    "https://developer.apple.com/documentation/backgroundtasks/choosing-background-strategies-for-your-app",
+    "https://developer.apple.com/documentation/marketplacekit/applibrary",
+    "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
+    "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+    "https://github.com/jkcoxson/LocalDevVPN/blob/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift",
+    "https://github.com/claration/feather/blob/7078b053c0af262809a48e4d3898d42b0d35fedf/Feather/Views/Library/Install/InstallPreviewView.swift",
+    "https://github.com/claration/feather/wiki/Using-an-Apple-Developer-Account/2ecb8e822fd47e5dc942f82df381c0dcd7517077",
+    "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
+  ],
+  "nextGates": [
+    "Inspect device discovery, local-network access and same-device TCP evidence before a separately bounded authenticated transport implementation.",
+    "Prove profile renewal, signing, same-identity replacement, preserved data, background retry and expiry recovery before claiming automatic self-renewal."
+  ],
+  "completedGates": [
+    "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed.",
+    "Fixed C actual 8 legacy/13 discovery/UI1 passed and independently audited; A build12 separately audited and handed off only through explicit narrow unchanged-diagnostic source mapping."
+  ],
+  "nextDeviceCandidate": {
+    "build": "12",
+    "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "record": "native-reader-experience-build12.json",
+    "builtInSources": false,
+    "IPAIndependentlyAudited": true,
+    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-unsigned.ipa",
+    "ipaSHA256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
+    "signedOrInstalled": false,
+    "automaticSelfRenewalImplemented": false
+  },
+  "latestDeviceReport": {
+    "record": "self-renewal-device-transport-build10.json",
+    "outcome": "Both fixed loopback endpoints timed out in connecting, TCP not established, zero response bytes.",
+    "lastWaitingError": {
+      "domain": "posix",
+      "code": 1
+    },
+    "specificDenialMechanismEstablished": false,
+    "computerUSBVPNAndCompanionContext": "Original report did not measure these conditions. User reports computer on, USB connected, no active VPN and no SideStore; other companion apps not established.",
+    "unchangedBuild11ProbeMustNotBeTreatedAsFix": true,
+    "automaticSelfRenewalVerified": false,
+    "userReportedRunContext": {
+      "source": "User reply on 2026-10-19; not automatically measured by the app.",
+      "computerPoweredOn": true,
+      "USBConnected": true,
+      "VPNActive": false,
+      "SideStorePresent": false,
+      "otherCompanionApps": "notEstablished"
+    }
+  },
+  "nextTransportSlice": {
+    "record": "self-renewal-alternate-transport-followup.json",
+    "sourceReferencesChecked": 9,
+    "scope": "Bounded single-service discovery, validated same-device numeric destinations, TCP-open only; no protocol payload, credentials or pairing input.",
+    "implementationPerformed": false,
+    "SDKOrDeviceValidationPerformed": false
+  },
+  "previousDeviceCandidates": [
+    {
+      "build": "10",
+      "status": "user-report-received-fixed-endpoint-transport-negative",
+      "builtInSources": false,
+      "publicIPAUploadEnabled": true,
+      "privateArtifactChannelRequiredByCurrentPolicy": false,
+      "temporaryPublicUploadAuthorized": true,
+      "artifactRetentionDays": 1,
+      "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39178530335",
+      "record": "native-reader-experience-build10.json",
+      "IPAIndependentlyAudited": true,
+      "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-594fd21-unsigned.ipa",
+      "ipaSHA256": "6db01f77340ffb37d7989b70fa1ffe7cef8e9453be2da96b235cf6c5f4711f8c",
+      "signedOrInstalled": false,
+      "automaticSelfRenewalImplemented": false,
+      "deviceReport": "self-renewal-device-transport-build10.json"
+    },
+    {
+      "build": "11",
+      "status": "delivered_unsigned_same_probe_as_negative_build10_report",
+      "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39255216718",
+      "record": "native-reader-experience-build11.json",
+      "builtInSources": false,
+      "IPAIndependentlyAudited": true,
+      "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-unsigned.ipa",
+      "ipaSHA256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f",
+      "signedOrInstalled": false,
+      "automaticSelfRenewalImplemented": false,
+      "equivalentBuild10Report": "self-renewal-device-transport-build10.json",
+      "repeatUnchangedProbeUnderSameConditionsRequested": false
+    }
+  ],
+  "currentUserRequest": {
+    "requestedOn": "2026-10-19",
+    "deviceVerificationExplicitlyAuthorized": true,
+    "scope": "Read-only transport diagnostic only; no implemented automatic renewal to test.",
+    "record": "native-reader-experience-build12.json"
+  },
+  "previousFixedLoopbackExperiment": {
+    "service": "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+    "screen": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+    "entry": "Settings / Advanced / Self-renewal verification",
+    "manualStartRequired": true,
+    "endpoints": [
+      "127.0.0.1:62078",
+      "[::1]:62078"
+    ],
+    "request": "length-prefixed lockdown QueryType only",
+    "timeoutSecondsPerEndpoint": 3,
+    "maximumReplyBytes": 16384,
+    "arbitraryHostInput": false,
+    "export": "user-shared local JSON with normalized errors and no raw server reply",
+    "operationsNotPerformed": [
+      "TLS",
+      "StartSession",
+      "Pair",
+      "Apple login",
+      "signing",
+      "installation"
+    ],
+    "coverage": "partial: fixed loopback lockdown endpoints only",
+    "negativeResultExcludesOtherTransports": false,
+    "successfulQueryProvesRenewal": false
+  },
+  "previousFixedLoopbackVerification": {
+    "windowsPortableProbeGuards": {
+      "passed": 10
+    },
+    "windowsExistingSmokeGuards": {
+      "passed": 12
+    },
+    "windowsSwiftSyntaxParse": {
+      "files": 6,
+      "passed": true,
+      "isTypeCheck": false
+    },
+    "localizationKeyParity": {
+      "languages": 5,
+      "passed": true
+    },
+    "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml",
+    "intendedSimulatorCases": {
+      "unit": 8,
+      "ui": 1
+    },
+    "implementationCommit": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
+    "simulatorExecution": "passed-and-downloaded-evidence-reviewed",
+    "simulatorRunURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39146602853",
+    "simulatorSourceTag": "reader-renewal-97d9f0f",
+    "xcresultFormatReference": "https://chromium.googlesource.com/chromium/src/+/a8420d0c885e1d5dc4643994e1957595636afd8d/ios/build/bots/scripts/xcode_log_parser.py#898",
+    "physicalDeviceExecution": "user-provided-build10-report-reviewed-both-fixed-endpoints-timed-out-before-TCP",
+    "ipaDelivery": "unsigned-build11-copied-to-local-Downloads-after-independent-static-audit",
+    "priorAttempts": [
+      {
+        "commit": "502ad353f19f1cc92b18fde21536d305c335df22",
+        "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39142240830",
+        "status": "failed-before-test-acceptance",
+        "artifact": {
+          "id": 12142612636,
+          "bytes": 970408,
+          "sha256": "1396639dc9d31f8a58a7c46e9db3065e62f6edf0baeca6ceb6fff074456505fd",
+          "downloadedAndHashVerified": true
+        },
+        "rawUnitBuildLog": {
+          "path": ".build/cloud-evidence/run-39142240830/artifact/reader-renewal-probe/unit-tests.log",
+          "bytes": 9804417,
+          "sha256": "13e988014d9247b43c9d823685e64f0154968f77c1cee588377c48b89aea57c6",
+          "uniqueCompilerDiagnostics": 1
+        },
+        "completedJobLogResponse": {
+          "path": ".build/cloud-evidence/run-39142240830/completed-job-log-response.txt",
+          "bytes": 32080,
+          "sha256": "593351c11bdd6fbde8071580677bd2d4bfdd991ee6635acf102559da0a54a2e8",
+          "scope": "Decoded connector response, not claimed to be a complete raw build log."
+        },
+        "compilerDiagnostic": "SelfRenewalProbeView.swift:46:37: error: extraneous argument label 'title:' in call",
+        "localReviewFinding": "Two settings row calls used a title: label absent from the shared component's custom initializer; both corrected in 5ad5707.",
+        "probeTestsAccepted": false
+      },
+      {
+        "commit": "5ad5707f987281cd0f86c3fbda791b4c81bda0ce",
+        "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39143666388",
+        "status": "failed-before-test-acceptance",
+        "artifact": {
+          "id": 12143177347,
+          "bytes": 1224003,
+          "sha256": "43ad07bfd2edf891b2ff7ef4217885f4ab0cee8351297912602d6c75d5f45e2c",
+          "downloadedAndHashVerified": true
+        },
+        "rawUnitBuildLog": {
+          "path": ".build/cloud-evidence/run-39143666388/artifact/reader-renewal-probe/unit-tests.log",
+          "bytes": 11561142,
+          "sha256": "ac92a3e23fcd16d73bf98941cde307ee152a1e60e5e21bff267e0e53b23643dc",
+          "uniqueCompilerDiagnostics": 1
+        },
+        "compilerDiagnostic": "SelfRenewalTransportProbeTests.swift:68 #expect expansion: errors thrown from here are not handled",
+        "correction": "Encode the report with try before entering the nonthrowing expectation macro; corrected in 97d9f0f.",
+        "probeTestsAccepted": false
+      }
+    ],
+    "fixtureReview": "Corrected fixture terminal paths compiled and executed in the passing eight-case suite.",
+    "actualSimulatorCases": {
+      "unit": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "expectedFailures": 0,
+        "caseIdentifiers": [
+          "SelfRenewalTransportProbeTests/acceptsBinaryPropertyListResponse",
+          "SelfRenewalTransportProbeTests/cancellationAndPreCancellationFinishOnce",
+          "SelfRenewalTransportProbeTests/confirmsQueryTypeWithoutExportingPrivateFields",
+          "SelfRenewalTransportProbeTests/normalizesErrorsAndRejectsWrongService",
+          "SelfRenewalTransportProbeTests/recordsNetworkFailureWithoutCredentialClaims",
+          "SelfRenewalTransportProbeTests/rejectsInvalidFrameLengths",
+          "SelfRenewalTransportProbeTests/rejectsMalformedAndTruncatedResponses",
+          "SelfRenewalTransportProbeTests/tcpConnectionAloneIsNotServiceSuccess"
+        ]
+      },
+      "ui": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "expectedFailures": 0,
+        "caseIdentifiers": [
+          "SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"
+        ]
+      }
+    },
+    "simulatorArtifact": {
+      "id": 12144238944,
+      "path": ".build/cloud-evidence/run-39146602853/renewal-passed-evidence.zip",
+      "bytes": 2108904,
+      "sha256": "7f10b5eddafd9245579db91def775186197cdcfd6bb5ea7c39cf5a6e045091a8",
+      "apiSHA256Matched": true
+    },
+    "simulatorResult": {
+      "path": ".build/cloud-evidence/run-39146602853/artifact/reader-renewal-probe/result.json",
+      "bytes": 8388,
+      "sha256": "ff341c170831805a47d80928f962c192051ef57ea5d110cd25a8c283f02e9aea"
+    },
+    "sourceFilesByteMatchedToTestedCommit": 13,
+    "evidenceFilesHashMatched": 9,
+    "projectIdentityReplacementCount": 0,
+    "rawTestRecordsIndependentlyReviewed": "Exact testNodes, raw per-case log records and SQLite TestCaseRuns agree on eight unit and one UI success.",
+    "uiScreenshot": {
+      "path": ".build/cloud-evidence/run-39146602853/ui-attachment-review/renewal-read-only-probe-result.png",
+      "bytes": 224368,
+      "sha256": "7ba6cfcf094e2b1bbfdd726b01e9c20c7f5f20ab6df024c3d2e999c20fae99b1"
+    },
+    "uiAccessibilityAttachment": {
+      "path": ".build/cloud-evidence/run-39146602853/ui-attachment-review/renewal-read-only-probe-accessibility.txt",
+      "bytes": 12993,
+      "sha256": "0dd9dc9c4888b06ddc7d9033a0cae1980d5e9bfa6e282aac30f5e84468222ddf"
+    },
+    "uiObservation": "Both fixed Simulator loopback endpoints timed out; Unverified and the export entry remain visible. This is not an iPhone transport result.",
+    "evidenceLimit": "The complete built Info.plist was not uploaded, so its producer-reported testedInfoSHA256 cannot be independently recalculated. Source overlay reconstruction and all nine retained evidence hashes match.",
+    "physicalDeviceEvidence": {
+      "record": "self-renewal-device-transport-build10.json",
+      "inputSHA256": "9fa49141cd4d7b6968355391682929633414a03e34381567029205deb269c50b",
+      "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
+      "build": "10",
+      "reportedExecutionEnvironment": "device",
+      "cryptographicDeviceAttestation": false,
+      "fixedEndpointTransportGatePassed": false,
+      "otherTransportsExcluded": false
+    }
+  },
+  "nextDevelopmentCandidate": {
+    "build": "12",
+    "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "record": "native-reader-experience-build12.json",
+    "builtInSources": false,
+    "IPAIndependentlyAudited": true,
+    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-unsigned.ipa",
+    "ipaSHA256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
+    "signedOrInstalled": false,
+    "automaticSelfRenewalImplemented": false
+  },
+  "currentDiscoveryCloudCheckpoint": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "runID": 39281084369,
+    "job": {
+      "id": 118155310210,
+      "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369/job/118155310210",
+      "status": "completed",
+      "conclusion": "success",
+      "all11StepsCompletedSuccess": true
+    },
+    "groups": {
+      "legacy": "8/8",
+      "discovery": "13/13",
+      "UI": "1/1"
+    },
+    "failures": 0,
+    "skips": 0,
+    "expectedFailures": 0,
+    "platform": "Debug iOS Simulator",
+    "ReleaseIPAExecuted": false,
+    "record": "docs/legado-ios/native-reader-experience-build12.json",
+    "aggregateRunConflictPreserved": true
+  },
+  "previousDiscoveryCloudCheckpoint": {
+    "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+    "runId": 39267868623,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39267868623",
+    "conclusion": "failure",
+    "actualIOSTestExecutions": 0,
+    "failure": [
+      "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift:181:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+    ],
+    "record": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/actual-sdk-failure-summary.json",
+    "repair": "Replace only the nested test fixture map/array concatenations with typed bounded event arrays and append loops; bind failure-scenario tuples separately and await reports before assertions. All 13 methods and all assertions retained. The benchmark direct-module import repair is also included in the next checkpoint.",
+    "postRepairSwiftCompilationPassed": false,
+    "newProductionFilesChangedByRepair": false,
+    "mainAppDebugSimulatorCompiledAndLinked": true,
+    "automaticSelfRenewalVerified": false
+  }
+}

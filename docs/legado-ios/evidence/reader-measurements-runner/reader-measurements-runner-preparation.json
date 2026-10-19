@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "kind": "isolated-source-only-measurement-runner-preparation",
+  "status": "prepared-for-independent-review-not-executed-on-macos-or-ios",
+  "preparedAtUTC": "2026-10-19T16:32:04.925185+00:00",
+  "baselineSourceCommit": "9e4656128e202a0324dda3e8ad97a3c028d37499",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+  "files": [
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "bytes": 27526,
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+    },
+    {
+      "path": "scripts/reader-experience/test-smoke-tools.py",
+      "bytes": 29734,
+      "sha256": "2222861c18ee769bb8b6f64f6ea7f7ce1792d5641e9044bc8fbd65917e9c21ae"
+    },
+    {
+      "path": "scripts/reader-experience/collect-reader-measurements.py",
+      "bytes": 22358,
+      "sha256": "b8adb8211178713a6805a811d1a42955890511f8d8695ce706fd9fb6cf3215fe"
+    },
+    {
+      "path": "scripts/reader-experience/test-collect-reader-measurements.py",
+      "bytes": 23784,
+      "sha256": "f5871964e8a46bb2b0fb2e355f1cf558e8c3273b4d117a010d519a604b34f1f1"
+    },
+    {
+      "path": "scripts/reader-experience/reader-measurements.sh",
+      "bytes": 6412,
+      "sha256": "7887fa3693a8df09a21dabfaf32831e5fec37b09e9cf130d26e522c6b8969445"
+    },
+    {
+      "path": ".github/workflows/reader-measurements.yml",
+      "bytes": 4255,
+      "sha256": "30e52cc822ec75ad75ef4f851b73d7319d5245a765591e972624efab3b75943f"
+    },
+    {
+      "path": "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json",
+      "bytes": 984,
+      "sha256": "422b43e5e6f671d84b115864216ba33cb3b47c8df25b7d78ffd4cfd623dc34ec"
+    },
+    {
+      "path": "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json",
+      "bytes": 1775,
+      "sha256": "5868bc2b0c9cb43ae465e4ea5a03292c13fb47bc125bc43fc0d3a65042c7cbde"
+    }
+  ],
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-runner.patch",
+    "bytes": 65960,
+    "sha256": "1da20a58629e888ab6b430c22d68e3500158dbce9379b0c0ab52e2516c3d191f"
+  },
+  "changedPaths": [
+    "scripts/reader-experience/smoke-tools.py",
+    "scripts/reader-experience/test-smoke-tools.py",
+    "scripts/reader-experience/collect-reader-measurements.py",
+    "scripts/reader-experience/test-collect-reader-measurements.py",
+    "scripts/reader-experience/reader-measurements.sh",
+    ".github/workflows/reader-measurements.yml",
+    "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json",
+    "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json"
+  ],
+  "sourceInputsPlanned": 38,
+  "preparedGroups": {
+    "memory": {
+      "methods": 1,
+      "executions": 1,
+      "innerSamples": 10,
+      "fixtures": 2,
+      "iterationsPerFixture": 5,
+      "rawPhaseRows": 300
+    },
+    "launch": {
+      "methods": 1,
+      "executions": 1,
+      "innerSamples": 5
+    },
+    "umd": {
+      "methods": 11,
+      "executions": 11,
+      "pureParserOnly": true
+    }
+  },
+  "newCIProtocol": {
+    "workflow": ".github/workflows/reader-measurements.yml",
+    "tagPrefix": "reader-measurements-",
+    "artifact": "reader-measurements-evidence",
+    "jobDeadlineMinutes": 80,
+    "executionStepDeadlineMinutes": 70,
+    "wrapperDeadlineSeconds": {
+      "memoryIncludingInitialCompilation": 2700,
+      "launch": 900,
+      "umd": 300
+    },
+    "submittedOrTriggered": false,
+    "existingSmokeWorkflowChanged": false
+  },
+  "bindingContract": [
+    "Fresh shared prepare(tag_prefix=reader-measurements-) first creates reviewed source-stamped Info/project local overlays. Only then capture environment and source preparation; all other selected source bytes must match committed HEAD before and after collection.",
+    "Reuse stage capture-environment only. Bind actual Debug settings, Xcode/SDK/Simulator runtime/UDID, raw input digests, source commit, current CI run/attempt and built local/synthetic Simulator app metadata/source stamp/executable digest. No fifty-row stage execution is implied.",
+    "Three original dedicated xcodebuild -l logs, result bundles, summaries and modern tests trees are independently gated. Exact 1/1, 1/1 and 11/11, no extra/duplicate/parameterized/failed/skipped/expected-failure cases. Every leaf must descend from the unique selected target bundle; unit/UI cannot borrow the other's bundle type.",
+    "Original shape helper remains unchanged and shape-only; execution validation additionally requires actual wrapper/export success and original XCTest source identities. Raw measurement marker bytes survive failed/incomplete collection. Source/environment/artifact/log drift cannot leave a successful group.",
+    "All recoverable groups run and retain evidence before combined final failure. Initial unsafe local-overlay preparation does not launch any host. Fatal abort/deadline may leave incomplete artifacts, never success or synthetic replacement."
+  ],
+  "historicalUIStructureReference": {
+    "runID": 39146602853,
+    "sourceCommit": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
+    "originalRelativeDirectory": ".build/cloud-evidence/run-39146602853/artifact/reader-renewal-probe",
+    "newFixturePaths": [
+      "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json",
+      "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json"
+    ],
+    "purpose": "Unmodified modern UI test tree/summary structure, not execution of the new launch method.",
+    "knownContainerTypes": [
+      "Test Plan",
+      "UI test bundle",
+      "Test Suite",
+      "Test Case"
+    ]
+  },
+  "UMDDependencyPreparation": {
+    "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\reader-umd-parser-preparation.json",
+    "bytes": 20445,
+    "sha256": "f5ffb5197a5ae2e346f15bb123c53278b7bd5da4a17cc8ebd78706b8996a6040"
+  },
+  "localTestUMDFixtureRoot": {
+    "variable": "YUEDU_UMD_PREPARATION_ROOT",
+    "value": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+    "scope": "Only the portable test copies existing reviewed source/fixture inputs to owned resolved temp paths. Production collector never reads it. CI defaults to the one committed source repository.",
+    "UMD16PathsIncludedInThisPatch": false
+  },
+  "fixedFindings": [
+    {
+      "id": "selected-target-bundle-containment",
+      "originalNegativeEvidence": {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\measurement-runner-preliminary-containment-negative.json",
+        "bytes": 4176,
+        "sha256": "6144500f71a0344982c9498b2042581b80fff20249318e7235ea634031d6f4ba"
+      },
+      "fix": "Pass inside_bundle/is_root through the closed walker; require selected bundle ancestry for every leaf, reject nested test plans/bundles. A precise new negative test preserves the external-leaf and nested-plan counterexamples."
+    },
+    {
+      "id": "macos-owned-temporary-root",
+      "fix": "All independently created TemporaryDirectory roots use Path(...).resolve() before appending checked evidence paths. Production symlink/junction rejection is unchanged; this follows the actual C preflight temp-ancestor failure fact without claiming a macOS rerun here."
+    }
+  ],
+  "localChecks": {
+    "portableCollectionMethodsPassed": 20,
+    "portableSharedSmokeMethodsPassed": 24,
+    "portableSharedStageMethodsPassed": 20,
+    "countsNotAccumulatedWithEarlierRuns": true,
+    "bashSyntaxPassed": true,
+    "actionlintPassed": true,
+    "shellcheckExecuted": false,
+    "pythonUTF8AndASTPassed": true,
+    "commands": [
+      {
+        "name": "portable-collection",
+        "argv": [
+          "C:\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "-B",
+          "scripts/reader-experience/test-collect-reader-measurements.py",
+          "-v"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\portable-collection.stdout",
+          "bytes": 1626,
+          "sha256": "884db3db18085d5462a0cfc8410fd5218605c8e73214f3e76abb44fcee4588b6"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\portable-collection.stderr",
+          "bytes": 3664,
+          "sha256": "fce313c961c8b1b9e488f251a76ad2901beea10c44bbb5f14604b3cc7f375e4d"
+        }
+      },
+      {
+        "name": "portable-shared-smoke",
+        "argv": [
+          "C:\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "-B",
+          "scripts/reader-experience/test-smoke-tools.py",
+          "-v"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\portable-shared-smoke.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\portable-shared-smoke.stderr",
+          "bytes": 4250,
+          "sha256": "6af6fe7c9f3c6daa0fb9cf09839f9c8ee4bb0919e06c86319a61455d31a1b910"
+        }
+      },
+      {
+        "name": "portable-shared-stage",
+        "argv": [
+          "C:\\Python312\\python.exe",
+          "-X",
+          "utf8",
+          "-B",
+          "scripts/reader-experience/test-reader-stage-baseline.py",
+          "-v"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\portable-shared-stage.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\portable-shared-stage.stderr",
+          "bytes": 3412,
+          "sha256": "5318e2cebb0b36cc0bd1dd32b37688d14ac24448060981e1afb22967da20c4fc"
+        }
+      },
+      {
+        "name": "bash-syntax",
+        "argv": [
+          "D:/app/Git/bin/bash.exe",
+          "-n",
+          "scripts/reader-experience/reader-measurements.sh"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\bash-syntax.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\bash-syntax.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "actionlint",
+        "argv": [
+          "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+          "-shellcheck=",
+          ".github/workflows/reader-measurements.yml"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\actionlint.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\actionlint.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\diff-check.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\diff-check.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "tracked-patch",
+        "argv": [
+          "git",
+          "diff",
+          "--binary",
+          "--full-index",
+          "--",
+          "scripts/reader-experience/smoke-tools.py",
+          "scripts/reader-experience/test-smoke-tools.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\tracked-patch.stdout",
+          "bytes": 3785,
+          "sha256": "8ea66f18c31a05e643b5c4b798bf3302a9eb95c258b1ead4dcafea71063ed9a0"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\tracked-patch.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "new-file-0",
+        "argv": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "scripts/reader-experience/collect-reader-measurements.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-0.stdout",
+          "bytes": 22979,
+          "sha256": "1aa2d90ce99bd46c3382d086f02346787f693aaad80fb3ed16fb84f2db36b469"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-0.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "new-file-1",
+        "argv": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "scripts/reader-experience/test-collect-reader-measurements.py"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-1.stdout",
+          "bytes": 24416,
+          "sha256": "369199a0ce8b7b70f6f59b8ebd3804081091ed7f2a4412d6955b9e8b16c68492"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-1.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "new-file-2",
+        "argv": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "scripts/reader-experience/reader-measurements.sh"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-2.stdout",
+          "bytes": 6753,
+          "sha256": "a62e879b7849599af3ff335183e80e19bff61ca7cedd8cbc3ee815961b8f3a9f"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-2.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "new-file-3",
+        "argv": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          ".github/workflows/reader-measurements.yml"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-3.stdout",
+          "bytes": 4549,
+          "sha256": "4cb98bba7d8a922e326e9190ccc166e77b721b3a005601db5526537d82bf8a59"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-3.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "new-file-4",
+        "argv": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-4.stdout",
+          "bytes": 1341,
+          "sha256": "e853f576b913be2e80b0d642175fb0dd268d90f4838432ce3384a4f5716adb5b"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-4.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "new-file-5",
+        "argv": [
+          "git",
+          "diff",
+          "--no-index",
+          "--binary",
+          "--",
+          "/dev/null",
+          "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-5.stdout",
+          "bytes": 2137,
+          "sha256": "af78fd3deba26a7dc1b403fe866257529df464028ae945c792eab3c56f986df3"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\new-file-5.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "reverse-patch-check",
+        "argv": [
+          "git",
+          "apply",
+          "--reverse",
+          "--check",
+          "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-runner.patch"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\reverse-patch-check.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\reverse-patch-check.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "forward-main-check",
+        "argv": [
+          "git",
+          "apply",
+          "--check",
+          "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-runner.patch"
+        ],
+        "cwd": "F:\\yuedu-reader",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\forward-main-check.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-validation\\forward-main-check.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "patchForwardMainAndReverseWorktreeChecksPassed": true,
+    "unchangedProtocolFiles": [
+      "scripts/reader-experience/smoke.sh",
+      ".github/workflows/reader-smoke.yml",
+      "scripts/reader-experience/reader-stage-baseline.py",
+      "scripts/reader-experience/test-reader-stage-baseline.py",
+      "scripts/reader-experience/reader-launch-memory.py",
+      "scripts/reader-experience/test-reader-launch-memory.py"
+    ],
+    "performanceNineSourceHashesUnchanged": true
+  },
+  "limits": [
+    "No Swift/Apple SDK compilation, actual XCTest, launch or memory measurements ran in this preparation. Portable positive records use explicit owned synthetic mocks, never SDK evidence.",
+    "A future source checkpoint must contain the separately reviewed UMD16 and these runner8 paths before source_provenance can pass; the isolated baseline deliberately contains neither a fake parser nor a copied UMD implementation in this patch.",
+    "Launch CPU/AX after automation is not device-cold or GPU presentation. Memory is sampled in an XCTest host including overhead; short peaks may be missed, and a fixed child viewport may be clipped by a small scene.",
+    "UMD11 is pure parser/owned-original-fixture acceptance only, no registry/importer/product support, MOBI, cover, DRM, hardware or legal clearance.",
+    "No whole-stage completion, performance improvement, automatic renewal or compatibility claim follows from these checks."
+  ],
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "iOSTestsExecuted": 0,
+  "actualLaunchSamples": 0,
+  "actualMemorySamples": 0,
+  "actualUMDSwiftExecutions": 0,
+  "mainTrackedFilesModified": false,
+  "canonicalPlanModified": false,
+  "CIQueriedOrTriggered": false,
+  "committedOrPushed": false,
+  "independentReviewPending": true
+}

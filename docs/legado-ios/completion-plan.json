@@ -153,8 +153,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Finish reviewed UMD pure parser and independent measurement runner preparation, then submit one coherent source-only checkpoint including the actual C portable test-root repair. Keep existing smoke groups and independent measurement1/UI1/UMD11 identities separate. Do not create tags for individual fixes. Current C renewal result is independent; do not repeat Release A for test-only changes. Narrow A/C reuse still requires actual C8/13/1, exact source-scope mapping and independent package/source audits.",
-      "alreadyRunningTasks": "Saved bounded receipt 2026-10-19T16:24:16Z-16:24:22Z: C smoke39281083749/source1a87f6d completed failure in portable collector guard setUp (19 Python errors, zero Swift/iOS, Xcode steps skipped). C renewal39281084369/source1a87f6d remained in_progress at its Execute cases step; no diagnostic verdict or artifact inferred. Earlier Release A39272843081/sourcea76d380 succeeded and its static IPA/source/JVM20/168 audits passed; build12 awaits actual diagnostic gates and explicit source-scope mapping, not delivered. Prior snapshots/failures remain immutable."
+      "nextPlannedCheckpoint": "Submit one coherent source-only smoke and independent measurements checkpoint with reviewed UMD parser16, launch/memory9, runner8 and actual C test-owned temporary-root repair. Keep existing smoke groups, memory1/UI1/UMD11 and schema observations separate. No new Release or unchanged renewal run; A build12 is already delivered as a narrowly scoped diagnostic candidate.",
+      "alreadyRunningTasks": "Saved actual C renewal job118155310210/source1a87f6d completed success, all11steps and source-bound 8/13/UI1 passed; original aggregate API in_progress is preserved without inferring run completion. A Release39272843081/sourcea76d380 audited and build12 delivered via explicit narrow diagnostic mapping. C smoke39281083749 failed in portable collector setUp with zero Swift/iOS; test-owned canonical temp-root repair is included for the next consolidated source-only checkpoint. Prior failures remain immutable."
     },
     "nextReadyBatch": [
       "local-formats",
@@ -176,18 +176,19 @@
     "awaitingEvidenceQueue": [
       "reading-quick-panel-accessibility",
       "backup-webdav",
-      "automatic-renewal-feasibility",
       "reading-experience-design",
       "reading-position-write-integrity",
       "source-schema",
       "reading-performance-and-prefetch"
     ],
-    "deferredQueue": [],
+    "deferredQueue": [
+      "automatic-renewal-feasibility"
+    ],
     "currentDeviceCandidate": {
       "userRequestedOn": "2026-10-19",
-      "scopeZh": "用户主动要求真机续签验证；现阶段仅交付只读连接检查，其他真机待测边界不变。",
-      "record": "docs/legado-ios/native-reader-experience-build11.json",
-      "build": "11",
+      "scopeZh": "已交付动态发现与同设备 TCP 只读诊断包，待用户导出报告；完整自动续签仍未实现。",
+      "record": "docs/legado-ios/native-reader-experience-build12.json",
+      "build": "12",
       "fullAutomaticRenewalImplemented": false
     }
   },
@@ -602,21 +603,22 @@
         "reader-smoke",
         "feature-comparison",
         "reader-supply-measurements",
-        "reader-launch-memory-integration"
+        "reader-launch-memory-integration",
+        "reader-measurements-runner-integration"
       ],
       "execution": {
         "summaryZh": "启动、排版、内存与预取测量",
-        "currentState": "20/100 章十跳、损坏缓存对照和原 50 行排版阶段采集器继续各按其源码与证据验收。另已在同一 importer/reader/CoreText 路径准备独立启动与进程内存采集代码：启动 1 方法内 5 个 fresh-process 样本，内存 1 方法内 100K/1M 各 5 样本；导入/fixture 构造在区间外。主树 9 文件匹配冻结 patch 和独审，实际 portable 15＋原 stage 20、7 文件 grammar screen 通过；不是 Swift typecheck，实际 SDK/iOS/launch/memory 样本均 0。该 measurement 独立 CI 选择尚未接入/提交，不在 C 源码 1a87f6d；awaiting-cloud 仅指后续证据待办，不表示已提交。",
+        "currentState": "20/100 章十跳、损坏缓存与原 50 行排版阶段证据继续按各自源码验收。独立启动/内存 9 文件与未注册 UMD 纯解析器 16 文件保持原冻结字节；另已准备并审查独立 runner 8 文件，接入 memory 1/1、UI launch 1/1、UMD 11/11 三组精确实际叶集门、38 源文件及环境/overlay/Debug 主代码载荷绑定。作者实际 portable collector 22、shared 24、stage 20 有原始日志；root 主树同组检查与 bash/diff 仅 tool-reported-only，无新增 raw，不累计为更多用例。独立 workflow/选择的代码已接入，但该批尚未提交；实际 Swift/SDK、新 XCTest、启动和内存样本均 0，不在 C1a87f6d 或 A Release 中。awaiting-cloud 仅表示等待对应证据。",
         "remainingWork": [
-          "为两个独立 measurement selectors 接入经审批的同阶段采集入口，绑定固定源码、实际 passing XCTest leaves、原 xcresult/log、build/overlay 与 Xcode/SDK/runtime/destination；不要混入原 1 条 TXT 或 50 行阶段计数。此批尚未提交云测。",
-          "实际获取 5 个启动与 2×5 个内存样本、300 条完整 raw phase events，保留失败/缺样原始事实。启动终点仅 CPU layer.contents 提交＋可见 AX 真正文/UTF16 anchor；内存是同一 XCTest-host 的 sampled footprint/RSS，必须有 periodic 样本且实际最大 gap≤50ms。",
-          "按各自当前源码验收原预取/损坏缓存/50 行阶段基线；得到可比真实基线后才改实测瓶颈，不改未经证明有错的排队策略，不用 synthetic 或单章耗时替代启动/内存。"
+          "由 root 在同阶段相关源码与实际 C 临时根修复审查完成后统一提交独立 runner 检查点；提交前 submitted 保持 false。保留旧 smoke/TXT 1 方法/50 行阶段协议，三组分别留存 dedicated log、xcresult、summary、tests tree 与失败事实。",
+          "按固定 source、实际 Xcode/SDK/runtime/UDID、overlay 和构建产物身份取得真实 memory 1/1、launch 1/1 与 UMD 11/11、零失败/跳过/额外叶；须满足 5 个启动样本、2×5 个内存样本及 300 条完整 raw phase events，不能仅凭 shape 或自报接受。",
+          "继续取得原预取/损坏缓存/50 行阶段的源码对应证据；测量仅 CPU layer.contents 提交与 AX 正文、进程 sampled footprint/RSS，保留 periodic/gap 门与裁切边界。没有可比实测前值不宣称性能收益，不更改未确认错误的排队策略。"
         ],
-        "nextAction": "准备并审查两个独立测量选择的同阶段 runner/证据绑定后再提交一次集中验证；现有 C 检查点不含本批，禁止把等待态写成已提交。继续其他 ready 包开发，不轮询或为本批各小改单独触发 CI。",
+        "nextAction": "root 集中提交经审的 source-only 检查点后再执行一次独立 measurement workflow，按每组原始结果逐项验收；当前 runner 已接入代码但尚未提交，不查询或改写其他检查点状态。继续其他 ready 工作，不能将采集准备等同 native 验收或整包完成。",
         "readiness": "awaiting-cloud",
         "readyPreparation": [
-          "只读核对冻结源码/patch/独审与原始 portable/Apple primary 证据；准备明确 source、runtime、overlay 和通过方法叶集绑定，保持原 groups/历史原件。",
-          "复用两自有 fixture 与实际 signal，独立准备测量入口和失败保留；不把 process-cold、固定 viewport/live anchor 或间隔采样扩大为设备冷启动、GPU 显示、精确 peak 或性能收益。"
+          "逐 SHA 核对 runner 8、原测量 9 与纯解析器 16 文件；保留 v1/v2、修复前外移叶负例、独审 replay、全部作者 raw、A Debug link 与旧 UI 原始结构/环境证据。",
+          "独立保留 memory、launch、UMD 的真实 leaf/source/environment/host 绑定；不把旧 UI 结构、synthetic 负例或文件 hash 当新 SDK 执行，不混入旧 TXT 与 stage 50 计数。"
         ],
         "acceptance": [
           "每章规模/环境固定；排版每 fixture 五次、五阶段总 50 唯一记录，所有内容覆盖/版本/ready 断言通过，保留原始日志而非仅摘要。",
@@ -636,7 +638,13 @@
           "docs/legado-ios/evidence/reader-launch-memory/reader-launch-memory-independent-review.json",
           "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift",
           "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift",
-          "scripts/reader-experience/reader-launch-memory.py"
+          "scripts/reader-experience/reader-launch-memory.py",
+          "docs/legado-ios/reader-measurements-runner-batch.json",
+          "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-preparation-v2.json",
+          "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-independent-review.json",
+          ".github/workflows/reader-measurements.yml",
+          "scripts/reader-experience/reader-measurements.sh",
+          "scripts/reader-experience/collect-reader-measurements.py"
         ],
         "deferredHardware": [
           "最终硬件持续滚动/翻页、低内存、热/电池",
@@ -733,7 +741,8 @@
       ],
       "existingEvidence": [
         "renewal-research",
-        "build10"
+        "build10",
+        "build12-diagnostic-handoff"
       ],
       "feasibilityEstablished": false,
       "signerIntegrationAuthorizedByPlanOnlyAfterTransportEvidence": true,
@@ -741,14 +750,14 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "固定入口的原设备报告与另行补充的运行条件已保留。动态发现探针已有两次真实 Xcode 26.2 Debug arm64 Simulator 主 App 编译／链接证据；最新 a76d380 的测试目标因预取夹具初始化时闭包捕获未完成 self 失败，iOS 用例执行仍为 0。已最小改为捕获 local host，独立审查及 grammar screen 通过，尚待实际重编。8 秒截止、地址归属／scope／TTL 复核与零 TCP 业务帧等已实现范围不升级为传输或自动续签成功。 修复已包含于集中源码 1a87f6d；独立 renewal 39281084369 于 15:53 UTC 首次观察 queued，8／13／1 尚无实际通过结果。固定 a76d380 Release 与更新字体、进度、schema 的集中测试分开记账；交付 build11 不变。",
+        "currentState": "动态发现探针已在固定 C 源码的真实 Xcode 26.2 Debug Simulator 通过旧通道 8／发现 13／界面 1，零失败、跳过和预期失败。A build12 的 IPA、资源、JVM 与对应源码审计通过；已按独立源码范围证明明确接受仅诊断范围的 A／C 映射，并交付未签名包。电脑离线条件的动态发现真机报告尚未收到，认证安装与完整自动续签均未实现。",
         "remainingWork": [
           "不收集真实秘密，先记录有界传输候选、认证状态机、发现边界、超时取消和诊断协议。",
           "真机可用后先证明电脑关闭、无伴侣App的同设备认证安装传输；固定端点失败不能排除所有传输，QueryType成功也不是安装成功。",
           "仅传输门槛成立后开始profile／签名、同身份安全替换、冷启和数据保留，随后独立验证允许触发、过期恢复和有限重试。"
         ],
-        "nextAction": "读取已提交的 1a87f6d renewal 实际旧 8／动态发现 13／UI 1 的原始叶集；另核对 a76d380 Release 成品与来源，只有相关代码字节未变证明、实际测试与独立成品审计均成立，才复用并交付诊断包。",
-        "readiness": "awaiting-cloud",
+        "nextAction": "用户按 build12 说明验证电脑关机且 USB 断开时的动态发现，导出 JSON；先核对发现与 TCP 证据，再决定有界认证传输工作。其他 ready 开发继续，不重复本次已通过且未改变的探针测试。",
+        "readiness": "deferred-device",
         "readyPreparation": [
           "审查只读探针长度、超时、取消、错误归一化和不导出原reply的边界，复用已有证据。",
           "准备无真实秘密的协议夹具；transport前不引入signer或新AGPL续签依赖。"
@@ -771,10 +780,11 @@
           "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
           "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
           "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json",
-          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json"
+          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+          "docs/legado-ios/native-reader-experience-build12.json"
         ],
         "deferredHardware": [
-          "同设备认证transport、profile／签名、替换安装、冷启数据、无人值守与过期恢复全部暂缓真机，不要求用户执行。"
+          "已按用户要求交付 build12 通道诊断包，待电脑关机、USB 断开的动态发现报告；认证 transport、签名、替换安装、冷启数据与无人值守分别待验。"
         ],
         "verificationBoundary": "automaticSelfRenewalImplemented和feasibilityEstablished仍false；提醒、到期显示、跳外部工具及模拟成功都不是自续签，不承诺精确后台触发。"
       }
@@ -3704,6 +3714,14 @@
     "umd-parser-preparation": {
       "path": "docs/legado-ios/umd-parser-preparation-batch.json",
       "scope": "Unregistered bounded UMD type1 text parser preparation: frozen16 sources, original Java five fixtures/fifteen chapter getters, portable12 and three-file grammar only. Eleven Swift methods planned, SDK/iOS0; checked import commit/product reader/TOC/reopen remain ready work. No full UMD/MOBI/product support."
+    },
+    "reader-measurements-runner-integration": {
+      "path": "docs/legado-ios/reader-measurements-runner-batch.json",
+      "scope": "Reviewed independent runner8 code is present, not submitted: exact memory1/UI1/UMD11 leaves, source38/environment/overlay/actual Debug main-payload binding. Original portable collector22/shared24/stage20 raw retained; root rerun is tool-reported-only without new raw. Swift/SDK/new XCTest and launch/memory samples0. Old TXT1/stage50, parser product readiness and all other checkpoints remain independent."
+    },
+    "build12-diagnostic-handoff": {
+      "path": "docs/legado-ios/native-reader-experience-build12.json",
+      "scope": "A Release static audits plus explicitly mapped unchanged C8/13/UI1 diagnostic; unsigned handoff only, no service/auth/install/renewal acceptance."
     }
   },
   "retainedExistingWork": [

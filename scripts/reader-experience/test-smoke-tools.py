@@ -124,6 +124,15 @@ class SmokeEvidenceTests(unittest.TestCase):
             self.assertEqual(smoke.validate_tag(), SOURCE)
             with patch.dict(smoke.os.environ, {"GITHUB_REF_NAME": "reader-experience-aaaaaaa"}), self.assertRaises(ValueError):
                 smoke.validate_tag()
+        with patch.object(smoke, "source_sha", return_value=SOURCE), \
+                patch.dict(smoke.os.environ, {"GITHUB_SHA": SOURCE, "GITHUB_REF_NAME": "reader-measurements-aaaaaaa"}):
+            self.assertEqual(smoke.validate_tag("reader-measurements-"), SOURCE)
+            with self.assertRaises(ValueError):
+                smoke.validate_tag()
+            with patch.dict(smoke.os.environ, {"GITHUB_SHA": "b" * 40}), self.assertRaises(ValueError):
+                smoke.validate_tag("reader-measurements-")
+            with self.assertRaises(ValueError):
+                smoke.validate_tag("reader-anything-")
 
     def test_parameterized_summary_separates_method_and_execution_counts(self):
         # An immutable xcresult from a previous actual run has six methods but

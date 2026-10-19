@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 1,
+  "archivedAtUTC": "2026-10-19T16:53:51.636866+00:00",
+  "kind": "lossless-archive-of-actual-C-read-only-renewal-diagnostic-evidence",
+  "说明": "仅归档原始 C Simulator 诊断证据与既有独审，不查询 CI、不重跑任何测试。aggregate API 原件仍为 in_progress/null，同时保存实际单 job completed/success 与全部 11 步成功；不把二者改写成整次 run 终态。C smoke 的独立 preflight 失败不因本归档变为通过。",
+  "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "sourceTag": "reader-renewal-1a87f6d",
+  "runID": 39281084369,
+  "actualJob": {
+    "id": 118155310210,
+    "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369/job/118155310210",
+    "status": "completed",
+    "conclusion": "success",
+    "all11StepsCompletedSuccess": true
+  },
+  "aggregateRun": {
+    "savedStatus": "in_progress",
+    "savedConclusion": null,
+    "successfulCompletionInferred": false,
+    "conflictPreserved": true,
+    "originalAPIUnmodified": true
+  },
+  "artifact": {
+    "path": "original-reader-renewal-probe-evidence.zip",
+    "bytes": 2260954,
+    "sha256": "bfa6496f86183fced6a95125bfe6ac0faa278971fe09b95593933919983eebcc",
+    "githubDigestRecheckedAgainstSavedOriginalAPI": true,
+    "members": 163,
+    "uncompressedBytes": 12023046,
+    "allMemberHashesRecheckedAgainstOriginalZIPAndExistingExtractedBytes": true,
+    "allThreeOriginalXCResultBundlesPreservedInsideOriginalZIP": true,
+    "deepXCResultFilesNotIndividuallyDuplicated": true,
+    "originalMemberIndex": "archive-members.json"
+  },
+  "independentAudit": {
+    "path": "C-renewal-actual-independent-audit.json",
+    "sha256": "f5e00d24f53689fd9ceb6b45fc4061b7c5c9d3c6c95d258fb2d3bf0d3e5672f9",
+    "status": "passed-for-actual-C-read-only-diagnostic-test-scope",
+    "newAuditOrOriginalTestReexecutionPerformed": false,
+    "originalRawMembers": 122,
+    "originalRawManifestSeparate": "completed-manifest.json",
+    "originalRawManifestSHA256": "8d930b2c716b8d601721371ec4380cac8e692fbc82976a05aab7d0f02ff31ce6",
+    "losslessRawContainer": "independent-audit-raw.zip",
+    "memberHashIndex": "independent-audit-raw-members.json"
+  },
+  "actualScopeAlreadyAudited": {
+    "unitMethodsAndExecutions": 8,
+    "discoveryMethodsAndExecutions": 13,
+    "UIMethodsAndExecutions": 1,
+    "totalMethodsAndExecutions": 22,
+    "failures": 0,
+    "skips": 0,
+    "expectedFailures": 0,
+    "sourceInputs": 29,
+    "portablePreflight": [
+      24,
+      16
+    ],
+    "theseCountsAreNotNewRunsByArchiver": true,
+    "device": {
+      "architecture": "arm64",
+      "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+      "deviceName": "iPhone 17 Pro Max",
+      "modelName": "iPhone 17 Pro Max",
+      "osBuildNumber": "23C54",
+      "osVersion": "26.2",
+      "platform": "iOS Simulator"
+    },
+    "Xcode": {
+      "version": "26.2",
+      "build": "17C52",
+      "SDKVersion": "26.2",
+      "configuration": "Debug"
+    }
+  },
+  "exclusions": {
+    "AReleaseIPAExecuted": false,
+    "physicalDeviceVerified": false,
+    "serviceIdentityVerified": false,
+    "signingInstallationOrRenewalVerified": false,
+    "automaticSelfRenewalImplementedOrVerified": false,
+    "fullAppFontPositionFirestoreAccepted": false,
+    "fullLegadoCompatibilityAccepted": false,
+    "computerPoweredOff": "notMeasured",
+    "companionAppsAbsent": "notMeasured"
+  },
+  "builtHostBoundary": {
+    "builtAppIncluded": false,
+    "builtInfoOrLocalizedFilesReReadOffline": false,
+    "builtInfoSHA256RecordedByRunner": "96e507a6f5ad33466ff501de67e8988c74768fb1b5766d360a16b8096cbcda42",
+    "builtMetadataReportedByRunner": {
+      "bonjourServices": [
+        "_calibresmartdeviceapp._tcp",
+        "_remotepairing._tcp"
+      ],
+      "fallbackMatchesBothSourceConfigurations": true,
+      "localizedUsageDescriptions": [
+        {
+          "language": "zh-Hant",
+          "sourceSHA256": "d2ec71ea3002d79f3cfee64dc747145c9f9138a877e999068cba35d559f436fd",
+          "builtSHA256": "f98b4a1cdae999cd816b2aa65431a57675fc29c42cf07bf027ba7b2b8905a28a",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "zh-Hans",
+          "sourceSHA256": "4a55831681710e3848738aa098b7b3102ee10c0ff5d7f5c3434b9c900dace008",
+          "builtSHA256": "391ab95587f6138c1f8912fe367bc2798434bc183c28769c7b700484ad996328",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "en",
+          "sourceSHA256": "a372133b21aede7b49287a2f2bdba95354e88df4ad3e6daeac1666a65867db0e",
+          "builtSHA256": "7b053df97348aaf5a5546db4a091cced7f6ae64c5db818e39ecff8c84db84a14",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "ja",
+          "sourceSHA256": "b650251b751d78d106c4ae913b0d1bc99f2ad9d9c86c4bd45e9850fc33a1cc38",
+          "builtSHA256": "926210bfda259673cee09cb6b0b3b9c499273ce9facc6c22f8e6d1f1bd2f1fd8",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "ko",
+          "sourceSHA256": "d8e2c7de68bde565c17ac5b159b448349a57ed14efed96ee1af3e0e846d72d52",
+          "builtSHA256": "eac129d3cbf65b0548911eb847cd01ee65c13755fe097ad4bc0aa3c87a33bfd2",
+          "usageDescriptionMatchesSource": true
+        }
+      ]
+    },
+    "actualResultHelperRanOnCI": true,
+    "basis": "Fixed-C result() source performs built local-info/source-stamp/Bonjour/privacy/five-localization/synthetic-config/no-JVM checks before writing result.json. Actual source-bound job and execution step succeeded and original result/log are byte-identical. The app bytes are deliberately absent, so offline hash/Info re-execution is impossible and is not claimed."
+  },
+  "payloadFiles": [
+    {
+      "path": "C-renewal-actual-independent-audit.json",
+      "source": ".build/renewal-discovery/C-renewal-actual-independent-audit.json",
+      "bytes": 17505,
+      "sha256": "f5e00d24f53689fd9ceb6b45fc4061b7c5c9d3c6c95d258fb2d3bf0d3e5672f9",
+      "kind": "independent-offline-audit-original"
+    },
+    {
+      "path": "acquisition/evidence-manifest.json",
+      "source": ".build/renewal-discovery/C-completed-job-evidence-20261019T1640/evidence-manifest.json",
+      "bytes": 1068,
+      "sha256": "4a5bd3138e6ff2b730bea2ad30391b74b82cea443845fc4bbdd9200e48f7423e",
+      "kind": "original-acquisition-manifest"
+    },
+    {
+      "path": "acquisition/renewalC-artifacts.http.json",
+      "source": ".build/renewal-discovery/C-completed-job-evidence-20261019T1640/renewalC-artifacts.http.json",
+      "bytes": 3620,
+      "sha256": "d1129a62adfce05a5c62fd6db23d761116b8d17c1eb68e4e69791fe8df523be1",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "acquisition/renewalC-artifacts.raw.json",
+      "source": ".build/renewal-discovery/C-completed-job-evidence-20261019T1640/renewalC-artifacts.raw.json",
+      "bytes": 752,
+      "sha256": "81435398f25c44ac3ff21055463ba918a6544b0928d06fce05a7f3b49140795c",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "acquisition/retrieval-record.json",
+      "source": ".build/renewal-discovery/C-completed-job-evidence-20261019T1640/retrieval-record.json",
+      "bytes": 6911,
+      "sha256": "83c9de8551b3a13a5619350fb89a2ac5d717289632e64edfa604f254d380c9f0",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "actual-read-only-commands.json",
+      "source": ".build/renewal-discovery/C-renewal-actual-independent-audit-raw/actual-read-only-commands.json",
+      "bytes": 44221,
+      "sha256": "047bbb3cd91614c03491c10712ccf4b50759af7f1cb8e26fbd1192d1faabcfc6",
+      "kind": "readable-original-independent-index"
+    },
+    {
+      "path": "api-observation/evidence-manifest.json",
+      "source": ".build/renewal-discovery/C-renewal-after-umd-20261019T1638/evidence-manifest.json",
+      "bytes": 1483,
+      "sha256": "6105aad1ff965a3a6635475b96a0d4256418f693aaabc86772f91d2af5c8cc31",
+      "kind": "original-acquisition-manifest"
+    },
+    {
+      "path": "api-observation/index.json",
+      "source": ".build/renewal-discovery/C-renewal-after-umd-20261019T1638/index.json",
+      "bytes": 13469,
+      "sha256": "464ac1c2b6691da33d08012a459fbba42eb289d474819b937c1cb5d99ebda876",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "api-observation/renewalC-inspection.json",
+      "source": ".build/renewal-discovery/C-renewal-after-umd-20261019T1638/renewalC-inspection.json",
+      "bytes": 11800,
+      "sha256": "d3333d8a25097e656781f5afb2260d6698c62add875cbcecb38c2c86f153599e",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "api-observation/renewalC-jobs.http.json",
+      "source": ".build/renewal-discovery/C-renewal-after-umd-20261019T1638/renewalC-jobs.http.json",
+      "bytes": 3579,
+      "sha256": "0696cfc0b3486959ee153eb863f39f2ea60813ec3961537d456c8a4fbdbe75e4",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "api-observation/renewalC-jobs.raw.json",
+      "source": ".build/renewal-discovery/C-renewal-after-umd-20261019T1638/renewalC-jobs.raw.json",
+      "bytes": 3069,
+      "sha256": "26c5dbaa183a98393fef2bedd18244a049ffc208e370aa4f0f4a96243edc792a",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "api-observation/renewalC-run.http.json",
+      "source": ".build/renewal-discovery/C-renewal-after-umd-20261019T1638/renewalC-run.http.json",
+      "bytes": 3565,
+      "sha256": "2c43a10efe45ecd05fbcfa2cf9197098a67ca1eed1f663ed9ed281d49af52227",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "api-observation/renewalC-run.raw.json",
+      "source": ".build/renewal-discovery/C-renewal-after-umd-20261019T1638/renewalC-run.raw.json",
+      "bytes": 12499,
+      "sha256": "768c4a1aef471e8c4ec039096078030397abfeeca189ec4ec864ab3f58cd1e9b",
+      "kind": "original-existing-evidence"
+    },
+    {
+      "path": "archive-members.json",
+      "source": ".build/renewal-discovery/C-renewal-actual-independent-audit-raw/archive-members.json",
+      "bytes": 41279,
+      "sha256": "2ac8d2d3ba78e307f6263ca3759ed2662008c19486c61051eeca675183384362",
+      "kind": "readable-original-independent-index"
+    },
+    {
+      "path": "archive-renewal-actual-C.py",
+      "source": ".build/renewal-discovery/archive-renewal-actual-C.py",
+      "bytes": 19620,
+      "sha256": "30c6ced9dae0b08180f2d97f2f4c44a467fadc4b93118f091e8bb235b3102ef3",
+      "kind": "archiver-source"
+    },
+    {
+      "path": "audit-C-renewal-actual-offline.py",
+      "source": ".build/renewal-discovery/audit-C-renewal-actual-offline.py",
+      "bytes": 26194,
+      "sha256": "f05b5b7c6da9771217e65e5c495d600abb23da87b1a0fa660fc754cf21769d05",
+      "kind": "original-auditor-source-not-executed-by-archiver"
+    },
+    {
+      "path": "ci-logs/reader-renewal-existing-guards.log",
+      "source": ".build/b12-2e93221697/ci-logs/reader-renewal-existing-guards.log",
+      "bytes": 4221,
+      "sha256": "9609a2671cf5e21fa359bf1d8209886de476aefacd22df28a97f125acf2bb0ba",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "ci-logs/reader-renewal-guards.log",
+      "source": ".build/b12-2e93221697/ci-logs/reader-renewal-guards.log",
+      "bytes": 2961,
+      "sha256": "e418941385e4984909b3a35e5d0a77050e5f63297ffbb3fc343eaa1430817c51",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "ci-logs/reader-renewal-xcode.log",
+      "source": ".build/b12-2e93221697/ci-logs/reader-renewal-xcode.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "ci-logs/reader-renewal.log",
+      "source": ".build/b12-2e93221697/ci-logs/reader-renewal.log",
+      "bytes": 3303,
+      "sha256": "e6a4b636e9d7b5ca59ece0f826d99a142d61c239b3e55f499e308f4fbea723eb",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "completed-manifest.json",
+      "source": ".build/renewal-discovery/C-renewal-actual-independent-audit-raw/completed-manifest.json",
+      "bytes": 29221,
+      "sha256": "8d930b2c716b8d601721371ec4380cac8e692fbc82976a05aab7d0f02ff31ce6",
+      "kind": "original-independent-raw-completed-manifest"
+    },
+    {
+      "path": "independent-audit-raw-members.json",
+      "source": "generated-from-original-completed-manifest-and-reverified-member-bytes",
+      "bytes": 30658,
+      "sha256": "3900aee88350336bc788c4bd985cfe42d48fc30dd7f2bd77d49f05b915eb669c",
+      "kind": "lossless-member-index"
+    },
+    {
+      "path": "independent-audit-raw.zip",
+      "source": ".build/renewal-discovery/C-renewal-actual-independent-audit-raw",
+      "bytes": 1042235,
+      "sha256": "000f05afc8a63d785d8d8b4318ee1ea408d6eab8f828847752917047542648a3",
+      "kind": "lossless-container-of-122-existing-independent-raw-files"
+    },
+    {
+      "path": "original-reader-renewal-probe-evidence.zip",
+      "source": ".build/renewal-discovery/C-completed-job-evidence-20261019T1640/renewalC-reader-renewal-probe-evidence.zip",
+      "bytes": 2260954,
+      "sha256": "bfa6496f86183fced6a95125bfe6ac0faa278971fe09b95593933919983eebcc",
+      "kind": "original-GitHub-artifact-ZIP"
+    },
+    {
+      "path": "reader-renewal-probe/boot-status.log",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/boot-status.log",
+      "bytes": 12323,
+      "sha256": "66c820e472bc9a9a8ec9eba5bfdeb9fabe32292ed4741733d74ec6182aba3af1",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/build-settings.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/build-settings.json",
+      "bytes": 43810,
+      "sha256": "76be065f8356a414093fb4cc784abef798062133e43c1031e108667ee551d3aa",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/discovery-summary.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/discovery-summary.json",
+      "bytes": 987,
+      "sha256": "bf22034d93eb30cf405b254cecc373ad508794585c3d105bb5cd31d60742590b",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/discovery-tests.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/discovery-tests.json",
+      "bytes": 7338,
+      "sha256": "998d1f2ca144536af7453e4ac5fd20e609fa2a0fe0327f539e9cbfb40741e572",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/discovery-tests.log",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/discovery-tests.log",
+      "bytes": 531989,
+      "sha256": "f363d64a0232c391a234af152d384e7cf135d6e6720f88fae1e4d05e70f477a4",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/info-overlay.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/info-overlay.json",
+      "bytes": 691,
+      "sha256": "39dc41b9512234b72911010d7c2b9e45af998067d6ab8210f081153434df85d8",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/overlays.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/overlays.json",
+      "bytes": 2624,
+      "sha256": "87a39abe9d12c0b682aaed744a20892c14307cea7b617b5b76225ffa30f4f642",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/prepare.log",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/prepare.log",
+      "bytes": 7209,
+      "sha256": "750a42bee1c49182c77d400815ae9e02d56478c40e5ea13334c23ab26929c005",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/project-overlay.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/project-overlay.json",
+      "bytes": 1215,
+      "sha256": "b26e7c3407760c4776260bcbec6855a776003053cd684f259ab112ecd3d483f2",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/result.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/result.json",
+      "bytes": 14693,
+      "sha256": "7e186013e1a9185bc7ebf1329c8da7e9e3f961a6c78c8995492fc830badf6076",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/result.log",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/result.log",
+      "bytes": 14693,
+      "sha256": "7e186013e1a9185bc7ebf1329c8da7e9e3f961a6c78c8995492fc830badf6076",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/source-inputs.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/source-inputs.json",
+      "bytes": 7209,
+      "sha256": "750a42bee1c49182c77d400815ae9e02d56478c40e5ea13334c23ab26929c005",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/ui-summary.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/ui-summary.json",
+      "bytes": 982,
+      "sha256": "e7a7534dfe3d4b9245f4c91d8e6c5473f6438be35ddfb2bbb9da688f216f2517",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/ui-tests.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/ui-tests.json",
+      "bytes": 1773,
+      "sha256": "e856124ca1c577f2d7480689614fc2576f2303a0c440d2aa47658b8a756aedab",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/ui-tests.log",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/ui-tests.log",
+      "bytes": 459361,
+      "sha256": "37b10097fd1a2c9662b0fc3c108005786cc75aaf7b337eb7fc809879921178ab",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/unit-summary.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/unit-summary.json",
+      "bytes": 984,
+      "sha256": "c4918e512ae3f9902f59dad8125ea668977de4f72498e5cac9438fb88ffa6522",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/unit-tests.json",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/unit-tests.json",
+      "bytes": 5424,
+      "sha256": "5bfeae6dba19f3838b8d49910e481365a47244ae4f70695b84318295079b3b29",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/unit-tests.log",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/unit-tests.log",
+      "bytes": 8362998,
+      "sha256": "0a9ef4b8996df03dcdac26cdb80bf30e673520b69e239976df591f43823eec6a",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "reader-renewal-probe/xcode-version.log",
+      "source": ".build/b12-2e93221697/reader-renewal-probe/xcode-version.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3",
+      "kind": "readable-original-artifact-file"
+    },
+    {
+      "path": "source-input-comparison.json",
+      "source": ".build/renewal-discovery/C-renewal-actual-independent-audit-raw/source-input-comparison.json",
+      "bytes": 9709,
+      "sha256": "f19837545970b62856231800f2e822cf1ef65dd67fee785337f16eaabfb03ff4",
+      "kind": "readable-original-independent-index"
+    }
+  ],
+  "payloadFileCount": 44,
+  "payloadBytes": 13070261,
+  "directoryManifest": "archive-directory-manifest.json",
+  "manifestIncludesRecordAndExcludesOnlyItself": true,
+  "protectedExistingDocumentsSHA256": {
+    "docs/legado-ios/completion-plan.json": "6c2c9eb38d8c7e33267bbd272f646f9226536bf177456d580d25a9865420bf95",
+    "docs/legado-ios/reader-launch-memory-batch.json": "b81b097789b4b1b5069ad5737937e110bb7f0a96537309dc206119e67a69b74c",
+    "docs/legado-ios/umd-parser-preparation-batch.json": "74f6d775c25fad244cc8bb814afbf88ea4844efb69ab32ba10ef790eda46b3ca",
+    "docs/legado-ios/native-reader-experience-build12.json": "697c2d2574bb579ccb8777e52f13f4356015af85c3d10dbe1a2d090f6611e5e7"
+  },
+  "performed": {
+    "offlineExistingEvidenceReadAndLosslessPackaging": true,
+    "networkQueries": 0,
+    "testRuns": 0,
+    "gitOperations": 0,
+    "CIQueriesOrTriggers": 0,
+    "canonicalOrBatchModified": false,
+    "DownloadsModified": false,
+    "privateInputsRead": false
+  }
+}

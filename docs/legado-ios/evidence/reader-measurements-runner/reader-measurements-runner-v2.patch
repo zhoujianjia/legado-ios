@@ -1,0 +1,1147 @@
+diff --git a/scripts/reader-experience/smoke-tools.py b/scripts/reader-experience/smoke-tools.py
+index b875b017020e24c52df2cd2d5b66ba94f5c891ea..29b5abf74c59922261805db0ee2d99e53dd17069 100644
+--- a/scripts/reader-experience/smoke-tools.py
++++ b/scripts/reader-experience/smoke-tools.py
+@@ -220,7 +220,7 @@ def source_sha():
+ 
+ 
+ def validate_tag(tag_prefix="reader-smoke-"):
+-    if tag_prefix not in ("reader-smoke-", "reader-renewal-"):
++    if tag_prefix not in ("reader-smoke-", "reader-renewal-", "reader-measurements-"):
+         raise ValueError("Unsupported isolated Simulator test tag prefix")
+     source = source_sha()
+     if os.environ.get("GITHUB_SHA") != source or os.environ.get("GITHUB_REF_NAME") != tag_prefix + source[:7]:
+@@ -274,7 +274,7 @@ def prepare(directory, tag_prefix="reader-smoke-"):
+             raise ValueError("Source bytes differ from HEAD before smoke overlay: " + path)
+     synthetic = config.stage(REPO / "GoogleService-Info.plist")
+     project = config.overlay_project(REPO / config.PROJECT, directory / "project-overlay.json")
+-    if tag_prefix == "reader-renewal-":
++    if tag_prefix in ("reader-renewal-", "reader-measurements-"):
+         info = overlay_info(REPO / INFO, directory / "info-overlay.json", source_commit=source)
+     else:
+         info = overlay_info(REPO / INFO, directory / "info-overlay.json")
+@@ -400,10 +400,10 @@ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+     commands = parser.add_subparsers(dest="phase", required=True)
+     validation = commands.add_parser("validate-tag")
+-    validation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-"), default="reader-smoke-")
++    validation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-", "reader-measurements-"), default="reader-smoke-")
+     preparation = commands.add_parser("prepare")
+     preparation.add_argument("--directory", type=Path, required=True)
+-    preparation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-"), default="reader-smoke-")
++    preparation.add_argument("--tag-prefix", choices=("reader-smoke-", "reader-renewal-", "reader-measurements-"), default="reader-smoke-")
+     verify = commands.add_parser("verify-summary")
+     verify.add_argument("--summary", type=Path, required=True)
+     verify.add_argument("--expected", type=int, required=True)
+diff --git a/scripts/reader-experience/test-smoke-tools.py b/scripts/reader-experience/test-smoke-tools.py
+index 29a46af905a675b35505ca1ddb05cb9b78505598..38985b0a8b51395546934e51122b44a955660407 100644
+--- a/scripts/reader-experience/test-smoke-tools.py
++++ b/scripts/reader-experience/test-smoke-tools.py
+@@ -124,6 +124,15 @@ class SmokeEvidenceTests(unittest.TestCase):
+             self.assertEqual(smoke.validate_tag(), SOURCE)
+             with patch.dict(smoke.os.environ, {"GITHUB_REF_NAME": "reader-experience-aaaaaaa"}), self.assertRaises(ValueError):
+                 smoke.validate_tag()
++        with patch.object(smoke, "source_sha", return_value=SOURCE), \
++                patch.dict(smoke.os.environ, {"GITHUB_SHA": SOURCE, "GITHUB_REF_NAME": "reader-measurements-aaaaaaa"}):
++            self.assertEqual(smoke.validate_tag("reader-measurements-"), SOURCE)
++            with self.assertRaises(ValueError):
++                smoke.validate_tag()
++            with patch.dict(smoke.os.environ, {"GITHUB_SHA": "b" * 40}), self.assertRaises(ValueError):
++                smoke.validate_tag("reader-measurements-")
++            with self.assertRaises(ValueError):
++                smoke.validate_tag("reader-anything-")
+ 
+     def test_parameterized_summary_separates_method_and_execution_counts(self):
+         # An immutable xcresult from a previous actual run has six methods but
+diff --git a/scripts/reader-experience/collect-reader-measurements.py b/scripts/reader-experience/collect-reader-measurements.py
+new file mode 100644
+index 0000000..5b153dd
+--- /dev/null
++++ b/scripts/reader-experience/collect-reader-measurements.py
+@@ -0,0 +1,374 @@
++#!/usr/bin/env python3
++"""Bind separate source-only measurement/UMD selections to real XCTest evidence.
++
++The imported reader-launch-memory.py remains shape-only. This gate additionally
++requires the exact passing XCTest identities, committed source, audited local
++overlays, actual Debug Simulator environment and retained original artifacts.
++No result accepts product UMD import, device-cold, GPU paint or an improvement.
++"""
++import argparse
++from datetime import datetime, timezone
++import hashlib
++import importlib.util
++import json
++import os
++from pathlib import Path
++import plistlib
++import re
++import sys
++
++HERE = Path(__file__).resolve().parent
++REPO = HERE.parents[1]
++
++
++def module(name, filename):
++    spec = importlib.util.spec_from_file_location(name, HERE / filename)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++stage = module("measurements_stage_environment", "reader-stage-baseline.py")
++shape = module("measurements_shape_only", "reader-launch-memory.py")
++smoke, config = stage.smoke, stage.config
++UMD_METHODS = tuple("UMDTextDecoderTests/" + name + "()" for name in (
++    "matchesOriginalJavaFixtures", "rejectsEveryTruncatedPrefix", "rejectsImagesKeysAndUnknownSections",
++    "rejectsInvalidLengthsAndEndMarker", "rejectsInvalidChapterOffsets", "rejectsInvalidUTF16AndSurrogateBoundary",
++    "rejectsCorruptedZlibAndUnconsumedTail", "rejectsMismatchedRecordIdentity", "enforcesAllBudgets",
++    "observesCancellation", "fileParserRetainsSnapshotAndEnforcesInputBudget"))
++GROUPS = {
++    "memory": {"target": "yuedu appTests", "bundle": "Unit test bundle",
++               "methods": ("ReaderProcessMemoryMeasurementsTests/sampleOwnedCoreTextChapters()",)},
++    "launch": {"target": "yuedu appUITests", "bundle": "UI test bundle",
++               "methods": ("ReaderProcessLaunchMeasurementsUITests/testFiveProcessLaunchesToSubmittedReadableTXTAnchor()",)},
++    "umd": {"target": "yuedu appTests", "bundle": "Unit test bundle", "methods": UMD_METHODS},
++}
++PERF_SOURCES = (
++    "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift", "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
++    "Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift", "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift",
++    "Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift",
++    "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
++    "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift",
++    "scripts/reader-experience/reader-launch-memory.py", "scripts/reader-experience/test-reader-launch-memory.py")
++UMD_FIXTURES = "Tests/iOS/yuedu appTests/Fixtures/UMD/"
++UMD_IDS = ("chinese-two-chapters", "cross-compression-blocks", "multi-chapter-optional-metadata", "non-bmp-utf16", "paragraph-separators")
++UMD_SOURCES = ("Modules/Core/UMD/UMDBookParser.swift", "Modules/Core/UMD/UMDTextDecoder.swift",
++    "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift", UMD_FIXTURES + "provenance.json",
++    "scripts/reader-experience/inspect-umd-fixtures.py", "scripts/reader-experience/test-umd-fixtures.py") + tuple(
++        UMD_FIXTURES + identity + "/" + name for identity in UMD_IDS for name in ("fixture.umd", "reader-output.json"))
++UI_FIXTURES = {
++    "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json": "5868bc2b0c9cb43ae465e4ea5a03292c13fb47bc125bc43fc0d3a65042c7cbde",
++    "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json": "422b43e5e6f671d84b115864216ba33cb3b47c8df25b7d78ffd4cfd623dc34ec",
++}
++SOURCE_FILES = (*PERF_SOURCES, *UMD_SOURCES, *UI_FIXTURES,
++    "scripts/reader-experience/reader-measurements.sh", ".github/workflows/reader-measurements.yml",
++    "scripts/reader-experience/collect-reader-measurements.py", "scripts/reader-experience/test-collect-reader-measurements.py",
++    "scripts/reader-experience/smoke-tools.py", "scripts/reader-experience/test-smoke-tools.py",
++    "scripts/reader-experience/stage-config.py", "scripts/reader-experience/reader-stage-baseline.py",
++    "scripts/sim.sh", "scripts/xctest.sh", "Tests/iOS/yuedu appTests/EPUBTestFixtures.swift")
++
++
++def require(value, message):
++    if not value:
++        raise ValueError(message)
++
++
++def digest(raw):
++    return hashlib.sha256(raw).hexdigest()
++
++
++def object_json(path):
++    return shape.strict_json(config.checked_path(path).read_text(encoding="utf-8"))
++
++
++def evidence(path):
++    path = config.checked_path(path)
++    require(path.is_file(), "Missing regular evidence file: " + str(path))
++    require(path.stat().st_size <= 512 * 1024**2, "Evidence file exceeds 512MiB")
++    with path.open("rb") as stream:
++        value = hashlib.file_digest(stream, "sha256").hexdigest()
++    return {"path": str(path), "bytes": path.stat().st_size, "sha256": value}
++
++
++def source_inventory(read_source):
++    """Review simple declared signatures; source inventory is never execution."""
++    memory = read_source(PERF_SOURCES[6]).decode("utf-8")
++    launch = read_source(PERF_SOURCES[3]).decode("utf-8")
++    umd = read_source("Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift").decode("utf-8")
++    require(re.findall(r"^\s*func (\w+)\(\) async throws \{", memory, re.MULTILINE) == ["sampleOwnedCoreTextChapters"]
++            and len(re.findall(r"^\s*@Test\b", memory, re.MULTILINE)) == 1, "Memory source selection changed")
++    require(re.findall(r"^\s*func (test\w+)\(\) async throws \{", launch, re.MULTILINE)
++            == ["testFiveProcessLaunchesToSubmittedReadableTXTAnchor"]
++            and re.findall(r"\bfunc (test\w+)\(", launch) == ["testFiveProcessLaunchesToSubmittedReadableTXTAnchor"],
++            "Launch source selection changed")
++    require("ReaderProcessLaunchMeasurementsUITests: ReaderLocalTXTScenarioTestCase" in launch,
++            "Launch must not inherit the old smoke test")
++    base = read_source(PERF_SOURCES[2]).decode("utf-8")
++    old = read_source(PERF_SOURCES[1]).decode("utf-8")
++    require(not re.findall(r"\bfunc test\w+\(", base)
++            and re.findall(r"\bfunc (test\w+)\(", old) == ["testTXTImportTOCAndProgressSurviveRelaunch"],
++            "Old TXT identity or no-test helper changed")
++    names = re.findall(r"^\s*func (\w+)\(\)(?: async)? throws \{", umd, re.MULTILINE)
++    require(set("UMDTextDecoderTests/" + name + "()" for name in names) == set(UMD_METHODS)
++            and len(names) == len(UMD_METHODS) == len(re.findall(r"^\s*@Test\b", umd, re.MULTILINE)),
++            "UMD source selection changed or became parameterized")
++
++
++def source_provenance():
++    result = {}
++    require(len(SOURCE_FILES) == len(set(SOURCE_FILES)), "Duplicate source binding")
++    def read_source(name):
++        raw = config.checked_path(REPO / name).read_bytes()
++        require(raw == smoke.git("show", "HEAD:" + name, binary=True), "Source differs from committed HEAD: " + name)
++        result[name] = {"bytes": len(raw), "sha256": digest(raw)}
++        return raw
++    for name in SOURCE_FILES:
++        read_source(name)
++    source_inventory(read_source)
++    for path, expected in UI_FIXTURES.items():
++        require(result[path]["sha256"] == expected, "Historical UI structure fixture changed")
++    provenance_raw = read_source(UMD_FIXTURES + "provenance.json")
++    require(digest(provenance_raw) == "e77c071c9f821ae63dfd14d233a627b9cc6c9061e9ab2de864699f513194a2c4", "Frozen UMD golden provenance changed")
++    provenance = shape.strict_json(provenance_raw.decode("utf-8"))
++    require(provenance["referenceRecordSHA256"] == "fde4be8b82780807741a2f19d3bc6bfbcedabfa6b74a41a74eeb6fdfc60c345a"
++            and provenance["bundleManifestSHA256"] == "aa9b128ba7ff51e524af0ef1d905860d6599e9f71426bc484544ed1344110719",
++            "UMD original reference identity changed")
++    expected = {identity + "/" + name for identity in UMD_IDS for name in ("fixture.umd", "reader-output.json")}
++    require(len(provenance["files"]) == 10 and {entry["path"] for entry in provenance["files"]} == expected,
++            "UMD fixture inventory changed")
++    for entry in provenance["files"]:
++        require(result[UMD_FIXTURES + entry["path"]] == {"bytes": entry["bytes"], "sha256": entry["sha256"]}, "UMD fixture digest differs")
++    return result
++
++
++def context():
++    source = smoke.validate_tag("reader-measurements-")
++    result = {"sourceCommit": source}
++    for key in ("GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT"):
++        value = os.environ.get(key)
++        require(type(value) is str and re.fullmatch(r"[1-9][0-9]*", value), "Missing same-run CI context: " + key)
++        result[key] = value
++    return result
++
++
++def validate_binding(audit_path, environment_path):
++    audit = object_json(audit_path)
++    smoke.review_overlays(audit)  # prepare() has already created these audited overlays.
++    smoke.require_source_stamp(plistlib.loads((REPO / smoke.INFO).read_bytes()), audit["sourceCommit"])
++    environment = stage.validate_environment(object_json(environment_path))
++    require(environment["sourceCommit"] == audit["sourceCommit"] == context()["sourceCommit"], "Environment/source differs")
++    require(environment["sourceFiles"] == stage.source_provenance(), "Shared environment source changed")
++    for entry in environment["inputEvidence"].values():
++        require(evidence(Path(entry["path"]))["sha256"] == entry["sha256"], "Environment raw input changed")
++    require(environment["inputEvidence"]["audit"]["sha256"] == evidence(audit_path)["sha256"], "Overlay audit differs")
++    return environment
++
++
++def prepare(audit, environment, output):
++    require(not output.exists(), "Refusing prior preparation")
++    env = validate_binding(audit, environment)
++    value = {"schemaVersion": 1, "kind": "reader-measurements-preparation", "context": context(),
++             "preparedAtUTC": datetime.now(timezone.utc).isoformat(), "sourceInputs": source_provenance(),
++             "environment": evidence(environment), "audit": evidence(audit),
++             "expectedGroups": GROUPS, "measurementFixtures": shape.fixture_protocol(),
++             "launchFixture": shape.launch_fixture_protocol(),
++             "historicalUITreeReference": {"runID": 39146602853, "sourceCommit": "97d9f0f208369cd32766cf7d0391a6b2936d03b2",
++                 "purpose": "Original modern UI container structure only; not execution of new launch method.", "files": UI_FIXTURES},
++             "environmentScope": "Shared stage capture validates actual environment only; no old fifty-row stage execution is claimed.",
++             "preparedDestination": env["destination"], "actualSelectedXCTestExecutionValidated": False}
++    config.write_new_json(output, value)
++    return value
++
++
++def verify_tree(tree, target, bundle_kind, methods):
++    require(type(tree) is dict and type(tree.get("testNodes")) is list and len(tree["testNodes"]) == 1,
++            "Missing single actual test plan")
++    require(tree["testNodes"][0].get("nodeType") == "Test Plan", "Unknown test-plan root")
++    found, bundles = set(), []
++    def visit(node, inside_bundle=False, is_root=False):
++        require(type(node) is dict, "Malformed test node")
++        kind = node.get("nodeType")
++        require(kind in ("Test Plan", bundle_kind, "Test Suite", "Test Case"), "Unknown/wrong-group node type: " + str(kind))
++        children = node.get("children", [])
++        require(type(children) is list, "Malformed test children")
++        if kind == "Test Case":
++            require(inside_bundle, "Test method is outside its selected target bundle")
++            name = node.get("nodeIdentifier")
++            require(type(name) is str, "Missing actual method identity")
++            identity = name.removeprefix(target + "/")
++            require(identity in methods and identity not in found and node.get("result") == "Passed" and not children,
++                    "Unexpected/duplicate/failed/skipped method: " + name)
++            found.add(identity)
++        else:
++            require(children and ("result" not in node or node["result"] == "Passed"), "Empty or nonpassing test container")
++            if kind == "Test Plan":
++                require(is_root, "Nested test plan is not a selected target tree")
++            if kind == bundle_kind:
++                require(not inside_bundle, "Nested target bundles are not permitted")
++                require(node.get("name") == target, "Wrong actual test target")
++                bundles.append(node)
++        for child in children:
++            visit(child, inside_bundle or kind == bundle_kind)
++    visit(tree["testNodes"][0], is_root=True)
++    require(found == set(methods) and len(bundles) == 1, "Missing exact source methods or unique target bundle")
++    return sorted(found)
++
++
++def verify_execution(summary, tree, group, test_status, artifact_status, environment):
++    require(type(test_status) is int and test_status == 0 and type(artifact_status) is int and artifact_status == 0,
++            "XCTest wrapper or original artifact export failed")
++    selection = GROUPS[group]
++    counts = smoke.verify_summary(summary, len(selection["methods"]), len(selection["methods"]))
++    require(summary.get("result") == "Passed" and summary.get("testFailures") == [], "Original summary not clean Passed")
++    methods = verify_tree(tree, selection["target"], selection["bundle"], selection["methods"])
++    devices = tree.get("devices")
++    require(type(devices) is list and len(devices) == 1 and type(devices[0]) is dict, "Missing single original test device")
++    actual = summary["devicesAndConfigurations"][0]
++    require(actual.get("device") == devices[0], "Summary/tree devices differ")
++    device = devices[0]
++    require(device.get("deviceId") == environment["destination"][3:] and device.get("platform") == "iOS Simulator"
++            and device.get("osVersion") == environment["runtimeVersion"] and device.get("osBuildNumber") == environment["runtimeBuild"],
++            "Actual XCTest device/runtime differs from captured destination")
++    require(tree.get("testPlanConfigurations") == [actual.get("testPlanConfiguration")]
++            and type(actual.get("testPlanConfiguration")) is dict, "Actual test configuration differs")
++    return {"counts": counts, "passedMethodIdentities": methods, "device": device}
++
++
++def retain_raw(log, output, group):
++    require(not output.exists(), "Refusing prior raw rows")
++    markers = {"launch": (shape.LAUNCH.encode(),), "memory": (shape.MEMORY.encode(), shape.PHASE.encode()), "umd": ()}[group]
++    raw = bytearray()
++    original = evidence(log)
++    with config.checked_path(log).open("rb") as stream:
++        for line in stream:
++            if any(marker in line for marker in markers):
++                require(len(line) <= 8 * 1024**2 and len(raw) + len(line) <= 64 * 1024**2, "Raw observation budget exceeded")
++                raw.extend(line)
++    output.parent.mkdir(parents=True, exist_ok=True)
++    with config.checked_path(output).open("xb") as stream:
++        stream.write(raw)
++    require(evidence(log) == original, "Dedicated XCTest log changed while retaining rows")
++    return bytes(raw), original
++
++
++def tested_host(environment):
++    settings = object_json(Path(environment["inputEvidence"]["settings"]["path"]))
++    matches = [item.get("buildSettings") for item in settings if item.get("target") == config.MAIN_TARGET]
++    require(len(matches) == 1 and type(matches[0]) is dict, "Missing unique actual host settings")
++    actual = matches[0]
++    for name, expected in {"CONFIGURATION": "Debug", "PLATFORM_NAME": "iphonesimulator", "SWIFT_VERSION": "5.0",
++                           "PRODUCT_BUNDLE_IDENTIFIER": config.MAIN_BUNDLE}.items():
++        require(actual.get(name) == expected, "Unexpected host setting: " + name)
++    app = config.checked_path(Path(actual["TARGET_BUILD_DIR"]) / actual["FULL_PRODUCT_NAME"])
++    info = config.read_info(app)
++    smoke.require_local_info(info)
++    smoke.require_source_stamp(info, environment["sourceCommit"])
++    require(info.get("CFBundleIdentifier") == config.MAIN_BUNDLE and info.get("CFBundleSupportedPlatforms") == ["iPhoneSimulator"], "Wrong tested app")
++    require(plistlib.loads((app / "GoogleService-Info.plist").read_bytes()) == config.synthetic_config(), "Tested host is not exactly synthetic")
++    config.no_jvm_payload(app)
++    executable = info.get("CFBundleExecutable")
++    require(type(executable) is str and executable not in ("", ".", "..") and Path(executable).name == executable
++            and "/" not in executable and "\\" not in executable, "Invalid executable basename")
++    debug_flag = actual.get("ENABLE_DEBUG_DYLIB")
++    require(type(debug_flag) is str and debug_flag in ("YES", "NO"), "Missing explicit actual ENABLE_DEBUG_DYLIB setting")
++    executable_evidence = evidence(app / executable)
++    require(executable_evidence["bytes"] > 0, "Empty tested executable")
++    debug_payload = None
++    declared_path = actual.get("EXECUTABLE_DEBUG_DYLIB_PATH")
++    path_origin = "disabled-by-actual-setting"
++    if debug_flag == "YES":
++        # Actual A Debug link/settings retain YueduReader.app/YueduReader.debug.dylib.
++        # In this mode the CFBundleExecutable is the launch stub, not all main code.
++        # The historical actual -showBuildSettings JSON contains ENABLE_DEBUG_DYLIB
++        # but not always this derived path field; preserve that absence as null.
++        require(declared_path is None or declared_path == app.name + "/" + executable + ".debug.dylib",
++                "Actual debug payload path differs from executable/settings")
++        path_origin = "actual-build-setting-validated" if declared_path is not None else "actual-executable-basename-and-observed-debug-dylib-suffix"
++        debug_payload = evidence(app / (executable + ".debug.dylib"))
++        require(debug_payload["bytes"] > 0, "Empty tested debug payload")
++    return {"app": str(app), "info": evidence(app / "Info.plist"), "executable": executable_evidence,
++            "ENABLE_DEBUG_DYLIB": debug_flag, "EXECUTABLE_DEBUG_DYLIB_PATH": declared_path,
++            "mainDebugPayload": debug_payload, "debugPayloadPathOrigin": path_origin,
++            "payloadIdentityScope": "Built file identities only; hashes do not attest which instructions executed.",
++            "syntheticConfiguration": evidence(app / "GoogleService-Info.plist")}
++
++
++def collect(args):
++    require(not args.output.exists() and not args.raw.exists(), "Refusing previous group evidence")
++    require(len({path.resolve() for path in (args.output, args.raw, args.log, args.summary, args.tests, args.preparation, args.audit, args.environment)}) == 8,
++            "Evidence input/output paths overlap")
++    report = {"schemaVersion": 1, "kind": "reader-measurements-bound-group", "group": args.group,
++              "selectedXCTestExecutionValidated": False, "measurementSamplesValidated": False,
++              "physicalDeviceMeasured": False, "deviceColdMeasured": False, "GPUPresentationMeasured": False,
++              "performanceImprovementEstablished": False, "UMDProductImportSupported": False,
++              "testExitStatus": args.test_exit_status, "artifactExitStatus": args.artifact_exit_status,
++              "limitations": ["Committed runner/CI result and original artifact/source/environment hashes remain required for audit.",
++                  "Launch is CPU submission plus AX text under automation, not GPU/device-cold; memory is a sampled XCTest-host interval including overhead.",
++                  "The fixed memory child viewport need not fit entirely inside a small scene. Five observations are not p95 or an improvement.",
++                  "UMD is a pure parser/owned-fixture selection, not product import, MOBI, cover, DRM or device acceptance."]}
++    try:
++        # Raw original marker lines survive a failed wrapper, missing summary or later validation.
++        raw, log_evidence = retain_raw(args.log, args.raw, args.group)
++        report["dedicatedXcodebuildLog"] = log_evidence
++        report["rawRows"] = evidence(args.raw)
++        environment = validate_binding(args.audit, args.environment)
++        prepared = object_json(args.preparation)
++        source = source_provenance()
++        require(prepared.get("kind") == "reader-measurements-preparation" and type(prepared.get("schemaVersion")) is int and prepared["schemaVersion"] == 1
++                and prepared.get("context") == context() and prepared.get("sourceInputs") == source
++                and prepared.get("audit") == evidence(args.audit) and prepared.get("environment") == evidence(args.environment)
++                and prepared.get("measurementFixtures") == shape.fixture_protocol() and prepared.get("launchFixture") == shape.launch_fixture_protocol()
++                and json.dumps(prepared.get("expectedGroups"), sort_keys=True) == json.dumps(GROUPS, sort_keys=True),
++                "Preparation/source/run/environment binding differs")
++        report["execution"] = verify_execution(object_json(args.summary), object_json(args.tests), args.group,
++                                               args.test_exit_status, args.artifact_exit_status, environment)
++        require(args.result_bundle.is_dir() and args.result_bundle.name == args.group + ".xcresult", "Wrong original result bundle")
++        report["originalInputs"] = {name: evidence(path) for name, path in (
++            ("summary", args.summary), ("tests", args.tests), ("preparation", args.preparation),
++            ("audit", args.audit), ("environment", args.environment), ("resultBundleInfo", args.result_bundle / "Info.plist"))}
++        report["testedHost"] = tested_host(environment)
++        if args.group == "launch":
++            report["observations"] = shape.validate_launch(shape.rows(raw, shape.LAUNCH))
++        elif args.group == "memory":
++            report["observations"] = shape.validate_memory(shape.rows(raw, shape.MEMORY), shape.rows(raw, shape.PHASE))
++        report.update(context=context(), environment=environment, sourceInputs=source)
++        require(source_provenance() == source and validate_binding(args.audit, args.environment) == environment
++                and evidence(args.log) == log_evidence, "Source/environment/raw log changed during collection")
++        for entry in report["originalInputs"].values():
++            require(evidence(Path(entry["path"])) == entry, "Original test artifact changed during collection")
++        require(tested_host(environment) == report["testedHost"], "Tested host payload changed during collection")
++        report["selectedXCTestExecutionValidated"] = True
++        report["measurementSamplesValidated"] = args.group in ("launch", "memory")
++    except Exception as error:
++        report["error"] = type(error).__name__ + ": " + str(error)
++    config.write_new_json(args.output, report)
++    print(json.dumps({"group": args.group, "output": str(args.output),
++                      "selectedXCTestExecutionValidated": report["selectedXCTestExecutionValidated"]}))
++    return 0 if report["selectedXCTestExecutionValidated"] else 1
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    commands = parser.add_subparsers(dest="phase", required=True)
++    prepare_command = commands.add_parser("prepare")
++    for name in ("audit", "environment", "output"):
++        prepare_command.add_argument("--" + name, type=Path, required=True)
++    collect_command = commands.add_parser("collect")
++    collect_command.add_argument("--group", choices=tuple(GROUPS), required=True)
++    for name in ("audit", "environment", "preparation", "log", "summary", "tests", "result-bundle", "raw", "output"):
++        collect_command.add_argument("--" + name, type=Path, required=True)
++    collect_command.add_argument("--test-exit-status", type=int, required=True)
++    collect_command.add_argument("--artifact-exit-status", type=int, required=True)
++    args = parser.parse_args()
++    try:
++        if args.phase == "prepare":
++            print(json.dumps(prepare(args.audit, args.environment, args.output), ensure_ascii=False, indent=2))
++            return 0
++        return collect(args)
++    except Exception as error:
++        print(type(error).__name__ + ": " + str(error), file=sys.stderr)
++        return 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/scripts/reader-experience/test-collect-reader-measurements.py b/scripts/reader-experience/test-collect-reader-measurements.py
+new file mode 100644
+index 0000000..a886eae
+--- /dev/null
++++ b/scripts/reader-experience/test-collect-reader-measurements.py
+@@ -0,0 +1,416 @@
++#!/usr/bin/env python3
++"""Owned synthetic binding/negative guards; no Swift, XCTest or device execution.
++
++For isolated local preparation only, YUEDU_UMD_PREPARATION_ROOT may point at the
++separately reviewed UMD checkout for copying static test inputs. Production
++collector never reads this variable; CI defaults to the single committed repo.
++"""
++import argparse
++import copy
++import importlib.util
++import json
++import os
++from pathlib import Path
++import plistlib
++import tempfile
++import unittest
++from unittest.mock import patch
++
++HERE = Path(__file__).resolve().parent
++
++
++def module(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++gate = module("owned_measurement_binding", HERE / "collect-reader-measurements.py")
++shapes = module("owned_measurement_shape_inputs", HERE / "test-reader-launch-memory.py")
++SOURCE = "a" * 40
++CONTEXT = {"sourceCommit": SOURCE, "GITHUB_RUN_ID": "1234", "GITHUB_RUN_ATTEMPT": "1"}
++DEVICE = {"deviceId": "4C675116-265D-488F-BFFA-836A4545674C", "platform": "iOS Simulator",
++          "osVersion": "26.2", "osBuildNumber": "23C54"}
++ENVIRONMENT = {"sourceCommit": SOURCE, "destination": "id=" + DEVICE["deviceId"],
++               "runtimeVersion": DEVICE["osVersion"], "runtimeBuild": DEVICE["osBuildNumber"]}
++CONFIGURATION = {"configurationId": "1", "configurationName": "Test Scheme Action"}
++
++
++def inputs(group):
++    selection = gate.GROUPS[group]
++    summary = {"totalTestCount": len(selection["methods"]), "passedTests": len(selection["methods"]),
++               "failedTests": 0, "skippedTests": 0, "expectedFailures": 0, "result": "Passed", "testFailures": [],
++               "devicesAndConfigurations": [{"device": copy.deepcopy(DEVICE), "testPlanConfiguration": CONFIGURATION,
++                    "passedTests": len(selection["methods"]), "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
++    leaves = [{"nodeType": "Test Case", "nodeIdentifier": method, "result": "Passed"} for method in selection["methods"]]
++    tree = {"devices": [copy.deepcopy(DEVICE)], "testPlanConfigurations": [CONFIGURATION], "testNodes": [
++        {"nodeType": "Test Plan", "result": "Passed", "children": [
++            {"nodeType": selection["bundle"], "name": selection["target"], "result": "Passed", "children": [
++                {"nodeType": "Test Suite", "result": "Passed", "children": leaves}]}]}]}
++    return summary, tree
++
++
++def leaves(tree):
++    return tree["testNodes"][0]["children"][0]["children"][0]["children"]
++
++
++def write_json(path, value):
++    path.write_text(json.dumps(value, ensure_ascii=False) + "\n", encoding="utf-8")
++
++
++class MeasurementBindingGuards(unittest.TestCase):
++    def test_original_modern_ui_tree_is_structural_reference_only(self):
++        paths = list(gate.UI_FIXTURES)
++        tree = json.loads((gate.REPO / paths[0]).read_bytes())
++        summary = json.loads((gate.REPO / paths[1]).read_bytes())
++        for path, digest in gate.UI_FIXTURES.items():
++            self.assertEqual(gate.digest((gate.REPO / path).read_bytes()), digest)
++        old_method = "SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal()"
++        self.assertEqual(gate.verify_tree(tree, "yuedu appUITests", "UI test bundle", (old_method,)), [old_method])
++        self.assertEqual(gate.smoke.verify_summary(summary, 1, 1)["expectedExecutions"], 1)
++        with self.assertRaises(ValueError):
++            gate.verify_execution(summary, tree, "launch", 0, 0, ENVIRONMENT)
++
++    def test_exact_three_source_selections_are_independent(self):
++        for group, count in (("memory", 1), ("launch", 1), ("umd", 11)):
++            summary, tree = inputs(group)
++            result = gate.verify_execution(summary, tree, group, 0, 0, ENVIRONMENT)
++            self.assertEqual(result["counts"]["expectedExecutions"], count)
++            self.assertEqual(set(result["passedMethodIdentities"]), set(gate.GROUPS[group]["methods"]))
++
++    def test_bundles_are_closed_and_cannot_borrow_another_group(self):
++        for group in gate.GROUPS:
++            for kind in ("Future Container", None, "UI test bundle" if group != "launch" else "Unit test bundle"):
++                summary, tree = inputs(group)
++                tree["testNodes"][0]["children"][0]["nodeType"] = kind
++                with self.subTest(group=group, kind=kind), self.assertRaises(ValueError):
++                    gate.verify_execution(summary, tree, group, 0, 0, ENVIRONMENT)
++
++    def test_unknown_empty_or_failed_containers_never_supply_green_leaves(self):
++        mutations = (
++            lambda node: node.update(nodeType="Future Type"), lambda node: node.update(result="Skipped"),
++            lambda node: node.update(result="Failed"), lambda node: node.update(result="Unknown"),
++            lambda node: node.update(children=[]))
++        for change in mutations:
++            summary, tree = inputs("memory"); change(tree["testNodes"][0])
++            with self.subTest(change=change), self.assertRaises(ValueError):
++                gate.verify_execution(summary, tree, "memory", 0, 0, ENVIRONMENT)
++
++    def test_missing_duplicate_extra_argument_or_nonpassing_actual_leaf_fails(self):
++        mutations = (
++            lambda rows: rows.pop(), lambda rows: rows.append(copy.deepcopy(rows[0])),
++            lambda rows: rows[0].update(nodeIdentifier="UnrelatedTests/allGreen()"),
++            lambda rows: rows[0].update(result="Expected Failure"), lambda rows: rows[0].update(result="Skipped"),
++            lambda rows: rows[0].update(result="Failed"),
++            lambda rows: rows[0].update(children=[{"nodeType": "Arguments", "result": "Passed"}]))
++        for group in gate.GROUPS:
++            for change in mutations:
++                summary, tree = inputs(group); change(leaves(tree))
++                with self.subTest(group=group, change=change), self.assertRaises(ValueError):
++                    gate.verify_execution(summary, tree, group, 0, 0, ENVIRONMENT)
++
++    def test_legal_method_names_outside_the_selected_bundle_cannot_complete_the_gate(self):
++        summary, tree = inputs("umd")
++        misplaced = leaves(tree)[1:]
++        del leaves(tree)[1:]
++        tree["testNodes"][0]["children"].append({"nodeType": "Test Suite", "result": "Passed", "children": misplaced})
++        with self.assertRaisesRegex(ValueError, "outside its selected target bundle"):
++            gate.verify_execution(summary, tree, "umd", 0, 0, ENVIRONMENT)
++        summary, tree = inputs("memory")
++        subtree = tree["testNodes"][0]["children"][0]["children"][0]
++        subtree["nodeType"] = "Test Plan"
++        with self.assertRaisesRegex(ValueError, "Nested test plan"):
++            gate.verify_execution(summary, tree, "memory", 0, 0, ENVIRONMENT)
++
++    def test_method_and_execution_counts_have_no_empty_or_expected_failure_escape(self):
++        for key, value in (("totalTestCount", 0), ("passedTests", True), ("failedTests", 1),
++                           ("skippedTests", 1), ("expectedFailures", 1), ("result", "Failed")):
++            summary, tree = inputs("launch"); summary[key] = value
++            with self.subTest(key=key), self.assertRaises(ValueError):
++                gate.verify_execution(summary, tree, "launch", 0, 0, ENVIRONMENT)
++        summary, tree = inputs("umd"); summary["devicesAndConfigurations"][0]["passedTests"] = 10
++        with self.assertRaises(ValueError): gate.verify_execution(summary, tree, "umd", 0, 0, ENVIRONMENT)
++
++    def test_wrapper_and_export_statuses_must_be_actual_integer_zero(self):
++        summary, tree = inputs("launch")
++        for test, artifact in ((1, 0), (0, 1), (False, 0), (0, False), (None, 0)):
++            with self.subTest(test=test, artifact=artifact), self.assertRaises(ValueError):
++                gate.verify_execution(summary, tree, "launch", test, artifact, ENVIRONMENT)
++
++    def test_actual_target_device_runtime_and_configuration_are_bound(self):
++        for change in (lambda summary, tree: tree["testNodes"][0]["children"][0].update(name="Other target"),
++                       lambda summary, tree: tree["devices"][0].update(deviceId="another"),
++                       lambda summary, tree: summary["devicesAndConfigurations"][0]["device"].update(osBuildNumber="wrong"),
++                       lambda summary, tree: tree.update(testPlanConfigurations=[])):
++            summary, tree = inputs("memory"); change(summary, tree)
++            with self.subTest(change=change), self.assertRaises(ValueError):
++                gate.verify_execution(summary, tree, "memory", 0, 0, ENVIRONMENT)
++
++    def test_source_inventory_rejects_extra_inherited_or_parameterized_cases(self):
++        umd_root = Path(os.environ.get("YUEDU_UMD_PREPARATION_ROOT", gate.REPO))
++        def raw(name):
++            return ((umd_root if name in gate.UMD_SOURCES else gate.REPO) / name).read_bytes()
++        gate.source_inventory(raw)
++        for path, suffix in ((gate.PERF_SOURCES[2], "\nfunc testInheritedExtra() {}\n"),
++                             (gate.PERF_SOURCES[6], "\n@Test func unrelated() async throws {}\n")):
++            with self.subTest(path=path), self.assertRaises(ValueError):
++                gate.source_inventory(lambda name: raw(name) + (suffix.encode() if name == path else b""))
++        path = "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift"
++        with self.assertRaises(ValueError):
++            gate.source_inventory(lambda name: raw(name).replace(b"enforcesAllBudgets()", b"enforcesAllBudgets(value: Int)") if name == path else raw(name))
++
++    def test_committed_sources_and_frozen_golden_provenance_cannot_drift(self):
++        umd_root = Path(os.environ.get("YUEDU_UMD_PREPARATION_ROOT", gate.REPO))
++        with tempfile.TemporaryDirectory(prefix="owned-source-binding-only-") as temporary:
++            root, committed = Path(temporary).resolve(), {}
++            for name in gate.SOURCE_FILES:
++                original = (umd_root if name in gate.UMD_SOURCES else gate.REPO) / name
++                data = original.read_bytes()
++                destination = root / name; destination.parent.mkdir(parents=True, exist_ok=True); destination.write_bytes(data)
++                committed[name] = data
++            with patch.object(gate, "REPO", root), patch.object(gate.smoke, "git", side_effect=lambda *args, **kwargs: committed[args[1].removeprefix("HEAD:")]):
++                self.assertEqual(len(gate.source_provenance()), len(gate.SOURCE_FILES))
++                name = gate.PERF_SOURCES[0]; (root / name).write_bytes(committed[name] + b"\n// owned mutation\n")
++                with self.assertRaises(ValueError): gate.source_provenance()
++                (root / name).write_bytes(committed[name])
++                name = gate.UMD_FIXTURES + "provenance.json"
++                committed[name] = committed[name].replace(b'"schema": 1', b'"schema": 2')
++                (root / name).write_bytes(committed[name])
++                with self.assertRaises(ValueError): gate.source_provenance()
++
++    def test_only_explicit_measurement_tag_and_same_run_context_are_accepted(self):
++        with patch.object(gate.smoke, "validate_tag", return_value=SOURCE) as validate, \
++                patch.dict(os.environ, {"GITHUB_RUN_ID": "1234", "GITHUB_RUN_ATTEMPT": "1"}):
++            self.assertEqual(gate.context(), CONTEXT)
++            validate.assert_called_once_with("reader-measurements-")
++            with patch.dict(os.environ, {"GITHUB_RUN_ATTEMPT": "0"}), self.assertRaises(ValueError): gate.context()
++
++    def environment_fixture(self, root):
++        audit = root / "audit.json"; write_json(audit, {"sourceCommit": SOURCE})
++        (root / "Info.plist").write_bytes(plistlib.dumps({"YueduExperienceSourceCommit": SOURCE, "GitCommitSHA": SOURCE[:7]}))
++        value = dict(ENVIRONMENT, schemaVersion=1, configuration="Debug", platform="iphonesimulator",
++            xcodeVersion="owned", xcodeBuild="owned", sdkVersion="26.2", runtimeIdentifier="owned.iOS-runtime",
++            deviceName="owned", deviceTypeIdentifier="owned", developerDirectory="owned", capturedAt="owned",
++            fixtures=gate.stage.fixture_protocol(), style=gate.stage.STYLE,
++            sourceFiles={name: {"bytes": 1, "sha256": "b" * 64} for name in gate.stage.SOURCE_FILES}, inputEvidence={})
++        for name in ("audit", "settings", "xcode", "sdk", "simulators"):
++            path = audit if name == "audit" else root / (name + ".raw")
++            if name != "audit": path.write_bytes(b"owned synthetic environment input")
++            value["inputEvidence"][name] = {"path": str(path), "sha256": gate.evidence(path)["sha256"]}
++        environment = root / "environment.json"; write_json(environment, value)
++        return audit, environment, value
++
++    def test_environment_requires_audited_overlay_stamp_and_unchanged_raw_inputs(self):
++        mutations = (lambda root, value: value.update(sourceCommit="c" * 40),
++                     lambda root, value: value.update(sdkVersion=""),
++                     lambda root, value: (root / "settings.raw").write_bytes(b"changed owned input"),
++                     lambda root, value: (root / "Info.plist").write_bytes(plistlib.dumps({"YueduExperienceSourceCommit": "wrong"})))
++        for mutate in mutations:
++            with tempfile.TemporaryDirectory(prefix="owned-environment-binding-") as temporary:
++                root = Path(temporary).resolve(); audit, environment, value = self.environment_fixture(root)
++                with patch.object(gate, "REPO", root), patch.object(gate.smoke, "review_overlays") as review, \
++                        patch.object(gate.stage, "source_provenance", return_value=value["sourceFiles"]), patch.object(gate, "context", return_value=CONTEXT):
++                    self.assertEqual(gate.validate_binding(audit, environment), value)
++                    review.assert_called_once()
++                    mutate(root, value); write_json(environment, value)
++                    with self.assertRaises(ValueError): gate.validate_binding(audit, environment)
++
++    def test_prepare_checks_existing_overlay_before_own_provenance_and_never_claims_execution(self):
++        with tempfile.TemporaryDirectory(prefix="owned-prepare-order-") as temporary:
++            root = Path(temporary).resolve(); audit, environment, value = self.environment_fixture(root)
++            order = []
++            def own_source():
++                self.assertIn("overlay", order)
++                return {"ownedSyntheticOnly": {"bytes": 1, "sha256": "d" * 64}}
++            with patch.object(gate, "REPO", root), \
++                    patch.object(gate.smoke, "review_overlays", side_effect=lambda value: order.append("overlay")), \
++                    patch.object(gate.stage, "source_provenance", return_value=value["sourceFiles"]), \
++                    patch.object(gate, "context", return_value=CONTEXT), patch.object(gate, "source_provenance", side_effect=own_source):
++                output = root / "prepared.json"
++                report = gate.prepare(audit, environment, output)
++                self.assertFalse(report["actualSelectedXCTestExecutionValidated"])
++                self.assertEqual(report["historicalUITreeReference"]["runID"], 39146602853)
++                self.assertIn("only", report["historicalUITreeReference"]["purpose"])
++                with self.assertRaises(ValueError): gate.prepare(audit, environment, output)
++
++    def test_built_host_requires_same_source_stamp_local_flags_and_synthetic_configuration(self):
++        for fault in ("stamp", "firebase", "settings"):
++            with tempfile.TemporaryDirectory(prefix="owned-host-metadata-only-") as temporary:
++                root = Path(temporary).resolve(); app = root / "Owned.app"; app.mkdir()
++                info = {**gate.config.LOCAL_FLAGS, "GatewayBaseURL": "", "GIDClientID": gate.config.GOOGLE_CLIENT,
++                    "YueduExperienceSourceCommit": SOURCE, "GitCommitSHA": SOURCE[:7],
++                    "CFBundleSupportedPlatforms": ["iPhoneSimulator"], "CFBundleIdentifier": gate.config.MAIN_BUNDLE,
++                    "CFBundleExecutable": "owned-executable"}
++                (app / "Info.plist").write_bytes(plistlib.dumps(info))
++                (app / "GoogleService-Info.plist").write_bytes(plistlib.dumps(gate.config.synthetic_config()))
++                (app / "owned-executable").write_bytes(b"owned nonexecutable bytes, no SDK build")
++                settings = root / "settings.json"
++                actual = {"CONFIGURATION": "Debug", "PLATFORM_NAME": "iphonesimulator", "SWIFT_VERSION": "5.0",
++                          "PRODUCT_BUNDLE_IDENTIFIER": gate.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(root), "FULL_PRODUCT_NAME": app.name,
++                          "ENABLE_DEBUG_DYLIB": "NO"}
++                write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
++                environment = {"sourceCommit": SOURCE, "inputEvidence": {"settings": {"path": str(settings)}}}
++                self.assertEqual(gate.tested_host(environment)["executable"]["sha256"], gate.digest((app / "owned-executable").read_bytes()))
++                self.assertIsNone(gate.tested_host(environment)["mainDebugPayload"])
++                if fault == "stamp":
++                    info["GitCommitSHA"] = "wrong"; (app / "Info.plist").write_bytes(plistlib.dumps(info))
++                elif fault == "firebase":
++                    (app / "GoogleService-Info.plist").write_bytes(plistlib.dumps({"owned": True}))
++                else:
++                    actual["SWIFT_VERSION"] = "6.0"; write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
++                with self.assertRaises(ValueError): gate.tested_host(environment)
++
++    def host_fixture(self, root):
++        app = root / "Owned.app"; app.mkdir()
++        info = {**gate.config.LOCAL_FLAGS, "GatewayBaseURL": "", "GIDClientID": gate.config.GOOGLE_CLIENT,
++                "YueduExperienceSourceCommit": SOURCE, "GitCommitSHA": SOURCE[:7],
++                "CFBundleSupportedPlatforms": ["iPhoneSimulator"], "CFBundleIdentifier": gate.config.MAIN_BUNDLE,
++                "CFBundleExecutable": "owned-executable"}
++        (app / "Info.plist").write_bytes(plistlib.dumps(info))
++        (app / "GoogleService-Info.plist").write_bytes(plistlib.dumps(gate.config.synthetic_config()))
++        (app / "owned-executable").write_bytes(b"owned launch stub, not executable code")
++        payload = app / "owned-executable.debug.dylib"
++        payload.write_bytes(b"owned debug payload, not executable code")
++        settings = root / "built-settings.json"
++        actual = {"CONFIGURATION": "Debug", "PLATFORM_NAME": "iphonesimulator", "SWIFT_VERSION": "5.0",
++                  "PRODUCT_BUNDLE_IDENTIFIER": gate.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(root),
++                  "FULL_PRODUCT_NAME": app.name, "ENABLE_DEBUG_DYLIB": "YES",
++                  "EXECUTABLE_DEBUG_DYLIB_PATH": app.name + "/" + payload.name}
++        write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
++        return dict(ENVIRONMENT, inputEvidence={"settings": {"path": str(settings)}}), actual, settings, payload
++
++    def test_debug_dylib_mode_requires_real_nonempty_payload_and_preserves_no_mode(self):
++        with tempfile.TemporaryDirectory(prefix="owned-debug-payload-identity-") as temporary:
++            root = Path(temporary).resolve(); environment, actual, settings, payload = self.host_fixture(root)
++            initial = gate.tested_host(environment)
++            self.assertEqual(initial["ENABLE_DEBUG_DYLIB"], "YES")
++            self.assertEqual(initial["mainDebugPayload"]["sha256"], gate.digest(payload.read_bytes()))
++            payload.unlink()
++            with self.assertRaises(ValueError): gate.tested_host(environment)
++            payload.write_bytes(b"")
++            with self.assertRaisesRegex(ValueError, "Empty tested debug payload"): gate.tested_host(environment)
++            payload.write_bytes(b"owned different debug payload")
++            self.assertEqual(gate.tested_host(environment)["executable"], initial["executable"])
++            self.assertNotEqual(gate.tested_host(environment)["mainDebugPayload"], initial["mainDebugPayload"])
++            original_path = actual.pop("EXECUTABLE_DEBUG_DYLIB_PATH")
++            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
++            self.assertIsNone(gate.tested_host(environment)["EXECUTABLE_DEBUG_DYLIB_PATH"])
++            self.assertEqual(gate.tested_host(environment)["mainDebugPayload"]["sha256"], gate.digest(payload.read_bytes()))
++            actual["EXECUTABLE_DEBUG_DYLIB_PATH"] = original_path
++            actual["EXECUTABLE_DEBUG_DYLIB_PATH"] = "wrong.debug.dylib"
++            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
++            with self.assertRaisesRegex(ValueError, "debug payload path differs"): gate.tested_host(environment)
++            actual["ENABLE_DEBUG_DYLIB"] = "NO"
++            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
++            self.assertIsNone(gate.tested_host(environment)["mainDebugPayload"])
++            actual.pop("ENABLE_DEBUG_DYLIB")
++            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
++            with self.assertRaisesRegex(ValueError, "explicit actual ENABLE_DEBUG_DYLIB"): gate.tested_host(environment)
++
++    def test_debug_payload_mutated_during_collection_cannot_leave_a_passing_record(self):
++        with tempfile.TemporaryDirectory(prefix="owned-late-debug-payload-change-") as temporary:
++            root = Path(temporary).resolve(); args = self.fixture(root, "launch")
++            environment, actual, settings, payload = self.host_fixture(root)
++            calls = []
++            def binding(*paths):
++                if calls: payload.write_bytes(b"owned mutated main debug payload")
++                calls.append(True)
++                return environment
++            with patch.object(gate, "validate_binding", side_effect=binding), patch.object(gate, "context", return_value=CONTEXT), \
++                    patch.object(gate, "source_provenance", return_value={}):
++                self.assertEqual(gate.collect(args), 1)
++            result = json.loads(args.output.read_bytes())
++            self.assertEqual(len(calls), 2)
++            self.assertIn("Tested host payload changed", result["error"])
++            self.assertFalse(result["selectedXCTestExecutionValidated"])
++            self.assertFalse(result["measurementSamplesValidated"])
++
++    def test_raw_marker_bytes_survive_and_evidence_is_not_overwritten(self):
++        with tempfile.TemporaryDirectory(prefix="owned-raw-observation-") as temporary:
++            root = Path(temporary).resolve(); log = root / "dedicated.log"; output = root / "raw.log"
++            raw = b"compiler output\n12:00 READER_PROCESS_LAUNCH {\"owned\":true}\r\n"
++            log.write_bytes(raw)
++            retained, original = gate.retain_raw(log, output, "launch")
++            self.assertEqual(retained, raw.splitlines(keepends=True)[1])
++            self.assertEqual(original["sha256"], gate.digest(raw))
++            with self.assertRaises(ValueError): gate.retain_raw(log, output, "launch")
++            self.assertEqual(output.read_bytes(), retained)
++
++    def fixture(self, root, group):
++        summary, tree = inputs(group)
++        for name, value in (("summary", summary), ("tests", tree), ("audit", {}), ("environment", {})):
++            write_json(root / (name + ".json"), value)
++        log = root / "dedicated.log"
++        if group == "launch":
++            rows = [gate.shape.LAUNCH + json.dumps(row, ensure_ascii=False) for row in shapes.launch_rows()]
++        elif group == "memory":
++            memory = shapes.memory_rows()
++            rows = [gate.shape.PHASE + json.dumps(row) for row in shapes.phases(memory)] + [gate.shape.MEMORY + json.dumps(row) for row in memory]
++        else: rows = ["owned synthetic UMD wrapper output only"]
++        log.write_text("\n".join(rows) + "\n", encoding="utf-8")
++        bundle = root / (group + ".xcresult"); bundle.mkdir(); (bundle / "Info.plist").write_bytes(plistlib.dumps({"ownedSyntheticOnly": True}))
++        write_json(root / "preparation.json", {"schemaVersion": 1, "kind": "reader-measurements-preparation", "context": CONTEXT,
++            "sourceInputs": {}, "expectedGroups": gate.GROUPS,
++            "measurementFixtures": gate.shape.fixture_protocol(), "launchFixture": gate.shape.launch_fixture_protocol(),
++            "audit": gate.evidence(root / "audit.json"), "environment": gate.evidence(root / "environment.json")})
++        return argparse.Namespace(group=group, audit=root / "audit.json", environment=root / "environment.json",
++            preparation=root / "preparation.json", log=log, summary=root / "summary.json", tests=root / "tests.json",
++            result_bundle=bundle, test_exit_status=0, artifact_exit_status=0, raw=root / "raw.log", output=root / "result.json")
++
++    def collect_owned(self, args, binding=None):
++        with patch.object(gate, "validate_binding", side_effect=binding or [ENVIRONMENT, ENVIRONMENT]), \
++                patch.object(gate, "context", return_value=CONTEXT), patch.object(gate, "source_provenance", return_value={}), \
++                patch.object(gate, "tested_host", return_value={"ownedSyntheticHostOnly": True}):
++            return gate.collect(args)
++
++    def test_owned_complete_pipeline_shapes_still_are_not_sdk_runs(self):
++        for group in gate.GROUPS:
++            with tempfile.TemporaryDirectory(prefix="owned-synthetic-group-only-") as temporary:
++                args = self.fixture(Path(temporary).resolve(), group)
++                self.assertEqual(self.collect_owned(args), 0)
++                result = json.loads(args.output.read_bytes())
++                self.assertTrue(result["selectedXCTestExecutionValidated"])
++                self.assertEqual(result["measurementSamplesValidated"], group != "umd")
++                self.assertFalse(result["UMDProductImportSupported"])
++                self.assertFalse(result["physicalDeviceMeasured"])
++                with self.assertRaises(ValueError): self.collect_owned(args)
++
++    def test_prepare_context_source_and_artifact_changes_retain_failed_record(self):
++        mutations = (lambda args: args.preparation.write_text("{}", encoding="utf-8"),
++                     lambda args: args.summary.write_text("{}", encoding="utf-8"),
++                     lambda args: setattr(args, "test_exit_status", 1),
++                     lambda args: setattr(args, "artifact_exit_status", 1),
++                     lambda args: (args.result_bundle / "Info.plist").unlink(),
++                     lambda args: args.log.write_bytes(b"no observation rows\n"))
++        for mutate in mutations:
++            with tempfile.TemporaryDirectory(prefix="owned-rejected-group-only-") as temporary:
++                args = self.fixture(Path(temporary).resolve(), "launch"); mutate(args)
++                self.assertEqual(self.collect_owned(args), 1)
++                result = json.loads(args.output.read_bytes())
++                self.assertFalse(result["selectedXCTestExecutionValidated"])
++                self.assertFalse(result["measurementSamplesValidated"])
++                self.assertTrue(args.raw.exists())
++
++    def test_late_environment_drift_cannot_leave_successful_samples(self):
++        with tempfile.TemporaryDirectory(prefix="owned-late-binding-fault-") as temporary:
++            args = self.fixture(Path(temporary).resolve(), "memory")
++            self.assertEqual(self.collect_owned(args, [ENVIRONMENT, dict(ENVIRONMENT, runtimeBuild="changed")]), 1)
++            result = json.loads(args.output.read_bytes())
++            self.assertFalse(result["selectedXCTestExecutionValidated"])
++            self.assertFalse(result["measurementSamplesValidated"])
++
++    def test_runner_retains_three_groups_and_uses_existing_dedicated_exports(self):
++        text = (HERE / "reader-measurements.sh").read_text(encoding="utf-8")
++        self.assertIn('scripts/xctest.sh" -l "$WORK/$group-tests.log"', text)
++        self.assertIn("xcresulttool get test-results summary", text)
++        self.assertIn("xcresulttool get test-results tests", text)
++        self.assertLess(text.index('smoke-tools.py" prepare'), text.index('collect-reader-measurements.py" prepare'))
++        self.assertNotIn("set -e", text.split("# Recoverable group failures")[0])
++        for group, method in (("memory", "sampleOwnedCoreTextChapters"), ("launch", "testFiveProcessLaunchesToSubmittedReadableTXTAnchor"), ("umd", "UMDTextDecoderTests")):
++            self.assertRegex(text, "run_group " + group + " [^\\n]*" + method)
++        self.assertNotIn("readerStageLatency", text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/scripts/reader-experience/reader-measurements.sh b/scripts/reader-experience/reader-measurements.sh
+new file mode 100644
+index 0000000..056b275
+--- /dev/null
++++ b/scripts/reader-experience/reader-measurements.sh
+@@ -0,0 +1,98 @@
++#!/usr/bin/env bash
++# Separate source-only observations: memory1/UI1/UMD11, never old smoke groups.
++set -uo pipefail
++SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
++REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
++WORK="$REPO_DIR/.build/reader-measurements"
++[[ $(uname -s) == Darwin ]] || { echo 'Reader measurements require macOS/Xcode.' >&2; exit 2; }
++[[ ! -e "$WORK" ]] || { echo 'Refusing existing measurement evidence.' >&2; exit 2; }
++mkdir -p "$WORK" || exit 2
++cd "$REPO_DIR" || exit 2
++export LEGADO_RUNTIME_SOURCE_ONLY=1
++export DEVELOPER_DIR=${DEVELOPER_DIR:-$(bash "$REPO_DIR/scripts/sim.sh" xcode)}
++export YUEDU_DEST=${YUEDU_DEST:-$(bash "$REPO_DIR/scripts/sim.sh" dest)}
++setup_status=0
++# This first call creates the audited Info/project overlays. Source provenance
++# checks requiring those overlays must occur only after prepare succeeds.
++python3 "$SCRIPT_DIR/smoke-tools.py" prepare --tag-prefix reader-measurements- --directory "$WORK" \
++  > "$WORK/prepare.log" 2> "$WORK/prepare.stderr" || setup_status=$?
++if (( setup_status != 0 )); then
++  echo 'Local-mode preparation failed; no test host will be launched.' >&2
++  exit "$setup_status"
++fi
++ARGS=(
++  -configuration Debug -onlyUsePackageVersionsFromResolvedFile
++  CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_IDENTITY=-
++  CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGN_ENTITLEMENTS=
++  GATEWAY_BASE_URL= YUEDU_LOCAL_EXPERIENCE=YES
++  INFOPLIST_KEY_YueduLocalExperience=YES
++  INFOPLIST_KEY_FirebaseDataCollectionDefaultEnabled=NO
++  INFOPLIST_KEY_FIREBASE_ANALYTICS_COLLECTION_ENABLED=NO
++  INFOPLIST_KEY_FirebaseCrashlyticsCollectionEnabled=NO
++  INFOPLIST_KEY_firebase_performance_collection_enabled=NO
++  INFOPLIST_KEY_firebase_performance_instrumentation_enabled=NO
++)
++xcodebuild -version > "$WORK/xcode-version.log" 2> "$WORK/xcode-version.stderr" || setup_status=$?
++xcrun simctl bootstatus "${YUEDU_DEST#id=}" -b > "$WORK/boot-status.log" 2>&1 || setup_status=$?
++xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
++  -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json \
++  > "$WORK/build-settings.json" 2> "$WORK/build-settings.stderr" || setup_status=$?
++xcrun --sdk iphonesimulator --show-sdk-version > "$WORK/sdk-version.log" 2> "$WORK/sdk-version.stderr" || setup_status=$?
++xcrun simctl list --json > "$WORK/simulators.json" 2> "$WORK/simulators.stderr" || setup_status=$?
++# Reuse only stage environment capture; the old fifty-row method is not run.
++python3 "$SCRIPT_DIR/reader-stage-baseline.py" capture-environment \
++  --audit "$WORK/overlays.json" --settings "$WORK/build-settings.json" \
++  --xcode "$WORK/xcode-version.log" --sdk "$WORK/sdk-version.log" --simulators "$WORK/simulators.json" \
++  --destination "$YUEDU_DEST" --developer-directory "$DEVELOPER_DIR" --output "$WORK/environment.json" \
++  > "$WORK/environment-capture.log" 2> "$WORK/environment-capture.stderr" || setup_status=$?
++python3 "$SCRIPT_DIR/collect-reader-measurements.py" prepare --audit "$WORK/overlays.json" \
++  --environment "$WORK/environment.json" --output "$WORK/preparation.json" \
++  > "$WORK/source-preparation.log" 2> "$WORK/source-preparation.stderr" || setup_status=$?
++
++run_group() {
++  local group=$1 selector=$2 timeout=$3 test_status=0 artifact_status=0 collection_status=0
++  # A dedicated -l log is the original xcodebuild output, not the outer tee.
++  # The workflow bounds this whole step at 70min (job80 leaves upload time).
++  # Wrapper deadlines are 45min initial compile+memory, 15min UI, 5min UMD.
++  bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/$group-tests.log" -t "$timeout" -- \
++    "${ARGS[@]}" -resultBundlePath "$WORK/$group.xcresult" -only-testing:"$selector" \
++    > "$WORK/$group-wrapper.log" 2>&1 || test_status=$?
++  xcrun xcresulttool get test-results summary --path "$WORK/$group.xcresult" \
++    > "$WORK/$group-summary.json" 2> "$WORK/$group-summary.stderr" || artifact_status=$?
++  xcrun xcresulttool get test-results tests --path "$WORK/$group.xcresult" \
++    > "$WORK/$group-tests.json" 2> "$WORK/$group-tests.stderr" || artifact_status=$?
++  python3 "$SCRIPT_DIR/collect-reader-measurements.py" collect --group "$group" \
++    --audit "$WORK/overlays.json" --environment "$WORK/environment.json" --preparation "$WORK/preparation.json" \
++    --log "$WORK/$group-tests.log" --summary "$WORK/$group-summary.json" --tests "$WORK/$group-tests.json" \
++    --result-bundle "$WORK/$group.xcresult" --test-exit-status "$test_status" --artifact-exit-status "$artifact_status" \
++    --raw "$WORK/$group-raw.log" --output "$WORK/$group-result.json" \
++    > "$WORK/$group-collection.log" 2> "$WORK/$group-collection.stderr" || collection_status=$?
++  python3 - "$WORK/$group-status.json" "$group" "$test_status" "$artifact_status" "$collection_status" <<'PY'
++import json, sys
++from pathlib import Path
++output, group, test, artifact, collection = sys.argv[1:]
++with Path(output).open("x", encoding="utf-8") as stream:
++    json.dump({"group": group, "testExitStatus": int(test), "artifactExitStatus": int(artifact),
++               "collectionExitStatus": int(collection)}, stream, indent=2)
++    stream.write("\n")
++PY
++  local status_record=$?
++  (( test_status == 0 && artifact_status == 0 && collection_status == 0 && status_record == 0 ))
++}
++memory_status=0; launch_status=0; umd_status=0
++# Recoverable group failures never set -e-abort the other two selections. There
++# are no retries; a timeout/fatal job abort remains incomplete evidence.
++run_group memory 'yuedu appTests/ReaderProcessMemoryMeasurementsTests/sampleOwnedCoreTextChapters' 2700 || memory_status=$?
++run_group launch 'yuedu appUITests/ReaderProcessLaunchMeasurementsUITests/testFiveProcessLaunchesToSubmittedReadableTXTAnchor' 900 || launch_status=$?
++run_group umd 'yuedu appTests/UMDTextDecoderTests' 300 || umd_status=$?
++python3 - "$WORK/execution-status.json" "$setup_status" "$memory_status" "$launch_status" "$umd_status" <<'PY'
++import json, sys
++from pathlib import Path
++output, setup, memory, launch, umd = sys.argv[1:]
++with Path(output).open("x", encoding="utf-8") as stream:
++    json.dump({"setupExitStatus": int(setup), "memoryGroupExitStatus": int(memory),
++               "launchGroupExitStatus": int(launch), "umdGroupExitStatus": int(umd)}, stream, indent=2)
++    stream.write("\n")
++PY
++status_record=$?
++(( setup_status == 0 && memory_status == 0 && launch_status == 0 && umd_status == 0 && status_record == 0 ))
+diff --git a/.github/workflows/reader-measurements.yml b/.github/workflows/reader-measurements.yml
+new file mode 100644
+index 0000000..972df9e
+--- /dev/null
++++ b/.github/workflows/reader-measurements.yml
+@@ -0,0 +1,73 @@
++name: Yuedu Source-only Reader Measurements and UMD Parser
++
++on:
++  push:
++    tags:
++      - 'reader-measurements-*'
++
++permissions:
++  contents: read
++
++concurrency:
++  group: reader-measurements-${{ github.ref }}
++  cancel-in-progress: false
++
++defaults:
++  run:
++    shell: bash
++
++jobs:
++  measurements:
++    runs-on: macos-15
++    timeout-minutes: 80
++    steps:
++      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
++        with:
++          persist-credentials: false
++      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
++        with:
++          python-version: '3.12'
++      - name: Verify exact source tag and portable evidence guards
++        run: |
++          mkdir -p .build/ci-logs
++          python -B scripts/reader-experience/smoke-tools.py validate-tag --tag-prefix reader-measurements-
++          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/shared-smoke-tools.log
++          python -B scripts/reader-experience/test-reader-stage-baseline.py -v 2>&1 | tee .build/ci-logs/shared-stage-tools.log
++          python -B scripts/reader-experience/test-reader-launch-memory.py -v 2>&1 | tee .build/ci-logs/measurement-shapes.log
++          python -B scripts/reader-experience/test-collect-reader-measurements.py -v 2>&1 | tee .build/ci-logs/measurement-binding-tools.log
++          python -B scripts/reader-experience/test-umd-fixtures.py -v 2>&1 | tee .build/ci-logs/umd-fixture-tools.log
++          python -B scripts/reader-experience/inspect-umd-fixtures.py --root 'Tests/iOS/yuedu appTests/Fixtures/UMD' > .build/ci-logs/umd-fixture-integrity.json
++          bash -n scripts/reader-experience/reader-measurements.sh
++      - name: Select the installed toolchain and Simulator
++        run: |
++          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
++          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
++          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
++          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
++          xcodebuild -version > .build/ci-logs/measurement-xcode.log
++      - name: Run three independent selections and retain every group before gating
++        timeout-minutes: 70
++        env:
++          LEGADO_RUNTIME_SOURCE_ONLY: '1'
++        run: bash scripts/reader-experience/reader-measurements.sh > .build/ci-logs/reader-measurements-runner.log 2>&1
++      - name: Preserve original artifacts and all failure evidence
++        if: always()
++        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
++        with:
++          name: reader-measurements-evidence
++          path: |
++            .build/ci-logs
++            .build/reader-measurements
++          if-no-files-found: error
++          include-hidden-files: true
++          retention-days: 7
++      - name: Record the observation boundary
++        if: always()
++        run: |
++          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
++          This independent source-only checkpoint selects memory 1 method/1 execution, launch UI 1/1, and pure UMD parser 11/11, each with zero failures/skips/expected failures and its own original log, xcresult, summary, tests tree, source/environment binding and count result. A recoverable group failure does not prevent collecting the others; the combined gate still fails.
++
++          Launch requires five fresh-process observations to the current CPU layer submission plus a visible AX UTF16/text anchor; import/setup is outside the interval and automation navigation remains included. Memory requires two owned fixtures times five samples, thirty raw phases each, same-snapshot TASK_VM_INFO footprint/RSS, actual periodic gaps and no failed/on-main kernel queries. The imported shape collector alone never attests execution. UMD selects only the isolated text decoder/file parser against five owned original-Java goldens; it does not enable product import or MOBI/cover/DRM.
++
++          The old TXT one-method selection and fifty-row stage protocol are unchanged and are not run here. This is Debug Simulator evidence only when the actual new passing XCTest identities, committed source, overlay and SDK/runtime artifacts validate. It is not device-cold startup, GPU presentation, an exact kernel peak, a production speedup or physical-device acceptance.
++          TEXT
+diff --git a/docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json b/docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json
+new file mode 100644
+index 0000000..554630b
+--- /dev/null
++++ b/docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json
+@@ -0,0 +1,42 @@
++{
++  "devicesAndConfigurations" : [
++    {
++      "device" : {
++        "architecture" : "arm64",
++        "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
++        "deviceName" : "iPhone 17 Pro Max",
++        "modelName" : "iPhone 17 Pro Max",
++        "osBuildNumber" : "23C54",
++        "osVersion" : "26.2",
++        "platform" : "iOS Simulator"
++      },
++      "expectedFailures" : 0,
++      "failedTests" : 0,
++      "passedTests" : 1,
++      "skippedTests" : 0,
++      "testPlanConfiguration" : {
++        "configurationId" : "1",
++        "configurationName" : "Test Scheme Action"
++      }
++    }
++  ],
++  "environmentDescription" : "Yuedu-Reader · Built with macOS 15.7.9",
++  "expectedFailures" : 0,
++  "failedTests" : 0,
++  "finishTime" : 1792344297.216,
++  "passedTests" : 1,
++  "result" : "Passed",
++  "skippedTests" : 0,
++  "startTime" : 1792344123.496,
++  "statistics" : [
++
++  ],
++  "testFailures" : [
++
++  ],
++  "title" : "Test - Yuedu-Reader",
++  "topInsights" : [
++
++  ],
++  "totalTestCount" : 1
++}
+diff --git a/docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json b/docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json
+new file mode 100644
+index 0000000..871b987
+--- /dev/null
++++ b/docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json
+@@ -0,0 +1,53 @@
++{
++  "devices" : [
++    {
++      "architecture" : "arm64",
++      "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
++      "deviceName" : "iPhone 17 Pro Max",
++      "modelName" : "iPhone 17 Pro Max",
++      "osBuildNumber" : "23C54",
++      "osVersion" : "26.2",
++      "platform" : "iOS Simulator"
++    }
++  ],
++  "testNodes" : [
++    {
++      "children" : [
++        {
++          "children" : [
++            {
++              "children" : [
++                {
++                  "duration" : "43s",
++                  "durationInSeconds" : 43.34796702861786,
++                  "name" : "testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal()",
++                  "nodeIdentifier" : "SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal()",
++                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appUITests/SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal",
++                  "nodeType" : "Test Case",
++                  "result" : "Passed"
++                }
++              ],
++              "name" : "SelfRenewalProbeUITests",
++              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appUITests/SelfRenewalProbeUITests",
++              "nodeType" : "Test Suite",
++              "result" : "Passed"
++            }
++          ],
++          "name" : "yuedu appUITests",
++          "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appUITests",
++          "nodeType" : "UI test bundle",
++          "result" : "Passed"
++        }
++      ],
++      "name" : "Yuedu-Reader",
++      "nodeType" : "Test Plan",
++      "result" : "Passed"
++    }
++  ],
++  "testPlanConfigurations" : [
++    {
++      "configurationId" : "1",
++      "configurationName" : "Test Scheme Action"
++    }
++  ]
++}

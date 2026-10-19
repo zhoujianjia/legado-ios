@@ -1,0 +1,72 @@
+log:  /Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-probe/unit-tests.log
+dest: id=4C675116-265D-488F-BFFA-836A4545674C
+xcodebuild status: 0; wrapper verdict stop: false
+--- errors ---
+--- verdict ---
+✔ Test run with 8 tests in 1 suite passed after 3.289 seconds.
+** TEST SUCCEEDED **
+{
+  "expectedTests": 8,
+  "totalTestCount": 8,
+  "passedTests": 8,
+  "failedTests": 0,
+  "skippedTests": 0,
+  "passedCaseIdentifiers": [
+    "SelfRenewalTransportProbeTests/acceptsBinaryPropertyListResponse",
+    "SelfRenewalTransportProbeTests/cancellationAndPreCancellationFinishOnce",
+    "SelfRenewalTransportProbeTests/confirmsQueryTypeWithoutExportingPrivateFields",
+    "SelfRenewalTransportProbeTests/normalizesErrorsAndRejectsWrongService",
+    "SelfRenewalTransportProbeTests/recordsNetworkFailureWithoutCredentialClaims",
+    "SelfRenewalTransportProbeTests/rejectsInvalidFrameLengths",
+    "SelfRenewalTransportProbeTests/rejectsMalformedAndTruncatedResponses",
+    "SelfRenewalTransportProbeTests/tcpConnectionAloneIsNotServiceSuccess"
+  ]
+}
+log:  /Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-probe/discovery-tests.log
+dest: id=4C675116-265D-488F-BFFA-836A4545674C
+xcodebuild status: 0; wrapper verdict stop: false
+--- errors ---
+--- verdict ---
+✔ Test run with 13 tests in 1 suite passed after 0.202 seconds.
+** TEST SUCCEEDED **
+{
+  "expectedTests": 13,
+  "totalTestCount": 13,
+  "passedTests": 13,
+  "failedTests": 0,
+  "skippedTests": 0,
+  "passedCaseIdentifiers": [
+    "SelfRenewalDiscoveryProbeTests/acceptsOnlyOwnedAddresses",
+    "SelfRenewalDiscoveryProbeTests/cancellationAndGlobalDeadlineCloseAllWork",
+    "SelfRenewalDiscoveryProbeTests/connectsOnlyAfterClosedWindowAndKeepsReportRedacted",
+    "SelfRenewalDiscoveryProbeTests/enforcesBudgetsAndPreservesDistinctFailures",
+    "SelfRenewalDiscoveryProbeTests/incompleteOrOverflowedDiscoveryNeverConnects",
+    "SelfRenewalDiscoveryProbeTests/rejectsBroadcastAndExcludedInterfaces",
+    "SelfRenewalDiscoveryProbeTests/rejectsNonUnicastAndMalformedAddresses",
+    "SelfRenewalDiscoveryProbeTests/removalsAndExpiredRecordsCannotConnect",
+    "SelfRenewalDiscoveryProbeTests/retainsSchemaOneReportCompatibility",
+    "SelfRenewalDiscoveryProbeTests/revalidatesOwnershipAndTTLBeforeEachConnection",
+    "SelfRenewalDiscoveryProbeTests/scopedIPv6NeedsExactInterface",
+    "SelfRenewalDiscoveryProbeTests/snapshotsDetectRelevantTopologyChanges",
+    "SelfRenewalDiscoveryProbeTests/tcpAdapterConnectsAndClosesWithoutSendingPayload"
+  ]
+}
+log:  /Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-probe/ui-tests.log
+dest: id=4C675116-265D-488F-BFFA-836A4545674C
+xcodebuild status: 0; wrapper verdict stop: false
+--- errors ---
+--- verdict ---
+** TEST SUCCEEDED **
+{
+  "expectedTests": 1,
+  "totalTestCount": 1,
+  "passedTests": 1,
+  "failedTests": 0,
+  "skippedTests": 0,
+  "passedCaseIdentifiers": [
+    "SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"
+  ]
+}
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, arch:arm64, id:4C675116-265D-488F-BFFA-836A4545674C, OS:26.2, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:x86_64, id:4C675116-265D-488F-BFFA-836A4545674C, OS:26.2, name:iPhone 17 Pro Max }

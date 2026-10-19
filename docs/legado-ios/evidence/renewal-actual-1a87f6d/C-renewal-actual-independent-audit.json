@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-offline-audit-of-actual-C-renewal-probe-evidence",
+  "auditedAtUTC": "2026-10-19T16:46:12.660404+00:00",
+  "auditor": "/root/renewal_discovery_ui",
+  "status": "passed-for-actual-C-read-only-diagnostic-test-scope",
+  "unresolvedBlockingFindings": [],
+  "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "sourceTag": "reader-renewal-1a87f6d",
+  "runID": 39281084369,
+  "job": {
+    "id": 118155310210,
+    "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369/job/118155310210",
+    "status": "completed",
+    "conclusion": "success",
+    "all11StepsCompletedSuccess": true
+  },
+  "aggregateRun": {
+    "savedStatus": "in_progress",
+    "savedConclusion": null,
+    "successfulCompletionInferred": false,
+    "conflictPreserved": true,
+    "originalAPIUnmodified": true
+  },
+  "retrieval": {
+    "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C-completed-job-evidence-20261019T1640\\retrieval-record.json",
+    "bytes": 6911,
+    "sha256": "83c9de8551b3a13a5619350fb89a2ac5d717289632e64edfa604f254d380c9f0"
+  },
+  "originalArtifact": {
+    "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C-completed-job-evidence-20261019T1640\\renewalC-reader-renewal-probe-evidence.zip",
+    "bytes": 2260954,
+    "sha256": "bfa6496f86183fced6a95125bfe6ac0faa278971fe09b95593933919983eebcc"
+  },
+  "archiveMemberCount": 163,
+  "allOriginalZIPMembersSafelyComparedToExtractedBytes": true,
+  "result": {
+    "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\result.json",
+    "bytes": 14693,
+    "sha256": "7e186013e1a9185bc7ebf1329c8da7e9e3f961a6c78c8995492fc830badf6076"
+  },
+  "resultLogByteIdentical": true,
+  "sourceInputs": {
+    "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\source-inputs.json",
+    "bytes": 7209,
+    "sha256": "750a42bee1c49182c77d400815ae9e02d56478c40e5ea13334c23ab26929c005"
+  },
+  "groups": {
+    "unit": {
+      "actualMethods": 8,
+      "actualExecutions": 8,
+      "failures": 0,
+      "skips": 0,
+      "expectedFailures": 0,
+      "passedExactIdentities": [
+        "SelfRenewalTransportProbeTests/acceptsBinaryPropertyListResponse",
+        "SelfRenewalTransportProbeTests/cancellationAndPreCancellationFinishOnce",
+        "SelfRenewalTransportProbeTests/confirmsQueryTypeWithoutExportingPrivateFields",
+        "SelfRenewalTransportProbeTests/normalizesErrorsAndRejectsWrongService",
+        "SelfRenewalTransportProbeTests/recordsNetworkFailureWithoutCredentialClaims",
+        "SelfRenewalTransportProbeTests/rejectsInvalidFrameLengths",
+        "SelfRenewalTransportProbeTests/rejectsMalformedAndTruncatedResponses",
+        "SelfRenewalTransportProbeTests/tcpConnectionAloneIsNotServiceSuccess"
+      ],
+      "closedNodeCounts": {
+        "Test Plan": 1,
+        "Unit test bundle": 1,
+        "Test Suite": 1,
+        "Test Case": 8
+      },
+      "sourceCVerifyCasesAndSummaryReplayed": true,
+      "additionalClosedBundleLeafGatePassed": true,
+      "summary": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\unit-summary.json",
+        "bytes": 984,
+        "sha256": "c4918e512ae3f9902f59dad8125ea668977de4f72498e5cac9438fb88ffa6522"
+      },
+      "tree": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\unit-tests.json",
+        "bytes": 5424,
+        "sha256": "5bfeae6dba19f3838b8d49910e481365a47244ae4f70695b84318295079b3b29"
+      },
+      "rawLog": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\unit-tests.log",
+        "bytes": 8362998,
+        "sha256": "0a9ef4b8996df03dcdac26cdb80bf30e673520b69e239976df591f43823eec6a"
+      },
+      "finalXcodebuildVerdict": "TEST SUCCEEDED",
+      "xcresultInfo": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\unit.xcresult\\Info.plist",
+        "bytes": 715,
+        "sha256": "b6565a959fad97c38a36cf18b8f739443d31b590c6b278fdbd6ddb07036896d5"
+      },
+      "xcresultFiles": 46
+    },
+    "discovery": {
+      "actualMethods": 13,
+      "actualExecutions": 13,
+      "failures": 0,
+      "skips": 0,
+      "expectedFailures": 0,
+      "passedExactIdentities": [
+        "SelfRenewalDiscoveryProbeTests/acceptsOnlyOwnedAddresses",
+        "SelfRenewalDiscoveryProbeTests/cancellationAndGlobalDeadlineCloseAllWork",
+        "SelfRenewalDiscoveryProbeTests/connectsOnlyAfterClosedWindowAndKeepsReportRedacted",
+        "SelfRenewalDiscoveryProbeTests/enforcesBudgetsAndPreservesDistinctFailures",
+        "SelfRenewalDiscoveryProbeTests/incompleteOrOverflowedDiscoveryNeverConnects",
+        "SelfRenewalDiscoveryProbeTests/rejectsBroadcastAndExcludedInterfaces",
+        "SelfRenewalDiscoveryProbeTests/rejectsNonUnicastAndMalformedAddresses",
+        "SelfRenewalDiscoveryProbeTests/removalsAndExpiredRecordsCannotConnect",
+        "SelfRenewalDiscoveryProbeTests/retainsSchemaOneReportCompatibility",
+        "SelfRenewalDiscoveryProbeTests/revalidatesOwnershipAndTTLBeforeEachConnection",
+        "SelfRenewalDiscoveryProbeTests/scopedIPv6NeedsExactInterface",
+        "SelfRenewalDiscoveryProbeTests/snapshotsDetectRelevantTopologyChanges",
+        "SelfRenewalDiscoveryProbeTests/tcpAdapterConnectsAndClosesWithoutSendingPayload"
+      ],
+      "closedNodeCounts": {
+        "Test Plan": 1,
+        "Unit test bundle": 1,
+        "Test Suite": 1,
+        "Test Case": 13
+      },
+      "sourceCVerifyCasesAndSummaryReplayed": true,
+      "additionalClosedBundleLeafGatePassed": true,
+      "summary": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\discovery-summary.json",
+        "bytes": 987,
+        "sha256": "bf22034d93eb30cf405b254cecc373ad508794585c3d105bb5cd31d60742590b"
+      },
+      "tree": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\discovery-tests.json",
+        "bytes": 7338,
+        "sha256": "998d1f2ca144536af7453e4ac5fd20e609fa2a0fe0327f539e9cbfb40741e572"
+      },
+      "rawLog": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\discovery-tests.log",
+        "bytes": 531989,
+        "sha256": "f363d64a0232c391a234af152d384e7cf135d6e6720f88fae1e4d05e70f477a4"
+      },
+      "finalXcodebuildVerdict": "TEST SUCCEEDED",
+      "xcresultInfo": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\discovery.xcresult\\Info.plist",
+        "bytes": 715,
+        "sha256": "2a6cb2165cb6f57472f732de7323deeecaf2466865c8b65d73b82cc15e51ee53"
+      },
+      "xcresultFiles": 56
+    },
+    "ui": {
+      "actualMethods": 1,
+      "actualExecutions": 1,
+      "failures": 0,
+      "skips": 0,
+      "expectedFailures": 0,
+      "passedExactIdentities": [
+        "SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"
+      ],
+      "closedNodeCounts": {
+        "Test Plan": 1,
+        "UI test bundle": 1,
+        "Test Suite": 1,
+        "Test Case": 1
+      },
+      "sourceCVerifyCasesAndSummaryReplayed": true,
+      "additionalClosedBundleLeafGatePassed": true,
+      "summary": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\ui-summary.json",
+        "bytes": 982,
+        "sha256": "e7a7534dfe3d4b9245f4c91d8e6c5473f6438be35ddfb2bbb9da688f216f2517"
+      },
+      "tree": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\ui-tests.json",
+        "bytes": 1773,
+        "sha256": "e856124ca1c577f2d7480689614fc2576f2303a0c440d2aa47658b8a756aedab"
+      },
+      "rawLog": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\ui-tests.log",
+        "bytes": 459361,
+        "sha256": "37b10097fd1a2c9662b0fc3c108005786cc75aaf7b337eb7fc809879921178ab"
+      },
+      "finalXcodebuildVerdict": "TEST SUCCEEDED",
+      "xcresultInfo": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\reader-renewal-probe\\ui.xcresult\\Info.plist",
+        "bytes": 715,
+        "sha256": "69853b3b51c4a3baa57921037df440b41a5f23d639ca765bca0c5b6739a08b8a"
+      },
+      "xcresultFiles": 38
+    }
+  },
+  "actualSwiftOrXCTestMethods": 22,
+  "actualExecutions": 22,
+  "device": {
+    "architecture": "arm64",
+    "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+    "deviceName": "iPhone 17 Pro Max",
+    "modelName": "iPhone 17 Pro Max",
+    "osBuildNumber": "23C54",
+    "osVersion": "26.2",
+    "platform": "iOS Simulator"
+  },
+  "Xcode": {
+    "version": "26.2",
+    "build": "17C52",
+    "SDKVersion": "26.2",
+    "configuration": "Debug"
+  },
+  "actualPortablePreflight": [
+    {
+      "methods": 24,
+      "rawLog": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\ci-logs\\reader-renewal-existing-guards.log",
+        "bytes": 4221,
+        "sha256": "9609a2671cf5e21fa359bf1d8209886de476aefacd22df28a97f125acf2bb0ba"
+      },
+      "rerunByReviewer": false
+    },
+    {
+      "methods": 16,
+      "rawLog": {
+        "path": "F:\\yuedu-reader\\.build\\b12-2e93221697\\ci-logs\\reader-renewal-guards.log",
+        "bytes": 2961,
+        "sha256": "e418941385e4984909b3a35e5d0a77050e5f63297ffbb3fc343eaa1430817c51"
+      },
+      "rerunByReviewer": false
+    }
+  ],
+  "localizationAndShellCheck": "The fixed-C guard step executes localization and shell syntax checks after portable suites and is actually completed/success. Separate localization stdout was not retained in this artifact; no new localization check was rerun.",
+  "sourceBinding": {
+    "all29InputBytesAndHashesMatchFixedCGitBlobs": true,
+    "sourceStampConsistentAcrossInputResultOverlay": true,
+    "workingTreeHEADUsedAsC": false,
+    "fixedCPureVerifySummaryAndVerifyCasesOnlyReplayed": true,
+    "currentGitHEADResultFunctionExecuted": false
+  },
+  "overlays": {
+    "InfoOriginalGitBytesAndReconstructedAfterHashMatch": true,
+    "sourceInfoOverlaySHA256": "0073fbbead49a4f0323fd0496ebbf844cb2aa8b5eb532bdc5bcf5e9c16d04fcc",
+    "projectReplacementCount": 0,
+    "projectOriginalAndAfterBytesMatchFixedC": true,
+    "onlyDeclaredTrackedChange": "Info.plist",
+    "standaloneOverlayRecordsEqualResultAndAudit": true
+  },
+  "builtHostBoundary": {
+    "builtAppIncluded": false,
+    "builtInfoOrLocalizedFilesReReadOffline": false,
+    "builtInfoSHA256RecordedByRunner": "96e507a6f5ad33466ff501de67e8988c74768fb1b5766d360a16b8096cbcda42",
+    "builtMetadataReportedByRunner": {
+      "bonjourServices": [
+        "_calibresmartdeviceapp._tcp",
+        "_remotepairing._tcp"
+      ],
+      "fallbackMatchesBothSourceConfigurations": true,
+      "localizedUsageDescriptions": [
+        {
+          "language": "zh-Hant",
+          "sourceSHA256": "d2ec71ea3002d79f3cfee64dc747145c9f9138a877e999068cba35d559f436fd",
+          "builtSHA256": "f98b4a1cdae999cd816b2aa65431a57675fc29c42cf07bf027ba7b2b8905a28a",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "zh-Hans",
+          "sourceSHA256": "4a55831681710e3848738aa098b7b3102ee10c0ff5d7f5c3434b9c900dace008",
+          "builtSHA256": "391ab95587f6138c1f8912fe367bc2798434bc183c28769c7b700484ad996328",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "en",
+          "sourceSHA256": "a372133b21aede7b49287a2f2bdba95354e88df4ad3e6daeac1666a65867db0e",
+          "builtSHA256": "7b053df97348aaf5a5546db4a091cced7f6ae64c5db818e39ecff8c84db84a14",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "ja",
+          "sourceSHA256": "b650251b751d78d106c4ae913b0d1bc99f2ad9d9c86c4bd45e9850fc33a1cc38",
+          "builtSHA256": "926210bfda259673cee09cb6b0b3b9c499273ce9facc6c22f8e6d1f1bd2f1fd8",
+          "usageDescriptionMatchesSource": true
+        },
+        {
+          "language": "ko",
+          "sourceSHA256": "d8e2c7de68bde565c17ac5b159b448349a57ed14efed96ee1af3e0e846d72d52",
+          "builtSHA256": "eac129d3cbf65b0548911eb847cd01ee65c13755fe097ad4bc0aa3c87a33bfd2",
+          "usageDescriptionMatchesSource": true
+        }
+      ]
+    },
+    "actualResultHelperRanOnCI": true,
+    "basis": "Fixed-C result() source performs built local-info/source-stamp/Bonjour/privacy/five-localization/synthetic-config/no-JVM checks before writing result.json. Actual source-bound job and execution step succeeded and original result/log are byte-identical. The app bytes are deliberately absent, so offline hash/Info re-execution is impossible and is not claimed."
+  },
+  "AReleaseAndNarrowMapping": {
+    "releaseSource": "a76d380fdc108db83be68961905ee49edd209571",
+    "releaseIPAHash": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
+    "releaseIPABytes": 106448692,
+    "existingActualThreeAuditsRehashed": [
+      {
+        "kind": "core",
+        "path": "F:\\yuedu-reader\\docs\\legado-ios\\evidence\\reader-build12-a76d380\\build12-actual-core-a76d380.json",
+        "bytes": 9912,
+        "sha256": "0100e8973ee1f84f02c5c830f5431322844605c16b8f84a386932d6939e2ff00",
+        "passed": true,
+        "scope": "Independent static inspection of this ordinary-JVM main reader IPA; no reading or device execution claim.",
+        "packageReauditPerformed": false
+      },
+      {
+        "kind": "extra",
+        "path": "F:\\yuedu-reader\\docs\\legado-ios\\evidence\\reader-build12-a76d380\\build12-actual-extra-a76d380.json",
+        "bytes": 19737,
+        "sha256": "4cebba9bb9860ce553681c0bb615b84f85d14d8e10666beb9a0f4714929e1a84",
+        "passed": true,
+        "scope": "Static packaged resource and raw ordinary-JVM XML audit only; no CoreText/UIKit/device execution claim.",
+        "packageReauditPerformed": false
+      },
+      {
+        "kind": "source",
+        "path": "F:\\yuedu-reader\\docs\\legado-ios\\evidence\\reader-build12-a76d380\\build12-actual-source-a76d380.json",
+        "bytes": 1051,
+        "sha256": "c2f228c312eaa2c6c4c52df06b74ececa66969dd9f83b740c1252800d6e27fa9",
+        "passed": true,
+        "scope": "Exact tracked Git archive bytes; external dependency source closure remains separate.",
+        "packageReauditPerformed": false
+      }
+    ],
+    "packageAuditsRerun": false,
+    "narrowScopeReview": {
+      "path": "F:\\yuedu-reader\\docs\\legado-ios\\evidence\\reader-build12-a76d380\\source-scope\\build12-A-C-diagnostic-source-scope-review.json",
+      "bytes": 248763,
+      "sha256": "8f1064d97b340b92b1960dab95cedd56b0ca893a1e919cf99cdcf7911ed3bc9a"
+    },
+    "itsRawArchive": {
+      "path": "F:\\yuedu-reader\\docs\\legado-ios\\evidence\\reader-build12-a76d380\\source-scope\\original-static-review-raw-evidence.zip",
+      "bytes": 1448660,
+      "sha256": "f097b080e9d34e22bbac1bb3f8043c79f9fccff3c84306e33f53184c5cd985f7"
+    },
+    "sameWholeSourceInputFiles": 28,
+    "wholeInputFileCount": 29,
+    "differentWholeHelper": "scripts/reader-experience/smoke-tools.py",
+    "relevantTenImportedHelperRawAndASTEqualRechecked": true,
+    "completeAppSourceOrBinaryEquivalent": false,
+    "opinionSupportsExplicitRootNarrowDiagnosticHandoffMapping": true,
+    "opinion": "The actual C 8/13/UI1 gates and successful preflight close the runtime prerequisites previously left open for the unchanged narrow diagnostic projection. Together with the three actual A package audits, they are sufficient evidence for root to explicitly map only this read-only diagnostic test coverage to the A build12 package for a user device diagnostic handoff. This is a scoped source-mapping exception, not same-source, whole-app or Release-binary runtime acceptance. Keep all C result fingerprints C-bound and all delivered IPA/manifest/source hashes A-bound; state this exception in the handoff."
+  },
+  "exclusions": {
+    "AReleaseIPAExecuted": false,
+    "physicalDeviceVerified": false,
+    "serviceIdentityVerified": false,
+    "signingInstallationOrRenewalVerified": false,
+    "automaticSelfRenewalImplementedOrVerified": false,
+    "fullAppFontPositionFirestoreAccepted": false,
+    "fullLegadoCompatibilityAccepted": false,
+    "computerPoweredOff": "notMeasured",
+    "companionAppsAbsent": "notMeasured"
+  },
+  "performed": {
+    "offlineReadOnlyAudit": true,
+    "newSDKBuilds": 0,
+    "newSwiftOrIOSTestRuns": 0,
+    "portableSuitesRerun": 0,
+    "networkQueries": 0,
+    "CIQueriesOrTriggers": 0,
+    "trackedSourceOrCanonicalEdits": 0,
+    "privateInputsRead": false
+  },
+  "rawEvidence": {
+    "directory": "F:\\yuedu-reader\\.build\\renewal-discovery\\C-renewal-actual-independent-audit-raw",
+    "commands": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C-renewal-actual-independent-audit-raw\\actual-read-only-commands.json",
+      "bytes": 44221,
+      "sha256": "047bbb3cd91614c03491c10712ccf4b50759af7f1cb8e26fbd1192d1faabcfc6"
+    },
+    "archiveMembers": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C-renewal-actual-independent-audit-raw\\archive-members.json",
+      "bytes": 41279,
+      "sha256": "2ac8d2d3ba78e307f6263ca3759ed2662008c19486c61051eeca675183384362"
+    },
+    "sourceComparison": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C-renewal-actual-independent-audit-raw\\source-input-comparison.json",
+      "bytes": 9709,
+      "sha256": "f19837545970b62856231800f2e822cf1ef65dd67fee785337f16eaabfb03ff4"
+    },
+    "auditorScript": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\audit-C-renewal-actual-offline.py",
+      "bytes": 26194,
+      "sha256": "f05b5b7c6da9771217e65e5c495d600abb23da87b1a0fa660fc754cf21769d05"
+    }
+  }
+}

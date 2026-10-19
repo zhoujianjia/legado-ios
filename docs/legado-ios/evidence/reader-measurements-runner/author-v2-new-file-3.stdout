@@ -1,0 +1,79 @@
+diff --git a/.github/workflows/reader-measurements.yml b/.github/workflows/reader-measurements.yml
+new file mode 100644
+index 0000000..972df9e
+--- /dev/null
++++ b/.github/workflows/reader-measurements.yml
+@@ -0,0 +1,73 @@
++name: Yuedu Source-only Reader Measurements and UMD Parser
++
++on:
++  push:
++    tags:
++      - 'reader-measurements-*'
++
++permissions:
++  contents: read
++
++concurrency:
++  group: reader-measurements-${{ github.ref }}
++  cancel-in-progress: false
++
++defaults:
++  run:
++    shell: bash
++
++jobs:
++  measurements:
++    runs-on: macos-15
++    timeout-minutes: 80
++    steps:
++      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
++        with:
++          persist-credentials: false
++      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
++        with:
++          python-version: '3.12'
++      - name: Verify exact source tag and portable evidence guards
++        run: |
++          mkdir -p .build/ci-logs
++          python -B scripts/reader-experience/smoke-tools.py validate-tag --tag-prefix reader-measurements-
++          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/shared-smoke-tools.log
++          python -B scripts/reader-experience/test-reader-stage-baseline.py -v 2>&1 | tee .build/ci-logs/shared-stage-tools.log
++          python -B scripts/reader-experience/test-reader-launch-memory.py -v 2>&1 | tee .build/ci-logs/measurement-shapes.log
++          python -B scripts/reader-experience/test-collect-reader-measurements.py -v 2>&1 | tee .build/ci-logs/measurement-binding-tools.log
++          python -B scripts/reader-experience/test-umd-fixtures.py -v 2>&1 | tee .build/ci-logs/umd-fixture-tools.log
++          python -B scripts/reader-experience/inspect-umd-fixtures.py --root 'Tests/iOS/yuedu appTests/Fixtures/UMD' > .build/ci-logs/umd-fixture-integrity.json
++          bash -n scripts/reader-experience/reader-measurements.sh
++      - name: Select the installed toolchain and Simulator
++        run: |
++          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
++          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
++          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
++          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
++          xcodebuild -version > .build/ci-logs/measurement-xcode.log
++      - name: Run three independent selections and retain every group before gating
++        timeout-minutes: 70
++        env:
++          LEGADO_RUNTIME_SOURCE_ONLY: '1'
++        run: bash scripts/reader-experience/reader-measurements.sh > .build/ci-logs/reader-measurements-runner.log 2>&1
++      - name: Preserve original artifacts and all failure evidence
++        if: always()
++        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
++        with:
++          name: reader-measurements-evidence
++          path: |
++            .build/ci-logs
++            .build/reader-measurements
++          if-no-files-found: error
++          include-hidden-files: true
++          retention-days: 7
++      - name: Record the observation boundary
++        if: always()
++        run: |
++          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
++          This independent source-only checkpoint selects memory 1 method/1 execution, launch UI 1/1, and pure UMD parser 11/11, each with zero failures/skips/expected failures and its own original log, xcresult, summary, tests tree, source/environment binding and count result. A recoverable group failure does not prevent collecting the others; the combined gate still fails.
++
++          Launch requires five fresh-process observations to the current CPU layer submission plus a visible AX UTF16/text anchor; import/setup is outside the interval and automation navigation remains included. Memory requires two owned fixtures times five samples, thirty raw phases each, same-snapshot TASK_VM_INFO footprint/RSS, actual periodic gaps and no failed/on-main kernel queries. The imported shape collector alone never attests execution. UMD selects only the isolated text decoder/file parser against five owned original-Java goldens; it does not enable product import or MOBI/cover/DRM.
++
++          The old TXT one-method selection and fifty-row stage protocol are unchanged and are not run here. This is Debug Simulator evidence only when the actual new passing XCTest identities, committed source, overlay and SDK/runtime artifacts validate. It is not device-cold startup, GPU presentation, an exact kernel peak, a production speedup or physical-device acceptance.
++          TEXT

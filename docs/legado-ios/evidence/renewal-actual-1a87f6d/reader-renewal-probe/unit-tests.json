@@ -1,0 +1,104 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
+      "deviceName" : "iPhone 17 Pro Max",
+      "modelName" : "iPhone 17 Pro Max",
+      "osBuildNumber" : "23C54",
+      "osVersion" : "26.2",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "name" : "QueryType confirms only its exact service and excludes all unrelated response data",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/confirmsQueryTypeWithoutExportingPrivateFields()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/confirmsQueryTypeWithoutExportingPrivateFields()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "binary plist responses use the same bounded QueryType contract",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/acceptsBinaryPropertyListResponse()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/acceptsBinaryPropertyListResponse()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "2s",
+                  "durationInSeconds" : 2,
+                  "name" : "an established TCP peer without a response reaches its deadline without claiming lockdown",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/tcpConnectionAloneIsNotServiceSuccess()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/tcpConnectionAloneIsNotServiceSuccess()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "protocol errors and unexpected service types are normalized without leaking arbitrary strings",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/normalizesErrorsAndRejectsWrongService()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/normalizesErrorsAndRejectsWrongService()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "zero and oversized length prefixes are rejected before receiving or allocating a payload",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/rejectsInvalidFrameLengths()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/rejectsInvalidFrameLengths()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "malformed and truncated frames finish without accepting a service",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/rejectsMalformedAndTruncatedResponses()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/rejectsMalformedAndTruncatedResponses()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "cancellation closes the pending attempt and never starts a subsequent endpoint",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/cancellationAndPreCancellationFinishOnce()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/cancellationAndPreCancellationFinishOnce()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "1s",
+                  "durationInSeconds" : 1,
+                  "name" : "a refused owned fixture port reports numeric network evidence without guessing pairing or TLS",
+                  "nodeIdentifier" : "SelfRenewalTransportProbeTests/recordsNetworkFailureWithoutCredentialClaims()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests/recordsNetworkFailureWithoutCredentialClaims()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Read-only self-renewal transport probe",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalTransportProbeTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "yuedu appTests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests",
+          "nodeType" : "Unit test bundle",
+          "result" : "Passed"
+        }
+      ],
+      "name" : "Yuedu-Reader",
+      "nodeType" : "Test Plan",
+      "result" : "Passed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}

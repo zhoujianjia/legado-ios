@@ -1,0 +1,550 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "stageId": "s2-reading-experience",
+  "workpackageId": "reading-performance-and-prefetch",
+  "status": "implemented-reviewed-awaiting-separate-measurement-runner-and-ios-evidence",
+  "说明": "仅归档已审测量准备代码、原始 portable 与静态证据；实际 Swift/SDK/launch/memory 样本均 0。独立测量 CI 选择未接入/提交，不在 C1a87f6d；awaiting-cloud 不表示已提交。",
+  "stageComplete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "sourceBinding": {
+    "patchBaseCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "integratingHEADObserved": "2db099aba248cdefe840ce37c7672ca194f0033c",
+    "HEADNotUsedAsAcceptanceCommitForUncommittedChanges": true,
+    "nineMainFilesMatchFrozenReviewedByteHashes": true,
+    "files": [
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+        "bytes": 131229,
+        "sha256": "0370489a26089778af7dc0a2568e9284b981983ce6a150b0709a59ecb9f8cade"
+      },
+      {
+        "path": "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+        "bytes": 7631,
+        "sha256": "1f9142838a46236600eeb375e1bb2b71b5ca66dd0dfe7607fcc595d61ed9d0ee"
+      },
+      {
+        "path": "Tests/iOS-UI/ReaderLocalTXTScenarioTestCase.swift",
+        "bytes": 7912,
+        "sha256": "11618885bb65144fe7d4b23b8bab97e0e37215300da7732e17ac54d8477ae963"
+      },
+      {
+        "path": "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift",
+        "bytes": 10129,
+        "sha256": "91f7beed556a12131b977a8d841df02c5c5d4a5373e9852f7518dccc5f4f9a98"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift",
+        "bytes": 15123,
+        "sha256": "5fd725526f69353e5a2cc60d9ed027e29d41a767a0243675be373420b94cdd39"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+        "bytes": 9646,
+        "sha256": "10bc4d7b32d8e18a3cea2fc8e061c8af48e1ac713f5bdd27a4cf5b2ea8227b3f"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift",
+        "bytes": 19749,
+        "sha256": "be25f2748d9ecc1b791119269dba1f90932a36516e22d56659b7b10c6960dafb"
+      },
+      {
+        "path": "scripts/reader-experience/reader-launch-memory.py",
+        "bytes": 21981,
+        "sha256": "e348bd60d3078dc8993da1e0dbc35cc64045d147a9f1f8838200e66ef3ef8249"
+      },
+      {
+        "path": "scripts/reader-experience/test-reader-launch-memory.py",
+        "bytes": 15563,
+        "sha256": "2331f4322ace0c8fd261dbe1aabea52aa8e9a2e865ce108ea498427b6355b8e9"
+      }
+    ],
+    "checkpointCSource": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "includedInCheckpointC": false
+  },
+  "preparedSelections": {
+    "launch": {
+      "selector": "yuedu appUITests/ReaderProcessLaunchMeasurementsUITests/testFiveProcessLaunchesToSubmittedReadableTXTAnchor",
+      "methods": 1,
+      "executions": 1,
+      "innerSamples": 5
+    },
+    "memory": {
+      "selector": "yuedu appTests/ReaderProcessMemoryMeasurementsTests/sampleOwnedCoreTextChapters",
+      "methods": 1,
+      "executions": 1,
+      "fixtures": 2,
+      "innerSamplesPerFixture": 5,
+      "innerSamples": 10
+    },
+    "addedToCI": false,
+    "oldTXTSelectionAndCount": 1,
+    "oldReaderStageRows": 50
+  },
+  "measurementCloudSubmission": {
+    "selectorsAddedToCI": false,
+    "submitted": false,
+    "readinessIsPendingEvidenceNotSubmission": true
+  },
+  "reuse": {
+    "importer": "Existing DEBUG -auto-import-epub routes to LocalBookImportService.importBook; no second importer. Shared test actions only.",
+    "renderer": "Existing OnlineProviderAttributedStringBuilder, BenchmarkChapterProvider, ChapterDocumentStore, CoreTextPaginator, CoreTextScrollEngine and CoreTextCollectionScrollViewController.",
+    "oldSmoke": "Exact one existing method name and same assertion/action order after inlining the three extracted helpers; quick-reader checks and all six selector/page helpers unchanged. Default TXT fixture remains the previous repeated-paragraph bytes; only the new class selects unique paragraph markers.",
+    "production": "Only CoreTextPageView DEBUG branches and an explicit -reader-launch-measurement flag. After removing DEBUG sections and blank lines, the release view source matches baseline."
+  },
+  "launchProtocol": {
+    "fixture": {
+      "fixtureSHA256": "74549292aec35d57bfff367eacd84a6e167225edd1aa2159b0be5b6e8775d94d",
+      "fixtureBytes": 5980
+    },
+    "setupOutsideInterval": true,
+    "importInputRemovedBeforeSamples": true,
+    "processBoundary": "Each sample terminates, awaits real notRunning, then invokes XCUIApplication.launch. Per-process observation UUID distinguishes a new process while allowing legal PID reuse. PID and per-view identity remain raw metadata.",
+    "clock": "Raw ProcessInfo.systemUptime seconds from UI runner for terminate/notRunning/launch requested/launch returned/shelf/book tap/page observed. App submission uptime is retained separately and checked within the corresponding launch interval.",
+    "endpoint": "Current CoreTextPageView captured configure/display binding serial, actual spine/range/page UTF16 text and unique marker; published only after layer.contents assignment and a recheck of captured binding/index/attributed-string identity. XCUI must also observe the current label as hittable at the viewport centre.",
+    "anchorScope": "Page-level actual rendered UTF16 range and marker position; not a direct reading-position JSON/persisted charOffset observation. pageStartUTF16 is never named a persisted position. Existing independent position regressions own that storage contract.",
+    "notClaimed": [
+      "ChapterDocument ContentRevision propagation",
+      "GPU/pixel presentation",
+      "tap-to-photon",
+      "OS/device cache-cold startup",
+      "automatic restore directly into reader without test navigation"
+    ],
+    "timingMeaning": "launchCallMilliseconds times the synchronous XCUI launch API, not the system first-frame metric. Launch-to-readable includes UI automation selecting Library and tapping the persisted owned book. Five recoverable failures retain individual rows; a fatal XCTest/framework abort leaves an incomplete matrix and must fail later collection."
+  },
+  "memoryProtocol": {
+    "fixtures": {
+      "plain-100k": {
+        "fixtureSHA256": "14cb4f035b0986ca492b0d3965558c9f1c0c590e6c35f2f6c8fdf7248d9fbad5",
+        "fixtureHTMLBytes": 310613,
+        "fixtureMinimumUTF16": 102400
+      },
+      "plain-1m": {
+        "fixtureSHA256": "5caa23f0a8c1fd5586ed578e42f28df7dd9b02bf566c61afc45e696a9edd7c9d",
+        "fixtureHTMLBytes": 3178707,
+        "fixtureMinimumUTF16": 1048576
+      }
+    },
+    "fixtureConstructionOutsideInterval": true,
+    "scope": "Current app process with XCTest loaded, Simulator collector only; corpus HTML is retained in baseline. Samples share a process and system/framework caches are not cleared.",
+    "method": "One task_info(TASK_VM_INFO) per point: phys_footprint is the reported Mach footprint-accounting bytes; resident_size is current resident-memory bytes (RSS), distinct from footprint and allocation churn. Kernel failure, insufficient returned count or nonpositive values never become zero/success. Lifetime *_peak fields are not used.",
+    "sampling": "Off-main actor captures baseline, explicit phase boundaries and periodic points. A detached Task requests a 10ms sleep between ticks (a measurement timer, not settling); actual query-before/after uptimes are retained. Sleep scheduling is not real-time or a fixed-rate guarantee.",
+    "quality": "No periodic points, buffer limit, raw phase encoding failure, bad/short kernel response, on-main query, stage failure or an actual baseline/periodic/terminal gap >50ms marks complete=false. Boundary points cannot conceal a missing periodic sampler. All raw points determine baseline and sampled maxima; this is not the exact kernel/global peak.",
+    "stages": [
+      "baseline",
+      "document.begin",
+      "document.end",
+      "first-page.begin",
+      "first-page.end",
+      "pagination.begin",
+      "pagination.end",
+      "scroll.begin",
+      "scroll.end",
+      "jump.0.begin",
+      "jump.0.end",
+      "jump.1.begin",
+      "jump.1.end",
+      "jump.2.begin",
+      "jump.2.end",
+      "jump.3.begin",
+      "jump.3.end",
+      "jump.4.begin",
+      "jump.4.end",
+      "jump.5.begin",
+      "jump.5.end",
+      "jump.6.begin",
+      "jump.6.end",
+      "jump.7.begin",
+      "jump.7.end",
+      "jump.8.begin",
+      "jump.8.end",
+      "jump.9.begin",
+      "jump.9.end",
+      "complete"
+    ],
+    "stageIntegrity": "Document length, real first-page text, complete contiguous full-page coverage, complete scroll character coverage and ten distinct actual controller line anchors are required. Requested/observed spine/offset plus actual UTF16 anchor text are retained for every jump. The existing controller is mounted as a fixed 390x844 child viewport in an owned XCTest-host window, with the previous key window restored on cleanup.",
+    "failureEvidence": "Thirty raw phase events per completed sample are printed as work proceeds; recoverable failures emit partial point/event arrays before the outer test aggregates failure. Fatal process death cannot emit the in-memory point buffer; missing terminal/sample rows and failed XCTest are never accepted.",
+    "overhead": "Fixture HTML, recording buffers, Mach queries, phase logging, timestamps and scheduling all affect the process. Instrumentation overhead is included and is not subtracted. Previous-sample/framework retention and any existing renderer background work are not claimed globally quiescent."
+  },
+  "collectorBoundary": {
+    "name": "reader-launch-memory.py",
+    "expectedLaunchRows": 5,
+    "expectedMemoryRows": 10,
+    "expectedRawMemoryPhaseRows": 300,
+    "statusField": "collectionShapeValidated",
+    "sourceOrExecutionAttested": false,
+    "sameRunRequirement": "Future integration must independently bind exact actual passing new XCTest identities, fresh raw xcresult, committed source/patch hashes, local overlay and actual build settings/Xcode/SDK/Simulator/destination metadata. Supplied logs alone are not SDK or iOS execution evidence.",
+    "failureStatus": "The new collector writes a fresh explicit invalid/incomplete record and exits1 for malformed/missing/duplicate/failed observations. It refuses overwriting prior evidence. It does not alter or replace the old passed collector."
+  },
+  "localChecksAlreadyExecuted": {
+    "authorPortableNewMethodsPassed": 15,
+    "authorPortableExistingStageMethodsPassed": 20,
+    "rootMainPortableNewMethodsPassed": 15,
+    "rootMainPortableExistingStageMethodsPassed": 20,
+    "sameChecksAreNotAccumulated": true,
+    "grammarSwiftFiles": 7,
+    "grammarIsNotTypecheck": true,
+    "testsRerunByRecorder": false,
+    "SwiftTypecheckPerformed": false,
+    "AppleSDKCompilationPerformed": false,
+    "iOSTestsExecuted": 0,
+    "actualLaunchSamples": 0,
+    "actualMemorySamples": 0
+  },
+  "rootMainVerificationRecords": [
+    "docs/legado-ios/evidence/reader-launch-memory/main-measurement.json",
+    "docs/legado-ios/evidence/reader-launch-memory/main-stage.json"
+  ],
+  "retainedEvidence": [
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/reader-launch-memory.patch",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/reader-launch-memory.patch",
+      "bytes": 93317,
+      "sha256": "51d40c7aa6bee34753deb838f13db70167c3cd5b29b12281e866bffb6605a647",
+      "kind": "frozen-original-preparation"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/reader-launch-memory-preparation.json",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/reader-launch-memory-preparation.json",
+      "bytes": 24441,
+      "sha256": "f5704e40f106c5256cedeebcac878036cf68bec1741bd4e7a2535c6efd97e961",
+      "kind": "frozen-original-preparation"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-swift-grammar.json",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/launch-memory-swift-grammar.json",
+      "bytes": 1701,
+      "sha256": "0ffc288db1e62a5f8ffc5ae5e7a71f8edb459cd9f2bdf8edef6feca46494de4f",
+      "kind": "frozen-original-preparation"
+    },
+    {
+      "source": ".build/renewal-discovery/reader-launch-memory-independent-review.json",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/reader-launch-memory-independent-review.json",
+      "bytes": 16397,
+      "sha256": "de634c2d0b6ea131de0f2f9a48d6d5777ab0c705943b4a36df06cf59deb49f63",
+      "kind": "independent-static-review"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/portable-launch-memory.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-portable-launch-memory.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/portable-launch-memory.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-portable-launch-memory.stderr.txt",
+      "bytes": 119,
+      "sha256": "3184270de09e077d43933ed44033ab962a7272725e39b181d8d678ebfd428af5",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/portable-existing-stage-baseline.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-portable-existing-stage-baseline.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/portable-existing-stage-baseline.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-portable-existing-stage-baseline.stderr.txt",
+      "bytes": 124,
+      "sha256": "b7b7fee5ff595f438400422d42335774a8043d835ba7e0f3eb9acf4d5e14a814",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/diff-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-diff-check.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/diff-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-diff-check.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/tracked-diff.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-tracked-diff.stdout.txt",
+      "bytes": 15378,
+      "sha256": "6e1e0a54ac7e3423ea2c18b7104680b21fa8a1e9d51eddf90d28dc1ded5f67ec",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/tracked-diff.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-tracked-diff.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-0.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-0.stdout.txt",
+      "bytes": 8326,
+      "sha256": "12ba026ee126446ad704689053d93fe6bd069fe9e8fe073731201a62a2c5de06",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-0.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-1.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-1.stdout.txt",
+      "bytes": 10592,
+      "sha256": "c9fe423f469140f5878812208c531ef54fd60bd7413c205768235c56b1abd4d7",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-1.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-2.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-2.stdout.txt",
+      "bytes": 20433,
+      "sha256": "eca985c022abd8d5434dfa039819b0a2dedd3ab703131d24cb497dfab8bcba43",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-2.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-3.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-3.stdout.txt",
+      "bytes": 22532,
+      "sha256": "59589e8c6ebede2705b4ceae71d8300484ca3dbdefab996028517e7b8fc38121",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-3.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-4.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-4.stdout.txt",
+      "bytes": 16056,
+      "sha256": "d78ae3a0c04f3e0419dc7f6a9c41ad41584b89cadf003fd3f2018f5e326a174b",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/new-file-4.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-new-file-4.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/patch-reverse-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-patch-reverse-check.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/patch-reverse-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-patch-reverse-check.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/patch-forward-main-check.stdout.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-patch-forward-main-check.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/launch-memory-validation/patch-forward-main-check.stderr.txt",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/original-patch-forward-main-check.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original-portable-or-static-raw-log"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/apple-primary/index.json",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/apple-primary-index.json",
+      "bytes": 1895,
+      "sha256": "3dabea9d440b2e826954f564741af79b51f1091dfe636f0de50b597efe4189f8",
+      "kind": "apple-primary-original-index"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/apple-primary/xcuiapplication-launch.md",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/apple-primary-xcuiapplication-launch.md",
+      "bytes": 1208,
+      "sha256": "a0dfaadd743a1576beaca46f999de6683504fe5dbab61c463fe24142b0690cd6",
+      "kind": "apple-primary-original-raw"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/apple-primary/xcuiapplication-terminate.md",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/apple-primary-xcuiapplication-terminate.md",
+      "bytes": 1088,
+      "sha256": "85c0891754421245829cbe9102fe669ac5516eff8e3176c2e36bc3b8d09af040",
+      "kind": "apple-primary-original-raw"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/apple-primary/xctapplicationlaunchmetric.md",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/apple-primary-xctapplicationlaunchmetric.md",
+      "bytes": 2031,
+      "sha256": "da7a36106bb0350bc034b77e2a622dd748f5f1a5582a7eb03dc16c10439659c0",
+      "kind": "apple-primary-original-raw"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/apple-primary/xctmemorymetric.md",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/apple-primary-xctmemorymetric.md",
+      "bytes": 1966,
+      "sha256": "fbde0a2ed82995b16a237ea7db04f3b4b21d5cba5aaeac9e4e505e0ac66e2b5f",
+      "kind": "apple-primary-original-raw"
+    },
+    {
+      "source": ".build/reader-launch-memory-worktree/.build/apple-primary/task_info.h",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/apple-primary-task_info.h",
+      "bytes": 27248,
+      "sha256": "1c09d3ff0bb37b4c17da286f011c8ceb61962f610bd1304688bec4b90c556b81",
+      "kind": "apple-primary-original-raw"
+    },
+    {
+      "source": ".build/renewal-discovery/perf-main-verification/measurement.json",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/main-measurement.json",
+      "bytes": 2408,
+      "sha256": "e7b12e51a822fbfa15ecd7d0eaaaa70f046889f1501adaadcbf561b035e861f7",
+      "kind": "root-main-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/perf-main-verification/measurement.stdout",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/main-measurement.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/perf-main-verification/measurement.stderr",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/main-measurement.stderr",
+      "bytes": 119,
+      "sha256": "866a47ad8846f24ed567c0b33849044062b2b7c4a431982b37e5d12fedfe7cef",
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/perf-main-verification/stage.json",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/main-stage.json",
+      "bytes": 2397,
+      "sha256": "500e492452bf67309d730b81669e87a2009a868420cd1dd48d58db1025314bc8",
+      "kind": "root-main-verification"
+    },
+    {
+      "source": ".build/renewal-discovery/perf-main-verification/stage.stdout",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/main-stage.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/perf-main-verification/stage.stderr",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/main-stage.stderr",
+      "bytes": 124,
+      "sha256": "bc533af3246cb318c8b1d1cb37619cc40380f8cddc1173ec142c96baa8a5b518",
+      "kind": "root-main-portable-raw-log"
+    },
+    {
+      "source": ".build/renewal-discovery/verify-perf-main.py",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/verify-perf-main.py",
+      "bytes": 1741,
+      "sha256": "f596fd55f6bc3298de106b74dde0cd4f2bfb2826011667624a267dd0c70d0113",
+      "kind": "root-verification-command-source"
+    },
+    {
+      "source": "recorder-executed-read-only-check",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/recorder-diff-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "recorder-read-only-check-raw"
+    },
+    {
+      "source": "recorder-executed-read-only-check",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/recorder-diff-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "recorder-read-only-check-raw"
+    },
+    {
+      "source": "recorder-executed-read-only-check",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/recorder-reverse-patch-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "recorder-read-only-check-raw"
+    },
+    {
+      "source": "recorder-executed-read-only-check",
+      "path": "docs/legado-ios/evidence/reader-launch-memory/recorder-reverse-patch-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "recorder-read-only-check-raw"
+    }
+  ],
+  "historicalEvidencePreservedSHA256": {
+    "docs/legado-ios/reading-comfort-batch.json": "730ee0cc9ad95f69e4c53e7aeef036aa744bf398038ce67713c2e643c2b0edcb",
+    "docs/legado-ios/reader-supply-measurement-batch.json": "f5ac93fc62c336142fb69969b822768550bcd926dbc100dbe6a98ff1a6301e16",
+    "docs/legado-ios/previous-reader-smoke-audit.json": "ad94143ef08f7520c3894047c844fae4e7ab1a0ee6391a79898be4d6b51da5ba",
+    "docs/legado-ios/local-product-validation.json": "04a2ad2ccb0207b0c39b5e6d4595d2b4c5e4ad2d8513de5b9c4935909a3dacb6",
+    "scripts/reader-experience/reader-stage-baseline.py": "56580b42ce989cb66b83845368e576adc6384c1f76edec6ac9ed1e35cd3a53d6",
+    "scripts/reader-experience/test-reader-stage-baseline.py": "f895d69f1fb7333dcde9c9d536d42e29426b011b913c6b299ac3bbbd0659d807"
+  },
+  "historicalProtocol": {
+    "existingStagePortableMethods": 20,
+    "existingMetricRows": 50,
+    "oldTXTMethods": 1,
+    "newLaunchMethods": 1,
+    "newMemoryMethods": 1,
+    "innerLaunchSamplesPlanned": 5,
+    "innerMemorySamplesPlanned": 10,
+    "plannedRawMemoryPhaseRows": 300,
+    "actualSamples": 0
+  },
+  "limits": [
+    "这是待审准备批；Swift typecheck、Apple SDK compilation、XCTest 与实际 launch/memory 样本均 0。",
+    "源级规则与 synthetic 门禁不能代替实际 SDK、passing xcresult leaves、committed source/build/overlay、Xcode/runtime/destination 绑定。",
+    "launch 是进程重启并经 UI 自动化到 reader 页文本；系统缓存未清，不是设备 cold、系统首帧、GPU paint、tap-to-photon 或持久位置 JSON 证明。",
+    "memory 是同一 app XCTest-host 的间隔采样，含 retained HTML、日志、采样缓冲、Mach 查询与调度开销；样本之间不保证全局缓存/后台任务静止。短峰可漏，不是 allocation churn、kernel 精确 peak 或设备内存上限。",
+    "memory 固定 child viewport 可被小 scene 裁切；只验证控制器几何和 live text anchor，不证明整 viewport 屏幕可见。",
+    "fatal abort/进程死亡可能无法发出 in-memory points；缺 terminal/matrix/phase 或失败 XCTest 必须作为失败保留，不能补零或静默重跑。",
+    "五样本只支持 median/max 描述，不支持 p95 或性能收益宣称。"
+  ],
+  "archivedPreparationContext": "原件保留其隔离 worktree 准备时路径与事实；当前九文件已由 root apply，按 byte hashes 验证。主树 apply 不改变原记录，也不构成实际 native 验收。",
+  "canonicalPlanMutation": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "beforeSHA256": "4f7c04df04ac7d094b008a783a3e83de2ed64937f3721ea6cf913044fed43ae8",
+    "afterSHA256": "8ff3ffab268bd4b83f7797a44926b2aafa49e01d418b75c961a96feed1a93449",
+    "stageCount": 8,
+    "workpackageCount": 33,
+    "featureDomainCount": 64,
+    "ownershipDependenciesOtherPackagesAndAllCloudPoliciesUnchanged": true,
+    "allFourGlobalFlagsRemainFalse": true,
+    "existingCheckerResult": "docs/legado-ios/evidence/reader-launch-memory/plan-check.json"
+  },
+  "recorderActions": {
+    "gitMutation": false,
+    "CIQueriedOrTriggered": false,
+    "privateSourcesRead": false,
+    "deviceOrPackageActions": false
+  }
+}

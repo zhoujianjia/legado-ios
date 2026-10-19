@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "dynamic-discovery-implemented-awaiting-Simulator-verification",
+  "status": "dynamic-discovery-Simulator-verified-build12-delivered-device-report-pending",
   "product": "single-reader",
   "requiredConditions": {
     "freeApplePersonalTeam": true,
@@ -61,15 +61,23 @@
       "discovery": 13,
       "UI": 1
     },
-    "newDiscoverySwiftTestsExecuted": false,
-    "AppleSDKCompilationPassed": false,
-    "AppleSDKLinkPassed": false,
+    "newDiscoverySwiftTestsExecuted": true,
+    "AppleSDKCompilationPassed": true,
+    "AppleSDKLinkPassed": true,
     "physicalDeviceDynamicDiscoveryExecuted": false,
     "serviceIdentityVerified": false,
     "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation.",
     "record": "self-renewal-dynamic-discovery-batch.json",
     "physicalDeviceExecution": "New dynamic discovery not executed; prior build10 fixed-endpoint report remains separately recorded.",
-    "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml"
+    "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml",
+    "AppleSDKAcceptanceScope": "Actual fixed C Debug arm64 Simulator app/test build and selected 8/13/UI1. A Release has separate static audits and explicit narrow diagnostic mapping; no whole-App or physical-device runtime acceptance.",
+    "reportInspectorSyntheticTestsPassed": 25,
+    "oldDeviceReportSchemaCompatibilityPassed": true,
+    "actualSimulatorCasesPassed": {
+      "legacyUnit": 8,
+      "discovery": 13,
+      "UI": 1
+    }
   },
   "upstreamSourceLocks": [
     {
@@ -135,28 +143,24 @@
     "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
-    "Run and independently review the source-bound 8 legacy, 13 discovery and 1 UI Simulator cases, including actual SDK linking and built privacy metadata.",
-    "After SDK verification, deliver an independently audited build12 changed diagnostic; do not ask the user to repeat the unchanged fixed-loopback experiment.",
     "Inspect device discovery, local-network access and same-device TCP evidence before a separately bounded authenticated transport implementation.",
     "Prove profile renewal, signing, same-identity replacement, preserved data, background retry and expiry recovery before claiming automatic self-renewal."
   ],
   "completedGates": [
-    "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed."
+    "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed.",
+    "Fixed C actual 8 legacy/13 discovery/UI1 passed and independently audited; A build12 separately audited and handed off only through explicit narrow unchanged-diagnostic source mapping."
   ],
   "nextDeviceCandidate": {
-    "build": "11",
-    "status": "delivered_unsigned_same_probe_as_negative_build10_report",
-    "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
-    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39255216718",
-    "record": "native-reader-experience-build11.json",
+    "build": "12",
+    "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "record": "native-reader-experience-build12.json",
     "builtInSources": false,
     "IPAIndependentlyAudited": true,
-    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-unsigned.ipa",
-    "ipaSHA256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f",
+    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-unsigned.ipa",
+    "ipaSHA256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
     "signedOrInstalled": false,
-    "automaticSelfRenewalImplemented": false,
-    "equivalentBuild10Report": "self-renewal-device-transport-build10.json",
-    "repeatUnchangedProbeUnderSameConditionsRequested": false
+    "automaticSelfRenewalImplemented": false
   },
   "latestDeviceReport": {
     "record": "self-renewal-device-transport-build10.json",
@@ -182,8 +186,11 @@
     "record": "self-renewal-alternate-transport-followup.json",
     "sourceReferencesChecked": 9,
     "scope": "Bounded single-service discovery, validated same-device numeric destinations, TCP-open only; no protocol payload, credentials or pairing input.",
-    "implementationPerformed": false,
-    "SDKOrDeviceValidationPerformed": false
+    "implementationPerformed": true,
+    "SDKOrDeviceValidationPerformed": true,
+    "validationScope": "Actual fixed C Debug Simulator 8/13/UI1 only; physical-device dynamic discovery remains unverified.",
+    "supersedingEvidence": "native-reader-experience-build12.json",
+    "originalPreparationSnapshot": "evidence/reader-build12-delivery/self-renewal-research.json.before"
   },
   "previousDeviceCandidates": [
     {
@@ -203,13 +210,28 @@
       "signedOrInstalled": false,
       "automaticSelfRenewalImplemented": false,
       "deviceReport": "self-renewal-device-transport-build10.json"
+    },
+    {
+      "build": "11",
+      "status": "delivered_unsigned_same_probe_as_negative_build10_report",
+      "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39255216718",
+      "record": "native-reader-experience-build11.json",
+      "builtInSources": false,
+      "IPAIndependentlyAudited": true,
+      "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-unsigned.ipa",
+      "ipaSHA256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f",
+      "signedOrInstalled": false,
+      "automaticSelfRenewalImplemented": false,
+      "equivalentBuild10Report": "self-renewal-device-transport-build10.json",
+      "repeatUnchangedProbeUnderSameConditionsRequested": false
     }
   ],
   "currentUserRequest": {
     "requestedOn": "2026-10-19",
     "deviceVerificationExplicitlyAuthorized": true,
     "scope": "Read-only transport diagnostic only; no implemented automatic renewal to test.",
-    "record": "native-reader-experience-build11.json"
+    "record": "native-reader-experience-build12.json"
   },
   "previousFixedLoopbackExperiment": {
     "service": "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -382,10 +404,40 @@
   },
   "nextDevelopmentCandidate": {
     "build": "12",
-    "status": "awaiting-source-only-Simulator-checkpoint",
-    "delivered": false
+    "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "record": "native-reader-experience-build12.json",
+    "builtInSources": false,
+    "IPAIndependentlyAudited": true,
+    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-unsigned.ipa",
+    "ipaSHA256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
+    "signedOrInstalled": false,
+    "automaticSelfRenewalImplemented": false
   },
   "currentDiscoveryCloudCheckpoint": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "runID": 39281084369,
+    "job": {
+      "id": 118155310210,
+      "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369/job/118155310210",
+      "status": "completed",
+      "conclusion": "success",
+      "all11StepsCompletedSuccess": true
+    },
+    "groups": {
+      "legacy": "8/8",
+      "discovery": "13/13",
+      "UI": "1/1"
+    },
+    "failures": 0,
+    "skips": 0,
+    "expectedFailures": 0,
+    "platform": "Debug iOS Simulator",
+    "ReleaseIPAExecuted": false,
+    "record": "docs/legado-ios/native-reader-experience-build12.json",
+    "aggregateRunConflictPreserved": true
+  },
+  "previousDiscoveryCloudCheckpoint": {
     "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
     "runId": 39267868623,
     "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39267868623",

@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-static-review-of-source-only-measurement-runner",
+  "reviewedAtUTC": "2026-10-19T16:39:40.974304+00:00",
+  "reviewer": "/root/renewal_discovery_ui",
+  "status": "no-unresolved-static-blocking-findings",
+  "unresolvedBlockingFindings": [],
+  "baselineSourceCommit": "9e4656128e202a0324dda3e8ad97a3c028d37499",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree",
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-runner-v2.patch",
+    "bytes": 72760,
+    "sha256": "11e578fc44104e10b168320b0c8ebd766ab4d46294e7f40203a381df1798197f"
+  },
+  "preparation": {
+    "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-runner-preparation-v2.json",
+    "bytes": 26207,
+    "sha256": "99a2fada7ec2f1bdd6dd4811655cd38e0a920c0716780208f5cc591784dcc4f6"
+  },
+  "files": [
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "bytes": 27526,
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+    },
+    {
+      "path": "scripts/reader-experience/test-smoke-tools.py",
+      "bytes": 29734,
+      "sha256": "2222861c18ee769bb8b6f64f6ea7f7ce1792d5641e9044bc8fbd65917e9c21ae"
+    },
+    {
+      "path": "scripts/reader-experience/collect-reader-measurements.py",
+      "bytes": 24035,
+      "sha256": "8f56850e3117b6eb1119731dcb0054452d66a24f86e86106ae06f168f6c96bc0"
+    },
+    {
+      "path": "scripts/reader-experience/test-collect-reader-measurements.py",
+      "bytes": 28782,
+      "sha256": "f75c39591ca2c2f6d8df21771974bfc3cf3dd093545abc926c55cd41ff7624c1"
+    },
+    {
+      "path": "scripts/reader-experience/reader-measurements.sh",
+      "bytes": 6412,
+      "sha256": "7887fa3693a8df09a21dabfaf32831e5fec37b09e9cf130d26e522c6b8969445"
+    },
+    {
+      "path": ".github/workflows/reader-measurements.yml",
+      "bytes": 4291,
+      "sha256": "eab73a4055afe0dc081469b130ee3441872da3ba3f9732804741e9626d751fe6"
+    },
+    {
+      "path": "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json",
+      "bytes": 984,
+      "sha256": "422b43e5e6f671d84b115864216ba33cb3b47c8df25b7d78ffd4cfd623dc34ec"
+    },
+    {
+      "path": "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json",
+      "bytes": 1775,
+      "sha256": "5868bc2b0c9cb43ae465e4ea5a03292c13fb47bc125bc43fc0d3a65042c7cbde"
+    }
+  ],
+  "changedPathCount": 8,
+  "resolvedFindings": [
+    {
+      "id": "selected-target-bundle-containment",
+      "originalNegative": {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\measurement-runner-preliminary-containment-negative.json",
+        "bytes": 4176,
+        "sha256": "6144500f71a0344982c9498b2042581b80fff20249318e7235ea634031d6f4ba"
+      },
+      "frozenReplay": {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\reader-measurements-runner-independent-validation\\containment-replay.json",
+        "bytes": 851,
+        "sha256": "acaf09f3a1be7987c3a03687a5fabf4215775f67d8098027497d21eb63696723"
+      },
+      "resolution": "Every case must descend from the selected bundle; nested test plans/bundles are rejected. The original counterexample now throws the precise required ValueError. New portable method preserves both the external-leaf and nested-plan counterexamples."
+    },
+    {
+      "id": "hidden-owned-evidence-upload",
+      "reportedBy": "/root",
+      "resolution": "Pinned upload action receives include-hidden-files:true for both owned .build paths and retention7. Existing workflow scope/action pin unchanged. This is explicit artifact configuration, not a claim of observed upload loss in prior runs."
+    },
+    {
+      "id": "actual-main-debug-code-payload",
+      "reportedBy": "/root",
+      "resolution": "Actual ENABLE_DEBUG_DYLIB must be explicit YES/NO. YES requires a real nonempty executable-basename.debug.dylib plus hash, validating an optional declared path while preserving original absence as null. NO records no main debug payload. Complete host identity is re-read after collection; changed payload with unchanged stub cannot leave validated flags.",
+      "actualPortableCoverageReadAndLogsVerified": [
+        "test_debug_dylib_mode_requires_real_nonempty_payload_and_preserves_no_mode",
+        "test_debug_payload_mutated_during_collection_cannot_leave_a_passing_record"
+      ],
+      "scope": "Synthetic owned file identity/negative tests, not a new SDK build or proof the hashed instructions executed."
+    }
+  ],
+  "reviewedInvariants": {
+    "overlayPreparationOrder": "smoke.prepare with explicit measurement tag first requires clean tracked HEAD and creates audited project/Info/source-stamp overlays; only then are actual settings/runtime captured and source preparation validated. Unsafe initial overlay setup exits before any test host.",
+    "sourceBinding": "Production requires 38 distinct selected source/helper/fixture files byte-equal to committed HEAD, matching CI tag/GITHUB_SHA and run/attempt. Preparation pins the same audit/environment/source set; collection rechecks before and after. This review only inspected the proposed combined source inventory, using separately frozen UMD16 as an explicit static dependency; no runtime source_provenance success is claimed on this uncommitted isolated checkout.",
+    "environmentAndBuiltHost": "Shared capture validates Debug iphonesimulator settings, Xcode/SDK, selected available UDID/runtime, raw input hashes and source. Actual summary/tree must match one device/runtime/configuration. Collection checks the built local/synthetic app source stamp, Info/configuration/executable hashes and actual captured host settings. No built host was created or audited during this preparation. The explicit actual Debug-dylib flag also binds the nonempty main .debug.dylib when enabled; optional build-derived path absence stays null, and the full tested-host identity is rechecked at collection end.",
+    "closedExactExecutionGate": "Single Test Plan, unique correct target bundle, supported nonempty containers, Passed container result when present, unique childless exact method identities, 1/1 memory, 1/1 launch, 11/11 UMD, integer-zero wrapper/export statuses, zero failures/skips/expected failures. Unknown/missing node types, cross-group bundle types, parameterized/duplicate/extra/failed leaves and outside-bundle leaves cannot complete the gate.",
+    "rawLogAndArtifactRetention": "Each group uses its own original xcodebuild -l log, xcresult, summary and tests export. Raw marker lines retain original bytes before later validation. The collector additionally requires exact execution artifacts; imported shape validators and owned synthetic positive records do not attest an SDK/XCTest run. Artifact/log/environment/source drift invalidates collection.",
+    "failureCollectionAndCombinedGate": "No set -e group abort: recoverable memory, launch or UMD failure still permits both remaining selections and captures individual status/result records. Combined setup/group/status-record gate remains nonzero. Fatal wrapper/step/job deadlines may leave incomplete evidence; neither retries nor synthetic replacement supply success. Workflow upload uses always().",
+    "samplesAndClaims": "Source contract selects 13 Swift/XCTest methods in three groups and requires five launch samples, ten memory samples over two fixtures with 300 raw phases. Actual selected methods and samples remain zero. CPU submission plus visible AX under automation is not GPU/device-cold; sampled memory is not exact kernel peak or an improvement.",
+    "UMDGoldenBinding": "Runtime source list binds all reviewed UMD16; frozen provenance digest and original reference identities require the ten exact golden bytes. Independent review rehashed dependency16 and compared both original modern UI JSON bytes with their actual prior artifacts. UI originals are structural reference only. No UMD product import/TOC/reopen is enabled.",
+    "temporaryRoots": "All independently created temporary roots in the new guard tests resolve before creating checked child paths. Production stage-config.py is byte-identical to base, including symlink/junction rejection. This follows the C failure diagnosis without claiming that an actual macOS alias path was logged or that macOS was rerun.",
+    "sharedProtocolScope": "Shared smoke changes add only explicit reader-measurements tag validation, source-stamped overlay preparation and CLI choices, plus assertions inside an existing test. Existing default smoke/renewal behavior remains intact. The old TXT1 selection, stage50 runner/shape protocol, performance nine sources, existing smoke workflow and original shape-only helper are byte-identical to base.",
+    "artifactUpload": "Always upload both owned .build directories with include-hidden-files:true, if-no-files-found:error, seven-day retention and the unchanged pinned upload action. No actual new upload was performed during this review.",
+    "debugPayloadNegatives": "Read the two additional methods and pinned successful 22-method raw log: missing/empty payload fails, changing only payload changes its identity while stub stays equal, optional derived path absence is retained, wrong declared path fails, NO produces null payload and missing flag fails. The collection-level mutation changes only debug bytes during its second binding call and requires exit1 with both validated flags false. No suite was rerun by reviewer."
+  },
+  "evidence": {
+    "identityCheck": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\reader-measurements-runner-independent-validation\\identity-check.json",
+      "bytes": 42307,
+      "sha256": "70d35d2d170a8f23249155a43e3b186e7522cee4c758a5b7bde894bc3e35d645"
+    },
+    "reviewerScript": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\review-measurements-runner-v2.py",
+      "bytes": 6682,
+      "sha256": "fcf2c9c77c93b0f0bb92b42647dbe8c1a776ad0d1106c784c4fea2c22d54274a"
+    },
+    "authorPortableCollectionMethods": 22,
+    "authorSharedSmokeMethods": 24,
+    "authorSharedStageMethods": 20,
+    "authorRawLogsAllHashVerified": true,
+    "authorPortableSuitesRerunByReviewer": false,
+    "reviewerOriginalNegativeReplays": 1,
+    "bashAndActionlintRawLogsHashVerified": true,
+    "shellcheckExecuted": false,
+    "historicalUIReference": [
+      {
+        "fixture": "docs/legado-ios/fixtures/reader-measurements-ui-tests-39146602853.json",
+        "original": {
+          "path": "F:\\yuedu-reader\\.build\\cloud-evidence\\run-39146602853\\artifact\\reader-renewal-probe\\ui-tests.json",
+          "bytes": 1775,
+          "sha256": "5868bc2b0c9cb43ae465e4ea5a03292c13fb47bc125bc43fc0d3a65042c7cbde"
+        },
+        "purpose": "Original modern container shape only, not new measurement execution."
+      },
+      {
+        "fixture": "docs/legado-ios/fixtures/reader-measurements-ui-summary-39146602853.json",
+        "original": {
+          "path": "F:\\yuedu-reader\\.build\\cloud-evidence\\run-39146602853\\artifact\\reader-renewal-probe\\ui-summary.json",
+          "bytes": 984,
+          "sha256": "422b43e5e6f671d84b115864216ba33cb3b47c8df25b7d78ffd4cfd623dc34ec"
+        },
+        "purpose": "Original modern container shape only, not new measurement execution."
+      }
+    ],
+    "plannedSourceBindings": 38,
+    "plannedGroupMethods": {
+      "memory": 1,
+      "launch": 1,
+      "umd": 11
+    },
+    "reviewerBaseScript": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\review-measurements-runner.py",
+      "bytes": 14624,
+      "sha256": "71f5e0c084c5fabf55966f7e45b434bddba6c0bdbd3814bc8900686ad8686cfc"
+    },
+    "debugPayloadHistoricalReferenceRehashed": {
+      "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\debug-payload-historical-reference.json",
+      "bytes": 2285,
+      "sha256": "9cb38e97570f5ca112d10721b598dde93c08b6775b013d01dadfa98ccb2aede4"
+    }
+  },
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "iOSTestsExecuted": 0,
+  "actualSelectedSwiftXCTestMethodsExecuted": 0,
+  "actualLaunchSamples": 0,
+  "actualMemorySamples": 0,
+  "actualRawMemoryPhaseRows": 0,
+  "CIQueriedOrTriggered": false,
+  "sourceOrCanonicalEditsByReviewer": false,
+  "UMDProductImportSupported": false,
+  "physicalDeviceMeasured": false,
+  "performanceImprovementEstablished": false,
+  "acceptanceBoundary": "Static integration preparation only. The source checkpoint must contain UMD16 and runner8 before actual source-only CI can validate runtime gate compatibility, Apple SDK compilation, exact XCTest methods and original samples.",
+  "reviewedPreparationRevision": 2,
+  "supersededV1PreservedAndRehashed": {
+    "preparation": {
+      "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-runner-preparation.json",
+      "bytes": 23684,
+      "sha256": "48e6d3de388ff7cfa5a760fa885c08d90a0c2a7f02a40b268b094b6909f06bd6"
+    },
+    "patch": {
+      "path": "F:\\yuedu-reader\\.build\\reader-measurements-runner-worktree\\.build\\reader-measurements-runner.patch",
+      "bytes": 65960,
+      "sha256": "1da20a58629e888ab6b430c22d68e3500158dbce9379b0c0ab52e2516c3d191f"
+    },
+    "priorRawLogsRetainedUnchanged": true
+  }
+}

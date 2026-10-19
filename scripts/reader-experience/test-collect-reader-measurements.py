@@ -1,0 +1,416 @@
+#!/usr/bin/env python3
+"""Owned synthetic binding/negative guards; no Swift, XCTest or device execution.
+
+For isolated local preparation only, YUEDU_UMD_PREPARATION_ROOT may point at the
+separately reviewed UMD checkout for copying static test inputs. Production
+collector never reads this variable; CI defaults to the single committed repo.
+"""
+import argparse
+import copy
+import importlib.util
+import json
+import os
+from pathlib import Path
+import plistlib
+import tempfile
+import unittest
+from unittest.mock import patch
+
+HERE = Path(__file__).resolve().parent
+
+
+def module(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    value = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(value)
+    return value
+
+
+gate = module("owned_measurement_binding", HERE / "collect-reader-measurements.py")
+shapes = module("owned_measurement_shape_inputs", HERE / "test-reader-launch-memory.py")
+SOURCE = "a" * 40
+CONTEXT = {"sourceCommit": SOURCE, "GITHUB_RUN_ID": "1234", "GITHUB_RUN_ATTEMPT": "1"}
+DEVICE = {"deviceId": "4C675116-265D-488F-BFFA-836A4545674C", "platform": "iOS Simulator",
+          "osVersion": "26.2", "osBuildNumber": "23C54"}
+ENVIRONMENT = {"sourceCommit": SOURCE, "destination": "id=" + DEVICE["deviceId"],
+               "runtimeVersion": DEVICE["osVersion"], "runtimeBuild": DEVICE["osBuildNumber"]}
+CONFIGURATION = {"configurationId": "1", "configurationName": "Test Scheme Action"}
+
+
+def inputs(group):
+    selection = gate.GROUPS[group]
+    summary = {"totalTestCount": len(selection["methods"]), "passedTests": len(selection["methods"]),
+               "failedTests": 0, "skippedTests": 0, "expectedFailures": 0, "result": "Passed", "testFailures": [],
+               "devicesAndConfigurations": [{"device": copy.deepcopy(DEVICE), "testPlanConfiguration": CONFIGURATION,
+                    "passedTests": len(selection["methods"]), "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+    leaves = [{"nodeType": "Test Case", "nodeIdentifier": method, "result": "Passed"} for method in selection["methods"]]
+    tree = {"devices": [copy.deepcopy(DEVICE)], "testPlanConfigurations": [CONFIGURATION], "testNodes": [
+        {"nodeType": "Test Plan", "result": "Passed", "children": [
+            {"nodeType": selection["bundle"], "name": selection["target"], "result": "Passed", "children": [
+                {"nodeType": "Test Suite", "result": "Passed", "children": leaves}]}]}]}
+    return summary, tree
+
+
+def leaves(tree):
+    return tree["testNodes"][0]["children"][0]["children"][0]["children"]
+
+
+def write_json(path, value):
+    path.write_text(json.dumps(value, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+class MeasurementBindingGuards(unittest.TestCase):
+    def test_original_modern_ui_tree_is_structural_reference_only(self):
+        paths = list(gate.UI_FIXTURES)
+        tree = json.loads((gate.REPO / paths[0]).read_bytes())
+        summary = json.loads((gate.REPO / paths[1]).read_bytes())
+        for path, digest in gate.UI_FIXTURES.items():
+            self.assertEqual(gate.digest((gate.REPO / path).read_bytes()), digest)
+        old_method = "SelfRenewalProbeUITests/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal()"
+        self.assertEqual(gate.verify_tree(tree, "yuedu appUITests", "UI test bundle", (old_method,)), [old_method])
+        self.assertEqual(gate.smoke.verify_summary(summary, 1, 1)["expectedExecutions"], 1)
+        with self.assertRaises(ValueError):
+            gate.verify_execution(summary, tree, "launch", 0, 0, ENVIRONMENT)
+
+    def test_exact_three_source_selections_are_independent(self):
+        for group, count in (("memory", 1), ("launch", 1), ("umd", 11)):
+            summary, tree = inputs(group)
+            result = gate.verify_execution(summary, tree, group, 0, 0, ENVIRONMENT)
+            self.assertEqual(result["counts"]["expectedExecutions"], count)
+            self.assertEqual(set(result["passedMethodIdentities"]), set(gate.GROUPS[group]["methods"]))
+
+    def test_bundles_are_closed_and_cannot_borrow_another_group(self):
+        for group in gate.GROUPS:
+            for kind in ("Future Container", None, "UI test bundle" if group != "launch" else "Unit test bundle"):
+                summary, tree = inputs(group)
+                tree["testNodes"][0]["children"][0]["nodeType"] = kind
+                with self.subTest(group=group, kind=kind), self.assertRaises(ValueError):
+                    gate.verify_execution(summary, tree, group, 0, 0, ENVIRONMENT)
+
+    def test_unknown_empty_or_failed_containers_never_supply_green_leaves(self):
+        mutations = (
+            lambda node: node.update(nodeType="Future Type"), lambda node: node.update(result="Skipped"),
+            lambda node: node.update(result="Failed"), lambda node: node.update(result="Unknown"),
+            lambda node: node.update(children=[]))
+        for change in mutations:
+            summary, tree = inputs("memory"); change(tree["testNodes"][0])
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                gate.verify_execution(summary, tree, "memory", 0, 0, ENVIRONMENT)
+
+    def test_missing_duplicate_extra_argument_or_nonpassing_actual_leaf_fails(self):
+        mutations = (
+            lambda rows: rows.pop(), lambda rows: rows.append(copy.deepcopy(rows[0])),
+            lambda rows: rows[0].update(nodeIdentifier="UnrelatedTests/allGreen()"),
+            lambda rows: rows[0].update(result="Expected Failure"), lambda rows: rows[0].update(result="Skipped"),
+            lambda rows: rows[0].update(result="Failed"),
+            lambda rows: rows[0].update(children=[{"nodeType": "Arguments", "result": "Passed"}]))
+        for group in gate.GROUPS:
+            for change in mutations:
+                summary, tree = inputs(group); change(leaves(tree))
+                with self.subTest(group=group, change=change), self.assertRaises(ValueError):
+                    gate.verify_execution(summary, tree, group, 0, 0, ENVIRONMENT)
+
+    def test_legal_method_names_outside_the_selected_bundle_cannot_complete_the_gate(self):
+        summary, tree = inputs("umd")
+        misplaced = leaves(tree)[1:]
+        del leaves(tree)[1:]
+        tree["testNodes"][0]["children"].append({"nodeType": "Test Suite", "result": "Passed", "children": misplaced})
+        with self.assertRaisesRegex(ValueError, "outside its selected target bundle"):
+            gate.verify_execution(summary, tree, "umd", 0, 0, ENVIRONMENT)
+        summary, tree = inputs("memory")
+        subtree = tree["testNodes"][0]["children"][0]["children"][0]
+        subtree["nodeType"] = "Test Plan"
+        with self.assertRaisesRegex(ValueError, "Nested test plan"):
+            gate.verify_execution(summary, tree, "memory", 0, 0, ENVIRONMENT)
+
+    def test_method_and_execution_counts_have_no_empty_or_expected_failure_escape(self):
+        for key, value in (("totalTestCount", 0), ("passedTests", True), ("failedTests", 1),
+                           ("skippedTests", 1), ("expectedFailures", 1), ("result", "Failed")):
+            summary, tree = inputs("launch"); summary[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                gate.verify_execution(summary, tree, "launch", 0, 0, ENVIRONMENT)
+        summary, tree = inputs("umd"); summary["devicesAndConfigurations"][0]["passedTests"] = 10
+        with self.assertRaises(ValueError): gate.verify_execution(summary, tree, "umd", 0, 0, ENVIRONMENT)
+
+    def test_wrapper_and_export_statuses_must_be_actual_integer_zero(self):
+        summary, tree = inputs("launch")
+        for test, artifact in ((1, 0), (0, 1), (False, 0), (0, False), (None, 0)):
+            with self.subTest(test=test, artifact=artifact), self.assertRaises(ValueError):
+                gate.verify_execution(summary, tree, "launch", test, artifact, ENVIRONMENT)
+
+    def test_actual_target_device_runtime_and_configuration_are_bound(self):
+        for change in (lambda summary, tree: tree["testNodes"][0]["children"][0].update(name="Other target"),
+                       lambda summary, tree: tree["devices"][0].update(deviceId="another"),
+                       lambda summary, tree: summary["devicesAndConfigurations"][0]["device"].update(osBuildNumber="wrong"),
+                       lambda summary, tree: tree.update(testPlanConfigurations=[])):
+            summary, tree = inputs("memory"); change(summary, tree)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                gate.verify_execution(summary, tree, "memory", 0, 0, ENVIRONMENT)
+
+    def test_source_inventory_rejects_extra_inherited_or_parameterized_cases(self):
+        umd_root = Path(os.environ.get("YUEDU_UMD_PREPARATION_ROOT", gate.REPO))
+        def raw(name):
+            return ((umd_root if name in gate.UMD_SOURCES else gate.REPO) / name).read_bytes()
+        gate.source_inventory(raw)
+        for path, suffix in ((gate.PERF_SOURCES[2], "\nfunc testInheritedExtra() {}\n"),
+                             (gate.PERF_SOURCES[6], "\n@Test func unrelated() async throws {}\n")):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                gate.source_inventory(lambda name: raw(name) + (suffix.encode() if name == path else b""))
+        path = "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift"
+        with self.assertRaises(ValueError):
+            gate.source_inventory(lambda name: raw(name).replace(b"enforcesAllBudgets()", b"enforcesAllBudgets(value: Int)") if name == path else raw(name))
+
+    def test_committed_sources_and_frozen_golden_provenance_cannot_drift(self):
+        umd_root = Path(os.environ.get("YUEDU_UMD_PREPARATION_ROOT", gate.REPO))
+        with tempfile.TemporaryDirectory(prefix="owned-source-binding-only-") as temporary:
+            root, committed = Path(temporary).resolve(), {}
+            for name in gate.SOURCE_FILES:
+                original = (umd_root if name in gate.UMD_SOURCES else gate.REPO) / name
+                data = original.read_bytes()
+                destination = root / name; destination.parent.mkdir(parents=True, exist_ok=True); destination.write_bytes(data)
+                committed[name] = data
+            with patch.object(gate, "REPO", root), patch.object(gate.smoke, "git", side_effect=lambda *args, **kwargs: committed[args[1].removeprefix("HEAD:")]):
+                self.assertEqual(len(gate.source_provenance()), len(gate.SOURCE_FILES))
+                name = gate.PERF_SOURCES[0]; (root / name).write_bytes(committed[name] + b"\n// owned mutation\n")
+                with self.assertRaises(ValueError): gate.source_provenance()
+                (root / name).write_bytes(committed[name])
+                name = gate.UMD_FIXTURES + "provenance.json"
+                committed[name] = committed[name].replace(b'"schema": 1', b'"schema": 2')
+                (root / name).write_bytes(committed[name])
+                with self.assertRaises(ValueError): gate.source_provenance()
+
+    def test_only_explicit_measurement_tag_and_same_run_context_are_accepted(self):
+        with patch.object(gate.smoke, "validate_tag", return_value=SOURCE) as validate, \
+                patch.dict(os.environ, {"GITHUB_RUN_ID": "1234", "GITHUB_RUN_ATTEMPT": "1"}):
+            self.assertEqual(gate.context(), CONTEXT)
+            validate.assert_called_once_with("reader-measurements-")
+            with patch.dict(os.environ, {"GITHUB_RUN_ATTEMPT": "0"}), self.assertRaises(ValueError): gate.context()
+
+    def environment_fixture(self, root):
+        audit = root / "audit.json"; write_json(audit, {"sourceCommit": SOURCE})
+        (root / "Info.plist").write_bytes(plistlib.dumps({"YueduExperienceSourceCommit": SOURCE, "GitCommitSHA": SOURCE[:7]}))
+        value = dict(ENVIRONMENT, schemaVersion=1, configuration="Debug", platform="iphonesimulator",
+            xcodeVersion="owned", xcodeBuild="owned", sdkVersion="26.2", runtimeIdentifier="owned.iOS-runtime",
+            deviceName="owned", deviceTypeIdentifier="owned", developerDirectory="owned", capturedAt="owned",
+            fixtures=gate.stage.fixture_protocol(), style=gate.stage.STYLE,
+            sourceFiles={name: {"bytes": 1, "sha256": "b" * 64} for name in gate.stage.SOURCE_FILES}, inputEvidence={})
+        for name in ("audit", "settings", "xcode", "sdk", "simulators"):
+            path = audit if name == "audit" else root / (name + ".raw")
+            if name != "audit": path.write_bytes(b"owned synthetic environment input")
+            value["inputEvidence"][name] = {"path": str(path), "sha256": gate.evidence(path)["sha256"]}
+        environment = root / "environment.json"; write_json(environment, value)
+        return audit, environment, value
+
+    def test_environment_requires_audited_overlay_stamp_and_unchanged_raw_inputs(self):
+        mutations = (lambda root, value: value.update(sourceCommit="c" * 40),
+                     lambda root, value: value.update(sdkVersion=""),
+                     lambda root, value: (root / "settings.raw").write_bytes(b"changed owned input"),
+                     lambda root, value: (root / "Info.plist").write_bytes(plistlib.dumps({"YueduExperienceSourceCommit": "wrong"})))
+        for mutate in mutations:
+            with tempfile.TemporaryDirectory(prefix="owned-environment-binding-") as temporary:
+                root = Path(temporary).resolve(); audit, environment, value = self.environment_fixture(root)
+                with patch.object(gate, "REPO", root), patch.object(gate.smoke, "review_overlays") as review, \
+                        patch.object(gate.stage, "source_provenance", return_value=value["sourceFiles"]), patch.object(gate, "context", return_value=CONTEXT):
+                    self.assertEqual(gate.validate_binding(audit, environment), value)
+                    review.assert_called_once()
+                    mutate(root, value); write_json(environment, value)
+                    with self.assertRaises(ValueError): gate.validate_binding(audit, environment)
+
+    def test_prepare_checks_existing_overlay_before_own_provenance_and_never_claims_execution(self):
+        with tempfile.TemporaryDirectory(prefix="owned-prepare-order-") as temporary:
+            root = Path(temporary).resolve(); audit, environment, value = self.environment_fixture(root)
+            order = []
+            def own_source():
+                self.assertIn("overlay", order)
+                return {"ownedSyntheticOnly": {"bytes": 1, "sha256": "d" * 64}}
+            with patch.object(gate, "REPO", root), \
+                    patch.object(gate.smoke, "review_overlays", side_effect=lambda value: order.append("overlay")), \
+                    patch.object(gate.stage, "source_provenance", return_value=value["sourceFiles"]), \
+                    patch.object(gate, "context", return_value=CONTEXT), patch.object(gate, "source_provenance", side_effect=own_source):
+                output = root / "prepared.json"
+                report = gate.prepare(audit, environment, output)
+                self.assertFalse(report["actualSelectedXCTestExecutionValidated"])
+                self.assertEqual(report["historicalUITreeReference"]["runID"], 39146602853)
+                self.assertIn("only", report["historicalUITreeReference"]["purpose"])
+                with self.assertRaises(ValueError): gate.prepare(audit, environment, output)
+
+    def test_built_host_requires_same_source_stamp_local_flags_and_synthetic_configuration(self):
+        for fault in ("stamp", "firebase", "settings"):
+            with tempfile.TemporaryDirectory(prefix="owned-host-metadata-only-") as temporary:
+                root = Path(temporary).resolve(); app = root / "Owned.app"; app.mkdir()
+                info = {**gate.config.LOCAL_FLAGS, "GatewayBaseURL": "", "GIDClientID": gate.config.GOOGLE_CLIENT,
+                    "YueduExperienceSourceCommit": SOURCE, "GitCommitSHA": SOURCE[:7],
+                    "CFBundleSupportedPlatforms": ["iPhoneSimulator"], "CFBundleIdentifier": gate.config.MAIN_BUNDLE,
+                    "CFBundleExecutable": "owned-executable"}
+                (app / "Info.plist").write_bytes(plistlib.dumps(info))
+                (app / "GoogleService-Info.plist").write_bytes(plistlib.dumps(gate.config.synthetic_config()))
+                (app / "owned-executable").write_bytes(b"owned nonexecutable bytes, no SDK build")
+                settings = root / "settings.json"
+                actual = {"CONFIGURATION": "Debug", "PLATFORM_NAME": "iphonesimulator", "SWIFT_VERSION": "5.0",
+                          "PRODUCT_BUNDLE_IDENTIFIER": gate.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(root), "FULL_PRODUCT_NAME": app.name,
+                          "ENABLE_DEBUG_DYLIB": "NO"}
+                write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
+                environment = {"sourceCommit": SOURCE, "inputEvidence": {"settings": {"path": str(settings)}}}
+                self.assertEqual(gate.tested_host(environment)["executable"]["sha256"], gate.digest((app / "owned-executable").read_bytes()))
+                self.assertIsNone(gate.tested_host(environment)["mainDebugPayload"])
+                if fault == "stamp":
+                    info["GitCommitSHA"] = "wrong"; (app / "Info.plist").write_bytes(plistlib.dumps(info))
+                elif fault == "firebase":
+                    (app / "GoogleService-Info.plist").write_bytes(plistlib.dumps({"owned": True}))
+                else:
+                    actual["SWIFT_VERSION"] = "6.0"; write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
+                with self.assertRaises(ValueError): gate.tested_host(environment)
+
+    def host_fixture(self, root):
+        app = root / "Owned.app"; app.mkdir()
+        info = {**gate.config.LOCAL_FLAGS, "GatewayBaseURL": "", "GIDClientID": gate.config.GOOGLE_CLIENT,
+                "YueduExperienceSourceCommit": SOURCE, "GitCommitSHA": SOURCE[:7],
+                "CFBundleSupportedPlatforms": ["iPhoneSimulator"], "CFBundleIdentifier": gate.config.MAIN_BUNDLE,
+                "CFBundleExecutable": "owned-executable"}
+        (app / "Info.plist").write_bytes(plistlib.dumps(info))
+        (app / "GoogleService-Info.plist").write_bytes(plistlib.dumps(gate.config.synthetic_config()))
+        (app / "owned-executable").write_bytes(b"owned launch stub, not executable code")
+        payload = app / "owned-executable.debug.dylib"
+        payload.write_bytes(b"owned debug payload, not executable code")
+        settings = root / "built-settings.json"
+        actual = {"CONFIGURATION": "Debug", "PLATFORM_NAME": "iphonesimulator", "SWIFT_VERSION": "5.0",
+                  "PRODUCT_BUNDLE_IDENTIFIER": gate.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(root),
+                  "FULL_PRODUCT_NAME": app.name, "ENABLE_DEBUG_DYLIB": "YES",
+                  "EXECUTABLE_DEBUG_DYLIB_PATH": app.name + "/" + payload.name}
+        write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
+        return dict(ENVIRONMENT, inputEvidence={"settings": {"path": str(settings)}}), actual, settings, payload
+
+    def test_debug_dylib_mode_requires_real_nonempty_payload_and_preserves_no_mode(self):
+        with tempfile.TemporaryDirectory(prefix="owned-debug-payload-identity-") as temporary:
+            root = Path(temporary).resolve(); environment, actual, settings, payload = self.host_fixture(root)
+            initial = gate.tested_host(environment)
+            self.assertEqual(initial["ENABLE_DEBUG_DYLIB"], "YES")
+            self.assertEqual(initial["mainDebugPayload"]["sha256"], gate.digest(payload.read_bytes()))
+            payload.unlink()
+            with self.assertRaises(ValueError): gate.tested_host(environment)
+            payload.write_bytes(b"")
+            with self.assertRaisesRegex(ValueError, "Empty tested debug payload"): gate.tested_host(environment)
+            payload.write_bytes(b"owned different debug payload")
+            self.assertEqual(gate.tested_host(environment)["executable"], initial["executable"])
+            self.assertNotEqual(gate.tested_host(environment)["mainDebugPayload"], initial["mainDebugPayload"])
+            original_path = actual.pop("EXECUTABLE_DEBUG_DYLIB_PATH")
+            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
+            self.assertIsNone(gate.tested_host(environment)["EXECUTABLE_DEBUG_DYLIB_PATH"])
+            self.assertEqual(gate.tested_host(environment)["mainDebugPayload"]["sha256"], gate.digest(payload.read_bytes()))
+            actual["EXECUTABLE_DEBUG_DYLIB_PATH"] = original_path
+            actual["EXECUTABLE_DEBUG_DYLIB_PATH"] = "wrong.debug.dylib"
+            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
+            with self.assertRaisesRegex(ValueError, "debug payload path differs"): gate.tested_host(environment)
+            actual["ENABLE_DEBUG_DYLIB"] = "NO"
+            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
+            self.assertIsNone(gate.tested_host(environment)["mainDebugPayload"])
+            actual.pop("ENABLE_DEBUG_DYLIB")
+            write_json(settings, [{"target": gate.config.MAIN_TARGET, "buildSettings": actual}])
+            with self.assertRaisesRegex(ValueError, "explicit actual ENABLE_DEBUG_DYLIB"): gate.tested_host(environment)
+
+    def test_debug_payload_mutated_during_collection_cannot_leave_a_passing_record(self):
+        with tempfile.TemporaryDirectory(prefix="owned-late-debug-payload-change-") as temporary:
+            root = Path(temporary).resolve(); args = self.fixture(root, "launch")
+            environment, actual, settings, payload = self.host_fixture(root)
+            calls = []
+            def binding(*paths):
+                if calls: payload.write_bytes(b"owned mutated main debug payload")
+                calls.append(True)
+                return environment
+            with patch.object(gate, "validate_binding", side_effect=binding), patch.object(gate, "context", return_value=CONTEXT), \
+                    patch.object(gate, "source_provenance", return_value={}):
+                self.assertEqual(gate.collect(args), 1)
+            result = json.loads(args.output.read_bytes())
+            self.assertEqual(len(calls), 2)
+            self.assertIn("Tested host payload changed", result["error"])
+            self.assertFalse(result["selectedXCTestExecutionValidated"])
+            self.assertFalse(result["measurementSamplesValidated"])
+
+    def test_raw_marker_bytes_survive_and_evidence_is_not_overwritten(self):
+        with tempfile.TemporaryDirectory(prefix="owned-raw-observation-") as temporary:
+            root = Path(temporary).resolve(); log = root / "dedicated.log"; output = root / "raw.log"
+            raw = b"compiler output\n12:00 READER_PROCESS_LAUNCH {\"owned\":true}\r\n"
+            log.write_bytes(raw)
+            retained, original = gate.retain_raw(log, output, "launch")
+            self.assertEqual(retained, raw.splitlines(keepends=True)[1])
+            self.assertEqual(original["sha256"], gate.digest(raw))
+            with self.assertRaises(ValueError): gate.retain_raw(log, output, "launch")
+            self.assertEqual(output.read_bytes(), retained)
+
+    def fixture(self, root, group):
+        summary, tree = inputs(group)
+        for name, value in (("summary", summary), ("tests", tree), ("audit", {}), ("environment", {})):
+            write_json(root / (name + ".json"), value)
+        log = root / "dedicated.log"
+        if group == "launch":
+            rows = [gate.shape.LAUNCH + json.dumps(row, ensure_ascii=False) for row in shapes.launch_rows()]
+        elif group == "memory":
+            memory = shapes.memory_rows()
+            rows = [gate.shape.PHASE + json.dumps(row) for row in shapes.phases(memory)] + [gate.shape.MEMORY + json.dumps(row) for row in memory]
+        else: rows = ["owned synthetic UMD wrapper output only"]
+        log.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        bundle = root / (group + ".xcresult"); bundle.mkdir(); (bundle / "Info.plist").write_bytes(plistlib.dumps({"ownedSyntheticOnly": True}))
+        write_json(root / "preparation.json", {"schemaVersion": 1, "kind": "reader-measurements-preparation", "context": CONTEXT,
+            "sourceInputs": {}, "expectedGroups": gate.GROUPS,
+            "measurementFixtures": gate.shape.fixture_protocol(), "launchFixture": gate.shape.launch_fixture_protocol(),
+            "audit": gate.evidence(root / "audit.json"), "environment": gate.evidence(root / "environment.json")})
+        return argparse.Namespace(group=group, audit=root / "audit.json", environment=root / "environment.json",
+            preparation=root / "preparation.json", log=log, summary=root / "summary.json", tests=root / "tests.json",
+            result_bundle=bundle, test_exit_status=0, artifact_exit_status=0, raw=root / "raw.log", output=root / "result.json")
+
+    def collect_owned(self, args, binding=None):
+        with patch.object(gate, "validate_binding", side_effect=binding or [ENVIRONMENT, ENVIRONMENT]), \
+                patch.object(gate, "context", return_value=CONTEXT), patch.object(gate, "source_provenance", return_value={}), \
+                patch.object(gate, "tested_host", return_value={"ownedSyntheticHostOnly": True}):
+            return gate.collect(args)
+
+    def test_owned_complete_pipeline_shapes_still_are_not_sdk_runs(self):
+        for group in gate.GROUPS:
+            with tempfile.TemporaryDirectory(prefix="owned-synthetic-group-only-") as temporary:
+                args = self.fixture(Path(temporary).resolve(), group)
+                self.assertEqual(self.collect_owned(args), 0)
+                result = json.loads(args.output.read_bytes())
+                self.assertTrue(result["selectedXCTestExecutionValidated"])
+                self.assertEqual(result["measurementSamplesValidated"], group != "umd")
+                self.assertFalse(result["UMDProductImportSupported"])
+                self.assertFalse(result["physicalDeviceMeasured"])
+                with self.assertRaises(ValueError): self.collect_owned(args)
+
+    def test_prepare_context_source_and_artifact_changes_retain_failed_record(self):
+        mutations = (lambda args: args.preparation.write_text("{}", encoding="utf-8"),
+                     lambda args: args.summary.write_text("{}", encoding="utf-8"),
+                     lambda args: setattr(args, "test_exit_status", 1),
+                     lambda args: setattr(args, "artifact_exit_status", 1),
+                     lambda args: (args.result_bundle / "Info.plist").unlink(),
+                     lambda args: args.log.write_bytes(b"no observation rows\n"))
+        for mutate in mutations:
+            with tempfile.TemporaryDirectory(prefix="owned-rejected-group-only-") as temporary:
+                args = self.fixture(Path(temporary).resolve(), "launch"); mutate(args)
+                self.assertEqual(self.collect_owned(args), 1)
+                result = json.loads(args.output.read_bytes())
+                self.assertFalse(result["selectedXCTestExecutionValidated"])
+                self.assertFalse(result["measurementSamplesValidated"])
+                self.assertTrue(args.raw.exists())
+
+    def test_late_environment_drift_cannot_leave_successful_samples(self):
+        with tempfile.TemporaryDirectory(prefix="owned-late-binding-fault-") as temporary:
+            args = self.fixture(Path(temporary).resolve(), "memory")
+            self.assertEqual(self.collect_owned(args, [ENVIRONMENT, dict(ENVIRONMENT, runtimeBuild="changed")]), 1)
+            result = json.loads(args.output.read_bytes())
+            self.assertFalse(result["selectedXCTestExecutionValidated"])
+            self.assertFalse(result["measurementSamplesValidated"])
+
+    def test_runner_retains_three_groups_and_uses_existing_dedicated_exports(self):
+        text = (HERE / "reader-measurements.sh").read_text(encoding="utf-8")
+        self.assertIn('scripts/xctest.sh" -l "$WORK/$group-tests.log"', text)
+        self.assertIn("xcresulttool get test-results summary", text)
+        self.assertIn("xcresulttool get test-results tests", text)
+        self.assertLess(text.index('smoke-tools.py" prepare'), text.index('collect-reader-measurements.py" prepare'))
+        self.assertNotIn("set -e", text.split("# Recoverable group failures")[0])
+        for group, method in (("memory", "sampleOwnedCoreTextChapters"), ("launch", "testFiveProcessLaunchesToSubmittedReadableTXTAnchor"), ("umd", "UMDTextDecoderTests")):
+            self.assertRegex(text, "run_group " + group + " [^\\n]*" + method)
+        self.assertNotIn("readerStageLatency", text)
+
+
+if __name__ == "__main__":
+    unittest.main()

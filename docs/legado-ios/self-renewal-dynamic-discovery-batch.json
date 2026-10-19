@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordedOn": "2026-10-19",
   "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
-  "status": "production-Debug-Simulator-compile-recorded-consolidated-reverification-submitted",
+  "status": "actual-C-diagnostics-passed-A-build12-narrow-handoff-delivered",
   "trigger": "Build10 fixed-loopback report timed out before TCP; user separately reports computer on, USB connected, no VPN and no SideStore.",
   "implementation": {
     "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
@@ -43,15 +43,20 @@
       "discovery": 13,
       "UI": 1
     },
-    "newDiscoverySwiftTestsExecuted": false,
+    "newDiscoverySwiftTestsExecuted": true,
     "AppleSDKCompilationPassed": true,
     "AppleSDKLinkPassed": true,
     "physicalDeviceDynamicDiscoveryExecuted": false,
     "serviceIdentityVerified": false,
     "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation.",
-    "AppleSDKAcceptanceScope": "Xcode 26.2/17C52 Debug arm64 iOS Simulator main app: production files compiled, main executable and debug dylib linked. Test target failed before any iOS test execution. No Release/device build acceptance.",
+    "AppleSDKAcceptanceScope": "Actual fixed C Debug arm64 Simulator app/test build and selected 8/13/UI1. A Release has separate static audits and explicit narrow diagnostic mapping; no whole-App or physical-device runtime acceptance.",
     "reportInspectorSyntheticTestsPassed": 25,
-    "oldDeviceReportSchemaCompatibilityPassed": true
+    "oldDeviceReportSchemaCompatibilityPassed": true,
+    "actualSimulatorCasesPassed": {
+      "legacyUnit": 8,
+      "discovery": 13,
+      "UI": 1
+    }
   },
   "retainedReviews": [
     {
@@ -73,9 +78,10 @@
   ],
   "plannedDeviceCandidate": {
     "build": "12",
-    "status": "Release-static-audits-passed-awaiting-Simulator-diagnostics-and-source-scope-review",
-    "delivered": false,
-    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571"
+    "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+    "delivered": true,
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "record": "docs/legado-ios/native-reader-experience-build12.json"
   },
   "automaticSelfRenewalImplemented": false,
   "automaticSelfRenewalVerified": false,
@@ -215,9 +221,32 @@
     "staticIPAAndSourceAuditsPassed": true,
     "ordinaryJVMXMLFiles": 20,
     "ordinaryJVMCases": 168,
-    "SimulatorDiagnosticsAccepted": false,
-    "ACRelevantSourceScopeReuseAccepted": false,
-    "delivered": false,
-    "automaticSelfRenewalImplemented": false
+    "SimulatorDiagnosticsAccepted": true,
+    "ACRelevantSourceScopeReuseAccepted": true,
+    "delivered": true,
+    "automaticSelfRenewalImplemented": false,
+    "handoffRecord": "docs/legado-ios/native-reader-experience-build12.json",
+    "diagnosticSourceIsCNotA": true
+  },
+  "actualPassedDiagnosticCheckpoint": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "runID": 39281084369,
+    "job": {
+      "id": 118155310210,
+      "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369/job/118155310210",
+      "status": "completed",
+      "conclusion": "success",
+      "all11StepsCompletedSuccess": true
+    },
+    "groups": {
+      "legacy": "8/8",
+      "discovery": "13/13",
+      "UI": "1/1"
+    },
+    "failures": 0,
+    "skips": 0,
+    "expectedFailures": 0,
+    "platform": "Debug iOS Simulator",
+    "ReleaseIPAExecuted": false
   }
 }

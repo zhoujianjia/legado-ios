@@ -1,0 +1,3801 @@
+{
+  "schemaVersion": 1,
+  "planKind": "single-reader-non-device-completion-execution-plan",
+  "updatedOn": "2026-10-19",
+  "activeBatchRecord": "docs/legado-ios/all-work-execution-batch.json",
+  "timeZone": "Asia/Shanghai",
+  "简体中文执行说明": {
+    "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
+    "当前状态": "已逐项审查 8 阶段、33 工作包和 64 功能域，现为每包列明中文现状、剩余工作、下一步、可独立准备项、验收及真实证据路径。当前优先修复 WebDAV 无效／部分恢复可能覆盖旧数据的问题，并新增严格计划检查器。阅读排版、启动与峰值内存、离线及本地格式、批注字典、RSS／朗读／媒体、LAN 服务与任务、材料闭合均仍有待办；UMD／MOBI、原 JVM 完整产品路由、通用 Cron 执行及自续签不能写成已有完整实现。既有 2747900 集中云测按实际原件核对；新恢复修复尚待 Swift 编译与执行。全部无需真机工作、完整兼容、自续签和许可闭合继续为未完成。",
+    "实施顺序": [
+      {
+        "阶段": 1,
+        "内容": "基础可靠性",
+        "交付": "进度写入保护、同键规则等待取消、阅读快捷面板辅助功能，以及可追踪任务清单。",
+        "验收": "写盘故障、真实重开恢复、取消与关闭通知、字号和亮度操作的固定用例通过。"
+      },
+      {
+        "阶段": 2,
+        "内容": "阅读体验",
+        "交付": "完善字体选择与预览、排版预设、夜间阅读、无障碍和 iPad 自适应；只修改已确认的缺口。",
+        "验收": "换字体、旋转、分页与滚动切换、分屏改变宽度后，仍保留同一段文字的阅读锚点；性能改动有前后测量。"
+      },
+      {
+        "阶段": 3,
+        "内容": "传统规则与请求语义",
+        "交付": "补齐原 AnalyzeRule、AnalyzeUrl 及其实体与网络接口。",
+        "验收": "固定输入对照原版请求字节、输出及 Java 类型、异常、变量、Cookie 和缓存变化，保留差异。"
+      },
+      {
+        "阶段": 4,
+        "内容": "完整阅读链路与宿主",
+        "交付": "将原核心接入搜索、发现、详情、目录和正文；补齐状态持久化、书源网页登录和平台宿主。",
+        "验收": "固定多页和批量内容链路、重启状态、并发隔离、超时取消通过后再接产品路由。"
+      },
+      {
+        "阶段": 5,
+        "内容": "书库、文件与备份",
+        "交付": "验证离线、换源、书签笔记、WebDAV 与备份恢复；补齐 UMD/MOBI，并验收现有 TXT/EPUB/PDF。",
+        "验收": "合法与损坏文件、中文编码、往返导入导出和中断恢复均有用例；失败不覆盖无法确认的旧数据。"
+      },
+      {
+        "阶段": 6,
+        "内容": "扩展阅读能力",
+        "交付": "逐项完善 RSS、系统/HTTP 朗读、音频、漫画、文件源、视频及段评。",
+        "验收": "固定协议与界面流程分别通过；实际声音路由、锁屏、画中画等设备行为单列待测。"
+      },
+      {
+        "阶段": 7,
+        "内容": "编辑、服务与任务",
+        "交付": "源编辑调试、日志、局域网、HTTP/Web 编辑器/WebSocket、13 个 MCP 工具，以及任务持久化与前台补跑。",
+        "验收": "请求、响应、错误、副作用、连接关闭及前台生命周期逐项验证；不承诺后台常驻和精确 Cron。"
+      },
+      {
+        "阶段": 8,
+        "内容": "交付材料与最终候选",
+        "交付": "无书源候选包、准确对应源码、依赖与补丁材料、许可清单和简短真机待测表。",
+        "验收": "实际成品字节与不可变源码对应；明确 MPL/GPL/Classpath/AGPL 及源码闭包未决项，不能用测试代替权利核验。"
+      }
+    ],
+    "阅读体验重点": [
+      "保留两款已有授权中文字体和自定义字体导入，先检查现有预览和预设是否满足需要。",
+      "切章、换字体、旋转及分页/滚动切换保持文字锚点，不用会变化的全书页码定位。",
+      "检查夜间对比度、字号、触控目标、减少动态效果与读屏信息。",
+      "适配 iPad 分屏和横竖屏，避免正文或操作项被裁切。",
+      "离线恢复和按需预取复用现有下载及缓存服务，取消过时任务。",
+      "启动、长章排版和内存先测量再优化，不凭代码观感宣称更快。"
+    ],
+    "继续保留": "简体界面、账号与会员入口清理、独立品牌、缓存 TXT 导出、已有字体及全部用户书籍/书源/进度。书源自身的登录验证继续保留。",
+    "自续签边界": "目前只有只读连接探针。免费账号、只装阅读器且无需日常电脑的安装通道尚未证明可行；通道、实际签名覆盖安装、后台及到期恢复必须独立验收，不计为已完成。",
+    "完成口径": "逐工作包保存真实证据；电脑或模拟器通过只完成对应范围，不换算为全功能、全部书源或真机完成率。",
+    "开发与验证节奏": [
+      "先按依赖顺序完成同一阶段的相关优化，再集中进行一次云端编译和集成验证。",
+      "开发过程中保留廉价静态检查和相关局部回归，尽早发现问题。",
+      "云端运行不阻塞已具备条件的开发；不为每个小改动创建构建标签。",
+      "阶段检查与最终候选包检查分开，已有且未受影响的通过证据直接复用。",
+      "没有新改动、真实失败或未解决疑点时，不重复启动构建。"
+    ],
+    "本批执行": [
+      "P0：WebDAV 恢复先验证、协调现有 writer、普通提交错误回滚；失败不覆盖无法确认的原数据、不发布成功。",
+      "计划工具：33 包 execution 与 64 域归属严格检查，保留历史证据与全部未完成边界。",
+      "下一就绪批：原 schema 差异、进度并发、字体事务、启动／内存采集、本地格式与源码闭合材料按依赖继续。",
+      "真机／外部：自续签安装通道、硬件体验和许可组合未决项独立列出，不要求现在安装测试。"
+    ]
+  },
+  "baseline": {
+    "sourceCommit": "dccfbec9f50c5b40259e2db9131fdb4a69410628",
+    "featureCatalog": "docs/legado-ios/feature-catalog.json",
+    "featureDomainCount": 64,
+    "legadoArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "currentTraditionalReaderRoute": "existing JSC; retained original-rule JVM coordinator is not yet routed into product reading",
+    "deliveredCandidateRecord": "docs/legado-ios/native-reader-experience-build10.json"
+  },
+  "status": "in_progress",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "policy": {
+    "singleProduct": true,
+    "builtInBookSources": false,
+    "privateSourcesMayBeReadOrUploaded": false,
+    "preserveExistingUserSourcesBooksAndProgress": true,
+    "deviceValidationCurrentlyDeferred": true,
+    "askUserToInstallOrTestDuringDeferredPeriod": false,
+    "compatibleUIAndServicesMayBeReused": true,
+    "sourceCompatibilityTarget": "Locked original Legado archive; native reading experience may improve beyond original UI.",
+    "completionMeasure": "Observable feature/protocol/data/runtime contracts with source-specific evidence; test counts and source counts are not completion percentages.",
+    "unsupportedBehavior": "Return explicit capability/error information; do not fabricate successful empty results or silently switch rule engines.",
+    "backgroundBoundary": "Foreground services and system-permitted scheduling only; do not promise persistent servers or precise background Cron.",
+    "legalBoundary": "Preserve original license partitions, attribution and source obligations; this plan is implementation/material work, not legal advice or a clearance determination.",
+    "userRequestedDeviceVerificationScopes": [
+      "self-renewal-read-only-transport"
+    ]
+  },
+  "execution": {
+    "immediateBatch": [
+      "plan-and-evidence-refresh",
+      "backup-webdav"
+    ],
+    "parallelLanes": [
+      {
+        "id": "reader-lane",
+        "initialWorkpackage": "reading-position-write-integrity",
+        "next": [
+          "reader-layout",
+          "reading-experience-design",
+          "reading-performance-and-prefetch"
+        ]
+      },
+      {
+        "id": "runtime-lane",
+        "initialWorkpackage": "rule-scope-wait-cancellation",
+        "next": [
+          "runtime-core",
+          "traditional-rules",
+          "url-http"
+        ]
+      },
+      {
+        "id": "evidence-lane",
+        "initialWorkpackage": "plan-and-evidence-refresh",
+        "next": [
+          "license-and-source-closure"
+        ]
+      }
+    ],
+    "schedulingRule": "Implement related workpackages in their dependency order. Reviewed dependency code/contracts may unblock implementation within the same stage while integration evidence is pending. Cloud execution does not block other ready development. Switching the product rule engine and release integration still require their existing compatibility and safety gates.",
+    "validationRule": "During development run inexpensive static checks and the smallest relevant local regression after related edits. Collect the reviewed changes for one stage and run cloud iOS compilation/integration once at that stage checkpoint. Reuse unchanged passing evidence; only new changes, actual failures or unresolved concerns justify another run. Each major subsystem keeps its own checkpoint rather than deferring every check until project completion.",
+    "progressRule": "Report implementation progress, local checks, pending integration and the next stage checkpoint separately. Do not spend an active development turn repeatedly waiting for a cloud build; a passing local check does not imply iOS acceptance.",
+    "terminalNonDeviceState": "All implementable desktop/Simulator tasks verified, external/device-dependent feasibility decisions explicit, one audited source-free candidate and concise deferred checklist. Do not mark the full feature domains complete while required evidence is missing.",
+    "cloudTriggerPolicy": {
+      "createOrPushBuildTagsOnlyAtStageCheckpoint": true,
+      "triggerForEachSmallChange": false,
+      "waitForCloudBeforeContinuingReadyDevelopment": false,
+      "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
+      "nextPlannedCheckpoint": "Finish reviewed UMD pure parser and independent measurement runner preparation, then submit one coherent source-only checkpoint including the actual C portable test-root repair. Keep existing smoke groups and independent measurement1/UI1/UMD11 identities separate. Do not create tags for individual fixes. Current C renewal result is independent; do not repeat Release A for test-only changes. Narrow A/C reuse still requires actual C8/13/1, exact source-scope mapping and independent package/source audits.",
+      "alreadyRunningTasks": "Saved bounded receipt 2026-10-19T16:24:16Z-16:24:22Z: C smoke39281083749/source1a87f6d completed failure in portable collector guard setUp (19 Python errors, zero Swift/iOS, Xcode steps skipped). C renewal39281084369/source1a87f6d remained in_progress at its Execute cases step; no diagnostic verdict or artifact inferred. Earlier Release A39272843081/sourcea76d380 succeeded and its static IPA/source/JVM20/168 audits passed; build12 awaits actual diagnostic gates and explicit source-scope mapping, not delivered. Prior snapshots/failures remain immutable."
+    },
+    "nextReadyBatch": [
+      "local-formats",
+      "license-and-source-closure"
+    ],
+    "readinessMeaningZh": "readiness 指本包下一步实际动作是否具备条件；准备、可靠性修复和独立协议夹具可先行。ready 不表示原 dependsOn 或阶段出口已验收，不允许因此切换产品路由或声明完整兼容。有依赖的包仍明确列出 readyPreparation；真机及外部决定不阻塞其他独立工作。",
+    "readyQueue": [
+      "plan-and-evidence-refresh",
+      "license-and-source-closure",
+      "runtime-core",
+      "traditional-rules",
+      "url-http",
+      "reader-layout",
+      "reader-library",
+      "reader-online-storage",
+      "local-formats",
+      "annotations-dictionary"
+    ],
+    "awaitingEvidenceQueue": [
+      "reading-quick-panel-accessibility",
+      "backup-webdav",
+      "automatic-renewal-feasibility",
+      "reading-experience-design",
+      "reading-position-write-integrity",
+      "source-schema",
+      "reading-performance-and-prefetch"
+    ],
+    "deferredQueue": [],
+    "currentDeviceCandidate": {
+      "userRequestedOn": "2026-10-19",
+      "scopeZh": "用户主动要求真机续签验证；现阶段仅交付只读连接检查，其他真机待测边界不变。",
+      "record": "docs/legado-ios/native-reader-experience-build11.json",
+      "build": "11",
+      "fullAutomaticRenewalImplemented": false
+    }
+  },
+  "stages": [
+    {
+      "id": "s1-integrity-plan",
+      "title": "Immediate integrity fixes and task/evidence refresh",
+      "status": "in_progress",
+      "dependsOn": [],
+      "exitCondition": "Four declared immediate workpackages have reviewed code/plan and focused evidence; no new whole-project completion claim."
+    },
+    {
+      "id": "s2-reading-experience",
+      "title": "Reading comfort, anchors, adaptive layout and measured performance",
+      "status": "in_progress",
+      "dependsOn": [
+        "s1-integrity-plan"
+      ],
+      "exitCondition": "Adopted reading changes pass fixed UI/layout/data scenarios; desktop benchmark methods and limits recorded."
+    },
+    {
+      "id": "s3-jvm-rules-http",
+      "title": "Pinned runtime, complete traditional rules and request semantics",
+      "status": "in_progress",
+      "dependsOn": [
+        "s1-integrity-plan"
+      ],
+      "exitCondition": "Required parser/URL public contracts compare against original typed values, bytes, errors and side effects."
+    },
+    {
+      "id": "s4-product-core-hosts",
+      "title": "Original product pipeline, persistence, browser/login and host adapters",
+      "status": "planned",
+      "dependsOn": [
+        "s3-jvm-rules-http"
+      ],
+      "exitCondition": "Original traditional route works through ordinary-JAR native App interfaces with restart, isolation and cancellation scenarios; no silent fallback."
+    },
+    {
+      "id": "s5-library-formats-backup",
+      "title": "Durable library, formats, annotations, offline behavior and backup",
+      "status": "planned",
+      "dependsOn": [
+        "s2-reading-experience",
+        "s4-product-core-hosts"
+      ],
+      "exitCondition": "Original-data round trips and user-data-preserving imports/restores work with negative/corrupt/incomplete cases."
+    },
+    {
+      "id": "s6-rss-media-reviews",
+      "title": "Remaining source types, RSS, speech, media and paragraph reviews",
+      "status": "planned",
+      "dependsOn": [
+        "s5-library-formats-backup"
+      ],
+      "exitCondition": "Each protocol is compared with fixed responses and supported native UI; device-only media checks remain deferred."
+    },
+    {
+      "id": "s7-tools-services-tasks",
+      "title": "Editing/logs, LAN and web protocols, MCP and allowed task scheduling",
+      "status": "planned",
+      "dependsOn": [
+        "s4-product-core-hosts",
+        "s5-library-formats-backup",
+        "s6-rss-media-reviews"
+      ],
+      "exitCondition": "Foreground protocol and task lifecycle checks pass with explicit iOS background/platform differences."
+    },
+    {
+      "id": "s8-delivery-readiness",
+      "title": "Final validation, source/license materials, renewal feasibility boundary and delivery",
+      "status": "planned",
+      "dependsOn": [
+        "s2-reading-experience",
+        "s3-jvm-rules-http",
+        "s4-product-core-hosts",
+        "s5-library-formats-backup",
+        "s6-rss-media-reviews",
+        "s7-tools-services-tasks"
+      ],
+      "exitCondition": "All non-device implementable work has source-specific evidence, one audited candidate and a remaining hardware/external-decision checklist. Renewal stays unimplemented until its independent feasibility gate passes."
+    }
+  ],
+  "workpackages": [
+    {
+      "id": "plan-and-evidence-refresh",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Maintain this executable ledger and add current-state corrections to stale docs without rewriting historical audits.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "All 64 feature-catalog IDs have exactly one domain-owner workpackage; task and stage dependencies are acyclic.",
+        "Separate code present, measured desktop behavior, real ordinary-JAR native execution, Simulator UI and device acceptance.",
+        "Update stale claims that the coordinator is uncommitted or current branding unbuilt, preserving historical sourceHEAD, hashes and raw reports."
+      ],
+      "deferredDeviceAcceptance": [],
+      "existingEvidence": [
+        "feature-catalog",
+        "feature-comparison",
+        "migration-status",
+        "redistribution",
+        "redistribution-inventory",
+        "reader-smoke-history"
+      ],
+      "execution": {
+        "summaryZh": "把全部剩余工作改为可执行、能复核来源的任务账本。",
+        "currentState": "已在原计划补齐全部 33 包的现状、缺口、下一步、准备项和验收。严格结构检查与 9 项负向回归通过，证明计划覆盖和边界，没有证明全部功能通过。后续随实现和实际证据持续更新。",
+        "remainingWork": [
+          "随实际实现与证据维护已填好的三十三包现状、缺口、下一步、准备项和验收；planned不等于没有代码。",
+          "分开已验证、代码完成待iOS、已有实现待验收、未实现或未证明、暂缓真机，保留历史SHA、失败与原日志。",
+          "用便携guard检查唯一归属、阶段及任务DAG、证据路径、execution覆盖和未完成边界。"
+        ],
+        "nextAction": "把本批恢复保护、真实云编译失败及下一集中检查点的准确来源写入账本；后续继续按原依赖推进。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "立即核对计划与四个未完成布尔边界，把证据映射到精确来源。",
+          "运行新增九项计划 guard 负向回归和严格 execution 覆盖检查，不触发云构建。"
+        ],
+        "acceptance": [
+          "八／三十三／六十四计数与catalog ID一致，每域只有一个domain-owner且双向归属一致。",
+          "两类DAG无未知边和环，跨阶段依赖一致，execution证据是真实文件。",
+          "三十三包均有中文现状、明确下一步和验收；ready队列只含ready，队列不重复。",
+          "续签及许可独立门槛保持，不以test数量推算功能完成。"
+        ],
+        "evidence": [
+          "docs/legado-ios/completion-plan.json",
+          "docs/legado-ios/feature-catalog.json",
+          "docs/legado-ios/previous-reader-smoke-audit.json",
+          "scripts/reader-experience/check-completion-plan.py",
+          "scripts/reader-experience/test-check-completion-plan.py"
+        ],
+        "deferredHardware": [],
+        "verificationBoundary": "只验证计划结构、来源与口径，不执行应用功能，不证明规则兼容、许可、真机或续签。"
+      }
+    },
+    {
+      "id": "reading-position-write-integrity",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.bookshelf",
+        "reader.layout",
+        "reader.page-turn"
+      ],
+      "objective": "Fix and directly test reading-position store write integrity before broader reading UX work.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "Inspect the existing store's actual write/read path and repair the root cause within that store.",
+        "Dedicated regression proves required progress updates are not silently lost on persistence failure and that later successful persistence preserves the intended latest position.",
+        "Preserve stable (spineIndex, charOffset) semantics and existing on-disk compatibility; do not add a parallel position store."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify background/foreground and cold-launch progress continuity on the signed final device build."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "feature-comparison",
+        "reader-smoke-history",
+        "reading-position-write-integrity-integration"
+      ],
+      "execution": {
+        "summaryZh": "阅读位置写盘及并发顺序",
+        "currentState": "现有位置服务已准备共享短 actor 接纳与后台有序 Task 链，save／async load／flush 和 Firestore sync 导入使用同一顺序；成功写后才 onSave，sync 导入不回推。顺序指实际 admitted order，不是 Task 创建顺序或较大章号。新增 5 个自有 held-write 回归，原 selector 的新门槛为 18 方法／28 计划执行；portable 24 与 4 Swift 文件 grammar screen 已通过，主树 7 文件及相同 guard 已由 root 独立验证。历史两次 13／23 保留各自旧源码事实；本批 Swift／iOS／实际故障复现尚未执行，不能记为 S1 或功能完成。 1a87f6d reader-smoke 实际在 Python collector 的 19 个 setUp 中因路径保护失败，Xcode／全部 iOS 步骤跳过；没有编译器错误或本批运行验收。测试自有临时根已最小 resolve、独审确认生产保护和 19 个用例身份不变，root 原工具输出 19 通过；macOS 修复仍待后续集中验证。",
+        "remainingWork": [
+          "在相关集中源码检查点实际编译及执行 reading-position 18／28，保存原始 summary、tests tree、日志、source 与环境；核对新增 5 方法身份，零失败／跳过／expected failure。",
+          "实际验证接纳后取消、跨实例 save／async load／flush、失败后成功、删除目录重建、sync 不回推及既有坏字节保护；准备夹具和源码交错反例不算运行复现。",
+          "真实读者重开及最终签名包前后台／冷启动连续性仍分开验收。现协议继续日志＋Void，未新增 throws／自动重试；TXT 迁移仍在 save／flush 后显式读盘验证。"
+        ],
+        "nextAction": "复用相关阶段集中 reader-smoke，在固定源码上验收 reading-position 18 方法／28 执行及原始方法叶集；相同输入 portable 结果复用，不为 5 条回归单独触发云测。",
+        "readiness": "awaiting-cloud",
+        "readyPreparation": [
+          "只读核对冻结证据及源码 hash，准备保留实际 SDK、runtime、destination、source 与 xcresult 原始结果。",
+          "继续其他 ready 包或其独立准备；原依赖和阶段出口不因本批准备代码／portable 通过而改变。"
+        ],
+        "acceptance": [
+          "失败不清空旧进度、不错误通知持久化成功；后续成功可重开恢复。",
+          "取消、并发、flush 与同步读取不造成最新已完成保存被旧操作覆盖；保持现有磁盘格式。"
+        ],
+        "evidence": [
+          "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+          "docs/legado-ios/previous-reader-smoke-audit.json",
+          "docs/legado-ios/reading-position-integrity-batch.json",
+          "docs/legado-ios/evidence/reader-position-integrity/reader-position-integrity-review.json",
+          "docs/legado-ios/evidence/reader-position-integrity/reader-position-independent-review.json",
+          "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+          "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/failure-record.json"
+        ],
+        "deferredHardware": [
+          "最终签名包的前后台和冷启动进度连续性。"
+        ],
+        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。"
+      }
+    },
+    {
+      "id": "rule-scope-wait-cancellation",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "source.shared-state",
+        "host.concurrency",
+        "rules.declarative"
+      ],
+      "objective": "Make waiting on same-key scope initialization cancellation-aware without changing original shared-state semantics.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "Regression enters a real blocked initialization and cancels a second same-key waiter; completion must follow the cancellation signal rather than a settle delay.",
+        "Retain same-key single initialization, independent-key progress, no partial-scope publication, close behavior and creation-lock cleanup.",
+        "Run focused coordinator regressions and reuse the existing exact stateful baseline; preserve disclosed exception-label differences."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify cancellation and resource recovery in ordinary-JAR native product sessions after the completed coordinator is routed into the app."
+      ],
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "stateful-reference",
+        "traditional-integration"
+      ],
+      "execution": {
+        "summaryZh": "同键规则初始化等待取消",
+        "currentState": "已有桌面 168 测试及固定同键取消／关闭证据，未变实现直接复用。原协调器尚未接为传统产品唯一入口；普通 JAR 原生会话中的资源释放和整条链路取消不能由桌面证据替代。",
+        "remainingWork": [
+          "接入 S3／S4 原协调器时重放同键初始化阻塞、独立键推进、取消、关闭及创建锁清理。",
+          "验证不发布半初始化或关闭后结果、原共享状态语义不变；保留原基线异常编号差异。"
+        ],
+        "nextAction": "将现有信号驱动回归映射到普通 JAR 产品桥固定契约，待原协调器接口具备后集中执行。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "固定普通桥的取消／close 请求及资源观察信号，不重跑未变桌面套件。"
+        ],
+        "acceptance": [
+          "取消后等待者及时结束；同键只初始化一次，独立键不被全局阻塞。",
+          "关闭清理等待者和创建锁，无半成品与迟到发布。"
+        ],
+        "evidence": [
+          "docs/legado-ios/sdk-and-rule-scope-validation.json",
+          "docs/legado-ios/traditional-stateful-reference.json"
+        ],
+        "deferredHardware": [
+          "原协调器接线后的普通签名 App 取消及资源恢复。"
+        ],
+        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。"
+      }
+    },
+    {
+      "id": "reading-quick-panel-accessibility",
+      "kind": "cross-domain",
+      "stageId": "s1-integrity-plan",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.layout",
+        "reader.page-turn"
+      ],
+      "objective": "Expose current font size and labeled brightness values to assistive technology in the existing quick reading panel.",
+      "dependsOn": [],
+      "desktopSimulatorAcceptance": [
+        "Font-size increase/decrease buttons expose the current displayed font-size value through accessibilityValue.",
+        "The existing brightness slider has a localized accessibility label and a percentage accessibilityValue matching the on-screen state.",
+        "Decorative sun symbols are hidden from accessibility without hiding actual controls.",
+        "Extend the existing TXT reopen UI test method to verify the same current values and retained reading position; reuse the same cloud build and test run.",
+        "This is a bounded accessibility improvement; do not describe additional fonts, new themes or a new reading settings system as implemented."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify VoiceOver speaks the controls, current font size and brightness percentage correctly on final hardware."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product",
+        "reader-smoke-history"
+      ],
+      "execution": {
+        "summaryZh": "快捷面板字号和亮度读屏",
+        "currentState": "快捷面板字号、亮度读屏、原生关闭和端点手势修正已有实现；c009a49 云测在快捷面板测试文件编译失败，尚未执行 iOS 测试。已移除对只读 Reduce Motion 系统环境的非法写入，并显式捕获递归闭包 self，保留两个测试及全部断言；实际重编与 TXT UI 验收仍待相关检查点。",
+        "remainingWork": [
+          "核对当前源码实际 TXT UI 和辅助树结果，保留失败、截图和重开锚点。",
+          "最大辅助字号、五语和原生关闭可达性随阅读阶段集中验收；VoiceOver 实机独立保留。"
+        ],
+        "nextAction": "在修复实际编译失败后的集中检查点核对 TXT 字号、亮度 5%／100% 与关闭重开原始结果。",
+        "readiness": "awaiting-cloud",
+        "readyPreparation": [
+          "后续阅读 UI 修改复用同一个导入／重开方法和真实控件。"
+        ],
+        "acceptance": [
+          "按钮读出当前字号，亮度标签和显示值一致，所有操作可达。",
+          "TXT 改样式／亮度后重开仍恢复同一稳定文字锚点。"
+        ],
+        "evidence": [
+          "Modules/Features/Reader/ReaderQuickThemePanelView.swift",
+          "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+          "docs/legado-ios/review-rule-schema-followup.json",
+          "docs/legado-ios/evidence/reader-smoke-c009a49/checkpoint-result.json",
+          "docs/legado-ios/evidence/reader-smoke-c009a49/reader-test-compile-repair.json"
+        ],
+        "deferredHardware": [
+          "VoiceOver 实际朗读与实体屏幕亮度体验。"
+        ],
+        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。"
+      }
+    },
+    {
+      "id": "reading-experience-design",
+      "kind": "cross-domain",
+      "stageId": "s2-reading-experience",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.layout",
+        "reader.page-turn",
+        "reader.bookmarks",
+        "reader.highlights"
+      ],
+      "objective": "Improve comfort and clarity using existing native controls, CoreText rendering and reusable appearance settings.",
+      "dependsOn": [
+        "reading-position-write-integrity",
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Keep the two licensed bundled Chinese fonts and user font import; evaluate a sample-text preview plus font-size/line-spacing presets before adding more font assets or new controls.",
+        "Verify changing font/size/spacing, rotation and page-to-scroll transitions retain the same semantic reading anchor.",
+        "Evaluate low-brightness night reading, high-contrast text, Reduce Motion, VoiceOver labels and large text using native settings.",
+        "Verify iPad split-view width changes, controls and navigation preserve the reading anchor and avoid clipped content.",
+        "Every adopted change names its user problem and includes the smallest meaningful UI/layout evidence; do not add duplicate appearance or pagination systems."
+      ],
+      "deferredDeviceAcceptance": [
+        "Check font comfort, physical screen brightness, real gestures, VoiceOver usability and iPad split-screen reading on hardware."
+      ],
+      "existingEvidence": [
+        "font-provenance",
+        "local-product",
+        "reader-smoke",
+        "reader-supply-measurements",
+        "user-font-transaction-integration"
+      ],
+      "execution": {
+        "summaryZh": "字体、夜间阅读与无障碍",
+        "currentState": "字体文件与注册失败事务已实现并独审；ccafee5 的真实 Xcode 26.2 Debug arm64 Simulator 日志记录六个生产文件编译、主 App module 与 executable/debug-dylib 链接。测试目标被预取夹具初始化错误阻断，所有 iOS 用例实际执行 0，不能推断字体运行或 CoreText 回滚通过。该最小测试修复已进入集中源码 1a87f6d，reader-smoke 39281083749 于 15:53 UTC 首次观察 queued；字体 24／42、local-product 50／68 仍待真实叶集验收。便携及 grammar 历史结果保留；其余阅读矩阵仍未验收。 1a87f6d reader-smoke 实际在 Python collector 的 19 个 setUp 中因路径保护失败，Xcode／全部 iOS 步骤跳过；没有编译器错误或本批运行验收。测试自有临时根已最小 resolve、独审确认生产保护和 19 个用例身份不变，root 原工具输出 19 通过；macOS 修复仍待后续集中验证。",
+        "remainingWork": [
+          "在本批固定源码的集中 reader-smoke 检查点实际编译及执行 local-product 50／68，保留原始 summary、tests 叶集、日志、环境及 source；独立核对字体 24／42。",
+          "默认 Operations missing-URL 用例只准备了真实调用链，尚未运行；需验证 CoreText 双 scope／同 PostScript 替换失败后旧注册恢复、in-use／权限及缺失 URL 行为，不推断已注册后丢失字体 cache 已获验证。",
+          "继续现有字体预览、间距、面板、viewport 的渲染、五语／读屏顺序、夜间／增强对比度、旋转与 iPad 窗口变化后的语义锚点矩阵；普通 selection／theme 在 await 期间不锁定，userFonts JSON／UserDefaults 和删除数组发布仍在主线程。"
+        ],
+        "nextAction": "读取已提交的 1a87f6d 整批 reader-smoke 实际结果，独立核对字体 24／42 与 local-product 50／68；失败只修复实际问题，不把生产编译、注入故障或默认 Operations 准备等同真实 CoreText 验收。",
+        "readiness": "awaiting-cloud",
+        "readyPreparation": [
+          "复用现有 SourcePerfTrace 的 main／bytes 和固定自有故障 fixture 审阅原始输出；不把 portable 或 grammar screen 当作 CoreText／iOS 通过。",
+          "继续复用 ReaderQuickThemePanelLayoutTests、ReaderViewportSizeObserverTests 和 ReaderLiveStyleRefreshTests 准备夜间／增强对比度／真实旋转与分屏矩阵，保留现有第一层 importer。"
+        ],
+        "acceptance": [
+          "合法/损坏字体、同 PostScript 重导入、删除被两处选中的字体、写盘/注册失败均有固定临时目录用例；失败不丢旧字体，重复操作不积累副本。",
+          "最大辅助字号、Reduce Motion、所有末行操作可达、关闭按钮和亮度 5%/100% 均通过真实 UI/Hosting 验收。",
+          "字体/字号/间距/主题切换、旋转和 iPad 分屏后同一 spineIndex/charOffset 锚点仍可辨识，五种语言无漏键。"
+        ],
+        "evidence": [
+          "docs/legado-ios/reading-comfort-batch.json",
+          "Resources/ReaderFonts/ReaderFonts-provenance.json",
+          "docs/legado-ios/local-product-validation.json",
+          "Tests/iOS/yuedu appTests/UserFontSettingsTests.swift",
+          "Tests/iOS/yuedu appTests/ReaderQuickThemePanelLayoutTests.swift",
+          "Tests/iOS/yuedu appTests/ReaderViewportSizeObserverTests.swift",
+          "Tests/iOS/yuedu appTests/ReaderSettingsPublicationTests.swift",
+          "docs/legado-ios/user-font-transaction-batch.json",
+          "docs/legado-ios/evidence/reader-font-transaction/reader-font-integration-review.json",
+          "docs/legado-ios/evidence/reader-font-transaction/font-integration-independent-review.json",
+          "Tests/iOS/yuedu appTests/UserFontTransactionTests.swift",
+          "docs/legado-ios/evidence/reader-smoke-ccafee5/failure-summary.json",
+          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+          "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/failure-record.json"
+        ],
+        "deferredHardware": [
+          "实体屏幕与 VoiceOver 体验",
+          "签名安装后的系统字体持久注册和长时交互"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "reading-performance-and-prefetch",
+      "kind": "cross-domain",
+      "stageId": "s2-reading-experience",
+      "status": "in_progress",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [
+        "reader.layout",
+        "reader.cache-download",
+        "pipeline.content"
+      ],
+      "objective": "Measure startup, long-chapter navigation and offline/prefetch behavior, then change only the measured bottleneck.",
+      "dependsOn": [
+        "reading-position-write-integrity",
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Define repeatable fixture sizes, build mode, phase spans, metrics and acceptance thresholds before optimization; distinguish Debug XCTest-host stalls from product benchmarks.",
+        "Measure app startup, opening a cached long chapter, chapter switching, repagination and peak memory on fixed fixtures; record before/after with matching environment.",
+        "Evaluate on-demand bounded prefetch and offline recovery through the existing download/cache repository only.",
+        "Cancel obsolete prefetch on source/book changes; distinguish missing cache, corrupted cache and legitimate empty content; do not silently retry an internal parsing error.",
+        "No startup, memory, package-size or smoothness improvement claim without an appropriate before/after measurement."
+      ],
+      "deferredDeviceAcceptance": [
+        "Measure cold/warm startup, sustained scrolling/paging, memory pressure, battery/thermal behavior, network transitions and background behavior on final hardware."
+      ],
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "native-cancel",
+        "reader-smoke",
+        "feature-comparison",
+        "reader-supply-measurements",
+        "reader-launch-memory-integration",
+        "reader-measurements-runner-integration"
+      ],
+      "execution": {
+        "summaryZh": "启动、排版、内存与预取测量",
+        "currentState": "20/100 章十跳、损坏缓存与原 50 行排版阶段证据继续按各自源码验收。独立启动/内存 9 文件与未注册 UMD 纯解析器 16 文件保持原冻结字节；另已准备并审查独立 runner 8 文件，接入 memory 1/1、UI launch 1/1、UMD 11/11 三组精确实际叶集门、38 源文件及环境/overlay/Debug 主代码载荷绑定。作者实际 portable collector 22、shared 24、stage 20 有原始日志；root 主树同组检查与 bash/diff 仅 tool-reported-only，无新增 raw，不累计为更多用例。独立 workflow/选择的代码已接入，但该批尚未提交；实际 Swift/SDK、新 XCTest、启动和内存样本均 0，不在 C1a87f6d 或 A Release 中。awaiting-cloud 仅表示等待对应证据。",
+        "remainingWork": [
+          "由 root 在同阶段相关源码与实际 C 临时根修复审查完成后统一提交独立 runner 检查点；提交前 submitted 保持 false。保留旧 smoke/TXT 1 方法/50 行阶段协议，三组分别留存 dedicated log、xcresult、summary、tests tree 与失败事实。",
+          "按固定 source、实际 Xcode/SDK/runtime/UDID、overlay 和构建产物身份取得真实 memory 1/1、launch 1/1 与 UMD 11/11、零失败/跳过/额外叶；须满足 5 个启动样本、2×5 个内存样本及 300 条完整 raw phase events，不能仅凭 shape 或自报接受。",
+          "继续取得原预取/损坏缓存/50 行阶段的源码对应证据；测量仅 CPU layer.contents 提交与 AX 正文、进程 sampled footprint/RSS，保留 periodic/gap 门与裁切边界。没有可比实测前值不宣称性能收益，不更改未确认错误的排队策略。"
+        ],
+        "nextAction": "root 集中提交经审的 source-only 检查点后再执行一次独立 measurement workflow，按每组原始结果逐项验收；当前 runner 已接入代码但尚未提交，不查询或改写其他检查点状态。继续其他 ready 工作，不能将采集准备等同 native 验收或整包完成。",
+        "readiness": "awaiting-cloud",
+        "readyPreparation": [
+          "逐 SHA 核对 runner 8、原测量 9 与纯解析器 16 文件；保留 v1/v2、修复前外移叶负例、独审 replay、全部作者 raw、A Debug link 与旧 UI 原始结构/环境证据。",
+          "独立保留 memory、launch、UMD 的真实 leaf/source/environment/host 绑定；不把旧 UI 结构、synthetic 负例或文件 hash 当新 SDK 执行，不混入旧 TXT 与 stage 50 计数。"
+        ],
+        "acceptance": [
+          "每章规模/环境固定；排版每 fixture 五次、五阶段总 50 唯一记录，所有内容覆盖/版本/ready 断言通过，保留原始日志而非仅摘要。",
+          "20/100 十跳保留真实 active/queued、请求/完成/取消顺序和恢复；损坏缓存轻量 hit 与完整验证行为分别记录。",
+          "启动与内存分别五样本，记录原始值和单位/区间；没有可比前值不宣称更快或更省内存。"
+        ],
+        "evidence": [
+          "docs/legado-ios/reader-supply-measurement-batch.json",
+          "docs/legado-ios/reading-comfort-batch.json",
+          "docs/legado-ios/evidence/reader-supply-static-review.json",
+          "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+          "Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift",
+          "Tests/iOS/yuedu appTests/CoreTextPerformanceFixtures.swift",
+          "scripts/reader-experience/test-reader-stage-baseline.py",
+          "docs/legado-ios/reader-launch-memory-batch.json",
+          "docs/legado-ios/evidence/reader-launch-memory/reader-launch-memory-preparation.json",
+          "docs/legado-ios/evidence/reader-launch-memory/reader-launch-memory-independent-review.json",
+          "Tests/iOS-UI/ReaderProcessLaunchMeasurementsUITests.swift",
+          "Tests/iOS/yuedu appTests/ReaderProcessMemoryMeasurementsTests.swift",
+          "scripts/reader-experience/reader-launch-memory.py",
+          "docs/legado-ios/reader-measurements-runner-batch.json",
+          "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-preparation-v2.json",
+          "docs/legado-ios/evidence/reader-measurements-runner/reader-measurements-runner-independent-review.json",
+          ".github/workflows/reader-measurements.yml",
+          "scripts/reader-experience/reader-measurements.sh",
+          "scripts/reader-experience/collect-reader-measurements.py"
+        ],
+        "deferredHardware": [
+          "最终硬件持续滚动/翻页、低内存、热/电池",
+          "系统缓存未清的 process-cold 不能冒充冷设备启动"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "license-and-source-closure",
+      "kind": "cross-domain",
+      "stageId": "s8-delivery-readiness",
+      "status": "planned",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Complete inspectable release materials and identify unresolved rights/combination decisions without making an unsupported legal-clearance claim.",
+      "dependsOn": [
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Retain MPL, Legado GPLv3-default file partitions, Oracle GPLv2/ClassPath-exception partitions, engine notices and all original modification/source attributions.",
+        "Explicitly inventory the ios-tools AGPLv3 root and injected symbol_keeper.cpp/native-object boundary; do not hide this behind a generic MPL/GPL/ClassPath label.",
+        "Collect exact engine/JDK/native/dependency source versions, all patches and required build/install inputs; verify complete corresponding-source retrieval rather than only hashes and license texts.",
+        "Expand resolved transitive dependency, font, artwork, sample-book/data and static-object/header inventories; source locks alone do not establish rights.",
+        "Check actual final IPA notice/source/brand bytes against the immutable release commit and materials; preserve historical audits as historical.",
+        "Record remaining legal/rights decisions as unresolved when evidence is insufficient; materials completion is distinct from legal redistribution clearance."
+      ],
+      "deferredDeviceAcceptance": [],
+      "existingEvidence": [
+        "redistribution",
+        "redistribution-inventory",
+        "runtime-notices",
+        "runtime-notices-validation",
+        "provenance",
+        "font-provenance",
+        "brand-assets",
+        "build10"
+      ],
+      "execution": {
+        "summaryZh": "闭合来源、修改、许可和对应源码材料，保留未解决权利问题。",
+        "currentState": "已有源码锁、组件清单、37份notice、字体许可及品牌记录；完整对应源码、构建安装输入、链接对象和许可组合尚未闭合。临时公开诊断授权不是正式分发许可。",
+        "remainingWork": [
+          "固定engine、JDK、ios-tools、native对象与依赖的源码、补丁、构建安装输入及获取方式，实际核验源码可取得。",
+          "扩展传递依赖、字体、插图、样书／数据、头文件和静态对象，hash和notice不等于权利或源码完整。",
+          "保留MPL、Legado GPLv3默认分区、Oracle GPLv2/ClassPath例外、ios-tools AGPLv3及symbol_keeper.cpp注入边界。",
+          "在最终commit核对IPA内notice、source及品牌，按临时授权清理诊断和历史产物；删除无法召回已下载副本。"
+        ],
+        "nextAction": "立即整理对应源码闭合manifest：revision、获取方式、补丁、构建安装输入、文件许可分区、未解决项和核验动作。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "现在即可核验工程材料和源码获取，保留原许可、署名与历史原件。",
+          "把材料齐全和权利／组合是否解决分成两个状态，不自行判定法律许可。"
+        ],
+        "acceptance": [
+          "精确候选对应源码、补丁及工具链输入可取得并有原始SHA，不只链接变化分支。",
+          "注入对象、notice、依赖、字体和品牌与候选字节相符，遗漏显式列出。",
+          "AGPL注入、权利链、许可组合与正式分发未决项保持未解决，不把编译成功写成许可通过。"
+        ],
+        "evidence": [
+          "docs/legado-ios/redistribution-notes.md",
+          "docs/legado-ios/redistribution-inventory.json",
+          "docs/legado-ios/runtime-notices.md",
+          "docs/legado-ios/runtime-notices-validation.json",
+          "docs/legado-ios/provenance-lock.json",
+          "docs/legado-ios/distribution-policy.json",
+          "Resources/ReaderFonts/ReaderFonts-provenance.json"
+        ],
+        "deferredHardware": [],
+        "verificationBoundary": "只做工程材料与边界核对，不作法律意见、商标检索或许可已清判断；legalRedistributionClearanceEstablished保持false。"
+      }
+    },
+    {
+      "id": "automatic-renewal-feasibility",
+      "kind": "cross-domain",
+      "stageId": "s8-delivery-readiness",
+      "status": "device_dependent_feasibility",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Keep the phone-only reader self-renewal requirement as an honest transport/install feasibility gate.",
+      "dependsOn": [
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Document current read-only probe behavior and bounded transport hypotheses; a fixed-loopback failure cannot rule out every transport.",
+        "Prepare protocol/state-machine boundaries, bounded discovery design, credential/pairing-data protection, cancellation/timeouts and reproducible diagnostic instructions without collecting real secrets.",
+        "Plan signing/profile freshness, same-identity replacement, crash-safe handover and data-preservation checks without claiming they are implemented.",
+        "Do not integrate a signer or additional AGPL renewal dependency before an authenticated same-device installation transport satisfying the user's single-App/free-team requirement is demonstrated.",
+        "Keep automaticSelfRenewalImplemented false; reminders, expiry display, opening external tools and mocked renewal responses do not satisfy this requirement."
+      ],
+      "deferredDeviceAcceptance": [
+        "On an unmodified free-team signed iPhone, prove a same-device authenticated transport with computer off and no companion App.",
+        "Only after transport succeeds, obtain fresh profile/signature, replace the same App identity, cold launch and verify books/sources/progress survive.",
+        "Separately prove OS-permitted background triggering, bounded failure retry and expiry recovery; iOS scheduling cannot be represented as guaranteed precise execution."
+      ],
+      "existingEvidence": [
+        "renewal-research",
+        "build10"
+      ],
+      "feasibilityEstablished": false,
+      "signerIntegrationAuthorizedByPlanOnlyAfterTransportEvidence": true,
+      "implementationAfterTransport": "gated_not_started",
+      "automaticSelfRenewalImplemented": false,
+      "execution": {
+        "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
+        "currentState": "固定入口的原设备报告与另行补充的运行条件已保留。动态发现探针已有两次真实 Xcode 26.2 Debug arm64 Simulator 主 App 编译／链接证据；最新 a76d380 的测试目标因预取夹具初始化时闭包捕获未完成 self 失败，iOS 用例执行仍为 0。已最小改为捕获 local host，独立审查及 grammar screen 通过，尚待实际重编。8 秒截止、地址归属／scope／TTL 复核与零 TCP 业务帧等已实现范围不升级为传输或自动续签成功。 修复已包含于集中源码 1a87f6d；独立 renewal 39281084369 于 15:53 UTC 首次观察 queued，8／13／1 尚无实际通过结果。固定 a76d380 Release 与更新字体、进度、schema 的集中测试分开记账；交付 build11 不变。",
+        "remainingWork": [
+          "不收集真实秘密，先记录有界传输候选、认证状态机、发现边界、超时取消和诊断协议。",
+          "真机可用后先证明电脑关闭、无伴侣App的同设备认证安装传输；固定端点失败不能排除所有传输，QueryType成功也不是安装成功。",
+          "仅传输门槛成立后开始profile／签名、同身份安全替换、冷启和数据保留，随后独立验证允许触发、过期恢复和有限重试。"
+        ],
+        "nextAction": "读取已提交的 1a87f6d renewal 实际旧 8／动态发现 13／UI 1 的原始叶集；另核对 a76d380 Release 成品与来源，只有相关代码字节未变证明、实际测试与独立成品审计均成立，才复用并交付诊断包。",
+        "readiness": "awaiting-cloud",
+        "readyPreparation": [
+          "审查只读探针长度、超时、取消、错误归一化和不导出原reply的边界，复用已有证据。",
+          "准备无真实秘密的协议夹具；transport前不引入signer或新AGPL续签依赖。"
+        ],
+        "acceptance": [
+          "QueryType、TCP、认证session、安装transport和实际续签分层记录，前一层成功不升级后一层。",
+          "硬件门槛要求免费团队、未越狱、无JIT、电脑关闭、无伴侣App和同设备认证替换同身份。",
+          "实际冷启且书籍、书源、进度保留后才能登记安装；无人值守和过期恢复另验。"
+        ],
+        "evidence": [
+          "docs/legado-ios/self-renewal-research.json",
+          "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+          "docs/legado-ios/native-reader-experience-build10.json",
+          "docs/legado-ios/native-reader-experience-build11.json",
+          "docs/legado-ios/self-renewal-device-transport-build10.json",
+          "docs/legado-ios/self-renewal-alternate-transport-followup.json",
+          "docs/legado-ios/self-renewal-dynamic-discovery-batch.json",
+          "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+          "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+          "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+          "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+          "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json",
+          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json"
+        ],
+        "deferredHardware": [
+          "同设备认证transport、profile／签名、替换安装、冷启数据、无人值守与过期恢复全部暂缓真机，不要求用户执行。"
+        ],
+        "verificationBoundary": "automaticSelfRenewalImplemented和feasibilityEstablished仍false；提醒、到期显示、跳外部工具及模拟成功都不是自续签，不承诺精确后台触发。"
+      }
+    },
+    {
+      "id": "cloud-validation-and-final-delivery",
+      "kind": "cross-domain",
+      "stageId": "s8-delivery-readiness",
+      "status": "planned",
+      "ownedFeatureIds": [],
+      "relatedFeatureIds": [],
+      "objective": "Produce one source-free final candidate with exact evidence and a concise remaining device checklist.",
+      "dependsOn": [
+        "reader-layout",
+        "reader-library",
+        "reader-online-storage",
+        "local-formats",
+        "annotations-dictionary",
+        "backup-webdav",
+        "source-type-routing",
+        "rss",
+        "tts",
+        "media",
+        "paragraph-reviews",
+        "source-debug-logs",
+        "lan-web-services",
+        "automatic-tasks",
+        "platform-integration",
+        "reading-experience-design",
+        "reading-performance-and-prefetch",
+        "license-and-source-closure"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Batch related changes at stage checkpoints. Run one cloud integration build after the batch is reviewed, reuse unaffected passing evidence, and reserve final candidate packaging/audit for delivery readiness. Cloud waiting must not block ready implementation work.",
+        "After related edits settle, run the smallest relevant checks; share one prepared native payload and one iOS build across compatible groups.",
+        "Run broader ordinary-JAR native and UI acceptance when new integration requires it; do not repeatedly run unchanged suites or launch duplicate cloud builds.",
+        "Keep the existing native cancellation 15-second gate, 45-second operation deadline and seven actual wire requests unless the product contract itself changes with documented justification.",
+        "Independently review raw results and actual final IPA bytes, exclude private sources/credentials/tests, preserve original licenses and supply exact corresponding source/build materials.",
+        "Provide one candidate and one short device checklist; do not ask the user to test during the deferred-device period."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute the deferred per-domain hardware checklist on this exact candidate; carry unresolved renewal feasibility and legal decisions explicitly."
+      ],
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "build10",
+        "migration-status",
+        "runtime-notices"
+      ],
+      "execution": {
+        "summaryZh": "按阶段集中取得精确源码证据，最后交付一个无内置书源候选。",
+        "currentState": "已有历史build10及受范围约束的cloud原件；后续批次有portable预检失败与待复验代码，旧IPA、桌面和探针数量不能汇总为最新全部通过，阶段依赖尚未完成。 最新 run 39249523428／2747900 的便携检查通过，首组 Xcode 编译失败；没有本次 iOS 执行计数。已保存完整原 artifact 并修复 CodingKeys 声明，待本批恢复修改统一复验。",
+        "remainingWork": [
+          "阶段修改审查后集中编译与必要测试，实际失败才复验；云任务期间继续独立ready工作，不持续轮询。",
+          "分别保留方法／参数执行、零失败／跳过／预期失败、日志／summary／tests和源码／artifact摘要；guard失败不冒充App失败。",
+          "ordinary-JAR native、产品路由、15秒取消／45秒操作和七次wire请求按各自门槛验收，不放宽或用mock替代。",
+          "最后固定一个候选及源码、runtime、字体、notice、无私人源无secret材料，独立复核，给剩余硬件及外部决定短清单。"
+        ],
+        "nextAction": "本批先固化三十三包执行计划与结构证据；后续按依赖推进，在各阶段检查点集中验证，相关验收具备后才制作最终候选。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "整理现有原件的源码、计数及状态和下一检查点独立组，不为查旧状态重新构建。",
+          "准备候选材料及无源／密钥检查，保持全部阶段及非真机工作未完成。"
+        ],
+        "acceptance": [
+          "所需桌面／Simulator证据对应确切源码、配置、fixture和范围，缺失项继续待办。",
+          "同阶段兼容组共享构建及payload，独立门槛保留；只因改动、实际失败或未解疑点重验。",
+          "唯一候选无内置／私人源，许可署名保留，对应源码与构建安装材料可核查，与真机、续签、许可边界分开。"
+        ],
+        "evidence": [
+          ".github/workflows/reader-smoke.yml",
+          "scripts/reader-experience/smoke.sh",
+          "docs/legado-ios/native-reader-experience-build10.json",
+          "docs/legado-ios/reader-supply-measurement-batch.json",
+          "docs/legado-ios/review-rule-schema-followup.json",
+          "docs/legado-ios/distribution-policy.json"
+        ],
+        "deferredHardware": [
+          "最终候选的手势、字体舒适度、VoiceOver、多任务、热耗电与权限硬件清单暂缓；续签及权利独立未决。"
+        ],
+        "verificationBoundary": "账本和便携guard通过只证明声明范围，不是全工程、Release IPA或真机通过；暂不要求用户安装测试。"
+      }
+    },
+    {
+      "id": "runtime-core",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "core.engine",
+        "core.dynamic-semantics",
+        "core.e4x",
+        "core.java-interop"
+      ],
+      "objective": "Verify the pinned interpreter and Java behavior through the ordinary product bridge, preserving original engine semantics.",
+      "dependsOn": [
+        "rule-scope-wait-cancellation"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "execution": {
+        "summaryZh": "普通产品桥的原运行时语义",
+        "currentState": "锁定Rhino/Zero与Java互操作已有桌面及历史独立Probe证据；普通主App固定mainJS链路通过只证明有限调用，动态this/eval/Function、E4X及全部Java返回类型尚未在当前普通产品桥逐项重放。 历史设备报告和含测试类的Probe JAR不能替代当前普通JAR、原生模块、JNI边界及签名App的同源码验收。",
+        "remainingWork": [
+          "锁定Rhino/Zero与Java互操作已有桌面及历史独立Probe证据；普通主App固定mainJS链路通过只证明有限调用，动态this/eval/Function、E4X及全部Java返回类型尚未在当前普通产品桥逐项重放。 历史设备报告和含测试类的Probe JAR不能替代当前普通JAR、原生模块、JNI边界及签名App的同源码验收。",
+          "1. 冻结现有JsEngineCapabilitiesTest与InteropSemanticSuiteTest向量清单，标记已验证的桌面/Probe/普通App来源，复用未变代码的已有证据。",
+          "2. 以现有LegadoRuntime执行接口和合成mainJS函数重放动态绑定、E4X、Java字符串/集合/byte[]/重载/可捕获异常；逐项保留值、Java类型、错误，不把中间Java对象先转成Swift近似值。",
+          "3. 普通JAR产物核验后，在下一次相关阶段统一模拟器任务运行上述产品桥子集；通过前不扩写核心兼容结论。"
+        ],
+        "nextAction": "1. 冻结现有JsEngineCapabilitiesTest与InteropSemanticSuiteTest向量清单，标记已验证的桌面/Probe/普通App来源，复用未变代码的已有证据。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "整理与补齐普通产品桥的固定语义向量及原结果索引；无需等待阅读UI或网络。"
+        ],
+        "acceptance": [
+          "缓存编译后的同脚本换两个调用绑定，this/eval/Function不串参；共享源码库不携带上次book/chapter。",
+          "XML字面量、后代查询、空节点与错误文本逐项对照原向量；确认普通payload有java.xml。",
+          "Java嵌套类、脱离对象的方法、集合迭代、字节符号值、重载和异常在JVM内保持原类型；JNI最终返回值与原类型报告一一对应。"
+        ],
+        "evidence": [
+          "docs/legado-ios/migration-status.md",
+          "docs/legado-ios/device-validation.json",
+          "docs/legado-ios/sdk-and-rule-scope-validation.json",
+          "docs/legado-ios/native-cancellation-investigation.json",
+          "docs/legado-ios/runtime-notices.md"
+        ],
+        "deferredHardware": [
+          "最终签名App从主屏幕冷启动、无调试器/JIT执行核心/E4X/Java子集；记录新源码与资源身份。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "source-schema",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "in_progress",
+      "ownedFeatureIds": [
+        "source.schema"
+      ],
+      "objective": "Complete lossless source schema/model mapping and safe import/export without shipping sources.",
+      "dependsOn": [
+        "plan-and-evidence-refresh"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "build10",
+        "content-rule-schema",
+        "review-rule-schema-followup",
+        "rule-schema-field-audit",
+        "original-rule-defaults-reference",
+        "source-schema-reference-integration"
+      ],
+      "execution": {
+        "summaryZh": "书源字段、默认值及导入导出",
+        "currentState": "40 条合法公有原 getter／默认 Gson／显式 serializeNulls 参考已接入现有模型的观察器；另已准备 13 个未知字段夹具，调用现有导入、编辑、导出与 writer 链，尚未执行。新增独立 3 方法诊断组要求实际叶身份、319 条观察与 916 个快照、source／环境／原始日志绑定。主树已保留 position 18／28；便携 reference 8、collector 19、smoke 24、renewal 16 及 Bash／actionlint／diff 检查已有原件。Swift／SDK 实际执行和真实观察仍为 0；源码推导 24 差异／16 选定字段相等只是预测，既有 19／50 preservation 与完整书源兼容继续分开。 该观察器已随集中源码 1a87f6d 提交 reader-smoke 39281083749，15:53 UTC 首次观察 queued；此处仅记提交，不产生真实观察或兼容验收。 1a87f6d reader-smoke 实际在 Python collector 的 19 个 setUp 中因路径保护失败，Xcode／全部 iOS 步骤跳过；没有编译器错误或本批运行验收。测试自有临时根已最小 resolve、独审确认生产保护和 19 个用例身份不变，root 原工具输出 19 通过；macOS 修复仍待后续集中验证。",
+        "remainingWork": [
+          "在下一次整批 source-only 检查点实际编译并执行 3 方法，保留零失败／跳过／expected failure 的 summary、精确 tests tree、原始 -l log 与 source／环境；完整采集 280＋39＝319 条观察和 760＋156＝916 个快照。",
+          "依据真实差异逐项设计生产字段保存修复；区分 absent／null／empty／whitespace、原 getter、默认 Gson 与 serializeNulls 诊断策略，保持 1e3 原字面量、Unicode 及未知字段经原链路保存。诊断采集成功且 selectedContractsMatch=false 不算兼容通过。",
+          "继续完整字段审计与顶层／嵌套投影、group／id、URL 和编辑保留验收；不另建第二 BookSource 模型，不以这五个 getter、13 个夹具或 19／50 证明完整 schema／规则执行兼容。"
+        ],
+        "nextAction": "将自有测试临时根修复与已审 UMD／测量 runner 准备固定为下一集中源码，实际执行 3 方法并取得 319 条／916 快照；新 CI 未提交前不记为已运行，诊断差异仍不算兼容通过。",
+        "readiness": "awaiting-cloud",
+        "readyPreparation": [
+          "只读核对固定公有参考、观察器、收集器及原始 artifact；准备真实 SDK／Simulator／source 的采集绑定。",
+          "可继续其他独立准备；新增诊断组不完成 schema 工作包、S3 阶段或完整 Legado 兼容。"
+        ],
+        "acceptance": [
+          "五个原getter的40条向量逐项比较值、缺省/键存在与导出形状；默认Gson与serializeNulls诊断变体分开，不擅自把后者当产品导出策略。",
+          "对象/数组/bookSources包装、坏包装、原脚本文本的CRLF/分解Unicode、空字符串、group/id和已导入用户修改均不被归一化或生成空源。",
+          "Int32越界、非法enabled和非String文本的防护差异明示；字段存在、测试数量及19/50计划组不等于全部兼容。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/migration-status.md",
+          "docs/legado-ios/native-reader-experience-build10.json",
+          "docs/legado-ios/content-rule-schema-preservation.json",
+          "docs/legado-ios/review-rule-schema-followup.json",
+          "docs/legado-ios/rule-schema-field-audit.json",
+          "docs/legado-ios/original-rule-defaults-reference.json",
+          "docs/legado-ios/source-schema-reference-batch.json",
+          "docs/legado-ios/evidence/source-schema-reference/source-schema-v3-independent-review.json",
+          "docs/legado-ios/evidence/source-schema-reference/source-schema-reference-preparation-v3.json",
+          "Tests/iOS/yuedu appTests/BookSourceRuleDefaultsReferenceTests.swift",
+          "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+          "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/failure-record.json"
+        ],
+        "deferredHardware": [
+          "最终签名App手动导入、编辑、导出、覆盖升级与重启，确认源/分组/用户修改不丢；不内置源。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "traditional-rules",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "rules.declarative",
+        "rules.css",
+        "rules.xpath",
+        "rules.jsonpath",
+        "rules.regex"
+      ],
+      "objective": "Complete retained AnalyzeRule public entry points and exact typed results, replacements, variables and shared-call scope behavior.",
+      "dependsOn": [
+        "runtime-core",
+        "source-schema"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "execution": {
+        "summaryZh": "原 AnalyzeRule 公开入口",
+        "currentState": "JVM已保留原AnalyzeRule协调器切片和CSS/XPath/JSONPath/regex helper，但产品传统阅读与DeclarativeSource没有调用它；有限静态选择/替换通过不能替代完整公开入口。 有状态47调用保留两处异常脚本编号差异；完整JS/get-put、列表/元素转换、URL分支、同实例并发及iOS协调器执行仍有边界。",
+        "remainingWork": [
+          "JVM已保留原AnalyzeRule协调器切片和CSS/XPath/JSONPath/regex helper，但产品传统阅读与DeclarativeSource没有调用它；有限静态选择/替换通过不能替代完整公开入口。 有状态47调用保留两处异常脚本编号差异；完整JS/get-put、列表/元素转换、URL分支、同实例并发及iOS协调器执行仍有边界。",
+          "1. 在现有OriginalAnalyzeRuleTest按公开getString/getStringList/getElements入口组织CSS/XPath/JSONPath/regex和组合规则，而非只验底层helper；复用28标量、36 JSONPath和47有状态原基线。",
+          "2. 先定位并记录每个实际差异：空/缺失/错误、||/&&/%%、捕获组、替换、HTML实体、Java DOM/节点类型、动态JS与变量；一次修复一个原入口差异，比较器不替实现补值。",
+          "3. 原协调器分阶段接入现有JVM业务编排所需接口，先补平台依赖再做普通JAR→Swift固定产品链路，禁止用新Swift解析器绕过原协调器。"
+        ],
+        "nextAction": "1. 在现有OriginalAnalyzeRuleTest按公开getString/getStringList/getElements入口组织CSS/XPath/JSONPath/regex和组合规则，而非只验底层helper；复用28标量、36 JSONPath和47有状态原基线。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "补原公开入口缺失向量、将已有golden逐项映射到当前协调器测试；与schema和URL原契约可并行。"
+        ],
+        "acceptance": [
+          "同一输入分别获取标量、列表和元素，验证null过滤与类型保留、selector→转换→替换→unescape顺序，regex零宽/Unicode/多行。",
+          "对比每一步source/book/chapter变量、缓存、异常类型和原文；两处脚本编号差异保留为未通过项，不能trim归一化。",
+          "同源共享库、不同源、同实例并发与取消/关闭后操作有明确生命周期结果，不发布旧scope。"
+        ],
+        "evidence": [
+          "docs/legado-ios/traditional-rule-integration.md",
+          "docs/legado-ios/original-rule-coordinator-port.json",
+          "docs/legado-ios/stateful-port-reference/2026-10-19/record.json",
+          "docs/legado-ios/jsonpath-public-reference.json",
+          "docs/legado-ios/scalar-selector-port.json",
+          "docs/legado-ios/traditional-stateful-reference.json"
+        ],
+        "deferredHardware": [
+          "最终普通JVM中重放选定原向量，再用用户自有代表传统源验证真实链路；私人源不进入仓库/日志。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "url-http",
+      "kind": "domain-owner",
+      "stageId": "s3-jvm-rules-http",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "network.requests",
+        "network.http-host"
+      ],
+      "objective": "Retain AnalyzeUrl ordering, original synchronous Java host responses and exact HTTP/network-option semantics.",
+      "dependsOn": [
+        "runtime-core",
+        "source-schema"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "http-wire"
+      ],
+      "execution": {
+        "summaryZh": "原 AnalyzeUrl 与请求语义",
+        "currentState": "传统产品仍走Swift/JSC AnalyzeUrl；原协调器RulePlatform.request明确报未连接，JVM SourceJavaHost生产路径拒绝动态URL、动态header、proxy及若干URL选项。 JVM普通HTTP已有固定字节/TLS/取消证据，但不覆盖完整AnalyzeUrl编排；URLSession可选宿主不能保留重复头字段，不能用它冒充原响应类型或完整wire一致。",
+        "remainingWork": [
+          "传统产品仍走Swift/JSC AnalyzeUrl；原协调器RulePlatform.request明确报未连接，JVM SourceJavaHost生产路径拒绝动态URL、动态header、proxy及若干URL选项。 JVM普通HTTP已有固定字节/TLS/取消证据，但不覆盖完整AnalyzeUrl编排；URLSession可选宿主不能保留重复头字段，不能用它冒充原响应类型或完整wire一致。",
+          "1. 按原AnalyzeUrl的URL JS、模板、key/page分支、header/bodyJs、请求选项执行顺序建立固定loopback请求记录；每个缺口保留原字节/类型/异常。",
+          "2. 把锁定AnalyzeUrl必要依赖接到现有JVM传输和原StrResponse/Connection.Response接口，统一RulePlatform.request与当前网络宿主，保留不支持错误，不加静默平台回退。",
+          "3. 扩大现有SourceHttpSemanticsTest/ProductionHttpTransportTest到POST/二进制/GBK、重复头/Set-Cookie、相对重定向、超时/取消/重试和DNS/proxy边界；阶段末单次普通App集中验证。"
+        ],
+        "nextAction": "1. 按原AnalyzeUrl的URL JS、模板、key/page分支、header/bodyJs、请求选项执行顺序建立固定loopback请求记录；每个缺口保留原字节/类型/异常。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "立即构造原AnalyzeUrl固定输入与loopback wire向量；不等待UI或状态持久化实现。"
+        ],
+        "acceptance": [
+          "逐字节比较method、URL/query编码、header顺序/重复字段、body编码、最终URL、status及响应Java类型。",
+          "动态header读登录头、bodyJs改请求、page/key条件分支与重定向基址执行顺序一致；不把只比最终正文当通过。",
+          "held-response取消保持原15秒/45秒门槛并成功恢复第七次请求；同键排队耗时计入绝对deadline。"
+        ],
+        "evidence": [
+          "docs/legado-ios/traditional-rule-integration.md",
+          "docs/legado-ios/http-wire-capability.json",
+          "docs/legado-ios/native-worker-thread-fix.json"
+        ],
+        "deferredHardware": [
+          "真机TLS/网络切换、代理/权限、实际站点重定向和超时；无系统长期后台网络承诺。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "source-state",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "source.shared-state",
+        "host.concurrency"
+      ],
+      "objective": "Preserve source/book/chapter scope boundaries and persist required JVM variables/cache safely across process restarts.",
+      "dependsOn": [
+        "traditional-rules",
+        "rule-scope-wait-cancellation"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "sdk-scope-validation",
+        "stateful-reference"
+      ],
+      "execution": {
+        "summaryZh": "源、书、章状态的持久化",
+        "currentState": "JVM RuleStateStore/RuleCache和mainJS SessionCache/SessionCookies明确是内存实现，关闭环境会清空；Swift保存书/章原DTO不等于源变量、Cookie和缓存跨进程持久化。 已有每key scope锁、取消/关闭唤醒及有状态基线，但源/book/chapter持久边界、TTL、删除/坏盘、同实例并发与普通App长期恢复未完成。",
+        "remainingWork": [
+          "JVM RuleStateStore/RuleCache和mainJS SessionCache/SessionCookies明确是内存实现，关闭环境会清空；Swift保存书/章原DTO不等于源变量、Cookie和缓存跨进程持久化。 已有每key scope锁、取消/关闭唤醒及有状态基线，但源/book/chapter持久边界、TTL、删除/坏盘、同实例并发与普通App长期恢复未完成。",
+          "1. 从既有47调用前后状态建立source/book/chapter/key、文本/二进制缓存、TTL、memory-only/disk-only、关闭/删源语义表，明确哪些原状态必须跨进程。",
+          "2. 在现有状态/持久化服务边界设计一个JVM适配契约，按实际所有权读写；不另建第二个无主缓存，不把JSC共享内存或@Published状态直接从后台读取。",
+          "3. 补固定时钟、失败写入、源编辑失效、同key waiter取消、close后拒绝发布及重启恢复场景；落盘失败保留旧文件，成功后才标持久。"
+        ],
+        "nextAction": "1. 从既有47调用前后状态建立source/book/chapter/key、文本/二进制缓存、TTL、memory-only/disk-only、关闭/删源语义表，明确哪些原状态必须跨进程。\n2. 在现有状态/持久化服务边界设计一个JVM适配契约，按实际所有权读写；不另建第二个无主缓存，不把JSC共享内存或@Published状态直接从后台读取。\n3. 补固定时钟、失败写入、源编辑失效、同key waiter取消、close后拒绝发布及重启恢复场景；落盘失败保留旧文件，成功后才标持久。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "整理状态所有权/TTL/持久化契约和合成失败向量；可与解析和HTTP工作并行。"
+        ],
+        "acceptance": [
+          "两源相同key隔离，同源两book/两chapter不串；每次调用局部绑定独立，共享源变量按原语义延续。",
+          "TTL过期与memory/disk查询、文本/byte[]同名键、关闭后操作、原状态重放完全记录；错误/取消释放锁。",
+          "新进程恢复仅应恢复的变量/Cookie/缓存；源编辑或删除不复活旧脚本scope，损坏文件不被当作空状态覆盖。"
+        ],
+        "evidence": [
+          "docs/legado-ios/migration-status.md",
+          "docs/legado-ios/sdk-and-rule-scope-validation.json",
+          "docs/legado-ios/stateful-port-reference/2026-10-19/record.json",
+          "docs/legado-ios/stateful-environment-lifetime-investigation.json"
+        ],
+        "deferredHardware": [
+          "杀进程/覆盖升级/源编辑后的恢复、原生取消资源回收、长时间多源并发与内存压力。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "traditional-reading-pipeline",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "pipeline.search",
+        "pipeline.explore",
+        "pipeline.info",
+        "pipeline.toc",
+        "pipeline.content",
+        "pipeline.batch"
+      ],
+      "objective": "Connect original WebBook business orchestration to the existing native services, then select it as the sole validated traditional-source route.",
+      "dependsOn": [
+        "traditional-rules",
+        "url-http",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "execution": {
+        "summaryZh": "原核心完整传统阅读链路",
+        "currentState": "Swift/JSC已有搜索、发现、详情、目录、正文和CoreText阅读；有限DeclarativeSource与未接路由的原协调器都不是完整原WebBook业务编排。 目录/正文分页顺序、源变量/Cookie/缓存副作用、preUpdate/formatJs、subContent、批量正文及普通JAR持久会话闭环未获得全量原协议验收。",
+        "remainingWork": [
+          "Swift/JSC已有搜索、发现、详情、目录、正文和CoreText阅读；有限DeclarativeSource与未接路由的原协调器都不是完整原WebBook业务编排。 目录/正文分页顺序、源变量/Cookie/缓存副作用、preUpdate/formatJs、subContent、批量正文及普通JAR持久会话闭环未获得全量原协议验收。",
+          "1. 先以现有固定服务器制作静态CSS/XPath/JSONPath/regex四种同功能链路，记录搜索→详情→目录→两章/次页正文的原请求、typed结果和状态。",
+          "2. 在现有服务中接入锁定WebBook编排与统一原协调器/AnalyzeUrl，保持搜索快照路由、稳定OnlineChapterRef身份和(spineIndex,charOffset)锚点；验证缓存命中、网络及失败路径。",
+          "3. 单独实现并验原一次批量contentBatch/maxBatchSize协议：返回章映射、cacheContent、缺失章节和取消；多章并发下载不能代替此验收。原链路证明完整前不切传统产品唯一入口。"
+        ],
+        "nextAction": "1. 先以现有固定服务器制作静态CSS/XPath/JSONPath/regex四种同功能链路，记录搜索→详情→目录→两章/次页正文的原请求、typed结果和状态。\n2. 在现有服务中接入锁定WebBook编排与统一原协调器/AnalyzeUrl，保持搜索快照路由、稳定OnlineChapterRef身份和(spineIndex,charOffset)锚点；验证缓存命中、网络及失败路径。\n3. 单独实现并验原一次批量contentBatch/maxBatchSize协议：返回章映射、cacheContent、缺失章节和取消；多章并发下载不能代替此验收。原链路证明完整前不切传统产品唯一入口。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "准备固定原WebBook样例、请求/状态schema和现有服务适配测试入口；不等待全S3结束才做参考采集。"
+        ],
+        "acceptance": [
+          "固定六类阶段输出、每次request bytes、变量/Cookie/异常/缓存前后状态同原版；正文nextContentUrl、多页去重与处理顺序一致。",
+          "目录分页重复/卷标题/付费/次序及preUpdate/formatJs不造成新UUID或错误章节合并；网络失败可重试。",
+          "普通JAR JNI链路→原生详情/目录/阅读→断网缓存→新进程恢复同锚点；批量缺失/取消不标伪缓存成功。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/traditional-rule-integration.md",
+          "docs/legado-ios/reader-online-smoke.json"
+        ],
+        "deferredHardware": [
+          "用户自有代表传统源真实搜索/发现/登录、长目录、多页正文、离线重启与连续阅读；不推断全部书源兼容率。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "main-js-product",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "source.main-js"
+      ],
+      "objective": "Expand the existing limited text mainJs route without silent JSC fallback or loss of original Java host types.",
+      "dependsOn": [
+        "runtime-core",
+        "url-http",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "execution": {
+        "summaryZh": "mainJS 可选接口与内容协议",
+        "currentState": "现有LegadoMainJSSourceService仅type0纯文本、String正文，显式拒绝HTML/media；App只接搜索/详情/目录/正文。普通固定JNI链路和取消/恢复已有证据。 JVM存在更多可选函数分派与batch/prototype能力，但完整可选接口、发现/分页、批量、原宿主类型、跨进程源状态及非文本结果没有全部进入原生产品服务验收。",
+        "remainingWork": [
+          "现有LegadoMainJSSourceService仅type0纯文本、String正文，显式拒绝HTML/media；App只接搜索/详情/目录/正文。普通固定JNI链路和取消/恢复已有证据。 JVM存在更多可选函数分派与batch/prototype能力，但完整可选接口、发现/分页、批量、原宿主类型、跨进程源状态及非文本结果没有全部进入原生产品服务验收。",
+          "1. 列出原JsSourceEngine可选函数与当前JVM/Swift分派的逐项差集，先补缺省函数、存在但返回null/空/非法类型、异常和参数book/chapter上下文向量。",
+          "2. 沿既有LegadoMainJSSourceService逐项扩展已经有原基线且宿主就绪的结果；先保留明确错误，HTML/media与batch需各自正式内容协议，不能伪造成纯文本。",
+          "3. 复用已通过的原生取消/恢复，新增源编辑/并发/重启状态和可选接口固定链路，按相关批次合并普通App验证。"
+        ],
+        "nextAction": "1. 列出原JsSourceEngine可选函数与当前JVM/Swift分派的逐项差集，先补缺省函数、存在但返回null/空/非法类型、异常和参数book/chapter上下文向量。\n2. 沿既有LegadoMainJSSourceService逐项扩展已经有原基线且宿主就绪的结果；先保留明确错误，HTML/media与batch需各自正式内容协议，不能伪造成纯文本。\n3. 复用已通过的原生取消/恢复，新增源编辑/并发/重启状态和可选接口固定链路，按相关批次合并普通App验证。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "可选分派差集、错误/空结果向量与固定DTO契约可立即推进；有限纯文本现路径的未变证据可复用。"
+        ],
+        "acceptance": [
+          "函数缺失与函数报错有不同结果；search/details/toc/content/explore/batch等只对已实现声明的接口通过，不把JVM内部返回当Swift入口已支持。",
+          "同book/chapter DTO校验、源签名更新、排队绝对deadline与取消互不污染；失败不切JSC。",
+          "原书源上下文、宿主Java类型和非文本/不支持结果错误同原契约；真正缓存正文可跨服务实例读取且不额外执行。"
+        ],
+        "evidence": [
+          "docs/legado-ios/migration-status.md",
+          "docs/legado-ios/native-worker-thread-fix.json",
+          "docs/legado-ios/sdk-and-rule-scope-validation.json"
+        ],
+        "deferredHardware": [
+          "用户自有代表mainJS源、重启/编辑/登录/长会话与最终签名普通App的原生取消恢复。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "cookie-browser-login",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "network.cookie",
+        "network.browser",
+        "login.legacy",
+        "login.v2"
+      ],
+      "objective": "Bridge JVM cookie/login semantics and WKWebView/forms with cancellable worker waits and persisted authentication state.",
+      "dependsOn": [
+        "url-http",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "execution": {
+        "summaryZh": "Cookie、原生表单与网页登录",
+        "currentState": "JSC路径已有CookieStore、LoginManager、原生表单、SourceBrowserPresenter/WebView；这些入口不是JVM持久Cookie/浏览器宿主或完整LoginUiV2验收。 JVM SessionCookies只在内存，RuleCookieHost默认unsupported，默认平台宿主不提供browser；重复Set-Cookie、WKWebView同步、域/路径/expiry、登录头和关闭取消仍缺统一原契约。",
+        "remainingWork": [
+          "JSC路径已有CookieStore、LoginManager、原生表单、SourceBrowserPresenter/WebView；这些入口不是JVM持久Cookie/浏览器宿主或完整LoginUiV2验收。 JVM SessionCookies只在内存，RuleCookieHost默认unsupported，默认平台宿主不提供browser；重复Set-Cookie、WKWebView同步、域/路径/expiry、登录头和关闭取消仍缺统一原契约。",
+          "1. 准备本地固定登录站点：重复Set-Cookie、跨域/路径/过期、显式Cookie覆盖、401/403 loginCheckJs、跳转验证码与退出/取消；保留原Cookie和请求字节。",
+          "2. 让同一源身份的JVM Cookie/登录头与现有持久化、WKWebsiteDataStore使用一个明确适配边界；原生browser等待由worker挂起，MainActor只呈现/完成，真实dismissal释放资源。",
+          "3. 按原LoginUiV2控件/动作及既有RowUi/Flex样式投影逐项补契约：初值、click/toggle/select事件、变量写回、重新登录、取消和源编辑失效，不混入已移除App账号。"
+        ],
+        "nextAction": "1. 准备本地固定登录站点：重复Set-Cookie、跨域/路径/过期、显式Cookie覆盖、401/403 loginCheckJs、跳转验证码与退出/取消；保留原Cookie和请求字节。\n2. 让同一源身份的JVM Cookie/登录头与现有持久化、WKWebsiteDataStore使用一个明确适配边界；原生browser等待由worker挂起，MainActor只呈现/完成，真实dismissal释放资源。\n3. 按原LoginUiV2控件/动作及既有RowUi/Flex样式投影逐项补契约：初值、click/toggle/select事件、变量写回、重新登录、取消和源编辑失效，不混入已移除App账号。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "固定站点/原HTTP与Cookie向量、LoginUiV2事件表和现有投影差异审查可并行。"
+        ],
+        "acceptance": [
+          "同名Cookie多domain/path、expiry/repeated字段和登录头合并顺序同原版；重启恢复/明确清理对JVM与WebKit一致。",
+          "固定WKWebView导航拦截、网页JS/HTML提取、重定向、超时、用户取消和返回阅读现场；关闭后worker及时返回且不阻塞主线程。",
+          "静态/JS loginUi先运行loginUrl再生成UI；V2初始值、操作顺序、错误/空结果、浏览器结果与持久状态对照原版。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/http-wire-capability.json",
+          "docs/legado-ios/traditional-rule-integration.md",
+          "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+          "Tests/iOS/yuedu appTests/SourceWebLoginTests.swift",
+          "Tests/iOS/yuedu appTests/StageLoginCheckTests.swift",
+          "docs/legado-ios/rule-schema-field-audit.json"
+        ],
+        "deferredHardware": [
+          "真实站点验证码/网页登录、系统键盘、前后台/权限、WKWebView数据清理及签名App重启恢复。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "host-adapters",
+      "kind": "domain-owner",
+      "stageId": "s4-product-core-hosts",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "host.files-archives",
+        "host.fonts",
+        "host.crypto",
+        "source.events-ui"
+      ],
+      "objective": "Complete required sandbox/file/archive/font/crypto/event adapters, retaining original Java conversions and explicit unsupported errors.",
+      "dependsOn": [
+        "runtime-core",
+        "source-state",
+        "url-http"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "execution": {
+        "summaryZh": "文件、字体、加密与事件宿主",
+        "currentState": "JSC桥已有有限Java能力白名单、字体/解码/加密/文件和SourceCallBack实现；原协调器RuleJsExtensions与mainJS SourceJavaHost均是有限ABI，不等于完整原JsExtensions。 原协调器仍拒绝cache文件、若干Base64 flags/byte[]、WebBook刷新等；JVM文件/归档/QueryTTF/crypto及UI事件与现有原生服务尚未逐项型别和副作用验收。",
+        "remainingWork": [
+          "JSC桥已有有限Java能力白名单、字体/解码/加密/文件和SourceCallBack实现；原协调器RuleJsExtensions与mainJS SourceJavaHost均是有限ABI，不等于完整原JsExtensions。 原协调器仍拒绝cache文件、若干Base64 flags/byte[]、WebBook刷新等；JVM文件/归档/QueryTTF/crypto及UI事件与现有原生服务尚未逐项型别和副作用验收。",
+          "1. 对原JsExtensions/JsEncodeUtils与当前RuleJsExtensions、SourceJavaHost、JSC能力表做可执行API差集，首批按主链路实际需要逐项选择，不把未知API返回空值/伪成功。",
+          "2. 为Base64 flags/charset/AES/RSA/digest、Java byte[]重载、QueryTTF/字体反混淆、文本/二进制文件和ZIP/RAR/7z准备固定小向量；映射Android路径到既有iOS沙盒并验证路径逃逸拒绝。",
+          "3. 把eventListener/customButton/callBackJs调用放到既有SourceCallBackService所有权中，对原事件名、book/chapter/result与refresh副作用逐项接JVM；UI动作只在主线程呈现。"
+        ],
+        "nextAction": "1. 对原JsExtensions/JsEncodeUtils与当前RuleJsExtensions、SourceJavaHost、JSC能力表做可执行API差集，首批按主链路实际需要逐项选择，不把未知API返回空值/伪成功。\n2. 为Base64 flags/charset/AES/RSA/digest、Java byte[]重载、QueryTTF/字体反混淆、文本/二进制文件和ZIP/RAR/7z准备固定小向量；映射Android路径到既有iOS沙盒并验证路径逃逸拒绝。\n3. 把eventListener/customButton/callBackJs调用放到既有SourceCallBackService所有权中，对原事件名、book/chapter/result与refresh副作用逐项接JVM；UI动作只在主线程呈现。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "API差集和小型字节/字体/归档/事件向量可立即并行；使用已锁定依赖，不擅自新增替代库。"
+        ],
+        "acceptance": [
+          "编码/加密/字节重载返回真实原Java类型，错误可被脚本捕获；已有inline CryptoJS不被重复初始化改变状态。",
+          "文件读写/charset、损坏归档、Zip Slip/越界路径、取消和空间不足保留准确错误；字体查询向量和cover decode结果与原版一致。",
+          "加书/删书/startRead/endRead/saveRead/刷新/自定义按钮事件恰好按原语义发出，取消关闭后不继续操作UI或修改旧书。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/traditional-rule-integration.md",
+          "docs/legado-ios/provenance-lock.json",
+          "Tests/iOS/yuedu appTests/SourceCallBackTests.swift",
+          "Tests/iOS/yuedu appTests/LegadoRuntimeContractTests.swift"
+        ],
+        "deferredHardware": [
+          "文件选择/分享的沙盒授权与大归档中断、实际字体反混淆源、provider/crypto差异、真实自定义按钮与返回阅读。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "reader-layout",
+      "kind": "domain-owner",
+      "stageId": "s2-reading-experience",
+      "status": "in_progress",
+      "ownedFeatureIds": [
+        "reader.layout",
+        "reader.page-turn"
+      ],
+      "objective": "Verify existing CoreText layout and page/scroll modes with stable text anchors and accessible native settings.",
+      "dependsOn": [
+        "reading-position-write-integrity"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product",
+        "font-provenance"
+      ],
+      "execution": {
+        "summaryZh": "分页、滚动与文字锚点",
+        "currentState": "CoreText 分页、滚动、字体、图片和稳定位置系统已存在；缺的是当前集成源码在长章/中西混排/图片、不同翻页模式及旋转/分屏后的完整锚点验收，不能因为菜单或大量测试存在判定完成。",
+        "remainingWork": [
+          "CoreText 分页、滚动、字体、图片和稳定位置系统已存在；缺的是当前集成源码在长章/中西混排/图片、不同翻页模式及旋转/分屏后的完整锚点验收，不能因为菜单或大量测试存在判定完成。",
+          "复用 ReaderLiveStyleRefreshTests、CoreTextWritingModeTests、CoreTextPagedScrollAppearanceTests 和程序翻页回归，新增自有长章/图片 fixture 的旋转与 iPad 窗口变化验证；先固定当前文字摘录及 spineIndex/charOffset，再触发真实模式/样式变化并比较恢复。"
+        ],
+        "nextAction": "复用 ReaderLiveStyleRefreshTests、CoreTextWritingModeTests、CoreTextPagedScrollAppearanceTests 和程序翻页回归，新增自有长章/图片 fixture 的旋转与 iPad 窗口变化验证；先固定当前文字摘录及 spineIndex/charOffset，再触发真实模式/样式变化并比较恢复。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "补真实引擎与 hosting 的固定锚点组合测试，复用现有 CoreTextReadingPosition 和 ReaderSessionCoordinator；不新增另一套页码/位置系统。"
+        ],
+        "acceptance": [
+          "分页与滚动均完整覆盖正文，无空白未就绪终态。",
+          "字体/字号/间距/模式切换、旋转与同方向窗口缩放后仍落在原文本锚点，取消手势不提交错误位置。",
+          "Reduce Motion 生效，末页、章节边界、图片页和长章无越界。"
+        ],
+        "evidence": [
+          "docs/legado-ios/reading-comfort-batch.json",
+          "docs/legado-ios/local-product-validation.json",
+          "Tests/iOS/yuedu appTests/ReaderLiveStyleRefreshTests.swift",
+          "Tests/iOS/yuedu appTests/CoreTextWritingModeTests.swift",
+          "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+          "Tests/iOS/yuedu appTests/ReaderNavigationCoordinatorTests.swift",
+          "Tests/iOS/yuedu appTests/ProgrammaticPageTransitionPerformerTests.swift"
+        ],
+        "deferredHardware": [
+          "实体横竖屏手势与动画",
+          "真实显示字体舒适度和长期流畅度"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "reader-library",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "reader.bookshelf",
+        "reader.groups",
+        "reader.read-records"
+      ],
+      "objective": "Complete durable library/group/progress/history behavior and original-data mapping without destroying existing data.",
+      "dependsOn": [
+        "reading-position-write-integrity",
+        "source-schema"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ],
+      "execution": {
+        "summaryZh": "书架、分组、进度与统计",
+        "currentState": "书架、分组、排序、稳定书籍 ID、写盘故障保留和统计跟踪器均已有；尚未证明原数据完整往返和统计在跨日、暂停、切书、重启、备份合并时不重复。统计目前同步 load/save，不能凭现有两个基础测试推断大库生命周期表现。",
+        "remainingWork": [
+          "书架、分组、排序、稳定书籍 ID、写盘故障保留和统计跟踪器均已有；尚未证明原数据完整往返和统计在跨日、暂停、切书、重启、备份合并时不重复。统计目前同步 load/save，不能凭现有两个基础测试推断大库生命周期表现。",
+          "先扩充现有 ReadingStatsSessionTracker/ReadingStatsStore 的可控时钟、临时文件和合并去重用例，再做书架/分组保存重开矩阵；只把原数据 schema 对照留给兼容验收，不让它阻塞本地持久化可靠性。"
+        ],
+        "nextAction": "先扩充现有 ReadingStatsSessionTracker/ReadingStatsStore 的可控时钟、临时文件和合并去重用例，再做书架/分组保存重开矩阵；只把原数据 schema 对照留给兼容验收，不让它阻塞本地持久化可靠性。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "对现有统计 tracker 注入固定日期/位置序列，补跨日、负时钟、重复会话 ID 合并、暂停/切书的确定性回归；不另造统计 store。",
+          "复用 BookStore(metadataFileURL:)、BookStoreShelfRecoveryTests 与 BookshelfGroupsUITests，在临时目录验证增删改组/排序/重开和失败保护。"
+        ],
+        "acceptance": [
+          "新增/移组/改名/排序/删除/重开不换 ID，不误删 off-shelf 阅读记录。",
+          "损坏/不可写元数据保留原字节，失败不发布已持久化状态。",
+          "跨章跳转不计入已读字符，切书/暂停/跨日/重开和相同备份二次合并不重复累计时长。"
+        ],
+        "evidence": [
+          "docs/legado-ios/local-product-validation.json",
+          "docs/legado-ios/feature-comparison.md",
+          "Tests/iOS/yuedu appTests/BookStoreShelfRecoveryTests.swift",
+          "Tests/iOS/yuedu appTests/BookStoreMetadataWriteBudgetTests.swift",
+          "Tests/iOS/yuedu appTests/BookChapterStorageTests.swift",
+          "Tests/iOS/yuedu appTests/ReadingStatsStoreTests.swift",
+          "Tests/iOS-UI/BookshelfGroupsUITests.swift"
+        ],
+        "deferredHardware": [
+          "前后台真实会话边界",
+          "手机已有书籍升级/恢复的最终无损验收"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "reader-online-storage",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "reader.change-source",
+        "reader.cache-download",
+        "reader.cleanup"
+      ],
+      "objective": "Complete source-change matching, download/cache lifecycle and original text-processing contracts using the existing repositories.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "execution": {
+        "summaryZh": "离线下载、换源与缓存生命周期",
+        "currentState": "离线队列、按章 checksum、漫画完整 manifest、缓存分类清理和换源章节映射均已有。当前缺的是网络中断/取消/重启、清理与在途写入冲突、换源缓存失效及标题对齐的固定综合验收；完整原 WebBook 路由未完成只限制兼容结论，不阻塞这些本地场景。",
+        "remainingWork": [
+          "离线队列、按章 checksum、漫画完整 manifest、缓存分类清理和换源章节映射均已有。当前缺的是网络中断/取消/重启、清理与在途写入冲突、换源缓存失效及标题对齐的固定综合验收；完整原 WebBook 路由未完成只限制兼容结论，不阻塞这些本地场景。",
+          "在既有注入 roots、ChapterFetching 和 owned URLProtocol 上构造下载中断/重启、移除下载与 reconcile/在途保存竞争；换源先用合成章节快照测试对齐与旧任务隔离，暂不宣称任何真实书源兼容。"
+        ],
+        "nextAction": "在既有注入 roots、ChapterFetching 和 owned URLProtocol 上构造下载中断/重启、移除下载与 reconcile/在途保存竞争；换源先用合成章节快照测试对齐与旧任务隔离，暂不宣称任何真实书源兼容。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "扩展 OfflineDownloadManagerTests、OfflineChapterStoreTests、CacheManagementServiceTests 与 ChapterAlignmentTests 的真实临时文件/owned response 组合；信号驱动取消，不 sleep。"
+        ],
+        "acceptance": [
+          "取消阅读不取消同书 download，暂停/恢复只继续未完成章。",
+          "损坏正文与缺页 manifest 不被当完成；失败不把旧有效数据覆盖为空。",
+          "清理只删明确缓存 roots；清理后仍保留原书、书架/进度/配置，旧在途写入不能重新污染已经切换的源。"
+        ],
+        "evidence": [
+          "docs/legado-ios/reader-supply-measurement-batch.json",
+          "docs/legado-ios/native-worker-thread-fix.json",
+          "Tests/iOS/yuedu appTests/OfflineDownloadManagerTests.swift",
+          "Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift",
+          "Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift",
+          "Tests/iOS/yuedu appTests/ChapterAlignmentTests.swift"
+        ],
+        "deferredHardware": [
+          "网络可达性切换与后台生命周期",
+          "系统磁盘压力和终止后的真实恢复"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "local-formats",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "local.txt",
+        "local.epub",
+        "local.umd",
+        "local.mobi",
+        "local.pdf"
+      ],
+      "objective": "Verify existing TXT/EPUB/PDF and add the currently unsupported UMD/MOBI through the existing import and reading services.",
+      "dependsOn": [
+        "reader-layout",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke",
+        "umd-parser-preparation"
+      ],
+      "execution": {
+        "summaryZh": "本地 TXT／EPUB／PDF 验收及 UMD／MOBI 支持",
+        "currentState": "TXT/EPUB/PDF 继续按既有统一导入及 CoreText/Readium/PDFKit 路径逐项验收。UMD 已在主树准备未注册的 bounded type1 文本 decoder/file parser 与原 Java 自有 5 fixture/15 章 golden；16 文件匹配冻结补丁及独审，原始 ZIP、9 Java 和全部 132 reference members 核验，归档除大 ZIP 外的原字节。author/root portable 12、getter integrity 与 3 文件 grammar screen 通过，但不能累加或当 Swift 验收；11 个 Swift 方法仅 planned，实际 Swift/SDK/iOS 均 0。UMD/MOBI 仍未接入产品 registry/import/reader；checked lease 只有 design0。另有 3 组集中 runner 准备，尚未提交，不在 C1a87f6d 或 ARelease12；本记录不改变它的提交状态或验收。",
+        "remainingWork": [
+          "为已准备的 11 个无参数 UMDTextDecoderTests 方法取得固定源码的真实 Apple SDK 编译及精确 11/11 passing leaves；保留原始 xcresult/log，不把 Python fixture walker 或 grammar 当 Swift 执行。",
+          "先实现经审查的最小 shared-writer checked import commit：复用现有 pause/drain，覆盖同文件跨 store/direct writer 与 records revision 冲突，成功前不发布，失败或 CAS rollback 不确定时保留 owned recovery；不新建 GCD 或平行书架，不宣称全局 crash/powerloss 事务。当前只有设计，未实现。",
+          "完成原 .umd 保留、同一 LocalBookImportService/BookParserRegistry 接入及既有 TXT/CoreText 的显式 UMD TOC/relative UTF16 spine 路由，覆盖 WorkTableOfContents、同步 TXT 入口、share/Calibre/iCloud 与关闭重开；禁用 UMD 正文的 Aozora 注记解释，不经标题 regex 重猜目录，不把 raw byte offset 当持久 charOffset。",
+          "UMD 完成真实导入、目录、正文、关闭重开及失败不污染旧书架的验收后再接受该子集；MOBI 仍需合法无 DRM 子集、样本、许可调查与真实 parser/import/reader。TXT/EPUB/PDF 继续合法、损坏、编码、目录、图像与重开的固定回归。"
+        ],
+        "nextAction": "继续 local-formats ready 开发：先审定并实施最小 checked-commit foundation 与显式目录 reader 路由，再挂接 UMD 产品入口；将 11 方法 SDK 验证并入经审批的集中 checkpoint，不为小改触发 CI，不把纯 parser 准备改成已支持，也不把 ready 改为 awaiting。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "复用已冻结未注册 decoder/file parser、原 Java 5 fixture/15 getter 与 11 方法精确身份；strict malformed、预算及加密拒绝是项目策略，不伪称原 Java 坏输入异常。",
+          "收敛 checked lease design0 为最小 shared writer 原语，覆盖旧 direct writers、跨 store、取消后结果收尾与失败恢复；独立实现评审后再复用同一 importer/reader。",
+          "保持 MOBI 调查与 TXT/EPUB/PDF 原验收边界；不得以改扩展名、静默 TXT storageText 或第二 importer/renderer 伪装完整格式支持。"
+        ],
+        "acceptance": [
+          "UMD/MOBI 合法 fixture 能导入、显示正确标题/目录/正文并重开到稳定文本锚点；错误/截断/超界/加密不支持形态明确拒绝。",
+          "任何失败不新增半本书、不破坏原输入或已保存书架；批量坏一项不抹掉成功项。",
+          "TXT 多字节边界、EPUB 缺 container/损坏资源、PDF 不可读/空 outline 等各有精确结果，PDF 定位保持页语义。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/reader-online-smoke.json",
+          "Tests/iOS/yuedu appTests/LocalBookImportServiceTests.swift",
+          "Tests/iOS/yuedu appTests/LocalPDFArchiveTests.swift",
+          "Tests/iOS/yuedu appTests/TXTFileReaderTests.swift",
+          "Tests/iOS/yuedu appTests/TXTChapterBoundaryTests.swift",
+          "Tests/iOS/yuedu appTests/EPUBPipelineParityTests.swift",
+          "docs/legado-ios/umd-parser-preparation-batch.json",
+          "docs/legado-ios/evidence/reader-umd-parser/reader-umd-parser-preparation.json",
+          "docs/legado-ios/evidence/reader-umd-parser/umd-parser-independent-review.json",
+          "docs/legado-ios/evidence/reader-umd-parser/reference/run/reference-record.json",
+          "docs/legado-ios/evidence/reader-umd-parser/umd-reference-independent-review.json",
+          "docs/legado-ios/evidence/reader-umd-parser/umd-checked-import-design.json",
+          "Modules/Core/UMD/UMDBookParser.swift",
+          "Modules/Core/UMD/UMDTextDecoder.swift",
+          "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift"
+        ],
+        "deferredHardware": [
+          "系统文件提供商、共享扩展与安全作用域",
+          "代表性大 EPUB/PDF/UMD/MOBI 的实体内存/交互"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "annotations-dictionary",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "reader.bookmarks",
+        "reader.highlights",
+        "reader.highlight-rules",
+        "reader.dictionary"
+      ],
+      "objective": "Preserve annotations on processed text and add original dictionary-rule behavior, using native selection and existing storage.",
+      "dependsOn": [
+        "reader-layout",
+        "reader-library",
+        "traditional-reading-pipeline"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "execution": {
+        "summaryZh": "书签、笔记、高亮与字典",
+        "currentState": "原生书签、笔记/高亮、正则规则和选区已有；测试已覆盖稳定位置及增删/改色身份保留，但加工正文后的跨页锚点、导出恢复和规则重叠仍缺完整证据。原版自定义字典规则网络/解析映射没有实现证明；AI 查词或系统选区功能不能代替它。",
+        "remainingWork": [
+          "原生书签、笔记/高亮、正则规则和选区已有；测试已覆盖稳定位置及增删/改色身份保留，但加工正文后的跨页锚点、导出恢复和规则重叠仍缺完整证据。原版自定义字典规则网络/解析映射没有实现证明；AI 查词或系统选区功能不能代替它。",
+          "先用合成正文补跨页/跨行/替换前后高亮和笔记身份、引用摘录、导出再恢复；字典工作单独接现有选区动作与服务层，先固定多字典/空/失败/取消/返回原锚点的 owned HTTP 契约，解析引擎相关兼容部分保持独立验收。"
+        ],
+        "nextAction": "扩展 BookStoreTextAnnotationTests、BookmarkStablePositionTests 和 RegexHighlightDecorationTests，加入替换/加工后的 UTF-16 范围与摘录对照；复用既有 renderer/store。",
+        "readiness": "ready",
+        "readyPreparation": [
+          "扩展 BookStoreTextAnnotationTests、BookmarkStablePositionTests 和 RegexHighlightDecorationTests，加入替换/加工后的 UTF-16 范围与摘录对照；复用既有 renderer/store。",
+          "定位并冻结原字典数据字段和自有响应，准备现有选区入口的服务协议、取消和恢复锚点测试；先不切换任何书源规则路由。"
+        ],
+        "acceptance": [
+          "标注增删/改色/笔记编辑不改无关标注，重排后仍指同一文本范围。",
+          "plain/regex 分组、优先级及与手工高亮重叠均有实际渲染或几何结果，导出恢复保留 ID/日期/摘录。",
+          "字典结果、空、失败、取消和多字典明确区分，返回阅读保留位置，不把 AI 结果当原协议通过。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "Tests/iOS/yuedu appTests/BookmarkStablePositionTests.swift",
+          "Tests/iOS/yuedu appTests/BookStoreTextAnnotationTests.swift",
+          "Tests/iOS/yuedu appTests/RegexHighlightDecorationTests.swift",
+          "Tests/iOS/yuedu appTests/RegexHighlightConfigurationTests.swift",
+          "Tests/iOS/yuedu appTests/RegexHighlightRenderRefreshTests.swift",
+          "Tests/iOS/yuedu appTests/LegacySelectionGeometryTests.swift"
+        ],
+        "deferredHardware": [
+          "真实触控选区、朗读与无障碍顺序",
+          "系统字典/浏览器/键盘生命周期"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "backup-webdav",
+      "kind": "domain-owner",
+      "stageId": "s5-library-formats-backup",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "sync.backup",
+        "sync.webdav"
+      ],
+      "objective": "Complete original backup mapping, encrypted/selective atomic restore and user-owned WebDAV conflict/retry behavior.",
+      "dependsOn": [
+        "reader-library",
+        "reader-online-storage",
+        "annotations-dictionary",
+        "source-state"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "execution": {
+        "summaryZh": "备份范围与 WebDAV 恢复保护",
+        "currentState": "恢复保护及 12 方法／27 执行的自有故障用例已写入源码：先验证文件、协调既有 writer、提交错误回滚、冲突不假报成功并保留 TOC／legacy inline 数据。产品代码已在 ccdddd3 的 build 11 Release 编译通过；c009a49 测试目标因快捷面板测试编译失败，恢复用例实际执行仍为 0。该测试编译修复已集成，等待相关检查点重编执行；完整／选择性／加密与原版备份协议未完成。",
+        "remainingWork": [
+          "集中运行新增 12／27 用例，核对真实 xcresult、零失败／跳过和原始日志；测试定义与只读代码审查不能代替执行。",
+          "扩展取消、重开和实际 Source／Replace writer lease 集成；本批 injected 事务及 BookStore writer 用例不等于三 store 全面验证。",
+          "列出设置、Cookie、历史、批注、阅读数据与资产的实际持久化归属，制定完整／选择性／加密版本化 manifest 并沿现有服务实现。",
+          "对原版备份输入、合并和冲突协议保存固定参考与往返结果，并用自有 WebDAV 服务验认证、传输中断及取消。",
+          "提交暂停期间以版本检查拒绝新编辑；下载阶段沿用原 overwrite 语义。当前只做进程内普通失败回滚，不承诺跨文件／侧文件断电事务。"
+        ],
+        "nextAction": "在本批统一 source-only Debug 检查点实际编译并执行 WebDAVRestoreIntegrityTests 12 方法／27 执行，保存独立结果；后续再按原依赖完善备份范围和协议。",
+        "readiness": "awaiting-cloud",
+        "readyPreparation": [
+          "按现有各 store 所有权准备完整备份 manifest，不复制另一份运行中 store。",
+          "准备取消／源与替换规则 writer lease／重开及自有 WebDAV 协议夹具。"
+        ],
+        "acceptance": [
+          "坏 manifest/sources/books/rules、401、网络失败、无数据、取消都保留原字节且零 store 发布/成功状态。",
+          "第二/第三文件写入故障回滚先前提交，保留原来缺失文件的缺失状态；故障解除后一次正常恢复成功，不 sleep/自动重试掩盖错误。",
+          "大 JSON/文件 I/O 在后台，SourcePerfTrace 记录 bytes/main；注入测试仅用临时根和合成源，不触碰用户设置、源或书籍。",
+          "完整备份另验 manifest 版本/文件清单/校验、cookies/settings/history/批注/TOC 及选择性恢复；当前三文件备份不得冒充已完成。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/migration-status.md",
+          "Tests/iOS/yuedu appTests/WebDAVBrowseModelTests.swift",
+          "Tests/iOS/yuedu appTests/WebDAVIndexTests.swift",
+          "Tests/iOS/yuedu appTests/BookStoreSyncEncodingTests.swift",
+          "Tests/iOS/yuedu appTests/BookChapterStorageTests.swift",
+          "Modules/Services/WebDAV/WebDAVRestoreTransaction.swift",
+          "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
+          "Modules/Features/Settings/WebDAVSyncView.swift",
+          "docs/legado-ios/evidence/reader-smoke-c009a49/checkpoint-result.json",
+          "docs/legado-ios/native-reader-experience-build11.json"
+        ],
+        "deferredHardware": [
+          "真实个人服务器认证/网络切换",
+          "最终签名应用升级/重装、Files 分享导入导出"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "source-type-routing",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "source.five-types"
+      ],
+      "objective": "Route all five source types to supported native workflows and reject unknown/unsupported types explicitly.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "main-js-product"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "execution": {
+        "summaryZh": "五类书源的明确分流",
+        "currentState": "Swift OnlineBookContentKind当前只有text/audio/manga，type1/2已有分流；type3文件与type4视频没有完整对应产品流程，未知类型在部分推断/校验路径仍不形成明确支持边界。 JVM App guard仅支持type0 mainJS。不得由type0文本闭环或已有inline-video入口推定五类源全部支持。",
+        "remainingWork": [
+          "Swift OnlineBookContentKind当前只有text/audio/manga，type1/2已有分流；type3文件与type4视频没有完整对应产品流程，未知类型在部分推断/校验路径仍不形成明确支持边界。 JVM App guard仅支持type0 mainJS。不得由type0文本闭环或已有inline-video入口推定五类源全部支持。",
+          "1. 穷举type0/1/2/3/4及未知值，在搜索结果→详情→目录→内容→下载/打开的每个既有入口记录当前行为，加入合成防误分流契约。",
+          "2. 对type3建立原downloadUrls/文件获取与现有LocalBookImportService的接口合同；对type4建立原video episode/媒体内容合同，未支持前返回明确unsupported，不通过放宽文字guard实现。",
+          "3. 在传统/mainJS各自可用的内容接口上接入同一源类型判定；聚合源返回的明确子类型保持边界，音频/漫画不因transport提示被强制WebView。"
+        ],
+        "nextAction": "1. 穷举type0/1/2/3/4及未知值，在搜索结果→详情→目录→内容→下载/打开的每个既有入口记录当前行为，加入合成防误分流契约。\n2. 对type3建立原downloadUrls/文件获取与现有LocalBookImportService的接口合同；对type4建立原video episode/媒体内容合同，未支持前返回明确unsupported，不通过放宽文字guard实现。\n3. 在传统/mainJS各自可用的内容接口上接入同一源类型判定；聚合源返回的明确子类型保持边界，音频/漫画不因transport提示被强制WebView。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "类型路由现状表、五类合成输入与负向契约可以现在准备，无需等待完整引擎迁移。"
+        ],
+        "acceptance": [
+          "0–4和未知值逐一验证目标服务/错误；文件/视频不得被标为成功的纯文本阅读。",
+          "聚合源文字/音频/漫画混合结果、显式类型与URL推断冲突时选定明确候选，不误验证次要模式。",
+          "下载/导入/媒体打开后保留书身份、目录及进度；unsupported失败不生成空书或伪缓存。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/migration-status.md",
+          "docs/legado-ios/feature-matrix.md"
+        ],
+        "deferredHardware": [
+          "实际音频/漫画/文件/视频源的解码、系统文件选择/打开、网络媒体权限及返回阅读。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "rss",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.rss"
+      ],
+      "objective": "Verify original rule-based RSS import, articles, login, favorites and offline history in existing native RSS services.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "cookie-browser-login",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "execution": {
+        "summaryZh": "RSS 原规则、收藏与离线",
+        "currentState": "已有RSS/Atom、Legado JSON导入导出、RSSStore与JSC规则抓取；其实现调用Swift AnalyzeUrl/ModernRuleEngine/JSCoreEngine，并非原JVM Rss/RssParserByRule链路。 原规则订阅的完整字段、分页/全文/login/收藏/历史/离线与状态副作用尚无固定原版全链路对照；入口存在不证明兼容。",
+        "remainingWork": [
+          "已有RSS/Atom、Legado JSON导入导出、RSSStore与JSC规则抓取；其实现调用Swift AnalyzeUrl/ModernRuleEngine/JSCoreEngine，并非原JVM Rss/RssParserByRule链路。 原规则订阅的完整字段、分页/全文/login/收藏/历史/离线与状态副作用尚无固定原版全链路对照；入口存在不证明兼容。",
+          "1. 以现有LegadoRSSCompatTests与RSSPageDecodingTests为起点，冻结RSS/Atom及原规则订阅的固定list/detail/next-page/login响应，核对sortUrl、singleUrl、反序与空/错误区别。",
+          "2. 逐项对比现有LegadoSourceJSONParser字段往返、文章稳定身份/去重、全文/图片/日期和ruleNextPage；只修原契约已证实的差异，不另建RSS模型或抓取路线。",
+          "3. 原JVM请求/解析/身份宿主就绪后，将规则RSS逐段接入同一原核心服务；继续使用现有RSSStore/原生列表与文章阅读，补收藏/历史/离线重启。"
+        ],
+        "nextAction": "1. 以现有LegadoRSSCompatTests与RSSPageDecodingTests为起点，冻结RSS/Atom及原规则订阅的固定list/detail/next-page/login响应，核对sortUrl、singleUrl、反序与空/错误区别。\n2. 逐项对比现有LegadoSourceJSONParser字段往返、文章稳定身份/去重、全文/图片/日期和ruleNextPage；只修原契约已证实的差异，不另建RSS模型或抓取路线。\n3. 原JVM请求/解析/身份宿主就绪后，将规则RSS逐段接入同一原核心服务；继续使用现有RSSStore/原生列表与文章阅读，补收藏/历史/离线重启。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "固定feed与原Rss行为向量、JSON字段和文章身份审查可以立即并行。"
+        ],
+        "acceptance": [
+          "标准RSS/Atom与原rule-source同站多分类/分页/反序/全文、相对URL、charset、loginCheckJs及Cookie对照原请求和文章输出。",
+          "重复刷新不制造新id/无变化写盘，收藏、已读、历史和离线全文重启不丢。",
+          "空feed、规则失败、401/403、取消、断网可区别重试，不把抓取失败当合法零文章。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md"
+        ],
+        "deferredHardware": [
+          "用户自配真实订阅、OPML/JSON系统导入、前后台刷新/通知权限与生命周期恢复。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "tts",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.tts-system",
+        "extension.tts-http"
+      ],
+      "objective": "Verify sentence/position following and original HTTP TTS requests with native playback and cancellation.",
+      "dependsOn": [
+        "reader-layout",
+        "url-http",
+        "reader-online-storage"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "execution": {
+        "summaryZh": "朗读协议、句段锚点与取消",
+        "currentState": "已有SystemTTSEngine、HTTPTTSEngine、原生协调器、句段offset和HTTP/Edge/章节音频provider；现有定向测试不能证明原HTTP TTS完整协议或真实锁屏跟随。 HTTP请求模板/认证/charset与原Java类型、缓存/重试/取消、手动翻页与朗读位置协调、打断恢复仍缺同源码协议和设备证据。",
+        "remainingWork": [
+          "已有SystemTTSEngine、HTTPTTSEngine、原生协调器、句段offset和HTTP/Edge/章节音频provider；现有定向测试不能证明原HTTP TTS完整协议或真实锁屏跟随。 HTTP请求模板/认证/charset与原Java类型、缓存/重试/取消、手动翻页与朗读位置协调、打断恢复仍缺同源码协议和设备证据。",
+          "1. 用既有TTSNarrationOffsetMap/SystemTTSEngine/TTSCoordinator/HTTPTTSQueue测试先固定start/pause/skip/rate/手动翻页/跨章等待状态表与句子锚点。",
+          "2. 建立固定短音频端点，对原HTTP TTS sentence/audio请求、header/body/认证/charset、JS库、缓存、失败重试与取消逐项留wire/状态golden；与UI播放验证分开。",
+          "3. URL/HTTP语义稳定后复用既有TTSAudioProvider与播放器接原协议，保留可取消预合成和当前播放优先级，不凭静音保活单元测试宣称系统后台保证。"
+        ],
+        "nextAction": "1. 用既有TTSNarrationOffsetMap/SystemTTSEngine/TTSCoordinator/HTTPTTSQueue测试先固定start/pause/skip/rate/手动翻页/跨章等待状态表与句子锚点。\n2. 建立固定短音频端点，对原HTTP TTS sentence/audio请求、header/body/认证/charset、JS库、缓存、失败重试与取消逐项留wire/状态golden；与UI播放验证分开。\n3. URL/HTTP语义稳定后复用既有TTSAudioProvider与播放器接原协议，保留可取消预合成和当前播放优先级，不凭静音保活单元测试宣称系统后台保证。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "状态/句段锚点向量及固定音频HTTP请求原基线可以现在并行，不依赖真实设备或完整传统路由。"
+        ],
+        "acceptance": [
+          "原正文offset→朗读替换/ruby/多角色chunk→源句子锚点映射双向正确，翻页/跳章/速率变更不重复或漏段。",
+          "固定HTTP TTS认证、GBK/二进制音频、空/坏音频、预取失败到真正播放时重试和取消按原顺序；未播放失败不终止当前音频。",
+          "模拟系统中断/耳机断开/重返前台事件后状态与应恢复的句子一致；实际声音/后台另测。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md"
+        ],
+        "deferredHardware": [
+          "真实语音、扬声器/蓝牙/耳机、锁屏/控制中心、电话/Siri/其他App中断、后台跨章与实际句子跟随。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "media",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.audio",
+        "extension.video"
+      ],
+      "objective": "Complete audio/video source protocols, protected media, playlists, caching, native controls, PiP and required overlays.",
+      "dependsOn": [
+        "source-type-routing",
+        "cookie-browser-login",
+        "reader-online-storage"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "execution": {
+        "summaryZh": "音频、视频与媒体协议",
+        "currentState": "已有AudiobookPlayer/AVQueuePlayer、受保护header资源、预载、Now Playing和inline-video协调；这些不是完整音频/视频源协议、视频选集/弹幕/PiP全量原版验收。 type4完整视频内容路由缺失，mainJS媒体被明确拒绝；实际编解码、后台音频/画中画等只能保留设备门槛。",
+        "remainingWork": [
+          "已有AudiobookPlayer/AVQueuePlayer、受保护header资源、预载、Now Playing和inline-video协调；这些不是完整音频/视频源协议、视频选集/弹幕/PiP全量原版验收。 type4完整视频内容路由缺失，mainJS媒体被明确拒绝；实际编解码、后台音频/画中画等只能保留设备门槛。",
+          "1. 按原AudioPlay/VideoPlay冻结播放列表、URL/header/Cookie、seek/rate/片头片尾/播放模式、过期链接重解与缓存的固定媒体服务向量。",
+          "2. 先对现有ChapterAudioProvider/AudiobookPlayer/HeaderedMediaAsset做本地短媒体状态与请求验收；同一资产不制造第二播放器/缓存服务。",
+          "3. 视频源与选集协议在source-type-routing确定后接入现有AVPlayer/inline能力；弹幕/PiP恢复各有明确原状态表和不支持边界，不把脚本打开视频当全视频源支持。"
+        ],
+        "nextAction": "1. 按原AudioPlay/VideoPlay冻结播放列表、URL/header/Cookie、seek/rate/片头片尾/播放模式、过期链接重解与缓存的固定媒体服务向量。\n2. 先对现有ChapterAudioProvider/AudiobookPlayer/HeaderedMediaAsset做本地短媒体状态与请求验收；同一资产不制造第二播放器/缓存服务。\n3. 视频源与选集协议在source-type-routing确定后接入现有AVPlayer/inline能力；弹幕/PiP恢复各有明确原状态表和不支持边界，不把脚本打开视频当全视频源支持。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "短媒体固定文件/HTTP服务、原播放状态表与受保护header/Range契约可立即并行。"
+        ],
+        "acceptance": [
+          "固定媒体的请求头/Cookie、Range/seek、重定向和过期URL、列表末尾/随机/循环、片头片尾和失败恢复与原版状态一致。",
+          "章节边界预载、用户跳章、取消旧解析、缓存/断网恢复不播错书/错章；Now Playing只反映当前实际播放。",
+          "本地视频选集/速率/弹幕状态与PiP进入退出后的阅读现场在模拟器可测部分分开留证，实际画中画/路由不由模拟器推断。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md"
+        ],
+        "deferredHardware": [
+          "实际codec/DRM可支持边界、扬声器/蓝牙/耳机、锁屏/后台、真实PiP、网络切换、前后台恢复与热量/电池。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "paragraph-reviews",
+      "kind": "domain-owner",
+      "stageId": "s6-rss-media-reviews",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.reviews"
+      ],
+      "objective": "Add original traditional/mainJs paragraph review protocols and native anchored pagination/media/actions.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "main-js-product",
+        "annotations-dictionary",
+        "media"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "execution": {
+        "summaryZh": "原段评协议与段落动作",
+        "currentState": "原ReviewRule全部30字段现已保留，仍无基于该schema的完整原段评执行路径；JSC LegadoSourceBridge.ruleReview仍只投影旧review键。 已有段评marker/SVG气泡、ReviewSummaryResponseCache和源JS点击动作属于现有特定流程，不等于原传统/mainJS评论列表、汇总/详情分页、回复/赞踩/删除及媒体协议。",
+        "remainingWork": [
+          "原ReviewRule全部30字段现已保留，仍无基于该schema的完整原段评执行路径；JSC LegadoSourceBridge.ruleReview仍只投影旧review键。 已有段评marker/SVG气泡、ReviewSummaryResponseCache和源JS点击动作属于现有特定流程，不等于原传统/mainJS评论列表、汇总/详情分页、回复/赞踩/删除及媒体协议。",
+          "1. 从原JsSourceReview与ReviewRule固定汇总/详情/次页/回复/赞踩/删除输入输出及失败/空语义，先记录paragraphIndex/data/id与原正文的锚定规则。",
+          "2. 定义一次评论服务请求/状态契约，沿既有源会话、ReviewTarget与原生阅读锚点接原传统和mainJS协议；schema/JS桥字段、请求、分页和动作分批补，不能以字段保留跳过执行。",
+          "3. 复用现有marker渲染/ReviewActionRunner及媒体能力，补重复分页、编辑/删除失败、过期Token、关闭/切书取消与回到同段落的固定回归。"
+        ],
+        "nextAction": "1. 从原JsSourceReview与ReviewRule固定汇总/详情/次页/回复/赞踩/删除输入输出及失败/空语义，先记录paragraphIndex/data/id与原正文的锚定规则。\n2. 定义一次评论服务请求/状态契约，沿既有源会话、ReviewTarget与原生阅读锚点接原传统和mainJS协议；schema/JS桥字段、请求、分页和动作分批补，不能以字段保留跳过执行。\n3. 复用现有marker渲染/ReviewActionRunner及媒体能力，补重复分页、编辑/删除失败、过期Token、关闭/切书取消与回到同段落的固定回归。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "原评论协议golden、段落/id锚点与动作状态表现在可准备；不等待整媒体阶段完成才做参考。"
+        ],
+        "acceptance": [
+          "同一章节summary→detail→nextPage→reply保持原paragraph/id顺序；空评论与解析/登录失败可区分。",
+          "文字处理/分页/字体变化后评论仍落在原段落；投票/回复/删除的请求、返回及缓存失效逐项比对原行为。",
+          "评论媒体/源JS按钮、跳浏览器/回阅读、取消/换书后旧结果不污染新页面；不把本地笔记当网站段评。"
+        ],
+        "evidence": [
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/review-rule-schema-followup.json",
+          "docs/legado-ios/rule-schema-field-audit.json"
+        ],
+        "deferredHardware": [
+          "用户自有真实评论源、登录Token/验证码、评论媒体/动作、字体或旋转后锚点及返回阅读现场。"
+        ],
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+      }
+    },
+    {
+      "id": "source-debug-logs",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "extension.source-editor",
+        "extension.http-logs"
+      ],
+      "objective": "Connect the source editor/debugger to the completed runtime and produce phase-specific diagnostics with authentication redaction.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "main-js-product",
+        "cookie-browser-login"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "execution": {
+        "summaryZh": "复用现有书源编辑、调试与HTTP日志，接入最终产品规则路径。",
+        "currentState": "已有四阶段BookSourceDebugEngine、录制／截断／缓冲测试和DiagnosticRedactor导出。调试器直接构造ModernParserBridge，完整原核心产品路径及会话取消／错误一致性尚待验收。",
+        "remainingWork": [
+          "对原BookSourceDebugModel和HttpLogController列出输入、阶段、错误、取消、过滤／截断及API载荷契约。",
+          "在完成的traditional/mainJs产品路径上接同一调试用例服务，不能以JSC调试成功推断原JVM产品路由已接。",
+          "补合成cookie、token、认证头、正文secret脱敏和取消后重入／跨源隔离验收；测试源码存在不等于本次执行。"
+        ],
+        "nextAction": "先建立原阶段／日志API、现有入口、已有测试和缺失契约矩阵，准备无真实密钥的固定样本，再随S4产品路径接线。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "现在可提取锁定原调试／日志契约和固定错误样本。",
+          "核对录制关闭、500条缓冲、8KB正文截断及共享脱敏边界，复用现有redactor。"
+        ],
+        "acceptance": [
+          "自有源覆盖search/info/toc/content，保留阶段、typed错误、真实取消及恢复结果。",
+          "两个源并行或重入不串session、cookie或变量，调试与接受的产品路径一致。",
+          "共享诊断不含合成secret，截断不伪造原响应大小，关闭录制不追加。"
+        ],
+        "evidence": [
+          "Modules/Core/BookSource/BookSourceDebugEngine.swift",
+          "Modules/Features/BookSource/BookSourceDebugExportFile.swift",
+          "Tests/iOS/yuedu appTests/WebCrawlerDebuggerTests.swift",
+          "docs/legado-ios/feature-comparison.md",
+          "docs/legado-ios/migration-status.md"
+        ],
+        "deferredHardware": [
+          "暂缓真实设备大源编辑键盘／分享、日志导出和实际网站登录调试；不读私人源。"
+        ],
+        "verificationBoundary": "代码和测试定义不代表本次已运行；日志功能不能证明原核心路由，不允许上传实际认证数据。"
+      }
+    },
+    {
+      "id": "lan-web-services",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "sync.lan",
+        "web.http-api",
+        "web.editor",
+        "web.websocket",
+        "web.mcp"
+      ],
+      "objective": "Complete original foreground LAN/HTTP/editor/WebSocket/MCP contracts and cancellable lifecycle using existing services.",
+      "dependsOn": [
+        "source-debug-logs",
+        "backup-webdav"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "execution": {
+        "summaryZh": "完成受控前台LAN与原HTTP、Web编辑器、WebSocket、MCP协议。",
+        "currentState": "已有NWListener、六位PIN和四类只读GET：/health、/、/book/:id、/api/sources。不是原HTTP控制器、LAN迁移、Web编辑器、调试WebSocket或十三个编目MCP工具的完成证明。",
+        "remainingWork": [
+          "逐原路由比对method、状态、鉴权和持久副作用，LAN校验和／断线／重复导入不能由只读列表替代。",
+          "补连接所有权、start/stop、端口占用、残缺／超长请求和取消场景；验证stop后已有连接结束及数据快照线程边界。",
+          "在现有服务体系接HTTP控制器、许可明确的编辑器资产、WebSocket顺序／背压／重连／终止和MCP参数／错误／进度，不建重复缓存或存储。"
+        ],
+        "nextAction": "提取锁定原HTTP、WebSocket与十三MCP工具清单，给现有四GET标精确覆盖，再准备owned loopback／peer契约夹具。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "现在可完成协议清单、无真实数据client transcript、错误／断线样本和资产来源清单。",
+          "定义listener、连接、任务统一取消的前台生命周期。"
+        ],
+        "acceptance": [
+          "逐原路由核对请求／响应字节、状态、鉴权失败和持久副作用，非法输入不伪成功。",
+          "LAN固定文件校验和、重复导入与取消不破坏数据，断线终止owned连接和任务。",
+          "编辑器加载依赖并保存／调试，WebSocket有序且关闭重连／背压可复现，十三MCP工具逐项transcript通过。"
+        ],
+        "evidence": [
+          "Modules/Services/LanServer/LanWebServer.swift",
+          "Modules/Features/Settings/LanServerView.swift",
+          "docs/legado-ios/feature-catalog.json",
+          "docs/legado-ios/completion-plan.json"
+        ],
+        "deferredHardware": [
+          "暂缓手机／iPad局域网权限、真实Wi-Fi同伴、浏览器互操作和前后台切换。"
+        ],
+        "verificationBoundary": "只承诺App前台及系统允许的生命周期，不保证挂起后HTTP／WebSocket／MCP常驻；TTS的WebSocket客户端不是原调试服务。"
+      }
+    },
+    {
+      "id": "automatic-tasks",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "tasks.cron"
+      ],
+      "objective": "Retain Cron/task logic, persistence, reentrancy and foreground catch-up; expose only background scheduling the OS permits.",
+      "dependsOn": [
+        "traditional-reading-pipeline",
+        "source-state",
+        "reader-library"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "execution": {
+        "summaryZh": "保留原自动任务语义，明确iOS只提供允许的调度与前台补偿。",
+        "currentState": "尚未在普通产品代码中确认通用原AutoTask/Cron存储、执行器和错过触发策略。已有RSS BGAppRefresh及测试是专用订阅刷新，不等于通用Cron完成。",
+        "remainingWork": [
+          "提取原任务实体、Cron边界、上下文与副作用，与source-state及书架共用持久任务模型。",
+          "实现注入时钟的计算、重启、重入去重、取消及明确错过触发政策，再由前台驱动同一服务。",
+          "接BGTaskScheduler机会和过期取消，保存实际执行时间与补偿结果，不把提交请求当定时执行成功。"
+        ],
+        "nextAction": "先固定原Cron和错过触发参考样本，设计注入时钟、取消、持久化接口，待S4来源状态及书架契约具备后实现执行器。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "无需真机即可准备月末、闰日、时区、重启、取消和重入固定样本。",
+          "复用RSS调度生命周期经验，但不复用其数量作通用任务通过。"
+        ],
+        "acceptance": [
+          "注入时钟验证边界、重启、错过触发、失败恢复、取消和不会重复写入的重入。",
+          "状态原子持久化，取消／退出不伪报完成，前台补偿可复现。",
+          "BG注册、请求、过期取消和实际执行分开记录。"
+        ],
+        "evidence": [
+          "Modules/Services/RSS/RSSFeedRefreshService.swift",
+          "Tests/iOS/yuedu appTests/RSSBackgroundRefreshTests.swift",
+          "docs/legado-ios/feature-catalog.json",
+          "docs/legado-ios/completion-plan.json"
+        ],
+        "deferredHardware": [
+          "暂缓BGTaskScheduler真实机会、系统终止、低电量、长期挂起及前台补偿观察。"
+        ],
+        "verificationBoundary": "后台时机由iOS决定，不承诺精确Cron、后台线程常驻；桌面时钟夹具不证明硬件后台可用性。"
+      }
+    },
+    {
+      "id": "platform-integration",
+      "kind": "domain-owner",
+      "stageId": "s7-tools-services-tasks",
+      "status": "planned",
+      "ownedFeatureIds": [
+        "platform.integration"
+      ],
+      "objective": "Verify native file/URL import, share extension, browser, notifications and return-to-reader mappings without Android-only promises.",
+      "dependsOn": [
+        "source-schema",
+        "local-formats",
+        "cookie-browser-login"
+      ],
+      "desktopSimulatorAcceptance": [
+        "Complete each owned feature's exact desktopSimulatorAcceptance contract and retain source-specific raw results; do not infer parity from menu presence or test counts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Execute each owned feature's deferredDeviceAcceptance on the final source-specific signed build; leave these gates open until evidence exists."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "build10",
+        "sdk-scope-validation"
+      ],
+      "execution": {
+        "summaryZh": "复用导入、分享、浏览器和通知，验收系统边界及返回阅读。",
+        "currentState": "已有导入deep link、共享队列drainer、App onOpenURL、RSS通知与ShareExtension接线；fixed smoke和build10有明确范围，尚无完整平台入口与拒绝权限矩阵。",
+        "remainingWork": [
+          "列Android openUrl、Intent与设备标识到iOS的支持、受限及不支持映射。",
+          "验证文件／URL导入、扩展容器交接、重复／取消、拒绝权限和浏览器返回阅读锚点。",
+          "核对script外部URL允许策略、失败和通知点击路由；仅对需要且存在的App Intents补实现，不凭菜单假定已支持。"
+        ],
+        "nextAction": "整理onOpenURL、ShareExtension、共享导入队列、浏览器／通知回跳的全部入口，准备固定URL／文件和拒绝、重复、取消夹具。",
+        "readiness": "depends-on-work",
+        "readyPreparation": [
+          "立即产出入口、数据归属及错误矩阵，复用现有deep-link和共享队列测试，不新建导入系统。",
+          "先验证Simulator支持的身份与语义锚点保留。"
+        ],
+        "acceptance": [
+          "固定文件、URL及扩展交接逐路由核对状态与持久副作用，坏输入不损坏既有数据。",
+          "外部URL被拒、App不存在或取消有明确结果，返回后保留阅读锚点。",
+          "通知与外部入口不因移除App账号而误伤书源网站登录或RSS。"
+        ],
+        "evidence": [
+          "Modules/Core/BookSource/BookSourceImportDeepLink.swift",
+          "Modules/Core/BookSource/SharedImportQueueDrainer.swift",
+          "Tests/iOS/yuedu appTests/BookSourceImportDeepLinkTests.swift",
+          "Tests/iOS/yuedu appTests/SharedImportQueueDrainerTests.swift",
+          "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+          "docs/legado-ios/native-reader-experience-build10.json"
+        ],
+        "deferredHardware": [
+          "暂缓实际文档提供者、Files、系统分享目标、外部App、通知提示与手机／iPad回跳手势。"
+        ],
+        "verificationBoundary": "Simulator路由检查和真实提供者／权限交互分开，Android特性不做无依据等价承诺。"
+      }
+    }
+  ],
+  "features": [
+    {
+      "id": "core.engine",
+      "behavior": "Custom Rhino interpreted execution",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Start a signed device app without a debugger or JIT; compare values and errors",
+      "desktopSimulatorAcceptance": [
+        "Confirm ordinary payload/JAR/modules and non-JIT interpreter startup in the main App Simulator; compare fixed values/errors with pinned original engine."
+      ],
+      "deferredDeviceAcceptance": [
+        "Cold launch final signed ordinary reader from Home Screen without debugger/JIT and collect current-build report."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "core.dynamic-semantics",
+      "behavior": "Dynamic this, indirect eval, Function and legacy block scope",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Port JsEngineCapabilitiesTest; cached compilation must not retain caller bindings",
+      "desktopSimulatorAcceptance": [
+        "Replay dynamic this/eval/Function, legacy scope and cached-compilation binding vectors in desktop and iOS ordinary JVM without comparator normalization."
+      ],
+      "deferredDeviceAcceptance": [
+        "Repeat semantic subset on final signed hardware interpreter; do not inherit historical Probe evidence."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "core.e4x",
+      "behavior": "E4X XML literals and descendant queries",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Run XML literals and data..item_null.text; compare exact strings",
+      "desktopSimulatorAcceptance": [
+        "Exercise XML literals, descendants and xml module availability through the ordinary product runtime, comparing exact values and errors."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify current-build E4X vectors on signed hardware."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "core.java-interop",
+      "behavior": "Java strings, collections, byte arrays, overloads and exceptions",
+      "ownerWorkpackage": "runtime-core",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check collection iteration, nested classes, detached methods and catchable failures",
+      "desktopSimulatorAcceptance": [
+        "Compare string/collection/byte-array/overload/exception types and host behavior inside JVM; cross JNI only at service-level result boundaries."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify current-build Java object/overload edge cases on hardware."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "device-history",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.schema",
+      "behavior": "Book-source JSON schema, groups, import and export",
+      "ownerWorkpackage": "source-schema",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Round-trip known fields and primary keys; document unknown-field preservation",
+      "desktopSimulatorAcceptance": [
+        "Round-trip all known wire fields, mainJs text, groups, IDs and unknown fields where preservation is promised; reject malformed wrapper objects without creating empty sources."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import/export/upgrade in final signed App without losing manually imported sources or user edits."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "build10"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.five-types",
+      "behavior": "Five source types: text, audio, images, files and video",
+      "ownerWorkpackage": "source-type-routing",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Exercise all five values without silently treating media as text",
+      "desktopSimulatorAcceptance": [
+        "Exercise type values 0-4, native routing and unsupported errors; no file/video/media source may report a false text success."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify hardware-dependent decoding/playback/picker behavior of each supported type."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.main-js",
+      "behavior": "mainJs single-file sources and optional function dispatch",
+      "ownerWorkpackage": "main-js-product",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Run pure-JS search, details, TOC and content; compare missing optional functions",
+      "desktopSimulatorAcceptance": [
+        "Exercise full declared optional function dispatch, original host interfaces, state, errors and all supported result types through ordinary-JAR native product tasks."
+      ],
+      "deferredDeviceAcceptance": [
+        "Exercise user-owned representative mainJs sources on signed App; keep private source content and credentials out of repository and logs."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.shared-state",
+      "behavior": "Independent call scopes with shared per-source state",
+      "ownerWorkpackage": "source-state",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Run concurrent same-source calls and two sources; assert no argument or state leakage",
+      "desktopSimulatorAcceptance": [
+        "Prove per-call bindings with shared per-source state, separate book/chapter storage, source-edit invalidation, persistence and concurrent source isolation."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify kill/relaunch/source editing preserves only intended persistent state and cancellation frees native resources."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "sdk-scope-validation",
+        "stateful-reference"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.declarative",
+      "behavior": "Traditional combined rules, variables, replacements and JS fragments",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare combined rules, variables, empty values and errors on fixed inputs",
+      "desktopSimulatorAcceptance": [
+        "Complete retained AnalyzeRule public string/list/element entry points including dynamic fragments, get/put, Java types, replacements and typed errors against original vectors."
+      ],
+      "deferredDeviceAcceptance": [
+        "Exercise selected original vectors and representative traditional sources through the final signed reader's JVM route."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.css",
+      "behavior": "Jsoup CSS selectors and Java DOM element objects",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare elements, attributes, relative URLs and mixed DOM/JS rules",
+      "desktopSimulatorAcceptance": [
+        "Compare css through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.xpath",
+      "behavior": "XPath extraction",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare nested, attribute and empty XPath selections",
+      "desktopSimulatorAcceptance": [
+        "Compare xpath through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.jsonpath",
+      "behavior": "JSONPath extraction",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare arrays, filtering, nulls and numeric conversion",
+      "desktopSimulatorAcceptance": [
+        "Compare jsonpath through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "rules.regex",
+      "behavior": "Java regex extraction, capture groups and replacements",
+      "ownerWorkpackage": "traditional-rules",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare escaping, Unicode, multiline, replacements and zero-width matches",
+      "desktopSimulatorAcceptance": [
+        "Compare regex through full original AnalyzeRule public APIs using valid/empty/error/combined/typed-result fixtures, not only the underlying helper; preserve original DOM, replacement and conversion order."
+      ],
+      "deferredDeviceAcceptance": [
+        "Run selected parser vectors through the final signed ordinary JVM and representative source chain."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "coordinator-port",
+        "stateful-reference",
+        "jsonpath-reference",
+        "scalar-port"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.search",
+      "behavior": "Search pipeline",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare original search request, pagination/options, typed books, variables, Cookie, exceptions and cache effects; then run native App navigation on fixed responses."
+      ],
+      "deferredDeviceAcceptance": [
+        "Search representative user-owned live traditional/mainJs sources and open selected snapshot without navigation stalls."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.explore",
+      "behavior": "Explore lists and filters",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare explore list/filter rules, request order, pagination, typed output and side effects with original fixed fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify user-owned source discovery and filters on phone and iPad."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.info",
+      "behavior": "Book-details pipeline",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare book field merging, original book/source context and errors; preserve native detail sanitization and snapshot routing."
+      ],
+      "deferredDeviceAcceptance": [
+        "Open live details and return to existing reading position on final hardware build."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.toc",
+      "behavior": "TOC and pre-update scripts",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare pagination, duplicates, chapter identities, display order and update scripts with original; verify native selection on fixed fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify large live TOCs, source updates and anchor-preserving chapter navigation."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.content",
+      "behavior": "Chapter content and subsequent pages",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare output, request bytes, variables, cookies, errors and cache effects",
+      "desktopSimulatorAcceptance": [
+        "Compare nextContentUrl, request and processing order, title/body outputs, cache metadata and native cached plain/XHTML payloads with fixed originals."
+      ],
+      "deferredDeviceAcceptance": [
+        "Read representative live chapters, relaunch offline and resume at the same text anchor."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "pipeline.batch",
+      "behavior": "Batch chapter content",
+      "ownerWorkpackage": "traditional-reading-pipeline",
+      "status": "planned",
+      "originalAcceptanceContract": "Compare cache writes, missing chapters, cancellation and original request sequence",
+      "desktopSimulatorAcceptance": [
+        "Implement original batch protocol and compare one-call request sequence, per-chapter mapping/cache writes, missing chapters and cancellation; multi-download alone is insufficient."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify a user-owned batch-capable source and interruption/recovery on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.requests",
+      "behavior": "URL templates, methods, bodies, encodings, headers and request options",
+      "ownerWorkpackage": "url-http",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare GET/POST, redirects, non-UTF-8, binary responses and timeouts",
+      "desktopSimulatorAcceptance": [
+        "Compare dynamic URL/header/bodyJs, branch/key/page substitution, charset/query/form/binary bytes, redirects, timeout, retries, DNS and proxy behavior where supported."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify device networking/TLS/proxy/permission mappings and realistic timeout/reachability changes."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "http-wire"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.cookie",
+      "behavior": "CookieJar, script cookies and login state",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare repeated Set-Cookie, domain/path/expiry, overrides and authenticated retry",
+      "desktopSimulatorAcceptance": [
+        "Compare domain/path/expiry, repeated Set-Cookie, script overrides, WebView synchronization, authenticated retry and cross-process persistence."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real cookie/login lifecycle including WebKit data, relaunch and explicit clearing on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.browser",
+      "behavior": "WebView extraction, URL interception and verification browser",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare JS execution, navigation, cancellation, timeout, redirects and returned cookies",
+      "desktopSimulatorAcceptance": [
+        "Exercise navigation interception, JS extraction, redirects, cookies, timeout and cancellation with a fixed local WKWebView site; no main-thread worker wait."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify live verification pages/captcha, foreground/background dismissal and native worker cleanup."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": "Never block the iOS main thread; cancellation must release browser waits.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "network.http-host",
+      "behavior": "Synchronous ajax/connect/get/post/head host APIs",
+      "ownerWorkpackage": "url-http",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Exercise ajaxAll concurrency, rate limits, response bytes/headers and catchable failures",
+      "desktopSimulatorAcceptance": [
+        "Retain synchronous original Java response types for ajax/connect/get/post/head and ajaxAll; compare raw headers/bytes, concurrency, throttling and catchable failures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify host networking cancellation/recovery and device resource use under representative source scripts."
+      ],
+      "existingEvidence": [
+        "traditional-integration",
+        "http-wire"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "login.legacy",
+      "behavior": "Legacy loginUi, loginUrl and loginCheckJs",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare form/browser success, failure, cancellation and persisted values",
+      "desktopSimulatorAcceptance": [
+        "Compare loginUi/loginUrl/loginCheckJs form, browser, persistence, failure and cancellation with deterministic fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real source login/captcha/relogin in the signed reader; this is independent of removed App accounts."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "login.v2",
+      "behavior": "LoginUiV2 declarative controls and script actions",
+      "ownerWorkpackage": "cookie-browser-login",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Port V2 tests for initial values, actions, persisted values and errors",
+      "desktopSimulatorAcceptance": [
+        "Port original LoginUiV2 controls/actions tests and compare initial values, event order, persisted data and errors in native controls."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify user-owned V2 source interaction, keyboard, browser and cancellation on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "http-wire",
+        "traditional-integration"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.files-archives",
+      "behavior": "File access/download and ZIP, RAR, 7z archives",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare text/binary/charset inputs, corrupt archives and cancellation",
+      "desktopSimulatorAcceptance": [
+        "Map Android paths to the sandbox; compare text/binary/charset operations, ZIP/RAR/7z vectors, corrupt input and cancellation without path escapes."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify file picker/share sandbox grants, available storage failures and large archive interruption on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": "Map Android paths into the iOS application sandbox.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.fonts",
+      "behavior": "TTF glyph queries, obfuscated font replacement and cover decoding",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare fixed obfuscated-font vectors, missing glyphs and cache refresh",
+      "desktopSimulatorAcceptance": [
+        "Compare fixed QueryTTF/glyph and obfuscated-font replacement vectors, cover decoding and refresh/cache behavior with original."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify representative font-obfuscated source text and font resource loading on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.crypto",
+      "behavior": "Encoding, digests and cryptography host APIs",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare Base64/hex/charset, AES/RSA/digest vectors and overloaded calls",
+      "desktopSimulatorAcceptance": [
+        "Compare Base64/hex/charset, AES/RSA/digest vectors and overloaded Java byte/object calls through ordinary JVM."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify current-build required crypto/provider vectors on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "host.concurrency",
+      "behavior": "Per-source singleFlight, lock and tick coordination",
+      "ownerWorkpackage": "source-state",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check one same-key execution, release after error/cancel and independent sources",
+      "desktopSimulatorAcceptance": [
+        "Verify singleFlight/locks/tick, same-key waiter cancellation, release after error/cancel, independent source progress and closure without publishing stale scope."
+      ],
+      "deferredDeviceAcceptance": [
+        "Stress final native task cancellation, source isolation and sustained resource recovery on hardware."
+      ],
+      "existingEvidence": [
+        "migration-status",
+        "sdk-scope-validation",
+        "stateful-reference"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "source.events-ui",
+      "behavior": "Source event listeners, custom buttons and refresh callbacks",
+      "ownerWorkpackage": "host-adapters",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Test event switches, button actions and book/TOC/content refresh effects",
+      "desktopSimulatorAcceptance": [
+        "Compare original event toggles, custom buttons, refresh side effects and invocation bindings; main-thread UI only with worker-owned rule tasks."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real source button flows and return-to-reading state on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "traditional-integration",
+        "provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.bookshelf",
+      "behavior": "Bookshelf updates, ordering and reading progress",
+      "ownerWorkpackage": "reader-library",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check add/delete/update/sort, restart and restored progress",
+      "desktopSimulatorAcceptance": [
+        "Verify add/delete/update/sort, failed persistence protection, relaunch reconstruction and source/book identity mapping using temporary stores."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify signed-App upgrade/relaunch preserves books, manually imported sources and latest progress."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.groups",
+      "behavior": "Bookshelf groups and source groups",
+      "ownerWorkpackage": "reader-library",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check multi-group membership, delete/reorder and backup round-trip",
+      "desktopSimulatorAcceptance": [
+        "Compare multi-group membership, ordering, group deletion and original backup round-trip without accidental book deletion."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify group operations and large-library interactions on phone and iPad."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.change-source",
+      "behavior": "Change-source search and chapter matching",
+      "ownerWorkpackage": "reader-online-storage",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Match same-title books and different TOCs while retaining reading position",
+      "desktopSimulatorAcceptance": [
+        "Compare same-title disambiguation and different-TOC matching; retain stable current chapter/text anchor and expose failed/mismatched choices."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify representative live multi-source switches preserve the intended book and position."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.cache-download",
+      "behavior": "Chapter downloads, cache state, resume and retry",
+      "ownerWorkpackage": "reader-online-storage",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Check pause/resume/cancel/retry, cache hit and offline restart",
+      "desktopSimulatorAcceptance": [
+        "Verify existing queue pause/resume/cancel/retry, atomic writes, checksum/migration, duplicate requests and offline restart; missing and empty remain distinct."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify airplane-mode reading, interrupted downloads, storage pressure and app relaunch on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.cleanup",
+      "behavior": "Replacement rules and processed chapter text",
+      "ownerWorkpackage": "reader-online-storage",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare title processing, regex cleanup and stored versus displayed text",
+      "desktopSimulatorAcceptance": [
+        "Compare title/body replacement order, regex cleanup, display conversion and original stored-versus-displayed text; never rewrite source scripts or raw text implicitly."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify visually processed text and reading/annotation anchors across setting changes."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "native-cancel",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.layout",
+      "behavior": "Text layout, fonts, spacing, margins and pagination",
+      "ownerWorkpackage": "reader-layout",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Long chapters, mixed CJK, images and stable anchors after rotation/font changes",
+      "desktopSimulatorAcceptance": [
+        "Verify mixed CJK/images/long chapters, font metrics and text-anchor stability after font/size/spacing, rotation and iPad split-view width changes."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify physical font comfort, actual display/night contrast and long-session layout responsiveness."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product",
+        "font-provenance"
+      ],
+      "platformDifference": "Native font metrics and page breaks can differ; text and position anchors require validation.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.page-turn",
+      "behavior": "Simulation, cover, slide, scroll and no-animation page modes",
+      "ownerWorkpackage": "reader-layout",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Exercise modes, bounds, cancelled gestures, auto page turns and device performance",
+      "desktopSimulatorAcceptance": [
+        "Exercise supported page/cover/slide/scroll/no-animation modes, bounds/cancelled gestures/auto-page and anchor-preserving mode switches with Reduce Motion."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real gesture feel, rotation, animation smoothness and accessibility on phone/iPad."
+      ],
+      "existingEvidence": [
+        "reader-smoke",
+        "local-product",
+        "font-provenance"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.txt",
+      "behavior": "Local TXT import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Valid/corrupt/charset-boundary files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Verify valid/corrupt Chinese encodings, boundary splits, TOC/cover, long input and close/reopen anchors through the existing importer/reader."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import files through native device providers/share and verify reopening large books."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.epub",
+      "behavior": "Local EPUB import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Verify valid/corrupt EPUB, container/TOC/CSS/images and reflow anchors through existing Readium/CoreText paths."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify representative user-owned EPUBs, file access and long reading on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.umd",
+      "behavior": "Local UMD import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "planned",
+      "originalAcceptanceContract": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Add UMD detection/parser/import dispatch with valid/corrupt fixtures, chapter mapping and stable persisted positions."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import and reopen representative user-owned UMD files on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.mobi",
+      "behavior": "Local MOBI import, TOC and chapter content",
+      "ownerWorkpackage": "local-formats",
+      "status": "planned",
+      "originalAcceptanceContract": "Valid/corrupt files; TOC, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Add lawful locally available MOBI parser/import dispatch with valid/corrupt fixtures, text/images/TOC and stable anchors; document DRM limitations explicitly."
+      ],
+      "deferredDeviceAcceptance": [
+        "Import and reopen representative user-owned supported MOBI files on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "local.pdf",
+      "behavior": "Local PDF import, outlines and page position",
+      "ownerWorkpackage": "local-formats",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Valid/corrupt files; outlines, cover, progress and close/reopen",
+      "desktopSimulatorAcceptance": [
+        "Verify PDFKit import, valid/corrupt PDFs, outlines, cover and page/zoom/position restoration, keeping PDF positioning semantics explicit."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify large/graphic PDF responsiveness, gestures and file-provider access on hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": "Use PDFKit for rendering and verify outline/position mapping.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.bookmarks",
+      "behavior": "Bookmarks and chapter positions",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Add/edit/delete/jump and restore backup with stable anchors",
+      "desktopSimulatorAcceptance": [
+        "Compare add/edit/delete/jump and original data round-trip; maintain chapter/text anchors across reflow and replacement settings."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify bookmark reopening and long-press interaction on final hardware."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.highlights",
+      "behavior": "Manual highlights, notes, colors, styles and anchors",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Cross-line/page marks, processed-text anchors, note edit/export/restore",
+      "desktopSimulatorAcceptance": [
+        "Verify cross-line/page selection, note edits/colors/styles/export/restore and processed-text anchor integrity."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real touch selection, accessibility and annotation persistence after hardware lifecycle changes."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.highlight-rules",
+      "behavior": "Automatic highlight rules and rule groups",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Regex/plain rules, group switches, precedence and overlap with manual highlights",
+      "desktopSimulatorAcceptance": [
+        "Compare plain/regex rules, groups, precedence and overlap with manual highlights; verify original data mapping."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify visual precedence and long-book performance with representative rules."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.dictionary",
+      "behavior": "Custom dictionary rules and selected-word lookup",
+      "ownerWorkpackage": "annotations-dictionary",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Lookup, failure/empty results, multiple dictionaries and position retention",
+      "desktopSimulatorAcceptance": [
+        "Add original dictionary-rule network/parser mappings to native selection actions; fixed fixtures cover empty/failure/multi-dictionary and retained position."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify selected-word menu, keyboard/browser transitions and user-configured lookup sources."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "reader-smoke"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "reader.read-records",
+      "behavior": "Reading records, durations and merged backups",
+      "ownerWorkpackage": "reader-library",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Switch books, pause, cross-day, restart and restore without double counting",
+      "desktopSimulatorAcceptance": [
+        "Compare durations/book switching/pause/cross-day/relaunch and merged backup without duplicate accumulation."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual foreground/background/session interruptions and clock boundaries."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status",
+        "local-product"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.reviews",
+      "behavior": "Traditional and pure-JS paragraph reviews, media and actions",
+      "ownerWorkpackage": "paragraph-reviews",
+      "status": "planned",
+      "originalAcceptanceContract": "Pagination, paragraph anchors, image/video/actions and empty/error responses",
+      "desktopSimulatorAcceptance": [
+        "Compare traditional/mainJs review pagination, paragraph anchors, media/actions and error/empty responses using fixed original fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify user-owned live review source and native media/action interaction."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.rss",
+      "behavior": "Default/rule-based RSS, articles, favorites and read history",
+      "ownerWorkpackage": "rss",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Source import, pagination, full text, login, favorites and offline records",
+      "desktopSimulatorAcceptance": [
+        "Verify RSS/Atom plus original rule-source import, pagination/full text/login/favorites/offline history using fixed feeds."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify live user-configured feeds, system file import and lifecycle recovery."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.tts-system",
+      "behavior": "System TTS, sentence position and page following",
+      "ownerWorkpackage": "tts",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Start/pause/skip/rate, manual page turns, lock screen and audio interruptions",
+      "desktopSimulatorAcceptance": [
+        "Verify deterministic speech-state mapping, sentence anchors, start/pause/skip/rate, manual page interaction and interruption event handling."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual voices, audio route, headset/lock-screen interruption and resumed sentence position."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.tts-http",
+      "behavior": "HTTP TTS and custom endpoints",
+      "ownerWorkpackage": "tts",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Authentication, sentence requests, cache, retry and position synchronization",
+      "desktopSimulatorAcceptance": [
+        "Compare original sentence/audio requests, authentication/charset, cache/retry/cancel and position following using fixed audio endpoints."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real configured endpoint, network interruption, lock-screen playback and actual sentence synchronization."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.audio",
+      "behavior": "Audio-source playback, caching and intro/outro skipping",
+      "ownerWorkpackage": "media",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Playlist, seeking, caching, headset/lock-screen interruptions and resume",
+      "desktopSimulatorAcceptance": [
+        "Verify original playlist/URL/header/cache/seek/intro-outro skip state and native Now Playing mappings with local media fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real audio routes, lock screen/headset interruptions, background audio and resume."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.video",
+      "behavior": "Video sources, episodes, speed, danmaku and floating playback",
+      "ownerWorkpackage": "media",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Header-protected media, episodes, overlays, rate, PiP and restoration",
+      "desktopSimulatorAcceptance": [
+        "Compare episodes/protected headers/speed/danmaku state and native AVPlayer/PiP restoration using local fixtures."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual PiP, codecs, media routes, background/foreground and live source playback."
+      ],
+      "existingEvidence": [
+        "feature-comparison"
+      ],
+      "platformDifference": "Use system PiP; Android arbitrary overlay windows have no direct equivalent.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.source-editor",
+      "behavior": "Source editing, checking and debugging",
+      "ownerWorkpackage": "source-debug-logs",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Import/edit/export, stage logs, error context, cancellation and isolation",
+      "desktopSimulatorAcceptance": [
+        "Verify source import/edit/export/check/debug against completed runtime, stage logs, typed errors and cancellation/isolation with fixed sources."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify large-source editing/keyboard/share and live debug workflows without secret leakage."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "extension.http-logs",
+      "behavior": "HTTP log recording, filters, details and sensitive fields",
+      "ownerWorkpackage": "source-debug-logs",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Recording switch, filters, truncation, redaction and API payload comparison",
+      "desktopSimulatorAcceptance": [
+        "Compare recording/filter/detail/truncation/API payloads and redact cookie/token/authentication data in shared diagnostics."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify on-device recording/export lifecycle and redaction using user-controlled nonsecret fixtures."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "sync.backup",
+      "behavior": "Complete/encrypted backups, selective restore and legacy migration",
+      "ownerWorkpackage": "backup-webdav",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Round-trip sources, shelf, settings, cookies, highlights and history; atomic restore",
+      "desktopSimulatorAcceptance": [
+        "Compare complete/encrypted/selective backup and legacy mappings for sources/shelf/settings/cookies/highlights/history; corrupt/partial restore is atomic and preserves original data."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify backup import/export/share across signed-App reinstall/upgrade without losing existing data."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "sync.webdav",
+      "behavior": "WebDAV backups, progress and remote books",
+      "ownerWorkpackage": "backup-webdav",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Authentication errors, conflicts, replacement, upload/download and cancellation",
+      "desktopSimulatorAcceptance": [
+        "Verify auth errors/conflicts/replacement/upload/download/cancel and original backup/progress contracts with a deterministic local WebDAV server."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real user-owned WebDAV reachability, credentials, lifecycle and recovery."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "migration-status"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "sync.lan",
+      "behavior": "LAN backup transfer and migration",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Connect, checksums, disconnect, duplicate import and cancellation",
+      "desktopSimulatorAcceptance": [
+        "Compare checksums/disconnect/duplicate import/cancel and foreground transfer lifecycle with a local peer fixture."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify physical local-network permission, Wi-Fi peers and foreground transfer on phone/iPad."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "Local-network permission and foreground lifetime require device tests.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.http-api",
+      "behavior": "Web book/source/rule/review/log APIs",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Compare controller methods, status codes, errors and persistent side effects",
+      "desktopSimulatorAcceptance": [
+        "Compare original controller routes/methods/status/errors/access-control and persistent effects in a local foreground harness."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real LAN access/permission and foreground lifetime; no suspended-App server guarantee."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "No availability guarantee while the application is suspended.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.editor",
+      "behavior": "Built-in web editor and help assets",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "Browser source editing, save, debug and dependent asset loading",
+      "desktopSimulatorAcceptance": [
+        "Bundle appropriately licensed original assets and compare browser loading, editing/save/debug and dependent resources against foreground APIs."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real browser access from a peer device and app foreground return."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.websocket",
+      "behavior": "Search/source/RSS debug WebSockets",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "planned",
+      "originalAcceptanceContract": "Connect, ordered messages, close, reconnect and task termination",
+      "desktopSimulatorAcceptance": [
+        "Compare ordered source/search/RSS debug messages, connect/close/reconnect/backpressure and termination of associated tasks."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify peer-network interruption/reconnect and foreground/suspend boundary."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": null,
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "web.mcp",
+      "behavior": "MCP tools/resources, debug progress and access control",
+      "ownerWorkpackage": "lan-web-services",
+      "status": "planned",
+      "originalAcceptanceContract": "Compare every extracted tool: parameters, errors, progress and side effects",
+      "desktopSimulatorAcceptance": [
+        "Compare all 13 catalogued tools' parameters/results/errors/progress/access-control and side effects using fixed client transcripts."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify real client interop over permitted device foreground networking; no always-on guarantee."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "Foreground service; no availability guarantee while suspended.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "tasks.cron",
+      "behavior": "Automatic tasks, Cron scheduling, execution and missed runs",
+      "ownerWorkpackage": "automatic-tasks",
+      "status": "planned",
+      "originalAcceptanceContract": "Cron boundaries, restart, missed triggers, cancellation, persistence and reentrancy",
+      "desktopSimulatorAcceptance": [
+        "Compare Cron boundaries/persistence/reentrancy/cancel/missed-trigger policy and explicit foreground catch-up; use injected time, not settle sleeps."
+      ],
+      "deferredDeviceAcceptance": [
+        "Observe BGTaskScheduler behavior and foreground catch-up on hardware; do not promise precise Cron or constant background execution."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "feature-catalog"
+      ],
+      "platformDifference": "iOS schedules background execution; precise Cron and persistent services cannot be promised.",
+      "fullCompatibilityEstablished": false
+    },
+    {
+      "id": "platform.integration",
+      "behavior": "Share/open-file/browser/notification and external launch integration",
+      "ownerWorkpackage": "platform-integration",
+      "status": "partially_implemented_pending_acceptance",
+      "originalAcceptanceContract": "File/URL import, script-opened URLs, denied permissions and return to reading",
+      "desktopSimulatorAcceptance": [
+        "Verify file/URL routing, share extension handoff, denied permissions, allowed external URLs/App Intents and retained navigation state in Simulator where supported."
+      ],
+      "deferredDeviceAcceptance": [
+        "Verify actual document providers, share sheets, notification prompts, external Apps and return to reading."
+      ],
+      "existingEvidence": [
+        "feature-comparison",
+        "build10",
+        "sdk-scope-validation"
+      ],
+      "platformDifference": "Android Intents and device identifiers require documented platform mappings.",
+      "fullCompatibilityEstablished": false
+    }
+  ],
+  "existingEvidence": {
+    "feature-comparison": {
+      "path": "docs/legado-ios/feature-comparison.md",
+      "scope": "Current implementation, deliberate product choices and unresolved compatibility boundaries; no whole-project completion claim."
+    },
+    "feature-catalog": {
+      "path": "docs/legado-ios/feature-catalog.json",
+      "scope": "All 64 original feature domains and original acceptance contracts; an inventory, not a measured completion rate."
+    },
+    "migration-status": {
+      "path": "docs/legado-ios/migration-status.md",
+      "scope": "Historical and current source-specific integration evidence; distinguish JSC reader routing, desktop JVM and Simulator native execution."
+    },
+    "traditional-integration": {
+      "path": "docs/legado-ios/traditional-rule-integration.md",
+      "scope": "Limited retained coordinator, required AnalyzeUrl/WebBook integration and unresolved platform seams."
+    },
+    "sdk-scope-validation": {
+      "path": "docs/legado-ios/sdk-and-rule-scope-validation.json",
+      "scope": "c47169d SDK direct-link cleanup and per-key scope creation, actual desktop and main-App Debug Simulator evidence; no new device or full compatibility acceptance."
+    },
+    "coordinator-port": {
+      "path": "docs/legado-ios/original-rule-coordinator-port.json",
+      "scope": "Retained coordinator slice and desktop regression; ordinary JAR inclusion does not establish product routing."
+    },
+    "stateful-reference": {
+      "path": "docs/legado-ios/stateful-port-reference/2026-10-19/record.json",
+      "scope": "Frozen original/port stateful comparison; exact returns/state with two retained exception script-label differences, not all raw calls equal."
+    },
+    "jsonpath-reference": {
+      "path": "docs/legado-ios/jsonpath-public-reference.json",
+      "scope": "Original Android public API observations; compare only the actually ported and executed cases."
+    },
+    "scalar-port": {
+      "path": "docs/legado-ios/scalar-selector-port.json",
+      "scope": "Limited explicit non-URL scalar selector/replacement parity; URL/list/dynamic semantics excluded."
+    },
+    "http-wire": {
+      "path": "docs/legado-ios/http-wire-capability.json",
+      "scope": "Existing bounded original/port wire vectors; not all AnalyzeUrl options or all real sources."
+    },
+    "native-cancel": {
+      "path": "docs/legado-ios/native-worker-thread-fix.json",
+      "scope": "Earlier native fixed mainJs chain, real cancellation and recovery; newer c47169d rerun documented separately."
+    },
+    "local-product": {
+      "path": "docs/legado-ios/local-product-validation.json",
+      "scope": "Actual bounded Debug Simulator product/UI tests, fonts and cached TXT export; no new device acceptance."
+    },
+    "reader-smoke": {
+      "path": "docs/legado-ios/reader-online-smoke.json",
+      "scope": "Fixed online/local text UI scenarios and source-specific limits."
+    },
+    "build10": {
+      "path": "docs/legado-ios/native-reader-experience-build10.json",
+      "scope": "Delivered source-free build10 IPA, exact source and independent static checks; not a device acceptance of new commits."
+    },
+    "device-history": {
+      "path": "docs/legado-ios/device-validation.json",
+      "scope": "Historical standalone runtime report on a user device; do not transfer its acceptance to newly changed code or full product workflows."
+    },
+    "font-provenance": {
+      "path": "Resources/ReaderFonts/ReaderFonts-provenance.json",
+      "scope": "Two existing bundled Chinese font assets, exact provenance and licenses; retain these rather than rebundling unreviewed fonts."
+    },
+    "renewal-research": {
+      "path": "docs/legado-ios/self-renewal-research.json",
+      "scope": "Only manual read-only QueryType probe implemented; single-App free-team transport, signing and replacement installation remain unproven."
+    },
+    "redistribution": {
+      "path": "docs/legado-ios/redistribution-notes.md",
+      "scope": "Historical license partitions, material/brand cleanup and unresolved distribution obligations; contains old statements requiring a dated current-state supplement."
+    },
+    "redistribution-inventory": {
+      "path": "docs/legado-ios/redistribution-inventory.json",
+      "scope": "Historical audit snapshots and hashes; preserve original sourceHEAD and raw evidence rather than silently rewriting them."
+    },
+    "runtime-notices": {
+      "path": "docs/legado-ios/runtime-notices.md",
+      "scope": "37 original notice materials and packaging guards; explicitly not full corresponding source, object-license coverage or license-combination clearance."
+    },
+    "runtime-notices-validation": {
+      "path": "docs/legado-ios/runtime-notices-validation.json",
+      "scope": "Bounded notice staging/guard evidence; not legal clearance."
+    },
+    "provenance": {
+      "path": "docs/legado-ios/provenance-lock.json",
+      "scope": "Locked archive, UI baseline, customized engine and runtime sources; user ZIP identity is not proof of all upstream rights."
+    },
+    "brand-assets": {
+      "path": "Resources/Branding/brand-assets.json",
+      "scope": "Independent generated current branding; not a trademark search or clearance."
+    },
+    "reader-smoke-history": {
+      "path": "docs/legado-ios/previous-reader-smoke-audit.json",
+      "scope": "Exact historical GitHub artifact digests and raw summaries; passing 13/23 position groups and retained later TXT UI endpoint failure, not acceptance of later source."
+    },
+    "reader-supply-measurements": {
+      "path": "docs/legado-ios/reader-supply-measurement-batch.json",
+      "scope": "Prepared owned prefetch/corrupt-cache scenarios and strict stage baseline collection, local portable guard evidence; iOS execution remains separately pending."
+    },
+    "content-rule-schema": {
+      "path": "docs/legado-ios/content-rule-schema-preservation.json",
+      "scope": "Three original ContentRule fields retained in Swift, original Kotlin/Gson observations preserved; new 6/23 Swift acceptance pending, explicit malformed/overflow differences remain."
+    },
+    "review-rule-schema-followup": {
+      "path": "docs/legado-ios/review-rule-schema-followup.json",
+      "scope": "Original 30 ReviewRule fields carried through the existing Swift model; original Gson observations and focused fixture-path guard fix, pending exact corrected Simulator source."
+    },
+    "rule-schema-field-audit": {
+      "path": "docs/legado-ios/rule-schema-field-audit.json",
+      "scope": "Pinned original/Swift field and projection inventory; static field presence does not prove null/coercion/roundtrip compatibility."
+    },
+    "original-rule-defaults-reference": {
+      "path": "docs/legado-ios/original-rule-defaults-reference.json",
+      "scope": "40 actual original Kotlin/Gson public getter/serializer observations, five fields and eight wire forms each; no Swift/iOS parity or rule execution claim."
+    },
+    "all-work-execution-batch": {
+      "path": "docs/legado-ios/all-work-execution-batch.json",
+      "scope": "2026-10-19 all 33 workpackages actionable execution coverage, portable plan guard and in-progress WebDAV restore integrity batch; no full feature acceptance."
+    },
+    "reader-smoke-2747900-failure": {
+      "path": "docs/legado-ios/evidence/reader-smoke-2747900/checkpoint.json",
+      "scope": "Actual source 2747900 run 39249523428: portable guards passed; Swift compilation failed before any iOS tests. Original artifact ZIP retained with verified GitHub digest; pending history is not acceptance."
+    },
+    "reader-smoke-c009a49-actual-failure": {
+      "path": "docs/legado-ios/evidence/reader-smoke-c009a49/checkpoint-result.json",
+      "scope": "Source-bound original artifact digest verified; four test-target compiler diagnostics, zero iOS executions. Repaired source needs actual recompilation."
+    },
+    "reader-build11-device-candidate": {
+      "path": "docs/legado-ios/native-reader-experience-build11.json",
+      "scope": "User-requested unsigned build 11 ordinary-JVM reader; actual Release compilation and independent package/source audits. Contains only read-only self-renewal transport probe; no device/signing/installation/automatic-renewal acceptance."
+    },
+    "self-renewal-device-fixed-endpoint-negative": {
+      "path": "docs/legado-ios/self-renewal-device-transport-build10.json",
+      "scope": "Build10 fixed-loopback timeout before TCP, no response or renewal operations. User separately reports computer on, USB connected, no active VPN and no SideStore; original report did not measure context, and other companion apps are not established."
+    },
+    "self-renewal-bounded-alternate-transport-source-followup": {
+      "path": "docs/legado-ios/self-renewal-alternate-transport-followup.json",
+      "scope": "Nine source references checked against locked Git blobs; bounded same-device RemotePairing discovery proposal. No SDK integration, network scan, device transport or renewal implementation accepted."
+    },
+    "self-renewal-dynamic-discovery-implementation": {
+      "path": "docs/legado-ios/self-renewal-dynamic-discovery-batch.json",
+      "scope": "Implemented bounded original diagnostic; Debug Simulator production app compiled and linked in 6b3a3bd. Test target failed before execution; 13 Swift discovery cases remain unexecuted, test-only repair prepared. Sixteen portable evidence guards and twenty-five report contract guards passed. No phone, authentication or renewal acceptance."
+    },
+    "user-font-transaction-integration": {
+      "path": "docs/legado-ios/user-font-transaction-batch.json",
+      "scope": "Reviewed existing user-font service import/replace/delete transaction and strict local-product 50-method/68-planned-execution gate; actual portable 24+16 and eight-file grammar screen only. Swift/iOS/CoreText execution pending, no full S2 or device acceptance."
+    },
+    "reading-position-write-integrity-integration": {
+      "path": "docs/legado-ios/reading-position-integrity-batch.json",
+      "scope": "Reviewed admitted-order position worker and five owned regressions; 18 methods/28 planned executions, actual portable 24 and four-file grammar screen only. Swift/iOS and full S1/device acceptance pending; historical 13/23 unchanged."
+    },
+    "source-schema-reference-integration": {
+      "path": "docs/legado-ios/source-schema-reference-batch.json",
+      "scope": "Reviewed public original40/unknown13 diagnostic observer and closed xcresult collection gates; actual portable8/19/24/16 only, planned3 methods/319 rows/916 snapshots. Swift observations0; compatibility remains unaccepted."
+    },
+    "stage-checkpoint-1a87f6d": {
+      "path": "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+      "scope": "Initial source/tag/workflow-bound submission observation only; no later cloud status, passing iOS execution or compatibility acceptance."
+    },
+    "font-B-actual-SDK-failure": {
+      "path": "docs/legado-ios/evidence/reader-smoke-ccafee5/failure-summary.json",
+      "scope": "Six production font files compiled and main-app module/link steps recorded; unrelated test-target compiler failure, zero iOS executions."
+    },
+    "stage-checkpoint-1a87f6d-bounded-observation": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/current-observation.json",
+      "scope": "Saved 16:09 UTC API receipt only: C queued and contradictory A run/job versus successful steps. No terminal Release verdict, artifact query or test acceptance."
+    },
+    "reader-launch-memory-integration": {
+      "path": "docs/legado-ios/reader-launch-memory-batch.json",
+      "scope": "Reviewed process-launch CPU/AX and sampled TASK_VM_INFO preparation; actual portable15+20 and seven-file grammar screen only. Two independent measurement selections are not in CI or source1a87f6d; Swift/SDK/launch/memory samples0. No whole S2, device-cold, GPU or performance-improvement acceptance."
+    },
+    "build12-release-audit-a76d380": {
+      "path": "docs/legado-ios/build12-release-audit-a76d380.json",
+      "scope": "Actual source-a76d380 Release IPA and tracked source-byte audits passed, with ordinary-JVM20/168 XML; diagnostic Simulator results and explicit A/C source-scope proof still required before delivery. No device/signing/renewal or license-clearance acceptance."
+    },
+    "C-smoke-preflight-failure": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/failure-record.json",
+      "scope": "Actual source1a87f6d portable preflight failure: nineteen Python setUp errors, no Swift/iOS execution; test-owned root repair leaves production path protection unchanged."
+    },
+    "umd-parser-preparation": {
+      "path": "docs/legado-ios/umd-parser-preparation-batch.json",
+      "scope": "Unregistered bounded UMD type1 text parser preparation: frozen16 sources, original Java five fixtures/fifteen chapter getters, portable12 and three-file grammar only. Eleven Swift methods planned, SDK/iOS0; checked import commit/product reader/TOC/reopen remain ready work. No full UMD/MOBI/product support."
+    },
+    "reader-measurements-runner-integration": {
+      "path": "docs/legado-ios/reader-measurements-runner-batch.json",
+      "scope": "Reviewed independent runner8 code is present, not submitted: exact memory1/UI1/UMD11 leaves, source38/environment/overlay/actual Debug main-payload binding. Original portable collector22/shared24/stage20 raw retained; root rerun is tool-reported-only without new raw. Swift/SDK/new XCTest and launch/memory samples0. Old TXT1/stage50, parser product readiness and all other checkpoints remain independent."
+    }
+  },
+  "retainedExistingWork": [
+    {
+      "item": "Independent brand, removed upstream reserved assets/screenshots and simplified README",
+      "existingEvidence": [
+        "brand-assets",
+        "redistribution",
+        "build10"
+      ]
+    },
+    {
+      "item": "Simplified-Chinese UI, local-mode upstream account/membership/purchase/feedback/CloudKit gating; source-site login retained",
+      "existingEvidence": [
+        "feature-comparison",
+        "local-product",
+        "build10"
+      ]
+    },
+    {
+      "item": "Two licensed bundled Chinese fonts, custom font import and cached TXT export",
+      "existingEvidence": [
+        "font-provenance",
+        "local-product",
+        "build10"
+      ]
+    },
+    {
+      "item": "No-source package and existing user data preservation requirements",
+      "existingEvidence": [
+        "build10",
+        "migration-status"
+      ]
+    },
+    {
+      "item": "Removed 16 unused direct SDK product links, retained seven referenced products and unchanged package locks; no measured size/startup benefit claimed",
+      "existingEvidence": [
+        "sdk-scope-validation"
+      ]
+    },
+    {
+      "item": "Pinned runtime and frozen original/port vectors, source-specific native cancellation/recovery and cache regressions",
+      "existingEvidence": [
+        "sdk-scope-validation",
+        "native-cancel",
+        "stateful-reference",
+        "http-wire"
+      ]
+    },
+    {
+      "item": "Read-only renewal probe and its bounded Simulator evidence; no signer or installation function exists",
+      "existingEvidence": [
+        "renewal-research"
+      ]
+    }
+  ],
+  "openDecisions": [
+    {
+      "id": "single-app-free-team-renewal-transport",
+      "status": "requires_device_evidence",
+      "ownerWorkpackage": "automatic-renewal-feasibility",
+      "detail": "Feasibility has not been established. No-computer/no-companion self-install cannot be certified by mock, Simulator or desktop protocol work."
+    },
+    {
+      "id": "license-combination-and-source-obligations",
+      "status": "unresolved_external_review_may_be_required",
+      "ownerWorkpackage": "license-and-source-closure",
+      "detail": "MPL/GPLv3/GPLv2-exception/ios-tools-AGPL boundaries and exact corresponding-source closure need explicit evidence and review; material automation does not itself settle rights."
+    }
+  ],
+  "validation": {
+    "featureCoverageAndDependencyCheck": "passed_once_after_writing",
+    "verifiedFeatureCount": 64,
+    "allCatalogFeatureIdsOwnedExactlyOnce": true,
+    "workpackageDependenciesAcyclic": true,
+    "stageDependenciesAcyclic": true,
+    "referencedEvidenceFilesExist": true,
+    "featureCompletionInferredFromTestCounts": false,
+    "checkScope": "Plan structure, unique ownership, dependency graphs and evidence path existence only; not implementation or feature acceptance.",
+    "executionInstructionsCount": 33,
+    "executionInstructionsCheck": "passed_strict_33_package_guard",
+    "executionCheckResult": "docs/legado-ios/evidence/all-work-execution/plan-check.json"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "audited-build12-read-only-diagnostic-device-handoff",
+  "recordedAtUTC": "2026-10-19T16:53:06.872391+00:00",
+  "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+  "version": "3.0.0",
+  "build": "12",
+  "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+  "minimumIOS": "18.0",
+  "bundleIdentifier": "local.zhoujianjia.legado-reader",
+  "signed": false,
+  "installed": false,
+  "delivered": true,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "automaticSelfRenewalVerified": false,
+  "delivery": [
+    {
+      "path": ".build/b12-f870fe2fcd/.build/reader-experience/output/YueduReader-experience-unsigned.ipa",
+      "bytes": 106448692,
+      "sha256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
+      "localPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-unsigned.ipa",
+      "copyVerified": true
+    },
+    {
+      "path": ".build/b12-f870fe2fcd/.build/reader-experience/output/build-manifest.json",
+      "bytes": 9681,
+      "sha256": "eaed0ed9e2510164bd615d1e8d398631be7aef2c6b5d024c2560036a46e29f82",
+      "localPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-manifest.json",
+      "copyVerified": true
+    },
+    {
+      "path": ".build/b12-f870fe2fcd/.build/reader-experience/output/LocalBookshelf-source.zip",
+      "bytes": 45320851,
+      "sha256": "34ec584adfde8e75494bc0d24cfbaf2ea4cb48ce03ec602ee6602e039b5c1a69",
+      "localPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-source-a76d380.zip",
+      "copyVerified": true
+    },
+    {
+      "path": ".build/renewal-discovery/build12-delivery-preparation/LocalBookshelf-build12-a76d380-README.txt",
+      "localPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-README.txt",
+      "bytes": 1909,
+      "sha256": "48d59ead5ca0f5701c4928dcb2aa38154b13813bc322ddb83cbf5a453fad48bd",
+      "copyVerified": true
+    }
+  ],
+  "releaseAudit": "docs/legado-ios/build12-release-audit-a76d380.json",
+  "retainedDiagnosticEvidence": {
+    "path": "docs/legado-ios/evidence/renewal-actual-1a87f6d/archive-record.json",
+    "sha256": "5c65f7150adda06e5eefd012f3ab01767eefcb5d69a619cfa8f97e557088790a",
+    "directoryManifest": "docs/legado-ios/evidence/renewal-actual-1a87f6d/archive-directory-manifest.json",
+    "directoryManifestSHA256": "f78173fd3e1348d443f64f3d80bd2b6dc26514ec3d4443c1b93825f7eb93dea0",
+    "addedAfterDeliveryRecorder": true,
+    "newTestsOrAPIQueries": 0
+  },
+  "explicitDiagnosticMapping": {
+    "acceptedBy": "/root",
+    "acceptedAtUTC": "2026-10-19T16:53:06.872391+00:00",
+    "decision": "Accept narrowly scoped diagnostic device handoff only",
+    "ReleaseSourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "actualDiagnosticTestSourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "sameSourceAcceptance": false,
+    "wholeAppOrReleaseBinaryRuntimeAcceptance": false,
+    "sourceScopeReview": {
+      "path": "docs/legado-ios/evidence/reader-build12-a76d380/source-scope/build12-A-C-diagnostic-source-scope-review.json",
+      "sha256": "8f1064d97b340b92b1960dab95cedd56b0ca893a1e919cf99cdcf7911ed3bc9a"
+    },
+    "independentActualCAudit": {
+      "path": "docs/legado-ios/evidence/reader-build12-delivery/C-renewal-actual-independent-audit.json",
+      "sha256": "f5e00d24f53689fd9ceb6b45fc4061b7c5c9d3c6c95d258fb2d3bf0d3e5672f9"
+    },
+    "basis": "Actual C8/13/UI1 and successful preflight apply only to the unchanged narrow diagnostic projection: 28/29 whole inputs equal; the helper differs outside ten raw/AST-identical reachable functions. A IPA, source archive and JVM static/raw-XML audits separately passed. All C results stay C-bound; delivered bytes stay A-bound.",
+    "excluded": [
+      "font and position runtime",
+      "Firestore schema observations",
+      "launch/memory samples",
+      "UMD parser or product import",
+      "physical device behavior",
+      "authenticated service identity",
+      "signing",
+      "installation",
+      "automatic renewal"
+    ],
+    "builtCInfoReReadOffline": false,
+    "originalAggregateRunConflict": {
+      "savedStatus": "in_progress",
+      "savedConclusion": null,
+      "successfulCompletionInferred": false,
+      "conflictPreserved": true,
+      "originalAPIUnmodified": true
+    },
+    "successfulJobAndUploadAcceptanceDoesNotRewriteAggregateAPI": true
+  },
+  "actualDiagnosticTests": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "runID": 39281084369,
+    "job": {
+      "id": 118155310210,
+      "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369/job/118155310210",
+      "status": "completed",
+      "conclusion": "success",
+      "all11StepsCompletedSuccess": true
+    },
+    "groups": {
+      "legacy": "8/8",
+      "discovery": "13/13",
+      "UI": "1/1"
+    },
+    "failures": 0,
+    "skips": 0,
+    "expectedFailures": 0,
+    "platform": "Debug iOS Simulator",
+    "ReleaseIPAExecuted": false
+  },
+  "instructionsZh": "沿用原签名方式与同一账号／团队、主 App 及扩展 Bundle ID 映射覆盖安装，保留书籍、书源及进度，不要卸载。电脑关机、拔 USB，手机 Wi-Fi 开、VPN 关；设置 → 高级 → 自续签验证 → 开始连接验证 → 导出验证报告。无需安装 SideStore。",
+  "requestMeaning": "Only a bounded RemotePairing discovery and same-device TCP diagnostic; no authentication, signing or replacement installation implementation.",
+  "oldReportPreserved": "docs/legado-ios/self-renewal-device-transport-build10.json",
+  "newDeviceReportReceived": false,
+  "builtInSources": false,
+  "privateSourcesReadOrUploaded": false,
+  "temporaryPublicDiagnosticPolicy": {
+    "existingAuthorizationOnly": true,
+    "retentionDays": 1,
+    "formalRedistributionClearanceEstablished": false
+  },
+  "historicalDocumentSnapshots": [
+    "docs/legado-ios/evidence/reader-build12-delivery/completion-plan.json.before",
+    "docs/legado-ios/evidence/reader-build12-delivery/self-renewal-dynamic-discovery-batch.json.before",
+    "docs/legado-ios/evidence/reader-build12-delivery/self-renewal-research.json.before",
+    "docs/legado-ios/evidence/reader-build12-delivery/build12-release-audit-a76d380.json.before"
+  ]
+}
