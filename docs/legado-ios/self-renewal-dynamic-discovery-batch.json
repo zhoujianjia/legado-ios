@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordedOn": "2026-10-19",
   "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
-  "status": "Debug-Simulator-app-compiled-and-linked-test-target-repair-awaiting-reverification",
+  "status": "Debug-Simulator-app-compiled-and-linked-second-test-target-fixture-repaired-awaiting-reverification",
   "trigger": "Build10 fixed-loopback report timed out before TCP; user separately reports computer on, USB connected, no VPN and no SideStore.",
   "implementation": {
     "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
@@ -73,7 +73,7 @@
   ],
   "plannedDeviceCandidate": {
     "build": "12",
-    "status": "awaiting-repaired-Simulator-checkpoint-and-actual-Release-audit",
+    "status": "awaiting-actual-Simulator-tests-and-Release-artifact-audit",
     "delivered": false,
     "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571"
   },
@@ -132,6 +132,26 @@
     {
       "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/typecheck-budget-repair-review.json",
       "sha256": "054d29ce8fab0a9a59f3685b6ff40eedc23ec12c023138ed9776efdc62b64b5e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json",
+      "sha256": "dd2bcc12c4b390c62fbb9d3f7e14d2bc1485f5b09708a155907f94f037823170"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/reader-renewal-probe-evidence.zip",
+      "sha256": "a5671fb085d59adff588d2ec18bc8dcc97e920a1982b26c4c0e7cdb134ac73cb"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/root-repair-independent-review.json",
+      "sha256": "830158a53110021b0376005532821b499cea12a2edcaba8c2b08e01567fed533"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/repair-swift-grammar-screen.json",
+      "sha256": "e32d94a24b49b65bc98679fc3a004bd6ba88b5f8e8db36ce0b09b11f473fb310"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/evidence-manifest.json",
+      "sha256": "d8538942476d8a66a07d303fbf022f38cc26ebc26f6cc78ca2fe24f0b48a00d0"
     }
   ],
   "submittedRepairCheckpoint": {
@@ -143,5 +163,26 @@
     "statusAtInitialBoundedRead": "in_progress",
     "actualPassedTestsOrReleaseAcceptanceEstablished": false,
     "reason": "Two actual compiler failures repaired together; identical production discovery files. Separate font follow-up is excluded from this fixed build12 candidate."
+  },
+  "subsequentActualCloudCheckpoint": {
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "runId": 39272841721,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39272841721",
+    "conclusion": "failure",
+    "actualIOSTestExecutions": 0,
+    "uniqueCompilerDiagnostics": [
+      "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift:266:54: error: constant 'self.book' captured by a closure before being initialized"
+    ],
+    "diagnosticOccurrencesAreNotFailedTestCases": true,
+    "record": "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json",
+    "mainAppScope": "Actual main app Debug iOS-Simulator compile and executable/debug-dylib/preview link steps appear before test-target failure. No Release/device/package or runtime behavior acceptance is inferred.",
+    "sourceRepair": {
+      "path": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+      "sha256": "d7f8aae20ccc2e662fc03b9db2d4c3366e7b5c7c46af5f51c5cef99a00266c1e",
+      "reason": "The map closure now captures a local String, instead of implicitly capturing the incompletely initialized fixture self while its book field is unset.",
+      "productionDiscoveryFilesChanged": false,
+      "SwiftRecompileOrIOSTestAcceptanceEstablished": false
+    },
+    "fontSameSourceRiskIsNotActualFontRunResult": true
   }
 }

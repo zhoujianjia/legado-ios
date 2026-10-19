@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-19T15:36:14.559348+00:00",
+  "kind": "independent-review-of-root-prefetch-initialization-repair",
+  "status": "no-unresolved-static-blocking-findings",
+  "sourceWithActualFailure": "a76d380fdc108db83be68961905ee49edd209571",
+  "actualRun": 39272841721,
+  "sourcePath": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+  "beforeGitBlobSHA256": "160c859b388de9ea83d0ba37b917f108771715f43d98e1b39a80b45bd538ed28",
+  "rootWorkingTreeAfterSHA256": "d7f8aae20ccc2e662fc03b9db2d4c3366e7b5c7c46af5f51c5cef99a00266c1e",
+  "scope": "Only replace the initialized stored host assignment with local let host plus self.host = host; exact normalized source replacement verified.",
+  "reason": "The map closure now captures a local String, instead of implicitly capturing the incompletely initialized fixture self while its book field is unset.",
+  "unchanged": [
+    "Same generated host String and one UUID() expression",
+    "Same source/book/chapters/jump targets and assertions",
+    "Same one test method and two [20,100] planned executions",
+    "No main production source or reader behavior modified"
+  ],
+  "diffCheckExitCode": 0,
+  "grammarScreen": "repair-swift-grammar-screen.json",
+  "fontFixedSourceComparison": {
+    "sourceCommit": "ccafee529e802b28fafc7b89e2c38cf9fc91d4c7",
+    "path": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+    "byteIdenticalToFailedASource": true,
+    "gitBlobSHA256": "160c859b388de9ea83d0ba37b917f108771715f43d98e1b39a80b45bd538ed28",
+    "meaning": "The same test-source initialization defect is present, so it is a compile risk. This is not an observed font run failure or a new query.",
+    "lastActuallyReadRunStatus": "in_progress",
+    "newNetworkRequestsForThisReview": 0
+  },
+  "observedExecutedIOSTestCasesInA": 0,
+  "repairSwiftCompilationExecuted": false,
+  "repairIOSTestsExecuted": false,
+  "productionSourceModifiedByReviewer": false,
+  "testSourceModifiedByReviewer": false,
+  "planModifiedByReviewer": false,
+  "CIQueriedOrTriggeredByReviewerDuringThisReview": false,
+  "unresolvedBlockingFindings": [],
+  "nextAcceptance": "A source-specific Apple SDK recompile/test at root's existing related checkpoint is still required."
+}

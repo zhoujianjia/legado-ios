@@ -253,7 +253,8 @@ private struct PrefetchScenarioFixture {
 
     init(chapterCount: Int) {
         self.chapterCount = chapterCount
-        host = "prefetch-\(UUID().uuidString.lowercased()).example.com"
+        let host = "prefetch-\(UUID().uuidString.lowercased()).example.com"
+        self.host = host
         var source = BookSource(bookSourceUrl: "https://\(host)", bookSourceName: "Owned prefetch fixture")
         source.ruleContent.content = "#content@text"
         self.source = source

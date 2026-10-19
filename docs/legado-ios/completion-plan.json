@@ -731,13 +731,13 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "build 10 固定入口设备报告失败已保留，用户运行条件另行记载。动态服务发现、本机数值地址归属／IPv6 scope／TTL／接口复核、8 秒总截止及零业务帧 TCP 探针已实现并独立源码审查；已写 13 项新测试，尚待 Apple SDK 编译、链接和模拟器执行。完整自动续签仍未实现。",
+        "currentState": "固定入口的原设备报告与另行补充的运行条件已保留。动态发现探针已有两次真实 Xcode 26.2 Debug arm64 Simulator 主 App 编译／链接证据；最新 a76d380 的测试目标因预取夹具初始化时闭包捕获未完成 self 失败，iOS 用例执行仍为 0。已最小改为捕获 local host，独立审查及 grammar screen 通过，尚待实际重编。8 秒截止、地址归属／scope／TTL 复核与零 TCP 业务帧等已实现范围不升级为传输或自动续签成功。",
         "remainingWork": [
           "不收集真实秘密，先记录有界传输候选、认证状态机、发现边界、超时取消和诊断协议。",
           "真机可用后先证明电脑关闭、无伴侣App的同设备认证安装传输；固定端点失败不能排除所有传输，QueryType成功也不是安装成功。",
           "仅传输门槛成立后开始profile／签名、同身份安全替换、冷启和数据保留，随后独立验证允许触发、过期恢复和有限重试。"
         ],
-        "nextAction": "在一个 source-only 检查点实际执行旧 8 项、动态发现 13 项和 UI 1 项；复核原始结果与实际产物权限文案，成功后按固定源码打包 build 12，再请求新通道的设备报告。",
+        "nextAction": "将已审测试初始化修复与相关整批改动集中做 source-only 验证，实际核对旧 8／动态发现 13／UI 1 的原始结果；Release 产物另作精确来源及包审计，全部成立后才交付新通道诊断包。",
         "readiness": "awaiting-cloud",
         "readyPreparation": [
           "审查只读探针长度、超时、取消、错误归一化和不导出原reply的边界，复用已有证据。",
@@ -759,7 +759,8 @@
           "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
           "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
           "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
-          "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift"
+          "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+          "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json"
         ],
         "deferredHardware": [
           "同设备认证transport、profile／签名、替换安装、冷启数据、无人值守与过期恢复全部暂缓真机，不要求用户执行。"

@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "kind": "derived-compiler-failure-summary-not-xcresult-summary",
+  "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+  "runID": 39272841721,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39272841721",
+  "status": "completed",
+  "conclusion": "failure",
+  "uniqueCompilerDiagnostics": [
+    "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift:266:54: error: constant 'self.book' captured by a closure before being initialized"
+  ],
+  "compilerDiagnosticOccurrences": 24,
+  "observedExecutedIOSTestCases": 0,
+  "failedIOSTestCases": null,
+  "caseCountMeaning": "Test target build failed before the runner started; 24 diagnostic repetitions and 26 reported failed build commands are not failing test cases.",
+  "originalXcresultSummaryExists": false,
+  "originalSummaryEntries": [],
+  "evidence": {
+    "rawUnitLog": "docs/legado-ios/evidence/renewal-discovery-a76d380/raw/reader-renewal-probe/unit-tests.log",
+    "rawUnitLogSHA256": "ac83cbfd99a9dc3e52b11bae46665331c062838af3ec347b21afb2f4c5bd6b63",
+    "firstDiagnosticLine": 31949,
+    "appMainModuleSteps": [
+      {
+        "line": 20319,
+        "text": "SwiftEmitModule normal arm64 Emitting\\ module\\ for\\ yuedu_app (in target 'yuedu app' from project 'Yuedu-Reader')"
+      }
+    ],
+    "appMainLinkSteps": [
+      {
+        "line": 19427,
+        "text": "Ld /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/__preview.dylib normal (in target 'yuedu app' from project 'Yuedu-Reader')"
+      },
+      {
+        "line": 25361,
+        "text": "Ld /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader.debug.dylib normal (in target 'yuedu app' from project 'Yuedu-Reader')"
+      },
+      {
+        "line": 25370,
+        "text": "Ld /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader normal (in target 'yuedu app' from project 'Yuedu-Reader')"
+      }
+    ]
+  },
+  "appCompilationScope": "Actual main app Debug iOS-Simulator compile and executable/debug-dylib/preview link steps appear before test-target failure. No Release/device/package or runtime behavior acceptance is inferred.",
+  "artifact": {
+    "id": 12199455217,
+    "bytes": 979209,
+    "sha256": "a5671fb085d59adff588d2ec18bc8dcc97e920a1982b26c4c0e7cdb134ac73cb",
+    "githubDigestMatched": true
+  },
+  "originalArtifactEntryManifest": [
+    {
+      "entry": "reader-renewal-probe/boot-status.log",
+      "bytes": 15400,
+      "sha256": "f564bd52306988d91b88c05e8af066eda3da56523708e836b3918261d246391f"
+    },
+    {
+      "entry": "reader-renewal-probe/info-overlay.json",
+      "bytes": 691,
+      "sha256": "3a71a5d194bc529b2d54239fb263ea1e95424e09d5880cdf4ca498f9c818428b"
+    },
+    {
+      "entry": "reader-renewal-probe/overlays.json",
+      "bytes": 2624,
+      "sha256": "f03099362f5ea1e4729b59f1e9c400f018f767df6fc7c9afc50b1c13d637c6bd"
+    },
+    {
+      "entry": "reader-renewal-probe/prepare.log",
+      "bytes": 7209,
+      "sha256": "16e0f7778c10bfdf840ced7903ba165c3ebe1aee1be9e63d85768da849794048"
+    },
+    {
+      "entry": "reader-renewal-probe/project-overlay.json",
+      "bytes": 1215,
+      "sha256": "b26e7c3407760c4776260bcbec6855a776003053cd684f259ab112ecd3d483f2"
+    },
+    {
+      "entry": "reader-renewal-probe/source-inputs.json",
+      "bytes": 7209,
+      "sha256": "16e0f7778c10bfdf840ced7903ba165c3ebe1aee1be9e63d85768da849794048"
+    },
+    {
+      "entry": "reader-renewal-probe/unit-tests.log",
+      "bytes": 7977592,
+      "sha256": "ac83cbfd99a9dc3e52b11bae46665331c062838af3ec347b21afb2f4c5bd6b63"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+      "bytes": 40,
+      "sha256": "96faa45c2b54e05553291e5b8ec90e59f6e7b23a908ca31153ec52d6b5f9f65b"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~44u7W_-XY5QmfvGGTwKzZR5w0gSi8pdLB6eCtd1fUk9Pq7ghJq97Fv9RNr8cUZokCuO_jCaSsivWPYxOiMHG1A==",
+      "bytes": 616785,
+      "sha256": "c379f432951cb23eab24f4a3f60cb94be2eb95bbde63bbbc27fe9a2396f07c9e"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~GGAznkwLuc73jJDCuLIQxW2Bdov-L1lC8S-RFdQrKcV0TvDJGxCWGHVEAGjI2UVLJUHQ_QUVhXdAwd0D91iHIw==",
+      "bytes": 97,
+      "sha256": "c21d84c26e4dc057ea32161c643b01fceceaa49b1ccadcbe4b759b1b73a83960"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~JPlYuwCF3f7gzziMlJ52bRPMQbp5fVnordZqCp1mTXag3rrVhN8bIBl-T4ZskKyGH8TnVMi2xjlQxcRrK0QGYA==",
+      "bytes": 292,
+      "sha256": "59e593bdf5de3f2dfa74ab2546be27007aed1723549671447b75c964db18fabf"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~hsWc-4fvw412Ndh3pdvKymj8wZANI2Nw1CyfqFonLal4BkGeXM5v38T-XkKUZWJWf34XgeV4EFUohtogAQZYOw==",
+      "bytes": 36,
+      "sha256": "dba2e19680e43e4cd5c024fa5cd08ed6ace54bd2fc89900ce9a78dabc2cb7c45"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~l7Wg2lhTb2C9xA24ymkHnmZR38OrMaWh0rKz-MD09tvGSPm40c3gHAgdK1UrPZyalolQhZMztM07bwJwXQ-GfA==",
+      "bytes": 7138,
+      "sha256": "98f60324b682eaaa8462f28d13437643f121f94506564ae060630132390209cc"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~vuwakbpfFbc4GRWCPEX1qkpchDDsKIIhihCe0rjtbVNAU3J0EzPhTfo8_GnHGx_HXFOIOFDmj7SkctV5WL_DSQ==",
+      "bytes": 118,
+      "sha256": "38534efe4be60d84c8bf53c183f7daa60ac0bb85f7af535d7a498e60a2f4beaf"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/data.0~woCv1vXErEKys8w8J2zRp4b_yX0NY3v-oyyjbhQqRzGm20Qj1y0NTiWCTa3AdrF6p31ODfxnSpE8xPlEB-O4vw==",
+      "bytes": 416,
+      "sha256": "c0dcf644cdcff7c0aecc103679601a9cd8a9709d3615c225bb8ac11bc940a086"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~44u7W_-XY5QmfvGGTwKzZR5w0gSi8pdLB6eCtd1fUk9Pq7ghJq97Fv9RNr8cUZokCuO_jCaSsivWPYxOiMHG1A==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~GGAznkwLuc73jJDCuLIQxW2Bdov-L1lC8S-RFdQrKcV0TvDJGxCWGHVEAGjI2UVLJUHQ_QUVhXdAwd0D91iHIw==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~JPlYuwCF3f7gzziMlJ52bRPMQbp5fVnordZqCp1mTXag3rrVhN8bIBl-T4ZskKyGH8TnVMi2xjlQxcRrK0QGYA==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~hsWc-4fvw412Ndh3pdvKymj8wZANI2Nw1CyfqFonLal4BkGeXM5v38T-XkKUZWJWf34XgeV4EFUohtogAQZYOw==",
+      "bytes": 67,
+      "sha256": "ddaf500b5e056c2d015a0a274f9461d305a8eca2bb545d82ba005d16baa6eadb"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~l7Wg2lhTb2C9xA24ymkHnmZR38OrMaWh0rKz-MD09tvGSPm40c3gHAgdK1UrPZyalolQhZMztM07bwJwXQ-GfA==",
+      "bytes": 331,
+      "sha256": "f6ca66a5e2e7030db643b43df41d161bc272e6cae685ab837d58ad3a44be558a"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~vuwakbpfFbc4GRWCPEX1qkpchDDsKIIhihCe0rjtbVNAU3J0EzPhTfo8_GnHGx_HXFOIOFDmj7SkctV5WL_DSQ==",
+      "bytes": 67,
+      "sha256": "9df5de20bef18c11a56565abeb3fc23f6faf6e460a22d4f0739e0eb6c2c900ac"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Data/refs.0~woCv1vXErEKys8w8J2zRp4b_yX0NY3v-oyyjbhQqRzGm20Qj1y0NTiWCTa3AdrF6p31ODfxnSpE8xPlEB-O4vw==",
+      "bytes": 1,
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "entry": "reader-renewal-probe/xcode-version.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+    },
+    {
+      "entry": "reader-renewal-probe/unit.xcresult/Info.plist",
+      "bytes": 715,
+      "sha256": "3025f78359c69c9d9423ad84fe8f4ded4d555c739acc87da559596af06f936ff"
+    },
+    {
+      "entry": "ci-logs/reader-renewal-existing-guards.log",
+      "bytes": 2421,
+      "sha256": "22da0796a192da2527d732e8db73836553f59703b22769bc88423cfa50072702"
+    },
+    {
+      "entry": "ci-logs/reader-renewal-guards.log",
+      "bytes": 2961,
+      "sha256": "f8d015d161bc8fa18132bfb3edf19cf71cf9533b302d8749d67b978e1c329f7d"
+    },
+    {
+      "entry": "ci-logs/reader-renewal-xcode.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+    },
+    {
+      "entry": "ci-logs/reader-renewal.log",
+      "bytes": 3788,
+      "sha256": "b308332fa8496e9e3244ffa93fcd597b1cc6d26f7da2e8a903a5e69e50c018e9"
+    }
+  ]
+}
