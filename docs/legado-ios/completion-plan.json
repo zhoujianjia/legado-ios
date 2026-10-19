@@ -6,7 +6,7 @@
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
-    "当前状态": "bfebe0a 集中云测在 macOS 便携测试的临时目录别名处失败，尚未进入 Xcode；失败日志与准确源码已保留。目录夹具修复后 20 项工具检查通过。继续补齐原版 ReviewRule 30 字段的往返保留，原版 Kotlin/Gson 15 项观察通过；三套相关书源 Swift 回归合计 19 方法／50 执行仍待修复后的集中云测。S2 阅读体验、预取／缓存与 50 条性能基线也待同次 iOS 验证，全部无需真机任务、完整兼容与段评执行均未完成。",
+    "当前状态": "两批源码与证据已提交：补齐固定预取／损坏缓存场景、严格性能采集及原版 ContentRule／ReviewRule 字段保留。bfebe0a 的 macOS 便携测试夹具路径问题已修；2747900 集中云测已通过该便携检查，iOS 原始结果仍待核对。原版 Kotlin/Gson 探测只证明对应原版行为，新 Swift 19 方法／50 执行、阅读 60／62 与供给 3／6 均不能预先记为通过。S2、完整 schema／原核心兼容及全部无需真机工作仍未完成。 云测期间又补充 40 次原版公开 getter／序列化参考观察，原始输入、Java 类型和 null／标量差异已保存，尚未修改对应 Swift 归一化行为。",
     "实施顺序": [
       {
         "阶段": 1,
@@ -565,7 +565,8 @@
         "build10",
         "content-rule-schema",
         "review-rule-schema-followup",
-        "rule-schema-field-audit"
+        "rule-schema-field-audit",
+        "original-rule-defaults-reference"
       ]
     },
     {
@@ -2525,6 +2526,10 @@
     "rule-schema-field-audit": {
       "path": "docs/legado-ios/rule-schema-field-audit.json",
       "scope": "Pinned original/Swift field and projection inventory; static field presence does not prove null/coercion/roundtrip compatibility."
+    },
+    "original-rule-defaults-reference": {
+      "path": "docs/legado-ios/original-rule-defaults-reference.json",
+      "scope": "40 actual original Kotlin/Gson public getter/serializer observations, five fields and eight wire forms each; no Swift/iOS parity or rule execution claim."
     }
   },
   "retainedExistingWork": [

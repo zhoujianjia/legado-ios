@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-10-19",
+  "stageId": "s3-jvm-rules-http",
+  "workpackage": "source-schema",
+  "status": "original-reference-observed-swift-parity-pending",
+  "说明": "在集中云测执行期间继续准备后续差异修复的原始基线：执行锁定原版五个公开 getter 的缺省／null／空白／标量与容器转换，不改 Swift 模型，不把原版观察当成本项目兼容通过。",
+  "lockedArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "appCodeChanged": false,
+  "workflowChanged": false,
+  "modelsAndGetters": [
+    {
+      "model": "SearchRule",
+      "getter": "getCheckKeyWord"
+    },
+    {
+      "model": "ExploreRule",
+      "getter": "getBookList"
+    },
+    {
+      "model": "BookInfoRule",
+      "getter": "getInit"
+    },
+    {
+      "model": "TocRule",
+      "getter": "getChapterList"
+    },
+    {
+      "model": "ContentRule",
+      "getter": "getCallBackJs"
+    }
+  ],
+  "actualObservations": 40,
+  "wireFormsPerGetter": 8,
+  "observedContracts": [
+    "Absent and null yield Java null; default original Gson omits the null key.",
+    "Empty text and whitespace, including CRLF and U+2003, remain text rather than missing.",
+    "Original StringJsonDeserializer converts true to Java String true and the exact raw numeric token 1e3 to Java String 1e3.",
+    "Objects and arrays become compact JSON text.",
+    "An explicit serializeNulls clone retains declared null fields; this diagnostic variant is distinct from the default original Gson output."
+  ],
+  "rawEvidence": [
+    {
+      "path": "docs/legado-ios/fixtures/rule-defaults-original-cases.json",
+      "bytes": 4881,
+      "sha256": "78cb973cc7fb97a8bdb32ff13c202c31e1d6c0966c31428c4faf101c01dc1f44"
+    },
+    {
+      "path": "docs/legado-ios/fixtures/rule-defaults-original-probe.kt",
+      "bytes": 2386,
+      "sha256": "f0f01a42b4fc70e4e1972e2516eb8a9d509bf437fa06b96c41d63698718524d1"
+    },
+    {
+      "path": "docs/legado-ios/fixtures/rule-defaults-original-results.jsonl",
+      "bytes": 22015,
+      "sha256": "467bbfe63a14a0f99acfb8e90a40391fdd43077cee5a67b09de52d0e162c931f"
+    },
+    {
+      "path": "docs/legado-ios/fixtures/rule-defaults-original-provenance.json",
+      "bytes": 14127,
+      "sha256": "a37cc35b48e234dbea0a48bd39d7980df4cb9b0684ba3b5d7a671bdbf65cbf0e"
+    }
+  ],
+  "limits": [
+    "Reference execution covers one actual public nullable String getter per original model and eight fixed wire forms. It does not prove every field or rule execution protocol.",
+    "Only the original Kotlin/Gson model serializers were executed; no Swift code, iOS tests, source network operations or reader UI were exercised.",
+    "Parcelable/Parcelize are empty platform-only stubs. The eight original Kotlin sources are byte-identical to the pinned ZIP.",
+    "serializeNulls output is an explicit Gson diagnostic variant. It is not a claim that the original application exports using serializeNulls.",
+    "Old Swift safeString normalization and ContentRule.callBackJs empty-to-nil behavior are not changed or validated by this reference fixture.",
+    "Numeric 1e3 is retained as an exact raw JSON token before Gson conversion; no Python numeric parse/re-encoding is used to construct that wire value."
+  ],
+  "previous17And15And7RawGroupsUnchanged": true,
+  "swiftExecuted": false,
+  "iosExecuted": false,
+  "fullSourceSchemaCompatibilityEstablished": false,
+  "allNonDeviceWorkComplete": false,
+  "nextAcceptance": "Use these typed original values and raw wire tokens to design specific Swift preservation fixes without changing unrelated reader routes; compare actual Swift runtime output before declaring parity."
+}
