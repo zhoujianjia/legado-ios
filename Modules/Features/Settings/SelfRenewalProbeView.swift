@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import SwiftUI
+import UIKit
 
 @MainActor @Observable
 private final class SelfRenewalProbeModel {
@@ -19,7 +20,7 @@ private final class SelfRenewalProbeModel {
         reportURL = nil
         defer { isRunning = false }
         do {
-            let result = await probe.run()
+            let result = await probe.runDiscovery()
             try Task.checkCancellation()
             report = result
             reportURL = try await SelfRenewalProbeExport.write(result)
@@ -37,6 +38,7 @@ private final class SelfRenewalProbeModel {
 /// An opt-in diagnostic, not a signing service. Opening Settings starts no connection.
 struct SelfRenewalProbeView: View {
     @Environment(\.appDependencies) private var dependencies
+    @Environment(\.openURL) private var openURL
     @State private var model = SelfRenewalProbeModel()
     @State private var runIdentifier: UUID?
 
@@ -63,24 +65,36 @@ struct SelfRenewalProbeView: View {
                         .foregroundStyle(DSColor.textSecondary)
                 }
             } footer: {
-                Text(localized("僅檢查本機設備服務，尚不執行簽名或安裝。"))
+                Text(localized("手動開始時可能請求本機網路權限；僅檢查屬於本機的入口，不執行簽名或安裝。"))
                     .dsSectionFooter()
             }
             .interfaceSectionSurface()
 
-            if let report = model.report {
+            if let discovery = model.report?.remotePairingDiscovery {
                 Section {
-                    ForEach(report.attempts, id: \.address.rawValue) { attempt in
-                        ThemedLabeledContent(
-                            endpoint(attempt), value: localized(outcomeKey(attempt.outcome))
-                        )
-                        .accessibilityIdentifier(attempt.address == .ipv4
-                                                 ? "self_renewal_attempt_ipv4" : "self_renewal_attempt_ipv6")
+                    ThemedLabeledContent(localized("探索結果"), value: localized(outcomeKey(discovery.outcome)))
+                        .accessibilityIdentifier("self_renewal_discovery_outcome")
+                    ThemedLabeledContent(localized("探索階段"), value: localized(phaseKey(discovery.phase)))
+                        .accessibilityIdentifier("self_renewal_discovery_phase")
+                    ThemedLabeledContent(localized("發現的服務"), value: discovery.discoveredServiceCount.formatted())
+                    ThemedLabeledContent(localized("解析的位址"), value: discovery.resolvedAddressCount.formatted())
+                    ThemedLabeledContent(localized("排除的位址"), value: discovery.rejectedAddressCount.formatted())
+                    ThemedLabeledContent(localized("核准的本機入口"), value: discovery.approvedEndpointCount.formatted())
+                    ThemedLabeledContent(localized("TCP 連線嘗試"), value: discovery.tcpConnectionAttemptsStarted.formatted())
+                    if mayNeedLocalNetworkAccess(discovery) {
+                        Button {
+                            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                        } label: {
+                            SettingsRowLabel(localized("開啟系統設定"), systemImage: "gearshape", role: .action)
+                        }
+                        .accessibilityIdentifier("self_renewal_open_settings")
                     }
                 } header: {
                     Text(localized("本機連線結果"))
                 } footer: {
-                    Text(localized("此探測僅覆蓋本機固定入口，無法判斷其他安裝通道是否可用。"))
+                    Text(localized(mayNeedLocalNetworkAccess(discovery)
+                                   ? "本機網路存取可能受限，可在系統設定中檢查權限。TCP 連通仍不能確認設備服務或自續簽。"
+                                   : "TCP 連通僅代表本機入口可連線，仍不能確認設備服務或自續簽；沒有結果也不能排除其他通道。"))
                         .dsSectionFooter()
                 }
                 .interfaceSectionSurface()
@@ -115,28 +129,46 @@ struct SelfRenewalProbeView: View {
         }
     }
 
-    private func endpoint(_ attempt: SelfRenewalTransportAttempt) -> String {
-        let host = attempt.address == .ipv6 ? "[::1]" : "127.0.0.1"
-        return "\(host):\(attempt.port)"
+    private func mayNeedLocalNetworkAccess(_ discovery: SelfRenewalRemotePairingDiscoveryReport) -> Bool {
+        // DNS-SD PolicyDenied is a permission signal, including while waiting; it is
+        // not evidence that an empty result or a POSIX error has this cause.
+        [discovery.networkError, discovery.lastWaitingError].contains {
+            $0?.domain == "dns" && $0?.code == -65570
+        }
     }
 
-    private func outcomeKey(_ outcome: SelfRenewalTransportOutcome) -> String {
+    private func outcomeKey(_ outcome: SelfRenewalDiscoveryOutcome) -> String {
         switch outcome {
-        case .lockdownConfirmed: return "已確認設備服務"
-        case .protocolError: return "設備服務返回錯誤"
-        case .unexpectedService: return "回應無法確認服務"
-        case .invalidResponse: return "回應格式無效"
+        case .tcpConnected: return "TCP 已連通，服務尚未確認"
+        case .noLocalCandidate: return "未找到屬於本機的入口"
+        case .discoveryTimedOut: return "服務探索逾時"
+        case .discoveryUnavailable: return "服務探索無法使用"
+        case .resolutionFailed: return "服務位址解析失敗"
         case .transportFailed: return "連線未建立"
-        case .peerClosed: return "服務關閉連線"
         case .timedOut: return "連線逾時"
         case .cancelled: return "連線檢查已取消"
+        case .interfaceChanged: return "本機網路介面已變更"
+        case .discoveryChanged: return "探索結果已變更"
+        case .limitExceeded: return "探索結果超過檢查上限"
         case .internalError: return "無法完成檢查"
+        }
+    }
+
+    private func phaseKey(_ phase: SelfRenewalDiscoveryPhase) -> String {
+        switch phase {
+        case .snapshotting: return "讀取本機網路介面"
+        case .discovering: return "探索服務"
+        case .resolving: return "解析服務位址"
+        case .checkingOwnership: return "核對本機位址"
+        case .connecting: return "連線中"
+        case .completed: return "檢查完成"
         }
     }
 }
 
 private enum SelfRenewalProbeExport {
     private struct Envelope: Encodable {
+        let schemaVersion = 2
         let report: SelfRenewalTransportProbeReport
         let appVersion: String?
         let appBuild: String?
@@ -144,8 +176,8 @@ private enum SelfRenewalProbeExport {
         let operatingSystem: String
         let computerPoweredOff = "notMeasured"
         let companionAppsAbsent = "notMeasured"
-        let dynamicRemotePairingDiscoveryAttempted = false
-        let interpretation = "Fixed loopback lockdown QueryType only. No automatic renewal or installation has been proven."
+        let dynamicRemotePairingDiscoveryAttempted: Bool
+        let interpretation = "Opt-in dynamic remote-pairing discovery, same-device address ownership checks, and TCP connection only. DNS-SD queries may be sent; no application frames are sent on TCP. Device service identity, automatic renewal, and installation remain unverified."
     }
 
     /// Encoding and file I/O stay off the main actor in the app's Swift 5 mode.
@@ -163,7 +195,8 @@ private enum SelfRenewalProbeExport {
             report: report,
             appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
             appBuild: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
-            sourceCommit: source, operatingSystem: ProcessInfo.processInfo.operatingSystemVersionString
+            sourceCommit: source, operatingSystem: ProcessInfo.processInfo.operatingSystemVersionString,
+            dynamicRemotePairingDiscoveryAttempted: report.remotePairingDiscovery?.discoveryStarted == true
         )
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]

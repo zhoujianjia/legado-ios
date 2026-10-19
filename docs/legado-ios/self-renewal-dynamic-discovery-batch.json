@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "sourceCommit": null,
+  "status": "implemented-and-source-reviewed-awaiting-Apple-SDK-verification",
+  "trigger": "Build10 fixed-loopback report timed out before TCP; user separately reports computer on, USB connected, no VPN and no SideStore.",
+  "implementation": {
+    "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+    "policy": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+    "native": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+    "UI": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+    "flow": "Opt-in NWBrowser for one service; DNS-SD resolve/address APIs without candidate connection; exact local numeric ownership and TTL; TCP open and close without application frames.",
+    "bonjourType": "_remotepairing._tcp",
+    "bonjourDomain": "local.",
+    "overallDeadlineSeconds": 8,
+    "discoveryWindowSeconds": 3,
+    "maximumServices": 8,
+    "maximumResolvedAddressCallbacks": 32,
+    "maximumApprovedEndpoints": 4,
+    "maximumConcurrentConnections": 1,
+    "maximumTCPDeadlineSeconds": 2,
+    "DNSQueriesMayBeSent": true,
+    "TCPApplicationPayloadBytesSent": 0,
+    "currentUIRepeatsLegacyFixedPortProbe": false,
+    "legacySchemaOneReadCompatibilityRetained": true,
+    "reportSchemaVersion": 2
+  },
+  "safetyAndBoundaries": [
+    "Accept exact captured local numeric addresses only; reject DNS host fallback, malformed/multicast/broadcast/mapped addresses, missing/conflicting scope and excluded interfaces.",
+    "Eligible interface names are numbered lo/en with up and non-point-to-point flags; this is narrow coverage, not proof that VPN or other transports are absent.",
+    "Snapshot comparison includes all captured IP nodes, including excluded interfaces, full raw flags, index, scope and IPv4 mask/broadcast; it does not cover addressless interfaces or all route/proxy changes.",
+    "SDK Host must round-trip address family, raw bytes and link-local interface index. Local destination ownership is not cryptographic device-service identity.",
+    "Only one explicit windowEnded followed by stream completion authorizes any connection. Overflow, invalidation, premature stream end and stale/removed generations fail closed.",
+    "Recheck address snapshot and DNS TTL before each serial attempt. TCP-ready is neither protocol authentication nor signing/installation/renewal.",
+    "C callback context and DNSServiceRef teardown stay on the serial dispatch queue required by the SDK; snapshots run in a detached utility task.",
+    "No credential, pairing file, device identifier, TXT, dynamic endpoint, interface name/index or raw server reply is exported. Counts, enums, elapsed times and numeric errors only."
+  ],
+  "verification": {
+    "portableEvidenceGuardTestsPassed": 16,
+    "independentSourceReviewCompleted": true,
+    "plannedSimulatorCases": {
+      "legacyUnit": 8,
+      "discovery": 13,
+      "UI": 1
+    },
+    "newDiscoverySwiftTestsExecuted": false,
+    "AppleSDKCompilationPassed": false,
+    "AppleSDKLinkPassed": false,
+    "physicalDeviceDynamicDiscoveryExecuted": false,
+    "serviceIdentityVerified": false,
+    "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation."
+  },
+  "retainedReviews": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/tooling-validation.json",
+      "sha256": "4770d358758f9023a911e0c4584e868f630e25fb037e2c5a2ba10824017c690c"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/tooling-independent-review.json",
+      "sha256": "80e8302cf0fb849348cb6c682222c30a6304c3f04b44a46c9d84ed6a8ac12f90"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/native-core-review.json",
+      "sha256": "5d6b4be645c9d2815089420f816f347e01626fcb083b729b5ae664d6dbec5be6"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/independent-acceptance-review.json",
+      "sha256": "c838be2e9b7cd01cc0e37c3978aef72c59163c4411d37ce0bca494f8714913d0"
+    }
+  ],
+  "plannedDeviceCandidate": {
+    "build": "12",
+    "status": "awaiting-source-only-Simulator-checkpoint",
+    "delivered": false
+  },
+  "automaticSelfRenewalImplemented": false,
+  "automaticSelfRenewalVerified": false,
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "primaryReferences": [
+    "https://developer.apple.com/documentation/technotes/tn3151-choosing-the-right-networking-api",
+    "https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy",
+    "https://github.com/apple-oss-distributions/mDNSResponder/blob/d4658af3f5f291311c6aee4210aa6d39bda82bbe/mDNSShared/dns_sd.h"
+  ]
+}

@@ -20,6 +20,8 @@ build 9 使用源码 `903e90a`，相关 Swift、资源、Info、工程和测试�
 
 自续签另加手动只读探针：前两次构建的编译问题已修正并保留原记录。源码 `97d9f0f` 的[独立模拟器重测](https://github.com/zhoujianjia/legado-ios/actions/runs/39146602853)已实际通过 8 项服务测试和 1 项界面测试，零失败／跳过；下载后逐项核对了原始结果、源码哈希、截图与辅助功能文本。用户提供的 [build 10 设备报告](self-renewal-device-transport-build10.json)中，两个固定本机入口均在连接阶段超时、收到 0 字节，未确认设备服务；电脑、USB、VPN 等条件未由报告测量。build 11 的探针源码相同，相同条件无需仅为包号变化重测。探针不执行签名或安装，配对、签名、覆盖安装、数据保留和后台续签仍未验证，见[研究记录](self-renewal-research.json)。
 
+动态服务发现与本机数值地址筛选已接入同一手动入口，替代界面原先的固定端口操作。原生 DNS-SD 解析不先连接候选，连接前检查 TTL、接口及 IPv6 scope；TCP 建立后立即关闭，报告不导出动态地址或服务名。该实现和 13 项新测试已独立审查，16 项便携工具测试通过，实际 Apple SDK／模拟器结果待检查点验收；完整自动续签仍未实现，见[本批记录](self-renewal-dynamic-discovery-batch.json)。
+
 源码 `594fd21` 的 build 10 已通过 Release 真机目标构建，并下载核对实际无书源 IPA、两个字体及许可、13 个原生模块、39 个导出和普通 JAR；云端 135 项 JVM 测试零失败／跳过。随附源码 ZIP 的 2,649 个文件逐字节匹配该提交，不含本机未提交研究或私人书源。IPA、源码、清单与说明已保存到 `C:\Users\ZJJ\Downloads`，见[build 10 记录](native-reader-experience-build10.json)。此轮临时公开产物保留一天；本包仍需自行签名，尚无 build 10 真机验收，也尚未实现自动续签。
 
 2026-10-19 在暂缓真机测试期间，后续源码保留了未接入阅读路由的原 `AnalyzeRule` 协调器切片，修复同名文本／二进制缓存、块状 JS 库分类及关闭后的宿主调用；完整桌面回归 153 项通过，见[协调器记录](original-rule-coordinator-port.json)。原版有状态观察已独立冻结，并用[可重复运行工具](../../scripts/legado-ios/stateful-port-reference/README.md)实际重放 47 次调用：46 个返回值、9 次状态修改和 112 个前后状态快照一致；一次异常的两处原文仍有脚本编号差异，见[完整对照记录](stateful-port-reference/2026-10-19/record.json)。后续[生命周期控制实验](stateful-environment-lifetime-investigation.json)已将差异定位到重复的 CryptoJS 注册；对齐测试环境后，47 次 API 调用原始结果一致，但产品隔离策略和原始基线未改写，不计为完整兼容。

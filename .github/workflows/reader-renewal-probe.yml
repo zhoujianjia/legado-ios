@@ -19,7 +19,7 @@ defaults:
 jobs:
   probe:
     runs-on: macos-15
-    timeout-minutes: 80
+    timeout-minutes: 95
     env:
       LEGADO_RUNTIME_SOURCE_ONLY: '1'
     steps:
@@ -44,7 +44,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
-      - name: Execute only eight probe unit cases and one probe UI case
+      - name: Execute eight fixed-port cases, thirteen discovery cases and one diagnostic UI case
         run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
       - name: Preserve probe test evidence without application binaries
         if: always()
@@ -61,7 +61,7 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This source-only Debug Simulator workflow selects exactly eight SelfRenewalTransportProbeTests and one SelfRenewalProbeUITests case. Actual xcresult summaries require the fixed counts, zero failures and zero skips; test nodes must match the fixed method identities. It does not repeat the 64-case reader smoke suite.
-          Unit network cases inject owned temporary loopback listeners. UI diagnostics observe Simulator endpoints only. Passing validates bounded read-only probing, redaction, cancellation and the export interface; it does not establish iPhone service reachability, independent installation, signing, self-renewal or unattended background operation. No Apple account or real pairing file is used. Computer-powered-off and absence-of-companion-app conditions remain unmeasured.
-          Exact source hashes, audited local-mode Info/project overlays, synthetic cloud configuration, final build settings, logs, xcresult bundles and UI attachments are retained. The existing independent app identifiers require zero project replacements when already present. LEGADO_RUNTIME_SOURCE_ONLY=1 excludes the experimental JVM. No device archive, IPA or main-app binary is generated for distribution or uploaded by this workflow.
+          This source-only Debug Simulator workflow selects exactly eight SelfRenewalTransportProbeTests, thirteen SelfRenewalDiscoveryProbeTests and one SelfRenewalProbeUITests case in three independently checked xcresult bundles. Every group requires its fixed count and exact method identities, zero failures and zero skips. It does not repeat the reader smoke suite.
+          Existing QueryType network cases inject owned temporary loopback listeners. Discovery fixtures inject browser, resolver, interface, clock and TCP seams; the TCP adapter case uses an owned temporary listener and requires zero application payload. The explicit UI operation browses only RemotePairing, filters numeric same-device addresses, opens TCP and closes without sending an application frame. It no longer starts the fixed-port QueryType probe. Passing validates bounded diagnostics, redaction, cancellation and the export interface; it does not establish iPhone local-network privacy behavior, service identity, authentication, signing, installation or self-renewal. No Apple account or real pairing file is used. Computer-powered-off and absence-of-companion-app conditions remain unmeasured.
+          Exact source hashes, audited local-mode Info/project overlays, synthetic cloud configuration, final build settings, logs, xcresult bundles and UI attachments are retained. The actual built Info.plist must preserve Calibre and declare exactly one RemotePairing Bonjour service; its privacy fallback must match both source build configurations, and all five built privacy localizations must match their corresponding source values. The existing independent app identifiers require zero project replacements when already present. LEGADO_RUNTIME_SOURCE_ONLY=1 excludes the experimental JVM. No device archive, IPA or main-app binary is generated for distribution or uploaded by this workflow.
           TEXT

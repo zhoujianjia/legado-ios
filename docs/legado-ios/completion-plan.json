@@ -183,11 +183,10 @@
     ],
     "awaitingEvidenceQueue": [
       "reading-quick-panel-accessibility",
-      "backup-webdav"
-    ],
-    "deferredQueue": [
+      "backup-webdav",
       "automatic-renewal-feasibility"
     ],
+    "deferredQueue": [],
     "currentDeviceCandidate": {
       "userRequestedOn": "2026-10-19",
       "scopeZh": "用户主动要求真机续签验证；现阶段仅交付只读连接检查，其他真机待测边界不变。",
@@ -722,14 +721,14 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "用户已提供 build 10 设备报告：电脑开机、USB 连接、手机无 VPN／SideStore（运行条件由用户另行说明，原报告未自动测量）；两个固定本机入口在 connecting 阶段超时，TCP 未建立且收到 0 字节。build 11 Release 已编译、独立核验并交付，但探针源码相同，无需相同条件重测。配对、签名及覆盖安装未实现，完整自动续签未验证。",
+        "currentState": "build 10 固定入口设备报告失败已保留，用户运行条件另行记载。动态服务发现、本机数值地址归属／IPv6 scope／TTL／接口复核、8 秒总截止及零业务帧 TCP 探针已实现并独立源码审查；已写 13 项新测试，尚待 Apple SDK 编译、链接和模拟器执行。完整自动续签仍未实现。",
         "remainingWork": [
           "不收集真实秘密，先记录有界传输候选、认证状态机、发现边界、超时取消和诊断协议。",
           "真机可用后先证明电脑关闭、无伴侣App的同设备认证安装传输；固定端点失败不能排除所有传输，QueryType成功也不是安装成功。",
           "仅传输门槛成立后开始profile／签名、同身份安全替换、冷启和数据保留，随后独立验证允许触发、过期恢复和有限重试。"
         ],
-        "nextAction": "依据已锁定上游的动态 _remotepairing._tcp 发现路径，准备有界只读发现与本机数值地址归属过滤，先做取消、超时、地址变更和报告脱敏的夹具测试，再单独验证 Apple SDK 与设备可达性；认证传输成立后才推进签名与覆盖安装，不以新包号代替通道修复。",
-        "readiness": "deferred-device",
+        "nextAction": "在一个 source-only 检查点实际执行旧 8 项、动态发现 13 项和 UI 1 项；复核原始结果与实际产物权限文案，成功后按固定源码打包 build 12，再请求新通道的设备报告。",
+        "readiness": "awaiting-cloud",
         "readyPreparation": [
           "审查只读探针长度、超时、取消、错误归一化和不导出原reply的边界，复用已有证据。",
           "准备无真实秘密的协议夹具；transport前不引入signer或新AGPL续签依赖。"
@@ -745,7 +744,12 @@
           "docs/legado-ios/native-reader-experience-build10.json",
           "docs/legado-ios/native-reader-experience-build11.json",
           "docs/legado-ios/self-renewal-device-transport-build10.json",
-          "docs/legado-ios/self-renewal-alternate-transport-followup.json"
+          "docs/legado-ios/self-renewal-alternate-transport-followup.json",
+          "docs/legado-ios/self-renewal-dynamic-discovery-batch.json",
+          "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+          "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+          "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+          "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift"
         ],
         "deferredHardware": [
           "同设备认证transport、profile／签名、替换安装、冷启数据、无人值守与过期恢复全部暂缓真机，不要求用户执行。"
@@ -3615,6 +3619,10 @@
     "self-renewal-bounded-alternate-transport-source-followup": {
       "path": "docs/legado-ios/self-renewal-alternate-transport-followup.json",
       "scope": "Nine source references checked against locked Git blobs; bounded same-device RemotePairing discovery proposal. No SDK integration, network scan, device transport or renewal implementation accepted."
+    },
+    "self-renewal-dynamic-discovery-implementation": {
+      "path": "docs/legado-ios/self-renewal-dynamic-discovery-batch.json",
+      "scope": "Implemented bounded original diagnostic with 16 portable evidence guards passed; new 13 Swift cases written, Apple SDK and device execution pending. No renewal acceptance."
     }
   },
   "retainedExistingWork": [

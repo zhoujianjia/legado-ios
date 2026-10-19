@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "reviewedSourceCommit": "299c9f2b970b63098bc5c9c1d6e5743e72e22319",
+  "status": "preimplementation-contract-review",
+  "reviewed": [
+    ".agents/skills/yuedu-swift/SKILL.md",
+    "CLAUDE.md",
+    "docs/legado-ios/self-renewal-alternate-transport-followup.json",
+    "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+    "Modules/Features/Settings/SelfRenewalProbeView.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalTransportProbeTests.swift",
+    "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
+    "Info.plist",
+    "Yuedu-Reader.xcodeproj/project.pbxproj",
+    "scripts/reader-experience/renewal-probe-tools.py",
+    "scripts/reader-experience/renewal-probe-tests.sh",
+    "scripts/reader-experience/smoke-tools.py",
+    "scripts/reader-experience/stage-config.py",
+    "scripts/reader-experience/build.sh",
+    "scripts/reader-experience/native-smoke-tools.py"
+  ],
+  "agreedRouting": {
+    "existingFixedLoopbackRunAndEightUnitTestsPreserved": true,
+    "newUIOperation": "dynamic discovery, proven-local numeric address selection, TCP open, close without payload",
+    "fixedPortProbeRunsBeforeDiscovery": false,
+    "newReportSchema": 2,
+    "legacySchemaOneDecodingPreserved": true,
+    "originalDeviceReportBytesRewritten": false
+  },
+  "coreAcceptance": [
+    "Browse only _remotepairing._tcp in local.; no all-type enumeration, advertising, custom multicast, pairing input or guessed ports.",
+    "Resolve SRV and numeric addresses before connection. Never create a connection to an unresolved service endpoint or hostname. Browser loopback metadata does not establish ownership.",
+    "Use bounded numeric interface snapshots. Declare accepted interface name/type/flags policy. Excluded VPN interface names do not establish absence of a VPN on the device.",
+    "Reject malformed, oversized, wildcard, multicast, limited/directed broadcast, nonlocal and ambiguous addresses. Directed broadcast requires interface netmask/brdaddr knowledge.",
+    "IPv6 link-local ownership requires canonical address bytes and validated same-interface scope index. Reject missing/wrong scope rather than guessing. Handle or reject IPv4-mapped IPv6 explicitly.",
+    "Revalidate complete relevant interface snapshot immediately before each connection. Ownership, flags, netmask, address set or scope changes stop the probe without connecting.",
+    "Connect only to an approved numeric endpoint and discovered port. No LAN candidate fallback or peer substitution.",
+    "One overall deadline bounds browse, resolve and connect. At most eight examined results, four approved endpoints, one active connection and a two-second per-connect deadline.",
+    "Pre-cancellation, in-stage cancellation, result removal, duplicate results, resolver failure, browser waiting, connection waiting/ready/failure and late callbacks all finish exactly once and tear down resources.",
+    "Once TCP is ready, close without application send/receive, QueryType, TLS, account, session, pairing, signing or installation work.",
+    "Empty discovery is distinct from proven permission denial. TCP-ready establishes reachability only, not service identity, authenticated transport or renewal.",
+    "Report JSON contains only fixed categories, stages, counts, bounded elapsed times and numeric normalized errors; no names, hostnames, address strings, discovered ports, TXT, interface identities, raw payloads or error descriptions."
+  ],
+  "fixtureAcceptance": [
+    "Service/type/domain and valid SRV port selection; browser loopback hint with resolved nonlocal address rejects.",
+    "IPv4 canonical equality and directed broadcasts with multiple masks; IPv6 compressed forms, explicit scope, missing/wrong scope, multicast/unspecified and mapped-address policy.",
+    "Interface changes after approval and immediately before connect produce zero connect calls.",
+    "Duplicate/removal/result cap and endpoint cap cannot create unbounded resolution, storage or network work.",
+    "Inject clock, browser, resolver, interface snapshot and TCP adapters; synchronously invoking callbacks and timeout/cancel/ready races cannot double resume or leave live handles.",
+    "Inject browser/resolver/connection waiting and terminal failures separately; a waiting state can recover to ready within the deadline.",
+    "Pre-cancel, every-stage cancel, repeated runs, UI reentry and teardown after disappearance preserve one active run and no postcancel connection.",
+    "Synthetic private service names, addresses, TXT and error text are absent from the complete encoded report.",
+    "Schema-one fixture still decodes; schema-two absent optional discovery field and actual discovery payload have explicit expected behavior; report metadata accurately describes the operation.",
+    "Existing eight QueryType tests remain fixture-only and unchanged in claim. New discovery cases are selected by exact suite/method identity, with zero failures/skips, in the existing isolated Simulator protocol.",
+    "UI merely visiting diagnostic does not start discovery. Explicit start exposes discovery result and export, clearly unverified service/renewal state. UI timeout accommodates real bounded deadline, not state-settling sleeps."
+  ],
+  "integrationConstraints": [
+    "Update report schema and export envelope together; the old export currently hardcodes dynamicRemotePairingDiscoveryAttempted=false and fixed-loopback interpretation.",
+    "Keep original reports and historical validators frozen. Any new offline inspector must branch explicitly by schema rather than accepting arbitrary new fields in schema one.",
+    "Add new service and test files plus relevant Info/localization sources to renewal sourceInputs; current source inventory is limited to thirteen inputs.",
+    "Expand expected test case identities and shell selections, fixed counts and workflow descriptions together. Added tests must actually run, not merely compile.",
+    "NSBonjourServices currently declares only Calibre. Add exact RemotePairing type while preserving existing Calibre behavior.",
+    "The current local-network description is configured in two project build settings and overridden by five localized InfoPlist.strings resources. All user-facing versions must cover the new explicit diagnostic purpose.",
+    "Smoke source overlays and unsigned finalization currently preserve arbitrary Bonjour/usage fields without asserting the new capability. Verify final built app Info and localization bytes, not only source plist text.",
+    "Preserve existing native smoke private overlay/source stamping behavior and source-only Debug path; no entitlement, language-mode, default actor isolation or distribution direction changes."
+  ],
+  "previousSmoke": {
+    "runID": 39262540685,
+    "sourceCommit": "52059d00e1e9c5ee6552acc6fc1f74c32b4e545f",
+    "oneReadOnlyCheck": true,
+    "status": "in_progress",
+    "currentStep": "Execute existing smoke groups and the batch-end reader experience checks",
+    "portableGuardsFixtureAndToolchainSteps": "success",
+    "swiftCompilationPassed": "notEstablishedByAvailableMetadata",
+    "iOSTestsPassed": "notEstablishedByAvailableMetadata",
+    "artifactDownloaded": false,
+    "localEvidence": ".build/renewal-discovery/previous-smoke/inspection.json"
+  },
+  "claims": {
+    "testsExecutedByThisReview": 0,
+    "trackedFilesModified": false,
+    "CITriggered": false,
+    "deviceExecuted": false,
+    "automaticSelfRenewalImplemented": false,
+    "sameDeviceTransportVerified": false
+  }
+}

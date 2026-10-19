@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "status": "portable-checks-passed-sdk-and-device-not-executed",
+  "files": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "sha256": "469846fadf1e64fd00b317530137176d5a54fdce776f7e820b2ac44d232e439b"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "sha256": "58b712899946a9f9a1206c8d273c91031c3fa9fec3b745d101e7ec2a914f8055"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "sha256": "21c2de5235a5680fdb6aaf46b9cc647fe0efd29b57a845ae4f4b2e2112ab3ede"
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "sha256": "e51e573a1c163c0467233e646dee6912307d18459cfe6381ae37ea3a93c70e8f"
+    }
+  ],
+  "checksActuallyExecuted": [
+    {
+      "command": "python -B scripts/reader-experience/test-renewal-probe-tools.py -v",
+      "exitCode": 0,
+      "passedTests": 16,
+      "failedTests": 0
+    },
+    {
+      "command": "D:/app/Git/bin/bash.exe -n scripts/reader-experience/renewal-probe-tests.sh",
+      "exitCode": 0
+    },
+    {
+      "command": ".tools/actionlint/actionlint.exe -shellcheck= .github/workflows/reader-renewal-probe.yml",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check -- <the four declared files>",
+      "exitCode": 0
+    }
+  ],
+  "fixedSimulatorSelection": {
+    "unit": 8,
+    "discovery": 13,
+    "ui": 1
+  },
+  "sourceInputs": 29,
+  "swiftCompilationExecuted": false,
+  "iOSTestsExecuted": false,
+  "deviceExecuted": false,
+  "CITriggered": false,
+  "independentToolingReview": "requested-from-root-and-adapter"
+}

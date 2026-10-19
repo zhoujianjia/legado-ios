@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "status": "source-review-complete-no-remaining-source-review-blockers-apple-sdk-validation-pending",
+  "reviewer": "renewal_discovery_adapter",
+  "workspaceBaseCommit": "299c9f2b970b63098bc5c9c1d6e5743e72e22319",
+  "sourceFiles": [
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+      "sha256": "6f6e2728040c6327b96d2ef948e562937dcf356753ecdbbd0a72dbfd3296dc0c",
+      "bytes": 5664
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+      "sha256": "7c46967d7e9c1d4330abbb98dd9383610597eeb1cca9b3807127445fb9394bf0",
+      "bytes": 17086
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+      "sha256": "da8339177b721d17f82e11a54316bf9a05b800b84ad611ff434152240c8015c5",
+      "bytes": 24042
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+      "sha256": "0ad91c2003222241dcfab1962f2fa3fa17e783af6a0c55f09dc45db8eeb2fcad",
+      "bytes": 23078
+    }
+  ],
+  "closedFindings": [
+    {
+      "id": "resolution-failure-priority",
+      "confirmation": "When all candidates are absent, a recorded DNS resolution failure takes precedence over an earlier resolved-address count. The existing failure-distinction test includes valid address -> removed -> resolutionFailed -> windowEnded and asserts zero TCP destinations."
+    },
+    {
+      "id": "numeric-host-roundtrip",
+      "confirmation": "Before NWConnection creation, checkedHost rejects name fallback and requires the exact expected IP family and raw address bytes; IPv6 link-local also requires matching SDK interface index. The existing scope test uses the actual lo0 index for its SDK-roundtrip assertion."
+    },
+    {
+      "id": "native-callback-and-short-mask-lifetime",
+      "confirmation": "DNS-SD refs deactivate and deallocate on the same required serial queue before context ownership is released. C pointers do not cross async hops. Raw two-byte sockaddr header reads precede bounded full-host or short-mask decoding."
+    },
+    {
+      "id": "fail-closed-observation-window",
+      "confirmation": "TCP requires an explicit normal windowEnded and a closed stream; cancellation, overflow, invalidation and unexpected termination cannot authorize partial discovery results. Address TTL and current interface ownership are rechecked before connecting."
+    }
+  ],
+  "reviewedBoundaries": [
+    "Only _remotepairing._tcp in local. is browsed; SRV targets are restricted to local. or localhost. DNS-SD resolves addresses before any candidate TCP connection.",
+    "A TCP-only attempt has no send/receive or TLS/session/pair/account/sign/install behavior, closes on its single completion, and does not establish service identity or automatic renewal.",
+    "The interface snapshot includes IP-address nodes and raw flags, including ineligible interface addresses, but not unaddressed AF_LINK nodes or the complete route table. Narrow eligible interface classification is not proof that no VPN exists.",
+    "Reports expose bounded counts, categories, phases and normalized errors; service names, addresses, scope identifiers, interface names, dynamic ports and TXT stay out of the report."
+  ],
+  "validation": {
+    "readOnlyIncrementalSourceReviewCompleted": true,
+    "gitDiffCheckPassed": true,
+    "swiftOrClangTypecheckExecuted": false,
+    "appleSDKCompileExecuted": false,
+    "appleSDKLinkExecuted": false,
+    "simulatorTestsExecuted": false,
+    "physicalDeviceExecutionPerformed": false,
+    "networkOrDeviceScanPerformed": false,
+    "credentialsOrPairingFilesRead": false,
+    "reviewTreatsSyntaxScreenAsTypecheck": false
+  },
+  "acceptanceClaims": {
+    "sameDeviceTransportVerified": false,
+    "serviceIdentityVerified": false,
+    "automaticSelfRenewalImplemented": false,
+    "signingVerified": false,
+    "installationVerified": false
+  },
+  "primaryReferences": [
+    "https://developer.apple.com/documentation/technotes/tn3151-choosing-the-right-networking-api",
+    "https://developer.apple.com/documentation/dnssd/dnsservicesetdispatchqueue(_:_:)",
+    "https://github.com/apple-oss-distributions/mDNSResponder/blob/d4658af3f5f291311c6aee4210aa6d39bda82bbe/mDNSShared/dns_sd.h",
+    "https://github.com/apple-oss-distributions/Libinfo/blob/main/gen.subproj/getifaddrs.c"
+  ]
+}

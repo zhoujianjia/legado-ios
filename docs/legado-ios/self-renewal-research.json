@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "device-fixed-endpoint-transport-negative-candidate-delivered",
+  "status": "dynamic-discovery-implemented-awaiting-Simulator-verification",
   "product": "single-reader",
   "requiredConditions": {
     "freeApplePersonalTeam": true,
@@ -21,6 +21,197 @@
     "expiryRecoveryVerified": false
   },
   "implementedExperiment": {
+    "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+    "policy": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+    "native": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+    "UI": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+    "flow": "Opt-in NWBrowser for one service; DNS-SD resolve/address APIs without candidate connection; exact local numeric ownership and TTL; TCP open and close without application frames.",
+    "bonjourType": "_remotepairing._tcp",
+    "bonjourDomain": "local.",
+    "overallDeadlineSeconds": 8,
+    "discoveryWindowSeconds": 3,
+    "maximumServices": 8,
+    "maximumResolvedAddressCallbacks": 32,
+    "maximumApprovedEndpoints": 4,
+    "maximumConcurrentConnections": 1,
+    "maximumTCPDeadlineSeconds": 2,
+    "DNSQueriesMayBeSent": true,
+    "TCPApplicationPayloadBytesSent": 0,
+    "currentUIRepeatsLegacyFixedPortProbe": false,
+    "legacySchemaOneReadCompatibilityRetained": true,
+    "reportSchemaVersion": 2,
+    "entry": "Settings / Advanced / Self-renewal verification",
+    "manualStartRequired": true,
+    "operationsNotPerformed": [
+      "TLS",
+      "session",
+      "pairing",
+      "Apple login",
+      "signing",
+      "installation"
+    ],
+    "successfulTCPProvesServiceOrRenewal": false,
+    "negativeResultExcludesOtherTransports": false
+  },
+  "verification": {
+    "portableEvidenceGuardTestsPassed": 16,
+    "independentSourceReviewCompleted": true,
+    "plannedSimulatorCases": {
+      "legacyUnit": 8,
+      "discovery": 13,
+      "UI": 1
+    },
+    "newDiscoverySwiftTestsExecuted": false,
+    "AppleSDKCompilationPassed": false,
+    "AppleSDKLinkPassed": false,
+    "physicalDeviceDynamicDiscoveryExecuted": false,
+    "serviceIdentityVerified": false,
+    "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation.",
+    "record": "self-renewal-dynamic-discovery-batch.json",
+    "physicalDeviceExecution": "New dynamic discovery not executed; prior build10 fixed-endpoint report remains separately recorded.",
+    "xcodeWorkflow": ".github/workflows/reader-renewal-probe.yml"
+  },
+  "upstreamSourceLocks": [
+    {
+      "repository": "SideStore/SideStore",
+      "commit": "d97ec133719d79916675bdaf722b82a8d091d545",
+      "license": "AGPL-3.0"
+    },
+    {
+      "repository": "SideStore/minimuxer",
+      "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909",
+      "license": "AGPL-3.0",
+      "relationship": "exact SideStore gitlink"
+    },
+    {
+      "repository": "SideStore/idevice",
+      "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
+      "license": "MIT",
+      "relationship": "actual minimuxer dependency release v0.1.68-ss-3e55c84"
+    },
+    {
+      "repository": "jkcoxson/LocalDevVPN",
+      "commit": "af3fd697803ada4ac2b8d518358f5ab0a534844c",
+      "relationship": "outer packet-tunnel route, not embedded"
+    }
+  ],
+  "findings": [
+    "The documented SideStore route uses a separate VPN app; it does not satisfy the single-app requirement.",
+    "Apple's capability table does not list Network Extensions or Personal VPN for free Apple Developer provisioning; copying the packet-tunnel extension is not a verified solution.",
+    "The actual idevice dependency also has a userspace CDTunnel adapter. Its ordinary outer TCP connection and authenticated same-device protocol still require device evidence.",
+    "RemotePairing's initial, TLS, RSD and service ports can be discovered or negotiated dynamically. Fixed-port refusal cannot establish a universal impossibility result.",
+    "No supported free-team direct installation API was established. Private symbol existence is not evidence of usable installation permission.",
+    "iOS schedules background tasks; even a future working foreground renewal path would not establish reliable unattended renewal."
+  ],
+  "sourceReuse": {
+    "upstreamSigningOrInstallationCodeAdded": false,
+    "upstreamDependencyAdded": false,
+    "appleCredentialsOrPairingRecordsRead": false,
+    "realDeviceIdentifiersExported": false
+  },
+  "alternateOTATransport": {
+    "repository": "claration/feather",
+    "commit": "7078b053c0af262809a48e4d3898d42b0d35fedf",
+    "wikiCommit": "2ecb8e822fd47e5dc942f82df381c0dcd7517077",
+    "sourceInspectionOnly": true,
+    "freePersonalTeamOTAInstallation": "unknown-no-primary-passing-evidence",
+    "documentedProvisioning": "Apple Distribution certificate with Ad Hoc profile",
+    "selfUpdate": "locked Feather Server implementation rejects its own bundle ID; this does not establish an OS-wide prohibition",
+    "appleDocumentedSelfUpdate": "in-house HTTPS OTA can be opened from the app; this is not evidence for free Personal Team or an app-hosted server surviving replacement",
+    "profileRenewalProvidedByOTATransport": false,
+    "unattendedOperationProven": false,
+    "integrationPerformed": false
+  },
+  "primaryReferences": [
+    "https://docs.sidestore.io/docs/installation/prerequisites",
+    "https://developer.apple.com/help/account/reference/supported-capabilities-ios/",
+    "https://developer.apple.com/documentation/backgroundtasks/choosing-background-strategies-for-your-app",
+    "https://developer.apple.com/documentation/marketplacekit/applibrary",
+    "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
+    "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
+    "https://github.com/jkcoxson/LocalDevVPN/blob/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift",
+    "https://github.com/claration/feather/blob/7078b053c0af262809a48e4d3898d42b0d35fedf/Feather/Views/Library/Install/InstallPreviewView.swift",
+    "https://github.com/claration/feather/wiki/Using-an-Apple-Developer-Account/2ecb8e822fd47e5dc942f82df381c0dcd7517077",
+    "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
+  ],
+  "nextGates": [
+    "Run and independently review the source-bound 8 legacy, 13 discovery and 1 UI Simulator cases, including actual SDK linking and built privacy metadata.",
+    "After SDK verification, deliver an independently audited build12 changed diagnostic; do not ask the user to repeat the unchanged fixed-loopback experiment.",
+    "Inspect device discovery, local-network access and same-device TCP evidence before a separately bounded authenticated transport implementation.",
+    "Prove profile renewal, signing, same-identity replacement, preserved data, background retry and expiry recovery before claiming automatic self-renewal."
+  ],
+  "completedGates": [
+    "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed."
+  ],
+  "nextDeviceCandidate": {
+    "build": "11",
+    "status": "delivered_unsigned_same_probe_as_negative_build10_report",
+    "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39255216718",
+    "record": "native-reader-experience-build11.json",
+    "builtInSources": false,
+    "IPAIndependentlyAudited": true,
+    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-unsigned.ipa",
+    "ipaSHA256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f",
+    "signedOrInstalled": false,
+    "automaticSelfRenewalImplemented": false,
+    "equivalentBuild10Report": "self-renewal-device-transport-build10.json",
+    "repeatUnchangedProbeUnderSameConditionsRequested": false
+  },
+  "latestDeviceReport": {
+    "record": "self-renewal-device-transport-build10.json",
+    "outcome": "Both fixed loopback endpoints timed out in connecting, TCP not established, zero response bytes.",
+    "lastWaitingError": {
+      "domain": "posix",
+      "code": 1
+    },
+    "specificDenialMechanismEstablished": false,
+    "computerUSBVPNAndCompanionContext": "Original report did not measure these conditions. User reports computer on, USB connected, no active VPN and no SideStore; other companion apps not established.",
+    "unchangedBuild11ProbeMustNotBeTreatedAsFix": true,
+    "automaticSelfRenewalVerified": false,
+    "userReportedRunContext": {
+      "source": "User reply on 2026-10-19; not automatically measured by the app.",
+      "computerPoweredOn": true,
+      "USBConnected": true,
+      "VPNActive": false,
+      "SideStorePresent": false,
+      "otherCompanionApps": "notEstablished"
+    }
+  },
+  "nextTransportSlice": {
+    "record": "self-renewal-alternate-transport-followup.json",
+    "sourceReferencesChecked": 9,
+    "scope": "Bounded single-service discovery, validated same-device numeric destinations, TCP-open only; no protocol payload, credentials or pairing input.",
+    "implementationPerformed": false,
+    "SDKOrDeviceValidationPerformed": false
+  },
+  "previousDeviceCandidates": [
+    {
+      "build": "10",
+      "status": "user-report-received-fixed-endpoint-transport-negative",
+      "builtInSources": false,
+      "publicIPAUploadEnabled": true,
+      "privateArtifactChannelRequiredByCurrentPolicy": false,
+      "temporaryPublicUploadAuthorized": true,
+      "artifactRetentionDays": 1,
+      "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39178530335",
+      "record": "native-reader-experience-build10.json",
+      "IPAIndependentlyAudited": true,
+      "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-594fd21-unsigned.ipa",
+      "ipaSHA256": "6db01f77340ffb37d7989b70fa1ffe7cef8e9453be2da96b235cf6c5f4711f8c",
+      "signedOrInstalled": false,
+      "automaticSelfRenewalImplemented": false,
+      "deviceReport": "self-renewal-device-transport-build10.json"
+    }
+  ],
+  "currentUserRequest": {
+    "requestedOn": "2026-10-19",
+    "deviceVerificationExplicitlyAuthorized": true,
+    "scope": "Read-only transport diagnostic only; no implemented automatic renewal to test.",
+    "record": "native-reader-experience-build11.json"
+  },
+  "previousFixedLoopbackExperiment": {
     "service": "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
     "screen": "Modules/Features/Settings/SelfRenewalProbeView.swift",
     "entry": "Settings / Advanced / Self-renewal verification",
@@ -46,7 +237,7 @@
     "negativeResultExcludesOtherTransports": false,
     "successfulQueryProvesRenewal": false
   },
-  "verification": {
+  "previousFixedLoopbackVerification": {
     "windowsPortableProbeGuards": {
       "passed": 10
     },
@@ -189,144 +380,9 @@
       "otherTransportsExcluded": false
     }
   },
-  "upstreamSourceLocks": [
-    {
-      "repository": "SideStore/SideStore",
-      "commit": "d97ec133719d79916675bdaf722b82a8d091d545",
-      "license": "AGPL-3.0"
-    },
-    {
-      "repository": "SideStore/minimuxer",
-      "commit": "12be70dc2627307a16bfd2dc7a009080d5bec909",
-      "license": "AGPL-3.0",
-      "relationship": "exact SideStore gitlink"
-    },
-    {
-      "repository": "SideStore/idevice",
-      "commit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
-      "license": "MIT",
-      "relationship": "actual minimuxer dependency release v0.1.68-ss-3e55c84"
-    },
-    {
-      "repository": "jkcoxson/LocalDevVPN",
-      "commit": "af3fd697803ada4ac2b8d518358f5ab0a534844c",
-      "relationship": "outer packet-tunnel route, not embedded"
-    }
-  ],
-  "findings": [
-    "The documented SideStore route uses a separate VPN app; it does not satisfy the single-app requirement.",
-    "Apple's capability table does not list Network Extensions or Personal VPN for free Apple Developer provisioning; copying the packet-tunnel extension is not a verified solution.",
-    "The actual idevice dependency also has a userspace CDTunnel adapter. Its ordinary outer TCP connection and authenticated same-device protocol still require device evidence.",
-    "RemotePairing's initial, TLS, RSD and service ports can be discovered or negotiated dynamically. Fixed-port refusal cannot establish a universal impossibility result.",
-    "No supported free-team direct installation API was established. Private symbol existence is not evidence of usable installation permission.",
-    "iOS schedules background tasks; even a future working foreground renewal path would not establish reliable unattended renewal."
-  ],
-  "sourceReuse": {
-    "upstreamSigningOrInstallationCodeAdded": false,
-    "upstreamDependencyAdded": false,
-    "appleCredentialsOrPairingRecordsRead": false,
-    "realDeviceIdentifiersExported": false
-  },
-  "alternateOTATransport": {
-    "repository": "claration/feather",
-    "commit": "7078b053c0af262809a48e4d3898d42b0d35fedf",
-    "wikiCommit": "2ecb8e822fd47e5dc942f82df381c0dcd7517077",
-    "sourceInspectionOnly": true,
-    "freePersonalTeamOTAInstallation": "unknown-no-primary-passing-evidence",
-    "documentedProvisioning": "Apple Distribution certificate with Ad Hoc profile",
-    "selfUpdate": "locked Feather Server implementation rejects its own bundle ID; this does not establish an OS-wide prohibition",
-    "appleDocumentedSelfUpdate": "in-house HTTPS OTA can be opened from the app; this is not evidence for free Personal Team or an app-hosted server surviving replacement",
-    "profileRenewalProvidedByOTATransport": false,
-    "unattendedOperationProven": false,
-    "integrationPerformed": false
-  },
-  "primaryReferences": [
-    "https://docs.sidestore.io/docs/installation/prerequisites",
-    "https://developer.apple.com/help/account/reference/supported-capabilities-ios/",
-    "https://developer.apple.com/documentation/backgroundtasks/choosing-background-strategies-for-your-app",
-    "https://developer.apple.com/documentation/marketplacekit/applibrary",
-    "https://github.com/SideStore/minimuxer/blob/12be70dc2627307a16bfd2dc7a009080d5bec909/DeviceGateway/idevice/IdeviceGateway.swift",
-    "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/ffi/src/tunnel_provider.rs",
-    "https://github.com/jkcoxson/LocalDevVPN/blob/af3fd697803ada4ac2b8d518358f5ab0a534844c/TunnelProv/PacketTunnelProvider.swift",
-    "https://github.com/claration/feather/blob/7078b053c0af262809a48e4d3898d42b0d35fedf/Feather/Views/Library/Install/InstallPreviewView.swift",
-    "https://github.com/claration/feather/wiki/Using-an-Apple-Developer-Account/2ecb8e822fd47e5dc942f82df381c0dcd7517077",
-    "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
-  ],
-  "nextGates": [
-    "Preserve the negative fixed-endpoint build10 report and separately supplied computer-on/USB-connected/no-VPN/no-SideStore context; do not repeat the identical probe solely for build11 or claim computer-independent renewal.",
-    "Evaluate bounded alternate same-device transport/discovery from locked primary implementations; do not infer all transports from this fixed-loopback failure.",
-    "Only after transport is demonstrated, validate an authenticated session, signing, replacement installation, cold launch and preserved data.",
-    "Validate background triggering, failure retry and expiry recovery separately before claiming automatic self-renewal."
-  ],
-  "completedGates": [
-    "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed."
-  ],
-  "nextDeviceCandidate": {
-    "build": "11",
-    "status": "delivered_unsigned_same_probe_as_negative_build10_report",
-    "sourceCommit": "ccdddd30853179b0c7a6b3d134f902c28f12e9f4",
-    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39255216718",
-    "record": "native-reader-experience-build11.json",
-    "builtInSources": false,
-    "IPAIndependentlyAudited": true,
-    "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build11-ccdddd3-unsigned.ipa",
-    "ipaSHA256": "bd423464bc25c84338cb4eb0c2a0b1046c569f59a318dbbebff681d1c61aed6f",
-    "signedOrInstalled": false,
-    "automaticSelfRenewalImplemented": false,
-    "equivalentBuild10Report": "self-renewal-device-transport-build10.json",
-    "repeatUnchangedProbeUnderSameConditionsRequested": false
-  },
-  "latestDeviceReport": {
-    "record": "self-renewal-device-transport-build10.json",
-    "outcome": "Both fixed loopback endpoints timed out in connecting, TCP not established, zero response bytes.",
-    "lastWaitingError": {
-      "domain": "posix",
-      "code": 1
-    },
-    "specificDenialMechanismEstablished": false,
-    "computerUSBVPNAndCompanionContext": "Original report did not measure these conditions. User reports computer on, USB connected, no active VPN and no SideStore; other companion apps not established.",
-    "unchangedBuild11ProbeMustNotBeTreatedAsFix": true,
-    "automaticSelfRenewalVerified": false,
-    "userReportedRunContext": {
-      "source": "User reply on 2026-10-19; not automatically measured by the app.",
-      "computerPoweredOn": true,
-      "USBConnected": true,
-      "VPNActive": false,
-      "SideStorePresent": false,
-      "otherCompanionApps": "notEstablished"
-    }
-  },
-  "nextTransportSlice": {
-    "record": "self-renewal-alternate-transport-followup.json",
-    "sourceReferencesChecked": 9,
-    "scope": "Bounded single-service discovery, validated same-device numeric destinations, TCP-open only; no protocol payload, credentials or pairing input.",
-    "implementationPerformed": false,
-    "SDKOrDeviceValidationPerformed": false
-  },
-  "previousDeviceCandidates": [
-    {
-      "build": "10",
-      "status": "user-report-received-fixed-endpoint-transport-negative",
-      "builtInSources": false,
-      "publicIPAUploadEnabled": true,
-      "privateArtifactChannelRequiredByCurrentPolicy": false,
-      "temporaryPublicUploadAuthorized": true,
-      "artifactRetentionDays": 1,
-      "sourceCommit": "594fd21552ea6513f900f1fcc8be328fc07e893f",
-      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39178530335",
-      "record": "native-reader-experience-build10.json",
-      "IPAIndependentlyAudited": true,
-      "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build10-594fd21-unsigned.ipa",
-      "ipaSHA256": "6db01f77340ffb37d7989b70fa1ffe7cef8e9453be2da96b235cf6c5f4711f8c",
-      "signedOrInstalled": false,
-      "automaticSelfRenewalImplemented": false,
-      "deviceReport": "self-renewal-device-transport-build10.json"
-    }
-  ],
-  "currentUserRequest": {
-    "requestedOn": "2026-10-19",
-    "deviceVerificationExplicitlyAuthorized": true,
-    "scope": "Read-only transport diagnostic only; no implemented automatic renewal to test.",
-    "record": "native-reader-experience-build11.json"
+  "nextDevelopmentCandidate": {
+    "build": "12",
+    "status": "awaiting-source-only-Simulator-checkpoint",
+    "delivered": false
   }
 }

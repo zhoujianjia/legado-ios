@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import plistlib
+import re
 import sys
 
 
@@ -20,7 +21,11 @@ smoke = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(smoke)
 TAG_PREFIX = "reader-renewal-"
 UNIT_SUITE = "SelfRenewalTransportProbeTests"
+DISCOVERY_SUITE = "SelfRenewalDiscoveryProbeTests"
 UI_SUITE = "SelfRenewalProbeUITests"
+LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
+BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
+USAGE_KEY = "NSLocalNetworkUsageDescription"
 EXPECTED_CASES = {
     "unit": {UNIT_SUITE + "/" + name for name in (
         "confirmsQueryTypeWithoutExportingPrivateFields",
@@ -32,15 +37,36 @@ EXPECTED_CASES = {
         "cancellationAndPreCancellationFinishOnce",
         "recordsNetworkFailureWithoutCredentialClaims",
     )},
+    "discovery": {DISCOVERY_SUITE + "/" + name for name in (
+        "acceptsOnlyOwnedAddresses",
+        "rejectsNonUnicastAndMalformedAddresses",
+        "scopedIPv6NeedsExactInterface",
+        "rejectsBroadcastAndExcludedInterfaces",
+        "snapshotsDetectRelevantTopologyChanges",
+        "connectsOnlyAfterClosedWindowAndKeepsReportRedacted",
+        "removalsAndExpiredRecordsCannotConnect",
+        "incompleteOrOverflowedDiscoveryNeverConnects",
+        "revalidatesOwnershipAndTTLBeforeEachConnection",
+        "cancellationAndGlobalDeadlineCloseAllWork",
+        "enforcesBudgetsAndPreservesDistinctFailures",
+        "retainsSchemaOneReportCompatibility",
+        "tcpAdapterConnectsAndClosesWithoutSendingPayload",
+    )},
     "ui": {UI_SUITE + "/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"},
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+    "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+    "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+    "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
     "Modules/Features/Settings/SelfRenewalProbeView.swift",
     "Modules/Features/Settings/ProfileView.swift",
     "Targets/Yuedu/SharedApp/AppDependencies.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalTransportProbeTests.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
+    "Info.plist",
+    "Yuedu-Reader.xcodeproj/project.pbxproj",
     "scripts/reader-experience/renewal-probe-tools.py",
     "scripts/reader-experience/renewal-probe-tests.sh",
     "scripts/reader-experience/smoke-tools.py",
@@ -48,7 +74,8 @@ SOURCE_INPUTS = (
     "scripts/xctest.sh",
     "scripts/sim.sh",
     ".github/workflows/reader-renewal-probe.yml",
-)
+) + tuple("Resources/" + language + ".lproj/" + table
+          for language in LANGUAGES for table in ("Localizable.strings", "InfoPlist.strings"))
 
 
 def validate_tag():
@@ -60,19 +87,76 @@ def require_source_only():
         raise ValueError("Renewal diagnostics must use LEGADO_RUNTIME_SOURCE_ONLY=1")
 
 
-def source_inputs():
+def source_inputs(overlays=None):
     records = []
     for path in SOURCE_INPUTS:
         original = smoke.git("show", "HEAD:" + path, binary=True)
         actual = (smoke.REPO / path).read_bytes()
         if actual != original:
-            raise ValueError("Probe source input differs from checked-out HEAD: " + path)
-        records.append({"path": path, "sha256": hashlib.sha256(actual).hexdigest(), "bytes": len(actual)})
+            # These two inputs alone have an independently reviewed local-mode overlay.
+            # Their source fingerprint must remain the original checked-out Git bytes.
+            overlay = next((overlays.get(key, {}) for key in ("infoOverlay", "projectOverlay")
+                            if overlays.get(key, {}).get("path") == path), None) if overlays else None
+            if (path not in smoke.OVERLAYS or overlay is None
+                    or overlay.get("originalSHA256") != hashlib.sha256(original).hexdigest()
+                    or overlay.get("overlaySHA256") != hashlib.sha256(actual).hexdigest()):
+                raise ValueError("Probe source input differs from checked-out HEAD: " + path)
+        records.append({"path": path, "sha256": hashlib.sha256(original).hexdigest(), "bytes": len(original)})
     return records
+
+
+def decoded_strings_value(path, key):
+    """Read source OpenStep strings and Xcode's binary/XML compiled strings."""
+    raw = path.read_bytes()
+    if len(raw) > 64 * 1024:
+        raise ValueError("Oversized privacy localization table")
+    if raw.startswith(b"bplist") or raw.lstrip().startswith((b"<?xml", b"<plist")):
+        table = plistlib.loads(raw)
+        value = table.get(key) if isinstance(table, dict) else None
+    else:
+        text = raw.decode("utf-16" if raw.startswith((b"\xff\xfe", b"\xfe\xff")) else "utf-8-sig")
+        matches = re.findall(r'^\s*"' + re.escape(key) + r'"\s*=\s*("(?:[^"\\\r\n]|\\.)*")\s*;\s*$',
+                             text, flags=re.MULTILINE)
+        if len(matches) != 1:
+            raise ValueError("Privacy localization must contain exactly one usage description")
+        # OpenStep supports uppercase four-digit Unicode escapes as well as JSON's escapes.
+        value = json.loads(re.sub(r"(?<!\\)((?:\\\\)*)\\U([0-9a-fA-F]{4})", r"\1\\u\2", matches[0]))
+    if not isinstance(value, str) or not value.strip() or len(value) > 1024:
+        raise ValueError("Missing or invalid local-network usage description")
+    return value
+
+
+def verify_built_discovery_metadata(app, info):
+    services = info.get("NSBonjourServices")
+    if (not isinstance(services, list) or len(services) != len(BONJOUR_SERVICES)
+            or any(not isinstance(value, str) for value in services)
+            or set(services) != set(BONJOUR_SERVICES)):
+        raise ValueError("Built Bonjour services must preserve Calibre and declare exactly one RemotePairing type")
+    project = (smoke.REPO / smoke.config.PROJECT).read_text(encoding="utf-8")
+    fallbacks = re.findall(r'^\s*INFOPLIST_KEY_NSLocalNetworkUsageDescription\s*=\s*("(?:[^"\\\r\n]|\\.)*")\s*;\s*$',
+                           project, flags=re.MULTILINE)
+    if len(fallbacks) != 2:
+        raise ValueError("Both project configurations must declare the local-network privacy fallback")
+    values = [json.loads(value) for value in fallbacks]
+    if not values[0].strip() or values[0] != values[1] or info.get(USAGE_KEY) != values[0]:
+        raise ValueError("Built local-network privacy fallback differs from both source project configurations")
+    localized = []
+    for language in LANGUAGES:
+        relative = language + ".lproj/InfoPlist.strings"
+        source = smoke.REPO / "Resources" / relative
+        built = app / relative
+        if decoded_strings_value(built, USAGE_KEY) != decoded_strings_value(source, USAGE_KEY):
+            raise ValueError("Built local-network privacy localization differs from source: " + language)
+        localized.append({"language": language, "sourceSHA256": smoke.config.digest(source),
+                          "builtSHA256": smoke.config.digest(built), "usageDescriptionMatchesSource": True})
+    return {"bonjourServices": list(BONJOUR_SERVICES), "fallbackMatchesBothSourceConfigurations": True,
+            "localizedUsageDescriptions": localized}
 
 
 def prepare(work):
     require_source_only()
+    if (work / "overlays.json").exists() or (work / "source-inputs.json").exists():
+        raise ValueError("Refusing to overwrite prior renewal preparation evidence")
     records = source_inputs()
     audit = smoke.prepare(work, tag_prefix=TAG_PREFIX)
     record = {"schemaVersion": 1, "sourceCommit": audit["sourceCommit"],
@@ -129,7 +213,7 @@ def result(work):
     inputs = smoke.read_json(work / "source-inputs.json")
     if (inputs.get("sourceCommit") != source or inputs.get("runtimeSourceOnly") is not True
             or inputs.get("sourceTag") != TAG_PREFIX + source[:7]
-            or inputs.get("sourceInputs") != source_inputs()
+            or inputs.get("sourceInputs") != source_inputs(audit)
             or inputs.get("intendedTests") != {key: sorted(value) for key, value in EXPECTED_CASES.items()}):
         raise ValueError("Renewal source-input audit changed or differs from this source")
     settings = smoke.read_json(work / "build-settings.json")
@@ -149,35 +233,41 @@ def result(work):
     if (info.get("CFBundleSupportedPlatforms") != ["iPhoneSimulator"]
             or info.get("CFBundleIdentifier") != smoke.config.MAIN_BUNDLE):
         raise ValueError("Renewal test host must be the isolated Simulator reader")
+    metadata = verify_built_discovery_metadata(app, info)
     if plistlib.loads((app / "GoogleService-Info.plist").read_bytes()) != smoke.config.synthetic_config():
         raise ValueError("The diagnostic test host must include only synthetic Firebase configuration")
     smoke.config.no_jvm_payload(app)
     groups = {}
-    for group in ("unit", "ui"):
+    for group in EXPECTED_CASES:
         groups[group] = {
             **smoke.verify_summary(smoke.read_json(work / (group + "-summary.json")), len(EXPECTED_CASES[group])),
             **verify_cases(smoke.read_json(work / (group + "-tests.json")), group),
         }
     evidence = {}
     for name in ("build-settings.json", "source-inputs.json", "overlays.json", "project-overlay.json",
-                 "info-overlay.json", "unit-summary.json", "unit-tests.json", "ui-summary.json", "ui-tests.json"):
+                 "info-overlay.json", "unit-summary.json", "unit-tests.json", "discovery-summary.json",
+                 "discovery-tests.json", "ui-summary.json", "ui-tests.json"):
         evidence[name] = smoke.config.digest(work / name)
-    return {"schemaVersion": 1, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
+    return {"schemaVersion": 2, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
             "status": "passed", "configuration": "Debug", "executionPlatform": "ios-simulator",
             "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "targetedTests": groups,
             "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "sourceInputs": inputs["sourceInputs"], "evidenceSHA256": evidence,
+            "builtDiscoveryMetadata": metadata,
             "runtimeSourceOnly": True, "ipaGenerated": False, "ipaUploaded": False,
             "appleAccountUsed": False, "pairingRecordUsed": False,
             "iphoneTransportVerified": False, "physicalDeviceValidationPassed": False,
+            "serviceIdentityVerified": False,
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Simulator tests of a read-only diagnostic, not a delivered IPA or iPhone test.",
                             "Unit network responses come from owned temporary loopback fixture listeners.",
-                            "The UI may observe only the Simulator's own default lockdown endpoints.",
+                            "The explicit UI operation browses only RemotePairing, filters numeric local ownership, opens TCP and closes without an application payload.",
+                            "The existing eight QueryType fixture cases remain separate from thirteen discovery cases and one UI case.",
+                            "A bare TCP connection does not establish service identity or an authenticated usable transport.",
                             "No Apple login, pairing, signing, installation or renewal operation is performed.",
-                            "Loopback-only endpoint results cannot exclude all direct same-device transports."]}
+                            "The previous fixed-loopback experiment does not exclude alternate transports; discovery fixtures and Simulator UI do not establish iPhone reachability."]}
 
 
 def main():
@@ -190,7 +280,7 @@ def main():
     verify = commands.add_parser("verify-tests")
     verify.add_argument("--tests", type=Path, required=True)
     verify.add_argument("--summary", type=Path, required=True)
-    verify.add_argument("--group", choices=("unit", "ui"), required=True)
+    verify.add_argument("--group", choices=tuple(EXPECTED_CASES), required=True)
     args = parser.parse_args()
     try:
         if args.phase == "validate-tag":

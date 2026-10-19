@@ -33,6 +33,13 @@ xcrun xcresulttool get test-results summary --path "$WORK/unit.xcresult" > "$WOR
 xcrun xcresulttool get test-results tests --path "$WORK/unit.xcresult" > "$WORK/unit-tests.json"
 python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group unit \
   --summary "$WORK/unit-summary.json" --tests "$WORK/unit-tests.json"
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/discovery-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/discovery.xcresult" \
+  -only-testing:'yuedu appTests/SelfRenewalDiscoveryProbeTests'
+xcrun xcresulttool get test-results summary --path "$WORK/discovery.xcresult" > "$WORK/discovery-summary.json"
+xcrun xcresulttool get test-results tests --path "$WORK/discovery.xcresult" > "$WORK/discovery-tests.json"
+python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group discovery \
+  --summary "$WORK/discovery-summary.json" --tests "$WORK/discovery-tests.json"
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/ui-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/ui.xcresult" \
   -only-testing:'yuedu appUITests/SelfRenewalProbeUITests'

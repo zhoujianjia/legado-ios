@@ -61,6 +61,7 @@ struct SelfRenewalTransportProbeReport: Codable, Sendable {
     let signingAttempted: Bool
     let installationAttempted: Bool
     let renewalProven: Bool
+    let remotePairingDiscovery: SelfRenewalRemotePairingDiscoveryReport?
 }
 
 /// Read-only endpoint evidence. No host/port input, credentials, pairing or installation APIs.
@@ -113,7 +114,7 @@ struct SelfRenewalTransportProbe: Sendable {
             attempts: attempts, cancelled: Task.isCancelled || attempts.contains { $0.outcome == .cancelled },
             testTransportInjected: testTransportInjected, tlsAttempted: false, sessionStarted: false,
             pairingAttempted: false, accountAccessed: false, signingAttempted: false,
-            installationAttempted: false, renewalProven: false
+            installationAttempted: false, renewalProven: false, remotePairingDiscovery: nil
         )
     }
 }
