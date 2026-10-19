@@ -1,0 +1,90 @@
+{
+  "id": "cross-compression-blocks",
+  "status": "matched-owned-expectations",
+  "binary": {
+    "path": "run/fixtures/cross-compression-blocks/fixture.umd",
+    "bytes": 439,
+    "sha256": "2044ddc9c93c2be81e542ed59f8786a338bd3d01c880918be9977c383ec0ee22"
+  },
+  "chapterCount": 3,
+  "totalUTF16LEBytes": 72788,
+  "writerChunkSizeFromUnmodifiedSource": 32768,
+  "expectedChunkCountFromOwnedInputAndOriginalWriter": 3,
+  "metadataObservedWithTypeAndNull": {
+    "title": {
+      "type": "java.lang.String",
+      "value": "跨压缩块"
+    },
+    "author": {
+      "type": "java.lang.String",
+      "value": "测试作者"
+    },
+    "year": {
+      "type": null,
+      "value": null
+    },
+    "month": {
+      "type": null,
+      "value": null
+    },
+    "day": {
+      "type": null,
+      "value": null
+    },
+    "bookType": {
+      "type": null,
+      "value": null
+    },
+    "bookMan": {
+      "type": null,
+      "value": null
+    },
+    "shopKeeper": {
+      "type": null,
+      "value": null
+    }
+  },
+  "chapters": [
+    {
+      "index": 0,
+      "title": "块边界一",
+      "offsetBytes": 0,
+      "rawUTF16LEBytes": 32772,
+      "rawSHA256": "e03862d23374e1479be280e68a2ce9f84de8760d249db23969a90c813baa386a",
+      "publicStringType": "java.lang.String",
+      "publicStringWasNull": false,
+      "publicStringUTF8Bytes": 49156,
+      "publicStringSHA256": "ad5a066fce60a30ebf0f6ea4fae384c96c404ba2ca79501c974a62ecc45acc1a",
+      "paragraphSeparatorCount": 0,
+      "expectationMatchesOriginalReader": true
+    },
+    {
+      "index": 1,
+      "title": "块边界二",
+      "offsetBytes": 32772,
+      "rawUTF16LEBytes": 40004,
+      "rawSHA256": "f7b84bdbd8c37295c3d0cc3a1b51766c8e4360f8ed368190bd58acffb6e8bf07",
+      "publicStringType": "java.lang.String",
+      "publicStringWasNull": false,
+      "publicStringUTF8Bytes": 40004,
+      "publicStringSHA256": "0d127debbdc4feb7991b77f53158bed8c0487d32d719c58ac6a54834aebd6f56",
+      "paragraphSeparatorCount": 10000,
+      "expectationMatchesOriginalReader": true
+    },
+    {
+      "index": 2,
+      "title": "块边界三",
+      "offsetBytes": 72776,
+      "rawUTF16LEBytes": 12,
+      "rawSHA256": "c4350833106bc56b6fbbd4749eea0c891cc4813896c55c571fc8fe51416a2d67",
+      "publicStringType": "java.lang.String",
+      "publicStringWasNull": false,
+      "publicStringUTF8Bytes": 16,
+      "publicStringSHA256": "be70dfa8c081820a0fac6d523ef0f972467c1cb38a681fb11b4f1bf806c0fb31",
+      "paragraphSeparatorCount": 0,
+      "expectationMatchesOriginalReader": true
+    }
+  ],
+  "actualPublicOutput": "run/fixtures/cross-compression-blocks/reader-output.json",
+  "independentOwnedInput": "run/fixtures/cross-compression-blocks/fixture-input.json"
+}

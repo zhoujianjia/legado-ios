@@ -1,0 +1,740 @@
+{
+  "schemaVersion": 1,
+  "createdAtUTC": "2026-10-19T15:53:23.079752+00:00",
+  "status": "original-java-reference-executed-five-owned-fixtures-matched",
+  "scope": "原版 Java 桌面公开 API 参考与自有文本 fixture；不是 UMD 产品支持验收。",
+  "sourceZIP": {
+    "original": "F:\\legado-master.zip",
+    "archived": "run/original/legado-master.zip",
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "bytes": 11178463
+  },
+  "sourceEntries": [
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/domain/UmdBook.java",
+      "path": "run/sources/original/me/ag2s/umdlib/domain/UmdBook.java",
+      "bytes": 1704,
+      "sha256": "801e6bb47ffd04f28b687a0f6b501b1b1ee08317bf6ffbb7df766bf5770bed07",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/domain/UmdChapters.java",
+      "path": "run/sources/original/me/ag2s/umdlib/domain/UmdChapters.java",
+      "bytes": 6455,
+      "sha256": "59eee9f6fae66d340a6fe64ba90a10968bf3dfeec4ac32dd33ff6ff2908d212f",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/domain/UmdCover.java",
+      "path": "run/sources/original/me/ag2s/umdlib/domain/UmdCover.java",
+      "bytes": 2768,
+      "sha256": "aa5eda7cd8e69b382d0420a2a5af509d12d387536c9cacc4158404e6ca9dccec",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/domain/UmdEnd.java",
+      "path": "run/sources/original/me/ag2s/umdlib/domain/UmdEnd.java",
+      "bytes": 416,
+      "sha256": "b1e9fd6971366d8d9adc91536351cb6abb98603357f1c20f39f81718db60d18c",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/domain/UmdHeader.java",
+      "path": "run/sources/original/me/ag2s/umdlib/domain/UmdHeader.java",
+      "bytes": 4165,
+      "sha256": "9a0de596a1e3c4b48a9b6f371f6ca8e789cfc961246e424325eddff0427654e1",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/tool/StreamReader.java",
+      "path": "run/sources/original/me/ag2s/umdlib/tool/StreamReader.java",
+      "bytes": 3156,
+      "sha256": "1041eb97a6d2d77272d04fbd0b1b2f2e497b751f94871dc66738837f5a0c80a5",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/tool/UmdUtils.java",
+      "path": "run/sources/original/me/ag2s/umdlib/tool/UmdUtils.java",
+      "bytes": 3595,
+      "sha256": "9a8e2106adc9b7fabb9f8ed0b2bd44dcc1f8d58aaac15384ad8c3b865f26aa0b",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/tool/WrapOutputStream.java",
+      "path": "run/sources/original/me/ag2s/umdlib/tool/WrapOutputStream.java",
+      "bytes": 1938,
+      "sha256": "e89531151d9a19f9bf806b6117ca4176318e6e9d7ad259b26be2db47ea077de4",
+      "modified": false
+    },
+    {
+      "entry": "legado-master/modules/book/src/main/java/me/ag2s/umdlib/umd/UmdReader.java",
+      "path": "run/sources/original/me/ag2s/umdlib/umd/UmdReader.java",
+      "bytes": 9054,
+      "sha256": "ffd9b0db0b570183768bdf09a617c6a29e4f196e3df050d33773f1d8c96c6a39",
+      "modified": false
+    }
+  ],
+  "harness": {
+    "annotationStub": "harness/androidx/annotation/NonNull.java",
+    "stubScope": "annotation-only; no parser/writer/runtime business implementation",
+    "source": "harness/UmdReferenceHarness.java",
+    "originalSourcesModified": false,
+    "rng": "Unmodified original java.util.Random; no seed injection/reflection. Frozen binaries have recorded SHA256; regenerated binaries need not match.",
+    "fixtureOwnership": "All titles, content and metadata self-authored for this bundle; no private source or user library was read."
+  },
+  "toolchain": {
+    "jdkRoot": "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1",
+    "javaSHA256": "82051fdab26319d77d20cc0065045d05ec00b3e3d05f44935d7c06b96b621d55",
+    "javacSHA256": "00f7c6f9ec89ebba4bb96cf8760403cccf1268df2eae8685900ba38e58a7aff9",
+    "releaseSHA256": "07117c72ce033949c14878e07fbf2fe23f59a1f8c90a6d1351b5c89099847ce7",
+    "javaVersionRaw": "run/logs/java-version.stderr.txt",
+    "javacVersionRaw": "run/logs/javac-version.stdout.txt"
+  },
+  "commands": [
+    {
+      "name": "java-version",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-version"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:20.882135+00:00",
+      "durationSeconds": 0.109,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/java-version.stdout.txt",
+      "stderr": "run/logs/java-version.stderr.txt"
+    },
+    {
+      "name": "javac-version",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+        "-version"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:20.990161+00:00",
+      "durationSeconds": 0.156,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/javac-version.stdout.txt",
+      "stderr": "run/logs/javac-version.stderr.txt"
+    },
+    {
+      "name": "compile-original-and-harness",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+        "-encoding",
+        "UTF-8",
+        "-d",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\classes",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\domain\\UmdBook.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\domain\\UmdChapters.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\domain\\UmdCover.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\domain\\UmdEnd.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\domain\\UmdHeader.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\tool\\StreamReader.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\tool\\UmdUtils.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\tool\\WrapOutputStream.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\sources\\original\\me\\ag2s\\umdlib\\umd\\UmdReader.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\harness\\androidx\\annotation\\NonNull.java",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\harness\\UmdReferenceHarness.java"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:21.145078+00:00",
+      "durationSeconds": 0.86,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/compile-original-and-harness.stdout.txt",
+      "stderr": "run/logs/compile-original-and-harness.stderr.txt"
+    },
+    {
+      "name": "chinese-two-chapters",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Dfile.encoding=UTF-8",
+        "-Dstdout.encoding=UTF-8",
+        "-Dstderr.encoding=UTF-8",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\classes",
+        "UmdReferenceHarness",
+        "chinese-two-chapters",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\fixtures\\chinese-two-chapters"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:22.001899+00:00",
+      "durationSeconds": 0.156,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/chinese-two-chapters.stdout.txt",
+      "stderr": "run/logs/chinese-two-chapters.stderr.txt"
+    },
+    {
+      "name": "paragraph-separators",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Dfile.encoding=UTF-8",
+        "-Dstdout.encoding=UTF-8",
+        "-Dstderr.encoding=UTF-8",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\classes",
+        "UmdReferenceHarness",
+        "paragraph-separators",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\fixtures\\paragraph-separators"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:22.175845+00:00",
+      "durationSeconds": 0.172,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/paragraph-separators.stdout.txt",
+      "stderr": "run/logs/paragraph-separators.stderr.txt"
+    },
+    {
+      "name": "non-bmp-utf16",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Dfile.encoding=UTF-8",
+        "-Dstdout.encoding=UTF-8",
+        "-Dstderr.encoding=UTF-8",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\classes",
+        "UmdReferenceHarness",
+        "non-bmp-utf16",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\fixtures\\non-bmp-utf16"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:22.361482+00:00",
+      "durationSeconds": 0.156,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/non-bmp-utf16.stdout.txt",
+      "stderr": "run/logs/non-bmp-utf16.stderr.txt"
+    },
+    {
+      "name": "multi-chapter-optional-metadata",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Dfile.encoding=UTF-8",
+        "-Dstdout.encoding=UTF-8",
+        "-Dstderr.encoding=UTF-8",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\classes",
+        "UmdReferenceHarness",
+        "multi-chapter-optional-metadata",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\fixtures\\multi-chapter-optional-metadata"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:22.522061+00:00",
+      "durationSeconds": 0.157,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/multi-chapter-optional-metadata.stdout.txt",
+      "stderr": "run/logs/multi-chapter-optional-metadata.stderr.txt"
+    },
+    {
+      "name": "cross-compression-blocks",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Dfile.encoding=UTF-8",
+        "-Dstdout.encoding=UTF-8",
+        "-Dstderr.encoding=UTF-8",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\classes",
+        "UmdReferenceHarness",
+        "cross-compression-blocks",
+        "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\fixtures\\cross-compression-blocks"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\umd-reference-preparation",
+      "startedAtUTC": "2026-10-19T15:53:22.685430+00:00",
+      "durationSeconds": 0.39,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "exitCode": 0,
+      "stdout": "run/logs/cross-compression-blocks.stdout.txt",
+      "stderr": "run/logs/cross-compression-blocks.stderr.txt"
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "chinese-two-chapters",
+      "status": "matched-owned-expectations",
+      "binary": {
+        "path": "run/fixtures/chinese-two-chapters/fixture.umd",
+        "bytes": 261,
+        "sha256": "5d01e2919f769d6b8e77122df64833d34a4397f2dd74de5a5c4640f2189909b3"
+      },
+      "chapterCount": 2,
+      "totalUTF16LEBytes": 68,
+      "writerChunkSizeFromUnmodifiedSource": 32768,
+      "expectedChunkCountFromOwnedInputAndOriginalWriter": 1,
+      "metadataObservedWithTypeAndNull": {
+        "title": {
+          "type": "java.lang.String",
+          "value": "自有中文样本"
+        },
+        "author": {
+          "type": "java.lang.String",
+          "value": "公开测试作者"
+        },
+        "year": {
+          "type": null,
+          "value": null
+        },
+        "month": {
+          "type": null,
+          "value": null
+        },
+        "day": {
+          "type": null,
+          "value": null
+        },
+        "bookType": {
+          "type": null,
+          "value": null
+        },
+        "bookMan": {
+          "type": null,
+          "value": null
+        },
+        "shopKeeper": {
+          "type": null,
+          "value": null
+        }
+      },
+      "chapters": [
+        {
+          "index": 0,
+          "title": "第一章 初见",
+          "offsetBytes": 0,
+          "rawUTF16LEBytes": 36,
+          "rawSHA256": "275cf1d6e740c4b237d0ccb1cef0ea82a8941bd8679be4690552365a59c13c33",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 52,
+          "publicStringSHA256": "484b87aae97a29cc54ba74218cd24631c8e437258ba71668336a53768ea7344c",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 1,
+          "title": "第二章 归途",
+          "offsetBytes": 36,
+          "rawUTF16LEBytes": 32,
+          "rawSHA256": "6f80c48461b2cef27c90d8676dc358c85c227dbf472a544f2f8f12be0c04af8a",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 46,
+          "publicStringSHA256": "03f160d5ad6eefe5cba479449a9c9a6b1a96e5b44a5de0fb76a449be77e9f8fc",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        }
+      ],
+      "actualPublicOutput": "run/fixtures/chinese-two-chapters/reader-output.json",
+      "independentOwnedInput": "run/fixtures/chinese-two-chapters/fixture-input.json"
+    },
+    {
+      "id": "paragraph-separators",
+      "status": "matched-owned-expectations",
+      "binary": {
+        "path": "run/fixtures/paragraph-separators/fixture.umd",
+        "bytes": 244,
+        "sha256": "da0ace6f13013d6da36cce47beaed845eb450e3de1ac0756e0656f469b5f4056"
+      },
+      "chapterCount": 3,
+      "totalUTF16LEBytes": 60,
+      "writerChunkSizeFromUnmodifiedSource": 32768,
+      "expectedChunkCountFromOwnedInputAndOriginalWriter": 1,
+      "metadataObservedWithTypeAndNull": {
+        "title": {
+          "type": "java.lang.String",
+          "value": "段落分隔符"
+        },
+        "author": {
+          "type": "java.lang.String",
+          "value": "测试作者"
+        },
+        "year": {
+          "type": null,
+          "value": null
+        },
+        "month": {
+          "type": null,
+          "value": null
+        },
+        "day": {
+          "type": null,
+          "value": null
+        },
+        "bookType": {
+          "type": null,
+          "value": null
+        },
+        "bookMan": {
+          "type": null,
+          "value": null
+        },
+        "shopKeeper": {
+          "type": null,
+          "value": null
+        }
+      },
+      "chapters": [
+        {
+          "index": 0,
+          "title": "段落一",
+          "offsetBytes": 0,
+          "rawUTF16LEBytes": 18,
+          "rawSHA256": "81de9ca588dfe4cb317f1baa4e90f646a7e89cfd6a6a70cc559a06c0cc5101dd",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 17,
+          "publicStringSHA256": "1499505972e5bca24eba98d6e5d739fe3ffcafbdba1895adf90a75d78137e6cd",
+          "paragraphSeparatorCount": 2,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 1,
+          "title": "段落二",
+          "offsetBytes": 18,
+          "rawUTF16LEBytes": 14,
+          "rawSHA256": "8419f083606b4e05debda61ccff8dd31b515720820e212df173bfae4b814ba56",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 17,
+          "publicStringSHA256": "c3e43173fb03543721cf66df276cc8ebfec1ce5fdd87c7b40a1f57286fece4e3",
+          "paragraphSeparatorCount": 2,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 2,
+          "title": "段落三",
+          "offsetBytes": 32,
+          "rawUTF16LEBytes": 28,
+          "rawSHA256": "e97341fc592e44b0251c0a78914dcf07a9a40fafb29aa3bc123b5a5629f024dc",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 38,
+          "publicStringSHA256": "1bf2dfe44864b0da73a8a004f91614a188aec4272dceb13b944edc13a1f83b60",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        }
+      ],
+      "actualPublicOutput": "run/fixtures/paragraph-separators/reader-output.json",
+      "independentOwnedInput": "run/fixtures/paragraph-separators/fixture-input.json"
+    },
+    {
+      "id": "non-bmp-utf16",
+      "status": "matched-owned-expectations",
+      "binary": {
+        "path": "run/fixtures/non-bmp-utf16/fixture.umd",
+        "bytes": 253,
+        "sha256": "18fc7b41d99ff8dca0fd50490aa6cfdfb319ed688a07e4f14050c5fa8c771a2c"
+      },
+      "chapterCount": 2,
+      "totalUTF16LEBytes": 64,
+      "writerChunkSizeFromUnmodifiedSource": 32768,
+      "expectedChunkCountFromOwnedInputAndOriginalWriter": 1,
+      "metadataObservedWithTypeAndNull": {
+        "title": {
+          "type": "java.lang.String",
+          "value": "星空😀"
+        },
+        "author": {
+          "type": "java.lang.String",
+          "value": "作者𠀀"
+        },
+        "year": {
+          "type": null,
+          "value": null
+        },
+        "month": {
+          "type": null,
+          "value": null
+        },
+        "day": {
+          "type": null,
+          "value": null
+        },
+        "bookType": {
+          "type": null,
+          "value": null
+        },
+        "bookMan": {
+          "type": null,
+          "value": null
+        },
+        "shopKeeper": {
+          "type": null,
+          "value": null
+        }
+      },
+      "chapters": [
+        {
+          "index": 0,
+          "title": "第一章 😀",
+          "offsetBytes": 0,
+          "rawUTF16LEBytes": 34,
+          "rawSHA256": "66660109addc12222241f0765707458f1e15524c22ece7e7a4a8993038d227f2",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 45,
+          "publicStringSHA256": "cd30baf12b8327a2b86900ccf7f9dd9d01d1317ce9199e9b2c9dc26ca8af5e9f",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 1,
+          "title": "第二章 𠀀",
+          "offsetBytes": 34,
+          "rawUTF16LEBytes": 30,
+          "rawSHA256": "9c467ab68b65046e074f375bd2dee2b6dd6ba98842ff56e9f2a523cbb200accc",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 36,
+          "publicStringSHA256": "968bbfc2ce55aede336ac1783e5ecf0c00c8c8e1fd94689467ef80df739caf56",
+          "paragraphSeparatorCount": 1,
+          "expectationMatchesOriginalReader": true
+        }
+      ],
+      "actualPublicOutput": "run/fixtures/non-bmp-utf16/reader-output.json",
+      "independentOwnedInput": "run/fixtures/non-bmp-utf16/fixture-input.json"
+    },
+    {
+      "id": "multi-chapter-optional-metadata",
+      "status": "matched-owned-expectations",
+      "binary": {
+        "path": "run/fixtures/multi-chapter-optional-metadata/fixture.umd",
+        "bytes": 293,
+        "sha256": "e242825d04a0a8411611a1c425ea6942b35c93baf1ea212447faa832e6009cc4"
+      },
+      "chapterCount": 5,
+      "totalUTF16LEBytes": 80,
+      "writerChunkSizeFromUnmodifiedSource": 32768,
+      "expectedChunkCountFromOwnedInputAndOriginalWriter": 1,
+      "metadataObservedWithTypeAndNull": {
+        "title": {
+          "type": "java.lang.String",
+          "value": "可选元数据"
+        },
+        "author": {
+          "type": null,
+          "value": null
+        },
+        "year": {
+          "type": "java.lang.String",
+          "value": "2026"
+        },
+        "month": {
+          "type": "java.lang.String",
+          "value": "10"
+        },
+        "day": {
+          "type": "java.lang.String",
+          "value": "19"
+        },
+        "bookType": {
+          "type": "java.lang.String",
+          "value": "自有文本"
+        },
+        "bookMan": {
+          "type": null,
+          "value": null
+        },
+        "shopKeeper": {
+          "type": "java.lang.String",
+          "value": "公开样本"
+        }
+      },
+      "chapters": [
+        {
+          "index": 0,
+          "title": "章节 1",
+          "offsetBytes": 0,
+          "rawUTF16LEBytes": 16,
+          "rawSHA256": "ca85cf950c5ab39d188a10a8d03814d17eac0d0f688d2c92ee18b195ce66c221",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 22,
+          "publicStringSHA256": "233f8be4ad0d54efe5964d1895b628d8d38f1846500d4d7fa90ec71c7fb4afbf",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 1,
+          "title": "章节 2",
+          "offsetBytes": 16,
+          "rawUTF16LEBytes": 16,
+          "rawSHA256": "3631f5ddee5b990f2ed375859d55c67ea49fbddcf3044d1f393bc5d6befb9d80",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 22,
+          "publicStringSHA256": "e659f28bfbdc6ef0be7025ee52a537f110187e0c386f3b6994fe961e1d6ac165",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 2,
+          "title": "章节 3",
+          "offsetBytes": 32,
+          "rawUTF16LEBytes": 16,
+          "rawSHA256": "be71b4da5e4d481bb08a2912e921eeebeac3294bb26fb0d26056769380b6c2cc",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 22,
+          "publicStringSHA256": "2a8743903cd4c2e5f4435875fadc862a06e13543de7f44b87631b3dc0bd2aa9a",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 3,
+          "title": "章节 4",
+          "offsetBytes": 48,
+          "rawUTF16LEBytes": 16,
+          "rawSHA256": "e5c15bbcc78cadee984f0c8753c92e26a64a3720baa0c9296f9bf8ad653ff8f4",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 22,
+          "publicStringSHA256": "336caa1793cf77f93493a6b5b1be7081c75c972aa93b48a7f7dc3c1aafa41d11",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 4,
+          "title": "章节 5",
+          "offsetBytes": 64,
+          "rawUTF16LEBytes": 16,
+          "rawSHA256": "5c8d9a339296b72815b5f4401d03d1202d399319fb5a9b274648f18a43ec5ac0",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 22,
+          "publicStringSHA256": "1f5271cefb6b947f5d38244d8cc85a108d94314fc968f00b3d5dbbc182820651",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        }
+      ],
+      "actualPublicOutput": "run/fixtures/multi-chapter-optional-metadata/reader-output.json",
+      "independentOwnedInput": "run/fixtures/multi-chapter-optional-metadata/fixture-input.json"
+    },
+    {
+      "id": "cross-compression-blocks",
+      "status": "matched-owned-expectations",
+      "binary": {
+        "path": "run/fixtures/cross-compression-blocks/fixture.umd",
+        "bytes": 439,
+        "sha256": "2044ddc9c93c2be81e542ed59f8786a338bd3d01c880918be9977c383ec0ee22"
+      },
+      "chapterCount": 3,
+      "totalUTF16LEBytes": 72788,
+      "writerChunkSizeFromUnmodifiedSource": 32768,
+      "expectedChunkCountFromOwnedInputAndOriginalWriter": 3,
+      "metadataObservedWithTypeAndNull": {
+        "title": {
+          "type": "java.lang.String",
+          "value": "跨压缩块"
+        },
+        "author": {
+          "type": "java.lang.String",
+          "value": "测试作者"
+        },
+        "year": {
+          "type": null,
+          "value": null
+        },
+        "month": {
+          "type": null,
+          "value": null
+        },
+        "day": {
+          "type": null,
+          "value": null
+        },
+        "bookType": {
+          "type": null,
+          "value": null
+        },
+        "bookMan": {
+          "type": null,
+          "value": null
+        },
+        "shopKeeper": {
+          "type": null,
+          "value": null
+        }
+      },
+      "chapters": [
+        {
+          "index": 0,
+          "title": "块边界一",
+          "offsetBytes": 0,
+          "rawUTF16LEBytes": 32772,
+          "rawSHA256": "e03862d23374e1479be280e68a2ce9f84de8760d249db23969a90c813baa386a",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 49156,
+          "publicStringSHA256": "ad5a066fce60a30ebf0f6ea4fae384c96c404ba2ca79501c974a62ecc45acc1a",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 1,
+          "title": "块边界二",
+          "offsetBytes": 32772,
+          "rawUTF16LEBytes": 40004,
+          "rawSHA256": "f7b84bdbd8c37295c3d0cc3a1b51766c8e4360f8ed368190bd58acffb6e8bf07",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 40004,
+          "publicStringSHA256": "0d127debbdc4feb7991b77f53158bed8c0487d32d719c58ac6a54834aebd6f56",
+          "paragraphSeparatorCount": 10000,
+          "expectationMatchesOriginalReader": true
+        },
+        {
+          "index": 2,
+          "title": "块边界三",
+          "offsetBytes": 72776,
+          "rawUTF16LEBytes": 12,
+          "rawSHA256": "c4350833106bc56b6fbbd4749eea0c891cc4813896c55c571fc8fe51416a2d67",
+          "publicStringType": "java.lang.String",
+          "publicStringWasNull": false,
+          "publicStringUTF8Bytes": 16,
+          "publicStringSHA256": "be70dfa8c081820a0fac6d523ef0f972467c1cb38a681fb11b4f1bf806c0fb31",
+          "paragraphSeparatorCount": 0,
+          "expectationMatchesOriginalReader": true
+        }
+      ],
+      "actualPublicOutput": "run/fixtures/cross-compression-blocks/reader-output.json",
+      "independentOwnedInput": "run/fixtures/cross-compression-blocks/fixture-input.json"
+    }
+  ],
+  "actualExecution": {
+    "originalJavaCompileCommands": 1,
+    "originalReaderFixtureProcesses": 5,
+    "originalWriterFixtureProcesses": 5,
+    "matchedFixtureCount": 5,
+    "swiftTypecheck": 0,
+    "iOSExecution": 0,
+    "deviceExecution": 0,
+    "malformedCompressedInputs": 0,
+    "retries": 0
+  },
+  "observedContract": [
+    "章节 offset 是 UTF-16LE 原始字节偏移；每章原始字节与自有输入逐字节一致。",
+    "getContentString 将 U+2029 替换为 LF；原始字节保留 U+2029；原有 LF/CR/CRLF 保留。",
+    "原 writer 省略 null/空 metadata；原 reader 对这些缺省字段返回 Java null，类型/null 已保留。",
+    "非 BMP 的 UTF-16 surrogate pair 可跨原 writer 的 32768 字节压缩块；reader 拼接后本次结果与预期一致。"
+  ],
+  "limits": [
+    "不是 UMD 产品支持、MOBI、封面、DRM、导入重开、真机或法律清算证据。",
+    "未修改 BookParserRegistry / LocalBookImportService；后续实现复用现有唯一导入链。",
+    "仅 writer 生成的有效 text-type 输入。原 Inflater 缺少停滞保护，逐进程 timeout 用于防挂起；未运行畸形压缩输入。",
+    "未来 Swift 的严格拒绝策略不能倒推为原 Java parser 已拒绝。",
+    "annotation-only stub 只提供编译注解；未替换原 parser/writer 的任何执行逻辑。"
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-static-review-of-test-owned-temp-root-fix",
+  "reviewedAtUTC": "2026-10-19T16:27:12.295437+00:00",
+  "reviewer": "/root/renewal_discovery_ui",
+  "status": "no-unresolved-static-blocking-findings",
+  "unresolvedBlockingFindings": [],
+  "baseSourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "sourcePath": "scripts/reader-experience/test-collect-rule-defaults-reference.py",
+  "before": {
+    "bytes": 17205,
+    "sha256": "6f5b2f49048224ebc320deacd704a2ba3008ebb1b10a22723a2ce1529e61e1fd"
+  },
+  "after": {
+    "bytes": 17375,
+    "sha256": "b6490569073a7d702b376d7168a02c93c3fb503609686a8d354c8abe7d808b75",
+    "snapshot": {
+      "path": "test-root-fix-review\\test-after.py",
+      "bytes": 17375,
+      "sha256": "b6490569073a7d702b376d7168a02c93c3fb503609686a8d354c8abe7d808b75"
+    }
+  },
+  "exactDelta": {
+    "commentsAdded": 2,
+    "assignmentChanged": 1,
+    "wholeFileEqualsBaselineWithOnlyExpectedBlockReplacement": true,
+    "newAssignment": "self.root = Path(self.temp.name).resolve()",
+    "scope": "Canonicalizes only this owned temporary root immediately after its creation; no general source/output path canonicalization is introduced."
+  },
+  "preserved": {
+    "portableTestIdentities": [
+      "test_complete_synthetic_collection_retains_exact_counts_and_digests",
+      "test_complete_differences_keep_real_cli_exit_one_and_false_match",
+      "test_empty_missing_duplicate_unknown_and_malformed_observations_fail",
+      "test_missing_summary_tree_or_bundle_is_never_collection_success",
+      "test_explicit_method_and_execution_counts_reject_missing_false_skipped_and_expected_failure",
+      "test_exact_actual_leaf_gate_rejects_omitted_duplicate_wrong_failed_skipped_and_arguments",
+      "test_unknown_or_missing_node_types_cannot_hide_under_passing_counts",
+      "test_all_known_containers_reject_interrupted_cancelled_and_unrecognized_results",
+      "test_known_nonempty_container_hierarchy_allows_only_passed_or_absent_container_result",
+      "test_source_environment_or_preparation_changes_are_rejected",
+      "test_fixture_only_report_cannot_satisfy_required_collection",
+      "test_exit_one_without_complete_report_is_not_diagnostic_success",
+      "test_exit_status_must_agree_with_actual_comparison",
+      "test_raw_log_digest_and_comparison_replay_cannot_be_changed",
+      "test_prior_evidence_is_never_overwritten",
+      "test_mid_collection_input_changes_and_output_aliases_are_rejected",
+      "test_real_environment_validator_rejects_wrong_source_digest_and_configuration",
+      "test_source_bytes_must_equal_committed_checkpoint",
+      "test_collect_cli_requires_log_and_actual_execution_inputs"
+    ],
+    "portableTestIdentityCount": 19,
+    "allExistingAssertionsAndMethodBodiesUnchangedOutsideOwnedRootAssignment": true,
+    "productionSourceIdentities": [
+      {
+        "path": "scripts/reader-experience/stage-config.py",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607",
+        "byteIdenticalToC": true
+      },
+      {
+        "path": "scripts/reader-experience/collect-rule-defaults-reference.py",
+        "bytes": 15369,
+        "sha256": "d96f349a9ef3bc8d3e8cb2c52d3a94ddc967131a7504e63c317d50c854c46998",
+        "byteIdenticalToC": true
+      }
+    ],
+    "productionCheckedPathSymlinkRejectionUnchanged": true,
+    "collectorRuntimeAndCISelectionUnchanged": true
+  },
+  "finding": "The narrow change addresses the plausible owned temporary-root alias mismatch without weakening production checked_path. Actual raw logs show only the guard exception; they do not print the actual temporary pathname or a symlink ancestor, so the precise OS cause remains source-level diagnosis rather than an automatically measured fact.",
+  "runtimeEvidence": {
+    "reviewerReran19": false,
+    "newPortableTestsExecutedByReviewer": 0,
+    "rootReportedPortable19Passed": true,
+    "rootReportedPortableRawLogAvailable": false,
+    "rootReportedResultIsNotInventedArchivedRawEvidence": true,
+    "MacOSVerificationPerformed": false,
+    "actualSwiftTestsExecuted": 0,
+    "actualIOSTestsExecuted": 0,
+    "AppleSDKCompilationPerformed": false,
+    "newCITriggered": false
+  },
+  "actualReadOnlyCommands": [
+    {
+      "argv": [
+        "git",
+        "show",
+        "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:scripts/reader-experience/test-collect-rule-defaults-reference.py"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "startedAtUTC": "2026-10-19T16:27:12.065361+00:00",
+      "exitCode": 0,
+      "stdout": {
+        "path": "test-root-fix-review\\baseline-test.stdout.bin",
+        "bytes": 17205,
+        "sha256": "6f5b2f49048224ebc320deacd704a2ba3008ebb1b10a22723a2ce1529e61e1fd"
+      },
+      "stderr": {
+        "path": "test-root-fix-review\\baseline-test.stderr.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:scripts/reader-experience/stage-config.py"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "startedAtUTC": "2026-10-19T16:27:12.112732+00:00",
+      "exitCode": 0,
+      "stdout": {
+        "path": "test-root-fix-review\\baseline-stage-config.stdout.bin",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+      },
+      "stderr": {
+        "path": "test-root-fix-review\\baseline-stage-config.stderr.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:scripts/reader-experience/collect-rule-defaults-reference.py"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "startedAtUTC": "2026-10-19T16:27:12.157361+00:00",
+      "exitCode": 0,
+      "stdout": {
+        "path": "test-root-fix-review\\baseline-collect-rule-defaults-reference.stdout.bin",
+        "bytes": 15369,
+        "sha256": "d96f349a9ef3bc8d3e8cb2c52d3a94ddc967131a7504e63c317d50c854c46998"
+      },
+      "stderr": {
+        "path": "test-root-fix-review\\baseline-collect-rule-defaults-reference.stderr.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+        "--",
+        "scripts/reader-experience/test-collect-rule-defaults-reference.py"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "startedAtUTC": "2026-10-19T16:27:12.201584+00:00",
+      "exitCode": 0,
+      "stdout": {
+        "path": "test-root-fix-review\\test-only-diff.stdout.bin",
+        "bytes": 917,
+        "sha256": "134c0b58a76dbc3976cbbaf1cd7b6b77c88a07ce78451519d7c9c4b819d984f3"
+      },
+      "stderr": {
+        "path": "test-root-fix-review\\test-only-diff.stderr.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "scripts/reader-experience/test-collect-rule-defaults-reference.py"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "startedAtUTC": "2026-10-19T16:27:12.245438+00:00",
+      "exitCode": 0,
+      "stdout": {
+        "path": "test-root-fix-review\\diff-check.stdout.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "test-root-fix-review\\diff-check.stderr.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "originalFailureManifest": {
+    "path": "archive-manifest.json",
+    "bytes": 11776,
+    "sha256": "72bff51acbefb81db129dd2a9e19c991d868e1a3747262775c0753acc8d13b55"
+  },
+  "originalFailureRecord": {
+    "path": "failure-record.json",
+    "bytes": 2992,
+    "sha256": "2a30c4f20f646ec472b5dabd6d517c95a01fc5784353b1bb57847d3005550421"
+  },
+  "sourceOrCanonicalEditsByReviewer": false
+}

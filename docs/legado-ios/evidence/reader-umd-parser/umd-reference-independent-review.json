@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-offline-UMD-original-reference-bundle-review",
+  "reviewer": "/root/renewal_discovery_ui",
+  "reviewedAtUTC": "2026-10-19T16:01:47.829239+00:00",
+  "status": "no-unresolved-blocking-findings-for-reference-preparation-scope",
+  "unresolvedBlockingFindings": [],
+  "manifest": {
+    "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\bundle-manifest.json",
+    "bytes": 24989,
+    "sha256": "aa9b128ba7ff51e524af0ef1d905860d6599e9f71426bc484544ed1344110719"
+  },
+  "referenceRecord": {
+    "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\reference-record.json",
+    "bytes": 28436,
+    "sha256": "fde4be8b82780807741a2f19d3bc6bfbcedabfa6b74a41a74eeb6fdfc60c345a"
+  },
+  "bundleFileCount": 133,
+  "manifestMemberHashesVerified": 132,
+  "unexpectedOrUnsafeMembers": 0,
+  "sourceZIP": {
+    "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\original\\legado-master.zip",
+    "bytes": 11178463,
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd"
+  },
+  "nineUnmodifiedJavaEntriesVerifiedAgainstPinnedZIP": true,
+  "harness": {
+    "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\harness\\UmdReferenceHarness.java",
+    "bytes": 10033,
+    "sha256": "badc2a96607b6fd2e7df78febab7d7ffa51e0b266dd61908b8d843e2887c70d8"
+  },
+  "annotationStub": {
+    "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\harness\\androidx\\annotation\\NonNull.java",
+    "bytes": 444,
+    "sha256": "af3fb3abd9780a47336fc2b052c95d51712331e98aef9b688c23d623fbd409d8"
+  },
+  "preparationDriver": {
+    "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\prepare-reference.py",
+    "bytes": 15632,
+    "sha256": "a243f9862c1a8533b657cdebfc5ab80cd7a844a136a3a246f2370ff1e26d90ec"
+  },
+  "staticReview": {
+    "publicEntryPoints": "Harness constructs original UmdBook/UmdHeader/UmdChapters, calls original buildUmd once and original UmdReader.read once per process; getContent/getContentString/title/offset/header getter outputs are serialized without replacing parser/inflater.",
+    "expectedIndependence": "Java self-authored fixture literals and Python declared expectations were read and compared. This reviewer separately checked retained fixture inputs against typed reader JSON, raw Base64 and actual/expected byte files; it did not import/run the author driver or derive expected bytes from the UMD reader result.",
+    "annotationOnlyStub": "NonNull has annotation declarations/retention/targets only; no parser, writer, inflater or library runtime implementation is stubbed.",
+    "formatSemantics": "Original getContentLength returns cumulative UTF-16LE byte offsets on decoded books; getContentString replaces U+2029 only. Writer skips null/empty metadata and the retained typed reader fields contain Java null for those inputs. Strings/CR/LF/CRLF/decomposed Unicode and supplementary pairs were checked byte-for-byte.",
+    "crossBlockScope": "The owned 72788-byte input crosses the original 32768-byte writer boundary; first surrogate pair bytes32766..32769 are3dd800de. Retained public raw reader output reconstructs complete chapters. Three chunks is derived from the unmodified writer source plus input size, not an additional independent UMD parser result.",
+    "randomness": "Original UmdUtils remains byte-identical; harness does not seed/reflect/replace RNG. Frozen .umd SHA256 binds the observed binaries, not deterministic regeneration."
+  },
+  "retainedExecutionEvidence": {
+    "commandsVerified": 8,
+    "originalCompileCommands": 1,
+    "fixtureProcesses": 5,
+    "originalReaderCalls": 5,
+    "originalWriterCalls": 5,
+    "chaptersIndependentlyRecompared": 15,
+    "allExitCodesZero": true,
+    "fixtureProcessTimeoutSeconds": 20,
+    "timeoutOrRetryObserved": false,
+    "classFiles": 13,
+    "classFileMajorVersion": 65,
+    "existingJDKHashesRechecked": true,
+    "reviewerReranJavaCompilerOrWriterOrReader": false
+  },
+  "fixtures": [
+    {
+      "id": "chinese-two-chapters",
+      "chaptersVerified": 2,
+      "UTF16LEBytesVerified": 68,
+      "expectedOriginalWriterChunks": 1,
+      "actualRetainedBinary": {
+        "path": "run/fixtures/chinese-two-chapters/fixture.umd",
+        "bytes": 261,
+        "sha256": "5d01e2919f769d6b8e77122df64833d34a4397f2dd74de5a5c4640f2189909b3"
+      }
+    },
+    {
+      "id": "paragraph-separators",
+      "chaptersVerified": 3,
+      "UTF16LEBytesVerified": 60,
+      "expectedOriginalWriterChunks": 1,
+      "actualRetainedBinary": {
+        "path": "run/fixtures/paragraph-separators/fixture.umd",
+        "bytes": 244,
+        "sha256": "da0ace6f13013d6da36cce47beaed845eb450e3de1ac0756e0656f469b5f4056"
+      }
+    },
+    {
+      "id": "non-bmp-utf16",
+      "chaptersVerified": 2,
+      "UTF16LEBytesVerified": 64,
+      "expectedOriginalWriterChunks": 1,
+      "actualRetainedBinary": {
+        "path": "run/fixtures/non-bmp-utf16/fixture.umd",
+        "bytes": 253,
+        "sha256": "18fc7b41d99ff8dca0fd50490aa6cfdfb319ed688a07e4f14050c5fa8c771a2c"
+      }
+    },
+    {
+      "id": "multi-chapter-optional-metadata",
+      "chaptersVerified": 5,
+      "UTF16LEBytesVerified": 80,
+      "expectedOriginalWriterChunks": 1,
+      "actualRetainedBinary": {
+        "path": "run/fixtures/multi-chapter-optional-metadata/fixture.umd",
+        "bytes": 293,
+        "sha256": "e242825d04a0a8411611a1c425ea6942b35c93baf1ea212447faa832e6009cc4"
+      }
+    },
+    {
+      "id": "cross-compression-blocks",
+      "chaptersVerified": 3,
+      "UTF16LEBytesVerified": 72788,
+      "expectedOriginalWriterChunks": 3,
+      "actualRetainedBinary": {
+        "path": "run/fixtures/cross-compression-blocks/fixture.umd",
+        "bytes": 439,
+        "sha256": "2044ddc9c93c2be81e542ed59f8786a338bd3d01c880918be9977c383ec0ee22"
+      }
+    }
+  ],
+  "limits": [
+    "Only five writer-generated valid text fixtures; not a general malformed/compressed-input rejection or coverage result. Original inflater stall risk and need for bounded future product behavior remain.",
+    "No MOBI/cover/DRM/product import/reopen integration or book registry change; no Swift/iOS/device result or legal clearance.",
+    "Reference Java execution belongs to the already retained author run. This review performed read-only byte/hash/output comparisons and did not rerun any original Java process."
+  ],
+  "productUMDSupportEstablished": false,
+  "SwiftOrIOSTestsExecutedByReviewer": false,
+  "networkUsed": false,
+  "privateSourcesRead": false,
+  "bundleModified": false,
+  "mainOrCanonicalModified": false
+}

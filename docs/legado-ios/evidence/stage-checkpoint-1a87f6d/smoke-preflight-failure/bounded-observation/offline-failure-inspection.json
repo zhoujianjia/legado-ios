@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "kind": "offline-inspection-of-one-C-only-bounded-read",
+  "createdAtUTC": "2026-10-19T16:25:39.012342+00:00",
+  "index": {
+    "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C2-bounded-20261019T162314Z-4d692f1c\\index.json",
+    "bytes": 33538,
+    "sha256": "f8a9718170c64c9637c3b356f1c22d16715902ba5b2deeee2632457da61dc3e5"
+  },
+  "observationOnlyAt": {
+    "startedAtUTC": "2026-10-19T16:24:16.857036+00:00",
+    "completedAtUTC": "2026-10-19T16:24:22.929349+00:00"
+  },
+  "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "smoke": {
+    "runID": 39281083749,
+    "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281083749",
+    "runStatus": "completed",
+    "jobStatus": "completed",
+    "conclusion": "failure",
+    "failedStep": "Verify the source tag and portable smoke evidence guards",
+    "failureKind": "Python portable unittest setUp error before Xcode",
+    "uniqueRootException": "ValueError: Refusing a symlinked experience output/configuration path",
+    "rootExceptionOccurrences": 19,
+    "unittestErrorBlocks": 19,
+    "actualCollectorMethodsAttempted": 19,
+    "collectorTestBodiesReached": 0,
+    "tracebackChain": [
+      "test-collect-rule-defaults-reference.py:60 setUp",
+      "collect-rule-defaults-reference.py:137 prepare",
+      "stage-config.py:62 write_new_json",
+      "stage-config.py:57 checked_path"
+    ],
+    "compilerErrors": 0,
+    "XcodeCompilationAttempted": false,
+    "actualSwiftTestsExecuted": 0,
+    "actualIOSTestsExecuted": 0,
+    "actualRuleReferenceObservations": 0,
+    "actualRuleReferenceSnapshots": 0,
+    "unitSummaryExists": false,
+    "xcresultExists": false,
+    "allXcodeAndIOSTestStepsSkipped": true,
+    "artifact": {
+      "id": 12201040906,
+      "name": "reader-smoke-evidence",
+      "bytes": 6685,
+      "sha256": "d1d59344c7138fee73d169f85e4b9fa4322fb443d60aeb4acd88d9fc920f31bb",
+      "githubArtifactDigestMatched": true,
+      "archivePath": "F:\\yuedu-reader\\.build\\renewal-discovery\\C2-bounded-20261019T162314Z-4d692f1c\\smokeC-reader-smoke-evidence.zip",
+      "extractedRoot": "F:\\yuedu-reader\\.build\\b12-16f18f36bf",
+      "uncompressedBytes": 45505,
+      "auditEntryPoints": []
+    },
+    "extractedFiles": [
+      {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\completion-plan.json",
+        "bytes": 8758,
+        "sha256": "488d9261037600a044afd81de996743ea99b5dde1fcc40d2883b8af9bda36a73"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\completion-plan-tools.log",
+        "bytes": 1575,
+        "sha256": "d512df25173fd8fd119ed5336c3bdbc96b0b891eddd9cc6f8d1d6e1ea5b0cfda"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\reader-smoke-tools.log",
+        "bytes": 4221,
+        "sha256": "f580fbac5b3a93f9ad677b739b710c726fd15547664ac38a93e04aa0d7c12cf6"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\reader-stage-baseline-tools.log",
+        "bytes": 3387,
+        "sha256": "d6deb6bcd85f6df9bb15b3971fb44dfe140a2fff94af2046947b34134bcfc787"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\rule-defaults-collection-tools.log",
+        "bytes": 26148,
+        "sha256": "923728348a6e8c60cf54c9084167961d24d2a9231e84392ffefd26e34452279a"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\rule-defaults-reference-tools.log",
+        "bytes": 1416,
+        "sha256": "4a3dd8ca68ba1ebe1cbf72e2a0729c4108a8a1aeb21af5b62d44478dfd7d392d"
+      }
+    ],
+    "actualPortableLogs": {
+      "completion-plan-tools.log": {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\completion-plan-tools.log",
+        "bytes": 1575,
+        "sha256": "d512df25173fd8fd119ed5336c3bdbc96b0b891eddd9cc6f8d1d6e1ea5b0cfda",
+        "actualPythonUnittestMethods": 9,
+        "OK": true,
+        "errors": 0
+      },
+      "reader-smoke-tools.log": {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\reader-smoke-tools.log",
+        "bytes": 4221,
+        "sha256": "f580fbac5b3a93f9ad677b739b710c726fd15547664ac38a93e04aa0d7c12cf6",
+        "actualPythonUnittestMethods": 24,
+        "OK": true,
+        "errors": 0
+      },
+      "reader-stage-baseline-tools.log": {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\reader-stage-baseline-tools.log",
+        "bytes": 3387,
+        "sha256": "d6deb6bcd85f6df9bb15b3971fb44dfe140a2fff94af2046947b34134bcfc787",
+        "actualPythonUnittestMethods": 20,
+        "OK": true,
+        "errors": 0
+      },
+      "rule-defaults-collection-tools.log": {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\rule-defaults-collection-tools.log",
+        "bytes": 26148,
+        "sha256": "923728348a6e8c60cf54c9084167961d24d2a9231e84392ffefd26e34452279a",
+        "actualPythonUnittestMethods": 19,
+        "OK": false,
+        "errors": 19
+      },
+      "rule-defaults-reference-tools.log": {
+        "path": "F:\\yuedu-reader\\.build\\b12-16f18f36bf\\ci-logs\\rule-defaults-reference-tools.log",
+        "bytes": 1416,
+        "sha256": "4a3dd8ca68ba1ebe1cbf72e2a0729c4108a8a1aeb21af5b62d44478dfd7d392d",
+        "actualPythonUnittestMethods": 8,
+        "OK": true,
+        "errors": 0
+      }
+    },
+    "sourceReasoning": {
+      "snapshots": [
+        {
+          "sourcePath": "scripts/reader-experience/test-collect-rule-defaults-reference.py",
+          "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+          "actualReadCommand": [
+            "git",
+            "show",
+            "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:scripts/reader-experience/test-collect-rule-defaults-reference.py"
+          ],
+          "exitCode": 0,
+          "snapshot": {
+            "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C2-bounded-20261019T162314Z-4d692f1c\\source-inspection\\test-collect-rule-defaults-reference.py",
+            "bytes": 17205,
+            "sha256": "6f5b2f49048224ebc320deacd704a2ba3008ebb1b10a22723a2ce1529e61e1fd"
+          }
+        },
+        {
+          "sourcePath": "scripts/reader-experience/collect-rule-defaults-reference.py",
+          "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+          "actualReadCommand": [
+            "git",
+            "show",
+            "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:scripts/reader-experience/collect-rule-defaults-reference.py"
+          ],
+          "exitCode": 0,
+          "snapshot": {
+            "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C2-bounded-20261019T162314Z-4d692f1c\\source-inspection\\collect-rule-defaults-reference.py",
+            "bytes": 15369,
+            "sha256": "d96f349a9ef3bc8d3e8cb2c52d3a94ddc967131a7504e63c317d50c854c46998"
+          }
+        },
+        {
+          "sourcePath": "scripts/reader-experience/stage-config.py",
+          "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+          "actualReadCommand": [
+            "git",
+            "show",
+            "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:scripts/reader-experience/stage-config.py"
+          ],
+          "exitCode": 0,
+          "snapshot": {
+            "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\C2-bounded-20261019T162314Z-4d692f1c\\source-inspection\\stage-config.py",
+            "bytes": 26097,
+            "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+          }
+        }
+      ],
+      "confirmed": "The fixture uses Path(self.temp.name) without resolving the owned temporary root, and checked_path rejects a symlink anywhere in the path ancestry. Actual errors occurred in this guard before any collector test body.",
+      "inferenceOnly": "A macOS temporary directory ancestor such as /var resolving to /private/var is a plausible reason, but the actual temporary path and ancestor identity are not printed in this raw log. No claim that this precise symlink was measured.",
+      "sourceEdits": 0
+    }
+  },
+  "renewal": {
+    "runID": 39281084369,
+    "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281084369",
+    "runStatus": "in_progress",
+    "jobStatus": "in_progress",
+    "conclusion": null,
+    "activeStep": [
+      {
+        "number": 6,
+        "name": "Execute eight fixed-port cases, thirteen discovery cases and one diagnostic UI case",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T15:52:28Z",
+        "completed_at": null
+      }
+    ],
+    "artifactsQueried": false,
+    "runtimeResultNotYetKnown": true
+  },
+  "networkBoundary": {
+    "runJobsGETs": 4,
+    "artifactListGETs": 1,
+    "artifactDownloads": 1,
+    "retries": 0,
+    "polling": false,
+    "AReleaseOrARenewalOrFontBRead": false,
+    "uniqueQueryNoCacheIsNotFreshnessProof": true
+  },
+  "docsOrCanonicalOrSourceEdited": false
+}

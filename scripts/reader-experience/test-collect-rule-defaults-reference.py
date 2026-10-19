@@ -31,7 +31,9 @@ class RuleCollectionGuards(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="synthetic-rule-collection-")
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        # Canonicalize only this test-owned root (macOS may return a /var alias).
+        # Production checked_path must still reject symlinked evidence paths.
+        self.root = Path(self.temp.name).resolve()
         shape = fixtures.RuleReferenceGuards()
         shape.setUp()
         self.rows = shape.synthetic_observations()

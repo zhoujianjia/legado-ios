@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "kind": "actual-reader-smoke-C-preflight-failure-offline-archive",
+  "createdAtUTC": "2026-10-19T16:26:28.584460+00:00",
+  "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "sourceTag": "reader-smoke-1a87f6d",
+  "workflow": ".github/workflows/reader-smoke.yml",
+  "runID": 39281083749,
+  "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281083749",
+  "observationStartedAtUTC": "2026-10-19T16:24:16.857036+00:00",
+  "observationCompletedAtUTC": "2026-10-19T16:24:22.929349+00:00",
+  "runAndJobTerminalConsistent": true,
+  "runConclusion": "failure",
+  "failedStage": "portable source/evidence guards before Xcode",
+  "failureRecord": "bounded-observation/offline-failure-inspection.json",
+  "originalAPIAndHTTPDirectory": "bounded-observation",
+  "originalArtifactZIP": "bounded-observation/smokeC-reader-smoke-evidence.zip",
+  "githubArtifactID": 12201040906,
+  "githubArtifactBytes": 6685,
+  "githubArtifactSHA256": "d1d59344c7138fee73d169f85e4b9fa4322fb443d60aeb4acd88d9fc920f31bb",
+  "GitHubDigestAndSizeMatched": true,
+  "allSixZIPMembersComparedToOriginalBytes": true,
+  "actualPythonResults": {
+    "smokeTools": {
+      "methods": 24,
+      "passed": true
+    },
+    "ruleReferenceTools": {
+      "methods": 8,
+      "passed": true
+    },
+    "readerStageBaselineTools": {
+      "methods": 20,
+      "passed": true
+    },
+    "completionPlanTools": {
+      "methods": 9,
+      "passed": true
+    },
+    "ruleCollectionTools": {
+      "methods": 19,
+      "setUpErrors": 19,
+      "bodiesReached": 0
+    }
+  },
+  "actualSwiftMethods": 0,
+  "actualIOSMethods": 0,
+  "XcodeAndSimulatorStepsSkipped": true,
+  "compilerDiagnostics": 0,
+  "noXCResultOrIOSResultSummaryInvented": true,
+  "sourceDiagnosis": {
+    "confirmed": "All 19 Python methods error during setUp at production output-path protection, before their bodies run. The owned test root is not resolved before deriving output paths.",
+    "inferenceOnly": "A macOS temporary-root ancestor alias is a plausible source-level explanation. The actual temporary pathname and symlink ancestry were not printed in the raw log, so this is not an automatically measured cause or proof of a specific OS alias.",
+    "sourceBeforeSnapshots": "bounded-observation/source-inspection",
+    "fixNotExecutedByThisArchive": true
+  },
+  "renewalObservation": {
+    "runID": 39281084369,
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "statusOnlyAtThisObservation": "in_progress",
+    "artifactsQueried": false,
+    "rawEvidenceRetainedInBoundedObservation": true
+  },
+  "readBoundary": {
+    "runJobsGETs": 4,
+    "artifactListGETs": 1,
+    "artifactDownloads": 1,
+    "retries": 0,
+    "polling": false,
+    "AReleaseOrARenewalOrFontBRead": false,
+    "uniqueQueryNoCacheIsNotFreshnessProof": true
+  },
+  "archiveScope": "Original byte archive and offline failure diagnosis only. No main source, canonical plan, package batch, source gate or CI trigger was changed."
+}

@@ -1,0 +1,77 @@
+{
+  "id": "non-bmp-utf16",
+  "status": "matched-owned-expectations",
+  "binary": {
+    "path": "run/fixtures/non-bmp-utf16/fixture.umd",
+    "bytes": 253,
+    "sha256": "18fc7b41d99ff8dca0fd50490aa6cfdfb319ed688a07e4f14050c5fa8c771a2c"
+  },
+  "chapterCount": 2,
+  "totalUTF16LEBytes": 64,
+  "writerChunkSizeFromUnmodifiedSource": 32768,
+  "expectedChunkCountFromOwnedInputAndOriginalWriter": 1,
+  "metadataObservedWithTypeAndNull": {
+    "title": {
+      "type": "java.lang.String",
+      "value": "星空😀"
+    },
+    "author": {
+      "type": "java.lang.String",
+      "value": "作者𠀀"
+    },
+    "year": {
+      "type": null,
+      "value": null
+    },
+    "month": {
+      "type": null,
+      "value": null
+    },
+    "day": {
+      "type": null,
+      "value": null
+    },
+    "bookType": {
+      "type": null,
+      "value": null
+    },
+    "bookMan": {
+      "type": null,
+      "value": null
+    },
+    "shopKeeper": {
+      "type": null,
+      "value": null
+    }
+  },
+  "chapters": [
+    {
+      "index": 0,
+      "title": "第一章 😀",
+      "offsetBytes": 0,
+      "rawUTF16LEBytes": 34,
+      "rawSHA256": "66660109addc12222241f0765707458f1e15524c22ece7e7a4a8993038d227f2",
+      "publicStringType": "java.lang.String",
+      "publicStringWasNull": false,
+      "publicStringUTF8Bytes": 45,
+      "publicStringSHA256": "cd30baf12b8327a2b86900ccf7f9dd9d01d1317ce9199e9b2c9dc26ca8af5e9f",
+      "paragraphSeparatorCount": 0,
+      "expectationMatchesOriginalReader": true
+    },
+    {
+      "index": 1,
+      "title": "第二章 𠀀",
+      "offsetBytes": 34,
+      "rawUTF16LEBytes": 30,
+      "rawSHA256": "9c467ab68b65046e074f375bd2dee2b6dd6ba98842ff56e9f2a523cbb200accc",
+      "publicStringType": "java.lang.String",
+      "publicStringWasNull": false,
+      "publicStringUTF8Bytes": 36,
+      "publicStringSHA256": "968bbfc2ce55aede336ac1783e5ecf0c00c8c8e1fd94689467ef80df739caf56",
+      "paragraphSeparatorCount": 1,
+      "expectationMatchesOriginalReader": true
+    }
+  ],
+  "actualPublicOutput": "run/fixtures/non-bmp-utf16/reader-output.json",
+  "independentOwnedInput": "run/fixtures/non-bmp-utf16/fixture-input.json"
+}

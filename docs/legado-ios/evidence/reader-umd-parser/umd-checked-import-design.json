@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "design-only-not-implemented",
+  "base": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "purpose": "Minimal future checked new-local-file admission over the existing BookStore writer; no parallel shelf or UMD importer.",
+  "confirmedGaps": [
+    "saveReadingBook -> saveMetaImmediately -> persist is void; encode/write/external-change failures are logged or skipped and cannot attest success.",
+    "queuedWritesLanded is a barrier, not a success result.",
+    "validatedRestorePausesWrites is per instance and only checked by some writers; it is not an import lease and does not freeze records.",
+    "replaceRecords is the record mutation funnel and bumps mutationRevision; records subscript/append setters route through it.",
+    "Existing direct paths commitTXTBookmarks, persistEncodedReadingRecords, loadMeta migrations/reload and baseline-note callbacks need explicit lease analysis. A per-instance pause alone does not protect another BookStore on the same files."
+  ],
+  "minimalModelChanges": [
+    "Replace the private boolean pause with a private owned token kind (validated restore or checked import), UUID and generation. Preserve existing restore outward API; require exact owner on finish/apply.",
+    "Keep ReadingBook and on-disk JSON schema unchanged for UMD: original UUID.umd is contentFilename, explicit .txt rendering kind. No synthesized TXT index/journal or persisted location at import.",
+    "Lease snapshot contains shelf URL, before revision, prior persisted baseline, persist sequence fence, candidate UUID/file URL and owned recovery directory; no file paths from incoming metadata.",
+    "For multiple stores writing the same metadata URLs, either generalize an existing shared writer admission gate keyed by canonical shelf URL, or prove/ enforce single writable owner. Do not silently rely on only the app singleton. This is an unresolved implementation requirement, not a completed primitive."
+  ],
+  "pauseAndDrain": [
+    "Begin on MainActor: reject unreadable/blocked metadata, active restore/import token, candidate UUID/path collision. Flush already requested legacy work using existing API, then acquire pause synchronously before yielding; fence late prior writer bookkeeping.",
+    "Await the already existing queuedWritesLanded once; do not add any DispatchQueue/.async/.sync/GCD calls. Because queue entries admitted before pause have completed and later entries defer, detached checked I/O may run without overlap only if every relevant writer honors the same owner token.",
+    "After drain, copy owned baseline/snapshot values into Task.detached. No background access to live records, @Published data or the store; no blocking MainActor wait.",
+    "Extract a small checked throws shelf-file operation from existing I/O so legacy call sites retain catch/log behavior and checked admission receives the actual error. Do not retrofit every legacy caller into success semantics in this batch."
+  ],
+  "recordsWhilePaused": [
+    "Do not overwrite or freeze the UI library behind an old snapshot. Permit normal record mutations through replaceRecords; increment mutationRevision and mark work deferred as today.",
+    "Check token ownership and mutationRevision after encoding, before install, and immediately after detached install. Any intervening mutation is an explicit conflict, never an automatic retry or stale replacement.",
+    "Synchronous legacy commits must reject the checked lease before any disk access, preserving current memory state. Void legacy saves keep deferred intent, not a false persisted marker. load/reload/migration/restore and same-file other-instance writers must be excluded or conflict-failed explicitly.",
+    "On successful final admission, only insert the new record into the current records under exact revision/token ownership; never replace all current records with captured output. Update persisted baseline for precisely the snapshot written."
+  ],
+  "beforeAfterAndRollback": [
+    "Use an owned recovery directory containing exact prior shelf bytes (or explicit absent-file marker), candidate encoded bytes/digests and original UMD snapshot identity. Write recovery before touching the shelf.",
+    "Before atomic install, compare the actual old shelf bytes/existence to the baseline captured after drain. Reject external-change conflict without touching the shelf. No stale baseline overwrite.",
+    "After install, a failed main-actor revision/token check requires compare-before-rollback: restore old bytes only while the current shelf is still precisely this attempt's installed bytes. Never clobber a later external restore.",
+    "If rollback succeeds, publish no candidate, retain in-memory edits and release lease then enqueue existing deferred current-state writer. If rollback or compare fails, preserve owned recovery and original UMD candidate; keep writes blocked until explicit recovery resolution, report conflict/recovery failure, publish no candidate. Never delete recovery on uncertainty.",
+    "Portable tests cannot establish atomic CAS against uncoordinated external processes: byte comparison plus atomic replacement is a cooperative in-process boundary, with a remaining external TOCTOU risk. Must not claim a cross-process filesystem transaction or power-loss/crash atomicity."
+  ],
+  "cancellation": [
+    "Before any shelf install, propagate cancellation to owned read/decode/prepare tasks; join cleanup; remove only paths allocated by the current attempt.",
+    "Once shelf install may have occurred, finish success-or-compensation under the lease even if the caller cancels. Do not abandon a detached write/result or release the lease early. After successful durability/publication define whether caller cancellation is returned; it must not misreport a committed book as absent.",
+    "Cancellation during compensation never permits deleting owned recovery or returning while the shelf outcome is unknown."
+  ],
+  "routingRequiredBeforeRegistration": [
+    "BookParserRegistry and LocalBookImportService gain UMD only after checked commit and explicit reader routing; .umd remains unsupported to the current product in this preparation.",
+    "ReaderView+PageBuilding must branch .umd before TXTFileReader and TXT index migration. Build TXTBookDocument(chapterIndexes:text:) and TXTLazyAttributedStringBuilder from the validated UMD directory; source offsets / 2 are UTF16 boundaries after 2029->LF, no title regex.",
+    "TXTLazyAttributedStringBuilder defaults to Aozora markup interpretation. UMD plain text must explicitly disable parsesAozoraMarkup so literal ruby-like marks are not reinterpreted. Rendered offsets remain relative to their actual spine chapter; no raw file byte offset is a persisted charOffset.",
+    "WorkTableOfContents.chapters local .txt branch currently invokes TXTReaderPreparationService and indexForListing; add the same UMD explicit-directory route before it, no synthetic TXT cache or journal.",
+    "BookStore.content(for:), TXTBookDocument(book:store:), TXTContentProviderAdapter and makeLocalTXTProvider are synchronous TXT assumptions. Route callers to async validated UMD preparation or explicitly reject .umd; never decode compressed bytes as text or silently provide an empty fallback.",
+    "ReadingBook.displayFormatLabel needs the UMD file format label while retaining the .txt renderer capabilities.",
+    "shareableFileURL direct local-file path, Calibre returnBookFile and iCloud local content filename use contentFilename and can preserve original .umd, subject to actual execution. WebDAV backs up sources/books/rules JSON only today and does not claim TXT/EPUB/UMD payload backup.",
+    "Import file presentation, Calibre accepted-format negotiation, remote library/Works file filters, direct-export/backup and Info.plist document types require a final targeted source audit before exposing UMD selection; no extension-only support claim."
+  ],
+  "plannedMeaningfulTests": [
+    "held original writer + admitted drain proves no overlapping checked file I/O; unrelated in-memory edit forces conflict without dropping the edit",
+    "before-install external shelf change forces conflict; successful install publishes only after real checked write",
+    "after-install revision change compensates only exact own bytes; external change prevents rollback and retains recovery",
+    "write/encode/rollback faults preserve old shelf/owned recovery with no candidate publication",
+    "cancel before install cleans owned staging; cancel after install joins compensation/result",
+    "same shelf in two stores, restore/index bookmark/sync/reload direct writers cannot bypass lease",
+    "5 original Java fixtures through actual LocalBookImportService -> persisted original bytes -> same reader/TOC -> reopen exact chapter bodies/relative locations; failed import leaves existing shelf unchanged"
+  ],
+  "limits": [
+    "Design is not executed or implemented; no Swift SDK/iOS/device validation.",
+    "No new queue/GCD/sleep/retry, no parallel storage, no full UMD/MOBI/DRM/cover support.",
+    "This cooperative checked import must not be advertised as fixing all legacy void persistence or as a global crash/power-loss transaction.",
+    "The multi-writer admission gate and post-install conflict compensation require their own small reviewed implementation batch; current parser is intentionally unregistered."
+  ]
+}

@@ -3,7 +3,7 @@
   "recordedOn": "2026-10-19",
   "workpackageId": "source-schema",
   "stageId": "s3-jvm-rules-http",
-  "status": "reviewed-diagnostic-observer-submitted-awaiting-actual-cloud-observations",
+  "status": "diagnostic-observer-consolidated-smoke-preflight-failed-actual-observations-zero",
   "说明": "仅归档已审观察器、收集门及既有便携原件；未新增生产 schema 修复，未取得 Swift 真实差异。",
   "allNonDeviceWorkComplete": false,
   "automaticSelfRenewalImplemented": false,
@@ -688,5 +688,34 @@
     "passedCasesOrSchemaObservationsAccepted": false,
     "fixedAReleaseRebuilt": false,
     "excludesSubsequentLaunchMemoryAndUMDPreparation": true
+  },
+  "actualConsolidatedSmokePreflightFailure": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "runID": 39281083749,
+    "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39281083749",
+    "conclusion": "failure",
+    "failedStage": "portable guards before Xcode",
+    "PythonSetUpErrors": 19,
+    "SwiftOrIOSTestExecutions": 0,
+    "compilerDiagnostics": 0,
+    "XcodeStepsSkipped": true,
+    "record": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/failure-record.json",
+      "bytes": 2992,
+      "sha256": "2a30c4f20f646ec472b5dabd6d517c95a01fc5784353b1bb57847d3005550421"
+    },
+    "minimalTestRootFixReview": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-1a87f6d/smoke-preflight-failure/test-root-fix-independent-review.json",
+      "bytes": 8204,
+      "sha256": "e5769bc50115e08f855205e68d88f72ca0498d54e0ec9a40bee5faf9851b5e57"
+    },
+    "productionPathGuardUnchanged": true,
+    "portableTestIdentitiesUnchanged": 19,
+    "rootPortable19Passed": true,
+    "rootPortableRawLogRetained": false,
+    "rootPortableResultIsToolReportedOnly": true,
+    "MacOSTemporaryPathAndAncestryMeasured": false,
+    "specificOSAliasCauseIsInferenceOnly": true,
+    "successorStageNotSubmittedByThisRecord": true
   }
 }

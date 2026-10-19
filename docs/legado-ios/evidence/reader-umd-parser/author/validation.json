@@ -1,0 +1,160 @@
+{
+  "scope": "portable and grammar only; no Swift SDK, Simulator or iOS execution",
+  "commands": [
+    {
+      "name": "portable-12",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-umd-fixtures.py",
+        "-v"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+      "startedAtUTC": "2026-10-19T16:12:09.565773+00:00",
+      "durationSeconds": 0.15700000000651926,
+      "exitCode": 0,
+      "stdout": ".build/umd-validation/portable-12.stdout.txt",
+      "stderr": ".build/umd-validation/portable-12.stderr.txt"
+    },
+    {
+      "name": "fixture-getters",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/inspect-umd-fixtures.py",
+        "--root",
+        "Tests/iOS/yuedu appTests/Fixtures/UMD"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+      "startedAtUTC": "2026-10-19T16:12:09.725561+00:00",
+      "durationSeconds": 0.0779999999795109,
+      "exitCode": 0,
+      "stdout": ".build/umd-validation/fixture-getters.stdout.txt",
+      "stderr": ".build/umd-validation/fixture-getters.stderr.txt"
+    },
+    {
+      "name": "diff-check-final",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+      "startedAtUTC": "2026-10-19T16:13:43.392914+00:00",
+      "durationSeconds": 0.06300000008195639,
+      "exitCode": 0,
+      "stdout": ".build/umd-validation/diff-check-final.stdout.txt",
+      "stderr": ".build/umd-validation/diff-check-final.stderr.txt"
+    },
+    {
+      "name": "paths-final",
+      "argv": [
+        "git",
+        "diff",
+        "--name-only",
+        "-z"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+      "startedAtUTC": "2026-10-19T16:13:43.463741+00:00",
+      "durationSeconds": 0.046999999904073775,
+      "exitCode": 0,
+      "stdout": ".build/umd-validation/paths-final.stdout.txt",
+      "stderr": ".build/umd-validation/paths-final.stderr.txt"
+    },
+    {
+      "name": "patch-final",
+      "argv": [
+        "git",
+        "diff",
+        "--binary",
+        "--no-ext-diff"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+      "startedAtUTC": "2026-10-19T16:13:43.510367+00:00",
+      "durationSeconds": 0.062000000034458935,
+      "exitCode": 0,
+      "stdout": ".build/umd-validation/patch-final.stdout.txt",
+      "stderr": ".build/umd-validation/patch-final.stderr.txt"
+    },
+    {
+      "name": "patch-reverse-final",
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "--reverse",
+        "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\reader-umd-parser.patch"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+      "startedAtUTC": "2026-10-19T16:13:43.568979+00:00",
+      "durationSeconds": 0.03200000000651926,
+      "exitCode": 0,
+      "stdout": ".build/umd-validation/patch-reverse-final.stdout.txt",
+      "stderr": ".build/umd-validation/patch-reverse-final.stderr.txt"
+    },
+    {
+      "name": "patch-forward-main-final",
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\reader-umd-parser.patch"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "startedAtUTC": "2026-10-19T16:13:43.605398+00:00",
+      "durationSeconds": 0.030999999959021807,
+      "exitCode": 0,
+      "stdout": ".build/umd-validation/patch-forward-main-final.stdout.txt",
+      "stderr": ".build/umd-validation/patch-forward-main-final.stderr.txt"
+    }
+  ],
+  "grammar": [
+    {
+      "path": "Modules/Core/UMD/UMDBookParser.swift",
+      "sha256": "00d903a2b1e994ca6124db9d14079986d34485c9b783a4073972434a49a00ea9",
+      "errors": [],
+      "passed": true
+    },
+    {
+      "path": "Modules/Core/UMD/UMDTextDecoder.swift",
+      "sha256": "4c9f55d7e2eaa7fc97a26cce973be0d18291292b7d3cb57dd6d653a73be42c8f",
+      "errors": [],
+      "passed": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift",
+      "sha256": "8125bc6eea3663d36265db6d5babcd5d7a49d64bbf75450e89c5873899e0f8de",
+      "errors": [],
+      "passed": true
+    }
+  ],
+  "grammarPassed": true,
+  "pythonASTPassed": true,
+  "swiftSDKExecuted": 0,
+  "iOSExecuted": 0,
+  "deviceExecuted": 0,
+  "patch": {
+    "path": ".build/reader-umd-parser.patch",
+    "bytes": 335793,
+    "sha256": "50f5d84136eca006fdeea2cf0c151d39920673c1bc2e3e46759796fa02de1b21"
+  },
+  "paths": [
+    "Modules/Core/UMD/UMDBookParser.swift",
+    "Modules/Core/UMD/UMDTextDecoder.swift",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/fixture.umd",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/reader-output.json",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/fixture.umd",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/reader-output.json",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/fixture.umd",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/reader-output.json",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/fixture.umd",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/reader-output.json",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/fixture.umd",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/reader-output.json",
+    "Tests/iOS/yuedu appTests/Fixtures/UMD/provenance.json",
+    "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift",
+    "scripts/reader-experience/inspect-umd-fixtures.py",
+    "scripts/reader-experience/test-umd-fixtures.py"
+  ],
+  "finalAdjustment": "After initial final capture, made UTF16 second-pass cancellation threshold robust to surrogate pair skipping an exact modulo boundary; reran grammar/diff/patch checks only. Python was unchanged."
+}

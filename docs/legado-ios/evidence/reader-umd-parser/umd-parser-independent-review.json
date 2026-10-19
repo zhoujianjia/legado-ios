@@ -1,0 +1,543 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-static-review-of-unregistered-umd-text-parser-preparation",
+  "reviewedAtUTC": "2026-10-19T16:22:07.903694+00:00",
+  "reviewer": "/root/renewal_discovery_ui",
+  "status": "no-unresolved-static-blocking-findings",
+  "scope": "Frozen 16 new files in the isolated worktree, not product UMD support or an Apple SDK acceptance result.",
+  "base": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+  "worktree": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+  "patch": {
+    "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\reader-umd-parser.patch",
+    "bytes": 335793,
+    "sha256": "50f5d84136eca006fdeea2cf0c151d39920673c1bc2e3e46759796fa02de1b21"
+  },
+  "preparation": {
+    "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\reader-umd-parser-preparation.json",
+    "bytes": 20445,
+    "sha256": "f5ffb5197a5ae2e346f15bb123c53278b7bd5da4a17cc8ebd78706b8996a6040"
+  },
+  "files": [
+    {
+      "path": "Modules/Core/UMD/UMDBookParser.swift",
+      "bytes": 2998,
+      "sha256": "00d903a2b1e994ca6124db9d14079986d34485c9b783a4073972434a49a00ea9"
+    },
+    {
+      "path": "Modules/Core/UMD/UMDTextDecoder.swift",
+      "bytes": 12942,
+      "sha256": "4c9f55d7e2eaa7fc97a26cce973be0d18291292b7d3cb57dd6d653a73be42c8f"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/fixture.umd",
+      "bytes": 261,
+      "sha256": "5d01e2919f769d6b8e77122df64833d34a4397f2dd74de5a5c4640f2189909b3"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/reader-output.json",
+      "bytes": 1530,
+      "sha256": "b1e7ccb87c1be6ba2f8a4a7103e4d68e6767c821c139725f9e89c84632ec310a"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/fixture.umd",
+      "bytes": 439,
+      "sha256": "2044ddc9c93c2be81e542ed59f8786a338bd3d01c880918be9977c383ec0ee22"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/reader-output.json",
+      "bytes": 276943,
+      "sha256": "58ea25c4dcc488de09404900db60e9ba3c7ec53a26c9d9c60c4dff0e1aa61dd4"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/fixture.umd",
+      "bytes": 293,
+      "sha256": "e242825d04a0a8411611a1c425ea6942b35c93baf1ea212447faa832e6009cc4"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/reader-output.json",
+      "bytes": 2528,
+      "sha256": "b0415da7a95182e08d3c24dcb9ec2f9559859d94e06f95cbd72d5d6050acd6f6"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/fixture.umd",
+      "bytes": 253,
+      "sha256": "18fc7b41d99ff8dca0fd50490aa6cfdfb319ed688a07e4f14050c5fa8c771a2c"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/reader-output.json",
+      "bytes": 1477,
+      "sha256": "1530f0733037cf23a10b685da9daf6453ee16ed3d6da767f4e332336a352b38d"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/fixture.umd",
+      "bytes": 244,
+      "sha256": "da0ace6f13013d6da36cce47beaed845eb450e3de1ac0756e0656f469b5f4056"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/reader-output.json",
+      "bytes": 1734,
+      "sha256": "2d41a1a581167d3f12aee85e69b3a6a7d364454e79ed87b7dd5c8698903454a5"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/Fixtures/UMD/provenance.json",
+      "bytes": 2100,
+      "sha256": "e77c071c9f821ae63dfd14d233a627b9cc6c9061e9ab2de864699f513194a2c4"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/UMDTextDecoderTests.swift",
+      "bytes": 12530,
+      "sha256": "8125bc6eea3663d36265db6d5babcd5d7a49d64bbf75450e89c5873899e0f8de"
+    },
+    {
+      "path": "scripts/reader-experience/inspect-umd-fixtures.py",
+      "bytes": 8749,
+      "sha256": "50085899d263769f0e10ffc75b0c69254865506914f0e72169ec94ec513a2812"
+    },
+    {
+      "path": "scripts/reader-experience/test-umd-fixtures.py",
+      "bytes": 5197,
+      "sha256": "4ce7266f51a4fbb1a8e9d7d5b05735c5d7ddd79873e4981d4e192cdbd73458be"
+    }
+  ],
+  "skillsRead": [
+    {
+      "path": "F:\\yuedu-reader\\.agents\\skills\\yuedu-swift\\SKILL.md",
+      "usedFor": "owned worker, synchronous decoder boundary, cancellation and tracing; verified project SDK limitations"
+    },
+    {
+      "path": "F:\\yuedu-reader\\.agents\\skills\\yuedu-tour\\SKILL.md",
+      "usedFor": "BookParser/BookParserRegistry and local import ownership; explicit product integration boundary"
+    }
+  ],
+  "unresolvedBlockingFindings": [],
+  "staticReview": {
+    "zlibLifecycle": {
+      "source": "Modules/Core/UMD/UMDTextDecoder.swift:174",
+      "finding": "No confirmed lifecycle defect found. A successful inflateInit2_ is immediately paired with defer inflateEnd on normal return, malformed input, budget failure and cooperative cancellation. Failed init exits before that defer.",
+      "pointers": "All inflate calls occur inside the input Data borrow and current mutable scratch-buffer borrow. next_in remains within the live input borrow across iterations; next_out is reset inside each scratch borrow before inflate. No user buffers are read by application code through the stored C pointers after their scopes. Cached zlib manual documents inflateEnd freeing stream-owned allocations rather than caller input/output buffers.",
+      "availabilityBoundary": "This is a source/API-contract review, not actual Apple zlib Swift import/signature validation. Existing app code already imports zlib, but the three new Swift files still need an Apple SDK build."
+    },
+    "compressedStreamCompletion": {
+      "finding": "Positive MAX_WBITS selects the zlib wrapper. Accepted blocks must reach Z_STREAM_END with avail_in equal to zero; checksum failures, NEED_DICT, other non-OK codes, no-progress loops, truncation and unconsumed compressed tails cannot be accepted by this loop.",
+      "boundedProgress": "Each inflate call has a 16384-byte scratch output. The loop either makes measurable input/output progress, returns a complete stream, or throws. The frozen tests prepare corrupt-wrapper/checksum/tail coverage, but none of those Swift tests has executed."
+    },
+    "budgetsAndIntegerBounds": {
+      "finding": "Input, declared output, chapters and records are checked before their bounded operations. The per-block remaining output budget is checked before appending output. Cursor reads check nonnegative count against remaining bytes before slicing. UInt32 record values fit the app's 64-bit iOS Int; index storage is bounded by record/input limits.",
+      "defaults": {
+        "inputBytes": 67108864,
+        "outputUTF16LEBytes": 33554432,
+        "chapters": 16384,
+        "records": 65536,
+        "inflateScratchBytes": 16384,
+        "fileReadChunkBytes": 65536
+      },
+      "memoryBoundary": "These are logical byte/count budgets. Input Data/Array copies, decompressed content, per-chapter raw Data, UTF16 unit arrays and String copies add memory; no measured peak RSS, device memory or performance result is asserted. A scratch inflate can produce at most one 16KiB chunk beyond remaining logical output before rejection; that output is not appended."
+    },
+    "cancellationAndFileOwnership": {
+      "source": "Modules/Core/UMD/UMDBookParser.swift:24",
+      "finding": "The public file load creates an owned detached worker, forwards parent cancellation via withTaskCancellationHandler and awaits the worker result. It checks cancellation in the bounded read loop, decoder record/inflate/UTF16 loops and chapter assembly; closes the FileHandle on success and failure; and returns the same validated source bytes as Snapshot.originalBytes. It performs no writes or staging.",
+      "inputReadBoundary": "Reads are at most 65536 bytes and at most the remaining logical budget plus a one-byte EOF probe. Bytes exceeding the budget are rejected before append; custom large positive limits avoid remaining+1 overflow through the branch condition.",
+      "limits": "Cancellation is cooperative between filesystem/C/Foundation operations. The review supplies no cancellation latency, cancellation-during-blocking-read or actual execution evidence. External security-scope and checked durable import leases are outside this unregistered read-only preparation."
+    },
+    "recordAndUTF16Semantics": {
+      "finding": "Checked framing requires the UMD magic, a single type-1 header, known flags and section payload lengths, exact offset/title identities, unique chunk IDs, the reversed final chunk index, exact declared output and exact EOF size. Chapter offsets begin at zero and must be even, monotonic and within the complete concatenated output.",
+      "utf16": "UTF16LE code units are assembled explicitly; high/low surrogate validity is checked before String decoding. Raw bytes and byte offsets are retained. Compressed blocks are concatenated before chapter decoding, so a valid pair split across compression blocks remains valid; a chapter boundary splitting a pair is rejected. Only U+2029 is replaced with LF for the public content projection, and exact UTF16-array comparisons are prepared to avoid hiding normalization differences behind String equality.",
+      "strictPolicyBoundary": "Rejection of type2, nonzero license/key placeholders, unsupported records, tails and malformed data is project strict subset policy. It is not evidence of original Java rejection, a DRM detector or general UMD compatibility. Original Java was exercised only for the five valid owned fixtures."
+    },
+    "goldenProvenance": {
+      "finding": "Independently rehashed the pinned original reference manifest and all 132 members, compared the nine unchanged Java source entries against the archived original ZIP, compared all ten copied UMD/golden files byte-for-byte with that reference, and checked raw chapter base64 against the retained original reader raw files and getter projection for all 15 chapters.",
+      "identity": {
+        "manifest": {
+          "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\bundle-manifest.json",
+          "bytes": 24989,
+          "sha256": "aa9b128ba7ff51e524af0ef1d905860d6599e9f71426bc484544ed1344110719"
+        },
+        "record": {
+          "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\reference-record.json",
+          "bytes": 28436,
+          "sha256": "fde4be8b82780807741a2f19d3bc6bfbcedabfa6b74a41a74eeb6fdfc60c345a"
+        },
+        "priorIndependentReview": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-reference-independent-review.json",
+          "bytes": 6588,
+          "sha256": "3052ffd6cea4918047cd5ddcf3c830f791ab8ccac69024ab570e155565467901"
+        },
+        "manifestMembersRehashed": 132,
+        "originalJavaEntriesComparedToZIP": 9,
+        "originalArchive": {
+          "path": "F:\\yuedu-reader\\.build\\umd-reference-preparation\\run\\original\\legado-master.zip",
+          "bytes": 11178463,
+          "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd"
+        },
+        "copiedGoldenFilesCompared": 10,
+        "fixtures": 5,
+        "chapters": 15
+      },
+      "executionBoundary": "The reviewer did not rerun the original Java compiler, writer, reader or RNG. Reference random IDs and compressed bytes were kept unchanged. The existing independent reference review is reused only for original harness/provenance scope."
+    },
+    "testsAndAccess": {
+      "finding": "Read both production Swift files, all eleven nonparameterized Swift test methods, their private helpers, the portable fixture inspector and twelve portable checks. No definite stored-property-before-init capture, cross-file private access, actor isolation violation or readonly settings write was identified in these new files by this static review.",
+      "pending": "Swift Testing macro expansion, Foundation/FileHandle behavior, Task generic inference, zlib C import bindings and actual source-tree fixture resolution under the selected Simulator test target remain Apple SDK verification work. The #filePath fixture route is checkout-host dependent and is not a device-bundled fixture claim."
+    },
+    "productBoundary": {
+      "finding": "All sixteen diff paths are new. BookParsing.swift and LocalBookImportService.swift were compared with the worktree base and are byte-identical. UMDBookParser is not registered or selected by product import. No current shelf, reader, TOC, reopen, UI, metadata or CI integration was added.",
+      "unchangedFiles": [
+        {
+          "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\Modules\\Core\\EPUB\\BookParsing.swift",
+          "bytes": 11290,
+          "sha256": "21ccba61d47895fbfab30e475ac86ca2339c7e4472a90ba00e83d0ff2285d0cf"
+        },
+        {
+          "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\Modules\\Services\\LibraryStore\\LocalBookImportService.swift",
+          "bytes": 4584,
+          "sha256": "78229eab046daed3d18b9d2275a1623f84421fd8ca0e4aacc536cfa97c0e87de"
+        }
+      ],
+      "knownLossyProjection": "ParsedBookDocument only carries chapter bodies and storageText is lossy for UMD titles/offsets. Snapshot retains the richer document and original bytes, but a checked durable import and an explicit directory/reader route are future work. This preparation must not be described as finished product import, TOC or reopen support."
+    }
+  },
+  "evidenceAccounting": {
+    "authorPortableChecks": 12,
+    "authorPortableScope": "Python frozen-fixture/reference integrity and owned project-policy mutations, not execution of the Swift decoder",
+    "authorPortableRawLogsHashVerified": true,
+    "reviewerReranPortableChecks": false,
+    "plannedSwiftMethods": 11,
+    "actualSwiftMethodsExecuted": 0,
+    "authorGrammarFiles": 3,
+    "authorGrammarHashVerified": true,
+    "grammarScope": "Tree-sitter syntax only, not Swift typechecking, C binding validation or concurrency checking",
+    "reviewerReranGrammar": false,
+    "authorEvidence": {
+      "validation": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\validation.json",
+        "bytes": 5909,
+        "sha256": "4cc5117d972d2837f659235f0f11b0b77cc08a2d5d8ad538b11a3466c6f2d9a8"
+      },
+      "rawLogs": [
+        {
+          "name": "portable-12",
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\portable-12.stdout.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\portable-12.stderr.txt",
+            "bytes": 1644,
+            "sha256": "0944ab191019a1551a8280b8035c06fc9e71d25591a6bf65bec2ae4aace690b1"
+          },
+          "reviewerReran": false
+        },
+        {
+          "name": "fixture-getters",
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\fixture-getters.stdout.txt",
+            "bytes": 274,
+            "sha256": "f809bf5460aa8a63c6c01fa64fa767e1042c2b378a332d50ee0b5d039befb305"
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\fixture-getters.stderr.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "reviewerReran": false
+        },
+        {
+          "name": "diff-check-final",
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\diff-check-final.stdout.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\diff-check-final.stderr.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "reviewerReran": false
+        },
+        {
+          "name": "paths-final",
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\paths-final.stdout.txt",
+            "bytes": 1038,
+            "sha256": "d3ddc69743a8f05815a20e1c02647e7eebbd698117f0c063216fa840038388ed"
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\paths-final.stderr.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "reviewerReran": false
+        },
+        {
+          "name": "patch-final",
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\patch-final.stdout.txt",
+            "bytes": 335793,
+            "sha256": "50f5d84136eca006fdeea2cf0c151d39920673c1bc2e3e46759796fa02de1b21"
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\patch-final.stderr.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "reviewerReran": false
+        },
+        {
+          "name": "patch-reverse-final",
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\patch-reverse-final.stdout.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\patch-reverse-final.stderr.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "reviewerReran": false
+        },
+        {
+          "name": "patch-forward-main-final",
+          "stdout": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\patch-forward-main-final.stdout.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-validation\\patch-forward-main-final.stderr.txt",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "reviewerReran": false
+        }
+      ],
+      "portableChecks": 12,
+      "portableRerunByReviewer": false,
+      "grammar": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-swift-grammar.json",
+        "bytes": 685,
+        "sha256": "26a82a89599acfa5db6a975fd10316c35e7d2160d4d4242ecf668b4713f60995"
+      },
+      "grammarFiles": 3,
+      "grammarRerunByReviewer": false,
+      "primaryIndex": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-primary\\index.json",
+        "bytes": 554,
+        "sha256": "cb9f2038a2b2876cf73233f9fbd7ee9d1deee4c4b5d17dbd08deca75f47bd5e1"
+      },
+      "primaryManual": {
+        "path": "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\umd-primary\\zlib-manual.html",
+        "bytes": 105499,
+        "sha256": "5e5c72f4f30e417c56f2c0018bfdac871fdaa33df8bdf9349d0a11dcf9228ae8"
+      }
+    },
+    "reviewerIdentityCheck": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\identity-check.json",
+      "bytes": 17118,
+      "sha256": "fc851743e58b38337421fb210ffa6a5fd0b09a83c6c823023717d85750453056"
+    },
+    "reviewerChecker": {
+      "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\check-umd-parser-independent.py",
+      "bytes": 9937,
+      "sha256": "5772d1eec1f050fd7a9b179d4ccaf8015f45e5e83f68976bbc3b56b8b702c269"
+    },
+    "reviewerLaunchCommand": {
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\check-umd-parser-independent.py",
+        "--out-dir",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation"
+      ],
+      "cwd": "F:\\yuedu-reader",
+      "startedAtUTC": "2026-10-19T16:20:42.543546+00:00",
+      "exitCode": 0
+    },
+    "reviewerLaunchRaw": [
+      {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\reviewer-check.stdout.bin",
+        "bytes": 208,
+        "sha256": "80385d9f277ca04a5f35179aad3ac42ca61850a2598c795d590aac4d8ca23a5c"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\reviewer-check.stderr.bin",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\reviewer-check-command.json",
+        "bytes": 359,
+        "sha256": "6ec1a8fcc1d9d53b48bed524ef6b8eac6bc65f860eb9eb87c358f00b8d7d3e0d"
+      }
+    ],
+    "reviewerActualReadOnlyGitCommands": [
+      {
+        "name": "head",
+        "argv": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+        "startedAtUTC": "2026-10-19T16:20:42.606038+00:00",
+        "exitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\head.stdout.bin",
+          "bytes": 41,
+          "sha256": "eeef2a3bc9cafed93cbeb1e419979c106c4ab6936f77439a45340dd7f3f7ebc2"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\head.stderr.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "diff-paths",
+        "argv": [
+          "git",
+          "diff",
+          "--name-only",
+          "-z"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+        "startedAtUTC": "2026-10-19T16:20:42.650038+00:00",
+        "exitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\diff-paths.stdout.bin",
+          "bytes": 1038,
+          "sha256": "d3ddc69743a8f05815a20e1c02647e7eebbd698117f0c063216fa840038388ed"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\diff-paths.stderr.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "diff-binary",
+        "argv": [
+          "git",
+          "diff",
+          "--binary",
+          "--no-ext-diff"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+        "startedAtUTC": "2026-10-19T16:20:42.699037+00:00",
+        "exitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\diff-binary.stdout.bin",
+          "bytes": 335793,
+          "sha256": "50f5d84136eca006fdeea2cf0c151d39920673c1bc2e3e46759796fa02de1b21"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\diff-binary.stderr.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+        "startedAtUTC": "2026-10-19T16:20:42.750865+00:00",
+        "exitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\diff-check.stdout.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\diff-check.stderr.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "reverse-check",
+        "argv": [
+          "git",
+          "apply",
+          "--check",
+          "--reverse",
+          "F:\\yuedu-reader\\.build\\reader-umd-worktree\\.build\\reader-umd-parser.patch"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+        "startedAtUTC": "2026-10-19T16:20:42.802573+00:00",
+        "exitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\reverse-check.stdout.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\reverse-check.stderr.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "base-BookParsing",
+        "argv": [
+          "git",
+          "show",
+          "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:Modules/Core/EPUB/BookParsing.swift"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+        "startedAtUTC": "2026-10-19T16:20:42.881573+00:00",
+        "exitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\base-BookParsing.stdout.bin",
+          "bytes": 11290,
+          "sha256": "21ccba61d47895fbfab30e475ac86ca2339c7e4472a90ba00e83d0ff2285d0cf"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\base-BookParsing.stderr.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "base-LocalBookImportService",
+        "argv": [
+          "git",
+          "show",
+          "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06:Modules/Services/LibraryStore/LocalBookImportService.swift"
+        ],
+        "cwd": "F:\\yuedu-reader\\.build\\reader-umd-worktree",
+        "startedAtUTC": "2026-10-19T16:20:42.931636+00:00",
+        "exitCode": 0,
+        "stdout": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\base-LocalBookImportService.stdout.bin",
+          "bytes": 4584,
+          "sha256": "78229eab046daed3d18b9d2275a1623f84421fd8ca0e4aacc536cfa97c0e87de"
+        },
+        "stderr": {
+          "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\umd-parser-independent-validation\\base-LocalBookImportService.stderr.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "priorLaunchIssue": "An exploratory inline python -c invocation was rejected by PowerShell quoting before launching the verifier; no reviewed file was written. The saved file-based verifier execution is the successful actual check recorded here."
+  },
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "iOSTestsExecuted": false,
+  "deviceExecutionPerformed": false,
+  "JavaRerunPerformed": false,
+  "CIQueriedOrTriggered": false,
+  "networkQueries": 0,
+  "reviewedSourceEdits": 0,
+  "mainSourceEdits": 0,
+  "originalReferenceEdits": 0,
+  "privateBookOrSourceAccess": false,
+  "productImportTOCReopenSupported": false,
+  "nextAcceptance": "Build the frozen Swift files and execute the eleven production-calling tests on Apple SDK before any parser runtime claim. Product import remains gated on a checked commit and explicit directory reader/TOC/reopen implementation and tests."
+}
