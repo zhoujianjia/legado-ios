@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+  "status": "production-Debug-Simulator-compile-recorded-consolidated-reverification-submitted",
+  "trigger": "Build10 fixed-loopback report timed out before TCP; user separately reports computer on, USB connected, no VPN and no SideStore.",
+  "implementation": {
+    "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+    "policy": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+    "native": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+    "UI": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+    "flow": "Opt-in NWBrowser for one service; DNS-SD resolve/address APIs without candidate connection; exact local numeric ownership and TTL; TCP open and close without application frames.",
+    "bonjourType": "_remotepairing._tcp",
+    "bonjourDomain": "local.",
+    "overallDeadlineSeconds": 8,
+    "discoveryWindowSeconds": 3,
+    "maximumServices": 8,
+    "maximumResolvedAddressCallbacks": 32,
+    "maximumApprovedEndpoints": 4,
+    "maximumConcurrentConnections": 1,
+    "maximumTCPDeadlineSeconds": 2,
+    "DNSQueriesMayBeSent": true,
+    "TCPApplicationPayloadBytesSent": 0,
+    "currentUIRepeatsLegacyFixedPortProbe": false,
+    "legacySchemaOneReadCompatibilityRetained": true,
+    "reportSchemaVersion": 2
+  },
+  "safetyAndBoundaries": [
+    "Accept exact captured local numeric addresses only; reject DNS host fallback, malformed/multicast/broadcast/mapped addresses, missing/conflicting scope and excluded interfaces.",
+    "Eligible interface names are numbered lo/en with up and non-point-to-point flags; this is narrow coverage, not proof that VPN or other transports are absent.",
+    "Snapshot comparison includes all captured IP nodes, including excluded interfaces, full raw flags, index, scope and IPv4 mask/broadcast; it does not cover addressless interfaces or all route/proxy changes.",
+    "SDK Host must round-trip address family, raw bytes and link-local interface index. Local destination ownership is not cryptographic device-service identity.",
+    "Only one explicit windowEnded followed by stream completion authorizes any connection. Overflow, invalidation, premature stream end and stale/removed generations fail closed.",
+    "Recheck address snapshot and DNS TTL before each serial attempt. TCP-ready is neither protocol authentication nor signing/installation/renewal.",
+    "C callback context and DNSServiceRef teardown stay on the serial dispatch queue required by the SDK; snapshots run in a detached utility task.",
+    "No credential, pairing file, device identifier, TXT, dynamic endpoint, interface name/index or raw server reply is exported. Counts, enums, elapsed times and numeric errors only."
+  ],
+  "verification": {
+    "portableEvidenceGuardTestsPassed": 16,
+    "independentSourceReviewCompleted": true,
+    "plannedSimulatorCases": {
+      "legacyUnit": 8,
+      "discovery": 13,
+      "UI": 1
+    },
+    "newDiscoverySwiftTestsExecuted": false,
+    "AppleSDKCompilationPassed": true,
+    "AppleSDKLinkPassed": true,
+    "physicalDeviceDynamicDiscoveryExecuted": false,
+    "serviceIdentityVerified": false,
+    "localSyntaxScreen": "Seven modified Swift files checked with tree-sitter Swift grammar; no syntax errors. This is not Swift type checking or SDK compilation.",
+    "AppleSDKAcceptanceScope": "Xcode 26.2/17C52 Debug arm64 iOS Simulator main app: production files compiled, main executable and debug dylib linked. Test target failed before any iOS test execution. No Release/device build acceptance.",
+    "reportInspectorSyntheticTestsPassed": 25,
+    "oldDeviceReportSchemaCompatibilityPassed": true
+  },
+  "retainedReviews": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/tooling-validation.json",
+      "sha256": "4770d358758f9023a911e0c4584e868f630e25fb037e2c5a2ba10824017c690c"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/tooling-independent-review.json",
+      "sha256": "80e8302cf0fb849348cb6c682222c30a6304c3f04b44a46c9d84ed6a8ac12f90"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/native-core-review.json",
+      "sha256": "5d6b4be645c9d2815089420f816f347e01626fcb083b729b5ae664d6dbec5be6"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery/independent-acceptance-review.json",
+      "sha256": "c838be2e9b7cd01cc0e37c3978aef72c59163c4411d37ce0bca494f8714913d0"
+    }
+  ],
+  "plannedDeviceCandidate": {
+    "build": "12",
+    "status": "awaiting-actual-Simulator-tests-and-Release-artifact-audit",
+    "delivered": false,
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571"
+  },
+  "automaticSelfRenewalImplemented": false,
+  "automaticSelfRenewalVerified": false,
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "primaryReferences": [
+    "https://developer.apple.com/documentation/technotes/tn3151-choosing-the-right-networking-api",
+    "https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy",
+    "https://github.com/apple-oss-distributions/mDNSResponder/blob/d4658af3f5f291311c6aee4210aa6d39bda82bbe/mDNSShared/dns_sd.h"
+  ],
+  "actualCloudCheckpoint": {
+    "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
+    "runId": 39267868623,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39267868623",
+    "conclusion": "failure",
+    "actualIOSTestExecutions": 0,
+    "failure": [
+      "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift:181:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+    ],
+    "record": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/actual-sdk-failure-summary.json",
+    "repair": "Replace only the nested test fixture map/array concatenations with typed bounded event arrays and append loops; bind failure-scenario tuples separately and await reports before assertions. All 13 methods and all assertions retained. The benchmark direct-module import repair is also included in the next checkpoint.",
+    "postRepairSwiftCompilationPassed": false,
+    "newProductionFilesChangedByRepair": false
+  },
+  "additionalEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/actual-sdk-failure-summary.json",
+      "sha256": "1895adfc2d84165f62f1a1b325ac5338344fe9a5635e8bfd50fb1eba411d3dd6"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/reader-renewal-probe-evidence.zip",
+      "sha256": "8c45283fd03af5729e572835dd217cd5b9c7eea798e9bb389c6f7e33b285c845"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/repair-syntax-screen.json",
+      "sha256": "caf7a3edfc050fd2321aa2e8c1de93e75ef02e7025e22f7eef3bd8ae7b81ba8d"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/report-inspector-tools.zip",
+      "sha256": "de20cce95511cd37a62ab4f02c63a5b9a0f6c2df963ffe912e639c5b9c96ea92"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/report-inspector-validation.json",
+      "sha256": "bb6dfb2ad39b5f2cc9e84897d61e04136c51d17974d9084d2fd99c9e938c179f"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/run.json",
+      "sha256": "d60f06861ae117d6b3a7d9eaca80d88d2b6ebf27eb6841c4fc13ae98a8706a2b"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/schema1-compatibility.json",
+      "sha256": "12cbedd47174407aca5573714d2937e456395ae57355dac441387b4302f8de69"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-6b3a3bd/typecheck-budget-repair-review.json",
+      "sha256": "054d29ce8fab0a9a59f3685b6ff40eedc23ec12c023138ed9776efdc62b64b5e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json",
+      "sha256": "dd2bcc12c4b390c62fbb9d3f7e14d2bc1485f5b09708a155907f94f037823170"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/reader-renewal-probe-evidence.zip",
+      "sha256": "a5671fb085d59adff588d2ec18bc8dcc97e920a1982b26c4c0e7cdb134ac73cb"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/root-repair-independent-review.json",
+      "sha256": "830158a53110021b0376005532821b499cea12a2edcaba8c2b08e01567fed533"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/repair-swift-grammar-screen.json",
+      "sha256": "e32d94a24b49b65bc98679fc3a004bd6ba88b5f8e8db36ce0b09b11f473fb310"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-discovery-a76d380/evidence-manifest.json",
+      "sha256": "d8538942476d8a66a07d303fbf022f38cc26ebc26f6cc78ca2fe24f0b48a00d0"
+    },
+    {
+      "path": "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+      "bytes": 3670,
+      "sha256": "e99def1cfd673323eb736044c514e1e938e3dad75dcd4ffc0e1e58ae1fb50f2d"
+    }
+  ],
+  "submittedRepairCheckpoint": {
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "diagnosticRunId": 39272841721,
+    "diagnosticURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39272841721",
+    "releaseRunId": 39272843081,
+    "releaseURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39272843081",
+    "statusAtInitialBoundedRead": "in_progress",
+    "actualPassedTestsOrReleaseAcceptanceEstablished": false,
+    "reason": "Two actual compiler failures repaired together; identical production discovery files. Separate font follow-up is excluded from this fixed build12 candidate."
+  },
+  "subsequentActualCloudCheckpoint": {
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "runId": 39272841721,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39272841721",
+    "conclusion": "failure",
+    "actualIOSTestExecutions": 0,
+    "uniqueCompilerDiagnostics": [
+      "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift:266:54: error: constant 'self.book' captured by a closure before being initialized"
+    ],
+    "diagnosticOccurrencesAreNotFailedTestCases": true,
+    "record": "docs/legado-ios/evidence/renewal-discovery-a76d380/failure-summary.json",
+    "mainAppScope": "Actual main app Debug iOS-Simulator compile and executable/debug-dylib/preview link steps appear before test-target failure. No Release/device/package or runtime behavior acceptance is inferred.",
+    "sourceRepair": {
+      "path": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+      "sha256": "d7f8aae20ccc2e662fc03b9db2d4c3366e7b5c7c46af5f51c5cef99a00266c1e",
+      "reason": "The map closure now captures a local String, instead of implicitly capturing the incompletely initialized fixture self while its book field is unset.",
+      "productionDiscoveryFilesChanged": false,
+      "SwiftRecompileOrIOSTestAcceptanceEstablished": false
+    },
+    "fontSameSourceRiskIsNotActualFontRunResult": true
+  },
+  "submittedConsolidatedStageCheckpoint": {
+    "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
+    "observedAtUTC": "2026-10-19T15:53:04.096385+00:00",
+    "observationRecord": {
+      "path": "docs/legado-ios/stage-checkpoint-1a87f6d-initial.json",
+      "bytes": 3670,
+      "sha256": "e99def1cfd673323eb736044c514e1e938e3dad75dcd4ffc0e1e58ae1fb50f2d"
+    },
+    "readerSmokeRunId": 39281083749,
+    "renewalRunId": 39281084369,
+    "statusAtSavedInitialObservation": "queued",
+    "statusIsNotClaimedCurrent": true,
+    "passedCasesOrSchemaObservationsAccepted": false,
+    "fixedAReleaseRebuilt": false,
+    "excludesSubsequentLaunchMemoryAndUMDPreparation": true
+  }
+}

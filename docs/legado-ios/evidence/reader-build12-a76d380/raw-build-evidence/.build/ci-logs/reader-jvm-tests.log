@@ -1,0 +1,110 @@
+Downloading https://services.gradle.org/distributions/gradle-8.14.3-bin.zip
+...................................................................................................................................
+Unzipping /Users/runner/.gradle/wrapper/dists/gradle-8.14.3-bin/cv11ve7ro1n3o1j4so8xd9n66/gradle-8.14.3-bin.zip to /Users/runner/.gradle/wrapper/dists/gradle-8.14.3-bin/cv11ve7ro1n3o1j4so8xd9n66
+Set executable permissions for: /Users/runner/.gradle/wrapper/dists/gradle-8.14.3-bin/cv11ve7ro1n3o1j4so8xd9n66/gradle-8.14.3/bin/gradle
+
+Welcome to Gradle 8.14.3!
+
+Here are the highlights of this release:
+ - Java 24 support
+ - GraalVM Native Image toolchain selection
+ - Enhancements to test reporting
+ - Build Authoring improvements
+
+For more details see https://docs.gradle.org/8.14.3/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+w: ⚠️ Deprecated Gradle Version
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+Solution: Please update the Gradle version to at least Gradle 8.14.4.
+
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources
+> Task :mergeServices
+> Task :processTestResources
+> Task :prepareTlsSmokeResources
+
+> Task :compileKotlin
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeByJSoup.kt:77:38 Elvis operator (?:) always returns the left operand of non-nullable type 'String'.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt:122:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/MainJsResultMarshaller.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/MainJsResultMarshaller.kt:181:30 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:143:74 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:151:81 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:165:62 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:70:25 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:80:22 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt:30:33 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+
+> Task :compileJava
+> Task :classes
+> Task :jar
+> Task :runtimeJar
+
+> Task :runtimeSmoke
+PACKAGED_PAYLOAD_OK {"ok":true,"taskId":"packaged-semantics","result":{"e4x":"ok","indirect":"function","dynamicThis":true,"legacy":42},"metrics":{"elapsedMs":1454.61825}}
+
+> Task :runtimeSuiteSmoke
+ORDINARY_TLS_FIXTURES_ABSENT_EXTERNAL_RESOURCES_OK {"fixturePackaging":"external-test-resources","resourceURL":"file:/Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/build/smoke-tls-resources/io/yuedu/legado/tls-fixture-v1/fixture-manifest.json","jarContainsTLSFixtures":false}
+PACKAGED_INTEROP_SUITE_OK {"ok":true,"taskId":"packaged-interop-suite","result":{"suite":"InteropSemanticSuite","caseSetVersion":"legado-interop-v1","passed":true,"passedCount":28,"failed":0,"total":28,"tests":[{"name":"list.indexed-read-and-null","passed":true,"actual":"[true,3,\"first\",true,\"last\",false]","expected":"[true,3,\"first\",true,\"last\",false]"},{"name":"list.indexed-write-updates-java","passed":true,"actual":"[\"changed\",\"changed\",4,\"append\"]","expected":"[\"changed\",\"changed\",4,\"append\"]"},{"name":"list.remove-selects-index-overload","passed":true,"actual":"[\"first\",2,true,\"last\"]","expected":"[\"first\",2,true,\"last\"]"},{"name":"list.java-iterator-preserves-null","passed":true,"actual":"[\"first\",null,\"last\"]","expected":"[\"first\",null,\"last\"]"},{"name":"map.key-access-distinguishes-missing-and-null","passed":true,"actual":"[\"book\",7,true,true,false,\"undefined\"]","expected":"[\"book\",7,true,true,false,\"undefined\"]"},{"name":"map.property-write-updates-java-types","passed":true,"actual":"[42,\"java.lang.Double\",\"written\",true]","expected":"[42,\"java.lang.Double\",\"written\",true]"},{"name":"string.java-wrapper-and-utf16-methods","passed":true,"actual":"[\"object\",true,6,20070,\"书📚\",\"A书📚\\u0000Z\"]","expected":"[\"object\",true,6,20070,\"书📚\",\"A书📚\\u0000Z\"]"},{"name":"string.utf8-produces-signed-java-bytes","passed":true,"actual":"[3,-28,-71,-90,\"number\",\"书\"]","expected":"[3,-28,-71,-90,\"number\",\"书\"]"},{"name":"byte-array.signed-boundaries-and-unsigned-mask","passed":true,"actual":"[4,0,127,-128,-1,128,255,\"[B\"]","expected":"[4,0,127,-128,-1,128,255,\"[B\"]"},{"name":"byte-array.base64-roundtrip-keeps-signed-values","passed":true,"actual":"[\"AH+A/w==\",4,127,-128,-1,\"[B\"]","expected":"[\"AH+A/w==\",4,127,-128,-1,\"[B\"]"},{"name":"byte-array.js-array-converts-to-byte-array","passed":true,"actual":"[\"[B\",4,-128,-1,0,127,-2]","expected":"[\"[B\",4,-128,-1,0,127,-2]"},{"name":"array.java-string-array-is-fixed-java-type","passed":true,"actual":"[false,3,\"first\",true,\"third\",\"[Ljava.lang.String;\"]","expected":"[false,3,\"first\",true,\"third\",\"[Ljava.lang.String;\"]"},{"name":"array.indexed-write-updates-original-array","passed":true,"actual":"[\"written\",\"written\",true,3]","expected":"[\"written\",\"written\",true,3]"},{"name":"array.js-arrays-convert-to-declared-java-types","passed":true,"actual":"[\"[I\",3,6,\"[Ljava.lang.String;\",true,\"beta\"]","expected":"[\"[I\",3,6,\"[Ljava.lang.String;\",true,\"beta\"]"},{"name":"null.java-null-remains-distinct-from-void","passed":true,"actual":"[true,true,true,\"object\",true,\"undefined\"]","expected":"[true,true,true,\"object\",true,\"undefined\"]"},{"name":"parameters.primitive-int-long-boolean-char-conversion","passed":true,"actual":"[7,\"2147483648\",true,\"char:20070\"]","expected":"[7,\"2147483648\",true,\"char:20070\"]"},{"name":"parameters.object-keeps-java-boxed-types","passed":true,"actual":"[\"java.lang.String\",\"java.lang.Double\",\"java.lang.Boolean\",\"null\",\"java.lang.String\",\"undefined\"]","expected":"[\"java.lang.String\",\"java.lang.Double\",\"java.lang.Boolean\",\"null\",\"java.lang.String\",\"undefined\"]"},{"name":"overload.automatic-js-primitive-and-java-object-selection","passed":true,"actual":"[\"String:text\",\"double:7.5\",\"boolean:true\",\"Object:java.util.ArrayList\",true,\"InternalError\",\"String:<null>\",\"Object:null\"]","expected":"[\"String:text\",\"double:7.5\",\"boolean:true\",\"Object:java.util.ArrayList\",true,\"InternalError\",\"String:<null>\",\"Object:null\"]"},{"name":"overload.js-number-prefers-double","passed":true,"actual":"[\"double:7.0\",\"double:7.5\"]","expected":"[\"double:7.0\",\"double:7.5\"]"},{"name":"overload.explicit-signatures-select-exact-java-target","passed":true,"actual":"[\"int:7\",\"double:7.0\",\"Object:java.lang.String\"]","expected":"[\"int:7\",\"double:7.0\",\"Object:java.lang.String\"]"},{"name":"overload.arity-selection-and-missing-arity-error","passed":true,"actual":"[\"one:a\",\"two:a:b\",true]","expected":"[\"one:a\",\"two:a:b\",true]"},{"name":"exception.instance-java-exception-remains-catchable","passed":true,"actual":"[true,true,\"java.lang.IllegalStateException\"]","expected":"[true,true,\"java.lang.IllegalStateException\"]"},{"name":"exception.nested-list-map-and-array-keep-catchable-wrappers","passed":true,"actual":"[true,true,true]","expected":"[true,true,true]"},{"name":"exception.static-java-exception-remains-catchable","passed":true,"actual":"[true,true,\"java.lang.IllegalArgumentException\"]","expected":"[true,true,\"java.lang.IllegalArgumentException\"]"},{"name":"method.detached-method-restores-original-java-receiver","passed":true,"actual":"[\"String:text\",3,\"one:value\"]","expected":"[\"String:text\",3,\"one:value\"]"},{"name":"parameters.invalid-numeric-and-null-primitive-are-catchable","passed":true,"actual":"[true,true,true]","expected":"[true,true,true]"},{"name":"number.boxed-long-string-preserves-beyond-js-safe-integer","passed":true,"actual":"[\"object\",\"java.lang.Long\",\"9007199254740993\",9007199254740992,\"9007199254740991\"]","expected":"[\"object\",\"java.lang.Long\",\"9007199254740993\",9007199254740992,\"9007199254740991\"]"},{"name":"byte-array.out-of-range-js-values-are-rejected","passed":true,"actual":"[true,true]","expected":"[true,true]"}]},"metrics":{"elapsedMs":1196.373333}}
+LEGADO_TLS_STAGE run.begin
+LEGADO_TLS_STAGE fixtures.verified
+
+> Task :compileTestKotlin
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:154:106 'val id: Long' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:161:84 'val id: Long' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:188:58 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:216:52 'val id: Long' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OkHttpWireCapabilityProbe.kt:118:58 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleScopesConcurrencyTest.kt:120:45 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+w: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleScopesConcurrencyTest.kt:130:66 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+
+> Task :runtimeSuiteSmoke
+LEGADO_TLS_STAGE server_context.ready
+LEGADO_TLS_STAGE trusted-tls12.begin
+LEGADO_TLS_STAGE trusted-tls12.server_handshake.begin
+LEGADO_TLS_STAGE trusted-tls12.client_handshake.begin
+LEGADO_TLS_STAGE trusted-tls12.server_handshake.returned
+LEGADO_TLS_STAGE trusted-tls12.client_handshake.returned
+LEGADO_TLS_STAGE trusted-tls12.classified.ACCEPTED
+LEGADO_TLS_STAGE trusted-tls13.begin
+LEGADO_TLS_STAGE trusted-tls13.server_handshake.begin
+LEGADO_TLS_STAGE trusted-tls13.client_handshake.begin
+LEGADO_TLS_STAGE trusted-tls13.client_handshake.returned
+LEGADO_TLS_STAGE trusted-tls13.server_handshake.returned
+LEGADO_TLS_STAGE trusted-tls13.classified.ACCEPTED
+LEGADO_TLS_STAGE untrusted-ca.begin
+LEGADO_TLS_STAGE untrusted-ca.server_handshake.begin
+LEGADO_TLS_STAGE untrusted-ca.client_handshake.begin
+LEGADO_TLS_STAGE untrusted-ca.classified.CERTIFICATE_CHAIN_REJECTED
+LEGADO_TLS_STAGE wrong-host.begin
+LEGADO_TLS_STAGE wrong-host.server_handshake.begin
+LEGADO_TLS_STAGE wrong-host.client_handshake.begin
+LEGADO_TLS_STAGE wrong-host.classified.HOSTNAME_REJECTED
+LEGADO_TLS_STAGE cleanup.complete
+ORDINARY_EXTERNAL_RESOURCE_TLS_CAPABILITY_OK {"ok":true,"taskId":"packaged-tls-capability","result":{"suite":"TlsCapabilityProbe","passed":true,"loopbackOnly":true,"provesHTTPCompatibility":false,"fixtureSHA256":{"test-ca.der":"fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08","server-localhost.der":"f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10","server-private-key.pk8":"685632b4576a8bb80f4cf1fb15e567c03ec4ae638120338e90ebd58529fe929f","unrelated-ca.der":"c7e734a9fc9cc0c07346315745226756b32d3dadd92e46cef9986c1d5440604e"},"cases":[{"name":"trusted-tls12","protocol":"TLSv1.2","peerHost":"localhost","expected":"ACCEPTED","passed":true,"applicationRoundtrip":true,"endpointIdentificationAlgorithm":"HTTPS","trustAnchorSHA256":"fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08","negotiatedProtocol":"TLSv1.2","cipherSuite":"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384","peerCertificateSHA256":"f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10","classification":"ACCEPTED","clientFailure":[],"serverFailure":[],"elapsedMilliseconds":300.234292},{"name":"trusted-tls13","protocol":"TLSv1.3","peerHost":"localhost","expected":"ACCEPTED","passed":true,"applicationRoundtrip":true,"endpointIdentificationAlgorithm":"HTTPS","trustAnchorSHA256":"fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08","negotiatedProtocol":"TLSv1.3","cipherSuite":"TLS_AES_256_GCM_SHA384","peerCertificateSHA256":"f63e394e2d50066d0b32130fa2a30ee695fb40cdf8b7e7336c45657467cc4a10","classification":"ACCEPTED","clientFailure":[],"serverFailure":[],"elapsedMilliseconds":852.751542},{"name":"untrusted-ca","protocol":"TLSv1.3","peerHost":"localhost","expected":"CERTIFICATE_CHAIN_REJECTED","passed":true,"applicationRoundtrip":false,"endpointIdentificationAlgorithm":"HTTPS","trustAnchorSHA256":"c7e734a9fc9cc0c07346315745226756b32d3dadd92e46cef9986c1d5440604e","classification":"CERTIFICATE_CHAIN_REJECTED","clientFailure":[{"type":"javax.net.ssl.SSLHandshakeException","message":"(certificate_unknown) PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"},{"type":"sun.security.validator.ValidatorException","message":"PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"},{"type":"sun.security.provider.certpath.SunCertPathBuilderException","message":"unable to find valid certification path to requested target"}],"serverFailure":[{"type":"java.net.SocketException","message":"Socket closed"}],"elapsedMilliseconds":206.25475},{"name":"wrong-host","protocol":"TLSv1.3","peerHost":"wrong.invalid","expected":"HOSTNAME_REJECTED","passed":true,"applicationRoundtrip":false,"endpointIdentificationAlgorithm":"HTTPS","trustAnchorSHA256":"fe824a7c9fa6cc49b5574eb0a6333774d4901391bd80b489135718d9a7710e08","classification":"HOSTNAME_REJECTED","clientFailure":[{"type":"javax.net.ssl.SSLHandshakeException","message":"(certificate_unknown) No subject alternative DNS name matching wrong.invalid found."},{"type":"java.security.cert.CertificateException","message":"No subject alternative DNS name matching wrong.invalid found."}],"serverFailure":[{"type":"java.net.SocketException","message":"Socket closed"}],"elapsedMilliseconds":251.3005}],"cleanup":{"serverStopped":true,"timerStopped":true,"errors":[]},"deadlineExceeded":false,"totalMilliseconds":4752.369666},"metrics":{"elapsedMs":4768.422542}}
+PACKAGED_SUITE_ABSENT_OK {"ok":false,"taskId":"packaged-semantic-suite","error":{"code":"SEMANTIC_SUITE_NOT_PACKAGED","message":"Engine tests are absent; build the diagnostic payload with -PincludeEngineTests=true (org.junit.Test)"}}
+
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses
+> Task :test
+
+> Task :runtimeWireSmoke
+PACKAGED_PRODUCTION_HTTP_OK {"executionPlatform":"desktop","requests":1,"g4ValidationPassed":false}
+PACKAGED_HTTP_WIRE_ABSENT_OK {"executionPlatform":"desktop","g4ValidationPassed":false}
+
+> Task :runtimeCpuLoopSmoke
+PACKAGED_CPU_LOOP_ABSENT_OK
+
+[Incubating] Problems report is available at: file:///Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/jvm/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 1m 41s
+14 actionable tasks: 14 executed

@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "staticAuditPassed": true,
+  "runtimeExecuted": false,
+  "deviceValidationPassed": false,
+  "issues": [],
+  "scope": "Independent static inspection of this ordinary-JVM main reader IPA; no reading or device execution claim.",
+  "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+  "ipaSHA256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
+  "ipaBytes": 106448692,
+  "buildManifestSHA256": "eaed0ed9e2510164bd615d1e8d398631be7aef2c6b5d024c2560036a46e29f82",
+  "auditBindings": {
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "sourceSnapshot": "F:\\yuedu-reader\\.build\\renewal-discovery\\build12-preflight\\binding-a76d380\\source",
+    "snapshotRecordSHA256": "8687680613095f3355da0d5ea3c084b4e7cf50074b5ace4cd9bc71f628c9c234",
+    "allSnapshotFileBytesVerified": true,
+    "importedSourceHelpers": [
+      "F:\\yuedu-reader\\.build\\renewal-discovery\\build12-preflight\\binding-a76d380\\source\\scripts\\legado-ios\\verify-native-reuse.py",
+      "F:\\yuedu-reader\\.build\\renewal-discovery\\build12-preflight\\binding-a76d380\\source\\scripts\\legado-ios\\verify-runtime-reuse.py",
+      "F:\\yuedu-reader\\.build\\renewal-discovery\\build12-preflight\\binding-a76d380\\source\\scripts\\legado-ios\\verify-runtime.py",
+      "F:\\yuedu-reader\\.build\\renewal-discovery\\build12-preflight\\binding-a76d380\\source\\scripts\\reader-experience\\runtime-packaging.py",
+      "F:\\yuedu-reader\\.build\\renewal-discovery\\build12-preflight\\binding-a76d380\\source\\scripts\\reader-experience\\stage-config.py"
+    ],
+    "trustedHostMachOHelper": "F:\\yuedu-reader\\.build\\audit-legado-ipa.py",
+    "trustedHostMachOHelperSHA256": "29644a0daf9a88336c2c90f1b855c1984e47168e4f05fdf8598af4714e2564ed",
+    "worktreeManifestLicenseOrPinReads": false,
+    "expectedBuild": "12",
+    "expectedProjectReplacements": 0
+  },
+  "bundles": [
+    {
+      "architecture": "arm64",
+      "platform": "iPhoneOS",
+      "minimumIOS": "18.0",
+      "bytes": 142615224,
+      "sha256": "8ab4c34ef2903ccc891b17f87a8f80b747cdb1a772be8a9b1d5c95644bfba3a5",
+      "codeSignatureLoadCommand": false,
+      "bundleIdentifier": "local.zhoujianjia.legado-reader",
+      "executable": "YueduReader",
+      "infoPlistSHA256": "d0e7cac37ec22abc89c566b3c3feb210c7da0fc4181192daea2cc2feaadabc85"
+    },
+    {
+      "architecture": "arm64",
+      "platform": "iPhoneOS",
+      "minimumIOS": "18.0",
+      "bytes": 376184,
+      "sha256": "a42a571ae6a4b1dd154759c1c3a10bcf8348053621c625c797b7da17f1b7b315",
+      "codeSignatureLoadCommand": false,
+      "bundleIdentifier": "local.zhoujianjia.legado-reader.widget",
+      "executable": "yuedu_app_Widget",
+      "infoPlistSHA256": "33c7ea5f6308fa4692e0e47302e07aefb20e6b7d0d2eae48e24b9e2b833c677c"
+    },
+    {
+      "architecture": "arm64",
+      "platform": "iPhoneOS",
+      "minimumIOS": "18.0",
+      "bytes": 109152,
+      "sha256": "50934c2fdaf1e382294d4ff733e67ccde921c74d819692abe4579b0f71dc22a0",
+      "codeSignatureLoadCommand": false,
+      "bundleIdentifier": "local.zhoujianjia.legado-reader.shareextension",
+      "executable": "yuedu_app_ShareExtension",
+      "infoPlistSHA256": "853bc3e7684ab99ca313c1c9c9c75a8090a796f996960e23bed2242cb51eb6f6"
+    }
+  ],
+  "nativeJavaHome": {
+    "matchesPinnedNative12Bytes": true,
+    "fileCount": 17241,
+    "totalBytes": 73995276,
+    "pathAndFileHashDigest": "3efc7463f6c51f74368610eab3bf0355a59f954d7173c065453616d25f97fa3e",
+    "modules": [
+      "java.base",
+      "java.compiler",
+      "java.datatransfer",
+      "java.desktop",
+      "java.instrument",
+      "java.logging",
+      "java.net.http",
+      "java.prefs",
+      "java.sql",
+      "java.transaction.xa",
+      "java.xml",
+      "jdk.charsets",
+      "jdk.unsupported"
+    ],
+    "extraOwnedMarker": ".legado-runtime-home-owner.json"
+  },
+  "ordinaryJar": {
+    "sha256": "ee90b2d247b637d47b4ed785d234e925243cea6ab64695db4e44a45c08c19440",
+    "bytes": 10260755,
+    "maximumBaseClassMajor": 65,
+    "requiredClasses": [
+      "io/yuedu/legado/LegadoRuntime.class",
+      "io/yuedu/legado/NativeHost.class",
+      "io/yuedu/legado/ProductionHttpTransport.class",
+      "io/yuedu/legado/RuntimeSessionOptions.class",
+      "io/yuedu/legado/StaticScalarSelectorRule.class",
+      "org/htmlunit/corejs/javascript/Context.class",
+      "okhttp3/OkHttpClient.class",
+      "org/brotli/dec/BrotliInputStream.class",
+      "org/apache/commons/text/StringEscapeUtils.class",
+      "org/apache/commons/lang3/StringUtils.class",
+      "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+      "io/legado/app/data/entities/Book.class",
+      "io/legado/app/data/entities/BookChapter.class",
+      "io/legado/app/data/entities/BookSource.class"
+    ],
+    "testClassesIncluded": false,
+    "licenses": [
+      {
+        "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+        "bytes": 426,
+        "sha256": "3f991eff87a6212affed07c2d2cc0a8bb681a72ecefeff54f4915de7b5aa5a52"
+      },
+      {
+        "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+        "bytes": 16780,
+        "sha256": "ada0787f27b581e024972a18b51db92c8e8508d0f05017d104a1c70a61b59951"
+      },
+      {
+        "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+        "bytes": 1825,
+        "sha256": "9246f7f820e791b7328d46ba341bb5a2bb08c3e2e1b9d36803ab0c3899e0462f"
+      },
+      {
+        "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+        "bytes": 3020,
+        "sha256": "c8539fca8905465681c131e79dd58b98e4276702fc6f221b5f98aa91baf6bcf2"
+      },
+      {
+        "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+        "bytes": 12369,
+        "sha256": "98793632f4e0ebb70c8e81abb7ca29186878caca0f505374b5ff07f64d7998cc"
+      },
+      {
+        "entry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+        "bytes": 1450,
+        "sha256": "7979d0f6470ffe8628473d6a6d36d2fae0d280adee341922353d984f4b113cb4"
+      },
+      {
+        "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/LICENSE.txt",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/MPL-2.0.html",
+        "bytes": 17329,
+        "sha256": "79fefbb5ce750421056e8639e83b055fa97deb02407617d4c0f9d50cfa0cfd32"
+      },
+      {
+        "entry": "META-INF/licenses/jvm-http/okhttp-5.4.0/NOTICE-publicsuffix.txt",
+        "bytes": 223,
+        "sha256": "362ad8b05fc7042f86ac08a5747452052fe422d35cd19a36a28da3f42efffa01"
+      },
+      {
+        "entry": "META-INF/licenses/jvm-http/okio-3.17.0/LICENSE.txt",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "entry": "META-INF/licenses/jvm-http/brotli-MIT-LICENSE.txt",
+        "bytes": 1084,
+        "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+      },
+      {
+        "entry": "META-INF/licenses/jvm-http/ICU-release-58-2-LICENSE.txt",
+        "bytes": 19442,
+        "sha256": "2023a2d68dfcdb1f7b7c5dccb96f88aabba112f63f250cb9e533cc64625eff07"
+      }
+    ],
+    "fixtureAndJUnitExclusionPassed": true
+  },
+  "mainExecutableDynamicExports": {
+    "machoSlices": 1,
+    "machoArchitecture": "CPU_TYPE.ARM64",
+    "machoPlatform": "PLATFORMS.IOS",
+    "machoMinimumOS": [
+      18,
+      0,
+      0
+    ],
+    "requiredDynamicExportsPresent": true,
+    "requiredDynamicExports": [
+      "JDK_Canonicalize",
+      "JIMAGE_Open",
+      "JIMAGE_Close",
+      "JIMAGE_FindResource",
+      "JIMAGE_GetResource",
+      "VerifyClassForMajorVersion",
+      "Java_java_lang_Class_registerNatives",
+      "Java_java_lang_ClassLoader_registerNatives",
+      "Java_java_lang_System_registerNatives",
+      "Java_java_lang_Thread_registerNatives",
+      "JNI_OnLoad_net",
+      "JNI_OnLoad_nio",
+      "Java_java_net_InetAddress_isIPv4Available",
+      "Java_java_net_InetAddress_isIPv6Supported",
+      "Java_java_net_Inet4AddressImpl_getLocalHostName",
+      "Java_java_net_Inet4AddressImpl_lookupAllHostAddr",
+      "Java_java_net_Inet4AddressImpl_getHostByAddr",
+      "Java_java_net_Inet4AddressImpl_isReachable0",
+      "Java_java_net_Inet6AddressImpl_getLocalHostName",
+      "Java_java_net_Inet6AddressImpl_lookupAllHostAddr",
+      "Java_java_net_Inet6AddressImpl_getHostByAddr",
+      "Java_java_net_Inet6AddressImpl_isReachable0",
+      "Java_java_net_NetworkInterface_getAll",
+      "Java_java_net_NetworkInterface_getByName0",
+      "Java_java_net_NetworkInterface_getByIndex0",
+      "Java_java_net_NetworkInterface_boundInetAddress0",
+      "Java_java_net_NetworkInterface_getByInetAddress0",
+      "Java_java_net_NetworkInterface_isUp0",
+      "Java_java_net_NetworkInterface_isLoopback0",
+      "Java_java_net_NetworkInterface_supportsMulticast0",
+      "Java_java_net_NetworkInterface_isP2P0",
+      "Java_java_net_NetworkInterface_getMacAddr0",
+      "Java_java_net_NetworkInterface_getMTU0",
+      "Java_java_net_NetworkInterface_init",
+      "Java_sun_net_PortConfig_getLower0",
+      "Java_sun_net_PortConfig_getUpper0",
+      "Java_sun_net_spi_DefaultProxySelector_init",
+      "Java_sun_net_spi_DefaultProxySelector_getSystemProxies",
+      "Java_sun_net_dns_ResolverConfigurationImpl_fallbackDomain0"
+    ],
+    "exportTrieEntries": 38547,
+    "hasCodeSignatureLoadCommand": false,
+    "liefVersion": "1.0.0-d05b3499b",
+    "liefModule": "F:\\yuedu-reader\\.tools\\macho-audit-python\\lief\\__init__.py",
+    "pythonExecutable": "C:\\Python312\\python.exe"
+  }
+}
