@@ -4,7 +4,9 @@
 
 当前已交付到 Windows 的安装包为不内置书源的 build 10，包含独立品牌、字体、缓存 TXT 导出与只读续签连接验证；实际 IPA 和对应 Git 源码已核对。用户此前确认 build 6 在 iPhone 上能看到书源、搜索并打开正文。**这份旧版反馈不等于 build 10 已获真机验收，也不等于 1,331 个书源都可用。**详见 [build 10 记录](native-reader-experience-build10.json)和 [build 6 真机反馈](native-reader-experience.json)。自动续签仍未实现。
 
-暂缓真机测试期间，后续源码已保留原 `AnalyzeRule` 的有限协调器切片，修复缓存类型冲突、inline JS 库分类及关闭后的宿主调用；153 项桌面回归通过，见[对应源码与证据](original-rule-coordinator-port.json)。另已实际完成[47 次有状态调用对照](stateful-port-reference/2026-10-19/record.json)：46 个返回值和全部前后状态一致，一次异常保留两处脚本编号差异，不计为全部兼容；[工具](../../scripts/legado-ios/stateful-port-reference/README.md)可用于后续回归。普通阅读的传统规则仍走原有 JSC 路由。运行时声明文件的[独立打包校验](runtime-notices.md)也已补齐；这不代表整体许可核验完成。[集成模拟器重测](native-cancel-task-trace.json)实际通过 157 项 JVM 和 4 项诊断读取测试；主 App 已到达正文与缓存阅读，但取消仍耗时 60.207 秒，唯一产品用例失败，第七次恢复请求未尝试。观测已确认取消命中，仍待解决取消后的本地正文读取等待。以上后续代码尚未生成新的 iPhone IPA。
+暂缓真机测试期间，后续源码已保留原 `AnalyzeRule` 的有限协调器切片，修复缓存类型冲突、inline JS 库分类及关闭后的宿主调用；153 项桌面回归通过，见[对应源码与证据](original-rule-coordinator-port.json)。另已实际完成[47 次有状态调用对照](stateful-port-reference/2026-10-19/record.json)：46 个返回值和全部前后状态一致，一次异常保留两处脚本编号差异，不计为全部兼容；[工具](../../scripts/legado-ios/stateful-port-reference/README.md)可用于后续回归。普通阅读的传统规则仍走原有 JSC 路由。运行时声明文件的[独立打包校验](runtime-notices.md)也已补齐；这不代表整体许可核验完成。
+
+最新源码 `f73f0ae` 的[主 App 模拟器验证](native-worker-thread-fix.json)已通过：真实 JVM 完成固定 `mainJs` 搜索、详情、目录、两章正文和缓存读取，取消耗时 **48.008 毫秒**，原 JNI 返回 `CANCELLED`，第七次恢复请求成功。157 项 JVM、16 项 Swift 接口测试及缓存回归的 6 个方法／8 个执行实例也全部通过。缓存修复拒绝正文与已存校验值不符的迁移，同时保留无校验值旧缓存的升级能力。[前轮 60.207 秒的失败报告](native-cancel-task-trace.json)保留。本轮未生成新 iPhone IPA，也未完成真机或全部真实书源验收。
 
 ## 功能对照
 
@@ -17,7 +19,7 @@
 | 发现和分类（`pipeline.explore`） | 已有规则发现页面，尚无完整真实书源验收。 | 保留书源自己的发现入口，简化无关推荐。 | [发现请求](../../Modules/Core/BookSource/BookSourceFetcher+Discover.swift) |
 | CSS、XPath、JSONPath、正则及组合规则（`rules.*`） | 已有 Swift/JSC 解析实现；它们与原版 JVM 库存在行为差异。 | 按真实失败源补齐，并继续原版固定输入对照。 | [规则解析](../../Modules/Core/RuleEngine/ModernParser/RuleAnalyzer.swift)、[传统规则迁移边界](traditional-rule-integration.md) |
 | 原引擎、动态 `this/eval/Function`、E4X、Java 对象（`core.*`） | JVM/定制 Rhino 已有诊断验证；传统源产品主路径仍是 JSC。 | 保留兼容研究，不宣称所有书源已使用原核心。 | [迁移记录](migration-status.md)、[运行时真机记录](device-validation.json) |
-| `mainJs` 纯 JS 源与共享状态（`source.main-js/shared-state`） | 已接入有限文本源 JVM 路径；私人源包中 `mainJs` 为 0。真实主 App 固定链路到达正文，但阻塞网络取消仍失败。 | 先解决取消与恢复，再扩大能力；不能由普通阅读反馈推断通过。 | [产品路由](../../Modules/Services/Online/LegadoMainJSSourceService.swift)、[取消故障](native-cancellation-investigation.json) |
+| `mainJs` 纯 JS 源与共享状态（`source.main-js/shared-state`） | 已接入有限文本源 JVM 路径；私人源包中 `mainJs` 为 0。真实主 App 固定模拟器链路、阻塞正文取消及恢复请求已通过。 | 再扩大能力并验证持久化、并发和真实源；不能由固定样例推断全部通过。 | [产品路由](../../Modules/Services/Online/LegadoMainJSSourceService.swift)、[取消与恢复验证](native-worker-thread-fix.json) |
 | 五类书源：文字、音频、漫画、文件、视频（`source.five-types`） | 文字、音频、漫画已有内容分流；文件型和视频型没有证明与原版一致。JVM `mainJs` 只允许文字。 | 首先做好文字；音频/漫画独立验收；文件/视频不冒充文字成功。 | [内容类型](../../Modules/Core/BookSource/BookSource.swift)、[JVM 类型限制](../../Modules/Services/Online/LegadoMainJSSourceService.swift) |
 | 批量正文（`pipeline.batch`） | 未完成压缩包原版批量协议的产品验收；多章下载不等同一次批量正文请求。 | 保留为兼容缺口。 | [原版清单](feature-matrix.md)、[传统规则迁移边界](traditional-rule-integration.md) |
 | 请求方法、编码、请求头、限流（`network.requests/http-host`） | 传统源已有平台网络和同步 JS 宿主桥；JVM 有部分请求字节对照。 | 对照请求字节、重定向、异常和缓存，不能只比最终文字。 | [传统网络入口](../../Modules/Core/BookSource/BookSourceFetcher.swift)、[JSC 宿主桥](../../Modules/Core/RuleEngine/ModernParser/JS/LegadoJSBridge.swift)、[HTTP 对照](http-wire-capability.json) |
@@ -25,7 +27,7 @@
 | Java 类、文件、解压、字体解混淆、加解密、锁、源事件（`host.*`、`source.events-ui`） | JSC 使用有限宿主实现和 Java 类白名单，不能当作完整 JVM；原版能力尚未全部接入。 | 按实际用到的 API 逐项补齐；不静默返回伪造成功结果。 | [Java 能力白名单](../../Modules/Core/RuleEngine/ModernParser/JS/LegadoRuntimeCapabilityRegistry.swift)、[宿主桥](../../Modules/Core/RuleEngine/ModernParser/JS/LegadoJSBridge.swift)、[原版验收清单](feature-matrix.md) |
 | 书架、标签/集合、排序、阅读进度（`reader.bookshelf/groups`） | 已有原生书架及持久化；原版分组和备份数据格式未完成对照。 | 保留；优先验证重启、覆盖安装、删除与恢复不会丢数据。 | [书架](../../Modules/Features/Bookshelf/HomeView.swift)、[书库服务](../../Modules/Services/LibraryStore/) |
 | 换源及目录位置匹配（`reader.change-source`） | 已有换源代码，未取得真实多源位置匹配验收。 | 保留；同名异书、不同章节数量和失效源要能安全回退。 | [阅读器换源](../../Modules/Features/Reader/ReaderView+SourceChange.swift)、[章节匹配](../../Modules/Services/Online/ChapterAlignment.swift) |
-| 下载、缓存、离线阅读（`reader.cache-download`） | 已有下载队列和章节缓存；尚无用户断网、重启、连续阅读验收。 | 高优先级；区分“缓存缺失”和“正文为空”，支持失败重试。 | [离线下载](../../Modules/Services/Offline/OfflineDownloadManager.swift)、[正文缓存](../../Modules/Services/Online/ChapterCacheRepository.swift) |
+| 下载、缓存、离线阅读（`reader.cache-download`） | 已有下载队列和章节缓存；缓存迁移及写入的 8 个模拟器执行实例通过，尚无用户断网、重启、连续阅读验收。 | 高优先级；区分“缓存缺失”和“正文为空”，支持失败重试。 | [离线下载](../../Modules/Services/Offline/OfflineDownloadManager.swift)、[正文缓存](../../Modules/Services/Online/ChapterCacheRepository.swift)、[缓存回归](native-worker-thread-fix.json) |
 | 净化替换、繁简转换（`reader.cleanup`） | 已有替换引擎和显示转换。 | 保留；默认简体界面，不改写用户书源脚本和原始正文。 | [替换引擎](../../Modules/Core/Replace/ReplaceRuleEngine.swift)、[文字转换](../../Modules/Core/Replace/TextConversion+Apply.swift) |
 | 排版、字体、间距、主题、翻页（`reader.layout/page-turn`） | 已有 CoreText 阅读器、排版和交互设置；新增两款中文字体已通过模拟器注册及 build 10 字体、许可和注册路径核对，真机待验收。 | 优先改善中文字体、夜间阅读、长章稳定性、换字体后位置保持。 | [CoreText 阅读器](../../Modules/Core/ReaderCore/CoreText/)、[阅读设置](../../Modules/Features/Reader/ReaderSettingsView.swift)、[字体目录](../../Targets/Yuedu/SharedApp/ReaderFontCatalog.swift) |
 | 本地 TXT、EPUB、PDF（`local.txt/epub/pdf`） | 已有统一导入入口；TXT Simulator 阅读验证通过，其他格式尚非本项目的完整验收。 | 保留；验证中文编码、目录、图片和重开位置。 | [文件导入](../../Modules/Services/LibraryStore/LocalBookImportService.swift)、[PDF](../../Modules/Core/PDF/LocalPDFArchive.swift)、[UI 验证](reader-online-smoke.json) |
@@ -67,7 +69,7 @@
 
 **现在不能保证，也没有测得整体兼容率。**能导入 JSON、搜索一本书或显示正文，只证明那条实际执行链路。当前传统源仍以 JSC、SwiftSoup、ICU 等实现承接规则和 Java 宿主，与压缩包内定制 Rhino、Jsoup、Jayway JSONPath、Java 正则并不相同；Java 类白名单也不能替代任意 Java 包。原版的 E4X、对象转换、重载、作用域、动态 `this/eval/Function` 和平台 API 都要分别核对。
 
-已有的固定输入对照仅证明相应样例。普通读书版本尚未全部切换到原解析核心；有限 `mainJs` JVM 路径还存在已记录的阻塞网络取消约 60 秒、超过 15 秒门槛且未恢复后续请求的故障，不能标为稳定通过。见 [取消调查](native-cancellation-investigation.json)。JVM 会话的 Cookie、变量和缓存也尚未完成跨进程持久化验收。
+已有的固定输入对照仅证明相应样例。普通读书版本尚未全部切换到原解析核心；有限 `mainJs` JVM 路径的阻塞网络取消已在主 App 模拟器中从约 60 秒降至 48.008 毫秒，保持原 15 秒门槛并成功恢复后续请求，见[验证记录](native-worker-thread-fix.json)。这不证明真实书源、长期运行或真机表现。JVM 会话的 Cookie、变量和缓存也尚未完成跨进程持久化验收。
 
 有状态对照中的两处异常编号差异已用[生命周期控制实验](stateful-environment-lifetime-investigation.json)解释：重复注册同一份 CryptoJS 源码改变了脚本编号。对齐测试环境生命周期后，47 次调用的原始 API 结果和全部 112 个状态快照相同；完整观察仍含对象身份及平台元数据差异。原始基线不改写，产品的会话和状态隔离也未因此调整。
 

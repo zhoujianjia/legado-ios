@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-19",
+  "status": "verified-fixed-simulator-chain-and-cache-regressions",
+  "scope": "Local desktop and cloud Simulator work only; no new IPA or device test requested.",
+  "cacheIntegrityFix": {
+    "sourceCommit": "cd06bdf37602a455c024e7b79f7e75b6f99cce19",
+    "behaviour": "When a legacy package is missing, a nonempty stored body checksum must match before migration. A mismatch preserves body/metadata bytes and does not manufacture a valid package. Legacy metadata with an empty contentChecksum string retains the migration path; no support for a missing required checksum field is added.",
+    "tests": "ChapterCacheMigrationTests and ChapterCacheRepositoryWriteTests",
+    "swiftExecutionAccepted": true,
+    "actualSimulatorTests": {
+      "uniqueMethods": 6,
+      "executionInstances": 8,
+      "migrationMethods": 3,
+      "migrationExecutionInstances": 5,
+      "writeMethods": 3,
+      "writeExecutionInstances": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "rawSummary": {
+      "path": "docs/legado-ios/fixtures/ios-cache-summary-f73f0ae.json",
+      "bytes": 1083,
+      "sha256": "95aa7c57fb31bf473d34653e5b47efb92e7a941c218fad231065efe7e02c01b4"
+    },
+    "rawTestTree": {
+      "path": "docs/legado-ios/fixtures/ios-cache-tests-f73f0ae.json",
+      "bytes": 5562,
+      "sha256": "ea3a2707871c79052cb4d1b52b6d15d8803ed015b4d4db0f1cb2c6767bf1711b"
+    },
+    "independentAudit": {
+      "path": ".build/cloud-evidence/run-39196753403/cache-independent-review.json",
+      "bytes": 3917,
+      "sha256": "8c148ee4136f9d7bf1abf2868d6d5551033cb981c631e8f5cab62dc123cfc7a4"
+    }
+  },
+  "workerImplementation": {
+    "sourceCommit": "f73f0ae945048f2b7daf44d2252c4e15984f71fd",
+    "behaviour": "Each synchronous JVM invocation runs on a short-lived Foundation.Thread, retaining userInitiated QoS. Cancellation uses a distinct invocation thread.",
+    "jniSignalPermissionObservationCommit": "7b01decc593534de403c5d2a736282b9a3ef4098",
+    "defaultOffJNIProbe": "With task tracing enabled, pthread_kill(pthread_self(), 0) and the live SIGIO mask are sampled on the actual JNI worker. No signal is sent or handler replaced.",
+    "privateAPIsAdded": false,
+    "socketOrHTTPTimeoutSemanticsChanged": false,
+    "jniAttachDetachProtocolChanged": false,
+    "nativeInterpreterRebuilt": false,
+    "nativeProducerInputsChanged": false,
+    "sourceOnlyTests": "LegadoRuntimeTests.LegadoRuntimeTests/; includes actual worker permissions and independent cancellation while execution is blocked."
+  },
+  "darwinControl": {
+    "runID": 39196457797,
+    "jobID": 117880187848,
+    "sourceCommit": "7b01decc593534de403c5d2a736282b9a3ef4098",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39196457797",
+    "artifact": {
+      "id": 12161669361,
+      "bytes": 12227,
+      "sha256": "1a0c10c8ccb6b073aaa7a861fceda913f56e22af22a87f3764e9d997c0de32b9"
+    },
+    "rawObservation": {
+      "path": ".build/cloud-evidence/run-39196457797/artifact/delivery-observed.json",
+      "bytes": 1763,
+      "sha256": "7197ac40bfe1c174ce99f3559a940d8c2c4db6efa1d06f7e39eaec13746e1ffe",
+      "value": {
+        "schemaVersion": 1,
+        "executionPlatform": "macos-command-line",
+        "changesSignalMask": true,
+        "installsHandler": true,
+        "runtimeExecuted": false,
+        "iosValidationPassed": false,
+        "processDeadlineMilliseconds": 15000,
+        "elapsedMilliseconds": 0,
+        "signalNumber": 23,
+        "senderPID": 2770,
+        "senderThreadID": 12132,
+        "distinctTargetAndSenderThreads": true,
+        "handlerTransport": "SA_SIGINFO; nonblocking pipe; one fixed byte",
+        "handlerThreadIdentityQueried": false,
+        "onlyProbeSendMechanism": "pthread_kill from main",
+        "originalHandlerRestored": true,
+        "originalMainMaskRestored": true,
+        "sendAndObservedDeliveryConsistent": true,
+        "observations": [
+          {
+            "role": "concurrent-user-initiated-dispatch-worker",
+            "threadID": 12136,
+            "saveMaskReturnCode": 0,
+            "initialSigioBlocked": 1,
+            "blockReturnCode": 0,
+            "unblockReturnCode": 0,
+            "armedMaskReadReturnCode": 0,
+            "armedSigioBlocked": 0,
+            "killAttempted": true,
+            "probeZeroResult": 45,
+            "pthreadKillReturnCode": 45,
+            "handlerObservationWindowMilliseconds": 0,
+            "handlerByteCount": 0,
+            "handlerHasSiginfo": false,
+            "handlerSignalNumber": -1,
+            "handlerSignalCode": -1,
+            "handlerSenderPID": -1,
+            "handlerWriteFailed": false,
+            "startTimedOut": false,
+            "releaseTimedOut": false,
+            "restoreMaskReturnCode": 0,
+            "fullOriginalMaskRestored": true,
+            "routineReachedReturn": true
+          },
+          {
+            "role": "ordinary-pthread-create",
+            "threadID": 12137,
+            "saveMaskReturnCode": 0,
+            "initialSigioBlocked": 1,
+            "blockReturnCode": 0,
+            "unblockReturnCode": 0,
+            "armedMaskReadReturnCode": 0,
+            "armedSigioBlocked": 0,
+            "killAttempted": true,
+            "probeZeroResult": 0,
+            "pthreadKillReturnCode": 0,
+            "handlerObservationWindowMilliseconds": 750,
+            "handlerByteCount": 1,
+            "handlerHasSiginfo": true,
+            "handlerSignalNumber": 23,
+            "handlerSignalCode": 0,
+            "handlerSenderPID": 2770,
+            "handlerWriteFailed": false,
+            "startTimedOut": false,
+            "releaseTimedOut": false,
+            "restoreMaskReturnCode": 0,
+            "fullOriginalMaskRestored": true,
+            "routineReachedReturn": true
+          }
+        ]
+      }
+    },
+    "independentAudit": {
+      "path": ".build/cloud-evidence/run-39196457797/independent-darwin-delivery-audit-final.json",
+      "bytes": 10555,
+      "sha256": "ff5f54b2adacd932ad756ad6826bd8ba803a52684f1a8b2f9319ebb573abc0d2"
+    },
+    "boundary": "Actual macOS CLI directed-signal restriction and positive control; this process did not run a JVM or iOS app."
+  },
+  "nativeProductValidation": {
+    "runID": 39196753403,
+    "jobID": 117881079273,
+    "sourceCommit": "f73f0ae945048f2b7daf44d2252c4e15984f71fd",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39196753403",
+    "status": "passed-actual-main-app-simulator-test",
+    "cancellationMaximumMilliseconds": 15000,
+    "operationDeadlineMilliseconds": 45000,
+    "requiredWireRequests": 7,
+    "requiredRecoveryRequest": true,
+    "physicalDeviceRequiredForThisRun": false,
+    "artifact": {
+      "id": 12163411985,
+      "bytes": 2481304,
+      "sha256": "8a92c014e9bac0f1c65cdfa1afe6a20985342cea2e298f4a479215523c3e2ea1"
+    },
+    "tests": {
+      "ordinaryJVM": {
+        "uniqueMethods": 157,
+        "xmlFiles": 19,
+        "failed": 0,
+        "skipped": 0
+      },
+      "sourceOnlySwift": {
+        "uniqueMethods": 16,
+        "startedAndPassedOncePerMethod": true,
+        "failed": 0,
+        "skipped": 0,
+        "nativeJVMExecuted": false
+      },
+      "mainAppNative": {
+        "uniqueMethods": 1,
+        "actualXCResultStatus": "Success",
+        "failed": 0,
+        "skipped": 0
+      },
+      "chapterCache": {
+        "uniqueMethods": 6,
+        "executionInstances": 8,
+        "migrationMethods": 3,
+        "migrationExecutionInstances": 5,
+        "writeMethods": 3,
+        "writeExecutionInstances": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "rawProductReport": {
+      "path": "docs/legado-ios/fixtures/ios-native-worker-f73f0ae.json",
+      "bytes": 45454,
+      "sha256": "f2bf1cd64701c5626235770891a5fab2ae0bf1a4adbd1b62627dbbeb6a120882"
+    },
+    "rawProductAttachmentOriginEstablished": true,
+    "observed": {
+      "cancellationMilliseconds": 48.007965087890625,
+      "nativeExecutionErrorCode": "CANCELLED",
+      "matchingTaskAndCallCancellationObserved": true,
+      "deadlineFired": false,
+      "deadlineRemainingAtRegistrationMilliseconds": 44999,
+      "actualRequests": 7,
+      "completeResponses": 6,
+      "heldResponses": 1,
+      "recoveryRequestPassed": true,
+      "allSixCleanupChecksPassed": true,
+      "heldExecuteAndCancelThreadIDs": [
+        280051,
+        280052
+      ],
+      "heldWorkerPermissionProbeReturnCode": 0,
+      "heldWorkerMaskProbeReturnCode": 0,
+      "heldWorkerSigioBlockedRawValue": 0,
+      "callCancelDurationMilliseconds": 0.450291,
+      "bodyExitedAfterCallCancelMilliseconds": 0.450709,
+      "nativeSIGIOHandlerDeliveryDirectlyObserved": false,
+      "readerUIRendered": false,
+      "realBookSourcesValidated": false,
+      "deliveredIPAExecuted": false
+    },
+    "independentAudits": [
+      {
+        "path": ".build/cloud-evidence/run-39196753403/independent-worker-fix-audit-v2.json",
+        "bytes": 122851,
+        "sha256": "f4aa551d19c43a08b9a26a0e4183a4c41e5282d4be9a8a417cc6351c8719d112"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39196753403/independent-worker-timing-addendum.json",
+        "bytes": 2750,
+        "sha256": "d0f7dcae068afcb551155486ba534fff17fcbc201de7736c441f8286bf10006f"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39196753403/independent-artifact-envelope-audit.json",
+        "bytes": 60893,
+        "sha256": "45cc5929d2b0f223807118f262d72991871cd7f18a076fd301d27883e824c24c"
+      }
+    ],
+    "interpretationCorrection": {
+      "previousAuditRetained": {
+        "path": "F:\\yuedu-reader\\.build\\cloud-evidence\\run-39196753403\\independent-worker-fix-audit.json",
+        "sha256": "4115691e354bd3c80c6bb6b0c0f36e1818f4e20edbfb1da98f371800a42b06cb"
+      },
+      "correction": "The pinned C bridge boxes the sigismember comparison as a C int. Native sigioBlocked is JSON integer 0, not necessarily JSON false. Only boolean false or exact integer zero establishes unblocked; floats, strings and null are rejected.",
+      "rawEvidenceOrProductChanged": false
+    },
+    "metadata": [
+      {
+        "path": ".build/cloud-evidence/run-39196753403/run-metadata.json",
+        "bytes": 12513,
+        "sha256": "804683a6250cea28377ed80861c50db4fce93a6bda1dfe14539b8a861908adf8"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39196753403/jobs-metadata.json",
+        "bytes": 3718,
+        "sha256": "a2d399d5ca869911bb09ac19834048ff0d575d66df31601850d4dedf3a6b7c07"
+      },
+      {
+        "path": ".build/cloud-evidence/run-39196753403/artifacts-metadata.json",
+        "bytes": 770,
+        "sha256": "6955c6289220eed506811661aa8807768819389d949af09992a97a60ca37c4a4"
+      }
+    ],
+    "runtimeNoticeProducerReport": {
+      "actualFinalAppValidationExecuted": true,
+      "reportMatchesExactSourceManifest": true,
+      "noticeFileCount": 37,
+      "manifestSHA256": "0b60c9ed3e2b6e4c70f36627db630c8b3b0b72a0a5b016c5b9d9f580d3e4574a",
+      "directAppOrJARByteAudit": false,
+      "licenseCombinationOrCorrespondingSourceClosureEstablished": false
+    },
+    "diagnostics": {
+      "collectionStatus": "partial",
+      "nativeStageAndTaskTraceFilesCollected": true,
+      "simulatorCrashReportDirectoryRejectedBecauseLinked": true,
+      "absenceOfCrashReportsEstablished": false,
+      "manifest": {
+        "path": ".build/cloud-evidence/run-39196753403/artifact/.build/native-reader-test/diagnostics/collection.json",
+        "bytes": 2093,
+        "sha256": "a8b8d7909ad01a82d4819b99dfadfa610c82637238efe6cbccb92535f96a483d"
+      }
+    }
+  },
+  "limitations": [
+    "The exact old failed native observation remains in native-cancel-task-trace.json. Only the new f73f0ae fixed mainJs Simulator chain is accepted here.",
+    "Foundation.Thread creation/scheduling overhead, long-session behaviour and high-concurrency performance remain unmeasured.",
+    "The cheap isChapterCached presence/count check is not a body-integrity proof; actual package loading performs validation. Full multi-file transaction atomicity is not established.",
+    "The JNI zero-signal probe observes permission and mask, not actual kernel handler delivery. Timing includes synchronous diagnostic serialization/locks/fsync.",
+    "ZIP, xcresult and reports were independently read; this artifact has no actual built App, ordinary JAR or native runtime binary for direct reinspection.",
+    "Final-App notice verification ran in the producer and its report matches the pinned source manifest; this does not close license combination or corresponding-source obligations.",
+    "The Simulator crash-log directory was safely rejected as linked. No assertion that crash reports do not exist follows.",
+    "Traditional reader routing remains JSC; physical-device reading, cross-process JVM state, full Legado compatibility and standalone self-renewal remain incomplete."
+  ],
+  "acceptance": {
+    "nativeProductCancellationPassed": true,
+    "cacheSimulatorRegressionPassed": true,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false
+  }
+}
