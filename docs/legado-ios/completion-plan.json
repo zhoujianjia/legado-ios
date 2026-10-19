@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-19",
-  "activeBatchRecord": "docs/legado-ios/reading-comfort-batch.json",
+  "activeBatchRecord": "docs/legado-ios/reader-supply-measurement-batch.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
-    "当前状态": "阅读体验批次正在实施：字体字形预览、间距预设、大字快捷面板及真实窗口尺寸输入已写入源码，并补充回归用例；iOS 编译和执行尚待统一验证。上一批 168 项 JVM 回归通过。继续按阶段集中验证，不轮询等待构建；全部无需真机的工作尚未完成。",
+    "当前状态": "已核对两次旧云测原件：进度等已执行组通过；第二次 TXT UI 亮度端点拖动未到 5%，已修测试手势并保留严格门槛。本批补齐 20／100 章十次远跳、现代损坏缓存与 50 条性能基线的严格采集；新 iOS 代码待阶段集中验证，不宣称 S2 或全部无需真机工作完成。 同批补齐原版三个 ContentRule 字段的往返保留，并用锁定源码执行 17 项 Kotlin/Gson 观察；Swift 6 方法／23 执行仍待云测，批量规则执行能力未实现。",
     "实施顺序": [
       {
         "阶段": 1,
@@ -170,7 +170,7 @@
     {
       "id": "s3-jvm-rules-http",
       "title": "Pinned runtime, complete traditional rules and request semantics",
-      "status": "planned",
+      "status": "in_progress",
       "dependsOn": [
         "s1-integrity-plan"
       ],
@@ -251,7 +251,8 @@
         "feature-comparison",
         "migration-status",
         "redistribution",
-        "redistribution-inventory"
+        "redistribution-inventory",
+        "reader-smoke-history"
       ]
     },
     {
@@ -277,7 +278,8 @@
       ],
       "existingEvidence": [
         "reader-smoke",
-        "feature-comparison"
+        "feature-comparison",
+        "reader-smoke-history"
       ]
     },
     {
@@ -331,7 +333,8 @@
       ],
       "existingEvidence": [
         "reader-smoke",
-        "local-product"
+        "local-product",
+        "reader-smoke-history"
       ]
     },
     {
@@ -364,7 +367,8 @@
       "existingEvidence": [
         "font-provenance",
         "local-product",
-        "reader-smoke"
+        "reader-smoke",
+        "reader-supply-measurements"
       ]
     },
     {
@@ -397,7 +401,8 @@
         "sdk-scope-validation",
         "native-cancel",
         "reader-smoke",
-        "feature-comparison"
+        "feature-comparison",
+        "reader-supply-measurements"
       ]
     },
     {
@@ -540,7 +545,7 @@
       "id": "source-schema",
       "kind": "domain-owner",
       "stageId": "s3-jvm-rules-http",
-      "status": "planned",
+      "status": "in_progress",
       "ownedFeatureIds": [
         "source.schema"
       ],
@@ -557,7 +562,8 @@
       "existingEvidence": [
         "feature-comparison",
         "migration-status",
-        "build10"
+        "build10",
+        "content-rule-schema"
       ]
     },
     {
@@ -2497,6 +2503,18 @@
     "brand-assets": {
       "path": "Resources/Branding/brand-assets.json",
       "scope": "Independent generated current branding; not a trademark search or clearance."
+    },
+    "reader-smoke-history": {
+      "path": "docs/legado-ios/previous-reader-smoke-audit.json",
+      "scope": "Exact historical GitHub artifact digests and raw summaries; passing 13/23 position groups and retained later TXT UI endpoint failure, not acceptance of later source."
+    },
+    "reader-supply-measurements": {
+      "path": "docs/legado-ios/reader-supply-measurement-batch.json",
+      "scope": "Prepared owned prefetch/corrupt-cache scenarios and strict stage baseline collection, local portable guard evidence; iOS execution remains separately pending."
+    },
+    "content-rule-schema": {
+      "path": "docs/legado-ios/content-rule-schema-preservation.json",
+      "scope": "Three original ContentRule fields retained in Swift, original Kotlin/Gson observations preserved; new 6/23 Swift acceptance pending, explicit malformed/overflow differences remain."
     }
   },
   "retainedExistingWork": [

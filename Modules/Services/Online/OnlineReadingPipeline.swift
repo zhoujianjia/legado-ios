@@ -89,6 +89,7 @@ actor ChapterFetchManager {
 
     private let bookSourceFetcher: BookSourceFetcher
     private let webViewFetcher: WebViewFetcher
+    private let sourceResolver: @MainActor @Sendable (UUID) -> BookSource?
     private var tasks: [String: Task<ChapterPackage, Error>] = [:]
     private var states: [String: OnlineChapterLoadState] = [:]
     private var priorities: [String: ChapterFetchPriority] = [:]
@@ -106,10 +107,14 @@ actor ChapterFetchManager {
 
     init(
         bookSourceFetcher: BookSourceFetcher = .shared,
-        webViewFetcher: WebViewFetcher
+        webViewFetcher: WebViewFetcher,
+        sourceResolver: @escaping @MainActor @Sendable (UUID) -> BookSource? = {
+            BookSourceStore.shared.source(id: $0)
+        }
     ) {
         self.bookSourceFetcher = bookSourceFetcher
         self.webViewFetcher = webViewFetcher
+        self.sourceResolver = sourceResolver
     }
 
     private func key(bookId: UUID, chapterIndex: Int) -> String {
@@ -377,6 +382,7 @@ actor ChapterFetchManager {
         }
         let startedAt = CFAbsoluteTimeGetCurrent()
         let bookId = book.id
+        let resolveSource = sourceResolver
         ReaderTelemetry.shared.log(
             "chapter_fetch_start",
             attributes: [
@@ -391,7 +397,7 @@ actor ChapterFetchManager {
             if let sourceId = book.bookSourceId {
                 guard
                     let source = await MainActor.run(body: {
-                        BookSourceStore.shared.source(id: sourceId)
+                        resolveSource(sourceId)
                     })
                 else {
                     throw NSError(

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-10-19",
+  "stageId": "s3-jvm-rules-http",
+  "workpackage": "source-schema",
+  "status": "implemented-reviewed-pending-ios-integration",
+  "说明": "修复三个已确认原版字段在现有 Swift 模型导入、编辑、导出和保存后丢失的问题；仅保留字段，不代表子正文、批量正文协议已执行或完整 schema 已通过验收。",
+  "fields": [
+    "ruleContent.subContent",
+    "ruleContent.contentBatch",
+    "ruleContent.maxBatchSize"
+  ],
+  "existingModel": "Modules/Core/BookSource/BookSource.swift:ContentRule",
+  "defaultAbsentOrNullBehavior": "Optional fields remain nil and are omitted from synthesized export; existing legacy sources gain no default keys.",
+  "textBehavior": "Preserve valid text including empty/whitespace-only strings, line endings and decomposed Unicode; reject malformed field types with a field/reason-only diagnostic.",
+  "batchSizeBehavior": "Preserve signed Int32 integers and integer strings; truncate finite numeric fractions toward zero as the original Gson does. Reject values outside Int32 range instead of wrapping. Invalid forms produce nil and a field/reason-only diagnostic, preserving other content-rule fields.",
+  "productRuleExecutionChanged": false,
+  "batchContentExecutionImplemented": false,
+  "fullSourceSchemaCompatibilityEstablished": false,
+  "originalDesktopObservation": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "originalSourceBytesUnchanged": true,
+    "cases": 17,
+    "passed": true,
+    "scope": "Actual original ContentRule and GsonExtensions compiled/run on desktop with only Parcelable/Parcelize platform stubs. These observations do not execute the Swift decoder or the Android application.",
+    "rawEvidence": [
+      {
+        "path": "docs/legado-ios/fixtures/content-rule-original-2026-10-19.jsonl",
+        "bytes": 1960,
+        "sha256": "14c60df5f3db08b4dde5bee831afeb29030424efea388bb34a7bdffbf76fb2c8"
+      },
+      {
+        "path": "docs/legado-ios/fixtures/content-rule-original-probe.kt",
+        "bytes": 1155,
+        "sha256": "8a4525da71c03129ec3a85d9edd05ef36820ab120afd055a17703b985dff5cef"
+      },
+      {
+        "path": "docs/legado-ios/fixtures/content-rule-original-provenance.json",
+        "bytes": 7632,
+        "sha256": "bab82b23b27787cc94602248abf04cbd89ec5b8c925cb9bfd59440a05f204c6b"
+      }
+    ]
+  },
+  "preparedSwiftTests": {
+    "selector": "yuedu appTests/BookSourceContentRulePreservationTests",
+    "methods": 6,
+    "executions": 23,
+    "status": "not-run",
+    "covers": [
+      "absent/null",
+      "object/double-encoded rule across three existing import shapes",
+      "raw JSON editor and export",
+      "whitespace/Unicode bytes",
+      "numeric/string/fraction/range forms",
+      "malformed field isolation",
+      "existing content comparison",
+      "streamed library writer and reload"
+    ]
+  },
+  "reviewedInputs": [
+    {
+      "path": "Modules/Core/BookSource/BookSource.swift",
+      "bytes": 41382,
+      "sha256": "792849b950255a99ef9ea0b75ddb6790732b69cf56cd4e6a8db11ae337a77300"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceContentRulePreservationTests.swift",
+      "bytes": 7729,
+      "sha256": "5496c3f79d452bed28db0fe21f037842d11793abb8cd8acf137e9e50ce04993c"
+    }
+  ],
+  "limits": [
+    "No Swift/iOS compilation or execution on Windows; all 23 Swift executions await the source-specific cloud check.",
+    "Malformed optional fields are logged and omitted while other rule fields survive; original Gson rejects the malformed rule.",
+    "Original Gson Int overflow can wrap; this decoder explicitly drops values outside Int32 range. This is a disclosed protective difference, not full parity.",
+    "No new evaluator, host, parser route or source store is introduced; traditional product reading still uses JSC."
+  ]
+}

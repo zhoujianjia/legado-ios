@@ -22,6 +22,31 @@ actor PerHostSemaphore {
     private var cancelledWaiterIDs: Set<UUID> = []
     private var registeringWaiterIDs: Set<UUID> = []
 
+    #if DEBUG
+    /// Read-only test instrumentation for the existing HTTP permit/queue state. Observers
+    /// run synchronously on this actor, so they must only capture a small value snapshot.
+    struct DebugState: Sendable {
+        let availablePermitCount: Int?
+        let queuedRequestCount: Int
+    }
+    private var debugStateObservers: [String: @Sendable (DebugState) -> Void] = [:]
+
+    func setDebugStateObserver(
+        for host: String,
+        observer: (@Sendable (DebugState) -> Void)?
+    ) {
+        debugStateObservers[host] = observer
+        publishDebugState(for: host)
+    }
+
+    private func publishDebugState(for host: String) {
+        debugStateObservers[host]?(.init(
+            availablePermitCount: available[host],
+            queuedRequestCount: waiters[host]?.count ?? 0
+        ))
+    }
+    #endif
+
     private init() {}
 
     /// Acquires a lock for the given host, executes the body, then releases.
@@ -48,6 +73,9 @@ actor PerHostSemaphore {
         let current = available[host] ?? maxConcurrent
         if current > 0 {
             available[host] = current - 1
+            #if DEBUG
+            publishDebugState(for: host)
+            #endif
             return
         }
         let waiterID = UUID()
@@ -65,6 +93,9 @@ actor PerHostSemaphore {
                     waiters[host, default: []].append(
                         Waiter(id: waiterID, continuation: continuation)
                     )
+                    #if DEBUG
+                    publishDebugState(for: host)
+                    #endif
                 }
             }
         } onCancel: {
@@ -82,6 +113,9 @@ actor PerHostSemaphore {
         } else {
             available[host] = (available[host] ?? 0) + 1
         }
+        #if DEBUG
+        publishDebugState(for: host)
+        #endif
     }
 
     private func cancelWaiter(id: UUID, host: String) {
@@ -96,6 +130,9 @@ actor PerHostSemaphore {
             waiters.removeValue(forKey: host)
         }
         waiter.continuation.resume(throwing: CancellationError())
+        #if DEBUG
+        publishDebugState(for: host)
+        #endif
     }
 
     func queuedRequestCount(for host: String) -> Int {

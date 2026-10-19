@@ -144,11 +144,11 @@ final class ReaderLocalSmokeUITests: XCTestCase {
         let originalBrightnessPercent = try XCTUnwrap(Double(originalBrightnessValue.replacingOccurrences(of: "%", with: "")))
         XCTAssertGreaterThanOrEqual(originalBrightnessPercent, 5)
         XCTAssertLessThanOrEqual(originalBrightnessPercent, 100)
-        brightness.adjust(toNormalizedSliderPosition: 0)
+        dragSliderToEndpoint(brightness, maximum: false)
         let minimumAnnounced = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "5%"), object: brightness)
         XCTAssertEqual(XCTWaiter.wait(for: [minimumAnnounced], timeout: 5), .completed,
                        "Minimum slider position means 5% screen brightness, not 0%.\n\(app.debugDescription)")
-        brightness.adjust(toNormalizedSliderPosition: 1)
+        dragSliderToEndpoint(brightness, maximum: true)
         let maximumAnnounced = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "100%"), object: brightness)
         XCTAssertEqual(XCTWaiter.wait(for: [maximumAnnounced], timeout: 5), .completed, app.debugDescription)
         for symbol in ["sun.min.fill", "sun.max.fill"] {
@@ -167,18 +167,31 @@ final class ReaderLocalSmokeUITests: XCTestCase {
                        "Restore brightness before returning to the book.\n\(app.debugDescription)")
         let restoredBrightnessValue = try XCTUnwrap(brightness.value as? String)
 
-        // Drag the native sheet down from its visible top row. Continue only
-        // after the controls disappear, rather than assuming its dimming view dismisses it.
-        increase.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98)))
+        let close = app.buttons["reader_quick_close"].firstMatch
+        XCTAssertTrue(close.isHittable, app.debugDescription)
+        close.tap()
         XCTAssertTrue(increase.waitForNonExistence(timeout: 10), "The native quick panel must dismiss.\n\(app.debugDescription)")
         return [
             "fontSizeBefore": originalFontValue, "fontSizeAfterIncrease": increasedValue,
             "fontSizeRestored": true, "brightnessLabel": "Brightness",
             "minimumBrightnessValue": "5%", "maximumBrightnessValue": "100%",
+            "brightnessEndpointInput": "center-thumb-to-track-edge drag",
             "brightnessBefore": originalBrightnessValue, "brightnessRestored": restoredBrightnessValue,
             "decorativeSymbolsHidden": true
         ]
+    }
+
+    @MainActor
+    private func dragSliderToEndpoint(_ slider: XCUIElement, maximum: Bool) {
+        // XCTest documents normalized adjustment as best effort: the old call
+        // to position 0 stopped at 6% on the real 5%...100% brightness slider.
+        // Bring the thumb to the middle, then drag it to the track's outer edge
+        // so the native control clamps to its actual endpoint. Keep the exact
+        // announced-value assertions above; neither endpoint permits rounding.
+        slider.adjust(toNormalizedSliderPosition: 0.5)
+        let center = slider.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let edge = slider.coordinate(withNormalizedOffset: CGVector(dx: maximum ? 1 : 0, dy: 0.5))
+        center.press(forDuration: 0, thenDragTo: edge)
     }
 
     private var launchArguments: [String] {

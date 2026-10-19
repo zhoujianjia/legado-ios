@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import Testing
 import UIKit
@@ -6,10 +7,12 @@ import UIKit
 /// Deterministic stage measurements. No live websites or persistent user content are modified.
 @Suite("Reader architecture measurements", .serialized)
 struct ReaderArchitectureBenchmarkTests {
-    private func report(_ stage: String, fixture: String, iteration: Int, start: TimeInterval, count: Int) {
+    private func report(_ stage: String, fixture: String, iteration: Int, start: TimeInterval, count: Int,
+                        metadata: [String: Any] = [:]) {
         let ms = (ProcessInfo.processInfo.systemUptime - start) * 1_000
-        let row: [String: Any] = ["stage": stage, "fixture": fixture, "iteration": iteration,
+        var row: [String: Any] = ["stage": stage, "fixture": fixture, "iteration": iteration,
                                   "ms": ms, "outputCount": count]
+        row.merge(metadata) { _, measurement in measurement }
         let data = try! JSONSerialization.data(withJSONObject: row, options: [.sortedKeys])
         print("READER_ARCH_BENCH " + String(decoding: data, as: UTF8.self))
     }
@@ -50,6 +53,22 @@ struct ReaderArchitectureBenchmarkTests {
         let size = CGSize(width: 390, height: 844)
         let settings = EPUBTestFixtures.renderSettings(fontSize: 18, lineHeightMultiple: 1.5, paragraphSpacing: 8)
         for fixture in [CoreTextPerformanceFixtures.plain10K, CoreTextPerformanceFixtures.plain100K] {
+            // Hash the exact generated HTML, before any timed work. The portable collector
+            // independently reconstructs these two public synthetic fixtures and rejects drift.
+            let htmlBytes = Data(fixture.html.utf8)
+            let metadata: [String: Any] = [
+                "schemaVersion": 1,
+                "fixtureSHA256": SHA256.hash(data: htmlBytes).map { String(format: "%02x", $0) }.joined(),
+                "fixtureHTMLBytes": htmlBytes.count,
+                "fixtureMinimumUTF16": fixture.minimumTextCharacters,
+                "renderWidth": size.width, "renderHeight": size.height,
+                "fontSize": settings.fontSize, "lineHeightMultiple": settings.lineHeightMultiple,
+                "paragraphSpacing": settings.paragraphSpacing, "lineSpacing": settings.lineSpacing,
+                "letterSpacing": settings.letterSpacing,
+                "contentInsets": [settings.contentInsets.top, settings.contentInsets.left,
+                                  settings.contentInsets.bottom, settings.contentInsets.right],
+                "writingMode": settings.writingMode == .horizontal ? "horizontal" : "nonhorizontal"
+            ]
             for iteration in 0..<5 {
                 let builder = OnlineProviderAttributedStringBuilder(
                     provider: BenchmarkChapterProvider(html: fixture.html), renderSize: size)
@@ -62,14 +81,14 @@ struct ReaderArchitectureBenchmarkTests {
                 }
                 #expect(document.attributedString.length >= fixture.minimumTextCharacters)
                 report("document.first", fixture: fixture.id, iteration: iteration,
-                       start: buildStart, count: document.attributedString.length)
+                       start: buildStart, count: document.attributedString.length, metadata: metadata)
                 let warmStart = ProcessInfo.processInfo.systemUptime
                 let cached = try await SourcePerfTrace.spanAsync("benchmark.document.reuse", thresholdMs: 0) {
                     try await store.document(for: request)
                 }
                 #expect(cached.revision == document.revision)
                 report("document.reuse", fixture: fixture.id, iteration: iteration,
-                       start: warmStart, count: cached.attributedString.length)
+                       start: warmStart, count: cached.attributedString.length, metadata: metadata)
                 let paginator = CoreTextPaginator()
                 let firstStart = ProcessInfo.processInfo.systemUptime
                 let first = await SourcePerfTrace.spanAsync("benchmark.page.first", thresholdMs: 0) {
@@ -82,7 +101,7 @@ struct ReaderArchitectureBenchmarkTests {
                 }
                 #expect(first?.pageRanges.isEmpty == false)
                 report("page.first", fixture: fixture.id, iteration: iteration,
-                       start: firstStart, count: first?.pageRanges.count ?? 0)
+                       start: firstStart, count: first?.pageRanges.count ?? 0, metadata: metadata)
                 let fullStart = ProcessInfo.processInfo.systemUptime
                 let full = await SourcePerfTrace.spanAsync("benchmark.page.full", thresholdMs: 0) {
                     await paginator.paginate(spineIndex: 0, attrStr: document.attributedString,
@@ -96,7 +115,7 @@ struct ReaderArchitectureBenchmarkTests {
                 let covered = full.pageRanges.reduce(0) { $0 + $1.length }
                 #expect(covered == document.attributedString.length)
                 report("page.full", fixture: fixture.id, iteration: iteration,
-                       start: fullStart, count: full.pageRanges.count)
+                       start: fullStart, count: full.pageRanges.count, metadata: metadata)
                 let scroll = CoreTextScrollEngine(builder: builder, renderSettings: settings, chapterDocumentStore: store)
                 let scrollStart = ProcessInfo.processInfo.systemUptime
                 await SourcePerfTrace.spanAsync("benchmark.scroll.ready", thresholdMs: 0) {
@@ -107,7 +126,7 @@ struct ReaderArchitectureBenchmarkTests {
                 #expect(scroll.isReady)
                 #expect(scroll.chunks.reduce(0) { $0 + $1.charRange.length } == document.attributedString.length)
                 report("scroll.ready", fixture: fixture.id, iteration: iteration,
-                       start: scrollStart, count: scroll.chunks.count)
+                       start: scrollStart, count: scroll.chunks.count, metadata: metadata)
             }
         }
     }

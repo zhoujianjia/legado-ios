@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "observedAtUTC": "2026-10-19T11:55:56.996817+00:00",
+  "status": "passed",
+  "scope": "Independent static document/provenance/fixture review only",
+  "sourceHEAD": "3d047be61918c1431107f674a22b514613e308ae",
+  "iosCompilationExecuted": false,
+  "iosTestsExecuted": false,
+  "runtimeFixtureHashesValidated": false,
+  "checks": {
+    "planStructure": {
+      "stages": 8,
+      "workpackages": 33,
+      "features": 64,
+      "catalogIDsMatch": true,
+      "ownedExactlyOnce": true,
+      "stageDependenciesAcyclic": true,
+      "workpackageDependenciesAcyclic": true
+    },
+    "planEvidence": {
+      "registeredFiles": 26,
+      "allPathsExist": true
+    },
+    "acceptanceBoundaries": {
+      "currentIOSExecuted": false,
+      "stageComplete": false,
+      "globalComplete": false,
+      "performanceImprovementEstablished": false,
+      "readerExperienceMethodsExecutions": [
+        60,
+        62
+      ],
+      "readerSupplyMethodsExecutions": [
+        3,
+        6
+      ]
+    },
+    "reviewedInputs": [
+      {
+        "path": "Modules/Services/Network/FetchRetryPolicy.swift",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "scripts/reader-experience/reader-stage-baseline.py",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "scripts/reader-experience/test-reader-stage-baseline.py",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": "scripts/reader-experience/smoke.sh",
+        "matchesRecordedBytesAndSHA256": true
+      },
+      {
+        "path": ".github/workflows/reader-smoke.yml",
+        "matchesRecordedBytesAndSHA256": true
+      }
+    ],
+    "localCheckEvidence": {
+      "logsWithVerifiedSHA256": [
+        ".build/ci-logs/reader-stage-baseline-tools-local.log",
+        ".build/ci-logs/reader-smoke-tools-local.log",
+        ".build/ci-logs/reader-batch-actionlint-local.log",
+        ".build/ci-logs/reader-batch-bash-syntax-local.log",
+        ".build/ci-logs/reader-batch-yaml-local.log",
+        ".build/ci-logs/reader-batch-diff-check-local.log"
+      ],
+      "currentIOSCompilationExecuted": false
+    },
+    "relatedSchemaEvidence": {
+      "methods": 6,
+      "executions": 23,
+      "originalDesktopCases": 17,
+      "verifiedInputAndEvidenceHashes": 5,
+      "swiftExecutionStatus": "not-run",
+      "fullCompatibilityEstablished": false
+    },
+    "historicalEvidence": [
+      {
+        "runID": 39235837329,
+        "sourceCommit": "3a32c6af4814a35e44b0aa7d4f36f45b5cfd900b",
+        "zipSHA256Matches": true,
+        "groups": [
+          {
+            "group": "cloudkit",
+            "methods": 9,
+            "executions": 9
+          },
+          {
+            "group": "local-product",
+            "methods": 41,
+            "executions": 41
+          },
+          {
+            "group": "reading-position",
+            "methods": 13,
+            "executions": 23
+          }
+        ],
+        "fullReaderAcceptance": false
+      },
+      {
+        "runID": 39238550557,
+        "sourceCommit": "44eee1c18098ac67d9dbed88f389bc97d9d7274c",
+        "zipSHA256Matches": true,
+        "groups": [
+          {
+            "group": "cloudkit",
+            "methods": 9,
+            "executions": 9
+          },
+          {
+            "group": "local-product",
+            "methods": 41,
+            "executions": 41
+          },
+          {
+            "group": "reading-position",
+            "methods": 13,
+            "executions": 23
+          },
+          {
+            "group": "paging",
+            "methods": 12,
+            "executions": 12
+          }
+        ],
+        "fullReaderAcceptance": false
+      }
+    ],
+    "baselineFixtureSourceReview": {
+      "sourceOnly": true,
+      "runtimeFixtureHashesValidated": false,
+      "closingMultilineIndentSpaces": 8,
+      "paragraphCharacters": 256,
+      "collectorMatchesIndependentSourceReconstruction": true,
+      "expectedFixtureProtocol": {
+        "plain-10k": {
+          "fixtureSHA256": "9bd24e5ea4d37c2149927d030f535ece5fbf58a450bb97816c97a3b8a9f11417",
+          "fixtureHTMLBytes": 31252,
+          "fixtureMinimumUTF16": 10240
+        },
+        "plain-100k": {
+          "fixtureSHA256": "14cb4f035b0986ca492b0d3965558c9f1c0c590e6c35f2f6c8fdf7248d9fbad5",
+          "fixtureHTMLBytes": 310613,
+          "fixtureMinimumUTF16": 102400
+        }
+      },
+      "styleMatchesCurrentSource": true,
+      "limits": "No Swift compilation or iOS execution; these are independently reconstructed expected bytes, not measured runtime hashes."
+    }
+  },
+  "issues": []
+}

@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "observedAtUTC": "2026-10-19T11:46:32.354416+00:00",
+  "configuration": "Debug iOS Simulator; source-only; JSC/CoreText; no JVM or physical-device execution",
+  "artifactRetrieval": "Public nightly.link mirror; downloaded ZIP SHA-256 must equal GitHub Actions artifact API digest",
+  "rawEvidenceRewritten": false,
+  "runs": [
+    {
+      "runID": 39235837329,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39235837329",
+      "sourceCommit": "3a32c6af4814a35e44b0aa7d4f36f45b5cfd900b",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifactID": 12180723985,
+      "archiveSHA256": "4f98106248685a23846659eddf39d6edcd741635fbf838b57ed5cf453d8dbc53",
+      "archiveBytes": 1624560,
+      "localArchive": ".build/s2-checkpoint/previous-runs/39235837329.zip",
+      "groups": [
+        {
+          "group": "cloudkit",
+          "methods": 9,
+          "executions": 9,
+          "failures": 0,
+          "skips": 0,
+          "expectedFailures": 0,
+          "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39235837329-cloudkit-summary.json",
+          "sha256": "c01d68c5b5d2287c81bd51f5f10a231e93ccea1080cfa1389fb9fd73c24dcc05"
+        },
+        {
+          "group": "local-product",
+          "methods": 41,
+          "executions": 41,
+          "failures": 0,
+          "skips": 0,
+          "expectedFailures": 0,
+          "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39235837329-local-product-summary.json",
+          "sha256": "d65598bb370b3b2edaffeeaa3cb92893eede95b4c3e01a9bdd73e75e2fa36e89"
+        },
+        {
+          "group": "reading-position",
+          "methods": 13,
+          "executions": 23,
+          "failures": 0,
+          "skips": 0,
+          "expectedFailures": 0,
+          "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39235837329-reading-position-summary.json",
+          "sha256": "914084a43019db3f7ba840398cb034b38f4c351597fb272b85eb26d6ef040f7c"
+        }
+      ],
+      "rawDriverLog": {
+        "path": "docs/legado-ios/evidence/reader-smoke-history/39235837329-driver.log",
+        "sha256": "9b291eb2c9e01905388f3f1a16cbe6502d4cb0b27b2926506798e007b4af41ec"
+      },
+      "failureClassification": "Validation script required 23 top-level methods; actual position group passed 13 methods / 23 executions. Paging and UI were not reached.",
+      "fullReaderAcceptance": false
+    },
+    {
+      "runID": 39238550557,
+      "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39238550557",
+      "sourceCommit": "44eee1c18098ac67d9dbed88f389bc97d9d7274c",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifactID": 12183065271,
+      "archiveSHA256": "81d9f5ee2081672f9dcddc3d258cac95499c2873ce375fd73a69da37c0bc9e7c",
+      "archiveBytes": 22504182,
+      "localArchive": ".build/s2-checkpoint/previous-runs/39238550557.zip",
+      "groups": [
+        {
+          "group": "cloudkit",
+          "methods": 9,
+          "executions": 9,
+          "failures": 0,
+          "skips": 0,
+          "expectedFailures": 0,
+          "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39238550557-cloudkit-summary.json",
+          "sha256": "aa9ca5d1876eaf9030dcabf40d80927b3d0aac47b5bcc6e3dcd3d4724fce6b44"
+        },
+        {
+          "group": "local-product",
+          "methods": 41,
+          "executions": 41,
+          "failures": 0,
+          "skips": 0,
+          "expectedFailures": 0,
+          "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39238550557-local-product-summary.json",
+          "sha256": "873aec29485a78161ce114301a924e46cab2c67035394281b442c7ae5238f5ab"
+        },
+        {
+          "group": "reading-position",
+          "methods": 13,
+          "executions": 23,
+          "failures": 0,
+          "skips": 0,
+          "expectedFailures": 0,
+          "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39238550557-reading-position-summary.json",
+          "sha256": "532e46c88687f2e34ebe740fd2090100fb34ab4103ea2968d674a63c98d20c4f"
+        },
+        {
+          "group": "paging",
+          "methods": 12,
+          "executions": 12,
+          "failures": 0,
+          "skips": 0,
+          "expectedFailures": 0,
+          "rawSummary": "docs/legado-ios/evidence/reader-smoke-history/39238550557-paging-summary.json",
+          "sha256": "595f9eedb2ccd614d44ec3ca478d99bd767d42322f748b542af193925acb48da"
+        }
+      ],
+      "rawDriverLog": {
+        "path": "docs/legado-ios/evidence/reader-smoke-history/39238550557-driver.log",
+        "sha256": "18bbce520a943ef043873ca99e364001c7f71481fd88d57585cf388f6dd6cc22"
+      },
+      "failureClassification": "Real TXT UI test failed its exact 5% brightness endpoint assertion; XCUI native normalized drag stopped at an announced 6%. Loopback UI was not reached.",
+      "txtUILogSHA256": "bf0022d9228634146bbcd67938e2a086ca5b3902d65844531f7dca003754a106",
+      "txtUIFailureExcerpt": [
+        "/Users/runner/work/legado-ios/legado-ios/Tests/iOS-UI/ReaderLocalSmokeUITests.swift:149: error: -[yuedu_appUITests.ReaderLocalSmokeUITests testTXTImportTOCAndProgressSurviveRelaunch] : XCTAssertEqual failed: (\"XCTWaiterResult(rawValue: 2)\") is not equal to (\"XCTWaiterResult(rawValue: 1)\") - Minimum slider position means 5% screen brightness, not 0%.",
+        "                                Slider, 0x10209db80, {{61.3, 681.1}, {316.1, 29.9}}, identifier: 'reader_quick_brightness', label: 'Brightness', value: 6%"
+      ],
+      "fullReaderAcceptance": false
+    }
+  ],
+  "limits": [
+    "Passing historical groups are tied to their own source commits; they do not establish acceptance for later Swift changes.",
+    "The count correction does not remove the later independent TXT UI failure.",
+    "Brightness endpoint gesture correction is code reviewed only until a new source-specific Simulator run passes.",
+    "No new IPA, performance improvement, native JVM or physical-device acceptance follows from this audit."
+  ]
+}

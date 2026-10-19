@@ -63,13 +63,89 @@ bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/paging-tests.log" -t 1200 -- \
   -only-testing:'yuedu appTests/SearchAutoPagingTests'
 xcrun xcresulttool get test-results summary --path "$WORK/paging.xcresult" > "$WORK/paging-summary.json"
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/paging-summary.json" --expected 12
+xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
+  -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > "$WORK/build-settings.json"
+# Batch-end reader comfort checks reuse the same prepared host and incremental
+# build. Keep this result independent from every unchanged acceptance group above.
+# Methods/executions: publications 9/9 + scope 20/20 + panel 2/2 + viewport 6/6
+# + viewport hosting 1/1 + layout import 10/10 + export 6/6 + live style 2/4
+# + restore/commit offsets 3/3 + reader-stage baseline 1/1 = 60/62.
+# The single Swift Testing method selector follows the existing selector form in
+# docs/browser-layout/extraction/commands.md. No source-session benchmark is run.
+xcrun --sdk iphonesimulator --show-sdk-version > "$WORK/reader-stage-sdk-version.log"
+xcrun simctl list --json > "$WORK/reader-stage-simulators.json"
+python3 "$SCRIPT_DIR/reader-stage-baseline.py" capture-environment \
+  --audit "$WORK/overlays.json" --settings "$WORK/build-settings.json" \
+  --xcode "$WORK/xcode-version.log" --sdk "$WORK/reader-stage-sdk-version.log" \
+  --simulators "$WORK/reader-stage-simulators.json" --destination "$YUEDU_DEST" \
+  --developer-directory "$DEVELOPER_DIR" --output "$WORK/reader-stage-environment.json" \
+  > "$WORK/reader-stage-environment-capture.log"
+# A failed run must still retain its raw metric lines. Gather raw xcresult output
+# and invoke the collector before enforcing the wrapper/artifact exit codes.
+reader_test_status=0
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reader-experience-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/reader-experience.xcresult" \
+  -only-testing:'yuedu appTests/ReaderSettingsPublicationTests' \
+  -only-testing:'yuedu appTests/ReadingSettingsScopeTests' \
+  -only-testing:'yuedu appTests/ReaderQuickThemePanelLayoutTests' \
+  -only-testing:'yuedu appTests/ReaderViewportSizeObserverTests' \
+  -only-testing:'yuedu appTests/ReaderViewportSizeObserverHostingTests' \
+  -only-testing:'yuedu appTests/ReaderLayoutPresetImporterTests' \
+  -only-testing:'yuedu appTests/ReaderSettingsExportTests' \
+  -only-testing:'yuedu appTests/ReaderLiveStyleRefreshTests' \
+  -only-testing:'yuedu appTests/ScrollOffsetEquivalenceTests' \
+  -only-testing:'yuedu appTests/ReaderArchitectureBenchmarkTests/readerStageLatency' || reader_test_status=$?
+reader_artifact_status=0
+xcrun xcresulttool get test-results summary --path "$WORK/reader-experience.xcresult" > "$WORK/reader-experience-summary.json" || reader_artifact_status=$?
+xcrun xcresulttool get test-results tests --path "$WORK/reader-experience.xcresult" > "$WORK/reader-experience-tests.json" || reader_artifact_status=$?
+reader_baseline_status=0
+python3 "$SCRIPT_DIR/reader-stage-baseline.py" collect \
+  --audit "$WORK/overlays.json" --log "$WORK/reader-experience-tests.log" \
+  --test-exit-status "$reader_test_status" \
+  --summary "$WORK/reader-experience-summary.json" --environment "$WORK/reader-stage-environment.json" \
+  --raw "$WORK/reader-stage-raw.log" --output "$WORK/reader-stage-baseline.json" \
+  > "$WORK/reader-stage-collection.log" 2>&1 || reader_baseline_status=$?
+reader_count_status=0
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reader-experience-summary.json" \
+  --expected 60 --expected-executions 62 > "$WORK/reader-experience-result.json" || reader_count_status=$?
+# Fixed synthetic chapter-supply scenarios have their own gate. Do not change
+# the established reader-experience 60/62 contract to absorb these new cases.
+# Prefetch 1 method / 2 executions + modern cache 2 methods / 4 executions = 3/6.
+# Logs retain READER_PREFETCH_SCENARIO peaks/order/cancellation observations.
+supply_test_status=0
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reader-supply-scenarios-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/reader-supply-scenarios.xcresult" \
+  -only-testing:'yuedu appTests/ReaderPrefetchScenarioTests' \
+  -only-testing:'yuedu appTests/ModernChapterCacheScenarioTests' || supply_test_status=$?
+supply_artifact_status=0
+xcrun xcresulttool get test-results summary --path "$WORK/reader-supply-scenarios.xcresult" > "$WORK/reader-supply-scenarios-summary.json" || supply_artifact_status=$?
+xcrun xcresulttool get test-results tests --path "$WORK/reader-supply-scenarios.xcresult" > "$WORK/reader-supply-scenarios-tests.json" || supply_artifact_status=$?
+supply_count_status=0
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reader-supply-scenarios-summary.json" \
+  --expected 3 --expected-executions 6 > "$WORK/reader-supply-scenarios-result.json" || supply_count_status=$?
+# Preserve the three original content-rule fields through the existing import /
+# storage / sharing paths. This is schema preservation, not rule execution.
+schema_test_status=0
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/source-schema-tests.log" -t 1200 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/source-schema.xcresult" \
+  -only-testing:'yuedu appTests/BookSourceContentRulePreservationTests' || schema_test_status=$?
+schema_artifact_status=0
+xcrun xcresulttool get test-results summary --path "$WORK/source-schema.xcresult" > "$WORK/source-schema-summary.json" || schema_artifact_status=$?
+xcrun xcresulttool get test-results tests --path "$WORK/source-schema.xcresult" > "$WORK/source-schema-tests.json" || schema_artifact_status=$?
+schema_count_status=0
+python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/source-schema-summary.json" \
+  --expected 6 --expected-executions 23 > "$WORK/source-schema-result.json" || schema_count_status=$?
+# Collect all three new groups before enforcing their independent verdicts, so
+# an incomplete baseline cannot hide supply/schema evidence. Earlier gates and
+# the TXT/loopback acceptance protocols keep their established behavior.
+[[ $reader_test_status == 0 && $reader_artifact_status == 0 && $reader_baseline_status == 0 && $reader_count_status == 0 \
+   && $supply_test_status == 0 && $supply_artifact_status == 0 && $supply_count_status == 0 \
+   && $schema_test_status == 0 && $schema_artifact_status == 0 && $schema_count_status == 0 ]]
 bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/txt-ui-tests.log" -t 1200 -- \
   "${ARGS[@]}" -resultBundlePath "$WORK/txt-ui.xcresult" \
   -only-testing:'yuedu appUITests/ReaderLocalSmokeUITests'
 xcrun xcresulttool get test-results summary --path "$WORK/txt-ui.xcresult" > "$WORK/txt-ui-summary.json"
 python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/txt-ui-summary.json" --expected 1
-xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
-  -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > "$WORK/build-settings.json"
 python3 "$SCRIPT_DIR/smoke-tools.py" result --audit "$WORK/overlays.json" --settings "$WORK/build-settings.json" \
   --unit "$WORK/cloudkit-summary.json" --paging "$WORK/paging-summary.json" \
   --ui "$WORK/txt-ui-summary.json" --product "$WORK/local-product-summary.json" --output "$WORK/result.json"
@@ -83,26 +159,3 @@ python3 "$SCRIPT_DIR/run-online-smoke.py" run --work "$WORK" -- \
 xcrun xcresulttool get test-results summary --path "$WORK/online-ui.xcresult" > "$WORK/online-ui-summary.json"
 python3 "$SCRIPT_DIR/run-online-smoke.py" result --work "$WORK" \
   --summary "$WORK/online-ui-summary.json" --output "$WORK/online-result.json"
-# Batch-end reader comfort checks reuse the same prepared host and incremental
-# build. Keep this result independent from every unchanged acceptance group above.
-# Methods/executions: publications 9/9 + scope 20/20 + panel 2/2 + viewport 6/6
-# + viewport hosting 1/1 + layout import 10/10 + export 6/6 + live style 2/4
-# + restore/commit offsets 3/3 + reader-stage baseline 1/1 = 60/62.
-# The single Swift Testing method selector follows the existing selector form in
-# docs/browser-layout/extraction/commands.md. No source-session benchmark is run.
-bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/reader-experience-tests.log" -t 1200 -- \
-  "${ARGS[@]}" -resultBundlePath "$WORK/reader-experience.xcresult" \
-  -only-testing:'yuedu appTests/ReaderSettingsPublicationTests' \
-  -only-testing:'yuedu appTests/ReadingSettingsScopeTests' \
-  -only-testing:'yuedu appTests/ReaderQuickThemePanelLayoutTests' \
-  -only-testing:'yuedu appTests/ReaderViewportSizeObserverTests' \
-  -only-testing:'yuedu appTests/ReaderViewportSizeObserverHostingTests' \
-  -only-testing:'yuedu appTests/ReaderLayoutPresetImporterTests' \
-  -only-testing:'yuedu appTests/ReaderSettingsExportTests' \
-  -only-testing:'yuedu appTests/ReaderLiveStyleRefreshTests' \
-  -only-testing:'yuedu appTests/ScrollOffsetEquivalenceTests' \
-  -only-testing:'yuedu appTests/ReaderArchitectureBenchmarkTests/readerStageLatency'
-xcrun xcresulttool get test-results summary --path "$WORK/reader-experience.xcresult" > "$WORK/reader-experience-summary.json"
-xcrun xcresulttool get test-results tests --path "$WORK/reader-experience.xcresult" > "$WORK/reader-experience-tests.json"
-python3 "$SCRIPT_DIR/smoke-tools.py" verify-summary --summary "$WORK/reader-experience-summary.json" \
-  --expected 60 --expected-executions 62 > "$WORK/reader-experience-result.json"

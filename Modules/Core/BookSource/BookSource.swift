@@ -165,6 +165,9 @@ struct TOCRule: Codable {
 
 struct ContentRule: Codable {
     var content: String = ""
+    /// Original source fields are carried through editing/export; their sub-content
+    /// and batch execution protocols are not implemented by this model.
+    var subContent: String?
     var title: String = ""
     var nextContentUrl: String = ""
     var webJs: String = ""
@@ -177,11 +180,14 @@ struct ContentRule: Codable {
     /// (`SourceCallBack`) when the source sets `eventListener`. Optional so a source without one
     /// encodes exactly as before.
     var callBackJs: String?
+    var contentBatch: String?
+    var maxBatchSize: Int?
 
     init() {}
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         content        = c.safeString(forKey: .content)
+        subContent     = Self.decodeOptionalText(.subContent, from: c)
         title          = c.safeString(forKey: .title)
         nextContentUrl = c.safeString(forKey: .nextContentUrl)
         webJs          = c.safeString(forKey: .webJs)
@@ -192,6 +198,50 @@ struct ContentRule: Codable {
         payAction      = c.safeString(forKey: .payAction)
         let callBack   = c.safeString(forKey: .callBackJs)
         callBackJs     = callBack.isEmpty ? nil : callBack
+        contentBatch   = Self.decodeOptionalText(.contentBatch, from: c)
+        // The original Gson rule accepts integer strings and truncates numeric
+        // fractions. Keep this field optional: malformed values must not become
+        // a fabricated zero or erase the rule's other fields. Unlike Java's Int,
+        // values outside Kotlin Int's 32-bit range are dropped rather than wrapped.
+        maxBatchSize = Self.decodeOptionalBatchSize(from: c)
+    }
+
+    private static func decodeOptionalText(_ key: CodingKeys, from c: KeyedDecodingContainer<CodingKeys>) -> String? {
+        do {
+            return try c.decodeIfPresent(String.self, forKey: key)
+        } catch {
+            AppLogger.parse("Content rule optional field rejected", context: [
+                "field": key.rawValue, "reason": "expectedString",
+            ])
+            return nil
+        }
+    }
+
+    private static func decodeOptionalBatchSize(from c: KeyedDecodingContainer<CodingKeys>) -> Int? {
+        do {
+            return try c.decodeIfPresent(Int32.self, forKey: .maxBatchSize).map(Int.init)
+        } catch {
+            // A supported integer string or numeric fraction needs the next wire-form probe.
+        }
+        do {
+            if let value = try c.decodeIfPresent(String.self, forKey: .maxBatchSize), let integer = Int32(value) {
+                return Int(integer)
+            }
+        } catch {
+            // A numeric fraction cannot decode as a string; inspect the numeric form below.
+        }
+        do {
+            if let value = try c.decodeIfPresent(Double.self, forKey: .maxBatchSize), value.isFinite,
+               let integer = Int32(exactly: value.rounded(.towardZero)) {
+                return Int(integer)
+            }
+        } catch {
+            // All supported wire forms have now been tried. Report only the field/reason.
+        }
+        AppLogger.parse("Content rule optional field rejected", context: [
+            "field": "maxBatchSize", "reason": "invalidOrOutsideInt32Range",
+        ])
+        return nil
     }
 }
 

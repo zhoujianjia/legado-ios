@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-10-19",
+  "baseCommit": "3d047be61918c1431107f674a22b514613e308ae",
+  "stageId": "s2-reading-experience",
+  "status": "implemented-reviewed-pending-ios-integration",
+  "说明": "本批补充固定预取、现代损坏缓存与性能证据采集；测试代码和便携工具已审查，不把准备好的 iOS 用例当成执行通过。",
+  "stageComplete": false,
+  "allNonDeviceWorkComplete": false,
+  "builtInBookSources": false,
+  "productionPrefetchSchedulingChanged": false,
+  "performanceImprovementEstablished": false,
+  "previousBatch": "docs/legado-ios/reading-comfort-batch.json",
+  "historicalCloudAudit": "docs/legado-ios/previous-reader-smoke-audit.json",
+  "changes": [
+    {
+      "id": "held-response-prefetch-scenarios",
+      "implementation": "Two owned 20/100-chapter fixtures enter ten distant targets through the real ReaderViewModel, live adapter, fetch manager, coordinator, source parser and WebFetcher. URLProtocol holds each response until explicitly released; the existing HTTP semaphore reports read-only Debug permit/queue snapshots.",
+      "fixtures": {
+        "20": [
+          2,
+          17,
+          7,
+          12,
+          2,
+          17,
+          7,
+          12,
+          2,
+          17
+        ],
+        "100": [
+          2,
+          97,
+          12,
+          87,
+          22,
+          77,
+          32,
+          67,
+          42,
+          57
+        ]
+      },
+      "observations": [
+        "HTTP acquired permits and queued requests",
+        "held response peak",
+        "request/response/cancellation order",
+        "responses drained to reach queued targets",
+        "real cancellation signals and successful re-entry"
+      ],
+      "rawMarker": "READER_PREFETCH_SCENARIO",
+      "expectedRows": 2,
+      "scope": "No new scheduler/cache, no live site or user source, no timing waits; transport counts are not total app-wide chapter-job counts. Failure cleanup is best effort and does not wait without a deadline."
+    },
+    {
+      "id": "modern-corrupt-cache-scenarios",
+      "implementation": "After a valid cache write, change only its body (replacement, empty/truncated, invalid UTF-8), preserving package/meta. Reopen twice to contrast lightweight cached status with checksum rejection and exact unchanged bytes. A second scenario proves prefetch skips that lightweight hit, actual entry fetches once, and a new manager reuses the validated recovered package without another request.",
+      "methods": 2,
+      "executions": 4,
+      "scope": "Repository probes preserve the invalid bytes; successful on-demand source fetch replaces the rejected cache through the existing writer. Failed-network cache retention and physical-storage faults are not established by these cases."
+    },
+    {
+      "id": "source-resolver-test-seam",
+      "implementation": "The existing ChapterFetchManager accepts a MainActor Sendable source resolver; its default still performs the same indexed BookSourceStore lookup. Owned tests inject a synthetic source and do not mutate the source store.",
+      "defaultProductRouteChanged": false
+    },
+    {
+      "id": "strict-reader-stage-baseline",
+      "implementation": "Runtime rows include fixture SHA-256/bytes/minimum UTF-16 and actual render/style settings. An offline collector independently reconstructs public fixture HTML and requires all 50 unique fixture/iteration/stage rows, finite times, valid output counts, passing 60/62 XCTest summary, matching Git source and actual Xcode/SDK/runtime/destination evidence. Raw rows survive failure; accepted output contains median/max only.",
+      "metricsExecuted": false,
+      "expectedRows": 50,
+      "samplesPerFixtureStage": 5,
+      "sourceSessionBenchmarkSelected": false
+    },
+    {
+      "id": "txt-ui-brightness-endpoint-input",
+      "problem": "The original normalized XCUI drag stopped at an announced 6%, failing the exact 5% endpoint check in source 44eee1c.",
+      "implementation": "Move the native thumb near its center, then drag to the track edge. Keep exact 5% and 100% assertions and use the real native close button. No production brightness change, sleep, retry or relaxed endpoint gate.",
+      "iosExecutionStatus": "not-run"
+    }
+  ],
+  "preparedIntegration": {
+    "workflow": ".github/workflows/reader-smoke.yml",
+    "entryPoint": "scripts/reader-experience/smoke.sh",
+    "readerExperience": {
+      "methods": 60,
+      "executions": 62,
+      "changedCountContract": false
+    },
+    "readerSupplyScenarios": {
+      "methods": 3,
+      "executions": 6,
+      "selectors": [
+        "ReaderPrefetchScenarioTests",
+        "ModernChapterCacheScenarioTests"
+      ]
+    },
+    "failuresSkipsExpectedFailuresAllowed": 0,
+    "newGroupsBeforeTXTUI": true,
+    "configuration": "Debug Simulator; source-only; no native JVM execution or IPA",
+    "retain": [
+      "separate xcresult bundles",
+      "summary",
+      "tests tree",
+      "raw logs",
+      "count gates",
+      "raw benchmark rows",
+      "source/fixture hashes",
+      "environment",
+      "median/max"
+    ],
+    "cloudTriggered": false,
+    "iosCompilationExecuted": false,
+    "iosTestsExecuted": false,
+    "sourceSchema": {
+      "methods": 6,
+      "executions": 23,
+      "selector": "BookSourceContentRulePreservationTests",
+      "sameCloudInvocation": true
+    }
+  },
+  "separateMeasurementContracts": {
+    "status": "protocol-defined-not-executed",
+    "processColdLaunch": {
+      "fixture": "Owned TXT imported through the existing Debug hook, then import input removed and app terminated; retain file SHA-256 and persisted spineIndex/charOffset.",
+      "samples": 5,
+      "measurement": "A fresh process launch per sample, ending at first usable reader content with expected text and anchor. Fixture preparation and import are outside the measured interval.",
+      "retain": [
+        "exact source/build mode",
+        "Xcode/SDK/runtime/device",
+        "per-sample launch interval",
+        "first usable content interval",
+        "text/anchor result",
+        "raw log/result bundle"
+      ],
+      "limits": "Process-cold is not OS/device cold: filesystem, Simulator and package caches are not purged. No measured values exist yet."
+    },
+    "peakProcessMemory": {
+      "fixture": "Owned 100K and 1M UTF-16 chapters, fixture construction outside the interval; 390x844 viewport, 18pt, line-height 1.5 and paragraph spacing 8.",
+      "samples": 5,
+      "measurement": "Record process baseline before entry and sampled peak during opening, full pagination, scrolling and ten distant jumps. Record footprint/RSS units and sampling interval, separately from document-stage timings.",
+      "retain": [
+        "exact source/build/environment",
+        "fixture SHA-256/size",
+        "baseline bytes",
+        "sampled peak bytes",
+        "interval and sampling method",
+        "stage timestamps",
+        "completion/anchor assertions"
+      ],
+      "limits": "A sampled process peak is not allocation churn, a memory-pressure test or a physical-device memory limit. Collection code and runs remain outstanding."
+    }
+  },
+  "localChecks": {
+    "reader-stage-baseline-tools-local.log": {
+      "path": ".build/ci-logs/reader-stage-baseline-tools-local.log",
+      "methodsPassed": 18,
+      "exitCode": 0,
+      "sha256": "1f06b3dc0330810cf4eee4a1189e49adc30aeb9fb46cee33bf4e18c0a74273f2"
+    },
+    "reader-smoke-tools-local.log": {
+      "path": ".build/ci-logs/reader-smoke-tools-local.log",
+      "methodsPassed": 14,
+      "exitCode": 0,
+      "sha256": "e5573c4162dda77bf098b6fd0b1213411049bea96bf1b585b408594e2b9763a1"
+    },
+    "workflowAndShell": [
+      {
+        "path": ".build/ci-logs/reader-batch-actionlint-local.log",
+        "exitCode": 0,
+        "sha256": "31167b377af360659674e0a36cb658214e3e90fba81460d614b148786ab9ba4c",
+        "inputSHA256": {
+          ".github/workflows/reader-smoke.yml": "2e666a8fbe1f8894ad5f14c45f4b69c2397e6c3d8c6c4f8781e99b7f2d9b746b"
+        }
+      },
+      {
+        "path": ".build/ci-logs/reader-batch-bash-syntax-local.log",
+        "exitCode": 0,
+        "sha256": "759c0bf77801d16af0c737e9a19500bc9e9c6f05ed0571fae0c6b9832bd6281c",
+        "inputSHA256": {
+          "scripts/reader-experience/smoke.sh": "a22d980452aacca96c96d4bb22190d2995d8a6f08d7031ea3cb4f016e7572060"
+        }
+      },
+      {
+        "path": ".build/ci-logs/reader-batch-yaml-local.log",
+        "exitCode": 0,
+        "sha256": "457c7ca58e9fdbe7c7c51809b7ae399d43563d82daf341de83969139628bba1d",
+        "inputSHA256": {
+          ".github/workflows/reader-smoke.yml": "2e666a8fbe1f8894ad5f14c45f4b69c2397e6c3d8c6c4f8781e99b7f2d9b746b"
+        }
+      },
+      {
+        "path": ".build/ci-logs/reader-batch-diff-check-local.log",
+        "exitCode": 0,
+        "sha256": "2ad616b0b6fc31661bf6bd8369a6a22a38a53803ce4e50d5cb25959631bb17d7",
+        "inputSHA256": {
+          "scripts/reader-experience/smoke.sh": "a22d980452aacca96c96d4bb22190d2995d8a6f08d7031ea3cb4f016e7572060",
+          ".github/workflows/reader-smoke.yml": "2e666a8fbe1f8894ad5f14c45f4b69c2397e6c3d8c6c4f8781e99b7f2d9b746b"
+        }
+      }
+    ],
+    "portableLocalization": {
+      "check": "portable-strings-and-changed-swift-literals",
+      "status": "passed",
+      "languages": [
+        "zh-Hant",
+        "zh-Hans",
+        "en",
+        "ja",
+        "ko"
+      ],
+      "keysPerLanguage": 3698,
+      "newKeysPerLanguage": 9,
+      "changedSwiftFilesChecked": 8,
+      "preexistingDuplicateCounts": {
+        "zh-Hant": 0,
+        "zh-Hans": 0,
+        "en": 0,
+        "ja": 0,
+        "ko": 0
+      },
+      "canonicalMacOSLocalizationCheckExecuted": false,
+      "iosCompilationOrTestsExecuted": false
+    },
+    "canonicalMacOSLocalizationExecuted": false,
+    "iosCompilationExecuted": false,
+    "independentReview": {
+      "path": "docs/legado-ios/evidence/reader-supply-static-review.json",
+      "sha256": "ca5db1448ca8f936e607d321a625c4a5b48913a44b3aa3ca040f6c51e9536850",
+      "status": "passed",
+      "scope": "Static plan, source/evidence hashes, fixture reconstruction and acceptance boundaries; no iOS execution."
+    }
+  },
+  "reviewedInputs": [
+    {
+      "path": "Modules/Services/Network/FetchRetryPolicy.swift",
+      "bytes": 8739,
+      "sha256": "ed27faf8d1b297e2ee8fda810ee04739c3f6b36947fb366b96163c6d1e3422ca"
+    },
+    {
+      "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+      "bytes": 50867,
+      "sha256": "493c837c011fe0503decd1846f9e7b0ddf85f27039784826d57ec208c7a21515"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderPrefetchScenarioTests.swift",
+      "bytes": 21158,
+      "sha256": "160c859b388de9ea83d0ba37b917f108771715f43d98e1b39a80b45bd538ed28"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift",
+      "bytes": 8248,
+      "sha256": "11443c634787f751c82136b441c310d5b3a8ec1c824cab53e9bbdcbe01df0486"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderArchitectureBenchmarkTests.swift",
+      "bytes": 9516,
+      "sha256": "4824a9ed383601ca062a25e3a0c8827e2bcae2c03f61292e8ed16be13f57f491"
+    },
+    {
+      "path": "Tests/iOS-UI/ReaderLocalSmokeUITests.swift",
+      "bytes": 14464,
+      "sha256": "e2e7571f3af4f608dcd413eb364f8e157565f0a655c96be4f94b346eb3294da2"
+    },
+    {
+      "path": "scripts/reader-experience/reader-stage-baseline.py",
+      "bytes": 17073,
+      "sha256": "56580b42ce989cb66b83845368e576adc6384c1f76edec6ac9ed1e35cd3a53d6"
+    },
+    {
+      "path": "scripts/reader-experience/test-reader-stage-baseline.py",
+      "bytes": 14488,
+      "sha256": "2011103539460efa31279006f123b06b6a8f7544c9a8fc8ba35bea69ab249952"
+    },
+    {
+      "path": "scripts/reader-experience/smoke.sh",
+      "bytes": 12123,
+      "sha256": "a22d980452aacca96c96d4bb22190d2995d8a6f08d7031ea3cb4f016e7572060"
+    },
+    {
+      "path": ".github/workflows/reader-smoke.yml",
+      "bytes": 9458,
+      "sha256": "2e666a8fbe1f8894ad5f14c45f4b69c2397e6c3d8c6c4f8781e99b7f2d9b746b"
+    }
+  ],
+  "remaining": [
+    "Execute the exact new source on macOS/Xcode and audit the raw results.",
+    "Review real font-page/panel rendering, large text, contrast, VoiceOver order and iPad window/anchor behavior.",
+    "Implement and execute separate startup and peak-memory collection; the reader-stage baseline does not satisfy these gates.",
+    "Traditional rules remain on JSC; no complete AnalyzeRule/AnalyzeUrl/WebBook or host migration is claimed.",
+    "Self renewal, legal source closure, release candidate and device acceptance remain incomplete."
+  ],
+  "relatedIndependentWork": "docs/legado-ios/content-rule-schema-preservation.json"
+}
