@@ -17,6 +17,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.currentCoroutineContext
 import com.script.rhino.runScriptWithContext
 import io.yuedu.legado.originalrule.OriginalExploreContexts
+import io.yuedu.legado.originalrule.OriginalSourceLoginHost
+import io.yuedu.legado.originalrule.GSON
 import java.io.IOException
 
 /** Opt-in business execution at the existing public JSON/JNI boundary. This is not a probe,
@@ -35,6 +37,7 @@ internal object OriginalTraditionalRuntime {
     }
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         val fields = when (operation) {
+            "formLogin" -> setOf("credentials", "timeoutMs")
             "sourceCallback" -> setOf("event", "timeoutMs")
             "bookCallback" -> setOf("event", "book", "chapter", "result", "timeoutMs")
             "search" -> setOf("key", "page", "timeoutMs")
@@ -56,6 +59,41 @@ internal object OriginalTraditionalRuntime {
                 val source = LegadoRuntime.originalBookSource(task, environment)
                 val result = runBlocking(task.job) {
                     when (operation) {
+                        "formLogin" -> {
+                            // The Android dialog has lifecycle cancellation, no fixed
+                            // 30s form timer. This is the finite iOS embedding budget.
+                            require(input.int("timeoutMs", 30_000) in 1..30_000) { "Form login timeout must be between 1 and 30000 milliseconds" }
+                            if (source.isLoginUiV2()) throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Interactive loginUi v2 is not connected")
+                            val loginJS = source.getLoginJs()
+                            if (loginJS?.startsWith("http://", true) == true || loginJS?.startsWith("https://", true) == true)
+                                throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Browser login navigation is not connected")
+                            val raw = input.requiredObject("credentials")
+                            require(raw.size() <= 4096 && raw.entrySet().all { (_, value) -> value.isJsonPrimitive && value.asJsonPrimitive.isString }) { "Form credentials must be a bounded String map" }
+                            val loginData = raw.entrySet().associateTo(linkedMapOf()) { (key, value) -> key to value.asString }
+                            environment.platform.runWebBook(currentCoroutineContext()) {
+                                if (loginData.isEmpty()) {
+                                    source.removeLoginInfo()
+                                    jsonObject("credentialsStored" to false, "credentialsCleared" to true, "executed" to false)
+                                } else if (!source.putLoginInfo(GSON.toJson(loginData))) {
+                                    jsonObject("credentialsStored" to false, "credentialsCleared" to false, "executed" to false)
+                                } else {
+                                    if (!loginJS.isNullOrBlank()) {
+                                        val context = currentCoroutineContext()
+                                        OriginalSourceLoginHost(source).use { java ->
+                                            runScriptWithContext(context) {
+                                                source.evalJS("$loginJS\nif(typeof login=='function'){login.apply(this);}else{throw('Function login not implements!!!');}") {
+                                                    put("java", java); put("result", loginData)
+                                                    put("book", null); put("chapter", null); put("isLongClick", false)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    // Return values are ignored by the real dialog.
+                                    // Never infer a login header from arbitrary JSON.
+                                    jsonObject("credentialsStored" to true, "credentialsCleared" to false, "executed" to !loginJS.isNullOrBlank())
+                                }
+                            }
+                        }
                         "sourceCallback" -> {
                             require(input.int("timeoutMs", 30_000) in 1..30_000) { "Original source callback timeout must be between 1 and 30000 milliseconds" }
                             val event = input.requiredText("event")

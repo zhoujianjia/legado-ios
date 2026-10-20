@@ -51,6 +51,12 @@ open class RulePlatform {
     open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
     open fun loginInfo(source: BaseSource): String? = unsupportedRule("checked source login-info owner")
     open fun storeLoginInfo(source: BaseSource, value: String?): Boolean = unsupportedRule("checked source login-info owner")
+    open fun protectLoginDiagnostics(source: BaseSource) {}
+    /** Existing parser/URL diagnostic sink; production may protect the current login task. */
+    open fun ruleDiagnostic(error: Throwable, loggerName: String = "io.yuedu.legado.originalrule",
+                            message: String = "Original rule evaluation diagnostic") {
+        Logger.getLogger(loggerName).log(java.util.logging.Level.FINE, message, error)
+    }
     open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()
     open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =

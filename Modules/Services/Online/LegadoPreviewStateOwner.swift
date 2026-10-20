@@ -308,6 +308,7 @@ struct LegadoPreviewStateOwner: LegadoEntityStateBacking {
 
 /// Explicit original-business execution only. No route selection, JSC or second HTTP jar.
 enum LegadoOriginalPreviewOperation: Sendable {
+    case formLogin([String: String])
     case search(String, Int32?)
     case explore(String, Int32?)
     case openExploreContext
@@ -320,6 +321,7 @@ enum LegadoOriginalPreviewOperation: Sendable {
 }
 
 enum LegadoOriginalPreviewResult: Sendable {
+    case formLogin(LegadoOriginalFormLoginResult, completedEffects: [String])
     case search([LegadoOriginalBook])
     case explore([LegadoOriginalBook])
     case exploreContext(LegadoOriginalExploreContextResult)
@@ -358,6 +360,10 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 let taskID = grant?.taskID ?? UUID().uuidString
                 let remaining = Int64(min(300_000, max(1, deadline.timeIntervalSinceNow * 1000)))
                 switch operation {
+                case .formLogin(let credentials):
+                    let value = try await runtime.formLoginOriginal(session: session, credentials: credentials,
+                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
+                    result = .formLogin(value, completedEffects: reportedEffects.withLock { $0 })
                 case .sourceCallback(let event):
                     let value = try await runtime.sourceCallbackOriginal(session: session, event: event,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)

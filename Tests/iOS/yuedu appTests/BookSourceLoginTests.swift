@@ -117,6 +117,18 @@ struct BookSourceLoginTests {
 
     @Test("空白登入欄位不會被當成登入成功")
     func blankLoginFieldIsRequired() {
+        let submissionFields = LoginManager.shared.parseLoginUi("""
+        [{"name":"username","type":"text","default":"synthetic-default"},{"name":"password","type":"password","default":"synthetic-default-password"},{"name":"captcha","type":"text"},{"name":"button","type":"button","default":"must-not-add"}]
+        """)
+        let submitted = BookSourceFormLoginView.originalFormSubmissionValues(
+            fields: submissionFields,
+            values: ["username": "synthetic-edited", "password": "", "refreshToken": "synthetic-hidden-token"]
+        )
+        #expect(submitted == ["username": "synthetic-edited", "password": "", "captcha": "", "refreshToken": "synthetic-hidden-token"])
+        #expect(BookSourceFormLoginView.originalFormSubmissionValues(fields: [], values: ["refreshToken": "synthetic-hidden-token"]) == ["refreshToken": "synthetic-hidden-token"])
+        #expect(BookSourceFormLoginView.originalFormSubmissionValues(fields: [], values: [:]).isEmpty)
+        let defaults = BookSourceFormLoginView.originalFormSubmissionValues(fields: submissionFields, values: [:])
+        #expect(defaults == ["username": "synthetic-default", "password": "synthetic-default-password", "captcha": ""])
         let fields = LoginManager.shared.parseLoginUi("""
         [{"name":"Token","type":"password"}]
         """)

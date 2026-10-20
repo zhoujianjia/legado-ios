@@ -77,6 +77,7 @@ object LegadoRuntime {
             val timeoutMs = input["timeoutMs"]?.asLong ?: 30_000L
             require(timeoutMs in 1..300_000) { "timeoutMs must be between 1 and 300000" }
             task = RuntimeTask(taskId, session, Job(), System.currentTimeMillis() + timeoutMs)
+            task.sensitiveSourceOperation = session.options.usesOriginalTraditional && operation == "formLogin"
             synchronized(session) {
                 if (session.closed.get()) throw RuntimeFailure("UNKNOWN_SESSION", "Session is closed")
                 if (tasks.putIfAbsent(taskId, task) != null) {
@@ -125,7 +126,8 @@ object LegadoRuntime {
             }
             val completedEffects = (generateSequence(error as Throwable?) { it.cause }.take(32)
                 .filterIsInstance<RulePersistenceException>().mapNotNull { it.completedEffect }.toList() + hostFailure?.completedEffects.orEmpty() + task?.hostEffectsSnapshot().orEmpty()).distinct()
-            val message = if (stateFailure?.completedEffect != null) stateFailure.message else hostFailure?.message ?: error.message ?: error.javaClass.simpleName
+            val message = if (operation == "formLogin" || task?.sensitiveSourceOperation == true) "Original form login did not complete ($code)"
+                else if (stateFailure?.completedEffect != null) stateFailure.message else hostFailure?.message ?: error.message ?: error.javaClass.simpleName
             val response = if (completedEffects.isEmpty()) failure(code, message.orEmpty(), taskId)
                 else jsonObject("ok" to false, "taskId" to taskId, "error" to jsonObject("code" to code,
                     "message" to message, "completedEffects" to completedEffects)).toString()
@@ -398,6 +400,9 @@ internal class RuntimeSession(val id: String, val source: JsonObject,
 
 internal class RuntimeTask(val id: String, val session: RuntimeSession, val job: kotlinx.coroutines.CompletableJob,
     val deadlineEpochMs: Long, val diagnosticHttp: TaskHttpDispatcher? = null) {
+    // Metadata only. Login JS errors/debug calls can otherwise echo passwords
+    // from result/source.getLoginInfo into a persisted diagnostic message.
+    internal var sensitiveSourceOperation = false
     val timedOut = AtomicBoolean(false)
     // Request-local control facts, never a second state/cache owner. A native
     // Cookie IPC can already have effects before cancellation returns its ACK.

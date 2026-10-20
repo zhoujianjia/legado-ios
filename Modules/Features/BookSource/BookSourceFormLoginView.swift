@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import JavaScriptCore
+import LegadoRuntime
 
 // MARK: - BookSourceFormLoginView
 // Handles book sources whose `loginUi` JSON defines form fields (text/password/select/button).
@@ -25,6 +26,7 @@ struct BookSourceFormLoginView: View {
     @State private var showFanqieLogin = false
     @State private var showLog = false
     @State private var canRetryLoginUi = false
+    @State private var formSubmissionTask: Task<Void, Never>?
     /// What a menu button's run reported when the source itself said nothing.
     /// Alert only, never the inline error Section: that Section sits below the whole
     /// form, which on a long source menu is far off-screen — the button still read
@@ -139,6 +141,7 @@ struct BookSourceFormLoginView: View {
             }
         }
         .onAppear { loadUI() }
+        .onDisappear { formSubmissionTask?.cancel(); formSubmissionTask = nil }
         .sheet(isPresented: $showLog) {
             BookSourceDebugView()
         }
@@ -490,29 +493,74 @@ struct BookSourceFormLoginView: View {
         menuAlert = nil
         canRetryLoginUi = false
 
-        // Validate: collect non-button field values
-        let credentials = currentFormValues()
+        submitForm()
+    }
 
-        let missingFields = Self.missingRequiredFieldNames(fields: fields, values: credentials)
-        guard missingFields.isEmpty else {
-            menuAlert = MenuActionAlert(
-                title: localized("操作失敗"),
-                detail: localized("請填入登入資訊")
-            )
-            return
+    /// Locked dialog getLoginData: preserve complete loginInfo, then overwrite
+    /// only visible text/password edits. An explicit empty edit stays empty.
+    nonisolated static func originalFormSubmissionValues(
+        fields: [LoginField], values: [String: String]
+    ) -> [String: String] {
+        var submitted = values
+        for field in fields where field.type == .text || field.type == .password {
+            submitted[field.name] = values[field.name] ?? field.defaultValue ?? ""
         }
+        return submitted
+    }
 
-        if credentials.isEmpty {
-            // No credentials needed — just execute loginUrl JS directly
-            runLoginJS(credentials: [:])
-            return
+    private func submitForm() {
+        isLoading = true
+        let snapshot = source
+        let valueSnapshot = values
+        let fieldSnapshot = fields
+        formSubmissionTask = Task {
+            defer { formSubmissionTask = nil }
+            // Source classification and complete form synthesis run off MainActor.
+            let (original, submittedCredentials) = await Task.detached {
+                let original = snapshot.bookSourceType == 0 && !snapshot.isJsSource
+                let submitted = original
+                    ? Self.originalFormSubmissionValues(fields: fieldSnapshot, values: valueSnapshot)
+                    : [:]
+                return (original, submitted)
+            }.value
+            guard !Task.isCancelled else { isLoading = false; return }
+            guard original else {
+                isLoading = false
+                // Existing mainJs/media validation and login remain on their route.
+                let credentials = currentFormValues()
+                let missingFields = Self.missingRequiredFieldNames(fields: fields, values: credentials)
+                guard missingFields.isEmpty else {
+                    menuAlert = MenuActionAlert(
+                        title: localized("操作失敗"),
+                        detail: localized("請填入登入資訊")
+                    )
+                    return
+                }
+
+                if !credentials.isEmpty {
+                    LoginManager.shared.storeLoginInfo(sourceUrl: snapshot.bookSourceUrl, info: credentials)
+                }
+                runLoginJS(credentials: credentials)
+                return
+            }
+            do {
+                let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+                _ = try await service.originalFormLogin(source: snapshot, credentials: submittedCredentials)
+                guard !Task.isCancelled else { isLoading = false; return }
+                isLoading = false
+                menuAlert = MenuActionAlert(title: localized("完成"), detail: localized("完成"), dismissesView: true)
+            } catch {
+                isLoading = false
+                guard !Task.isCancelled else { return }
+                let failure = error as? LegadoRuntimeError
+                let code = failure?.code ?? "STATE_IO"
+                // Script/request/credential descriptions are intentionally not
+                // displayed or logged by this submission boundary.
+                AppLogger.error("Original form login failed", context: ["code": code,
+                    "reportedEffects": failure?.completedEffects?.count ?? 0])
+                menuAlert = MenuActionAlert(title: localized("操作失敗"), detail: localized("操作失敗") + " (\(code))")
+            }
         }
-
-        // Store credentials then run login JS
-        LoginManager.shared.storeLoginInfo(
-            sourceUrl: source.bookSourceUrl, info: credentials
-        )
-        runLoginJS(credentials: credentials)
     }
 
     private func handleButton(field: LoginField) {

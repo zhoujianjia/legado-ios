@@ -210,20 +210,20 @@ internal object NetworkUtils {
         }.getOrDefault(null)
     }
 
-    fun getAbsoluteURL(baseURL: String?, relativePath: String): String {
+    @JvmOverloads fun getAbsoluteURL(baseURL: String?, relativePath: String, onError: ((Throwable) -> Unit)? = null): String {
         if (baseURL.isNullOrEmpty()) return relativePath.trim()
         val url = try { URL(baseURL.substringBefore(",")) } catch (error: Exception) {
-            error.printOnDebug(); null
+            onError?.invoke(error) ?: error.printOnDebug(); null
         }
-        return getAbsoluteURL(url, relativePath)
+        return getAbsoluteURL(url, relativePath, onError)
     }
-    fun getAbsoluteURL(baseURL: URL?, relativePath: String): String {
+    @JvmOverloads fun getAbsoluteURL(baseURL: URL?, relativePath: String, onError: ((Throwable) -> Unit)? = null): String {
         val trimmed = relativePath.trim()
         if (baseURL == null) return trimmed
         if (trimmed.startsWith("http://", true) || trimmed.startsWith("https://", true) || trimmed.isDataUrl()) return trimmed
         if (trimmed.startsWith("javascript")) return ""
         return try { URL(baseURL, relativePath).toString() } catch (error: Exception) {
-            error.printOnDebug(); trimmed
+            onError?.invoke(error) ?: error.printOnDebug(); trimmed
         }
     }
 }

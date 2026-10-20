@@ -1677,3 +1677,50 @@ extension LegadoMainJSSourceService {
         return .init(executed: reply.executed, completedEffects: effects)
     }
 }
+
+struct LegadoOriginalFormLoginReceipt: Sendable {
+    let credentialsStored: Bool
+    let credentialsCleared: Bool
+    let executed: Bool
+    let completedEffects: [String]
+}
+
+extension LegadoMainJSSourceService {
+    /// Standalone traditional text form submission. Shares the actual reader's
+    /// source lock/process/credential/Cookie/header owners; grants no Book.
+    func originalFormLogin(source: BookSource, credentials: [String: String]) async throws -> LegadoOriginalFormLoginReceipt {
+        var effects: [String] = []
+        do {
+            let signature = try originalSignature(source)
+            // The original dialog is lifecycle-bound. This finite 30s iOS
+            // embedding budget includes lock wait; it is not an Android timer.
+            let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
+            try await acquire(source.bookSourceUrl, deadline: deadline)
+            defer { release(source.bookSourceUrl) }
+            try acceptOriginalRevision(source, signature: signature)
+            let result = try await SourcePerfTrace.spanAsync("legado.original.form.login",
+                "main=\(Thread.isMainThread) fields=\(credentials.count)") {
+                try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                    sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+                    operation: .formLogin(credentials), deadline: deadline)
+            }
+            guard case .formLogin(let reply, let reported) = result else {
+                throw failure("INVALID_RESULT", "Original form login omitted its result")
+            }
+            effects = reported
+            guard reply.credentialsStored || reply.credentialsCleared else {
+                throw failure("STATE_IO", "The credential owner rejected the submitted form")
+            }
+            try previewCheck(deadline)
+            return .init(credentialsStored: reply.credentialsStored, credentialsCleared: reply.credentialsCleared,
+                executed: reply.executed, completedEffects: effects)
+        } catch {
+            let typed = error as? LegadoRuntimeError
+            let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+            // Neither authored JS errors nor request/credential text may enter
+            // a login alert/log through an arbitrary Error description.
+            throw LegadoRuntimeError(code: code, message: "Original form login did not complete (\(code))",
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted())
+        }
+    }
+}

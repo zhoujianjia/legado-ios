@@ -165,3 +165,13 @@ internal struct OriginalSourceCallbackRequest: Encodable, Sendable {
     let event: String
     let timeoutMs: Int64
 }
+
+public struct LegadoOriginalFormLoginResult: Codable, Sendable, Equatable {
+    public let credentialsStored: Bool
+    public let credentialsCleared: Bool
+    public let executed: Bool
+}
+internal struct OriginalFormLoginRequest: Encodable, Sendable {
+    let credentials: [String: String]
+    let timeoutMs: Int64
+}

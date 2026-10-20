@@ -159,10 +159,10 @@ class AnalyzeRule(
      */
     private fun getAnalyzeByJSonPath(o: Any): AnalyzeByJSonPath {
         return if (o != content) {
-            AnalyzeByJSonPath(o)
+            AnalyzeByJSonPath(o) { runtime.platform.ruleDiagnostic(it, AnalyzeByJSonPath::class.java.name, "JSONPath rule evaluation failed") }
         } else {
             if (analyzeByJSonPath == null) {
-                analyzeByJSonPath = AnalyzeByJSonPath(content!!)
+                analyzeByJSonPath = AnalyzeByJSonPath(content!!) { runtime.platform.ruleDiagnostic(it, AnalyzeByJSonPath::class.java.name, "JSONPath rule evaluation failed") }
             }
             analyzeByJSonPath!!
         }
@@ -263,7 +263,7 @@ class AnalyzeRule(
             val urlList = ArrayList<String>()
             if (result is List<*>) {
                 for (url in result) {
-                    val absoluteURL = NetworkUtils.getAbsoluteURL(redirectUrl, url.toString())
+                    val absoluteURL = NetworkUtils.getAbsoluteURL(redirectUrl, url.toString()) { runtime.platform.ruleDiagnostic(it) }
                     if (absoluteURL.isNotEmpty() && !urlList.contains(absoluteURL)) {
                         urlList.add(absoluteURL)
                     }
@@ -358,7 +358,7 @@ class AnalyzeRule(
             return if (str.isBlank()) {
                 baseUrl ?: ""
             } else {
-                NetworkUtils.getAbsoluteURL(redirectUrl, str)
+                NetworkUtils.getAbsoluteURL(redirectUrl, str) { runtime.platform.ruleDiagnostic(it) }
             }
         }
         return str

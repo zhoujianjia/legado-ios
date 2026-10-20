@@ -108,7 +108,7 @@ class AnalyzeUrl(
     private fun analyzeUrl() {
         val matcher = paramPattern.matcher(ruleUrl)
         val noOption = if (matcher.find()) ruleUrl.substring(0, matcher.start()) else ruleUrl
-        url = NetworkUtils.getAbsoluteURL(baseUrl, noOption)
+        url = NetworkUtils.getAbsoluteURL(baseUrl, noOption) { environment.platform.ruleDiagnostic(it) }
         NetworkUtils.getBaseUrl(url)?.let { baseUrl = it }
         if (noOption.length != ruleUrl.length) {
             val text = ruleUrl.substring(matcher.end())

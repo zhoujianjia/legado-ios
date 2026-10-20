@@ -247,11 +247,28 @@ class BookSource(
         return (matcher.group(1) ?: matcher.group(2))?.trim()
     }
     fun getLoginUiJs(): String? = extractInlineJs(loginUi)
-    /** Only the prefix required by dynamic defaults; this does not invoke login(). */
+    /** Locked getLoginJs: inline wrappers or the complete trimmed script. */
     fun getLoginJs(): String? {
         val loginRule = loginUrl?.trim()
         if (loginRule.isNullOrBlank()) return null
         return extractInlineJs(loginRule) ?: loginRule
+    }
+    /** Locked BaseSource.login ignores completion values; only explicit owner
+     * writes made by the authored function change credentials/headers. */
+    fun login() {
+        environment.ensureOpen()
+        environment.platform.protectLoginDiagnostics(this)
+        val loginJs = getLoginJs()
+        if (!loginJs.isNullOrBlank()) {
+            val js = """$loginJs
+                if(typeof login=='function'){
+                    login.apply(this);
+                } else {
+                    throw('Function login not implements!!!')
+                }
+            """.trimIndent()
+            evalJS(js)
+        }
     }
     fun isLoginUiV2(): Boolean {
         val text = loginUi?.trim() ?: return false

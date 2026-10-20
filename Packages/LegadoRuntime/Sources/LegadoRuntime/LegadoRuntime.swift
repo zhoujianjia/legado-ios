@@ -311,6 +311,16 @@ public final class LegadoRuntime: @unchecked Sendable {
             timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
     }
 
+    public func formLoginOriginal(session: LegadoSourceSession, credentials: [String: String],
+        timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalFormLoginResult {
+        guard (1...30_000).contains(timeoutMilliseconds) else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original form login timeout must be between 1 and 30000 milliseconds")
+        }
+        return try await executeOriginal(session, "formLogin", OriginalFormLoginRequest(credentials: credentials,
+            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+    }
+
     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
         _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String,
         _ onReportedEffects: (@Sendable ([String]) -> Void)? = nil

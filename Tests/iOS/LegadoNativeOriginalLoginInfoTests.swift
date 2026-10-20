@@ -6,6 +6,35 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a
+            source.enabledCookieJar = false
+            source.loginUrl = "function login(){if(book!==null||chapter!==null||String(result.get('password'))!=='synthetic-native-password')throw new Error('wrong form Map');source.putLoginHeader('synthetic-native-header');return '{\"X-Fake-Header\":\"must-not-infer\"}';}"
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let result = try await service.originalFormLogin(source: source,
+                credentials: ["password": "synthetic-native-password"])
+            XCTAssertTrue(result.credentialsStored); XCTAssertTrue(result.executed)
+            let stored = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            let header = await Task.detached { LoginManager.shared.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(stored, ["password": "synthetic-native-password"])
+            XCTAssertEqual(header, "synthetic-native-header")
+            source.loginUrl = "throw new Error('empty form must not execute');"
+            let removed = try await service.originalFormLogin(source: source, credentials: [:])
+            XCTAssertTrue(removed.credentialsCleared); XCTAssertFalse(removed.executed)
+            let remainingHeader = await Task.detached { LoginManager.shared.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(remainingHeader, header)
+        } catch { problem = error }
+        await Task.detached { LoginManager.shared.removeLoginHeader(sourceUrl: fixture.a) }.value
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()

@@ -37,6 +37,14 @@ internal class ProductionRulePlatform(
 ) : RulePlatform() {
     private val hostDispatch = dispatch
     override val userAgent: String? get() = task.session.options.userAgent
+    override fun log(value: Any?): Any? = if (task.sensitiveSourceOperation) value else super.log(value)
+    override fun ruleDiagnostic(error: Throwable, loggerName: String, message: String) {
+        if (!task.sensitiveSourceOperation) super.ruleDiagnostic(error, loggerName, message)
+    }
+    override fun protectLoginDiagnostics(source: BaseSource) {
+        check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
+        task.sensitiveSourceOperation = true
+    }
     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
     init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }
     override val cookie: RuleCookieHost = object : RuleCookieHost() {
