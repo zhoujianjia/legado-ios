@@ -169,7 +169,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Final reviewed V2 plus Native210 production/fixture/countgate repairs are ready: App463/466 and330 inputs, Native21+separateMainJS1 and131 inputs, fresh explicit independent Package loginv224 and23 inputs. Submit one immutable source tag pair, retain every required phase and signer fixture, and record only newly created actual handles. Browser and new IPA excluded; terminal210 jobs remain archived and are not repolled.",
+      "nextPlannedCheckpoint": "Only these two new8d934dd handles are live. Preserve their actual terminal logs/artifacts and fix concrete failures before any next pair; never repoll archived210 jobs or restart for elapsed observation. Browser first slice and subsequent Await development remain independent and must not change the immutable running source. No device/IPA tag.",
       "alreadyRunningTasks": "None. Both source210fb05 SDK and Native are terminal and archived. Never poll them or earlier closed runs again; no new source pair is submitted until concrete failures are repaired.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
@@ -204,7 +204,26 @@
         "unexecutedSelectedDefinitions": 438,
         "independentPackageMethodsPassed": 18
       },
-      "onlyLiveSDKHandles": [],
+      "onlyLiveSDKHandles": [
+        {
+          "workflow": "Legado Native Main-App Product Chain",
+          "runID": 39495414820,
+          "jobID": 118879092115,
+          "tag": "legado-native-reader-test-8d934dd",
+          "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+          "statusAtObservation": "queued",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39495414820"
+        },
+        {
+          "workflow": "Local Reader Renewal Probe Tests",
+          "runID": 39495414773,
+          "jobID": 118879092571,
+          "tag": "reader-renewal-8d934dd",
+          "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+          "statusAtObservation": "in_progress",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39495414773"
+        }
+      ],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -229,6 +248,24 @@
         "actualNativeSelectedMethodsPassed": 4,
         "MainJSMethodsPassed": 1,
         "ordinaryJVMMethodsPassed": 309
+      },
+      "currentUnifiedCheckpoint": {
+        "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+        "requestRecord": "docs/legado-ios/core-sdk-8d934dd-request.json",
+        "observedUTC": "2026-10-20 20:51:26 UTC",
+        "counts": {
+          "AppDefinitions": 463,
+          "AppLeaves": 466,
+          "coreInputs": 330,
+          "NativeOriginalDefinitions": 21,
+          "NativeMainJSDefinitions": 1,
+          "nativeInputs": 131,
+          "PackageMethods": 24,
+          "PackageCompileInputs": 16,
+          "PackageControls": 7,
+          "PackageAllInputs": 23
+        },
+        "actualResultAccepted": false
       }
     },
     "nextReadyBatch": [
@@ -1414,7 +1451,8 @@
         "PackageAllInputs": 23,
         "sourceCountsPendingNativeReaderAndControls": false,
         "actualAcceptancePending": true,
-        "BrowserIncluded": false
+        "BrowserIncluded": false,
+        "submittedRequest": "docs/legado-ios/core-sdk-8d934dd-request.json"
       },
       "native210ProductionFixtureAndGateRepairs": {
         "record": "docs/legado-ios/core-native-reader-v2-sdk-checkpoint.json",
