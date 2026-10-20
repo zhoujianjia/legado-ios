@@ -1,0 +1,16 @@
+--- v2/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift
++++ v3/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift
+@@ -319,10 +319,11 @@
+                 ("Owned", "user@@example.invalid"), ("Owned", "no-domain"), ("Owned", "@example.invalid"),
+                 ("Owned", "user@"), ("Owned", "user\n@example.invalid"), ("Owned", "user@\u{4f8b}.invalid")]
+             for (name, email) in invalid {
+-                try await Self.failure(.invalidCertificateRequestSubject) {
++                do {
+                     _ = try await f.vault.certificateSigningRequest(in: namespace, keyID: pending.id,
+                         expectedGeneration: pending.generation, commonName: name, emailAddress: email)
+-                }
++                    Issue.record("Invalid CSR subject was accepted")
++                } catch let error as Vault.CertificateRequestFailure { #expect(error == .invalidSubject) }
+             }
+             let cancelled = Task.detached {
+                 withUnsafeCurrentTask { $0?.cancel() }

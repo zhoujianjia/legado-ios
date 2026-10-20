@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T08:49:57.991337+00:00",
+  "scope": "Independent source-only review of frozen S2 CSR v2 overlay; no production edits or execution.",
+  "preparation": {
+    "path": ".build/renewal-discovery/signing-csr-step/preparation-v2.json",
+    "bytes": 2375,
+    "sha256": "2f5947e54e254cf1b72b1540e7a79c3432ceafa4f20009074717cf3ecdee3c33"
+  },
+  "preparationSHA256": "2f5947e54e254cf1b72b1540e7a79c3432ceafa4f20009074717cf3ecdee3c33",
+  "reviewedFiles": [
+    {
+      "path": ".build/renewal-discovery/signing-csr-step/work-v2/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 38429,
+      "sha256": "68b46695c003b3a093f62e59fd512c9e10a0e621b352344c2b272c7a46b80180",
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "reviewedDiff": {
+        "path": ".build/renewal-discovery/signing-csr-step/work-v2/SelfRenewalSigningMaterialVault.swift.diff",
+        "bytes": 8640,
+        "sha256": "e875c9db5dfdedc44d351511132fa6dfa9bba7d1672e1212eb6431b2086a49e0"
+      }
+    },
+    {
+      "path": ".build/renewal-discovery/signing-csr-step/work-v2/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "bytes": 31423,
+      "sha256": "30de1bf9c669e91d36b098963da80537c2ac286f938191bb03a65af5b5f1d0f7",
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "reviewedDiff": {
+        "path": ".build/renewal-discovery/signing-csr-step/work-v2/SelfRenewalSigningMaterialVaultTests.swift.diff",
+        "bytes": 10101,
+        "sha256": "40ef57d5ddc88602d26170af88d79b65108d7732ff67c379d03bd493ab6ffc02"
+      }
+    }
+  ],
+  "confirmedBlockers": [],
+  "observations": [
+    {
+      "file": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "lines": [
+        257,
+        307,
+        554,
+        567
+      ],
+      "finding": "CSR accepts namespace/keyID/generation instead of a retained PendingKey as authority. It uses current() checked manifest, ready state, exact module random application tag, RSA private key query, public class/type/2048-bit checks and the stored public-key digest. current().encoded is checked again before signing and before return."
+    },
+    {
+      "file": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "lines": [
+        280,
+        283,
+        288,
+        292,
+        298,
+        312,
+        335
+      ],
+      "finding": "PKCS10 uses exact DER CRI version0, subject, rsaEncryption+NULL SPKI with public PKCS1 bytes in a zero-unused-bit BIT STRING, mandatory empty A000 attributes, and sha256WithRSAEncryption+NULL. SecKeyCreateSignature message algorithm signs these exact CRI bytes, followed by actual public SecKeyVerifySignature before publishing public DER."
+    },
+    {
+      "file": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "lines": [
+        275,
+        290,
+        294,
+        315,
+        347
+      ],
+      "finding": "Each new Copy/Create/Verify CFError output is consumed once with takeRetainedValue. Input CN/email iteration is bounded before allocation; CN is nonempty <=64 scalars without C0/C1 controls, email is <=128 printable ASCII with one non-edge @. DER output is <=8192 bytes. DN is encoded as literal ASN1 values, not slash syntax; trace contains operation/byte count/main flag only, not subject or key data."
+    },
+    {
+      "file": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "lines": [
+        203,
+        210,
+        215,
+        244,
+        253,
+        257,
+        265,
+        277,
+        311,
+        377
+      ],
+      "finding": "Three new SDK definitions use the existing fixture detached worker, actual permanent RSA generation and actual Vault resume/loadKey, parse returned CSR with the independent CMS DER reader, import its public key and verify its exact signature plus tampered CRI rejection. They also check old publication/manifest retention, stale/foreign/revoked/deleted-key refusal, bounded invalid subjects and cancellation. They are definitions only, not observed Security execution."
+    }
+  ],
+  "localPrimaryReferencesRead": [
+    {
+      "path": ".build/renewal-discovery/signing-csr-step/primary/manifest.json",
+      "bytes": 2086,
+      "sha256": "f71bdab3d6b50d058d813337caedd4e004c7f82d8b7798e6fd42a71a904e4559"
+    },
+    {
+      "path": ".build/renewal-discovery/signing-csr-step/primary/pkcs10-rfc2986.txt",
+      "bytes": 27794,
+      "sha256": "9f93627442b9fa03b24336646ffdfb3f33ed8cfd575e6b984fddab5fe88d03c0"
+    },
+    {
+      "path": ".build/renewal-discovery/signing-csr-step/primary/public-key-export-apple.json",
+      "bytes": 18532,
+      "sha256": "e04f5825e2d9c16198f1dfebc42a19bdc252365b3bcc08ab15cfda6e80d1ceee"
+    }
+  ],
+  "limitations": [
+    "Synchronous actor confinement and before/after manifest equality do not form cross-process locking/CAS or invalidate already-borrowed raw SecKey references.",
+    "Key-only CSR creation conveys no Apple account/remote authorization, certificate issuance, profile authority, installation permission or whole automatic-renewal completion.",
+    "Subject policy is the explicitly bounded supported form, not a complete email/DN validation engine; public CSR bytes intentionally contain supplied CN/email.",
+    "Native Swift/Security types, Keychain reopen behavior and CSR signatures still need actual concentrated SDK execution; grammar was neither rerun nor treated as typecheck.",
+    "This unmerged two-file overlay is outside frozen currentcore314/316 and Package16 selection."
+  ],
+  "newNativeMethodDefinitions": 3,
+  "SDKExecutions": 0,
+  "actualSecurityKeychainCSRExecutions": 0,
+  "grammarOrTestsRerun": 0,
+  "cloudQueriesOrTriggers": 0,
+  "canonicalOrGitMutations": 0,
+  "AppleRemoteAuthorizationEstablished": false
+}

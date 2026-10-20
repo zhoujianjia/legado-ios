@@ -1,0 +1,47 @@
+--- v2/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
++++ v3/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
+@@ -60,6 +60,8 @@
+             publicKeySHA256 = hash; privateKey = key
+         }
+     }
++    enum CertificateRequestFailure: Error, Sendable, Equatable { case invalidSubject, signature }
++
+     /// Public PKCS#10 bytes only. Request creation proves possession of this
+     /// namespace's current key, not account authorization or certificate issue.
+     struct CertificateRequest: Sendable {
+@@ -102,7 +104,6 @@
+         case limit, namespaceUnavailable, malformedManifest, manifestWrite, staleGeneration
+         case keyGeneration, keychain(OSStatus), missingKey, keyMismatch, revoked
+         case invalidCertificate, untrustedCertificate, identityChanged, invalidProfiles, clockMovedBackwards
+-        case invalidCertificateRequestSubject, certificateRequestSignature
+     }
+     enum Limits {
+         static let namespaces = 8
+@@ -286,15 +287,15 @@
+         guard try current(namespace).encoded == session.encoded else { throw Failure.staleGeneration }
+         let algorithm = SecKeyAlgorithm.rsaSignatureMessagePKCS1v15SHA256
+         guard SecKeyIsAlgorithmSupported(key, .sign, algorithm),
+-              SecKeyIsAlgorithmSupported(publicKey, .verify, algorithm) else { throw Failure.certificateRequestSignature }
++              SecKeyIsAlgorithmSupported(publicKey, .verify, algorithm) else { throw CertificateRequestFailure.signature }
+         var signError: Unmanaged<CFError>?
+         let result = SecKeyCreateSignature(key, algorithm, info as CFData, &signError) as Data?
+         if let signError { _ = signError.takeRetainedValue() }
+-        guard let signature = result, signature.count == 256 else { throw Failure.certificateRequestSignature }
++        guard let signature = result, signature.count == 256 else { throw CertificateRequestFailure.signature }
+         var verifyError: Unmanaged<CFError>?
+         let verified = SecKeyVerifySignature(publicKey, algorithm, info as CFData, signature as CFData, &verifyError)
+         if let verifyError { _ = verifyError.takeRetainedValue() }
+-        guard verified else { throw Failure.certificateRequestSignature }
++        guard verified else { throw CertificateRequestFailure.signature }
+         let der = try CertificateRequestDER.sequence([
+             info, CertificateRequestDER.algorithm(lastOIDByte: 11),
+             CertificateRequestDER.tlv(3, Data([0]) + signature)])
+@@ -322,7 +323,7 @@
+                   !email.isEmpty, email.count <= 128,
+                   email.allSatisfy({ (0x21...0x7e).contains($0) }),
+                   email.filter({ $0 == 0x40 }).count == 1,
+-                  email.first != 0x40, email.last != 0x40 else { throw Failure.invalidCertificateRequestSubject }
++                  email.first != 0x40, email.last != 0x40 else { throw CertificateRequestFailure.invalidSubject }
+             let commonNameOID = Data([6, 3, 0x55, 4, 3])
+             let emailOID = Data([6, 9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 9, 1])
+             // Each RDN contains exactly one value, so no SET member sorting is

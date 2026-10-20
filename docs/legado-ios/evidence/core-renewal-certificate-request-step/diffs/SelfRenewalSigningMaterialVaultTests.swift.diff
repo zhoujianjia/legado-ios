@@ -1,0 +1,148 @@
+--- Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift
++++ Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift
+@@ -199,6 +199,145 @@
+         }
+     }
+ 
++    @Test("CSR reopens the real owned key and external public key verifies exact PKCS10 bytes")
++    func requestsCertificateWithPersistedKeyAndIndependentPublicVerification() async throws {
++        try await Self.fixture { f in
++            let namespace = try await f.namespace()
++            let first = try await f.generate(namespace)
++            let original = try f.candidate(first)
++            _ = try await f.vault.publish(in: namespace, keyID: first.id, expectedGeneration: first.generation,
++                certificateChainDER: original.chain, profiles: original.profiles)
++            let pending = try await f.generate(namespace)
++            let account = "owned-v1-" + namespace.id.uuidString.lowercased()
++            let before = try f.storage.load(account: account)
++            let reopened = Vault(codeAnchors: f.issuer.certificateChainDER, profileAnchors: f.issuer.certificateChainDER,
++                storage: f.storage, clock: { f.clock.now() })
++            let resumed = try await reopened.resume(namespaceID: namespace.id, identity: f.baseline)
++            let request = try await reopened.certificateSigningRequest(in: resumed, keyID: pending.id,
++                expectedGeneration: pending.generation, commonName: "Owned /CN=literal, + Test", emailAddress: "owned@example.invalid")
++            #expect(request.namespace == namespace && request.keyID == pending.id)
++            #expect(request.generation == pending.generation && request.publicKeySHA256 == pending.publicKeySHA256)
++            #expect(!request.der.isEmpty && request.der.count <= 8192)
++            let root = try SelfRenewalCMSVerifier.parseDER(request.der)
++            let fields = try SelfRenewalCMSVerifier.children(of: root)
++            #expect(root.tag == 0x30)
++            try #require(fields.count == 3)
++            let info = try SelfRenewalCMSVerifier.children(of: fields[0])
++            try #require(info.count == 4)
++            #expect(info[0].originalDER == Data([2, 1, 0]))
++            #expect(info[3].originalDER == Data([0xa0, 0]))
++            let subject = try SelfRenewalCMSVerifier.children(of: info[1])
++            try #require(subject.count == 2)
++            let nameSet = try SelfRenewalCMSVerifier.children(of: subject[0])
++            try #require(nameSet.count == 1)
++            let namePair = try SelfRenewalCMSVerifier.children(of: nameSet[0])
++            #expect(namePair.last?.body == Data("Owned /CN=literal, + Test".utf8))
++            let publicInfo = try SelfRenewalCMSVerifier.children(of: info[2])
++            try #require(publicInfo.count == 2)
++            let signatureOID = try SelfRenewalCMSVerifier.children(of: fields[1])
++            #expect(signatureOID.map(\.originalDER) == [Data([6, 9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 1, 11]), Data([5, 0])])
++            #expect(publicInfo[1].tag == 3 && publicInfo[1].body.first == 0)
++            #expect(fields[2].tag == 3 && fields[2].body.first == 0 && fields[2].body.count == 257)
++            let publicBytes = Data(publicInfo[1].body.dropFirst())
++            let expectedPublicKey = try #require(SecKeyCopyPublicKey(pending.privateKey))
++            var exportError: Unmanaged<CFError>?
++            let expectedBytes = SecKeyCopyExternalRepresentation(expectedPublicKey, &exportError) as Data?
++            if let exportError { _ = exportError.takeRetainedValue() }
++            #expect(expectedBytes == publicBytes)
++            let publicAlgorithm = try SelfRenewalCMSVerifier.children(of: publicInfo[0])
++            #expect(publicAlgorithm.map(\.originalDER) == [Data([6, 9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 1, 1]), Data([5, 0])])
++            let options: [String: Any] = [kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
++                kSecAttrKeyClass as String: kSecAttrKeyClassPublic, kSecAttrKeySizeInBits as String: 2048]
++            var importError: Unmanaged<CFError>?
++            let rawPublicKey = SecKeyCreateWithData(publicBytes as CFData, options as CFDictionary, &importError)
++            if let importError { _ = importError.takeRetainedValue() }
++            let publicKey = try #require(rawPublicKey)
++            let signature = Data(fields[2].body.dropFirst())
++            var verifyError: Unmanaged<CFError>?
++            let verified = SecKeyVerifySignature(publicKey, .rsaSignatureMessagePKCS1v15SHA256,
++                fields[0].originalDER as CFData, signature as CFData, &verifyError)
++            if let verifyError { _ = verifyError.takeRetainedValue() }
++            #expect(verified)
++            var tampered = fields[0].originalDER
++            let marker = try #require(tampered.range(of: Data("Owned /CN=literal, + Test".utf8)))
++            tampered[marker.lowerBound] ^= 1
++            verifyError = nil
++            let acceptedTamper = SecKeyVerifySignature(publicKey, .rsaSignatureMessagePKCS1v15SHA256,
++                tampered as CFData, signature as CFData, &verifyError)
++            if let verifyError { _ = verifyError.takeRetainedValue() }
++            #expect(!acceptedTamper)
++            let after = try f.storage.load(account: account)
++            let kept = try await f.vault.lease(in: namespace)
++            #expect(before == after && kept.keyID == first.id && kept.generation == pending.generation)
++            try Self.signAndVerify(kept.keyMaterial)
++        }
++    }
++
++    @Test("CSR rejects stale revoked foreign and deleted keys despite retained pending handles")
++    func rejectsStaleRevokedForeignAndMissingCertificateRequestKeys() async throws {
++        try await Self.fixture { f in
++            let namespace = try await f.namespace()
++            let first = try await f.generate(namespace)
++            let second = try await f.generate(namespace)
++            try await Self.failure(.staleGeneration) {
++                _ = try await f.vault.certificateSigningRequest(in: namespace, keyID: first.id,
++                    expectedGeneration: first.generation, commonName: "Owned", emailAddress: "owned@example.invalid")
++            }
++            let other = try await f.namespace()
++            let otherGeneration = try await f.vault.generation(in: other)
++            try await Self.failure(.missingKey) {
++                _ = try await f.vault.certificateSigningRequest(in: other, keyID: first.id,
++                    expectedGeneration: otherGeneration, commonName: "Owned", emailAddress: "owned@example.invalid")
++            }
++            try await f.vault.revoke(first.id, in: namespace, expectedGeneration: second.generation)
++            let generation = try await f.vault.generation(in: namespace)
++            try await Self.failure(.revoked) {
++                _ = try await f.vault.certificateSigningRequest(in: namespace, keyID: first.id,
++                    expectedGeneration: generation, commonName: "Owned", emailAddress: "owned@example.invalid")
++            }
++            let secondTag = try Self.tag(second.privateKey)
++            let delete: [String: Any] = [kSecClass as String: kSecClassKey,
++                kSecAttrKeyClass as String: kSecAttrKeyClassPrivate, kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
++                kSecAttrApplicationTag as String: secondTag, kSecAttrSynchronizable as String: false]
++            #expect(SecItemDelete(delete as CFDictionary) == errSecSuccess)
++            try await Self.failure(.missingKey) {
++                _ = try await f.vault.certificateSigningRequest(in: namespace, keyID: second.id,
++                    expectedGeneration: generation, commonName: "Owned", emailAddress: "owned@example.invalid")
++            }
++        }
++    }
++
++    @Test("invalid bounded CSR subjects and cancellation preserve the existing manifest")
++    func rejectsInvalidCertificateRequestSubjectsAndCancellationWithoutPublication() async throws {
++        try await Self.fixture { f in
++            let namespace = try await f.namespace()
++            let pending = try await f.generate(namespace)
++            let account = "owned-v1-" + namespace.id.uuidString.lowercased()
++            let before = try f.storage.load(account: account)
++            let invalid: [(String, String)] = [("", "owned@example.invalid"), ("Owned\nOther", "owned@example.invalid"),
++                (String(repeating: "a", count: 65), "owned@example.invalid"), ("Owned", String(repeating: "a", count: 129)),
++                ("Owned", "user@@example.invalid"), ("Owned", "no-domain"), ("Owned", "@example.invalid"),
++                ("Owned", "user@"), ("Owned", "user\n@example.invalid"), ("Owned", "user@\u{4f8b}.invalid")]
++            for (name, email) in invalid {
++                do {
++                    _ = try await f.vault.certificateSigningRequest(in: namespace, keyID: pending.id,
++                        expectedGeneration: pending.generation, commonName: name, emailAddress: email)
++                    Issue.record("Invalid CSR subject was accepted")
++                } catch let error as Vault.CertificateRequestFailure { #expect(error == .invalidSubject) }
++            }
++            let cancelled = Task.detached {
++                withUnsafeCurrentTask { $0?.cancel() }
++                return try await f.vault.certificateSigningRequest(in: namespace, keyID: pending.id,
++                    expectedGeneration: pending.generation, commonName: "Owned", emailAddress: "owned@example.invalid")
++            }
++            do { _ = try await cancelled.value; Issue.record("Cancelled CSR was accepted") }
++            catch is CancellationError {}
++            let after = try f.storage.load(account: account)
++            let generation = try await f.vault.generation(in: namespace)
++            #expect(before == after && generation == pending.generation)
++        }
++    }
++
+     nonisolated private static func failure(_ expected: Vault.Failure, _ action: @Sendable () async throws -> Void) async throws {
+         do { try await action(); Issue.record("Expected \(expected)") }
+         catch let error as Vault.Failure { #expect(error == expected) }

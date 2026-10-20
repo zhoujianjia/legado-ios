@@ -571,10 +571,12 @@
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
-            "docs/legado-ios/core-renewal-controlled-signing-step.json"
+            "docs/legado-ios/core-renewal-controlled-signing-step.json",
+            "docs/legado-ios/core-renewal-certificate-request-step.json"
           ],
           "implementedSubtasksZh": [
-            "已接入单一actor签名材料库，使用既有KeychainHelper保存公开材料与代际日志；真实软件SecKey的生成、重开、profile双CMS及身份一致性验证、撤销和故障恢复已实现。7项原生方法待SDK；尚无Apple账号授权、二次认证、证书/profile远程申请或跨进程事务。"
+            "已接入单一actor签名材料库，使用既有KeychainHelper保存公开材料与代际日志；真实软件SecKey的生成、重开、profile双CMS及身份一致性验证、撤销和故障恢复已实现。7项原生方法待SDK；尚无Apple账号授权、二次认证、证书/profile远程申请或跨进程事务。",
+            "同一材料 Vault 已实现真实永久密钥重开的 PKCS#10 CSR 生成、签名与公钥自验，按 namespace/keyID/generation 校验当前记录，保持原材料错误分类；3 个原生回归定义、2 文件语法检查和修正后的源码独审已完成，SDK/Security 执行仍为 0。账号授权、证书/profile 远程申请刷新和跨进程事务仍未完成。"
           ],
           "nextActionZh": "集中执行新源码SDK方法并修复实际失败；继续同一材料库的真实整包重签租约接线，另行实现账号服务与材料刷新协议。"
         },
@@ -808,7 +810,8 @@
       "ownedIdentityCBridgeImplementation": "docs/legado-ios/core-owned-identity-c-bridge-step.json",
       "ownedIdentityCBridgeMacResult": "docs/legado-ios/core-owned-sdk-producer-5edbdea-result.json",
       "currentCoreSDKSelectionImplementation": "docs/legado-ios/core-current-sdk-selection-step.json",
-      "currentCoreSDKRequest": "docs/legado-ios/core-current-sdk-f51af09-request.json"
+      "currentCoreSDKRequest": "docs/legado-ios/core-current-sdk-f51af09-request.json",
+      "certificateRequestImplementation": "docs/legado-ios/core-renewal-certificate-request-step.json"
     }
   },
   "stages": [
@@ -4927,6 +4930,10 @@
     "current-core-sdk-f51af09-request": {
       "path": "docs/legado-ios/core-current-sdk-f51af09-request.json",
       "scope": "One real pushed source tag, one exact in-progress run/job observation,205 native/22 Package inputs pinned. Portable step failed, native diagnostic step started; no accepted native/Package methods."
+    },
+    "renewal-certificate-request-production": {
+      "path": "docs/legado-ios/core-renewal-certificate-request-step.json",
+      "scope": "Actual same-Vault PKCS10 public request creation and persisted-key signature path, with3 native test definitions and corrected source review. SDK0, no remote enrollment/account authority; f51 source excludes this change."
     }
   },
   "retainedExistingWork": [

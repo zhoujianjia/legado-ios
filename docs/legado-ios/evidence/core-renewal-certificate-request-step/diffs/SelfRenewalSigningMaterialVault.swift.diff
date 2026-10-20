@@ -1,0 +1,135 @@
+--- Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
++++ Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
+@@ -60,6 +60,22 @@
+             publicKeySHA256 = hash; privateKey = key
+         }
+     }
++    enum CertificateRequestFailure: Error, Sendable, Equatable { case invalidSubject, signature }
++
++    /// Public PKCS#10 bytes only. Request creation proves possession of this
++    /// namespace's current key, not account authorization or certificate issue.
++    struct CertificateRequest: Sendable {
++        let namespace: Namespace
++        let keyID: UUID
++        let generation: UInt64
++        let publicKeySHA256: Data
++        let der: Data
++        fileprivate init(namespace: Namespace, keyID: UUID, generation: UInt64, hash: Data, der: Data) {
++            self.namespace = namespace; self.keyID = keyID; self.generation = generation
++            publicKeySHA256 = hash; self.der = der
++        }
++    }
++
+     struct ProfileInput: Sendable, Equatable, Codable {
+         let componentRelativePath: String
+         let bytes: Data
+@@ -235,6 +251,109 @@
+         }
+     }
+ 
++    /// Reopen the exact permanent key on every request. A retained PendingKey
++    /// handle is deliberately not accepted as authority after revoke/CAS drift.
++    /// RFC2986 section4: DER CRI v0, subject, RSA SPKI, mandatory empty [0]
++    /// attributes, then SHA256-with-RSA signature over those exact CRI bytes.
++    func certificateSigningRequest(in namespace: Namespace, keyID: UUID, expectedGeneration: UInt64,
++        commonName: String, emailAddress: String) throws -> CertificateRequest {
++        let started = SourcePerfTrace.now
++        var requestBytes = 0
++        defer { trace("certificate-request", bytes: requestBytes, since: started) }
++        try Task.checkCancellation()
++        let session = try current(namespace)
++        guard session.manifest.generation == expectedGeneration else { throw Failure.staleGeneration }
++        guard let record = session.manifest.keys.first(where: { $0.id == keyID }) else { throw Failure.missingKey }
++        guard record.state == .ready else { throw Failure.revoked }
++        let subject = try CertificateRequestDER.subject(commonName: commonName, emailAddress: emailAddress)
++        let key = try Self.loadKey(namespace: namespace.id, id: keyID)
++        guard let publicKey = SecKeyCopyPublicKey(key),
++              let attributes = SecKeyCopyAttributes(publicKey) as? [String: Any],
++              attributes[kSecAttrKeyClass as String] as? String == kSecAttrKeyClassPublic as String,
++              attributes[kSecAttrKeyType as String] as? String == kSecAttrKeyTypeRSA as String,
++              attributes[kSecAttrKeySizeInBits as String] as? Int == 2048 else { throw Failure.keyMismatch }
++        var exportError: Unmanaged<CFError>?
++        // This is the public key only. No private representation is requested.
++        let exported = SecKeyCopyExternalRepresentation(publicKey, &exportError) as Data?
++        if let exportError { _ = exportError.takeRetainedValue() }
++        guard let exported, !exported.isEmpty, exported.count <= 1024 else { throw Failure.keyMismatch }
++        let hash = Data(SHA256.hash(data: exported))
++        guard hash == record.publicHash else { throw Failure.keyMismatch }
++        let spki = try CertificateRequestDER.sequence([
++            CertificateRequestDER.algorithm(lastOIDByte: 1),
++            CertificateRequestDER.tlv(3, Data([0]) + exported)])
++        let info = try CertificateRequestDER.sequence([Data([2, 1, 0]), subject, spki, Data([0xa0, 0])])
++        try Task.checkCancellation()
++        guard try current(namespace).encoded == session.encoded else { throw Failure.staleGeneration }
++        let algorithm = SecKeyAlgorithm.rsaSignatureMessagePKCS1v15SHA256
++        guard SecKeyIsAlgorithmSupported(key, .sign, algorithm),
++              SecKeyIsAlgorithmSupported(publicKey, .verify, algorithm) else { throw CertificateRequestFailure.signature }
++        var signError: Unmanaged<CFError>?
++        let result = SecKeyCreateSignature(key, algorithm, info as CFData, &signError) as Data?
++        if let signError { _ = signError.takeRetainedValue() }
++        guard let signature = result, signature.count == 256 else { throw CertificateRequestFailure.signature }
++        var verifyError: Unmanaged<CFError>?
++        let verified = SecKeyVerifySignature(publicKey, algorithm, info as CFData, signature as CFData, &verifyError)
++        if let verifyError { _ = verifyError.takeRetainedValue() }
++        guard verified else { throw CertificateRequestFailure.signature }
++        let der = try CertificateRequestDER.sequence([
++            info, CertificateRequestDER.algorithm(lastOIDByte: 11),
++            CertificateRequestDER.tlv(3, Data([0]) + signature)])
++        requestBytes = der.count
++        try Task.checkCancellation()
++        // A different process can change the manifest while Security signs.
++        // This detects an observed change; it is not a cross-process lock or a
++        // promise that a later remote enrollment can bypass publication CAS.
++        guard try current(namespace).encoded == session.encoded else { throw Failure.staleGeneration }
++        return CertificateRequest(namespace: namespace, keyID: keyID, generation: expectedGeneration, hash: hash, der: der)
++    }
++
++    /// Only writes this bounded PKCS#10 shape; existing CMS/profile decoders
++    /// and all publication/trust decisions remain the same owners as before.
++    private enum CertificateRequestDER {
++        static let maximumBytes = 8192
++        static func subject(commonName: String, emailAddress: String) throws -> Data {
++            // Bound iteration before allocating from externally supplied text.
++            // CN uses RFC5280's 64-character bound and UTF8String. The supported
++            // email subject form is non-whitespace ASCII with one non-edge @.
++            let name = Array(commonName.unicodeScalars.prefix(65))
++            let email = Array(emailAddress.utf8.prefix(129))
++            guard !name.isEmpty, name.count <= 64,
++                  name.allSatisfy({ $0.value >= 0x20 && !((0x7f...0x9f).contains($0.value)) }),
++                  !email.isEmpty, email.count <= 128,
++                  email.allSatisfy({ (0x21...0x7e).contains($0) }),
++                  email.filter({ $0 == 0x40 }).count == 1,
++                  email.first != 0x40, email.last != 0x40 else { throw CertificateRequestFailure.invalidSubject }
++            let commonNameOID = Data([6, 3, 0x55, 4, 3])
++            let emailOID = Data([6, 9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 9, 1])
++            // Each RDN contains exactly one value, so no SET member sorting is
++            // needed. Subject text is never converted into slash/DN syntax.
++            return try sequence([
++                tlv(0x31, sequence([commonNameOID, tlv(0x0c, Data(commonName.utf8))])),
++                tlv(0x31, sequence([emailOID, tlv(0x16, Data(email))]))])
++        }
++        static func algorithm(lastOIDByte: UInt8) throws -> Data {
++            try sequence([Data([6, 9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 1, lastOIDByte]), Data([5, 0])])
++        }
++        static func sequence(_ fields: [Data]) throws -> Data {
++            var body = Data()
++            for field in fields {
++                guard field.count <= maximumBytes - body.count else { throw Failure.limit }
++                body.append(field)
++            }
++            return try tlv(0x30, body)
++        }
++        static func tlv(_ tag: UInt8, _ body: Data) throws -> Data {
++            guard body.count <= maximumBytes - 4 else { throw Failure.limit }
++            var result = Data([tag])
++            if body.count < 128 { result.append(UInt8(body.count)) }
++            else if body.count < 256 { result.append(contentsOf: [0x81, UInt8(body.count)]) }
++            else { result.append(contentsOf: [0x82, UInt8(body.count >> 8), UInt8(body.count & 0xff)]) }
++            result.append(body)
++            return result
++        }
++    }
++
+     func publish(in namespace: Namespace, keyID: UUID, expectedGeneration: UInt64,
+         certificateChainDER: [Data], profiles: [ProfileInput]) throws -> Lease {
+         let started = SourcePerfTrace.now
