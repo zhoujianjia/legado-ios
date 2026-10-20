@@ -53,7 +53,8 @@ struct ChapterFetcher {
         title: String,
         plainTextContent: String,
         rawHTMLContent: String?,
-        reviewContext: ReaderHTMLUtilities.LegadoReviewContext? = nil
+        reviewContext: ReaderHTMLUtilities.LegadoReviewContext? = nil,
+        contentBaseURL: String? = nil
     ) async -> String {
         ReaderHTMLUtilities.logReviewMarkupDiagnostics(
             stage: "fetcherInput",
@@ -124,7 +125,8 @@ struct ChapterFetcher {
         // and the rest of the chapter leaks out as literal text.
         let cleanedRawHTML = ReaderHTMLUtilities.sanitizeOnlineChapterMarkup(
             originalRawHTML,
-            reviewContext: reviewContext
+            reviewContext: reviewContext,
+            contentBaseURL: contentBaseURL
         )
         ReaderHTMLUtilities.logReviewMarkupDiagnostics(
             stage: "sanitized",
@@ -178,12 +180,39 @@ struct ChapterFetcher {
                 html: String,
                 titleBubble: String?,
                 reviewRepair: ParagraphReviewStructureRepair,
-                promotedParagraphs: Int
+                promotedParagraphs: Int,
+                resourceMappingFailed: Bool
             ) in
             guard let document = try? SwiftSoup.parse(slimmedHTML),
                   let body = document.body()
             else {
-                return ("", nil, ParagraphReviewStructureRepair(), 0)
+                return ("", nil, ParagraphReviewStructureRepair(), 0, contentBaseURL != nil)
+            }
+            if let rawBase = contentBaseURL, let base = URL(string: rawBase),
+               base.scheme?.lowercased() == "http" || base.scheme?.lowercased() == "https" {
+                // Batch callbacks retain the source's exact text, unlike the
+                // single-page HtmlFormatter that makes image URLs absolute.
+                // Resolve only the render tree, using the actual chapter base.
+                // Existing URL/header encoding preserves the media request ABI;
+                // data/absolute references and original saved bytes stay intact.
+                do {
+                    for (selector, attribute) in [("img[src],audio[src],video[src],source[src],iframe[src]", "src"),
+                        ("video[poster]", "poster")] {
+                        for element in try body.select(selector).array() {
+                            let raw = try element.attr(attribute)
+                            let option = OnlineImageRequestOptions.decode(raw)
+                            guard !option.src.isEmpty, URL(string: option.src)?.scheme == nil,
+                                  let resolved = URL(string: option.src, relativeTo: base)?.absoluteURL,
+                                  resolved.scheme?.lowercased() == "http" || resolved.scheme?.lowercased() == "https" else { continue }
+                            let replacement = option.headers.isEmpty ? resolved.absoluteString
+                                : OnlineImageRequestOptions.encoding(src: resolved.absoluteString, headers: option.headers)
+                            try element.attr(attribute, replacement)
+                        }
+                    }
+                } catch {
+                    AppLogger.error("Chapter render resource URL mapping failed", error: error)
+                    return ("", nil, ParagraphReviewStructureRepair(), 0, true)
+                }
             }
             // `<iframe>` stays: the reader shows it as an inline video (a media file) or a
             // tap-to-load page (user's choice, 2026-10-10). Stripping it here, in the render
@@ -199,8 +228,11 @@ struct ChapterFetcher {
             let promotedParagraphs = ReaderHTMLUtilities.promoteBreakSeparatedParagraphs(in: body)
             let reviewRepair = Self.reattachStandaloneParagraphReviews(in: body)
             let html = ((try? body.html()) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            return (html, titleBubble, reviewRepair, promotedParagraphs)
+            return (html, titleBubble, reviewRepair, promotedParagraphs, false)
         }.value
+        // Only explicit resource-base callers request strict callback rendering.
+        // A failed map must not fall back to escaped markup and receive a save ACK.
+        if parsedBody.resourceMappingFailed { return "" }
         let bodyHTML = ReaderHTMLUtilities.restoreDataURIPayloads(parsedBody.html, restore: payloadRestore)
         let leadingTitleBubbleHTML = parsedBody.titleBubble.map {
             ReaderHTMLUtilities.restoreDataURIPayloads($0, restore: payloadRestore)

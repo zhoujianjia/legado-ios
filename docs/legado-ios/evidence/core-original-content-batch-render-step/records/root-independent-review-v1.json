@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T11:29:32.202918+00:00",
+  "reviewKind": "Independent root source and evidence inspection; root did not author this render implementation",
+  "preparation": {
+    "path": ".build/original-content-batch-render-delta/preparation.json",
+    "bytes": 21129,
+    "sha256": "d7d53f08f54976deda5bc73fe24e66010837e39aba53cf464ea7a24841804cf6"
+  },
+  "reviewInputFreeze": {
+    "path": ".build/original-content-batch-render-delta/review-inputs-v2.json",
+    "bytes": 11094,
+    "sha256": "31665c503a86b49bc9d677eca78d454c75c3867bc047307d0c8ddae01be979d9"
+  },
+  "sourceFiles": [
+    {
+      "path": "Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+      "bytes": 6276,
+      "sha256": "c3a4f3539b92bdbffa7b31bbcd3673614afec71e3eac2fe605667c226c7f09b6"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+      "bytes": 110999,
+      "sha256": "54dc0bc5816b937ff9f82717cdc6559d5d8ad626b7b1a5adf7492748ac975236"
+    },
+    {
+      "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+      "bytes": 45847,
+      "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+    },
+    {
+      "path": "Modules/Services/Online/ChapterFetcher.swift",
+      "bytes": 46127,
+      "sha256": "bd55dc5e8772185784df5687acb5f285764f070335b9088c53928ec43c661eb9"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "bytes": 26209,
+      "sha256": "9e29ad73bf706f6cea054e68d0980bf1390a7b5bcf5ddaafa344a7145bd742bb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+      "bytes": 22800,
+      "sha256": "f2b32eaefaa9f21dbf4122d9d1b3457b2b8b9cce7ffefa43fa6547d9e3a342a7"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 128552,
+      "sha256": "eb3a6808d260d40da3b7018830c154e166f0939587361fae88e41a69b56cafc0"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+      "bytes": 30151,
+      "sha256": "07edbd68628d595a25e01501369f62373898ab8971fd514991996826648f9207"
+    }
+  ],
+  "verdict": "no-confirmed-source-blocker",
+  "confirmedBlockers": [],
+  "checks": [
+    "Read all five Swift production diffs and new App/JVM methods against actual existing consumer paths. The original rule-output string remains the body and raw fragment; normalized XHTML is a separate existing render artifact, with no new HTTP response or refetch invented.",
+    "Actual ordinary image, audio/video/source/iframe and video poster consumers use src/poster. The existing same SwiftSoup tree maps only the supported relative resource attributes. Header options survive in the existing request fragment ABI before generic URL-option suffix removal.",
+    "Optional resource base defaults nil on existing callers. Batch uses its actual granted chapter URL and DTO/source base; no redirect URL is asserted. Deferred-image JS is explicitly unsupported on this path and nil reviewContext does not borrow a legacy JS session.",
+    "Same body can upgrade missing render artifacts through the existing five-file CAS; actual body/raw/normalized readback precedes acknowledgement, and complete unchanged bytes preserve no-write behavior. Existing generation/TOC/raw-URL/effect seal and rollback ownership remains the same.",
+    "Read new regression definitions for actual Host/save/reopen/export, relative protected media, no-write upgrade, declined effect seal and refusal before write. These three native definitions still have zero actual SDK executions.",
+    "Verified actual two unique JVM XML leaves and frozen execution-source hashes, plus all396 newly compiled production class bytes and195 compiled test-class exclusions against the immutable prior ordinary JAR. No new ordinary JAR/smoke execution is invented."
+  ],
+  "evidenceAudit": {
+    "actualNewUniqueJVMPasses": 2,
+    "exactExecutionInputs": 165,
+    "byteEqualPriorJarProductionClasses": 396,
+    "currentTestClassesExcludedFromJar": 195,
+    "nativeGrammarBound": 6,
+    "nativeGrammarActuallyParsed": 5,
+    "nativeGrammarExactReuse": 1,
+    "nativeSDKExecuted": 0,
+    "JNIExecuted": 0,
+    "newRootTestsExecuted": 0
+  },
+  "remaining": [
+    "Execute the three new App definitions and necessary existing renderer/header/cache methods in a coherent SDK stage; actual JNI/public runtime/App image and media reader/playback acceptance is still pending.",
+    "Deferred image UrlOption.js/imageDecode must use the original task/Rhino path; no legacy JS engine fallback is authorized. Full original image/media source semantics, dedicated type>0 player/manga owner and complete WebBook/caller equivalence remain unfinished.",
+    "The callback cannot expose an HTTP response/raw page or redirect URL it never received. Authored output and the granted chapter/base URL are the complete available inputs; no second fetch or invented document.",
+    "Existing renderer CSS/srcset/SVG/UI review capabilities are neither expanded nor claimed fully compatible by this resource mapping. Normal product route, complete C2/C3/C4 and all source compatibility remain unaccepted.",
+    "Five-file consistency preserves the previous stage in-process CAS/rollback contract. It is not a power-loss atomic transaction and provides no new explicit file/directory fsync guarantee."
+  ],
+  "defaultRouteSwitched": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "allNonDeviceWorkComplete": false
+}

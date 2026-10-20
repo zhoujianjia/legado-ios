@@ -2386,6 +2386,62 @@
     "jniSignaturesChanged": false,
     "jniExecuted": false,
     "fullC3OrC4Complete": false,
-    "currentSwiftSourceReview": "native-review-v3; existing interim source review has two findings addressed, root narrow verification pending; not SDK acceptance"
+    "currentSwiftSourceReview": "native-review-v3; existing interim source review has two findings addressed, root narrow verification pending; not SDK acceptance",
+    "renderArtifactBoundarySupersededBy": "contentBatchRenderArtifactsIntegration; prior source/execution hashes and prior ordinary JAR manifest remain historical bytes"
+  },
+  "contentBatchRenderArtifactsIntegration": {
+    "scope": "Explicit original batch callback rule-output mapping into the existing normal ChapterFetcher renderer and five-file cache owner; native source definitions only, not SDK/App/JNI accepted. No original HTTP response is available or fabricated.",
+    "apiAndAppSources": [
+      {
+        "path": "Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+        "bytes": 6276,
+        "sha256": "c3a4f3539b92bdbffa7b31bbcd3673614afec71e3eac2fe605667c226c7f09b6"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "bytes": 110999,
+        "sha256": "54dc0bc5816b937ff9f82717cdc6559d5d8ad626b7b1a5adf7492748ac975236"
+      },
+      {
+        "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+        "bytes": 45847,
+        "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+      },
+      {
+        "path": "Modules/Services/Online/ChapterFetcher.swift",
+        "bytes": 46127,
+        "sha256": "bd55dc5e8772185784df5687acb5f285764f070335b9088c53928ec43c661eb9"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "bytes": 26209,
+        "sha256": "9e29ad73bf706f6cea054e68d0980bf1390a7b5bcf5ddaafa344a7145bd742bb"
+      }
+    ],
+    "originalContract": "Pinned BatchContentContext.applyContentReplace/saveContent passes the resulting String to BookHelp.saveContent; no HtmlFormatter or extra HTTP is run by batch save. Original rule output remains byte-exact in .txt and .raw.html; .normalized.xhtml is a separate render representation.",
+    "implemented": [
+      "Static HTML/usehtml, images and embedded audio/video/iframe reuse existing sanitizer, SwiftSoup render tree, URL/header encoding and normal reader/export artifact contract.",
+      "Optional explicit actual chapter contentBaseURL resolves render-only relative src/poster, including per-resource headers before option suffix removal. All existing callers default nil, preserving their prior behavior.",
+      "Equal body can upgrade missing render artifacts; complete semantic no-op writes nothing. Actual artifact bytes read back within the same existing five-file CAS/backup/rollback turn; metadata-only legacy migration retains its original unclaimed-file boundary.",
+      "Same live grant/generation/deadline/revoke and Native effect-seal claim remain at actual commit. Direct audio URL callback bytes retain the existing audio request resolver contract without fetch or invented media response."
+    ],
+    "validation": {
+      "actualNewWindowsJVMMethods": 2,
+      "newAppDefinitions": 3,
+      "actualAppSDKExecutions": 0,
+      "actualJNIExecutions": 0,
+      "actualPlaybackOrImageNetworkExecutions": 0,
+      "newJVMProductionFiles": 0,
+      "priorOrdinaryReuse": "396 freshly compiled production classes byte-equal to prior executed ordinary JAR; no new JAR or smoke execution claimed for Swift-only changes/new manifest."
+    },
+    "limits": [
+      "Deferred image UrlOption.js still requires the same original Rhino task and is explicitly refused before writes; no legacy JSC fallback.",
+      "No callback HTTP raw document or response/redirect URL is available; resource base is the actual chapter URL resolved with its explicit chapter/base/source identity.",
+      "No new CSS/srcset/SVG renderer, dedicated manga/audio/video player owner or source imageDecode contract is claimed by these reused prose-render artifacts.",
+      "Normal product routing, coherent native SDK/JNI acceptance, full original WebBook/caller coverage, C2/C3/C4 and full compatibility remain incomplete.",
+      "Existing multi-file consistency is not crash/power-loss atomic and makes no new fsync guarantee."
+    ],
+    "readerRouteIntegrated": false,
+    "fullC3OrC4Complete": false
   }
 }

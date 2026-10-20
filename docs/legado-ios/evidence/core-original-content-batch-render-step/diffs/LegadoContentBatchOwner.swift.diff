@@ -1,0 +1,55 @@
+--- baseline/Modules/Services/Online/LegadoContentBatchOwner.swift
++++ work/Modules/Services/Online/LegadoContentBatchOwner.swift
+@@ -264,14 +264,48 @@
+               row.author.utf8.elementsEqual(book.author.utf8), !row.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+             throw Self.failure("INVALID_STATE_REQUEST", "Original body identity differs from the captured App save grant")
+         }
+-        guard row.body.range(of: #"<\s*/?\s*[a-zA-Z!][^>]*>"#, options: .regularExpression) == nil else {
+-            throw Self.failure("UNSUPPORTED_CAPABILITY", "App original batch HTML/media render artifacts are not connected")
+-        }
++        // Original BatchContentContext does not run the single-page HtmlFormatter:
++        // this is the authored rule's final content string, not an HTTP document.
++        // Keep those exact bytes in .txt for original state reads and audio/image
++        // URL consumers; the ordinary reader separately consumes normalized XHTML.
++        let hasMarkup = row.body.range(of: #"<\s*/?\s*[a-zA-Z!][^>]*>"#, options: .regularExpression) != nil
++        let normalized: String?
++        if hasMarkup {
++            // The existing deferred-image resolver evaluates UrlOption.js in the
++            // old source JS session. Original tasks cannot borrow that session.
++            guard !row.body.contains(";base64,,{") else {
++                throw Self.failure("UNSUPPORTED_CAPABILITY", "Original batch deferred image UrlOption.js requires the same original Rhino task")
++            }
++            let base = value.dto.baseURL.isEmpty ? book.origin : value.dto.baseURL
++            guard let resourceBase = URL(string: value.dto.url, relativeTo: URL(string: base))?.absoluteURL,
++                  resourceBase.scheme?.lowercased() == "http" || resourceBase.scheme?.lowercased() == "https" else {
++                throw Self.failure("UNSUPPORTED_CAPABILITY", "Original batch markup requires its actual absolute chapter resource base")
++            }
++            normalized = await SourcePerfTrace.spanAsync("chapter.original.batch.render",
++                "bytes=\(row.body.utf8.count) main=\(Thread.isMainThread)") {
++                let resolved = await ChapterFetcher.shared.resolveContent(parsed: .init(
++                    content: row.body, title: value.chapter.title, sourceMatched: true, isPay: value.chapter.isPay))
++                // nil reviewContext deliberately avoids the legacy JSC image
++                // resolver; ordinary static images/embedded media use the same
++                // established sanitizer/XHTML/reader data contract as normal fetch.
++                return await ChapterFetcher.shared.buildRenderableNormalizedHTML(
++                    title: value.chapter.title, plainTextContent: resolved,
++                    rawHTMLContent: row.body, reviewContext: nil,
++                    contentBaseURL: resourceBase.absoluteString)
++            }
++            try cancellation.check(deadline: min(deadline, expiresAt)); try checkChapter(index, deadline: deadline)
++            guard normalized?.isEmpty == false else {
++                throw Self.failure("UNSUPPORTED_CAPABILITY", "Existing chapter renderer could not map original callback resources")
++            }
++        } else { normalized = nil }
+         let package = ChapterPackage(bookId: bookID, chapterIndex: index, sourceURL: value.chapter.url,
+             tocTitle: value.chapter.title, canonicalTitle: nil, content: row.body, contentChecksum: "",
+-            rawHTMLFilename: nil, normalizedHTMLFilename: nil, savedAt: Date(), state: .cached, failureReason: nil)
++            rawHTMLFilename: hasMarkup ? "\(index).raw.html" : nil,
++            normalizedHTMLFilename: hasMarkup ? "\(index).normalized.xhtml" : nil,
++            savedAt: Date(), state: .cached, failureReason: nil)
+         do {
+             guard let receipt = try await cache.compareOriginalBatchSnapshot(snapshot.cache, package: package,
++                rawHTML: hasMarkup ? row.body : nil, normalizedHTML: normalized,
+                 validateGrant: { [self] in try checkChapterOnWriter(index, deadline: deadline, cancellation: cancellation) },
+                 claimCommit: { request.recordPossibleEffect("chapterContentMayCommit") }) else { return false }
+             proofLock.withLock { accepted[index] = receipt.snapshot.fingerprints }

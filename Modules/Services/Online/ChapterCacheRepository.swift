@@ -349,8 +349,20 @@ struct ChapterCacheRepository: Sendable {
         try installChapterFiles(directory: directory, index: index, candidates: candidates, validateGrant: validateGrant, claimCommit: claimCommit) {
             guard let verified = loadChapterPackageSync(bookId: package.bookId, chapterIndex: package.chapterIndex,
                 expectedSourceURL: package.sourceURL, expectedTOCTitle: package.tocTitle),
-                verified.state == .cached, verified.content == package.content, verified.contentChecksum == checksum else {
+                verified.state == .cached, verified.content == package.content, verified.contentChecksum == checksum,
+                verified.rawHTMLFilename == rawName, verified.normalizedHTMLFilename == normalizedName else {
                 throw ChapterCacheWriteError.verificationFailed
+            }
+            if !migrationOnly {
+                // Metadata-only legacy migration never claims or mutates existing
+                // unrecognized raw/render files. Verify the five-artifact contract
+                // only for an actual full install that supplied those candidates.
+                guard try cacheFileBytes(chapterRawHTMLPath(bookId: package.bookId, chapterIndex: package.chapterIndex),
+                    limit: 67_108_864) == (hasRaw ? rawHTML.map { Data($0.utf8) } : nil),
+                    try cacheFileBytes(chapterNormalizedHTMLPath(bookId: package.bookId, chapterIndex: package.chapterIndex),
+                    limit: 67_108_864) == (normalizedName != nil ? normalizedHTML.map { Data($0.utf8) } : nil) else {
+                    throw ChapterCacheWriteError.verificationFailed
+                }
             }
         }
         return .init(filename: filename, changed: true)
@@ -379,6 +391,7 @@ struct ChapterCacheRepository: Sendable {
     /// nil means a stale, unmodified CAS. Actual write errors throw; a successful
     /// receipt is returned even if cancellation arrives after the committed IO.
     func compareOriginalBatchSnapshot(_ expected: OriginalChapterCacheSnapshot, package: ChapterPackage,
+                                       rawHTML: String? = nil, normalizedHTML: String? = nil,
                                        validateGrant: @escaping @Sendable () throws -> Void,
                                        claimCommit: @escaping @Sendable () -> Bool) async throws -> OriginalChapterCacheCommitReceipt? {
         guard package.bookId == expected.bookID, package.chapterIndex == expected.index else {
@@ -392,14 +405,18 @@ struct ChapterCacheRepository: Sendable {
                 guard try chapterFingerprints(bookID: expected.bookID, index: expected.index, check: check) == expected.fingerprints else { return nil }
                 let currentPackage = loadChapterPackageSync(bookId: expected.bookID, chapterIndex: expected.index,
                     scheduleLegacyMigration: false)
-                if let existing = currentPackage, existing.state == .cached,
+                if rawHTML == nil, normalizedHTML == nil,
+                   let existing = currentPackage, existing.state == .cached,
                    existing.content.utf8.elementsEqual(package.content.utf8),
                    Self.sameRaw(existing.sourceURL, package.sourceURL) {
                     // Identical resolved text is already durable: retain existing
                     // canonical title/raw/render artifacts instead of stripping them.
                     return .init(write: .init(filename: String(expected.index)+".txt", changed: false), snapshot: expected)
                 }
-                let receipt = try persistChapterPackage(package, rawHTML: nil, normalizedHTML: nil,
+                // New render artifacts must reach the same semantic no-op and
+                // five-file replacement path; equal body alone cannot suppress
+                // upgrading an older plain-only callback cache.
+                let receipt = try persistChapterPackage(package, rawHTML: rawHTML, normalizedHTML: normalizedHTML,
                     validateGrant: check, claimCommit: claimCommit)
                 if !receipt.changed { return .init(write: receipt, snapshot: expected) }
                 do {

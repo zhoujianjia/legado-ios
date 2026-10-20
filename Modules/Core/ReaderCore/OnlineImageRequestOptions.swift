@@ -50,15 +50,26 @@ enum OnlineImageRequestOptions {
     /// The one `data:` src that keeps them is an `<iframe>` page a source builds itself
     /// (`data:text/html`): its `Referer` is the address the page loads as, so the requests the
     /// page makes carry it (`ReaderWebEmbed.inlinePage`).
-    static func encoding(src: String, headers: [String: String]) -> String {
+    static func encoding(src: String, headers: [String: String], contentBaseURL: String? = nil) -> String {
         guard !headers.isEmpty, !src.contains(marker) else { return src }
-        let lowercased = src.lowercased()
+        // Explicit original callback rendering supplies its actual chapter base
+        // before option suffixes are stripped. Resolve here so a relative image
+        // or media URL does not lose its headers before the DOM can normalize it.
+        // All existing callers default nil and preserve their prior behavior.
+        let source: String
+        if let contentBaseURL, let base = URL(string: contentBaseURL),
+           URL(string: src)?.scheme == nil,
+           let resolved = URL(string: src, relativeTo: base)?.absoluteURL,
+           resolved.scheme?.lowercased() == "http" || resolved.scheme?.lowercased() == "https" {
+            source = resolved.absoluteString
+        } else { source = src }
+        let lowercased = source.lowercased()
         guard lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://")
                 || lowercased.hasPrefix("data:text/html")
         else { return src }
         guard let data = try? JSONSerialization.data(withJSONObject: headers, options: [.sortedKeys])
         else { return src }
-        return src + marker + base64URLEncoded(data)
+        return source + marker + base64URLEncoded(data)
     }
 
     /// Splits an encoded src back into the URL to request and the headers to request it with.

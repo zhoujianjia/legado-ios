@@ -890,10 +890,11 @@ enum ReaderHTMLUtilities {
     /// which would otherwise survive as unknown elements.
     static func sanitizeOnlineChapterMarkup(
         _ html: String,
-        reviewContext: LegadoReviewContext? = nil
+        reviewContext: LegadoReviewContext? = nil,
+        contentBaseURL: String? = nil
     ) -> String {
-        var result = rewriteLegadoImageClickConfigs(html, reviewContext: reviewContext)
-        result = carryingMediaRequestHeaders(result)
+        var result = rewriteLegadoImageClickConfigs(html, reviewContext: reviewContext, contentBaseURL: contentBaseURL)
+        result = carryingMediaRequestHeaders(result, contentBaseURL: contentBaseURL)
 
         // Strip `,{…}` click-config suffixes that sit at the very end of an attribute value
         // (immediately followed by a closing quote / tag-end / whitespace). Anchoring on the
@@ -1225,7 +1226,8 @@ enum ReaderHTMLUtilities {
 
     private static func rewriteLegadoImageClickConfigs(
         _ html: String,
-        reviewContext: LegadoReviewContext?
+        reviewContext: LegadoReviewContext?,
+        contentBaseURL: String?
     ) -> String {
         guard html.containsMarker("<img", ignoringCase: true),
               html.containsMarker(",{")
@@ -1245,7 +1247,7 @@ enum ReaderHTMLUtilities {
             let range = match.range
             result += ns.substring(with: NSRange(location: cursor, length: range.location - cursor))
             let tag = ns.substring(with: range)
-            let rewritten = rewriteLegadoImageTag(tag, reviewContext: reviewContext)
+            let rewritten = rewriteLegadoImageTag(tag, reviewContext: reviewContext, contentBaseURL: contentBaseURL)
             if rewritten.containsMarker("yd-review-image", ignoringCase: true) {
                 reviewImages += 1
             } else if rewritten != tag {
@@ -1269,7 +1271,8 @@ enum ReaderHTMLUtilities {
 
     private static func rewriteLegadoImageTag(
         _ tag: String,
-        reviewContext: LegadoReviewContext?
+        reviewContext: LegadoReviewContext?,
+        contentBaseURL: String?
     ) -> String {
         guard let configMatch = legadoClickConfigMatch(in: tag) else {
             return rewriteImageHandlerTag(tag, reviewContext: reviewContext)
@@ -1301,7 +1304,8 @@ enum ReaderHTMLUtilities {
         // onto the src as a fragment instead — see `OnlineImageRequestOptions`.
         cleanedTag = carryingImageRequestHeaders(
             cleanedTag,
-            headers: OnlineImageRequestOptions.headers(fromOptionSuffix: suffix)
+            headers: OnlineImageRequestOptions.headers(fromOptionSuffix: suffix),
+            contentBaseURL: contentBaseURL
         )
 
         let isQidianFullReview = clickStyle == "full" && isQidianSource(reviewContext)
@@ -1582,7 +1586,8 @@ enum ReaderHTMLUtilities {
     /// option block declared none, which is every image but a handful across the source packs.
     private static func carryingImageRequestHeaders(
         _ tag: String,
-        headers: [String: String]
+        headers: [String: String],
+        contentBaseURL: String?
     ) -> String {
         guard !headers.isEmpty,
               let regex = try? NSRegularExpression(
@@ -1600,7 +1605,7 @@ enum ReaderHTMLUtilities {
         // so it needs no escaping and appending it leaves whatever entity escaping the source
         // wrote (`&amp;` in a query string) exactly as it was.
         let source = ns.substring(with: match.range(at: 2))
-        let encoded = OnlineImageRequestOptions.encoding(src: source, headers: headers)
+        let encoded = OnlineImageRequestOptions.encoding(src: source, headers: headers, contentBaseURL: contentBaseURL)
         guard encoded != source else { return tag }
         return ns.replacingCharacters(in: match.range(at: 2), with: encoded)
     }
@@ -1616,7 +1621,7 @@ enum ReaderHTMLUtilities {
     /// or an `<iframe>` `src`, onto that URL as an `OnlineImageRequestOptions` fragment, before
     /// the generic suffix strip below would delete it. A media tag can carry two blocks (`src`
     /// and `poster`), so every block is handled, not just the first one the image path looks at.
-    static func carryingMediaRequestHeaders(_ html: String) -> String {
+    static func carryingMediaRequestHeaders(_ html: String, contentBaseURL: String? = nil) -> String {
         guard html.containsMarker(",{"),
               html.containsMarker("<video", ignoringCase: true)
                 || html.containsMarker("<audio", ignoringCase: true)
@@ -1629,14 +1634,14 @@ enum ReaderHTMLUtilities {
         var cursor = 0
         for match in matches {
             result += ns.substring(with: NSRange(location: cursor, length: match.range.location - cursor))
-            result += carryingMediaRequestHeaders(inTag: ns.substring(with: match.range))
+            result += carryingMediaRequestHeaders(inTag: ns.substring(with: match.range), contentBaseURL: contentBaseURL)
             cursor = NSMaxRange(match.range)
         }
         result += ns.substring(from: cursor)
         return result
     }
 
-    private static func carryingMediaRequestHeaders(inTag original: String) -> String {
+    private static func carryingMediaRequestHeaders(inTag original: String, contentBaseURL: String?) -> String {
         var tag = original
         while let config = legadoClickConfigMatch(in: tag) {
             let ns = tag as NSString
@@ -1655,7 +1660,7 @@ enum ReaderHTMLUtilities {
             }
             let urlRange = value.range(at: 1)
             let url = beforeNS.substring(with: urlRange)
-            let encoded = OnlineImageRequestOptions.encoding(src: url, headers: headers)
+            let encoded = OnlineImageRequestOptions.encoding(src: url, headers: headers, contentBaseURL: contentBaseURL)
             tag = beforeNS.replacingCharacters(in: urlRange, with: encoded) + after
         }
         return tag

@@ -1,0 +1,480 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T11:34:58.765961+00:00",
+  "status": "original-batch-render-artifact-production-connected-two-original-JVM-contracts-passed-native-SDK-pending",
+  "integrationBaseCommit": "6a875399ae3a73bee2cf14f9a1430a4ce630a724",
+  "previousAppBatchImplementation": "docs/legado-ios/core-original-content-batch-public-step.json",
+  "sourceFiles": [
+    {
+      "path": "Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+      "bytes": 6276,
+      "sha256": "c3a4f3539b92bdbffa7b31bbcd3673614afec71e3eac2fe605667c226c7f09b6"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+      "bytes": 110999,
+      "sha256": "54dc0bc5816b937ff9f82717cdc6559d5d8ad626b7b1a5adf7492748ac975236"
+    },
+    {
+      "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+      "bytes": 45847,
+      "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+    },
+    {
+      "path": "Modules/Services/Online/ChapterFetcher.swift",
+      "bytes": 46127,
+      "sha256": "bd55dc5e8772185784df5687acb5f285764f070335b9088c53928ec43c661eb9"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "bytes": 26209,
+      "sha256": "9e29ad73bf706f6cea054e68d0980bf1390a7b5bcf5ddaafa344a7145bd742bb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+      "bytes": 22800,
+      "sha256": "f2b32eaefaa9f21dbf4122d9d1b3457b2b8b9cce7ffefa43fa6547d9e3a342a7"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 128552,
+      "sha256": "eb3a6808d260d40da3b7018830c154e166f0939587361fae88e41a69b56cafc0"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+      "bytes": 30151,
+      "sha256": "07edbd68628d595a25e01501369f62373898ab8971fd514991996826648f9207"
+    }
+  ],
+  "implementation": [
+    "Pinned original BatchContentContext passes applyContentReplace output unchanged to BookHelp.saveContent/writeText. Batch save supplies no HTTP response/redirect document, does not run single-page HtmlFormatter and does not refetch media. Original output remains byte-exact as the cached .txt body and retained .raw.html callback fragment.",
+    "Existing ChapterFetcher resolveContent/sanitizer/SwiftSoup normalization produces a separate .normalized.xhtml for static images, usehtml and embedded audio/video/iframe; existing ordinary reader and cached TXT export consume the same files/data contract. No new renderer, parser, persistence file/queue/cache, JSC or HTTP owner.",
+    "Explicit actual chapter raw URL plus its DTO base/source URL supplies the resource base. The same existing SwiftSoup tree resolves supported src and video poster only in the render representation. Original callback bytes are untouched and no response URL is invented.",
+    "Relative image/media request headers are carried by the existing ReaderHTMLUtilities/OnlineImageRequestOptions path before URL-option suffix stripping. Optional contentBaseURL defaults nil on every existing caller, preserving old behavior.",
+    "The existing five-file same-queue CAS accepts actual raw/normalized candidate strings. Equal callback body can upgrade absent render files, complete identical files write nothing, and actual raw/normalized bytes are checked before ACK. Metadata-only legacy migration does not claim or validate unknown orphan render files.",
+    "Current App UUID/TOC index/raw URL/generation/grant/deadline/cancel and Native effect-seal claim still guard actual file replacement. Original getter state restores the exact callback body. Unresolved image UrlOption.js refuses before file writes instead of borrowing legacy JSC.",
+    "Pure direct audio URL strings and their static request options remain exact and use the existing DirectChapterAudioResolver contract; this is no claim of complete dedicated audio/video/manga owner acceptance."
+  ],
+  "originalArchive": {
+    "path": "F:/legado-master.zip",
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "references": [
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/model/BatchContentContext.kt",
+        "bytes": 6635,
+        "sha256": "270b131144e96910fbdbcfd80499c61f8f86486dab6cfdaeb8533f7d014dcaf6"
+      },
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/help/book/BookHelp.kt",
+        "bytes": 37263,
+        "sha256": "8dab81c3aec31a051b2396e09bf671651c0f272f2a9e73979a37d138d1d78d2b"
+      },
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/help/book/BookExtensions.kt",
+        "bytes": 12536,
+        "sha256": "bdac691b429d21ba9e5ad1d8d9b4235a4dd3d7f3b394c6a3c48b4d8a685488cd"
+      },
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/model/webBook/BookContent.kt",
+        "bytes": 14702,
+        "sha256": "b1a685ca969174ecc83886cde3a37ba7155f828ccbfe7507d87d02fb53c8dc07"
+      }
+    ],
+    "newRawVendorEntries": 0,
+    "AndroidExecutions": 0,
+    "resourceBaseEvidence": "BookHelp.kt pinned saveImages uses NetworkUtils.getAbsoluteURL(bookChapter.url, src), while saveContent has its saveImages call commented. Batch callback carries only chapter/content, not HTTP response URL."
+  },
+  "sourceBinding": {
+    "changedCodeTestsAndProvenance": [
+      {
+        "path": "Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+        "intendedPath": "Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+        "workPath": ".build/original-content-batch-render-delta/work/Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+        "bytes": 6276,
+        "sha256": "c3a4f3539b92bdbffa7b31bbcd3673614afec71e3eac2fe605667c226c7f09b6",
+        "canonicalBaseline": {
+          "path": "Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+          "bytes": 5524,
+          "sha256": "53536fc60e6ce97038c77523148b8392afab6d9e179f50c0feed9e66a6b06272"
+        }
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "intendedPath": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "workPath": ".build/original-content-batch-render-delta/work/Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "bytes": 110999,
+        "sha256": "54dc0bc5816b937ff9f82717cdc6559d5d8ad626b7b1a5adf7492748ac975236",
+        "canonicalBaseline": {
+          "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+          "bytes": 110569,
+          "sha256": "b6091231d27b21abd0c2daae03aaf4d08a6f7dc1c5426af3072c4a52d1e4078a"
+        }
+      },
+      {
+        "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+        "intendedPath": "Modules/Services/Online/ChapterCacheRepository.swift",
+        "workPath": ".build/original-content-batch-render-delta/work/Modules/Services/Online/ChapterCacheRepository.swift",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Modules/Services/Online/ChapterCacheRepository.swift",
+        "bytes": 45847,
+        "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79",
+        "canonicalBaseline": {
+          "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+          "bytes": 44515,
+          "sha256": "2e3fdebf3c5eae5f27f06b461db6486370ea5558ca3f11ad7f0101464869ecea"
+        }
+      },
+      {
+        "path": "Modules/Services/Online/ChapterFetcher.swift",
+        "intendedPath": "Modules/Services/Online/ChapterFetcher.swift",
+        "workPath": ".build/original-content-batch-render-delta/work/Modules/Services/Online/ChapterFetcher.swift",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Modules/Services/Online/ChapterFetcher.swift",
+        "bytes": 46127,
+        "sha256": "bd55dc5e8772185784df5687acb5f285764f070335b9088c53928ec43c661eb9",
+        "canonicalBaseline": {
+          "path": "Modules/Services/Online/ChapterFetcher.swift",
+          "bytes": 43856,
+          "sha256": "0e332ee832ca07d625435a187e2c1f1f90461ec51234c35c0585bc29f92357e2"
+        }
+      },
+      {
+        "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "intendedPath": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "workPath": ".build/original-content-batch-render-delta/work/Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "bytes": 26209,
+        "sha256": "9e29ad73bf706f6cea054e68d0980bf1390a7b5bcf5ddaafa344a7145bd742bb",
+        "canonicalBaseline": {
+          "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+          "bytes": 23659,
+          "sha256": "f15377d74c68514e2c7a370c8cac9a727c5ff70e86220310e7b21266f63c9f88"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "workPath": ".build/original-content-batch-render-delta/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "bytes": 22800,
+        "sha256": "f2b32eaefaa9f21dbf4122d9d1b3457b2b8b9cce7ffefa43fa6547d9e3a342a7",
+        "canonicalBaseline": {
+          "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+          "bytes": 19419,
+          "sha256": "2f713129522d7d4530404c6f9fe45d77b7a042f1b9f77695eb538f5b2c959338"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "intendedPath": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "workPath": ".build/original-content-batch-render-delta/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 128552,
+        "sha256": "eb3a6808d260d40da3b7018830c154e166f0939587361fae88e41a69b56cafc0",
+        "canonicalBaseline": {
+          "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+          "bytes": 124536,
+          "sha256": "2cdaf0fde7cd58b5790071ae5fb50f259f0c8038c75fdd7f9b5f86f9d319a4e5"
+        }
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+        "workPath": ".build/original-content-batch-render-delta/work/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+        "snapshot": ".build/original-content-batch-render-delta/final-sources/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+        "bytes": 30151,
+        "sha256": "07edbd68628d595a25e01501369f62373898ab8971fd514991996826648f9207",
+        "canonicalBaseline": {
+          "path": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+          "bytes": 20087,
+          "sha256": "687263e6b0e93b2048a3fd912f9ef2bfaecfbb25bde4a3127c806e4990490429"
+        }
+      }
+    ],
+    "changedFileCount": 8,
+    "productionSwiftFiles": 5,
+    "AppTestFiles": 1,
+    "JVMTestFiles": 1,
+    "manifestFiles": 1,
+    "newJVMProductionFiles": 0,
+    "acceptedExecutionInputs": {
+      "record": {
+        "path": ".build/original-content-batch-render-delta/focused-v1.json",
+        "bytes": 85040,
+        "sha256": "9bccbaabccc1857d74a34ab142fad923522100a3802500cbcc62d51fc10d9cd4"
+      },
+      "key": "sourceBinding",
+      "count": 165,
+      "allCurrentJVMBytesEqual": true,
+      "fullInputTreesDuplicated": false
+    },
+    "ordinaryInputContinuity": {
+      "priorOrdinaryRecord": {
+        "path": ".build/original-content-batch-public-delta/ordinary-v1.json",
+        "bytes": 94296,
+        "sha256": "81e7b80976425e15c48a384724c67ba4e52bfe5721223b895c1233b16fdde8f8"
+      },
+      "unchangedInputs": 164,
+      "changedInputs": [
+        "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt"
+      ],
+      "meaning": "The only JVM source change is the two new methods in an existing test class. No claim that the whole165 closure is unchanged or that Swift executes in the JAR."
+    },
+    "unchangedConsumerAndTaskReferences": [
+      {
+        "path": "Modules/Core/BookSource/LegadoImageSourceResolver.swift",
+        "bytes": 10534,
+        "sha256": "134880c6d368264afd2313da1827c6b2dff9e6fdf3eac00ce05a1d7d2fa44710"
+      },
+      {
+        "path": "Modules/Core/BookSource/SourcePerfTrace.swift",
+        "bytes": 3788,
+        "sha256": "d77b01929cde847fb62c9a4820c9135286abc783d4af1f94056dc0c476f0a934"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/OnlineProviderAttributedStringBuilder.swift",
+        "bytes": 43314,
+        "sha256": "443d20d4af7c776d99c1efc838cc0e646e9ae71c20ff3339010cb76342d43406"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/HTMLStyledASTRenderableNodeConverter.swift",
+        "bytes": 27313,
+        "sha256": "e307af886874c88b62989ce93b84b30ead63afc30a03af4b116eb6d5f63e3152"
+      },
+      {
+        "path": "Modules/Services/Online/OnlineChapterContentService.swift",
+        "bytes": 5979,
+        "sha256": "26ec82a3d08cb32b015913f010877cc4374a1fb43db728502616b02b24031c16"
+      },
+      {
+        "path": "Modules/Services/Online/CachedBookTXTExportService.swift",
+        "bytes": 5604,
+        "sha256": "2dcabe006c22075d6cd6fdedd02d80f5f00bd07b09b3084320294690f8ff4a69"
+      },
+      {
+        "path": "Modules/Core/TTS/TTSAudioProvider.swift",
+        "bytes": 53807,
+        "sha256": "8aa483aab1d4fde95fb6ac8d7acc1d5bf94b024f3c02438107ce8fabf041ed4c"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 59443,
+        "sha256": "6a2da8a7a1254530b5073f5629729483c5c51729f9b1a09c841a2b58799ff6a0"
+      },
+      {
+        "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+        "bytes": 61584,
+        "sha256": "5be7448b4435e80f85fce62fa61152165da390ac6b745e06327347f02f412038"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
+        "bytes": 8136,
+        "sha256": "fc856eeaee426b6c889d483838b2481e21852a666e7b77dc5cfd6301545568ac"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+        "bytes": 8685,
+        "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+      }
+    ]
+  },
+  "actualValidation": {
+    "actualAcceptedNewJVMMethods": 2,
+    "actualRawXML": {
+      "path": ".build/original-content-batch-render-delta/focused-v1-xml/TEST-io.yuedu.legado.OriginalContentBatchTest.xml",
+      "bytes": 672,
+      "sha256": "b2cdf5b4358b3aba6ede7fdd1a77ecdd7623a01523713dffe97c3bdd26a890f7"
+    },
+    "actualJvmRecord": {
+      "path": ".build/original-content-batch-render-delta/focused-v1.json",
+      "bytes": 85040,
+      "sha256": "9bccbaabccc1857d74a34ab142fad923522100a3802500cbcc62d51fc10d9cd4"
+    },
+    "actualJvmLog": {
+      "path": ".build/original-content-batch-render-delta/focused-v1.log",
+      "bytes": 9329,
+      "sha256": "9fa1253528545ab41a6f5479da6f95fa33cceda09f5cea661a7f2e1e22f240b5"
+    },
+    "methods": [
+      "OriginalContentBatchTest.originalBatchMarkupAndMediaCallbacksPersistExactOutputWithoutExtraHttp",
+      "OriginalContentBatchTest.pinnedBatchOracleKeepsMarkupAcrossSourceAndBookTypesAndOnlyAppliesConfiguredReplacement"
+    ],
+    "meaning": "Actual Windows JDK21 retained WebBook/persistence and pinned original context oracle. Tests assert raw HTML/media/URI bytes, replacement/type behavior, restart and zero extra HTTP; no native rendering execution.",
+    "nativeGrammar": {
+      "path": ".build/original-content-batch-render-delta/grammar-final.json",
+      "bytes": 1939,
+      "sha256": "e0760fb6ac4c680cda4770d2b163064dc1e52ca6a3cc7b1005a8e800b81c31a5"
+    },
+    "nativeBoundFiles": 6,
+    "nativeActualGrammarParsedFiles": 5,
+    "nativeExactByteGrammarReusedFiles": 1,
+    "nativeGrammarDiagnostics": 0,
+    "historicalGrammar": {
+      "path": ".build/original-content-batch-render-delta/grammar-v1.json",
+      "bytes": 879,
+      "sha256": "e3ca4c93b47d7c073ffdf49430499e91d22c5a8be4a4604e89d912b79e21615e"
+    },
+    "newAppDefinitions": [
+      "LegadoContentBatchOwnerTests.markupCallbackUsesExistingArtifactsAndReopensWithoutRefetch",
+      "LegadoContentBatchOwnerTests.sameBodyUpgradesRenderArtifactsThenKeepsAllBytesUnchanged",
+      "LegadoContentBatchOwnerTests.deferredImageDoesNotBorrowLegacyEngineAndAudioUrlStaysExact"
+    ],
+    "newAppDefinitionCount": 3,
+    "suggestedAffectedExistingDefinitionsForLaterCoherentSDK": [
+      "OnlineChapterImageHeaderTests.perImageHeadersSurviveSanitizing",
+      "OnlineChapterImageHeaderTests.plainSourcesAreUntouched",
+      "OnlineInlineVideoTests.singleQuotedOptionHeaders",
+      "OnlineInlineVideoTests.optionWithoutHeadersIsDropped",
+      "OnlineInlineVideoTests.mediaOnlyChapterIsNotEmpty"
+    ],
+    "suggestedDefinitionsAreNotExecutedOrSelectedNow": true,
+    "SwiftSDKExecutions": 0,
+    "AppTestExecutions": 0,
+    "JNIExecutions": 0,
+    "actualRemoteImageOrMediaPlaybackExecutions": 0,
+    "physicalDeviceExecutions": 0,
+    "newOrdinaryJarExecutions": 0,
+    "newOrdinarySmokeExecutions": 0,
+    "ordinaryReuseByteProof": {
+      "path": ".build/original-content-batch-render-delta/ordinary-reuse-byte-proof.json",
+      "bytes": 1081,
+      "sha256": "156932d97a6f4669d77bb0872a457caa3f255c5013bc7d624dbc9b5aea4dafd7"
+    },
+    "ordinaryReuseLeakAudit": {
+      "path": ".build/original-content-batch-render-delta/ordinary-reuse-leak-audit.json",
+      "bytes": 720,
+      "sha256": "052741f65ca1d2423640c11ad19a84db8510c5dc9a00ee980719f73c86c26922"
+    },
+    "ordinaryReuseScope": "396 freshly compiled production classes byte-equal to the prior executed ordinary JAR;195 currently compiled project test classes/JUnit absent from that immutable JAR. Prior eight markers are reused as prior evidence, not re-executed. New Swift/new manifest are not in or executed by that old JAR."
+  },
+  "rootIndependentReview": {
+    "schemaVersion": 1,
+    "recordedAtUTC": "2026-10-20T11:29:32.202918+00:00",
+    "reviewKind": "Independent root source and evidence inspection; root did not author this render implementation",
+    "preparation": {
+      "path": ".build/original-content-batch-render-delta/preparation.json",
+      "bytes": 21129,
+      "sha256": "d7d53f08f54976deda5bc73fe24e66010837e39aba53cf464ea7a24841804cf6"
+    },
+    "reviewInputFreeze": {
+      "path": ".build/original-content-batch-render-delta/review-inputs-v2.json",
+      "bytes": 11094,
+      "sha256": "31665c503a86b49bc9d677eca78d454c75c3867bc047307d0c8ddae01be979d9"
+    },
+    "sourceFiles": [
+      {
+        "path": "Modules/Core/ReaderCore/OnlineImageRequestOptions.swift",
+        "bytes": 6276,
+        "sha256": "c3a4f3539b92bdbffa7b31bbcd3673614afec71e3eac2fe605667c226c7f09b6"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "bytes": 110999,
+        "sha256": "54dc0bc5816b937ff9f82717cdc6559d5d8ad626b7b1a5adf7492748ac975236"
+      },
+      {
+        "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+        "bytes": 45847,
+        "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+      },
+      {
+        "path": "Modules/Services/Online/ChapterFetcher.swift",
+        "bytes": 46127,
+        "sha256": "bd55dc5e8772185784df5687acb5f285764f070335b9088c53928ec43c661eb9"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "bytes": 26209,
+        "sha256": "9e29ad73bf706f6cea054e68d0980bf1390a7b5bcf5ddaafa344a7145bd742bb"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "bytes": 22800,
+        "sha256": "f2b32eaefaa9f21dbf4122d9d1b3457b2b8b9cce7ffefa43fa6547d9e3a342a7"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 128552,
+        "sha256": "eb3a6808d260d40da3b7018830c154e166f0939587361fae88e41a69b56cafc0"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+        "bytes": 30151,
+        "sha256": "07edbd68628d595a25e01501369f62373898ab8971fd514991996826648f9207"
+      }
+    ],
+    "verdict": "no-confirmed-source-blocker",
+    "confirmedBlockers": [],
+    "checks": [
+      "Read all five Swift production diffs and new App/JVM methods against actual existing consumer paths. The original rule-output string remains the body and raw fragment; normalized XHTML is a separate existing render artifact, with no new HTTP response or refetch invented.",
+      "Actual ordinary image, audio/video/source/iframe and video poster consumers use src/poster. The existing same SwiftSoup tree maps only the supported relative resource attributes. Header options survive in the existing request fragment ABI before generic URL-option suffix removal.",
+      "Optional resource base defaults nil on existing callers. Batch uses its actual granted chapter URL and DTO/source base; no redirect URL is asserted. Deferred-image JS is explicitly unsupported on this path and nil reviewContext does not borrow a legacy JS session.",
+      "Same body can upgrade missing render artifacts through the existing five-file CAS; actual body/raw/normalized readback precedes acknowledgement, and complete unchanged bytes preserve no-write behavior. Existing generation/TOC/raw-URL/effect seal and rollback ownership remains the same.",
+      "Read new regression definitions for actual Host/save/reopen/export, relative protected media, no-write upgrade, declined effect seal and refusal before write. These three native definitions still have zero actual SDK executions.",
+      "Verified actual two unique JVM XML leaves and frozen execution-source hashes, plus all396 newly compiled production class bytes and195 compiled test-class exclusions against the immutable prior ordinary JAR. No new ordinary JAR/smoke execution is invented."
+    ],
+    "evidenceAudit": {
+      "actualNewUniqueJVMPasses": 2,
+      "exactExecutionInputs": 165,
+      "byteEqualPriorJarProductionClasses": 396,
+      "currentTestClassesExcludedFromJar": 195,
+      "nativeGrammarBound": 6,
+      "nativeGrammarActuallyParsed": 5,
+      "nativeGrammarExactReuse": 1,
+      "nativeSDKExecuted": 0,
+      "JNIExecuted": 0,
+      "newRootTestsExecuted": 0
+    },
+    "remaining": [
+      "Execute the three new App definitions and necessary existing renderer/header/cache methods in a coherent SDK stage; actual JNI/public runtime/App image and media reader/playback acceptance is still pending.",
+      "Deferred image UrlOption.js/imageDecode must use the original task/Rhino path; no legacy JS engine fallback is authorized. Full original image/media source semantics, dedicated type>0 player/manga owner and complete WebBook/caller equivalence remain unfinished.",
+      "The callback cannot expose an HTTP response/raw page or redirect URL it never received. Authored output and the granted chapter/base URL are the complete available inputs; no second fetch or invented document.",
+      "Existing renderer CSS/srcset/SVG/UI review capabilities are neither expanded nor claimed fully compatible by this resource mapping. Normal product route, complete C2/C3/C4 and all source compatibility remain unaccepted.",
+      "Five-file consistency preserves the previous stage in-process CAS/rollback contract. It is not a power-loss atomic transaction and provides no new explicit file/directory fsync guarantee."
+    ],
+    "defaultRouteSwitched": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "allNonDeviceWorkComplete": false
+  },
+  "provenance": {
+    "before": {
+      "path": ".build/original-content-batch-render-delta/manifest.before.json",
+      "bytes": 124536,
+      "sha256": "2cdaf0fde7cd58b5790071ae5fb50f259f0c8038c75fdd7f9b5f86f9d319a4e5"
+    },
+    "newManifest": {
+      "path": ".build/original-content-batch-render-delta/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 128552,
+      "sha256": "eb3a6808d260d40da3b7018830c154e166f0939587361fae88e41a69b56cafc0"
+    },
+    "newSection": "contentBatchRenderArtifactsIntegration",
+    "original57SourceProvenanceRecordsExactlyUnchanged": true,
+    "priorPublicIntegrationHashesRetainedWithExplicitSupersessionPointer": true,
+    "oldJarEmbeddedManifestSHA256": "2cdaf0fde7cd58b5790071ae5fb50f259f0c8038c75fdd7f9b5f86f9d319a4e5",
+    "newManifestIsNotClaimedExecutedInOldJar": true,
+    "legalRedistributionClearanceEstablished": false
+  },
+  "coherentSDK733120eDoesNotCoverThisNewRenderDelta": true,
+  "nextStep": "Include three actual new render Host/cache methods plus necessary existing nil-base/header/cache methods in the next coherent SDK group after actual current account/public-batch compiler diagnostics. Continue original same-task image/media and full runtime routing work; do not treat this partial render mapping as C3/C4 completion.",
+  "remaining": [
+    "Execute the three new App definitions and necessary existing renderer/header/cache methods in a coherent SDK stage; actual JNI/public runtime/App image and media reader/playback acceptance is still pending.",
+    "Deferred image UrlOption.js/imageDecode must use the original task/Rhino path; no legacy JS engine fallback is authorized. Full original image/media source semantics, dedicated type>0 player/manga owner and complete WebBook/caller equivalence remain unfinished.",
+    "The callback cannot expose an HTTP response/raw page or redirect URL it never received. Authored output and the granted chapter/base URL are the complete available inputs; no second fetch or invented document.",
+    "Existing renderer CSS/srcset/SVG/UI review capabilities are neither expanded nor claimed fully compatible by this resource mapping. Normal product route, complete C2/C3/C4 and all source compatibility remain unaccepted.",
+    "Five-file consistency preserves the previous stage in-process CAS/rollback contract. It is not a power-loss atomic transaction and provides no new explicit file/directory fsync guarantee."
+  ],
+  "defaultProductRouteSwitched": false,
+  "completeC3": false,
+  "completeC4": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-original-content-batch-render-step",
+    "manifest": "manifest.json",
+    "rawFiles": 26,
+    "ordinaryJarRepublishedOrRepacked": false,
+    "fullUpstreamArchiveRepublished": false
+  }
+}

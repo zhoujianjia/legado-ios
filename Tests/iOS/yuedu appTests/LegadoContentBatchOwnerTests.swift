@@ -1,6 +1,7 @@
 import Foundation
 import LegadoRuntime
 import Testing
+import SwiftSoup
 @testable import yuedu_app
 
 private struct BatchNoSourceBacking: LegadoOwnedStateBacking {
@@ -77,6 +78,124 @@ private struct OwnedBatchCallbackExecutor: LegadoOriginalContentBatchExecuting {
 @Suite("Original public batch App owner", .serialized)
 @MainActor
 struct LegadoContentBatchOwnerTests {
+
+    @Test("actual Host keeps rule output bytes and persists the ordinary image and embedded-media render artifacts")
+    func markupCallbackUsesExistingArtifactsAndReopensWithoutRefetch() async throws {
+        let f = try await fixture(); defer { cleanup(f.root) }
+        let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking()); let task = "owned-markup"
+        let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
+            store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: grants(f),
+            deadline: Date().addingTimeInterval(60), cache: f.cache)
+        let body = "<usehtml><p>Original &amp; retained prose.</p><img src='../image.png'><img src='../protected.png,{\"headers\":{\"Referer\":\"https://owned.invalid/protected\"}}'><audio controls src='/a.m4a,{\"headers\":{\"Referer\":\"https://owned.invalid/audio\"}}'></audio><video poster='/poster.png' src='https://owned.invalid/v.mp4'></video><iframe src='https://owned.invalid/player'></iframe><script>ownedMustNotRun()</script></usehtml>"
+        let snapshot = try await BatchHostFixture.read(host, owner: owner, task: task,
+            source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
+        #expect(try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: snapshot, body: body))
+        let reopened = ChapterCacheRepository(rootDirectory: f.root.appendingPathComponent("body"))
+        let persisted = try await BookStore.chapterCachePersistence {
+            let package = try #require(reopened.loadChapterPackageSync(bookId: f.book.id, chapterIndex: 0,
+                expectedSourceURL: f.chapters[0].url, expectedTOCTitle: f.chapters[0].title))
+            let html = try #require(reopened.loadNormalizedChapterHTMLSync(bookId: f.book.id, chapterIndex: 0,
+                expectedSourceURL: f.chapters[0].url, expectedTOCTitle: f.chapters[0].title))
+            let raw = try String(contentsOf: f.root.appendingPathComponent("body").appendingPathComponent(f.book.id.uuidString).appendingPathComponent("0.raw.html"), encoding: .utf8)
+            return (package, html, raw)
+        }
+        #expect(persisted.0.content == body && persisted.2 == body)
+        #expect(persisted.0.rawHTMLFilename == "0.raw.html" && persisted.0.normalizedHTMLFilename == "0.normalized.xhtml")
+        #expect(OnlineChapterCacheWritePolicy.isReusableCachedPackage(persisted.0, hasBookSource: true))
+        for tag in ["<img", "<audio", "<video", "<iframe"] { #expect(persisted.1.contains(tag)) }
+        #expect(persisted.1.contains("https://batch-owned.invalid/image.png"))
+        #expect(persisted.1.contains("https://batch-owned.invalid/a.m4a"))
+        #expect(!persisted.1.contains("<usehtml") && !persisted.1.contains("ownedMustNotRun"))
+        let resources = try await Task.detached {
+            let document = try SwiftSoup.parse(persisted.1)
+            return try document.select("img[src],audio[src]").array().map { try $0.attr("src") }
+        }.value
+        let decoded = resources.map { OnlineImageRequestOptions.decode($0) }
+        #expect(decoded.contains { $0.src == "https://batch-owned.invalid/protected.png" && $0.headers["Referer"] == "https://owned.invalid/protected" })
+        #expect(decoded.contains { $0.src == "https://batch-owned.invalid/a.m4a" && $0.headers["Referer"] == "https://owned.invalid/audio" })
+        #expect(persisted.1.contains("https://batch-owned.invalid/poster.png"))
+        let restored = try await BatchHostFixture.read(host, owner: owner, task: task,
+            source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
+        #expect(restored.2["body"] as? String == body)
+        let exported = try await CachedBookTXTExportService.export(
+            .init(bookID: f.book.id, title: f.book.title, author: f.book.author, chapters: f.chapters),
+            repository: reopened, temporaryDirectory: f.root)
+        let text = try await Task.detached { try String(contentsOf: exported.fileURL, encoding: .utf8) }.value
+        #expect(text.contains("Original & retained prose.") && !text.contains("<usehtml"))
+        await host.revoke(owner: owner)
+    }
+
+    @Test("equal callback text upgrades missing render files but an identical complete package writes nothing")
+    func sameBodyUpgradesRenderArtifactsThenKeepsAllBytesUnchanged() async throws {
+        let f = try await fixture(); defer { cleanup(f.root) }
+        let body = "<p>Original batch image.</p><img src='https://owned.invalid/one.png'>"
+        _ = try await f.cache.saveToCache(content: body, bookId: f.book.id, chapterIndex: 0,
+            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, storeNormalizedHTML: false)
+        let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking()); let task = "owned-upgrade"
+        let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
+            store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: grants(f),
+            deadline: Date().addingTimeInterval(60), cache: f.cache)
+        let before = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 0,
+            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, validateGrant: {})
+        #expect(before.fingerprints[".raw.html"] == "missing" && before.fingerprints[".normalized.xhtml"] == "missing")
+        var firstRenderProof: [String: String] = [:]
+        for iteration in 0..<2 {
+            let read = try await BatchHostFixture.read(host, owner: owner, task: task,
+                source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
+            #expect(try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: read, body: body))
+            let current = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 0,
+                sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, validateGrant: {})
+            #expect(current.fingerprints[".raw.html"] != "missing" && current.fingerprints[".normalized.xhtml"] != "missing")
+            if iteration == 0 { firstRenderProof = current.fingerprints }
+            else { #expect(current.fingerprints == firstRenderProof) }
+        }
+        let complete = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 0,
+            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, validateGrant: {})
+        let package = try #require(complete.package)
+        await #expect(throws: CancellationError.self) {
+            _ = try await f.cache.compareOriginalBatchSnapshot(complete, package: package,
+                rawHTML: body, normalizedHTML: "<html><body>Unacknowledged replacement.</body></html>",
+                validateGrant: {}, claimCommit: { false })
+        }
+        let refused = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 0,
+            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, validateGrant: {})
+        #expect(refused.fingerprints == complete.fingerprints)
+        await host.revoke(owner: owner)
+    }
+
+    @Test("unresolved original image JS refuses before writes while direct audio URLs retain their existing playback contract")
+    func deferredImageDoesNotBorrowLegacyEngineAndAudioUrlStaysExact() async throws {
+        let f = try await fixture(); defer { cleanup(f.root) }
+        _ = try await f.cache.saveToCache(content: "Previously accepted prose.", bookId: f.book.id, chapterIndex: 0,
+            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, storeNormalizedHTML: false)
+        let before = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 0,
+            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, validateGrant: {})
+        let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking()); let task = "owned-media-refusal"
+        let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
+            store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: grants(f),
+            deadline: Date().addingTimeInterval(60), cache: f.cache)
+        let read = try await BatchHostFixture.read(host, owner: owner, task: task,
+            source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
+        do {
+            _ = try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: read,
+                body: "<img src=\"data:image/png;base64,,{\"js\":\"result='must-use-original-task'\"}\">")
+            Issue.record("A deferred image cannot borrow another JS session")
+        } catch let error as LegadoRuntimeError { #expect(error.code == "UNSUPPORTED_CAPABILITY" && error.completedEffects.isEmpty) }
+        let unchanged = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 0,
+            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, validateGrant: {})
+        #expect(unchanged.fingerprints == before.fingerprints)
+        let audio = "https://owned.invalid/a.m4a,{\"headers\":{\"Referer\":\"https://owned.invalid/book\"}}"
+        let audioRead = try await BatchHostFixture.read(host, owner: owner, task: task,
+            source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 1)
+        #expect(try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: audioRead, body: audio))
+        let request = try #require(DirectChapterAudioResolver.request(from: audio))
+        #expect(request.url?.absoluteString == "https://owned.invalid/a.m4a")
+        #expect(request.value(forHTTPHeaderField: "Referer") == "https://owned.invalid/book")
+        let saved = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 1,
+            sourceURL: f.chapters[1].url, tocTitle: f.chapters[1].title, validateGrant: {})
+        #expect(saved.package?.content == audio && saved.package?.normalizedHTMLFilename == nil)
+        await host.revoke(owner: owner)
+    }
     private struct Fixture {
         let root: URL
         let store: BookStore

@@ -24,6 +24,50 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /** Retained original batch body, same real task/HTTP/state host and temporary file owner. */
 class OriginalContentBatchTest {
+
+    @Test(timeout = 25_000) fun originalBatchMarkupAndMediaCallbacksPersistExactOutputWithoutExtraHttp() {
+        Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
+            val chapters = o.chapters(3); o.environment.webBook.publish(o.book.bookUrl, chapters)
+            val markup = "<usehtml><p>A &amp; B</p><img src='../one.png'><audio src='https://owned.invalid/a.m4a'></audio><iframe src='https://owned.invalid/player'></iframe></usehtml>\nEND"
+            val audio = "https://owned.invalid/chapter.m4a,{\"headers\":{\"Referer\":\"https://owned.invalid/book\"}}"
+            o.source.ruleContent = ContentRule(contentBatch = "java.cacheContent(chapters[0]," + GSON.toJson(markup) + ");java.cacheContent(chapters[1]," + GSON.toJson(audio) + ")")
+            assertEquals(listOf(chapters[2]), WebBook.getContentBatchAwait(o.source, o.book, chapters))
+            assertEquals(markup, o.environment.webBook.getContent(o.book, chapters[0]))
+            assertEquals(audio, o.environment.webBook.getContent(o.book, chapters[1]))
+            assertTrue(peer.requests.isEmpty()); assertTrue(o.session.requests.isEmpty())
+            o.reopen { env, book ->
+                val restored = env.webBook.chapters(book.bookUrl)
+                assertEquals(markup, env.webBook.getContent(book, restored[0]))
+                assertEquals(audio, env.webBook.getContent(book, restored[1]))
+            }
+        } } }
+    }
+
+    @Test(timeout = 25_000) fun pinnedBatchOracleKeepsMarkupAcrossSourceAndBookTypesAndOnlyAppliesConfiguredReplacement() {
+        Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
+            val chapters = o.chapters(1); o.environment.webBook.publish(o.book.bookUrl, chapters)
+            val captured = mutableListOf<String>()
+            ReferenceBatchBookHelp.capture = { _,_,_,body,_ -> captured += body; true }
+            try {
+                for ((sourceType, bookType) in listOf(0 to 8, 1 to 32, 2 to 64, 4 to 4)) {
+                    o.source.bookSourceType = sourceType; o.book.type = bookType
+                    for (replace in listOf<String?>(null, "##DROP##")) {
+                        o.source.ruleContent = ContentRule(replaceRegex = replace)
+                        val tokens = chapters.associate { it.index to o.environment.webBook.contentSaveToken(o.book, it) }
+                        val oracle = OriginalBatchContextOracle(o.source, o.book, chapters, coroutineContext, tokens)
+                        val port = BatchContentContext(o.source, o.book, chapters, coroutineContext, tokens)
+                        val raw = "  <usehtml><b>DROP &amp; prose</b><img src='../image.png'></usehtml>\nhttps://owned.invalid/a.m4a  "
+                        assertEquals(oracle.applyContentReplace(chapters[0], raw), port.applyContentReplace(chapters[0], raw))
+                        assertTrue(oracle.saveContent(chapters[0], raw)); assertTrue(port.saveContent(chapters[0], raw))
+                        assertEquals(captured.last(), o.environment.webBook.getContent(o.book, chapters[0]))
+                        if (replace == null) assertEquals(raw, captured.last())
+                        oracle.close(); port.close()
+                    }
+                }
+            } finally { ReferenceBatchBookHelp.capture = { _,_,_,_,_ -> true } }
+            assertTrue(peer.requests.isEmpty())
+        } } }
+    }
     @Test(timeout = 25_000) fun realBatchSavesTwoChaptersReturnsOnlyMissingAndKeepsSameBookHttpAndCookieOwner() {
         Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
             val chapters = o.chapters(3); o.environment.webBook.publish(o.book.bookUrl, chapters)
