@@ -1,0 +1,60 @@
+{
+  "reviewedAtUTC": "2026-10-20T06:32:27.902969+00:00",
+  "reviewer": "/root/original_url_execution",
+  "scope": "Independent read-only source review; no test/Gradle/Swift/compiler/network/Git/production mutation",
+  "reviewedSources": [
+    {
+      "path": ".build/original-subcontent-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+      "bytes": 10584,
+      "sha256": "fb9ec680b871e13906a5a359b4b2d3a43fca85bf5a2ec881568c3341e62191f3"
+    },
+    {
+      "path": ".build/original-subcontent-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBookCompat.kt",
+      "bytes": 2184,
+      "sha256": "90d8cd56a73bb85bad28c8765ef4c42ba2bb4353a0df55db8bf74fcb3273df1f"
+    },
+    {
+      "path": ".build/original-subcontent-delta/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSubContentTest.kt",
+      "bytes": 8370,
+      "sha256": "e4a0e60308f382b0cfb244bb2e7d70ec2a5ec75bda3dfbeae0987cdc87fd1ea5"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "bytes": 22504,
+      "sha256": "327b1553a64abb321f8ae9d9a46301d72b1879eeb59a45d2f247b1e12eba1576"
+    }
+  ],
+  "originalReferences": [
+    {
+      "path": ".build/original-subcontent-delta/references/constant/BookType.kt",
+      "bytes": 1792,
+      "sha256": "a7bcb044192cb6844bc2a63e59261e94e701090f6c4dd6a127764fc3f98a14ef",
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/constant/BookType.kt",
+      "byteEqualsLockedZIP": true
+    },
+    {
+      "path": ".build/original-subcontent-delta/references/help/book/BookExtensions.kt",
+      "bytes": 12536,
+      "sha256": "bdac691b429d21ba9e5ad1d8d9b4235a4dd3d7f3b394c6a3c48b4d8a685488cd",
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/help/book/BookExtensions.kt",
+      "byteEqualsLockedZIP": true
+    }
+  ],
+  "findings": [],
+  "conclusion": "No confirmed blocker in the finite online-text subContent/indentation contract reviewed.",
+  "confirmedBoundaries": [
+    "The homepage AnalyzeRule is created before page parsing, retains homepage body/baseUrl/redirectUrl/book/chapter/nextChapter context and is used after serial or fanout content assembly, matching original BookContent lines131-178. Subcontent runs once rather than on every page.",
+    "Original getString(subContent) happens before the original media runCatching branch. This text slice preserves raw returned text without trimming/HTML formatting/HTTP URL fetching, appends before joined-content replacement, and uses the same original getString HTML-unescape semantics.",
+    "isOriginalOnlineText is exactly !isLocal && text bit; type==0 uses original loc_book/webDav:: origin check; type256 and text8 constants match the two byte-verified locked ZIP references.",
+    "Full replacement retains original line.trim, homepage getString(replaceRegex,joined), then two ideographic spaces per LF line only for online text. Chapter title extraction follows replacement, on the same homepage scope.",
+    "Existing controlled typed failure propagation is not broadened to swallow subContent errors; Unsupported/cancellation/persistence escapes cannot publish a successful partial result.",
+    "Non-text/media subContent remains explicit typed unsupported after original expression evaluation; no lyric/danmaku/browser/file path is pretended implemented. New tests call public runtime getContent with persistent host and real controlled HTTP."
+  ],
+  "validationNotClaimed": {
+    "testsRerunByReviewer": false,
+    "androidExecuted": false,
+    "SwiftSDKExecuted": false,
+    "deviceExecuted": false,
+    "fullSourceCompatibility": false
+  }
+}

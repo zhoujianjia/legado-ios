@@ -290,6 +290,12 @@
       "vendorPath": "sources/tests/help/book/ContentSaveFenceTest.kt",
       "bytes": 4441,
       "sha256": "94c24494dee70c9d3dd99eb7574b6037d219d0c6374696635382a810fd365140"
+    },
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/help/book/BookExtensions.kt",
+      "vendorPath": "sources/help/book/BookExtensions.kt",
+      "bytes": 12536,
+      "sha256": "bdac691b429d21ba9e5ad1d8d9b4235a4dd3d7f3b394c6a3c48b4d8a685488cd"
     }
   ],
   "retainedAlgorithms": {
@@ -323,7 +329,8 @@
       "Retained original algorithmic method bodies/ordering; explicit environment/task/response/transient-state seams and finite unsupported boundaries are listed in webBookIntegration."
     ],
     "BookContent.kt": [
-      "Retained original algorithmic method bodies/ordering; explicit environment/task/response/transient-state seams and finite unsupported boundaries are listed in webBookIntegration."
+      "Retained original algorithmic method bodies/ordering; explicit environment/task/response/transient-state seams and finite unsupported boundaries are listed in webBookIntegration.",
+      "Online text subContent now follows the pinned first-page AnalyzeRule scope and raw append before replacement; pinned online-text predicate restores post-replacement two-ideographic-space line indentation. Non-text side channels remain unsupported."
     ]
   },
   "platformSeams": [
@@ -752,13 +759,13 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
-      "bytes": 9975,
-      "sha256": "1b482cdd787749262ea85c4bf8656777645b394c23fbc436977afad158ffc24e"
+      "bytes": 10584,
+      "sha256": "fb9ec680b871e13906a5a359b4b2d3a43fca85bf5a2ec881568c3341e62191f3"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBookCompat.kt",
-      "bytes": 1776,
-      "sha256": "2253cc317e45047007c7581233bea912d59005e090bbcdbbf7f9c85476a64697"
+      "bytes": 2184,
+      "sha256": "90d8cd56a73bb85bad28c8765ef4c42ba2bb4353a0df55db8bf74fcb3273df1f"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/SearchBook.kt",
@@ -1130,13 +1137,13 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
-        "bytes": 9975,
-        "sha256": "1b482cdd787749262ea85c4bf8656777645b394c23fbc436977afad158ffc24e"
+        "bytes": 10584,
+        "sha256": "fb9ec680b871e13906a5a359b4b2d3a43fca85bf5a2ec881568c3341e62191f3"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBookCompat.kt",
-        "bytes": 1776,
-        "sha256": "2253cc317e45047007c7581233bea912d59005e090bbcdbbf7f9c85476a64697"
+        "bytes": 2184,
+        "sha256": "90d8cd56a73bb85bad28c8765ef4c42ba2bb4353a0df55db8bf74fcb3273df1f"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/SearchBook.kt",
@@ -1257,7 +1264,7 @@
     "remainingUnsupportedOrUnfinished": [
       "Outer WebBook.getContentAwait needSave=true now saves through the injected owner; the direct BookContent.analyzeContent needSave=true helper, full Android failed-edit/delete/resource/folder generation fencing, contentBatch/BatchContentContext/java.cacheContent and App reader publication remain unsupported/unintegrated.",
       "mainJs WebBook delegation remains its separate retained route; this finite await entry explicitly rejects mainJs, non-text/media/file sources and explore navigation/infoMap rather than substituting a simplified parser.",
-      "Browser/webJs/sourceRegex, configured proxy, media payload/decode/upload/rate limiting, subContent side channels, image/pay/callback/full model APIs remain unported or explicit unsupported at their invocation boundary. Persistent state capabilities are listed separately below.",
+      "Browser/webJs/sourceRegex, configured proxy, media payload/decode/upload/rate limiting, non-text subContent side channels, image/pay/callback/full model APIs remain unported or explicit unsupported at their invocation boundary. Persistent state capabilities are listed separately below.",
       "Arbitrary already-running Java host callbacks cannot be forcibly interrupted; existing task/guard/return boundaries reject cancelled/closed results."
     ],
     "validation": {
@@ -1570,5 +1577,37 @@
     "SwiftSDKExecuted": false,
     "deviceValidationPassed": false,
     "completeCookieContract": false
+  },
+  "textSubContentIntegration": {
+    "scope": "Explicit original-traditional text API only; existing parser/network/state owners retained.",
+    "productionSources": [
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBookCompat.kt"
+    ],
+    "implemented": [
+      "First-page AnalyzeRule subContent evaluated once after all content pages; text result appended without extra trim/HTML formatting/URL fetch, while existing AnalyzeRule HTML entity decoding remains.",
+      "Full-text replacement follows append and original per-line trim; online-text result then regains its original two-ideographic-space indentation before title processing.",
+      "Unsupported/cancelled/failed subContent extraction cannot publish a partial public result. Blank rule keeps previous formatted text."
+    ],
+    "validation": {
+      "platform": "Windows JDK21",
+      "currentUniqueMethodsPassed": 24,
+      "newMethods": 4,
+      "unchangedRelatedMethodsReused": 20,
+      "sourceInputs": 149,
+      "initialAttempt": ".build/original-subcontent-delta/focused-v1.json",
+      "fixtureCorrectionOnlyAttempt": ".build/original-subcontent-delta/focused-v2.json",
+      "initialFailuresPreserved": 2,
+      "productionBytesChangedAfterInitialRun": 0,
+      "newAndroidReferenceExecutions": 0,
+      "JNIExecutions": 0,
+      "SwiftSDKExecutions": 0
+    },
+    "remaining": [
+      "Ordinary production JAR with this source must be assembled and inspected in the coherent Cookie-write checkpoint.",
+      "App default traditional route, full batch saving, non-text lyric/danmaku/file helpers and complete source compatibility remain unfinished."
+    ],
+    "readerRouteIntegrated": false,
+    "fullFeatureParityEstablished": false
   }
 }

@@ -120,13 +120,24 @@ object BookContent {
                 contentList.add(it)
             }
         }
-        if (!contentRule.subContent.isNullOrBlank()) unsupportedRule("original WebBook subContent/media side channels")
+        val subContentRule = contentRule.subContent
+        if (!subContentRule.isNullOrBlank()) {
+            // Original BookContent appends the first page's raw subContent for
+            // online text before full-text replacement. It does not trim,
+            // format HTML or fetch a URL-looking text result in this branch.
+            val rawContent = analyzeRule.getString(subContentRule)
+            if (!book.isOriginalOnlineText) unsupportedRule("original WebBook non-text subContent/media side channels")
+            contentList.add(rawContent)
+        }
         var contentStr = contentList.joinToString("\n")
         //全文替换
         val replaceRegex = contentRule.replaceRegex
         if (!replaceRegex.isNullOrEmpty()) {
             contentStr = contentStr.split(AppPattern.LFRegex).joinToString("\n") { it.trim() }
             contentStr = analyzeRule.getString(replaceRegex, contentStr)
+            if (book.isOriginalOnlineText) {
+                contentStr = contentStr.split(AppPattern.LFRegex).joinToString("\n") { "　　$it" }
+            }
         }
         val titleRule = contentRule.title //先正文再章节名称
         if (!titleRule.isNullOrBlank()) {

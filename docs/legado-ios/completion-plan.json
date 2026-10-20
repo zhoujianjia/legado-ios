@@ -391,9 +391,10 @@
           "preparatoryImplementationEvidence": [
             "docs/legado-ios/core-original-webbook-step.json",
             "docs/legado-ios/core-original-state-persistence-step.json",
-            "docs/legado-ios/core-original-public-runtime-step.json"
+            "docs/legado-ios/core-original-public-runtime-step.json",
+            "docs/legado-ios/core-original-text-subcontent-step.json"
           ],
-          "preparatoryScopeZh": "原WebBook四段公开execute与跨任务同owner/HTTP/Cookie已有171项JVM及普通JAR证据，有限实体变量业务结果可往返；批量、完整保存栅栏和App状态/发布仍未完成，整步未验收。",
+          "preparatoryScopeZh": "原WebBook四段公开execute与跨任务同owner/HTTP/Cookie已有171项JVM及普通JAR证据，有限实体变量业务结果可往返；批量、完整保存栅栏和App状态/发布仍未完成，整步未验收。；本段另接原版文本subContent、分页后一次追加及全文替换后缩进，24项当前JVM通过（20既有复用+4新），普通JAR/JNI/App验收仍待。",
           "preparatoryStatus": "public-JVM-business-boundary-implemented-Swift-SDK-and-product-gates-unfinished",
           "implementationEvidence": [
             "docs/legado-ios/core-original-search-owner-correction.json"
@@ -736,7 +737,8 @@
       "cookieReadSDKCheckpoint": "docs/legado-ios/core-cookie-read-sdk-checkpoint.json",
       "cookieReadSDKRequest": "docs/legado-ios/core-cookie-read-sdk-request.json",
       "cookieReadSDKCorrectedRequest": "docs/legado-ios/core-cookie-read-sdk-tag-correction.json",
-      "unsubmittedTransactionRetirementImplementation": "docs/legado-ios/core-renewal-transaction-retirement-step.json"
+      "unsubmittedTransactionRetirementImplementation": "docs/legado-ios/core-renewal-transaction-retirement-step.json",
+      "originalTextSubContentImplementation": "docs/legado-ios/core-original-text-subcontent-step.json"
     }
   },
   "stages": [
@@ -4775,6 +4777,10 @@
     "unsubmitted-transaction-retirement": {
       "path": "docs/legado-ios/core-renewal-transaction-retirement-step.json",
       "scope": "Actual journal/coordinator safe-unsubmitted retirement and recovery wiring, independently reviewed; seven native definitions, SDK execution zero. No submitted/completed retirement or App trigger acceptance."
+    },
+    "original-text-subcontent": {
+      "path": "docs/legado-ios/core-original-text-subcontent-step.json",
+      "scope": "Actual original text subContent and online-text replacement indentation; current24 JVM passes with two initial fixture failures preserved. New ordinary JAR/JNI/Swift/App acceptance remains pending."
     }
   },
   "retainedExistingWork": [

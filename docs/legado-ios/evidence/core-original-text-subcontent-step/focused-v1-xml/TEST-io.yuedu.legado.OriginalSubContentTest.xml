@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.OriginalSubContentTest" tests="4" skipped="0" failures="2" errors="0" timestamp="2026-10-20T06:30:24.804Z" hostname="DESKTOP-2E0OC06" time="1.304">
+  <properties/>
+  <testcase name="pagedTextAppendsFirstPageRawSubContentOnceWithoutFetchingUrlLookingText" classname="io.yuedu.legado.OriginalSubContentTest" time="0.988">
+    <failure message="java.lang.AssertionError: 　　　　FIRST&#10;　　&#10;　　　　SECOND&#10;　　&#10;  https://literal.invalid/副文 &lt;b&gt;&amp;&lt;/b&gt;  " type="java.lang.AssertionError">java.lang.AssertionError: 　　　　FIRST
+　　
+　　　　SECOND
+　　
+  https://literal.invalid/副文 &lt;b&gt;&amp;&lt;/b&gt;  
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at io.yuedu.legado.OriginalSubContentTest.pagedTextAppendsFirstPageRawSubContentOnceWithoutFetchingUrlLookingText(OriginalSubContentTest.kt:31)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="replacementSeesAppendedRawTextBeforeOriginalOnlineTextIndentationAndTitle" classname="io.yuedu.legado.OriginalSubContentTest" time="0.104"/>
+  <testcase name="typedControlFailureDuringSubContentNeverPublishesPartialContent" classname="io.yuedu.legado.OriginalSubContentTest" time="0.119"/>
+  <testcase name="absentEmptyAndBlankSubContentPreserveExistingTextWithoutReplacementIndentation" classname="io.yuedu.legado.OriginalSubContentTest" time="0.092">
+    <failure message="java.lang.AssertionError" type="java.lang.AssertionError">java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertFalse(Assert.java:65)
+	at org.junit.Assert.assertFalse(Assert.java:75)
+	at io.yuedu.legado.OriginalSubContentTest.absentEmptyAndBlankSubContentPreserveExistingTextWithoutReplacementIndentation(OriginalSubContentTest.kt:78)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

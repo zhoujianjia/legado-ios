@@ -56,7 +56,7 @@ class OriginalWebBookExecutionTest {
             assertEquals("ready", book.getVariable("toc")); assertEquals(2, book.totalChapterNum)
             assertEquals("第二章", book.latestChapterTitle); assertSame(chapters[0], owned.environment.webBook.chapters(book.bookUrl)[0])
             val first = WebBook.getContentAwait(s, book, chapters[0], needSave = false)
-            assertEquals("首页&正文\n\n末页\n<img src=\"${peer.origin}/image.png\">\n", first)
+            assertEquals("　　首页&正文\n　　\n　　末页\n　　<img src=\"${peer.origin}/image.png\">\n　　", first)
             assertFalse(first, first.contains("REMOVE")); assertEquals("第一章!", chapters[0].title)
             assertEquals(0, peer.requests.count { it.path == "/c2" }) // Default transient TOC lookup prevents crossing chapter boundary.
             assertTrue(WebBook.getContentAwait(s, book, chapters[1], needSave = false).contains("第二章正文"))

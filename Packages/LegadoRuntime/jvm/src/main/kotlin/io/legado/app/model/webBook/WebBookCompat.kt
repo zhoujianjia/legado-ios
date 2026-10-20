@@ -1,5 +1,6 @@
 package io.legado.app.model.webBook
 
+import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookSource
 import io.yuedu.legado.originalrule.*
 import java.text.DecimalFormat
@@ -17,6 +18,14 @@ internal fun wordCountFormat(wc: String?): String {
     if (words <= 0) return ""
     return if (words > 10000) DecimalFormat("#.#").format(words * 1.0f / 10000f.toDouble()) + "万字" else words.toString() + "字"
 }
+
+// Pinned BookExtensions.isLocal/isOnLineTxt and BookType flags; only the
+// predicate needed by the retained text algorithm is exposed in this port.
+internal val Book.isOriginalOnlineText: Boolean
+    get() {
+        val local = if (type == 0) origin == "loc_book" || origin.startsWith("webDav::") else type and 256 > 0
+        return !local && type and 8 > 0
+    }
 
 internal fun BookSource.getBookType(): Int = when (bookSourceType) { 3 -> 8 or 128; 2 -> 64; 1 -> 32; 4 -> 4; else -> 8 }
 internal fun String?.isTrue(nullIsTrue: Boolean = false): Boolean {

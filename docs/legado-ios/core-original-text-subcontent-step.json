@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T06:33:44.104909+00:00",
+  "status": "original-text-subcontent-production-connected-actual-Windows-JVM-verified",
+  "sourceBinding": {
+    "count": 6,
+    "files": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+        "bytes": 10584,
+        "sha256": "fb9ec680b871e13906a5a359b4b2d3a43fca85bf5a2ec881568c3341e62191f3"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBookCompat.kt",
+        "bytes": 2184,
+        "sha256": "90d8cd56a73bb85bad28c8765ef4c42ba2bb4353a0df55db8bf74fcb3273df1f"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+        "bytes": 22534,
+        "sha256": "94f4bf708bd84c9dc6314655376574e47c367ef331e895c16928c5f3193bfe1b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSubContentTest.kt",
+        "bytes": 8370,
+        "sha256": "e4a0e60308f382b0cfb244bb2e7d70ec2a5ec75bda3dfbeae0987cdc87fd1ea5"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/sources/help/book/BookExtensions.kt",
+        "bytes": 12536,
+        "sha256": "bdac691b429d21ba9e5ad1d8d9b4235a4dd3d7f3b394c6a3c48b4d8a685488cd"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 83378,
+        "sha256": "78225210599bb93864699d07c32e03cadb8e9d411fa8746249799c6f3f34020c"
+      }
+    ]
+  },
+  "actualProductionFlow": [
+    "First-page AnalyzeRule subContent evaluated once after all content pages; text result appended without extra trim/HTML formatting/URL fetch, while existing AnalyzeRule HTML entity decoding remains.",
+    "Full-text replacement follows append and original per-line trim; online-text result then regains its original two-ideographic-space indentation before title processing.",
+    "Unsupported/cancelled/failed subContent extraction cannot publish a partial public result. Blank rule keeps previous formatted text."
+  ],
+  "verification": {
+    "schemaVersion": 1,
+    "recordedAtUTC": "2026-10-20T06:33:44.104909+00:00",
+    "sourceBinding": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+        "bytes": 10584,
+        "sha256": "fb9ec680b871e13906a5a359b4b2d3a43fca85bf5a2ec881568c3341e62191f3"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBookCompat.kt",
+        "bytes": 2184,
+        "sha256": "90d8cd56a73bb85bad28c8765ef4c42ba2bb4353a0df55db8bf74fcb3273df1f"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+        "bytes": 22534,
+        "sha256": "94f4bf708bd84c9dc6314655376574e47c367ef331e895c16928c5f3193bfe1b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSubContentTest.kt",
+        "bytes": 8370,
+        "sha256": "e4a0e60308f382b0cfb244bb2e7d70ec2a5ec75bda3dfbeae0987cdc87fd1ea5"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/sources/help/book/BookExtensions.kt",
+        "bytes": 12536,
+        "sha256": "bdac691b429d21ba9e5ad1d8d9b4235a4dd3d7f3b394c6a3c48b4d8a685488cd"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 83378,
+        "sha256": "78225210599bb93864699d07c32e03cadb8e9d411fa8746249799c6f3f34020c"
+      }
+    ],
+    "actualUniqueCurrentJVMMethodsPassed": 24,
+    "newMethods": 4,
+    "relatedUnchangedMethods": 20,
+    "actualAttempts": 28,
+    "initialFailures": [
+      "The new URL-looking raw fixture incorrectly expected HTML entity escaping to survive original AnalyzeRule.getString default unescaping.",
+      "The blank-rule fixture incorrectly assumed the pre-existing HTML formatter produced no ideographic indentation."
+    ],
+    "correction": "Only the four-method new fixture file changed. Production and existing20 test bytes remained identical, so those actual passes were reused. Failed initial XML/log/source are retained.",
+    "rootSourceReview": [
+      "Compared retained ZIP BookContent subContent/replacement/title ordering and exact BookExtensions/BookType predicate.",
+      "No extra raw-result trim, formatter, URL request, cache or media path. Normal AnalyzeRule HTML unescape retained.",
+      "Typed rule control/cancellation failures retain existing runtime error path; no partial content result.",
+      "Updated the old affected replacement expected string to the original two-space line output; its actual13-method suite passed."
+    ],
+    "compiledInputsVerified": 149,
+    "independentSourceReview": ".build/original-subcontent-delta/independent-subcontent-source-review.json",
+    "ordinaryJarWithTheseBytesVerified": false,
+    "JNIExecutions": 0,
+    "SwiftSDKExecutions": 0,
+    "currentFixedSDKTagIncludesThisSource": false
+  },
+  "remaining": [
+    "Ordinary production JAR with this source must be assembled and inspected in the coherent Cookie-write checkpoint.",
+    "App default traditional route, full batch saving, non-text lyric/danmaku/file helpers and complete source compatibility remain unfinished."
+  ],
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-original-text-subcontent-step",
+    "manifest": "manifest.json",
+    "rawFiles": 19
+  },
+  "newCloudBuildRequested": false,
+  "physicalDeviceValidationRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
