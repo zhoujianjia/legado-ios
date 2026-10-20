@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "real-public-first-use-input-delivered-device-enrollment-pending",
+  "frozenDeviceSource": "44f125b73c06bf95637765ab58e65f41d0651b44",
+  "preparation": {
+    "schemaVersion": 1,
+    "status": "frozen-public-three-root-enrollment-delivery-awaiting-root-independent-review",
+    "frozenAtUTC": "2026-10-20T16:42:25.512149+00:00",
+    "author": "/root/build_preflight_review",
+    "scope": "Public certificate material only; no Swift or IPA change",
+    "files": [
+      {
+        "path": "final/apple-public-enrollment.json",
+        "bytes": 8731,
+        "sha256": "b27f4c8d309996cc7db5e80b18a21799ed1d0c036bf853a598c45d3b3a8fd2f1"
+      },
+      {
+        "path": "final/sources.json",
+        "bytes": 9351,
+        "sha256": "5708f87166ac5252fdb8ae83a7bbd4b1670714794cc60cc3fd31c8f24510eeca"
+      },
+      {
+        "path": "final/简体首次配置说明.txt",
+        "bytes": 3833,
+        "sha256": "753bcd875b106b148e6b192db3919b432a75f1a23ae45de23457207fb1571ec1"
+      }
+    ],
+    "preparer": {
+      "path": "prepare-public-configuration.py",
+      "bytes": 10874,
+      "sha256": "624ec3e3a345743fb762f1626c6e61d26454353ed3cbba5a3fe581a4924a33e7"
+    },
+    "inputs": [
+      {
+        "path": "verified-public-downloads/apple-pki-page.html",
+        "bytes": 23361,
+        "sha256": "736b710a338fa4a4759afea379517cbcc4c23412dfe43c29b51a3333df557620"
+      },
+      {
+        "path": "verified-public-downloads/AppleIncRootCertificate.cer",
+        "bytes": 1215,
+        "sha256": "b0b1730ecbc7ff4505142c49f1295e6eda6bcaed7e2c68c5be91b5a11001f024"
+      },
+      {
+        "path": "verified-public-downloads/AppleRootCA-G2.cer",
+        "bytes": 1430,
+        "sha256": "c2b9b042dd57830e7d117dac55ac8ae19407d38e41d88f3215bc3a890444a050"
+      },
+      {
+        "path": "verified-public-downloads/AppleRootCA-G3.cer",
+        "bytes": 583,
+        "sha256": "63343abfb89a6a03ebb57e9b3f5fa7be7c4f5c756f3017b3a8c488c3653e9179"
+      }
+    ],
+    "actualValidation": {
+      "DERDownloadsSuccessfullyVerified": 3,
+      "selfSignaturesCAKeyCertSignAndDatePassed": true,
+      "DERExactRoundTripsPassed": 3,
+      "configurationExactThreeKeysAndBase64RoundTripsPassed": true,
+      "configurationOnlyThreePublishedAppleRoots": true,
+      "noNamespaceOrDeviceOrCredentials": true,
+      "SDKExecutions": 0,
+      "deviceExecutions": 0,
+      "installedUserApplicationRead": false,
+      "privateCredentialsOrPairingRead": false,
+      "systemTrustMutations": 0,
+      "productionCodeChanges": 0,
+      "canonicalGitOrCloudChanges": false,
+      "automaticSelfRenewalProven": false
+    },
+    "independentRootReviewPending": true,
+    "priorFirstUseReview": ".build/renewal-delivery/build14-first-use-review.json",
+    "priorGapScopeUpdate": "A real public-root-only EnrollmentConfiguration is now prepared, removing the missing input-file delivery gap. No successful initial device enrollment, account authorization, material publication, pairing reachability, installation or renewal follows from this preparation."
+  },
+  "integratedFiles": [
+    {
+      "path": "scripts/reader-experience/renewal-initial-configuration/apple-public-enrollment.json",
+      "bytes": 8731,
+      "sha256": "b27f4c8d309996cc7db5e80b18a21799ed1d0c036bf853a598c45d3b3a8fd2f1"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-initial-configuration/sources.json",
+      "bytes": 9351,
+      "sha256": "5708f87166ac5252fdb8ae83a7bbd4b1670714794cc60cc3fd31c8f24510eeca"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-initial-configuration/简体首次配置说明.txt",
+      "bytes": 3833,
+      "sha256": "753bcd875b106b148e6b192db3919b432a75f1a23ae45de23457207fb1571ec1"
+    }
+  ],
+  "rootIndependentVerification": {
+    "path": "docs/legado-ios/evidence/renewal-public-initial-configuration-independent.json",
+    "bytes": 2405,
+    "sha256": "b3db8971f2c5093aba17c81bbac4a2f8775346a546f81074c29722ffb220c850",
+    "review": "Independently downloaded the three exact official PKI root URLs over verified HTTPS; all actual bytes match official Apple support fingerprints and the authored JSON. Verified DER roundtrip, RSA PKCS1v15/SHA1 or ECDSA/SHA384 self-signatures with the actual public keys, CA/keyCertSign and UTC validity. JSON is exactly schema/codeAnchors/profileAnchors, same ordered3 roots, no namespace/device/secrets. Reviewed all user instructions against frozen44 source including existing signed-IPA/manual and automatic-due boundaries."
+  },
+  "closedGap": "Previously no usable real EnrollmentConfiguration input was delivered; now a public Apple-root-only input is available to import into the existing App first-enrollment verifier.",
+  "unverified": "No installed user App, profile, Keychain, Apple account authorization, initial namespace enrollment, signed material publication, paired endpoint, same-device installation, expiry extension or background execution is proved by public certificate validation.",
+  "devicePackageBoundary": "These files accompany the unchanged frozen44f125b build14 IPA. They do not require a new App package tag or alter system trust, signing gates or source compatibility.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

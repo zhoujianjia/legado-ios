@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Public Apple-root-only enrollment input for the existing Yuedu App verifier; not an OS certificate installation profile",
+  "preparedAtUTC": "2026-10-20T16:41:10.255346Z",
+  "officialPKIPage": {
+    "url": "https://www.apple.com/certificateauthority/",
+    "downloadFinalURL": "https://www.apple.com/certificateauthority/",
+    "bytes": 23361,
+    "sha256": "736b710a338fa4a4759afea379517cbcc4c23412dfe43c29b51a3333df557620"
+  },
+  "officialWWDRDocumentationURL": "https://developer.apple.com/help/account/certificates/wwdr-intermediate-certificates/",
+  "officialWWDRDocumentationScope": "G3 lists Apple Development and Apple Distribution; G6 lists ECDSA software/services signing. The delivered configuration includes roots only, no WWDR intermediate as an extra trust anchor.",
+  "certificateSourceSelection": "Exactly the three Apple Root Certificates links published on the official PKI page; filenames and URLs were parsed from that page, not guessed",
+  "downloadLimits": {
+    "TLSCertificateVerification": true,
+    "allowedHost": "www.apple.com",
+    "HTTPSOnly": true,
+    "socketTimeoutSeconds": 20,
+    "maximumPKIHTMLBytes": 262144,
+    "maximumCertificateDERBytes": 65536,
+    "parallelCertificateDownloads": 3
+  },
+  "cryptographyVersion": "47.0.0",
+  "configuration": {
+    "filename": "apple-public-enrollment.json",
+    "bytes": 8731,
+    "sha256": "b27f4c8d309996cc7db5e80b18a21799ed1d0c036bf853a598c45d3b3a8fd2f1",
+    "keys": [
+      "codeAnchors",
+      "profileAnchors",
+      "schema"
+    ],
+    "codeAnchorCount": 3,
+    "profileAnchorCount": 3,
+    "sameOrderedRootSet": true,
+    "base64RoundTripVerified": true,
+    "namespaceIDIncluded": false,
+    "deviceIncluded": false,
+    "credentialsIncluded": false
+  },
+  "certificates": [
+    {
+      "officialPKILinkText": "Apple Inc. Root",
+      "discoveredOnURL": "https://www.apple.com/certificateauthority/",
+      "officialURL": "https://www.apple.com/appleca/AppleIncRootCertificate.cer",
+      "downloadFinalURL": "https://www.apple.com/appleca/AppleIncRootCertificate.cer",
+      "downloadedAtUTC": "2026-10-20T16:41:09.984933Z",
+      "filename": "AppleIncRootCertificate.cer",
+      "contentType": "application/x-x509-ca-cert",
+      "bytes": 1215,
+      "sha256": "b0b1730ecbc7ff4505142c49f1295e6eda6bcaed7e2c68c5be91b5a11001f024",
+      "subjectRFC4514": "CN=Apple Root CA,OU=Apple Certification Authority,O=Apple Inc.,C=US",
+      "issuerRFC4514": "CN=Apple Root CA,OU=Apple Certification Authority,O=Apple Inc.,C=US",
+      "serialNumberHex": "2",
+      "notValidBeforeUTC": "2006-04-25T21:40:36Z",
+      "notValidAfterUTC": "2035-02-09T21:40:36Z",
+      "publicKey": {
+        "type": "RSA",
+        "keySizeBits": 2048
+      },
+      "signatureAlgorithmOID": "1.2.840.113549.1.1.5",
+      "signatureHashAlgorithm": "sha1",
+      "verification": {
+        "DERExactRoundTrip": true,
+        "subjectEqualsIssuer": true,
+        "selfSignatureVerified": true,
+        "selfSignatureVerificationAPI": "cryptography RSAPublicKey.verify with certificate signature parameters and hash",
+        "basicConstraintsCA": true,
+        "basicConstraintsCritical": true,
+        "keyUsageKeyCertSign": true,
+        "keyUsageCritical": true,
+        "withinValidityAtDownload": true,
+        "revocationStatusChecked": false,
+        "iOSSecurityFrameworkExecuted": false
+      },
+      "configurationArrayIndex": 0
+    },
+    {
+      "officialPKILinkText": "Apple Root CA - G2 Root",
+      "discoveredOnURL": "https://www.apple.com/certificateauthority/",
+      "officialURL": "https://www.apple.com/certificateauthority/AppleRootCA-G2.cer",
+      "downloadFinalURL": "https://www.apple.com/certificateauthority/AppleRootCA-G2.cer",
+      "downloadedAtUTC": "2026-10-20T16:41:10.253309Z",
+      "filename": "AppleRootCA-G2.cer",
+      "contentType": "application/x-x509-ca-cert",
+      "bytes": 1430,
+      "sha256": "c2b9b042dd57830e7d117dac55ac8ae19407d38e41d88f3215bc3a890444a050",
+      "subjectRFC4514": "C=US,O=Apple Inc.,OU=Apple Certification Authority,CN=Apple Root CA - G2",
+      "issuerRFC4514": "C=US,O=Apple Inc.,OU=Apple Certification Authority,CN=Apple Root CA - G2",
+      "serialNumberHex": "1e0e5b58367a3e0",
+      "notValidBeforeUTC": "2014-04-30T18:10:09Z",
+      "notValidAfterUTC": "2039-04-30T18:10:09Z",
+      "publicKey": {
+        "type": "RSA",
+        "keySizeBits": 4096
+      },
+      "signatureAlgorithmOID": "1.2.840.113549.1.1.12",
+      "signatureHashAlgorithm": "sha384",
+      "verification": {
+        "DERExactRoundTrip": true,
+        "subjectEqualsIssuer": true,
+        "selfSignatureVerified": true,
+        "selfSignatureVerificationAPI": "cryptography RSAPublicKey.verify with certificate signature parameters and hash",
+        "basicConstraintsCA": true,
+        "basicConstraintsCritical": true,
+        "keyUsageKeyCertSign": true,
+        "keyUsageCritical": true,
+        "withinValidityAtDownload": true,
+        "revocationStatusChecked": false,
+        "iOSSecurityFrameworkExecuted": false
+      },
+      "configurationArrayIndex": 1
+    },
+    {
+      "officialPKILinkText": "Apple Root CA - G3 Root",
+      "discoveredOnURL": "https://www.apple.com/certificateauthority/",
+      "officialURL": "https://www.apple.com/certificateauthority/AppleRootCA-G3.cer",
+      "downloadFinalURL": "https://www.apple.com/certificateauthority/AppleRootCA-G3.cer",
+      "downloadedAtUTC": "2026-10-20T16:41:10.180393Z",
+      "filename": "AppleRootCA-G3.cer",
+      "contentType": "application/x-x509-ca-cert",
+      "bytes": 583,
+      "sha256": "63343abfb89a6a03ebb57e9b3f5fa7be7c4f5c756f3017b3a8c488c3653e9179",
+      "subjectRFC4514": "C=US,O=Apple Inc.,OU=Apple Certification Authority,CN=Apple Root CA - G3",
+      "issuerRFC4514": "C=US,O=Apple Inc.,OU=Apple Certification Authority,CN=Apple Root CA - G3",
+      "serialNumberHex": "2dc5fc88d2c54b95",
+      "notValidBeforeUTC": "2014-04-30T18:19:06Z",
+      "notValidAfterUTC": "2039-04-30T18:19:06Z",
+      "publicKey": {
+        "type": "ECDSA",
+        "curve": "secp384r1",
+        "keySizeBits": 384
+      },
+      "signatureAlgorithmOID": "1.2.840.10045.4.3.3",
+      "signatureHashAlgorithm": "sha384",
+      "verification": {
+        "DERExactRoundTrip": true,
+        "subjectEqualsIssuer": true,
+        "selfSignatureVerified": true,
+        "selfSignatureVerificationAPI": "cryptography EllipticCurvePublicKey.verify with certificate signature parameters",
+        "basicConstraintsCA": true,
+        "basicConstraintsCritical": true,
+        "keyUsageKeyCertSign": true,
+        "keyUsageCritical": true,
+        "withinValidityAtDownload": true,
+        "revocationStatusChecked": false,
+        "iOSSecurityFrameworkExecuted": false
+      },
+      "configurationArrayIndex": 2
+    }
+  ],
+  "validation": {
+    "downloadedPublicDERCount": 3,
+    "allSelfSignaturesVerified": true,
+    "allCAAndKeyCertSignVerified": true,
+    "allWithinValidityAtDownload": true,
+    "configurationSchemaAndBase64RoundTripVerified": true,
+    "SDKExecutions": 0,
+    "deviceExecutions": 0,
+    "installedUserApplicationRead": false,
+    "privateCredentialsOrPairingRead": false,
+    "systemTrustStoreChanged": false,
+    "SwiftVerifierChanged": false,
+    "signingOrInstallationAttempted": false,
+    "automaticRenewalVerified": false
+  },
+  "limits": [
+    "No installed App, provisioning profile or signer chain was provided or verified. The existing App must verify its own complete signed Bundle and profiles using these explicit roots.",
+    "No signature, entitlement, team, Keychain, pairing, install permission or background scheduling gate is weakened by this public input.",
+    "The roots do not supply missing intermediate certificates or grant Apple account access; the existing verifier disables network fetching.",
+    "Local cryptographic checks are not Apple SDK/SecTrust execution, online revocation validation, or successful namespace enrollment on a device."
+  ],
+  "appSourceContract": {
+    "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
+    "sourceOnlyScreen": true,
+    "files": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 110227,
+        "sha256": "a5777e45fe23946754508bc5932607f12d604bc6a1dcc67b525e10299229a5f7"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 25565,
+        "sha256": "d835a75bdeb280173b388a943a018a672476898d50b309b1c21a04aaa28c9c57"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 54233,
+        "sha256": "d27ca57eda321ee8f57edc3b85e25738faeb3241c38a0ca45d50b8fe9ba1ac02"
+      }
+    ],
+    "observedAlgorithmFamilies": "RSA and ECDSA CMS verification includes SHA1/SHA256/SHA384/SHA512; explicit certificate anchors are evaluated by existing Security SecTrust. No Apple runtime was executed."
+  },
+  "legacyRootVerificationNote": "Apple Inc. Root is the unmodified official RSA/SHA1 self-signed public root. cryptography 47 high-level Certificate.verify_directly_issued_by rejects this signature algorithm; the delivered original DER self-signature was instead verified with RSAPublicKey.verify using its encoded PKCS1v15/SHA1 parameters. App validation code was not changed."
+}
