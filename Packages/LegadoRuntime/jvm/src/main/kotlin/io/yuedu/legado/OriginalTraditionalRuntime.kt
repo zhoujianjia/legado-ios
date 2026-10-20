@@ -38,6 +38,7 @@ internal object OriginalTraditionalRuntime {
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         val fields = when (operation) {
             "loginUi" -> setOf("values", "timeoutMs")
+            "loginAction" -> setOf("action", "credentials", "isLongClick", "timeoutMs")
             "formLogin" -> setOf("credentials", "timeoutMs")
             "sourceCallback" -> setOf("event", "timeoutMs")
             "bookCallback" -> setOf("event", "book", "chapter", "result", "timeoutMs")
@@ -61,6 +62,7 @@ internal object OriginalTraditionalRuntime {
                 val result = runBlocking(task.job) {
                     when (operation) {
                         "loginUi" -> OriginalLoginUIRuntime.execute(source, input)
+                        "loginAction" -> OriginalLoginActionRuntime.execute(source, input)
                         "formLogin" -> {
                             // The Android dialog has lifecycle cancellation, no fixed
                             // 30s form timer. This is the finite iOS embedding budget.

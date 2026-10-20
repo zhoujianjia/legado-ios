@@ -26,7 +26,10 @@ struct BookSourceFormLoginView: View {
     @State private var showFanqieLogin = false
     @State private var showLog = false
     @State private var canRetryLoginUi = false
+    @State private var originalActionTask: Task<Void, Never>?
+    @State private var originalActionGeneration = UUID()
     @State private var formSubmissionTask: Task<Void, Never>?
+    @State private var formSubmissionGeneration = UUID()
     @State private var loginUIRenderTask: Task<Void, Never>?
     @State private var loginUIRenderGeneration = UUID()
     @State private var originalFormLoaded = false
@@ -58,11 +61,14 @@ struct BookSourceFormLoginView: View {
                         values: $values,
                         labels: fieldLabels,
                         onValueChange: { field, _ in
-                            if field.type == .select {
+                            if field.type == .select && field.originalRowID == nil {
                                 persistCurrentFormValues()
                             }
                         },
-                        onAction: handleButton
+                        onAction: handleButton,
+                        onOriginalAction: { field, isLongClick in
+                            runOriginalAction(field: field, isLongClick: isLongClick)
+                        }
                     )
 
                     if Self.supportsFanqieLogin(source: source) {
@@ -112,8 +118,12 @@ struct BookSourceFormLoginView: View {
                 } else {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            persistCurrentFormValues()
-                            onDismiss()
+                            if usesOriginalLoginUI {
+                                doLogin()
+                            } else {
+                                persistCurrentFormValues()
+                                onDismiss()
+                            }
                         } label: {
                             Image(systemName: "checkmark")
                         }
@@ -148,6 +158,9 @@ struct BookSourceFormLoginView: View {
         }
         .onAppear { loadUI() }
         .onDisappear {
+            originalActionGeneration = UUID()
+            originalActionTask?.cancel(); originalActionTask = nil
+            formSubmissionGeneration = UUID()
             formSubmissionTask?.cancel(); formSubmissionTask = nil
             loginUIRenderGeneration = UUID()
             loginUIRenderTask?.cancel(); loginUIRenderTask = nil
@@ -229,6 +242,10 @@ struct BookSourceFormLoginView: View {
     // MARK: - Setup
 
     private func loadUI() {
+        formSubmissionGeneration = UUID()
+        formSubmissionTask?.cancel(); formSubmissionTask = nil
+        originalActionGeneration = UUID()
+        originalActionTask?.cancel(); originalActionTask = nil
         loginUIRenderTask?.cancel()
         let generation = UUID()
         loginUIRenderGeneration = generation
@@ -571,13 +588,17 @@ struct BookSourceFormLoginView: View {
     }
 
     private func submitForm() {
+        let generation = UUID()
+        formSubmissionGeneration = generation
         isLoading = true
         let snapshot = source
         let valueSnapshot = values
         let fieldSnapshot = fields
         let hadValidOriginalForm = originalFormLoaded
         formSubmissionTask = Task {
-            defer { formSubmissionTask = nil }
+            defer {
+                if formSubmissionGeneration == generation { formSubmissionTask = nil }
+            }
             // Source classification and complete form synthesis run off MainActor.
             let (original, submittedCredentials) = await Task.detached {
                 let original = snapshot.bookSourceType == 0 && !snapshot.isJsSource
@@ -586,7 +607,10 @@ struct BookSourceFormLoginView: View {
                     : [:]
                 return (original, submitted)
             }.value
-            guard !Task.isCancelled else { isLoading = false; return }
+            guard !Task.isCancelled, formSubmissionGeneration == generation else {
+                if formSubmissionGeneration == generation { isLoading = false }
+                return
+            }
             // Original toolbar requires a successfully parsed rowUis, including
             // valid []. A failed initial render must never become removeLoginInfo.
             guard !original || hadValidOriginalForm else { isLoading = false; return }
@@ -612,12 +636,12 @@ struct BookSourceFormLoginView: View {
             do {
                 let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
                 _ = try await service.originalFormLogin(source: snapshot, credentials: submittedCredentials)
-                guard !Task.isCancelled else { isLoading = false; return }
+                guard !Task.isCancelled, formSubmissionGeneration == generation else { return }
                 isLoading = false
                 menuAlert = MenuActionAlert(title: localized("完成"), detail: localized("完成"), dismissesView: true)
             } catch {
+                guard !Task.isCancelled, formSubmissionGeneration == generation else { return }
                 isLoading = false
-                guard !Task.isCancelled else { return }
                 let failure = error as? LegadoRuntimeError
                 let code = failure?.code ?? "STATE_IO"
                 // Script/request/credential descriptions are intentionally not
@@ -630,6 +654,10 @@ struct BookSourceFormLoginView: View {
     }
 
     private func handleButton(field: LoginField) {
+        if usesOriginalLoginUI {
+            runOriginalAction(field: field, isLongClick: false)
+            return
+        }
         AppLogger.parse("⟐ menuButton", context: ["name": field.name, "action": field.action ?? "nil"])
         guard let action = field.action, !action.isEmpty else { return }
         // If it's a URL, open in browser; if JS, run it
@@ -647,6 +675,49 @@ struct BookSourceFormLoginView: View {
                 )
             }
             runButtonJS(action: action, credentials: currentCredentials)
+        }
+    }
+
+    /// Source actions borrow the complete transient map and never pre-store it.
+    /// Presentation callbacks remain typed unsupported in the finite native host.
+    private func runOriginalAction(field: LoginField, isLongClick: Bool) {
+        guard usesOriginalLoginUI, originalFormLoaded, !isLoading,
+              let action = field.action else { return }
+        // Retain the existing external-link path; browser/WebJS is a later slice.
+        if action.hasPrefix("http://") || action.hasPrefix("https://") {
+            if let url = URL(string: action) { UIApplication.shared.open(url) }
+            return
+        }
+        originalActionTask?.cancel()
+        let generation = UUID()
+        originalActionGeneration = generation
+        let snapshot = source, fieldSnapshot = fields, valueSnapshot = values
+        isLoading = true
+        originalActionTask = Task {
+            defer {
+                if originalActionGeneration == generation {
+                    originalActionTask = nil
+                    isLoading = false
+                }
+            }
+            do {
+                let credentials = await Task.detached {
+                    Self.originalFormSubmissionValues(fields: fieldSnapshot, values: valueSnapshot)
+                }.value
+                guard !Task.isCancelled, originalActionGeneration == generation else { return }
+                let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+                _ = try await service.originalLoginAction(source: snapshot, action: action,
+                    credentials: credentials, isLongClick: isLongClick)
+                guard !Task.isCancelled, originalActionGeneration == generation else { return }
+            } catch {
+                guard !Task.isCancelled, originalActionGeneration == generation else { return }
+                let typed = error as? LegadoRuntimeError
+                let code = typed?.code ?? "STATE_IO"
+                AppLogger.error("Original login action failed", context: ["code": code,
+                    "reportedEffects": typed?.completedEffects?.count ?? 0])
+                menuAlert = MenuActionAlert(title: localized("操作失敗"),
+                    detail: localized("操作失敗") + " (\(code))")
+            }
         }
     }
 

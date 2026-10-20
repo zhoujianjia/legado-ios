@@ -208,3 +208,13 @@ internal struct OriginalLoginUIRequest: Encodable, Sendable {
     let values: [String: String]?
     let timeoutMs: Int64
 }
+
+public struct LegadoOriginalLoginActionResult: Codable, Sendable, Equatable {
+    public let executed: Bool
+}
+internal struct OriginalLoginActionRequest: Encodable, Sendable {
+    let action: String?
+    let credentials: [String: String]
+    let isLongClick: Bool
+    let timeoutMs: Int64
+}

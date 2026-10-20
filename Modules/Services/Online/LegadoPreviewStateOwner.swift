@@ -308,6 +308,7 @@ struct LegadoPreviewStateOwner: LegadoEntityStateBacking {
 
 /// Explicit original-business execution only. No route selection, JSC or second HTTP jar.
 enum LegadoOriginalPreviewOperation: Sendable {
+    case loginAction(action: String?, credentials: [String: String], isLongClick: Bool)
     case loginUI([String: String]?)
     case formLogin([String: String])
     case search(String, Int32?)
@@ -322,6 +323,7 @@ enum LegadoOriginalPreviewOperation: Sendable {
 }
 
 enum LegadoOriginalPreviewResult: Sendable {
+    case loginAction(LegadoOriginalLoginActionResult, completedEffects: [String])
     case loginUI(LegadoOriginalLoginUIResult, completedEffects: [String])
     case formLogin(LegadoOriginalFormLoginResult, completedEffects: [String])
     case search([LegadoOriginalBook])
@@ -362,6 +364,11 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 let taskID = grant?.taskID ?? UUID().uuidString
                 let remaining = Int64(min(300_000, max(1, deadline.timeIntervalSinceNow * 1000)))
                 switch operation {
+                case .loginAction(let action, let credentials, let isLongClick):
+                    let value = try await runtime.loginActionOriginal(session: session, action: action,
+                        credentials: credentials, isLongClick: isLongClick,
+                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
+                    result = .loginAction(value, completedEffects: reportedEffects.withLock { $0 })
                 case .loginUI(let values):
                     let value = try await runtime.loginUIOriginal(session: session, values: values,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)

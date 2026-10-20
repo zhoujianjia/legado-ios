@@ -6,6 +6,40 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            let original = ["hidden": "synthetic-hidden", "username": ""]
+            await Task.detached { LoginManager.shared.storeLoginInfo(sourceUrl: fixture.a, info: original) }.value
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a; source.enabledCookieJar = false
+            source.loginUi = "[{name:'username',default:'must-not-replace-empty'},{name:'action',type:'button'}]"
+            source.loginUrl = "function login(){throw new Error('must-not-submit');}"
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let rendered = try await service.originalLoginUI(source: source, values: nil)
+            let values = BookSourceFormLoginView.originalFormSubmissionValues(fields: rendered.fields, values: rendered.values)
+            let result = try await service.originalLoginAction(source: source,
+                action: "if(java===source||book!==null||chapter!==null||isLongClick!==true||String(result.get('hidden'))!=='synthetic-hidden'||String(result.get('username'))!=='')throw new Error('wrong action Map');java.setContent('<p>native action</p>');if(String(java.getString('p@text'))!=='native action')throw new Error('wrong original parser');source.putLoginHeader('synthetic-action-header');JSON.stringify({XFake:'must-not-be-header'});",
+                credentials: values, isLongClick: true)
+            XCTAssertTrue(result.executed)
+            let stored = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            let header = await Task.detached { LoginManager.shared.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(stored, original)
+            XCTAssertEqual(header, "synthetic-action-header")
+            do {
+                _ = try await service.originalLoginAction(source: source,
+                    action: "java.reLoginView(true)", credentials: values, isLongClick: false)
+                XCTFail("UI callback must not become a successful action")
+            } catch { XCTAssertEqual((error as? LegadoRuntimeError)?.code, "UNSUPPORTED_CAPABILITY") }
+        } catch { problem = error }
+        await Task.detached { LoginManager.shared.removeLoginHeader(sourceUrl: fixture.a) }.value
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()

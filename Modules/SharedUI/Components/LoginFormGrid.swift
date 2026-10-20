@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 // MARK: - LoginFormGrid
@@ -26,8 +27,17 @@ struct LoginFormGrid: View {
     let labels: [String: String]
     var onValueChange: ((LoginField, String) -> Void)?
     var onAction: ((LoginField) -> Void)?
+    var onOriginalAction: ((LoginField, Bool) -> Void)? = nil
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var lastOriginalPointerRelease: TimeInterval = 0
+
+    private func acceptOriginalPointerRelease() -> Bool {
+        let now = ProcessInfo.processInfo.systemUptime
+        guard now - lastOriginalPointerRelease >= 0.2 else { return false }
+        lastOriginalPointerRelease = now
+        return true
+    }
 
     var body: some View {
         LoginGridLayout(
@@ -39,7 +49,9 @@ struct LoginFormGrid: View {
                     field: field,
                     label: labels[field.id] ?? labels[field.name] ?? field.name,
                     value: valueBinding(for: field),
-                    onAction: onAction
+                    onAction: onAction,
+                    onOriginalAction: onOriginalAction,
+                    acceptOriginalPointer: acceptOriginalPointerRelease
                 )
             }
         }
@@ -66,6 +78,18 @@ private struct LoginFieldCell: View {
     let label: String
     @Binding var value: String
     let onAction: ((LoginField) -> Void)?
+    let onOriginalAction: ((LoginField, Bool) -> Void)?
+    let acceptOriginalPointer: () -> Bool
+
+    private func dispatch(_ isLongClick: Bool = false) {
+        if field.originalRowID != nil, let onOriginalAction { onOriginalAction(field, isLongClick) }
+        else { onAction?(field) }
+    }
+
+    private var longAction: (() -> Void)? {
+        guard field.originalRowID != nil, onOriginalAction != nil else { return nil }
+        return { dispatch(true) }
+    }
 
     var body: some View {
         content
@@ -82,18 +106,16 @@ private struct LoginFieldCell: View {
             LoginTextFieldCell(field: field, label: label, value: $value, alignment: alignment)
 
         case .button:
-            LoginActionPill(label: label, alignment: alignment) {
-                onAction?(field)
-            }
+            LoginActionPill(label: label, alignment: alignment, action: { dispatch() },
+                longAction: longAction, acceptOriginalPointer: acceptOriginalPointer)
 
         case .toggle:
             if field.originalRowID != nil || LoginToggleChars(options: field.options) != nil {
                 LoginTogglePill(
                     field: field, label: label, value: $value,
-                    alignment: alignment
-                ) {
-                    onAction?(field)
-                }
+                    alignment: alignment, action: { dispatch() }, longAction: longAction,
+                    acceptOriginalPointer: acceptOriginalPointer
+                )
             } else {
                 // `chars` that isn't a two-state pair can't flip — show the choices
                 // instead of guessing which one means on.
@@ -116,7 +138,7 @@ private struct LoginFieldCell: View {
                 field: field, label: label, value: $value,
                 alignment: alignment
             ) {
-                onAction?(field)
+                dispatch()
             }
         }
     }
@@ -185,6 +207,8 @@ private struct LoginActionPill: View {
     let label: String
     let alignment: LoginPillAlignment
     let action: () -> Void
+    var longAction: (() -> Void)? = nil
+    var acceptOriginalPointer: (() -> Bool)? = nil
 
     var body: some View {
         Button(action: action) {
@@ -196,6 +220,8 @@ private struct LoginActionPill: View {
                 .padding(.horizontal, DSSpacing.md)
         }
         .buttonStyle(LoginPressButtonStyle())
+        .modifier(LoginOriginalActionGesture(tap: action, long: longAction,
+            acceptPointer: acceptOriginalPointer))
     }
 }
 
@@ -205,6 +231,8 @@ private struct LoginTogglePill: View {
     @Binding var value: String
     let alignment: LoginPillAlignment
     let action: () -> Void
+    var longAction: (() -> Void)? = nil
+    var acceptOriginalPointer: (() -> Bool)? = nil
 
     private var chars: [String] {
         field.originalRowID != nil ? field.options : field.options.filter { !$0.isEmpty }
@@ -225,12 +253,7 @@ private struct LoginTogglePill: View {
     }
 
     var body: some View {
-        Button {
-            guard !chars.isEmpty else { return }
-            let index = chars.firstIndex(of: currentChar) ?? -1
-            value = chars[(index + 1) % chars.count]
-            action()
-        } label: {
+        Button { cycle(action) } label: {
             Text(displayText)
                 .font(DSFont.headline)
                 .fixedSize(horizontal: false, vertical: true)
@@ -241,6 +264,16 @@ private struct LoginTogglePill: View {
         .buttonStyle(LoginPressButtonStyle())
         .accessibilityLabel(label)
         .accessibilityValue(currentChar)
+        .modifier(LoginOriginalActionGesture(tap: { cycle(action) },
+            long: longAction.map { callback in { cycle(callback) } },
+            acceptPointer: acceptOriginalPointer))
+    }
+
+    private func cycle(_ callback: () -> Void) {
+        guard !chars.isEmpty else { return }
+        let index = chars.firstIndex(of: currentChar) ?? -1
+        value = chars[(index + 1) % chars.count]
+        callback()
     }
 }
 
@@ -320,6 +353,38 @@ private struct LoginSelectPill: View {
                 action()
             }
         )
+    }
+}
+
+/// Original button/toggle pointer release chooses a single short/long action.
+/// The Button action remains available to accessibility and keyboard activation.
+private struct LoginOriginalActionGesture: ViewModifier {
+    let tap: () -> Void
+    let long: (() -> Void)?
+    let acceptPointer: (() -> Bool)?
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if let long {
+            content.highPriorityGesture(
+                LongPressGesture(minimumDuration: 0.666)
+                    .sequenced(before: DragGesture(minimumDistance: 0))
+                    .exclusively(before: TapGesture())
+                    .onEnded { result in
+                        switch result {
+                        case .first(.second(true, _)):
+                            guard acceptPointer?() != false else { return }
+                            long()
+                        case .second(_):
+                            guard acceptPointer?() != false else { return }
+                            tap()
+                        default: break
+                        }
+                    }
+            )
+        } else {
+            content
+        }
     }
 }
 

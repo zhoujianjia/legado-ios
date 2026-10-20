@@ -1755,3 +1755,38 @@ extension LegadoMainJSSourceService {
         }
     }
 }
+
+extension LegadoMainJSSourceService {
+    /// Original row action shares the render/login actor and source owners.
+    /// UI callback methods remain typed unsupported on the finite task host.
+    func originalLoginAction(source: BookSource, action: String?, credentials: [String: String],
+                             isLongClick: Bool) async throws -> LegadoOriginalLoginActionResult {
+        var effects: [String] = []
+        do {
+            let signature = try originalSignature(source)
+            let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
+            try await acquire(source.bookSourceUrl, deadline: deadline)
+            defer { release(source.bookSourceUrl) }
+            try acceptOriginalRevision(source, signature: signature)
+            let result = try await SourcePerfTrace.spanAsync("legado.original.login.action",
+                "main=\(Thread.isMainThread) values=\(credentials.count) bytes=\(action?.utf8.count ?? 0)") {
+                try await originalExecutor.execute(
+                    sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                    sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+                    operation: .loginAction(action: action, credentials: credentials, isLongClick: isLongClick),
+                    deadline: deadline)
+            }
+            guard case .loginAction(let reply, let reported) = result else {
+                throw failure("INVALID_RESULT", "Original login action omitted its result")
+            }
+            effects = reported
+            try previewCheck(deadline)
+            return reply
+        } catch {
+            let typed = error as? LegadoRuntimeError
+            let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+            throw LegadoRuntimeError(code: code, message: "Original login action did not complete (\(code))",
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted())
+        }
+    }
+}

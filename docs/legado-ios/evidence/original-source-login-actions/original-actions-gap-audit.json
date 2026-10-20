@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-source-only-gap-audit-before-implementation",
+  "scope": "Traditional standalone loginUi source-authored button/menu/select/toggle action execution and reLoginView/upLoginData callbacks; exact current product consumer against locked original. No browser/WebJS/v2, TTS or engine/store reselection.",
+  "baseline": {
+    "commit": "a86d90242775d66d3169c58d9b534180988225ab",
+    "short": "a86d902",
+    "sourceFiles": [
+      {
+        "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+        "bytes": 51550,
+        "sha256": "0c2211d45a49e6d3c7d2a5d66d01b00802a5a7cf66ddfac44e15e7021e91424d",
+        "relevantLines": [
+          [
+            56,
+            65
+          ],
+          [
+            98,
+            122
+          ],
+          [
+            149,
+            154
+          ],
+          [
+            229,
+            280
+          ],
+          [
+            561,
+            678
+          ],
+          [
+            754,
+            874
+          ],
+          [
+            883,
+            1010
+          ]
+        ]
+      },
+      {
+        "path": "Modules/SharedUI/Components/LoginFormGrid.swift",
+        "bytes": 18472,
+        "sha256": "f36a3c0b9a53edcd0446044667329793d70a39f597b380b40c8caa71174bedf4",
+        "relevantLines": [
+          [
+            23,
+            130
+          ],
+          [
+            202,
+            244
+          ],
+          [
+            247,
+            323
+          ]
+        ]
+      },
+      {
+        "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+        "bytes": 1667,
+        "sha256": "e2002619ee703492d68aa694b5d45c790a8147f4a362a1fa351237396eb1bdd1",
+        "relevantLines": [
+          [
+            1,
+            36
+          ]
+        ]
+      },
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 115050,
+        "sha256": "45224aea76a2379aff5b94d76937ef0a0138ce94fa377dc8cacf36366209120f",
+        "relevantLines": [
+          [
+            1690,
+            1755
+          ]
+        ]
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "bytes": 25310,
+        "sha256": "551faee277e2137f3627592950c70ba7d3f3e9a81b52f83c3b4701cf2c5bf029",
+        "relevantLines": [
+          [
+            308,
+            385
+          ]
+        ]
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+        "bytes": 37795,
+        "sha256": "e5b8c376021901d6560253461157e5d31be9600a9c713b1988d7feabec6ecead",
+        "relevantLines": [
+          [
+            42,
+            90
+          ]
+        ]
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/JS/JSCoreEngine.swift",
+        "bytes": 80587,
+        "sha256": "81cf7b8841269323f9e4ef1bf66ffc75efb7c853c6f03e10f2e8630642141f31",
+        "relevantLines": [
+          [
+            120,
+            132
+          ]
+        ]
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoJSBridge.swift",
+        "bytes": 109307,
+        "sha256": "1ef604b1b84e6aa4bc386f7b543b43246f6c59448a2ea0f80f6938cbfbb1b752",
+        "relevantLines": [
+          [
+            218,
+            229
+          ],
+          [
+            1817,
+            1822
+          ],
+          [
+            1922,
+            1930
+          ]
+        ]
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 28871,
+        "sha256": "806c9e7df7614a56551a4af4291d073f86fbe7f54c2fd2d98d6756f620ec5c35",
+        "relevantLines": [
+          [
+            314,
+            332
+          ]
+        ]
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "bytes": 8865,
+        "sha256": "5d5dc4566b6aa1457cfc96eec9f5b9f75b6a591987856d4cf7e871642b32f620",
+        "relevantLines": [
+          [
+            160,
+            208
+          ]
+        ]
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 28412,
+        "sha256": "df80cac142c760cc66afdbac30d4c61bf802b6ae69b20df4dcdf8121dbcb7ce0",
+        "relevantLines": [
+          [
+            77,
+            84
+          ],
+          [
+            124,
+            134
+          ]
+        ]
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "bytes": 19180,
+        "sha256": "29bf159c8a33c30ca53363fa84659e41d1a014b04039df3a1436d15a9831fd78",
+        "relevantLines": [
+          [
+            38,
+            98
+          ]
+        ]
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt",
+        "bytes": 4806,
+        "sha256": "9a779e5ba067e44e2b5e64dbb959f700daf6d27404ad40c316a2758d5cbb8d70",
+        "relevantLines": [
+          [
+            14,
+            79
+          ]
+        ]
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+        "bytes": 3159,
+        "sha256": "f6d04c80c18f616543771f3518acb94fc31ecaac7058a8627e626fb46e74d457",
+        "relevantLines": [
+          [
+            7,
+            39
+          ]
+        ]
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+        "bytes": 37139,
+        "sha256": "1539403a9e4b064a9a256ae948c8422f6344202316239f3700c9088b7f6bebb5",
+        "relevantLines": [
+          [
+            117,
+            175
+          ],
+          [
+            444,
+            490
+          ]
+        ]
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "bytes": 17483,
+        "sha256": "dd8000b6ec853bce3f4bf4869d01a7990ec91fa02e6d3c34b7989c964440630b",
+        "relevantLines": [
+          [
+            9,
+            70
+          ]
+        ]
+      }
+    ],
+    "canonicalReadForSnapshot": false,
+    "sourceOrigin": "exact read-only git show blobs; later root C3 integration does not change this snapshot"
+  },
+  "original": {
+    "archive": "F:/legado-master.zip",
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "files": [
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/ui/login/SourceLoginDialog.kt",
+        "localPath": "locked-original/ui/login/SourceLoginDialog.kt",
+        "bytes": 37764,
+        "sha256": "6f15d89eed39d97668edb9d7b735fc1308c88dea3b70195dbb076c2b9213d1c8",
+        "relevantLines": [
+          [
+            83,
+            112
+          ],
+          [
+            114,
+            218
+          ],
+          [
+            229,
+            255
+          ],
+          [
+            269,
+            307
+          ],
+          [
+            340,
+            365
+          ],
+          [
+            404,
+            426
+          ],
+          [
+            452,
+            483
+          ],
+          [
+            512,
+            558
+          ],
+          [
+            578,
+            640
+          ],
+          [
+            650,
+            660
+          ],
+          [
+            743,
+            788
+          ],
+          [
+            791,
+            829
+          ],
+          [
+            832,
+            865
+          ],
+          [
+            868,
+            881
+          ]
+        ]
+      },
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/ui/login/SourceLoginViewModel.kt",
+        "localPath": "locked-original/ui/login/SourceLoginViewModel.kt",
+        "bytes": 3348,
+        "sha256": "eab10040c2ea448ca4d2587a3a97378807a073f7f8c6afecebc229bd3a7ac55d",
+        "relevantLines": [
+          [
+            23,
+            32
+          ],
+          [
+            70,
+            74
+          ]
+        ]
+      },
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/ui/login/SourceLoginJsExtensions.kt",
+        "localPath": "locked-original/ui/login/SourceLoginJsExtensions.kt",
+        "bytes": 2583,
+        "sha256": "cde38b9275e02e28af3cd34438ef6ef97ebea013acdb37cee5ac75d52c78378e",
+        "relevantLines": [
+          [
+            21,
+            48
+          ]
+        ]
+      },
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/ui/login/LoginUiScriptEvaluator.kt",
+        "localPath": "locked-original/ui/login/LoginUiScriptEvaluator.kt",
+        "bytes": 1063,
+        "sha256": "366029d45e61d81d866e6ee1c844abc0f39c3633295d87b9530647991b80a7eb",
+        "relevantLines": [
+          [
+            1,
+            39
+          ]
+        ]
+      },
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/data/entities/BaseSource.kt",
+        "localPath": "locked-original/data/entities/BaseSource.kt",
+        "bytes": 12803,
+        "sha256": "080160e06a23fdfc7f4dbe5975a370473eee5d13ad0638b46aa2075276516243",
+        "relevantLines": [
+          [
+            159,
+            163
+          ]
+        ]
+      },
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/utils/ViewExtensions.kt",
+        "localPath": "locked-original/utils/ViewExtensions.kt",
+        "bytes": 16837,
+        "sha256": "6a2f4a74434d9cdfff10718ae8f84fc02b8ee6adbd304e28c7715d9d28d7de96",
+        "relevantLines": [
+          [
+            489,
+            494
+          ]
+        ]
+      }
+    ]
+  },
+  "originalContract": [
+    {
+      "area": "Action dispatch",
+      "evidence": "SourceLoginDialog.kt:791-814; BaseSource.kt:159-163",
+      "contract": "A source row action runs in Fragment lifecycleScope IO. Absolute URL follows existing external navigation (excluded here). JS action concatenates getLoginJs + newline + action, binds java=SourceLoginJsExtensions, result=getLoginData real Java Map, actual book/chapter, isLongClick. Standalone caller has null book/chapter. It does not call login() implicitly, use action return as headers, or pre-store loginInfo. name is diagnostic only. A null action is skipped; a blank loginUrl yields null loginJS and skips JS action. Cancellation is rechecked before ordinary error logging; Android has no matching fixed30s timer."
+    },
+    {
+      "area": "Working data",
+      "evidence": "Dialog:817-829; ViewModel:70-74",
+      "contract": "Snapshot begins with complete viewModel.loginInfo then overwrites visible text/password edits only, preserving hidden keys and explicit empty strings. Startup uses stored map, not derived defaults. Select/toggle update transient map before their action; ordinary text edit is read when snapshot is taken."
+    },
+    {
+      "area": "Select/button/toggle triggers",
+      "evidence": "Dialog:452-483,512-558,578-640",
+      "contract": "Select ignores initialization callback; real selection sets working value then invokes optional action(false). Button accessibility click is false; touch release >666ms sets isLongClick, with200ms dedupe. Toggle cycles the exact declared chars including empty strings before invoking action with corresponding long flag. Same helper handles source menus composed from these rows."
+    },
+    {
+      "area": "reLoginView and refreshExplore",
+      "evidence": "SourceLoginJsExtensions:30-45; Dialog:98-126,269-307,650-660,743-771",
+      "contract": "Weak callback reaches same UI owner on main. reLoginView(deltaUp=false) renders source loginUi; refreshExplore aliases reUiView(false) in this host. Dynamic re-render preserves previous rows on failure. deltaUp=true reuses/moves existing named controls and returns before rebuilding/evaluating reused controls; it is not a whole-form reload."
+    },
+    {
+      "area": "upLoginData(null)",
+      "evidence": "Dialog:130-173",
+      "contract": "Transient reset rebuilds VM Map from current text/password defaults-or-empty and toggle/select default-or-first choices; hidden keys are removed. Button only resets display, never becomes credential entry. Select uses safe index; no immediate source.putLoginInfo call."
+    },
+    {
+      "area": "upLoginData(map)",
+      "evidence": "Dialog:175-217; ViewExtensions:489-494",
+      "contract": "Each value becomes nullable toString; first same-name row is found. Text/password update working map+actual input, button updates display only, toggle updates working char+display, select sets adapter selection and relies on existing listener for map/action behavior. Unknown/hidden keys update transient map with null-to-empty. Programmatic text/select updates may schedule the original watchers/listeners; cannot replace this with blind persistent Map merge."
+    },
+    {
+      "area": "Persistence/lifetime",
+      "evidence": "Dialog:782-788,832-865,868-881",
+      "contract": "Explicit OK follows login action even when button rows exist. Non-v2 dismiss with !oKToClose && hasChange persists the VM map or clears if empty; text editing alone does not itself mark hasChange. Dismiss removes Handler callbacks. Action is Fragment-lifecycle scoped, not renderJob; do not claim onDestroyView synchronously cancels every legacy action."
+    }
+  ],
+  "findings": [
+    {
+      "id": "C2-ACTION-LEGACY-EXECUTOR",
+      "severity": "P2",
+      "title": "New original-rendered controls still execute source actions through the old JSC consumer",
+      "currentEvidence": [
+        "View:56-65 routes onAction to handleButton for every source",
+        "View:632-650 calls runButtonJS without original source branch",
+        "View:754-873 creates a fresh JSCoreEngine and SourceScriptThread task",
+        "OriginalTraditionalRuntime:38-51 admits loginUi/formLogin but no row-action operation",
+        "Package runtime:314-332 and Preview operation enum:308-326 have no row-action DTO/API"
+      ],
+      "trigger": "Any non-URL action on a traditional rendered button/select/toggle, including dynamic source settings menus.",
+      "impact": "Action does not use the source actor/existing native task/original Rhino/Java Map identity that now owns render and explicit form login. Plain result is a JSC object and isLongClick is absent.",
+      "minimumFix": "Add a bounded original row-action operation/API/result to the existing runtime/executor/service and route only traditional actions through it. Reuse finite source login host, original evaluator, same source revision/owner/deadline/cancel/effects. Skip JS for original null loginJS/action and ignore its completion; no browser fallback."
+    },
+    {
+      "id": "C2-ACTION-PRESTORE-LOSS",
+      "severity": "P1",
+      "title": "Selection and action entry can overwrite stored credentials with a reduced/defaulted map before the action",
+      "currentEvidence": [
+        "View:60-63 select setter calls persistCurrentFormValues before onAction",
+        "View:642-649 handleButton stores currentFormValues before JS",
+        "View:653-678 currentFormValues starts empty, excludes hidden entries, resolves empty text to default, then writes Keychain",
+        "Dialog:791-829 performs no equivalent pre-store"
+      ],
+      "trigger": "Stored {hidden:token,username:old}, visible username edited to empty with nonempty default, then select/button action. Current reduced snapshot drops hidden and restores default, writes it before evaluating the action; the original passes hidden plus empty to result and keeps raw storage untouched.",
+      "impact": "Loss of existing hidden credential/state fields and unintended persistent writes, even for an action that fails or only changes presentation.",
+      "minimumFix": "For traditional actions use the existing originalFormSubmissionValues complete snapshot and bypass select/action automatic storeLoginInfo. Ordinary selector/toggle edits stay in the same transient values state; persistence requires its original explicit/dismiss contract."
+    },
+    {
+      "id": "C2-UPLOGIN-PERSISTENT-MERGE",
+      "severity": "P1",
+      "title": "upLoginData currently mutates persistent credentials instead of the actual form state",
+      "currentEvidence": [
+        "View:993-1006 converts map to dictionary and merges it into loginOwner Keychain",
+        "No values/fields/labels update occurs in that handler",
+        "OriginalSourceLoginHost:32 is typed unsupported for actual original form-login host",
+        "Dialog:130-217 implements current-control-specific transient update/reset"
+      ],
+      "trigger": "java.upLoginData(null), a visible input/button/select update, or a hidden key update from a source action.",
+      "impact": "Null reset is a no-op; visible controls remain stale; button presentation can become a persistent credential key; changes are durably stored earlier than original permits. Native host does not yet support this callback at all.",
+      "minimumFix": "A callback-capable finite task/host must report typed ordered UI updates to the same form owner. Implement null reset, first-row matching, per-type value/display behavior and select listener/watcher consequences; never treat it as direct Keychain merge."
+    },
+    {
+      "id": "C2-RELOGIN-DELTA-OWNER",
+      "severity": "P2",
+      "title": "reLoginView is a separate JSC reload and cannot represent deltaUp",
+      "currentEvidence": [
+        "LegadoJSBridge:218/1817-1821 exposes parameterless reLoginView only",
+        "View:784-806 invokes evaluateJsLoginUiResult using a new JSC evaluator and reconstructs values from stored map",
+        "View:835-848 reruns labels on the action engine instead of per-original-row fresh evaluation",
+        "OriginalSourceLoginHost:33-34 typed unsupported for native refresh"
+      ],
+      "trigger": "Action updates source variables/working form, then java.reLoginView(true) or java.refreshExplore().",
+      "impact": "deltaUp is lost, current transient edits can be replaced by stale stored values, native source pipeline is bypassed, and reused original rows/labels are reevaluated or rebuilt.",
+      "minimumFix": "Same original UI owner consumes explicit typed refresh request, preserving current complete working snapshot. delta false can call existing typed render; delta true must preserve/move reused controls and avoid evaluating their labels again. Failure keeps valid prior rows."
+    },
+    {
+      "id": "C2-ACTION-TRIGGER-LIFETIME",
+      "severity": "P2",
+      "title": "Original row actions lack long-click context and an owned cancel/publication lifecycle",
+      "currentEvidence": [
+        "Grid:27-28 exposes only field callbacks, with no long flag",
+        "Grid:84-95 button/toggle use plain tap",
+        "View:764 detached task is not assigned to any owned action handle",
+        "View:149-154 cancels only formSubmissionTask/render task",
+        "View:799-806/846-848/871 applies asynchronous action callbacks without render generation/dismissal guard"
+      ],
+      "trigger": "A source branches on isLongClick, or a held action/refresh callback finishes after sheet dismissal or a newer action/render.",
+      "impact": "Long-press branch cannot run; obsolete actions may continue making owner changes and publish stale UI. No actual device race is asserted, but the unowned path is directly reachable in source.",
+      "minimumFix": "Add original-row long flag and one same-owner action task/generation, cancellation propagation and effect-preserving terminal errors. Do not claim immediate onDestroyView cancellation parity: original actions are Fragment-lifecycle scoped."
+    },
+    {
+      "id": "C2-ACTION-SENSITIVE-BOUNDARY",
+      "severity": "P1",
+      "title": "Traditional row actions bypass the sensitive task/error/log boundary established for render and form confirmation",
+      "currentEvidence": [
+        "View:633 logs authored action verbatim",
+        "View:815-832 logs raw action/state/error for a source-name branch",
+        "View:859-871 displays and logs raw engine/API error details",
+        "LegadoRuntime.kt:80/129 sensitive protection currently names only loginUi/formLogin"
+      ],
+      "trigger": "A traditional action derives an error/response from its synthetic password/token, or embeds sensitive data in the action/state text.",
+      "impact": "The newly original-rendered action can expose raw secret-derived details through its legacy logging/UI path; the native safe error boundary is never entered.",
+      "minimumFix": "New operation must activate existing sensitive RuntimeTask before any evaluation, reuse existing parser/HTTP diagnostic seam and expose only static error code/effect metadata. Do not copy legacy action/body/error logging into the new path."
+    }
+  ],
+  "adjacentExplicitlyDeferred": [
+    {
+      "area": "Text/password action debounce",
+      "evidence": "Dialog:343-364/405-426 vs Grid:80-82 and View:60-63",
+      "fact": "Original text/password action runs after600ms changed-value debounce with initialization excluded; current Grid edits never invoke those actions. Record as adjacent trigger work, not silently included in this button/select/toggle-only first execution slice."
+    },
+    {
+      "area": "OK/dismiss on menus containing buttons",
+      "evidence": "Dialog:669-672/832-865/868-880 vs View:98-122/674-678",
+      "fact": "Current button-containing toolbar branch persists reduced currentFormValues and dismisses instead of original OK login action. Full hasChange/oKToClose dismissal persistence has not been migrated. A safe action slice must not imply this whole lifecycle is complete."
+    }
+  ],
+  "minimumImplementationSlices": [
+    {
+      "order": 1,
+      "name": "Original nonbrowser row action execution and safe complete snapshot",
+      "authorizationAtAuditFreeze": "Root has authorized ignored source preparation after this audit is frozen; no canonical/Git/cloud mutation.",
+      "productionSeam": [
+        "Existing OriginalTraditionalRuntime dispatch and sensitive RuntimeTask operation set",
+        "Reuse OriginalSourceLoginHost with UI callbacks still typed unsupported",
+        "Existing Package typed request/result and Native preview operation/executor",
+        "Same LegadoMainJSSourceService source actor/deadline/revision",
+        "View traditional handleButton and select automatic-save branch plus Grid original long-click callback"
+      ],
+      "mustProve": [
+        "Complete hidden/empty snapshot; original null action/loginJS skip; no implicit login() call",
+        "Actual java finite host/result JavaMap/null standalone book/chapter/isLongClick",
+        "Zero automatic raw credential writes/removes; explicit source.putLoginHeader stays sole owner",
+        "Real existing HTTP/cache/Cookie owner, cancel/timeout and accepted effects retained",
+        "Sensitive diagnostics; unsupported callback/error never becomes successful action"
+      ],
+      "notClaimed": [
+        "upLoginData/reLoginView completed",
+        "browser/WebJS/v2",
+        "full menu dismiss persistence",
+        "full Android scheduler/visual parity"
+      ]
+    },
+    {
+      "order": 2,
+      "name": "Typed finite UI callback transport and exact existing-owner projection",
+      "requires": "First resolve how callbacks already emitted before an action error/cancel are retained and delivered without losing either error or accepted effects. If this is not established, keep callbacks typed unsupported in slice1.",
+      "mustProve": [
+        "Map/null distinction and arbitrary value toString policy follow original rather than generic persistence",
+        "Ordered callback handling including error after an earlier callback",
+        "upLoginData null reset, first duplicate row, button display, hidden keys, select listener and watcher consequences",
+        "reLoginView false and true current-edit retention, delta row reuse and no reevaluation of reused labels",
+        "One UI owner/task and no added store/VM/JSC fallback"
+      ]
+    }
+  ],
+  "peerSourceCheck": {
+    "agent": "/root/original_source_login_info",
+    "mode": "read-only locked ZIP contract extraction",
+    "findings": "Confirmed exact trigger/bindings/callback/reset/delta/lifecycle contract above; cautioned Fragment lifecycleScope is not renderJob and upLoginData select depends on listener."
+  },
+  "claims": {
+    "sourceAuditComplete": true,
+    "newTestsExecuted": 0,
+    "swiftSDKExecuted": 0,
+    "jniExecuted": 0,
+    "deviceExecuted": 0,
+    "fullC2Accepted": false,
+    "bookSourceCompatibilityComplete": false,
+    "selfRenewalComplete": false
+  },
+  "operations": {
+    "canonicalModified": false,
+    "gitModified": false,
+    "cloudQueries": 0,
+    "cloudWrites": 0,
+    "privateUserSourceOrCredentialsRead": false,
+    "ignoredWritesOnly": true
+  }
+}
