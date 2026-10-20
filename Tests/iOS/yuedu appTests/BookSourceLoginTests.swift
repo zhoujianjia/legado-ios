@@ -117,7 +117,95 @@ struct BookSourceLoginTests {
     }
 
     @Test("空白登入欄位不會被當成登入成功")
-    func blankLoginFieldIsRequired() throws {
+    func blankLoginFieldIsRequired() async throws {
+        // Source replacement must await the canceled close which already owns
+        // the old action, even when the View's direct action handle is now nil.
+        let (released, release) = AsyncStream<Bool>.makeStream()
+        let (entered, enter) = AsyncStream<Bool>.makeStream()
+        let drainFacts = LoginV2OwnedDrainFacts()
+        let oldAction = Task {
+            enter.yield(true); enter.finish()
+            for await _ in released { break }
+            await drainFacts.append("action")
+        }
+        var enteredIterator = entered.makeAsyncIterator()
+        _ = await enteredIterator.next()
+        let oldExit = Task { await oldAction.value; await drainFacts.append("exit") }
+        oldExit.cancel()
+        let (replacingB, replaceB) = AsyncStream<Bool>.makeStream()
+        let replacementB = Task {
+            replaceB.yield(true); replaceB.finish()
+            await BookSourceFormLoginView.drainOriginalV2Owner(exit: oldExit, action: nil, render: nil)
+            guard !Task.isCancelled else { return }
+            await drainFacts.append("replacement:B")
+        }
+        var replacingBIterator = replacingB.makeAsyncIterator()
+        _ = await replacingBIterator.next()
+        // A second source change cancels B, but C still retains and drains B,
+        // including the old exit/action it owns, before publishing source C.
+        replacementB.cancel()
+        let latestSource = "C"
+        let replacementC = Task {
+            await BookSourceFormLoginView.drainOriginalV2Owner(exit: nil, action: nil, render: replacementB)
+            await drainFacts.append("replacement:" + latestSource)
+        }
+        let beforeRelease = await drainFacts.snapshot()
+        #expect(beforeRelease.isEmpty)
+        release.yield(true); release.finish()
+        await replacementC.value
+        let afterDrain = await drainFacts.snapshot()
+        #expect(afterDrain == ["action", "exit", "replacement:C"])
+        // V2 is a separate product projection: exact Java action identity,
+        // current controls only, and state publication only after valid rendering.
+        let v2JSON = #"{"rows":[{"name":"same label","type":"label"},{"name":"same label","type":"label"},{"name":"User","type":"text","key":"user"},{"name":"Secret","type":"password","key":"secret","value":""},{"name":"Choice","type":"select","key":"choice","options":["","signed"]},{"name":"Enabled","type":"toggle","key":"enabled"},{"name":"One","type":"button","action":"é","countdown":3},{"name":"Two","type":"button","action":"e\u0301"}],"storedValues":{"user":"stored","secret":"stored-secret","choice":"undeclared","enabled":"TRUE","hidden":"never-in-action-form"}}"#
+        let v2Reply = try JSONDecoder().decode(LegadoOriginalLoginV2RenderResult.self, from: Data(v2JSON.utf8))
+        var v2 = try LegadoOriginalLoginV2State().rendered(v2Reply, candidateState: "{}", renderID: UUID())
+        let v2Form = try #require(v2.form)
+        #expect(v2Form.rows.count == 8 && Set(v2Form.rows.map(\.id)).count == 8)
+        #expect(v2Form.rows[0].definition.type == "label" && v2Form.rows[1].definition.type == "label")
+        #expect(v2Form.rows[6].actionID != v2Form.rows[7].actionID)
+        #expect(v2.values == ["user":"stored", "secret":"", "choice":"", "enabled":"false"])
+        v2.values["user"] = "edited"
+        v2.values["enabled"] = "true"
+        v2.values["extraneous"] = "not-a-current-control"
+        let currentV2Form = v2.collectForm()
+        #expect(currentV2Form == ["user":"edited", "secret":"", "choice":"", "enabled":"true"])
+        #expect(currentV2Form["hidden"] == nil && currentV2Form["extraneous"] == nil)
+        let nextV2JSON = #"{"rows":[{"name":"Continue","type":"button","action":"next"}],"storedValues":{}}"#
+        let nextV2Reply = try JSONDecoder().decode(LegadoOriginalLoginV2RenderResult.self, from: Data(nextV2JSON.utf8))
+        v2 = try v2.rendered(nextV2Reply, candidateState: #"{"step":2}"#, renderID: UUID())
+        let hiddenV2Form = v2.collectForm()
+        #expect(v2.stateJSON == #"{"step":2}"# && hiddenV2Form.isEmpty)
+        #expect(v2.sessionValues["user"] == "edited" && v2.sessionValues["enabled"] == "true")
+        // Stored values lose to retained session input; an explicit empty row
+        // value still wins. Removing a control never sends its hidden value.
+        v2 = try v2.rendered(v2Reply, candidateState: #"{"step":3}"#, renderID: UUID())
+        #expect(v2.values["user"] == "edited" && v2.values["secret"] == "" && v2.values["enabled"] == "true")
+        let emptyV2Reply = try JSONDecoder().decode(LegadoOriginalLoginV2RenderResult.self,
+            from: Data(#"{"rows":[],"storedValues":{}}"#.utf8))
+        var rejectedV2Render = false
+        do { _ = try v2.rendered(emptyV2Reply, candidateState: #"{"step":4}"#, renderID: UUID()) }
+        catch let failure as LegadoRuntimeError { rejectedV2Render = failure.code == "INVALID_RESULT" }
+        #expect(rejectedV2Render && v2.stateJSON == #"{"step":3}"# && v2.values["user"] == "edited")
+        let v2Errors = try v2Form.checkedErrors(["user":"field error", "enabled":"toggle message", "outside":"global message"])
+        #expect(v2Errors.fields == ["user":"field error"])
+        #expect(Set(v2Errors.messages) == Set(["toggle message", "global message"]))
+        let nullableV2JSON = #"{"rows":[{"name":"Choice","type":"select","key":"choice","options":["a",null,""],"value":""},{"name":"Null first","type":"select","key":"nullFirst","options":[null,"valid"]},{"name":"Fallback","type":"select","key":"fallback","options":["a",null]}],"storedValues":{"fallback":""}}"#
+        let nullableV2 = try JSONDecoder().decode(LegadoOriginalLoginV2RenderResult.self, from: Data(nullableV2JSON.utf8))
+        let nullableV2Form = try LegadoOriginalLoginV2Form(nullableV2, sessionValues: [:], renderID: UUID())
+        let nullableOptions = try #require(nullableV2Form.rows[0].definition.options)
+        #expect(nullableOptions.count == 3 && nullableOptions[1] == nil)
+        #expect(nullableV2Form.values == ["choice":"", "nullFirst":"", "fallback":"a"])
+        let aliasedV2JSON = #"{"rows":[{"name":"User","type":"text","key":"é"}],"storedValues":{"e\u0301":"synthetic"}}"#
+        let aliasedV2 = try JSONDecoder().decode(LegadoOriginalLoginV2RenderResult.self, from: Data(aliasedV2JSON.utf8))
+        var rejectedV2Alias = false
+        do { _ = try LegadoOriginalLoginV2Form(aliasedV2, sessionValues: [:], renderID: UUID()) }
+        catch let failure as LegadoRuntimeError { rejectedV2Alias = failure.code == "UNSUPPORTED_CAPABILITY" }
+        #expect(rejectedV2Alias)
+        let now = ContinuousClock.now
+        #expect(LegadoOriginalLoginV2State.countdownRemaining(until: now.advanced(by: .milliseconds(2500)), now: now) == 3)
+        #expect(LegadoOriginalLoginV2State.countdownRemaining(until: now, now: now) == 0)
+        #expect(LegadoOriginalLoginV2State.countdownRemaining(until: now.advanced(by: .seconds(-1)), now: now) == 0)
         let originalJSON = #"{"rows":[{"name":"same","type":"text","default":"fallback"},{"name":"hiddenLabel","type":"label"},{"name":"same","type":"password"},{"name":"unknown","type":"future"},{"name":"nilSelect","type":"select"},{"name":"nilToggle","type":"toggle"},{"name":"emptySelect","type":"select","chars":[],"default":"kept"},{"name":"emptyChoice","type":"select","chars":["","signed"]}],"labels":["first","not-an-input","second","not-an-input","nilSelect","nilToggle","emptySelect","emptyChoice"],"values":{"hidden":"synthetic-hidden","same":""},"dynamic":true}"#
         let originalReply = try JSONDecoder().decode(LegadoOriginalLoginUIResult.self, from: Data(originalJSON.utf8))
         let originalForm = try LegadoOriginalLoginUIForm(originalReply)
@@ -783,6 +871,12 @@ struct BookSourceLoginTests {
 
         #expect(env == "改版")
     }
+}
+
+private actor LoginV2OwnedDrainFacts {
+    private var events: [String] = []
+    func append(_ event: String) { events.append(event) }
+    func snapshot() -> [String] { events }
 }
 
 @Suite("GuangYuLiveBookSource", .serialized)

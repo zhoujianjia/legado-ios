@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import LegadoRuntime
 
 // MARK: - LoginFormGrid
 //
@@ -198,6 +199,102 @@ private struct LoginFieldCell: View {
             justifySelf: field.style?.justifySelf,
             defaultAlignment: field.type == .text || field.type == .password ? .leading : .center
         )
+    }
+}
+
+/// V2 keeps its own typed rows; label rows stay labels and Toggle is the native
+/// Boolean control. No legacy action, long press, default or autosave is involved.
+struct LoginV2FormGrid: View {
+    let form: LegadoOriginalLoginV2Form
+    @Binding var values: [String: String]
+    let errors: [String: String]
+    let disabledButton: String?
+    let toggleActionsEnabled: Bool
+    let countdowns: [String: Int]
+    let onEdit: () -> Void
+    let onAction: (LegadoOriginalLoginV2Form.Row) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        LoginGridLayout(specs: form.rows.map {
+            dynamicTypeSize.isAccessibilitySize
+                ? LoginGridSpec(colSpan: LoginGridSpec.columnCount, rowSpan: 1, wrapBefore: true) : $0.gridSpec
+        }, horizontalSpacing: DSSpacing.md) {
+            ForEach(form.rows) { row in
+                VStack(alignment: .leading, spacing: DSSpacing.xs) {
+                    control(row)
+                    if let key = row.definition.key, let error = errors[key] {
+                        Text(error).font(DSFont.caption).foregroundStyle(DSColor.destructive)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.vertical, DSSpacing.sm)
+            }
+        }
+    }
+
+    @ViewBuilder private func control(_ row: LegadoOriginalLoginV2Form.Row) -> some View {
+        let raw = row.definition
+        switch raw.type {
+        case "text", "password":
+            let field = LoginField(name: raw.name, type: raw.type == "password" ? .password : .text,
+                action: nil, options: raw.hint.map { [$0] } ?? [], defaultValue: nil, style: nil, viewName: nil)
+            LoginTextFieldCell(field: field, label: raw.name, value: value(row), alignment: .leading)
+                .accessibilityHint(raw.key.flatMap { errors[$0] } ?? "")
+        case "label":
+            Text(raw.name).font(DSFont.body).foregroundStyle(DSColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: DSLayout.minimumTapTarget, alignment: .leading)
+        case "select":
+            Menu {
+                ForEach(options(row)) { option in
+                    Button(option.value) { value(row).wrappedValue = option.value }
+                }
+            } label: {
+                VStack(alignment: .leading, spacing: DSSpacing.xs) {
+                    Text(raw.name).font(DSFont.caption).foregroundStyle(DSColor.textSecondary)
+                        .accessibilityHidden(true)
+                    Text(value(row).wrappedValue).font(DSFont.body)
+                        .frame(maxWidth: .infinity, minHeight: DSLayout.minimumTapTarget, alignment: .leading)
+                }
+            }
+            .buttonStyle(LoginPressButtonStyle())
+            .accessibilityLabel(raw.name).accessibilityValue(value(row).wrappedValue)
+            .accessibilityHint(raw.key.flatMap { errors[$0] } ?? "")
+        case "toggle":
+            Toggle(raw.name, isOn: Binding(get: { value(row).wrappedValue == "true" }, set: { checked in
+                value(row).wrappedValue = checked ? "true" : "false"
+                if raw.action != nil { onAction(row) }
+            }))
+            .font(DSFont.body).tint(DSColor.accent)
+            .frame(maxWidth: .infinity, minHeight: DSLayout.minimumTapTarget)
+            .disabled(raw.action != nil && !toggleActionsEnabled)
+        case "button":
+            LoginActionPill(label: buttonLabel(row), alignment: .center, action: { onAction(row) })
+                .disabled(disabledButton == row.actionID || (row.actionID.flatMap { countdowns[$0] } ?? 0) > 0)
+        default:
+            // The same original parser rejects unknown V2 types before publication.
+            EmptyView()
+        }
+    }
+
+    private func value(_ row: LegadoOriginalLoginV2Form.Row) -> Binding<String> {
+        Binding(get: { row.definition.key.flatMap { values[$0] } ?? "" }, set: { changed in
+            guard let key = row.definition.key, values[key]?.utf16.elementsEqual(changed.utf16) != true else { return }
+            values[key] = changed; onEdit()
+        })
+    }
+
+    private struct Option: Identifiable { let id: String; let index: Int; let value: String }
+    private func options(_ row: LegadoOriginalLoginV2Form.Row) -> [Option] {
+        // Adapter slots preserve nulls and duplicate/empty options. Both null
+        // and an explicit empty choice set the original EditText to an empty string.
+        (row.definition.options ?? []).enumerated().map { .init(id: row.id + ".option.\($0.offset)", index: $0.offset, value: $0.element ?? "") }
+    }
+    private func buttonLabel(_ row: LegadoOriginalLoginV2Form.Row) -> String {
+        guard let id = row.actionID, let seconds = countdowns[id], seconds > 0 else { return row.definition.name }
+        // Original source-controlled countdown caption; s is the SI seconds unit.
+        return row.definition.name + " (\(seconds)s)"
     }
 }
 

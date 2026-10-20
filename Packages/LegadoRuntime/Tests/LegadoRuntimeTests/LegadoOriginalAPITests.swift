@@ -205,6 +205,51 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
         }
     }
 
+    func testLoginV2TypedRequestsKeepStateFormAndCheckedCloseCommandsDistinct() async throws {
+        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
+        transport.respondNext(#"{"ok":false,"error":{"code":"LOGIN_UI_V2","message":"Original version2 protocol required"}}"#)
+        do {
+            _ = try await runtime.loginUIOriginal(session: source, values: nil)
+            XCTFail("The original GSON marker admission must select the distinct protocol")
+        } catch let failure as LegadoRuntimeError { XCTAssertEqual(failure.code, "LOGIN_UI_V2") }
+        XCTAssertEqual(transport.calls.last?.operation, "loginUi")
+        transport.respondNext(#"{"ok":true,"result":{"rows":[{"name":"User","type":"text","key":"username","value":"rendered","hint":"hint"},{"name":"Remember","type":"toggle","key":"remember","value":"true","action":"toggle"},{"name":"Nullable","type":"select","key":"choice","options":[null,"b"]},{"name":"Submit","type":"button","action":"submit","countdown":3}],"storedValues":{"username":"stored","hidden":"kept"}}}"#)
+        let rendered = try await runtime.loginV2UIOriginal(session: source, stateJSON: #"{"phase":2}"#)
+        XCTAssertEqual(rendered.rows.map(\.type), ["text", "toggle", "select", "button"])
+        XCTAssertEqual(rendered.rows[0].key, "username"); XCTAssertEqual(rendered.rows[0].value, "rendered")
+        XCTAssertEqual(rendered.rows[1].value, "true"); XCTAssertEqual(rendered.rows[3].countdown, 3)
+        XCTAssertEqual(rendered.rows[2].options, [nil, "b"])
+        XCTAssertEqual(rendered.storedValues, ["username": "stored", "hidden": "kept"])
+        let renderCall = try XCTUnwrap(transport.calls.last)
+        XCTAssertEqual(renderCall.operation, "loginV2UI"); XCTAssertFalse(renderCall.main)
+        let renderRequest = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(renderCall.request.utf8)) as? [String: Any])
+        XCTAssertEqual(renderRequest["stateJSON"] as? String, #"{"phase":2}"#)
+        XCTAssertNil(renderRequest["credentials"]); XCTAssertNil(renderRequest["values"])
+        transport.respondNext(#"{"ok":true,"result":{"stateJSON":"{\"phase\":3}","errors":{"captcha":"retry"},"close":true,"loginStored":true,"unknownKeys":["future"]},"completedEffects":["sourceLoginInfoMayCommit","sourceLoginInfoCommitted"]}"#)
+        let effects = OSAllocatedUnfairLock(initialState: [String]())
+        let command = try await runtime.loginV2ActionOriginal(session: source, action: "submit'\n",
+            stateJSON: #"{"phase":2}"#, form: ["password": "synthetic", "empty": ""],
+            onReportedEffects: { values in effects.withLock { $0 = values } })
+        XCTAssertTrue(command.close); XCTAssertTrue(command.loginStored)
+        XCTAssertEqual(command.stateJSON, #"{"phase":3}"#); XCTAssertEqual(command.errors, ["captcha": "retry"])
+        XCTAssertEqual(command.unknownKeys, ["future"])
+        XCTAssertEqual(effects.withLock { $0 }, ["sourceLoginInfoMayCommit", "sourceLoginInfoCommitted"])
+        let actionCall = try XCTUnwrap(transport.calls.last)
+        XCTAssertEqual(actionCall.operation, "loginV2Action"); XCTAssertFalse(actionCall.main)
+        let request = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(actionCall.request.utf8)) as? [String: Any])
+        XCTAssertEqual(request["action"] as? String, "submit'\n")
+        XCTAssertEqual(request["form"] as? [String: String], ["password": "synthetic", "empty": ""])
+        XCTAssertNil(request["credentials"]); XCTAssertNil(request["loginJS"])
+        transport.respondNext(#"{"ok":false,"error":{"code":"STATE_REJECTED","message":"safe rejection","completedEffects":["sourceLoginInfoMayCommit"]}}"#)
+        do {
+            _ = try await runtime.loginV2ActionOriginal(session: source, action: "submit", stateJSON: "{}", form: [:])
+            XCTFail("Rejected save cannot become a close command")
+        } catch let failure as LegadoRuntimeError {
+            XCTAssertEqual(failure.code, "STATE_REJECTED")
+            XCTAssertEqual(failure.completedEffects, ["sourceLoginInfoMayCommit"])
+        }
+    }
+
     func testLoginUIDeltaReuseRequestAndTypedControlStateKeepRawRowsSeparate() async throws {
         let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
         let oldRow = try JSONDecoder().decode(LegadoOriginalLoginUIRow.self, from: Data(#"{"name":"flag","type":"toggle","action":"oldCycle()","chars":["","on",null],"default":"","viewName":"old label","style":{"layout_justifySelf":"right"}}"#.utf8))

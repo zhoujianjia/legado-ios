@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "status": "prepared-single-process-login-tests-and-accepted-effect-order-awaiting-grammar-and-independent-review",
+  "canonicalParent": "58da225d8b78a1e191656fb3dbfce8279fdca3e3",
+  "files": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "baseline": {
+        "bytes": 37795,
+        "sha256": "e5b8c376021901d6560253461157e5d31be9600a9c713b1988d7feabec6ecead"
+      },
+      "candidate": {
+        "bytes": 37954,
+        "sha256": "2f3c4cbfa02786f794ca024e059e57c2d0af10d0fc7305229688c91511400fbf"
+      },
+      "diff": {
+        "path": ".build/native-210-login-single-process-repair-step/diffs/Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift.diff",
+        "bytes": 665,
+        "sha256": "2c501f81202055f7c23ef782af914326983e906a4525a2714405b073dd97702f"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 34815,
+        "sha256": "535387d63c0e622f7493412c4bfc77d0e4cabec566c9eaf261923cac6b06f77b"
+      },
+      "candidate": {
+        "bytes": 35722,
+        "sha256": "08c73c192b72eff01c83722aef355a9d24722381ba6298ca7822e2056f7b58e9"
+      },
+      "diff": {
+        "path": ".build/native-210-login-single-process-repair-step/diffs/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 14775,
+        "sha256": "3f24e33f19fa3840217a0f0c7b2c0e3f2340071eb15f693dcb98e8137ef65464"
+      }
+    }
+  ],
+  "actualNativeFailureSource": "210fb0597dcc4081db9324876c4be922ba186367",
+  "rootCauses": [
+    "Direct fixture Runtime and different HostBox cannot reconfigure the process-scoped JVM after the product service starts it.",
+    "Accepted Keychain persistence notified synchronous cancellation observers before recording its irreversible Committed fact."
+  ],
+  "scope": [
+    "Preserve the sole existing process runtime and Host; bind/revoke fresh synthetic .invalid source grants.",
+    "Record accepted irreversible commit before revision notification; rejection/IO and current owners remain unchanged.",
+    "Use actual accepted-write notifications and a bounded test-only lock box to synchronously cancel the existing pending task, including notification-before-registration.",
+    "Retain real checked Keychain/reopen/source isolation and committed-cancellation assertions; no second interpreter/router or production test hook."
+  ],
+  "existingNativeTestDefinitionsUnchanged": 9,
+  "newAppNativeOrPackageDefinitions": 0,
+  "actualSwiftCompilerSDKJNIExecutions": 0,
+  "currentSourcesUnchanged": true
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "status": "confirmed-P2-reported-to-App-author-awaiting-fix",
+  "reviewedUTC": "2026-10-20T19:58:37.954438+00:00",
+  "source": {
+    "path": ".build/original-source-login-v2-protocol-step/work/Modules/Features/BookSource/BookSourceFormLoginView.swift",
+    "bytes": 97885,
+    "sha256": "09bf1d3af7a3162c61122f7fcaecd74c9d88dc078353f1c1fabb4148221e0f77"
+  },
+  "finding": {
+    "id": "V2-SOURCE-CHANGE-DURING-CLOSE",
+    "severity": "P2",
+    "trigger": "The bound source changes while a V2 close task is draining an already canceled action/render.",
+    "sequence": [
+      "requestOriginalV2Close captures the actual action/render, calls cancelOriginalOperations to cancel and clear their shared handles, then keeps originalExitInProgress true while originalExitTask drains those captured tasks.",
+      "The source onChange cancels originalExitTask and calls resetOriginalV2Source. Reset captures the now-empty shared action/render handles and does not await the exit task that still owns the real drain.",
+      "The replacement task can call loadUI before the canceled exit task finishes. loadUI returns because originalExitInProgress is still true.",
+      "The old exit defer eventually clears originalExitInProgress, but no code restarts loading. The replacement source remains on an empty loading form."
+    ],
+    "requiredRepair": "Capture and drain the old exit owner as well as action/render work before replacement-source loading, with explicit generation ownership and restored exit flags. Do not clear handles to bypass actual pending work.",
+    "reportedTo": "original_source_login_info"
+  },
+  "otherInspectedFacts": [
+    "V2 route only consumes exact LOGIN_UI_V2 admission.",
+    "Legacy OK and dismissal autosave are excluded once the V2 route is selected.",
+    "Candidate render projection occurs off main and rebases current input without running source JS twice.",
+    "Explicit checked login result precedes close; source-render failure retains prior form/state/session."
+  ],
+  "actualSwiftCompilerSDKOrUIExecutions": 0,
+  "canonicalGitOrCloudMutation": false,
+  "current55aCohortAffected": false
+}

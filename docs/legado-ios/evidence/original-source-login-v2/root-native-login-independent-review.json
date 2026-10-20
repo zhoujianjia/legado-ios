@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-two-source-repair-approved-pending-actual-SDK-and-JNI",
+  "manifest": {
+    "path": ".build/native-210-login-single-process-repair-step/final-v1.json",
+    "bytes": 4255,
+    "sha256": "d632ae4ae1fe8d09468902cf3af48ead2508b89875f16f076b29ec631b216318"
+  },
+  "baseline": "58da225d8b78a1e191656fb3dbfce8279fdca3e3",
+  "files": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "baseline": {
+        "bytes": 37795,
+        "sha256": "e5b8c376021901d6560253461157e5d31be9600a9c713b1988d7feabec6ecead"
+      },
+      "candidate": {
+        "bytes": 37954,
+        "sha256": "2f3c4cbfa02786f794ca024e059e57c2d0af10d0fc7305229688c91511400fbf"
+      },
+      "diff": {
+        "path": ".build/native-210-login-single-process-repair-step/diffs/Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift.diff",
+        "bytes": 665,
+        "sha256": "2c501f81202055f7c23ef782af914326983e906a4525a2714405b073dd97702f"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 34815,
+        "sha256": "535387d63c0e622f7493412c4bfc77d0e4cabec566c9eaf261923cac6b06f77b"
+      },
+      "candidate": {
+        "bytes": 35946,
+        "sha256": "b535a7a7ad40bfeb67b381bca5b7945924dd59df919a9700dfc2ff8e619f5427"
+      },
+      "diff": {
+        "path": ".build/native-210-login-single-process-repair-step/diffs/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 15719,
+        "sha256": "452c32ed8bbcae4ef25ee1d28b7b7664bfa7762e8b2338de2e188a0333ad9cc5"
+      }
+    }
+  ],
+  "allBaselineCandidateDiffBytesVerified": true,
+  "reviewSetupNote": "Initial reviewer path assumption rawbaseline was absent in this root-authored stage. Baselines were then read from their exact frozen Git parent and verified against manifest hashes; no test execution or source modification occurred.",
+  "sourceCausalReview": [
+    "C LGRStart requires process-scoped classpath/javaHome/heap/hostContext match; three direct fixture Runtime/Host creations caused actual jni_3 after product process had started. Final uses existing process executor and persistent source grants; C guard unchanged.",
+    "Shared process Host owns LoginManager.shared, so fixture now uses that exact owner for only unique synthetic.invalid accounts. Independent UserDefaults remains a reopen probe; raw Keychain/header cleanup targets only fixture keys.",
+    "Three bind/create/execute paths close created sessions and revoke the same process grants on captured execution errors. Original cancellation cancels/drains pending result even when explicit runtime.cancel reports error, before close/revoke.",
+    "Pure persist cancellation awaits pending.value to terminal before close and never calls loginJS. No local transport/router/test-only production Host is introduced.",
+    "Accepted Keychain path now records Committed before advanceRevision emits the synchronous notification; rejected and throwing storage paths still cannot acquire Committed. This closes the actual observer/response-sealing ordering risk, without weakening the original effect assertion.",
+    "Notification queue:nil filters the exact synthetic source. Lock box handles accept-before-install and install-before-accept with one cancel, invokes cancellation outside lock, unregisters observer and drops task closure at scope end. No sleep/poll or blocked Host actor.",
+    "Legacy context cancel first actually writes accepted-synthetic then executes a real Rhino instruction loop; the second put remains unreachable under successful cancellation. Tests still require typedCANCELLED+sourceLoginInfoCommitted and exact accepted persisted bytes."
+  ],
+  "compileRiskReview": {
+    "SwiftSDKExecuted": false,
+    "testDefinitionsBeforeAndAfter": 9,
+    "newDefinitions": 0,
+    "grammarRoots": 4,
+    "notes": [
+      "Task cancellation box uses locked @unchecked Sendable state and @Sendable cancellation closure, not a mutable unsynchronized captured Task slot.",
+      "No new throwing #expect/#require RHS or unqualified static test helper introduced.",
+      "Same actor-isolated process APIs are awaited and fixture I/O remains detached.",
+      "Typed-error assertions remain; pure cancellation dropping effect or returning CancellationError will still fail the actual test."
+    ]
+  },
+  "findings": [],
+  "compositionBoundary": {
+    "futureV2NativeTestSourceOverlaps": true,
+    "required": "Root must compose this9-method baseline repair with the separately frozen V2 newmethod and bind exact final Native source bytes; neither source review alone accepts that composed result.",
+    "countGateControlsSeparate": ".build/native-210-count-gate-repair-step/preparation/final-v1.json"
+  },
+  "contextSourceFacts": [
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 121534,
+      "sha256": "fe35a9e31404a78601df4ed6f5e8d420f21525bd2dbff5487fab92909ce65e1a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+      "bytes": 35615,
+      "sha256": "304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "bytes": 33706,
+      "sha256": "bbab19b414e9dcdac8597e393432b4058d8e0d4860900860a279cb5f45c72803"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "bytes": 8119,
+      "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+    }
+  ],
+  "notExecuted": [
+    "Swift compiler",
+    "XCTest",
+    "actualJNI",
+    "device"
+  ],
+  "operations": {
+    "canonical": false,
+    "peerStage": false,
+    "Git": false,
+    "cloud": false,
+    "suiteRerun": false
+  },
+  "flags": {
+    "sourceReviewApproved": true,
+    "actualNativeFailuresResolved": false,
+    "SDKValidated": false,
+    "deviceValidated": false
+  }
+}

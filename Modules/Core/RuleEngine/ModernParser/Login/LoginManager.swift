@@ -789,8 +789,10 @@ final class LoginManager {
             ?? credentials.deleteChecked(account: account)
         guard accepted else { return false }
         defaults.removeObject(forKey: account)
-        advanceRuntimeLoginInfoRevision(sourceUrl: sourceUrl)
+        // The accepted Keychain write is already irreversible. Publish that
+        // fact before a synchronous revision notification can cancel its caller.
         recordEffect("sourceLoginInfoCommitted")
+        advanceRuntimeLoginInfoRevision(sourceUrl: sourceUrl)
         return true
     }
 

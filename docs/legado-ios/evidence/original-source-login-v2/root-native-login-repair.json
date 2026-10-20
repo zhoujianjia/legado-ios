@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-single-process-login-tests-and-accepted-effect-order-awaiting-independent-review",
+  "canonicalParent": "58da225d8b78a1e191656fb3dbfce8279fdca3e3",
+  "files": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "baseline": {
+        "bytes": 37795,
+        "sha256": "e5b8c376021901d6560253461157e5d31be9600a9c713b1988d7feabec6ecead"
+      },
+      "candidate": {
+        "bytes": 37954,
+        "sha256": "2f3c4cbfa02786f794ca024e059e57c2d0af10d0fc7305229688c91511400fbf"
+      },
+      "diff": {
+        "path": ".build/native-210-login-single-process-repair-step/diffs/Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift.diff",
+        "bytes": 665,
+        "sha256": "2c501f81202055f7c23ef782af914326983e906a4525a2714405b073dd97702f"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 34815,
+        "sha256": "535387d63c0e622f7493412c4bfc77d0e4cabec566c9eaf261923cac6b06f77b"
+      },
+      "candidate": {
+        "bytes": 35946,
+        "sha256": "b535a7a7ad40bfeb67b381bca5b7945924dd59df919a9700dfc2ff8e619f5427"
+      },
+      "diff": {
+        "path": ".build/native-210-login-single-process-repair-step/diffs/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 15719,
+        "sha256": "452c32ed8bbcae4ef25ee1d28b7b7664bfa7762e8b2338de2e188a0333ad9cc5"
+      }
+    }
+  ],
+  "actualNativeFailureSource": "210fb0597dcc4081db9324876c4be922ba186367",
+  "rootCauses": [
+    "Direct fixture Runtime and different HostBox cannot reconfigure the process-scoped JVM after the product service starts it.",
+    "Accepted Keychain persistence notified synchronous cancellation observers before recording its irreversible Committed fact."
+  ],
+  "scope": [
+    "Preserve the sole existing process runtime and Host; bind/revoke fresh synthetic .invalid source grants.",
+    "Record accepted irreversible commit before revision notification; rejection/IO and current owners remain unchanged.",
+    "Use actual accepted-write notifications and a bounded test-only lock box to synchronously cancel the existing pending task, including notification-before-registration.",
+    "Retain real checked Keychain/reopen/source isolation and committed-cancellation assertions; no second interpreter/router or production test hook."
+  ],
+  "existingNativeTestDefinitionsUnchanged": 9,
+  "newAppNativeOrPackageDefinitions": 0,
+  "actualSwiftCompilerSDKJNIExecutions": 0,
+  "currentSourcesUnchanged": true,
+  "grammarBindings": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "version": "baseline",
+      "bytes": 37795,
+      "sha256": "e5b8c376021901d6560253461157e5d31be9600a9c713b1988d7feabec6ecead",
+      "grammarErrors": 0
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "version": "candidate",
+      "bytes": 37954,
+      "sha256": "2f3c4cbfa02786f794ca024e059e57c2d0af10d0fc7305229688c91511400fbf",
+      "grammarErrors": 0
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "version": "baseline",
+      "bytes": 34815,
+      "sha256": "535387d63c0e622f7493412c4bfc77d0e4cabec566c9eaf261923cac6b06f77b",
+      "grammarErrors": 0
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "version": "candidate",
+      "bytes": 35946,
+      "sha256": "b535a7a7ad40bfeb67b381bca5b7945924dd59df919a9700dfc2ff8e619f5427",
+      "grammarErrors": 0
+    }
+  ],
+  "rootPreparation": {
+    "path": ".build/native-210-login-single-process-repair-step/preparation-v1.json",
+    "bytes": 2596,
+    "sha256": "d07ecebd75d8fcbc6459c4c34e54374d3aa61966131abab834d9256903b78a34"
+  },
+  "postPreparationRepair": "Keep explicit native cancellation errors, cancel and drain the actual pending task before shared-session close and source-grant revocation.",
+  "notExecuted": [
+    "Swift compiler/typechecking",
+    "XCTest/actual JNI",
+    "device"
+  ],
+  "productionOrderingProof": "Accepted checked Keychain commit fact is registered before the synchronous revision notification; no rejection/IO path is promoted to committed."
+}

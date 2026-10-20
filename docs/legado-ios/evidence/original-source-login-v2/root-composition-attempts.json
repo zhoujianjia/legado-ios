@@ -1,0 +1,47 @@
+{
+  "earlierAttempts": [
+    {
+      "step": "first preparation before any output source",
+      "result": "clean-worktree guard rejected four auto-generated JVM crash/replay files, subsequently preserved by hash in ignored Native repair diagnostics"
+    },
+    {
+      "step": "second preparation before any composed production source write",
+      "result": "git merge-file returned nonzero with empty stderr; exact stdout was not retained, so conflict cause is not established"
+    },
+    {
+      "step": "read-only same-input merge inspection",
+      "exit": 0,
+      "output": {
+        "bytes": 39596,
+        "sha256": "59702ae34dfad3e9527c641dff298e1343e51fdfb1fb3241c150eae9825a7876"
+      }
+    }
+  ],
+  "finalMerge": {
+    "exit": 0,
+    "stdout": {
+      "bytes": 39596,
+      "sha256": "59702ae34dfad3e9527c641dff298e1343e51fdfb1fb3241c150eae9825a7876"
+    },
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "inputs": {
+      "nativeLogin": {
+        "bytes": 35946,
+        "sha256": "b535a7a7ad40bfeb67b381bca5b7945924dd59df919a9700dfc2ff8e619f5427"
+      },
+      "baseline": {
+        "bytes": 34815,
+        "sha256": "535387d63c0e622f7493412c4bfc77d0e4cabec566c9eaf261923cac6b06f77b"
+      },
+      "V2": {
+        "bytes": 38465,
+        "sha256": "4592db78ddd365cf968a7b8c1c9901b6b80ae420bd52099e30a2775f6e329139"
+      }
+    }
+  },
+  "NativeTestFunctionComposition": "All nine Root-reviewed functions match byte-for-byte; the additional V2 method matches the whole-approved V2 candidate byte-for-byte.",
+  "untrackedDebugLog": "Left untouched and excluded from source and commit rosters."
+}

@@ -1817,7 +1817,77 @@ extension LegadoMainJSSourceService {
     }
 }
 
+struct LegadoOriginalLoginV2RenderReceipt: Sendable {
+    let render: LegadoOriginalLoginV2RenderResult
+    let completedEffects: [String]
+}
+struct LegadoOriginalLoginV2ActionReceipt: Sendable {
+    let command: LegadoOriginalLoginV2ActionResult
+    let completedEffects: [String]
+}
+
 extension LegadoMainJSSourceService {
+    /// V2 rendering and returned commands share the original source actor and
+    /// checked owner. The current form owns session/state and accepts publication.
+    func originalLoginV2UI(source: BookSource, stateJSON: String = "{}") async throws -> LegadoOriginalLoginV2RenderReceipt {
+        var effects: [String] = []
+        do {
+            let signature = try originalSignature(source)
+            let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
+            try await acquire(source.bookSourceUrl, deadline: deadline)
+            defer { release(source.bookSourceUrl) }
+            try acceptOriginalRevision(source, signature: signature)
+            let result = try await SourcePerfTrace.spanAsync("legado.original.login.v2.ui",
+                "main=\(Thread.isMainThread) bytes=\(stateJSON.utf8.count)") {
+                try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                    sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+                    operation: .loginV2UI(stateJSON: stateJSON), deadline: deadline)
+            }
+            guard case .loginV2UI(let render, let reported) = result else {
+                throw failure("INVALID_RESULT", "Original login UI v2 omitted its render")
+            }
+            effects = reported
+            try previewCheck(deadline)
+            return .init(render: render, completedEffects: reported)
+        } catch {
+            let typed = error as? LegadoRuntimeError
+            let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+            throw LegadoRuntimeError(code: code, message: "Original login UI v2 did not complete (\(code))",
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted(),
+                secondaryFailures: typed?.secondaryFailures)
+        }
+    }
+
+    func originalLoginV2Action(source: BookSource, action: String, stateJSON: String,
+                               form: [String: String]) async throws -> LegadoOriginalLoginV2ActionReceipt {
+        var effects: [String] = []
+        do {
+            let signature = try originalSignature(source)
+            let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
+            try await acquire(source.bookSourceUrl, deadline: deadline)
+            defer { release(source.bookSourceUrl) }
+            try acceptOriginalRevision(source, signature: signature)
+            let result = try await SourcePerfTrace.spanAsync("legado.original.login.v2.action",
+                "main=\(Thread.isMainThread) fields=\(form.count) bytes=\(stateJSON.utf8.count)") {
+                try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                    sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+                    operation: .loginV2Action(action: action, stateJSON: stateJSON, form: form), deadline: deadline)
+            }
+            guard case .loginV2Action(let command, let reported) = result else {
+                throw failure("INVALID_RESULT", "Original login UI v2 omitted its command")
+            }
+            effects = reported
+            try previewCheck(deadline)
+            return .init(command: command, completedEffects: reported)
+        } catch {
+            let typed = error as? LegadoRuntimeError
+            let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+            throw LegadoRuntimeError(code: code, message: "Original login UI v2 action did not complete (\(code))",
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted(),
+                secondaryFailures: typed?.secondaryFailures)
+        }
+    }
+
     /// Original row action shares the render/login actor and source owners.
     /// Supported UI callbacks return ordered task facts for the existing form
     /// owner to consume after this source gate is released.

@@ -71,6 +71,20 @@ struct BookSourceFormLoginView: View {
     @State private var loginUIRenderGeneration = UUID()
     @State private var originalFormLoaded = false
     @State private var usesOriginalLoginUI = false
+    @State private var usesOriginalLoginV2 = false
+    @State private var originalV2ReplacingSource = false
+    @State private var originalV2State = LegadoOriginalLoginV2State()
+    @State private var originalV2Errors: [String: String] = [:]
+    @State private var originalV2OwnerGeneration = UUID()
+    @State private var originalV2InputGeneration = UUID()
+    @State private var originalV2Task: Task<Void, Never>?
+    @State private var originalV2TaskGeneration = UUID()
+    @State private var originalV2Rendering = false
+    @State private var originalV2RenderGeneration = UUID()
+    @State private var originalV2DisabledButton: String?
+    @State private var originalV2ToggleActionsEnabled = true
+    @State private var originalV2Countdowns: [String: Int] = [:]
+    @State private var originalV2CountdownTasks: [String: Task<Void, Never>] = [:]
     /// What a menu button's run reported when the source itself said nothing.
     /// Alert only, never the inline error Section: that Section sits below the whole
     /// form, which on a long source menu is far off-screen — the button still read
@@ -94,6 +108,15 @@ struct BookSourceFormLoginView: View {
                     if isLoading {
                         ProgressView()
                     }
+                    if usesOriginalLoginV2 {
+                        if let form = originalV2State.form {
+                            LoginV2FormGrid(form: form, values: $originalV2State.values, errors: originalV2Errors,
+                                disabledButton: originalV2DisabledButton,
+                                toggleActionsEnabled: originalV2ToggleActionsEnabled,
+                                countdowns: originalV2Countdowns,
+                                onEdit: { originalV2InputGeneration = UUID() }, onAction: runOriginalV2Action)
+                        }
+                    } else {
                     LoginFormGrid(
                         fields: fields,
                         values: $values,
@@ -122,8 +145,9 @@ struct BookSourceFormLoginView: View {
                         },
                         originalControls: usesOriginalLoginUI ? $originalControls : nil
                     )
+                    }
 
-                    if Self.supportsFanqieLogin(source: source) {
+                    if !usesOriginalLoginV2 && !originalV2ReplacingSource && Self.supportsFanqieLogin(source: source) {
                         Button {
                             showFanqieLogin = true
                         } label: {
@@ -153,7 +177,7 @@ struct BookSourceFormLoginView: View {
                     }
                     .accessibilityLabel(localized("取消"))
                 }
-                if !fields.contains(where: { $0.type == .button }) {
+                if !usesOriginalLoginV2 && !originalV2ReplacingSource && !fields.contains(where: { $0.type == .button }) {
                     ToolbarItem(placement: .topBarTrailing) {
                         if isLoading {
                             ProgressView()
@@ -167,7 +191,7 @@ struct BookSourceFormLoginView: View {
                     .disabled(usesOriginalLoginUI && !originalFormLoaded)
                         }
                     }
-                } else {
+                } else if !usesOriginalLoginV2 && !originalV2ReplacingSource {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             if usesOriginalLoginUI {
@@ -209,7 +233,7 @@ struct BookSourceFormLoginView: View {
             }
         }
         .background(OriginalLoginDismissObserver(
-            protectsDismissal: usesOriginalLoginUI && !originalExitAllowsDismiss,
+            protectsDismissal: (usesOriginalLoginUI || originalV2ReplacingSource) && !originalExitAllowsDismiss,
             onAttempt: { requestFormClose() },
             onSystemDismiss: { requestFormClose(system: true) }))
         .onAppear {
@@ -219,16 +243,27 @@ struct BookSourceFormLoginView: View {
             // Presenting this form's own child cover is not leaving the form.
             // The native host observer still sees an actual parent dismissal.
             guard !showLog && !showFanqieLogin else { return }
-            if usesOriginalLoginUI { requestFormClose(system: true) }
+            if usesOriginalLoginUI || originalV2ReplacingSource { requestFormClose(system: true) }
             else { cancelOriginalOperations() }
         }
         .onChange(of: source.id) { _, current in
             originalPresentedSourceID = current
             originalExitTask?.cancel()
+            if usesOriginalLoginV2 || originalV2ReplacingSource { resetOriginalV2Source() }
         }
         .onChange(of: source.bookSourceUrl) { _, current in
             originalPresentedSourceURL = current
             originalExitTask?.cancel()
+            if usesOriginalLoginV2 || originalV2ReplacingSource { resetOriginalV2Source() }
+        }
+        .onChange(of: source.loginUi) { _, _ in
+            if usesOriginalLoginV2 || originalV2ReplacingSource { resetOriginalV2Source() }
+        }
+        .onChange(of: source.loginUrl) { _, _ in
+            if usesOriginalLoginV2 || originalV2ReplacingSource { resetOriginalV2Source() }
+        }
+        .onChange(of: source.jsLib) { _, _ in
+            if usesOriginalLoginV2 || originalV2ReplacingSource { resetOriginalV2Source() }
         }
         .sheet(isPresented: $showLog) {
             BookSourceDebugView()
@@ -313,6 +348,7 @@ struct BookSourceFormLoginView: View {
     /// Stop and drain the existing owned operations before any exit write. A
     /// canceled operation keeps its host effect facts; it cannot publish new rows.
     private func cancelOriginalOperations() {
+        cancelOriginalV2Work()
         originalUIActive = false
         originalUIOwnerGeneration = UUID()
         cancelOriginalTransientWork()
@@ -325,6 +361,10 @@ struct BookSourceFormLoginView: View {
     }
 
     private func requestFormClose(system: Bool = false, discardingFailedGeneration: UUID? = nil) {
+        if usesOriginalLoginV2 || originalV2ReplacingSource {
+            requestOriginalV2Close(system: system)
+            return
+        }
         if let failedGeneration = discardingFailedGeneration {
             // Explicit abandonment is available only after this exact failed
             // close has drained. It never acknowledges a credential write.
@@ -412,6 +452,250 @@ struct BookSourceFormLoginView: View {
         }
     }
 
+    // MARK: - Original login UI v2
+
+    private func originalV2IsCurrent(_ generation: UUID, source snapshot: BookSource) -> Bool {
+        originalUIActive && usesOriginalLoginV2 && originalV2OwnerGeneration == generation
+            && originalPresentedSourceID == snapshot.id
+            && originalPresentedSourceURL?.utf8.elementsEqual(snapshot.bookSourceUrl.utf8) == true
+    }
+
+    private func collectOriginalV2Form() -> [String: String] {
+        SourcePerfTrace.span("legado.original.login.v2.collect",
+            "main=\(Thread.isMainThread) controls=\(originalV2State.values.count)") {
+            originalV2State.collectForm()
+        }
+    }
+
+    private func cancelOriginalV2Work() {
+        originalV2OwnerGeneration = UUID()
+        originalV2TaskGeneration = UUID()
+        originalV2RenderGeneration = UUID()
+        originalV2Task?.cancel(); originalV2Task = nil
+        for task in originalV2CountdownTasks.values { task.cancel() }
+        originalV2CountdownTasks = [:]; originalV2Countdowns = [:]
+        originalV2Rendering = false
+    }
+
+    private func resetOriginalV2Source() {
+        guard !originalExitAllowsDismiss, !originalExitSystemDismissed else { return }
+        // A close may already own the only remaining handles to canceled work.
+        // Capture that drain before rotating its publication generation.
+        let exit = originalExitTask, action = originalV2Task, render = loginUIRenderTask
+        originalExitGeneration = UUID()
+        originalExitTask?.cancel(); originalExitTask = nil
+        originalExitInProgress = true
+        originalExitAllowsDismiss = false; originalExitSystemDismissed = false
+        cancelOriginalOperations()
+        originalV2ReplacingSource = true
+        originalV2State = .init(); originalV2Errors = [:]
+        originalV2DisabledButton = nil; originalV2ToggleActionsEnabled = true
+        usesOriginalLoginV2 = false; usesOriginalLoginUI = false
+        originalFormLoaded = false; originalRows = []; originalLayout = nil
+        originalDismissState = .init(); originalFormSource = nil; originalDynamic = false
+        fields = []; fieldLabels = [:]; values = [:]; originalControls = [:]
+        let generation = UUID()
+        loginUIRenderGeneration = generation
+        isLoading = true
+        // Drain canceled work before admitting this View's replacement source.
+        loginUIRenderTask = Task {
+            await Self.drainOriginalV2Owner(exit: exit, action: action, render: render)
+            guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
+            originalExitInProgress = false
+            originalV2ReplacingSource = false
+            loginUIRenderTask = nil
+            loadUI()
+        }
+    }
+
+    /// Both source replacement and a native close retain their old owned work
+    /// until it has actually drained. A canceled close still owns its child work.
+    nonisolated static func drainOriginalV2Owner(exit: Task<Void, Never>?,
+        action: Task<Void, Never>?, render: Task<Void, Never>?) async {
+        await exit?.value
+        await action?.value
+        await render?.value
+    }
+
+    private func requestOriginalV2Close(system: Bool) {
+        if system { originalExitSystemDismissed = true }
+        guard !originalExitAllowsDismiss, originalExitTask == nil else { return }
+        let action = originalV2Task, render = loginUIRenderTask
+        cancelOriginalOperations()
+        originalExitInProgress = true; isLoading = true
+        let generation = UUID(); originalExitGeneration = generation
+        let hold = BackgroundTaskHold(name: "OriginalLoginV2Close")
+        originalExitTask = Task {
+            defer {
+                hold.release()
+                if originalExitGeneration == generation {
+                    originalExitTask = nil; originalExitInProgress = false
+                }
+            }
+            await Self.drainOriginalV2Owner(exit: nil, action: action, render: render)
+            guard originalExitGeneration == generation, !Task.isCancelled else { return }
+            // V2 never writes legacy working values on any dismissal path.
+            originalExitAllowsDismiss = true; isLoading = false
+            if !system && !originalExitSystemDismissed { onDismiss() }
+        }
+    }
+
+    @discardableResult private func applyOriginalV2Errors(_ errors: [String: String]) throws -> [String] {
+        guard let form = originalV2State.form else { return [] }
+        let checked = try form.checkedErrors(errors)
+        originalV2Errors = checked.fields
+        if !checked.messages.isEmpty {
+            // Authored field messages are user-visible source content, never logs.
+            menuAlert = .init(title: localized("操作失敗"), detail: checked.messages.joined(separator: "\n"))
+        }
+        return checked.messages
+    }
+
+    private func renderOriginalV2(source snapshot: BookSource, candidateState: String,
+        errors: [String: String] = [:], owner: UUID) async throws {
+        let token = UUID(); originalV2RenderGeneration = token
+        originalV2Rendering = true
+        _ = collectOriginalV2Form()
+        defer {
+            if originalV2RenderGeneration == token { originalV2Rendering = false }
+        }
+        var effects: [String] = []
+        do {
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let receipt = try await service.originalLoginV2UI(source: snapshot, stateJSON: candidateState)
+            effects = receipt.completedEffects
+            try Task.checkCancellation()
+            guard originalV2IsCurrent(owner, source: snapshot), originalV2RenderGeneration == token else {
+                throw CancellationError()
+            }
+            let renderID = UUID()
+            // The original collects again after the response. Project off main
+            // from the latest controls; if the user edits during projection,
+            // rebase that pure projection without executing the source again.
+            while true {
+                let inputToken = originalV2InputGeneration, latest = originalV2State
+                let projected = try await Task.detached {
+                    try latest.rendered(receipt.render, candidateState: candidateState, renderID: renderID)
+                }.value
+                try Task.checkCancellation()
+                guard originalV2IsCurrent(owner, source: snapshot), originalV2RenderGeneration == token else {
+                    throw CancellationError()
+                }
+                if originalV2InputGeneration != inputToken { continue }
+                // Validate authored errors before replacing any previous form.
+                _ = try projected.form?.checkedErrors(errors)
+                originalV2State = projected
+                break
+            }
+            originalV2Errors = [:]
+            originalV2DisabledButton = nil; originalV2ToggleActionsEnabled = true
+            isLoading = false
+            try applyOriginalV2Errors(errors)
+        } catch {
+            let typed = error as? LegadoRuntimeError
+            let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+            let reported = Array(Set(effects + (typed?.completedEffects ?? []))).sorted()
+            AppLogger.error("Original login v2 render failed", context: ["code": code, "reportedEffects": reported.count])
+            throw LegadoRuntimeError(code: code, message: "Original login v2 render did not complete",
+                completedEffects: reported, secondaryFailures: typed?.secondaryFailures)
+        }
+    }
+
+    private func runOriginalV2Action(_ row: LegadoOriginalLoginV2Form.Row) {
+        guard usesOriginalLoginV2, originalUIActive, originalV2Task == nil,
+              loginUIRenderTask == nil, !originalV2Rendering,
+              originalV2State.form?.rowIDs.contains(row.id) == true,
+              let action = row.definition.action, let actionID = row.actionID,
+              (originalV2Countdowns[actionID] ?? 0) <= 0 else { return }
+        originalV2Errors = [:]
+        let form = collectOriginalV2Form(), stateJSON = originalV2State.stateJSON, snapshot = source
+        let owner = originalV2OwnerGeneration, generation = UUID()
+        originalV2TaskGeneration = generation
+        originalV2DisabledButton = actionID; originalV2ToggleActionsEnabled = false
+        originalV2Task = Task {
+            defer {
+                if originalV2TaskGeneration == generation { originalV2Task = nil }
+            }
+            var effects: [String] = []
+            var sourceErrors: [String: String]?
+            do {
+                let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+                let receipt = try await service.originalLoginV2Action(source: snapshot, action: action,
+                    stateJSON: stateJSON, form: form)
+                effects = receipt.completedEffects
+                try Task.checkCancellation()
+                guard originalV2IsCurrent(owner, source: snapshot), originalV2TaskGeneration == generation else {
+                    throw CancellationError()
+                }
+                let command = receipt.command
+                if command.close {
+                    // The service has already validated the whole command and
+                    // acknowledged any explicit login object with its owner.
+                    // Do not await this action task from its own close path.
+                    originalV2Task = nil
+                    cancelOriginalOperations()
+                    originalExitAllowsDismiss = true; isLoading = false
+                    onDismiss()
+                    return
+                }
+                let errors = command.errors ?? [:]
+                sourceErrors = errors
+                if row.definition.type == "button", errors.isEmpty, let seconds = row.definition.countdown, seconds > 0 {
+                    startOriginalV2Countdown(actionID: actionID, seconds: seconds, owner: owner)
+                }
+                if let candidate = command.stateJSON {
+                    try await renderOriginalV2(source: snapshot, candidateState: candidate, errors: errors, owner: owner)
+                } else {
+                    originalV2DisabledButton = nil; originalV2ToggleActionsEnabled = true
+                    try applyOriginalV2Errors(errors)
+                }
+            } catch {
+                let typed = error as? LegadoRuntimeError
+                let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+                let count = Set(effects + (typed?.completedEffects ?? [])).count
+                AppLogger.error("Original login v2 action failed", context: ["code": code, "reportedEffects": count])
+                guard originalV2IsCurrent(owner, source: snapshot), originalV2TaskGeneration == generation else { return }
+                originalV2DisabledButton = nil; originalV2ToggleActionsEnabled = true
+                // A failed candidate render retains the prior state, controls
+                // and session. Preserve its primary error and apply source errors
+                // to those retained controls; any countdown keeps running.
+                var secondary = typed?.secondaryFailures?.map(\.code) ?? []
+                var messages: [String] = []
+                if let sourceErrors {
+                    do { messages = try applyOriginalV2Errors(sourceErrors) }
+                    catch { secondary.append((error as? LegadoRuntimeError)?.code ?? "STATE_IO") }
+                }
+                presentOriginalLoginFailure(code: code, secondary: secondary, effects: count)
+                if !messages.isEmpty, let failure = menuAlert {
+                    menuAlert = .init(title: failure.title, detail: failure.detail + "\n" + messages.joined(separator: "\n"))
+                }
+            }
+        }
+    }
+
+    private func startOriginalV2Countdown(actionID: String, seconds: Int, owner: UUID) {
+        originalV2CountdownTasks[actionID]?.cancel()
+        originalV2Countdowns[actionID] = seconds
+        let clock = ContinuousClock(), deadline = ContinuousClock.now.advanced(by: .seconds(seconds))
+        originalV2CountdownTasks[actionID] = Task {
+            do {
+                while true {
+                    // This is the source-requested one-second countdown, not a
+                    // delay used to settle UI or retry source execution.
+                    try await Task.sleep(for: .seconds(1))
+                    guard !Task.isCancelled, originalUIActive, originalV2OwnerGeneration == owner else { return }
+                    let left = LegadoOriginalLoginV2State.countdownRemaining(until: deadline, now: clock.now)
+                    if left == 0 { break }
+                    originalV2Countdowns[actionID] = left
+                }
+                guard originalV2OwnerGeneration == owner else { return }
+                originalV2Countdowns.removeValue(forKey: actionID)
+                originalV2CountdownTasks.removeValue(forKey: actionID)
+            } catch is CancellationError { }
+            catch { AppLogger.error("Original login v2 countdown failed") }
+        }
+    }
+
     // MARK: - Setup
 
     private func loadUI() {
@@ -429,6 +713,8 @@ struct BookSourceFormLoginView: View {
         loginUIRenderGeneration = generation
         isLoading = true
         canRetryLoginUi = false
+        originalV2TaskGeneration = UUID()
+        originalV2Task?.cancel(); originalV2Task = nil
         let snapshot = source
         let valueSnapshot = values
         let controlsSnapshot = originalControls
@@ -448,11 +734,17 @@ struct BookSourceFormLoginView: View {
             guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
             guard original else {
                 usesOriginalLoginUI = false
+                usesOriginalLoginV2 = false
                 loadLegacyUI()
                 return
             }
             usesOriginalLoginUI = true
             do {
+                if usesOriginalLoginV2 {
+                    try await renderOriginalV2(source: snapshot, candidateState: originalV2State.stateJSON,
+                        owner: originalV2OwnerGeneration)
+                    return
+                }
                 let evaluation: [String: String]? = try await Task.detached {
                     useExistingValues && dynamic
                         ? try Self.originalFormSubmissionValues(rows: rowsSnapshot, layout: layoutSnapshot,
@@ -479,9 +771,22 @@ struct BookSourceFormLoginView: View {
                 isLoading = false
             } catch {
                 guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
+                var failure = error
+                // Classification belongs to the locked BaseSource/GSON code.
+                // Only this explicit admission signal selects the V2 protocol;
+                // a script, state or IO failure never selects another engine.
+                if (error as? LegadoRuntimeError)?.code == "LOGIN_UI_V2" {
+                    usesOriginalLoginV2 = true
+                    do {
+                        try await renderOriginalV2(source: snapshot, candidateState: originalV2State.stateJSON,
+                            owner: originalV2OwnerGeneration)
+                        return
+                    } catch { failure = error }
+                }
+                guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
                 isLoading = false
                 canRetryLoginUi = true
-                let typed = error as? LegadoRuntimeError
+                let typed = failure as? LegadoRuntimeError
                 let code = typed?.code ?? "STATE_IO"
                 AppLogger.error("Original login UI failed", context: ["code": code,
                     "reportedEffects": typed?.completedEffects?.count ?? 0])

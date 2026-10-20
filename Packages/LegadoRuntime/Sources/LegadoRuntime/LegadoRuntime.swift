@@ -315,6 +315,28 @@ public final class LegadoRuntime: @unchecked Sendable {
             timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
     }
 
+    public func loginV2UIOriginal(session: LegadoSourceSession, stateJSON: String = "{}",
+        timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil
+    ) async throws -> LegadoOriginalLoginV2RenderResult {
+        guard (1...30_000).contains(timeoutMilliseconds) else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original login UI v2 timeout must be between1 and30000 milliseconds")
+        }
+        return try await executeOriginal(session, "loginV2UI", OriginalLoginV2UIRequest(stateJSON: stateJSON,
+            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+    }
+
+    public func loginV2ActionOriginal(session: LegadoSourceSession, action: String, stateJSON: String,
+        form: [String: String], timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil
+    ) async throws -> LegadoOriginalLoginV2ActionResult {
+        guard (1...30_000).contains(timeoutMilliseconds) else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original login UI v2 timeout must be between1 and30000 milliseconds")
+        }
+        return try await executeOriginal(session, "loginV2Action", OriginalLoginV2ActionRequest(action: action,
+            stateJSON: stateJSON, form: form, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+    }
+
     public func loginUIOriginal(session: LegadoSourceSession, values: [String: String]? = nil,
         evaluationValues: [String: String]? = nil,
         reuseState: LegadoOriginalLoginUIReuseState? = nil,

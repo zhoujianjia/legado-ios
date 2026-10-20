@@ -38,6 +38,8 @@ internal object OriginalTraditionalRuntime {
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         val fields = when (operation) {
             "loginUi" -> setOf("values", "evaluationValues", "reuseState", "timeoutMs")
+            "loginV2UI" -> setOf("stateJSON", "timeoutMs")
+            "loginV2Action" -> setOf("action", "stateJSON", "form", "timeoutMs")
             "loginAction" -> setOf("action", "credentials", "isLongClick", "inputBindingFailed", "timeoutMs")
             "formLogin", "persistLoginInfo" -> setOf("credentials", "timeoutMs")
             "sourceCallback" -> setOf("event", "timeoutMs")
@@ -62,6 +64,7 @@ internal object OriginalTraditionalRuntime {
                 val result = runBlocking(task.job) {
                     when (operation) {
                         "loginUi" -> OriginalLoginUIRuntime.execute(source, input)
+                        "loginV2UI", "loginV2Action" -> OriginalLoginV2Runtime.execute(source, operation, input)
                         "loginAction" -> OriginalLoginActionRuntime.execute(source, input)
                         "persistLoginInfo" -> {
                             require(input.int("timeoutMs", 30_000) in 1..30_000) { "Login-info persistence timeout must be between 1 and 30000 milliseconds" }

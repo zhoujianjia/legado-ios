@@ -276,6 +276,22 @@ class BookSource(
         val obj = GSON.fromJsonObject<JsonObject>(text).getOrNull() ?: return false
         return runCatching { obj.get("version")?.asInt == 2 }.getOrDefault(false)
     }
+    /** Locked BaseSource119-156: V2 uses JSON arguments, source as java, and
+     * no legacy result Map or login-page Java replacement. */
+    fun evalLoginUiV2(stateJson: String, book: Book? = null, chapter: BookChapter? = null): String? {
+        val loginJs = getLoginJs() ?: throw io.legado.app.exception.NoStackTraceException("Login UI v2 requires loginUi/loginAction script")
+        return normalizeRuleJsResult(evalJS("$loginJs\nloginUi(JSON.parse(String(__loginState)))") {
+            put("__loginState", stateJson); put("book", book); put("chapter", chapter)
+        })
+    }
+    fun evalLoginActionV2(action: String, stateJson: String, formJson: String,
+                          book: Book? = null, chapter: BookChapter? = null): String? {
+        val loginJs = getLoginJs() ?: throw io.legado.app.exception.NoStackTraceException("Login UI v2 requires loginUi/loginAction script")
+        return normalizeRuleJsResult(evalJS("$loginJs\nloginAction(String(__loginAction), JSON.parse(String(__loginState)), JSON.parse(String(__loginForm)))") {
+            put("__loginAction", action); put("__loginState", stateJson); put("__loginForm", formJson)
+            put("book", book); put("chapter", chapter)
+        })
+    }
     internal fun getStoredLoginInfoMap(): MutableMap<String, String>? {
         val json = getLoginInfo() ?: return null
         return GSON.fromJsonObject<MutableMap<String, String>>(json).getOrNull() ?: mutableMapOf()

@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "scope": "Author source-only cross-module Swift/actor/error closure audit after backend-v2; nullable-options DTO correction is in current candidate and will be frozen separately",
+  "frozenUTC": "2026-10-20T19:56:30.718576+00:00",
+  "sources": [
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "origin": "candidate",
+      "bytes": 125643,
+      "sha256": "1663078c52fad289fd86d9bb60298db645e374ba5131023acd94e096845e2e50"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "origin": "candidate",
+      "bytes": 29934,
+      "sha256": "9cc0b0e61e8ffad6ee6db1f9f4b0cb59f7ebfa648773f4f805f52b94a38d17c4"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "origin": "candidate",
+      "bytes": 35221,
+      "sha256": "03ec2bf8f3c662690c400bfdb9502a46a6176912ea4b22b9bb728729950ae538"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift",
+      "origin": "candidate",
+      "bytes": 1494,
+      "sha256": "d047a0cff2b65b2c6a9e0e40815075c636e62920430d8cc3f7cb8eb1335c6b1a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "origin": "candidate",
+      "bytes": 30376,
+      "sha256": "bcf93c4dbaf18cc0a379e2b9b7e21da3abe67f8ecd241f760d043d6130f30dae"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "origin": "candidate",
+      "bytes": 38465,
+      "sha256": "4592db78ddd365cf968a7b8c1c9901b6b80ae420bd52099e30a2775f6e329139"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "origin": "candidate",
+      "bytes": 44002,
+      "sha256": "62e93456a757c9a7e8b236384e4e49c814df1ecc1766a025c7c0791405180ced"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "origin": "canonical supporting source",
+      "bytes": 12955,
+      "sha256": "4a644c54f0fdfcadcc49df4d1b7f3558f2208f06343589a806d265dc736cf796"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+      "origin": "canonical supporting source",
+      "bytes": 6924,
+      "sha256": "0b9a24c79cf1ae7b719c8e82fb0a95f5a47f3d060cf8ce8d327280f832de7c40"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Package.swift",
+      "origin": "canonical supporting source",
+      "bytes": 4171,
+      "sha256": "183cd2b775956d8c5b6f16bd97bbec13e7fca59fc26d3e03ef1569907f7c3e57"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+      "origin": "canonical supporting source",
+      "bytes": 7574,
+      "sha256": "c194738ef2154f00806a70027438a52017a21591ad52bf3c848ba9067fcfaff9"
+    },
+    {
+      "path": "Modules/Core/BookSource/SourcePerfTrace.swift",
+      "origin": "canonical supporting source",
+      "bytes": 3788,
+      "sha256": "d77b01929cde847fb62c9a4820c9135286abc783d4af1f94056dc0c476f0a934"
+    }
+  ],
+  "checks": [
+    {
+      "topic": "Exhaustive operation/result consumers",
+      "evidence": "Repo-wide enum references resolve to the product executor/service plus three fixture sources; the full executor covers both new cases, the existing preview fixture now explicitly refuses them, exploration fixture has a default refusal, reload fixture uses a guarded pattern, service result checks have explicit invalid-result else branches.",
+      "result": "No further definite omitted exhaustive case after the recorded P1 fix."
+    },
+    {
+      "topic": "Call and type signatures",
+      "evidence": "Service source actor methods -> labeled Preview enum cases -> Native executor -> public Package loginV2UIOriginal/loginV2ActionOriginal -> typed Encodable requests. V2 stateJSON/form/rows/storedValues/errors/close/loginStored keys match actual original JVM envelopes. Public new models expose all types across the Package boundary; no public memberwise initializer is assumed by product code or tests.",
+      "result": "No definite new call/type mismatch found."
+    },
+    {
+      "topic": "Actor and source gate",
+      "evidence": "LegadoMainJSSourceService is an explicit actor; new extensions share its actor isolation and same-file private helpers. acquire/release uses existing source gate with defer; encoded/signature work is off Main. Existing generic Runtime.work owns a regular worker Thread; synchronous JNI Host refuses main. V2 java=source has no synchronous UI-owner callback reentry.",
+      "result": "No new MainActor assumption, blocking-on-main call or gate-reentry cycle introduced by the backend."
+    },
+    {
+      "topic": "Sensitive error/effect closure",
+      "evidence": "Both JVM operation names occur in task sensitive flag and pre-task catch fallback. ProductionRulePlatform suppresses log+Throwable diagnostic output for that same task. Native executor includes both operations in cleanup-error preservation, observes MayCommit/Committed before DTO decode, preserves execution primary plus cleanup secondary, closes/revokes owners; service safely wraps primary code and retains effects and secondary failures.",
+      "result": "Raw state/form/authored source does not enter the new count-only spans or new safe wrapper messages."
+    },
+    {
+      "topic": "Future build source closure",
+      "evidence": "Package.swift has automatic target source discovery, so the new public V2 models source belongs to its existing module. Future reviewed Native/Package allowlists and exact-hash snapshots must add that new source and fresh new definitions; the current55a checkpoint deliberately excludes V2.",
+      "result": "This audit is not a claim that a historical Package23/Native20 closure covers V2."
+    },
+    {
+      "topic": "Adjacent App private helper visibility",
+      "evidence": "The App draft initially used private validateNameBridge from another same-file struct; author was notified and current helper now uses fileprivate. This draft App source is not frozen or accepted by this backend-only audit.",
+      "result": "Specific anticipated Swift accessibility failure corrected during App authoring."
+    }
+  ],
+  "knownCorrections": [
+    {
+      "severity": "P1",
+      "status": "fixed in dedicated closure-fix facts",
+      "issue": "Existing exhaustive preview test fixture missed the two new enum operations"
+    },
+    {
+      "severity": "P2",
+      "status": "DTO current candidate fixed; App nullable projection still authoring",
+      "issue": "Original valid nullable options need [String?]? DTO to avoid synthetic Codable rejecting a valid original response"
+    }
+  ],
+  "limits": [
+    "Source review only, no Apple SDK/typecheck/JNI/device execution.",
+    "App4 actual consumer remains independently authored and requires whole-final binding and review.",
+    "No repeat of passing JVM, ordinaryJAR or packaging suites was run for this review."
+  ],
+  "mutations": {
+    "canonical": false,
+    "git": false,
+    "cloud": false,
+    "frozenSnapshots": false
+  }
+}

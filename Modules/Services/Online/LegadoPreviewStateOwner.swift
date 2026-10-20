@@ -309,6 +309,8 @@ struct LegadoPreviewStateOwner: LegadoEntityStateBacking {
 /// Explicit original-business execution only. No route selection, JSC or second HTTP jar.
 enum LegadoOriginalPreviewOperation: Sendable {
     case loginAction(action: String?, credentials: [String: String], isLongClick: Bool, inputBindingFailed: Bool = false)
+    case loginV2UI(stateJSON: String)
+    case loginV2Action(action: String, stateJSON: String, form: [String: String])
     case loginUI([String: String]?, evaluationValues: [String: String]?, reuseState: LegadoOriginalLoginUIReuseState?)
     case formLogin([String: String])
     case persistLoginInfo([String: String])
@@ -325,6 +327,8 @@ enum LegadoOriginalPreviewOperation: Sendable {
 
 enum LegadoOriginalPreviewResult: Sendable {
     case loginAction(LegadoOriginalLoginActionResult, completedEffects: [String])
+    case loginV2UI(LegadoOriginalLoginV2RenderResult, completedEffects: [String])
+    case loginV2Action(LegadoOriginalLoginV2ActionResult, completedEffects: [String])
     case loginUI(LegadoOriginalLoginUIResult, completedEffects: [String])
     case formLogin(LegadoOriginalFormLoginResult, completedEffects: [String])
     case search([LegadoOriginalBook])
@@ -360,7 +364,7 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
             reportedLoginUIEvents.withLock { $0 = events }
         }
         let loginOperation: Bool
-        switch operation { case .loginAction, .formLogin, .persistLoginInfo: loginOperation = true; default: loginOperation = false }
+        switch operation { case .loginAction, .formLogin, .persistLoginInfo, .loginV2UI, .loginV2Action: loginOperation = true; default: loginOperation = false }
         do {
             let runtime = try await process.executor()
             try check(deadline)
@@ -377,6 +381,15 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects,
                         onReportedLoginUIEvents: observeLoginUIEvents)
                     result = .loginAction(value, completedEffects: reportedEffects.withLock { $0 })
+                case .loginV2UI(let stateJSON):
+                    let value = try await runtime.loginV2UIOriginal(session: session, stateJSON: stateJSON,
+                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
+                    result = .loginV2UI(value, completedEffects: reportedEffects.withLock { $0 })
+                case .loginV2Action(let action, let stateJSON, let form):
+                    let value = try await runtime.loginV2ActionOriginal(session: session, action: action,
+                        stateJSON: stateJSON, form: form, timeoutMilliseconds: min(30_000, remaining),
+                        taskID: taskID, onReportedEffects: observeEffects)
+                    result = .loginV2Action(value, completedEffects: reportedEffects.withLock { $0 })
                 case .loginUI(let values, let evaluationValues, let reuseState):
                     let value = try await runtime.loginUIOriginal(session: session, values: values, evaluationValues: evaluationValues, reuseState: reuseState,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)

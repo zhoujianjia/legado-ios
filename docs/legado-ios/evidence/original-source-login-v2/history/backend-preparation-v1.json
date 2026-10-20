@@ -1,0 +1,463 @@
+{
+  "version": 1,
+  "stage": "original loginUi version2 actual protocol backend, awaiting real App consumer",
+  "frozenUTC": "2026-10-20T19:40:02.623700+00:00",
+  "baseline": {
+    "canonical": "13a13cce0bc62dd6df82247ea5a345e7dfcfa607",
+    "deltaManifest": "8166369634a9e4b4b71330174ac60a915bb8843c18f502b7718a17e451f72a77",
+    "files": [
+      {
+        "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 82555,
+        "sha256": "0aeae777e18a8e80138c74f04069dc9daaf3931f0b97eec75f2035d0da65170a"
+      },
+      {
+        "path": "Modules/SharedUI/Components/LoginFormGrid.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 25901,
+        "sha256": "be49d001dce1d79c7ce5425dda5cf1e5a616e31b7aa96a5a07e480889fa080ab"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 19110,
+        "sha256": "7baf9dcab761d63ed9605321bada8ace8f5de51cc06bae06af324aa3580084bb"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 55772,
+        "sha256": "d2e7863860fedfa9e6ff78b0775dc3c32f09d89f8a3e1069b80885b39181cd66"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 121534,
+        "sha256": "fe35a9e31404a78601df4ed6f5e8d420f21525bd2dbff5487fab92909ce65e1a"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 28784,
+        "sha256": "57df1164ae76d7aa5d754495e1fb8f08ab7175acfb5cf45c9d836fdb77d59f9b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 13619,
+        "sha256": "251c7fa44624f367f726ac9464d95a4cfef2c6872b373dac56a0d3da248755f9"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 33706,
+        "sha256": "bbab19b414e9dcdac8597e393432b4058d8e0d4860900860a279cb5f45c72803"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 26236,
+        "sha256": "8a941b514eaae385425ff3976992c49378a106d0b9155b12502470624dac1804"
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "origin": "frozen delta19 work",
+        "bytes": 34815,
+        "sha256": "535387d63c0e622f7493412c4bfc77d0e4cabec566c9eaf261923cac6b06f77b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "origin": "frozen delta19 work",
+        "bytes": 134140,
+        "sha256": "195a0dc72550d597a7e826e6cbac56285138c2849b0eb4dc56a430257184ccb1"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "origin": "frozen delta19 work",
+        "bytes": 30781,
+        "sha256": "976b550f6b227c0c0933442b42f0a3902c4ea4d683c63a59400e2e36ba424dc5"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "origin": "frozen delta19 work",
+        "bytes": 21054,
+        "sha256": "7bdb26483823506f93afe246e85100c6ed75512d01523e74337c800da1e44450"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "origin": "canonical13a13cc",
+        "bytes": 16748,
+        "sha256": "a268f7a2457c735c16bc941d7327ccce075d1f940d317623e915ad1478f73028"
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "baseline": {
+        "bytes": 121534,
+        "sha256": "fe35a9e31404a78601df4ed6f5e8d420f21525bd2dbff5487fab92909ce65e1a"
+      },
+      "candidate": {
+        "bytes": 125643,
+        "sha256": "1663078c52fad289fd86d9bb60298db645e374ba5131023acd94e096845e2e50"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Modules/Services/Online/LegadoMainJSSourceService.swift.diff",
+        "bytes": 4597,
+        "sha256": "1921bda40f681a3209e67b99e987c51c07ce61da79c74deb89016cad1c639ac0"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "baseline": {
+        "bytes": 28784,
+        "sha256": "57df1164ae76d7aa5d754495e1fb8f08ab7175acfb5cf45c9d836fdb77d59f9b"
+      },
+      "candidate": {
+        "bytes": 29934,
+        "sha256": "9cc0b0e61e8ffad6ee6db1f9f4b0cb59f7ebfa648773f4f805f52b94a38d17c4"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Modules/Services/Online/LegadoPreviewStateOwner.swift.diff",
+        "bytes": 3291,
+        "sha256": "d4c2911c092f4a021697f29af78dcbb446ae074f120ecf8cce856ec1d6ce872d"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "baseline": {
+        "bytes": 16748,
+        "sha256": "a268f7a2457c735c16bc941d7327ccce075d1f940d317623e915ad1478f73028"
+      },
+      "candidate": {
+        "bytes": 17980,
+        "sha256": "fbcdd3497dea8e578cfb3ac06233bc810c458570a18f0956557af5205e5eb72b"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt.diff",
+        "bytes": 1849,
+        "sha256": "c57b8dca6560d66f631d6b4bbd507d75435cb759b9039314e4caadcc529af944"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/login/LoginUiV2.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 4196,
+        "sha256": "2e23fb7bd06287d730e7f6aea59b54709e0282d17b66d51805b41eb781d211cb"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/login/LoginUiV2.kt.diff",
+        "bytes": 4491,
+        "sha256": "b0515b39c614d4e6971dd4f36017921e64e2cf5bb4c58f36de2aa718c47e1503"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "baseline": {
+        "bytes": 30781,
+        "sha256": "976b550f6b227c0c0933442b42f0a3902c4ea4d683c63a59400e2e36ba424dc5"
+      },
+      "candidate": {
+        "bytes": 30841,
+        "sha256": "c09fcedc8d7934f47eda3122404d1d91923f5bc94c422d8e11fea7a3496e4ded"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt.diff",
+        "bytes": 2178,
+        "sha256": "89e4e3549193296bacdfca480849b8dbdf714de3ba8d9dadb916f47a905edd52"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginV2Runtime.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3801,
+        "sha256": "6358b41beb9e8f00c671b4962c792bc2faa4c5a306d24829dd7f6e623901c7f5"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginV2Runtime.kt.diff",
+        "bytes": 4062,
+        "sha256": "4728887fbf2d83274369585aa4845db0128e7dd3f1344c5e18788b7605112b66"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "baseline": {
+        "bytes": 21054,
+        "sha256": "7bdb26483823506f93afe246e85100c6ed75512d01523e74337c800da1e44450"
+      },
+      "candidate": {
+        "bytes": 21307,
+        "sha256": "422aa2262f740b0f154d5b79221571e26141483119949b46550e6e7846255b20"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt.diff",
+        "bytes": 1434,
+        "sha256": "e51c1a2a12271093feacd4dd053eca0fdc5423d7e8f793f2ad9744e537e28d57"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2Test.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 11361,
+        "sha256": "2588867d2aece342a2fff641dc75bad4be8be93370bf57474069260ebe5955aa"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2Test.kt.diff",
+        "bytes": 11687,
+        "sha256": "4351aaff88d919b02a9fc348c82eccc25b9166371f393491e65ed29ad3dffc26"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift",
+      "baseline": null,
+      "candidate": {
+        "bytes": 1339,
+        "sha256": "8a1f07db2ca14f69e21256e254e93803df8e644d9d569ed835502075ffaf6a9b"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift.diff",
+        "bytes": 1563,
+        "sha256": "e4f9125c91b98faac3b45405467f1ec05b382c7b13fe38196c3b3300cc4aaeac"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "baseline": {
+        "bytes": 33706,
+        "sha256": "bbab19b414e9dcdac8597e393432b4058d8e0d4860900860a279cb5f45c72803"
+      },
+      "candidate": {
+        "bytes": 35221,
+        "sha256": "03ec2bf8f3c662690c400bfdb9502a46a6176912ea4b22b9bb728729950ae538"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift.diff",
+        "bytes": 2012,
+        "sha256": "e5add39f90642f69216cfd76bd6f0e022ebbd3e3c5319006d1593931c23f9d75"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "baseline": {
+        "bytes": 26236,
+        "sha256": "8a941b514eaae385425ff3976992c49378a106d0b9155b12502470624dac1804"
+      },
+      "candidate": {
+        "bytes": 29756,
+        "sha256": "0f2df0ed9dbf4323ca26428b69c8fb54bc45da1143c372684a85edce7addb449"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift.diff",
+        "bytes": 3989,
+        "sha256": "9e7037217efe8b58c85514c7f0e3b983f8de88be72a4ae970489e13b2123bc53"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134140,
+        "sha256": "195a0dc72550d597a7e826e6cbac56285138c2849b0eb4dc56a430257184ccb1"
+      },
+      "candidate": {
+        "bytes": 134720,
+        "sha256": "fba24b6994f02bb0d576b5f203bb328473d19202bcf2ac95c96187dd947ece27"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 2566,
+        "sha256": "2a0ae8d40ba0df916019fb4ca6afdbd75e1596618582def2995400b70ebbdfed"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 34815,
+        "sha256": "535387d63c0e622f7493412c4bfc77d0e4cabec566c9eaf261923cac6b06f77b"
+      },
+      "candidate": {
+        "bytes": 38025,
+        "sha256": "76c20f52cfbc204b6885e665025ce3bfa5c9fc6cb564dc5270be96c36001e763"
+      },
+      "diff": {
+        "path": "backend-diffs-v1/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 3788,
+        "sha256": "520f043718e25d787251078eff3d1b914314347fe6e249c50e9ee848153d02ef"
+      }
+    }
+  ],
+  "unchangedAppAndOtherInputs": [
+    {
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "bytes": 82555,
+      "sha256": "0aeae777e18a8e80138c74f04069dc9daaf3931f0b97eec75f2035d0da65170a"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "bytes": 19110,
+      "sha256": "7baf9dcab761d63ed9605321bada8ace8f5de51cc06bae06af324aa3580084bb"
+    },
+    {
+      "path": "Modules/SharedUI/Components/LoginFormGrid.swift",
+      "bytes": 25901,
+      "sha256": "be49d001dce1d79c7ce5425dda5cf1e5a616e31b7aa96a5a07e480889fa080ab"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "bytes": 13619,
+      "sha256": "251c7fa44624f367f726ac9464d95a4cfef2c6872b373dac56a0d3da248755f9"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+      "bytes": 55772,
+      "sha256": "d2e7863860fedfa9e6ff78b0775dc3c32f09d89f8a3e1069b80885b39181cd66"
+    }
+  ],
+  "interfaces": {
+    "Package": "LegadoOriginalLoginV2Models.swift; loginV2UIOriginal(session:stateJSON:) / loginV2ActionOriginal(session:action:stateJSON:form:)",
+    "ServiceRender": "originalLoginV2UI(source:stateJSON: = \"{}\") -> LegadoOriginalLoginV2RenderReceipt(render:{rows,storedValues}, completedEffects)",
+    "ServiceAction": "originalLoginV2Action(source:action:stateJSON:form:) -> LegadoOriginalLoginV2ActionReceipt(command:{stateJSON?,errors?,close,loginStored,unknownKeys}, completedEffects)",
+    "V2Row": "name,type,key?,hint?,value?,options?,action?,countdown?,style?",
+    "AppContract": [
+      "Same BookSourceFormLoginView, no legacy OK/dismiss save for version2.",
+      "Current View owns stateJSON initially{}, hidden sessionValues, controls, field errors, task generations and countdowns.",
+      "collectForm returns only current text/password/select/toggle, then merges into hidden session Map; render precedence row.value then session input then stored.",
+      "Action/save failure cannot close or commit candidate state; render failure keeps old UI/session/state and applies returned errors.",
+      "Countdown starts on successful valid command with no errors even if next state render later fails; original dispatch refuses render/action/countdown overlap; toggle edits themselves are not rolled back on action failure."
+    ]
+  },
+  "actual": {
+    "JVMTests": 4,
+    "ordinaryJar": {
+      "path": "validation-root/Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar",
+      "bytes": 10851889,
+      "sha256": "d3246db4652ede1a06a28b74c04e3e8e48b389f12320f5843b410e1834cbd734"
+    },
+    "productionKotlinClasses": 346,
+    "compilationInputs": 127,
+    "portedSources": 58,
+    "javaConsumerSessions": 5,
+    "javaConsumerSources": 2,
+    "renderCredentialReads": 2,
+    "checkedCredentialWrites": 1,
+    "rejectedSave": 1,
+    "malformedCommand": 1,
+    "genericOrHTTPHostCalls": 0,
+    "packagingTestsPassed": 6,
+    "swiftGrammarRoots": 21,
+    "swiftGrammarErrors": 0,
+    "SDK": 0,
+    "JNI": 0,
+    "device": 0
+  },
+  "newSourceTestDefinitions": {
+    "Package": "testLoginV2TypedRequestsKeepStateFormAndCheckedCloseCommandsDistinct",
+    "Native": "testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+    "JVM": 4,
+    "App": 0
+  },
+  "scope": [
+    "Port original LoginUiV2 parser body with only existing GSON utility import adaptation.",
+    "Same actual BookSource.evalJS/Rhino receives original __loginState/__loginAction/__loginForm JSON arguments and java=source, nullable book/chapter.",
+    "Single OriginalTraditionalRuntime execute admits distinct loginV2UI/loginV2Action; raw legacy row APIs and guards untouched.",
+    "Whole command validates before checked explicit login save; close/state receipt only after successful owner save and post-save cancellation check.",
+    "Existing task/source owner, diagnostic redaction including pre-task catch, independent MayCommit/Committed facts and native close-error propagation reused.",
+    "Render alone has no derived/default credential write; same source.getLoginInfoMap version2 stored Map path supplies persisted input."
+  ],
+  "limits": [
+    "Actual BookSourceFormLoginView version2 consumer remains to be implemented; backend/API success is NOT complete version2 product compatibility.",
+    "Swift typechecking, Package tests and Native/JNI source definitions are not locally executed; grammar only.",
+    "Browser/WebJS/WebView, loginUi v2 cross-platform live scheduling and device policies remain separate.",
+    "30-second action/render embedding budget remains explicit; no new runtime, HTTP owner, credentials store or retry cache."
+  ],
+  "evidence": [
+    {
+      "path": "baseline.json",
+      "bytes": 3498,
+      "sha256": "c7d0b035b49c368dd22d91747cd9c7400a8b34ae394c03372d238ae1ffeba167"
+    },
+    {
+      "path": "locked-parser-origin.json",
+      "bytes": 430,
+      "sha256": "1759b653fca948ac64bde5ac1e24089f47edf2630e1861d98ee57a901c31ae6a"
+    },
+    {
+      "path": "actual-jvm-tests.json",
+      "bytes": 910,
+      "sha256": "e5287b07d1d0065de1b82ab292f2a9a60ce20f99abefaec21940a23ba891eb92"
+    },
+    {
+      "path": "jvm-v2-final.log",
+      "bytes": 6498,
+      "sha256": "6b5922b9e91a25ddc65bfd4b781648452a26bda54a9192d9b0feda382585a4d2"
+    },
+    {
+      "path": "jvm-v2-attempt1.log",
+      "bytes": 18628,
+      "sha256": "3546834f5f74615bd852c7d73e24a57e31005ca20922f98cc5decd3f0e8caaa8"
+    },
+    {
+      "path": "jvm-v2-unchanged-assertion-attempt2.log",
+      "bytes": 8808,
+      "sha256": "4ea108357d77f878426811ca5de2dc800b140afe567df65adb7ea9929568be7a"
+    },
+    {
+      "path": "OrdinaryLoginV2Smoke.java",
+      "bytes": 5359,
+      "sha256": "8aee288c61f0427a49e1d9c0675f83e04959bb7d4ab1a0172070e369f08072d3"
+    },
+    {
+      "path": "ordinary-jar-smoke-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "ordinary-jar-smoke.log",
+      "bytes": 145,
+      "sha256": "e74c1870692b2682fd48c2c6f540a14e0d689957b63ad830bec6c9b0f183a9ac"
+    },
+    {
+      "path": "ordinary-jar-production-class-binding.json",
+      "bytes": 66863,
+      "sha256": "82622b6d54c42b529371e61542c0d3e32cb4b4c79c469cf772bd800893dec22c"
+    },
+    {
+      "path": "actual-jvm-compilation-inputs.json",
+      "bytes": 28219,
+      "sha256": "9ed589299e1088ec756097a7a04fd7e9119f3c7b9abde3640b3e68fe9fd374ec"
+    },
+    {
+      "path": "ordinary-jar-inspected.json",
+      "bytes": 880,
+      "sha256": "998e6a18ed09425438a685ab3e9c7a75480afcf34873ac71c5b945b52a043f4f"
+    },
+    {
+      "path": "packaging-tests.log",
+      "bytes": 1238,
+      "sha256": "cc8affe7ee35648a5505a4970542b1f9b05d9d2de627058bf789d4ff8ba2ccbb"
+    },
+    {
+      "path": "backend-swift-grammar-v1.json",
+      "bytes": 5156,
+      "sha256": "bf7ae860cec1c25847befca379c97f2054f08470bf570898ab49331e194ea711"
+    }
+  ],
+  "mutations": {
+    "canonical": false,
+    "git": false,
+    "cloud": false,
+    "privateDataRead": false,
+    "newStore": false,
+    "newJSRuntime": false
+  },
+  "claims": {
+    "version2ProductComplete": false,
+    "SDKValidated": false,
+    "JNIValidated": false,
+    "fullSourceCompatibility": false
+  }
+}

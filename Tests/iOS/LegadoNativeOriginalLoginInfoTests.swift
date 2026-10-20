@@ -6,6 +6,52 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            let initial = ["hidden": "synthetic-hidden", "username": "stored-user"]
+            await Task.detached { LoginManager.shared.storeLoginInfo(sourceUrl: fixture.a, info: initial) }.value
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a; source.enabledCookieJar = false
+            source.loginUi = #"{"version":2}"#
+            source.loginUrl = """
+            function loginUi(s){if(java!==source||book!==null||chapter!==null)throw new Error('wrong original host');return {rows:[{name:String(s.phase),key:'username',value:'render-user'},{name:'Remember',type:'toggle',key:'remember',value:true},{name:'Nullable',type:'select',key:'choice',options:[null,'b']},{name:'Submit',type:'button',action:'submit',countdown:2}]};}
+            function loginAction(a,s,f){if(java!==source||book!==null||chapter!==null||s.phase!==2)throw new Error('wrong original action');if(a==='invalid')return {state:[],login:{token:'must-not-save'},close:true};return {login:{token:f.password},state:{phase:3},close:true};}
+            """
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            do {
+                _ = try await service.originalLoginUI(source: source, values: nil)
+                XCTFail("Same original marker owner must request the distinct V2 protocol")
+            } catch let failure as LegadoRuntimeError { XCTAssertEqual(failure.code, "LOGIN_UI_V2") }
+            let rendered = try await service.originalLoginV2UI(source: source, stateJSON: #"{"phase":2}"#)
+            XCTAssertEqual(rendered.render.rows.map(\.type), ["text", "toggle", "select", "button"])
+            XCTAssertEqual(rendered.render.rows[2].options, [nil, "b"])
+            XCTAssertEqual(rendered.render.rows[0].name, "2")
+            XCTAssertEqual(rendered.render.storedValues, initial)
+            let unchanged = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(unchanged, initial)
+            let saved = try await service.originalLoginV2Action(source: source, action: "submit",
+                stateJSON: #"{"phase":2}"#, form: ["password": "accepted-synthetic"])
+            XCTAssertTrue(saved.command.loginStored); XCTAssertTrue(saved.command.close)
+            XCTAssertEqual(saved.command.stateJSON, #"{"phase":3}"#)
+            XCTAssertTrue(saved.completedEffects.contains("sourceLoginInfoCommitted"))
+            let committed = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(committed, ["token": "accepted-synthetic"])
+            do {
+                _ = try await service.originalLoginV2Action(source: source, action: "invalid",
+                    stateJSON: #"{"phase":2}"#, form: [:])
+                XCTFail("Malformed command must validate before explicit login save or close")
+            } catch let failure as LegadoRuntimeError { XCTAssertEqual(failure.code, "INVALID_RESULT") }
+            let retained = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(retained, committed)
+        } catch { problem = error }
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()
@@ -42,18 +88,27 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
             let remaining = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
             XCTAssertNil(remaining)
 
-            let accepted = expectation(description: "Actual pure persistence Keychain write accepted")
-            let held = HeldAcceptedHost(base: fixture.host, accepted: { accepted.fulfill() })
-            let runtime = LegadoRuntime(configuration: try XCTUnwrap(LegadoRuntime.Configuration.bundled()), host: held)
-            let owner = try await fixture.host.bind(sourceURL: fixture.a, sourceRevision: "native-persist-v1")
-            let session = try await runtime.createSession(sourceJSON: fixture.source(fixture.a, loginUrl: admitted.loginUrl),
-                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
-            let taskID = UUID().uuidString
-            let pending = Task { try await runtime.persistLoginInfoOriginal(session: session,
-                credentials: ["password": "accepted-synthetic"], taskID: taskID) }
-            await fulfillment(of: [accepted], timeout: 15)
+            let process = LegadoRuntimeProcess.shared
+            let runtime = try await process.executor()
+            let owner = try await process.bindPersistentSource(sourceURL: fixture.a, sourceRevision: "native-persist-v1")
+            var session: LegadoSourceSession?
             do {
-                try await runtime.cancel(taskID: taskID)
+                let current = try await runtime.createSession(sourceJSON: fixture.source(fixture.a, loginUrl: admitted.loginUrl),
+                    options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
+                session = current
+                let accepted = expectation(description: "Actual pure persistence Keychain write accepted")
+                let cancellation = AcceptedWriteCancellation()
+                let notification = NotificationCenter.default.addObserver(forName: .bookSourceLoginInfoDidChange,
+                    object: nil, queue: nil) { event in
+                    guard event.userInfo?["sourceURL"] as? String == fixture.a,
+                          cancellation.accept() else { return }
+                    accepted.fulfill()
+                }
+                defer { cancellation.finish(); NotificationCenter.default.removeObserver(notification) }
+                let pending = Task { try await runtime.persistLoginInfoOriginal(session: current,
+                    credentials: ["password": "accepted-synthetic"], taskID: UUID().uuidString) }
+                cancellation.install { pending.cancel() }
+                await fulfillment(of: [accepted], timeout: 15)
                 do { _ = try await pending.value; XCTFail("Actual cancellation must retain its checked commit fact") }
                 catch let failure as LegadoRuntimeError {
                     XCTAssertEqual(failure.code, "CANCELLED")
@@ -62,9 +117,10 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
                 let actual = await Task.detached { fixture.login.getLoginInfo(sourceUrl: fixture.a) }.value
                 XCTAssertEqual(actual, ["password": "accepted-synthetic"])
             } catch { problem = error }
-            await held.release(); _ = await pending.result
-            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
-            await fixture.host.revoke(owner: owner)
+            if let session {
+                do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
+            }
+            await process.revokePersistentSource(owner: owner)
         } catch { problem = error }
         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
         if let problem { throw problem }
@@ -364,37 +420,55 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
         executionTimeAllowance = 180
         try await requireNativeRuntime()
         let fixture = try await Task.detached { try Fixture() }.value
-        let accepted = expectation(description: "Actual App Keychain write accepted")
-        let host = HeldAcceptedHost(base: fixture.host, accepted: { accepted.fulfill() })
-        let configuration = try XCTUnwrap(LegadoRuntime.Configuration.bundled())
-        let runtime = LegadoRuntime(configuration: configuration, host: host)
-        let owner = try await fixture.host.bind(sourceURL: fixture.a, sourceRevision: "native-login-v1")
-        let session = try await runtime.createSession(sourceJSON: fixture.source(fixture.a),
-            options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
-        _ = try await runtime.openExploreContextOriginal(session: session)
-        let taskID = UUID().uuidString
-        let pending = Task {
-            try await runtime.evaluateExploreContextOriginal(session: session,
-                script: "source.putLoginInfo('accepted-synthetic');source.putLoginInfo('late-synthetic');'late';", taskID: taskID)
-        }
-        await fulfillment(of: [accepted], timeout: 15)
+        let process = LegadoRuntimeProcess.shared
+        let runtime = try await process.executor()
+        let owner = try await process.bindPersistentSource(sourceURL: fixture.a, sourceRevision: "native-login-v1")
+        var session: LegadoSourceSession?
         var problem: Error?
         do {
-            try await runtime.cancel(taskID: taskID)
-            do { _ = try await pending.value; XCTFail("Expected actual runtime cancellation") }
-            catch let error as LegadoRuntimeError {
-                XCTAssertEqual(error.code, "CANCELLED")
-                XCTAssertTrue(error.completedEffects?.contains("sourceLoginInfoCommitted") == true)
+            let current = try await runtime.createSession(sourceJSON: fixture.source(fixture.a),
+                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
+            session = current
+            _ = try await runtime.openExploreContextOriginal(session: current)
+            let accepted = expectation(description: "Actual App Keychain write accepted")
+            let cancellation = AcceptedWriteCancellation()
+            let notification = NotificationCenter.default.addObserver(forName: .bookSourceLoginInfoDidChange,
+                object: nil, queue: nil) { event in
+                guard event.userInfo?["sourceURL"] as? String == fixture.a,
+                      cancellation.accept() else { return }
+                accepted.fulfill()
             }
+            defer { cancellation.finish(); NotificationCenter.default.removeObserver(notification) }
+            let taskID = UUID().uuidString
+            let pending = Task {
+                try await runtime.evaluateExploreContextOriginal(session: current,
+                    // After the real accepted write, only the actual Rhino
+                    // instruction observer/cancel path can release this loop.
+                    script: "source.putLoginInfo('accepted-synthetic');while(true){};source.putLoginInfo('late-synthetic');'late';",
+                    taskID: taskID)
+            }
+            cancellation.install { pending.cancel() }
+            await fulfillment(of: [accepted], timeout: 15)
+            do {
+                try await runtime.cancel(taskID: taskID)
+                do { _ = try await pending.value; XCTFail("Expected actual runtime cancellation") }
+                catch let error as LegadoRuntimeError {
+                    XCTAssertEqual(error.code, "CANCELLED")
+                    XCTAssertTrue(error.completedEffects?.contains("sourceLoginInfoCommitted") == true)
+                }
+            } catch { problem = error }
+            // Drain even if explicit cancellation itself reports a failure.
+            pending.cancel()
+            _ = await pending.result
             let actual = try await Task.detached {
                 try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
             }.value
             XCTAssertEqual(actual, "accepted-synthetic")
         } catch { problem = error }
-        await host.release()
-        _ = await pending.result
-        do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
-        await fixture.host.revoke(owner: owner)
+        if let session {
+            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
+        }
+        await process.revokePersistentSource(owner: owner)
         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
         if let problem { throw problem }
     }
@@ -402,19 +476,23 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
     private func exercise(_ fixture: Fixture, source: String? = nil, loginUi: String? = nil, loginUrl: String? = nil,
         script: String, expected: String) async throws {
         let source = source ?? fixture.a
-        let configuration = try XCTUnwrap(LegadoRuntime.Configuration.bundled())
-        let runtime = LegadoRuntime(configuration: configuration, host: fixture.host)
-        let owner = try await fixture.host.bind(sourceURL: source, sourceRevision: "native-login-v1")
-        let session = try await runtime.createSession(sourceJSON: fixture.source(source, loginUi: loginUi, loginUrl: loginUrl),
-            options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
+        let process = LegadoRuntimeProcess.shared
+        let runtime = try await process.executor()
+        let owner = try await process.bindPersistentSource(sourceURL: source, sourceRevision: "native-login-v1")
+        var session: LegadoSourceSession?
         var problem: Error?
         do {
-            _ = try await runtime.openExploreContextOriginal(session: session)
-            let actual = try await runtime.evaluateExploreContextOriginal(session: session, script: script)
+            let current = try await runtime.createSession(sourceJSON: fixture.source(source, loginUi: loginUi, loginUrl: loginUrl),
+                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
+            session = current
+            _ = try await runtime.openExploreContextOriginal(session: current)
+            let actual = try await runtime.evaluateExploreContextOriginal(session: current, script: script)
             XCTAssertEqual(actual.result, expected)
         } catch { problem = error }
-        do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
-        await fixture.host.revoke(owner: owner)
+        if let session {
+            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
+        }
+        await process.revokePersistentSource(owner: owner)
         if let problem { throw problem }
     }
 
@@ -435,21 +513,17 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
     private final class Fixture: @unchecked Sendable {
         let a: String
         let b: String
-        let sourceDefaults: UserDefaults
         let loginDefaults: UserDefaults
         let login: LoginManager
-        let host: LegadoPersistentStateHost
-        private let sourceSuite: String
         private let loginSuite: String
         init() throws {
             let id = UUID().uuidString.lowercased()
             a = "https://native-login-a-\(id).invalid"; b = "https://native-login-b-\(id).invalid"
-            sourceSuite = "native.login.sources." + id; loginSuite = "native.login.owner." + id
-            sourceDefaults = try XCTUnwrap(UserDefaults(suiteName: sourceSuite))
+            loginSuite = "native.login.owner." + id
             loginDefaults = try XCTUnwrap(UserDefaults(suiteName: loginSuite))
-            login = LoginManager(defaults: loginDefaults)
-            let sources = BookSourceRuntimeStateStore(defaults: sourceDefaults)
-            host = LegadoPersistentStateHost(backing: AppLegadoOwnedStateBacking(sources: sources, login: login))
+            // Real sessions use the existing process Host and its App owner.
+            // This independent defaults suite is only for Keychain reopen probes.
+            login = .shared
             login.storeLoginHeader(sourceUrl: a, raw: "kept-header")
         }
         func source(_ url: String, loginUi: String? = nil, loginUrl: String? = nil) throws -> String {
@@ -463,28 +537,33 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
                 guard try login.storeRuntimeLoginInfo(sourceUrl: source, value: nil, validate: {}, recordEffect: { _ in true }) else {
                     throw LegadoRuntimeError(code: "cleanup_failed", message: "Synthetic Keychain item was not removed")
                 }
+                login.removeLoginHeader(sourceUrl: source)
                 UserDefaults(suiteName: "com.yuedu.cache." + source)?.removePersistentDomain(forName: "com.yuedu.cache." + source)
             }
-            sourceDefaults.removePersistentDomain(forName: sourceSuite); loginDefaults.removePersistentDomain(forName: loginSuite)
+            loginDefaults.removePersistentDomain(forName: loginSuite)
         }
     }
 
-    private actor HeldAcceptedHost: LegadoPlatformHost {
-        let base: LegadoPersistentStateHost
-        let accepted: @Sendable () -> Void
-        private var continuation: CheckedContinuation<Void, Never>?
-        private var released = false
-        init(base: LegadoPersistentStateHost, accepted: @escaping @Sendable () -> Void) { self.base = base; self.accepted = accepted }
-        func dispatch(_ request: LegadoHostRequest) async throws -> String {
-            let response = try await base.dispatch(request)
-            if request.operation == "source.login-info",
-               let input = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) as? [String: Any],
-               input["action"] as? String == "put", !released {
-                await withCheckedContinuation { continuation in self.continuation = continuation; accepted() }
-            }
-            return response
+    /// Observes only this synthetic account's real accepted-write notification.
+    /// Notification delivery may precede Task handle registration; either order
+    /// cancels exactly once without blocking the Host actor or the main thread.
+    private final class AcceptedWriteCancellation: @unchecked Sendable {
+        private let lock = NSLock()
+        private var accepted = false
+        private var cancellation: (@Sendable () -> Void)?
+        func install(_ action: @escaping @Sendable () -> Void) {
+            let shouldCancel = lock.withLock { cancellation = action; return accepted }
+            if shouldCancel { action() }
         }
-        func cancel(taskID: String) async { await base.cancel(taskID: taskID); release() }
-        func release() { released = true; let pending = continuation; continuation = nil; pending?.resume() }
+        func accept() -> Bool {
+            let result = lock.withLock { () -> (Bool, (@Sendable () -> Void)?) in
+                guard !accepted else { return (false, nil) }
+                accepted = true
+                return (true, cancellation)
+            }
+            result.1?()
+            return result.0
+        }
+        func finish() { lock.withLock { cancellation = nil } }
     }
 }

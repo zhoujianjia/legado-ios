@@ -301,7 +301,7 @@ extension LegadoOriginalLoginUIForm {
 
     /// Java names use exact UTF16 units. Swift String-keyed Maps cannot express
     /// two distinct Java names that Swift regards as canonically equivalent.
-    private nonisolated static func validateNameBridge(_ names: [String]) throws {
+    fileprivate nonisolated static func validateNameBridge(_ names: [String]) throws {
         var spellings: [String: [UInt16]] = [:]
         for name in names {
             let units = Array(name.utf16)
@@ -340,5 +340,136 @@ struct LegadoOriginalLoginUIDismissState: Sendable {
         guard shouldPersist, revision == savedRevision else { return false }
         hasChange = false
         return true
+    }
+}
+
+/// SourceLoginV2Delegate's temporary controls, distinct from both legacy rows
+/// and the credential owner. Row identity belongs to one successful render;
+/// action identity uses exact Java UTF16, never Swift canonical equivalence.
+struct LegadoOriginalLoginV2Form: Sendable {
+    struct Row: Identifiable, Sendable {
+        let id: String
+        let definition: LegadoOriginalLoginV2Row
+        let actionID: String?
+
+        var gridSpec: LoginGridSpec {
+            let raw = definition.style
+            let style = raw.map { LoginFieldStyle(cols: $0.cols, rows: $0.rows,
+                basisPercent: $0.layout_flexBasisPercent, flexGrow: $0.layout_flexGrow,
+                wrapBefore: $0.layout_wrapBefore ?? false, justifySelf: $0.layout_justifySelf) }
+            return LoginField(name: definition.name,
+                type: LoginField.LoginFieldType(rawValue: definition.type) ?? .button,
+                action: nil, options: [], defaultValue: nil, style: style, viewName: nil).gridSpec
+        }
+    }
+
+    let rows: [Row]
+    let rowIDs: Set<String>
+    let values: [String: String]
+    let fieldKeys: [String]
+
+    init(_ result: LegadoOriginalLoginV2RenderResult, sessionValues: [String: String],
+        renderID: UUID) throws {
+        try LegadoOriginalLoginUIForm.validateNameBridge(result.rows.compactMap(\.key)
+            + Array(result.storedValues.keys) + Array(sessionValues.keys))
+        guard !result.rows.isEmpty, result.rows.count <= 4096 else {
+            throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Login UI v2 rows are invalid")
+        }
+        var projected: [Row] = [], values: [String: String] = [:], keys: [String] = []
+        var seenActions: Set<[UInt16]> = []
+        for (index, row) in result.rows.enumerated() {
+            guard ["text", "password", "select", "toggle", "button", "label"].contains(row.type),
+                  !row.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  row.countdown.map({ $0 >= 0 }) ?? true else {
+                throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Login UI v2 row is invalid")
+            }
+            let actionID = row.action.map(Self.actionID)
+            if let action = row.action, row.type == "button" || row.type == "toggle" {
+                guard !action.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                      seenActions.insert(Array(action.utf16)).inserted else {
+                    throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Login UI v2 action is invalid")
+                }
+            }
+            if row.type == "button", row.action == nil {
+                throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Login UI v2 action is missing")
+            }
+            if ["text", "password", "select", "toggle"].contains(row.type) {
+                guard let key = row.key, !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                      values[key] == nil else {
+                    throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Login UI v2 field is invalid")
+                }
+                let resolved = row.value ?? sessionValues[key] ?? result.storedValues[key]
+                if row.type == "select" {
+                    guard let options = row.options, !options.isEmpty else {
+                        throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Login UI v2 options are missing")
+                    }
+                    values[key] = resolved.flatMap { value in
+                        options.first { $0?.utf16.elementsEqual(value.utf16) == true } ?? nil
+                    } ?? options[0] ?? ""
+                } else if row.type == "toggle" {
+                    values[key] = resolved == "true" ? "true" : "false"
+                } else { values[key] = resolved ?? "" }
+                keys.append(key)
+            }
+            projected.append(.init(id: "v2-\(renderID.uuidString)-\(index)", definition: row, actionID: actionID))
+        }
+        rows = projected; rowIDs = Set(projected.map(\.id)); self.values = values; fieldKeys = keys
+    }
+
+    nonisolated static func actionID(_ action: String) -> String {
+        action.utf16.map { String(format: "%04x", Int($0)) }.joined()
+    }
+
+    func collect(_ edited: [String: String]) -> [String: String] {
+        var form: [String: String] = [:]
+        for key in fieldKeys { form[key] = edited[key] ?? values[key] ?? "" }
+        return form
+    }
+
+    func checkedErrors(_ errors: [String: String]) throws -> (fields: [String: String], messages: [String]) {
+        try SourcePerfTrace.span("legado.original.login.v2.errors",
+            "main=\(Thread.isMainThread) rows=\(rows.count) errors=\(errors.count)") {
+        try LegadoOriginalLoginUIForm.validateNameBridge(fieldKeys + Array(errors.keys))
+        let keys = Set(rows.filter { ["text", "password", "select"].contains($0.definition.type) }
+            .compactMap { $0.definition.key })
+        var fields: [String: String] = [:], messages: [String] = []
+        for (key, message) in errors {
+            if keys.contains(key) { fields[key] = message } else { messages.append(message) }
+        }
+        return (fields, messages)
+        }
+    }
+}
+
+/// The same View owns this state for its lifetime. Hidden inputs survive a new
+/// render in sessionValues, but only current controls become loginAction(form).
+struct LegadoOriginalLoginV2State: Sendable {
+    private(set) var stateJSON = "{}"
+    private(set) var sessionValues: [String: String] = [:]
+    private(set) var form: LegadoOriginalLoginV2Form?
+    var values: [String: String] = [:]
+
+    nonisolated static func countdownRemaining(until deadline: ContinuousClock.Instant,
+        now: ContinuousClock.Instant) -> Int {
+        let duration = now.duration(to: deadline).components
+        return max(0, Int(duration.seconds) + (duration.attoseconds > 0 ? 1 : 0))
+    }
+
+    mutating func collectForm() -> [String: String] {
+        let visible = form?.collect(values) ?? [:]
+        sessionValues.merge(visible) { _, new in new }
+        return visible
+    }
+
+    func rendered(_ result: LegadoOriginalLoginV2RenderResult, candidateState: String,
+        renderID: UUID) throws -> Self {
+        try SourcePerfTrace.span("legado.original.login.v2.form",
+            "main=\(Thread.isMainThread) rows=\(result.rows.count) values=\(values.count)") {
+            var next = self
+            _ = next.collectForm()
+            let form = try LegadoOriginalLoginV2Form(result, sessionValues: next.sessionValues, renderID: renderID)
+            next.form = form; next.values = form.values; next.stateJSON = candidateState
+            return next
+        }
     }
 }

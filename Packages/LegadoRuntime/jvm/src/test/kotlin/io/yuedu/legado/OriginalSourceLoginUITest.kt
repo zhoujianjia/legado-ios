@@ -72,8 +72,12 @@ class OriginalSourceLoginUITest {
                 assertFalse(failed.toString().contains("SYNTHETIC-UI-CANARY"));assertTrue(messages.none{it.contains("SYNTHETIC-UI-CANARY")})
                 val invalid=owned.call("@js:'not an array';",success=false)
                 assertEquals("INVALID_RESULT",invalid["error"].asJsonObject["code"].asString)
-                val v2=owned.call("{version:2}",success=false)
-                assertEquals("UNSUPPORTED_CAPABILITY",v2["error"].asJsonObject["code"].asString)
+                // The same original GSON/version.asInt owner classifies V2.
+                // This is an explicit protocol admission, never a generic fallback.
+                for(marker in listOf("{version:2}", "{version:2.9}", "{version:'2'}")) {
+                    val v2=owned.call(marker,prelude="throw new Error('admission must not evaluate');",success=false)
+                    assertEquals("LOGIN_UI_V2",v2["error"].asJsonObject["code"].asString)
+                }
                 assertEquals(0,owned.secretWrites)
             } finally {logger.removeHandler(handler);logger.level=old}
         }

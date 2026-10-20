@@ -14,7 +14,7 @@ import kotlinx.coroutines.ensureActive
 internal object OriginalLoginUIRuntime {
     suspend fun execute(source: BookSource, input: JsonObject): JsonObject {
         require(input.int("timeoutMs", 30_000) in 1..30_000) { "Login UI timeout must be between 1 and 30000 milliseconds" }
-        if (source.isLoginUiV2()) throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Interactive loginUi v2 is not connected")
+        if (source.isLoginUiV2()) throw RuntimeFailure("LOGIN_UI_V2", "Original login UI requires the version2 protocol")
         fun inputValues(name: String): MutableMap<String, String>? {
             val supplied = input[name]?.takeUnless { it.isJsonNull } ?: return null
             require(supplied.isJsonObject && supplied.asJsonObject.size() <= 4096 && supplied.asJsonObject.entrySet().all { (_, v) -> v.isJsonPrimitive && v.asJsonPrimitive.isString }) { "Login UI values must be a bounded String map" }
