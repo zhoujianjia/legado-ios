@@ -1,0 +1,16 @@
+{
+  "kind": "stale-portable-expectation-before-Gradle",
+  "failingClass": "NativeSmokeProvenanceTests",
+  "failingMethod": "test_result_requires_exact_built_app_source_stamp",
+  "sourcePath": "scripts/reader-experience/test-native-smoke-tools.py",
+  "line": 83,
+  "expression": "self.assertEqual(result[\"originalReaderTests\"][\"expectedTests\"], 22)",
+  "expected": 22,
+  "actual": 23,
+  "assertion": "AssertionError: 23 != 22",
+  "exitCode": 1,
+  "GradleFailure": false,
+  "JVMFailure": false,
+  "sourceResultUsesActualNativeGroupSize": true,
+  "scope": "The old test expects22 while the exact same source declares original23, including new browserAwait. No Native/JVM runtime defect is established."
+}

@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "terminal-native-portable-count-assertion-failure-before-Gradle",
+  "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+  "archivePreparationCanonical": "f3c1631e9edfd6faf0cc7e84a03e0129003de6f3",
+  "runID": 39501416076,
+  "jobID": 118899570890,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39501416076",
+  "queryAgain": false,
+  "terminalLiveHandleRemovalScope": "Only this Native terminal handle; related SDK run excluded from this archive and not queried.",
+  "artifact": {
+    "id": 12300970404,
+    "bytes": 1840,
+    "sha256": "db5c085dc8dd5f889072a041cee943e120977fd26ceb5fa72b4c5a65b6f2f6e3",
+    "CRC": true,
+    "pathSafe": true,
+    "members": 2
+  },
+  "portable": {
+    "overlays": {
+      "executed": 24,
+      "passed": 24,
+      "failed": 0
+    },
+    "nativeProvenance": {
+      "executed": 9,
+      "passed": 8,
+      "failed": 1
+    },
+    "total": {
+      "executed": 33,
+      "passed": 32,
+      "failed": 1
+    }
+  },
+  "actualFailure": {
+    "kind": "stale-portable-expectation-before-Gradle",
+    "failingClass": "NativeSmokeProvenanceTests",
+    "failingMethod": "test_result_requires_exact_built_app_source_stamp",
+    "sourcePath": "scripts/reader-experience/test-native-smoke-tools.py",
+    "line": 83,
+    "expression": "self.assertEqual(result[\"originalReaderTests\"][\"expectedTests\"], 22)",
+    "expected": 22,
+    "actual": 23,
+    "assertion": "AssertionError: 23 != 22",
+    "exitCode": 1,
+    "GradleFailure": false,
+    "JVMFailure": false,
+    "sourceResultUsesActualNativeGroupSize": true,
+    "scope": "The old test expects22 while the exact same source declares original23, including new browserAwait. No Native/JVM runtime defect is established."
+  },
+  "actualStepExit": 1,
+  "actualGradleInvocations": 0,
+  "actualJVMTests": 0,
+  "actualJVMXMLFiles": 0,
+  "actualNativeAppMethods": 0,
+  "actualNativeCompilerInvocations": 0,
+  "actualOrdinaryRuntimeJARProduced": false,
+  "actualNativeSourcePreparationExecuted": false,
+  "actualNativePreparedSourceInputCount": null,
+  "sourceBinding": {
+    "historicalGitCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+    "files": 8,
+    "allBoundToExactGitBytes": true,
+    "nativePreparationRosterGenerated": false,
+    "prior8dSource131OrJVM327Reused": false
+  },
+  "intendedNativeGroups": [
+    {
+      "group": "mainjs",
+      "intended": 1,
+      "actualExecuted": 0,
+      "actualPassed": 0,
+      "state": "blocked-before-Gradle"
+    },
+    {
+      "group": "original",
+      "intended": 23,
+      "actualExecuted": 0,
+      "actualPassed": 0,
+      "state": "blocked-before-Gradle"
+    }
+  ],
+  "localReproduction": {
+    "status": "same single stale assertion actually failed on exact7576 source",
+    "methods": 1,
+    "failed": 1,
+    "exitCode": 1,
+    "sourceFiles": 2,
+    "log": {
+      "path": ".build/native-7576-portable-count-reproduction/actual-failure.log",
+      "bytes": 836,
+      "sha256": "7bd492c0987dbe0e9ab654c12d9013d43a64c0f9fb0683b47742dbc8fc6a14b9"
+    },
+    "productionChanged": false,
+    "SDKOrJVMExecuted": false,
+    "reviewerReranTests": false
+  },
+  "futureRepair": {
+    "status": "pending-unfrozen-not-a-pass",
+    "scope": "Parent plans POST24 controls to update this stale expectation22 to24 while retaining exact source/host/failure gates.",
+    "candidateFrozen": false,
+    "testsPassed": false,
+    "newNativeOrSDKPassEstablished": false
+  },
+  "priorCompilerRepairValidation": "This early portable failure provides no new compilation evidence for either8d Swift compiler repair, nor for browser Await/seed drain.",
+  "architecture": {
+    "existingSoleProcessJVMUnchangedByThisArchive": true,
+    "existingOriginalHTTPUnchangedByThisArchive": true,
+    "newVM": false,
+    "newHTTP": false,
+    "newStore": false,
+    "newJSC": false,
+    "actualRuntimeExecutionEstablished": false
+  },
+  "independentReview": {
+    "path": ".build/native-7576cbf-terminal/review.json",
+    "bytes": 9194,
+    "sha256": "13c68900137740813bea66a27b70c550f20c461be0ca237af3826789b0f3d73f",
+    "checks": 39,
+    "mismatches": 0
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/actual-error-excerpt.txt",
+      "bytes": 629,
+      "sha256": "2eed840a81972a3d94c0a69584889b4189809d684c7abd10e1a8c78cdd6c482e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/actual-error.json",
+      "bytes": 706,
+      "sha256": "9bb9eefc7b3e7cb3499a1382465eaa40213aa8697f8f287d9e615222352c7762"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/artifact-metadata.json",
+      "bytes": 870,
+      "sha256": "a9d932213a501dc5f624bc9d84dbbffc12182c9bb3ae817d7e0baee24f50aeb7"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/checks.json",
+      "bytes": 3935,
+      "sha256": "66cc7370c50c3660275d5693dfa92794957cad4792fb82a0a7f9ef784fb13fb6"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/ci-logs/native-reader-overlays.log",
+      "bytes": 4221,
+      "sha256": "054fedd9d0dabf782e4682f4761ce3e2176ee6545b20a9b4196cf9f777aa288e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/ci-logs/native-reader-source-stamps.log",
+      "bytes": 2364,
+      "sha256": "f978921e60ae90d4e1c8364b3ad3e767b59acdefd9be1bc3c2d0f5d9100699b5"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/excluded-evidence.json",
+      "bytes": 730,
+      "sha256": "c01e202de629e0eede2fc225f4dc76eaed755df455a9bc7b313a6334091278ce"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/execution-gates.json",
+      "bytes": 4403,
+      "sha256": "194fa55d893f0739cfb655de2f7a859c1049a80d24924bb1fb64d4823f09a2f3"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/independent-review.json",
+      "bytes": 9194,
+      "sha256": "13c68900137740813bea66a27b70c550f20c461be0ca237af3826789b0f3d73f"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/local-reproduction/actual-failure.log",
+      "bytes": 822,
+      "sha256": "8686379ad578029ef8242a4d543604d5efb186883e931414ae5bbec355ada8d1"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/local-reproduction/reproduction.json",
+      "bytes": 1168,
+      "sha256": "f9d213784558171d5d66bd3a81fa6333f0460b7d242dc9b8b104d78c4e666966"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/member-inventory.json",
+      "bytes": 340,
+      "sha256": "2dae618e15713c85a01eeff38dcbb3286454e5a324f26002890a09e5b347794f"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/source-binding.json",
+      "bytes": 2310,
+      "sha256": "ad1560b9a857aadc71547e3e189f78d3761ddbc7e12c3fe4ca23f8546914aa18"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/terminal-observation.json",
+      "bytes": 778,
+      "sha256": "5de7fdedbc290c6e503fe7efe9efa4642dcf139d96330e509b31314f15b5ebde"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-7576cbf-terminal/text-normalization-ledger.json",
+      "bytes": 7482,
+      "sha256": "c3de988f48f4845fe3baacd1151e0a70c05aac63859e2fa76ee802119616d1d5"
+    }
+  ],
+  "excludedLargeEvidence": [
+    {
+      "path": ".build/native-7576cbf-terminal/artifact.zip",
+      "bytes": 1840,
+      "sha256": "db5c085dc8dd5f889072a041cee943e120977fd26ceb5fa72b4c5a65b6f2f6e3",
+      "copied": false
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/decoded-job.log",
+      "bytes": 37843,
+      "sha256": "c868a36c159ef4fb65cc1de5bcbed67d9303d78393ff46ca69cf03f8eb8ebe57",
+      "copied": false
+    }
+  ],
+  "limits": [
+    "The job step name refers to building ordinary runtime, but actual failure occurs in the preceding portable source-provenance test. Gradle/JVM never starts.",
+    "Overlays24 passes and provenance8 passes are portable checks, not actual JVM or Native tests. No earlier8d327 pass/source131 binding transfers.",
+    "MainJS1 and original23 are exact preselected methods only; actual0 and no native-source-inputs/XML/ordinaryJAR/App compile artifacts exist.",
+    "Root local reproduction executes only the same one failing portable assertion on exact7576 source; it establishes the stale expectation and no repaired pass.",
+    "The separate SDK handle is excluded and has not been queried. Only this confirmed Native terminal handle is eligible for removal from live tracking.",
+    "No canonical source, test, Git, cloud, runtime owner or network implementation is changed by this archive candidate."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

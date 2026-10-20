@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+  "actualShell": "bash --noprofile --norc -e -o pipefail",
+  "actualCommands": [
+    {
+      "argv": [
+        "python",
+        "-B",
+        "scripts/reader-experience/test-smoke-tools.py",
+        "-v"
+      ],
+      "executed": 24,
+      "passed": 24,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "argv": [
+        "python",
+        "-B",
+        "scripts/reader-experience/test-native-smoke-tools.py",
+        "-v"
+      ],
+      "executed": 9,
+      "passed": 8,
+      "failed": 1,
+      "exitCode": 1
+    }
+  ],
+  "actualPortableTotal": {
+    "executed": 33,
+    "passed": 32,
+    "failed": 1
+  },
+  "notStarted": [
+    "subsequent staging/package/notice/diagnostic guards",
+    "Gradle test/runtimeJar/runtimeSmoke",
+    "audited native restore",
+    "native source preparation",
+    "App build-for-testing",
+    "MainJS required host",
+    "original required host"
+  ],
+  "intendedOnly": [
+    {
+      "group": "mainjs",
+      "count": 1,
+      "methods": [
+        "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain"
+      ],
+      "actualExecuted": 0
+    },
+    {
+      "group": "original",
+      "count": 23,
+      "methods": [
+        "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite"
+      ],
+      "actualExecuted": 0
+    }
+  ],
+  "actualGradleInvocations": 0,
+  "actualJVMTests": 0,
+  "actualJVMXMLFiles": 0,
+  "actualAppNativeMethods": 0,
+  "actualNativeCompilerInvocations": 0,
+  "nativePreparedSourceRosterGenerated": false,
+  "actualNativePreparedSourceInputCount": null,
+  "earlier8dCountsTransferred": false,
+  "meaning": "Colored shell-source echo of later Gradle commands is not execution. Bash failure/pipefail stops the step at the portable assertion. Planned1+23 must not become actual Native passes."
+}

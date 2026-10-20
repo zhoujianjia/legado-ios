@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Preserve actual terminal logs/artifacts for only these two7576cbf handles; fix real failures before any next pair. Continue independently reviewed POST development without changing this immutable running source. Do not restart for elapsed time or repeat unchanged passing suites.",
-      "alreadyRunningTasks": "Exactly the7576cbf SDK/Native pair below; no IPA/device tag. Earlier8d and all older jobs are terminal/archived and must never be polled again.",
+      "nextPlannedCheckpoint": "Archive actual SDK7576 terminal outcome when available. Native7576 exact stale guard failure is reproduced and successorPOST24 source/controls is prepared; integrate reviewed coherent changes, fix any actual SDK causes, then one future pair. No premature duplicate or IPA tag.",
+      "alreadyRunningTasks": "Only7576 SDK run39501414740/job118899566864 remains live at latest authoritative observation. Native7576 failed beforeGradle and is archived; never poll it or earlier closed jobs.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -216,15 +216,6 @@
           "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
           "statusAtObservation": "in_progress",
           "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39501414740"
-        },
-        {
-          "workflow": "Legado Native Main-App Product Chain",
-          "runID": 39501416076,
-          "jobID": 118899570890,
-          "tag": "legado-native-reader-test-7576cbf",
-          "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
-          "statusAtObservation": "in_progress",
-          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39501416076"
         }
       ],
       "latestDevicePackageTerminal": {
@@ -240,18 +231,18 @@
         "actualDeviceRenewalAccepted": false
       },
       "latestOriginalNativeTerminal": {
-        "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
-        "runID": 39495414820,
-        "jobID": 118879092115,
+        "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+        "runID": 39501416076,
+        "jobID": 118899570890,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
-        "record": "docs/legado-ios/core-native-8d934dd-terminal-result.json",
+        "record": "docs/legado-ios/core-native-7576cbf-terminal-result.json",
+        "actualGradleInvocations": 0,
         "actualNativeSelectedMethodsExecuted": 0,
-        "actualNativeSelectedMethodsPassed": 0,
         "MainJSMethodsPassed": 0,
-        "ordinaryJVMMethodsPassed": 327,
-        "compilerFailure": "BookSourceFormLoginView.swift1253 missingawait"
+        "ordinaryJVMMethodsPassed": 0,
+        "failure": "stale portable expected22 versus declared23 beforeGradle"
       },
       "currentUnifiedCheckpoint": {
         "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
@@ -272,7 +263,10 @@
           "uniqueInputUnion": 352,
           "noncandidateUnchangedCanonicalInputs": 331
         },
-        "actualResultAccepted": false
+        "actualResultAccepted": false,
+        "NativeStatus": "completed",
+        "NativeConclusion": "failure",
+        "NativeTerminalRecord": "docs/legado-ios/core-native-7576cbf-terminal-result.json"
       },
       "live8dPortableFailureRepair": {
         "record": "docs/legado-ios/core-sdk-8d-portable-expectations-repair.json",
@@ -1551,6 +1545,14 @@
         "actualAcceptancePending": true,
         "POSTExcluded": true,
         "submittedRequest": "docs/legado-ios/core-sdk-7576cbf-request.json"
+      },
+      "current7576NativeTerminal": {
+        "record": "docs/legado-ios/core-native-7576cbf-terminal-result.json",
+        "actualOrdinaryJVMMethodsPassed": 0,
+        "actualNativeHostMethodsExecuted": 0,
+        "portablePassed": 32,
+        "portableFailed": 1,
+        "failureBeforeGradle": true
       }
     }
   },

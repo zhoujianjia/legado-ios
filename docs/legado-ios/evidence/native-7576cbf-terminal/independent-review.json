@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T21:39:37.130598+00:00",
+  "scope": "Actual terminal Native7576 evidence acquisition/factual review, no rerun or source repair",
+  "terminal": {
+    "runID": 39501416076,
+    "jobID": 118899570890,
+    "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+    "conclusion": "failure",
+    "failingStep": "Build and audit this checkout's ordinary production runtime",
+    "actualExit": 1,
+    "statusNotPolled": true
+  },
+  "acquisition": {
+    "logFetchCount": 1,
+    "artifactMetadataFetchCount": 1,
+    "artifactDownloadCount": 1,
+    "artifactID": 12300970404,
+    "artifactName": "legado-native-main-app-product-chain",
+    "zip": {
+      "bytes": 1840,
+      "sha256": "db5c085dc8dd5f889072a041cee943e120977fd26ceb5fa72b4c5a65b6f2f6e3"
+    },
+    "GitHubDigestSizeMatched": true,
+    "CRC": true,
+    "pathSafe": true,
+    "members": 2,
+    "privateURLsRetainedOnlyIgnored": true,
+    "privateResponseCopiedToPublicEvidence": false,
+    "localHistory": "After successful one-time ZIP download/CRC/extraction, local final decoded-log write initially used Windows default GBK and raised UnicodeDecodeError. Only UTF8 decoding/write was corrected; no second download and no CI/test rerun occurred."
+  },
+  "rootCause": {
+    "path": "actual-error.json",
+    "bytes": 706,
+    "sha256": "9bb9eefc7b3e7cb3499a1382465eaa40213aa8697f8f287d9e615222352c7762"
+  },
+  "actualExecution": {
+    "portableOverlays": {
+      "executed": 24,
+      "passed": 24,
+      "failed": 0
+    },
+    "portableNativeProvenance": {
+      "executed": 9,
+      "passed": 8,
+      "failed": 1
+    },
+    "totalPortable": {
+      "executed": 33,
+      "passed": 32,
+      "failed": 1
+    },
+    "GradleStarted": false,
+    "JVMStarted": false,
+    "JVMXMLFiles": 0,
+    "JVMTestsExecuted": 0,
+    "ordinaryRuntimeJARBuilt": false,
+    "ordinaryRuntimeSmokeExecuted": false,
+    "nativePreparationExecuted": false,
+    "NativeBuildExecuted": false,
+    "NativeCompilerDiagnosticsObserved": 0,
+    "NativeGroups": [
+      {
+        "group": "mainjs",
+        "intendedCount": 1,
+        "intendedMethods": [
+          "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain"
+        ],
+        "actualExecuted": 0,
+        "actualPassed": 0,
+        "actualFailed": 0,
+        "actualSkipped": 0,
+        "reason": "prior portable gate exit1 before Gradle/restore/prepare/App build"
+      },
+      {
+        "group": "original",
+        "intendedCount": 23,
+        "intendedMethods": [
+          "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+          "LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite"
+        ],
+        "actualExecuted": 0,
+        "actualPassed": 0,
+        "actualFailed": 0,
+        "actualSkipped": 0,
+        "reason": "prior portable gate exit1 before Gradle/restore/prepare/App build"
+      }
+    ]
+  },
+  "source": {
+    "commit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+    "GitByteBindings": 8,
+    "binding": {
+      "path": "source-binding.json",
+      "bytes": 2310,
+      "sha256": "ad1560b9a857aadc71547e3e189f78d3761ddbc7e12c3fe4ca23f8546914aa18"
+    },
+    "actualNativePreparedInputCount": null,
+    "earlier8dSourceOrPassCountsReused": false
+  },
+  "executionGates": {
+    "actualShell": "bash --noprofile --norc -e -o pipefail",
+    "failedPythonPipelineBeforeGradle": true,
+    "echoedLaterShellCommandsAreNotExecution": true,
+    "noNativeCompilerConclusionDrawn": true,
+    "prior8dJVM327Transferred": false,
+    "priorCompilerFixesNotValidatedByThisRun": true,
+    "SDKConcurrentRunNotQueried": true
+  },
+  "evidence": [
+    {
+      "path": ".build/native-7576cbf-terminal/artifact-metadata.json",
+      "bytes": 870,
+      "sha256": "a9d932213a501dc5f624bc9d84dbbffc12182c9bb3ae817d7e0baee24f50aeb7"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/member-inventory.json",
+      "bytes": 340,
+      "sha256": "2dae618e15713c85a01eeff38dcbb3286454e5a324f26002890a09e5b347794f"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/artifact.zip",
+      "bytes": 1840,
+      "sha256": "db5c085dc8dd5f889072a041cee943e120977fd26ceb5fa72b4c5a65b6f2f6e3"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/decoded-job.log",
+      "bytes": 37843,
+      "sha256": "c868a36c159ef4fb65cc1de5bcbed67d9303d78393ff46ca69cf03f8eb8ebe57"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/extracted/.build/ci-logs/native-reader-overlays.log",
+      "bytes": 4221,
+      "sha256": "054fedd9d0dabf782e4682f4761ce3e2176ee6545b20a9b4196cf9f777aa288e"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/extracted/.build/ci-logs/native-reader-source-stamps.log",
+      "bytes": 2364,
+      "sha256": "f978921e60ae90d4e1c8364b3ad3e767b59acdefd9be1bc3c2d0f5d9100699b5"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/actual-error.json",
+      "bytes": 706,
+      "sha256": "9bb9eefc7b3e7cb3499a1382465eaa40213aa8697f8f287d9e615222352c7762"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/actual-error-excerpt.txt",
+      "bytes": 629,
+      "sha256": "2eed840a81972a3d94c0a69584889b4189809d684c7abd10e1a8c78cdd6c482e"
+    },
+    {
+      "path": ".build/native-7576cbf-terminal/source-binding.json",
+      "bytes": 2310,
+      "sha256": "ad1560b9a857aadc71547e3e189f78d3761ddbc7e12c3fe4ca23f8546914aa18"
+    }
+  ],
+  "checks": {
+    "count": 39,
+    "failed": 0,
+    "path": "checks.json"
+  },
+  "mismatches": [],
+  "limits": [
+    "The failing step name mentions ordinary production runtime, but its portable gate fails before Gradle starts. There is no observed Gradle/JVM failure or new JVM pass.",
+    "No source-only package/restore/native preparation/App build/MainJS/original required host execution follows this failure. Current source has MainJS1/original23 planned, all actual0.",
+    "Earlier8d JVM327, Package24 and source131/330 evidence remain independent and are not transferred to this run.",
+    "No result about either repaired Swift compiler expression, browser await/seed drain, actual JNI/App/Apple install or automatic renewal is established.",
+    "Only one terminal logs/metadata/ZIP acquisition occurred. No status polling, successful test/build rerun, source repair, canonical/Git mutation or cloud restart."
+  ],
+  "queryAgain": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "source": false,
+    "testRerun": false,
+    "compilationRerun": false,
+    "statusPolling": false
+  }
+}

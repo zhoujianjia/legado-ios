@@ -1,0 +1,22 @@
+test_cache_gate_rejects_wrong_summary_methods_bool_leaves_and_source (__main__.NativeSmokeProvenanceTests.test_cache_gate_rejects_wrong_summary_methods_bool_leaves_and_source) ... ok
+test_failed_first_native_host_retains_exports_and_allows_independent_second_diagnostics (__main__.NativeSmokeProvenanceTests.test_failed_first_native_host_retains_exports_and_allows_independent_second_diagnostics) ... ok
+test_group_gate_binds_original_exits_exports_sources_and_raw_bytes (__main__.NativeSmokeProvenanceTests.test_group_gate_binds_original_exits_exports_sources_and_raw_bytes) ... ok
+test_native_groups_require_exact_qualified_methods_without_skips_or_duplicates (__main__.NativeSmokeProvenanceTests.test_native_groups_require_exact_qualified_methods_without_skips_or_duplicates) ... ok
+test_private_prepare_stamps_source_and_restores_module_hooks (__main__.NativeSmokeProvenanceTests.test_private_prepare_stamps_source_and_restores_module_hooks) ... ok
+test_result_rejects_unstamped_or_other_source_preparation (__main__.NativeSmokeProvenanceTests.test_result_rejects_unstamped_or_other_source_preparation) ... ok
+test_result_requires_exact_built_app_source_stamp (__main__.NativeSmokeProvenanceTests.test_result_requires_exact_built_app_source_stamp) ... FAIL
+test_source_closure_rejects_changed_bytes_wrong_source_and_source_only_mode (__main__.NativeSmokeProvenanceTests.test_source_closure_rejects_changed_bytes_wrong_source_and_source_only_mode) ... ok
+test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging (__main__.NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging) ... ok
+
+======================================================================
+FAIL: test_result_requires_exact_built_app_source_stamp (__main__.NativeSmokeProvenanceTests.test_result_requires_exact_built_app_source_stamp)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/test-native-smoke-tools.py", line 83, in test_result_requires_exact_built_app_source_stamp
+    self.assertEqual(result["originalReaderTests"]["expectedTests"], 22)
+AssertionError: 23 != 22
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.037s
+
+FAILED (failures=1)
