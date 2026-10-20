@@ -587,16 +587,18 @@
             "docs/legado-ios/core-renewal-certificate-request-step.json",
             "docs/legado-ios/core-renewal-account-client-step.json",
             "docs/legado-ios/core-renewal-account-session-step.json",
-            "docs/legado-ios/core-renewal-gsa-protocol-step.json"
+            "docs/legado-ios/core-renewal-gsa-protocol-step.json",
+            "docs/legado-ios/core-renewal-gsa-AppSession-step.json"
           ],
           "implementedSubtasksZh": [
             "已接入单一actor签名材料库，使用既有KeychainHelper保存公开材料与代际日志；真实软件SecKey的生成、重开、profile双CMS及身份一致性验证、撤销和故障恢复已实现。7项原生方法待SDK；尚无Apple账号授权、二次认证、证书/profile远程申请或跨进程事务。",
             "同一材料 Vault 已实现真实永久密钥重开的 PKCS#10 CSR 生成、签名与公钥自验，按 namespace/keyID/generation 校验当前记录，保持原材料错误分类；3 个原生回归定义、2 文件语法检查和修正后的源码独审已完成，SDK/Security 执行仍为 0。账号授权、证书/profile 远程申请刷新和跨进程事务仍未完成。",
             "开发者服务客户端已实现会话/免费团队实查、同一 Vault 真实 CSR 提交、原 App ID/profile 获取和唯一材料发布；远程请求 intent 持久化，丢 ACK 禁止自动重发，发布后凭据保存失败保留真实 lease。3 源已审查、8 个原生回归仅定义，SDK/受控对端/真实 Apple 执行为 0；GSA 登录、二次认证、anisette、AppSession 单一实例接线及未知请求核对仍未完成。",
             "账号材料客户端已接入现有 AppSession/AppOwner，复用同一 Vault、namespace、传输与凭据存储，刷新使用当前真实永久密钥；旧候选仅按原事务规则退役，新代际仅在已退役且实际候选缺失和目录同步通过时可被前台及重启接受。未决 CSR 禁止重发，材料发布后的凭据写失败保留真实发布事实，过期或未打开状态可仅擦除凭据。修正入口权限、并发保护及取消后测试清理；4 个 App 接线加 1 个凭据擦除回归仍仅定义，SDK 执行 0。",
-            "GSA 协议核心已实现并独审：固定 SRP2048/SHA256、两种密码 KDF、服务端 M2 与协商 MAC、SPD 解密、app token 校验解密及可信设备二次认证单次挑战，结果仍经同一账号客户端实查团队。现有 transport 仅增加 3 个固定 GSA 路径，当前凭据擦除客户端只合并 serial 可选字段。独立 Python 公开参考向量通过；8 个原生定义及实际合并源码的 SDK/Apple 执行仍为 0。AppSession 登录操作、真实 anisette 和用户界面尚未接通。"
+            "GSA 协议核心已实现并独审：固定 SRP2048/SHA256、两种密码 KDF、服务端 M2 与协商 MAC、SPD 解密、app token 校验解密及可信设备二次认证单次挑战，结果仍经同一账号客户端实查团队。现有 transport 仅增加 3 个固定 GSA 路径，当前凭据擦除客户端只合并 serial 可选字段。独立 Python 公开参考向量通过；8 个原生定义及实际合并源码的 SDK/Apple 执行仍为 0。AppSession 登录操作、真实 anisette 和用户界面尚未接通。",
+            "GSA 登录、可信设备二次认证、真实任务取消和退出已接入同一 AppSession/AppOwner；Task 覆盖材料 owner 打开到认证完成，退出先取消并等实际任务结束，再清内存挑战和原凭据。Session epoch 与 UI 操作 UUID 防止旧结果/旧 defer 影响新状态，确认保存的账号事实不伪装撤回。修正首次登录取消后凭据应为空的测试断言；3 项新回归仍仅定义，SDK 执行 0；默认真实 anisette 和登录界面尚不可用。"
           ],
-          "nextActionZh": "把 GSA actor 接入同一 AppSession/账号实例，完成实际任务取消和二次认证清理、退出以及旧操作结果隔离；补真实可取消 anisette 提供端、未知证书结果核对与官方材料策略，再集中执行这一组 SDK 回归。"
+          "nextActionZh": "集中执行包含账号、公开批量正文和实际 App owner 的 coherent SDK；继续真实可取消 anisette 提供端、未知证书结果核对、过期重新登记及官方 issuer/profile 策略，接通真实提供端后再完善用户登录流程。"
         },
         {
           "id": "S3",
@@ -843,7 +845,8 @@
       "developerAccountAppSessionImplementation": "docs/legado-ios/core-renewal-account-session-step.json",
       "ownedPartitionCreationFiniteSDKTerminal": "docs/legado-ios/core-owned-sdk-producer-ddae452-result.json",
       "GSAProtocolImplementation": "docs/legado-ios/core-renewal-gsa-protocol-step.json",
-      "originalPublicContentBatchImplementation": "docs/legado-ios/core-original-content-batch-public-step.json"
+      "originalPublicContentBatchImplementation": "docs/legado-ios/core-original-content-batch-public-step.json",
+      "GSAAppSessionImplementation": "docs/legado-ios/core-renewal-gsa-AppSession-step.json"
     }
   },
   "stages": [
@@ -5022,6 +5025,10 @@
     "original-public-content-batch-App-owner": {
       "path": "docs/legado-ios/core-original-content-batch-public-step.json",
       "scope": "42 exact source/provenance leaves;19 unique actual JVM methods accepted from versioned closures;165 ordinary inputs;8 actual smoke markers;193 project testclasses/JUnit excluded;21 notices preserved.32 Swift grammar-only files and12 App+1 Package new definitions SDK0;default route unchanged;C2/C3/C4 unfinished."
+    },
+    "GSA-AppSession-implementation": {
+      "path": "docs/legado-ios/core-renewal-gsa-AppSession-step.json",
+      "scope": "Three source changes connect actual GSA task/2FA/cancel/logout to same existing Session/account/Vault. Epoch/Owner UUID and corrected first-login nil-record test source-reviewed. Three new methods/grammar only; SDK0, real provider/UI/Apple/installation unfinished."
     }
   },
   "retainedExistingWork": [

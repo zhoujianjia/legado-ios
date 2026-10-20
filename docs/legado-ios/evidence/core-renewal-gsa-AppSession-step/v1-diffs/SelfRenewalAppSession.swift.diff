@@ -1,0 +1,219 @@
+--- canonical/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ proposed/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -17,6 +17,11 @@
+         case ownedApplicationIsNotCurrentProcess
+     }
+     enum DeveloperServicesFailure: Error, Sendable, Equatable { case unavailable }
++    /// Cancellation can race a successful secure save. Preserve that confirmed
++    /// connection fact while clearing the actual pending authentication state.
++    struct DeveloperAuthenticationCancellation: Sendable {
++        let confirmedSession: SelfRenewalDeveloperAccountClient.SessionObservation?
++    }
+     /// One injected account HTTP owner and credential service, shared with the
+     /// GSA login path. Constructing the App session performs no account I/O.
+     struct DeveloperServices: Sendable {
+@@ -146,6 +151,14 @@
+     private var vault: Vault?
+     private var namespace: Vault.Namespace?
+     private var developerAccount: SelfRenewalDeveloperAccountClient?
++    private var developerAuthentication: SelfRenewalDeveloperAuthentication?
++    private struct DeveloperAuthenticationOperation {
++        let id: UUID
++        let task: Task<SelfRenewalDeveloperAuthentication.Outcome, Error>
++    }
++    private var developerAuthenticationOperation: DeveloperAuthenticationOperation?
++    private var developerAuthenticationEpoch = UUID()
++    private var developerAuthenticationResult: SelfRenewalDeveloperAuthentication.Outcome?
+     private var developerMaterial: DeveloperMaterialObservation?
+     private var developerLocallySignedOut = false
+     private var coordinator: Coordinator?
+@@ -158,6 +171,7 @@
+     private var configurationNeedsReload = false
+     private var busy = false
+     #if DEBUG
++    private var developerAuthenticationRandom: @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent
+     enum PublicationFault: Sendable {
+         case loseNextDirectorySyncAcknowledgement
+         case loseNextAuthenticatedRecoveryDirectorySyncAcknowledgement
+@@ -171,9 +185,11 @@
+     /// An owned test root still goes through the real complete verifier and
+     /// Vault. It can never produce a current-process file observation.
+     init(root: URL, currentApplicationRoot: URL, developerServices: DeveloperServices? = nil,
++        developerAuthenticationRandom: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent,
+         clock: @escaping @Sendable () -> Date = { Date() }) {
+         requestedRoot = root; ownedApplicationRoot = currentApplicationRoot; self.clock = clock
+         self.developerServices = developerServices
++        self.developerAuthenticationRandom = developerAuthenticationRandom
+     }
+     #endif
+     static let maximumConfigurationBytes = 524_288
+@@ -259,7 +275,8 @@
+             configuration = priorConfiguration
+             // A rename followed by a failed directory sync may have changed
+             // disk. Never keep using an older in-memory authorization binding.
+-            coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
++            coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
++            developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+             access = nil; profileValidity = nil; configurationNeedsReload = true
+             throw error
+         }
+@@ -302,6 +319,103 @@
+         } catch {
+             throw RecoveryFailed(signingMaterials: materialFailure, recoveryError: nil, observationError: error, completedRecovery: completed)
+         }
++    }
++
++    /// The actual login task belongs to this session, rather than the caller's
++    /// view task. Caller cancellation is forwarded to that same task and every
++    /// terminal path releases the operation before publishing its result.
++    func signInDeveloperAccount(appleID: String, password: String) async throws
++        -> SelfRenewalDeveloperAuthentication.Outcome {
++        try await runDeveloperAuthentication { authentication in
++            try await authentication.signIn(appleID: appleID, password: password)
++        }
++    }
++
++    func submitDeveloperVerificationCode(_ code: String, challengeID: UUID) async throws
++        -> SelfRenewalDeveloperAuthentication.Outcome {
++        try await runDeveloperAuthentication { authentication in
++            try await authentication.submitVerificationCode(code, challengeID: challengeID)
++        }
++    }
++
++    func cancelDeveloperAuthentication() async throws -> DeveloperAuthenticationCancellation {
++        let observed = try await acquireAfterDrainingDeveloperAuthentication()
++        defer { busy = false }
++        try await developerAuthentication?.clearPendingAuthentication()
++        developerAuthenticationResult = nil
++        developerAuthenticationEpoch = UUID()
++        return observed
++    }
++
++    private func runDeveloperAuthentication(
++        _ action: @escaping @Sendable (SelfRenewalDeveloperAuthentication) async throws -> SelfRenewalDeveloperAuthentication.Outcome
++    ) async throws -> SelfRenewalDeveloperAuthentication.Outcome {
++        guard !busy else { throw Failure.busy }
++        busy = true
++        let id = UUID()
++        developerAuthenticationEpoch = id; developerAuthenticationResult = nil
++        let task = Task { [self] in
++            do {
++                try Task.checkCancellation()
++                let authentication = try await developerAuthenticationOwner()
++                try Task.checkCancellation()
++                let result = try await action(authentication)
++                finishDeveloperAuthentication(id, result: result)
++                return result
++            } catch {
++                finishDeveloperAuthentication(id, result: nil)
++                throw error
++            }
++        }
++        developerAuthenticationOperation = DeveloperAuthenticationOperation(id: id, task: task)
++        return try await withTaskCancellationHandler {
++            try await task.value
++        } onCancel: { task.cancel() }
++    }
++
++    private func finishDeveloperAuthentication(_ id: UUID, result: SelfRenewalDeveloperAuthentication.Outcome?) {
++        guard developerAuthenticationOperation?.id == id else { return }
++        developerAuthenticationResult = result
++        if case .connected? = result { developerLocallySignedOut = false }
++        developerAuthenticationOperation = nil
++        busy = false
++    }
++
++    /// Once an awaited login releases busy, another operation may enter this
++    /// actor. Its epoch/busy barrier wins; an old cancellation cannot clear a
++    /// newer challenge, connection or changed namespace binding.
++    private func acquireAfterDrainingDeveloperAuthentication() async throws -> DeveloperAuthenticationCancellation {
++        let completed: SelfRenewalDeveloperAuthentication.Outcome?
++        if let operation = developerAuthenticationOperation {
++            operation.task.cancel()
++            let result = await operation.task.result
++            guard !busy, developerAuthenticationEpoch == operation.id,
++                  developerAuthenticationOperation == nil else { throw Failure.busy }
++            switch result { case .success(let value): completed = value; case .failure: completed = nil }
++        } else {
++            guard !busy else { throw Failure.busy }
++            completed = developerAuthenticationResult
++        }
++        busy = true
++        if case .connected(let observed)? = completed {
++            return DeveloperAuthenticationCancellation(confirmedSession: observed)
++        }
++        return DeveloperAuthenticationCancellation(confirmedSession: nil)
++    }
++
++    private func developerAuthenticationOwner() async throws -> SelfRenewalDeveloperAuthentication {
++        let account = try await developerAccountOwner()
++        if let developerAuthentication { return developerAuthentication }
++        guard let developerServices else { throw DeveloperServicesFailure.unavailable }
++        #if DEBUG
++        let authentication = SelfRenewalDeveloperAuthentication(account: account, transport: developerServices.transport,
++            freshAnisette: developerServices.freshAnisette, clock: clock, random: developerAuthenticationRandom)
++        #else
++        let authentication = SelfRenewalDeveloperAuthentication(account: account, transport: developerServices.transport,
++            freshAnisette: developerServices.freshAnisette, clock: clock)
++        #endif
++        developerAuthentication = authentication
++        return authentication
+     }
+ 
+     /// Transitional token input from the real GSA flow. The account client
+@@ -364,8 +478,12 @@
+     }
+ 
+     func signOutDeveloperAccount() async throws {
+-        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
++        _ = try await acquireAfterDrainingDeveloperAuthentication()
++        defer { busy = false }
+         developerLocallySignedOut = true
++        try await developerAuthentication?.clearPendingAuthentication()
++        developerAuthenticationResult = nil
++        developerAuthenticationEpoch = UUID()
+         if let developerAccount { try await developerAccount.signOut(); return }
+         guard let developerServices else { throw DeveloperServicesFailure.unavailable }
+         try await openLocalOwner()
+@@ -418,8 +536,10 @@
+     func close() async throws {
+         guard !busy else { throw Failure.busy }
+         busy = true; defer { busy = false }
++        try await developerAuthentication?.clearPendingAuthentication()
+         if let journal { try await journal.close() }
+-        journal = nil; vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
++        journal = nil; vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
++        developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+         coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
+         configuration = nil; persistedConfiguration = nil; lastStatus = nil; configurationNeedsReload = false
+     }
+@@ -484,7 +604,8 @@
+ 
+     private func activate(_ connection: Connection) {
+         vault = connection.vault; namespace = connection.namespace; coordinator = connection.coordinator
+-        developerAccount = nil; developerMaterial = nil
++        developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
++        developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+         access = connection.access; materialFailure = connection.materialFailure
+         profileValidity = connection.profileValidity
+     }
+@@ -680,7 +801,8 @@
+             // Stop retaining failed signing access before another awaited
+             // observation can be cancelled. Its separate failure must not
+             // restore access already disproved by the live-material read.
+-            vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
++            vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
++            developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+             self.coordinator = nil; access = nil; profileValidity = nil
+             materialFailure = SigningMaterialUnavailable(underlying: error, recoveryContextError: nil)
+         }
+@@ -767,7 +889,8 @@
+                 // Every publication uses this boundary, including bootstrap
+                 // status, observations and error status. A lost durable ACK
+                 // can never leave a prior coordinator binding usable.
+-                coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
++                coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
++            developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+                 access = nil; profileValidity = nil; configurationNeedsReload = true
+             }
+             throw error

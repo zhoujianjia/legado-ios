@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T11:13:03.828054+00:00",
+  "reviewer": "root",
+  "independentOfAuthor": true,
+  "preparation": {
+    "path": ".build/renewal-discovery/gsa-app-session-step/preparation-v2.json",
+    "bytes": 7830,
+    "sha256": "2818780b66a89a605d363d9b4a4ae5cab495d077b2718ab87a096b74162d8ce2"
+  },
+  "sourceBindings": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "path": ".build/renewal-discovery/gsa-app-session-step/final-sources-v2/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 61691,
+      "sha256": "6a1632a8a82d9d5ca5b93d2252c965fea7d72e24b410e66d5c8056b59c5e0a4f"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "path": ".build/renewal-discovery/gsa-app-session-step/final-sources-v2/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 14813,
+      "sha256": "1062bc0d661a72f9d94b51bb6017ebc2ab3b7a38cd21bd1faf6a65f6092d02f9"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "path": ".build/renewal-discovery/gsa-app-session-step/final-sources-v2/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "bytes": 53418,
+      "sha256": "8b51ee95dc01f018d46393a8684bdc0b04d2f8b92a87571d3cb5f93350eff0ab"
+    }
+  ],
+  "preservedAdditionalIndependentV1Review": {
+    "path": ".build/renewal-discovery/gsa-app-session-step/independent-source-review.json",
+    "bytes": 7807,
+    "sha256": "1300242ce340af527eb422b4c0da6e903f1f46d90897df4b3aa7e2f59ed5196e"
+  },
+  "confirmedRemainingBlockers": [],
+  "verdict": "no-confirmed-remaining-source-blocker-after-real-nil-record-fixture-correction",
+  "rootReviewed": [
+    "Read complete Session/Owner/Test diffs and actual Account.open/connect/signOut/storage boundaries. Same retained Client/Vault/transport/fresh provider are used. DEBUG-only exponent injection leaves production SecRandom unchanged.",
+    "Session installs its exact(id,Task) before the first await. Task includes real material verification and owner creation. It calls finish inside the worker on both terminal paths before releasing its result; outer cancellation targets that actual worker.",
+    "Cancel/logout drain the real worker result before acquiring busy and clearing Auth pending state. Epoch/operation identity denies an older drain after a new login/binding owns the actor. Confirmed account-save observations remain historical facts rather than fabricated rollback or current signing authority.",
+    "Owner cancellation/logout take a new operation UUID and retain isWorking. Old result/error/defer cannot overwrite the current outcome or clear a new operation. UI observations expose only checked account/challenge facts and logs contain error type, not password/token/key.",
+    "Every existing signing-context discard releases retained Auth and result before another await. App startup constructor performs no I/O and services nil still means unavailable; this change adds no user-facing login/provider.",
+    "Root found that first-login holdInit never reaches Account.connect and therefore never saves a credential Record. Original Client.signOut with absent record writes nothing. V1 test required a nonnil record and would fail on correct behavior. V2 changes only that assertion to exact nil; actual owner-state/peer-path/old-result checks stay intact. No production empty-record write was added."
+  ],
+  "preservedReviewMiss": "Original author self-review and additional independent v1 review both missed the nil-record fixture assertion. Their exact reports and v1 Test are retained; neither is a native execution pass.",
+  "actualValidation": {
+    "initialGrammarFiles": 3,
+    "correctedTestGrammarFiles": 1,
+    "grammarDiagnostics": 0,
+    "newNativeDefinitions": [
+      "SelfRenewalDeveloperAuthenticationTests/appSessionAuthenticatesThroughSameVaultAndReopensStoredSession",
+      "SelfRenewalDeveloperAuthenticationTests/appSessionCancelsSecondaryChallengeAndRejectsOldTicket",
+      "SelfRenewalDeveloperAuthenticationTests/appOwnerDrainsHeldLoginBeforeLogoutAndRejectsLateResult"
+    ],
+    "preservedExistingDefinitions": [
+      "SelfRenewalDeveloperAuthenticationTests/matchesIndependentPasswordAndAuthenticatedResponseVectors",
+      "SelfRenewalDeveloperAuthenticationTests/refusesInvalidServerKeysAndWorkBudgets",
+      "SelfRenewalDeveloperAuthenticationTests/rejectsTamperedProofNegotiationAndTokenEnvelope",
+      "SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation",
+      "SelfRenewalDeveloperAuthenticationTests/rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials",
+      "SelfRenewalDeveloperAuthenticationTests/submitsTrustedDeviceCodeAndRestartsAuthenticatedHandshake",
+      "SelfRenewalDeveloperAuthenticationTests/cancellationTerminatesActualLoginAndClearsPendingState",
+      "SelfRenewalDeveloperAuthenticationTests/refusesUnverifiedCryptoMissingMetadataAndStorageFailure"
+    ],
+    "SwiftSDKExecutions": 0,
+    "nativeMethodsAccepted": 0,
+    "controlledPeerExecutions": 0,
+    "actualAppleRequests": 0,
+    "physicalDeviceExecutions": 0
+  },
+  "limits": [
+    "Source review cannot prove runtime scheduling, crypto type semantics or the controlled HTTP/Keychain tests. Those exact eleven methods require the coherent SDK group.",
+    "Default genuine anisette provider and a login UI are unavailable. Current Apple service compatibility, official materials, install permission, unattended renewal and cold userdata preservation remain unverified."
+  ],
+  "canonicalOrGitMutationsAtReview": false
+}

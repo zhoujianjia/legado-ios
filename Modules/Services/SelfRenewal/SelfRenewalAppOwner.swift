@@ -19,6 +19,9 @@ final class SelfRenewalAppOwner {
     private(set) var recoveryAvailable = false
     private(set) var developerSession: SelfRenewalDeveloperAccountClient.SessionObservation?
     private(set) var developerMaterial: SelfRenewalAppSession.DeveloperMaterialObservation?
+    private(set) var developerChallenge: SelfRenewalDeveloperAuthentication.Challenge?
+    private var developerOperationID: UUID?
+    private var authenticatingOperationID: UUID?
     private var bootstrapped = false
 
     init(root: URL? = nil, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
@@ -30,10 +33,11 @@ final class SelfRenewalAppOwner {
     /// Only owned tests choose another verified application directory. This
     /// parameter is absent from configuration and production initialization.
     init(root: URL, currentApplicationRoot: URL, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
+        developerAuthenticationRandom: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff()
         session = SelfRenewalAppSession(root: root, currentApplicationRoot: currentApplicationRoot,
-            developerServices: developerServices, clock: clock)
+            developerServices: developerServices, developerAuthenticationRandom: developerAuthenticationRandom, clock: clock)
     }
     #endif
 
@@ -104,17 +108,76 @@ final class SelfRenewalAppOwner {
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
     }
 
-    /// The GSA login flow supplies candidate credentials here. The existing
-    /// App session retains the sole material client and validates the actual
-    /// server session/team before acknowledging this connection.
-    func acceptDeveloperCredentials(_ candidate: SelfRenewalDeveloperAccountClient.Credentials) async {
+    /// UI receives only a verified session observation or a bounded challenge.
+    /// Password/code inputs stay in the actual session-owned login task.
+    func signInDeveloperAccount(appleID: String, password: String) async {
         guard !isWorking else { return }
-        isWorking = true; defer { isWorking = false }
-        problem = nil; developerSession = nil
-        do { developerSession = try await session.connectDeveloperAccount(candidate) }
-        catch {
+        let id = beginDeveloperAuthentication()
+        defer { finishDeveloperOperation(id) }
+        do {
+            let outcome = try await session.signInDeveloperAccount(appleID: appleID, password: password)
+            guard developerOperationID == id else { return }
+            applyDeveloperAuthentication(outcome)
+        } catch {
+            guard developerOperationID == id else { return }
             problem = Self.classify(error)
-            AppLogger.parse("Renewal account connection unavailable type=\(String(reflecting: type(of: error)))")
+            AppLogger.parse("Renewal account login unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
+    func submitDeveloperVerificationCode(_ code: String, challengeID: UUID) async {
+        guard !isWorking else { return }
+        let id = beginDeveloperAuthentication()
+        defer { finishDeveloperOperation(id) }
+        do {
+            let outcome = try await session.submitDeveloperVerificationCode(code, challengeID: challengeID)
+            guard developerOperationID == id else { return }
+            applyDeveloperAuthentication(outcome)
+        } catch {
+            guard developerOperationID == id else { return }
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal verification unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
+    func cancelDeveloperAuthentication() async {
+        guard canTakeDeveloperAuthentication else { return }
+        let id = takeDeveloperAuthentication()
+        defer { finishDeveloperOperation(id) }
+        problem = nil; developerChallenge = nil
+        do {
+            let cancelled = try await session.cancelDeveloperAuthentication()
+            guard developerOperationID == id else { return }
+            if let confirmed = cancelled.confirmedSession { developerSession = confirmed }
+        } catch {
+            guard developerOperationID == id else { return }
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal login cancellation unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
+    private func beginDeveloperAuthentication() -> UUID {
+        let id = takeDeveloperAuthentication()
+        authenticatingOperationID = id
+        problem = nil; developerSession = nil; developerChallenge = nil
+        return id
+    }
+    private var canTakeDeveloperAuthentication: Bool {
+        !isWorking || (developerOperationID != nil && authenticatingOperationID == developerOperationID)
+    }
+    private func takeDeveloperAuthentication() -> UUID {
+        let id = UUID()
+        developerOperationID = id; authenticatingOperationID = nil; isWorking = true
+        return id
+    }
+    private func finishDeveloperOperation(_ id: UUID) {
+        guard developerOperationID == id else { return }
+        developerOperationID = nil; authenticatingOperationID = nil; isWorking = false
+    }
+    private func applyDeveloperAuthentication(_ outcome: SelfRenewalDeveloperAuthentication.Outcome) {
+        switch outcome {
+        case .connected(let observed): developerSession = observed; developerChallenge = nil
+        case .verificationRequired(let challenge): developerSession = nil; developerChallenge = challenge
         }
     }
 
@@ -160,11 +223,13 @@ final class SelfRenewalAppOwner {
     }
 
     func signOutDeveloperAccount() async {
-        guard !isWorking else { return }
-        isWorking = true; defer { isWorking = false }
-        problem = nil; developerSession = nil
+        guard canTakeDeveloperAuthentication else { return }
+        let id = takeDeveloperAuthentication()
+        defer { finishDeveloperOperation(id) }
+        problem = nil; developerSession = nil; developerChallenge = nil
         do { try await session.signOutDeveloperAccount() }
         catch {
+            guard developerOperationID == id else { return }
             problem = Self.classify(error)
             AppLogger.parse("Renewal account sign-out unavailable type=\(String(reflecting: type(of: error)))")
         }
@@ -175,12 +240,13 @@ final class SelfRenewalAppOwner {
         isWorking = true; defer { isWorking = false }
         try await session.close()
         status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
-        developerSession = nil; developerMaterial = nil
+        developerSession = nil; developerMaterial = nil; developerChallenge = nil
     }
 
     private static func classify(_ error: Error) -> Problem {
         if error is CancellationError { return .cancelled }
         if error is SelfRenewalAppSession.DeveloperServicesFailure { return .authenticationNotConfigured }
+        if error is SelfRenewalDeveloperAuthentication.Failure || error is SelfRenewalGSASRP.Failure { return .authenticationUnavailable }
         if let failure = error as? SelfRenewalAppSession.DeveloperMaterialFinalizationFailure { return classify(failure.underlying) }
         if let failure = error as? SelfRenewalDeveloperAccountClient.EnrollmentFailure { return classify(failure.underlying) }
         if let failure = error as? SelfRenewalDeveloperAccountClient.SessionInvalidationFailure { return classify(failure.storageError) }

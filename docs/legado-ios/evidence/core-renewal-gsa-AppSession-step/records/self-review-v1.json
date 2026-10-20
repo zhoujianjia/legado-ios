@@ -1,0 +1,47 @@
+{
+  "kind": "original-author self-review; not independent",
+  "sourceFiles": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 61691,
+      "sha256": "6a1632a8a82d9d5ca5b93d2252c965fea7d72e24b410e66d5c8056b59c5e0a4f"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 14813,
+      "sha256": "1062bc0d661a72f9d94b51bb6017ebc2ab3b7a38cd21bd1faf6a65f6092d02f9"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "bytes": 53555,
+      "sha256": "d0275049cc8086c30e96a9be1685cf9402b97192417fc06b6c923523dd2c222c"
+    }
+  ],
+  "confirmedBlockers": [],
+  "checked": [
+    "Same retained material Client, Vault namespace and injected single HTTP transport/storage/fresh-anisette; Auth constructed only after existing verified material owner, reused until actual capability discard.",
+    "Actual session-held task includes local material/account preparation before first GSA request; caller cancellation forwards to exact handle; terminal success and failure finish inside task before task terminal; outer continuation has no busy defer.",
+    "Cancel/logout cancel and await actual task.result; busy plus exact authentication epoch prevents clearing a newer authentication/challenge or changed binding; concurrent drains lose rather than erase new ownership.",
+    "Cancellation preserves already-confirmed connected observation checkedAt (historical account/team fact, not signing authority); no post-save cancellation check rewrites acknowledged storage as uncommitted.",
+    "Logout clears actual Auth pending password/challenge after drain and uses existing Client signOut; local signed-out guard is set before erase and remains on failure; no replacement credential store.",
+    "All existing material/namespace/commit-durability discard paths abandon Auth together with Client and invalidate epoch; close clears pending before journal close.",
+    "MainActor Owner authentication/cancel/logout operation UUID prevents old await result or old defer changing a newly taken cancellation/logout; isWorking remains held through actual drain.",
+    "UI-facing properties expose observations/challenge only. Password/code are method inputs, never persisted/logged properties. Removed unused Owner candidate credential acceptance entry; existing internal Session candidate entry retained for prior account regressions.",
+    "Fixed-vector random injection exists only in DEBUG owned-directory initializers; production uses existing SecRandom exponent implementation. Default nil developer services remain unavailable.",
+    "Three new declared methods reuse the original serialized GSA peer, transport, actual Keychain/Vault and independent vector; original eight @Test method bodies and declared identities retained.",
+    "Optional test-only published-lease seed uses actual generated persisted key, signed cert/profile inputs and Vault.publish before real App bootstrap/configure; restart calls actual new Session bootstrap and actual account observation.",
+    "Held-init wait observes init-arrival OR actual login completion; outer cancellation forwards to actual login; cleanup actual-awaited independent task avoids canceled fixture Vault guard; no settle sleeps/new queue/network owner."
+  ],
+  "limitations": [
+    "No local Swift compiler/Apple SDK; tree-sitter grammar is not typechecking.",
+    "All eleven Swift @Test definitions are definitions only here; new three and original eight have zero actual native execution on these sources.",
+    "Controlled peer authenticates no actual Apple account; anisette provisioning remains injected/unimplemented by default.",
+    "One real transport system-TLS protocol path is wired; account, device, installation, cold-launch, unattended renewal and whole compatibility remain unverified."
+  ],
+  "actualSwiftSDKExecutions": 0,
+  "actualControlledPeerExecutions": 0,
+  "realAppleRequests": 0,
+  "realCredentialsAccessed": 0,
+  "canonicalMutations": 0,
+  "gitOrCIExecutions": 0
+}

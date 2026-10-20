@@ -1,0 +1,12 @@
+--- frozen-v1
++++ proposed-v2
+@@ -221,8 +221,7 @@
+                         (owner.isWorking, owner.developerSession == nil, owner.developerChallenge == nil, owner.problem == nil)
+                     }
+                     #expect(!state.0 && state.1 && state.2 && state.3)
+-                    let stored = try #require(f.storage.load(namespace: f.namespace.id))
+-                    #expect(!stored.contains(vector.token) && !stored.contains(vector.password) && !stored.contains(vector.idms))
++                    #expect(try f.storage.load(namespace: f.namespace.id) == nil)
+                     #expect(await f.peer.paths() == ["init"])
+                 }
+                 try await owner.close()
