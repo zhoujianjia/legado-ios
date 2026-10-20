@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "scope": "Retained original AnalyzeRule/finite AnalyzeUrl and original text-only transient WebBook await orchestration in the ordinary JVM module. Same RuntimeSession HTTP/cookie/task/deadline; Android durable stores, media/browser/batch/explore UI and App route are unfinished. Windows evidence is not Android/iOS/device/full-source acceptance.",
+  "scope": "Retained original AnalyzeRule/finite AnalyzeUrl/text WebBook await chain with explicit embedding-owned state.read/state.commit persistence. Same RuntimeSession HTTP/cookie/task/deadline; default isolated memory remains. Android Room/full content resource fence, Swift book/chapter identity mapping, media/browser/batch/explore UI and App traditional-source route remain unfinished. Windows evidence is not Android/iOS/device/full-source acceptance.",
   "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
   "sourceProvenance": [
     {
@@ -272,6 +272,24 @@
       "vendorPath": "sources/exception/ContentEmptyException.kt",
       "bytes": 126,
       "sha256": "65d54f505de0cde8227bff4b8f96fdcabfd7d90d7f76decf5b680f99d1bc61bf"
+    },
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/help/http/CookieStore.kt",
+      "vendorPath": "sources/help/http/CookieStore.kt",
+      "bytes": 5186,
+      "sha256": "9890bbf76428c05601981af7b3148fe87944d788f0a082a50cd4a3b591956a8e"
+    },
+    {
+      "archivePath": "legado-master/app/src/test/java/io/legado/app/help/CacheManagerTtlContractTest.kt",
+      "vendorPath": "sources/tests/help/CacheManagerTtlContractTest.kt",
+      "bytes": 3025,
+      "sha256": "c80c946c963937af18addc03a9efdae0595a17840afeb5005825b83236091d30"
+    },
+    {
+      "archivePath": "legado-master/app/src/test/java/io/legado/app/help/book/ContentSaveFenceTest.kt",
+      "vendorPath": "sources/tests/help/book/ContentSaveFenceTest.kt",
+      "bytes": 4441,
+      "sha256": "94c24494dee70c9d3dd99eb7574b6037d219d0c6374696635382a810fd365140"
     }
   ],
   "retainedAlgorithms": {
@@ -589,6 +607,15 @@
     },
     {
       "path": "io/legado/app/data/entities/SearchBook.class"
+    },
+    {
+      "path": "io/yuedu/legado/originalrule/RulePersistenceAdapter.class"
+    },
+    {
+      "path": "io/yuedu/legado/originalrule/RulePersistenceBinding.class"
+    },
+    {
+      "path": "io/yuedu/legado/originalrule/RulePersistenceHost.class"
     }
   ],
   "runtimeResources": [
@@ -616,8 +643,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
-      "bytes": 10512,
-      "sha256": "72d4f79751b1c632f22c0a5e82f741596b1de957a71f78e7b3b3723238a1d067"
+      "bytes": 11531,
+      "sha256": "0f40f4e0c7bebec527304721fd6f2ff1d09a9b9543ba070ca55234b1f635919c"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
@@ -656,8 +683,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-      "bytes": 6903,
-      "sha256": "57e03b181f969f9993ad032035c8947a8f0162d66821a9460ed6f1cc1bbb3caf"
+      "bytes": 7043,
+      "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
@@ -666,8 +693,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
-      "bytes": 5496,
-      "sha256": "31b634664b8825c2db10ccef63d5fd143d165a72dea7c8227dc2a88a574810e5"
+      "bytes": 11831,
+      "sha256": "0b81b8c91c8a0e32fce6f5837cc16ce097e4dd67f049e4dc6d706014b6a59914"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
@@ -696,8 +723,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
-      "bytes": 17097,
-      "sha256": "23546cacd48ab85cfc2b2b037b58dcc2871422b439778310bd08fc8720d65d64"
+      "bytes": 17615,
+      "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookList.kt",
@@ -786,13 +813,18 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
-      "bytes": 907,
-      "sha256": "bbfd0fe5836ad97b29d2925ae30e94a9abaf58929e1f70ad22c6fcd0d9065eaa"
+      "bytes": 8600,
+      "sha256": "c82cba9d6c7af15055b4616891de1d3567aaafeb6b1da31330047965b80fbc46"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalWebBookSession.kt",
       "bytes": 1697,
       "sha256": "6da8523b9dc0d799f7b6558dc0c3aa63dc552e8f5ac6569ebf1e43c97219b872"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePersistence.kt",
+      "bytes": 5585,
+      "sha256": "0f7a764d8bb3d7ddd19f8261e29a171a0911a9082d558aacb4ddfaeda525def8"
     }
   ],
   "readerRouteIntegrated": false,
@@ -843,8 +875,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
-        "bytes": 10512,
-        "sha256": "72d4f79751b1c632f22c0a5e82f741596b1de957a71f78e7b3b3723238a1d067"
+        "bytes": 11531,
+        "sha256": "0f40f4e0c7bebec527304721fd6f2ff1d09a9b9543ba070ca55234b1f635919c"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
@@ -853,8 +885,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 6903,
-        "sha256": "57e03b181f969f9993ad032035c8947a8f0162d66821a9460ed6f1cc1bbb3caf"
+        "bytes": 7043,
+        "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleJsResult.kt",
@@ -863,8 +895,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 11593,
-        "sha256": "b38bcd695af6b2fda5bbfda5d53bcdbe6452a148afb10ba5277a4d699a74920c"
+        "bytes": 12913,
+        "sha256": "982ab3fa394167d7fb7f1c1c481173927261ff380a4325ebb8d57bda07bf2dd7"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalIpValidator.kt",
@@ -878,13 +910,13 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeHttpRequestExecutor.kt",
-        "bytes": 2514,
-        "sha256": "25167ce74ee431950b5ad4306a237c44917b3b8dda00452af350b19c1dc8560c"
+        "bytes": 2702,
+        "sha256": "e9589537a3f295c7a2fdd7406fa1596f307d3e2ccb37a58a455d8d31f8b647e3"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
-        "bytes": 18560,
-        "sha256": "0548fd9d8df35166daaff3716963f86fef4965423fe3b18bbc9de679c878aa1e"
+        "bytes": 24935,
+        "sha256": "eb8e71f5034e0c95492067f8a701fdc33a18e00dfa0df04c46c63a2f16a2f8cc"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoHttpRequestPreprocessor.kt",
@@ -893,8 +925,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
-        "bytes": 11214,
-        "sha256": "3bad4b47dcfc8c07f590bd194ac0b962a0c329b672f975fd48d150ff80e6e31b"
+        "bytes": 11462,
+        "sha256": "8625e8bcbc36c8d1b38fbc7f7b3b86b269e528c5567d0a515b4de19c97a29aab"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/com/script/rhino/RhinoContext.kt",
@@ -908,8 +940,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 20178,
-        "sha256": "9f012dba5939c51e949cf05899028f9a005a54373f60e5fc99482ef7543047a4"
+        "bytes": 24036,
+        "sha256": "84a5083a7149e4aa17bc2de6ee8873376b04f6bbcffe02d8f2d76084100a1819"
       }
     ],
     "implemented": [
@@ -925,7 +957,7 @@
     "remainingUnsupportedOrUnfinished": [
       "Browser/WebView/webJs, configured proxy, binary/media type, server upload, active WebView delay and rate-limit orchestration remain typed unsupported or explicitly unimplemented.",
       "A retained text-only transient WebBook await chain with loginCheckJs and serial/fanout pagination is now integrated below. Durable content saving, contentBatch, media/file/explore UI, JNI/App traditional-source routing, persistent source/login/cache and full model API remain unfinished.",
-      "Source header/login data now uses the actual RuleSource model/cache, not unrelated RuntimeSession header defaults. Source variable/login/cache persistence still needs explicit session/store integration.",
+      "Source header/login data now uses the actual RuleSource model/cache, not unrelated RuntimeSession header defaults. Explicit stateOwner session injection now routes source variable/login/cache through state.read/commit; actual host capability remains authoritative, with no credentials persisted in JSON.",
       "Cookie storage remains the existing JVM per-session URL/domain/path/scheme jar rather than Android registrable-domain Room/WebView persistence. Embedding User-Agent is provided by RuntimeSessionOptions; Android AppConfig default is not invented when absent.",
       "Speech/extraParams/infoMap configuration and complete AnalyzeUrl entity/media APIs are not supplied. Unknown option keys are explicitly unsupported instead of silently ignored.",
       "Arbitrary already-running Java host calls are not interrupted by close; existing cancellation/guard/host-return boundaries reject later publication. No Android/iOS/Zero/JNI/device execution is claimed."
@@ -1060,12 +1092,12 @@
     }
   },
   "webBookIntegration": {
-    "scope": "Retained locked-ZIP await orchestration for text search, detail, TOC and no-save content, not complete Android WebBook ABI or App route",
+    "scope": "Retained locked-ZIP text await orchestration with finite embedding-owned TOC/content persistence when explicitly injected; not complete Android WebBook ABI or App route",
     "integrationSources": [
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
-        "bytes": 17097,
-        "sha256": "23546cacd48ab85cfc2b2b037b58dcc2871422b439778310bd08fc8720d65d64"
+        "bytes": 17615,
+        "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookList.kt",
@@ -1154,8 +1186,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
-        "bytes": 907,
-        "sha256": "bbfd0fe5836ad97b29d2925ae30e94a9abaf58929e1f70ad22c6fcd0d9065eaa"
+        "bytes": 8600,
+        "sha256": "c82cba9d6c7af15055b4616891de1d3567aaafeb6b1da31330047965b80fbc46"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalWebBookSession.kt",
@@ -1164,28 +1196,28 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 20178,
-        "sha256": "9f012dba5939c51e949cf05899028f9a005a54373f60e5fc99482ef7543047a4"
+        "bytes": 24036,
+        "sha256": "84a5083a7149e4aa17bc2de6ee8873376b04f6bbcffe02d8f2d76084100a1819"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 11593,
-        "sha256": "b38bcd695af6b2fda5bbfda5d53bcdbe6452a148afb10ba5277a4d699a74920c"
+        "bytes": 12913,
+        "sha256": "982ab3fa394167d7fb7f1c1c481173927261ff380a4325ebb8d57bda07bf2dd7"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 6903,
-        "sha256": "57e03b181f969f9993ad032035c8947a8f0162d66821a9460ed6f1cc1bbb3caf"
+        "bytes": 7043,
+        "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
-        "bytes": 5496,
-        "sha256": "31b634664b8825c2db10ccef63d5fd143d165a72dea7c8227dc2a88a574810e5"
+        "bytes": 11831,
+        "sha256": "0b81b8c91c8a0e32fce6f5837cc16ce097e4dd67f049e4dc6d706014b6a59914"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
-        "bytes": 10512,
-        "sha256": "72d4f79751b1c632f22c0a5e82f741596b1de957a71f78e7b3b3723238a1d067"
+        "bytes": 11531,
+        "sha256": "0f40f4e0c7bebec527304721fd6f2ff1d09a9b9543ba070ca55234b1f635919c"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
@@ -1202,16 +1234,16 @@
       "Entire await operation uses existing RuntimeTask Job, absolute deadline, ScriptExecutionGuard and shared RuntimeHttpRequestExecutor/ProductionHttpTransport/session cookies. Close rejects late publication; no timer/thread/second transport or standalone helper execution claim."
     ],
     "explicitPlatformSeams": [
-      "RuleEnvironment.webBook is transient chapter lookup/state only, not Room or filesystem. The next-chapter default lookup is index+1 then index0 within this explicitly published state; persistent Android DB lookup is not claimed.",
+      "RuleEnvironment.webBook uses isolated transient state by default; an explicit stateOwner stores finite TOC/content records through the same host owner. Next-chapter lookup remains index+1 then index0 in that state. This is not a second App file database or an Android Room adapter.",
       "TOC metadata uses original ordering/timestamps/count with raw chapter titles. Android ContentProcessor title replacement rules and simulated chapter count/read configuration are not supplied; durable prior metadata merging is unported.",
       "threadCount=32, tocCountWords=true and adaptSpecialStyle=true are explicit mutable transient runtime options matching locked Android defaults, not a preference-store adapter.",
       "Original source rule DTO fields/getters/toString are retained; Parcelable/Room and Android Gson registration are replaced by a finite explicit snapshot decoder supporting object or legacy JSON-string rules.",
       "StrResponse remains the existing io.yuedu.legado adapter around actual OkHttp raw response, not full original io.legado.app.help.http.StrResponse ABI. Java method access is retained; Android/UI coroutine launch wrappers are not installed."
     ],
     "remainingUnsupportedOrUnfinished": [
-      "needSave=true durable content generation/cache tokens and persistence, contentBatch/BatchContentContext/java.cacheContent and App reader publication remain typed unsupported/unintegrated.",
+      "Outer WebBook.getContentAwait needSave=true now saves through the injected owner; the direct BookContent.analyzeContent needSave=true helper, full Android failed-edit/delete/resource/folder generation fencing, contentBatch/BatchContentContext/java.cacheContent and App reader publication remain unsupported/unintegrated.",
       "mainJs WebBook delegation remains its separate retained route; this finite await entry explicitly rejects mainJs, non-text/media/file sources and explore navigation/infoMap rather than substituting a simplified parser.",
-      "Browser/webJs/sourceRegex, configured proxy, media payload/decode/upload/rate limiting, subContent side channels, image/pay/callback/full model APIs and persistent source/login/cache stores remain unported or explicit unsupported at their invocation boundary.",
+      "Browser/webJs/sourceRegex, configured proxy, media payload/decode/upload/rate limiting, subContent side channels, image/pay/callback/full model APIs remain unported or explicit unsupported at their invocation boundary. Persistent state capabilities are listed separately below.",
       "Arbitrary already-running Java host callbacks cannot be forcibly interrupted; existing task/guard/return boundaries reject cancelled/closed results."
     ],
     "validation": {
@@ -1224,11 +1256,122 @@
       "skipped": 0,
       "runRecord": ".build/original-webbook-execution/focused-v7.json",
       "goldenBoundary": "Existing 28 scalar/36 JSONPath original Android observations reused in affected original parser tests; new loopback WebBook methods are JVM behavioral regressions against retained ZIP algorithms, not new Android observations.",
-      "notAddedToHistoricalCounts": true
+      "notAddedToHistoricalCounts": true,
+      "historicalRecordNotRecounted": true
     },
     "readerRouteIntegrated": false,
     "completeWebBookPort": false,
     "fullSourceCompatibilityEstablished": false,
+    "androidExecuted": false,
+    "iosExecuted": false,
+    "deviceExecuted": false,
+    "currentPersistenceValidation": ".build/original-state-persistence/focused-final.json"
+  },
+  "statePersistenceIntegration": {
+    "scope": "Explicit owner adapter wired into real rule/mainJs state and retained WebBook; default isolated memory unchanged. Concrete file backend is test-only.",
+    "integrationSources": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePersistence.kt",
+        "bytes": 5585,
+        "sha256": "0f7a764d8bb3d7ddd19f8261e29a171a0911a9082d558aacb4ddfaeda525def8"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+        "bytes": 11831,
+        "sha256": "0b81b8c91c8a0e32fce6f5837cc16ce097e4dd67f049e4dc6d706014b6a59914"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+        "bytes": 8600,
+        "sha256": "c82cba9d6c7af15055b4616891de1d3567aaafeb6b1da31330047965b80fbc46"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 12913,
+        "sha256": "982ab3fa394167d7fb7f1c1c481173927261ff380a4325ebb8d57bda07bf2dd7"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 7043,
+        "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 24036,
+        "sha256": "84a5083a7149e4aa17bc2de6ee8873376b04f6bbcffe02d8f2d76084100a1819"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
+        "bytes": 1398,
+        "sha256": "49f7f59673a6d273d67db7345646709a95ec5501db85863d6291a3c54d94f70c"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+        "bytes": 24935,
+        "sha256": "eb8e71f5034e0c95492067f8a701fdc33a18e00dfa0df04c46c63a2f16a2f8cc"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+        "bytes": 11462,
+        "sha256": "8625e8bcbc36c8d1b38fbc7f7b3b86b269e528c5567d0a515b4de19c97a29aab"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeHttpRequestExecutor.kt",
+        "bytes": 2702,
+        "sha256": "e9589537a3f295c7a2fdd7406fa1596f307d3e2ccb37a58a455d8d31f8b647e3"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "bytes": 11531,
+        "sha256": "0f40f4e0c7bebec527304721fd6f2ff1d09a9b9543ba070ca55234b1f635919c"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "bytes": 17615,
+        "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
+      }
+    ],
+    "protocol": {
+      "read": "state.read {owner,keys} -> {revision,values:base64}",
+      "commit": "state.commit {owner,revision,changes:base64|null} -> {committed}; false commits nothing",
+      "key": "JSON array string [sourceURL,area,...identityParts], owner only from embedding RuntimeSessionOptions.stateOwner",
+      "timeout": "Existing host request carries taskId/deadlineEpochMs/remainingTimeoutMs; same cancellation and absolute deadline",
+      "atomicity": "Read snapshot plus up to 32 CAS retries. Multi-key mutation is one owner commit. Unsupported capabilities must reject before any writes."
+    },
+    "implemented": [
+      "Book/source/chapter variables preserve original short JSON vs >=10000 UTF-16 large-value storage, null/delete and exact Java return types; book/chapter keys include URL identities.",
+      "Separate text/binary cache records and seconds-to-absolute-epoch TTL (zero means forever); transient typed memory remains session-local. Persistent auto-memory views re-read owner, explicit putMemory shadows stay local.",
+      "Verbatim source variables/login headers restore across sessions. Login header plus Cookie merge/remove uses a single owner CAS, then publishes live state. No plaintext credentials are introduced.",
+      "The existing single SessionCookies HTTP jar restores full cookie attributes and expiry through the owner; no replacement transport/jar. Malformed backing is typed STATE_IO and failed commits preserve old live/durable state.",
+      "Finite TOC DTOs restore actual environment-owned BookChapter entities. Outer WebBook needSave=true saves body+TOC title/image metadata atomically; current TOC book/index/chapterURL gates stale downloads. Empty body only reuses a fully matching content identity.",
+      "Normal downloads do not advance the edit generation. Successful atomic replace increments it and rejects older tokens. Closed/cancelled host-read results cannot commit or publish after return guards."
+    ],
+    "validation": {
+      "platform": "Actual Windows JDK21 JVM",
+      "runRecord": ".build/original-state-persistence/focused-final.json",
+      "uniqueMethods": 165,
+      "suites": 16,
+      "originalPublicStatefulCalls": 47,
+      "originalStatefulScenarios": 14,
+      "originalStatefulJUnitMethods": 1,
+      "referenceScope": "Existing pinned original Android 47 public-call observations reused twice against memory and injected persistent owners. Exact public return descriptors and effective state compared; not 94 methods or new Android execution.",
+      "newPersistenceMethods": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "actualPersistence": "Controlled temporary directory, atomic staged file failure and corrupted disk; two separate Java processes; real loopback header/cookie/WebBook body requests.",
+      "notAddedToHistoricalCounts": true
+    },
+    "remainingUnsupportedOrUnfinished": [
+      "Swift host capabilities/owner mappings remain explicit: current App host supports source raw variables/key-values, no-Cookie login headers and generic text cache; binary values, full Cookie snapshots, book/chapter variables, TOC/content and cross-owner atomic combinations are rejected until C4 mapping.",
+      "Swift UUID to original bookUrl/chapter URL identity, existing BookStore/ChapterCacheRepository generation publication and traditional-source App route are not connected. No second user file database is created.",
+      "Full Android ContentSaveFence semantics for failed edits, delete/resource invalidation, files/folders and all Room prior-metadata merging are not ported; successful replacement and current TOC URL identity are the finite implemented fences.",
+      "Direct BookContent.analyzeContent needSave=true, cache.putFile/getFile, credential/keychain methods, content batch/media/browser and full original public API remain typed unsupported or unfinished.",
+      "Already-running synchronous host callbacks cannot be forcibly rolled back after the host commits; owner must enforce task/deadline/atomic CAS before writes. Runtime return boundaries reject cancelled/expired publication."
+    ],
+    "appTraditionalRouteIntegrated": false,
+    "fullC2Complete": false,
+    "fullOriginalStateCompatibilityEstablished": false,
     "androidExecuted": false,
     "iosExecuted": false,
     "deviceExecuted": false

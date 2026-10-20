@@ -37,6 +37,10 @@ class Book(
     var durChapterTitle: String? = null,
     var durChapterIndex: Int = 0,
 ) : BaseBook {
+    init {
+        if (environment.persistence != null && bookUrl.isNotEmpty())
+            variable = environment.state.restoreVariables("book", bookUrl, "", variable)
+    }
     private var reverseToc = false
     fun setReverseToc(value: Boolean) { reverseToc = value }
     fun getReverseToc(): Boolean = reverseToc
@@ -51,6 +55,10 @@ class Book(
     }
     override fun putVariable(key: String, value: String?): Boolean {
         environment.ensureOpen()
+        if (environment.persistence != null && bookUrl.isNotEmpty()) {
+            if (environment.state.putVariable("book", bookUrl, "", variableMap, key, value)) variable = GSON.toJson(variableMap)
+            return true
+        }
         return super.putVariable(key, value)
     }
     override fun hashCode(): Int = bookUrl.hashCode()
@@ -86,11 +94,19 @@ data class BookChapter(
     var variable: String? = null,
     var imgUrl: String? = null,
 ) : RuleDataInterface {
+    init {
+        if (environment.persistence != null && bookUrl.isNotEmpty() && url.isNotEmpty())
+            variable = environment.state.restoreVariables("chapter", bookUrl, url, variable)
+    }
     @delegate:Transient override val variableMap: HashMap<String, String> by lazy {
         GSON.fromJsonObject<HashMap<String, String>>(variable).getOrNull() ?: hashMapOf()
     }
     override fun putVariable(key: String, value: String?): Boolean {
         environment.ensureOpen()
+        if (environment.persistence != null && bookUrl.isNotEmpty() && url.isNotEmpty()) {
+            if (environment.state.putVariable("chapter", bookUrl, url, variableMap, key, value)) variable = GSON.toJson(variableMap)
+            return true
+        }
         if (super.putVariable(key, value)) variable = GSON.toJson(variableMap)
         return true
     }
@@ -174,11 +190,15 @@ class BookSource(
         if (hasLoginHeader) getLoginHeaderMap()?.let(::putAll)
     }
     fun putLoginHeader(value: String) {
+        if (environment.platform.storeLoginHeader(this, value)) return
         val map = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
         (map?.get("Cookie") ?: map?.get("cookie"))?.let { environment.cookie.replaceCookie(getKey(), it) }
         environment.cache.put("loginHeader_${getKey()}", value)
     }
-    fun removeLoginHeader() { environment.cache.delete("loginHeader_${getKey()}"); environment.cookie.removeCookie(getKey()) }
+    fun removeLoginHeader() {
+        if (environment.platform.storeLoginHeader(this, null)) return
+        environment.cache.delete("loginHeader_${getKey()}"); environment.cookie.removeCookie(getKey())
+    }
     fun getLoginInfo(): Nothing = unsupportedRule("source login-info encryption/storage")
     fun putLoginInfo(value: String): Nothing = unsupportedRule("source login-info encryption/storage")
     fun refreshJSLib() { environment.scopes.remove(jsLib) }

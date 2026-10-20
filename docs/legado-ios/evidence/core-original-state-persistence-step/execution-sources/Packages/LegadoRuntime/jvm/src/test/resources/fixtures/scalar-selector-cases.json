@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "suite": "ScalarSelectorRuleObservation",
+  "caseSetVersion": "legado-scalar-selector-public-v1",
+  "apis": ["getString-unescape-false", "getString-default"],
+  "scope": "Static non-URL scalar selectors followed by nonempty replacement patterns; raw original observations only. The last two inputs isolate final HTML-unescape ordering, not port acceptance.",
+  "sourceProvenance": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "files": [
+      {"path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt", "fileSHA256": "5441d6d00064059519add3e5a81d85b1776f575bd0e5d30f3b5763d90af9e8a9"},
+      {"path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSoup.kt", "fileSHA256": "9889421f76a8fda62b0b874e70d0535f2b781b59a9c84fa797af695a9f8cccfa"},
+      {"path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByXPath.kt", "fileSHA256": "b6ee22cc3242313f8d5e3758dc93ff06891eeec7b3ab9ee9267ebac11145d842"},
+      {"path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeByJSonPath.kt", "fileSHA256": "ee5ee9ebc95b4f5d6e2d459d6f727fccd10a6bd6a36ce872547f6cee5684109d"},
+      {"path": "app/src/main/java/io/legado/app/model/analyzeRule/RuleAnalyzer.kt", "fileSHA256": "74ab0152bce9d5e014cc69d9c6974cbb093d8353200f1452066f7d05102265a7"},
+      {"path": "app/src/main/java/io/legado/app/model/analyzeRule/SourceHtmlParser.kt", "fileSHA256": "252630eef2545dc71b3c30905accc93dc834b78bfff2f207769e2aabfd3ed19a"}
+    ]
+  },
+  "cases": [
+    {
+      "caseId": "css-unicode-group-replace",
+      "content": "<p>章12🙂尾34</p>",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@CSS:p@text##([0-9]+)##[$1]"
+    },
+    {
+      "caseId": "css-element-joined-before-replace",
+      "content": "<article><b>one</b><b>two</b></article>",
+      "context": {"kind": "css-element", "rule": "tag.article", "index": 0},
+      "rule": "@CSS:b@text##one\ntwo##joined"
+    },
+    {
+      "caseId": "css-missing-skips-empty-replace",
+      "content": "<article>present</article>",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@CSS:missing@text##^$##fallback"
+    },
+    {
+      "caseId": "css-attribute-whitespace",
+      "content": "<a data-id=\"  code12  \">value</a>",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@CSS:a@data-id##[0-9]+##N"
+    },
+    {
+      "caseId": "xpath-document-text",
+      "content": "<div><b>章12🙂</b><b>尾34</b></div>",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@XPath://b/text()##([0-9]+)##[$1]"
+    },
+    {
+      "caseId": "xpath-node-relative-text",
+      "content": "<article><b>node12</b></article>",
+      "context": {"kind": "xpath-node", "rule": "//article", "index": 0},
+      "rule": "@XPath:.//b/text()##[0-9]+##N"
+    },
+    {
+      "caseId": "xpath-missing-empty-replace",
+      "content": "<article>present</article>",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@XPath://missing/text()##^$##fallback"
+    },
+    {
+      "caseId": "json-string-unicode-newline",
+      "content": "{\"value\":\"首12\\n🙂34尾\"}",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@Json:$.value##[0-9]+##N###"
+    },
+    {
+      "caseId": "json-missing-empty-replace",
+      "content": "{\"present\":\"value\"}",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@Json:$.missing##^$##fallback"
+    },
+    {
+      "caseId": "json-invalid-empty-replace",
+      "content": "{\"items\":[]}",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@Json:$.items[?]##^$##fallback"
+    },
+    {
+      "caseId": "json-null-empty-replace",
+      "content": "{\"value\":null}",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@Json:$.value##^$##fallback"
+    },
+    {
+      "caseId": "static-delimiter-whitespace",
+      "content": "{\"value\":\"left x right\"}",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": " \t@Json:$.value  ## x ## y \n"
+    },
+    {
+      "caseId": "entity-in-json-result",
+      "content": "{\"value\":\"&amp;lt;KEEP\"}",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@Json:$.value##KEEP##KEEP"
+    },
+    {
+      "caseId": "entity-introduced-by-replacement",
+      "content": "{\"value\":\"word\"}",
+      "context": {"kind": "document", "rule": "", "index": 0},
+      "rule": "@Json:$.value##word##&amp;lt;"
+    }
+  ]
+}

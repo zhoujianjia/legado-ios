@@ -17,6 +17,11 @@ import org.htmlunit.corejs.javascript.ScriptableObject
 import io.yuedu.legado.originalrule.ProductionRulePlatform
 import io.yuedu.legado.originalrule.RuleEnvironment
 import io.yuedu.legado.originalrule.decodeOriginalBookSource
+import io.yuedu.legado.originalrule.RulePersistenceBinding
+import io.yuedu.legado.originalrule.HostRulePersistenceAdapter
+import io.yuedu.legado.originalrule.RulePersistenceException
+import io.yuedu.legado.originalrule.UnsupportedRuleCapability
+import io.yuedu.legado.originalrule.RuleCacheMemory
 import io.legado.app.data.entities.BookSource
 
 /** Synchronous JNI facade. Call execute on a worker thread; cancel is safe on another thread. */
@@ -86,16 +91,20 @@ object LegadoRuntime {
                 finally { taskTrace.event(TaskTraceStage.DEADLINE_CANCEL_AFTER, current) }
                 cancelHost(current.id)
             }, timeoutMs, TimeUnit.MILLISECONDS)
-            val result = executeOperation(current, operation, input)
+            val result = session.withCurrentTask(current) { executeOperation(current, operation, input) }
             current.ensureActiveForRuntime()
             return jsonObject("ok" to true, "taskId" to taskId, "result" to result,
                 "metrics" to jsonObject("elapsedMs" to (System.nanoTime() - startedAt) / 1_000_000.0)).toString()
         } catch (error: Exception) {
             val hostFailure = generateSequence(error as Throwable?) { it.cause }
                 .filterIsInstance<RuntimeFailure>().firstOrNull()
+            val stateFailure = generateSequence(error as Throwable?) { it.cause }.filterIsInstance<RulePersistenceException>().firstOrNull()
+            val ruleCapability = generateSequence(error as Throwable?) { it.cause }.filterIsInstance<UnsupportedRuleCapability>().firstOrNull()
             val code = when {
                 task?.let { it.timedOut.get() || System.currentTimeMillis() >= it.deadlineEpochMs } == true -> "TIMEOUT"
                 error is CancellationException || task?.job?.isCancelled == true -> "CANCELLED"
+                ruleCapability != null -> "UNSUPPORTED_CAPABILITY"
+                stateFailure != null -> "STATE_IO"
                 hostFailure != null -> hostFailure.code
                 error is IllegalArgumentException || error is JsonParseException -> "INVALID_ARGUMENT"
                 else -> "SCRIPT_ERROR"
@@ -104,7 +113,7 @@ object LegadoRuntime {
         } finally {
             timeout?.cancel(false)
             task?.let { taskTrace.event(TaskTraceStage.EXECUTE_FINISHED, it) }
-            task?.let { if (tasks.remove(taskId, it)) { it.rawHttpResponses.clear(); it.job.complete(); it.session.taskFinished() } }
+            task?.let { if (tasks.remove(taskId, it)) { it.rawHttpResponses.clear(); it.releasePersistentEnvironment(); it.job.complete(); it.session.taskFinished() } }
         }
     }
 
@@ -176,8 +185,8 @@ object LegadoRuntime {
         scope["java"] = javaHost
         scope["source"] = SourceHost(task.session)
         scope["sourceApi"] = SourceHost(task.session)
-        scope["cache"] = task.session.cache
-        scope["cookie"] = task.session.cookies
+        scope["cache"] = if (task.persistence != null) PersistentCacheHost(task.session) else task.session.cache
+        scope["cookie"] = if (task.persistence != null) TaskCookieHost(task.session) else task.session.cookies
         scope["baseUrl"] = source["bookSourceUrl"]?.asString.orEmpty()
         scope["__runtimeInputJSON"] = preparedInput.toString()
         RhinoScriptEngine.eval(
@@ -243,13 +252,31 @@ object LegadoRuntime {
      * Task-bound HTTP for the retained coordinator. This does not select it as the
      * App's traditional-source route or replace the still-unported AnalyzeUrl.
      */
-    internal fun originalRuleEnvironment(task: RuntimeTask): RuleEnvironment {
+    internal fun originalRuleEnvironment(task: RuntimeTask): RuleEnvironment = ownedRuleEnvironment(task, requireJvmHttp = true)
+    internal fun originalStateEnvironment(task: RuntimeTask): RuleEnvironment = ownedRuleEnvironment(task, requireJvmHttp = false)
+    private fun ownedRuleEnvironment(task: RuntimeTask, requireJvmHttp: Boolean): RuleEnvironment {
         task.ensureActiveForRuntime()
         check(!task.session.closed.get()) { "Session is closed" }
-        require(task.session.options.usesJvmHttp) { "Original-rule requests require the JVM HTTP transport" }
+        require(!requireJvmHttp || task.session.options.usesJvmHttp) { "Original-rule requests require the JVM HTTP transport" }
         lateinit var environment: RuleEnvironment
-        environment = RuleEnvironment(ProductionRulePlatform(task, ::dispatchHost) { environment })
+        environment = RuleEnvironment(ProductionRulePlatform(task, ::dispatchHost) { environment }, persistence = task.persistence,
+            cacheMemory = if (task.persistence != null) task.session.persistentCacheMemory else null)
         return environment
+    }
+
+    /** Stable owner is an embedding option, never an imported source path. */
+    internal fun originalPersistence(task: RuntimeTask): RulePersistenceBinding? = task.session.options.stateOwner?.let { owner ->
+        val sourceKey = task.session.source["bookSourceUrl"]?.asString.orEmpty()
+        require(sourceKey.isNotBlank()) { "Persistent original state requires a stable source URL" }
+        RulePersistenceBinding(HostRulePersistenceAdapter { operation, request ->
+            try { dispatchHost(task, operation, request) }
+            catch (error: CancellationException) { throw error }
+            catch (error: RuntimeFailure) {
+                if (error.code in setOf("UNSUPPORTED_CAPABILITY", "unsupported_host")) throw UnsupportedRuleCapability(error.message.orEmpty())
+                throw RulePersistenceException("Persistent owner $operation failed", error)
+            }
+            catch (error: Exception) { throw RulePersistenceException("Persistent owner $operation failed", error) }
+        }, owner, sourceKey) { task.ensureActiveForRuntime(); if (task.session.closed.get()) throw CancellationException("Session is closed") }
     }
 
     /** Original source snapshot plus the existing owner, for the retained WebBook await APIs. */
@@ -301,6 +328,19 @@ internal class RuntimeSession(val id: String, val source: JsonObject,
     val variables = ConcurrentHashMap<String, String>()
     val cache = SessionCache()
     val cookies = SessionCookies()
+    internal val persistentCacheMemory = RuleCacheMemory()
+    private val currentTask = ThreadLocal<RuntimeTask>()
+    internal fun <T> withCurrentTask(task: RuntimeTask, action: () -> T): T {
+        check(task.session === this)
+        val prior = currentTask.get(); currentTask.set(task)
+        return try { action() } finally { if (prior == null) currentTask.remove() else currentTask.set(prior) }
+    }
+    internal fun persistenceTask(): RuntimeTask {
+        check(!closed.get()) { "Session is closed" }
+        val task = currentTask.get() ?: throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Persistent script host requires its active invocation")
+        task.ensureActiveForRuntime()
+        return task
+    }
     val contents = ConcurrentHashMap<String, String>()
     val requests = java.util.Collections.synchronizedList(mutableListOf<JsonObject>())
     val http: ProductionHttpTransport? = if (options.usesJvmHttp) ProductionHttpTransport(this) else null
@@ -311,7 +351,7 @@ internal class RuntimeSession(val id: String, val source: JsonObject,
         if (closed.get() && activeTaskCount == 0 && !released) {
             released = true
             sharedGlobal?.let(ScriptBindings::removeSharedGlobalState)
-            variables.clear(); cache.clear(); contents.clear(); cookies.clear()
+            variables.clear(); cache.clear(); contents.clear(); cookies.clear(); persistentCacheMemory.clear()
         }
         return activeTaskCount
     }
@@ -320,6 +360,11 @@ internal class RuntimeSession(val id: String, val source: JsonObject,
 internal class RuntimeTask(val id: String, val session: RuntimeSession, val job: kotlinx.coroutines.CompletableJob,
     val deadlineEpochMs: Long, val diagnosticHttp: TaskHttpDispatcher? = null) {
     val timedOut = AtomicBoolean(false)
+    internal val persistence: RulePersistenceBinding? by lazy { LegadoRuntime.originalPersistence(this) }
+    private val persistentEnvironmentDelegate = lazy { if (persistence == null) null else LegadoRuntime.originalStateEnvironment(this) }
+    internal val persistentEnvironment get() = persistentEnvironmentDelegate.value
+    internal val persistentSource: BookSource? by lazy { persistentEnvironment?.let { LegadoRuntime.originalBookSource(this, it) } }
+    internal fun releasePersistentEnvironment() { if (persistentEnvironmentDelegate.isInitialized()) persistentEnvironmentDelegate.value?.close() }
     // Never crosses JNI: SourceJavaHost consumes the handle before returning to JS.
     val rawHttpResponses = ConcurrentHashMap<String, okhttp3.Response>()
 }

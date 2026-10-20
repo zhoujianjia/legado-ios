@@ -274,7 +274,10 @@ object WebBook {
         nextChapterUrl: String? = null,
         needSave: Boolean = true
     ): String {
-        if (needSave) unsupportedRule("original WebBook persistent content cache")
+        val saveToken = if (needSave) book.environment.webBook.contentSaveToken(book, bookChapter) else null
+        if (saveToken != null && saveToken.version > 0) {
+            book.environment.webBook.getContent(book, bookChapter, saveToken)?.let { return it }
+        }
         if (bookChapter.isVolume && bookChapter.url.startsWith(bookChapter.title)) {
             Debug.log(bookSource.bookSourceUrl, "⇒一级目录正文不解析规则")
             return ""
@@ -348,6 +351,11 @@ object WebBook {
                 nextChapterUrl = nextChapterUrl,
                 needSave = false
             )
+        }
+        if (saveToken != null) {
+            val saved = book.environment.webBook.saveContent(book, bookChapter, content, saveToken)
+            book.environment.webBook.getContent(book, bookChapter, saveToken)?.let { return it }
+            if (!saved) throw NoStackTraceException("正文缓存已更新,请重试")
         }
         return content
     }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.OriginalStatePersistenceTest" tests="11" skipped="0" failures="1" errors="0" timestamp="2026-10-20T03:40:46.911Z" hostname="DESKTOP-2E0OC06" time="1.439">
+  <properties/>
+  <testcase name="persistedTocAndNeedSaveTrueContentUseOriginalGenerationAndRestoreAfterSessionClose" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.3"/>
+  <testcase name="liveSessionsReadSharedOwnerUpdatesWhileExplicitTypedMemoryRemainsLocal" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.003">
+    <failure message="java.lang.NullPointerException: Cannot invoke &quot;com.google.gson.JsonElement.getAsString()&quot; because the return value of &quot;com.google.gson.JsonObject.get(String)&quot; is null" type="java.lang.NullPointerException">java.lang.NullPointerException: Cannot invoke &quot;com.google.gson.JsonElement.getAsString()&quot; because the return value of &quot;com.google.gson.JsonObject.get(String)&quot; is null
+	at io.yuedu.legado.OriginalStatePersistenceTest.liveSessionsReadSharedOwnerUpdatesWhileExplicitTypedMemoryRemainsLocal$create(OriginalStatePersistenceTest.kt:38)
+	at io.yuedu.legado.OriginalStatePersistenceTest.liveSessionsReadSharedOwnerUpdatesWhileExplicitTypedMemoryRemainsLocal(OriginalStatePersistenceTest.kt:44)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="separateJavaProcessesRecoverActualFilesWithoutSharingMemory" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.818"/>
+  <testcase name="refreshedTocRejectsOlderDownloadAtReusedIndexWithoutChangingBodyOrMetadata" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.029"/>
+  <testcase name="facadePersistentHostsUseCurrentTaskAndKeepCachedClosuresAcrossInvocations" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.067"/>
+  <testcase name="productionHostAdapterRestoresHeadersAndSameHttpCookieJarAcrossNewSessions" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.071"/>
+  <testcase name="cancelledStateReadCannotCommitOrPublishAfterTheHostReturns" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.016"/>
+  <testcase name="malformedBackingPayloadFailsTypedAndCannotReplacePreviousState" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.026"/>
+  <testcase name="ttlTypedMemoryAndAtomicWriteFailureKeepPreviousDiskAndLiveState" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.029"/>
+  <testcase name="sourceBookChapterVariablesAndCacheRestoreThroughSameOwnerAdapter" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.063"/>
+  <testcase name="failingLoginHeaderCommitKeepsBothOriginalHeaderAndCookie" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.017"/>
+  <system-out><![CDATA[PERSISTENCE_CHILD pid=64148 mode=write PERSISTENCE_PROCESS_OK
+
+PERSISTENCE_CHILD pid=15744 mode=read PERSISTENCE_PROCESS_OK
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

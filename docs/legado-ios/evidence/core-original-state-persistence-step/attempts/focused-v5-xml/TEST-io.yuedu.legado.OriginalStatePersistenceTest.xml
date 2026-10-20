@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.OriginalStatePersistenceTest" tests="6" skipped="0" failures="1" errors="0" timestamp="2026-10-20T03:30:31.588Z" hostname="DESKTOP-2E0OC06" time="0.953">
+  <properties/>
+  <testcase name="separateJavaProcessesRecoverActualFilesWithoutSharingMemory" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.718"/>
+  <testcase name="facadePersistentHostsUseCurrentTaskAndKeepCachedClosuresAcrossInvocations" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.009">
+    <failure message="java.lang.AssertionError" type="java.lang.AssertionError">java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at io.yuedu.legado.OriginalStatePersistenceTest.facadePersistentHostsUseCurrentTaskAndKeepCachedClosuresAcrossInvocations(OriginalStatePersistenceTest.kt:38)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="productionHostAdapterRestoresHeadersAndSameHttpCookieJarAcrossNewSessions" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.101"/>
+  <testcase name="ttlTypedMemoryAndAtomicWriteFailureKeepPreviousDiskAndLiveState" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.039"/>
+  <testcase name="sourceBookChapterVariablesAndCacheRestoreThroughSameOwnerAdapter" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.07"/>
+  <testcase name="failingLoginHeaderCommitKeepsBothOriginalHeaderAndCookie" classname="io.yuedu.legado.OriginalStatePersistenceTest" time="0.016"/>
+  <system-out><![CDATA[PERSISTENCE_CHILD pid=68944 mode=write PERSISTENCE_PROCESS_OK
+
+PERSISTENCE_CHILD pid=81724 mode=read PERSISTENCE_PROCESS_OK
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

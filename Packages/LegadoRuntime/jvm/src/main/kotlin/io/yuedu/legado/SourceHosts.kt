@@ -43,8 +43,8 @@ class SourceJavaHost internal constructor(
     fun head(url: String, headers: Any?, timeout: Int?): Nothing = unsupported("java.head is not migrated")
     fun post(url: String, body: String, headers: Any?): Nothing = unsupported("java.post is not migrated")
     fun post(url: String, body: String, headers: Any?, timeout: Int?): Nothing = unsupported("java.post is not migrated")
-    fun getCookie(url: String): String = task.session.cookies.getCookie(url)
-    fun getCookie(url: String, key: String?): String = if (key == null) getCookie(url) else task.session.cookies.getKey(url, key)
+    fun getCookie(url: String): String = task.session.cookies.persistent(task.persistence) { task.session.cookies.getCookie(url) }
+    fun getCookie(url: String, key: String?): String = if (key == null) getCookie(url) else task.session.cookies.persistent(task.persistence) { task.session.cookies.getKey(url, key) }
 
     private fun request(rawUrl: String, headersJson: String?, timeoutMs: Long?): StrResponse {
         task.ensureActiveForRuntime()
@@ -80,14 +80,14 @@ class SourceJavaHost internal constructor(
         } else {
             mergeHeaders(task.session.source["header"])
             if (!production || ProductionHttpTransport.sameLoginSite(base, resolved))
-                task.session.variables["@loginHeader"]?.let { mergeHeaders(JsonParser.parseString(it)) }
+                getSource().getLoginHeader()?.let { mergeHeaders(JsonParser.parseString(it)) }
         }
         mergeHeaders(options["headers"])
         if (!production && !headersJson.isNullOrBlank()) mergeHeaders(JsonParser.parseString(headersJson))
         if (production && headers.keys.any { it.equals("proxy", true) }) unsupported("Source proxy configuration is not migrated")
         if (production && headers.keys.none { it.equals("User-Agent", true) })
             task.session.options.userAgent?.let { headers["User-Agent"] = it }
-        val cookie = task.session.cookies.getCookie(resolved)
+        val cookie = task.session.cookies.persistent(task.persistence) { task.session.cookies.getCookie(resolved) }
         val networkCookieJar = production && task.session.source["enabledCookieJar"]?.asBoolean == true
         if (!networkCookieJar && cookie.isNotEmpty() && headers.keys.none { it.equals("Cookie", true) }) headers["Cookie"] = cookie
         val method = options["method"]?.asString?.uppercase() ?: "GET"
@@ -164,26 +164,54 @@ class StrResponse internal constructor(
 }
 
 class SourceHost internal constructor(private val session: RuntimeSession) {
+    private val original get() = if (session.options.stateOwner != null) session.persistenceTask().persistentSource else null
     fun getKey(): String = session.source["bookSourceUrl"]?.asString.orEmpty()
     fun getTag(): String = session.source["bookSourceName"]?.asString.orEmpty()
     val bookSourceUrl: String get() = getKey()
     val bookSourceName: String get() = getTag()
-    fun put(key: String, value: String): String { ensureOpen(); session.variables[key] = value; return value }
-    fun get(key: String): String = session.variables[key].orEmpty()
-    fun putVariable(value: String?) { ensureOpen(); if (value == null) session.variables.remove("@variable") else session.variables["@variable"] = value }
+    fun put(key: String, value: String): String { ensureOpen(); original?.let { return it.put(key, value) }; session.variables[key] = value; return value }
+    fun get(key: String): String = original?.get(key) ?: session.variables[key].orEmpty()
+    fun putVariable(value: String?) { ensureOpen(); original?.let { it.putVariable(value); return }; if (value == null) session.variables.remove("@variable") else session.variables["@variable"] = value }
     fun setVariable(value: String?) = putVariable(value)
-    fun getVariable(): String = session.variables["@variable"].orEmpty()
-    fun putLoginInfo(value: String): Boolean { put("@loginInfo", value); return true }
-    fun getLoginInfo(): String? = session.variables["@loginInfo"]
+    fun getVariable(): String = original?.getVariable() ?: session.variables["@variable"].orEmpty()
+    fun putLoginInfo(value: String): Boolean { original?.putLoginInfo(value); put("@loginInfo", value); return true }
+    fun getLoginInfo(): String? { original?.getLoginInfo(); return session.variables["@loginInfo"] }
     fun putLoginHeader(value: String) {
+        original?.let { it.putLoginHeader(value); return }
         val headers = parseObject(value)
         headers.entrySet().firstOrNull { it.key.equals("Cookie", true) }?.let {
             session.cookies.replaceCookie(getKey(), it.value.asString)
         }
         put("@loginHeader", value)
     }
-    fun getLoginHeader(): String? = session.variables["@loginHeader"]
+    fun getLoginHeader(): String? { val source = original; return if (source != null) source.getLoginHeader() else session.variables["@loginHeader"] }
     private fun ensureOpen() { check(!session.closed.get()) { "Session is closed" } }
+}
+
+/** Script facade over the same transport-owned jar with this task's explicit owner access. */
+class TaskCookieHost internal constructor(private val session: RuntimeSession) {
+    private val task get() = session.persistenceTask()
+    fun setCookie(url: String, value: String) = task.session.cookies.persistent(task.persistence, true) { task.session.cookies.setCookie(url, value) }
+    fun replaceCookie(url: String, value: String) = task.session.cookies.persistent(task.persistence, true) { task.session.cookies.replaceCookie(url, value) }
+    fun removeCookie(url: String) = task.session.cookies.persistent(task.persistence, true) { task.session.cookies.removeCookie(url) }
+    fun getCookie(url: String): String = task.session.cookies.persistent(task.persistence) { task.session.cookies.getCookie(url) }
+    fun getKey(url: String, key: String): String = task.session.cookies.persistent(task.persistence) { task.session.cookies.getKey(url, key) }
+}
+
+/** Invocation lookup keeps retained global closures from capturing a completed task or owner lease. */
+class PersistentCacheHost internal constructor(private val session: RuntimeSession) {
+    private val cache get() = requireNotNull(session.persistenceTask().persistentEnvironment).cache
+    @JvmOverloads fun put(key: String, value: Any, saveTime: Int = 0) = cache.put(key, value, saveTime)
+    @JvmOverloads fun get(key: String, onlyDisk: Boolean = false) = cache.get(key, onlyDisk)
+    fun delete(key: String) = cache.delete(key)
+    fun putMemory(key: String, value: Any) = cache.putMemory(key, value)
+    fun getFromMemory(key: String): Any? = cache.getFromMemory(key)
+    fun deleteMemory(key: String) = cache.deleteMemory(key)
+    fun getInt(key: String) = cache.getInt(key)
+    fun getLong(key: String) = cache.getLong(key)
+    fun getDouble(key: String) = cache.getDouble(key)
+    fun getFloat(key: String) = cache.getFloat(key)
+    fun getByteArray(key: String) = cache.getByteArray(key)
 }
 
 class SessionCache internal constructor() {
@@ -209,9 +237,65 @@ class SessionCache internal constructor() {
 }
 
 class SessionCookies internal constructor() {
-    private val manager = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
+    private var manager = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
+    private var origins = java.util.IdentityHashMap<HttpCookie, String>()
+    private var expirations = java.util.IdentityHashMap<HttpCookie, Long>()
+    private data class StoredCookie(val origin: String, val name: String, val value: String, val domain: String?, val path: String?,
+                                    val expiresAt: Long?, val secure: Boolean, val httpOnly: Boolean, val version: Int,
+                                    val discard: Boolean, val portList: String?, val comment: String?, val commentURL: String?)
+    /** One jar, restored and committed through the explicitly supplied owner. No second transport jar. */
+    internal @Synchronized fun <T> persistent(store: io.yuedu.legado.originalrule.RulePersistenceBinding?, write: Boolean = false,
+                                             extraChanges: Map<String, ByteArray?> = emptyMap(), action: () -> T): T {
+        if (store == null) return action()
+        val oldManager = manager; val oldOrigins = origins; val oldExpirations = expirations
+        val key = store.key("cookies")
+        try {
+            return if (write) store.update(setOf(key) + extraChanges.keys) { prior ->
+                restore(prior[key])
+                val result = action()
+                (mapOf(key to encodeCookies()) + extraChanges) to result
+            } else {
+                restore(store.read(key)); action()
+            }
+        } catch (error: Exception) {
+            manager = oldManager; origins = oldOrigins; expirations = oldExpirations
+            throw error
+        }
+    }
+    private fun restore(bytes: ByteArray?) = io.yuedu.legado.originalrule.decodePersistent("cookies") {
+        val next = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
+        val nextOrigins = java.util.IdentityHashMap<HttpCookie, String>(); val nextExpirations = java.util.IdentityHashMap<HttpCookie, Long>()
+        val now = System.currentTimeMillis()
+        val entries = bytes?.let { gson.fromJson(it.toString(Charsets.UTF_8), Array<StoredCookie>::class.java).toList() }.orEmpty()
+        entries.forEach { entry ->
+            if (entry.expiresAt != null && entry.expiresAt <= now) return@forEach
+            val origin = ruleCookieUri(entry.origin)
+            val cookie = HttpCookie(entry.name, entry.value).apply {
+                domain = entry.domain; path = entry.path; secure = entry.secure; isHttpOnly = entry.httpOnly; version = entry.version
+                discard = entry.discard; portlist = entry.portList; comment = entry.comment; commentURL = entry.commentURL
+                maxAge = entry.expiresAt?.let { ((it - now + 999) / 1000).coerceAtLeast(1) } ?: -1
+            }
+            next.cookieStore.add(origin, cookie); nextOrigins[cookie] = entry.origin
+            entry.expiresAt?.let { nextExpirations[cookie] = it }
+        }
+        manager = next; origins = nextOrigins; expirations = nextExpirations
+    }
+    private fun recordCookies(origin: String, now: Long = System.currentTimeMillis()) {
+        manager.cookieStore.cookies.forEach { cookie ->
+            if (!origins.containsKey(cookie)) {
+                origins[cookie] = origin
+                if (cookie.maxAge >= 0) expirations[cookie] = now + cookie.maxAge * 1000
+            }
+        }
+    }
+    private fun encodeCookies(): ByteArray = gson.toJson(manager.cookieStore.cookies.filterNot(HttpCookie::hasExpired).map { c ->
+        StoredCookie(requireNotNull(origins[c]), c.name, c.value, c.domain, c.path, expirations[c], c.secure, c.isHttpOnly, c.version,
+            c.discard, c.portlist, c.comment, c.commentURL)
+    }).toByteArray(Charsets.UTF_8)
     @Synchronized fun setCookie(url: String, value: String) {
+        val now = System.currentTimeMillis()
         manager.put(URI(url), mapOf("Set-Cookie" to listOf(value)))
+        recordCookies(url, now)
     }
     @Synchronized fun replaceCookie(url: String, value: String) {
         manager.cookieStore.get(URI(url)).forEach { manager.cookieStore.remove(URI(url), it) }
@@ -243,6 +327,7 @@ class SessionCookies internal constructor() {
         // Parse and validate the complete input before discarding any live state.
         manager.cookieStore.get(uri).forEach { manager.cookieStore.remove(uri, it) }
         replacements.forEach { manager.cookieStore.add(uri, it) }
+        recordCookies(url)
     }
 
     internal @Synchronized fun replaceRuleCookie(url: String, value: String) {
@@ -265,6 +350,7 @@ class SessionCookies internal constructor() {
                 matching.forEach { it.value = replacement.value }
             }
         }
+        recordCookies(url)
     }
 
     internal @Synchronized fun getRuleCookie(url: String, key: String? = null): String {
@@ -312,5 +398,5 @@ class SessionCookies internal constructor() {
     }
 
     internal @Synchronized fun snapshot(): List<String> = manager.cookieStore.cookies.map(HttpCookie::toString)
-    internal @Synchronized fun clear() { manager.cookieStore.removeAll() }
+    internal @Synchronized fun clear() { manager.cookieStore.removeAll(); origins.clear(); expirations.clear() }
 }

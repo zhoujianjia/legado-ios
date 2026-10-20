@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "suite": "StaticRuleReplacement",
+  "caseSetVersion": "legado-static-rule-replacement-v1",
+  "sourceProvenance": {
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "path": "app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+    "fileSHA256": "5441d6d00064059519add3e5a81d85b1776f575bd0e5d30f3b5763d90af9e8a9",
+    "anchors": ["getString:308-311", "getString:344-366", "replaceRegex:544-568", "splitSourceRule:629-633", "SourceRule.makeUpRule:824-833"]
+  },
+  "cases": [
+    {"caseId": "replace-all-number-groups", "text": "ab12cd34", "rule": "##(\\d+)##[$1]"},
+    {"caseId": "extract-first-match", "text": "ab12cd34", "rule": "##(\\d+)##[$1]###"},
+    {"caseId": "extract-first-no-match", "text": "abc", "rule": "##\\d+##x###"},
+    {"caseId": "invalid-pattern-literal-fallback", "text": "a[b[c", "rule": "##[##<x>"},
+    {"caseId": "invalid-pattern-extract-fallback", "text": "a[b[c", "rule": "##[##<x>###"},
+    {"caseId": "invalid-group-literal-fallback", "text": "(a) (a)", "rule": "##(a)##$2"},
+    {"caseId": "invalid-group-extract-fallback", "text": "(a) (a)", "rule": "##(a)##$2###"},
+    {"caseId": "missing-replacement-deletes", "text": "a12b34", "rule": "##\\d+"},
+    {"caseId": "named-capture-replacement", "text": "isbn42", "rule": "##(?<word>[a-z]+)(?<number>\\d+)##${number}:${word}"},
+    {"caseId": "linebreak-unicode-preservation", "text": "第一12章\n🙂34尾", "rule": "##(\\d+)##{$1}"},
+    {"caseId": "zero-width-boundaries", "text": "ab", "rule": "##^|$##!"},
+    {"caseId": "escaped-literal-dollar", "text": "aa", "rule": "##a##\\$"},
+    {"caseId": "escaped-literal-backslash", "text": "aa", "rule": "##a##\\\\"},
+    {"caseId": "extract-zero-width-reapplies-in-match", "text": "ab", "rule": "##(?=b)##X###"},
+    {"caseId": "extract-lookbehind-reapplies-in-match", "text": "xa", "rule": "##(?<=x)a##Z###"},
+    {"caseId": "fourth-segment-enables-extraction", "text": "ab12cd34", "rule": "##(\\d+)##$1##ignored"},
+    {"caseId": "explicit-empty-replacement", "text": "a12b34", "rule": "##\\d+##"},
+    {"caseId": "regex-case-sensitive", "text": "aA", "rule": "##a##x"}
+  ]
+}

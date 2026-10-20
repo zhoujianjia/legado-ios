@@ -129,3 +129,7 @@ Windows JDK 21 本轮强制执行完整 JVM 回归，实际为 18 份 XML、153 
 2026-10-20，原WebBook底层文本await执行已接入同一任务/HTTP/Cookie/原实体：搜索→详情→多页目录→多页正文及第二章均有实际loopback回归，覆盖CSS/XPath/JSON/regex入口、目录去重/反序/有序fanout、重定向基址、loginCheck异常分层和取消/绝对截止。最终138唯一方法（13新+125相关旧）、普通生产JAR和smoke通过；28/36原golden向量属于方法内部，未额外累计，也未新增Android观察。
 
 此段仅供原内部调用方显式使用，正文要求needSave=false；瞬态章节查找不等于Room或持久化。正文保存/批量、必要宿主/标题替换及普通JNI/App唯一入口仍未完成。LegadoRuntime.execute仍保留原现有路由，尚未选择该新入口；完整兼容标志继续为false。原始结果、失败尝试与保留源码见[本段记录](core-original-webbook-step.json)。
+
+2026-10-20，原状态与有限正文保存已接入显式embedding owner及同一RuntimeSession网络/任务：源/书/章变量、文本/二进制缓存及TTL、完整Cookie快照、raw登录头可由同owner事务恢复，原WebBook默认needSave=true在受控backend原子保存目录/正文；两个独立Java进程实际恢复了这些文件。旧下载必须匹配当前目录URL；合法空正文不能继承另一章节正文；跨会话普通cache/source/login读会重读owner，显式putMemory仍按原瞬态语义。最终165唯一方法（12新+153相关旧）和普通生产JAR/smoke通过，47原调用是1项方法内部参考，未新增Android观察。
+
+这是C2/C3底层范围：App完整Cookie属性、书章UUID/generation及正文缓存发布仍未接，完整失败编辑/删除/资源ContentSaveFence和批量亦未完成。Swift状态宿主另在478b69d的78项SDK中待验，传统产品路由未切换。原始结果、有限实现与未完成边界见[本段记录](core-original-state-persistence-step.json)。

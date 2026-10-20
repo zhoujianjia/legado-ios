@@ -38,9 +38,9 @@ internal class ProductionRulePlatform(
     override val cookie: RuleCookieHost = object : RuleCookieHost() {
         override fun getCookie(url: String): String = cookieOperation { task.session.cookies.getRuleCookie(url) }
         override fun getCookie(url: String, key: String?): String = cookieOperation { task.session.cookies.getRuleCookie(url, key) }
-        override fun setCookie(url: String, value: String): Unit = cookieOperation { task.session.cookies.setRuleCookie(url, value) }
-        override fun replaceCookie(url: String, value: String): Unit = cookieOperation { task.session.cookies.replaceRuleCookie(url, value) }
-        override fun removeCookie(url: String): Unit = cookieOperation { task.session.cookies.removeRuleCookie(url) }
+        override fun setCookie(url: String, value: String): Unit = cookieOperation(true) { task.session.cookies.setRuleCookie(url, value) }
+        override fun replaceCookie(url: String, value: String): Unit = cookieOperation(true) { task.session.cookies.replaceRuleCookie(url, value) }
+        override fun removeCookie(url: String): Unit = cookieOperation(true) { task.session.cookies.removeRuleCookie(url) }
     }
 
     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
@@ -74,7 +74,7 @@ internal class ProductionRulePlatform(
         val context = analyzed.getRuleCoroutineContext()
         ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
         return try {
-            val request = analyzed.prepareRequest { target -> task.session.cookies.getCookie(target.toHttpUrl().toString()) }
+            val request = analyzed.prepareRequest { target -> task.session.cookies.persistent(environment().persistence) { task.session.cookies.getCookie(target.toHttpUrl().toString()) } }
             val result = http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
             ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
             result
@@ -83,6 +83,26 @@ internal class ProductionRulePlatform(
             rethrowRuleControlFailure(error)
             throw error
         }
+    }
+
+    override fun storeLoginHeader(source: BaseSource, value: String?): Boolean {
+        val store = environment().persistence ?: return false
+        check(source.getRuleEnvironment() === environment()) { "Source belongs to another environment" }
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        val cacheKey = "loginHeader_${source.getKey()}"
+        val changes = environment().cache.textChange(cacheKey, value)
+        val headers = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
+        val cookie = headers?.get("Cookie") ?: headers?.get("cookie")
+        if (value != null && cookie.isNullOrEmpty()) {
+            environment().cache.put(cacheKey, value)
+            return true
+        }
+        task.session.cookies.persistent(store, write = true, extraChanges = changes) {
+            if (value == null) task.session.cookies.removeRuleCookie(source.getKey())
+            else cookie?.let { task.session.cookies.replaceRuleCookie(source.getKey(), it) }
+        }
+        environment().cache.publishText(cacheKey, value)
+        return true
     }
 
     override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
@@ -141,7 +161,7 @@ internal class ProductionRulePlatform(
             // As in JsExtensions/AnalyzeRule, construction is outside recovery.
             // Only getStrResponse-equivalent execution errors become text.
             val response = try {
-                val request = analyzed.prepareRequest { target -> task.session.cookies.getCookie(target.toHttpUrl().toString()) }
+                val request = analyzed.prepareRequest { target -> task.session.cookies.persistent(environment().persistence) { task.session.cookies.getCookie(target.toHttpUrl().toString()) } }
                 http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
             } catch (error: Exception) {
                 ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
@@ -187,14 +207,14 @@ internal class ProductionRulePlatform(
         }
     }
 
-    private inline fun <T> cookieOperation(body: () -> T): T {
+    private fun <T> cookieOperation(write: Boolean = false, body: () -> T): T {
         // The existing jar monitor makes validation + mutation atomic relative
         // to transport Set-Cookie handling and other rule environments.
         synchronized(task.session.cookies) {
             ensureOwnerOpen()
             task.ensureActiveForRuntime()
             check(!task.session.closed.get()) { "Session is closed" }
-            return try { body() } catch (invalid: IllegalArgumentException) {
+            return try { task.session.cookies.persistent(environment().persistence, write, action = body) } catch (invalid: IllegalArgumentException) {
                 throw UnsupportedRuleCapability(invalid.message.orEmpty())
             }
         }

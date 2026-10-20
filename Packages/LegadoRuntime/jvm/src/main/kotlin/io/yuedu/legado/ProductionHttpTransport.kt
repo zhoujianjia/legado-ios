@@ -50,10 +50,11 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
         .addInterceptor(TransparentDecompression)
         .addNetworkInterceptor { chain ->
             var request = chain.request()
+            val state = request.tag(RuntimeTask::class.java)?.persistence
             val initial = request.tag(InitialCookies::class.java)
             val cookieJarEnabled = initial?.enabledCookieJar ?: (session.source["enabledCookieJar"]?.takeIf { it.isJsonPrimitive }?.asBoolean == true)
             if (cookieJarEnabled) {
-                val saved = session.cookies.getCookie(request.url.toString())
+                val saved = session.cookies.persistent(state) { session.cookies.getCookie(request.url.toString()) }
                 val authored = initial?.takeIf { it.host == request.url.host }?.authored
                 val cookie = if (initial?.originalRule == true) mergeCookies(saved, authored) else mergeCookies(authored, saved)
                 request = request.newBuilder().removeHeader("Cookie")
@@ -61,7 +62,9 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
             }
             val response = chain.proceed(request)
             if (cookieJarEnabled) {
-                response.headers.values("Set-Cookie").forEach { session.cookies.setCookie(response.request.url.toString(), it) }
+                session.cookies.persistent(state, write = true) {
+                    response.headers.values("Set-Cookie").forEach { session.cookies.setCookie(response.request.url.toString(), it) }
+                }
             }
             response
         }.build()
@@ -81,6 +84,7 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
         val requestUrl = input["url"].asString.toHttpUrl()
         val originalRule = input["originalAnalyzeUrl"]?.asBoolean == true
         val request = Request.Builder().url(requestUrl).headers(headers).method(method, body)
+            .tag(RuntimeTask::class.java, task)
             .tag(InitialCookies::class.java, InitialCookies(requestUrl.host, headers["Cookie"], originalRule,
                 input["enabledCookieJar"]?.asBoolean)).build()
         val follow = input["followRedirects"]?.asBoolean ?: true

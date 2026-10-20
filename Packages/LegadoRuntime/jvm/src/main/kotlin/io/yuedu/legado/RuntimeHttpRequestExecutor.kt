@@ -15,6 +15,7 @@ internal class RuntimeHttpRequestExecutor(
         val production = task.session.options.usesJvmHttp
         val resolved = request["url"].asString
         val response = try { dispatch(task, "http.request", request) } catch (error: IOException) {
+            if (error is io.yuedu.legado.originalrule.RulePersistenceException) throw error
             if (!production || !recoverIoFailure) throw error
             task.ensureActiveForRuntime()
             return StrResponse(resolved, 200, error.stackTraceToString(), emptyMap())
@@ -25,7 +26,9 @@ internal class RuntimeHttpRequestExecutor(
         response["headers"]?.asJsonObject?.entrySet()?.forEach { (name, value) ->
             val values = if (value.isJsonArray) value.asJsonArray.map { it.asString } else listOf(value.asString)
             responseHeaders[name] = values.joinToString(", ")
-            if (!production && name.equals("Set-Cookie", true)) values.forEach { task.session.cookies.setCookie(responseUrl, it) }
+            if (!production && name.equals("Set-Cookie", true)) task.session.cookies.persistent(task.persistence, write = true) {
+                values.forEach { task.session.cookies.setCookie(responseUrl, it) }
+            }
         }
         val contentType = responseHeaders.entries.firstOrNull { it.key.equals("Content-Type", true) }?.value.orEmpty()
         val responseCharset = Regex("charset\\s*=\\s*[\"']?([^;\\s\"']+)", RegexOption.IGNORE_CASE)

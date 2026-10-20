@@ -21,6 +21,7 @@ internal fun rethrowRuleControlFailure(error: Exception) {
     repeat(32) {
         current = when (val failure = current) {
             is UnsupportedRuleCapability -> throw failure
+            is RulePersistenceException -> throw failure
             is CancellationException -> throw failure
             is RuntimeFailure -> {
                 if (failure.code == "UNSUPPORTED_CAPABILITY") throw UnsupportedRuleCapability(failure.message.orEmpty())
@@ -38,6 +39,7 @@ open class RulePlatform {
     open suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T =
         unsupportedRule("original WebBook execution owner")
     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
+    open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
     open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()
     open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
