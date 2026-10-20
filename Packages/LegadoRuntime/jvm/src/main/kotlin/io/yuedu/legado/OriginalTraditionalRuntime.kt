@@ -37,7 +37,7 @@ internal object OriginalTraditionalRuntime {
     }
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         val fields = when (operation) {
-            "loginUi" -> setOf("values", "timeoutMs")
+            "loginUi" -> setOf("values", "evaluationValues", "timeoutMs")
             "loginAction" -> setOf("action", "credentials", "isLongClick", "timeoutMs")
             "formLogin" -> setOf("credentials", "timeoutMs")
             "sourceCallback" -> setOf("event", "timeoutMs")

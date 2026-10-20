@@ -145,4 +145,87 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
         XCTAssertEqual(raw["bookUrl"] as? String, book.bookURL); XCTAssertEqual(raw["imgUrl"] as? String, chapter.imgURL)
         XCTAssertNil(raw["environment"]); XCTAssertNil(raw["id"]); XCTAssertNil(raw["variableMap"])
     }
+    func testOriginalLoginUIEventsPreserveOrderNullResetAndFailureFacts() async throws {
+        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
+        let events = [
+            LegadoOriginalLoginUIEvent(taskID: "ui-events", sequence: 1, kind: .updateData,
+                entries: [.init(key: "nullable", value: nil), .init(key: "empty", value: "")]),
+            .init(taskID: "ui-events", sequence: 2, kind: .updateData, entries: []),
+            .init(taskID: "ui-events", sequence: 3, kind: .updateData),
+            .init(taskID: "ui-events", sequence: 4, kind: .render, deltaUp: false)
+        ]
+        func encoded(_ value: [String: Any]) throws -> String {
+            String(decoding: try JSONSerialization.data(withJSONObject: value), as: UTF8.self)
+        }
+        let raw = OriginalAPITransport.object(events)
+        let observed = OSAllocatedUnfairLock(initialState: [LegadoOriginalLoginUIEvent]())
+        transport.respondNext(try encoded(["ok": true, "result": ["executed": true, "loginUIEvents": raw], "loginUIEvents": raw]))
+        let value = try await runtime.loginActionOriginal(session: source, action: "synthetic", credentials: [:], taskID: "ui-events",
+            onReportedLoginUIEvents: { events in observed.withLock { $0 = events } })
+        XCTAssertEqual(value.loginUIEvents, events); XCTAssertEqual(observed.withLock { $0 }, events)
+        XCTAssertEqual(value.loginUIEvents?[0].entries?[0].value, nil)
+        XCTAssertEqual(value.loginUIEvents?[1].entries, []); XCTAssertNil(value.loginUIEvents?[2].entries)
+        transport.respondNext(try encoded(["ok": false, "error": ["code": "SCRIPT_ERROR", "message": "safe failure",
+            "loginUIEvents": raw, "completedEffects": ["sourceStateCommitted"],
+            "secondaryFailures": [["code": "STATE_IO", "message": "safe cleanup failure"]]]]))
+        do {
+            _ = try await runtime.loginActionOriginal(session: source, action: "synthetic", credentials: [:], taskID: "ui-events",
+                onReportedLoginUIEvents: { events in observed.withLock { $0 = events } })
+            XCTFail("A callback cannot convert the script error to success")
+        } catch let failure as LegadoRuntimeError {
+            XCTAssertEqual(failure.code, "SCRIPT_ERROR"); XCTAssertEqual(failure.loginUIEvents, events)
+            XCTAssertEqual(failure.completedEffects, ["sourceStateCommitted"])
+            XCTAssertEqual(failure.secondaryFailures?.map(\.code), ["STATE_IO"])
+            XCTAssertEqual(observed.withLock { $0 }, events)
+        }
+    }
+
+    func testLoginUIEventsRejectWrongTaskOrSequenceBeforePublicationAndKeepDtoFailureFacts() async throws {
+        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
+        let observed = OSAllocatedUnfairLock(initialState: [LegadoOriginalLoginUIEvent]())
+        for raw in [
+            #"{"ok":true,"result":{"executed":true},"loginUIEvents":[{"taskId":"another-task","sequence":1,"kind":"updateData"}]}"#,
+            #"{"ok":true,"result":{"executed":true},"loginUIEvents":[{"taskId":"dto-event","sequence":2,"kind":"updateData"}]}"#,
+            #"{"ok":true,"result":{"executed":true},"loginUIEvents":[{"taskId":"dto-event","sequence":1,"kind":"render","deltaUp":true}]}"#
+        ] {
+            transport.respondNext(raw)
+            do {
+                _ = try await runtime.loginActionOriginal(session: source, action: "synthetic", credentials: [:], taskID: "dto-event",
+                    onReportedLoginUIEvents: { events in observed.withLock { $0 = events } })
+                XCTFail("Untrusted task events must reject")
+            } catch let failure as LegadoRuntimeError { XCTAssertEqual(failure.code, "invalid_response") }
+            XCTAssertTrue(observed.withLock { $0.isEmpty })
+        }
+        transport.respondNext(#"{"ok":true,"result":{"executed":"invalid-bool"},"loginUIEvents":[{"taskId":"dto-event","sequence":1,"kind":"updateData"}]}"#)
+        do {
+            _ = try await runtime.loginActionOriginal(session: source, action: "synthetic", credentials: [:], taskID: "dto-event",
+                onReportedLoginUIEvents: { events in observed.withLock { $0 = events } })
+            XCTFail("DTO decoding failure cannot erase accepted callbacks")
+        } catch let failure as LegadoRuntimeError {
+            XCTAssertEqual(failure.code, "invalid_response"); XCTAssertEqual(failure.loginUIEvents?.count, 1)
+            XCTAssertEqual(failure.loginUIEvents, observed.withLock { $0 })
+        }
+    }
+
+    func testCallbackOnlyFactsSurviveCancellationAfterTerminalResponseWithoutBecomingPlainCancellation() async throws {
+        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
+        let running = OSAllocatedUnfairLock(initialState: Optional<Task<Void, Never>>.none)
+        let failureBox = OSAllocatedUnfairLock(initialState: Optional<LegadoRuntimeError>.none)
+        transport.respondNext(#"{"ok":true,"result":{"executed":true,"loginUIEvents":[{"taskId":"late-event","sequence":1,"kind":"updateData"}]},"loginUIEvents":[{"taskId":"late-event","sequence":1,"kind":"updateData"}]}"#)
+        let task = Task {
+            do {
+                _ = try await runtime.loginActionOriginal(session: source, action: "synthetic", credentials: [:], taskID: "late-event",
+                    onReportedLoginUIEvents: { _ in running.withLock { $0?.cancel() } })
+                XCTFail("Late cancellation must remain a failure")
+            } catch let failure as LegadoRuntimeError { failureBox.withLock { $0 = failure } }
+            catch { XCTFail("Accepted callbacks require a typed failure, not a plain cancellation") }
+        }
+        running.withLock { $0 = task }
+        await task.value
+        running.withLock { $0 = nil }
+        let failure = try XCTUnwrap(failureBox.withLock { $0 })
+        XCTAssertEqual(failure.code, "CANCELLED"); XCTAssertEqual(failure.loginUIEvents?.count, 1)
+        XCTAssertNil(failure.completedEffects)
+    }
+
 }

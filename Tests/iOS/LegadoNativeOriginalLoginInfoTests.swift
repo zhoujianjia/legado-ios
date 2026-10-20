@@ -6,6 +6,61 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            let stored = ["hidden": "synthetic-hidden", "username": "stored-user"]
+            await Task.detached { LoginManager.shared.storeLoginInfo(sourceUrl: fixture.a, info: stored) }.value
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a; source.enabledCookieJar = false
+            source.loginUi = "[{name:'username',default:'reset-user'},{name:'caption',type:'button',viewName:\"'Original'\"}]"
+            source.loginUrl = "var prefix='present';"
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let rendered = try await service.originalLoginUI(source: source, values: nil)
+            var events: [LegadoOriginalLoginUIEvent] = []
+            do {
+                _ = try await service.originalLoginAction(source: source,
+                    action: "result.put('username','callback-user');result.put('caption','Callback');java.upLoginData(result);java.reLoginView(false);throw new Error('synthetic failure');",
+                    credentials: stored, isLongClick: false)
+                XCTFail("Accepted callbacks cannot turn a script failure into success")
+            } catch let failure as LegadoRuntimeError {
+                XCTAssertEqual(failure.code, "SCRIPT_ERROR")
+                events = failure.loginUIEvents ?? []
+                XCTAssertEqual(events.map(\.kind), [.updateData, .render])
+                XCTAssertEqual(events.map(\.sequence), [1, 2])
+            }
+            let first = try XCTUnwrap(events.first)
+            let updated = try LegadoOriginalLoginUIForm.applying(entries: first.entries,
+                rows: rendered.rows, fields: rendered.fields, labels: rendered.labels,
+                values: rendered.values, controls: rendered.controls)
+            XCTAssertEqual(updated.values["username"], "callback-user")
+            XCTAssertNil(updated.values["caption"])
+            let caption = try XCTUnwrap(rendered.fields.first { $0.type == .button })
+            XCTAssertEqual(updated.labels[caption.id], "Callback")
+            // This second real service invocation occurs after the action throws
+            // and releases its source gate, rather than inside NativeHost dispatch.
+            let rerendered = try await service.originalLoginUI(source: source, values: updated.values,
+                evaluationValues: LegadoOriginalLoginUIForm.submissionValues(fields: rendered.fields,
+                    values: updated.values, controls: updated.controls))
+            XCTAssertEqual(rerendered.values["username"], "callback-user")
+            let reset = try await service.originalLoginAction(source: source,
+                action: "java.upLoginData(null)", credentials: updated.values, isLongClick: false)
+            let resetEvent = try XCTUnwrap(reset.loginUIEvents?.first)
+            XCTAssertNil(resetEvent.entries)
+            let resetForm = try LegadoOriginalLoginUIForm.applying(entries: resetEvent.entries,
+                rows: rerendered.rows, fields: rerendered.fields, labels: rerendered.labels,
+                values: rerendered.values, controls: rerendered.controls)
+            XCTAssertEqual(resetForm.values, ["username": "reset-user"])
+            let unchanged = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(unchanged, stored)
+        } catch { problem = error }
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()

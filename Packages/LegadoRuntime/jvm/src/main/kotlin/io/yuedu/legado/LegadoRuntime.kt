@@ -78,6 +78,7 @@ object LegadoRuntime {
             require(timeoutMs in 1..300_000) { "timeoutMs must be between 1 and 300000" }
             task = RuntimeTask(taskId, session, Job(), System.currentTimeMillis() + timeoutMs)
             task.sensitiveSourceOperation = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction")
+            task.loginUIEventsEnabled = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginAction")
             synchronized(session) {
                 if (session.closed.get()) throw RuntimeFailure("UNKNOWN_SESSION", "Session is closed")
                 if (tasks.putIfAbsent(taskId, task) != null) {
@@ -101,6 +102,9 @@ object LegadoRuntime {
             }, timeoutMs, TimeUnit.MILLISECONDS)
             val result = session.withCurrentTask(current) { executeOperation(current, operation, input) }
             current.ensureActiveForRuntime()
+            val loginUIEvents = current.loginUIEventsSnapshot()
+            if (!loginUIEvents.isEmpty && result.isJsonObject)
+                result.asJsonObject.add("loginUIEvents", loginUIEvents.deepCopy())
             val response = jsonObject("ok" to true, "taskId" to taskId, "result" to result,
                 "metrics" to jsonObject("elapsedMs" to (System.nanoTime() - startedAt) / 1_000_000.0))
             // MayCommit and Committed names retain the Host's distinct meanings.
@@ -109,6 +113,7 @@ object LegadoRuntime {
             current.hostEffectsSnapshot().takeIf { it.isNotEmpty() }?.let {
                 response.add("completedEffects", gson.toJsonTree(it))
             }
+            if (!loginUIEvents.isEmpty) response.add("loginUIEvents", loginUIEvents)
             return response.toString()
         } catch (error: Exception) {
             val hostFailure = generateSequence(error as Throwable?) { it.cause }
@@ -128,9 +133,11 @@ object LegadoRuntime {
                 .filterIsInstance<RulePersistenceException>().mapNotNull { it.completedEffect }.toList() + hostFailure?.completedEffects.orEmpty() + task?.hostEffectsSnapshot().orEmpty()).distinct()
             val message = if (operation in setOf("formLogin", "loginUi", "loginAction") || task?.sensitiveSourceOperation == true) "Original form login did not complete ($code)"
                 else if (stateFailure?.completedEffect != null) stateFailure.message else hostFailure?.message ?: error.message ?: error.javaClass.simpleName
-            val response = if (completedEffects.isEmpty()) failure(code, message.orEmpty(), taskId)
-                else jsonObject("ok" to false, "taskId" to taskId, "error" to jsonObject("code" to code,
-                    "message" to message, "completedEffects" to completedEffects)).toString()
+            val detail = jsonObject("code" to code, "message" to message)
+            if (completedEffects.isNotEmpty()) detail.add("completedEffects", gson.toJsonTree(completedEffects))
+            val loginUIEvents = task?.loginUIEventsSnapshot()
+            if (loginUIEvents != null && !loginUIEvents.isEmpty) detail.add("loginUIEvents", loginUIEvents)
+            val response = jsonObject("ok" to false, "taskId" to taskId, "error" to detail).toString()
             if (originalTraditional && response.toByteArray(Charsets.UTF_8).size > OriginalTraditionalRuntime.MAX_RESULT_BYTES)
                 return failure("PAYLOAD_TOO_LARGE", "Original traditional error envelope exceeds 8 MiB UTF-8")
             return response
@@ -403,6 +410,25 @@ internal class RuntimeTask(val id: String, val session: RuntimeSession, val job:
     // Metadata only. Login JS errors/debug calls can otherwise echo passwords
     // from result/source.getLoginInfo into a persisted diagnostic message.
     internal var sensitiveSourceOperation = false
+    internal var loginUIEventsEnabled = false
+    // Task-local terminal facts, separate from deduplicated persistence effects.
+    // Only standalone login operations can emit them. No live VM object or store.
+    private val loginUIEvents = arrayListOf<JsonObject>()
+    private var loginUIEventBytes = 0
+    @Synchronized internal fun recordLoginUIEvent(value: JsonObject) {
+        if (!loginUIEventsEnabled) throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "This task cannot emit login UI events")
+        ensureActiveForRuntime()
+        val event = value.deepCopy()
+        event.addProperty("taskId", id)
+        event.addProperty("sequence", loginUIEvents.size + 1)
+        val bytes = event.toString().toByteArray(Charsets.UTF_8).size
+        if (loginUIEvents.size >= 128 || bytes > 512 * 1024 - loginUIEventBytes)
+            throw RuntimeFailure("STATE_LIMIT", "Login UI events exceed their task budget")
+        loginUIEvents += event
+        loginUIEventBytes += bytes
+    }
+    @Synchronized internal fun loginUIEventsSnapshot(): com.google.gson.JsonArray =
+        com.google.gson.JsonArray().apply { loginUIEvents.forEach { add(it.deepCopy()) } }
     val timedOut = AtomicBoolean(false)
     // Request-local control facts, never a second state/cache owner. A native
     // Cookie IPC can already have effects before cancellation returns its ACK.
@@ -423,6 +449,16 @@ internal class RuntimeTask(val id: String, val session: RuntimeSession, val job:
     val rawHttpResponses = ConcurrentHashMap<String, okhttp3.Response>()
 }
 
+/** Explicit bridge limit: Java-distinct keys must not alias in a Swift Map. */
+internal fun requireRepresentableLoginUIKeys(keys: Iterable<String>) {
+    val seen = hashMapOf<String, String>()
+    for (key in keys) {
+        val canonical = java.text.Normalizer.normalize(key, java.text.Normalizer.Form.NFC)
+        val previous = seen.putIfAbsent(canonical, key)
+        if (previous != null && previous != key)
+            throw io.yuedu.legado.originalrule.UnsupportedRuleCapability("distinct login UI keys cannot share a Swift map key")
+    }
+}
 internal class RuntimeFailure(val code: String, message: String, val completedEffects: List<String> = emptyList()) : RuntimeException(message)
 internal val gson = GsonBuilder().disableHtmlEscaping().create()
 internal fun jsonObject(vararg entries: Pair<String, Any?>): JsonObject = JsonObject().apply {

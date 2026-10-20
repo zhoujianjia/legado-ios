@@ -1683,6 +1683,7 @@ struct LegadoOriginalFormLoginReceipt: Sendable {
     let credentialsCleared: Bool
     let executed: Bool
     let completedEffects: [String]
+    let loginUIEvents: [LegadoOriginalLoginUIEvent]
 }
 
 extension LegadoMainJSSourceService {
@@ -1690,6 +1691,7 @@ extension LegadoMainJSSourceService {
     /// source lock/process/credential/Cookie/header owners; grants no Book.
     func originalFormLogin(source: BookSource, credentials: [String: String]) async throws -> LegadoOriginalFormLoginReceipt {
         var effects: [String] = []
+        var events: [LegadoOriginalLoginUIEvent] = []
         do {
             let signature = try originalSignature(source)
             // The original dialog is lifecycle-bound. This finite 30s iOS
@@ -1708,26 +1710,30 @@ extension LegadoMainJSSourceService {
                 throw failure("INVALID_RESULT", "Original form login omitted its result")
             }
             effects = reported
+            events = reply.loginUIEvents ?? []
             guard reply.credentialsStored || reply.credentialsCleared else {
                 throw failure("STATE_IO", "The credential owner rejected the submitted form")
             }
             try previewCheck(deadline)
             return .init(credentialsStored: reply.credentialsStored, credentialsCleared: reply.credentialsCleared,
-                executed: reply.executed, completedEffects: effects)
+                executed: reply.executed, completedEffects: effects, loginUIEvents: events)
         } catch {
             let typed = error as? LegadoRuntimeError
             let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
             // Neither authored JS errors nor request/credential text may enter
             // a login alert/log through an arbitrary Error description.
             throw LegadoRuntimeError(code: code, message: "Original form login did not complete (\(code))",
-                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted())
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted(),
+                loginUIEvents: typed?.loginUIEvents ?? (events.isEmpty ? nil : events),
+                secondaryFailures: typed?.secondaryFailures)
         }
     }
 }
 
 extension LegadoMainJSSourceService {
     /// Same source actor/process/owner as the reader and confirmation operation.
-    func originalLoginUI(source: BookSource, values: [String: String]?) async throws -> LegadoOriginalLoginUIForm {
+    func originalLoginUI(source: BookSource, values: [String: String]?,
+                         evaluationValues: [String: String]? = nil) async throws -> LegadoOriginalLoginUIForm {
         var effects: [String] = []
         do {
             let signature = try originalSignature(source)
@@ -1739,14 +1745,17 @@ extension LegadoMainJSSourceService {
                 "main=\(Thread.isMainThread) values=\(values?.count ?? 0)") {
                 try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
                     sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
-                    operation: .loginUI(values), deadline: deadline)
+                    operation: .loginUI(values, evaluationValues: evaluationValues), deadline: deadline)
             }
             guard case .loginUI(let reply, let reported) = result else {
                 throw failure("INVALID_RESULT", "Original login UI omitted its result")
             }
             effects = reported
             try previewCheck(deadline)
-            return try LegadoOriginalLoginUIForm(reply)
+            return try SourcePerfTrace.span("legado.original.login.ui.map",
+                "main=\(Thread.isMainThread) rows=\(reply.rows.count)") {
+                try LegadoOriginalLoginUIForm(reply)
+            }
         } catch {
             let typed = error as? LegadoRuntimeError
             let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
@@ -1758,10 +1767,12 @@ extension LegadoMainJSSourceService {
 
 extension LegadoMainJSSourceService {
     /// Original row action shares the render/login actor and source owners.
-    /// UI callback methods remain typed unsupported on the finite task host.
+    /// Supported UI callbacks return ordered task facts for the existing form
+    /// owner to consume after this source gate is released.
     func originalLoginAction(source: BookSource, action: String?, credentials: [String: String],
                              isLongClick: Bool) async throws -> LegadoOriginalLoginActionResult {
         var effects: [String] = []
+        var events: [LegadoOriginalLoginUIEvent] = []
         do {
             let signature = try originalSignature(source)
             let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
@@ -1780,13 +1791,16 @@ extension LegadoMainJSSourceService {
                 throw failure("INVALID_RESULT", "Original login action omitted its result")
             }
             effects = reported
+            events = reply.loginUIEvents ?? []
             try previewCheck(deadline)
             return reply
         } catch {
             let typed = error as? LegadoRuntimeError
             let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
             throw LegadoRuntimeError(code: code, message: "Original login action did not complete (\(code))",
-                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted())
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted(),
+                loginUIEvents: typed?.loginUIEvents ?? (events.isEmpty ? nil : events),
+                secondaryFailures: typed?.secondaryFailures)
         }
     }
 }

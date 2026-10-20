@@ -48,7 +48,7 @@ class OriginalSourceLoginActionTest {
             assertEquals(0,owned.secretReads)
         }
     }
-    @Test(timeout=20_000) fun callbacksStayTypedUnsupportedAndSensitiveErrorsRetainAcceptedEffects() {
+    @Test(timeout=20_000) fun supportedCallbacksRetainOrderAndSensitiveErrorsRetainAcceptedEffects() {
         Owned().use { owned ->
             val messages=CopyOnWriteArrayList<String>();val logger=Logger.getLogger("io.yuedu.legado.originalrule");val old=logger.level
             val handler=object:Handler(){override fun publish(record:LogRecord){messages+=java.util.logging.SimpleFormatter().format(record)};override fun flush(){};override fun close(){}}
@@ -57,7 +57,9 @@ class OriginalSourceLoginActionTest {
                 val failed=owned.call("java.log(result.get('password'));throw new Error(String(result.get('password')));",jsonObject("password" to "SYNTHETIC-ACTION-CANARY"),success=false)
                 assertEquals("SCRIPT_ERROR",failed["error"].asJsonObject["code"].asString)
                 assertFalse(failed.toString().contains("SYNTHETIC-ACTION-CANARY"));assertTrue(messages.none{it.contains("SYNTHETIC-ACTION-CANARY")})
-                for(callback in listOf("java.upLoginData(result)","java.upLoginData(null)","java.reLoginView(true)","java.refreshExplore()")) {
+                val supported=owned.call("java.upLoginData(result);java.upLoginData(null);java.reLoginView();java.refreshExplore();")
+                assertEquals(listOf("updateData","updateData","render","render"),supported["loginUIEvents"].asJsonArray.map{it.asJsonObject["kind"].asString})
+                for(callback in listOf("java.reLoginView(true)")) {
                     val unsupported=owned.call("source.putLoginHeader('before-callback');$callback;source.putLoginHeader('must-not-run');",success=false)
                     assertEquals(callback,"UNSUPPORTED_CAPABILITY",unsupported["error"].asJsonObject["code"].asString)
                     assertTrue(unsupported["error"].asJsonObject["completedEffects"].asJsonArray.any{it.asString=="sourceStateCommitted"})

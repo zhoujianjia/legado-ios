@@ -309,7 +309,7 @@ struct LegadoPreviewStateOwner: LegadoEntityStateBacking {
 /// Explicit original-business execution only. No route selection, JSC or second HTTP jar.
 enum LegadoOriginalPreviewOperation: Sendable {
     case loginAction(action: String?, credentials: [String: String], isLongClick: Bool)
-    case loginUI([String: String]?)
+    case loginUI([String: String]?, evaluationValues: [String: String]?)
     case formLogin([String: String])
     case search(String, Int32?)
     case explore(String, Int32?)
@@ -354,6 +354,12 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
         else { owner = try await process.bindPersistentSource(sourceURL: sourceURL, sourceRevision: sourceRevision) }
         let reportedEffects = OSAllocatedUnfairLock(initialState: [String]())
         let observeEffects: @Sendable ([String]) -> Void = { effects in reportedEffects.withLock { $0 = effects } }
+        let reportedLoginUIEvents = OSAllocatedUnfairLock(initialState: [LegadoOriginalLoginUIEvent]())
+        let observeLoginUIEvents: @Sendable ([LegadoOriginalLoginUIEvent]) -> Void = { events in
+            reportedLoginUIEvents.withLock { $0 = events }
+        }
+        let loginOperation: Bool
+        switch operation { case .loginAction, .formLogin: loginOperation = true; default: loginOperation = false }
         do {
             let runtime = try await process.executor()
             try check(deadline)
@@ -367,15 +373,17 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 case .loginAction(let action, let credentials, let isLongClick):
                     let value = try await runtime.loginActionOriginal(session: session, action: action,
                         credentials: credentials, isLongClick: isLongClick,
-                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
+                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects,
+                        onReportedLoginUIEvents: observeLoginUIEvents)
                     result = .loginAction(value, completedEffects: reportedEffects.withLock { $0 })
-                case .loginUI(let values):
-                    let value = try await runtime.loginUIOriginal(session: session, values: values,
+                case .loginUI(let values, let evaluationValues):
+                    let value = try await runtime.loginUIOriginal(session: session, values: values, evaluationValues: evaluationValues,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
                     result = .loginUI(value, completedEffects: reportedEffects.withLock { $0 })
                 case .formLogin(let credentials):
                     let value = try await runtime.formLoginOriginal(session: session, credentials: credentials,
-                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
+                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects,
+                        onReportedLoginUIEvents: observeLoginUIEvents)
                     result = .formLogin(value, completedEffects: reportedEffects.withLock { $0 })
                 case .sourceCallback(let event):
                     let value = try await runtime.sourceCallbackOriginal(session: session, event: event,
@@ -408,10 +416,17 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                         nextChapterURL: next, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects)
                     result = .content(value.book, value.chapter, value.content)
                 }
-            } catch {
+            } catch let executionError {
                 do { try await runtime.close(session: session) }
-                catch { AppLogger.error("Original preview session cleanup failed", error: error) }
-                throw error
+                catch let cleanupError {
+                    if loginOperation {
+                        throw terminalFailure(executionError,
+                            effects: reportedEffects.withLock { $0 },
+                            events: reportedLoginUIEvents.withLock { $0 }, cleanupError: cleanupError)
+                    }
+                    AppLogger.error("Original preview session cleanup failed", error: cleanupError)
+                }
+                throw executionError
             }
             try await runtime.close(session: session)
             try check(deadline)
@@ -423,13 +438,30 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
             await process.revokePersistentSource(owner: owner)
             grant?.revoke()
             let failure = error as? LegadoRuntimeError
+            let events = failure?.loginUIEvents?.isEmpty == false
+                ? failure!.loginUIEvents! : reportedLoginUIEvents.withLock { $0 }
             let effects = Array(Set(reportedEffects.withLock { $0 } + (failure?.completedEffects ?? []))).sorted()
-            if !effects.isEmpty {
-                throw LegadoRuntimeError(code: failure?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
-                    message: error.localizedDescription, completedEffects: effects)
+            if !effects.isEmpty || !events.isEmpty || !(failure?.secondaryFailures ?? []).isEmpty {
+                throw terminalFailure(error, effects: effects, events: events)
             }
             throw error
         }
+    }
+    private func terminalFailure(_ error: Error, effects: [String], events: [LegadoOriginalLoginUIEvent],
+                                 cleanupError: Error? = nil) -> LegadoRuntimeError {
+        let failure = error as? LegadoRuntimeError
+        let retained = failure?.loginUIEvents?.isEmpty == false ? failure!.loginUIEvents! : events
+        var secondary = failure?.secondaryFailures ?? []
+        if let cleanupError {
+            let typed = cleanupError as? LegadoRuntimeError
+            secondary.append(.init(code: typed?.code ?? "STATE_IO",
+                message: "Original session cleanup did not complete"))
+        }
+        return LegadoRuntimeError(code: failure?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
+            message: failure?.message ?? "Original invocation did not complete",
+            completedEffects: Array(Set(effects + (failure?.completedEffects ?? []))).sorted(),
+            loginUIEvents: retained.isEmpty ? nil : retained,
+            secondaryFailures: secondary.isEmpty ? nil : secondary)
     }
     private func check(_ deadline: Date) throws {
         try Task.checkCancellation()

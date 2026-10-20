@@ -135,6 +135,120 @@ struct BookSourceLoginTests {
         #expect(originalForm.fields[5].options == ["", "signed"])
         #expect(originalForm.fields[5].originalSelectionDisplayValue("") == "")
         #expect(originalForm.fields[5].originalSelectionDisplayValue("signed") == "signed")
+        let textCharsJSON = #"{"rows":[{"name":"text","type":"text","chars":["must-not-default"]},{"name":"secret","type":"password","chars":["must-not-default-password"]}],"labels":["text","secret"],"values":{},"dynamic":false}"#
+        let textCharsForm = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(textCharsJSON.utf8)))
+        #expect(textCharsForm.controls["original-row-0"]?.value == "")
+        #expect(textCharsForm.controls["original-row-1"]?.value == "")
+        let suffixJSON = #"{"rows":[{"name":"flag","type":"toggle","chars":["off","on"],"viewName":"failedExpression()","style":{"layout_justifySelf":"right"}}],"labels":["null"],"values":{"flag":"off"},"dynamic":false,"toggleActionLabels":["flag"],"toggleLabelSuffixes":[true]}"#
+        let suffixForm = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(suffixJSON.utf8)))
+        let initialSuffix = try #require(suffixForm.controls["original-row-0"])
+        #expect(initialSuffix.cycleLabel == "flag")
+        #expect(LegadoOriginalLoginUIControl.toggleDisplay(value: initialSuffix.value, label: "null",
+            justifySelf: "right", forceSuffix: initialSuffix.forceSuffix) == "offnull")
+        let changedSuffix = try LegadoOriginalLoginUIForm.applying(entries: [.init(key: "flag", value: "on")],
+            rows: suffixForm.rows, fields: suffixForm.fields, labels: suffixForm.labels,
+            values: suffixForm.values, controls: suffixForm.controls)
+        let afterSuffix = try #require(changedSuffix.controls["original-row-0"])
+        #expect(afterSuffix.forceSuffix == false && afterSuffix.cycleValue == "off")
+        #expect(LegadoOriginalLoginUIControl.toggleDisplay(value: afterSuffix.value,
+            label: changedSuffix.labels["original-row-0"] ?? "", justifySelf: "right",
+            forceSuffix: afterSuffix.forceSuffix) == "failedExpression()on")
+        #expect(LegadoOriginalLoginUIControl.toggleDisplay(value: "off", label: "flag",
+            justifySelf: "flex_end", forceSuffix: false) == "offflag")
+        let callbackJSON = #"{"rows":[{"name":"duplicate","type":"text","default":"first-default","action":"textChanged()"},{"name":"duplicate","type":"password","default":"last-default"},{"name":"button","type":"button","viewName":"resolved button"},{"name":"flag","type":"toggle","chars":["off","on"],"default":"off","viewName":"resolved flag"},{"name":"choice","type":"select","chars":["same","same","other"],"default":"same","action":"selected()"},{"name":"blocked","type":"future"},{"name":"blocked","type":"text","default":"visible-default"}],"labels":["first","last","resolved button","resolved flag","choice","ignored","visible"],"values":{"duplicate":"old","hidden":"synthetic-hidden","button":"retained-map-value","choice":"same","flag":"on"},"dynamic":false,"toggleActionLabels":[null,null,null,"resolved flag",null,null,null]}"#
+        let callbackForm = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(callbackJSON.utf8)))
+        let updated = try LegadoOriginalLoginUIForm.applying(entries: [
+            .init(key: "duplicate", value: "first-edited"), .init(key: "button", value: "new caption"),
+            .init(key: "hidden", value: nil), .init(key: "blocked", value: "must-not-reach-second-row"),
+            .init(key: "choice", value: "other"), .init(key: "flag", value: nil)
+        ], rows: callbackForm.rows, fields: callbackForm.fields, labels: callbackForm.labels,
+            values: callbackForm.values, controls: callbackForm.controls)
+        #expect(updated.controls["original-row-0"]?.value == "first-edited")
+        #expect(updated.controls["original-row-1"]?.value == "old")
+        #expect(updated.values["duplicate"] == "first-edited")
+        #expect(updated.values["hidden"] == "")
+        #expect(updated.values["blocked"] == nil)
+        #expect(updated.controls["original-row-6"]?.value == "visible-default")
+        #expect(updated.values["button"] == "retained-map-value")
+        #expect(updated.labels["original-row-2"] == "new caption")
+        #expect(updated.values["flag"] == "off")
+        #expect(updated.controls["original-row-3"]?.value == "off")
+        #expect(updated.controls["original-row-3"]?.cycleValue == "on")
+        #expect(callbackForm.controls["original-row-3"]?.cycleLabel == "resolved flag")
+        #expect(updated.controls["original-row-4"]?.selectedIndex == 2)
+        #expect(updated.changedTextRows.map(\.id) == ["original-row-0"])
+        #expect(updated.actions.count == 1)
+        #expect(updated.actions.first?.credentials["flag"] == "on")
+        let actualSubmission = BookSourceFormLoginView.originalFormSubmissionValues(
+            fields: callbackForm.fields, values: updated.values, controls: updated.controls)
+        #expect(actualSubmission["duplicate"] == "old")
+        var duplicateChoiceControls = callbackForm.controls
+        duplicateChoiceControls["original-row-4"] = .init(value: "same", selectedIndex: 1)
+        let firstChoice = try LegadoOriginalLoginUIForm.applying(entries: [.init(key: "choice", value: "same")],
+            rows: callbackForm.rows, fields: callbackForm.fields, labels: callbackForm.labels,
+            values: callbackForm.values, controls: duplicateChoiceControls)
+        #expect(firstChoice.controls["original-row-4"]?.selectedIndex == 0)
+        #expect(firstChoice.actions.count == 1)
+        let unchangedChoice = try LegadoOriginalLoginUIForm.applying(entries: [.init(key: "choice", value: "unlisted")],
+            rows: callbackForm.rows, fields: callbackForm.fields, labels: callbackForm.labels,
+            values: ["choice": "retained-unmatched-map"], controls: callbackForm.controls)
+        #expect(unchangedChoice.values["choice"] == "retained-unmatched-map")
+        #expect(unchangedChoice.actions.isEmpty)
+        let emptyUpdate = try LegadoOriginalLoginUIForm.applying(entries: [], rows: callbackForm.rows,
+            fields: callbackForm.fields, labels: updated.labels, values: updated.values, controls: updated.controls)
+        #expect(emptyUpdate.values == updated.values && emptyUpdate.controls == updated.controls)
+        let reset = try LegadoOriginalLoginUIForm.applying(entries: nil, rows: callbackForm.rows,
+            fields: callbackForm.fields, labels: updated.labels, values: updated.values, controls: updated.controls)
+        #expect(reset.values == ["duplicate": "last-default", "flag": "off", "choice": "same", "blocked": "visible-default"])
+        #expect(reset.labels["original-row-2"] == "resolved button")
+        #expect(reset.controls["original-row-0"]?.value == "first-default")
+        #expect(reset.controls["original-row-1"]?.value == "last-default")
+        #expect(reset.actions.count == 1)
+        #expect(reset.controls["original-row-3"]?.cycleValue == "on")
+        #expect(reset.controls["original-row-3"]?.listenerMapIsCurrent == false)
+        #expect(reset.controls["original-row-4"]?.listenerMapIsCurrent == false)
+        let selectedAfterReset = try LegadoOriginalLoginUIForm.applying(entries: [.init(key: "choice", value: "other")],
+            rows: callbackForm.rows, fields: callbackForm.fields, labels: reset.labels,
+            values: reset.values, controls: reset.controls)
+        #expect(selectedAfterReset.controls["original-row-4"]?.selectedIndex == 2)
+        #expect(selectedAfterReset.values["choice"] == "same")
+        #expect(selectedAfterReset.actions.count == 1)
+        #expect(selectedAfterReset.actions.first?.credentials["choice"] == "same")
+        let exactNameJSON = #"{"rows":[{"name":"\u00e9","type":"text"}],"labels":["exact"],"values":{},"dynamic":false}"#
+        let exactNameForm = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(exactNameJSON.utf8)))
+        do {
+            _ = try LegadoOriginalLoginUIForm.applying(entries: [.init(key: "e\u{301}", value: "must-not-alias")],
+                rows: exactNameForm.rows, fields: exactNameForm.fields, labels: exactNameForm.labels,
+                values: exactNameForm.values, controls: exactNameForm.controls)
+            Issue.record("Canonically equivalent Java names were aliased by the form Map")
+        } catch let failure as LegadoRuntimeError {
+            #expect(failure.code == "UNSUPPORTED_CAPABILITY")
+        }
+        let exactValueJSON = #"{"rows":[{"name":"text","type":"text","action":"changed()"},{"name":"choice","type":"select","chars":["\u00e9","e\u0301"],"action":"selected()"}],"labels":["text","choice"],"values":{"text":"\u00e9","choice":"\u00e9"},"dynamic":false}"#
+        let exactValueForm = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(exactValueJSON.utf8)))
+        let changedUnits = try LegadoOriginalLoginUIForm.applying(entries: [
+            .init(key: "text", value: "e\u{301}"), .init(key: "choice", value: "e\u{301}")
+        ], rows: exactValueForm.rows, fields: exactValueForm.fields, labels: exactValueForm.labels,
+            values: exactValueForm.values, controls: exactValueForm.controls)
+        #expect(changedUnits.changedTextRows.map(\.id) == ["original-row-0"])
+        #expect(changedUnits.controls["original-row-1"]?.selectedIndex == 1)
+        #expect(changedUnits.actions.count == 1)
+        var listenerBudget = LegadoOriginalLoginUIActionBudget()
+        for _ in 0..<128 { try listenerBudget.acceptAutomatic() }
+        do {
+            try listenerBudget.acceptAutomatic()
+            Issue.record("Recursive automatic login listeners exceeded their finite chain budget")
+        } catch let failure as LegadoRuntimeError {
+            #expect(failure.code == "STATE_LIMIT")
+        }
+        var nextHumanChainBudget = LegadoOriginalLoginUIActionBudget()
+        try nextHumanChainBudget.acceptAutomatic()
+        #expect(nextHumanChainBudget.automaticCount == 1 && listenerBudget.automaticCount == 128)
         let submissionFields = LoginManager.shared.parseLoginUi("""
         [{"name":"username","type":"text","default":"synthetic-default"},{"name":"password","type":"password","default":"synthetic-default-password"},{"name":"captcha","type":"text"},{"name":"button","type":"button","default":"must-not-add"}]
         """)

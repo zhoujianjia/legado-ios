@@ -45,6 +45,41 @@ internal class ProductionRulePlatform(
         check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
         task.sensitiveSourceOperation = true
     }
+    override fun updateLoginUI(source: BaseSource, data: Map<String, Any?>?) {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
+        if (!task.loginUIEventsEnabled) unsupportedRule("this task cannot update login UI")
+        val entries = data?.let { values ->
+            require(values.size <= 4096) { "Login UI data contains too many entries" }
+            io.yuedu.legado.requireRepresentableLoginUIKeys(values.keys)
+            com.google.gson.JsonArray().apply {
+                var capturedBytes = 0
+                // Capture nullable toString values now; later Map mutations cannot
+                // change an accepted event. Preserve original Map iteration order.
+                values.forEach { (key, value) ->
+                    task.ensureActiveForRuntime()
+                    val text = value?.toString()
+                    // Reject before accumulating a large Map/escaped JSON tree.
+                    // The task also checks exact total bytes including envelope.
+                    if (key.length > 512 * 1024 || (text?.length ?: 0) > 512 * 1024)
+                        throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "Login UI data exceeds its task budget")
+                    val entry = io.yuedu.legado.jsonObject("key" to key, "value" to text)
+                    val bytes = entry.toString().toByteArray(Charsets.UTF_8).size
+                    if (bytes > 512 * 1024 - capturedBytes)
+                        throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "Login UI data exceeds its task budget")
+                    capturedBytes += bytes
+                    add(entry)
+                }
+            }
+        }
+        task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "updateData", "entries" to entries))
+    }
+    override fun renderLoginUI(source: BaseSource, deltaUp: Boolean) {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
+        if (deltaUp) unsupportedRule("incremental login UI control reuse is not connected")
+        task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "render", "deltaUp" to false))
+    }
     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
     init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }
     override val cookie: RuleCookieHost = object : RuleCookieHost() {

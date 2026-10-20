@@ -52,6 +52,11 @@ open class RulePlatform {
     open fun loginInfo(source: BaseSource): String? = unsupportedRule("checked source login-info owner")
     open fun storeLoginInfo(source: BaseSource, value: String?): Boolean = unsupportedRule("checked source login-info owner")
     open fun protectLoginDiagnostics(source: BaseSource) {}
+    /** Transient same-task UI facts; never a credential/state owner or Host call. */
+    open fun updateLoginUI(source: BaseSource, data: Map<String, Any?>?): Unit =
+        unsupportedRule("form login UI data updates")
+    open fun renderLoginUI(source: BaseSource, deltaUp: Boolean): Unit =
+        unsupportedRule("form login UI refresh")
     /** Existing parser/URL diagnostic sink; production may protect the current login task. */
     open fun ruleDiagnostic(error: Throwable, loggerName: String = "io.yuedu.legado.originalrule",
                             message: String = "Original rule evaluation diagnostic") {

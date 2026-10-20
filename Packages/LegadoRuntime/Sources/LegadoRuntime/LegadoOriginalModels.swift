@@ -166,10 +166,39 @@ internal struct OriginalSourceCallbackRequest: Encodable, Sendable {
     let timeoutMs: Int64
 }
 
+/// Immutable terminal UI facts. Emission does not assert UI application or persistence.
+public struct LegadoOriginalLoginUIEntry: Codable, Sendable, Equatable {
+    public let key: String
+    public let value: String?
+    public init(key: String, value: String?) { self.key = key; self.value = value }
+}
+public struct LegadoOriginalLoginUIEvent: Codable, Sendable, Equatable {
+    public enum Kind: String, Codable, Sendable { case updateData, render }
+    public let taskID: String
+    public let sequence: Int
+    public let kind: Kind
+    /// nil is the original null reset; [] is a nonnull empty Map.
+    public let entries: [LegadoOriginalLoginUIEntry]?
+    public let deltaUp: Bool?
+    public init(taskID: String, sequence: Int, kind: Kind,
+                entries: [LegadoOriginalLoginUIEntry]? = nil, deltaUp: Bool? = nil) {
+        self.taskID = taskID; self.sequence = sequence; self.kind = kind
+        self.entries = entries; self.deltaUp = deltaUp
+    }
+    enum CodingKeys: String, CodingKey { case taskID = "taskId", sequence, kind, entries, deltaUp }
+}
+/// An additional terminal error, separate from payloads and diagnostic output.
+public struct LegadoRuntimeFailureDetail: Codable, Sendable, Equatable {
+    public let code: String
+    public let message: String
+    public init(code: String, message: String) { self.code = code; self.message = message }
+}
+
 public struct LegadoOriginalFormLoginResult: Codable, Sendable, Equatable {
     public let credentialsStored: Bool
     public let credentialsCleared: Bool
     public let executed: Bool
+    public let loginUIEvents: [LegadoOriginalLoginUIEvent]?
 }
 internal struct OriginalFormLoginRequest: Encodable, Sendable {
     let credentials: [String: String]
@@ -203,14 +232,22 @@ public struct LegadoOriginalLoginUIResult: Codable, Sendable, Equatable {
     public let labels: [String]
     public let values: [String: String]
     public let dynamic: Bool
+    /// Original toggle click closures retain their successful builder name even
+    /// when a later upLoginData callback changes the visible caption.
+    public let toggleActionLabels: [String?]?
+    /// The original null-result branch appends "null" after the toggle value,
+    /// independently of its usual right-aligned caption ordering.
+    public let toggleLabelSuffixes: [Bool]?
 }
 internal struct OriginalLoginUIRequest: Encodable, Sendable {
     let values: [String: String]?
+    let evaluationValues: [String: String]?
     let timeoutMs: Int64
 }
 
 public struct LegadoOriginalLoginActionResult: Codable, Sendable, Equatable {
     public let executed: Bool
+    public let loginUIEvents: [LegadoOriginalLoginUIEvent]?
 }
 internal struct OriginalLoginActionRequest: Encodable, Sendable {
     let action: String?

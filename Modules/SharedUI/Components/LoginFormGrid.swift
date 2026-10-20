@@ -28,6 +28,7 @@ struct LoginFormGrid: View {
     var onValueChange: ((LoginField, String) -> Void)?
     var onAction: ((LoginField) -> Void)?
     var onOriginalAction: ((LoginField, Bool) -> Void)? = nil
+    var originalControls: Binding<[String: LegadoOriginalLoginUIControl]>? = nil
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var lastOriginalPointerRelease: TimeInterval = 0
@@ -51,7 +52,10 @@ struct LoginFormGrid: View {
                     value: valueBinding(for: field),
                     onAction: onAction,
                     onOriginalAction: onOriginalAction,
-                    acceptOriginalPointer: acceptOriginalPointerRelease
+                    acceptOriginalPointer: acceptOriginalPointerRelease,
+                    originalSelectionIndex: selectionBinding(for: field),
+                    originalCycleValue: cycleBinding(for: field),
+                    originalForceSuffix: originalControls?.wrappedValue[field.id]?.forceSuffix ?? false
                 )
             }
         }
@@ -61,13 +65,50 @@ struct LoginFormGrid: View {
     /// The setter routes through `onValueChange` so hosts keep their own persistence
     /// rules (book sources persist select changes immediately, TTS saves on 儲存).
     private func valueBinding(for field: LoginField) -> Binding<String> {
-        Binding(
+        if field.originalRowID != nil, let originalControls {
+            return Binding(
+                get: { originalControls.wrappedValue[field.id]?.value ?? field.defaultValue ?? "" },
+                set: { newValue in
+                    var controls = originalControls.wrappedValue
+                    var control = controls[field.id] ?? .init(value: "")
+                    if (field.type == .text || field.type == .password),
+                       control.value.utf16.elementsEqual(newValue.utf16) { return }
+                    control.value = newValue; controls[field.id] = control
+                    originalControls.wrappedValue = controls
+                    onValueChange?(field, newValue)
+                }
+            )
+        }
+        return Binding(
             get: { values[field.name] ?? field.defaultValue ?? "" },
             set: { newValue in
                 values[field.name] = newValue
                 onValueChange?(field, newValue)
             }
         )
+    }
+
+    private func selectionBinding(for field: LoginField) -> Binding<Int>? {
+        guard field.originalRowID != nil, field.type == .select, let originalControls else { return nil }
+        return Binding(
+            get: { originalControls.wrappedValue[field.id]?.selectedIndex ?? -1 },
+            set: { index in
+                var controls = originalControls.wrappedValue
+                var control = controls[field.id] ?? .init(value: "")
+                control.selectedIndex = index >= 0 ? index : nil
+                controls[field.id] = control; originalControls.wrappedValue = controls
+            }
+        )
+    }
+
+    private func cycleBinding(for field: LoginField) -> Binding<String>? {
+        guard field.originalRowID != nil, field.type == .toggle, let originalControls else { return nil }
+        return Binding(get: { originalControls.wrappedValue[field.id]?.cycleValue ?? "" }, set: { value in
+            var controls = originalControls.wrappedValue
+            var control = controls[field.id] ?? .init(value: "")
+            control.cycleValue = value; control.forceSuffix = false; controls[field.id] = control
+            originalControls.wrappedValue = controls
+        })
     }
 }
 
@@ -80,6 +121,9 @@ private struct LoginFieldCell: View {
     let onAction: ((LoginField) -> Void)?
     let onOriginalAction: ((LoginField, Bool) -> Void)?
     let acceptOriginalPointer: () -> Bool
+    let originalSelectionIndex: Binding<Int>?
+    let originalCycleValue: Binding<String>?
+    let originalForceSuffix: Bool
 
     private func dispatch(_ isLongClick: Bool = false) {
         if field.originalRowID != nil, let onOriginalAction { onOriginalAction(field, isLongClick) }
@@ -113,7 +157,9 @@ private struct LoginFieldCell: View {
             if field.originalRowID != nil || LoginToggleChars(options: field.options) != nil {
                 LoginTogglePill(
                     field: field, label: label, value: $value,
-                    alignment: alignment, action: { dispatch() }, longAction: longAction,
+                    alignment: alignment, originalCycleValue: originalCycleValue,
+                    originalForceSuffix: originalForceSuffix,
+                    action: { dispatch() }, longAction: longAction,
                     acceptOriginalPointer: acceptOriginalPointer
                 )
             } else {
@@ -136,7 +182,7 @@ private struct LoginFieldCell: View {
         } else {
             LoginSelectPill(
                 field: field, label: label, value: $value,
-                alignment: alignment
+                alignment: alignment, originalSelectionIndex: originalSelectionIndex
             ) {
                 dispatch()
             }
@@ -230,6 +276,8 @@ private struct LoginTogglePill: View {
     let label: String
     @Binding var value: String
     let alignment: LoginPillAlignment
+    var originalCycleValue: Binding<String>? = nil
+    var originalForceSuffix = false
     let action: () -> Void
     var longAction: (() -> Void)? = nil
     var acceptOriginalPointer: (() -> Bool)? = nil
@@ -249,7 +297,11 @@ private struct LoginTogglePill: View {
     }
 
     private var displayText: String {
-        alignment == .trailing ? "\(label)\(currentChar)" : "\(currentChar)\(label)"
+        if field.originalRowID != nil {
+            return LegadoOriginalLoginUIControl.toggleDisplay(value: currentChar, label: label,
+                justifySelf: field.style?.justifySelf, forceSuffix: originalForceSuffix)
+        }
+        return alignment == .trailing ? "\(label)\(currentChar)" : "\(currentChar)\(label)"
     }
 
     var body: some View {
@@ -271,8 +323,13 @@ private struct LoginTogglePill: View {
 
     private func cycle(_ callback: () -> Void) {
         guard !chars.isEmpty else { return }
-        let index = chars.firstIndex(of: currentChar) ?? -1
-        value = chars[(index + 1) % chars.count]
+        let prior = originalCycleValue?.wrappedValue ?? currentChar
+        let index = (field.originalRowID != nil
+            ? chars.firstIndex { $0.utf16.elementsEqual(prior.utf16) }
+            : chars.firstIndex(of: currentChar)) ?? -1
+        let next = chars[(index + 1) % chars.count]
+        if let originalCycleValue { originalCycleValue.wrappedValue = next }
+        value = next
         callback()
     }
 }
@@ -282,6 +339,7 @@ private struct LoginSelectPill: View {
     let label: String
     @Binding var value: String
     let alignment: LoginPillAlignment
+    var originalSelectionIndex: Binding<Int>? = nil
     let action: () -> Void
 
     /// Options plus a stored value the source no longer declares, so a saved selection
@@ -294,6 +352,9 @@ private struct LoginSelectPill: View {
     }
 
     private var selected: String {
+        if let index = originalSelectionIndex?.wrappedValue {
+            return field.options.indices.contains(index) ? field.options[index] : ""
+        }
         if let original = field.originalSelectionDisplayValue(value) { return original }
         if !value.isEmpty { return value }
         if let declared = field.defaultValue, !declared.isEmpty { return declared }
@@ -303,17 +364,25 @@ private struct LoginSelectPill: View {
     private struct OriginalOption: Identifiable {
         let id: String
         let value: String
+        let index: Int
     }
 
     private var originalOptions: [OriginalOption] {
         field.options.enumerated().map {
-            OriginalOption(id: "\(field.id).choice.\($0.offset)", value: $0.element)
+            OriginalOption(id: "\(field.id).choice.\($0.offset)", value: $0.element, index: $0.offset)
         }
     }
 
     var body: some View {
         Menu {
-            Picker(label, selection: selection) {
+            if let index = originalSelectionIndex {
+                Picker(label, selection: originalSelection(index)) {
+                    ForEach(originalOptions) { option in
+                        Text(option.value).tag(option.index)
+                    }
+                }
+            } else {
+                Picker(label, selection: selection) {
                 if field.originalRowID != nil {
                     ForEach(originalOptions) { option in
                         Text(option.value).tag(option.value)
@@ -322,6 +391,7 @@ private struct LoginSelectPill: View {
                     ForEach(options, id: \.self) { option in
                         Text(option).tag(option)
                     }
+                }
                 }
             }
         } label: {
@@ -343,6 +413,15 @@ private struct LoginSelectPill: View {
         .buttonStyle(LoginPressButtonStyle())
         .accessibilityLabel(label)
         .accessibilityValue(selected)
+    }
+
+    private func originalSelection(_ index: Binding<Int>) -> Binding<Int> {
+        Binding(get: { index.wrappedValue }, set: { selected in
+            guard selected != index.wrappedValue, field.options.indices.contains(selected) else { return }
+            index.wrappedValue = selected
+            value = field.options[selected]
+            action()
+        })
     }
 
     private var selection: Binding<String> {

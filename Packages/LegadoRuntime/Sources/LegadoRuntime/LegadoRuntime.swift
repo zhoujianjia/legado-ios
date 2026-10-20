@@ -8,9 +8,13 @@ public struct LegadoRuntimeError: Error, LocalizedError, Codable, Sendable, Equa
     /// Earlier effects of an original sequential operation can already be saved
     /// when a later owner fails. Missing means no such completion is asserted.
     public let completedEffects: [String]?
-    public init(code: String, message: String) { self.code = code; self.message = message; self.completedEffects = nil }
-    public init(code: String, message: String, completedEffects: [String]) {
+    public let loginUIEvents: [LegadoOriginalLoginUIEvent]?
+    public let secondaryFailures: [LegadoRuntimeFailureDetail]?
+    public init(code: String, message: String, completedEffects: [String]? = nil,
+                loginUIEvents: [LegadoOriginalLoginUIEvent]? = nil,
+                secondaryFailures: [LegadoRuntimeFailureDetail]? = nil) {
         self.code = code; self.message = message; self.completedEffects = completedEffects
+        self.loginUIEvents = loginUIEvents; self.secondaryFailures = secondaryFailures
     }
     public var errorDescription: String? { "\(code): \(message)" }
 }
@@ -174,7 +178,7 @@ public final class LegadoRuntime: @unchecked Sendable {
     /// Returns the complete JVM JSON envelope, keeping model conversion outside JNI.
     public func execute(session: LegadoSourceSession, operation: String, requestJSON: String = "{}", taskID: String = UUID().uuidString) async throws -> String {
         let response = try await executeResponse(session: session, operation: operation, requestJSON: requestJSON, taskID: taskID)
-        try Self.checkCancellation(after: response.envelope.completedEffects)
+        try Self.checkCancellation(after: response.envelope.completedEffects, loginUIEvents: response.envelope.loginUIEvents)
         return response.json
     }
     private struct ExecutionResponse: Sendable { let json: String; let envelope: Envelope }
@@ -193,19 +197,19 @@ public final class LegadoRuntime: @unchecked Sendable {
                 response = try await work {
                     try self.ensureStarted()
                     let raw = try self.transport.execute(session.id, taskID, operation, requestJSON)
-                    return ExecutionResponse(json: raw, envelope: try Self.envelope(raw))
+                    return ExecutionResponse(json: raw, envelope: try Self.envelope(raw, expectedTaskID: taskID))
                 }
             } catch {
                 // Native/JVM completion may already acknowledge an irreversible
                 // effect. Preserve its exact MayCommit/Committed names on cancel.
                 if Task.isCancelled, let failure = error as? LegadoRuntimeError,
-                   let effects = failure.completedEffects, !effects.isEmpty {
-                    throw LegadoRuntimeError(code: "CANCELLED", message: "Execution cancelled after reported platform effects", completedEffects: effects)
+                   (!(failure.completedEffects ?? []).isEmpty || !(failure.loginUIEvents ?? []).isEmpty) {
+                    throw Self.cancelledFailure(retaining: failure)
                 }
                 try Task.checkCancellation()
                 throw error
             }
-            try Self.checkCancellation(after: response.envelope.completedEffects)
+            try Self.checkCancellation(after: response.envelope.completedEffects, loginUIEvents: response.envelope.loginUIEvents)
             return response
         } onCancel: {
             // A different worker must deliver cancel while an execute worker is inside Rhino.
@@ -312,40 +316,44 @@ public final class LegadoRuntime: @unchecked Sendable {
     }
 
     public func loginUIOriginal(session: LegadoSourceSession, values: [String: String]? = nil,
+        evaluationValues: [String: String]? = nil,
         timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
         onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalLoginUIResult {
         guard (1...30_000).contains(timeoutMilliseconds) else {
             throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original login UI timeout must be between 1 and 30000 milliseconds")
         }
-        return try await executeOriginal(session, "loginUi", OriginalLoginUIRequest(values: values,
+        return try await executeOriginal(session, "loginUi", OriginalLoginUIRequest(values: values, evaluationValues: evaluationValues,
             timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
     }
 
     public func loginActionOriginal(session: LegadoSourceSession, action: String?,
         credentials: [String: String], isLongClick: Bool = false,
         timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
-        onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalLoginActionResult {
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil,
+        onReportedLoginUIEvents: (@Sendable ([LegadoOriginalLoginUIEvent]) -> Void)? = nil) async throws -> LegadoOriginalLoginActionResult {
         guard (1...30_000).contains(timeoutMilliseconds) else {
             throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original login action timeout must be between 1 and 30000 milliseconds")
         }
         return try await executeOriginal(session, "loginAction", OriginalLoginActionRequest(action: action,
             credentials: credentials, isLongClick: isLongClick, timeoutMs: timeoutMilliseconds),
-            timeoutMilliseconds, taskID, onReportedEffects)
+            timeoutMilliseconds, taskID, onReportedEffects, onReportedLoginUIEvents)
     }
 
     public func formLoginOriginal(session: LegadoSourceSession, credentials: [String: String],
         timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
-        onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalFormLoginResult {
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil,
+        onReportedLoginUIEvents: (@Sendable ([LegadoOriginalLoginUIEvent]) -> Void)? = nil) async throws -> LegadoOriginalFormLoginResult {
         guard (1...30_000).contains(timeoutMilliseconds) else {
             throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original form login timeout must be between 1 and 30000 milliseconds")
         }
         return try await executeOriginal(session, "formLogin", OriginalFormLoginRequest(credentials: credentials,
-            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects, onReportedLoginUIEvents)
     }
 
     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
         _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String,
-        _ onReportedEffects: (@Sendable ([String]) -> Void)? = nil
+        _ onReportedEffects: (@Sendable ([String]) -> Void)? = nil,
+        _ onReportedLoginUIEvents: (@Sendable ([LegadoOriginalLoginUIEvent]) -> Void)? = nil
     ) async throws -> Response {
         guard session.sourceMode == .originalTraditional else {
             throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Original business API requires an explicitly configured original-traditional session")
@@ -360,9 +368,19 @@ public final class LegadoRuntime: @unchecked Sendable {
             Self.logger.debug("original.dto.encode bytes=\(data.count) main=\(Thread.isMainThread)")
             return String(decoding: data, as: UTF8.self)
         }
-        let response = try await executeResponse(session: session, operation: operation, requestJSON: requestJSON, taskID: taskID)
-        // Bounded invocation facts survive DTO conversion and embedding close/save failures.
+        let response: ExecutionResponse
+        do {
+            response = try await executeResponse(session: session, operation: operation, requestJSON: requestJSON, taskID: taskID)
+        } catch {
+            if let failure = error as? LegadoRuntimeError {
+                onReportedEffects?(failure.completedEffects ?? [])
+                onReportedLoginUIEvents?(failure.loginUIEvents ?? [])
+            }
+            throw error
+        }
+        // Both immutable fact channels survive DTO conversion and close failures.
         onReportedEffects?(response.envelope.completedEffects ?? [])
+        onReportedLoginUIEvents?(response.envelope.loginUIEvents ?? [])
         let raw = response.json
         let result: Response
         do { result = try await work {
@@ -375,19 +393,33 @@ public final class LegadoRuntime: @unchecked Sendable {
             do { return try JSONDecoder().decode(OriginalBusinessEnvelope<Response>.self, from: data).result }
             catch { throw LegadoRuntimeError(code: "invalid_response", message: "Original runtime omitted or returned an incompatible business DTO") }
         } } catch {
-            try Self.checkCancellation(after: response.envelope.completedEffects)
-            if let effects = response.envelope.completedEffects, !effects.isEmpty {
-                throw LegadoRuntimeError(code: (error as? LegadoRuntimeError)?.code ?? "invalid_response",
-                    message: error.localizedDescription, completedEffects: effects)
-            }
-            throw error
+            let failure = LegadoRuntimeError(code: (error as? LegadoRuntimeError)?.code ?? "invalid_response",
+                message: "Original runtime business DTO did not decode",
+                completedEffects: response.envelope.completedEffects,
+                loginUIEvents: response.envelope.loginUIEvents,
+                secondaryFailures: (error as? LegadoRuntimeError)?.secondaryFailures)
+            if Task.isCancelled { throw Self.cancelledFailure(retaining: failure) }
+            throw failure
         }
-        try Self.checkCancellation(after: response.envelope.completedEffects)
+        try Self.checkCancellation(after: response.envelope.completedEffects, loginUIEvents: response.envelope.loginUIEvents)
         return result
     }
-    private static func checkCancellation(after effects: [String]?) throws {
-        if Task.isCancelled, let effects, !effects.isEmpty {
-            throw LegadoRuntimeError(code: "CANCELLED", message: "Execution cancelled after reported platform effects", completedEffects: effects)
+    private static func cancelledFailure(retaining failure: LegadoRuntimeError) -> LegadoRuntimeError {
+        // Preserve a prior script/DTO failure as well as the local cancellation.
+        var previous = failure.secondaryFailures ?? []
+        if failure.code != "CANCELLED" && failure.code != "TIMEOUT" {
+            previous.insert(.init(code: failure.code, message: failure.message), at: 0)
+        }
+        return LegadoRuntimeError(code: failure.code == "TIMEOUT" ? "TIMEOUT" : "CANCELLED",
+            message: "Execution cancelled after reported invocation facts",
+            completedEffects: failure.completedEffects, loginUIEvents: failure.loginUIEvents,
+            secondaryFailures: previous.isEmpty ? nil : previous)
+    }
+    private static func checkCancellation(after effects: [String]?,
+                                          loginUIEvents: [LegadoOriginalLoginUIEvent]?) throws {
+        if Task.isCancelled, (!(effects ?? []).isEmpty || !(loginUIEvents ?? []).isEmpty) {
+            throw LegadoRuntimeError(code: "CANCELLED", message: "Execution cancelled after reported invocation facts",
+                completedEffects: effects, loginUIEvents: loginUIEvents)
         }
         try Task.checkCancellation()
     }
@@ -416,10 +448,25 @@ public final class LegadoRuntime: @unchecked Sendable {
         thread.qualityOfService = .userInitiated
         thread.start()
     }
-    internal struct Envelope: Decodable, Sendable { let ok: Bool; let sessionId: String?; let error: LegadoRuntimeError?; let completedEffects: [String]? }
-    internal static func envelope(_ json: String) throws -> Envelope {
+    internal struct Envelope: Decodable, Sendable { let ok: Bool; let sessionId: String?; let error: LegadoRuntimeError?; let completedEffects: [String]?; let loginUIEvents: [LegadoOriginalLoginUIEvent]? }
+    internal static func envelope(_ json: String, expectedTaskID: String? = nil) throws -> Envelope {
         guard let data = json.data(using: .utf8), let envelope = try? JSONDecoder().decode(Envelope.self, from: data) else {
             throw LegadoRuntimeError(code: "invalid_response", message: "JVM response is not an envelope")
+        }
+        let events = envelope.ok ? envelope.loginUIEvents : envelope.error?.loginUIEvents
+        if let events {
+            guard events.count <= 128 else {
+                throw LegadoRuntimeError(code: "invalid_response", message: "Too many original login UI events")
+            }
+            let task = expectedTaskID ?? events.first?.taskID
+            for (index, event) in events.enumerated() {
+                guard !event.taskID.isEmpty, event.taskID == task, event.sequence == index + 1,
+                      (event.entries?.count ?? 0) <= 4096,
+                      (event.kind == .updateData && event.deltaUp == nil) ||
+                      (event.kind == .render && event.entries == nil && event.deltaUp == false) else {
+                    throw LegadoRuntimeError(code: "invalid_response", message: "Invalid original login UI event snapshot")
+                }
+            }
         }
         if !envelope.ok { throw envelope.error ?? LegadoRuntimeError(code: "runtime_error", message: "JVM operation failed") }
         return envelope
