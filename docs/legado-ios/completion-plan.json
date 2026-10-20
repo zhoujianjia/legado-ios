@@ -163,17 +163,22 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Continue real JNI preview/cancellation and expired-material account work while this finite owned producer runs. Inspect this exact job at the next meaningful checkpoint, retain actual failures, and avoid terminal-history polling.",
-      "alreadyRunningTasks": "Only finite owned producer source3df5243 run39420223324/job118619026772 is live at its initial observation, portable guards in progress. Coherent733120e and all earlier runs are terminal. No new signing/native success inferred.",
+      "nextPlannedCheckpoint": "Prioritize real JNI preview/cancellation and expired-material account closure. Investigate actual codesign key lookup/use and cleanup from the new terminal facts; batch necessary source review/evidence at stage end and do not repeat unchanged builds.",
+      "alreadyRunningTasks": "No live SDK handle remains. Owned producer3df5243 is terminal:60 portable passed, actual admin trust/readback and normal-user valid identity0-to1 passed, real codesign still item-not-found; cleanup child124/no absence ACK, owned Keychain cleanup0. Coherent733120e and all earlier runs are also terminal history.",
       "latestOwnedProducerTerminal": {
-        "sourceCommit": "ef228f5ffbb4227947def324c3076922e036c6a8",
-        "sourceTag": "reader-owned-sdk-ef228f5",
-        "runID": 39414478109,
+        "sourceCommit": "3df524307a4118c6871d862d8722029f0267fe04",
+        "sourceTag": "reader-owned-sdk-3df5243",
+        "runID": 39420223324,
+        "jobID": 118619026772,
         "status": "completed",
         "conclusion": "failure",
-        "record": "docs/legado-ios/core-owned-sdk-producer-ef228f5-result.json",
+        "record": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json",
         "queryAgain": false,
-        "nativeMethodsAccepted": 0
+        "nativeMethodsAccepted": 0,
+        "portableMethodsPassed": 60,
+        "validOwnedIdentityAfterTrust": 1,
+        "actualCodesignPassed": false,
+        "adminTrustCleanupVerified": false
       },
       "currentCoreLatestTerminal": {
         "sourceCommit": "733120e01f9250ea7509640080148249274a2d74",
@@ -187,17 +192,7 @@
         "nativeMethodsAccepted": 0,
         "independentPackageMethodsPassed": 17
       },
-      "onlyLiveSDKHandles": [
-        {
-          "sourceCommit": "3df524307a4118c6871d862d8722029f0267fe04",
-          "sourceTag": "reader-owned-sdk-3df5243",
-          "runID": 39420223324,
-          "jobID": 118619026772,
-          "initialStatus": "in_progress",
-          "requestRecord": "docs/legado-ios/core-owned-sdk-3df5243-request.json",
-          "queryPolicy": "One meaningful checkpoint; terminal histories never polled again."
-        }
-      ]
+      "onlyLiveSDKHandles": []
     },
     "nextReadyBatch": [
       "automatic-renewal-feasibility",
@@ -865,7 +860,8 @@
       "originalContentBatchRenderImplementation": "docs/legado-ios/core-original-content-batch-render-step.json",
       "certificateReconciliationImplementation": "docs/legado-ios/core-renewal-certificate-reconciliation-step.json",
       "ownedAdminTrustEnvironmentImplementation": "docs/legado-ios/core-owned-admin-trust-step.json",
-      "ownedAdminTrustFiniteSDKRequest": "docs/legado-ios/core-owned-sdk-3df5243-request.json"
+      "ownedAdminTrustFiniteSDKRequest": "docs/legado-ios/core-owned-sdk-3df5243-request.json",
+      "ownedAdminTrustFiniteSDKResult": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json"
     }
   },
   "stages": [
@@ -5088,6 +5084,10 @@
     "owned-admin-trust-finite-sdk-request": {
       "path": "docs/legado-ios/core-owned-sdk-3df5243-request.json",
       "scope": "One exact changed-source finite Mac tag submitted,20 current Git inputs bound, initial run/job live. Guards in progress; actual new producer/root/admin trust/codesign/stage/native acceptance0."
+    },
+    "owned-admin-trust-finite-sdk-terminal": {
+      "path": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json",
+      "scope": "Actual60 portable and20 Git inputs verified. Actual Mac C/Swift/key/partition and root admin trust readback/normal-user valid identity0-to1 passed. First codesign still item-not-found; removal child124/no absence ACK; owned Keychain delete0. Overall failed, target CMS/MachO and native0."
     }
   },
   "retainedExistingWork": [
