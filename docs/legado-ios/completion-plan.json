@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-sdk-f2d7160-terminal-result.json",
+  "activeBatchRecord": "docs/legado-ios/core-sdk-210fb05-request.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Submit the now reviewed and repaired UI/C3/action/compile-fix App459/462, core320/native107, originalNative17 plus independentmainjs1 and fresh Package18 pair after independent terminal review. The complete actual SDK/Native11 diagnostics are already covered by the integrated three-source repair; no unexplained actual additional failure warrants a new code change. Later ordered callbacks/debounce remain isolated. No per-item/device-package tag.",
-      "alreadyRunningTasks": "No previous SDK/Native run remains live. Both frozenf2 terminals are archived: actual producer and independent Package18 passed; App/JNI methods0 after the same3 test-file errors. All earlier jobs remain closed and must not be repolled.",
+      "nextPlannedCheckpoint": "Collect only the two actual210fb05 handles and archive terminal source-scoped results; repair concrete SDK failures before any additional batch. Continue later ordered UI callbacks in isolated staging while these run. No per-item or new IPA tag.",
+      "alreadyRunningTasks": "Exactly two current frozen210fb05 workflows: SDK App459definitions/462leaves/core320 plus fresh independent Package18; Native original17 and mainjs1 separate with107 source inputs. All f2 and older terminals are archived and must not be repolled. Queued/running is not validation.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "f2d7160d2dc5d5c5585baab4afe3d1da294df70a",
         "sourceTag": "reader-renewal-f2d7160",
@@ -200,7 +200,34 @@
         "AppMethodsExecuted": 0,
         "independentPackageMethodsPassed": 18
       },
-      "onlyLiveSDKHandles": [],
+      "onlyLiveSDKHandles": [
+        {
+          "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
+          "sourceTag": "reader-renewal-210fb05",
+          "runID": 39476533970,
+          "jobID": 118813818474,
+          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39476533970",
+          "createdAt": "2026-10-20T18:38:34Z",
+          "status": "queued",
+          "conclusion": null,
+          "current": [],
+          "queryAgain": true
+        },
+        {
+          "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
+          "sourceTag": "legado-native-reader-test-210fb05",
+          "runID": 39476534384,
+          "jobID": 118813819896,
+          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39476534384",
+          "createdAt": "2026-10-20T18:38:34Z",
+          "status": "in_progress",
+          "conclusion": null,
+          "current": [
+            "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+          ],
+          "queryAgain": true
+        }
+      ],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -1260,6 +1287,18 @@
         "actualAppMethods": 0,
         "uniqueCompilerDiagnostics": 11,
         "allDeterminedCausesRepaired": true
+      },
+      "loginUIExploreActionsSDKRequest": {
+        "record": "docs/legado-ios/core-sdk-210fb05-request.json",
+        "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
+        "AppDefinitions": 459,
+        "AppArgumentLeaves": 462,
+        "coreSourceInputs": 320,
+        "NativeOriginalMethods": 17,
+        "NativeMainjsSeparate": 1,
+        "NativeSourceInputs": 107,
+        "actualNewSDKOrJNIResultYet": false,
+        "freshIndependentPackage18Required": true
       }
     }
   },
