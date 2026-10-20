@@ -53,7 +53,8 @@ object LegadoRuntime {
         if (options.usesOriginalTraditional) OriginalTraditionalRuntime.checkRequestBudget(sourceJson)
         val source = parseObject(sourceJson)
         require(source["mainJs"]?.takeUnless { it.isJsonNull }?.asString?.isNotBlank() == true ||
-            source.has("ruleSearch") || source.has("ruleContent")) {
+            source.has("ruleSearch") || source.has("ruleContent") ||
+            (options.usesOriginalTraditional && source.has("ruleExplore"))) {
             "Source requires mainJs or supported declarative rules"
         }
         val id = UUID.randomUUID().toString()

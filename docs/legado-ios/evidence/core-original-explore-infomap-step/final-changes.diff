@@ -1,0 +1,2290 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -105,6 +105,9 @@
+         let keys: [LegadoEntityStateKey]
+         let snapshot: LegadoEntityBackingSnapshot
+     }
++    // Identity of this existing backing owner instance, not storage authority.
++    // It is stable across short-lived grants and never persisted as a new store.
++    private let exploreScopeIdentity = UUID().uuidString
+     private let cookieOwner: CookieStore
+     private let originalWebCookieStore: @MainActor @Sendable () -> WKHTTPCookieStore
+     private let backing: any LegadoOwnedStateBacking
+@@ -223,6 +226,7 @@
+     }
+ 
+     func dispatch(_ request: LegadoHostRequest) async throws -> String {
++        if request.operation == "explore.owner.scope" { return try explorationOwnerScope(request) }
+         if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
+         if request.operation == "cookie.owner.text" { return try await textCookieOwner(request) }
+         if request.operation != "state.read" && request.operation != "state.commit" {
+@@ -361,6 +365,26 @@
+         }
+     }
+ 
++    /// Only identifies the already granted backing/source/revision. A returned
++    /// scope cannot authorize cache writes; those still use the current grant.
++    private func explorationOwnerScope(_ request: LegadoHostRequest) throws -> String {
++        guard request.requestJSON.utf8.count <= 32_768 else { throw failure("STATE_LIMIT", "Explore owner scope request is oversized") }
++        let decoded: Any
++        do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
++        catch { throw failure("INVALID_STATE_REQUEST", "Explore owner request is not valid JSON") }
++        guard let input = decoded as? [String: Any], let owner = input["owner"] as? String,
++              let sourceURL = input["sourceURL"] as? String, sourceURL.utf8.count <= 8_192,
++              let binding = bindings[owner], binding.sourceURL.utf8.elementsEqual(sourceURL.utf8),
++              revisions[binding.sourceURL] == binding.sourceRevision else {
++            throw failure("INVALID_STATE_OWNER", "Explore context has no current explicit source owner")
++        }
++        let deadline = try cookieReadDeadline(input)
++        try checkCookieRead(request, deadline: deadline)
++        try binding.cookieCancellation.check(deadline: deadline)
++        let scope = String(decoding: try JSONSerialization.data(withJSONObject: [exploreScopeIdentity, binding.sourceURL, binding.sourceRevision]), as: UTF8.self)
++        return try encoded(["scope": scope])
++    }
++
+     /// Single-owner original text operations are deliberately separate from the
+     /// outward atomic state.commit batch. No source/header/cache write occurs
+     /// inside this owner operation, and unsupported input is rejected first.
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt
+@@ -41,6 +41,7 @@
+     headerMapF: Map<String, String>? = null,
+     hasLoginHeader: Boolean = true,
+     private val callTimeout: Long? = null,
++    private val infoMap: io.legado.app.utils.InfoMap? = null,
+ ) : RuleJsExtensions {
+     private val context = coroutineContext.minusKey(ContinuationInterceptor)
+     suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null): io.yuedu.legado.StrResponse {
+@@ -291,7 +292,7 @@
+             it["book"] = ruleData as? Book
+             it["source"] = source
+             it["result"] = result
+-            it["infoMap"] = null
++            it["infoMap"] = infoMap
+         }
+         val scope = environment.scopes.getScope(source?.jsLib, context)
+             ?: environment.scopes.getCryptoScope(source ?: this, context)
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt
+@@ -15,7 +15,7 @@
+ 
+ /** Retained WebBook await orchestration through the single task-owned JVM HTTP.
+  * Android launch/UI wrappers, durable saving, mainJs, media, file downloads,
+- * explore UI navigation/infoMap and contentBatch remain explicit unsupported.
++ * explore UI navigation/rendering and contentBatch remain explicit unsupported.
+  * This class name does not imply the full Android WebBook ABI or App routing.
+  */
+ object WebBook {
+@@ -43,7 +43,61 @@
+     suspend fun getContentBatchAwait(bookSource: BookSource, book: Book, chapters: List<BookChapter>): List<BookChapter> =
+         unsupportedRule("original WebBook contentBatch persistence")
+     suspend fun exploreBookAwait(bookSource: BookSource, url: String, page: Int? = 1): ArrayList<SearchBook> =
+-        unsupportedRule("original WebBook explore navigation/infoMap")
++        owned(bookSource) { exploreBookAwaitOwned(bookSource, url, page) }
++    private suspend fun exploreBookAwaitOwned(bookSource: BookSource, url: String, page: Int?): ArrayList<SearchBook> {
++        val ruleData = RuleData()
++        val sourceUrl = bookSource.bookSourceUrl
++        val exploreInfoMap = OriginalExploreContexts.peek()
++        val analyzeUrl = AnalyzeUrl(
++            mUrl = url,
++            page = page,
++            baseUrl = sourceUrl,
++            source = bookSource,
++            ruleData = ruleData,
++            coroutineContext = currentCoroutineContext(),
++            environment = bookSource.environment,
++            infoMap = exploreInfoMap
++        )
++        val checkJs = bookSource.loginCheckJs
++        val res = kotlin.runCatching {
++            analyzeUrl.getStrResponseAwait().let {
++                if (!checkJs.isNullOrBlank()) { //检测书源是否已登录
++                    analyzeUrl.evalJS(checkJs, it) as StrResponse
++                } else {
++                    it
++                }
++            }
++        }.getOrElse { throwable ->
++            if (throwable is Exception) { OriginalExploreContexts.rethrowMapTypeFailure(throwable); rethrowRuleControlFailure(throwable) }
++            currentCoroutineContext().ensureActive()
++            if (!checkJs.isNullOrBlank()) {
++                val errResponse = analyzeUrl.getErrStrResponse(throwable)
++                try {
++                    (analyzeUrl.evalJS(checkJs, errResponse) as StrResponse).also {
++                        if (it.code() == 500) {
++                            throw throwable
++                        }
++                    }
++                } catch (checkError: Throwable) {
++                    if (checkError is Exception) { OriginalExploreContexts.rethrowMapTypeFailure(checkError); rethrowRuleControlFailure(checkError) }
++                    currentCoroutineContext().ensureActive()
++                    throw throwable
++                }
++            } else {
++                throw throwable
++            }
++        }
++        checkRedirect(bookSource, res)
++        return BookList.analyzeBookList(
++            bookSource = bookSource,
++            ruleData = ruleData,
++            analyzeUrl = analyzeUrl,
++            baseUrl = res.url(),
++            body = res.body(),
++            isSearch = false
++        )
++    }
++
+     private suspend fun searchBookAwaitOwned(
+         bookSource: BookSource,
+         key: String,
+--- /dev/null
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt
+@@ -0,0 +1,47 @@
++package io.legado.app.utils
++
++import io.yuedu.legado.originalrule.GSON
++import io.yuedu.legado.originalrule.OriginalExploreContexts
++import io.yuedu.legado.originalrule.fromJsonObject
++import java.util.Collections
++
++/** Port of the locked utils/InfoMap.kt. Cache calls bind to the current original
++ * invocation; the process LRU object never retains an old environment or owner.
++ * save() marks only; original UI pause/savePending or explicit saveNow persists.
++ * The live backing/view ABI remains java.util.Map. A checked String map is an
++ * embedding boundary: erased raw Java maps cannot retain source/task objects. */
++class InfoMap(val sourceUrl: String) : MutableMap<String, String> {
++    private var actualMap: MutableMap<String, String>
++    var needSave = false
++    private var saveTime = 0
++    init {
++        val cache = OriginalExploreContexts.initialCache(sourceUrl).get("infoMap_${sourceUrl}")
++        actualMap = checkedCopy(GSON.fromJsonObject<MutableMap<String, String>>(cache).getOrNull() ?: emptyMap())
++    }
++    @JvmOverloads fun save(time: Int = 0, need: Boolean = true) {
++        OriginalExploreContexts.check(this)
++        needSave = need; saveTime = time
++    }
++    fun saveNow() {
++        OriginalExploreContexts.check(this)
++        val json = GSON.toJson(actualMap)
++        OriginalExploreContexts.cache(this).put("infoMap_${sourceUrl}", json, saveTime)
++        needSave = false
++    }
++    fun get(): MutableMap<String, String> { OriginalExploreContexts.check(this); return actualMap }
++    fun set(value: Map<String, String>) { OriginalExploreContexts.check(this); actualMap = checkedCopy(value) }
++    private fun checkedCopy(value: Map<String, String>): MutableMap<String, String> =
++        Collections.checkedMap(LinkedHashMap<String, String>(), String::class.java, String::class.java).also { it.putAll(value) }
++    override fun get(key: String): String? { OriginalExploreContexts.check(this); return actualMap[key] }
++    override fun put(key: String, value: String): String? { OriginalExploreContexts.check(this); return actualMap.put(key, value) }
++    override fun remove(key: String): String? { OriginalExploreContexts.check(this); return actualMap.remove(key) }
++    override fun putAll(from: Map<out String, String>) { OriginalExploreContexts.check(this); actualMap.putAll(from) }
++    override fun containsKey(key: String): Boolean { OriginalExploreContexts.check(this); return actualMap.containsKey(key) }
++    override fun containsValue(value: String): Boolean { OriginalExploreContexts.check(this); return actualMap.containsValue(value) }
++    override val size: Int get() { OriginalExploreContexts.check(this); return actualMap.size }
++    override val entries: MutableSet<MutableMap.MutableEntry<String, String>> get() { OriginalExploreContexts.check(this); return actualMap.entries }
++    override val keys: MutableSet<String> get() { OriginalExploreContexts.check(this); return actualMap.keys }
++    override val values: MutableCollection<String> get() { OriginalExploreContexts.check(this); return actualMap.values }
++    override fun isEmpty(): Boolean { OriginalExploreContexts.check(this); return actualMap.isEmpty() }
++    override fun clear() { OriginalExploreContexts.check(this); actualMap.clear() }
++}
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt
+@@ -53,7 +53,8 @@
+         if (options.usesOriginalTraditional) OriginalTraditionalRuntime.checkRequestBudget(sourceJson)
+         val source = parseObject(sourceJson)
+         require(source["mainJs"]?.takeUnless { it.isJsonNull }?.asString?.isNotBlank() == true ||
+-            source.has("ruleSearch") || source.has("ruleContent")) {
++            source.has("ruleSearch") || source.has("ruleContent") ||
++            (options.usesOriginalTraditional && source.has("ruleExplore"))) {
+             "Source requires mainJs or supported declarative rules"
+         }
+         val id = UUID.randomUUID().toString()
+--- /dev/null
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt
+@@ -0,0 +1,86 @@
++package io.yuedu.legado.originalrule
++
++import io.legado.app.utils.InfoMap
++import com.script.ScriptException
++import org.htmlunit.corejs.javascript.WrappedException
++import kotlinx.coroutines.ThreadContextElement
++import kotlinx.coroutines.sync.Mutex
++import kotlinx.coroutines.sync.withLock
++import kotlinx.coroutines.withContext
++import kotlin.coroutines.AbstractCoroutineContextElement
++import kotlin.coroutines.CoroutineContext
++
++/** Same process-lifetime LRU(99) as the original ExploreAdapter. The Host's
++ * scope identifies its actual backing/source/revision; it grants no cache/file
++ * permission. Every persisted access still uses this invocation's RuleCache.
++ * Entries retain no RuntimeTask, RuleEnvironment, coroutine or old grant. */
++internal object OriginalExploreContexts {
++    private class Entry(val sourceURL: String) {
++        val mutex = Mutex()
++        var map: InfoMap? = null
++    }
++    private val maps = LinkedHashMap<String, Entry>(16, .75f, true)
++    private val current = ThreadLocal<Access?>()
++    private class Access(val sourceURL: String, val cache: RuleCache, val check: () -> Unit, val entry: Entry) :
++        ThreadContextElement<Access?>, AbstractCoroutineContextElement(Key) {
++        companion object Key : CoroutineContext.Key<Access>
++        override fun updateThreadContext(context: CoroutineContext): Access? = current.get().also { current.set(this) }
++        override fun restoreThreadContext(context: CoroutineContext, oldState: Access?) {
++            if (oldState == null) current.remove() else current.set(oldState)
++        }
++    }
++    suspend fun <T> withScope(scope: String, sourceURL: String, environment: RuleEnvironment,
++                              create: Boolean, action: suspend (InfoMap?) -> T): T {
++        require(scope.isNotEmpty() && scope.toByteArray(Charsets.UTF_8).size <= 32_768) { "Invalid original explore owner scope" }
++        val entry = synchronized(maps) {
++            val existing = maps[scope]
++            if (existing != null) {
++                kotlin.check(existing.sourceURL == sourceURL) { "Explore scope belongs to another source" }
++                existing
++            } else if (create) {
++                Entry(sourceURL).also {
++                    maps[scope] = it
++                    while (maps.size > 99) maps.remove(maps.keys.first())
++                }
++            } else Entry(sourceURL) // An unopened original explore really has no InfoMap.
++        }
++        return entry.mutex.withLock {
++            environment.ensureOpen()
++            withContext(Access(sourceURL, environment.cache, environment::ensureOpen, entry)) {
++                if (create && entry.map == null) entry.map = InfoMap(sourceURL)
++                try { action(entry.map) }
++                catch (error: Exception) { rethrowMapTypeFailure(error); throw error }
++            }
++        }
++    }
++    /** Translate only escaping checked-Java-Map type failures in this original
++     * context. JS may still catch them; no global Rhino/mainJs policy changes. */
++    internal fun rethrowMapTypeFailure(error: Exception) {
++        var current: Throwable = error
++        repeat(32) {
++            current = when (val failure = current) {
++                is ClassCastException -> {
++                    if (failure.stackTrace.any { it.className.startsWith("java.util.Collections\$Checked") || it.className == InfoMap::class.java.name })
++                        unsupportedRule("Original exploration Java Map accepts String keys and String values; object values cannot retain old tasks")
++                    return
++                }
++                is ScriptException -> failure.cause ?: return
++                is WrappedException -> failure.wrappedException ?: return
++                else -> return
++            }
++        }
++    }
++    internal fun initialCache(sourceURL: String): RuleCache {
++        val access = current.get() ?: unsupportedRule("InfoMap needs its active original exploration context")
++        access.check()
++        kotlin.check(access.sourceURL == sourceURL) { "InfoMap belongs to another source" }
++        return access.cache
++    }
++    internal fun check(map: InfoMap) {
++        val access = current.get() ?: unsupportedRule("InfoMap needs its active original exploration context")
++        access.check()
++        kotlin.check(access.sourceURL == map.sourceUrl && access.entry.map === map) { "InfoMap belongs to another active exploration context" }
++    }
++    internal fun cache(map: InfoMap): RuleCache { check(map); return current.get()!!.cache }
++    internal fun peek(): InfoMap? { current.get()?.let { it.check(); return it.entry.map }; return null }
++}
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
+@@ -34,6 +34,7 @@
+     dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
+     private val environment: () -> RuleEnvironment,
+ ) : RulePlatform() {
++    private val hostDispatch = dispatch
+     override val userAgent: String? get() = task.session.options.userAgent
+     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
+     init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }
+@@ -53,6 +54,18 @@
+             val owner = appCookieOwner ?: unsupportedRule("original CookieStore.clear requires the explicit App owner")
+             owner.clear()
+         }
++    }
++
++    override fun exploreOwnerScope(source: BaseSource): String {
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        check(source.getRuleEnvironment() === environment()) { "Source belongs to another environment" }
++        val owner = task.session.options.stateOwner ?: unsupportedRule("original explore needs the explicit source owner")
++        val result = hostDispatch(task, "explore.owner.scope", io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to source.getKey()))
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        val scope = result["scope"]
++        if (scope == null || !scope.isJsonPrimitive || !scope.asJsonPrimitive.isString || scope.asString.isEmpty()
++            || scope.asString.toByteArray(Charsets.UTF_8).size > 32_768) throw RulePersistenceException("Original explore owner omitted its bounded stable scope")
++        return scope.asString
+     }
+ 
+     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
+@@ -39,6 +39,7 @@
+     open suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T =
+         unsupportedRule("original WebBook execution owner")
+     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
++    open fun exploreOwnerScope(source: BaseSource): String = unsupportedRule("original explore owner scope")
+     open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
+     open val userAgent: String? = null
+     open val cookie: RuleCookieHost = RuleCookieHost()
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt
+@@ -14,6 +14,9 @@
+ import io.yuedu.legado.OriginalRuleDto.text
+ import io.yuedu.legado.originalrule.rethrowRuleControlFailure
+ import kotlinx.coroutines.runBlocking
++import kotlinx.coroutines.currentCoroutineContext
++import com.script.rhino.runScriptWithContext
++import io.yuedu.legado.originalrule.OriginalExploreContexts
+ import java.io.IOException
+ 
+ /** Opt-in business execution at the existing public JSON/JNI boundary. This is not a probe,
+@@ -33,6 +36,8 @@
+     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
+         val fields = when (operation) {
+             "search" -> setOf("key", "page", "timeoutMs")
++            "explore" -> setOf("url", "page", "timeoutMs")
++            "exploreContext" -> setOf("action", "script", "timeoutMs")
+             "details", "getBookInfo" -> setOf("book", "canReName", "timeoutMs")
+             "toc", "getChapters" -> setOf("book", "runPreUpdateJs", "isFromBookInfo", "timeoutMs")
+             "content", "getContent" -> setOf("book", "chapter", "nextChapterUrl", "needSave", "timeoutMs")
+@@ -48,6 +53,38 @@
+                 val source = LegadoRuntime.originalBookSource(task, environment)
+                 val result = runBlocking(task.job) {
+                     when (operation) {
++                        "explore" -> {
++                            val page = if (input.has("page") && input["page"].isJsonNull) null else input.int("page", 1)
++                            val scope = environment.platform.exploreOwnerScope(source)
++                            OriginalExploreContexts.withScope(scope, source.bookSourceUrl, environment, create = false) {
++                                val books = WebBook.exploreBookAwait(source, input.requiredText("url"), page)
++                                jsonObject("books" to JsonArray().apply { books.forEach { add(OriginalRuleDto.book(it)) } })
++                            }
++                        }
++                        "exploreContext" -> {
++                            val action = input.requiredText("action")
++                            require(action in setOf("open", "evaluate", "savePending")) { "Unknown original exploration context action" }
++                            require((action == "evaluate") == input.has("script")) { "Only exploration evaluate takes its authored UI expression" }
++                            val scope = environment.platform.exploreOwnerScope(source)
++                            environment.platform.runWebBook(currentCoroutineContext()) {
++                                OriginalExploreContexts.withScope(scope, source.bookSourceUrl, environment, create = action == "open") { map ->
++                                    var result: String? = null
++                                    if (action == "evaluate") {
++                                        val current = map ?: throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Open the original exploration context before evaluating its UI expression")
++                                        try {
++                                            val context = currentCoroutineContext()
++                                            result = runScriptWithContext(context) { source.evalJS(input.requiredText("script")) { put("infoMap", current) } }.toString()
++                                        } catch (error: Exception) {
++                                            OriginalExploreContexts.rethrowMapTypeFailure(error)
++                                            rethrowRuleControlFailure(error)
++                                            task.ensureActiveForRuntime()
++                                            environment.platform.log("${source.getTag()} exploreUi err: ${error.localizedMessage ?: error.toString()}")
++                                        }
++                                    } else if (action == "savePending" && map?.needSave == true) map.saveNow()
++                                    jsonObject("infoMap" to map?.get(), "needSave" to (map?.needSave ?: false), "result" to result)
++                                }
++                            }
++                        }
+                         "search" -> {
+                             val page = if (input.has("page") && input["page"].isJsonNull) null else input.int("page", 1)
+                             val books = WebBook.searchBookAwait(source, input.requiredText("key"), page)
+--- a/Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java
++++ b/Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java
+@@ -36,6 +36,7 @@
+         originalTraditionalSmoke(true, false);
+         originalTraditionalSmoke(true, true);
+         originalBrowserProtocolSmoke();
++        originalExploreInfoMapSmoke();
+     }
+ 
+     // ASCII-only controlled smoke fixture. Production uses retained original
+@@ -229,4 +230,60 @@
+             System.out.println("PACKAGED_APP_COOKIE_OWNER_BROWSER_PROTOCOL_OK orderedActions=4 partialEffectsPreserved=true actualWebKitExecuted=false");
+         } finally { if(session!=null)checked(LegadoRuntime.closeSession(session)); LegadoRuntime.setHostCallback(null); server.stop(0); }
+     }
++
++    /** Assembled-JAR public business/lifecycle smoke with one controlled Host
++     * and loopback. This in-memory callback fixture does not assert native disk
++     * persistence, App integration, Android, JNI or Swift SDK execution. */
++    static void originalExploreInfoMapSmoke() throws Exception {
++        var values=new HashMap<String,String>(); var revision=new long[]{0};
++        var requests=new AtomicInteger(); var writes=new AtomicInteger();
++        var server=HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}),0),0);
++        server.createContext("/", exchange -> {
++            requests.incrementAndGet();
++            var query=exchange.getRequestURI().getRawQuery();
++            if(query==null || !query.contains("genre=owned"))throw new AssertionError("InfoMap did not reach original URL JS");
++            var bytes=("<a class='book' href='/book'>"+(query.contains("p=2")?"P2":"P1")+"</a>").getBytes(StandardCharsets.UTF_8);
++            exchange.sendResponseHeaders(200,bytes.length);
++            try(var body=exchange.getResponseBody()){body.write(bytes);}finally{exchange.close();}
++        });server.start();
++        var origin="http://127.0.0.1:"+server.getAddress().getPort();
++        LegadoRuntime.setHostCallback((task,operation,raw)->{
++            if(operation.equals("task.cancel"))return "{}";
++            var input=JsonParser.parseString(raw).getAsJsonObject();
++            if(!input.get("owner").getAsString().equals("ordinary-explore-owner") || !input.has("deadlineEpochMs"))throw new AssertionError("Missing actual exploration owner/deadline");
++            var out=new JsonObject();
++            synchronized(values){
++                if(operation.equals("explore.owner.scope"))out.addProperty("scope","ordinary-owned-backing-source-revision");
++                else if(operation.equals("state.read")){
++                    out.addProperty("revision",revision[0]);var selected=new JsonObject();
++                    for(var key:input.getAsJsonArray("keys")){var value=values.get(key.getAsString());if(value!=null)selected.addProperty(key.getAsString(),value);}
++                    out.add("values",selected);
++                }else if(operation.equals("state.commit")){
++                    var matches=input.get("revision").getAsLong()==revision[0];
++                    if(matches){for(var e:input.getAsJsonObject("changes").entrySet()){if(e.getValue().isJsonNull())values.remove(e.getKey());else values.put(e.getKey(),e.getValue().getAsString());}revision[0]++;writes.incrementAndGet();}
++                    out.addProperty("committed",matches);
++                }else throw new AssertionError(operation);
++            }return out.toString();
++        });
++        var source=JsonParser.parseString("{\"enabledCookieJar\":false,\"ruleExplore\":{\"bookList\":\".book\",\"name\":\"text\",\"bookUrl\":\"href\"}}").getAsJsonObject();source.addProperty("bookSourceUrl",origin+"/source");
++        java.util.function.BiFunction<String,String,JsonObject> call=(operation,input)->{
++            var session=checked(LegadoRuntime.createSession(source.toString(),"{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\"ordinary-explore-owner\"}")).get("sessionId").getAsString();
++            try{return checked(LegadoRuntime.execute(session,"ordinary-explore-"+java.util.UUID.randomUUID(),operation,input)).getAsJsonObject("result");}
++            finally{checked(LegadoRuntime.closeSession(session));}
++        };
++        try{
++            call.apply("exploreContext","{\"action\":\"open\"}");
++            call.apply("exploreContext","{\"action\":\"evaluate\",\"script\":\"infoMap.put('genre','owned'); infoMap.save(); 'ready'\"}");
++            for(int page=1;page<=2;page++){
++                var input=new JsonObject();input.addProperty("page",page);
++                input.addProperty("url","@js:infoMap.put('page',String(page)); '"+origin+"/list?p='+page+'&genre='+infoMap.get('genre')");
++                var book=call.apply("explore",input.toString()).getAsJsonArray("books").get(0).getAsJsonObject();
++                if(!book.get("name").getAsString().equals("P"+page))throw new AssertionError(book);
++            }
++            var saved=call.apply("exploreContext","{\"action\":\"savePending\"}");
++            if(saved.get("needSave").getAsBoolean() || !saved.getAsJsonObject("infoMap").get("page").getAsString().equals("2") || writes.get()!=1 || requests.get()!=2)throw new AssertionError(saved);
++            if(values.keySet().stream().noneMatch(k->k.contains("infoMap_")))throw new AssertionError("Original CacheManager key not persisted");
++            System.out.println("PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK pages=2 sameContextAcrossSessions=true explicitSave=true nativeExecuted=false");
++        }finally{LegadoRuntime.setHostCallback(null);server.stop(0);}
++    }
+ }
+--- /dev/null
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalExploreRuntimeTest.kt
+@@ -0,0 +1,265 @@
++package io.yuedu.legado
++
++import com.google.gson.JsonObject
++import com.sun.net.httpserver.HttpServer
++import io.legado.app.utils.InfoMap
++import io.yuedu.legado.originalrule.*
++import io.yuedu.legado.reference.OriginalInfoMapOracle
++import io.yuedu.legado.reference.ReferenceInfoMapCache
++import kotlinx.coroutines.runBlocking
++import org.junit.Assert.*
++import org.junit.Test
++import java.io.Closeable
++import java.net.InetAddress
++import java.net.InetSocketAddress
++import java.nio.file.Files
++import java.util.UUID
++import java.util.concurrent.CopyOnWriteArrayList
++import java.util.concurrent.CountDownLatch
++import java.util.concurrent.Executors
++import java.util.concurrent.TimeUnit
++import java.util.concurrent.atomic.AtomicLong
++
++/** Actual public runtime/host + loopback/file owner, not Android or native SDK. */
++class OriginalExploreRuntimeTest {
++    @Test(timeout = 20_000) fun pinnedInfoMapBodiesKeepMapIdentitySaveFlagsFailureAndSecondsContract() = runBlocking {
++        ReferenceInfoMapCache.reset()
++        val source = "https://oracle.invalid/${UUID.randomUUID()}"
++        val key = "infoMap_$source"
++        ReferenceInfoMapCache.values[key] = "{\"first\":\"old\"}"
++        val oracle = OriginalInfoMapOracle(source)
++        val clock = AtomicLong(100_000)
++        RuleEnvironment(clock = clock::get).use { env ->
++            env.cache.put(key, "{\"first\":\"old\"}")
++            lateinit var port: InfoMap
++            OriginalExploreContexts.withScope(UUID.randomUUID().toString(), source, env, create = true) { current ->
++                port = requireNotNull(current)
++                assertEquals(oracle.get(), port.get())
++                for (map in listOf<MutableMap<String, String>>(oracle, port)) {
++                    map["first"] = "new"; map["second"] = "two"; map.entries.first { it.key == "second" }.setValue("changed")
++                }
++                oracle.save(2, false); port.save(2, false)
++                assertFalse(oracle.needSave); assertFalse(port.needSave)
++                oracle.save(-1); port.save(-1)
++                assertTrue(oracle.needSave); assertTrue(port.needSave)
++                ReferenceInfoMapCache.fail = true
++                try { oracle.saveNow(); fail("oracle must retain pending flag on real cache failure") } catch (_: java.io.IOException) {}
++                assertTrue(oracle.needSave)
++                ReferenceInfoMapCache.fail = false
++                oracle.saveNow(); port.saveNow()
++                assertFalse(oracle.needSave); assertFalse(port.needSave)
++                assertEquals(-1, ReferenceInfoMapCache.writes.last().third)
++                assertNull(env.cache.get(key)) // Negative seconds expire in the existing CacheManager port.
++                assertEquals(oracle.get(), port.get()) // The live InfoMap is not discarded on cache expiry.
++                // Original deadline==0 is a sentinel, even when reached by a
++                // synthetic epoch clock plus negative seconds.
++                clock.set(1_000); port.save(-1); port.saveNow()
++                assertNotNull(env.cache.get(key))
++                val copy = linkedMapOf("copy" to "kept")
++                oracle.set(copy); port.set(copy); copy["copy"] = "later"
++                assertEquals(oracle.get(), port.get()); assertEquals("kept", port["copy"])
++                assertSame(port.get(), port.get())
++            }
++            try { port.saveNow(); fail("A retained map must not persist through a closed invocation context") }
++            catch (_: UnsupportedRuleCapability) {}
++        }
++    }
++
++    @Test(timeout = 30_000) fun publicExploreSharesUiAndUrlMapAndRunsRetainedCssXPathJsonRegexAndFallback() {
++        val exploreOnly = jsonObject("bookSourceUrl" to "https://explore-only.invalid", "ruleExplore" to jsonObject("bookList" to ".book"))
++        assertFalse(parseObject(LegadoRuntime.createSession(exploreOnly.toString()))["ok"].asBoolean)
++        Owned().use { f ->
++            f.exploreOnly = true
++            val absent = f.call("explore", jsonObject("url" to "@js: '${f.origin}/css?absent='+(infoMap===null)"))
++            assertEquals("CSS", absent["books"].asJsonArray[0].asJsonObject["name"].asString)
++            assertTrue(f.requests.last().contains("absent=true"))
++            val unopened = f.execute("exploreContext", jsonObject("action" to "evaluate", "script" to "'never'"))
++            assertEquals("UNSUPPORTED_CAPABILITY", unopened["error"].asJsonObject["code"].asString)
++            assertTrue(f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject.entrySet().isEmpty())
++            val ui = f.call("exploreContext", jsonObject("action" to "evaluate", "script" to "infoMap.put('genre','science'); infoMap.save(); source.put('ui','same-source'); 'ui-value'"))
++            assertEquals("ui-value", ui["result"].asString); assertTrue(ui["needSave"].asBoolean)
++            val rules = listOf(
++                "css" to jsonObject("bookList" to ".book", "name" to "text", "bookUrl" to "href"),
++                "xpath" to jsonObject("bookList" to "@XPath://a", "name" to "@XPath:text()", "bookUrl" to "@XPath:@href"),
++                "json" to jsonObject("bookList" to "$.items", "name" to "$.name", "bookUrl" to "$.url"),
++                "regex" to jsonObject("bookList" to ":BOOK\\[([^|]*)\\|([^\\]]*)\\]", "name" to "\$1", "bookUrl" to "\$2"))
++            for ((kind, rule) in rules) {
++                val url = "@js:if(source.get('ui')!='same-source') throw Error('wrong source'); infoMap.put('lastPage',String(page)); java.put('urlPage',String(page)); '${f.origin}/$kind?p='+page+'&genre='+infoMap.get('genre')"
++                val response = f.call("explore", jsonObject("url" to url, "page" to 2), rule = rule)
++                val book = response["books"].asJsonArray.single().asJsonObject
++                assertEquals(kind.uppercase(), book["name"].asString)
++                assertEquals("2", parseObject(book["variable"].asString)["urlPage"].asString)
++                assertTrue(f.requests.last().contains("p=2&genre=science"))
++            }
++            f.exploreOnly = false // The original fallback ruleSearch remains available when authored.
++            val fallback = f.call("explore", jsonObject("url" to "/css"), rule = jsonObject("bookList" to ""))
++            assertEquals("CSS", fallback["books"].asJsonArray.single().asJsonObject["name"].asString)
++            assertEquals("2", f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject["lastPage"].asString)
++            assertEquals(6, f.requests.size)
++        }
++    }
++
++    @Test(timeout = 30_000) fun contextSurvivesNewRuntimeGrantsAndLruEvictionWhileOnlyPendingSavePersists() {
++        Owned().use { f ->
++            f.call("exploreContext", jsonObject("action" to "open"))
++            f.call("exploreContext", jsonObject("action" to "evaluate", "script" to "infoMap.put('memory','retained'); infoMap.save(); 'done'"))
++            assertEquals("retained", f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject["memory"].asString)
++            f.failWrites = true
++            val failure = f.execute("exploreContext", jsonObject("action" to "savePending"))
++            assertEquals("STATE_IO", failure["error"].asJsonObject["code"].asString)
++            assertTrue(f.call("exploreContext", jsonObject("action" to "open"))["needSave"].asBoolean)
++            f.failWrites = false
++            assertFalse(f.call("exploreContext", jsonObject("action" to "savePending"))["needSave"].asBoolean)
++            f.generation++ // New actual backing/revision scope; cache file owner remains the same.
++            assertEquals("retained", f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject["memory"].asString)
++            f.call("exploreContext", jsonObject("action" to "evaluate", "script" to "infoMap.put('expire','past'); infoMap.save(-1); 'done'"))
++            f.call("exploreContext", jsonObject("action" to "savePending"))
++            assertEquals("past", f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject["expire"].asString)
++            f.generation++
++            assertTrue(f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject.entrySet().isEmpty())
++            f.call("exploreContext", jsonObject("action" to "evaluate", "script" to "infoMap.put('unsaved','discard'); infoMap.save(0,false); 'done'"))
++            f.call("exploreContext", jsonObject("action" to "savePending"))
++            for (index in 0..99) f.call("exploreContext", jsonObject("action" to "open"), sourceID = "lru-$index")
++            assertTrue(f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject.entrySet().isEmpty())
++            assertTrue(f.requests.isEmpty())
++        }
++    }
++
++    @Test(timeout = 25_000) fun cancellationOfWaitingContextDoesNotMutateAnotherLiveInvocationOrCrossOwners() {
++        Owned().use { f ->
++            f.call("exploreContext", jsonObject("action" to "open"))
++            val pool = Executors.newFixedThreadPool(2)
++            try {
++                val first = pool.submit<JsonObject> { f.execute("explore", jsonObject("url" to "@js: infoMap.put('first','accepted'); '${f.origin}/held'")) }
++                assertTrue(f.heldEntered.await(5, TimeUnit.SECONDS))
++                val secondID = "waiting-${UUID.randomUUID()}"; f.waitForScopeTask = secondID
++                val second = pool.submit<JsonObject> { f.execute("exploreContext", jsonObject("action" to "evaluate", "script" to "infoMap.put('late','forbidden'); 'late'"), taskID = secondID) }
++                assertTrue(f.waitingScope.await(5, TimeUnit.SECONDS))
++                LegadoRuntime.cancel(secondID)
++                assertEquals("CANCELLED", second.get(4, TimeUnit.SECONDS)["error"].asJsonObject["code"].asString)
++                f.heldRelease.countDown(); assertTrue(first.get(5, TimeUnit.SECONDS)["ok"].asBoolean)
++                val map = f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject
++                assertEquals("accepted", map["first"].asString); assertFalse(map.has("late"))
++                val other = f.call("exploreContext", jsonObject("action" to "open"), sourceID = "other-source")["infoMap"].asJsonObject
++                assertTrue(other.entrySet().isEmpty())
++            } finally { f.heldRelease.countDown(); pool.shutdownNow(); assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS)) }
++        }
++    }
++
++    @Test(timeout = 25_000) fun rawJavaMapAndMutableViewsCannotKeepSourceOrTaskObjectsInTheProcessLru() {
++        Owned().use { f ->
++            f.call("exploreContext", jsonObject("action" to "open"))
++            f.call("exploreContext", jsonObject("action" to "evaluate", "script" to "infoMap.put('safe','kept'); 'ready'"))
++            val attempts = listOf(
++                "var m=new Packages.java.util.LinkedHashMap();m.put('safe','changed');m.put('retained',source);infoMap.set(m)",
++                "var m=new Packages.java.util.LinkedHashMap();m.put('safe','changed');m.put('retained',source);infoMap.putAll(m)",
++                "var m=new Packages.java.util.HashMap();m.put(source,'retained');infoMap.set(m)",
++                "infoMap.get().put('retained',source)",
++                "infoMap.get().entrySet().iterator().next().setValue(source)",
++                "infoMap.entries.iterator().next().setValue(source)",
++                "infoMap.compute('retained',new JavaAdapter(Packages.java.util.function.BiFunction,{apply:function(k,v){return source;}}))",
++                "infoMap.computeIfAbsent('retained',new JavaAdapter(Packages.java.util.function.Function,{apply:function(k){return source;}}))",
++                "infoMap.get().compute('retained',new JavaAdapter(Packages.java.util.function.BiFunction,{apply:function(k,v){return source;}}))",
++                "infoMap.get().replaceAll(new JavaAdapter(Packages.java.util.function.BiFunction,{apply:function(k,v){return source;}}))")
++            for (script in attempts) {
++                val failure = f.execute("exploreContext", jsonObject("action" to "evaluate", "script" to script))
++                assertFalse(script + failure + f.logs, failure["ok"].asBoolean)
++                assertEquals(script + failure, "UNSUPPORTED_CAPABILITY", failure["error"].asJsonObject["code"].asString)
++                val map = f.call("exploreContext", jsonObject("action" to "open"))["infoMap"].asJsonObject
++                assertEquals(script + map, setOf("safe"), map.keySet()); assertEquals("kept", map["safe"].asString)
++            }
++            val caught = f.call("exploreContext", jsonObject("action" to "evaluate", "script" to "try { infoMap.get().put('retained',source); } catch(e) { infoMap.put('caught','yes'); } infoMap.get().values().remove('kept'); infoMap.put('safe','view-updated'); 'continued'"))
++            assertEquals("continued", caught["result"].asString)
++            assertEquals("yes", caught["infoMap"].asJsonObject["caught"].asString)
++            assertEquals("view-updated", caught["infoMap"].asJsonObject["safe"].asString)
++            // The URL JS path shares the same gate; no request occurs on failure.
++            val failedUrl = f.execute("explore", jsonObject("url" to "@js:infoMap.get().put('retained',source); '${f.origin}/css'"))
++            assertEquals("UNSUPPORTED_CAPABILITY", failedUrl["error"].asJsonObject["code"].asString)
++            assertTrue(f.requests.isEmpty())
++            val failedCheck = f.execute("explore", jsonObject("url" to "/css"), loginCheckJs = "if(result.code()==500) java.connect('${f.origin}/recovered'); else { infoMap.get().put('retained',source); result; }")
++            assertEquals("UNSUPPORTED_CAPABILITY", failedCheck["error"].asJsonObject["code"].asString)
++            assertEquals(listOf("/css"), f.requests.toList()) // No login recovery HTTP after the controlled type failure.
++        }
++    }
++
++    private class Owned : Closeable {
++        private val directory = Files.createTempDirectory("original-explore-public-")
++        private val adapter = FileRulePersistenceAdapter(directory)
++        private val state = RulePersistenceHost(adapter)
++        private val identity = UUID.randomUUID().toString()
++        private val grants = java.util.concurrent.ConcurrentHashMap<String, String>()
++        val logs = CopyOnWriteArrayList<String>()
++        private val logger = java.util.logging.Logger.getLogger("io.yuedu.legado.originalrule")
++        private val previousLevel = logger.level
++        private val handler = object : java.util.logging.Handler() {
++            override fun publish(record: java.util.logging.LogRecord) { logs += record.message }
++            override fun flush() {}
++            override fun close() {}
++        }
++        val requests = CopyOnWriteArrayList<String>()
++        val heldEntered = CountDownLatch(1); val heldRelease = CountDownLatch(1); val waitingScope = CountDownLatch(1)
++        @Volatile var waitForScopeTask: String? = null
++        @Volatile var failWrites = false
++        var generation = 0
++        var exploreOnly = false
++        private val serverPool = Executors.newFixedThreadPool(2)
++        private val server = HttpServer.create(InetSocketAddress(InetAddress.getByAddress(byteArrayOf(127,0,0,1)),0),0).apply {
++            executor = serverPool
++            createContext("/") { e ->
++                requests += e.requestURI.toString()
++                if (e.requestURI.path == "/held") { heldEntered.countDown(); check(heldRelease.await(15, TimeUnit.SECONDS)) }
++                val kind = e.requestURI.path.substringAfterLast('/')
++                val body = when(kind) {
++                    "json" -> "{\"items\":[{\"name\":\"JSON\",\"url\":\"/book\"}]}"
++                    "regex" -> "BOOK[REGEX|/book]"
++                    else -> "<a class='book' href='/book'>${if(kind == "held") "CSS" else kind.uppercase()}</a>"
++                }.toByteArray(Charsets.UTF_8)
++                e.sendResponseHeaders(200,body.size.toLong()); e.responseBody.use { it.write(body) }; e.close()
++            }; start()
++        }
++        val origin = "http://127.0.0.1:${server.address.port}"
++        init {
++            logger.addHandler(handler); logger.level = java.util.logging.Level.FINE
++            LegadoRuntime.setHostCallback { task, op, raw ->
++                if (op == "task.cancel") "{}" else {
++                    val input = parseObject(raw)
++                    val owner = input["owner"].asString
++                    val source = requireNotNull(grants[owner]) { "Revoked controlled source grant" }
++                    if (op == "explore.owner.scope") {
++                        check(input["sourceURL"].asString == source); check(input.has("deadlineEpochMs"))
++                        if (task == waitForScopeTask) waitingScope.countDown()
++                        jsonObject("scope" to "$identity|$generation|$source").toString()
++                    } else {
++                        check(op in setOf("state.read", "state.commit"))
++                        if (op == "state.commit" && failWrites) throw RulePersistenceException("Actual controlled owner refused its file commit")
++                        // Native grants are per invocation; the existing backing
++                        // owner is stable. This fixture models that same mapping.
++                        input.addProperty("owner", identity)
++                        state.dispatch(op,input).toString()
++                    }
++                }
++            }
++        }
++        fun execute(op: String, request: JsonObject, rule: JsonObject? = null, sourceID: String = "main", taskID: String = UUID.randomUUID().toString(), loginCheckJs: String? = null): JsonObject {
++            val sourceURL = "$origin/source-$sourceID"
++            val source = jsonObject("bookSourceUrl" to sourceURL, "enabledCookieJar" to false, "loginCheckJs" to loginCheckJs,
++                "bookUrlPattern" to ".*", "ruleBookInfo" to jsonObject("name" to "@js:'WRONG_SEARCH_ONLY_BRANCH'"),
++                "ruleSearch" to jsonObject("bookList" to ".book", "name" to "text", "bookUrl" to "href"),
++                "ruleExplore" to (rule ?: jsonObject("bookList" to ".book", "name" to "text", "bookUrl" to "href")))
++            if (exploreOnly) source.remove("ruleSearch")
++            val grant = "grant-${UUID.randomUUID()}"; grants[grant] = sourceURL
++            val created = parseObject(LegadoRuntime.createSession(source.toString(), jsonObject("sourceMode" to "original-traditional", "httpTransport" to "jvm-okhttp", "stateOwner" to grant).toString()))
++            assertTrue(created.toString(),created["ok"].asBoolean)
++            val session = created["sessionId"].asString
++            return try { parseObject(LegadoRuntime.execute(session,taskID,op,request.toString())) }
++            finally { LegadoRuntime.closeSession(session); grants.remove(grant) }
++        }
++        fun call(op: String, request: JsonObject, rule: JsonObject? = null, sourceID: String = "main"): JsonObject {
++            val reply = execute(op,request,rule,sourceID); assertTrue(reply.toString(), reply["ok"].asBoolean); return reply["result"].asJsonObject
++        }
++        override fun close() {
++            heldRelease.countDown(); server.stop(0); serverPool.shutdownNow(); check(serverPool.awaitTermination(5,TimeUnit.SECONDS))
++            LegadoRuntime.setHostCallback(null); logger.removeHandler(handler); logger.level = previousLevel; check(directory.toFile().deleteRecursively())
++        }
++    }
++}
+--- /dev/null
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalInfoMapOracle.kt
+@@ -0,0 +1,68 @@
++package io.yuedu.legado.reference
++
++import io.yuedu.legado.originalrule.GSON
++import io.yuedu.legado.originalrule.fromJsonObject
++
++
++/**
++ * 发现按钮信息
++ */
++class OriginalInfoMapOracle(val sourceUrl: String): MutableMap<String, String> {
++    private var actualMap: MutableMap<String, String>
++    var needSave = false
++    private var saveTime = 0
++
++    init {
++        val cache = ReferenceInfoMapCache.get("infoMap_${sourceUrl}")
++        actualMap = GSON.fromJsonObject<MutableMap<String, String>>(cache).getOrNull() ?: mutableMapOf()
++    }
++
++    /**
++     * time 保存时间 单位为秒
++     */
++    @JvmOverloads
++    fun save(time: Int = 0, need: Boolean = true) {
++        needSave = need
++        saveTime = time
++    }
++
++    fun saveNow() {
++        val json = GSON.toJson(actualMap)
++        ReferenceInfoMapCache.put("infoMap_${sourceUrl}", json, saveTime)
++        needSave = false
++    }
++
++    fun get(): MutableMap<String, String> {
++        return actualMap
++    }
++
++    fun set(value: Map<String, String>) {
++        actualMap = value.toMutableMap()
++    }
++
++    override fun get(key: String) = actualMap[key]
++    override fun put(key: String, value: String) = actualMap.put(key, value)
++    override fun remove(key: String) = actualMap.remove(key)
++    override fun putAll(from: Map<out String, String>) = actualMap.putAll(from)
++    override fun containsKey(key: String) = actualMap.containsKey(key)
++    override fun containsValue(value: String) = actualMap.containsValue(value)
++    override val size get() = actualMap.size
++    override val entries get() = actualMap.entries
++    override val keys get() = actualMap.keys
++    override val values get() = actualMap.values
++    override fun isEmpty() = actualMap.isEmpty()
++    override fun clear() = actualMap.clear()
++}
++// Controlled cache captures parameters of the unchanged locked InfoMap bodies;
++// no Android Room/WebKit execution or independent CacheManager port is claimed.
++internal object ReferenceInfoMapCache {
++    val values = linkedMapOf<String, String>()
++    val writes = mutableListOf<Triple<String, String, Int>>()
++    var fail = false
++    fun get(key: String): String? = values[key]
++    fun put(key: String, value: String, time: Int) {
++        if (fail) throw java.io.IOException("Owned original oracle cache write failed")
++        values[key] = value; writes += Triple(key, value, time)
++    }
++    fun reset() { values.clear(); writes.clear(); fail = false }
++}
+--- a/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift
++++ b/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift
+@@ -105,3 +105,23 @@
+     let book: LegadoOriginalBook; let chapter: LegadoOriginalChapter; let nextChapterUrl: String?; let timeoutMs: Int64
+     let needSave = false
+ }
++
++/// Snapshot of the explicitly opened original exploration context. This is
++/// business state only, never its native backing identity or a cache grant.
++public struct LegadoOriginalExploreContextResult: Codable, Sendable, Equatable {
++    public let infoMap: [String: String]?
++    public let needSave: Bool
++    public let result: String?
++}
++internal struct OriginalExploreRequest: Encodable, Sendable {
++    let url: String; let page: Int32?; let timeoutMs: Int64
++    private enum CodingKeys: String, CodingKey { case url, page, timeoutMs }
++    func encode(to encoder: any Encoder) throws {
++        var values = encoder.container(keyedBy: CodingKeys.self)
++        try values.encode(url, forKey: .url); try values.encode(timeoutMs, forKey: .timeoutMs)
++        if let page { try values.encode(page, forKey: .page) } else { try values.encodeNil(forKey: .page) }
++    }
++}
++internal struct OriginalExploreContextRequest: Encodable, Sendable {
++    let action: String; let script: String?; let timeoutMs: Int64
++}
+--- a/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift
++++ b/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift
+@@ -215,6 +215,24 @@
+                                timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalSearchResult {
+         try await executeOriginal(session, "search", OriginalSearchRequest(key: key, page: page, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+     }
++    /// Explore itself only peeks the process context, as original WebBook does.
++    /// Open/evaluate/pause are explicit lifecycle calls from the embedding UI.
++    public func exploreOriginal(session: LegadoSourceSession, url: String, page: Int32? = 1,
++                                timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalSearchResult {
++        try await executeOriginal(session, "explore", OriginalExploreRequest(url: url, page: page, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++    }
++    public func openExploreContextOriginal(session: LegadoSourceSession, timeoutMilliseconds: Int64 = 30_000,
++                                           taskID: String = UUID().uuidString) async throws -> LegadoOriginalExploreContextResult {
++        try await executeOriginal(session, "exploreContext", OriginalExploreContextRequest(action: "open", script: nil, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++    }
++    public func evaluateExploreContextOriginal(session: LegadoSourceSession, script: String, timeoutMilliseconds: Int64 = 30_000,
++                                               taskID: String = UUID().uuidString) async throws -> LegadoOriginalExploreContextResult {
++        try await executeOriginal(session, "exploreContext", OriginalExploreContextRequest(action: "evaluate", script: script, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++    }
++    public func savePendingExploreContextOriginal(session: LegadoSourceSession, timeoutMilliseconds: Int64 = 30_000,
++                                                  taskID: String = UUID().uuidString) async throws -> LegadoOriginalExploreContextResult {
++        try await executeOriginal(session, "exploreContext", OriginalExploreContextRequest(action: "savePending", script: nil, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++    }
+     public func detailsOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, canReName: Bool = true,
+                                 timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalDetailsResult {
+         try await executeOriginal(session, "details", OriginalDetailsRequest(book: book, canReName: canReName, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+--- /dev/null
++++ b/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift
+@@ -0,0 +1,53 @@
++import Foundation
++import XCTest
++@testable import LegadoRuntime
++
++private final class ExploreAPITransport: LegadoRuntimeTransport, @unchecked Sendable {
++    private let lock = NSLock()
++    private var requests: [(String, String)] = []
++    var calls: [(String, String)] { lock.withLock { requests } }
++    func start(_ configuration: LegadoRuntime.Configuration) throws {}
++    func createSession(_ source: String) throws -> String { "{\"ok\":true,\"sessionId\":\"explore\"}" }
++    func execute(_ session: String, _ task: String, _ operation: String, _ request: String) throws -> String {
++        lock.withLock { requests.append((operation, request)) }
++        if operation == "explore" { return "{\"ok\":true,\"result\":{\"books\":[]}}" }
++        return "{\"ok\":true,\"result\":{\"infoMap\":{\"genre\":\"fiction\"},\"needSave\":true,\"result\":null}}"
++    }
++    func cancel(_ task: String) throws -> String { "{\"ok\":true}" }
++    func closeSession(_ session: String) throws -> String { "{\"ok\":true}" }
++}
++
++@MainActor final class LegadoExploreAPITests: XCTestCase {
++    func testExploreUsesOriginalPublicActionAndPreservesExplicitNullPage() async throws {
++        let transport = ExploreAPITransport()
++        let runtime = LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []), host: UnsupportedLegadoHost(), transport: transport)
++        let session = LegadoSourceSession(id: "explore", sourceMode: .originalTraditional)
++        let result = try await runtime.exploreOriginal(session: session, url: "https://owned.invalid/list", page: nil)
++        XCTAssertTrue(result.books.isEmpty)
++        let call = try XCTUnwrap(transport.calls.first)
++        XCTAssertEqual(call.0, "explore")
++        let input = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(call.1.utf8)) as? [String: Any])
++        XCTAssertEqual(input["url"] as? String, "https://owned.invalid/list")
++        XCTAssertTrue(input["page"] is NSNull)
++        XCTAssertEqual(Set(input.keys), ["url", "page", "timeoutMs"])
++        do { _ = try await runtime.exploreOriginal(session: .init(id: "old-default"), url: "https://owned.invalid"); XCTFail("Original mode must be explicit") }
++        catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "UNSUPPORTED_CAPABILITY") }
++        XCTAssertEqual(transport.calls.count, 1)
++    }
++    func testExplicitContextLifecycleUsesTypedBusinessDtoAndDoesNotExposeScopeAuthority() async throws {
++        let transport = ExploreAPITransport()
++        let runtime = LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []), host: UnsupportedLegadoHost(), transport: transport)
++        let session = LegadoSourceSession(id: "explore", sourceMode: .originalTraditional)
++        let open = try await runtime.openExploreContextOriginal(session: session)
++        XCTAssertEqual(open.infoMap, ["genre": "fiction"]); XCTAssertTrue(open.needSave); XCTAssertNil(open.result)
++        _ = try await runtime.evaluateExploreContextOriginal(session: session, script: "infoMap.save(); 'done'")
++        _ = try await runtime.savePendingExploreContextOriginal(session: session)
++        XCTAssertEqual(transport.calls.map { $0.0 }, ["exploreContext", "exploreContext", "exploreContext"])
++        for (index, call) in transport.calls.enumerated() {
++            let input = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(call.1.utf8)) as? [String: Any])
++            XCTAssertEqual(input["action"] as? String, ["open", "evaluate", "savePending"][index])
++            XCTAssertEqual(input["script"] as? String, index == 1 ? "infoMap.save(); 'done'" : nil)
++            XCTAssertNil(input["scope"]); XCTAssertNil(input["owner"])
++        }
++    }
++}
+--- a/Packages/LegadoRuntime/vendor/original-rule/manifest.json
++++ b/Packages/LegadoRuntime/vendor/original-rule/manifest.json
+@@ -314,6 +314,18 @@
+       "vendorPath": "sources/utils/CookieManagerExtensions.kt",
+       "bytes": 609,
+       "sha256": "1effc6621e9191d942c603e318101ae94f8dcabdbbcc64ca5f81a946ca60f4b2"
++    },
++    {
++      "archivePath": "legado-master/app/src/main/java/io/legado/app/utils/InfoMap.kt",
++      "vendorPath": "sources/utils/InfoMap.kt",
++      "bytes": 1705,
++      "sha256": "f46d78a6d97419308061a64814553be14f9f85b06b8a8ad0751bce7682a3a3a0"
++    },
++    {
++      "archivePath": "legado-master/app/src/main/java/io/legado/app/ui/main/explore/ExploreAdapter.kt",
++      "vendorPath": "sources/ui/main/explore/ExploreAdapter.kt",
++      "bytes": 34274,
++      "sha256": "30b54cb1d14180b0ef339777da3c2153c964e1a3365535fe217a0115ca706187"
+     }
+   ],
+   "retainedAlgorithms": {
+@@ -354,6 +366,11 @@
+       "Original cookieToMap/mapToCookie/mergeCookies/mergeCookieValues pure method bodies shared by actual rule host and production request/response Cookie text path.",
+       "CookieManager.loadRequest uses each actual request header then current DB/session domain text, saved values last. Cookie.parseAll uses actual response URL and ordered Set-Cookie headers before redirects continue.",
+       "Android Room/CacheManager/WebKit calls are explicit App-owner ports; this does not claim full CookieManager/browser/clear API or Android error-recovery parity."
++    ],
++    "InfoMap.kt / ExploreAdapter.kt": [
++      "Original InfoMap map identity/live Java views, get/set/put/putAll, save(time,need) pending state, saveNow seconds cache call and flag-after-success order.",
++      "Process LRU99 keyed by same native backing/source/revision scope; each actual persistence access validates current source grant. Explore only peeks; explicit context open creates.",
++      "Original exploreBookAwait AnalyzeUrl infoMap binding, page/source RuleData, login-check recovery and non-search BookList selection."
+     ]
+   },
+   "platformSeams": [
+@@ -658,6 +675,12 @@
+     },
+     {
+       "path": "io/yuedu/legado/originalrule/OriginalCookieText.class"
++    },
++    {
++      "path": "io/legado/app/utils/InfoMap.class"
++    },
++    {
++      "path": "io/yuedu/legado/originalrule/OriginalExploreContexts.class"
+     }
+   ],
+   "runtimeResources": [
+@@ -725,8 +748,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+-      "bytes": 7565,
+-      "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
++      "bytes": 7674,
++      "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
+@@ -740,8 +763,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+-      "bytes": 20253,
+-      "sha256": "f7cf9de8c8e3dc1cc6798a81768d16bf914ae6acbc12f9bf0e426ba343957ca2"
++      "bytes": 20318,
++      "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptions.kt",
+@@ -765,8 +788,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+-      "bytes": 17615,
+-      "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
++      "bytes": 19864,
++      "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookList.kt",
+@@ -877,6 +900,31 @@
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalCookieText.kt",
+       "bytes": 2228,
+       "sha256": "1525eb9f39ed3f7cc7c497334a549b88b7a6d8e9a15a09e66e017441646dbfa5"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
++      "bytes": 3232,
++      "sha256": "3015f667fcb3607dc8aaaa73ece342d881be9c1b21f79eb1031a70cea04b23de"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
++      "bytes": 27474,
++      "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
++      "bytes": 4609,
++      "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
++      "bytes": 17638,
++      "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
++      "bytes": 9231,
++      "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
+     }
+   ],
+   "readerRouteIntegrated": false,
+@@ -907,8 +955,8 @@
+     "integrationSources": [
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+-        "bytes": 20253,
+-        "sha256": "f7cf9de8c8e3dc1cc6798a81768d16bf914ae6acbc12f9bf0e426ba343957ca2"
++        "bytes": 20318,
++        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptions.kt",
+@@ -937,8 +985,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+-        "bytes": 7565,
+-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
++        "bytes": 7674,
++        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleJsResult.kt",
+@@ -947,8 +995,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+-        "bytes": 16699,
+-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
++        "bytes": 17638,
++        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalIpValidator.kt",
+@@ -992,8 +1040,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+-        "bytes": 27396,
+-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
++        "bytes": 27474,
++        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+       }
+     ],
+     "implemented": [
+@@ -1148,8 +1196,8 @@
+     "integrationSources": [
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+-        "bytes": 17615,
+-        "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
++        "bytes": 19864,
++        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookList.kt",
+@@ -1248,18 +1296,18 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+-        "bytes": 27396,
+-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
++        "bytes": 27474,
++        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+-        "bytes": 16699,
+-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
++        "bytes": 17638,
++        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+-        "bytes": 7565,
+-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
++        "bytes": 7674,
++        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+@@ -1273,8 +1321,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+-        "bytes": 20253,
+-        "sha256": "f7cf9de8c8e3dc1cc6798a81768d16bf914ae6acbc12f9bf0e426ba343957ca2"
++        "bytes": 20318,
++        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
+       }
+     ],
+     "implemented": [
+@@ -1339,18 +1387,18 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+-        "bytes": 16699,
+-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
++        "bytes": 17638,
++        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+-        "bytes": 7565,
+-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
++        "bytes": 7674,
++        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+-        "bytes": 27396,
+-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
++        "bytes": 27474,
++        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
+@@ -1379,8 +1427,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+-        "bytes": 17615,
+-        "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
++        "bytes": 19864,
++        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
+       }
+     ],
+     "protocol": {
+@@ -1435,8 +1483,8 @@
+     "integrationSources": [
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+-        "bytes": 6108,
+-        "sha256": "6f613fe4c5eb6583de8e8194a7e204dc68a289e326720eae48627919e87ea0a2"
++        "bytes": 9231,
++        "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt",
+@@ -1445,8 +1493,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+-        "bytes": 27396,
+-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
++        "bytes": 27474,
++        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
+@@ -1457,13 +1505,13 @@
+     "apiSources": [
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+-        "bytes": 19443,
+-        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
++        "bytes": 21356,
++        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
+       },
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+-        "bytes": 4792,
+-        "sha256": "e52ff760d2d8ffa094283f531ae140962bb38f91e990771f353cf357c7b99a60"
++        "bytes": 5794,
++        "sha256": "9fa83ac4865b0b69783133de34f944643d39d5de1ebd766839344d419fc12a1d"
+       }
+     ],
+     "sourceMode": {
+@@ -1560,13 +1608,13 @@
+     "integrationSources": [
+       {
+         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+-        "bytes": 46630,
+-        "sha256": "1bac6f3c5eddaeb4b31e1f414ecde6986495cdb586476304af038fcc59173a2f"
++        "bytes": 48419,
++        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
+       },
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+-        "bytes": 19443,
+-        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
++        "bytes": 21356,
++        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
+@@ -1580,8 +1628,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+-        "bytes": 16699,
+-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
++        "bytes": 17638,
++        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
+@@ -1590,8 +1638,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+-        "bytes": 18798,
+-        "sha256": "07b6e1ce71daed662d0048e1ee13b908632b41a064162bf606ba29a38d635d0c"
++        "bytes": 23689,
++        "sha256": "5f5fe2c6e33e419436acec892ede4664f607fcda0c9a33284630e4801f9c698b"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerReadTest.kt",
+@@ -1656,18 +1704,18 @@
+       },
+       {
+         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+-        "bytes": 46630,
+-        "sha256": "1bac6f3c5eddaeb4b31e1f414ecde6986495cdb586476304af038fcc59173a2f"
++        "bytes": 48419,
++        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
+       },
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+-        "bytes": 19443,
+-        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
++        "bytes": 21356,
++        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+-        "bytes": 27396,
+-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
++        "bytes": 27474,
++        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+@@ -1691,8 +1739,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+-        "bytes": 16699,
+-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
++        "bytes": 17638,
++        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePersistence.kt",
+@@ -1701,8 +1749,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+-        "bytes": 7565,
+-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
++        "bytes": 7674,
++        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
+       }
+     ],
+     "protocol": {
+@@ -1770,13 +1818,13 @@
+       },
+       {
+         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+-        "bytes": 46630,
+-        "sha256": "1bac6f3c5eddaeb4b31e1f414ecde6986495cdb586476304af038fcc59173a2f"
++        "bytes": 48419,
++        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+-        "bytes": 27396,
+-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
++        "bytes": 27474,
++        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/AppCookieOwnerClient.kt",
+@@ -1785,8 +1833,8 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+-        "bytes": 16699,
+-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
++        "bytes": 17638,
++        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
+@@ -1859,5 +1907,116 @@
+     "appTraditionalRouteIntegrated": false,
+     "iosValidationPassed": false,
+     "deviceValidationPassed": false
++  },
++  "exploreInfoMapIntegration": {
++    "scope": "Explicit original-traditional public explore/context API into retained original WebBook; no default App route switch or second engine/owner/file/HTTP.",
++    "integrationSources": [
++      {
++        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
++        "bytes": 48419,
++        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
++        "bytes": 3232,
++        "sha256": "3015f667fcb3607dc8aaaa73ece342d881be9c1b21f79eb1031a70cea04b23de"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
++        "bytes": 20318,
++        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
++        "bytes": 19864,
++        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
++        "bytes": 27474,
++        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
++        "bytes": 9231,
++        "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
++        "bytes": 4609,
++        "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
++        "bytes": 17638,
++        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
++        "bytes": 7674,
++        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
++        "bytes": 23689,
++        "sha256": "5f5fe2c6e33e419436acec892ede4664f607fcda0c9a33284630e4801f9c698b"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalExploreRuntimeTest.kt",
++        "bytes": 19394,
++        "sha256": "f21749539a04e6dbfcd453d1fcebd0da957992d57063ee3ab3f33e9aeae4a68a"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalInfoMapOracle.kt",
++        "bytes": 2417,
++        "sha256": "7c96dd51fe696b3b8536bc13b6fe55da6b8bfd3276797d67f89b5a6fe2fc128f"
++      },
++      {
++        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
++        "bytes": 5794,
++        "sha256": "9fa83ac4865b0b69783133de34f944643d39d5de1ebd766839344d419fc12a1d"
++      },
++      {
++        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
++        "bytes": 21356,
++        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
++      },
++      {
++        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift",
++        "bytes": 3714,
++        "sha256": "77dccec10d2983ad7ecfee8cea5ff97ad547e407aa1a7e308981233175324bec"
++      },
++      {
++        "path": "Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift",
++        "bytes": 4764,
++        "sha256": "7eb41f3f345436282fd71e47ba74edcd2ab63687eaf1d4065329b4e4fc28227d"
++      }
++    ],
++    "actions": {
++      "explore": "url,page through retained WebBook.exploreBookAwait; no implicit InfoMap creation",
++      "exploreContext": "open/evaluate/savePending; explicit authored source UI expression and per-source save lifecycle seam"
++    },
++    "lifecycle": "Native scope identifies existing injected Host backing/source/revision, independent of per-task opaque grant. Process LRU99 retains text map only, no RuntimeTask/environment/coroutine. Source evalJS and AnalyzeUrl share the same live InfoMap. save marks only; savePending persists the current pending map through current owner/cache. Failed save leaves pending.",
++    "embeddingTypeBoundary": "Collections.checkedMap(String,String) preserves live Map/view ABI but rejects erased non-String Java key/value insertion, including bulk set/putAll, entry.setValue and Java8 default mutators. No toString coercion of raw host objects; standard Java null allowance is unchanged. Only escaping scoped checked-map/InfoMap bridge ClassCastException is restored to typed unsupported, before ordinary exploration login/UI recovery; JS may catch normally.",
++    "validation": {
++      "platform": "Windows JDK21",
++      "newFocusedMethods": 5,
++      "unchangedRelatedMethodsReused": 38,
++      "existingRuntimeMethodsRerun": 11,
++      "uniqueMethods": 54,
++      "androidExecutions": 0,
++      "SwiftSDKExecutions": 0,
++      "JNIExecutions": 0,
++      "nativeOwnerMethodsPrepared": 2,
++      "packageMethodsPrepared": 2
++    },
++    "remaining": [
++      "Original Android exploration UI rendering/layout/button JavaUI bridge and actual navigation pause/resume callbacks are not ported. Public lifecycle seam is usable but App preview/exploration UI has not selected it.",
++      "Original onPause enumerates all pending source maps; current explicit savePending is current source only. A future App lifecycle coordinator must revalidate each current source grant; no authority is granted by a scope string.",
++      "Collections checked String-map embedding boundary rejects original erased non-String raw values rather than retaining task objects. Arbitrary untyped InfoMap values are not supported.",
++      "Default App source route, complete C2 persistence/product gates, native/JNI execution and full source compatibility remain unfinished."
++    ],
++    "readerRouteIntegrated": false,
++    "fullFeatureParityEstablished": false
+   }
+ }
+--- /dev/null
++++ b/Packages/LegadoRuntime/vendor/original-rule/sources/ui/main/explore/ExploreAdapter.kt
+@@ -0,0 +1,740 @@
++package io.legado.app.ui.main.explore
++
++import android.annotation.SuppressLint
++import android.content.Context
++import android.text.Editable
++import android.text.TextWatcher
++import android.view.Gravity
++import android.view.MotionEvent
++import android.view.View
++import android.view.ViewGroup
++import android.widget.AdapterView
++import android.widget.ArrayAdapter
++import android.widget.AutoCompleteTextView
++import android.widget.LinearLayout
++import android.widget.TextView
++import androidx.appcompat.app.AppCompatActivity
++import androidx.appcompat.widget.AppCompatSpinner
++import androidx.collection.LruCache
++import androidx.core.view.children
++import com.google.android.flexbox.FlexboxLayout
++import com.script.rhino.runScriptWithContext
++import io.legado.app.R
++import io.legado.app.base.adapter.ItemViewHolder
++import io.legado.app.base.adapter.RecyclerAdapter
++import io.legado.app.constant.AppLog
++import io.legado.app.data.appDb
++import io.legado.app.data.entities.BaseSource
++import io.legado.app.data.entities.BookSource
++import io.legado.app.data.entities.BookSourcePart
++import io.legado.app.data.entities.rule.ExploreKind
++import io.legado.app.data.entities.rule.ExploreKind.Type
++import io.legado.app.databinding.ItemFilletTextBinding
++import io.legado.app.databinding.ItemFindBookBinding
++import io.legado.app.databinding.ItemFilletSelectorSingleBinding
++import io.legado.app.databinding.ItemFilletCompleteTextBinding
++import io.legado.app.help.coroutine.Coroutine
++import io.legado.app.help.source.clearExploreKindsCache
++import io.legado.app.help.source.exploreKinds
++import io.legado.app.lib.theme.accentColor
++import io.legado.app.ui.login.SourceLoginActivity
++import io.legado.app.ui.widget.popupActionMenu
++import io.legado.app.ui.login.SourceLoginJsExtensions
++import io.legado.app.ui.widget.dialog.TextDialog
++import io.legado.app.ui.widget.text.AccentTextView
++import io.legado.app.utils.InfoMap
++import io.legado.app.utils.activity
++import io.legado.app.utils.dpToPx
++import io.legado.app.utils.gone
++import io.legado.app.utils.removeLastElement
++import io.legado.app.utils.setSelectionSafely
++import io.legado.app.utils.showDialogFragment
++import io.legado.app.utils.startActivity
++import io.legado.app.utils.visible
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.Dispatchers.IO
++import kotlinx.coroutines.Job
++import kotlinx.coroutines.delay
++import kotlinx.coroutines.joinAll
++import kotlinx.coroutines.launch
++import kotlinx.coroutines.withContext
++import splitties.views.onLongClick
++import java.util.concurrent.ConcurrentHashMap
++import kotlin.collections.set
++import kotlin.text.isNullOrEmpty
++
++internal fun isExploreBindingCurrent(
++    expectedLoadVersion: Int,
++    currentLoadVersion: Int,
++    expandedPosition: Int,
++    bindingPosition: Int,
++    boundSourceUrl: String,
++    currentSourceUrl: String?,
++): Boolean = expectedLoadVersion == currentLoadVersion &&
++    expandedPosition == bindingPosition &&
++    boundSourceUrl == currentSourceUrl
++
++class ExploreAdapter(context: Context, val callBack: CallBack) :
++    RecyclerAdapter<BookSourcePart, ItemFindBookBinding>(context) {
++    companion object {
++        val exploreInfoMapList = LruCache<String, InfoMap>(99)
++    }
++    private val recycler = arrayListOf<TextView>()
++    private val textRecycler = arrayListOf<AutoCompleteTextView>()
++    private val selectRecycler = arrayListOf<LinearLayout>()
++
++    private var exIndex = -1
++    private var scrollTo = -1
++    private var kindLoadVersion = 0
++    private var lastClickTime: Long = 0
++    private val sourceKinds = ConcurrentHashMap<String, List<ExploreKind>>()
++    private var saveInfoMapJob: Job? = null
++
++    override fun getViewBinding(parent: ViewGroup): ItemFindBookBinding {
++        return ItemFindBookBinding.inflate(inflater, parent, false)
++    }
++
++    override fun convert(
++        holder: ItemViewHolder,
++        binding: ItemFindBookBinding,
++        item: BookSourcePart,
++        payloads: MutableList<Any>
++    ) {
++        binding.run {
++            if (holder.layoutPosition == itemCount - 1) {
++                root.setPadding(16.dpToPx(), 12.dpToPx(), 16.dpToPx(), 12.dpToPx())
++            } else {
++                root.setPadding(16.dpToPx(), 12.dpToPx(), 16.dpToPx(), 0)
++            }
++            if (payloads.isEmpty()) {
++                tvName.text = item.bookSourceName
++            }
++            if (exIndex == holder.layoutPosition) {
++                val loadVersion = ++kindLoadVersion
++                fun currentBindingPosition(): Int? {
++                    val position = holder.bindingAdapterPosition
++                    return position.takeIf {
++                        isExploreBindingCurrent(
++                            expectedLoadVersion = loadVersion,
++                            currentLoadVersion = kindLoadVersion,
++                            expandedPosition = exIndex,
++                            bindingPosition = position,
++                            boundSourceUrl = item.bookSourceUrl,
++                            currentSourceUrl = getItem(position)?.bookSourceUrl,
++                        )
++                    }
++                }
++                ivStatus.setImageResource(R.drawable.ic_arrow_down)
++                sourceKinds[item.bookSourceUrl]?.let { kindList ->
++                    val position = currentBindingPosition() ?: return@run
++                    // A refresh has already loaded these kinds. Replace them in this layout pass
++                    // so an expanded row cannot briefly collapse above the current viewport.
++                    upKindList(this@run, item, kindList, position)
++                    rotateLoading.gone()
++                    if (scrollTo >= 0) {
++                        callBack.scrollTo(scrollTo)
++                        scrollTo = -1
++                    }
++                    return@run
++                }
++                rotateLoading.loadingColor = context.accentColor
++                rotateLoading.visible()
++                recyclerFlexbox(flexbox)
++                flexbox.gone()
++                Coroutine.async(callBack.scope) {
++                    item.exploreKinds()
++                }.onSuccess { kindList ->
++                    currentBindingPosition()?.let { position ->
++                        sourceKinds[item.bookSourceUrl] = kindList
++                        upKindList(this@run, item, kindList, position)
++                    }
++                }.onFinally {
++                    if (currentBindingPosition() == null) return@onFinally
++                    rotateLoading.gone()
++                    if (scrollTo >= 0) {
++                        callBack.scrollTo(scrollTo)
++                        scrollTo = -1
++                    }
++                }
++            } else kotlin.runCatching {
++                ivStatus.setImageResource(R.drawable.ic_arrow_right)
++                rotateLoading.gone()
++                recyclerFlexbox(flexbox)
++                flexbox.gone()
++            }
++        }
++    }
++
++    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
++    private fun upKindList(binding: ItemFindBookBinding, item: BookSourcePart, kinds: List<ExploreKind>, exIndex: Int) {
++        val flexbox = binding.flexbox
++        recyclerFlexbox(flexbox)
++        flexbox.gone()
++        if (kinds.isEmpty()) {
++            return
++        }
++        val sourceUrl = item.bookSourceUrl
++        kotlin.runCatching {
++            flexbox.visible()
++            val source by lazy { appDb.bookSourceDao.getBookSource(sourceUrl) }
++            val infoMap by lazy {
++                exploreInfoMapList[sourceUrl] ?:  InfoMap(sourceUrl).also {
++                    exploreInfoMapList.put(sourceUrl, it)
++                }
++            }
++            val sourceUiCallback = object : SourceLoginJsExtensions.Callback {
++                override fun upUiData(data: Map<String, Any?>?) {
++                }
++
++                override fun reUiView(deltaUp: Boolean) {
++                    refreshExplore(item, exIndex, binding)
++                }
++            }
++            // The JS bridge holds callbacks weakly; the live controls own this one.
++            flexbox.tag = sourceUiCallback
++            val sourceJsExtensions by lazy {
++                SourceLoginJsExtensions(context as? AppCompatActivity, source, callback = sourceUiCallback)
++            }
++            kinds.forEach { kind ->
++                val type = kind.type
++                val title = kind.title
++                val viewName = kind.viewName
++                when (type) {
++                    Type.url -> {
++                        val tv = getFlexboxChild(flexbox)
++                        val viewNameToken = Any()
++                        tv.tag = viewNameToken
++                        flexbox.addView(tv)
++                        kind.style().apply {
++                            when (this.layout_justifySelf) {
++                                "flex_start" -> tv.gravity = Gravity.START
++                                "flex_end" -> tv.gravity = Gravity.END
++                                else -> tv.gravity = Gravity.CENTER
++                            }
++                            apply(tv)
++                        }
++                        if (viewName == null) {
++                            tv.text = title
++                        } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
++                            val n = viewName.substring(1, viewName.length - 1)
++                            tv.text = n
++                        } else {
++                            tv.text = title
++                            Coroutine.async(callBack.scope, IO) {
++                                evalUiJs(viewName, source, infoMap)
++                            }.onSuccess { n ->
++                                if (tv.tag !== viewNameToken) return@onSuccess
++                                if (n.isNullOrEmpty()) {
++                                    tv.text = "null"
++                                } else {
++                                    tv.text = n
++                                }
++                            }.onError { _ ->
++                                if (tv.tag !== viewNameToken) return@onError
++                                tv.text = "err"
++                            }
++                        }
++                        tv.setOnClickListener {// 辅助触发无障碍功能正常
++                            val url = kind.url ?: return@setOnClickListener
++                            if (kind.title.startsWith("ERROR:")) {
++                                it.activity?.showDialogFragment(TextDialog("ERROR", url))
++                            } else {
++                                callBack.openExplore(sourceUrl, kind.title, url)
++                            }
++                        }
++                        tv.setOnTouchListener { view, event ->
++                            when (event.action) {
++                                MotionEvent.ACTION_DOWN -> {
++                                    view.isSelected = true
++                                }
++                                MotionEvent.ACTION_UP -> {
++                                    view.isSelected = false
++                                    val upTime = System.currentTimeMillis()
++                                    if (upTime - lastClickTime < 200) {
++                                        return@setOnTouchListener true
++                                    }
++                                    lastClickTime = upTime
++                                    val url = kind.url?.takeIf { it.isNotBlank() } ?: return@setOnTouchListener true
++                                    if (kind.title.startsWith("ERROR:")) {
++                                        view.activity?.showDialogFragment(TextDialog("ERROR", url))
++                                    } else {
++                                        callBack.openExplore(sourceUrl, kind.title, url)
++                                    }
++                                }
++                                MotionEvent.ACTION_CANCEL -> {
++                                    view.isSelected = false
++                                }
++                            }
++                            return@setOnTouchListener true
++                        }
++                    }
++
++                    Type.button -> {
++                        val tv = getFlexboxChild(flexbox)
++                        val viewNameToken = Any()
++                        tv.tag = viewNameToken
++                        flexbox.addView(tv)
++                        kind.style().apply {
++                            when (this.layout_justifySelf) {
++                                "flex_start" -> tv.gravity = Gravity.START
++                                "flex_end" -> tv.gravity = Gravity.END
++                                else -> tv.gravity = Gravity.CENTER
++                            }
++                            apply(tv)
++                        }
++                        if (viewName == null) {
++                            tv.text = title
++                        } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
++                            val n = viewName.substring(1, viewName.length - 1)
++                            tv.text = n
++                        } else {
++                            tv.text = title
++                            Coroutine.async(callBack.scope, IO) {
++                                evalUiJs(viewName, source, infoMap)
++                            }.onSuccess { n ->
++                                if (tv.tag !== viewNameToken) return@onSuccess
++                                if (n.isNullOrEmpty()) {
++                                    tv.text = "null"
++                                } else {
++                                    tv.text = n
++                                }
++                            }.onError{ _ ->
++                                if (tv.tag !== viewNameToken) return@onError
++                                tv.text = "err"
++                            }
++                        }
++                        tv.setOnClickListener {
++                            val action = kind.action?.takeIf { it.isNotBlank() } ?: return@setOnClickListener
++                            callBack.scope.launch(IO) {
++                                evalButtonClick(action, source, infoMap, title, sourceJsExtensions)
++                            }
++                        }
++                        tv.setOnTouchListener { view, event ->
++                            when (event.action) {
++                                MotionEvent.ACTION_DOWN -> {
++                                    view.isSelected = true
++                                }
++                                MotionEvent.ACTION_UP -> {
++                                    view.isSelected = false
++                                    val upTime = System.currentTimeMillis()
++                                    if (upTime - lastClickTime < 200) {
++                                        return@setOnTouchListener true
++                                    }
++                                    lastClickTime = upTime
++                                    val action = kind.action?.takeIf { it.isNotBlank() } ?: return@setOnTouchListener true
++                                    callBack.scope.launch(IO) {
++                                        evalButtonClick(action, source, infoMap, title, sourceJsExtensions)
++                                    }
++                                }
++                                MotionEvent.ACTION_CANCEL -> {
++                                    view.isSelected = false
++                                }
++                            }
++                            return@setOnTouchListener true
++                        }
++                    }
++
++                    Type.text -> {
++                        val ti = getFlexboxChildText(flexbox)
++                        val viewNameToken = Any()
++                        ti.tag = viewNameToken
++                        flexbox.addView(ti)
++                        kind.style().apply {
++                            when (this.layout_justifySelf) {
++                                "center" -> ti.gravity = Gravity.CENTER
++                                "flex_end" -> ti.gravity = Gravity.END
++                                else -> ti.gravity = Gravity.START
++                            }
++                            apply(ti)
++                        }
++                        if (viewName == null) {
++                            ti.hint = title
++                        } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
++                            val n = viewName.substring(1, viewName.length - 1)
++                            ti.hint = n
++                        } else {
++                            ti.hint = title
++                            Coroutine.async(callBack.scope, IO) {
++                                evalUiJs(viewName, source, infoMap)
++                            }.onSuccess { n ->
++                                if (ti.tag !== viewNameToken) return@onSuccess
++                                if (n.isNullOrEmpty()) {
++                                    ti.hint = "null"
++                                } else {
++                                    ti.hint = n
++                                }
++                            }.onError{ _ ->
++                                if (ti.tag !== viewNameToken) return@onError
++                                ti.hint = "err"
++                            }
++                        }
++                        ti.setText(infoMap[title])
++                        var actionJob: Job? = null
++                        val watcher = object : TextWatcher {
++                            var content: String? = null
++                            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
++                                content = s.toString()
++                            }
++
++                            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
++
++                            override fun afterTextChanged(s: Editable?) {
++                                val reContent = s.toString()
++                                infoMap[title] = reContent
++                                if (kind.action != null && reContent != content) {
++                                    actionJob?.cancel()
++                                    actionJob = callBack.scope.launch(IO) {
++                                        delay(600) //防抖
++                                        evalButtonClick(kind.action, source, infoMap, title, sourceJsExtensions)
++                                        content = reContent
++                                    }
++                                }
++                            }
++                        }
++                        ti.setTag(R.id.text_watcher, watcher)
++                        ti.addTextChangedListener(watcher)
++                    }
++
++                    Type.toggle -> {
++                        var newName = title
++                        var left = true
++                        val tv = getFlexboxChild(flexbox)
++                        val viewNameToken = Any()
++                        tv.tag = viewNameToken
++                        flexbox.addView(tv)
++                        kind.style().apply {
++                            when (this.layout_justifySelf) {
++                                "flex_start" -> tv.gravity = Gravity.START
++                                "flex_end" -> tv.gravity = Gravity.END
++                                "right" -> left = false
++                                else -> tv.gravity = Gravity.CENTER
++                            }
++                            apply(tv)
++                        }
++                        val chars = kind.chars?.filterNotNull() ?: listOf("chars","is null")
++                        val infoV = infoMap[title]
++                        var char = if (infoV.isNullOrEmpty()) {
++                            (kind.default ?: chars[0]).also {
++                                infoMap[title] = it
++                            }
++                        } else {
++                            infoV
++                        }
++                        if (viewName == null) {
++                            tv.text = if (left) char + title else title + char
++                        } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
++                            val n = viewName.substring(1, viewName.length - 1)
++                            newName = n
++                            tv.text = if (left) char + n else n + char
++                        } else {
++                            tv.text = if (left) char + title else title + char
++                            Coroutine.async(callBack.scope, IO) {
++                                evalUiJs(viewName, source, infoMap)
++                            }.onSuccess { n ->
++                                if (tv.tag !== viewNameToken) return@onSuccess
++                                if (n.isNullOrEmpty()) {
++                                    tv.text = char + "null"
++                                } else {
++                                    newName = n
++                                    tv.text = if (left) char + n else n + char
++                                }
++                            }.onError{ _ ->
++                                if (tv.tag !== viewNameToken) return@onError
++                                tv.text = char + "err"
++                            }
++                        }
++                        tv.setOnClickListener {
++                            val currentIndex = chars.indexOf(char)
++                            val nextIndex = (currentIndex + 1) % chars.size
++                            char = chars.getOrNull(nextIndex) ?: ""
++                            infoMap[title] = char
++                            tv.text = if (left) char + newName else newName + char
++                            val action = kind.action?.takeIf { it.isNotBlank() } ?: return@setOnClickListener
++                            callBack.scope.launch(IO) {
++                                evalButtonClick(action, source, infoMap, title, sourceJsExtensions)
++                            }
++                        }
++                        tv.setOnTouchListener { view, event ->
++                            when (event.action) {
++                                MotionEvent.ACTION_DOWN -> {
++                                    view.isSelected = true
++                                }
++                                MotionEvent.ACTION_UP -> {
++                                    view.isSelected = false
++                                    val upTime = System.currentTimeMillis()
++                                    if (upTime - lastClickTime < 200) {
++                                        return@setOnTouchListener true
++                                    }
++                                    lastClickTime = upTime
++                                    val currentIndex = chars.indexOf(char)
++                                    val nextIndex = (currentIndex + 1) % chars.size
++                                    char = chars.getOrNull(nextIndex) ?: ""
++                                    infoMap[title] = char
++                                    tv.text = if (left) char + newName else newName + char
++                                    val action = kind.action?.takeIf { it.isNotBlank() } ?: return@setOnTouchListener true
++                                    callBack.scope.launch(IO) {
++                                        evalButtonClick(action, source, infoMap, title, sourceJsExtensions)
++                                    }
++                                }
++                                MotionEvent.ACTION_CANCEL -> {
++                                    view.isSelected = false
++                                }
++                            }
++                            return@setOnTouchListener true
++                        }
++                    }
++
++                    Type.select -> {
++                        val sl = getFlexboxChildSelect(flexbox)
++                        flexbox.addView(sl)
++                        kind.style().apply {
++                            when (this.layout_justifySelf) {
++                                "flex_start" -> sl.gravity = Gravity.START
++                                "flex_end" -> sl.gravity = Gravity.END
++                                else -> sl.gravity = Gravity.CENTER
++                            }
++                            apply(sl)
++                        }
++                        val spName = sl.findViewById<AccentTextView>(R.id.sp_name)
++                        val viewNameToken = Any()
++                        spName.tag = viewNameToken
++                        if (viewName == null) {
++                            spName.text = title
++                        } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
++                            val n = viewName.substring(1, viewName.length - 1)
++                            spName.text = n
++                        } else {
++                            spName.text = title
++                            Coroutine.async(callBack.scope, IO) {
++                                evalUiJs(viewName, source, infoMap)
++                            }.onSuccess { n ->
++                                if (spName.tag !== viewNameToken) return@onSuccess
++                                if (n.isNullOrEmpty()) {
++                                    spName.text = "null"
++                                } else {
++                                    spName.text = n
++                                }
++                            }.onError{ _ ->
++                                if (spName.tag !== viewNameToken) return@onError
++                                spName.text = "err"
++                            }
++                        }
++                        val chars = kind.chars?.filterNotNull() ?: listOf("chars","is null")
++                        val adapter = ArrayAdapter(
++                            context,
++                            R.layout.item_text_common,
++                            chars
++                        )
++                        adapter.setDropDownViewResource(R.layout.item_spinner_dropdown)
++                        val selector = sl.findViewById<AppCompatSpinner>(R.id.sp_type)
++                        selector.adapter = adapter
++                        val infoV = infoMap[title]
++                        val char = if (infoV.isNullOrEmpty()) {
++                            (kind.default ?: chars[0]).also {
++                                infoMap[title] = it
++                            }
++                        } else {
++                            infoV
++                        }
++                        val i = chars.indexOf(char)
++                        selector.setSelectionSafely(i)
++                        selector.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
++                            var isInitializing = true
++                            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
++                                if (isInitializing) { //忽略初始化选择
++                                    isInitializing = false
++                                    return
++                                }
++                                infoMap[title] = chars[position]
++                                if (kind.action != null) {
++                                    callBack.scope.launch(IO) {
++                                        evalButtonClick(kind.action, source, infoMap, title, sourceJsExtensions)
++                                    }
++                                }
++                            }
++                            override fun onNothingSelected(parent: AdapterView<*>?) {
++                            }
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    private suspend fun evalUiJs(jsStr: String, source: BookSource?, infoMap: InfoMap): String? {
++        val source = source ?: return null
++        return try {
++            runScriptWithContext {
++                source.evalJS(jsStr) {
++                    put("infoMap", infoMap)
++                }.toString()
++            }
++        } catch (e: Exception) {
++            AppLog.put(source.getTag() + " exploreUi err:" + (e.localizedMessage ?: e.toString()), e)
++            null
++        }
++    }
++
++    private suspend fun evalButtonClick(jsStr: String, source: BaseSource?, infoMap: InfoMap, name: String, java: SourceLoginJsExtensions) {
++        val source = source ?: return
++        try {
++            runScriptWithContext {
++                source.evalJS(jsStr) {
++                    put("java", java)
++                    put("infoMap", infoMap)
++                }
++            }
++        } catch (e: Exception) {
++            AppLog.put("ExploreUI Button $name JavaScript error", e)
++        }
++    }
++
++    @Synchronized
++    private fun getFlexboxChild(flexbox: FlexboxLayout): TextView {
++        return if (recycler.isEmpty()) {
++            ItemFilletTextBinding.inflate(inflater, flexbox, false).root
++        } else {
++            recycler.removeLastElement()
++        }
++    }
++
++    @Synchronized
++    private fun getFlexboxChildText(flexbox: FlexboxLayout): AutoCompleteTextView {
++        return if (textRecycler.isEmpty()) {
++            ItemFilletCompleteTextBinding.inflate(inflater, flexbox, false).root
++        } else {
++            textRecycler.removeLastElement()
++        }
++    }
++
++    @Synchronized
++    private fun getFlexboxChildSelect(flexbox: FlexboxLayout): LinearLayout {
++        return if (selectRecycler.isEmpty()) {
++            ItemFilletSelectorSingleBinding.inflate(inflater, flexbox, false).root
++        } else {
++            selectRecycler.removeLastElement()
++        }
++    }
++
++    @Synchronized
++    private fun recyclerFlexbox(flexbox: FlexboxLayout) {
++        flexbox.tag = null
++        val children = flexbox.children.toList()
++        if (children.isEmpty()) return
++        flexbox.removeAllViews()
++        callBack.scope.launch {
++            for (child in children) {
++                when (child) {
++                    is AutoCompleteTextView -> {
++                        val watcher = child.getTag(R.id.text_watcher) as? TextWatcher
++                        if (watcher != null) {
++                            child.removeTextChangedListener(watcher)
++                        }
++                        textRecycler.add(child)
++                    }
++                    is TextView -> {
++                        child.setOnTouchListener(null)
++                        child.setOnClickListener(null)
++                        recycler.add(child)
++                    }
++                    is LinearLayout -> {
++                        child.findViewById<AppCompatSpinner>(R.id.sp_type)?.onItemSelectedListener = null
++                        selectRecycler.add(child)
++                    }
++                }
++            }
++        }
++    }
++
++    override fun registerListener(holder: ItemViewHolder, binding: ItemFindBookBinding) {
++        binding.apply {
++            llTitle.setOnClickListener {
++                val position = holder.layoutPosition
++                val oldEx = exIndex
++                exIndex = if (exIndex == position) -1 else position
++                notifyItemChanged(oldEx, false)
++                if (exIndex != -1) {
++                    scrollTo = position
++                    callBack.scrollTo(position)
++                    notifyItemChanged(position, false)
++                }
++            }
++            llTitle.onLongClick {
++                showMenu(binding, holder.layoutPosition)
++            }
++        }
++    }
++
++    fun compressExplore(): Boolean {
++        return if (exIndex < 0) {
++            false
++        } else {
++            val oldExIndex = exIndex
++            exIndex = -1
++            notifyItemChanged(oldExIndex)
++            true
++        }
++    }
++
++    fun onPause() {
++        sourceKinds.clear()
++        saveInfoMapJob?.cancel()
++        saveInfoMapJob = callBack.scope.launch {
++            exploreInfoMapList.snapshot().filter { (_, infoMap) -> infoMap.needSave }.map { (_, infoMap) ->
++                launch {
++                    infoMap.saveNow()
++                }
++            }.joinAll()
++        }
++    }
++
++    private fun refreshExplore(source: BookSourcePart, position: Int, binding: ItemFindBookBinding) {
++        binding.rotateLoading.visible()
++        Coroutine.async(callBack.scope) {
++            source.clearExploreKindsCache()
++            sourceKinds[source.bookSourceUrl] = source.exploreKinds()
++        }.onSuccess {
++            notifyItemChanged(position, false)
++        }.onFinally {
++            binding.rotateLoading.gone()
++        }
++    }
++
++    private fun showMenu(binding: ItemFindBookBinding, position: Int): Boolean {
++        val source = getItem(position) ?: return true
++        popupActionMenu(context) {
++            item(context.getString(R.string.edit), "edit")
++            item(context.getString(R.string.to_top), "top")
++            item(context.getString(R.string.login), "login", source.hasLoginUrl)
++            item(context.getString(R.string.search), "search")
++            item(context.getString(R.string.refresh), "refresh")
++            item(context.getString(R.string.delete), "delete")
++            danger("delete")
++        }.show(binding.llTitle) { action ->
++            when (action) {
++                "edit" -> callBack.editSource(source.bookSourceUrl)
++                "top" -> callBack.toTop(source)
++                "search" -> callBack.searchBook(source)
++                "login" -> context.startActivity<SourceLoginActivity> {
++                    putExtra("type", "bookSource")
++                    putExtra("key", source.bookSourceUrl)
++                }
++
++                "refresh" -> refreshExplore(source, position, binding)
++
++                "delete" -> callBack.deleteSource(source)
++            }
++        }
++        return true
++    }
++
++    interface CallBack {
++        val scope: CoroutineScope
++        fun scrollTo(pos: Int)
++        fun openExplore(sourceUrl: String, title: String, exploreUrl: String?)
++        fun editSource(sourceUrl: String)
++        fun toTop(source: BookSourcePart)
++        fun deleteSource(source: BookSourcePart)
++        fun searchBook(bookSource: BookSourcePart)
++    }
++}
+--- /dev/null
++++ b/Packages/LegadoRuntime/vendor/original-rule/sources/utils/InfoMap.kt
+@@ -0,0 +1,55 @@
++package io.legado.app.utils
++
++import androidx.annotation.Keep
++import io.legado.app.help.CacheManager
++
++/**
++ * 发现按钮信息
++ */
++@Keep
++class InfoMap(val sourceUrl: String): MutableMap<String, String> {
++    private var actualMap: MutableMap<String, String>
++    var needSave = false
++    private var saveTime = 0
++
++    init {
++        val cache = CacheManager.get("infoMap_${sourceUrl}")
++        actualMap = GSON.fromJsonObject<MutableMap<String, String>>(cache).getOrNull() ?: mutableMapOf()
++    }
++
++    /**
++     * time 保存时间 单位为秒
++     */
++    @JvmOverloads
++    fun save(time: Int = 0, need: Boolean = true) {
++        needSave = need
++        saveTime = time
++    }
++
++    fun saveNow() {
++        val json = GSON.toJson(actualMap)
++        CacheManager.put("infoMap_${sourceUrl}", json, saveTime)
++        needSave = false
++    }
++
++    fun get(): MutableMap<String, String> {
++        return actualMap
++    }
++
++    fun set(value: Map<String, String>) {
++        actualMap = value.toMutableMap()
++    }
++
++    override fun get(key: String) = actualMap[key]
++    override fun put(key: String, value: String) = actualMap.put(key, value)
++    override fun remove(key: String) = actualMap.remove(key)
++    override fun putAll(from: Map<out String, String>) = actualMap.putAll(from)
++    override fun containsKey(key: String) = actualMap.containsKey(key)
++    override fun containsValue(value: String) = actualMap.containsValue(value)
++    override val size get() = actualMap.size
++    override val entries get() = actualMap.entries
++    override val keys get() = actualMap.keys
++    override val values get() = actualMap.values
++    override fun isEmpty() = actualMap.isEmpty()
++    override fun clear() = actualMap.clear()
++}--- /dev/null
++++ b/Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift
+@@ -0,0 +1,67 @@
++import Foundation
++import LegadoRuntime
++import Testing
++@testable import yuedu_app
++
++private struct ExploreNoStateBacking: LegadoOwnedStateBacking {
++    func read(sourceURL: String, domain: LegadoOwnedStateDomain, fields: Set<String>) throws -> LegadoOwnedStateSnapshot {
++        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "A scope identity grants no cache authority")
++    }
++    func commit(sourceURL: String, domain: LegadoOwnedStateDomain, expected: LegadoOwnedStateSnapshot, changes: [String: Data?]) throws -> Bool {
++        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "A scope identity grants no cache authority")
++    }
++}
++
++@Suite("Original exploration backing identity", .serialized)
++struct LegadoExploreOwnerTests {
++    private func request(owner: String, source: String = "https://explore-owned.invalid", task: String = UUID().uuidString,
++                         extra: [String: Any] = [:]) throws -> LegadoHostRequest {
++        var input: [String: Any] = ["owner": owner, "sourceURL": source]
++        input.merge(extra) { _, value in value }
++        return .init(taskID: task, operation: "explore.owner.scope", requestJSON: String(decoding: try JSONSerialization.data(withJSONObject: input), as: UTF8.self))
++    }
++    private func scope(_ host: LegadoPersistentStateHost, _ owner: String, source: String = "https://explore-owned.invalid") async throws -> String {
++        struct Reply: Decodable { let scope: String }
++        let raw = try await host.dispatch(request(owner: owner, source: source))
++        return try JSONDecoder().decode(Reply.self, from: Data(raw.utf8)).scope
++    }
++    @Test("scope is stable across per-invocation grants but distinct for backing source and revision")
++    func stableIdentityDoesNotUseTheEphemeralRuntimeGrant() async throws {
++        let host = LegadoPersistentStateHost(backing: ExploreNoStateBacking())
++        let first = try await host.bind(sourceURL: "https://explore-owned.invalid", sourceRevision: "r1")
++        let before = try await scope(host, first)
++        await host.revoke(owner: first)
++        let second = try await host.bind(sourceURL: "https://explore-owned.invalid", sourceRevision: "r1")
++        #expect(first != second)
++        #expect(try await scope(host, second) == before)
++        let other = try await host.bind(sourceURL: "https://other-owned.invalid", sourceRevision: "r1")
++        #expect(try await scope(host, other, source: "https://other-owned.invalid") != before)
++        let changed = try await host.bind(sourceURL: "https://explore-owned.invalid", sourceRevision: "r2")
++        #expect(try await scope(host, changed) != before)
++        let another = LegadoPersistentStateHost(backing: ExploreNoStateBacking())
++        let grant = try await another.bind(sourceURL: "https://explore-owned.invalid", sourceRevision: "r1")
++        #expect(try await scope(another, grant) != before)
++    }
++    @Test("revoked mismatched cancelled and expired source grants cannot acquire an exploration context")
++    func scopeStillChecksTheActualGrantAndCannotAuthorizeCacheWrites() async throws {
++        let host = LegadoPersistentStateHost(backing: ExploreNoStateBacking())
++        let owner = try await host.bind(sourceURL: "https://explore-owned.invalid", sourceRevision: "r1")
++        do { _ = try await scope(host, owner, source: "https://other-owned.invalid"); Issue.record("Wrong source received scope") }
++        catch let error as LegadoRuntimeError { #expect(error.code == "INVALID_STATE_OWNER") }
++        do {
++            _ = try await host.dispatch(request(owner: owner, extra: ["deadlineEpochMs": 1]))
++            Issue.record("Expired scope request succeeded")
++        } catch let error as LegadoRuntimeError { #expect(error.code == "STATE_TIMEOUT") }
++        await host.cancel(taskID: "cancelled-explore")
++        do { _ = try await host.dispatch(request(owner: owner, task: "cancelled-explore")); Issue.record("Cancelled scope request succeeded") }
++        catch is CancellationError {}
++        let identity = try await scope(host, owner)
++        let bad = LegadoHostRequest(taskID: UUID().uuidString, operation: "explore.owner.scope",
++            requestJSON: String(decoding: try JSONSerialization.data(withJSONObject: ["owner": identity, "sourceURL": "https://explore-owned.invalid"]), as: UTF8.self))
++        do { _ = try await host.dispatch(bad); Issue.record("A scope string became a state owner grant") }
++        catch let error as LegadoRuntimeError { #expect(error.code == "INVALID_STATE_OWNER") }
++        await host.revoke(owner: owner)
++        do { _ = try await scope(host, owner); Issue.record("Revoked source received scope") }
++        catch let error as LegadoRuntimeError { #expect(error.code == "INVALID_STATE_OWNER") }
++    }
++}

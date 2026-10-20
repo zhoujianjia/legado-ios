@@ -314,6 +314,18 @@
       "vendorPath": "sources/utils/CookieManagerExtensions.kt",
       "bytes": 609,
       "sha256": "1effc6621e9191d942c603e318101ae94f8dcabdbbcc64ca5f81a946ca60f4b2"
+    },
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/utils/InfoMap.kt",
+      "vendorPath": "sources/utils/InfoMap.kt",
+      "bytes": 1705,
+      "sha256": "f46d78a6d97419308061a64814553be14f9f85b06b8a8ad0751bce7682a3a3a0"
+    },
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/ui/main/explore/ExploreAdapter.kt",
+      "vendorPath": "sources/ui/main/explore/ExploreAdapter.kt",
+      "bytes": 34274,
+      "sha256": "30b54cb1d14180b0ef339777da3c2153c964e1a3365535fe217a0115ca706187"
     }
   ],
   "retainedAlgorithms": {
@@ -354,6 +366,11 @@
       "Original cookieToMap/mapToCookie/mergeCookies/mergeCookieValues pure method bodies shared by actual rule host and production request/response Cookie text path.",
       "CookieManager.loadRequest uses each actual request header then current DB/session domain text, saved values last. Cookie.parseAll uses actual response URL and ordered Set-Cookie headers before redirects continue.",
       "Android Room/CacheManager/WebKit calls are explicit App-owner ports; this does not claim full CookieManager/browser/clear API or Android error-recovery parity."
+    ],
+    "InfoMap.kt / ExploreAdapter.kt": [
+      "Original InfoMap map identity/live Java views, get/set/put/putAll, save(time,need) pending state, saveNow seconds cache call and flag-after-success order.",
+      "Process LRU99 keyed by same native backing/source/revision scope; each actual persistence access validates current source grant. Explore only peeks; explicit context open creates.",
+      "Original exploreBookAwait AnalyzeUrl infoMap binding, page/source RuleData, login-check recovery and non-search BookList selection."
     ]
   },
   "platformSeams": [
@@ -658,6 +675,12 @@
     },
     {
       "path": "io/yuedu/legado/originalrule/OriginalCookieText.class"
+    },
+    {
+      "path": "io/legado/app/utils/InfoMap.class"
+    },
+    {
+      "path": "io/yuedu/legado/originalrule/OriginalExploreContexts.class"
     }
   ],
   "runtimeResources": [
@@ -725,8 +748,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-      "bytes": 7565,
-      "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
+      "bytes": 7674,
+      "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
@@ -740,8 +763,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
-      "bytes": 20253,
-      "sha256": "f7cf9de8c8e3dc1cc6798a81768d16bf914ae6acbc12f9bf0e426ba343957ca2"
+      "bytes": 20318,
+      "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptions.kt",
@@ -765,8 +788,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
-      "bytes": 17615,
-      "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
+      "bytes": 19864,
+      "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookList.kt",
@@ -877,6 +900,31 @@
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalCookieText.kt",
       "bytes": 2228,
       "sha256": "1525eb9f39ed3f7cc7c497334a549b88b7a6d8e9a15a09e66e017441646dbfa5"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
+      "bytes": 3232,
+      "sha256": "3015f667fcb3607dc8aaaa73ece342d881be9c1b21f79eb1031a70cea04b23de"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "bytes": 27474,
+      "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+      "bytes": 4609,
+      "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "bytes": 17638,
+      "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "bytes": 9231,
+      "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
     }
   ],
   "readerRouteIntegrated": false,
@@ -907,8 +955,8 @@
     "integrationSources": [
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
-        "bytes": 20253,
-        "sha256": "f7cf9de8c8e3dc1cc6798a81768d16bf914ae6acbc12f9bf0e426ba343957ca2"
+        "bytes": 20318,
+        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptions.kt",
@@ -937,8 +985,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 7565,
-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
+        "bytes": 7674,
+        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleJsResult.kt",
@@ -947,8 +995,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 16699,
-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalIpValidator.kt",
@@ -992,8 +1040,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 27396,
-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
       }
     ],
     "implemented": [
@@ -1148,8 +1196,8 @@
     "integrationSources": [
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
-        "bytes": 17615,
-        "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
+        "bytes": 19864,
+        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookList.kt",
@@ -1248,18 +1296,18 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 27396,
-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 16699,
-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 7565,
-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
+        "bytes": 7674,
+        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
@@ -1273,8 +1321,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
-        "bytes": 20253,
-        "sha256": "f7cf9de8c8e3dc1cc6798a81768d16bf914ae6acbc12f9bf0e426ba343957ca2"
+        "bytes": 20318,
+        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
       }
     ],
     "implemented": [
@@ -1339,18 +1387,18 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 16699,
-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 7565,
-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
+        "bytes": 7674,
+        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 27396,
-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
@@ -1379,8 +1427,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
-        "bytes": 17615,
-        "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
+        "bytes": 19864,
+        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
       }
     ],
     "protocol": {
@@ -1435,8 +1483,8 @@
     "integrationSources": [
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
-        "bytes": 6108,
-        "sha256": "6f613fe4c5eb6583de8e8194a7e204dc68a289e326720eae48627919e87ea0a2"
+        "bytes": 9231,
+        "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt",
@@ -1445,8 +1493,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 27396,
-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
@@ -1457,13 +1505,13 @@
     "apiSources": [
       {
         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
-        "bytes": 19443,
-        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
+        "bytes": 21356,
+        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
       },
       {
         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
-        "bytes": 4792,
-        "sha256": "e52ff760d2d8ffa094283f531ae140962bb38f91e990771f353cf357c7b99a60"
+        "bytes": 5794,
+        "sha256": "9fa83ac4865b0b69783133de34f944643d39d5de1ebd766839344d419fc12a1d"
       }
     ],
     "sourceMode": {
@@ -1560,13 +1608,13 @@
     "integrationSources": [
       {
         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
-        "bytes": 46630,
-        "sha256": "1bac6f3c5eddaeb4b31e1f414ecde6986495cdb586476304af038fcc59173a2f"
+        "bytes": 48419,
+        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
       },
       {
         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
-        "bytes": 19443,
-        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
+        "bytes": 21356,
+        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
@@ -1580,8 +1628,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 16699,
-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
@@ -1590,8 +1638,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
-        "bytes": 18798,
-        "sha256": "07b6e1ce71daed662d0048e1ee13b908632b41a064162bf606ba29a38d635d0c"
+        "bytes": 23689,
+        "sha256": "5f5fe2c6e33e419436acec892ede4664f607fcda0c9a33284630e4801f9c698b"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerReadTest.kt",
@@ -1656,18 +1704,18 @@
       },
       {
         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
-        "bytes": 46630,
-        "sha256": "1bac6f3c5eddaeb4b31e1f414ecde6986495cdb586476304af038fcc59173a2f"
+        "bytes": 48419,
+        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
       },
       {
         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
-        "bytes": 19443,
-        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
+        "bytes": 21356,
+        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 27396,
-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
@@ -1691,8 +1739,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 16699,
-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePersistence.kt",
@@ -1701,8 +1749,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 7565,
-        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
+        "bytes": 7674,
+        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
       }
     ],
     "protocol": {
@@ -1770,13 +1818,13 @@
       },
       {
         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
-        "bytes": 46630,
-        "sha256": "1bac6f3c5eddaeb4b31e1f414ecde6986495cdb586476304af038fcc59173a2f"
+        "bytes": 48419,
+        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 27396,
-        "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/AppCookieOwnerClient.kt",
@@ -1785,8 +1833,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 16699,
-        "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
@@ -1859,5 +1907,116 @@
     "appTraditionalRouteIntegrated": false,
     "iosValidationPassed": false,
     "deviceValidationPassed": false
+  },
+  "exploreInfoMapIntegration": {
+    "scope": "Explicit original-traditional public explore/context API into retained original WebBook; no default App route switch or second engine/owner/file/HTTP.",
+    "integrationSources": [
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 48419,
+        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
+        "bytes": 3232,
+        "sha256": "3015f667fcb3607dc8aaaa73ece342d881be9c1b21f79eb1031a70cea04b23de"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "bytes": 20318,
+        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "bytes": 19864,
+        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "bytes": 9231,
+        "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+        "bytes": 4609,
+        "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 7674,
+        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "bytes": 23689,
+        "sha256": "5f5fe2c6e33e419436acec892ede4664f607fcda0c9a33284630e4801f9c698b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalExploreRuntimeTest.kt",
+        "bytes": 19394,
+        "sha256": "f21749539a04e6dbfcd453d1fcebd0da957992d57063ee3ab3f33e9aeae4a68a"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalInfoMapOracle.kt",
+        "bytes": 2417,
+        "sha256": "7c96dd51fe696b3b8536bc13b6fe55da6b8bfd3276797d67f89b5a6fe2fc128f"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "bytes": 5794,
+        "sha256": "9fa83ac4865b0b69783133de34f944643d39d5de1ebd766839344d419fc12a1d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 21356,
+        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift",
+        "bytes": 3714,
+        "sha256": "77dccec10d2983ad7ecfee8cea5ff97ad547e407aa1a7e308981233175324bec"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift",
+        "bytes": 4764,
+        "sha256": "7eb41f3f345436282fd71e47ba74edcd2ab63687eaf1d4065329b4e4fc28227d"
+      }
+    ],
+    "actions": {
+      "explore": "url,page through retained WebBook.exploreBookAwait; no implicit InfoMap creation",
+      "exploreContext": "open/evaluate/savePending; explicit authored source UI expression and per-source save lifecycle seam"
+    },
+    "lifecycle": "Native scope identifies existing injected Host backing/source/revision, independent of per-task opaque grant. Process LRU99 retains text map only, no RuntimeTask/environment/coroutine. Source evalJS and AnalyzeUrl share the same live InfoMap. save marks only; savePending persists the current pending map through current owner/cache. Failed save leaves pending.",
+    "embeddingTypeBoundary": "Collections.checkedMap(String,String) preserves live Map/view ABI but rejects erased non-String Java key/value insertion, including bulk set/putAll, entry.setValue and Java8 default mutators. No toString coercion of raw host objects; standard Java null allowance is unchanged. Only escaping scoped checked-map/InfoMap bridge ClassCastException is restored to typed unsupported, before ordinary exploration login/UI recovery; JS may catch normally.",
+    "validation": {
+      "platform": "Windows JDK21",
+      "newFocusedMethods": 5,
+      "unchangedRelatedMethodsReused": 38,
+      "existingRuntimeMethodsRerun": 11,
+      "uniqueMethods": 54,
+      "androidExecutions": 0,
+      "SwiftSDKExecutions": 0,
+      "JNIExecutions": 0,
+      "nativeOwnerMethodsPrepared": 2,
+      "packageMethodsPrepared": 2
+    },
+    "remaining": [
+      "Original Android exploration UI rendering/layout/button JavaUI bridge and actual navigation pause/resume callbacks are not ported. Public lifecycle seam is usable but App preview/exploration UI has not selected it.",
+      "Original onPause enumerates all pending source maps; current explicit savePending is current source only. A future App lifecycle coordinator must revalidate each current source grant; no authority is granted by a scope string.",
+      "Collections checked String-map embedding boundary rejects original erased non-String raw values rather than retaining task objects. Arbitrary untyped InfoMap values are not supported.",
+      "Default App source route, complete C2 persistence/product gates, native/JNI execution and full source compatibility remain unfinished."
+    ],
+    "readerRouteIntegrated": false,
+    "fullFeatureParityEstablished": false
   }
 }

@@ -1,0 +1,789 @@
+{
+  "schemaVersion": 1,
+  "stage": "C3 original exploreBookAwait + original InfoMap process lifecycle, public runtime/typed Package API, controlled JVM evidence",
+  "preparedAtUTC": "2026-10-20T08:00:42.324090+00:00",
+  "canonicalBaseCommit": "a3a639798632e221ce3154c5f779400b72610313",
+  "sourceBinding": {
+    "acceptedExecutionInputs": {
+      "record": {
+        "path": ".build/original-explore-infomap-delta/ordinary-v2.json",
+        "bytes": 112911,
+        "sha256": "baaa9ac4f1584231d412447412f365311a8773c20becf4fffc04fa211a241c13"
+      },
+      "field": "sourceBinding",
+      "count": 157,
+      "sameAsSuccessfulFocusedRecord": {
+        "path": ".build/original-explore-infomap-delta/focused-v7.json",
+        "bytes": 80863,
+        "sha256": "daa109d86cb2c9e25d51bd921ba122caf5a40005b76daaf99c10eecfa67c6db1"
+      },
+      "continuity": {
+        "path": ".build/original-explore-infomap-delta/final-input-continuity.json",
+        "bytes": 42976,
+        "sha256": "f41cd165a695948209ef6d03aea0f8ab4bd378372e15917abf5d2208a7c44cde"
+      }
+    },
+    "changedCodeTestsAndProvenance": [
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 48419,
+        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 46630,
+          "sha256": "1bac6f3c5eddaeb4b31e1f414ecde6986495cdb586476304af038fcc59173a2f"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "bytes": 20318,
+        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 20253,
+          "sha256": "f7cf9de8c8e3dc1cc6798a81768d16bf914ae6acbc12f9bf0e426ba343957ca2"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "bytes": 19864,
+        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 17615,
+          "sha256": "4430e1d195c0c89c1bcd3a8419cd8b4fd9924c057815f138bf98b87937361bd5"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
+        "bytes": 3232,
+        "sha256": "3015f667fcb3607dc8aaaa73ece342d881be9c1b21f79eb1031a70cea04b23de",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 27396,
+          "sha256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+        "bytes": 4609,
+        "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 16699,
+          "sha256": "e68e1fcaa02b521dd404435531b008c5d0d1713263f696001fb6460b5b3465a0"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 7674,
+        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 7565,
+          "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "bytes": 9231,
+        "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 6108,
+          "sha256": "6f613fe4c5eb6583de8e8194a7e204dc68a289e326720eae48627919e87ea0a2"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "bytes": 23689,
+        "sha256": "5f5fe2c6e33e419436acec892ede4664f607fcda0c9a33284630e4801f9c698b",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 18798,
+          "sha256": "07b6e1ce71daed662d0048e1ee13b908632b41a064162bf606ba29a38d635d0c"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalExploreRuntimeTest.kt",
+        "bytes": 19394,
+        "sha256": "f21749539a04e6dbfcd453d1fcebd0da957992d57063ee3ab3f33e9aeae4a68a",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalExploreRuntimeTest.kt",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalInfoMapOracle.kt",
+        "bytes": 2417,
+        "sha256": "7c96dd51fe696b3b8536bc13b6fe55da6b8bfd3276797d67f89b5a6fe2fc128f",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalInfoMapOracle.kt",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "bytes": 5794,
+        "sha256": "9fa83ac4865b0b69783133de34f944643d39d5de1ebd766839344d419fc12a1d",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 4792,
+          "sha256": "e52ff760d2d8ffa094283f531ae140962bb38f91e990771f353cf357c7b99a60"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 21356,
+        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 19443,
+          "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift",
+        "bytes": 3714,
+        "sha256": "77dccec10d2983ad7ecfee8cea5ff97ad547e407aa1a7e308981233175324bec",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 106561,
+        "sha256": "a1340a0037678dacef1f520637cefb6b46d007583562c3ffe897bb466ee67701",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "canonicalAtBase": {
+          "exists": true,
+          "bytes": 98027,
+          "sha256": "f58a26b09a021bfa8d3e91ecc4714e895b62ea53b418ac6e04a42cfab86ba7c6"
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/sources/ui/main/explore/ExploreAdapter.kt",
+        "bytes": 34274,
+        "sha256": "30b54cb1d14180b0ef339777da3c2153c964e1a3365535fe217a0115ca706187",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/sources/ui/main/explore/ExploreAdapter.kt",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/sources/utils/InfoMap.kt",
+        "bytes": 1705,
+        "sha256": "f46d78a6d97419308061a64814553be14f9f85b06b8a8ad0751bce7682a3a3a0",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/sources/utils/InfoMap.kt",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift",
+        "bytes": 4764,
+        "sha256": "7eb41f3f345436282fd71e47ba74edcd2ab63687eaf1d4065329b4e4fc28227d",
+        "snapshot": ".build/original-explore-infomap-delta/final-sources/Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift",
+        "canonicalAtBase": {
+          "exists": false,
+          "bytes": 0,
+          "sha256": null
+        },
+        "crlf": 0
+      }
+    ],
+    "finalDiff": {
+      "path": ".build/original-explore-infomap-delta/final-changes.diff",
+      "bytes": 125873,
+      "sha256": "2213782453673881f000c382e8d17d17eab2b7916e3fdf50fdd11599a68f7e98"
+    },
+    "frozen": true
+  },
+  "validation": {
+    "acceptedUniqueMethods": 54,
+    "newMethods": 5,
+    "oldMethods": 49,
+    "actualFinalRunMethods": 16,
+    "unchangedOldMethodsReused": 38,
+    "suites": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "acceptedXML": [
+      {
+        "path": ".build/original-explore-infomap-delta/focused-v1-xml/TEST-io.yuedu.legado.OriginalTraditionalRuntimeTest.xml",
+        "bytes": 1454,
+        "sha256": "473d40f9b666b8d54aac831cb676b878ee9672e26b47ab9540ea59bddf0318c4",
+        "suite": "io.yuedu.legado.OriginalTraditionalRuntimeTest",
+        "methods": 7,
+        "execution": "v1"
+      },
+      {
+        "path": ".build/original-explore-infomap-delta/focused-v1-xml/TEST-io.yuedu.legado.OriginalWebBookExecutionTest.xml",
+        "bytes": 2415,
+        "sha256": "af8eb276d20dfde76d62baefecc1b168fdd5b5b825a6ef3a0ee8d80bd8f299b4",
+        "suite": "io.yuedu.legado.OriginalWebBookExecutionTest",
+        "methods": 13,
+        "execution": "v1"
+      },
+      {
+        "path": ".build/original-explore-infomap-delta/focused-v1-xml/TEST-io.yuedu.legado.OriginalUrlRequestOptionsTest.xml",
+        "bytes": 3161,
+        "sha256": "93c0b6fbd269c7ad135e0f49a02c92e8b380d9515ec9e4d6ac8639ea8eecdb82",
+        "suite": "io.yuedu.legado.OriginalUrlRequestOptionsTest",
+        "methods": 18,
+        "execution": "v1"
+      },
+      {
+        "path": ".build/original-explore-infomap-delta/focused-v7-xml/TEST-io.yuedu.legado.OriginalExploreRuntimeTest.xml",
+        "bytes": 1339,
+        "sha256": "424c60a0b3b53f402b906c5a610a8a67c7faa5cc0d0caab71d264bdea85a47d9",
+        "suite": "io.yuedu.legado.OriginalExploreRuntimeTest",
+        "methods": 5,
+        "execution": "v7"
+      },
+      {
+        "path": ".build/original-explore-infomap-delta/focused-v7-xml/TEST-io.yuedu.legado.LegadoRuntimeTest.xml",
+        "bytes": 1863,
+        "sha256": "4d184b794e6349d04449f0cc44cb83999e897bce8a6ddb2b1f639d2c1e5ff906",
+        "suite": "io.yuedu.legado.LegadoRuntimeTest",
+        "methods": 11,
+        "execution": "v7"
+      }
+    ],
+    "reuseMapping": {
+      "path": ".build/original-explore-infomap-delta/related-result-reuse.json",
+      "bytes": 10678,
+      "sha256": "8b3d45c2df45a20197b98586f208725c784cbd196934e25f7e128dfd173f0a94"
+    },
+    "attempts": [
+      {
+        "record": {
+          "path": ".build/original-explore-infomap-delta/focused-v1.json",
+          "bytes": 81570,
+          "sha256": "f6b56db893aba03d6f2b043ec3b4a32c025dd5c9e722c26b168715ce74a2189a"
+        },
+        "note": "42 actual methods: old38 pass and new3 pass; one new oracle fixture expected expiration at synthetic epoch1000 + seconds(-1), but original deadline0 is the never-expire sentinel. Production unchanged for v2."
+      },
+      {
+        "record": {
+          "path": ".build/original-explore-infomap-delta/focused-v2.json",
+          "bytes": 80590,
+          "sha256": "aafba9b08ed5a4d66248a6da015880d07fd5634e730b0917548e3e521fcd3fea"
+        },
+        "note": "Only four new methods rerun after exact clock/sentinel fixture correction:4pass. Not cumulative with v1."
+      },
+      {
+        "record": {
+          "path": ".build/original-explore-infomap-delta/focused-v3.json",
+          "bytes": 80575,
+          "sha256": "19f5845c81b252efd36294c5d83f15c7a4a91fa5db2ad5f410f72acd3b50da43"
+        },
+        "note": "New5 run:4pass1fail. First rawMap script incorrectly used java.util where java is bound to source host, so it never reached map validation."
+      },
+      {
+        "record": {
+          "path": ".build/original-explore-infomap-delta/focused-v4.json",
+          "bytes": 80388,
+          "sha256": "b26e55163d9bc5342836bf3aca77caff906f75dd89a7578e3d3ec33ddaa4ebd3"
+        },
+        "note": "Single failing rawMap method plus JUL capture confirmed the same java namespace fixture error. Runner method filter did not collect suite XML; actual one-method failure XML was immediately copied separately under focused-v4-xml. No pass claim."
+      },
+      {
+        "record": {
+          "path": ".build/original-explore-infomap-delta/focused-v5.json",
+          "bytes": 80575,
+          "sha256": "2e22e5ccabc242854a1ebb0d57a37ec91ab4989f54c3927bb10ab09df01bde64"
+        },
+        "note": "Only fixture namespace corrected to Packages.java;5pass. Source review then confirmed two additional typed-error escape routes (direct Map bridge and login recovery), fixed before final acceptance."
+      },
+      {
+        "record": {
+          "path": ".build/original-explore-infomap-delta/focused-v6.json",
+          "bytes": 80575,
+          "sha256": "cc2b8997a1e84e203c1c3107d4d4c14356a6d790e8b888367e6ee57c6df8f220"
+        },
+        "note": "New5 pass after bridge/login recovery classification fix; no old38 rerun. Subsequent ordinary smoke found explore-only session admission gap."
+      },
+      {
+        "record": {
+          "path": ".build/original-explore-infomap-delta/focused-v7.json",
+          "bytes": 80863,
+          "sha256": "daa109d86cb2c9e25d51bd921ba122caf5a40005b76daaf99c10eecfa67c6db1"
+        },
+        "note": "Final new5 and affected old LegadoRuntime11 pass16; final production allows ruleExplore-only solely in explicit original-traditional mode; default mode rejection verified. Accepted with exact source continuity."
+      }
+    ],
+    "ordinary": {
+      "path": ".build/original-explore-infomap-delta/ordinary-v2.json",
+      "bytes": 112911,
+      "sha256": "baaa9ac4f1584231d412447412f365311a8773c20becf4fffc04fa211a241c13"
+    },
+    "ordinaryJar": {
+      "path": ".build/original-explore-infomap-delta/ordinary-v2-legado-runtime.jar",
+      "bytes": 10705582,
+      "sha256": "3662ae84bfcb6cc34effdc34edaaebbd940f2c2c170ccb78c81de0f907cdfcd5",
+      "requiredClasses": [
+        "io/legado/app/model/analyzeRule/AnalyzeUrl.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/yuedu/legado/originalrule/ProductionRulePlatform.class",
+        "com/script/rhino/ScriptExecutionGuard.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptionsKt.class",
+        "io/yuedu/legado/RuntimeHttpRequestExecutor.class",
+        "io/yuedu/legado/originalrule/OriginalIpValidator.class",
+        "io/yuedu/legado/originalrule/OriginalQueryEncoder.class",
+        "io/yuedu/legado/originalrule/AppCookieOwnerClient.class",
+        "io/yuedu/legado/originalrule/OriginalCookieText.class",
+        "io/legado/app/utils/InfoMap.class",
+        "io/yuedu/legado/originalrule/OriginalExploreContexts.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule$SourceRule.class",
+        "io/legado/app/model/analyzeRule/RuleDataInterface.class",
+        "io/legado/app/model/analyzeRule/RuleData.class",
+        "io/legado/app/data/entities/BaseBook.class",
+        "io/legado/app/data/entities/BaseSource.class",
+        "io/legado/app/data/entities/Book.class",
+        "io/legado/app/data/entities/BookChapter.class",
+        "io/legado/app/data/entities/BookSource.class",
+        "io/yuedu/legado/originalrule/RuleEnvironment.class",
+        "io/yuedu/legado/originalrule/RuleScopes.class",
+        "io/yuedu/legado/originalrule/RuleBase64.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrl.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrl$UrlOption.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptionsKt.class",
+        "io/yuedu/legado/RuntimeHttpRequestExecutor.class",
+        "io/yuedu/legado/originalrule/OriginalIpValidator.class",
+        "io/yuedu/legado/originalrule/OriginalQueryEncoder.class",
+        "io/legado/app/model/webBook/WebBook.class",
+        "io/legado/app/model/webBook/BookList.class",
+        "io/legado/app/model/webBook/BookInfo.class",
+        "io/legado/app/model/webBook/BookChapterList.class",
+        "io/legado/app/model/webBook/BookContent.class",
+        "io/legado/app/data/entities/SearchBook.class",
+        "io/yuedu/legado/originalrule/RulePersistenceAdapter.class",
+        "io/yuedu/legado/originalrule/RulePersistenceBinding.class",
+        "io/yuedu/legado/originalrule/RulePersistenceHost.class",
+        "io/yuedu/legado/OriginalTraditionalRuntime.class",
+        "io/yuedu/legado/OriginalRuleDto.class",
+        "io/yuedu/legado/originalrule/AppCookieOwnerClient.class",
+        "io/yuedu/legado/originalrule/OriginalCookieText.class",
+        "io/legado/app/utils/InfoMap.class",
+        "io/yuedu/legado/originalrule/OriginalExploreContexts.class"
+      ],
+      "junitOrProjectTestClasses": [],
+      "projectCompiledTestClassesChecked": 150,
+      "engineTestsFlag": false,
+      "byteEqualProvenanceAndNotices": [
+        {
+          "source": "manifest.json",
+          "member": "META-INF/legado-provenance/manifest.json",
+          "bytes": 14656,
+          "sha256": "e814ec9b300aa6ef7bbaed05555ba7e5ec2142032c2a36456e12b83073c8d36e"
+        },
+        {
+          "source": "runtime-http/manifest.json",
+          "member": "META-INF/legado-provenance/runtime-http/manifest.json",
+          "bytes": 9483,
+          "sha256": "714e2ce4308736b479a28958b474409456d1c8cbb47e8488e4ea02941454c87b"
+        },
+        {
+          "source": "runtime-http/resolved-dependencies.json",
+          "member": "META-INF/legado-provenance/runtime-http/resolved-dependencies.json",
+          "bytes": 26934,
+          "sha256": "fff63c52ace194d5ee6f38c1f26fef1fee23a94968f57b7ceada5abd601777af"
+        },
+        {
+          "source": "scalar-rules/manifest.json",
+          "member": "META-INF/legado-provenance/scalar-rules/manifest.json",
+          "bytes": 18765,
+          "sha256": "767c0501cd7109727f28997a1a433d1d337b3d882677f48c8a678ef18bc33d64"
+        },
+        {
+          "source": "scalar-rules/resolved-dependencies.json",
+          "member": "META-INF/legado-provenance/scalar-rules/resolved-dependencies.json",
+          "bytes": 26934,
+          "sha256": "fff63c52ace194d5ee6f38c1f26fef1fee23a94968f57b7ceada5abd601777af"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "bytes": 426,
+          "sha256": "3f991eff87a6212affed07c2d2cc0a8bb681a72ecefeff54f4915de7b5aa5a52"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "bytes": 16780,
+          "sha256": "ada0787f27b581e024972a18b51db92c8e8508d0f05017d104a1c70a61b59951"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "bytes": 1825,
+          "sha256": "9246f7f820e791b7328d46ba341bb5a2bb08c3e2e1b9d36803ab0c3899e0462f"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "bytes": 3020,
+          "sha256": "c8539fca8905465681c131e79dd58b98e4276702fc6f221b5f98aa91baf6bcf2"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "bytes": 12369,
+          "sha256": "98793632f4e0ebb70c8e81abb7ca29186878caca0f505374b5ff07f64d7998cc"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "bytes": 1450,
+          "sha256": "7979d0f6470ffe8628473d6a6d36d2fae0d280adee341922353d984f4b113cb4"
+        },
+        {
+          "source": "original-rule/licenses/cryptojs-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/cryptojs-LICENSE.txt",
+          "bytes": 1167,
+          "sha256": "df15cb64ddb4b92d3da8567f51cee37fadefe214f1131ff3520b18e61baa04f5"
+        },
+        {
+          "source": "original-rule/licenses/hutool-5.8.22-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/hutool-5.8.22-LICENSE.txt",
+          "bytes": 9549,
+          "sha256": "d7136cebc1c0c2a50e02013928fc283b8d69cb805a994e21e6a8cc3983f45131"
+        },
+        {
+          "source": "original-rule/licenses/legado-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/legado-LICENSE.txt",
+          "bytes": 35139,
+          "sha256": "35d3f26265f7c262a524602f72efda71f69d390086d6d0b74c70c8b07251227c"
+        },
+        {
+          "source": "runtime-http/licenses/brotli-MIT-LICENSE.txt",
+          "member": "META-INF/licenses/jvm-http/brotli-MIT-LICENSE.txt",
+          "bytes": 1084,
+          "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+        },
+        {
+          "source": "runtime-http/licenses/ICU-release-58-2-LICENSE.txt",
+          "member": "META-INF/licenses/jvm-http/ICU-release-58-2-LICENSE.txt",
+          "bytes": 19442,
+          "sha256": "2023a2d68dfcdb1f7b7c5dccb96f88aabba112f63f250cb9e533cc64625eff07"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-lang3-3.17.0/LICENSE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-lang3-3.17.0/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-lang3-3.17.0/NOTICE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-lang3-3.17.0/NOTICE.txt",
+          "bytes": 174,
+          "sha256": "73c3dd73ad54910699e4e364345798d083a9126b9799663d4bdce8d7468b7f66"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-text-1.13.1/LICENSE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-text-1.13.1/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-text-1.13.1/NOTICE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-text-1.13.1/NOTICE.txt",
+          "bytes": 174,
+          "sha256": "26ebc5e05468959b3ae5010f10e0c3fb0cbf8d7d2f1242005bf5656c1348c69f"
+        }
+      ],
+      "updatedOriginalRuleManifestMatchesReviewedFile": {
+        "member": "META-INF/legado-provenance/original-rule/manifest.json",
+        "bytes": 106561,
+        "sha256": "a1340a0037678dacef1f520637cefb6b46d007583562c3ffe897bb466ee67701"
+      },
+      "binaryLocalOnly": true
+    },
+    "ordinarySmokeLog": {
+      "path": ".build/original-explore-infomap-delta/ordinary-v2.log",
+      "bytes": 3785,
+      "sha256": "45f2f7c82936f42fe5c47a7d224680e741e4e0cce0b1cbf323e15aa10b3ea76d"
+    },
+    "ordinaryInitialFailure": {
+      "record": {
+        "path": ".build/original-explore-infomap-delta/ordinary-v1.json",
+        "bytes": 103570,
+        "sha256": "e9305dab27562ff67c113c7916ac412f7088e4fb8559bca8547e959830829d17"
+      },
+      "jar": {
+        "path": ".build/original-explore-infomap-delta/ordinary-v1-built-with-failed-smoke.jar",
+        "bytes": 10705462,
+        "sha256": "c6d1d2c8bad084dfc0c4758ed7834d6f3e4635dfd72b41081f550bc07e509d5b"
+      },
+      "embeddedManifest": {
+        "path": ".build/original-explore-infomap-delta/ordinary-v1-embedded-manifest.json",
+        "bytes": 106088,
+        "sha256": "97351c0d8b017faea5627b3626194dffd722bae86507e2ed4f64016b02fc5b0e"
+      },
+      "note": "Real production createSession admitted only mainJs/ruleSearch/ruleContent and rejected an explore-only traditional source after runtimeJar built and old5 smoke markers passed. Preserve failed source/JAR/log. A minimal original-only admission guard corrected the actual entry gap; v7 and ordinary-v2 verify final source."
+    },
+    "grammarReuse": {
+      "record": {
+        "path": ".build/original-explore-infomap-delta/grammar-v1.json",
+        "bytes": 2304,
+        "sha256": "7c3601e2f126e7543f852dc0fa518895c6172b9191b2fb70d7279637cc4c6907"
+      },
+      "files": 5,
+      "diagnostics": 0,
+      "byteEqualToFinalSources": true,
+      "SDKExecutions": 0
+    },
+    "AndroidExecutions": 0,
+    "JNIExecutions": 0,
+    "SwiftSDKExecutions": 0,
+    "deviceExecutions": 0
+  },
+  "nativePreparedMethods": [
+    "LegadoExploreOwnerTests.stableIdentityDoesNotUseTheEphemeralRuntimeGrant",
+    "LegadoExploreOwnerTests.scopeStillChecksTheActualGrantAndCannotAuthorizeCacheWrites"
+  ],
+  "packagePreparedMethods": [
+    "LegadoExploreAPITests.testExploreUsesOriginalPublicActionAndPreservesExplicitNullPage",
+    "LegadoExploreAPITests.testExplicitContextLifecycleUsesTypedBusinessDtoAndDoesNotExposeScopeAuthority"
+  ],
+  "implemented": {
+    "scope": "Explicit original-traditional public explore/context API into retained original WebBook; no default App route switch or second engine/owner/file/HTTP.",
+    "integrationSources": [
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 48419,
+        "sha256": "d48f227cb144413377afeec35856f0ee10a210cc86f8e01ad7f889960033ac76"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
+        "bytes": 3232,
+        "sha256": "3015f667fcb3607dc8aaaa73ece342d881be9c1b21f79eb1031a70cea04b23de"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "bytes": 20318,
+        "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "bytes": 19864,
+        "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 27474,
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "bytes": 9231,
+        "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+        "bytes": 4609,
+        "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 17638,
+        "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 7674,
+        "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "bytes": 23689,
+        "sha256": "5f5fe2c6e33e419436acec892ede4664f607fcda0c9a33284630e4801f9c698b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalExploreRuntimeTest.kt",
+        "bytes": 19394,
+        "sha256": "f21749539a04e6dbfcd453d1fcebd0da957992d57063ee3ab3f33e9aeae4a68a"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalInfoMapOracle.kt",
+        "bytes": 2417,
+        "sha256": "7c96dd51fe696b3b8536bc13b6fe55da6b8bfd3276797d67f89b5a6fe2fc128f"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "bytes": 5794,
+        "sha256": "9fa83ac4865b0b69783133de34f944643d39d5de1ebd766839344d419fc12a1d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 21356,
+        "sha256": "7df09ad81298c82c30d7c995d7d2ef169bdbea08ad2a0b56b5c545117429a28d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift",
+        "bytes": 3714,
+        "sha256": "77dccec10d2983ad7ecfee8cea5ff97ad547e407aa1a7e308981233175324bec"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift",
+        "bytes": 4764,
+        "sha256": "7eb41f3f345436282fd71e47ba74edcd2ab63687eaf1d4065329b4e4fc28227d"
+      }
+    ],
+    "actions": {
+      "explore": "url,page through retained WebBook.exploreBookAwait; no implicit InfoMap creation",
+      "exploreContext": "open/evaluate/savePending; explicit authored source UI expression and per-source save lifecycle seam"
+    },
+    "lifecycle": "Native scope identifies existing injected Host backing/source/revision, independent of per-task opaque grant. Process LRU99 retains text map only, no RuntimeTask/environment/coroutine. Source evalJS and AnalyzeUrl share the same live InfoMap. save marks only; savePending persists the current pending map through current owner/cache. Failed save leaves pending.",
+    "embeddingTypeBoundary": "Collections.checkedMap(String,String) preserves live Map/view ABI but rejects erased non-String Java key/value insertion, including bulk set/putAll, entry.setValue and Java8 default mutators. No toString coercion of raw host objects; standard Java null allowance is unchanged. Only escaping scoped checked-map/InfoMap bridge ClassCastException is restored to typed unsupported, before ordinary exploration login/UI recovery; JS may catch normally.",
+    "validation": {
+      "platform": "Windows JDK21",
+      "newFocusedMethods": 5,
+      "unchangedRelatedMethodsReused": 38,
+      "existingRuntimeMethodsRerun": 11,
+      "uniqueMethods": 54,
+      "androidExecutions": 0,
+      "SwiftSDKExecutions": 0,
+      "JNIExecutions": 0,
+      "nativeOwnerMethodsPrepared": 2,
+      "packageMethodsPrepared": 2
+    },
+    "remaining": [
+      "Original Android exploration UI rendering/layout/button JavaUI bridge and actual navigation pause/resume callbacks are not ported. Public lifecycle seam is usable but App preview/exploration UI has not selected it.",
+      "Original onPause enumerates all pending source maps; current explicit savePending is current source only. A future App lifecycle coordinator must revalidate each current source grant; no authority is granted by a scope string.",
+      "Collections checked String-map embedding boundary rejects original erased non-String raw values rather than retaining task objects. Arbitrary untyped InfoMap values are not supported.",
+      "Default App source route, complete C2 persistence/product gates, native/JNI execution and full source compatibility remain unfinished."
+    ],
+    "readerRouteIntegrated": false,
+    "fullFeatureParityEstablished": false
+  },
+  "provenance": {
+    "record": {
+      "path": ".build/original-explore-infomap-delta/provenance-update.json",
+      "bytes": 1230,
+      "sha256": "abac81b8e99f6f9d346414f104dc523d330c48df0539d7fa84e244a11e108298"
+    },
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "old52SourceEntriesUnchanged": true,
+    "newRawReferences": [
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/utils/InfoMap.kt",
+        "vendorPath": "sources/utils/InfoMap.kt",
+        "bytes": 1705,
+        "sha256": "f46d78a6d97419308061a64814553be14f9f85b06b8a8ad0751bce7682a3a3a0"
+      },
+      {
+        "archivePath": "legado-master/app/src/main/java/io/legado/app/ui/main/explore/ExploreAdapter.kt",
+        "vendorPath": "sources/ui/main/explore/ExploreAdapter.kt",
+        "bytes": 34274,
+        "sha256": "30b54cb1d14180b0ef339777da3c2153c964e1a3365535fe217a0115ca706187"
+      }
+    ],
+    "totalOriginalEntries": 54,
+    "oldNoticesEqual": 21,
+    "JARManifestMatchesFinalBytes": true
+  },
+  "reviews": [
+    {
+      "path": ".build/original-explore-infomap-delta/independent-explore-infomap-review-v1.json",
+      "bytes": 14056,
+      "sha256": "da3e1eb5f942c29969be3f7a2ef1ae85edea78f8da7a03b8c9c595bc701651c0"
+    },
+    {
+      "path": ".build/original-explore-infomap-delta/independent-explore-infomap-review-v2.json",
+      "bytes": 15201,
+      "sha256": "efe2a7111374bd134dc5dd7d055cfe59e7a97e9725ab68ef40050e2b7470c21a"
+    },
+    {
+      "path": ".build/original-explore-infomap-delta/independent-explore-infomap-review-v2-explore-only-addendum.json",
+      "bytes": 7686,
+      "sha256": "16bc3d05a11e914f62654f5243352bb16b5cda669a7b6f05973b4ff3aa113987"
+    }
+  ],
+  "actualFailuresAndCorrections": [
+    "Preflight script used Windows default GBK for one UTF8 source and stopped before Gradle; explicit UTF8 applied. A following source-origin preflight caught smoke launcher mismatch before Gradle and was synchronized. Neither was a test run.",
+    "v1 synthetic clock/sentinel assertion and v3/v4 java namespace failures were fixture errors, not hidden production passes.",
+    "Independent review confirmed raw-map host object retention, direct bridge typed-error loss and loginCheckJs ordinary recovery swallow. Checked live String backing and local exception restoration close these before final tests.",
+    "Ordinary-v1 exposed the actual explore-only public source admission defect. Fixed only explicit original mode; final v7 and ordinary-v2 passed."
+  ],
+  "remaining": [
+    "Original Android exploration UI rendering/layout/button JavaUI bridge and actual navigation pause/resume callbacks are not ported. Public lifecycle seam is usable but App preview/exploration UI has not selected it.",
+    "Original onPause enumerates all pending source maps; current explicit savePending is current source only. A future App lifecycle coordinator must revalidate each current source grant; no authority is granted by a scope string.",
+    "Collections checked String-map embedding boundary rejects original erased non-String raw values rather than retaining task objects. Arbitrary untyped InfoMap values are not supported.",
+    "Default App source route, complete C2 persistence/product gates, native/JNI execution and full source compatibility remain unfinished."
+  ],
+  "defaultAppRouteChanged": false,
+  "fullSourceCompatibilityEstablished": false,
+  "fullC2C3C4Complete": false,
+  "compactArchiveGuidance": "Archive these changed19 source snapshots, narrow diff, referenced record/XML/log and only the two new raw ZIP originals. Existing canonical52 originals and 157 execution inputs are bound to canonical Git SHA + changed-input hash mapping; do not duplicate their full archives. Local JARs are not published/embedded."
+}

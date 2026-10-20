@@ -34,6 +34,7 @@ internal class ProductionRulePlatform(
     dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
     private val environment: () -> RuleEnvironment,
 ) : RulePlatform() {
+    private val hostDispatch = dispatch
     override val userAgent: String? get() = task.session.options.userAgent
     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
     init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }
@@ -53,6 +54,18 @@ internal class ProductionRulePlatform(
             val owner = appCookieOwner ?: unsupportedRule("original CookieStore.clear requires the explicit App owner")
             owner.clear()
         }
+    }
+
+    override fun exploreOwnerScope(source: BaseSource): String {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Source belongs to another environment" }
+        val owner = task.session.options.stateOwner ?: unsupportedRule("original explore needs the explicit source owner")
+        val result = hostDispatch(task, "explore.owner.scope", io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to source.getKey()))
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        val scope = result["scope"]
+        if (scope == null || !scope.isJsonPrimitive || !scope.asJsonPrimitive.isString || scope.asString.isEmpty()
+            || scope.asString.toByteArray(Charsets.UTF_8).size > 32_768) throw RulePersistenceException("Original explore owner omitted its bounded stable scope")
+        return scope.asString
     }
 
     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "/root",
+  "mode": "Read-only production-source review; no test or SDK execution",
+  "preparationSHA256": "c316a215f55c5944a466f6fec5741448eeb43d2778baf8efba680bf3efc56f99",
+  "reviewedProductionSources": [
+    "Modules/Services/Online/LegadoPersistentStateHost.swift",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+    "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift"
+  ],
+  "confirmedBlockers": [],
+  "findings": [
+    "Process LRU stores only source URL, per-entry mutex and checked String map. Current environment/cache/check closure lives in invocation coroutine context and is removed/restored at scope exit.",
+    "Explicit open creates the map; explore only peeks. Eviction or an unopened scope does not silently restore/create an InfoMap. Explicit savePending persists only the currently granted source.",
+    "Original live Java Map/view ABI is preserved with checked backing. Erased non-String writes fail before old source/task objects can be retained. Escaping scoped bridge/type failures are translated before ordinary login/UI error recovery; JavaScript may catch them.",
+    "Native scope is identity of existing Host/source/revision, and checks original grant, deadline and cancellation. The resulting routing string grants no independent persistent authority.",
+    "Existing non-explore AnalyzeUrl calls still use the default null InfoMap, while explore passes the same map used by source evaluation. Text/public content saving restrictions and default App route are unchanged.",
+    "Swift typed methods use the existing original execute/session/task boundary. Their definitions and grammar are not compilation, JNI or App behavior proof."
+  ],
+  "limits": [
+    "This is an additional static source review. Actual JVM/JAR result acceptance requires the retained XML/log/source-continuity and ordinary JAR evidence audit.",
+    "Android UI rendering/navigation, JavaUI buttons, all-source onPause saving, complete original string/object-map parity, native/JNI execution and default App route remain unfinished."
+  ],
+  "testsExecuted": 0,
+  "SwiftSDKExecuted": 0,
+  "JNIExecuted": 0
+}

@@ -36,6 +36,7 @@ public class LegadoPayloadSmoke {
         originalTraditionalSmoke(true, false);
         originalTraditionalSmoke(true, true);
         originalBrowserProtocolSmoke();
+        originalExploreInfoMapSmoke();
     }
 
     // ASCII-only controlled smoke fixture. Production uses retained original
@@ -228,5 +229,61 @@ public class LegadoPayloadSmoke {
             if (error.get("ok").getAsBoolean() || !error.getAsJsonObject("error").get("code").getAsString().equals("STATE_IO") || !error.getAsJsonObject("error").getAsJsonArray("completedEffects").get(0).getAsString().equals("webKitCookieMutationIssued") || requests.get()!=1) throw new AssertionError(error);
             System.out.println("PACKAGED_APP_COOKIE_OWNER_BROWSER_PROTOCOL_OK orderedActions=4 partialEffectsPreserved=true actualWebKitExecuted=false");
         } finally { if(session!=null)checked(LegadoRuntime.closeSession(session)); LegadoRuntime.setHostCallback(null); server.stop(0); }
+    }
+
+    /** Assembled-JAR public business/lifecycle smoke with one controlled Host
+     * and loopback. This in-memory callback fixture does not assert native disk
+     * persistence, App integration, Android, JNI or Swift SDK execution. */
+    static void originalExploreInfoMapSmoke() throws Exception {
+        var values=new HashMap<String,String>(); var revision=new long[]{0};
+        var requests=new AtomicInteger(); var writes=new AtomicInteger();
+        var server=HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}),0),0);
+        server.createContext("/", exchange -> {
+            requests.incrementAndGet();
+            var query=exchange.getRequestURI().getRawQuery();
+            if(query==null || !query.contains("genre=owned"))throw new AssertionError("InfoMap did not reach original URL JS");
+            var bytes=("<a class='book' href='/book'>"+(query.contains("p=2")?"P2":"P1")+"</a>").getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200,bytes.length);
+            try(var body=exchange.getResponseBody()){body.write(bytes);}finally{exchange.close();}
+        });server.start();
+        var origin="http://127.0.0.1:"+server.getAddress().getPort();
+        LegadoRuntime.setHostCallback((task,operation,raw)->{
+            if(operation.equals("task.cancel"))return "{}";
+            var input=JsonParser.parseString(raw).getAsJsonObject();
+            if(!input.get("owner").getAsString().equals("ordinary-explore-owner") || !input.has("deadlineEpochMs"))throw new AssertionError("Missing actual exploration owner/deadline");
+            var out=new JsonObject();
+            synchronized(values){
+                if(operation.equals("explore.owner.scope"))out.addProperty("scope","ordinary-owned-backing-source-revision");
+                else if(operation.equals("state.read")){
+                    out.addProperty("revision",revision[0]);var selected=new JsonObject();
+                    for(var key:input.getAsJsonArray("keys")){var value=values.get(key.getAsString());if(value!=null)selected.addProperty(key.getAsString(),value);}
+                    out.add("values",selected);
+                }else if(operation.equals("state.commit")){
+                    var matches=input.get("revision").getAsLong()==revision[0];
+                    if(matches){for(var e:input.getAsJsonObject("changes").entrySet()){if(e.getValue().isJsonNull())values.remove(e.getKey());else values.put(e.getKey(),e.getValue().getAsString());}revision[0]++;writes.incrementAndGet();}
+                    out.addProperty("committed",matches);
+                }else throw new AssertionError(operation);
+            }return out.toString();
+        });
+        var source=JsonParser.parseString("{\"enabledCookieJar\":false,\"ruleExplore\":{\"bookList\":\".book\",\"name\":\"text\",\"bookUrl\":\"href\"}}").getAsJsonObject();source.addProperty("bookSourceUrl",origin+"/source");
+        java.util.function.BiFunction<String,String,JsonObject> call=(operation,input)->{
+            var session=checked(LegadoRuntime.createSession(source.toString(),"{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\"ordinary-explore-owner\"}")).get("sessionId").getAsString();
+            try{return checked(LegadoRuntime.execute(session,"ordinary-explore-"+java.util.UUID.randomUUID(),operation,input)).getAsJsonObject("result");}
+            finally{checked(LegadoRuntime.closeSession(session));}
+        };
+        try{
+            call.apply("exploreContext","{\"action\":\"open\"}");
+            call.apply("exploreContext","{\"action\":\"evaluate\",\"script\":\"infoMap.put('genre','owned'); infoMap.save(); 'ready'\"}");
+            for(int page=1;page<=2;page++){
+                var input=new JsonObject();input.addProperty("page",page);
+                input.addProperty("url","@js:infoMap.put('page',String(page)); '"+origin+"/list?p='+page+'&genre='+infoMap.get('genre')");
+                var book=call.apply("explore",input.toString()).getAsJsonArray("books").get(0).getAsJsonObject();
+                if(!book.get("name").getAsString().equals("P"+page))throw new AssertionError(book);
+            }
+            var saved=call.apply("exploreContext","{\"action\":\"savePending\"}");
+            if(saved.get("needSave").getAsBoolean() || !saved.getAsJsonObject("infoMap").get("page").getAsString().equals("2") || writes.get()!=1 || requests.get()!=2)throw new AssertionError(saved);
+            if(values.keySet().stream().noneMatch(k->k.contains("infoMap_")))throw new AssertionError("Original CacheManager key not persisted");
+            System.out.println("PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK pages=2 sameContextAcrossSessions=true explicitSave=true nativeExecuted=false");
+        }finally{LegadoRuntime.setHostCallback(null);server.stop(0);}
     }
 }

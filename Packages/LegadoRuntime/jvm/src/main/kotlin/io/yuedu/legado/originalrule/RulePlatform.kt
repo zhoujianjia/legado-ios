@@ -39,6 +39,7 @@ open class RulePlatform {
     open suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T =
         unsupportedRule("original WebBook execution owner")
     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
+    open fun exploreOwnerScope(source: BaseSource): String = unsupportedRule("original explore owner scope")
     open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
     open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()

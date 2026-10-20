@@ -14,6 +14,9 @@ import io.yuedu.legado.OriginalRuleDto.requiredText
 import io.yuedu.legado.OriginalRuleDto.text
 import io.yuedu.legado.originalrule.rethrowRuleControlFailure
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.currentCoroutineContext
+import com.script.rhino.runScriptWithContext
+import io.yuedu.legado.originalrule.OriginalExploreContexts
 import java.io.IOException
 
 /** Opt-in business execution at the existing public JSON/JNI boundary. This is not a probe,
@@ -33,6 +36,8 @@ internal object OriginalTraditionalRuntime {
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         val fields = when (operation) {
             "search" -> setOf("key", "page", "timeoutMs")
+            "explore" -> setOf("url", "page", "timeoutMs")
+            "exploreContext" -> setOf("action", "script", "timeoutMs")
             "details", "getBookInfo" -> setOf("book", "canReName", "timeoutMs")
             "toc", "getChapters" -> setOf("book", "runPreUpdateJs", "isFromBookInfo", "timeoutMs")
             "content", "getContent" -> setOf("book", "chapter", "nextChapterUrl", "needSave", "timeoutMs")
@@ -48,6 +53,38 @@ internal object OriginalTraditionalRuntime {
                 val source = LegadoRuntime.originalBookSource(task, environment)
                 val result = runBlocking(task.job) {
                     when (operation) {
+                        "explore" -> {
+                            val page = if (input.has("page") && input["page"].isJsonNull) null else input.int("page", 1)
+                            val scope = environment.platform.exploreOwnerScope(source)
+                            OriginalExploreContexts.withScope(scope, source.bookSourceUrl, environment, create = false) {
+                                val books = WebBook.exploreBookAwait(source, input.requiredText("url"), page)
+                                jsonObject("books" to JsonArray().apply { books.forEach { add(OriginalRuleDto.book(it)) } })
+                            }
+                        }
+                        "exploreContext" -> {
+                            val action = input.requiredText("action")
+                            require(action in setOf("open", "evaluate", "savePending")) { "Unknown original exploration context action" }
+                            require((action == "evaluate") == input.has("script")) { "Only exploration evaluate takes its authored UI expression" }
+                            val scope = environment.platform.exploreOwnerScope(source)
+                            environment.platform.runWebBook(currentCoroutineContext()) {
+                                OriginalExploreContexts.withScope(scope, source.bookSourceUrl, environment, create = action == "open") { map ->
+                                    var result: String? = null
+                                    if (action == "evaluate") {
+                                        val current = map ?: throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Open the original exploration context before evaluating its UI expression")
+                                        try {
+                                            val context = currentCoroutineContext()
+                                            result = runScriptWithContext(context) { source.evalJS(input.requiredText("script")) { put("infoMap", current) } }.toString()
+                                        } catch (error: Exception) {
+                                            OriginalExploreContexts.rethrowMapTypeFailure(error)
+                                            rethrowRuleControlFailure(error)
+                                            task.ensureActiveForRuntime()
+                                            environment.platform.log("${source.getTag()} exploreUi err: ${error.localizedMessage ?: error.toString()}")
+                                        }
+                                    } else if (action == "savePending" && map?.needSave == true) map.saveNow()
+                                    jsonObject("infoMap" to map?.get(), "needSave" to (map?.needSave ?: false), "result" to result)
+                                }
+                            }
+                        }
                         "search" -> {
                             val page = if (input.has("page") && input["page"].isJsonNull) null else input.int("page", 1)
                             val books = WebBook.searchBookAwait(source, input.requiredText("key"), page)

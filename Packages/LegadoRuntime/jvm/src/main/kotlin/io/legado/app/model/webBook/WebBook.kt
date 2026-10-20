@@ -15,7 +15,7 @@ import kotlinx.coroutines.ensureActive
 
 /** Retained WebBook await orchestration through the single task-owned JVM HTTP.
  * Android launch/UI wrappers, durable saving, mainJs, media, file downloads,
- * explore UI navigation/infoMap and contentBatch remain explicit unsupported.
+ * explore UI navigation/rendering and contentBatch remain explicit unsupported.
  * This class name does not imply the full Android WebBook ABI or App routing.
  */
 object WebBook {
@@ -43,7 +43,61 @@ object WebBook {
     suspend fun getContentBatchAwait(bookSource: BookSource, book: Book, chapters: List<BookChapter>): List<BookChapter> =
         unsupportedRule("original WebBook contentBatch persistence")
     suspend fun exploreBookAwait(bookSource: BookSource, url: String, page: Int? = 1): ArrayList<SearchBook> =
-        unsupportedRule("original WebBook explore navigation/infoMap")
+        owned(bookSource) { exploreBookAwaitOwned(bookSource, url, page) }
+    private suspend fun exploreBookAwaitOwned(bookSource: BookSource, url: String, page: Int?): ArrayList<SearchBook> {
+        val ruleData = RuleData()
+        val sourceUrl = bookSource.bookSourceUrl
+        val exploreInfoMap = OriginalExploreContexts.peek()
+        val analyzeUrl = AnalyzeUrl(
+            mUrl = url,
+            page = page,
+            baseUrl = sourceUrl,
+            source = bookSource,
+            ruleData = ruleData,
+            coroutineContext = currentCoroutineContext(),
+            environment = bookSource.environment,
+            infoMap = exploreInfoMap
+        )
+        val checkJs = bookSource.loginCheckJs
+        val res = kotlin.runCatching {
+            analyzeUrl.getStrResponseAwait().let {
+                if (!checkJs.isNullOrBlank()) { //检测书源是否已登录
+                    analyzeUrl.evalJS(checkJs, it) as StrResponse
+                } else {
+                    it
+                }
+            }
+        }.getOrElse { throwable ->
+            if (throwable is Exception) { OriginalExploreContexts.rethrowMapTypeFailure(throwable); rethrowRuleControlFailure(throwable) }
+            currentCoroutineContext().ensureActive()
+            if (!checkJs.isNullOrBlank()) {
+                val errResponse = analyzeUrl.getErrStrResponse(throwable)
+                try {
+                    (analyzeUrl.evalJS(checkJs, errResponse) as StrResponse).also {
+                        if (it.code() == 500) {
+                            throw throwable
+                        }
+                    }
+                } catch (checkError: Throwable) {
+                    if (checkError is Exception) { OriginalExploreContexts.rethrowMapTypeFailure(checkError); rethrowRuleControlFailure(checkError) }
+                    currentCoroutineContext().ensureActive()
+                    throw throwable
+                }
+            } else {
+                throw throwable
+            }
+        }
+        checkRedirect(bookSource, res)
+        return BookList.analyzeBookList(
+            bookSource = bookSource,
+            ruleData = ruleData,
+            analyzeUrl = analyzeUrl,
+            baseUrl = res.url(),
+            body = res.body(),
+            isSearch = false
+        )
+    }
+
     private suspend fun searchBookAwaitOwned(
         bookSource: BookSource,
         key: String,

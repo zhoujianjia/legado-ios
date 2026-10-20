@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.OriginalExploreRuntimeTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-10-20T07:51:16.375Z" hostname="DESKTOP-2E0OC06" time="0.808">
+  <properties/>
+  <testcase name="rawJavaMapAndMutableViewsCannotKeepSourceOrTaskObjectsInTheProcessLru" classname="io.yuedu.legado.OriginalExploreRuntimeTest" time="0.808">
+    <failure message="java.lang.AssertionError: var m=new java.util.LinkedHashMap();m.put('safe','changed');m.put('retained',source);infoMap.set(m){&quot;ok&quot;:true,&quot;taskId&quot;:&quot;cd600d2e-a134-4c26-b68a-0e5aa844f162&quot;,&quot;result&quot;:{&quot;infoMap&quot;:{&quot;safe&quot;:&quot;kept&quot;},&quot;needSave&quot;:false,&quot;result&quot;:null},&quot;metrics&quot;:{&quot;elapsedMs&quot;:65.0191}}[ exploreUi err: org.htmlunit.corejs.javascript.EcmaError: TypeError: 无法读取 undefined 的属性 “LinkedHashMap” (&lt;script-6&gt;#1)&#10;Source context:&#10;&gt; 1: var m=new java.util.LinkedHashMap();m.put('safe','changed');m.put('retained',source);infoMap.set(m) in &lt;script-6&gt; at line number 1]" type="java.lang.AssertionError">java.lang.AssertionError: var m=new java.util.LinkedHashMap();m.put('safe','changed');m.put('retained',source);infoMap.set(m){&quot;ok&quot;:true,&quot;taskId&quot;:&quot;cd600d2e-a134-4c26-b68a-0e5aa844f162&quot;,&quot;result&quot;:{&quot;infoMap&quot;:{&quot;safe&quot;:&quot;kept&quot;},&quot;needSave&quot;:false,&quot;result&quot;:null},&quot;metrics&quot;:{&quot;elapsedMs&quot;:65.0191}}[ exploreUi err: org.htmlunit.corejs.javascript.EcmaError: TypeError: 无法读取 undefined 的属性 “LinkedHashMap” (&lt;script-6&gt;#1)
+Source context:
+&gt; 1: var m=new java.util.LinkedHashMap();m.put('safe','changed');m.put('retained',source);infoMap.set(m) in &lt;script-6&gt; at line number 1]
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertFalse(Assert.java:65)
+	at io.yuedu.legado.OriginalExploreRuntimeTest.rawJavaMapAndMutableViewsCannotKeepSourceOrTaskObjectsInTheProcessLru(OriginalExploreRuntimeTest.kt:160)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

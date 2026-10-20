@@ -215,6 +215,24 @@ public final class LegadoRuntime: @unchecked Sendable {
                                timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalSearchResult {
         try await executeOriginal(session, "search", OriginalSearchRequest(key: key, page: page, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
     }
+    /// Explore itself only peeks the process context, as original WebBook does.
+    /// Open/evaluate/pause are explicit lifecycle calls from the embedding UI.
+    public func exploreOriginal(session: LegadoSourceSession, url: String, page: Int32? = 1,
+                                timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalSearchResult {
+        try await executeOriginal(session, "explore", OriginalExploreRequest(url: url, page: page, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
+    public func openExploreContextOriginal(session: LegadoSourceSession, timeoutMilliseconds: Int64 = 30_000,
+                                           taskID: String = UUID().uuidString) async throws -> LegadoOriginalExploreContextResult {
+        try await executeOriginal(session, "exploreContext", OriginalExploreContextRequest(action: "open", script: nil, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
+    public func evaluateExploreContextOriginal(session: LegadoSourceSession, script: String, timeoutMilliseconds: Int64 = 30_000,
+                                               taskID: String = UUID().uuidString) async throws -> LegadoOriginalExploreContextResult {
+        try await executeOriginal(session, "exploreContext", OriginalExploreContextRequest(action: "evaluate", script: script, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
+    public func savePendingExploreContextOriginal(session: LegadoSourceSession, timeoutMilliseconds: Int64 = 30_000,
+                                                  taskID: String = UUID().uuidString) async throws -> LegadoOriginalExploreContextResult {
+        try await executeOriginal(session, "exploreContext", OriginalExploreContextRequest(action: "savePending", script: nil, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
     public func detailsOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, canReName: Bool = true,
                                 timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalDetailsResult {
         try await executeOriginal(session, "details", OriginalDetailsRequest(book: book, canReName: canReName, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)

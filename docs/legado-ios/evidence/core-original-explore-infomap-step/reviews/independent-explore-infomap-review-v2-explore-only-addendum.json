@@ -1,0 +1,148 @@
+{
+  "reviewedAtUTC": "2026-10-20T07:58:44.945487+00:00",
+  "stage": "C3 v2 addendum: explicit originalTraditional explore-only public session guard",
+  "scope": "Only the new LegadoRuntime.createSession guard and OriginalExploreRuntimeTest fixture delta relative to focused-v6 source snapshots. No repeat review of prior 14 inputs; no tests executed by reviewer.",
+  "previousReview": {
+    "path": ".build\\original-explore-infomap-delta\\independent-explore-infomap-review-v2.json",
+    "bytes": 15201,
+    "sha256": "efe2a7111374bd134dc5dd7d055cfe59e7a97e9725ab68ef40050e2b7470c21a",
+    "unchanged": true
+  },
+  "reviewedNarrowInputs": [
+    {
+      "path": ".build\\original-explore-infomap-delta\\work\\Packages\\LegadoRuntime\\jvm\\src\\main\\kotlin\\io\\yuedu\\legado\\LegadoRuntime.kt",
+      "bytes": 27474,
+      "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1",
+      "baselinePath": ".build\\original-explore-infomap-delta\\focused-v6-sources\\src\\main\\kotlin\\io\\yuedu\\legado\\LegadoRuntime.kt",
+      "baselineSHA256": "10aacdbcdad9e84aab0284ee3312324d29a368cb2ab4da1c7aaa77bb533e70dc"
+    },
+    {
+      "path": ".build\\original-explore-infomap-delta\\work\\Packages\\LegadoRuntime\\jvm\\src\\test\\kotlin\\io\\yuedu\\legado\\OriginalExploreRuntimeTest.kt",
+      "bytes": 19394,
+      "sha256": "f21749539a04e6dbfcd453d1fcebd0da957992d57063ee3ab3f33e9aeae4a68a",
+      "baselinePath": ".build\\original-explore-infomap-delta\\focused-v6-sources\\src\\test\\kotlin\\io\\yuedu\\legado\\OriginalExploreRuntimeTest.kt",
+      "baselineSHA256": "0ea6125c148f8d9b3ef788154367572f8ce3d5bacc3b60c4b379bd16a7ebe42b"
+    }
+  ],
+  "allNarrowInputsUnchangedAfterReview": true,
+  "findings": [],
+  "verifiedSourceBehavior": [
+    "Production diff only adds (options.usesOriginalTraditional && source.has(\"ruleExplore\")) as another acceptable rule family in the existing createSession source guard.",
+    "Existing mainJs/ruleSearch/ruleContent predicates remain unchanged. Default mode cannot gain explore-only admission because usesOriginalTraditional is false.",
+    "Original-traditional request budget, stable source validation, media/mainJs restrictions, immutable session options and session creation order stay unchanged. No source JSON can turn on the embedding option or acquire a state owner.",
+    "The fixture first exercises default createSession with only ruleExplore and expects rejection. It then sets exploreOnly=true and removes ruleSearch before the actual public createSession call, so successful UI/context/explore flows cannot be accidentally admitted by another rule family.",
+    "Fixture restores ruleSearch only for the deliberately authored original ruleSearch fallback case. That restoration is not a production workaround."
+  ],
+  "existingEvidenceRead": {
+    "recordPath": ".build\\original-explore-infomap-delta\\focused-v7.json",
+    "recordBytes": 80863,
+    "recordSHA256": "daa109d86cb2c9e25d51bd921ba122caf5a40005b76daaf99c10eecfa67c6db1",
+    "exitCode": 0,
+    "executionSourcesUnchanged": true,
+    "reviewedInputBindings": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1",
+        "actualExecutionInputAndSnapshotMatch": true
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalExploreRuntimeTest.kt",
+        "sha256": "f21749539a04e6dbfcd453d1fcebd0da957992d57063ee3ab3f33e9aeae4a68a",
+        "actualExecutionInputAndSnapshotMatch": true
+      }
+    ],
+    "suites": [
+      {
+        "name": "io.yuedu.legado.OriginalExploreRuntimeTest",
+        "path": ".build\\original-explore-infomap-delta\\focused-v7-xml\\TEST-io.yuedu.legado.OriginalExploreRuntimeTest.xml",
+        "bytes": 1339,
+        "sha256": "424c60a0b3b53f402b906c5a610a8a67c7faa5cc0d0caab71d264bdea85a47d9",
+        "actualUniqueMethods": [
+          [
+            "io.yuedu.legado.OriginalExploreRuntimeTest",
+            "publicExploreSharesUiAndUrlMapAndRunsRetainedCssXPathJsonRegexAndFallback"
+          ],
+          [
+            "io.yuedu.legado.OriginalExploreRuntimeTest",
+            "pinnedInfoMapBodiesKeepMapIdentitySaveFlagsFailureAndSecondsContract"
+          ],
+          [
+            "io.yuedu.legado.OriginalExploreRuntimeTest",
+            "cancellationOfWaitingContextDoesNotMutateAnotherLiveInvocationOrCrossOwners"
+          ],
+          [
+            "io.yuedu.legado.OriginalExploreRuntimeTest",
+            "rawJavaMapAndMutableViewsCannotKeepSourceOrTaskObjectsInTheProcessLru"
+          ],
+          [
+            "io.yuedu.legado.OriginalExploreRuntimeTest",
+            "contextSurvivesNewRuntimeGrantsAndLruEvictionWhileOnlyPendingSavePersists"
+          ]
+        ]
+      },
+      {
+        "name": "io.yuedu.legado.LegadoRuntimeTest",
+        "path": ".build\\original-explore-infomap-delta\\focused-v7-xml\\TEST-io.yuedu.legado.LegadoRuntimeTest.xml",
+        "bytes": 1863,
+        "sha256": "4d184b794e6349d04449f0cc44cb83999e897bce8a6ddb2b1f639d2c1e5ff906",
+        "actualUniqueMethods": [
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "hostTimeoutAndBrowserCancellationRemainDistinctErrors"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "unregisteredHostAndClosedSessionFailExplicitly"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "deadlineAndCancellationBeforeRegistrationAreBothEffective"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "semanticProbeUsesOriginalE4xAndCustomEvalFeatures"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "sharedPrototypeMatchesUpstreamWhileOtherSessionsAndCallBindingsRemainIsolated"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "completeMainJsReadingChainPreservesRequestsCookiesVariablesAndCache"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "infiniteLoopCanBeCancelledFromAnotherThread"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "snapshotRequestEvidencePreservesExplicitGetNullAndExactPostBodyBase64"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "batchRejectsOutOfBatchCacheWritesAndHandlesMissingFunction"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "byteResponsesUseDeclaredCharsetBeforeLossyHostText"
+          ],
+          [
+            "io.yuedu.legado.LegadoRuntimeTest",
+            "originalJavaInteropPreservesCollectionsBytesRegexAndOverloads"
+          ]
+        ]
+      }
+    ],
+    "actualUniqueMethods": 16,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "logBytes": 3011,
+    "logSHA256": "bdf84ab760ff765f0f600cda479d410d17ace981cb6c1c3cc428869321dc8563",
+    "notCumulative": "These 16 methods include the same five explore methods already inspected in v6. Counts from retries, v6, and v7 must not be summed as distinct coverage."
+  },
+  "ordinaryJarBoundary": "Author reported ordinary-v1 passed its old markers but failed the new explore-only public session smoke at the old guard, and preserved its failed jar/raw output. This addendum does not call that attempt passing and does not launch or certify the subsequent ordinary jar.",
+  "reviewerTestsExecuted": 0,
+  "reviewerSDKExecuted": 0,
+  "conclusion": "No confirmed blocker in this isolated public-session admission repair; prior C3 v2 source review remains valid for its unchanged scope."
+}

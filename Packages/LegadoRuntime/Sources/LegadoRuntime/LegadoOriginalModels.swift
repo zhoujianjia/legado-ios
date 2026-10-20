@@ -105,3 +105,23 @@ internal struct OriginalContentRequest: Encodable, Sendable {
     let book: LegadoOriginalBook; let chapter: LegadoOriginalChapter; let nextChapterUrl: String?; let timeoutMs: Int64
     let needSave = false
 }
+
+/// Snapshot of the explicitly opened original exploration context. This is
+/// business state only, never its native backing identity or a cache grant.
+public struct LegadoOriginalExploreContextResult: Codable, Sendable, Equatable {
+    public let infoMap: [String: String]?
+    public let needSave: Bool
+    public let result: String?
+}
+internal struct OriginalExploreRequest: Encodable, Sendable {
+    let url: String; let page: Int32?; let timeoutMs: Int64
+    private enum CodingKeys: String, CodingKey { case url, page, timeoutMs }
+    func encode(to encoder: any Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(url, forKey: .url); try values.encode(timeoutMs, forKey: .timeoutMs)
+        if let page { try values.encode(page, forKey: .page) } else { try values.encodeNil(forKey: .page) }
+    }
+}
+internal struct OriginalExploreContextRequest: Encodable, Sendable {
+    let action: String; let script: String?; let timeoutMs: Int64
+}

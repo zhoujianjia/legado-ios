@@ -41,6 +41,7 @@ class AnalyzeUrl(
     headerMapF: Map<String, String>? = null,
     hasLoginHeader: Boolean = true,
     private val callTimeout: Long? = null,
+    private val infoMap: io.legado.app.utils.InfoMap? = null,
 ) : RuleJsExtensions {
     private val context = coroutineContext.minusKey(ContinuationInterceptor)
     suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null): io.yuedu.legado.StrResponse {
@@ -291,7 +292,7 @@ class AnalyzeUrl(
             it["book"] = ruleData as? Book
             it["source"] = source
             it["result"] = result
-            it["infoMap"] = null
+            it["infoMap"] = infoMap
         }
         val scope = environment.scopes.getScope(source?.jsLib, context)
             ?: environment.scopes.getCryptoScope(source ?: this, context)

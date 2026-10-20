@@ -105,6 +105,9 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         let keys: [LegadoEntityStateKey]
         let snapshot: LegadoEntityBackingSnapshot
     }
+    // Identity of this existing backing owner instance, not storage authority.
+    // It is stable across short-lived grants and never persisted as a new store.
+    private let exploreScopeIdentity = UUID().uuidString
     private let cookieOwner: CookieStore
     private let originalWebCookieStore: @MainActor @Sendable () -> WKHTTPCookieStore
     private let backing: any LegadoOwnedStateBacking
@@ -223,6 +226,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     }
 
     func dispatch(_ request: LegadoHostRequest) async throws -> String {
+        if request.operation == "explore.owner.scope" { return try explorationOwnerScope(request) }
         if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
         if request.operation == "cookie.owner.text" { return try await textCookieOwner(request) }
         if request.operation != "state.read" && request.operation != "state.commit" {
@@ -359,6 +363,26 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             AppLogger.error("The original runtime Cookie owner read failed", error: error)
             throw failure("STATE_IO", "The App Cookie owner could not be read")
         }
+    }
+
+    /// Only identifies the already granted backing/source/revision. A returned
+    /// scope cannot authorize cache writes; those still use the current grant.
+    private func explorationOwnerScope(_ request: LegadoHostRequest) throws -> String {
+        guard request.requestJSON.utf8.count <= 32_768 else { throw failure("STATE_LIMIT", "Explore owner scope request is oversized") }
+        let decoded: Any
+        do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
+        catch { throw failure("INVALID_STATE_REQUEST", "Explore owner request is not valid JSON") }
+        guard let input = decoded as? [String: Any], let owner = input["owner"] as? String,
+              let sourceURL = input["sourceURL"] as? String, sourceURL.utf8.count <= 8_192,
+              let binding = bindings[owner], binding.sourceURL.utf8.elementsEqual(sourceURL.utf8),
+              revisions[binding.sourceURL] == binding.sourceRevision else {
+            throw failure("INVALID_STATE_OWNER", "Explore context has no current explicit source owner")
+        }
+        let deadline = try cookieReadDeadline(input)
+        try checkCookieRead(request, deadline: deadline)
+        try binding.cookieCancellation.check(deadline: deadline)
+        let scope = String(decoding: try JSONSerialization.data(withJSONObject: [exploreScopeIdentity, binding.sourceURL, binding.sourceRevision]), as: UTF8.self)
+        return try encoded(["scope": scope])
     }
 
     /// Single-owner original text operations are deliberately separate from the
