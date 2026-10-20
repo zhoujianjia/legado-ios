@@ -15,7 +15,7 @@ struct yuedu_appApp: App {
     )
     @StateObject private var subscriptionStore = SubscriptionStore.shared
     @StateObject private var bookSourceDeepLinkHandler = BookSourceDeepLinkHandler()
-    @State private var renewalDataHandoff = SelfRenewalUserDataHandoff()
+    @State private var renewalOwner = SelfRenewalAppOwner()
     @Environment(\.scenePhase) private var scenePhase
 
     #if DEBUG
@@ -192,7 +192,8 @@ struct yuedu_appApp: App {
 
     private var dependenciesWithRenewalHandoff: AppDependencies {
         var dependencies = AppDependencies.live
-        dependencies.selfRenewalDataHandoff = renewalDataHandoff
+        dependencies.selfRenewalDataHandoff = renewalOwner.handoff
+        dependencies.selfRenewalOwner = renewalOwner
         return dependencies
     }
 
@@ -218,12 +219,8 @@ struct yuedu_appApp: App {
                 .environmentObject(subscriptionStore)
                 .environment(\.appDependencies, dependenciesWithRenewalHandoff)
                 .task {
-                    do {
-                        try renewalDataHandoff.bind(books: bookStore, sources: BookSourceStore.shared,
-                            positions: AppDependencies.live.readingPositionStore)
-                    } catch {
-                        AppLogger.error("Renewal handoff could not bind the App persistence owners", error: error)
-                    }
+                    await renewalOwner.start(books: bookStore, sources: BookSourceStore.shared,
+                        positions: AppDependencies.live.readingPositionStore)
                 }
                 #if DEBUG
                 .task {
@@ -339,6 +336,7 @@ struct yuedu_appApp: App {
                     if newPhase != .active { bookStore.flushPendingMetadataSave() }
                     // Pick up sources shared while the app was backgrounded.
                     if newPhase == .active {
+                        Task { await renewalOwner.becameActive() }
                         Task { await subscriptionStore.refreshAllEntitlements() }
                         Task { await subscriptionStore.reloadProductsIfStorefrontChanged() }
                         Task { await SharedImportQueueDrainer.shared.drain() }

@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 @MainActor @Observable
 private final class SelfRenewalProbeModel {
@@ -35,15 +36,25 @@ private final class SelfRenewalProbeModel {
     }
 }
 
-/// An opt-in diagnostic, not a signing service. Opening Settings starts no connection.
+/// The real App session and the opt-in transport diagnostic share this existing
+/// Settings page. Opening it starts no connection or installation.
 struct SelfRenewalProbeView: View {
     @Environment(\.appDependencies) private var dependencies
     @Environment(\.openURL) private var openURL
     @State private var model = SelfRenewalProbeModel()
     @State private var runIdentifier: UUID?
+    @State private var importingConfiguration = false
+    @State private var configurationImport: ConfigurationImport?
+    @State private var recoveryIdentifier: UUID?
+    @State private var configurationSelectionFailed = false
+
+    private struct ConfigurationImport { let id = UUID(); let url: URL }
 
     var body: some View {
         List {
+            if let owner = dependencies.selfRenewalOwner {
+                renewalConfigurationSection(owner)
+            }
             Section {
                 ThemedLabeledContent(localized("自續簽狀態"), value: localized("尚未驗證"))
                     .accessibilityIdentifier("self_renewal_unverified")
@@ -132,6 +143,26 @@ struct SelfRenewalProbeView: View {
             }
         }
         .softScrollEdges()
+        .fileImporter(isPresented: $importingConfiguration, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                configurationSelectionFailed = false
+                configurationImport = ConfigurationImport(url: url)
+            case .failure(let error):
+                if (error as? CocoaError)?.code != .userCancelled { configurationSelectionFailed = true }
+            }
+        }
+        .task(id: configurationImport?.id) {
+            guard let selection = configurationImport, let owner = dependencies.selfRenewalOwner else { return }
+            await owner.importConfiguration(selection.url)
+            if configurationImport?.id == selection.id { configurationImport = nil }
+        }
+        .task(id: recoveryIdentifier) {
+            guard let identifier = recoveryIdentifier, let owner = dependencies.selfRenewalOwner else { return }
+            await owner.recoverExplicitly()
+            if recoveryIdentifier == identifier { recoveryIdentifier = nil }
+        }
         .navigationTitle(localized("自續簽驗證"))
         .toolbarTitleDisplayMode(.inline)
         .themedAppSurface(for: .settings)
@@ -139,6 +170,77 @@ struct SelfRenewalProbeView: View {
             guard let identifier = runIdentifier else { return }
             await model.run(using: dependencies.selfRenewalTransportProbe)
             if runIdentifier == identifier { runIdentifier = nil }
+        }
+    }
+
+    private func renewalConfigurationSection(_ owner: SelfRenewalAppOwner) -> some View {
+        Section {
+            ThemedLabeledContent(localized("續簽材料"), value: localized(renewalStateKey(owner.status?.state, isWorking: owner.isWorking)))
+                .accessibilityIdentifier("self_renewal_material_status")
+            Button {
+                importingConfiguration = true
+            } label: {
+                SettingsRowLabel(localized("匯入續簽配置"), systemImage: "doc.badge.plus", role: .action)
+            }
+            .disabled(owner.isWorking)
+            .accessibilityIdentifier("self_renewal_import_configuration")
+            if owner.isWorking {
+                ProgressView(localized("正在檢查續簽材料"))
+                if configurationImport != nil || recoveryIdentifier != nil {
+                    Button(localized("取消"), role: .cancel) {
+                        configurationImport = nil; recoveryIdentifier = nil
+                    }
+                    .accessibilityIdentifier("self_renewal_cancel_material_action")
+                }
+            }
+            if owner.recoveryAvailable {
+                Button { recoveryIdentifier = UUID() } label: {
+                    SettingsRowLabel(localized("恢復續簽事務檢查"), systemImage: "arrow.clockwise", role: .action)
+                }
+                .disabled(owner.isWorking)
+                .accessibilityIdentifier("self_renewal_recover_existing_transaction")
+            }
+            if let problem = owner.problem {
+                Text(localized(renewalProblemKey(problem)))
+                    .foregroundStyle(DSColor.textSecondary)
+                    .accessibilityIdentifier("self_renewal_material_problem")
+            } else if configurationSelectionFailed {
+                Text(localized("無法開啟續簽配置"))
+                    .foregroundStyle(DSColor.textSecondary)
+            }
+        } footer: {
+            Text(localized(owner.recoveryAvailable
+                ? "恢復時可能請求本機網路權限，只檢查或清理已有事務，不重新提交安裝。"
+                : "需先準備有效簽名材料和設備認證；匯入配置不會安裝應用。"))
+                .dsSectionFooter()
+        }
+        .interfaceSectionSurface()
+    }
+
+    private func renewalStateKey(_ state: SelfRenewalAppSession.State?, isWorking: Bool) -> String {
+        switch state {
+        case nil: return isWorking ? "正在檢查續簽材料" : "續簽材料目前不可用"
+        case .unconfigured: return "尚未配置續簽材料"
+        case .ready: return "續簽材料已連接"
+        case .candidateReady: return "已有待處理續簽包"
+        case .recoveryRequired: return "已有事務需要恢復檢查"
+        case .attentionRequired: return "已有事務需要處理"
+        case .retiredUnsubmitted: return "未提交事務已安全退役"
+        case .authenticatedRecoveryObserved: return "已完成認證恢復檢查"
+        case .unavailable: return "續簽材料目前不可用"
+        }
+    }
+
+    private func renewalProblemKey(_ problem: SelfRenewalAppOwner.Problem) -> String {
+        switch problem {
+        case .invalidConfiguration: return "續簽配置無效或內容不完整"
+        case .configurationInUse: return "已有事務使用目前配置，暫時無法更換"
+        case .signingMaterials: return "缺少可用的簽名材料"
+        case .authenticationNotConfigured: return "尚未配置設備認證"
+        case .authenticationUnavailable: return "設備認證目前不可用"
+        case .localStorage: return "無法讀寫續簽狀態，原有事務已保留"
+        case .operationFailed: return "無法完成續簽檢查，原有事務已保留"
+        case .cancelled: return "續簽檢查已取消"
         }
     }
 

@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T06:48:22.322793+00:00",
+  "status": "actual-App-bootstrap-shared-owners-explicit-config-and-recovery-connected-SDK-unexecuted",
+  "sourceBinding": {
+    "count": 11,
+    "files": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 28484,
+        "sha256": "a0405d3d97a8708c477e45873c9b014f21b81f47f3b3e0d04c16a3a55192861c"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+        "bytes": 5575,
+        "sha256": "da5656e6a3085a7be1d17a3e9a13269095e7ace1d5c2792c4fe8241d76764f8c"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+        "bytes": 16929,
+        "sha256": "9bf730a5763a66edf11ec5c57b781af460fa3b5885c73059fca0799d6a46b7fc"
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+        "bytes": 25771,
+        "sha256": "11e3654687d0626b4fb885f47c3140d0ae97bd42c23fbc60f9b84bf49a52c940"
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/AppDependencies.swift",
+        "bytes": 14659,
+        "sha256": "964d3c96dc65dc9294cfd616ffdebc2bd68fa13b8deb5df54158774fcbb8883f"
+      },
+      {
+        "path": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+        "bytes": 17502,
+        "sha256": "f21739f5561f264c929ec3badeadbbf373d872c6f0a0d81694fe1a03d63e274f"
+      },
+      {
+        "path": "Resources/zh-Hant.lproj/Localizable.strings",
+        "bytes": 249392,
+        "sha256": "db2081efeda47a209dcbd06f16d4c30272f378ca125cac28e141199f986da41b"
+      },
+      {
+        "path": "Resources/zh-Hans.lproj/Localizable.strings",
+        "bytes": 251593,
+        "sha256": "f78fa8df619642cce0f9e31e6b59b7c971f5be883b892472a525916233988e44"
+      },
+      {
+        "path": "Resources/en.lproj/Localizable.strings",
+        "bytes": 264621,
+        "sha256": "701e554d971833fc6bc40225e63735812b73c957d80c3053255dfe421df1d8dc"
+      },
+      {
+        "path": "Resources/ja.lproj/Localizable.strings",
+        "bytes": 321056,
+        "sha256": "39226096961cc0050bfcfdc9afd6a8759c6dcb90b6090e11f5b2a47967196aeb"
+      },
+      {
+        "path": "Resources/ko.lproj/Localizable.strings",
+        "bytes": 297803,
+        "sha256": "55a594756767c69413856c09799b30759f9fc42136919b22f90526108ebd6065"
+      }
+    ]
+  },
+  "actualCallChain": [
+    "App @State SelfRenewalAppOwner -> AppDependencies.selfRenewalOwner + same owner.handoff -> existing ReaderNavigator registration",
+    "App task -> owner.start(actual BookStore, BookSourceStore.shared, AppDependencies.live.readingPositionStore) -> handoff.bind -> session.bootstrap",
+    "bootstrap -> owned public configuration root -> actual Journal.open/flock -> bounded configuration read -> typed durable unconfigured when missing",
+    "configured bootstrap -> real Bundle.main ApplicationMaterialVerifier -> Vault.resume -> actual lease/identity validation -> same Journal/Coordinator",
+    "local interrupted preparation -> real sealed Journal retirement APIs; remote and unknown phases never infer safe cleanup",
+    "Coordinator.observeCurrentProcess and observeUserDataAfterNormalLoad independently; no synthetic cold-launch or all-user-data proof",
+    "existing SelfRenewalProbeView fileImporter -> bounded public config -> real Keychain persistent SecIdentity ref + matching public/private handle -> material/vault checks before usable config",
+    "explicit recovery button -> actual pinned pairing + same coordinator.recover -> unique fresh authenticated Lookup/cleanup only; no Upload/Upgrade"
+  ],
+  "configurationContract": {
+    "wireSchema": 1,
+    "maximumBytes": 524288,
+    "fields": [
+      "schema",
+      "namespaceID",
+      "codeAnchors",
+      "profileAnchors",
+      "device?"
+    ],
+    "certificateLimits": "1..8 explicit anchors per trust set, <=64KiB per cert, <=256KiB combined anchors; Data uses Codable base64",
+    "deviceFields": [
+      "identityPersistentReference",
+      "deviceCertificateDER",
+      "rootCertificateDER",
+      "hostID",
+      "systemBUID",
+      "numericAddress",
+      "port",
+      "interfaceIndex"
+    ],
+    "deviceLimits": "persistent ref <=4KiB; certs <=64KiB each; IDs <=256 UTF8 bytes; numeric address <=64 bytes, no NUL, IPv4/IPv6 only; nonzero UInt16 port",
+    "privateKeyImportOrExport": false,
+    "newNamespaceOrKeyManufactured": false,
+    "actualPrivateFile": "ApplicationSupport/SelfRenewalApp/configuration.json (public configuration/status only)",
+    "journal": "ApplicationSupport/SelfRenewalApp/SelfRenewalTransactions, sole existing Journal owner/flock",
+    "publication": "same actor, checked atomic write + file fsync + checked close + rename + directory fsync; fixed bounded configuration.pending only",
+    "unknownCommit": "typed commitDurabilityUnknown, discard active coordinator/vault binding; under held flock fsync directory, reload actual bytes and revalidate before reuse",
+    "concurrency": "both observable owner and session guard close across await; failed post-lock config load closes actual Journal preserving primary and independent close errors"
+  },
+  "reviewFixes": [
+    "App State owns one observable use case and actor session. Actual App task invokes start with existing book/source/position owners; same handoff is injected into Reader dependencies and Settings.",
+    "Both owner and session close exclude reentrant work across awaits. Configuration is read only after actual Journal.open acquires the existing process flock; failed decode closes the opened journal and preserves independent close errors.",
+    "Explicit bounded configuration supplies public anchors and an existing Keychain persistent identity reference only. Real Bundle material, published vault namespace/generation/key lease and current peer pin are checked before usable configuration. No key/namespace/pairing or Apple authority is manufactured.",
+    "Unique publish handles every rename/dir-fsync unknown acknowledgement by invalidating coordinator/vault and requiring held-flock directory sync plus actual file reload before reuse. Primary failures and status-persistence failures remain separate.",
+    "Startup/foreground perform local material and original selected-file observations independently. Only explicit Settings recovery can enter the existing authenticated recovery implementation; no new transport or installation submission is introduced.",
+    "Reviewed existing Settings section styles, visible state/problem wording and task cancellation wiring; five locales append the same23 keys while preserving all old bytes. Windows static parity is not a rendered UI/plutil/SDK acceptance.",
+    "DEBUG lost-ack branch occurs after genuine writes/fsyncs; the prepared sixth suite still has six methods and actual SDK execution zero. It is not an actual OS-fsync fault or power-loss measurement."
+  ],
+  "verification": {
+    "newNativeDefinitions": 6,
+    "methods": [
+      "persistsUnconfiguredStatusAndReopensTheSameLocalOwner",
+      "retainsExistingTransactionWhenSigningMaterialsAreMissing",
+      "rejectsCorruptLinkedAndOversizedConfigurationWithoutReset",
+      "validatesRealCertificateInputsAndRejectsMissingAuthenticationHandles",
+      "preservesCancelledAndFailedConfigurationWrites",
+      "appOwnerBootstrapsItsSharedHandoffWithoutCreatingSigningCredentials"
+    ],
+    "nativeExecutions": 0,
+    "SDKCompilation": false,
+    "grammarFiles": 6,
+    "newGrammarDiagnostics": 0,
+    "locales": 5,
+    "newKeysPerLocale": 23,
+    "existingLocaleBytesUnchanged": true,
+    "macOSPlutilOrRubyLocaleCheckExecuted": false,
+    "independentAndRootReviewBlockers": 0
+  },
+  "testCoveragePrepared": [
+    "Actual missing-config write/fsync, unchanged-write suppression, same flock exclusion, close/reopen and bounded pending-file crash-window cleanup",
+    "Real prior Journal.create survives missing configuration without retirement, network or replacement",
+    "Actual corrupt/oversized/symlink configuration fails without resetting bytes and releases the acquired Journal lock",
+    "Dynamic owned public certificates validate syntax only; a random Keychain persistent ref cannot manufacture a PairingIdentity",
+    "Pre-admission cancellation, actual unwritable parent and invalid file destination never publish a usable status",
+    "DEBUG lost-ACK failure occurs only after real atomic write/file fsync/rename/directory fsync; same-session retry must resync/reload actual marked disk bytes without rewriting defaults. It is not an actual injected OS fsync error or positive I/O replacement",
+    "Actual AppOwner.start binds owned normal-load book/source/position stores; same Navigator/handoff yields real three-field position receipt and raw SHA256"
+  ],
+  "remaining": [
+    "No App CSR/private-key enrolment/developer certificate signing/provisioning issuance or pairing authorization/import workflow exists; config consumes only genuinely published existing Vault namespace and accessible existing identity",
+    "No signing preparation or installation submission button in this segment; no automatic submission, background scheduler or next completed-install renewal cycle",
+    "An expired/unavailable current Bundle/profile or vault lease prevents connect and consequently authenticated recovery; expiry-safe Lookup-only construction remains unfinished",
+    "No configured App/vault/Keychain/TLS positive runtime executed here; 6 tests are SDK0 definitions, not acceptance",
+    "App initial BookStore and legacy synchronous load paths retain their prior performance limits; no whole library reread/repair or replacement store was added",
+    "Selected owner receipts and normal-load observations do not prove kernel loaded image, actual cold launch, Apple installation authority or preservation of all user data",
+    "Durable syscalls are observed API completion, not a power-loss/device-filesystem guarantee; crash windows in definitions are prepared owned states, not actual OS-kill tests",
+    "SecureTransport and kSecUseAuthenticationUIFail remain public deprecated APIs; actual platform compile/handshake acceptance is a future independent gate"
+  ],
+  "nextAction": "Collect App6 plus retirement7 and Cookie5 with final preview integration into one coherent SDK batch. Continue expiry-safe authenticated Lookup/cleanup without requiring valid signing materials; enrollment/CSR/cert-profile issuance/pairing grant and preparation/submission/allowed background triggers remain separate unfinished production tasks.",
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-app-owner-step",
+    "manifest": "manifest.json",
+    "rawFiles": 30
+  },
+  "newCloudBuildRequested": false,
+  "physicalDeviceValidationRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

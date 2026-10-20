@@ -353,6 +353,8 @@ struct AppDependencies {
     var selfRenewalTransportProbe = SelfRenewalTransportProbe()
     /// The App supplies its single handoff owner, bound to its actual stores.
     var selfRenewalDataHandoff: SelfRenewalUserDataHandoff? = nil
+    /// The App's one lifetime session; previews do not create a second owner.
+    var selfRenewalOwner: SelfRenewalAppOwner? = nil
     var webContentFetcher: WebContentFetching
     var bookSourceFetcher: BookSourceFetching
     var chapterFetcher: ChapterFetching

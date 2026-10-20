@@ -637,14 +637,16 @@
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-controlled-transaction-step.json",
             "docs/legado-ios/core-renewal-app-data-handoff-step.json",
-            "docs/legado-ios/core-renewal-transaction-retirement-step.json"
+            "docs/legado-ios/core-renewal-transaction-retirement-step.json",
+            "docs/legado-ios/core-renewal-app-owner-step.json"
           ],
           "implementedSubtasksZh": [
             "实际整包重签→持久候选全复验→上传前路径意图→首Upgrade字节前提交意图→真实回执/Lookup，已串同一Keychain租约/IPA提取器/认证客户端。单journal actor+进程flock、原子写及父目录fsync；重启清所属临时文件，清理grant跨网络排他。未知Upgrade只Lookup且保留远端文件；安全上传失败可新认证清理。16项原生方法含真实整包到受控TLS恢复，尚未SDK执行。",
             "已把真实书架、书源和活动阅读进度保存回执接到首个Upgrade字节前的持久意图，并加入当前Bundle材料和原正常加载入口；27项新增定义待SDK。App启动协调器、自动观察、触发、冷启与完整数据保留仍未完成。",
-            "已接入同一持久 journal 的安全未提交事务退役：真实上传历史与认证清理回执授权、pending 后清理候选包并同步目录、重启续做及下一次 prepare；未知 Upgrade、安装回执和 Lookup 均保留。新增7项原生测试定义，SDK执行仍为0。"
+            "已接入同一持久 journal 的安全未提交事务退役：真实上传历史与认证清理回执授权、pending 后清理候选包并同步目录、重启续做及下一次 prepare；未知 Upgrade、安装回执和 Lookup 均保留。新增7项原生测试定义，SDK执行仍为0。",
+            "已实际接通单一App owner的启动/DI/同数据交接、真实Bundle与Vault材料校验、显式配置及认证恢复入口；关闭跨await防重入，配置同flock后读取，所有未知提交统一重新同步/读盘/验证。五语各23新key；新增6原生方法仍SDK执行0，启动不联网、不自动提交。"
           ],
-          "nextActionZh": "继续接通单一 App 生命周期 owner、材料配置与真实启动恢复；将退役7项、此前数据交接及受影响既有方法集中SDK检查。完成安装回执的下一轮策略、退避与系统允许触发仍未完成，不将局部清理或同版本Lookup登记为自动续签。"
+          "nextActionZh": "集中SDK检查App6、退役7、Cookie5及预览最终接线；继续材料到期时允许仅认证Lookup/所属清理、签名材料申请与配置、完成回执下一轮策略和系统允许触发。尚未完成重签/安装产品入口或真机冷启数据保留。"
         },
         {
           "id": "S6",
@@ -743,7 +745,8 @@
       "unsubmittedTransactionRetirementImplementation": "docs/legado-ios/core-renewal-transaction-retirement-step.json",
       "originalTextSubContentImplementation": "docs/legado-ios/core-original-text-subcontent-step.json",
       "cookieReadSDKCorrectedInitial": "docs/legado-ios/core-cookie-read-sdk-corrected-initial.json",
-      "originalCookieTextImplementation": "docs/legado-ios/core-original-app-cookie-text-step.json"
+      "originalCookieTextImplementation": "docs/legado-ios/core-original-app-cookie-text-step.json",
+      "appRenewalOwnerImplementation": "docs/legado-ios/core-renewal-app-owner-step.json"
     }
   },
   "stages": [
@@ -4794,6 +4797,10 @@
     "original-app-cookie-text": {
       "path": "docs/legado-ios/core-original-app-cookie-text-step.json",
       "scope": "Same-owner original Cookie text/read/write/response/login production wiring; actual63 JVM and source-bound ordinary4 smoke passed. Native5/Package2 remain SDK0; no default route or full Cookie compatibility."
+    },
+    "app-renewal-owner": {
+      "path": "docs/legado-ios/core-renewal-app-owner-step.json",
+      "scope": "Actual shared App owner/startup/DI/explicit public config/authenticated recovery; unknown commit and reentrancy fixes reviewed. Six native definitions, SDK0; enrollment, expired-material recovery, submission and automatic renewal unfinished."
     }
   },
   "retainedExistingWork": [

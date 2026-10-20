@@ -1,0 +1,92 @@
+--- v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ v2/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -77,6 +77,13 @@
+     private var persistedConfiguration: Configuration?
+     private var configurationNeedsReload = false
+     private var busy = false
++    #if DEBUG
++    enum PublicationFault: Sendable { case loseNextDirectorySyncAcknowledgement }
++    private var publicationFault: PublicationFault?
++    init(root: URL, publicationFault: PublicationFault) {
++        requestedRoot = root; self.publicationFault = publicationFault
++    }
++    #endif
+     static let maximumConfigurationBytes = 524_288
+ 
+     /// No file, Bundle, Keychain or network work happens during App.init.
+@@ -303,7 +310,23 @@
+         let document = Document(schema: 1, configuration: configuration, status: status)
+         let raw = try JSONEncoder().encode(document)
+         guard raw.count <= Self.maximumConfigurationBytes else { throw Failure.limit }
+-        try Self.writeDocument(raw, root: root)
++        do {
++            #if DEBUG
++            let losesAcknowledgement = publicationFault != nil
++            publicationFault = nil
++            try Self.writeDocument(raw, root: root, loseCommitAcknowledgement: losesAcknowledgement)
++            #else
++            try Self.writeDocument(raw, root: root)
++            #endif
++        } catch {
++            if let failure = error as? Failure, failure == .commitDurabilityUnknown {
++                // Every publication uses this boundary, including bootstrap
++                // status, observations and error status. A lost durable ACK
++                // can never leave a prior coordinator binding usable.
++                coordinator = nil; vault = nil; configurationNeedsReload = true
++            }
++            throw error
++        }
+         lastStatus = status
+         persistedConfiguration = configuration
+         return status
+@@ -463,7 +486,7 @@
+         return result
+     }
+ 
+-    private static func writeDocument(_ raw: Data, root: URL) throws {
++    private static func writeDocument(_ raw: Data, root: URL, loseCommitAcknowledgement: Bool = false) throws {
+         precondition(!Thread.isMainThread)
+         try Task.checkCancellation()
+         let directory = Darwin.open(root.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+@@ -490,6 +513,9 @@
+         try Task.checkCancellation()
+         guard renameat(directory, name, directory, "configuration.json") == 0 else { throw Failure.storage }
+         guard fsync(directory) == 0 else { throw Failure.commitDurabilityUnknown }
++        // DEBUG fault withdraws an acknowledgement only AFTER all genuine file
++        // I/O and fsync succeeded. It cannot replace I/O or manufacture success.
++        if loseCommitAcknowledgement { throw Failure.commitDurabilityUnknown }
+     }
+ 
+     private func trace(_ stage: String, since started: TimeInterval) {
+--- v1/Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift
++++ v2/Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift
+@@ -160,6 +160,29 @@
+             let status = try await restored.bootstrap(handoff: handoff)
+             #expect(status.state == .unconfigured)
+             try await restored.close()
++            #if DEBUG
++            let unknownRoot = root.deletingLastPathComponent().appendingPathComponent("ack-loss")
++            try FileManager.default.createDirectory(at: unknownRoot, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
++            let owned = unknownRoot.appendingPathComponent("SelfRenewalApp")
++            let unknown = Session(root: owned, publicationFault: .loseNextDirectorySyncAcknowledgement)
++            do { _ = try await unknown.bootstrap(handoff: handoff); Issue.record("lost configuration ACK reported success") }
++            catch let error as Session.Failure { #expect(error == .commitDurabilityUnknown) }
++            let beforeReload = await unknown.status()
++            #expect(beforeReload == nil)
++            let destination = owned.appendingPathComponent("configuration.json")
++            let committed = try Data(contentsOf: destination)
++            // Prepare a distinct, still valid actual disk document at the
++            // uncertain-commit window. A retry must read these bytes under the
++            // same lock, rather than blindly republish in-memory defaults.
++            var document = try #require(JSONSerialization.jsonObject(with: committed) as? [String: Any])
++            document["ownedRecoveryMarker"] = "must survive unchanged local refresh"
++            let staged = try JSONSerialization.data(withJSONObject: document, options: [.sortedKeys])
++            try staged.write(to: destination, options: .atomic)
++            let recovered = try await unknown.bootstrap(handoff: handoff)
++            #expect(recovered.state == .unconfigured)
++            #expect(try Data(contentsOf: destination) == staged)
++            try await unknown.close()
++            #endif
+         }
+     }
+ 
