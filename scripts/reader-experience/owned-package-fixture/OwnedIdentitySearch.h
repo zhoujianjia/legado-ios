@@ -1,0 +1,23 @@
+#ifndef YUEDU_OWNED_IDENTITY_SEARCH_H
+#define YUEDU_OWNED_IDENTITY_SEARCH_H
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <Security/SecBase.h>
+#include <Security/SecKeychain.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* macOS owned-fixture producer only. No identity/key is returned or retained.
+ * The caller supplies its one owned Keychain and a bounded public leaf DER.
+ * Output count is zero on every failure; success means exactly one exact leaf. */
+OSStatus YueduOwnedIdentitySearchCount(SecKeychainRef keychain,
+                                      CFDataRef expectedLeaf,
+                                      uint32_t *matchingCount);
+
+#ifdef __cplusplus
+}
+#endif
+#endif

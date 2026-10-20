@@ -53,7 +53,7 @@ class OwnedSDKProducerCheckTests(unittest.TestCase):
     def test_requires_exact_isolated_tag_sha_checkout_and_source_only(self):
         with self.context():
             source = self.inputs()
-            self.assertEqual(len(source['sourceInputs']),17)
+            self.assertEqual(len(source['sourceInputs']),19)
             self.assertEqual(source['sourceTag'],'reader-owned-sdk-aaaaaaa')
             for changes in [{'GITHUB_SHA':'b'*40},{'GITHUB_REF_NAME':'reader-renewal-aaaaaaa'},
                             {'GITHUB_REF':'refs/heads/main'},{'LEGADO_RUNTIME_SOURCE_ONLY':'0'}]:
@@ -93,7 +93,7 @@ class OwnedSDKProducerCheckTests(unittest.TestCase):
             with self.assertRaises(ValueError): check.stage_public(self.probe,self.work,produced,source['sourceInputs'])
             leaf.write_bytes(raw)
             changed = copy.deepcopy(source['sourceInputs'])
-            entry = next(x for x in changed if x['path'].endswith('/ImportOwnedIdentity.swift'))
+            entry = next(x for x in changed if x['path'].endswith('/OwnedIdentitySearch.c'))
             entry['sha256']='b'*64
             with self.assertRaises(ValueError): check.stage_public(self.probe,self.work,produced,changed)
             self.assertFalse((self.work/'sdk-produced-public').exists())

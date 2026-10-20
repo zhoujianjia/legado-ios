@@ -1,0 +1,96 @@
+--- canonical/scripts/reader-experience/test-renewal-probe-tools.py
++++ future/scripts/reader-experience/test-renewal-probe-tools.py
+@@ -241,7 +241,7 @@
+             self.assertEqual(len(record["intendedTests"]["replacement"]), 5)
+             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
+             paths = {item["path"] for item in record["sourceInputs"]}
+-            self.assertEqual(len(record["sourceInputs"]), 175)
++            self.assertEqual(len(record["sourceInputs"]), 177)
+             self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
+                              "scripts/reader-experience/renewal-report-schema1.py",
+                              "scripts/reader-experience/test-inspect-renewal-report.py",
+@@ -558,7 +558,7 @@
+             self.assertEqual(inputs["selectionMode"], "implementation")
+             self.assertEqual(inputs["intendedTests"], expected)
+             self.assertEqual(sum(map(len, expected.values())), 11)
+-            self.assertEqual(len(inputs["sourceInputs"]), 175)
++            self.assertEqual(len(inputs["sourceInputs"]), 177)
+             for group in ("unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
+                 for suffix in ("-summary.json", "-tests.json"):
+                     self.assertFalse((self.work / (group + suffix)).exists())
+@@ -656,7 +656,7 @@
+             self.assertEqual(inputs["selectionMode"], "signature")
+             self.assertEqual(inputs["intendedTests"], {"signature": sorted(probe.EXPECTED_CASES["signature"])})
+             self.assertEqual(len(inputs["intendedTests"]["signature"]), 9)
+-            self.assertEqual(len(inputs["sourceInputs"]), 175)
++            self.assertEqual(len(inputs["sourceInputs"]), 177)
+             for group in ("unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
+                 for suffix in ("-summary.json", "-tests.json"):
+                     self.assertFalse((self.work / (group + suffix)).exists())
+@@ -732,7 +732,7 @@
+             self.assertEqual(inputs["selectionMode"], "cryptography")
+             self.assertEqual(inputs["intendedTests"], {"cryptography": sorted(probe.EXPECTED_CASES["cryptography"])})
+             self.assertEqual(len(inputs["intendedTests"]["cryptography"]), 25)
+-            self.assertEqual(len(inputs["sourceInputs"]), 175)
++            self.assertEqual(len(inputs["sourceInputs"]), 177)
+             for group in probe.EXPECTED_CASES:
+                 if group == "cryptography":
+                     continue
+@@ -824,7 +824,7 @@
+             expected = probe.EXPECTED_CASES["sealedmaterials"]
+             self.assertEqual(inputs["selectionMode"], "sealedmaterials")
+             self.assertEqual(inputs["intendedTests"], {"sealedmaterials": sorted(expected)})
+-            self.assertEqual(len(inputs["sourceInputs"]), 175)
++            self.assertEqual(len(inputs["sourceInputs"]), 177)
+             self.assertEqual(len(expected), 48)
+             self.assertTrue(probe.EXPECTED_CASES["cryptography"] | probe.EXPECTED_CASES["materials"] <= expected)
+             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE,
+@@ -926,7 +926,7 @@
+             expected = probe.EXPECTED_CASES["boundmaterials"]
+             self.assertEqual(inputs["selectionMode"], "boundmaterials")
+             self.assertEqual(inputs["intendedTests"], {"boundmaterials": sorted(expected)})
+-            self.assertEqual(len(inputs["sourceInputs"]), 175)
++            self.assertEqual(len(inputs["sourceInputs"]), 177)
+             self.assertEqual(len(expected), 78)
+             self.assertTrue(probe.EXPECTED_CASES["sealedmaterials"] <= expected)
+             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE, probe.PROFILE_SUITE,
+@@ -1071,7 +1071,7 @@
+             self.built_fixture()
+             inputs = smoke.read_json(self.work / "source-inputs.json")
+             expected = probe.EXPECTED_CASES["controlledsigning"]
+-            self.assertEqual(len(inputs["sourceInputs"]), 175)
++            self.assertEqual(len(inputs["sourceInputs"]), 177)
+             self.assertEqual(inputs["intendedTests"], {"controlledsigning": sorted(expected)})
+             self.assertEqual(len(expected), 23)
+             suites = (probe.IPA_SUITE, probe.VAULT_SUITE, probe.CONTROLLED_SIGNER_SUITE)
+@@ -1181,8 +1181,8 @@
+         self.assertEqual(len(additional), 39)
+         self.assertEqual(expected, probe.EXPECTED_CASES["boundmaterials"] | probe.EXPECTED_CASES["controlledsigning"] |
+                          additional)
+-        self.assertEqual(len(probe.SOURCE_INPUTS), 175)
+-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 175)
++        self.assertEqual(len(probe.SOURCE_INPUTS), 177)
++        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 177)
+         for path in probe.SOURCE_INPUTS:
+             self.assertTrue((HERE.parents[1] / path).is_file(), path)
+         selected_suites = {case.split("/")[0] for case in expected}
+@@ -1308,6 +1308,8 @@
+                  'Modules/Services/Online/ChapterCacheRepository.swift',
+                  probe.SDK_TOOL_ROOT + 'generate-sdk-owned-package.py',
+                  probe.SDK_TOOL_ROOT + 'ImportOwnedIdentity.swift',
++                 probe.SDK_TOOL_ROOT + 'OwnedIdentitySearch.h',
++                 probe.SDK_TOOL_ROOT + 'OwnedIdentitySearch.c',
+                  probe.SDK_TOOL_ROOT + 'framework.c')
+         with self.context(), patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "integratedrenewal", "DEVELOPER_DIR": "owned-toolchain"}):
+             for path in paths:
+@@ -1444,8 +1446,8 @@
+         self.assertIn("!cancelled() && steps.toolchain.outcome == 'success'", workflow)
+         self.assertIn('private keys/P12/passwords are never artifact members', workflow)
+         self.assertIn('original-api-package-tests.sh', workflow)
+-        self.assertEqual(len(probe.SOURCE_INPUTS), 175)
+-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 175)
++        self.assertEqual(len(probe.SOURCE_INPUTS), 177)
++        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 177)
+         for path in probe.SOURCE_INPUTS: self.assertTrue((HERE.parents[1] / path).is_file(), path)
+ 
+ 

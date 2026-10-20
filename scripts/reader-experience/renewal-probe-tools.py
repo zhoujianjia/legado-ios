@@ -52,7 +52,7 @@ BOOK_STORAGE_SUITE = "BookChapterStorageTests"
 SDK_REQUIRED_CASE = PACKAGE_SIGNER_SUITE + "/signsSDKProducedMainExtensionsAndFrameworkInSameJob"
 SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
 SDK_TOOL_ROOT = "scripts/reader-experience/owned-package-fixture/"
-SDK_TOOL_NAMES = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "main.c", "extension.c", "framework.c")
+SDK_TOOL_NAMES = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "OwnedIdentitySearch.h", "OwnedIdentitySearch.c", "main.c", "extension.c", "framework.c")
 SDK_MARKER = "YUEDU_SDK_OWNED_FIXTURE"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
@@ -415,6 +415,8 @@ SOURCE_INPUTS = (
     'scripts/reader-experience/test-renewal-probe-tools.py',
     'scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py',
     'scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift',
+    'scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h',
+    'scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c',
     'scripts/reader-experience/owned-package-fixture/main.c',
     'scripts/reader-experience/owned-package-fixture/extension.c',
     'scripts/reader-experience/owned-package-fixture/framework.c',

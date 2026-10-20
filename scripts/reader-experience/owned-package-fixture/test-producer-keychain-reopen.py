@@ -5,6 +5,8 @@ import io
 import json
 from pathlib import Path
 import sys
+import tempfile
+from unittest.mock import patch
 import unittest
 
 spec = importlib.util.spec_from_file_location('owned_reopen_producer', Path(__file__).with_name('generate-sdk-owned-package.py'))
@@ -88,6 +90,76 @@ class OwnedKeychainReopenReportTests(unittest.TestCase):
         for changed in [dict(status, osStatus=0), dict(status, errorDescription='private-canary'), dict(status, stage='unknown')]:
             with self.assertRaises(ValueError):
                 producer.reopened_identity_status(json.dumps(changed).encode())
+
+
+    def compile_fixture(self, c_exit=0, swift_exit=0):
+        # Actual Python children check command ordering/failure/public logs.
+        # This is not a C compiler, Swift typecheck, Keychain or codesign proof.
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name); owned = root/'owned'; public = root/'public'
+        owned.mkdir(); public.mkdir()
+        tool = root/'public-compiler.py'
+        tool.write_text("""
+import pathlib,sys
+args=sys.argv[1:]
+kind=args[2]
+print('owned '+kind+' public compiler boundary')
+if kind=='clang':
+    if int(sys.argv[-1]):sys.exit(int(sys.argv[-1]))
+    pathlib.Path(args[args.index('-o')+1]).write_bytes(b'owned-object-marker')
+else:
+    if not pathlib.Path(args[args.index('-import-objc-header')+1]).is_file():sys.exit(66)
+    if b'owned-object-marker'!=pathlib.Path(args[args.index('-o')-1]).read_bytes():sys.exit(67)
+    if int(sys.argv[-1]):sys.exit(int(sys.argv[-1]))
+    pathlib.Path(args[args.index('-o')+1]).write_bytes(b'owned-tool-marker')
+""",encoding='utf8')
+        original = producer.run
+        commands = []
+        def actual_child(argv, **kwargs):
+            commands.append([str(item) for item in argv])
+            code = c_exit if argv[3]=='clang' else swift_exit
+            return original([sys.executable, tool, *argv[1:], str(code)], **kwargs)
+        return owned, public, commands, actual_child
+
+    def test_actual_compile_children_require_public_c_then_formal_header_and_object_link(self):
+        owned, public, commands, child = self.compile_fixture()
+        with patch.object(producer,'run',side_effect=child):
+            result = producer.compile_owned_importer(owned,public)
+        self.assertEqual(result.read_bytes(),b'owned-tool-marker')
+        self.assertEqual(len(commands),2)
+        self.assertEqual(commands[0][:4],['xcrun','--sdk','macosx','clang'])
+        self.assertIn('-Werror=implicit-function-declaration',commands[0])
+        self.assertEqual(commands[0][commands[0].index('-c')+1],str(producer.HERE/'OwnedIdentitySearch.c'))
+        self.assertEqual(commands[1][:4],['xcrun','--sdk','macosx','swiftc'])
+        self.assertEqual(commands[1][commands[1].index('-import-objc-header')+1],str(producer.HERE/'OwnedIdentitySearch.h'))
+        self.assertEqual(commands[1][commands[1].index('-o')-1],str(owned/'OwnedIdentitySearch.o'))
+        log = (public/'import-tool-compile.log').read_text()
+        self.assertIn('owned clang public compiler boundary',log)
+        self.assertIn('owned swiftc public compiler boundary',log)
+        self.assertEqual({path.name for path in public.iterdir()},{'import-tool-compile.log'})
+
+    def test_actual_c_compile_failure_remains_nonzero_and_never_starts_swift(self):
+        owned, public, commands, child = self.compile_fixture(c_exit=7)
+        output = io.StringIO()
+        with redirect_stdout(output), patch.object(producer,'run',side_effect=child), self.assertRaises(producer.ToolFailure) as failed:
+            producer.compile_owned_importer(owned,public)
+        self.assertEqual(failed.exception.code,7)
+        self.assertEqual(len(commands),1)
+        self.assertFalse((owned/'import-owned-identity').exists())
+        self.assertIn('OWNED_PUBLIC_TOOL_FAILURE',output.getvalue())
+        self.assertIn('owned clang public compiler boundary',output.getvalue())
+
+    def test_actual_swift_compile_failure_preserves_its_exit_and_public_diagnostic(self):
+        owned, public, commands, child = self.compile_fixture(swift_exit=9)
+        output = io.StringIO()
+        with redirect_stdout(output), patch.object(producer,'run',side_effect=child), self.assertRaises(producer.ToolFailure) as failed:
+            producer.compile_owned_importer(owned,public)
+        self.assertEqual(failed.exception.code,9)
+        self.assertEqual(len(commands),2)
+        self.assertFalse((owned/'import-owned-identity').exists())
+        self.assertIn('owned swiftc public compiler boundary',output.getvalue())
+        self.assertIn('owned swiftc public compiler boundary',(public/'import-tool-compile.log').read_text())
 
 
 if __name__ == '__main__':

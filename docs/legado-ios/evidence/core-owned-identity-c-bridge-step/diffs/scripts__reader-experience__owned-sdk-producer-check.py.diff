@@ -1,0 +1,16 @@
+--- canonical/scripts/reader-experience/owned-sdk-producer-check.py
++++ future/scripts/reader-experience/owned-sdk-producer-check.py
+@@ -22,11 +22,11 @@
+     'scripts/reader-experience/test-renewal-probe-tools.py',
+     'Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift',
+     'scripts/sim.sh',
+-    *(TOOL_ROOT + name for name in ('generate-sdk-owned-package.py','ImportOwnedIdentity.swift','main.c','extension.c','framework.c',
++    *(TOOL_ROOT + name for name in ('generate-sdk-owned-package.py','ImportOwnedIdentity.swift','OwnedIdentitySearch.h','OwnedIdentitySearch.c','main.c','extension.c','framework.c',
+                                    'test-producer-diagnostics.py','test-producer-timeouts.py','test-producer-keychain-reopen.py')),
+ )
+ PHASES = ('toolchain','xcode-version','sdk-path','producer','stage')
+-assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 17
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 19
+ 
+ 
+ def load_probe(repo):

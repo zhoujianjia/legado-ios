@@ -130,25 +130,10 @@ func legacySigningIdentityCount(_ keychain: SecKeychain, expected: Data) throws 
     // this exact leaf in this one owned file before codesign is invoked again.
     // This does not assert that the installed codesign implementation uses an
     // identical search, or that codesign's own ACL has executed successfully.
-    var search: SecIdentitySearch?
-    try require(SecIdentitySearchCreate(keychain, CSSM_KEYUSE(CSSM_KEYUSE_SIGN), &search), at: .legacyIdentitySearch)
-    guard let search else { throw Failure(stage: .legacyIdentitySearch, status: errSecInternalComponent) }
-    var count = 0
-    while true {
-        var identity: SecIdentity?
-        let status = SecIdentitySearchCopyNext(search, &identity)
-        if status == errSecItemNotFound { break }
-        try require(status, at: .legacyIdentitySearch)
-        guard let identity, count < 16 else { throw Failure(stage: .legacyIdentitySearch, status: errSecDecode) }
-        var certificate: SecCertificate?
-        try require(SecIdentityCopyCertificate(identity, &certificate), at: .legacyIdentitySearch)
-        guard let certificate, SecCertificateCopyData(certificate) as Data == expected else {
-            throw Failure(stage: .legacyIdentitySearch, status: errSecDecode)
-        }
-        count += 1
-    }
+    var count: UInt32 = 0
+    try require(YueduOwnedIdentitySearchCount(keychain, expected as CFData, &count), at: .legacyIdentitySearch)
     guard count == 1 else { throw Failure(stage: .legacyIdentitySearch, status: errSecItemNotFound) }
-    return count
+    return Int(count)
 }
 
 func verifyStoredIdentity(_ keychain: SecKeychain, input: Input, expectedLeaf: SecCertificate, importedCount: Int?) throws -> [String: Any] {

@@ -1,0 +1,49 @@
+--- canonical/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
++++ future/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
+@@ -115,6 +115,27 @@
+     result=subprocess.CompletedProcess(args,process.returncode if process is not None else None,stdout,stderr)
+     result.processStarted=process is not None;result.processCleanup=cleanup
+     return result,timed_out
++
++
++def compile_owned_importer(owned, out):
++    # The two deprecated public IdentitySearch functions are unavailable to
++    # Swift, but remain declared in the macOS C SDK. A normal C object and
++    # imported header expose only OSStatus/count, never an identity/private key.
++    bridge = owned/'OwnedIdentitySearch.o'
++    bridge_log = owned/'owned-identity-search-compile.log'
++    importer = owned/'import-owned-identity'
++    run(['xcrun','--sdk','macosx','clang','-std=c11','-Wall','-Wextra',
++         '-Werror=implicit-function-declaration','-c',HERE/'OwnedIdentitySearch.c','-o',bridge],
++        public_log=bridge_log)
++    run(['xcrun','--sdk','macosx','swiftc','-import-objc-header',HERE/'OwnedIdentitySearch.h',
++         HERE/'ImportOwnedIdentity.swift',bridge,'-o',importer],
++        public_log=out/'import-tool-compile.log')
++    # Successful public compiler logs share the existing allowlisted filename.
++    # Either compile failure raises first and retains its real bounded stderr in
++    # the existing producer log; no fake object/tool fallback is accepted.
++    log = out/'import-tool-compile.log'
++    log.write_bytes(b'OWNED_C_BRIDGE\n'+bridge_log.read_bytes()+b'\nOWNED_SWIFT_IMPORTER\n'+log.read_bytes())
++    return importer
+ 
+ def public_text(raw):
+     for literal in PRIVATE_LITERALS:
+@@ -291,7 +312,7 @@
+     out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
+     if any(out.iterdir()):raise RuntimeError('Output must be an empty controlled directory')
+     records=[]
+-    source_files=['generate-sdk-owned-package.py','ImportOwnedIdentity.swift','main.c','extension.c','framework.c']
++    source_files=['generate-sdk-owned-package.py','ImportOwnedIdentity.swift','OwnedIdentitySearch.h','OwnedIdentitySearch.c','main.c','extension.c','framework.c']
+     for name in source_files:
+         raw=(HERE/name).read_bytes();records.append({'path':name,'bytes':len(raw),'sha256':fingerprint(raw)})
+     run(['openssl','version'],public_log=out/'openssl-version.log')
+@@ -322,8 +343,7 @@
+             run(['openssl','verify','-purpose','any','-attime',str(int(at.timestamp())),'-CAfile',root_pem,leaf_pem],public_log=out/'owned-certificate-chain.log')
+             env={'PATH':os.defpath,'OWNED_SYNTHETIC_P12_PASSWORD':p12_password}
+             p12=run(['openssl','pkcs12','-export','-inkey','/dev/stdin','-in',leaf_pem,'-certfile',root_pem,'-passout','env:OWNED_SYNTHETIC_P12_PASSWORD','-keypbe','PBE-SHA1-3DES','-certpbe','PBE-SHA1-3DES','-macalg','SHA1','-iter','2048'],input=leaf_key,env=env,private=True)
+-            importer=owned/'import-owned-identity'
+-            run(['xcrun','swiftc',HERE/'ImportOwnedIdentity.swift','-o',importer],public_log=out/'import-tool-compile.log')
++            importer=compile_owned_importer(owned,out)
+             request={'path':str(keychain),'keychainPassword':keychain_password,'p12Password':p12_password,
+                 'p12':base64.b64encode(p12).decode(),'leafCertificate':base64.b64encode(leaf).decode(),
+                 'rootCertificate':base64.b64encode(root).decode()}
