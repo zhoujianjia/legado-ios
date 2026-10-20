@@ -208,6 +208,24 @@ final class SelfRenewalAppOwner {
         recoveryAvailable = await session.recoveryIsAvailable()
     }
 
+    /// A separate explicit action preserves pending intent instead of calling
+    /// refresh again. Only the same session/coordinator may recover materials.
+    func reconcileDeveloperMaterials() async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil
+        do { developerMaterial = try await session.reconcileDeveloperMaterials() }
+        catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
+            developerMaterial = failure.published
+            problem = Self.classify(failure.underlying)
+        } catch {
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal account material reconciliation unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        status = await session.status()
+        recoveryAvailable = await session.recoveryIsAvailable()
+    }
+
     func finalizeDeveloperMaterialPublication() async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }

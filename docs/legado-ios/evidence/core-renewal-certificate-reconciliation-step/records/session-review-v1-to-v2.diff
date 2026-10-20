@@ -1,0 +1,34 @@
+--- v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ v2/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -472,6 +472,7 @@
+         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+         let started = SourcePerfTrace.now
+         defer { trace("developer-material-reconcile", since: started) }
++        guard !developerLocallySignedOut else { throw SelfRenewalDeveloperAccountClient.Failure.signedOut }
+         let account = try await developerAccountOwner()
+         guard try await account.pendingEnrollment() != nil else {
+             throw SelfRenewalDeveloperAccountClient.Failure.reconciliationRequired
+--- v1/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
++++ v2/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
+@@ -163,6 +163,21 @@
+             do {
+                 let status = try await reopened.bootstrap(handoff: c.handoff)
+                 #expect(status.access == .signing)
++                // No account client has been opened in this reopened Session.
++                // Its erase-only fallback can fail with credentials still on
++                // disk; that must not undo the Session's local logout denial.
++                c.fixture.storage.failSave(afterSuccessfulSaves: 0)
++                do { try await reopened.signOutDeveloperAccount(); Issue.record("Failed credential erasure was acknowledged") }
++                catch let failure as Client.Failure { #expect(failure == .storage) }
++                let beforeDenied = await c.peer.facts()
++                do { _ = try await reopened.reconcileDeveloperMaterials(); Issue.record("Failed logout reenabled pending material requests") }
++                catch let failure as Client.Failure { #expect(failure == .signedOut) }
++                let afterDenied = await c.peer.facts()
++                #expect(beforeDenied.paths == afterDenied.paths)
++                let stillStored = try #require(try c.fixture.storage.load(namespace: c.fixture.namespace.id))
++                #expect(stillStored.contains(c.fixture.credentials.xcodeToken) && stillStored.contains("certificateRequestIntent"))
++                // Only a new explicit live account connection lifts denial.
++                _ = try await reopened.connectDeveloperAccount(c.fixture.credentials)
+                 let published = try await reopened.reconcileDeveloperMaterials()
+                 #expect(published.namespaceID == c.fixture.namespace.id && published.keyID == c.originalLease.keyID)
+                 #expect(published.generation == c.originalLease.generation + 1)

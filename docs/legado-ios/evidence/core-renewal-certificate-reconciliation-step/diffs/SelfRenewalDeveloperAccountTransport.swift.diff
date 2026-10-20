@@ -1,0 +1,28 @@
+--- baseline/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift
++++ final/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift
+@@ -43,6 +43,13 @@
+               Self.allowedEndpoint(url, method: request.httpMethod) else {
+             throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+         }
++        if url.path == "/services/v1/certificates" {
++            guard request.value(forHTTPHeaderField: "X-HTTP-Method-Override") == "GET",
++                  request.value(forHTTPHeaderField: "Content-Type") == "application/vnd.api+json",
++                  request.value(forHTTPHeaderField: "Accept") == "application/vnd.api+json" else {
++                throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
++            }
++        }
+         do {
+             try Task.checkCancellation()
+             let (stream, response) = try await session.bytes(for: request, delegate: delegate)
+@@ -67,7 +74,10 @@
+         catch { throw SelfRenewalDeveloperAccountTransportFailure.network }
+     }
+     private static func allowedEndpoint(_ url: URL, method: String?) -> Bool {
+-        if url.host == "developerservices2.apple.com" { return url.path.hasPrefix("/services/QH65B2/") && method == "POST" }
++        if url.host == "developerservices2.apple.com" {
++            if url.absoluteString == "https://developerservices2.apple.com/services/v1/certificates" { return method == "POST" }
++            return url.path.hasPrefix("/services/QH65B2/") && method == "POST"
++        }
+         guard url.host == "gsa.apple.com", url.query == nil, url.fragment == nil else { return false }
+         switch (url.absoluteString, method) {
+         case ("https://gsa.apple.com/grandslam/GsService2", "POST"),

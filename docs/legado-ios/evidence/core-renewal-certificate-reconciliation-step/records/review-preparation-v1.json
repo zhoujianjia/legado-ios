@@ -1,0 +1,154 @@
+{
+  "stage": "account-certificate-reconciliation/source-review-v1",
+  "recordedAtUTC": "2026-10-20T11:38:52.051278+00:00",
+  "baselineFacts": "Current canonical 3 production and 2 existing suites exact baseline hashes checked; unrelated parent HEAD updates do not change these bytes.",
+  "sourceFiles": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 52344,
+      "sha256": "83f57d103d7ed12efe3cf046d75ed04ff96d3249329d83bd0f42bd6704002022",
+      "baseline": {
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 34360,
+        "sha256": "fef17b812d123f03325e4b6ebf4acb892dea685781389b7710b578c05daa819f"
+      },
+      "baselineLineEnding": "LF"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 6198,
+      "sha256": "a0ed18fa64f468973e9417d557a9c05df01157a33615da06a4bfe210c8c0441c",
+      "baseline": {
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+        "bytes": 5606,
+        "sha256": "57523fa33b1b21dbda241888813000a7e17a4f1ca1f58af139b44126969f0a75"
+      },
+      "baselineLineEnding": "LF"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 39974,
+      "sha256": "db336f8029c3feb0493e9d8fcd8cc62c5c9a1777476e06b7484dc82c2c948a28",
+      "baseline": {
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 38453,
+        "sha256": "f8d754a50c0b011e325b4a3c5e2e910cb8a6bf48e0ca39bc3c80988e57d78e19"
+      },
+      "baselineLineEnding": "LF"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 55586,
+      "sha256": "3badca78ab7d14c02d0b226d9d5851c74ecb9a1a24c25e8d57eefdf8fe3dd9a4",
+      "baseline": {
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 34246,
+        "sha256": "a1970a50892bec06cc45823e1cac3b54822a3bfa58b48b6b107a351dc37d6e1c"
+      },
+      "baselineLineEnding": "LF"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "bytes": 35964,
+      "sha256": "ab61f42d062a8b723af6d9ac2b28e7c74f1daa8092f5fe3417fbb723524d60d7",
+      "baseline": {
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 31526,
+        "sha256": "939f7029ccee43b09414f7d6ed5591a9b1fa8ea114a07b5c3e8f77f25c0d370d"
+      },
+      "baselineLineEnding": "LF"
+    }
+  ],
+  "diff": {
+    "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1.diff",
+    "bytes": 73478,
+    "sha256": "53b1edb9b2b2d8af0850812b49f2a23b7b5ad7aa520f042feac0d4adbad06cb4"
+  },
+  "unchangedSessionReference": {
+    "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+    "bytes": 11609,
+    "sha256": "53215d2755e3b214f979fc9c6c7b84e0f3559fa81658e5b75b67c76254d6f2f1"
+  },
+  "newDefinitionCount": 7,
+  "selectedMethods": {
+    "SelfRenewalDeveloperAccountClientTests": {
+      "newDefinitions": [
+        "reconcilesLostCertificateACKWithUniqueActualCandidate",
+        "excludesBaselineAndPublishedLeafWhenReusingTheKey",
+        "retainsIntentForAmbiguousMissingAndIncompleteCertificateLists",
+        "rejectsLegacyCSRBindingAndChangedGenerationWithoutReissue",
+        "resumesObservedCertificateAndFinalizesItsActualPublicationLocally",
+        "cancellationDuringCertificateListRetainsUnknownIntent"
+      ],
+      "previousDefinitions": [
+        "submitsRealVaultCSRAndPublishesOnlyVerifiedOriginalIdentity",
+        "rejectsWrongCertificateKeyBeforeProfileRequests",
+        "rejectsTamperedRemoteProfilesWithoutChangingPublication",
+        "invalidatesExpiredOrChangedPortalSession",
+        "cancellationRetainsRemoteIntentAndPreventsDuplicateIssuance",
+        "retainsCommittedPublicationWhenAccountFinalizationFails",
+        "rejectsStaleKeysAndMissingOriginalAppIDsBeforeRemoteMutation",
+        "rejectsUnsafeResponseEnvelopesAndRedactsCredentialDescriptions",
+        "erasesStoredCredentialsWithoutMaterialAuthorityAndPreservesIntent"
+      ],
+      "totalDefinitions": 15
+    },
+    "SelfRenewalSigningMaterialVaultTests": {
+      "newDefinitions": [
+        "observesPublicationBaselineWithoutGrantingMaterialAuthority"
+      ],
+      "previousDefinitions": [
+        "publishesReloadsSignsAndRevokesOwnedKeychainMaterial",
+        "rejectsSignedIdentityAndKeyChangesWithoutReplacingOldMaterial",
+        "rejectsStaleCASAndCancellationBeforePublication",
+        "preservesPublicationWhenManifestSaveFails",
+        "recoversPendingKeyJournalWithoutDeletingPublishedKey",
+        "rejectsExpiredProfilesAndLocallyRevokedLeases",
+        "boundsLifetimeAndPreservesUnrelatedKeychainItems",
+        "requestsCertificateWithPersistedKeyAndIndependentPublicVerification",
+        "rejectsStaleRevokedForeignAndMissingCertificateRequestKeys",
+        "rejectsInvalidCertificateRequestSubjectsAndCancellationWithoutPublication"
+      ],
+      "totalDefinitions": 11
+    }
+  },
+  "api": {
+    "client": "func reconcilePendingMaterials() async throws -> SelfRenewalSigningMaterialVault.Lease",
+    "vault": "func publicationBaseline(in namespace: Namespace, expectedGeneration: UInt64) throws -> PublicationBaseline?",
+    "metadata": "Private-init namespace/generation/keyID/actual sealed manifest leaf SHA256; nil only manifest.published==nil; current Keychain owner, cancellation, missing/corrupt/stale errors preserved; no key, lease or authority.",
+    "localFinalize": "Actual Vault gen==pending.gen+1 AND certificateObserved invokes same local finalize: real lease/keyID/generation/leaf hash; credentials or new baseline are not required, no remote calls.",
+    "remoteReconcile": "Exact current pending gen; new persisted complete normalized DER baseline + old published leaf + exact CSR DER hash mandatory; same live account/team/current CSR; unique new keymatching candidate; actual profile downloads and original full Vault.publish commit.",
+    "oldFinalizeUnchanged": "Existing finalizeObservedPublication remains local-only; no implicit list or issuance.",
+    "normalRefresh": "Same current CSR generation and current publication read twice around list; baseline durable before original single CSR; direct ACK old/baseline leaf refused."
+  },
+  "selfAudit": {
+    "offMain": "Same actor Client/Vault; bounded list/DER parsing, SourcePerfTrace and existing URLSession. No new queue/store/session.",
+    "ambiguity": "All new actual public-key matches counted before machineId; metadata only rejects conflicting request, never resolves ambiguity.",
+    "failureFacts": "No pending reset or second CSR on unknown ACK; old valid publication remains. Actual post-publish account failure retains real published Lease.",
+    "privacy": "No session/certificate/key content or raw credentials in trace, prep or network logs.",
+    "normalization": "All final work files preserve each baseline line-ending convention; no canonical changes."
+  },
+  "validation": {
+    "swiftGrammar": "not yet run; final single pass after independent source review",
+    "swiftTypecheck": 0,
+    "SDKExecuted": 0,
+    "testsExecuted": 0,
+    "actualAccountRequests": 0
+  },
+  "remaining": [
+    "Session explicit action is a separate next draft, not included in these five files.",
+    "Private endpoint completeness marker availability and real Apple server compatibility are unverified.",
+    "Certificate existence cannot prove remote revocation, CSR causality, Apple signing authority or replacement authorization.",
+    "Only the existing Vault full chain/key/profile double-CMS verifier may publish; this step does not complete S2/S5/S6 or real-device renewal."
+  ]
+}

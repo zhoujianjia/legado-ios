@@ -100,6 +100,20 @@ actor SelfRenewalSigningMaterialVault {
             self.profiles = profiles; profileInputs = inputs; verifiedAt = date
         }
     }
+    /// Observation of the exact current sealed manifest, not a verified lease,
+    /// trusted chain, current profile validity or remote revocation statement.
+    /// Only the Vault can create it; absent publication is distinct from an
+    /// unavailable, changed or unreadable namespace.
+    struct PublicationBaseline: Sendable, Equatable {
+        let namespace: Namespace
+        let generation: UInt64
+        let keyID: UUID
+        let leafCertificateSHA256: Data
+        fileprivate init(namespace: Namespace, generation: UInt64, keyID: UUID, leafHash: Data) {
+            self.namespace = namespace; self.generation = generation
+            self.keyID = keyID; leafCertificateSHA256 = leafHash
+        }
+    }
     enum Failure: Error, Sendable, Equatable {
         case limit, namespaceUnavailable, malformedManifest, manifestWrite, staleGeneration
         case keyGeneration, keychain(OSStatus), missingKey, keyMismatch, revoked
@@ -205,6 +219,19 @@ actor SelfRenewalSigningMaterialVault {
     }
 
     func generation(in namespace: Namespace) throws -> UInt64 { try current(namespace).manifest.generation }
+
+    func publicationBaseline(in namespace: Namespace, expectedGeneration: UInt64) throws -> PublicationBaseline? {
+        let started = SourcePerfTrace.now
+        defer { trace("publication-baseline", bytes: 0, since: started) }
+        let session = try current(namespace)
+        guard session.manifest.generation == expectedGeneration else { throw Failure.staleGeneration }
+        guard let published = session.manifest.published else { return nil }
+        guard let leaf = published.chain.first, !leaf.isEmpty, leaf.count <= Limits.certificateBytes else {
+            throw Failure.malformedManifest
+        }
+        return PublicationBaseline(namespace: namespace, generation: session.manifest.generation,
+            keyID: published.keyID, leafHash: Data(SHA256.hash(data: leaf)))
+    }
 
     func generateKey(in namespace: Namespace, expectedGeneration: UInt64) throws -> PendingKey {
         let started = SourcePerfTrace.now

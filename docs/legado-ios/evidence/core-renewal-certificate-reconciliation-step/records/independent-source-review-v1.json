@@ -1,0 +1,179 @@
+{
+  "review": "independent-account-certificate-reconciliation-source-v1",
+  "recordedAtUTC": "2026-10-20T11:44:11.584561+00:00",
+  "reviewer": "/root/owned_signer_shape_review",
+  "independence": "Not author of these five reconciliation sources. Earlier account/GSA code author; reviewed this frozen delta and required current Vault/transport boundaries independently. Separate work-session explicitly excluded.",
+  "preparation": {
+    "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-preparation-v1.json",
+    "bytes": 9762,
+    "sha256": "5c07dfb48bfbacbe58c83510bbfb6533c6877c1e44154afd64b1ffac11bd305b"
+  },
+  "sourceBindings": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 52344,
+      "sha256": "83f57d103d7ed12efe3cf046d75ed04ff96d3249329d83bd0f42bd6704002022"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 6198,
+      "sha256": "a0ed18fa64f468973e9417d557a9c05df01157a33615da06a4bfe210c8c0441c"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 39974,
+      "sha256": "db336f8029c3feb0493e9d8fcd8cc62c5c9a1777476e06b7484dc82c2c948a28"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 55586,
+      "sha256": "3badca78ab7d14c02d0b226d9d5851c74ecb9a1a24c25e8d57eefdf8fe3dd9a4"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-v1-sources/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "bytes": 35964,
+      "sha256": "ab61f42d062a8b723af6d9ac2b28e7c74f1daa8092f5fe3417fbb723524d60d7"
+    }
+  ],
+  "sourceHashesIndependentlyMatched": true,
+  "confirmedBlockers": [],
+  "conclusion": "No confirmed source blocker found in these five frozen sources. Source review only; not Swift typecheck, execution or confirmation of real Apple private-endpoint compatibility.",
+  "checks": [
+    {
+      "file": "SelfRenewalDeveloperAccountClient.swift",
+      "lines": [
+        220,
+        280
+      ],
+      "fact": "Normal refresh rejects existing pending intent before remote enrollment; live viewDeveloper/listTeams pin and exact persisted-key CSR precede original app IDs and bounded certificate list. Current publication is observed on both sides of the list, current CSR DER/public hash rechecked. Sorted normalized complete list hashes, separately observed old published leaf and exact CSR DER hash are stored in the same credential journal before the sole submitDevelopmentCSR request. A direct ACK returning an old/baseline DER is refused. Save failure before dispatch does not issue CSR."
+    },
+    {
+      "file": "SelfRenewalDeveloperAccountClient.swift",
+      "lines": [
+        320,
+        381
+      ],
+      "fact": "Loaded pending validates generation bound before +1. Current Vault generation+1 plus certificateObserved enters only local finalize; lease reopens actual chain/key/profiles and requires same keyID, generation+1 and observed leaf SHA. For same generation, credentials and durable new baseline mandatory; live account/team and same namespace private key CSR DER/public hash checked before list. All new matching-key DER candidates counted before optional machineId; ambiguity never resolved by metadata. Baseline and old published leaf excluded; observed leaf if present must match unique candidate. No CSR call in reconcile."
+    },
+    {
+      "file": "SelfRenewalDeveloperAccountClient.swift",
+      "lines": [
+        285,
+        314
+      ],
+      "fact": "Reconciliation and direct ACK share original profile-download loop and full Vault.publish. Final live session/team and current CSR checked after profile awaits. Original bundle identifiers and signed group claims remain Vault-bound. PublicationFinalizationFailure carries acknowledged real lease if later journal write fails; pending is not silently erased and accepted commit is not reported as rollback."
+    },
+    {
+      "file": "SelfRenewalDeveloperAccountClient.swift",
+      "lines": [
+        493,
+        584
+      ],
+      "fact": "Exact pinned AltSign POST /services/v1/certificates + GET override + JSON query adapter, same anisette/transport. Rejects errors, wrong shape, missing total, total != observed count, non-null cursor/next/prev/first/last, unknown completeness fields and duplicate IDs/DER. At most256 entries and524288 normalized DER bytes; canonical outer base64 and bounded single certificate DER or PEM; hashes normalized DER and actual SecCertificate public representation. Metadata is no revocation, issuance causality or authority proof."
+    },
+    {
+      "file": "SelfRenewalDeveloperAccountClient.swift",
+      "lines": [
+        589,
+        626,
+        692,
+        763
+      ],
+      "fact": "Shared request path preserves fresh anisette, bounded headers/body, per-request session expiry, typed cancellation and epoch checks,401/403 invalidation, response byte limit and no raw request logging. Loaded baseline validates bounded unique sorted32-byte hashes and exact32-byte request/old leaf hashes. Busy spans awaits; signOut rejects busy. Cancellation/lost ACK preserve pending intent; no automatic reissue."
+    },
+    {
+      "file": "SelfRenewalSigningMaterialVault.swift",
+      "lines": [
+        223,
+        234,
+        466,
+        473
+      ],
+      "fact": "New observation has fileprivate initializer and no lease/key authority. current() checks cancellation, actual storage read, retained same namespace and byte-equal sealed manifest; I/O/locked/missing/drift do not become nil. nil only means manifest.published absent. Expected generation required; observation includes actual namespace/generation/published keyID/actual chain leaf hash, even if old profile no longer a valid lease."
+    },
+    {
+      "file": "SelfRenewalSigningMaterialVault.swift",
+      "lines": [
+        285,
+        333,
+        384,
+        425,
+        491,
+        539
+      ],
+      "fact": "Original permanent-key CSR validation, private/public match, generation checks, chain validation, profile double-CMS/original identity checks, signature challenge and publication boundary remain the same Vault path. New reconciliation metadata neither replaces nor relaxes them."
+    },
+    {
+      "file": "SelfRenewalDeveloperAccountTransport.swift",
+      "lines": [
+        19,
+        103
+      ],
+      "fact": "Adds only exact developerservices2 URL and required GET override/JSON media types. Same ephemeral session, disabled cookies/credential storage/cache, redirect refusal, system TLS, response stream cancellation/limit remain. Existing GSA paths and plist owner retained; no new session/store/queue."
+    },
+    {
+      "file": "SelfRenewalDeveloperAccountClientTests.swift",
+      "lines": [
+        261,
+        473,
+        482,
+        825
+      ],
+      "fact": "Six new definitions retain original nine; same serialized suite and URLProtocol drives the actual transport/client/Vault, with genuinely signed different same-key cert DER, original profiles and real Keychain-backed storage. Explicit prior-only/missing/ambiguous/paging/cursor/DER/machine mismatch tests; legacy digest/key/gen/future intent refusal; local finalize without credentials; held-list wait observes real list-arrival OR actual operation finish, cancellation forwarded to original task and actual task awaited. Independent awaited cleanup still reopens manifest. Source definitions only; not executed."
+    },
+    {
+      "file": "SelfRenewalSigningMaterialVaultTests.swift",
+      "lines": [
+        12,
+        68
+      ],
+      "fact": "One new definition separates explicit unpublished nil from typed injected locked error, missing manifest, drift/corrupt resume, generation mismatch, expired observation versus invalid live lease and cancellation. Fault injection is not actual device locking. Original ten test names retained."
+    }
+  ],
+  "primaryEvidence": [
+    {
+      "source": ".build/renewal-discovery/account-enrollment-step/primary/AltSign-1-ALTAppleAPI.m",
+      "lines": [
+        184,
+        219,
+        737,
+        784
+      ],
+      "commit": "1c44cfdcafc1ef301c9a0a20a96be0983bb5a003",
+      "fact": "Author-owned original implementation proves the fixed list path/filter, query serialization and POST GET override, but not complete pagination handling."
+    },
+    {
+      "source": ".build/renewal-discovery/account-enrollment-step/primary/AltSign-extra-0-ALTCertificate.m",
+      "lines": [
+        34,
+        69
+      ],
+      "fact": "Original certificate content parsing and machine metadata; no revocation or server public-key hash authority."
+    },
+    {
+      "source": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/research.json",
+      "fact": "Explicitly separates official App Store Connect paging schema from private developer-services endpoint; completeness availability remains unverified."
+    }
+  ],
+  "remainingUnverified": [
+    "No primary evidence establishes that private developerservices2 actually returns this paging marker, or that its total/null cursors have the same full-enumeration semantics as the separate App Store Connect API. Missing/unknown marker fails closed before CSR. This source review does not certify a usable real Apple list/recovery stage; compatibility and pagination protocol remain an explicit boundary, never a fake server-success claim.",
+    "Controlled peer fabricates the documented selected envelope and is not an Apple account, real network/TLS exercise, actual server revocation check or remote issue-causality proof.",
+    "New API AppSession action/wiring is separately staged and outside these five source bindings; not reviewed or credited here.",
+    "No local Swift SDK/typecheck/test execution;7 new definitions remain definitions only. Real Apple authorization, device replacement and overall renewal acceptance remain unfinished."
+  ],
+  "actions": {
+    "sourceReadsAndHashes": true,
+    "grammarRuns": 0,
+    "testsRun": 0,
+    "SDKRuns": 0,
+    "realAccountRequests": 0,
+    "cloudQueriesOrRuns": 0,
+    "GitMutations": 0,
+    "canonicalMutations": 0
+  }
+}

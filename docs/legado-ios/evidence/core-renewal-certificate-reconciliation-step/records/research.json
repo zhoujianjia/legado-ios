@@ -1,0 +1,33 @@
+{
+  "pinnedWire": {
+    "repository": "rileytestut/AltSign",
+    "commit": "1c44cfdcafc1ef301c9a0a20a96be0983bb5a003",
+    "apiSource": "https://github.com/rileytestut/AltSign/blob/1c44cfdcafc1ef301c9a0a20a96be0983bb5a003/AltSign/Apple%20API/ALTAppleAPI.m",
+    "certificateSource": "https://github.com/rileytestut/AltSign/blob/1c44cfdcafc1ef301c9a0a20a96be0983bb5a003/AltSign/Model/Apple%20API/ALTCertificate.m",
+    "facts": [
+      "ALTAppleAPI.m184-219 lists data[] at services/v1/certificates filtered IOS_DEVELOPMENT.",
+      "ALTAppleAPI.m737-782 serializes NSURLComponents.query (not percentEncodedQuery) in urlEncodedQueryParams; POST and GET override.",
+      "ALTCertificate.m34-82 reads certificateContent DER/PEM and optional arbitrary machineId; no server public-key hash or revoked boolean is a proof.",
+      "Pinned parser does not inspect pagination; it cannot prove complete enumeration."
+    ]
+  },
+  "knownJSONAPIBoundary": {
+    "sourceLocks": [
+      "primary-apple-source-lock.json",
+      "primary-schema-lock.json"
+    ],
+    "facts": [
+      "Official AppStoreConnect Paging JSON schema declares optional total and nextCursor, required limit (0..200).",
+      "Its CertificatesResponse declares optional meta. The public GET api.appstoreconnect.apple.com/v1/certificates is a different endpoint/authentication contract.",
+      "This private developer adapter requires actual integer total == observed count, known bounded fields, no cursor/next/other page; missing/unknown completeness remains unresolved.",
+      "Empty lists accept limit0; a null nextCursor is accepted; any non-null cursor is unresolved. No blind pagination or guessed response success."
+    ],
+    "remaining": "No evidence proves developerservices2 always returns this complete marker. Real server compatibility is unverified; absence refuses CSR before intent."
+  },
+  "fixtureLimits": [
+    "Controlled URLProtocol exercises the existing URLSession, not real HTTPS or Apple.",
+    "Actual PKI signs a different validity at +60/+120 seconds to generate different DER for the same real RSA key; original test time lies inside validity.",
+    "Shared test PKI still uses its existing fixed serial shape; it is not a real CA issuance/conformance/revocation simulation.",
+    "Storage locked failure is injected typed OSStatus, not actual device locking. No private key export or user account is used."
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T11:46:56.077149+00:00",
+  "reviewKind": "Independent root review of actual five-source Client/Vault/transport delta and three-source App session integration",
+  "preparations": [
+    {
+      "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-preparation-v1.json",
+      "bytes": 9762,
+      "sha256": "5c07dfb48bfbacbe58c83510bbfb6533c6877c1e44154afd64b1ffac11bd305b"
+    },
+    {
+      "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/session-review-preparation-v2.json",
+      "bytes": 6381,
+      "sha256": "0574d06dc47094033ec2525960c082dbbaeb98cefabef7f62fe2b5dca6592e33"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 52344,
+      "sha256": "83f57d103d7ed12efe3cf046d75ed04ff96d3249329d83bd0f42bd6704002022"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 6198,
+      "sha256": "a0ed18fa64f468973e9417d557a9c05df01157a33615da06a4bfe210c8c0441c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 39974,
+      "sha256": "db336f8029c3feb0493e9d8fcd8cc62c5c9a1777476e06b7484dc82c2c948a28"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 55586,
+      "sha256": "3badca78ab7d14c02d0b226d9d5851c74ecb9a1a24c25e8d57eefdf8fe3dd9a4"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "bytes": 35964,
+      "sha256": "ab61f42d062a8b723af6d9ac2b28e7c74f1daa8092f5fe3417fbb723524d60d7"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 63248,
+      "sha256": "e4b6686dcf6df2e05b46dfc48b49942dff2c7d419f6d5350d0d895c974691cf8"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 15724,
+      "sha256": "5123201aaca5fadd2fc0af4adbdc1994bc6bdbf74fe113ff662710427e61003c"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "bytes": 17407,
+      "sha256": "3afaacf769b675e078186fbef8ed0733e5d94cf7739a3793e0f0c9995e6b14c3"
+    }
+  ],
+  "additionalIndependentFiveSourceReview": {
+    "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/independent-source-review-v1.json",
+    "bytes": 11183,
+    "sha256": "c0558883c7c3091f44fd23a92b0b6f3eea22869d3433ec889a9ba0c6972209bc"
+  },
+  "verdict": "no-confirmed-source-blocker-after-session-v2",
+  "remainingConfirmedBlockers": [],
+  "confirmedFinding": {
+    "version": "session-v1",
+    "problem": "After a reopened session fails its erase-only logout write, durable credentials may remain while the session locally denies them. New reconciliation previously opened a fresh account and could reuse those credentials for remote material operations.",
+    "resolution": "Session-v2 checks the same developerLocallySignedOut guard before opening an account or reaching transaction/network work. The single new Session regression defines the actual no-client/static-erase-failure path, unchanged peer facts after denial and explicit new connection before successful reconciliation.",
+    "v1ToV2Diff": {
+      "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/session-review-v1-to-v2.diff",
+      "bytes": 2599,
+      "sha256": "57eb59100e988366756571dced42ac30ddd49e132626d8377d10e136ae39122d"
+    },
+    "actualSDKRegressionExecuted": false
+  },
+  "checks": [
+    "Read bounded JSON list transport, exact endpoint/GET override, DER/PEM normalization and full-list marker refusal. Baseline complete DER hashes, old published leaf hash and actual CSR DER hash are persisted before the sole CSR dispatch; unknown ACK does not reset intent or retry issuance.",
+    "Current Vault namespace/key/generation/CSR hash are rechecked around awaits. Candidate selection excludes baseline and published leaf, counts all new matching-key certificates before optional machine metadata, and refuses missing/ambiguous/incomplete lists.",
+    "The actual gen+1/certificateObserved branch only uses the existing local finalize/lease/key/fingerprint proof. Remote branches require same live account/team and original profile downloads, and publish through the sole full Vault verifier. Real publication survives a failed subsequent account save.",
+    "Vault publication metadata has private construction and no lease/private-key/trust capability. Nil means only explicitly absent manifest publication; stale/unreadable/locked/corrupt/current-owner errors are propagated. Account load rejects max generation before gen+1 arithmetic.",
+    "App Session uses its same busy owner, explicit pending check and actual transaction retirement barrier before reconciliation. Owner retains the real published observation on finalization error. Existing explicit local finalize is unchanged; no foreground/startup remote trigger or new queue/provider is added.",
+    "Reviewed the seven new Client/Vault definitions and one Session definition as definitions only. The peer now actually issues a separately signed different-validity certificate when reusing the key, rather than returning the old identical DER. Sentinel equality is limited owned-file evidence."
+  ],
+  "newTestDefinitions": 8,
+  "actualNewSDKTestsExecuted": 0,
+  "rootTestsExecuted": 0,
+  "limitations": [
+    "Pinned AltSign proves the request wire, not the private developer endpoint completeness-marker semantics or real current Apple account compatibility. Missing/unknown markers remain unresolved.",
+    "App developerAccountOwner still needs valid installed Bundle/profile/current Vault lease. This does not implement App enrollment recovery after those prerequisites expire, even though the direct Client metadata/reconciliation path itself does not require an old valid lease.",
+    "No real credentials or Apple request, native compilation, device installation, cold process or all-userdata preservation is demonstrated by this source review. Coherent733120e uses the prior source snapshot and cannot accept this new delta."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

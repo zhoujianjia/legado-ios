@@ -135,6 +135,85 @@ extension SelfRenewalDeveloperAccountClientTests {
         }
     }
 
+    @Test("reopened App session recovers one lost CSR ACK through its same namespace key and preserves owned data bytes")
+    func appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue() async throws {
+        try await Self.withAccountAppSession { c in
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            let bookID = UUID()
+            let userData = Data(("{\"bookID\":\"" + bookID.uuidString + "\",\"spineIndex\":7,\"charOffset\":113}").utf8)
+            let userDataURL = c.root.appendingPathComponent("owned-user-data-sentinel.json")
+            try userData.write(to: userDataURL)
+            let configurationURL = c.root.appendingPathComponent("configuration.json")
+            let originalConfiguration = try JSONDecoder().decode(AccountStoredConfiguration.self,
+                from: Data(contentsOf: configurationURL)).configuration
+            await c.peer.set(.lostCSRACK)
+            do {
+                _ = try await c.session.refreshDeveloperMaterials(machineName: "Owned lost ACK App session")
+                Issue.record("Lost CSR acknowledgement was called a publication")
+            } catch let failure as Client.EnrollmentFailure {
+                #expect(failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed)
+            }
+            let failed = await c.session.developerMaterialObservation()
+            #expect(failed == nil)
+            let pendingBytes = try #require(try c.fixture.storage.load(namespace: c.fixture.namespace.id))
+            #expect(pendingBytes.contains("certificateRequestIntent"))
+            try await c.session.close()
+            await c.peer.set(.normal)
+            let reopened = c.newSession()
+            do {
+                let status = try await reopened.bootstrap(handoff: c.handoff)
+                #expect(status.access == .signing)
+                // No account client has been opened in this reopened Session.
+                // Its erase-only fallback can fail with credentials still on
+                // disk; that must not undo the Session's local logout denial.
+                c.fixture.storage.failSave(afterSuccessfulSaves: 0)
+                do { try await reopened.signOutDeveloperAccount(); Issue.record("Failed credential erasure was acknowledged") }
+                catch let failure as Client.Failure { #expect(failure == .storage) }
+                let beforeDenied = await c.peer.facts()
+                do { _ = try await reopened.reconcileDeveloperMaterials(); Issue.record("Failed logout reenabled pending material requests") }
+                catch let failure as Client.Failure { #expect(failure == .signedOut) }
+                let afterDenied = await c.peer.facts()
+                #expect(beforeDenied.paths == afterDenied.paths)
+                let stillStored = try #require(try c.fixture.storage.load(namespace: c.fixture.namespace.id))
+                #expect(stillStored.contains(c.fixture.credentials.xcodeToken) && stillStored.contains("certificateRequestIntent"))
+                // Only a new explicit live account connection lifts denial.
+                _ = try await reopened.connectDeveloperAccount(c.fixture.credentials)
+                let published = try await reopened.reconcileDeveloperMaterials()
+                #expect(published.namespaceID == c.fixture.namespace.id && published.keyID == c.originalLease.keyID)
+                #expect(published.generation == c.originalLease.generation + 1)
+                #expect(!published.appleAuthorizationEstablished && !published.installedApplicationRenewed)
+                let retained = await reopened.developerMaterialObservation()
+                #expect(retained == published)
+                let namespace = try await c.fixture.vault.resume(namespaceID: c.fixture.namespace.id, identity: c.fixture.material)
+                let lease = try await c.fixture.vault.lease(in: namespace)
+                try await c.fixture.vault.validate(lease, for: c.fixture.material)
+                let before = await c.peer.facts()
+                do { _ = try await reopened.reconcileDeveloperMaterials(); Issue.record("Empty intent issued another material operation") }
+                catch let failure as Client.Failure { #expect(failure == .reconciliationRequired) }
+                let after = await c.peer.facts()
+                #expect(before.paths == after.paths && after.validCSRs == 1 && after.profileRequests == 3)
+                let raw = try #require(try c.fixture.storage.load(namespace: c.fixture.namespace.id))
+                let object = try JSONSerialization.jsonObject(with: Data(raw.utf8))
+                let record = try #require(object as? [String: Any])
+                #expect(record["pending"] == nil)
+                let currentConfiguration = try JSONDecoder().decode(AccountStoredConfiguration.self,
+                    from: Data(contentsOf: configurationURL)).configuration
+                #expect(currentConfiguration.namespaceID == originalConfiguration.namespaceID)
+                #expect(currentConfiguration.codeAnchors == originalConfiguration.codeAnchors)
+                #expect(currentConfiguration.profileAnchors == originalConfiguration.profileAnchors)
+                let afterData = try Data(contentsOf: userDataURL)
+                #expect(afterData == userData)
+                // A fixture sentinel and identity equality do not certify all
+                // App data, a cold process, installation or Apple authorization.
+                try await reopened.close()
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    private struct AccountStoredConfiguration: Decodable {
+        let configuration: SelfRenewalAppSession.Configuration
+    }
+
     private struct AccountAppContext: @unchecked Sendable {
         let fixture: Fixture
         let peer: Peer

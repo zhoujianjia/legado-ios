@@ -1,0 +1,462 @@
+--- baseline/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
++++ final/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
+@@ -33,7 +33,7 @@
+         case busy, signedOut, invalidInput, malformedResponse, limit, storage
+         case sessionExpired, accountChanged, teamChanged, notPersonalTeam
+         case appIdentifierMissing, ambiguousAppIdentifier, keyMismatch
+-        case staleOperation, reconciliationRequired, transport(Int), http(Int), portal(Int64)
++        case staleOperation, reconciliationRequired, incompleteCertificateList, ambiguousCertificate, transport(Int), http(Int), portal(Int64)
+     }
+     /// Carries a real completed Vault publication if the later account journal
+     /// write fails. Never misreports the accepted publication as rolled back.
+@@ -91,6 +91,22 @@
+         let startedAt: Date
+         var phase: Phase
+         var certificateSHA256: Data?
++        // Optional for source/storage compatibility. Older intents without a
++        // complete baseline and exact CSR can only finalize a proved existing
++        // publication; they cannot infer a new issue from a later list.
++        var reconciliationBaseline: CertificateBaseline? = nil
++    }
++    struct CertificateBaseline: Codable, Sendable, Equatable {
++        let certificateSHA256s: [Data]
++        let priorPublishedLeafSHA256: Data?
++        let requestDERSHA256: Data
++    }
++    private struct ListedCertificate {
++        let id: String
++        let der: Data
++        let sha256: Data
++        let publicKeySHA256: Data
++        let machineID: String?
+     }
+     private struct AccountPin: Codable, Equatable {
+         let dsid: String
+@@ -219,10 +235,21 @@
+             try check(operationEpoch)
+             let appIDs = try await request(.appIDs, credentials: credentials, team: teamID, epoch: operationEpoch)
+             let identifiers = try registeredAppIDs(appIDs)
++            let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: expectedGeneration)
++            let certificates = try await listDevelopmentCertificates(credentials: credentials, epoch: operationEpoch)
++            try check(operationEpoch)
++            let currentPublication = try await vault.publicationBaseline(in: namespace, expectedGeneration: expectedGeneration)
++            guard currentPublication == publication else { throw Failure.staleOperation }
++            let currentRequest = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
++                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
++            guard currentRequest.der == csr.der, currentRequest.publicKeySHA256 == csr.publicKeySHA256 else { throw Failure.keyMismatch }
++            try check(operationEpoch)
++            let baseline = CertificateBaseline(certificateSHA256s: certificates.map(\.sha256).sorted { $0.lexicographicallyPrecedes($1) },
++                priorPublishedLeafSHA256: publication?.leafCertificateSHA256, requestDERSHA256: Data(SHA256.hash(data: csr.der)))
+             let operationID = UUID()
+             loaded.record.pending = PendingEnrollment(operationID: operationID, keyID: keyID,
+                 materialGeneration: expectedGeneration, requestPublicKeySHA256: csr.publicKeySHA256,
+-                startedAt: clock(), phase: .certificateRequestIntent, certificateSHA256: nil)
++                startedAt: clock(), phase: .certificateRequestIntent, certificateSHA256: nil, reconciliationBaseline: baseline)
+             loaded.encoded = try save(loaded.record, replacing: loaded.encoded)
+             // Persist the possibility BEFORE dispatch. A timeout/lost ACK is
+             // never retried automatically, including after process restart.
+@@ -231,36 +258,15 @@
+                 parameters: ["csrContent": Self.pem(csr.der), "machineId": operationID.uuidString,
+                     "machineName": machineName], epoch: operationEpoch)
+             let certificate = try issuedCertificate(certificateResponse, csr: csr)
++            let certificateHash = Data(SHA256.hash(data: certificate))
++            guard !baseline.certificateSHA256s.contains(certificateHash),
++                  baseline.priorPublishedLeafSHA256 != certificateHash else { throw Failure.reconciliationRequired }
+             loaded.record.pending?.phase = .certificateObserved
+-            loaded.record.pending?.certificateSHA256 = Data(SHA256.hash(data: certificate))
++            loaded.record.pending?.certificateSHA256 = certificateHash
+             loaded.encoded = try save(loaded.record, replacing: loaded.encoded)
+-            var profiles: [Vault.ProfileInput] = []
+-            for bundle in bundles {
+-                try check(operationEpoch)
+-                guard let identifier = identifiers[bundle.identifier] else { throw Failure.appIdentifierMissing }
+-                profileIntent = true
+-                let response = try await request(.profile, credentials: credentials, team: teamID,
+-                    parameters: ["appIdId": identifier], epoch: operationEpoch)
+-                let container = try Self.dictionary(response["provisioningProfile"])
+-                let bytes = try Self.bytes(container["encodedProfile"], maximum: Vault.Limits.profileBytes)
+-                profiles.append(.init(componentRelativePath: bundle.component, bytes: bytes))
+-            }
+-            // Recheck remote account/team and the real persisted key after all
+-            // awaits. A retained CSR or raw token is not a commit capability.
+-            _ = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
+-            let currentCSR = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
+-                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
+-            guard currentCSR.publicKeySHA256 == csr.publicKeySHA256 else { throw Failure.keyMismatch }
+-            try check(operationEpoch)
+-            let lease = try await vault.publish(in: namespace, keyID: keyID, expectedGeneration: expectedGeneration,
+-                certificateChainDER: [certificate] + issuerChainDER, profiles: profiles)
+-            // No cancellation check after this acknowledged Vault commit.
+-            // The later credential write cannot roll it back or hide its fact.
+-            do {
+-                loaded.record.pending = nil
+-                _ = try save(loaded.record, replacing: loaded.encoded)
+-            } catch { throw PublicationFinalizationFailure(publishedLease: lease, underlying: error) }
+-            return lease
++            return try await completeEnrollment(loaded: &loaded, certificate: certificate, csr: csr,
++                account: account, identifiers: identifiers, credentials: credentials,
++                operationEpoch: operationEpoch, profileIntent: &profileIntent)
+         } catch let error as PublicationFinalizationFailure { throw error }
+         catch {
+             // Only a verified session failure removes credential use. Pending
+@@ -275,6 +281,107 @@
+         }
+     }
+ 
++
++    private func completeEnrollment(loaded: inout Loaded, certificate: Data, csr: Vault.CertificateRequest,
++        account: RemoteAccount, identifiers: [String: String], credentials: Credentials,
++        operationEpoch: UInt64, profileIntent: inout Bool) async throws -> Vault.Lease {
++        var profiles: [Vault.ProfileInput] = []
++        for bundle in bundles {
++            try check(operationEpoch)
++            guard let identifier = identifiers[bundle.identifier] else { throw Failure.appIdentifierMissing }
++            profileIntent = true
++            let response = try await request(.profile, credentials: credentials, team: teamID,
++                parameters: ["appIdId": identifier], epoch: operationEpoch)
++            let container = try Self.dictionary(response["provisioningProfile"])
++            let bytes = try Self.bytes(container["encodedProfile"], maximum: Vault.Limits.profileBytes)
++            profiles.append(.init(componentRelativePath: bundle.component, bytes: bytes))
++        }
++        // Recheck remote account/team and the real persisted key after all
++        // awaits. A retained CSR or raw token is not a commit capability.
++        _ = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
++        let currentCSR = try await vault.certificateSigningRequest(in: namespace, keyID: csr.keyID,
++            expectedGeneration: csr.generation, commonName: account.commonName, emailAddress: account.pin.email)
++        guard currentCSR.publicKeySHA256 == csr.publicKeySHA256, currentCSR.der == csr.der else { throw Failure.keyMismatch }
++        try check(operationEpoch)
++        let lease = try await vault.publish(in: namespace, keyID: csr.keyID, expectedGeneration: csr.generation,
++            certificateChainDER: [certificate] + issuerChainDER, profiles: profiles)
++        // No cancellation check after this acknowledged Vault commit.
++        // The later credential write cannot roll it back or hide its fact.
++        do {
++            loaded.record.pending = nil
++            _ = try save(loaded.record, replacing: loaded.encoded)
++        } catch { throw PublicationFinalizationFailure(publishedLease: lease, underlying: error) }
++        return lease
++    }
++
++    /// A read-only certificate-list reconciliation never submits another CSR.
++    /// Candidate presence is not revocation, issue causality or Apple authority.
++    /// Profiles and publication still use the sole verified Vault commit path.
++    func reconcilePendingMaterials() async throws -> Vault.Lease {
++        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.account.reconcile", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        let operationEpoch = epoch
++        guard var loaded = try load(), let pending = loaded.record.pending else { throw Failure.reconciliationRequired }
++        let now = clock()
++        guard now.timeIntervalSince1970.isFinite, now >= pending.startedAt else { throw Vault.Failure.clockMovedBackwards }
++        // An acknowledged publication can be finalized locally even if the
++        // account credential later expired. Never replace this with a new issue.
++        let generation = try await vault.generation(in: namespace)
++        try check(operationEpoch)
++        if generation == pending.materialGeneration + 1, pending.phase == .certificateObserved {
++            return try await finalizeObservedPublication(loaded: &loaded, pending: pending, operationEpoch: operationEpoch)
++        }
++        guard generation == pending.materialGeneration else { throw Vault.Failure.staleGeneration }
++        guard !locallyInvalidated, let credentials = loaded.record.credentials else { throw Failure.signedOut }
++        guard let baseline = pending.reconciliationBaseline else { throw Failure.reconciliationRequired }
++        var profileIntent = false
++        do {
++            let account = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
++            let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: pending.materialGeneration)
++            guard publication?.leafCertificateSHA256 == baseline.priorPublishedLeafSHA256 else { throw Failure.staleOperation }
++            let csr = try await vault.certificateSigningRequest(in: namespace, keyID: pending.keyID,
++                expectedGeneration: pending.materialGeneration, commonName: account.commonName, emailAddress: account.pin.email)
++            guard csr.publicKeySHA256 == pending.requestPublicKeySHA256,
++                  Data(SHA256.hash(data: csr.der)) == baseline.requestDERSHA256 else { throw Failure.keyMismatch }
++            let certificates = try await listDevelopmentCertificates(credentials: credentials, epoch: operationEpoch)
++            try check(operationEpoch)
++            var excluded = Set(baseline.certificateSHA256s)
++            if let old = baseline.priorPublishedLeafSHA256 { excluded.insert(old) }
++            let candidates = certificates.filter {
++                !excluded.contains($0.sha256) && $0.publicKeySHA256 == csr.publicKeySHA256
++            }
++            guard candidates.count <= 1 else { throw Failure.ambiguousCertificate }
++            guard let candidate = candidates.first else { throw Failure.reconciliationRequired }
++            // Metadata can reject a conflicting request association, but must
++            // not turn multiple actual key-matching certificates into one.
++            guard candidate.machineID == nil || candidate.machineID.flatMap(UUID.init(uuidString:)) == pending.operationID else {
++                throw Failure.reconciliationRequired
++            }
++            if let observed = pending.certificateSHA256, observed != candidate.sha256 { throw Failure.reconciliationRequired }
++            let currentCSR = try await vault.certificateSigningRequest(in: namespace, keyID: pending.keyID,
++                expectedGeneration: pending.materialGeneration, commonName: account.commonName, emailAddress: account.pin.email)
++            guard currentCSR.der == csr.der, currentCSR.publicKeySHA256 == csr.publicKeySHA256 else { throw Failure.keyMismatch }
++            try check(operationEpoch)
++            let response = try await request(.appIDs, credentials: credentials, team: teamID, epoch: operationEpoch)
++            let identifiers = try registeredAppIDs(response)
++            loaded.record.pending?.phase = .certificateObserved
++            loaded.record.pending?.certificateSHA256 = candidate.sha256
++            loaded.encoded = try save(loaded.record, replacing: loaded.encoded)
++            return try await completeEnrollment(loaded: &loaded, certificate: candidate.der, csr: csr,
++                account: account, identifiers: identifiers, credentials: credentials,
++                operationEpoch: operationEpoch, profileIntent: &profileIntent)
++        } catch let failure as PublicationFinalizationFailure { throw failure }
++        catch {
++            let original = error
++            let finalFailure: Error
++            do { try invalidateIfNecessary(original, loaded: loaded); finalFailure = original }
++            catch { finalFailure = error }
++            throw EnrollmentFailure(underlying: finalFailure, remoteCertificateMayHaveBeenIssued: true,
++                remoteProfilesMayHaveBeenRefreshed: profileIntent)
++        }
++    }
++
+     func pendingEnrollment() throws -> PendingEnrollment? { try load()?.record.pending }
+ 
+     /// Reconciles only a real already-published Vault lease. It does not issue
+@@ -282,8 +389,13 @@
+     func finalizeObservedPublication() async throws -> Vault.Lease {
+         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+         let operationEpoch = epoch
+-        guard var loaded = try load(), let pending = loaded.record.pending,
+-              let fingerprint = pending.certificateSHA256,
++        guard var loaded = try load(), let pending = loaded.record.pending else { throw Failure.reconciliationRequired }
++        return try await finalizeObservedPublication(loaded: &loaded, pending: pending, operationEpoch: operationEpoch)
++    }
++
++    private func finalizeObservedPublication(loaded: inout Loaded, pending: PendingEnrollment,
++        operationEpoch: UInt64) async throws -> Vault.Lease {
++        guard pending.phase == .certificateObserved, let fingerprint = pending.certificateSHA256,
+               pending.materialGeneration < UInt64.max else { throw Failure.reconciliationRequired }
+         let lease = try await vault.lease(in: namespace)
+         try check(operationEpoch)
+@@ -359,7 +471,125 @@
+         var responseBytes = 0
+         defer { SourcePerfTrace.record("renewal.account.request",
+             "stage=\(action.rawValue) responseBytes=\(responseBytes) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        var body = parameters
++        body["clientId"] = "XABBG36SBA"; body["protocolVersion"] = "QH65B2"; body["requestId"] = UUID().uuidString
++        if let team { body["teamId"] = team }
++        let data = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
++        guard data.count <= 32_768,
++              let url = URL(string: "https://developerservices2.apple.com/services/QH65B2/" + action.rawValue + "?clientId=XABBG36SBA") else { throw Failure.limit }
++        let response = try await sendDeveloperRequest(url: url, body: data, mediaType: "text/x-xml-plist",
++            credentials: credentials, epoch: epoch)
++        responseBytes = response.count
++        let result: [String: Value]
++        do { result = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(response)) }
++        catch is CancellationError { throw CancellationError() }
++        catch { throw Failure.malformedResponse }
++        let code = try Self.integer(result["resultCode"])
++        guard code != 1100 else { throw Failure.sessionExpired }
++        guard code == 0 else { throw Failure.portal(code) }
++        return result
++    }
++
++    /// Exact pinned AltSign services/v1 wire: POST containing an encoded query,
++    /// with GET override. No revocation, unfiltered request, paging guess or CSR.
++    private func listDevelopmentCertificates(credentials: Credentials, epoch: UInt64) async throws -> [ListedCertificate] {
++        let started = SourcePerfTrace.now
++        var responseBytes = 0
++        defer { SourcePerfTrace.record("renewal.account.list-certificates",
++            "responseBytes=\(responseBytes) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        var components = URLComponents()
++        components.queryItems = [URLQueryItem(name: "teamId", value: teamID),
++            URLQueryItem(name: "filter[certificateType]", value: "IOS_DEVELOPMENT")]
++        guard let encoded = components.query,
++              let url = URL(string: "https://developerservices2.apple.com/services/v1/certificates") else { throw Failure.invalidInput }
++        let body = try JSONSerialization.data(withJSONObject: ["urlEncodedQueryParams": encoded], options: [.sortedKeys])
++        let bytes = try await sendDeveloperRequest(url: url, body: body, mediaType: "application/vnd.api+json",
++            methodOverride: "GET", credentials: credentials, epoch: epoch)
++        responseBytes = bytes.count
++        let document: [String: Any]
++        do {
++            guard let parsed = try JSONSerialization.jsonObject(with: bytes) as? [String: Any] else { throw Failure.malformedResponse }
++            document = parsed
++        } catch { throw Failure.malformedResponse }
++        guard Set(document.keys).isSubset(of: ["data", "meta", "links", "jsonapi", "resultCode", "resultString", "userString", "errors"]) else {
++            throw Failure.incompleteCertificateList
++        }
++        if let raw = document["resultCode"] {
++            let code: Int64
++            if let text = raw as? String { code = try Self.integer(.string(text)) }
++            else { code = try Self.jsonInteger(raw, minimum: Int64.min, maximum: Int64.max) }
++            guard code != 1100 else { throw Failure.sessionExpired }
++            guard code == 0 else { throw Failure.portal(code) }
++        }
++        if let rawErrors = document["errors"], !(rawErrors is NSNull) {
++            guard let errors = rawErrors as? [Any], errors.isEmpty else { throw Failure.malformedResponse }
++        }
++        guard let entries = document["data"] as? [[String: Any]], entries.count <= 256 else { throw Failure.malformedResponse }
++        // AltSign's old parser ignores pagination. It does NOT establish that
++        // every real response has this marker. Unknown/missing completeness is
++        // explicitly unresolved, not a truncated baseline or a new authority.
++        guard let meta = document["meta"] as? [String: Any], Set(meta.keys) == ["paging"],
++              let paging = meta["paging"] as? [String: Any],
++              Set(paging.keys).isSubset(of: ["total", "limit", "nextCursor"]),
++              let total = paging["total"], try Self.jsonInteger(total, maximum: 256) == Int64(entries.count) else {
++            throw Failure.incompleteCertificateList
++        }
++        if let limit = paging["limit"] {
++            guard try Self.jsonInteger(limit, maximum: 1_000_000) >= Int64(entries.count) else { throw Failure.incompleteCertificateList }
++        }
++        if let cursor = paging["nextCursor"], !(cursor is NSNull) { throw Failure.incompleteCertificateList }
++        if let raw = document["links"], !(raw is NSNull) {
++            guard let links = raw as? [String: Any], Set(links.keys).isSubset(of: ["self", "next", "prev", "first", "last"]) else {
++                throw Failure.incompleteCertificateList
++            }
++            for key in ["next", "prev", "first", "last"] {
++                if let value = links[key], !(value is NSNull) { throw Failure.incompleteCertificateList }
++            }
++        }
++        var result: [ListedCertificate] = [], ids = Set<String>(), fingerprints = Set<Data>(), totalDERBytes = 0
++        for entry in entries {
++            try check(epoch)
++            guard let id = entry["id"] as? String, Self.headerValue(id, limit: 128), ids.insert(id).inserted,
++                  entry["type"] as? String == "certificates", let attributes = entry["attributes"] as? [String: Any],
++                  let encoded = attributes["certificateContent"] as? String, !encoded.isEmpty, encoded.utf8.count <= 87_384,
++                  let encodedBytes = Data(base64Encoded: encoded), !encodedBytes.isEmpty,
++                  encodedBytes.count <= Vault.Limits.certificateBytes,
++                  encodedBytes.base64EncodedString() == encoded else { throw Failure.malformedResponse }
++            let (der, certificate) = try Self.certificateDER(encodedBytes)
++            guard der.count <= 524_288 - totalDERBytes,
++                  let publicKey = SecCertificateCopyKey(certificate) else { throw Failure.malformedResponse }
++            totalDERBytes += der.count
++            let hash = Data(SHA256.hash(data: der))
++            guard fingerprints.insert(hash).inserted else { throw Failure.ambiguousCertificate }
++            var error: Unmanaged<CFError>?
++            let raw = SecKeyCopyExternalRepresentation(publicKey, &error) as Data?
++            if let error { _ = error.takeRetainedValue() }
++            guard let raw, !raw.isEmpty, raw.count <= 1024 else { throw Failure.malformedResponse }
++            let machine: String?
++            if let value = attributes["machineId"], !(value is NSNull) {
++                guard let text = value as? String, Self.headerValue(text, limit: 128) else { throw Failure.malformedResponse }
++                machine = text
++            } else { machine = nil }
++            result.append(ListedCertificate(id: id, der: der, sha256: hash,
++                publicKeySHA256: Data(SHA256.hash(data: raw)), machineID: machine))
++        }
++        try check(epoch)
++        return result
++    }
++
++    private static func jsonInteger(_ value: Any, minimum: Int64 = 0, maximum: Int64) throws -> Int64 {
++        guard let number = value as? NSNumber, CFGetTypeID(number as CFTypeRef) == CFNumberGetTypeID(),
++              String(cString: number.objCType) != "d", String(cString: number.objCType) != "f", number.int64Value >= minimum,
++              number.int64Value <= maximum, number.stringValue == String(number.int64Value) else { throw Failure.malformedResponse }
++        return number.int64Value
++    }
++
++    /// The same session, fresh anisette, privacy, cancellation and HTTP checks
++    /// serve both the existing plist actions and the one read-only JSON action.
++    private func sendDeveloperRequest(url: URL, body: Data, mediaType: String, methodOverride: String? = nil,
++        credentials: Credentials, epoch: UInt64) async throws -> Data {
+         try check(epoch); try validateCredentials(credentials)
++        guard body.count <= 32_768 else { throw Failure.limit }
+         let anisette = try await freshAnisette()
+         try check(epoch); try validateCredentials(credentials)
+         let now = clock()
+@@ -368,15 +598,9 @@
+         let values = [anisette.machineID, anisette.oneTimePassword, anisette.localUserID,
+             anisette.deviceID, anisette.clientInfo, anisette.locale, anisette.timeZone]
+         guard values.allSatisfy({ Self.headerValue($0, limit: 4096) }) else { throw Failure.invalidInput }
+-        var body = parameters
+-        body["clientId"] = "XABBG36SBA"; body["protocolVersion"] = "QH65B2"; body["requestId"] = UUID().uuidString
+-        if let team { body["teamId"] = team }
+-        let data = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
+-        guard data.count <= 32_768,
+-              let url = URL(string: "https://developerservices2.apple.com/services/QH65B2/" + action.rawValue + "?clientId=XABBG36SBA") else { throw Failure.limit }
+-        var request = URLRequest(url: url); request.httpMethod = "POST"; request.httpBody = data; request.timeoutInterval = 30
++        var request = URLRequest(url: url); request.httpMethod = "POST"; request.httpBody = body; request.timeoutInterval = 30
+         let formatter = ISO8601DateFormatter()
+-        let headers = ["Content-Type": "text/x-xml-plist", "Accept": "text/x-xml-plist", "User-Agent": "Xcode",
++        let headers = ["Content-Type": mediaType, "Accept": mediaType, "User-Agent": "Xcode",
+             "Accept-Language": "en-us", "X-Apple-App-Info": "com.apple.gs.xcode.auth", "X-Xcode-Version": "11.2 (11B41)",
+             "X-Apple-I-Identity-Id": credentials.dsid, "X-Apple-GS-Token": credentials.xcodeToken,
+             "X-Apple-I-MD-M": anisette.machineID, "X-Apple-I-MD": anisette.oneTimePassword,
+@@ -385,6 +609,7 @@
+             "X-Apple-I-Client-Time": formatter.string(from: anisette.issuedAt), "X-Apple-Locale": anisette.locale,
+             "X-Apple-I-Locale": anisette.locale, "X-Apple-I-TimeZone": anisette.timeZone]
+         for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
++        if let methodOverride { request.setValue(methodOverride, forHTTPHeaderField: "X-HTTP-Method-Override") }
+         let response: SelfRenewalDeveloperAccountResponse
+         do { response = try await transport.send(request) }
+         catch is CancellationError { throw CancellationError() }
+@@ -393,18 +618,11 @@
+             throw Failure.transport(failure.rawValue)
+         }
+         catch { throw Failure.transport(-1) }
+-        responseBytes = response.body.count
+         try check(epoch)
+         guard response.statusCode != 401, response.statusCode != 403 else { throw Failure.sessionExpired }
+         guard response.statusCode == 200 else { throw Failure.http(response.statusCode) }
+-        let result: [String: Value]
+-        do { result = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(response.body)) }
+-        catch is CancellationError { throw CancellationError() }
+-        catch { throw Failure.malformedResponse }
+-        let code = try Self.integer(result["resultCode"])
+-        guard code != 1100 else { throw Failure.sessionExpired }
+-        guard code == 0 else { throw Failure.portal(code) }
+-        return result
++        guard response.body.count <= SelfRenewalDERPropertyList.Limits.bytes else { throw Failure.limit }
++        return response.body
+     }
+ 
+     private func registeredAppIDs(_ response: [String: Value]) throws -> [String: String] {
+@@ -424,9 +642,9 @@
+ 
+     private func issuedCertificate(_ response: [String: Value], csr: Vault.CertificateRequest) throws -> Data {
+         let container = try Self.dictionary(response["certRequest"])
+-        let bytes = try Self.bytes(container["certContent"], maximum: Vault.Limits.certificateBytes)
+-        guard let certificate = SecCertificateCreateWithData(nil, bytes as CFData),
+-              let publicKey = SecCertificateCopyKey(certificate) else { throw Failure.malformedResponse }
++        let encoded = try Self.bytes(container["certContent"], maximum: Vault.Limits.certificateBytes)
++        let (bytes, certificate) = try Self.certificateDER(encoded)
++        guard let publicKey = SecCertificateCopyKey(certificate) else { throw Failure.malformedResponse }
+         var error: Unmanaged<CFError>?
+         let raw = SecKeyCopyExternalRepresentation(publicKey, &error) as Data?
+         if let error { _ = error.takeRetainedValue() }
+@@ -435,6 +653,33 @@
+         // verification remains the existing Vault publish(), never a second
+         // weaker account-client certificate verifier.
+         return bytes
++    }
++
++    /// AltSign accepts certificate data as DER or a single PEM certificate.
++    /// Normalize before hashing so a PEM re-encoding cannot look like a new
++    /// certificate. This is bounded structure parsing, never chain trust.
++    private static func certificateDER(_ bytes: Data) throws -> (Data, SecCertificate) {
++        guard !bytes.isEmpty, bytes.count <= Vault.Limits.certificateBytes else { throw Failure.limit }
++        let der: Data
++        let prefix = "-----BEGIN CERTIFICATE-----"
++        if bytes.starts(with: Data(prefix.utf8)) {
++            guard let text = String(data: bytes, encoding: .utf8),
++                  text.utf8.allSatisfy({ $0 == 10 || $0 == 13 || (32...126).contains($0) }) else { throw Failure.malformedResponse }
++            let normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
++            guard !normalized.contains("\r") else { throw Failure.malformedResponse }
++            let lines = normalized.trimmingCharacters(in: .newlines).split(separator: "\n", omittingEmptySubsequences: false)
++            guard lines.count >= 3, lines.first == Substring(prefix), lines.last == "-----END CERTIFICATE-----",
++                  lines.dropFirst().dropLast().allSatisfy({ !$0.isEmpty }) else { throw Failure.malformedResponse }
++            let base64 = lines.dropFirst().dropLast().joined()
++            guard let decoded = Data(base64Encoded: base64), !decoded.isEmpty, decoded.count <= Vault.Limits.certificateBytes,
++                  decoded.base64EncodedString() == base64 else { throw Failure.malformedResponse }
++            der = decoded
++        } else { der = bytes }
++        do { _ = try SelfRenewalCMSVerifier.parseDER(der) }
++        catch is CancellationError { throw CancellationError() }
++        catch { throw Failure.malformedResponse }
++        guard let certificate = SecCertificateCreateWithData(nil, der as CFData) else { throw Failure.malformedResponse }
++        return (der, certificate)
+     }
+ 
+     private func load() throws -> Loaded? {
+@@ -463,6 +708,16 @@
+         if let pending = record.pending {
+             guard pending.requestPublicKeySHA256.count == 32, pending.startedAt.timeIntervalSince1970.isFinite,
+                   pending.materialGeneration < UInt64.max else { throw Failure.storage }
++            if let baseline = pending.reconciliationBaseline {
++                guard baseline.certificateSHA256s.count <= 256,
++                      baseline.certificateSHA256s.allSatisfy({ $0.count == 32 }),
++                      Set(baseline.certificateSHA256s).count == baseline.certificateSHA256s.count,
++                      baseline.certificateSHA256s == baseline.certificateSHA256s.sorted(by: { $0.lexicographicallyPrecedes($1) }),
++                      baseline.requestDERSHA256.count == 32,
++                      baseline.priorPublishedLeafSHA256 == nil || baseline.priorPublishedLeafSHA256?.count == 32 else {
++                    throw Failure.storage
++                }
++            }
+             switch pending.phase {
+             case .certificateRequestIntent:
+                 guard pending.certificateSHA256 == nil else { throw Failure.storage }

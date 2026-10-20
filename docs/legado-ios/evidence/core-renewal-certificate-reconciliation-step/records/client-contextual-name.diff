@@ -1,0 +1,17 @@
+--- reviewed/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
++++ final/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
+@@ -374,10 +374,10 @@
+         } catch let failure as PublicationFinalizationFailure { throw failure }
+         catch {
+             let original = error
+-            let final: Error
+-            do { try invalidateIfNecessary(original, loaded: loaded); final = original }
+-            catch { final = error }
+-            throw EnrollmentFailure(underlying: final, remoteCertificateMayHaveBeenIssued: true,
++            let finalFailure: Error
++            do { try invalidateIfNecessary(original, loaded: loaded); finalFailure = original }
++            catch { finalFailure = error }
++            throw EnrollmentFailure(underlying: finalFailure, remoteCertificateMayHaveBeenIssued: true,
+                 remoteProfilesMayHaveBeenRefreshed: profileIntent)
+         }
+     }

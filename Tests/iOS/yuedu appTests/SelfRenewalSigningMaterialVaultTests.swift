@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import Security
 import Testing
@@ -7,6 +8,64 @@ import Testing
 struct SelfRenewalSigningMaterialVaultTests {
     private typealias Vault = SelfRenewalSigningMaterialVault
     private typealias PKI = SelfRenewalSigningOwnedPKIFixture
+
+    @Test("publication metadata nil means genuinely absent while stale corrupt cancelled and locked reads remain errors")
+    func observesPublicationBaselineWithoutGrantingMaterialAuthority() async throws {
+        try await Self.fixture { f in
+            let namespace = try await f.namespace()
+            let generation = try await f.vault.generation(in: namespace)
+            let missing = try await f.vault.publicationBaseline(in: namespace, expectedGeneration: generation)
+            #expect(missing == nil)
+            // Fault injection checks preservation of the real storage error
+            // category; this does not simulate actually locking an iOS device.
+            f.storage.failNextLoad(.keychain(errSecInteractionNotAllowed))
+            try await Self.failure(.keychain(errSecInteractionNotAllowed)) {
+                _ = try await f.vault.publicationBaseline(in: namespace, expectedGeneration: generation)
+            }
+            let account = "owned-v1-" + namespace.id.uuidString.lowercased()
+            let encoded = try #require(try f.storage.load(account: account))
+            do {
+                defer { do { try f.storage.save(account: account, value: encoded) } catch { Issue.record(error) } }
+                try f.storage.delete(account: account)
+                try await Self.failure(.namespaceUnavailable) {
+                    _ = try await f.vault.publicationBaseline(in: namespace, expectedGeneration: generation)
+                }
+            }
+            do {
+                defer { do { try f.storage.save(account: account, value: encoded) } catch { Issue.record(error) } }
+                try f.storage.save(account: account, value: "{owned corrupt manifest}")
+                try await Self.failure(.staleGeneration) {
+                    _ = try await f.vault.publicationBaseline(in: namespace, expectedGeneration: generation)
+                }
+                let reopened = Vault(codeAnchors: f.issuer.certificateChainDER, profileAnchors: f.issuer.certificateChainDER,
+                    storage: f.storage, clock: { f.clock.now() })
+                try await Self.failure(.malformedManifest) { _ = try await reopened.resume(namespaceID: namespace.id, identity: f.baseline) }
+            }
+            try await Self.failure(.staleGeneration) {
+                _ = try await f.vault.publicationBaseline(in: namespace, expectedGeneration: generation + 1)
+            }
+            let key = try await f.generate(namespace)
+            let candidate = try f.candidate(key)
+            let lease = try await f.vault.publish(in: namespace, keyID: key.id, expectedGeneration: key.generation,
+                certificateChainDER: candidate.chain, profiles: candidate.profiles)
+            let observation = try #require(try await f.vault.publicationBaseline(in: namespace, expectedGeneration: lease.generation))
+            #expect(observation.namespace == namespace && observation.keyID == key.id && observation.generation == lease.generation)
+            #expect(observation.leafCertificateSHA256 == Data(SHA256.hash(data: candidate.chain[0])))
+            f.clock.set(f.date.addingTimeInterval(31 * 86_400))
+            let afterExpiry = try await f.vault.publicationBaseline(in: namespace, expectedGeneration: lease.generation)
+            #expect(afterExpiry == observation)
+            // It remains old manifest metadata; it has no valid-lease property.
+            do { _ = try await f.vault.lease(in: namespace); Issue.record("Expired metadata was treated as a live lease") }
+            catch let failure as Vault.Failure { #expect(failure == .invalidProfiles || failure == .untrustedCertificate) }
+            f.clock.set(f.date)
+            let cancelled = Task.detached {
+                withUnsafeCurrentTask { $0?.cancel() }
+                return try await f.vault.publicationBaseline(in: namespace, expectedGeneration: lease.generation)
+            }
+            do { _ = try await cancelled.value; Issue.record("Cancelled metadata read became absence") }
+            catch is CancellationError {}
+        }
+    }
 
     @Test("real permanent handle publishes verified profiles reopens signs verifies and revokes only its tag")
     func publishesReloadsSignsAndRevokesOwnedKeychainMaterial() async throws {
@@ -393,8 +452,14 @@ struct SelfRenewalSigningMaterialVaultTests {
         private let base = SelfRenewalSigningKeychainManifestStorage()
         private let lock = NSLock()
         private var remaining: Int?
+        private var nextLoadFailure: Vault.Failure?
         func failSave(afterSuccessfulSaves count: Int) { lock.lock(); defer { lock.unlock() }; remaining = count }
-        func load(account: String) throws -> String? { try base.load(account: account) }
+        func failNextLoad(_ failure: Vault.Failure) { lock.lock(); defer { lock.unlock() }; nextLoadFailure = failure }
+        func load(account: String) throws -> String? {
+            lock.lock(); let failure = nextLoadFailure; nextLoadFailure = nil; lock.unlock()
+            if let failure { throw failure }
+            return try base.load(account: account)
+        }
         func save(account: String, value: String) throws {
             lock.lock()
             let fail = remaining == 0

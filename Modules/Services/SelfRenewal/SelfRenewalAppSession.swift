@@ -464,6 +464,31 @@ actor SelfRenewalAppSession {
         }
     }
 
+    /// Explicit recovery of the existing CSR intent. A possible installation
+    /// submission must first refuse the same generation-changing publication,
+    /// even though the certificate-list request itself is read-only. This
+    /// never issues another CSR or implicitly connects at App startup.
+    func reconcileDeveloperMaterials() async throws -> DeveloperMaterialObservation {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        let started = SourcePerfTrace.now
+        defer { trace("developer-material-reconcile", since: started) }
+        guard !developerLocallySignedOut else { throw SelfRenewalDeveloperAccountClient.Failure.signedOut }
+        let account = try await developerAccountOwner()
+        guard try await account.pendingEnrollment() != nil else {
+            throw SelfRenewalDeveloperAccountClient.Failure.reconciliationRequired
+        }
+        guard let coordinator else { throw Failure.notConfigured }
+        try await coordinator.retireBeforeMaterialRefresh()
+        do {
+            let observed = DeveloperMaterialObservation(try await account.reconcilePendingMaterials())
+            developerMaterial = observed; return observed
+        } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
+            let observed = DeveloperMaterialObservation(failure.publishedLease)
+            developerMaterial = observed
+            throw DeveloperMaterialFinalizationFailure(published: observed, underlying: failure.underlying)
+        }
+    }
+
     func finalizeDeveloperMaterialPublication() async throws -> DeveloperMaterialObservation {
         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
         let account = try await developerAccountOwner()

@@ -1,0 +1,86 @@
+{
+  "stage": "account-certificate-reconciliation/session-source-review-v1",
+  "recordedAtUTC": "2026-10-20T11:41:25.079673+00:00",
+  "sourceFiles": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work-session/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/session-review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 63140,
+      "sha256": "8f422e84043ce7546592939eca2770232a60128b456c9064de20098c2e1b7278",
+      "baseline": {
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 61691,
+        "sha256": "6a1632a8a82d9d5ca5b93d2252c965fea7d72e24b410e66d5c8056b59c5e0a4f"
+      }
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work-session/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/session-review-v1-sources/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 15724,
+      "sha256": "5123201aaca5fadd2fc0af4adbdc1994bc6bdbf74fe113ff662710427e61003c",
+      "baseline": {
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+        "bytes": 14813,
+        "sha256": "1062bc0d661a72f9d94b51bb6017ebc2ab3b7a38cd21bd1faf6a65f6092d02f9"
+      }
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "work": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/work-session/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "snapshot": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/session-review-v1-sources/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "bytes": 16079,
+      "sha256": "1588c77dc23808028bc4c686070e69f0b25fa01559cc5e8465cbef6078229466",
+      "baseline": {
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+        "bytes": 11609,
+        "sha256": "53215d2755e3b214f979fc9c6c7b84e0f3559fa81658e5b75b67c76254d6f2f1"
+      }
+    }
+  ],
+  "diff": {
+    "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/session-review-v1.diff",
+    "bytes": 8149,
+    "sha256": "b7de57133f39ec0a4964a41d2bbf3856a97bdf1adda732312f4344a90dbf596c"
+  },
+  "requiresFrozenFive": {
+    "path": ".build/renewal-discovery/account-certificate-reconciliation-step/reconciliation/review-preparation-v1.json",
+    "bytes": 9762,
+    "sha256": "5c07dfb48bfbacbe58c83510bbfb6533c6877c1e44154afd64b1ffac11bd305b"
+  },
+  "api": [
+    "SelfRenewalAppSession.reconcileDeveloperMaterials() async throws -> DeveloperMaterialObservation",
+    "SelfRenewalAppOwner.reconcileDeveloperMaterials() async"
+  ],
+  "facts": [
+    "One same App session busy/defer owner; real developerAccountOwner revalidates actual Bundle/Vault, actual pending check before transaction retirement.",
+    "Same coordinator.retireBeforeMaterialRefresh() precedes any certificate-list/profile request; existing upload/Upgrade/receipt/Lookup/attention cases refuse activeTransaction.",
+    "Only the retained same Client.reconcilePendingMaterials() is called; no CSR, new key, second journal, provider, owner, queue or UI trigger.",
+    "Actual post-Vault finalization failure remains DeveloperMaterialFinalizationFailure with the real published observation, retained by Session and Owner.",
+    "Existing finalizeDeveloperMaterialPublication remains unchanged and local-only. No startup/foreground reconciliation added."
+  ],
+  "test": {
+    "suite": "SelfRenewalDeveloperAccountClientTests",
+    "newMethod": "appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue",
+    "newDefinitions": 1,
+    "previousSessionDefinitions": 4,
+    "actualDefinitionPath": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+    "coverage": "Actual controlled URLSession CSR lost ACK, close/reopen same journal/config/key, explicit list reconciliation, real Vault full publication/validate, exactly one CSR, empty pending refusal before network, config identity and owned sentinel bytes unchanged.",
+    "limitations": [
+      "Sentinel equality is selected owned file evidence, not normal BookStore/position proof, cold process or all user-data preservation.",
+      "No duplicate new real-Upgrade fixture is added: existing SelfRenewalTransactionRetirementTests.preservesActualSubmittedReceiptAndLookupWithoutAutomaticResubmission covers genuine TLS submission and rejects the same retirement owner. New Session source explicitly calls that owner before network; SDK not run."
+    ]
+  },
+  "remaining": [
+    "App account owner still requires actual valid installed material/profile and current Vault lease before opening/reusing a Client. This substep does not make enrollment or certificate-list recovery available after those App prerequisites expire; Client direct metadata/list path itself has no old valid-lease prerequisite.",
+    "Owner provides an explicit method only; no new UI, scheduling, auto installation or real Apple account configured.",
+    "Certificate-list completeness on actual developer service remains unverified. Same original authority/revocation/installation/cold/all-userdata false boundaries retained."
+  ],
+  "validation": {
+    "grammar": "not run; await source review before final once",
+    "SDKExecuted": 0,
+    "testsExecuted": 0,
+    "networkRequestsToApple": 0
+  }
+}
