@@ -32,12 +32,15 @@ public class LegadoPayloadSmoke {
             if (!content.get("result").getAsString().equals("Local content")) throw new AssertionError(content);
             System.out.println("PACKAGED_PAYLOAD_OK " + semantics);
         } finally { checked(LegadoRuntime.closeSession(session)); }
-        originalTraditionalSmoke();
+        originalTraditionalSmoke(false);
+        originalTraditionalSmoke(true);
     }
 
     /** Controlled host fixture for assembled-JAR wiring only; durability is verified separately
      * with the test-only file owner and new JVM processes. No fixture enters the runtime JAR. */
-    static void originalTraditionalSmoke() throws Exception {
+    static void originalTraditionalSmoke(boolean appCookieOwner) throws Exception {
+        var ownerReads = new AtomicInteger();
+        var rfcSnapshotReads = new AtomicInteger();
         var lastChapterRequests = new AtomicInteger();
         var server = HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}), 0), 0);
         server.createContext("/", exchange -> {
@@ -70,9 +73,14 @@ public class LegadoPayloadSmoke {
                 var request = JsonParser.parseString(raw).getAsJsonObject();
                 if (!request.get("owner").getAsString().equals("packaged-owner")) throw new AssertionError("Wrong owner");
                 var response = new JsonObject();
-                if (operation.equals("state.read")) {
+                if (operation.equals("cookie.owner.read") && appCookieOwner) {
+                    ownerReads.incrementAndGet();
+                    if (request.get("purpose").getAsString().equals("getCookie") && !request.get("domain").getAsString().equals("example.co.uk")) throw new AssertionError("Wrong original PSL domain");
+                    response.addProperty("cookie", "packaged=1");
+                } else if (operation.equals("state.read")) {
                     response.addProperty("revision", revision[0]); var selected = new JsonObject();
                     for (var key : request.getAsJsonArray("keys")) {
+                        if (JsonParser.parseString(key.getAsString()).getAsJsonArray().get(1).getAsString().equals("cookies")) rfcSnapshotReads.incrementAndGet();
                         var value = values.get(key.getAsString()); if (value != null) selected.addProperty(key.getAsString(), value);
                     }
                     response.add("values", selected);
@@ -100,7 +108,13 @@ public class LegadoPayloadSmoke {
                  "ruleContent":{"content":"#text@html","nextContentUrl":".next@href","replaceRegex":"##REMOVE##"}}
                 """).getAsJsonObject();
             source.addProperty("bookSourceUrl", origin); source.addProperty("searchUrl", "/search?q={{key}}");
-            session = checked(LegadoRuntime.createSession(source.toString(), "{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\"packaged-owner\"}")).get("sessionId").getAsString();
+            if (appCookieOwner) {
+                source.addProperty("enabledCookieJar", false);
+                source.addProperty("header", "@js:({'X-Owner':cookie.getCookie('https://sub.example.co.uk','packaged')})");
+            }
+            var options = JsonParser.parseString("{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\"packaged-owner\"}").getAsJsonObject();
+            if (appCookieOwner) options.addProperty("cookieAccess", "app-owner-read");
+            session = checked(LegadoRuntime.createSession(source.toString(), options.toString())).get("sessionId").getAsString();
             var found = checked(LegadoRuntime.execute(session, "packaged-original-search", "search", "{\"key\":\"owned\"}")).getAsJsonObject("result").getAsJsonArray("books");
             if (found.size() != 1) throw new AssertionError(found);
             var input = new JsonObject(); input.add("book", found.get(0));
@@ -115,7 +129,10 @@ public class LegadoPayloadSmoke {
             input.add("chapter", chapters.get(1));
             var second = checked(LegadoRuntime.execute(session, "packaged-original-content-two", "content", input.toString())).getAsJsonObject("result").get("content").getAsString();
             if (!second.contains("second") || lastChapterRequests.get() != 1) throw new AssertionError(second);
-            System.out.println("PACKAGED_ORIGINAL_TRADITIONAL_OK books=1 chapters=2 tocPages=2 firstChapterPages=2 sameCookie=true");
+            if (appCookieOwner) {
+                if (ownerReads.get() < 14 || rfcSnapshotReads.get() != 0) throw new AssertionError("Cookie read seam was bypassed");
+                System.out.println("PACKAGED_APP_COOKIE_OWNER_READ_OK books=1 chapters=2 tocPages=2 firstChapterPages=2 rfcSnapshotReads=0");
+            } else System.out.println("PACKAGED_ORIGINAL_TRADITIONAL_OK books=1 chapters=2 tocPages=2 firstChapterPages=2 sameCookie=true");
         } finally {
             if (session != null) checked(LegadoRuntime.closeSession(session));
             LegadoRuntime.setHostCallback(null); server.stop(0);

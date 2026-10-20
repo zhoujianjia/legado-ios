@@ -103,6 +103,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         let keys: [LegadoEntityStateKey]
         let snapshot: LegadoEntityStateSnapshot
     }
+    private let cookieOwner: CookieStore
     private let backing: any LegadoOwnedStateBacking
     private let fallback: any LegadoPlatformHost
     private var bindings: [String: Binding] = [:]
@@ -116,7 +117,8 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     private var cancelled = Set<String>()
     private var cancellationOrder: [String] = []
 
-    init(backing: any LegadoOwnedStateBacking, fallback: any LegadoPlatformHost = UnsupportedLegadoHost()) {
+    init(backing: any LegadoOwnedStateBacking, fallback: any LegadoPlatformHost = UnsupportedLegadoHost(), cookieOwner: CookieStore = .shared) {
+        self.cookieOwner = cookieOwner
         self.backing = backing
         self.fallback = fallback
     }
@@ -191,6 +193,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     }
 
     func dispatch(_ request: LegadoHostRequest) async throws -> String {
+        if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
         if request.operation != "state.read" && request.operation != "state.commit" {
             return try await fallback.dispatch(request)
         }
@@ -270,6 +273,89 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             AppLogger.error("JVM source state owner failed", error: error)
             throw failure("STATE_IO", "The App state owner did not complete the request")
         }
+    }
+
+    /// A finite read-only Cookie operation shares the existing bound owner and
+    /// CookieStore. It returns business text, never a reconstructed Java jar.
+    /// Mutation/session-response batching is deliberately a separate capability.
+    private func readCookieOwner(_ request: LegadoHostRequest) async throws -> String {
+        guard request.requestJSON.utf8.count <= 32_768 else { throw failure("STATE_LIMIT", "Cookie owner request exceeds its byte budget") }
+        let decoded: Any
+        do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
+        catch { throw failure("INVALID_STATE_REQUEST", "Cookie owner request is not valid JSON") }
+        guard let input = decoded as? [String: Any], let owner = input["owner"] as? String,
+              let binding = bindings[owner], revisions[binding.sourceURL] == binding.sourceRevision else {
+            throw failure("INVALID_STATE_OWNER", "Cookie read has no current explicit App owner")
+        }
+        guard let purpose = input["purpose"] as? String,
+              let url = input["url"] as? String, url.utf8.count <= 8_192,
+              let domain = input["domain"] as? String, domain.utf8.count <= 8_192 else {
+            throw failure("INVALID_STATE_REQUEST", "Cookie read requires bounded URL/domain text")
+        }
+        let deadline = try cookieReadDeadline(input)
+        try checkCookieRead(request, deadline: deadline)
+        do {
+            let value: String
+            switch purpose {
+            case "getCookie":
+                // Domain comes from the JVM's locked original NetworkUtils/PSL,
+                // not a Swift last-two-label approximation. This intentionally
+                // uses the existing broad text API, not automatic HTTP headers.
+                if let target = cookieDomainURL(domain) {
+                    value = try await cookieOwner.getOwned(url: target.absoluteString)
+                } else {
+                    // The original getSubDomain returns arbitrary non-URL text
+                    // unchanged. Such a DB key is not a made-up HTTPS origin.
+                    value = try await cookieOwner.snapshot().legacyHeaders[domain] ?? ""
+                }
+            case "requestHeader":
+                guard let target = URL(string: url), target.host != nil,
+                      ["http", "https"].contains(target.scheme?.lowercased() ?? "") else {
+                    throw failure("INVALID_STATE_REQUEST", "Automatic Cookie headers require an absolute HTTP(S) URL")
+                }
+                value = try await cookieOwner.requestHeader(url: target) ?? ""
+            default: throw failure("UNSUPPORTED_CAPABILITY", "Unknown App Cookie read purpose")
+            }
+            try checkCookieRead(request, deadline: deadline)
+            try currentEntityBinding(owner: owner, binding: binding)
+            guard value.utf8.count <= 65_536 else { throw failure("STATE_LIMIT", "Cookie owner read exceeds its byte budget") }
+            return try encoded(["cookie": value])
+        } catch let error as CookieOwnerError {
+            throw failure(error.code, error.message)
+        } catch let error as LegadoRuntimeError { throw error }
+        catch is CancellationError { throw CancellationError() }
+        catch {
+            AppLogger.error("The original runtime Cookie owner read failed", error: error)
+            throw failure("STATE_IO", "The App Cookie owner could not be read")
+        }
+    }
+
+    private func cookieDomainURL(_ domain: String) -> URL? {
+        guard !domain.contains("://"), let parts = URLComponents(string: "https://" + domain),
+              parts.host?.isEmpty == false, parts.user == nil, parts.password == nil,
+              parts.port == nil, parts.percentEncodedPath.isEmpty,
+              parts.query == nil, parts.fragment == nil else { return nil }
+        return parts.url
+    }
+
+    private func cookieReadDeadline(_ input: [String: Any]) throws -> Date {
+        let now = Date()
+        var deadline = now.addingTimeInterval(180)
+        for field in ["remainingTimeoutMs", "timeoutMs", "deadlineEpochMs"] {
+            guard let raw = input[field] else { continue }
+            guard let number = raw as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID(), number.doubleValue.isFinite else {
+                throw failure("INVALID_STATE_REQUEST", "Cookie owner deadline must be finite numeric metadata")
+            }
+            let value = number.doubleValue / 1000
+            let limit = field == "deadlineEpochMs" ? Date(timeIntervalSince1970: value) : now.addingTimeInterval(value)
+            deadline = min(deadline, limit)
+        }
+        return deadline
+    }
+    private func checkCookieRead(_ request: LegadoHostRequest, deadline: Date) throws {
+        try Task.checkCancellation()
+        guard !cancelled.contains(request.taskID) else { throw CancellationError() }
+        guard deadline.timeIntervalSinceNow > 0 else { throw failure("STATE_TIMEOUT", "Cookie owner read deadline expired") }
     }
 
     func cancel(taskID: String) async {

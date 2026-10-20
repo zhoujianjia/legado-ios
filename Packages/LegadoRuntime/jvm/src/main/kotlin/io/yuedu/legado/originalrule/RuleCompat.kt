@@ -179,6 +179,20 @@ internal object NetworkUtils {
         return "${urlToParse.substringBefore("://")}://${parsed.authority}"
     }
 
+    // Original ZIP NetworkUtils.getSubDomain:213-224, retaining its different
+    // fallback from getSubDomainOrNull. The same pinned PSL and IP validator run
+    // in JVM; the App host never invents a last-two-label domain algorithm.
+    fun getSubDomain(url: String): String {
+        val baseUrl = getBaseUrl(url) ?: return url
+        return runCatching {
+            val host = URL(baseUrl).host
+            val ipv4 = host.isNotEmpty() && host[0] in '1'..'9' && host.count { it == '.' } == 3 && OriginalIpValidator.isIpv4(host)
+            val ipv6 = ':' in host && OriginalIpValidator.isIpv6(host)
+            if (ipv4 || ipv6) host
+            else okhttp3.internal.publicsuffix.PublicSuffixDatabase.get().getEffectiveTldPlusOne(host) ?: host
+        }.getOrDefault(baseUrl)
+    }
+
     fun getSubDomainOrNull(url: String): String? {
         val baseUrl = getBaseUrl(url) ?: return null
         return runCatching {

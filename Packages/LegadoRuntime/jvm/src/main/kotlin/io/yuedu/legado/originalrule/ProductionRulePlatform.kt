@@ -35,12 +35,13 @@ internal class ProductionRulePlatform(
     private val environment: () -> RuleEnvironment,
 ) : RulePlatform() {
     override val userAgent: String? get() = task.session.options.userAgent
+    private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
     override val cookie: RuleCookieHost = object : RuleCookieHost() {
-        override fun getCookie(url: String): String = cookieOperation { task.session.cookies.getRuleCookie(url) }
-        override fun getCookie(url: String, key: String?): String = cookieOperation { task.session.cookies.getRuleCookie(url, key) }
-        override fun setCookie(url: String, value: String): Unit = cookieOperation(true) { task.session.cookies.setRuleCookie(url, value) }
-        override fun replaceCookie(url: String, value: String): Unit = cookieOperation(true) { task.session.cookies.replaceRuleCookie(url, value) }
-        override fun removeCookie(url: String): Unit = cookieOperation(true) { task.session.cookies.removeRuleCookie(url) }
+        override fun getCookie(url: String): String = readCookie(url)
+        override fun getCookie(url: String, key: String?): String = readCookie(url, key)
+        override fun setCookie(url: String, value: String): Unit = cookieWrite("CookieStore.setCookie") { task.session.cookies.setRuleCookie(url, value) }
+        override fun replaceCookie(url: String, value: String): Unit = cookieWrite("CookieStore.replaceCookie") { task.session.cookies.replaceRuleCookie(url, value) }
+        override fun removeCookie(url: String): Unit = cookieWrite("CookieStore.removeCookie") { task.session.cookies.removeRuleCookie(url) }
     }
 
     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
@@ -74,7 +75,8 @@ internal class ProductionRulePlatform(
         val context = analyzed.getRuleCoroutineContext()
         ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
         return try {
-            val request = analyzed.prepareRequest { target -> task.session.cookies.persistent(environment().persistence) { task.session.cookies.getCookie(target.toHttpUrl().toString()) } }
+            val request = analyzed.prepareRequest { target -> requestCookieHeader(target.toHttpUrl().toString()) }
+            checkRequestCookieCapability(request)
             val result = http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
             ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
             result
@@ -93,6 +95,8 @@ internal class ProductionRulePlatform(
         val changes = environment().cache.textChange(cacheKey, value)
         val headers = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
         val cookie = headers?.get("Cookie") ?: headers?.get("cookie")
+        if (appCookieOwner != null && (value == null || !cookie.isNullOrEmpty()))
+            unsupportedRule("source.putLoginHeader/removeLoginHeader cross Cookie/login owner transaction is not connected")
         if (value != null && cookie.isNullOrEmpty()) {
             environment().cache.put(cacheKey, value)
             return true
@@ -161,7 +165,8 @@ internal class ProductionRulePlatform(
             // As in JsExtensions/AnalyzeRule, construction is outside recovery.
             // Only getStrResponse-equivalent execution errors become text.
             val response = try {
-                val request = analyzed.prepareRequest { target -> task.session.cookies.persistent(environment().persistence) { task.session.cookies.getCookie(target.toHttpUrl().toString()) } }
+                val request = analyzed.prepareRequest { target -> requestCookieHeader(target.toHttpUrl().toString()) }
+                checkRequestCookieCapability(request)
                 http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
             } catch (error: Exception) {
                 ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
@@ -205,6 +210,25 @@ internal class ProductionRulePlatform(
             // must never publish that text as a late successful result.
             throw CancellationException("Original-rule environment is closed").apply { initCause(closed) }
         }
+    }
+
+    private fun readCookie(url: String, key: String? = null): String {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        return appCookieOwner?.getCookie(url, key) ?: cookieOperation { task.session.cookies.getRuleCookie(url, key) }
+    }
+    private fun requestCookieHeader(url: String): String {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        return appCookieOwner?.requestHeader(url)
+            ?: task.session.cookies.persistent(environment().persistence) { task.session.cookies.getCookie(url) }
+    }
+    private fun checkRequestCookieCapability(request: JsonObject) {
+        if (appCookieOwner != null && request["enabledCookieJar"]?.asBoolean == true)
+            unsupportedRule("CookieManager.loadRequest/saveResponse enabledCookieJar needs the App owner's response/session text transaction")
+    }
+    private fun <T> cookieWrite(operation: String, body: () -> T): T {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        if (appCookieOwner != null) unsupportedRule("$operation App text-owner durable mutation is not connected")
+        return cookieOperation(true, body)
     }
 
     private fun <T> cookieOperation(write: Boolean = false, body: () -> T): T {

@@ -27,19 +27,27 @@ public struct LegadoSessionOptions: Encodable, Sendable {
         case existing
         case originalTraditional = "original-traditional"
     }
+    public enum CookieAccess: String, Encodable, Sendable {
+        case sessionJar = "session-jar"
+        /// Read directly through the explicitly granted App owner. Rich response
+        /// jar mutations remain unsupported; this never enables a product route.
+        case appOwnerRead = "app-owner-read"
+    }
+    public let cookieAccess: CookieAccess
     public let httpTransport: HTTPTransport
     public let userAgent: String?
     /// Granted explicitly by the embedding host; imported source JSON cannot
     /// choose this owner or a persistence path. Nil preserves isolated memory.
     public let stateOwner: String?
     public let sourceMode: SourceMode
-    public init(httpTransport: HTTPTransport, userAgent: String? = nil, stateOwner: String? = nil, sourceMode: SourceMode = .existing) {
+    public init(httpTransport: HTTPTransport, userAgent: String? = nil, stateOwner: String? = nil, sourceMode: SourceMode = .existing, cookieAccess: CookieAccess = .sessionJar) {
+        self.cookieAccess = cookieAccess
         self.httpTransport = httpTransport
         self.userAgent = userAgent
         self.stateOwner = stateOwner
         self.sourceMode = sourceMode
     }
-    private enum CodingKeys: String, CodingKey { case httpTransport, userAgent, stateOwner, sourceMode }
+    private enum CodingKeys: String, CodingKey { case httpTransport, userAgent, stateOwner, sourceMode, cookieAccess }
     public func encode(to encoder: any Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
         try values.encode(httpTransport, forKey: .httpTransport)
@@ -47,6 +55,7 @@ public struct LegadoSessionOptions: Encodable, Sendable {
         try values.encodeIfPresent(stateOwner, forKey: .stateOwner)
         // Preserve the previous embedding JSON for the default route.
         if sourceMode != .existing { try values.encode(sourceMode, forKey: .sourceMode) }
+        if cookieAccess != .sessionJar { try values.encode(cookieAccess, forKey: .cookieAccess) }
     }
 }
 
