@@ -163,7 +163,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "S1新源码冻结后仅cryptography25做单次Debug Simulator SDK检查，45源码绑定、2700秒冷编译；旧诊断/reader smoke/measurement不重跑，继续C1真实请求选项及S1材料开发，不反复轮询、不请求真机。",
+      "nextPlannedCheckpoint": "S1固定源码533f0b4已提交cryptography25检查，首轮冷编译2700秒；适时一次收取源码绑定结果并先修实际失败。继续C1请求选项与S1剩余非真机开发，不反复轮询，不重跑旧诊断/reader smoke/measurement，不制作IPA。",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
@@ -604,7 +604,8 @@
         "physicalDeviceValidationRequested": false,
         "ruleZh": "按已启用的持续目标继续实际开发；保留C1至C5、S1至S6及原依赖关系，不因单轮结束将目标标为完成。设备验证与其他17包仍暂缓。"
       },
-      "signatureSDKSubmission": "docs/legado-ios/core-renewal-20f4cd6-initial.json"
+      "signatureSDKSubmission": "docs/legado-ios/core-renewal-20f4cd6-initial.json",
+      "cryptographySDKSubmission": "docs/legado-ios/core-renewal-533f0b4-initial.json"
     }
   },
   "stages": [
@@ -4483,6 +4484,10 @@
     "material-cryptography-step": {
       "path": "docs/legado-ios/core-renewal-request-crypto-step.json",
       "scope": "S1 real content hashing and CMS/profile envelope production connections; independent owned fixture results and portable25 passed, Swift25 prepared only. No Apple authority, trusted replacement, signing/install/renewal or whole-step acceptance."
+    },
+    "material-cryptography-SDK-submission": {
+      "path": "docs/legado-ios/core-renewal-533f0b4-initial.json",
+      "scope": "One fixed-source cryptography25 initial workflow observation only; no actual native verdict, Apple authority, trusted replacement, signing/install/renewal, IPA or device result."
     }
   },
   "retainedExistingWork": [
