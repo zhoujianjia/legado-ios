@@ -1,0 +1,133 @@
+{
+  "status": "passed",
+  "observedAtUTC": "2026-10-20T02:03:04.746451+00:00",
+  "commands": [
+    {
+      "name": "renewal-evidence-guards",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "logs": [
+        {
+          "path": ".build/renewal-discovery/core-renewal-implementation-gates/renewal-evidence-guards.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/renewal-discovery/core-renewal-implementation-gates/renewal-evidence-guards.stderr",
+          "bytes": 3999,
+          "sha256": "301fe75b876bff6e98702baa5852cad1293750ff36db923915a6712637213c15"
+        }
+      ]
+    },
+    {
+      "name": "renewal-shell-syntax",
+      "command": [
+        "D:/app/Git/bin/bash.exe",
+        "-n",
+        "scripts/reader-experience/renewal-probe-tests.sh"
+      ],
+      "exitCode": 0,
+      "logs": [
+        {
+          "path": ".build/renewal-discovery/core-renewal-implementation-gates/renewal-shell-syntax.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/renewal-discovery/core-renewal-implementation-gates/renewal-shell-syntax.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "renewal-workflow-lint",
+      "command": [
+        "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+        "-shellcheck=",
+        ".github/workflows/reader-renewal-probe.yml"
+      ],
+      "exitCode": 0,
+      "logs": [
+        {
+          "path": ".build/renewal-discovery/core-renewal-implementation-gates/renewal-workflow-lint.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/renewal-discovery/core-renewal-implementation-gates/renewal-workflow-lint.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 20189,
+      "sha256": "e5b8d579c1e98947501d7680e94324976de2147aa7290ab5e91b6755397d40e5"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 32939,
+      "sha256": "e06be7523938f4fe26b8cb91f22535a5b6cc09e4e7c5095547ce8761803a20db"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "bytes": 5505,
+      "sha256": "4a97d42e48894de23304607f1645250e39d265927d438e51ecb5a21734858394"
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "bytes": 5384,
+      "sha256": "c2a4f057ee5513dd0e6df3588d044d8b2bdddd69b847ba32746f8f02be64e13d"
+    }
+  ],
+  "portableGuardMethods": 21,
+  "guardSuiteParentEnvironmentSelection": "implementation",
+  "baseSyntheticContextSelection": "all",
+  "sourceInputs": {
+    "path": ".build/renewal-discovery/core-renewal-implementation-gates/source-input-inventory.json",
+    "bytes": 6180,
+    "sha256": "4b2768aa08126eab1d5dd46f4f385010eb222db2bdcdb55ca4450acec80ba63d",
+    "count": 36,
+    "sourceCommitBound": false
+  },
+  "fixedSelectionModes": {
+    "all": {
+      "unit": 8,
+      "discovery": 16,
+      "replacement": 5,
+      "ui": 1
+    },
+    "replacement": {
+      "replacement": 5
+    },
+    "implementation": {
+      "replacement": 5,
+      "materials": 6
+    }
+  },
+  "workflowSelection": "implementation",
+  "plannedActualWorkflowCases": {
+    "replacement": 5,
+    "materials": 6
+  },
+  "nativeTestMethodNamesMatchedToSwiftFiles": true,
+  "xcodebuildWallClockBudgetsSeconds": {
+    "allFirstUnit": 2700,
+    "allWarmReplacement": 900,
+    "nonAllFirstReplacement": 2700,
+    "implementationWarmMaterials": 900
+  },
+  "actualSwiftOrIOSTestExecutions": 0,
+  "actualSDKBuilds": 0,
+  "GitOrNetworkOrCIUsed": false,
+  "historicalTimeoutEvidenceUnchanged": true
+}

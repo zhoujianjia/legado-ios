@@ -143,9 +143,9 @@
     "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
-    "Execute the exact five new replacement metadata tests in the fixed source-only Simulator selection; the previous eight/sixteen/UI1 evidence remains separately source-bound.",
-    "Continue offline transport and real signing adapter development; supplied metadata assertions do not verify certificates, profiles, a peer, an Apple account or permission to install.",
-    "Keep authenticated same-device transport, fresh signing, same-identity replacement, data preservation and unattended recovery unaccepted. Physical-device validation is currently deferred by the user; do not ask for it now."
+    "Implement S1-S6 from completion-plan.json#/execution/stepByStep: real material reading/verification, account and signing-material lifecycle, owned-fixture cryptographic resigning, authenticated protocol client, persistent recovery and allowed triggers. Do not stop all offline development behind a device gate.",
+    "Collect source-bound actual results at subsystem checkpoints and reuse unchanged evidence. Metadata5 or a synthetic peer does not establish cryptographic trust, real Apple authority, device installation or unattended renewal.",
+    "Keep actual free-team single-App authenticated replacement, cold-launch data retention, unattended scheduling and expiry recovery unaccepted; physical-device validation remains deferred and must not be requested now."
   ],
   "completedGates": [
     "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed.",
@@ -560,7 +560,13 @@
       "traditional-source-core"
     ],
     "physicalDeviceValidation": "deferred-by-user-not-accepted",
-    "askUserForDeviceTestsNow": false
+    "askUserForDeviceTestsNow": false,
+    "stepByStepCanonicalPointer": {
+      "path": "docs/legado-ios/completion-plan.json",
+      "jsonPointer": "/execution/stepByStep"
+    },
+    "offlineImplementationAuthorized": true,
+    "liveAuthenticatedInstallationEnabled": false
   },
   "offlineReplacementMetadataPolicy": {
     "record": {
@@ -576,5 +582,22 @@
     "plannedSwiftMethods": 5,
     "actualNewSwiftOrSDKExecutions": 0,
     "metadataCompatibilityIsNotCryptographicProof": true
+  },
+  "offlineMaterialInventory": {
+    "record": "docs/legado-ios/core-renewal-sequence-first-step.json",
+    "readerImplemented": true,
+    "cryptographicVerifierImplemented": false,
+    "trustedSnapshotAdapterImplemented": false,
+    "preparedMethods": 6,
+    "actualSDKAcceptedMethods": 0
+  },
+  "replacementMetadataSDKFailure": {
+    "record": "docs/legado-ios/core-renewal-sequence-first-step.json",
+    "sourceCommit": "4ada44eb70ace58e3f80e11d8571e9309c3b1dd8",
+    "runID": 39351991617,
+    "status": "completed",
+    "conclusion": "failure",
+    "actualAcceptedMethods": 0,
+    "scope": "Shared target cold compilation interrupted, no test verdict; budget fix prepared, not proven successful."
   }
 }

@@ -1,0 +1,36 @@
+{
+  "observedAtUTC": "2026-10-20T02:00:30.275616+00:00",
+  "runID": 39351991617,
+  "sourceCommit": "4ada44e",
+  "acceptedNewNativeCases": 0,
+  "log": {
+    "member": "reader-renewal-probe/replacement-tests.log",
+    "lines": 31597,
+    "bytes": 7871815,
+    "sha256": "39d1cf77f8a3b8a84d817a51145bdf0d1ffd399081cbb94044f0c5e01190cc43"
+  },
+  "wrapperLog": "log:  /Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-probe/replacement-tests.log\ndest: id=4C675116-265D-488F-BFFA-836A4545674C\n!! no verdict after 900s; killing\nxcodebuild status: 143; wrapper verdict stop: false\n--- errors ---\n--- verdict ---\n",
+  "finalCompilerAction": "SwiftCompile normal arm64 BrowserLayoutRubyLayoutTests.swift in yuedu appTests",
+  "finalLogLine": "** BUILD INTERRUPTED **",
+  "compilerErrors": [],
+  "authoritativeVerdicts": [],
+  "executedTestMarkers": [],
+  "policyCompileLogEntries": [
+    {
+      "line": 23513,
+      "text": "SwiftCompile normal arm64 /Users/runner/work/legado-ios/legado-ios/Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 30297,
+      "text": "SwiftCompile normal arm64 /Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu\\ appTests/SelfRenewalReplacementPolicyTests.swift (in target 'yuedu appTests' from project 'Yuedu-Reader')"
+    }
+  ],
+  "xcresultOnlyStaging": true,
+  "completedXCResultSummaryOrLeafEvidencePresent": false,
+  "timeoutLayer": "scripts/reader-experience/renewal-probe-tests.sh passes -t 900 to scripts/xctest.sh. The wrapper wall-clock budget covers the whole xcodebuild test process, including project/package/app and full test-target compilation, not an individual selected policy test. Build settings and Simulator boot occur before this timer.",
+  "scope": "The -only-testing selector restricts execution; it does not prevent the entire shared yuedu appTests target from compiling. The log ends while unrelated test sources are still compiling.",
+  "confirmedFixableDefect": "The selected replacement-only cold build was allowed 900s while existing all-mode first unit invocation has 2700s. Actual artifact proves this wrapper budget interrupted ongoing compilation, with no test verdict. It does not establish a compiler hang, a failure in a policy method, or a specific type-checking root cause.",
+  "remainingUncertainty": "No per-action timing trace or sampled compiler stack is present. Which file/batch consumed most time cannot be proven from ordering alone. A future changed checkpoint may use a cold-build-appropriate first-invocation budget; do not claim that alone fixes all build/test issues.",
+  "workflowRerunTriggered": false,
+  "productionOrCIChanged": false
+}

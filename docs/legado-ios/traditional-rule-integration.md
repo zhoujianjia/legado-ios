@@ -20,6 +20,8 @@
 
 上述仓库路径均以 `Packages/LegadoRuntime/` 为前缀。现有 `DeclarativeSourceTest` 仅证明固定 CSS 四步链路、几个底层解析调用及 unsupported 错误，不证明真实书源可用。
 
+当前执行顺序统一见 `completion-plan.json` 的 `execution.stepByStep`：C1 至 C5 依次推进原规则与请求、状态与登录、WebBook 编排、普通 JAR／JNI／App 唯一入口，以及核心对照和重启离线阅读。C1 最新首段已将原规则 Cookie 宿主接入现有单一 JVM 会话；44 项 Windows 回归及普通 JAR／smoke 实际通过。原 Android 域共享、持久化、WebView、完整 URL／业务编排与 App 传统入口仍未完成；上一段 38 项不与本次 44 项相加。源码、失败记录与验证边界见 `core-renewal-sequence-first-step.json`。
+
 ## 原版文件与关键方法
 
 | 文件 | 方法／原版行号 | 最小职责 |

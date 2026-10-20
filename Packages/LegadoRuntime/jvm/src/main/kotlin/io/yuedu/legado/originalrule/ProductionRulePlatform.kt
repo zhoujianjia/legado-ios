@@ -25,6 +25,14 @@ internal class ProductionRulePlatform(
     dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
     private val ensureEnvironmentOpen: () -> Unit,
 ) : RulePlatform() {
+    override val cookie: RuleCookieHost = object : RuleCookieHost() {
+        override fun getCookie(url: String): String = cookieOperation { task.session.cookies.getRuleCookie(url) }
+        override fun getCookie(url: String, key: String?): String = cookieOperation { task.session.cookies.getRuleCookie(url, key) }
+        override fun setCookie(url: String, value: String): Unit = cookieOperation { task.session.cookies.setRuleCookie(url, value) }
+        override fun replaceCookie(url: String, value: String): Unit = cookieOperation { task.session.cookies.replaceRuleCookie(url, value) }
+        override fun removeCookie(url: String): Unit = cookieOperation { task.session.cookies.removeRuleCookie(url) }
+    }
+
     private val javaHost = SourceJavaHost(task) { current, operation, input ->
         check(current === task && operation == "http.request") { "Unexpected original-rule host operation" }
         ensureOwnerOpen()
@@ -76,6 +84,19 @@ internal class ProductionRulePlatform(
             // ajax catches ordinary exceptions as response text; a closed owner
             // must never publish that text as a late successful result.
             throw CancellationException("Original-rule environment is closed").apply { initCause(closed) }
+        }
+    }
+
+    private inline fun <T> cookieOperation(body: () -> T): T {
+        // The existing jar monitor makes validation + mutation atomic relative
+        // to transport Set-Cookie handling and other rule environments.
+        synchronized(task.session.cookies) {
+            ensureOwnerOpen()
+            task.ensureActiveForRuntime()
+            check(!task.session.closed.get()) { "Session is closed" }
+            return try { body() } catch (invalid: IllegalArgumentException) {
+                throw UnsupportedRuleCapability(invalid.message.orEmpty())
+            }
         }
     }
 }

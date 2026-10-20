@@ -253,6 +253,90 @@ class SessionCookies internal constructor() {
     @Synchronized fun removeCookie(url: String) {
         manager.cookieStore.get(URI(url)).forEach { manager.cookieStore.remove(URI(url), it) }
     }
+
+    /**
+     * Original CookieStore's text operations use this same transport-owned jar.
+     * setCookie replaces text, whereas replaceCookie merges named values. These
+     * methods do not change the existing mainJs/HTTP Set-Cookie API above.
+     *
+     * Scope remains the existing URL/domain/path-aware in-memory CookieManager,
+     * not Android's registrable-domain Room/session/WebView store. In particular,
+     * a merge preserves every existing cookie's security/path/expiry attributes.
+     */
+    internal @Synchronized fun setRuleCookie(url: String, value: String) {
+        val uri = ruleCookieUri(url)
+        val replacements = ruleCookieValues(value).map { (name, text) -> newRuleCookie(name, text) }
+        // Parse and validate the complete input before discarding any live state.
+        manager.cookieStore.get(uri).forEach { manager.cookieStore.remove(uri, it) }
+        replacements.forEach { manager.cookieStore.add(uri, it) }
+    }
+
+    internal @Synchronized fun replaceRuleCookie(url: String, value: String) {
+        // CookieStore.replaceCookie treats either empty argument as a no-op.
+        if (url.isEmpty() || value.isEmpty()) return
+        val uri = ruleCookieUri(url)
+        val replacements = ruleCookieValues(value).map { (name, text) -> newRuleCookie(name, text) }
+        val existing = manager.cookieStore.get(uri)
+        replacements.forEach { replacement ->
+            val matching = existing.filter { it.name == replacement.name }
+            if (matching.isEmpty()) {
+                manager.cookieStore.add(uri, replacement)
+            } else {
+                // A name may have several paths/domains in the RFC jar. Update
+                // each matching value without flattening it into a new root
+                // cookie or dropping Secure, HttpOnly or expiration metadata.
+                // The sole owned CookieManager returns its stored HttpCookie
+                // objects. Only value changes, so name/domain/path index keys
+                // and original header ordering remain intact under this lock.
+                matching.forEach { it.value = replacement.value }
+            }
+        }
+    }
+
+    internal @Synchronized fun getRuleCookie(url: String, key: String? = null): String {
+        val uri = ruleCookieUri(url)
+        val visible = manager.get(uri, emptyMap()).entries
+            .filter { it.key.equals("Cookie", true) }.flatMap { it.value }
+        if (key == null) return visible.joinToString("; ")
+        // Let CookieManager decide visibility, including paths, ports and
+        // Secure. Match its complete per-cookie rendering back to the live
+        // value; reparsing an RFC 2965 header would expose $Path/$Version or
+        // incorrectly add quotation marks to the caller's logical value.
+        val matching = manager.cookieStore.get(uri).filter { it.name == key }.associateBy(HttpCookie::toString)
+        return visible.asReversed().firstNotNullOfOrNull { matching[it]?.value }.orEmpty()
+    }
+
+    internal @Synchronized fun removeRuleCookie(url: String) {
+        ruleCookieUri(url)
+        removeCookie(url)
+    }
+
+    private fun ruleCookieUri(url: String): URI {
+        val uri = try { URI(url) } catch (_: Exception) {
+            throw IllegalArgumentException("Original-rule cookies require an absolute HTTP(S) URL")
+        }
+        require(uri.scheme.equals("http", true) || uri.scheme.equals("https", true)) {
+            "Original-rule cookies require an absolute HTTP(S) URL"
+        }
+        require(!uri.host.isNullOrEmpty()) { "Original-rule cookies require an absolute HTTP(S) URL" }
+        return uri
+    }
+
+    private fun ruleCookieValues(value: String): Map<String, String> = linkedMapOf<String, String>().apply {
+        // CookieStore.cookieToMap: first '=' splits a pair, blank values are
+        // ignored, later duplicate keys win and the original key order remains.
+        value.split(';').forEach { pair ->
+            val split = pair.split('=', limit = 2)
+            if (split.size == 2 && split[1].isNotBlank()) put(split[0].trim { it <= ' ' }, split[1].trim { it <= ' ' })
+        }
+    }
+
+    private fun newRuleCookie(name: String, value: String): HttpCookie {
+        require(value.none { it == '\r' || it == '\n' || it == '\u0000' }) { "Invalid original-rule cookie value" }
+        return try { HttpCookie(name, value).apply { path = "/"; version = 0 } }
+        catch (_: IllegalArgumentException) { throw IllegalArgumentException("Invalid original-rule cookie name") }
+    }
+
     internal @Synchronized fun snapshot(): List<String> = manager.cookieStore.cookies.map(HttpCookie::toString)
     internal @Synchronized fun clear() { manager.cookieStore.removeAll() }
 }

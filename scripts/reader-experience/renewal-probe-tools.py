@@ -24,6 +24,7 @@ UNIT_SUITE = "SelfRenewalTransportProbeTests"
 DISCOVERY_SUITE = "SelfRenewalDiscoveryProbeTests"
 UI_SUITE = "SelfRenewalProbeUITests"
 REPLACEMENT_SUITE = "SelfRenewalReplacementPolicyTests"
+MATERIALS_SUITE = "SelfRenewalMaterialInventoryTests"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -63,7 +64,22 @@ EXPECTED_CASES = {
         "rejectsUnverifiedExpiredOrInvalidCandidateMaterial",
         "sameVersionAndBuildYieldOnlyMetadataPreflight",
     )},
+    "materials": {MATERIALS_SUITE + "/" + name for name in (
+        "parsesBoundedMetadataAndRejectsDamagedOrUnsafeValues",
+        "readsThreeBundleFactsWithoutTrustAssertion",
+        "retainsAdditionalPotentialSignedComponents",
+        "reportsIncompleteAndConflictingRoleStructure",
+        "rejectsLinkedMaterials",
+        "enforcesDirectoryAndByteLimits",
+    )},
     "ui": {UI_SUITE + "/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"},
+}
+SELECTION_GROUPS = {
+    # Preserve the historical all-mode contract; new implementation tests have
+    # an explicit independent selection rather than silently widening it.
+    "all": ("unit", "discovery", "replacement", "ui"),
+    "replacement": ("replacement",),
+    "implementation": ("replacement", "materials"),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -77,6 +93,8 @@ SOURCE_INPUTS = (
     "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
     "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -101,14 +119,14 @@ def validate_tag():
 
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
-    if mode not in {"all", "replacement"}:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all or replacement")
+    if mode not in SELECTION_GROUPS:
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement or implementation")
     return mode
 
 
 def selected_cases():
     mode = selection_mode()
-    return EXPECTED_CASES if mode == "all" else {"replacement": EXPECTED_CASES["replacement"]}
+    return {group: EXPECTED_CASES[group] for group in SELECTION_GROUPS[mode]}
 
 
 def require_source_only():
@@ -300,8 +318,12 @@ def result(work):
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "Five replacement-policy cases check caller-supplied metadata only; no real platform adapter, signature or profile authenticity is established.",
                             "No Apple login, pairing, signing, installation or renewal operation is performed."] + (
-                           ["This selection executes only replacement metadata cases; unit, discovery and UI groups are not executed or accepted."]
+                           ["This selection executes only replacement metadata cases; unit, discovery, materials and UI groups are not executed or accepted."]
                            if mode == "replacement" else [
+                            "This selection executes exactly five replacement-policy and six owned-file material-inventory cases; unit, discovery and UI groups are not executed or accepted.",
+                            "Material inventory reads bounded owned directory fixtures and untrusted metadata; it does not verify Mach-O signatures, resource seals, CMS profiles or certificate authority."]
+                           if mode == "implementation" else [
+                            "Historical all mode retains only unit, discovery, replacement and UI groups; material-inventory cases are not executed or accepted.",
                             "Unit network responses come from owned temporary loopback fixture listeners.",
                             "The explicit UI operation browses only RemotePairing, filters numeric local ownership, opens TCP and closes without an application payload.",
                             "The existing eight QueryType fixture cases remain separate from sixteen discovery cases and one UI case.",

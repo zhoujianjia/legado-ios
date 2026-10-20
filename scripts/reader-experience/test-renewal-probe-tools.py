@@ -4,6 +4,7 @@ import copy
 from contextlib import ExitStack
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -141,10 +142,13 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(len(record["intendedTests"]["replacement"]), 5)
             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
             paths = {item["path"] for item in record["sourceInputs"]}
-            self.assertEqual(len(record["sourceInputs"]), 34)
+            self.assertEqual(len(record["sourceInputs"]), 36)
             self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
                              "scripts/reader-experience/renewal-report-schema1.py",
-                             "scripts/reader-experience/test-inspect-renewal-report.py"} <= paths)
+                             "scripts/reader-experience/test-inspect-renewal-report.py",
+                             "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+                             "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift"} <= paths)
+            self.assertEqual(set(record["intendedTests"]), {"unit", "discovery", "replacement", "ui"})
             self.assertEqual(record["sourceInputs"][0]["sha256"], hashlib.sha256(self.originals[probe.SOURCE_INPUTS[0]]).hexdigest())
 
     def test_prepare_rejects_runtime_payload_mode_before_mutation(self):
@@ -200,6 +204,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["targetedTests"]["discovery"]["totalTestCount"], 16)
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
             self.assertEqual(result["targetedTests"]["ui"]["totalTestCount"], 1)
+            self.assertEqual(result["unselectedTestGroups"], ["materials"])
             self.assertEqual(result["executionPlatform"], "ios-simulator")
             for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",
                         "physicalDeviceValidationPassed", "appleAccountUsed", "pairingRecordUsed",
@@ -218,7 +223,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
     def test_result_rejects_skips_missing_counts_and_incorrect_group_counts(self):
         with self.context():
             self.built_fixture()
-            for group in probe.EXPECTED_CASES:
+            for group in probe.selected_cases():
                 original = smoke.read_json(self.work / (group + "-summary.json"))
                 for change in ({"skippedTests": 1}, {"failedTests": 1}, {"totalTestCount": 0},
                                {"passedTests": True}, {"totalTestCount": 64}):
@@ -381,7 +386,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             inputs = smoke.read_json(self.work / "source-inputs.json")
             self.assertEqual(inputs["selectionMode"], "replacement")
             self.assertEqual(inputs["intendedTests"], {"replacement": sorted(probe.EXPECTED_CASES["replacement"])})
-            for group in ("unit", "discovery", "ui"):
+            for group in ("unit", "discovery", "materials", "ui"):
                 self.assertFalse((self.work / (group + "-summary.json")).exists())
                 self.assertFalse((self.work / (group + "-tests.json")).exists())
                 # Even unrelated leftover files cannot become accepted test evidence.
@@ -391,10 +396,11 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["selectionMode"], "replacement")
             self.assertEqual(set(result["targetedTests"]), {"replacement"})
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
-            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "ui"})
-            with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "all"}), \
-                    self.assertRaisesRegex(ValueError, "source-input audit"):
-                probe.result(self.work)
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "materials", "ui"})
+            for mode in ("all", "implementation"):
+                with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
+                        self.assertRaisesRegex(ValueError, "source-input audit"):
+                    probe.result(self.work)
             for group in result["unselectedTestGroups"]:
                 self.assertNotIn(group + "-summary.json", result["evidenceSHA256"])
                 self.assertNotIn(group + "-tests.json", result["evidenceSHA256"])
@@ -413,7 +419,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
 
     def test_selection_rejects_invalid_values_before_prepare_and_prepare_result_mode_changes(self):
         with self.context():
-            for mode in ("", "Replacement", "unit", "all,replacement"):
+            for mode in ("", "Replacement", "Implementation", "materials", "unit", "all,replacement", "replacement,materials"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         patch.object(smoke, "prepare") as prepare, self.assertRaisesRegex(ValueError, "YUEDU_RENEWAL_SELECTION"):
                     probe.prepare(self.work)
@@ -424,15 +430,109 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                 self.assertEqual(probe.selection_mode(), "all")
             self.built_fixture()
             original = smoke.read_json(self.work / "source-inputs.json")
-            with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "replacement"}), \
-                    self.assertRaisesRegex(ValueError, "source-input audit"):
-                probe.result(self.work)
+            for mode in ("replacement", "implementation"):
+                with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
+                        self.assertRaisesRegex(ValueError, "source-input audit"):
+                    probe.result(self.work)
             changed = copy.deepcopy(original)
             changed["selectionMode"] = "replacement"
             self.write_json("source-inputs.json", changed)
             with self.assertRaisesRegex(ValueError, "source-input audit"):
                 probe.result(self.work)
             self.write_json("source-inputs.json", original)
+
+    def test_implementation_selection_accepts_only_eleven_exact_policy_and_material_cases(self):
+        with self.context(), patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "implementation"}):
+            self.built_fixture()
+            inputs = smoke.read_json(self.work / "source-inputs.json")
+            expected = {group: sorted(probe.EXPECTED_CASES[group]) for group in ("replacement", "materials")}
+            self.assertEqual(inputs["selectionMode"], "implementation")
+            self.assertEqual(inputs["intendedTests"], expected)
+            self.assertEqual(sum(map(len, expected.values())), 11)
+            self.assertEqual(len(inputs["sourceInputs"]), 36)
+            for group in ("unit", "discovery", "ui"):
+                for suffix in ("-summary.json", "-tests.json"):
+                    self.assertFalse((self.work / (group + suffix)).exists())
+                    self.write(self.work / (group + suffix), b"unselected evidence must not be read")
+            result = probe.result(self.work)
+            self.assertEqual(set(result["targetedTests"]), {"replacement", "materials"})
+            self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
+            self.assertEqual(result["targetedTests"]["materials"]["totalTestCount"], 6)
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "ui"})
+            for group in result["unselectedTestGroups"]:
+                for suffix in ("-summary.json", "-tests.json"):
+                    self.assertNotIn(group + suffix, result["evidenceSHA256"])
+            for mode in ("all", "replacement"):
+                with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
+                        self.assertRaisesRegex(ValueError, "source-input audit"):
+                    probe.result(self.work)
+            for group in ("replacement", "materials"):
+                for suffix in ("-summary.json", "-tests.json"):
+                    path = self.work / (group + suffix)
+                    original = path.read_bytes()
+                    path.unlink()
+                    with self.assertRaises(FileNotFoundError):
+                        probe.result(self.work)
+                    self.write(path, original)
+            summary = smoke.read_json(self.work / "materials-summary.json")
+            for change in ({"skippedTests": 1}, {"failedTests": 1}, {"totalTestCount": 5}, {"passedTests": True}):
+                self.write_json("materials-summary.json", {**summary, **change})
+                with self.subTest(change=change), self.assertRaises(ValueError):
+                    probe.result(self.work)
+            self.write_json("materials-summary.json", summary)
+            tree = self.tree("materials")
+            tree["testNodes"][0]["children"][0]["nodeIdentifier"] = "OtherTests/looksPassed()"
+            self.write_json("materials-tests.json", tree)
+            with self.assertRaisesRegex(ValueError, "Unexpected"):
+                probe.result(self.work)
+
+    def test_material_module_and_tests_are_required_exact_source_bound_inputs(self):
+        paths = ("Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+                 "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift")
+        with self.context(), patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "implementation"}):
+            for path in paths:
+                self.assertIn(path, probe.SOURCE_INPUTS)
+                self.write(self.root / path, b"uncommitted material input")
+                with self.subTest(path=path), self.assertRaisesRegex(ValueError, "differs from checked-out HEAD"):
+                    probe.prepare(self.work)
+                self.assertFalse((self.work / "source-inputs.json").exists())
+                self.write(self.root / path, self.originals[path])
+            self.built_fixture()
+            inputs = smoke.read_json(self.work / "source-inputs.json")
+            self.assertEqual(len(inputs["sourceInputs"]), len({item["path"] for item in inputs["sourceInputs"]}))
+            for path in paths:
+                changed = copy.deepcopy(inputs)
+                item = next(item for item in changed["sourceInputs"] if item["path"] == path)
+                item["sha256"] = "0" * 64
+                self.write_json("source-inputs.json", changed)
+                with self.subTest(path=path), self.assertRaisesRegex(ValueError, "source-input audit"):
+                    probe.result(self.work)
+            self.write_json("source-inputs.json", inputs)
+
+    def test_cli_verification_rejects_groups_outside_each_exact_mode(self):
+        expected = {"all": {"unit", "discovery", "replacement", "ui"},
+                    "replacement": {"replacement"}, "implementation": {"replacement", "materials"}}
+        with self.context():
+            for mode, groups in expected.items():
+                for group in probe.EXPECTED_CASES:
+                    count = len(probe.EXPECTED_CASES[group])
+                    self.write_json("cli-summary.json", {"totalTestCount": count, "passedTests": count,
+                                                         "failedTests": 0, "skippedTests": 0})
+                    self.write_json("cli-tests.json", self.tree(group))
+                    output, errors = io.StringIO(), io.StringIO()
+                    argv = ["renewal-probe-tools.py", "verify-tests", "--group", group,
+                            "--summary", str(self.work / "cli-summary.json"),
+                            "--tests", str(self.work / "cli-tests.json")]
+                    with self.subTest(mode=mode, group=group), \
+                            patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
+                            patch.object(probe.sys, "argv", argv), \
+                            patch.object(probe.sys, "stdout", output), patch.object(probe.sys, "stderr", errors):
+                        status = probe.main()
+                    self.assertEqual(status, 0 if group in groups else 1)
+                    if group in groups:
+                        self.assertEqual(json.loads(output.getvalue())["expectedTests"], count)
+                    else:
+                        self.assertIn("not part of YUEDU_RENEWAL_SELECTION", errors.getvalue())
 
 
 if __name__ == "__main__":

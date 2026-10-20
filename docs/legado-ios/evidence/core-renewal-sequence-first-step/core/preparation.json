@@ -1,0 +1,351 @@
+{
+  "schemaVersion": 1,
+  "createdAtUTC": "2026-10-20T02:03:06.193735+00:00",
+  "status": "desktop-verified-task-bound-cookie-first-segment-not-full-CookieStore-or-app-routing",
+  "summaryZh": "原 AnalyzeRule 的 RuleCookieHost 显式生产接通现有唯一 RuntimeSession Java CookieManager；保留旧 HTTP/mainJs API，离线规则与真实自有 loopback 同一 cookie 状态。",
+  "sourceBinding": {
+    "gitHeadAtPreparation": "1574e651c79e548fa1ab211af750924d1698155c",
+    "kind": "reviewed-worktree-bytes-not-committed-CI-or-device-proof",
+    "changedSources": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+        "bytes": 20408,
+        "sha256": "c1ee2e96b137f87b8299c9d5aad807644b9ee96f778e73280489c77437bb2680"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 5161,
+        "sha256": "4745b8c17f0c449f6ea55dfb546b37499e977a84e602d4e202977fdffa1532ba"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleCookiePlatformTest.kt",
+        "bytes": 14302,
+        "sha256": "a8f311b112943ac6cad97ef5bb74ff775a528b9038c76fdd52e2af2dd50370bf"
+      }
+    ],
+    "unchangedReviewedInputs": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 19691,
+        "sha256": "3a5e6a04e41400e4b7b76b841f2dfb539f5799a3672762f1b6336737da7e9c05"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+        "bytes": 10445,
+        "sha256": "a2bcb0432c02b1ac3e2ff12142bbfad82d425fd604bef50d7b927526f212a7e8"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 4714,
+        "sha256": "47f69c994ad614ba3ad1b7a047c6da0868aee0f06322c02f3ab5738a5b70f6f9"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+        "bytes": 5430,
+        "sha256": "594b04a5377c8f469ff21dc9f33635038101d6d21ff033adfdd9ce9ec4d0550a"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "bytes": 37228,
+        "sha256": "aae5c57d943d62dd16d5a6be46fc398afa2cb8c8f4e89332a61b447b696e809c"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "bytes": 6352,
+        "sha256": "ca0499cbfa219341abd97ce4f827777483ef6925379e58d0a24d2c96b025e4a2"
+      }
+    ],
+    "finalSourceSnapshotDirectory": ".build/original-rule-cookie-first-segment/final-sources"
+  },
+  "originalReference": {
+    "localArchive": "F:\\legado-master.zip",
+    "bytes": 11178463,
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "entries": [
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/help/http/CookieStore.kt",
+        "bytes": 5186,
+        "sha256": "9890bbf76428c05601981af7b3148fe87944d788f0a082a50cd4a3b591956a8e"
+      },
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/help/http/CookieManager.kt",
+        "bytes": 5369,
+        "sha256": "028c10cbfab578e69c3314d3e5c5cdacc3df46b692d872eb1cd955c357d6f1e0"
+      },
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/help/http/api/CookieManagerInterface.kt",
+        "bytes": 521,
+        "sha256": "536bb3e5e5a62f5935060f9a793f21168a96be7872ae6707ffa0e3147545b5f3"
+      }
+    ],
+    "execution": "read-only original behavior reference; Android code was not executed or substituted"
+  },
+  "implemented": [
+    "ProductionRulePlatform overrides RuleCookieHost and all five operations reuse task.session.cookies. A retained host checks environment, task deadline/cancellation and session lifetime before touching the same jar monitor.",
+    "Original setCookie means replace textual state; original replaceCookie means merge named nonblank values. Their new dedicated internal jar operations do not change the existing HTTP Set-Cookie/mainJs methods with similar names.",
+    "Input text uses the first equals sign, trims ASCII boundary whitespace, ignores blank/malformed pairs, preserves literal null, later duplicates win. Complete URI/name/value validation occurs before mutation; representability errors stay typed UnsupportedRuleCapability.",
+    "Merge changes only the value field of matching existing JDK cookies under the shared lock; same-name different path/domain objects retain security flags, HttpOnly, domain, path, maxAge, creation metadata and header order. Only genuinely new names receive version-0 host-root cookies.",
+    "get(url,key) delegates visibility to CookieManager then maps its exact per-cookie rendering to logical values. This handles JDK RFC2965 quoted values without exposing Secure/path/port-hidden cookie values or $Path/$Version as logical keys.",
+    "No new CookieManager/cache/persistent state, native HTTP fallback, original rule parser replacement, App route switch, HTTP transport API change, or cleanup of another session."
+  ],
+  "explicitLimitsAndUnfinished": [
+    "Jar lifetime and matching remain the existing JVM per-session RFC URL/domain/path/scheme model, not original Android registrable-domain Room + session cache + WebView. Bare domain strings are explicitly unsupported here; absolute HTTP(S) URLs are required.",
+    "set/remove operate only on cookies returned by the existing jar for that URL/domain and scheme. For example HTTP operations do not delete an HTTPS-only Secure cookie. Original CookieStore persistent-vs-server-session overwrite behavior is not reproduced.",
+    "Merge preserves old security/expiration attributes deliberately. This differs from flattening all original CookieStore values into one registrable-domain string; existing attributes are not silently weakened.",
+    "Full getCookie text follows the existing JDK request header representation, including RFC2965 attributes/quoting where present. Logical get(url,key) resolves raw values. Original getKey/url additional session-cache lookup is not available.",
+    "Original over-4096 random-key deletion, Android Room persistence, shared registrable-domain semantics, WebView cookies and background/login persistence adapters remain unimplemented.",
+    "RuleSource loginHeader/source variables/cache are not yet unified with the RuntimeSession stores; this only connects its cookie access. Full AnalyzeUrl, WebBook search/detail/TOC/content and pagination/batch product routing remain unfinished.",
+    "Environment closure rejects later operations but does not clear shared jar/cancel another task. This synchronous operation does not add an environment cancellation protocol beyond existing lifetime checks.",
+    "Windows JDK21 only; no Android/iOS/JNI/Zero/device execution, signing, installation or automatic renewal acceptance."
+  ],
+  "verification": {
+    "acceptedFocusedRun": {
+      "path": ".build/original-rule-cookie-first-segment/focused-v4.json",
+      "bytes": 1916,
+      "sha256": "7dae752209ba506b2e7d633fda0abb8767d6e8f11c7c2cc9d6318327a4b17ee9"
+    },
+    "acceptedFocusedLog": {
+      "path": ".build/original-rule-cookie-first-segment/focused-v4.log",
+      "bytes": 3077,
+      "sha256": "f4d969730c37b41bb25926966f384cf4a67144ed7064b69302e4988c838c6845"
+    },
+    "acceptedXML": [
+      {
+        "path": ".build/original-rule-cookie-first-segment/focused-v4-xml/TEST-io.yuedu.legado.OriginalAnalyzeRuleTest.xml",
+        "bytes": 3166,
+        "sha256": "cf42235490a2fe725ff72a6635eba03620983bf943d4d193f9f669dca25940e4"
+      },
+      {
+        "path": ".build/original-rule-cookie-first-segment/focused-v4-xml/TEST-io.yuedu.legado.OriginalRuleCookiePlatformTest.xml",
+        "bytes": 1290,
+        "sha256": "7bc2c776978ff0be91f7d680abd0dd5a6e8910f0e8479273f367eb7b1dabcfae"
+      },
+      {
+        "path": ".build/original-rule-cookie-first-segment/focused-v4-xml/TEST-io.yuedu.legado.OriginalRuleHttpPlatformTest.xml",
+        "bytes": 1541,
+        "sha256": "b365e4c4f94ed7f66ec14dc632f6928257c7371953eb83e52ff737daa7e330db"
+      },
+      {
+        "path": ".build/original-rule-cookie-first-segment/focused-v4-xml/TEST-io.yuedu.legado.ProductionHttpTransportTest.xml",
+        "bytes": 2268,
+        "sha256": "7171b66d5969e39922c10eaff63998f08ccbff71e6210e164d202316e267e5c8"
+      }
+    ],
+    "actualUniqueMethods": 44,
+    "actualNewMethods": 6,
+    "existingMethodsRevalidated": 38,
+    "suiteCounts": {
+      "OriginalRuleCookiePlatformTest": 6,
+      "OriginalRuleHttpPlatformTest": 8,
+      "OriginalAnalyzeRuleTest": 18,
+      "ProductionHttpTransportTest": 12
+    },
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "ordinaryRuntimeJarAndSmoke": {
+      "path": ".build/original-rule-cookie-first-segment/ordinary-v1.json",
+      "bytes": 7384,
+      "sha256": "bd1656aadef66781dd2b8e9ce88c412a03ee03d327c3c7fea978bfb0cf4bde7e"
+    },
+    "ordinaryRuntimeLog": {
+      "path": ".build/original-rule-cookie-first-segment/ordinary-v1.log",
+      "bytes": 2984,
+      "sha256": "dd740f5a2a01fec75c1221b9646afd0c33075a9f1514a13a9428ec35d6b64fd6"
+    },
+    "ordinaryJar": {
+      "path": ".build/original-rule-cookie-first-segment/ordinary-v1-legado-runtime.jar",
+      "bytes": 10274226,
+      "sha256": "59ddc2bef1cfae521fa088cb55d1210bb6f665073990db9f1c0c9a616c491dfd",
+      "requiredClasses": [
+        "io/yuedu/legado/SessionCookies.class",
+        "io/yuedu/legado/originalrule/ProductionRulePlatform.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class"
+      ],
+      "junitOrProjectTestClasses": [],
+      "projectCompiledTestClassesChecked": 69,
+      "engineTestsFlag": false,
+      "byteEqualProvenanceAndNotices": [
+        {
+          "source": "manifest.json",
+          "member": "META-INF/legado-provenance/manifest.json",
+          "bytes": 14656,
+          "sha256": "e814ec9b300aa6ef7bbaed05555ba7e5ec2142032c2a36456e12b83073c8d36e"
+        },
+        {
+          "source": "original-rule/manifest.json",
+          "member": "META-INF/legado-provenance/original-rule/manifest.json",
+          "bytes": 18060,
+          "sha256": "7cf9ff4eb2c6c88e2d12845322d9a7976494846b6b77d10ec39d1a2dd37b4d46"
+        },
+        {
+          "source": "runtime-http/manifest.json",
+          "member": "META-INF/legado-provenance/runtime-http/manifest.json",
+          "bytes": 9483,
+          "sha256": "714e2ce4308736b479a28958b474409456d1c8cbb47e8488e4ea02941454c87b"
+        },
+        {
+          "source": "runtime-http/resolved-dependencies.json",
+          "member": "META-INF/legado-provenance/runtime-http/resolved-dependencies.json",
+          "bytes": 26934,
+          "sha256": "fff63c52ace194d5ee6f38c1f26fef1fee23a94968f57b7ceada5abd601777af"
+        },
+        {
+          "source": "scalar-rules/manifest.json",
+          "member": "META-INF/legado-provenance/scalar-rules/manifest.json",
+          "bytes": 18765,
+          "sha256": "767c0501cd7109727f28997a1a433d1d337b3d882677f48c8a678ef18bc33d64"
+        },
+        {
+          "source": "scalar-rules/resolved-dependencies.json",
+          "member": "META-INF/legado-provenance/scalar-rules/resolved-dependencies.json",
+          "bytes": 26934,
+          "sha256": "fff63c52ace194d5ee6f38c1f26fef1fee23a94968f57b7ceada5abd601777af"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "bytes": 426,
+          "sha256": "3f991eff87a6212affed07c2d2cc0a8bb681a72ecefeff54f4915de7b5aa5a52"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "bytes": 16780,
+          "sha256": "ada0787f27b581e024972a18b51db92c8e8508d0f05017d104a1c70a61b59951"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "bytes": 1825,
+          "sha256": "9246f7f820e791b7328d46ba341bb5a2bb08c3e2e1b9d36803ab0c3899e0462f"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "bytes": 3020,
+          "sha256": "c8539fca8905465681c131e79dd58b98e4276702fc6f221b5f98aa91baf6bcf2"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "bytes": 12369,
+          "sha256": "98793632f4e0ebb70c8e81abb7ca29186878caca0f505374b5ff07f64d7998cc"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "bytes": 1450,
+          "sha256": "7979d0f6470ffe8628473d6a6d36d2fae0d280adee341922353d984f4b113cb4"
+        },
+        {
+          "source": "original-rule/licenses/cryptojs-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/cryptojs-LICENSE.txt",
+          "bytes": 1167,
+          "sha256": "df15cb64ddb4b92d3da8567f51cee37fadefe214f1131ff3520b18e61baa04f5"
+        },
+        {
+          "source": "original-rule/licenses/hutool-5.8.22-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/hutool-5.8.22-LICENSE.txt",
+          "bytes": 9549,
+          "sha256": "d7136cebc1c0c2a50e02013928fc283b8d69cb805a994e21e6a8cc3983f45131"
+        },
+        {
+          "source": "original-rule/licenses/legado-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/legado-LICENSE.txt",
+          "bytes": 35139,
+          "sha256": "35d3f26265f7c262a524602f72efda71f69d390086d6d0b74c70c8b07251227c"
+        },
+        {
+          "source": "runtime-http/licenses/brotli-MIT-LICENSE.txt",
+          "member": "META-INF/licenses/jvm-http/brotli-MIT-LICENSE.txt",
+          "bytes": 1084,
+          "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+        },
+        {
+          "source": "runtime-http/licenses/ICU-release-58-2-LICENSE.txt",
+          "member": "META-INF/licenses/jvm-http/ICU-release-58-2-LICENSE.txt",
+          "bytes": 19442,
+          "sha256": "2023a2d68dfcdb1f7b7c5dccb96f88aabba112f63f250cb9e533cc64625eff07"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-lang3-3.17.0/LICENSE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-lang3-3.17.0/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-lang3-3.17.0/NOTICE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-lang3-3.17.0/NOTICE.txt",
+          "bytes": 174,
+          "sha256": "73c3dd73ad54910699e4e364345798d083a9126b9799663d4bdce8d7468b7f66"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-text-1.13.1/LICENSE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-text-1.13.1/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-text-1.13.1/NOTICE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-text-1.13.1/NOTICE.txt",
+          "bytes": 174,
+          "sha256": "26ebc5e05468959b3ae5010f10e0c3fb0cbf8d7d2f1242005bf5656c1348c69f"
+        }
+      ],
+      "binaryLocalOnly": true
+    },
+    "noRepeatedPassingRunAfterFreeze": true
+  },
+  "failedAttemptsPreservedNotAcceptance": {
+    "v1": {
+      "record": {
+        "path": ".build/original-rule-cookie-first-segment/focused-v1.json",
+        "bytes": 1664,
+        "sha256": "dcb1af81a6b94df04419218b1aceef848010bc66cc0198398d0c05c735eec1c2"
+      },
+      "clarification": {
+        "path": ".build/original-rule-cookie-first-segment/focused-v1-not-executed.json",
+        "bytes": 596,
+        "sha256": "197490caa542520f275c86d0b0b1d3b1126ef74799488dd932dd7eac3fb5f1d8"
+      },
+      "actualExecuted": 0,
+      "reason": "invalid JAVA_HOME stopped batch bootstrap before Gradle; copied old XML is historical only and is excluded from all counts"
+    },
+    "v2": {
+      "record": {
+        "path": ".build/original-rule-cookie-first-segment/focused-v2.json",
+        "bytes": 1916,
+        "sha256": "11761f246ae71c30490fe79cf9e39e1154578abd2ea887fd2a5935f01b037b99"
+      },
+      "actualExecuted": 44,
+      "failures": 3,
+      "diagnosis": "re-add changed existing text order; secure fixture used HTTP merge while checking an HTTPS-only cookie; parent Domain fixture lacked required leading dot"
+    },
+    "v3": {
+      "record": {
+        "path": ".build/original-rule-cookie-first-segment/focused-v3.json",
+        "bytes": 1916,
+        "sha256": "a46c9b02bdccf31f9bdaccf2e5d9fb0a295ae23e8dc8505fe44640afb5c8658f"
+      },
+      "actualExecuted": 44,
+      "failures": 2,
+      "diagnosis": "text parsing of JDK RFC2965 header returned quoted representations rather than logical values; fixed with exact visible-rendering to live-cookie mapping"
+    },
+    "priorExactSourceSnapshotsCapturedAtExecution": false,
+    "sourceBindingLimit": "Only final v4 source bytes are hashed and snapshotted. Earlier failures retain actual command/log/XML and diagnoses but do not claim a precise historical source-byte binding.",
+    "countingRule": "Only final v4 44 unique methods are current passing evidence; do not add historical failed attempts or prior HTTP38 to that count."
+  },
+  "physicalDeviceValidationRequested": false,
+  "privateUserSourceRead": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

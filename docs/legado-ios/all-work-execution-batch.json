@@ -4,7 +4,7 @@
   "timeZone": "Asia/Shanghai",
   "kind": "existing-plan-execution-and-restore-integrity-batch",
   "auditedSourceCommit": "5616e76978938c9d89938a05f19d2b5abc40a751",
-  "requestZh": "先做自签和核心功能；其余未完成／按用户要求暂缓，暂不做任何真机验证。",
+  "requestZh": "制定并逐步执行自签与核心书源计划；当前C1／S1开工，其他17项继续未完成／暂缓，暂不真机验证。",
   "canonicalPlan": "docs/legado-ios/completion-plan.json",
   "scope": {
     "stages": 8,
@@ -87,7 +87,7 @@
         "id": "self-signing-lane",
         "initialWorkpackage": "automatic-renewal-feasibility",
         "next": [],
-        "scopeZh": "自签独立主线；仅推进无需真机的可实现准备，保留传输／授权／签名安装门槛。"
+        "scopeZh": "自签独立主线；推进S1至S6的真实非真机模块、受控包重签与协议对端验证；真实同机认证安装及最终续签保留设备门槛。"
       },
       {
         "id": "core-source-lane",
@@ -118,7 +118,7 @@
       "url-http"
     ],
     "coreGoalZh": "既定传统书源原核心的请求与完整阅读链路、必要状态持久化和阅读进度可靠性；不擅切引擎。",
-    "selfSigningBoundaryZh": "自签独立优先，当前可推进的非真机准备不等于通道、授权、签名安装或自动续签已实现。",
+    "selfSigningBoundaryZh": "按现有计划stepByStep的S1至S6实现真实离线模块；真机门槛仅限制实际认证安装启用和最终自续签验收，不阻止受控材料／重签／协议开发。",
     "previousWebDAVCodeAndEvidencePreserved": true,
     "physicalDeviceValidationStatus": "deferred_by_user_not_accepted",
     "latestOfflineSegment": {
@@ -126,7 +126,17 @@
       "bytes": 11050,
       "sha256": "c6caf9b006aa2cde667b2094e150ef7ced46d72643c9279cd15197ee96dc9a06"
     },
-    "actualNewFeatureCompletionClaim": false
+    "actualNewFeatureCompletionClaim": false,
+    "sequencePlanPointer": {
+      "path": "docs/legado-ios/completion-plan.json",
+      "jsonPointer": "/execution/stepByStep",
+      "currentSteps": [
+        "C1",
+        "S1"
+      ],
+      "actualStepsCompleted": 0
+    },
+    "latestStepExecution": "docs/legado-ios/core-renewal-sequence-first-step.json"
   },
   "actualCloudFailure": {
     "runId": 39249523428,
