@@ -110,7 +110,8 @@
       "newSwiftSourcesAndTests": 2,
       "evidenceAndCIInfrastructure": 4
     },
-    "note": "The 13 original-rule entries include 11 production/test Kotlin files, the exact upstream Kotlin source, and one vendor JSON provenance manifest."
+    "note": "The 13 original-rule entries include 11 production/test Kotlin files, the exact upstream Kotlin source, and one vendor JSON provenance manifest.",
+    "committedSourceCommit": "20f4cd60565b53a40a6cd4e5bb9fefc84cbdbcd7"
   },
   "evidenceManifest": {
     "path": "docs/legado-ios/evidence/core-renewal-url-signature-step/manifest.json",
@@ -395,14 +396,29 @@
     "noAdditionalNetworkReadOrPollingPerformed": true
   },
   "cloudSubmission": {
-    "submitted": false,
-    "sourceCommit": null,
+    "submitted": true,
+    "sourceCommit": "20f4cd60565b53a40a6cd4e5bb9fefc84cbdbcd7",
+    "record": {
+      "path": "docs/legado-ios/core-renewal-20f4cd6-initial.json",
+      "bytes": 1596,
+      "sha256": "1a852ca1775a0656a1e231161dae5de70fb3f0d5855ff86ff8dfe5df31d894a6"
+    },
     "selectionMode": "signature",
     "preparedSelectedMethods": {
       "signature": 9
     },
-    "runs": [],
-    "actualNativeCasesAccepted": 0
+    "runs": [
+      {
+        "id": 39359134891,
+        "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39359134891",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-10-20T02:28:52Z",
+        "updated_at": "2026-10-20T02:29:01Z"
+      }
+    ],
+    "actualNativeCasesAccepted": 0,
+    "physicalDeviceValidationRequested": false
   },
   "physicalDeviceValidationRequested": false,
   "privateUserSourceRead": false,

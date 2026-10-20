@@ -163,7 +163,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "本轮源码冻结后仅提交signature9的Debug Simulator SDK检查，使用既有2700秒冷编译预算；不重跑未改的implementation5+6、诊断、smoke或measurement。旧0a0c740仅保留02:13:37 UTC的in_progress观察，不反复轮询。继续C1/S1开发；无Release/IPA或设备请求。",
+      "nextPlannedCheckpoint": "固定源码20f4cd6已提交signature9检查，首轮冷编译2700秒；只在结果可用时做一次源码绑定复核，失败先修复受影响范围。继续C1/S1非真机开发，不反复轮询，不重跑旧组、smoke或measurement，不制作IPA。",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
@@ -601,7 +601,8 @@
         "scopeUnchanged": true,
         "physicalDeviceValidationRequested": false,
         "ruleZh": "按已启用的持续目标继续实际开发；保留C1至C5、S1至S6及原依赖关系，不因单轮结束将目标标为完成。设备验证与其他17包仍暂缓。"
-      }
+      },
+      "signatureSDKSubmission": "docs/legado-ios/core-renewal-20f4cd6-initial.json"
     }
   },
   "stages": [
@@ -4471,6 +4472,10 @@
     "core-renewal-url-signature-step": {
       "path": "docs/legado-ios/core-renewal-url-signature-step.json",
       "scope": "Actual82 Windows JVM methods and ordinaryJAR/smoke; bounded Mach-O reader9 prepared methods/grammar2 only, SDK0; portable23 selection guards. No whole C1/S1, native crypto/signing/install/renewal or full source acceptance."
+    },
+    "core-renewal-signature-SDK-submission": {
+      "path": "docs/legado-ios/core-renewal-20f4cd6-initial.json",
+      "scope": "One fixed-source signature9 initial workflow observation only; no actual native acceptance, crypto verification, signing/install/renewal, IPA or device result."
     }
   },
   "retainedExistingWork": [
