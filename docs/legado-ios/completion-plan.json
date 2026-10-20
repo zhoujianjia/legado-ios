@@ -589,10 +589,12 @@
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
-            "docs/legado-ios/core-renewal-authenticated-installation-step.json"
+            "docs/legado-ios/core-renewal-authenticated-installation-step.json",
+            "docs/legado-ios/core-renewal-controlled-transaction-step.json"
           ],
           "implementedSubtasksZh": [
-            "真实数字地址TCP、原FD原地TLS1.2、SecIdentity双向认证及设备证书精确pin、StartSession/StartService、AFC分块上传、Upgrade回执、独立Lookup、所属路径删除及StopSession已接线。增加上传前/提交前持久化钩子；取消唤醒实际poll。13项Python/OpenSSL对照已执行，7项Swift方法尚未SDK执行。"
+            "真实数字地址TCP、原FD原地TLS1.2、SecIdentity双向认证及设备证书精确pin、StartSession/StartService、AFC分块上传、Upgrade回执、独立Lookup、所属路径删除及StopSession已接线。增加上传前/提交前持久化钩子；取消唤醒实际poll。13项Python/OpenSSL对照已执行，7项Swift方法尚未SDK执行。",
+            "新认证cleanup-only已接真实journal grant；复用原会话/服务/Stop实现，只删严格所属UUID路径。已删除/不存在ACK、Stop/关闭/持久失败事实分离，取消不阻止grant释放。未知Upgrade连Lookup未找到也不删除；独立OpenSSL10场景已执行，6项Swift清理方法SDK未执行。"
           ],
           "nextActionZh": "集中SDK检查实际TLS客户端及受控对端；继续补取消/断流后的新认证所属路径清理，并连接S5真实持久事务。未知Upgrade仅Lookup，不能因断线重复提交或凭同版本Lookup登记续签成功。"
         },
@@ -605,7 +607,7 @@
             "automatic-renewal-feasibility",
             "reading-position-write-integrity"
           ],
-          "status": "unfinished_not_started",
+          "status": "in_progress",
           "actionsZh": [
             "串联读取→更新材料→预检→重签→签后复检→安装提交→冷启复核，按实际回执推进状态。",
             "实现防重复执行、持久化检查点、退避重试、中断恢复、到期／时钟异常及取消；复用现有书籍／书源／进度存储。"
@@ -619,7 +621,14 @@
           ],
           "actualAcceptedEvidence": [],
           "requiresPhysicalDevice": false,
-          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。"
+          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
+          "implementationEvidence": [
+            "docs/legado-ios/core-renewal-controlled-transaction-step.json"
+          ],
+          "implementedSubtasksZh": [
+            "实际整包重签→持久候选全复验→上传前路径意图→首Upgrade字节前提交意图→真实回执/Lookup，已串同一Keychain租约/IPA提取器/认证客户端。单journal actor+进程flock、原子写及父目录fsync；重启清所属临时文件，清理grant跨网络排他。未知Upgrade只Lookup且保留远端文件；安全上传失败可新认证清理。16项原生方法含真实整包到受控TLS恢复，尚未SDK执行。"
+          ],
+          "nextActionZh": "集中SDK执行16项及受影响既有链；继续真实当前Bundle签名材料冷启复核、原存储owner的可await实际失败回执/数据交接、安全事务退役/重试及App唯一入口，不能凭同版本Lookup或sentinel登记自动续签。"
         },
         {
           "id": "S6",
@@ -698,7 +707,8 @@
       "authenticatedInstallationImplementation": "docs/legado-ios/core-renewal-authenticated-installation-step.json",
       "integratedRenewalSDKCheckpoint": "docs/legado-ios/core-integrated-renewal-sdk-checkpoint.json",
       "integratedRenewalSDKRequest": "docs/legado-ios/core-integrated-renewal-sdk-request.json",
-      "integratedRenewalSDKFirstResults": "docs/legado-ios/core-integrated-renewal-sdk-first-results.json"
+      "integratedRenewalSDKFirstResults": "docs/legado-ios/core-integrated-renewal-sdk-first-results.json",
+      "controlledTransactionImplementation": "docs/legado-ios/core-renewal-controlled-transaction-step.json"
     }
   },
   "stages": [
@@ -4669,6 +4679,10 @@
     "integrated-renewal-sdk-first-results": {
       "path": "docs/legado-ios/core-integrated-renewal-sdk-first-results.json",
       "scope": "445 native23 and package10 did not compile; 4af3 platform fixture failed codesign before xcodebuild. All executed/accepted native/package methods are zero. Four minimal source repairs preserve assertions."
+    },
+    "controlled-renewal-transaction": {
+      "path": "docs/legado-ios/core-renewal-controlled-transaction-step.json",
+      "scope": "Actual signer/archive/vault/journal/authenticated install and recovery orchestration. Sixteen new SDK-unexecuted native definitions; ten independent wire cases are not Swift or Journal acceptance. No App trigger/cold data handoff yet."
     }
   },
   "retainedExistingWork": [

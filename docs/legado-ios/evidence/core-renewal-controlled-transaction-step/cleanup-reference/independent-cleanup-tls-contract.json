@@ -1,0 +1,400 @@
+{
+  "recordedAtUTC": "2026-10-20T04:51:56.378503+00:00",
+  "status": "passed",
+  "actualReferenceExperiments": 10,
+  "runtime": "OpenSSL 3.0.15 3 Sep 2024",
+  "referenceOnlyNotSwift": true,
+  "swiftExecutions": 0,
+  "swiftJournalExecutions": 0,
+  "frozenWireReferenceSHA256": "7e4ecf5b752b9fc336be0db0da5a51c05d4321f4d94be3f38db3e54506f4677e",
+  "publicCertificateSHA256": {
+    "root": "4a3540da7ce8607f114994df71a8d49579d22714ef28180c0cf3baee4389785f",
+    "host": "404058694d1e3c9c6bfaf84435006f762d54869234d5548e0f8380f0e6ab88a5",
+    "device": "11d51113d526a34c59a75fc806cdd8c0c49fdbaa43e777a5e28fc78d25a18036",
+    "wrong": "3698c223eaf70509ba77e4913285bf83e5f7c7135b3e6c2531f4e387034aceda"
+  },
+  "privateKeysPublished": false,
+  "physicalDeviceUsed": false,
+  "appleAccountUsed": false,
+  "cases": [
+    {
+      "case": "safe-remove",
+      "status": "passed",
+      "attempts": [
+        {
+          "rejected": false,
+          "removal": "removedAcknowledged",
+          "stopAck": true
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 5,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 1,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 1,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "already-absent",
+      "status": "passed",
+      "attempts": [
+        {
+          "rejected": false,
+          "removal": "alreadyAbsentAcknowledged",
+          "stopAck": true
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 5,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 0,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 1,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "unknown-upgrade-found",
+      "status": "passed",
+      "attempts": [
+        {
+          "lookupOnly": true,
+          "reported": true,
+          "removal": null
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 5,
+        "upgrades": 1,
+        "lookups": 1,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 0,
+        "fileOpens": 1,
+        "fileCloses": 1
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "unknown-upgrade-missing",
+      "status": "passed",
+      "attempts": [
+        {
+          "lookupOnly": true,
+          "reported": false,
+          "removal": null
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 5,
+        "upgrades": 1,
+        "lookups": 1,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 0,
+        "fileOpens": 1,
+        "fileCloses": 1
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "wrong-device-certificate",
+      "status": "passed",
+      "attempts": [
+        {
+          "rejected": true,
+          "removal": null,
+          "stopAck": false
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 4,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 0,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "passed"
+      ]
+    },
+    {
+      "case": "remove-denied-retry",
+      "status": "passed",
+      "attempts": [
+        {
+          "rejected": true,
+          "removal": null,
+          "stopAck": false
+        },
+        {
+          "freshAuthenticatedRetry": true,
+          "removal": "removedAcknowledged",
+          "stopAck": true
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 7,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 1,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 2,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "stop-disconnect-retry",
+      "status": "passed",
+      "attempts": [
+        {
+          "rejected": true,
+          "removal": "removedAcknowledged",
+          "stopAck": false
+        },
+        {
+          "freshAuthenticatedRetry": true,
+          "removal": "alreadyAbsentAcknowledged",
+          "stopAck": true
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 7,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 1,
+        "stops": 2,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 2,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "cancel-stall-retry",
+      "status": "passed",
+      "attempts": [
+        {
+          "actualSocketCancelled": true,
+          "removal": null,
+          "stopAck": false
+        },
+        {
+          "freshAuthenticatedRetry": true,
+          "removal": "removedAcknowledged",
+          "stopAck": true
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 7,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 1,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 2,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "deadline-stall-retry",
+      "status": "passed",
+      "attempts": [
+        {
+          "rejected": true,
+          "removal": null,
+          "stopAck": false
+        },
+        {
+          "freshAuthenticatedRetry": true,
+          "removal": "removedAcknowledged",
+          "stopAck": true
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 7,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 1,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 2,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "truncated-remove-retry",
+      "status": "passed",
+      "attempts": [
+        {
+          "rejected": true,
+          "removal": null,
+          "stopAck": false
+        },
+        {
+          "freshAuthenticatedRetry": true,
+          "removal": "removedAcknowledged",
+          "stopAck": true
+        }
+      ],
+      "observed": {
+        "authenticatedChannels": 7,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 65536,
+        "removed": 1,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "removeAttempts": 2,
+        "fileOpens": 1,
+        "fileCloses": 0
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    }
+  ],
+  "limitations": [
+    "Only independent Python/OpenSSL reference sockets ran; production Swift TLS and Journal APIs did not run.",
+    "Reference JSON metadata is not a Swift sealed cleanup grant.",
+    "Loopback does not prove Apple installation authority, same-device/no-VPN route or self-renewal."
+  ]
+}

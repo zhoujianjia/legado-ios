@@ -282,7 +282,7 @@ enum SelfRenewalAuthenticatedInstallationClient {
             catch { cleanupErrors.append(error) }
         }
     }
-    private static func openSession(_ channel: PlistChannel, pairing: Transport.PairingIdentity, at date: Date) throws -> (id: String, authentication: Transport.Authentication) {
+    static func openSession(_ channel: PlistChannel, pairing: Transport.PairingIdentity, at date: Date) throws -> (id: String, authentication: Transport.Authentication) {
         try channel.send(["Label": .string("Reading"), "Request": .string("StartSession"),
             "HostID": .string(pairing.hostID), "SystemBUID": .string(pairing.systemBUID)])
         let session = try channel.receive(request: "StartSession")
@@ -293,7 +293,7 @@ enum SelfRenewalAuthenticatedInstallationClient {
         guard let authentication = channel.stream.authentication else { throw Transport.Failure.missingFreshAuthentication }
         return (id, authentication)
     }
-    private static func stopSession(_ channel: PlistChannel, sessionID: String) throws {
+    static func stopSession(_ channel: PlistChannel, sessionID: String) throws {
         try channel.send(["Label": .string("Reading"), "Request": .string("StopSession"), "SessionID": .string(sessionID)])
         let response = try channel.receive(request: "StopSession")
         if let echoed = response["SessionID"], echoed != .string(sessionID) { throw Failure.sessionMismatch }
@@ -309,7 +309,7 @@ enum SelfRenewalAuthenticatedInstallationClient {
               !version.isEmpty, version.utf8.count <= 256, !version.utf8.contains(0) else { throw Failure.lookupMismatch }
         return .reported(bundleIdentifier: bundle, bundleVersion: version)
     }
-    private static func startService(_ name: String, on channel: PlistChannel, endpoint: Transport.Endpoint) throws -> Transport.Endpoint {
+    static func startService(_ name: String, on channel: PlistChannel, endpoint: Transport.Endpoint) throws -> Transport.Endpoint {
         try channel.send(["Request": .string("StartService"), "Service": .string(name)])
         let result = try channel.receive(request: "StartService")
         guard case .integer(let raw)? = result["Port"], let port = UInt16(exactly: raw), port > 0 else { throw Failure.invalidServicePort }

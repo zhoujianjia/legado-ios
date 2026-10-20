@@ -18,6 +18,20 @@ enum SelfRenewalAuthenticatedInstallationFixture {
         case badAFCSequence, truncatedAFC, afcError, midUploadError, midUploadCleanupError
         case installError, noComplete, wrongLookup, stallSession
         case excessivePlist, excessiveProgress, unusedInput, lookupOnly, lookupMissing, disconnectAfterUpgradeThenRecover
+        case disconnectAfterUpgradeThenLookupMissing
+        case partialUploadThenRecover, cleanupAfterInterruptedUpload, cleanupAlreadyAbsent, cleanupStopDisconnectThenRetry
+        case cleanupRemoveDeniedThenRetry, cleanupStallThenRetry, cleanupWrongServerCertificate, cleanupAfterReportedComplete
+        var isUnknownUpgradeRecovery: Bool {
+            self == .disconnectAfterUpgradeThenRecover || self == .disconnectAfterUpgradeThenLookupMissing
+        }
+        var cleanupSessionCount: Int {
+            switch self {
+            case .cleanupStopDisconnectThenRetry, .cleanupRemoveDeniedThenRetry, .cleanupStallThenRetry: return 3
+            case .partialUploadThenRecover, .cleanupAfterInterruptedUpload, .cleanupAlreadyAbsent, .cleanupWrongServerCertificate, .cleanupAfterReportedComplete: return 2
+            default: return 1
+            }
+        }
+        var sessionCount: Int { isUnknownUpgradeRecovery ? 2 : cleanupSessionCount }
     }
     struct Observation: Sendable {
         var uploaded = Data()
@@ -46,6 +60,8 @@ enum SelfRenewalAuthenticatedInstallationFixture {
         let version: String
         let observed: Observations
         let sessionRequestReceived: AsyncStream<Bool>
+        let recoveryRemoveRequestReceived: AsyncStream<Bool>
+        let wrongDeviceCertificateDER: Data
         func upgrade(timeout: TimeInterval = 8, archive alternate: Client.ArchiveInput? = nil,
             beforeCreation: @escaping @Sendable (Client.UploadIntent) async throws -> Void = { _ in },
             beforeSubmission: @escaping @Sendable (Client.UpgradeSubmission) async throws -> Void = { _ in }) async throws -> Client.Receipt {
@@ -171,11 +187,11 @@ enum SelfRenewalAuthenticatedInstallationFixture {
     private struct PeerResult: @unchecked Sendable { let error: Error? }
 
     static func withPeer(_ mode: Mode = .normal, bytes overrideBytes: Data? = nil,
-        bundle: String = "owned.reader", version: String = "42",
+        bundle: String = "owned.reader", version: String = "42", at date: Date = Date(),
+        beforeRecoveryRemoveReply: @escaping @Sendable () throws -> Void = {},
         _ action: @escaping @Sendable (Context) async throws -> Void) async throws {
         let cancellation = Transport.Cancellation()
         let worker = Task.detached(priority: .utility) {
-            let date = Date()
             let issuer = try PKI.issuer(at: date)
             let host = try Identity(issuer: issuer, serial: 2, at: date)
             let device = try Identity(issuer: issuer, serial: 3, at: date)
@@ -184,6 +200,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
             let deadline = try Transport.Stream.deadline(seconds: 20)
             let observed = Observations()
             let signal = AsyncStream<Bool>.makeStream(bufferingPolicy: .bufferingNewest(1))
+            let removalSignal = AsyncStream<Bool>.makeStream(bufferingPolicy: .bufferingNewest(1))
             let bytes = overrideBytes ?? Data((0..<150_001).map { UInt8(truncatingIfNeeded: $0 * 37) })
             guard !bytes.isEmpty, bytes.count <= 67_108_864 else { throw FixtureFailure.invalidRequest }
             let pairing = try Transport.PairingIdentity(hostIdentity: host.identity,
@@ -193,7 +210,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
             let peerHost = mode == .wrongHostCertificate ? wrong.certificate : host.certificate
             let peers: [Task<PeerResult, Never>] = [
                 peerTask {
-                    for round in 0..<(mode == .disconnectAfterUpgradeThenRecover ? 2 : 1) {
+                    for round in 0..<mode.sessionCount {
                     let stream = try lockdown.accept(cancellation: cancellation, deadline: deadline); defer { stream.close() }
                     let channel = Client.PlistChannel(stream)
                     let start = try channel.receive(request: "StartSession")
@@ -205,7 +222,8 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                     signal.continuation.yield(true)
                     if mode == .falseSession { return }
                     if mode == .stallSession { _ = try stream.read(count: 1_048_576); return }
-                    try stream.authenticate(identity: device.identity, expectedPeerDER: peerHost, rootDER: root, at: date, server: true)
+                    let serverIdentity = mode == .cleanupWrongServerCertificate && round > 0 ? wrong.identity : device.identity
+                    try stream.authenticate(identity: serverIdentity, expectedPeerDER: peerHost, rootDER: root, at: date, server: true)
                     observed.update { $0.authenticatedChannels += 1 }
                     for _ in 0..<(round > 0 || mode == .lookupOnly || mode == .lookupMissing ? 1 : 2) {
                         let request = try channel.receive(request: "StartService")
@@ -223,26 +241,57 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                         let stop = try channel.receive(request: "StopSession")
                         guard stop["Request"] == .string("StopSession"), stop["SessionID"] == .string(sessionID) else { throw FixtureFailure.invalidRequest }
                         observed.update { $0.stoppedSessions.append(sessionID) }
+                        if mode == .cleanupStopDisconnectThenRetry, round == 1 { continue }
                         try channel.send(["Request": .string("StopSession"), "SessionID": .string(mode == .wrongSession ? "wrong-session" : sessionID)])
                     } catch {
-                        if mode == .disconnectAfterUpgradeThenRecover, round == 0, error is Transport.Failure { continue }
+                        if (mode.isUnknownUpgradeRecovery || mode.cleanupSessionCount > 1), error is Transport.Failure {
+                            if round == 0 || (mode == .cleanupStallThenRetry && round == 1) || (mode == .cleanupRemoveDeniedThenRetry && round == 1) { continue }
+                        }
                         throw error
                     }
                     }
                 },
                 peerTask {
+                    var path: Data?
+                    var remoteExists = false
+                    for round in 0..<mode.cleanupSessionCount {
                     let stream = try afc.accept(cancellation: cancellation, deadline: deadline); defer { stream.close() }
                     try stream.authenticate(identity: device.identity, expectedPeerDER: peerHost, rootDER: root, at: date, server: true)
                     observed.update { $0.authenticatedChannels += 1 }
                     let channel = Client.AFCChannel(stream)
-                    var path: Data?
-                    while true {
+                    requestLoop: while true {
                         let request: Client.AFCChannel.Packet
                         do { request = try channel.receive() }
                         catch {
-                            if mode == .disconnectAfterUpgradeThenRecover, observed.snapshot.closedFileHandles == 1,
-                               error is Transport.Failure { return }
+                            if error is Transport.Failure {
+                                if mode.isUnknownUpgradeRecovery, observed.snapshot.closedFileHandles == 1 { return }
+                                if mode.cleanupSessionCount > 1 {
+                                    if round == 0, mode == .cleanupAlreadyAbsent { remoteExists = false }
+                                    break
+                                }
+                            }
                             throw error
+                        }
+                        if round > 0 {
+                            // Cleanup has no valid old-session handle. Its only
+                            // AFC command is Remove of this actual original path.
+                            guard request.operation == 8, request.header == path,
+                                  let path, let text = String(data: path.dropLast(), encoding: .utf8) else { throw FixtureFailure.invalidRequest }
+                            observed.update { $0.removeAttempts += 1 }
+                            removalSignal.continuation.yield(true)
+                            if mode == .cleanupStallThenRetry, round == 1 {
+                                do { _ = try stream.read(count: 1); throw FixtureFailure.invalidRequest }
+                                catch { if error is Transport.Failure { break }; throw error }
+                            }
+                            try beforeRecoveryRemoveReply()
+                            if mode == .cleanupRemoveDeniedThenRetry, round == 1 {
+                                try sendAFC(stream, sequence: request.sequence, operation: 1, header: Client.AFCChannel.integer(10))
+                                continue
+                            }
+                            let status: UInt64 = remoteExists ? 0 : 8
+                            if remoteExists { observed.update { $0.removedPaths.append(text) }; remoteExists = false }
+                            try sendAFC(stream, sequence: request.sequence, operation: 1, header: Client.AFCChannel.integer(status))
+                            break
                         }
                         if mode == .truncatedAFC { try stream.write(Data(repeating: 0, count: 9)); return }
                         let sequence = request.sequence + (mode == .badAFCSequence ? 1 : 0)
@@ -251,17 +300,22 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                         case 0x0a:
                             if request.header == Data("PublicStaging\0".utf8) {
                                 try sendAFC(stream, sequence: sequence, operation: 2, payload: Data("st_ifmt\0S_IFDIR\0".utf8))
-                            } else { try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(8)) }
+                            } else {
+                                path = request.header
+                                try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(8))
+                            }
                         case 0x0d:
                             guard request.header.prefix(8) == Client.AFCChannel.integer(3),
                                   let text = String(data: request.header.dropFirst(8), encoding: .utf8),
                                   text.hasPrefix("PublicStaging/reader-renewal-"), text.hasSuffix(".ipa\0") else { throw FixtureFailure.invalidRequest }
                             path = Data(request.header.dropFirst(8))
+                            remoteExists = true
                             observed.update { $0.openedFileHandles += 1 }
                             try sendAFC(stream, sequence: sequence, operation: 0x0e, header: Client.AFCChannel.integer(42))
                         case 0x10:
                             guard request.header == Client.AFCChannel.integer(42), !request.payload.isEmpty else { throw FixtureFailure.invalidRequest }
                             observed.update { $0.uploaded.append(request.payload) }
+                            if mode == .partialUploadThenRecover { stream.close(); break requestLoop }
                             let code: UInt64 = mode == .midUploadError || mode == .midUploadCleanupError ? 10 : 0
                             try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(code))
                         case 0x14:
@@ -276,13 +330,17 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                                 try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(10)); return
                             }
                             observed.update { $0.removedPaths.append(text) }
-                            try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(0)); return
+                            remoteExists = false
+                            try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(0))
+                            if mode.cleanupSessionCount > 1 { break requestLoop }
+                            return
                         default: throw FixtureFailure.invalidRequest
                         }
                     }
+                    }
                 },
                 peerTask {
-                    for round in 0..<(mode == .disconnectAfterUpgradeThenRecover ? 2 : 1) {
+                    for round in 0..<(mode.isUnknownUpgradeRecovery ? 2 : 1) {
                     let stream = try proxy.accept(cancellation: cancellation, deadline: deadline); defer { stream.close() }
                     try stream.authenticate(identity: device.identity, expectedPeerDER: peerHost, rootDER: root, at: date, server: true)
                     observed.update { $0.authenticatedChannels += 1 }
@@ -292,16 +350,18 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                         guard lookup["Command"] == .string("Lookup"),
                               lookup["ClientOptions"] == .dictionary(["ApplicationType": .string("Any"), "BundleIDs": .array([.string(bundle)])]) else { throw FixtureFailure.invalidRequest }
                         observed.update { $0.lookupRequests += 1 }
-                        let result: [String: Client.Value] = mode == .lookupMissing ? [:] : [bundle: .dictionary([
+                        let result: [String: Client.Value] = mode == .lookupMissing || mode == .disconnectAfterUpgradeThenLookupMissing ? [:] : [bundle: .dictionary([
                             "CFBundleIdentifier": .string(bundle), "CFBundleVersion": .string(version)])]
                         try channel.send(["LookupResult": .dictionary(result)]); return
                     }
-                    let upgrade = try channel.receive()
+                    let upgrade: [String: Client.Value]
+                    do { upgrade = try channel.receive() }
+                    catch { if mode.cleanupSessionCount > 1, error is Transport.Failure { return }; throw error }
                     guard upgrade["Command"] == .string("Upgrade"),
                           upgrade["ClientOptions"] == .dictionary(["CFBundleIdentifier": .string(bundle)]),
                           case .string(let path)? = upgrade["PackagePath"], path.hasPrefix("PublicStaging/reader-renewal-") else { throw FixtureFailure.invalidRequest }
                     observed.update { $0.upgradeRequests += 1 }
-                    if mode == .disconnectAfterUpgradeThenRecover { stream.close(); continue }
+                    if mode.isUnknownUpgradeRecovery { stream.close(); continue }
                     if mode == .installError { try channel.send(["Error": .string("OwnedInstallError"), "Status": .string("Complete")]); return }
                     if mode == .excessivePlist { try stream.write(Data([0, 16, 0, 0])); return }
                     let messages = mode == .excessiveProgress ? 257 : 1
@@ -321,18 +381,19 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                 pairing: pairing, archive: Client.ArchiveInput(byteCount: bytes.count, sha256: Data(SHA256.hash(data: bytes))) { offset, count in
                     Data(bytes[offset..<(offset + count)])
                 }, bytes: bytes, date: mode == .expiredPeer ? date.addingTimeInterval(86_400 * 31) : date,
-                bundle: bundle, version: version, observed: observed, sessionRequestReceived: signal.stream)
+                bundle: bundle, version: version, observed: observed, sessionRequestReceived: signal.stream,
+                recoveryRemoveRequestReceived: removalSignal.stream, wrongDeviceCertificateDER: wrong.certificate)
             do {
                 try await action(context)
-                let requirePeerSuccess = mode == .normal || mode == .disconnectAfterUpgradeThenRecover
+                let requirePeerSuccess = mode == .normal || mode.isUnknownUpgradeRecovery || (mode.cleanupSessionCount > 1 && mode != .cleanupWrongServerCertificate)
                 if !requirePeerSuccess { cancellation.cancel() }
                 for peer in peers {
                     let result = await peer.value
                     if requirePeerSuccess, let error = result.error { throw error }
                 }
-                signal.continuation.finish(); cancellation.cancel()
+                signal.continuation.finish(); removalSignal.continuation.finish(); cancellation.cancel()
             } catch {
-                cancellation.cancel(); signal.continuation.finish()
+                cancellation.cancel(); signal.continuation.finish(); removalSignal.continuation.finish()
                 for peer in peers { _ = await peer.value }
                 throw error
             }

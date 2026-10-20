@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T04:56:08.753520+00:00",
+  "status": "ignored-real-transaction-chain-frozen-for-next-root-integration-SDK-unexecuted",
+  "sourceBinding": {
+    "files": [
+      {
+        "path": ".build/renewal-discovery/controlled-renewal-transaction-step/work/SelfRenewalControlledPackageSignerTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+        "bytes": 27606,
+        "sha256": "4c7203df3802cb9280fe3652ceb41ef5f936db033b1a9ec9e7dcb65d5ae72abc"
+      },
+      {
+        "path": ".build/renewal-discovery/controlled-renewal-transaction-step/work/SelfRenewalControlledRenewalCoordinator.swift",
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+        "bytes": 14005,
+        "sha256": "7f1b543b0d4f192b25cf5fa2124b0e249adbe0ad2fd9be84345d9d38a062dbe9"
+      },
+      {
+        "path": ".build/renewal-discovery/controlled-renewal-transaction-step/work/SelfRenewalControlledRenewalCoordinatorTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalControlledRenewalCoordinatorTests.swift",
+        "bytes": 16471,
+        "sha256": "d47813428392b3186fd9c06f2f60a4c037278b2868d8f20631a3ff742b24fd00"
+      },
+      {
+        "path": ".build/renewal-discovery/controlled-renewal-transaction-step/work/SelfRenewalTransactionJournal.swift",
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+        "bytes": 28040,
+        "sha256": "ddaf353624ac72a89c7cbb69ec9b74be1fe9a0acb7e86756fc750d2309a6d533"
+      },
+      {
+        "path": ".build/renewal-discovery/controlled-renewal-transaction-step/work/SelfRenewalTransactionJournalTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalTransactionJournalTests.swift",
+        "bytes": 8366,
+        "sha256": "1547b6fb8e9063c97db9c0e2f958ca42e71b2bda72fb75ef116c1dfa4e154747"
+      },
+      {
+        "path": ".build/renewal-discovery/authenticated-installation-cleanup-step/work/SelfRenewalInstallationRecovery.swift",
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift",
+        "bytes": 12137,
+        "sha256": "038e79c42b6305bf6c06a173bd08c78a968d068c36ccf5f0d25f627a4c71389c"
+      },
+      {
+        "path": ".build/renewal-discovery/authenticated-installation-cleanup-step/work/SelfRenewalAuthenticatedInstallationClient.swift",
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 27643,
+        "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+      },
+      {
+        "path": ".build/renewal-discovery/authenticated-installation-cleanup-step/work/SelfRenewalInstallationRecoveryTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalInstallationRecoveryTests.swift",
+        "bytes": 21179,
+        "sha256": "4d04c099a28dbdef01ab642f2ab9e401edeb443a17907ec5b3b97b7fa43688aa"
+      },
+      {
+        "path": ".build/renewal-discovery/authenticated-installation-cleanup-step/work/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 29720,
+        "sha256": "e4643a122aca3ba03e041033db2a68f8f15f9c7b1d4f4a78881e9132841dadfd"
+      }
+    ],
+    "fileCount": 9
+  },
+  "cleanupPreparation": {
+    "path": ".build/renewal-discovery/authenticated-installation-cleanup-step/preparation.json",
+    "bytes": 10235,
+    "sha256": "4fb9f467f6c8e18331baea63746246246b8affce74e6b20e90d8826e51ae51cf"
+  },
+  "grammar": {
+    "parsedFiles": 9,
+    "errors": [],
+    "SwiftSDKExecuted": false,
+    "typechecked": false
+  },
+  "newNativeTests": {
+    "definedMethods": {
+      "SelfRenewalControlledRenewalCoordinatorTests": [
+        "persistsAndSubmitsActualVerifiedPackageWithoutTouchingUserStores",
+        "recoversUnknownUpgradeWithoutUploadingOrSubmittingTwice",
+        "rejectsChangedCandidateBeforeOpeningAuthenticatedTransport",
+        "rejectsRevokedMaterialBeforeAnyUploadOrUpgrade",
+        "retainsUploadOwnershipAfterActualPartialAFCFailure",
+        "recoversActualPackageUploadWithFreshAuthenticatedCleanup"
+      ],
+      "SelfRenewalTransactionJournalTests": [
+        "excludesSecondOwnerAndReopensDurableCheckpoint",
+        "rejectsContradictoryDurablePhaseInsteadOfResubmitting",
+        "rejectsFailedCandidateWithoutAcknowledgingOrReplacingState",
+        "reclaimsAbandonedOwnedTemporaryAfterProcessInterruption"
+      ],
+      "SelfRenewalInstallationRecoveryTests": [
+        "removesPersistedOwnedUploadAfterFreshMutualTLSAndClearsJournalPhase",
+        "acceptsActualMissingACKAndRetainsRemovalWhenStopDisconnects",
+        "retainsUnknownSubmittedUpgradeAndUsesOnlyAuthenticatedLookup",
+        "rejectsStaleMalformedAndWrongDeviceGrantsBeforeAnyRemoval",
+        "cancellationAndDeadlineReleaseGrantForFreshAuthenticatedRetry",
+        "keepsOriginalErrorSeparateFromRemoteCleanupAndJournalFailures"
+      ]
+    },
+    "definedCount": 16,
+    "executed": 0
+  },
+  "sharedWholePackageFixture": "Existing real package signer fixture access made module-internal; its eleven methods and all expectations unchanged.",
+  "realPath": [
+    "Same verified original IPA and live sealed namespace/lease",
+    "Actual whole-package signer and independent full output verification",
+    "Single flocked actor journal; parent and file and directory fsync boundaries; bounded owned crash-temporary cleanup",
+    "Hash-bound persisted candidate re-read by the same IPA extractor/verifier",
+    "Actual before-FileOpen upload intent and before-first-Upgrade-byte submission intent",
+    "Current upload snapshot chunk reads; full actual transport digest checked before Upgrade",
+    "Fresh authenticated cleanup under a journal-owned in-flight grant; unknown Upgrade only fresh Lookup",
+    "Actual receipt/lookup facts persisted without claiming a renewed installed profile or retained cold-launch data"
+  ],
+  "review": {
+    "independentReadOnlyReview": "implementation_checkpoint_result",
+    "confirmedProductionBlockersRemaining": 0,
+    "testHelperQualificationCorrected": true,
+    "notSwiftExecution": true
+  },
+  "supersedes": {
+    "path": ".build/renewal-discovery/controlled-renewal-transaction-step/freeze-v1/preparation.json",
+    "bytes": 7214,
+    "sha256": "f2a1d1d1dda5a10ba41f47cdb9e7ac46bfb98246e6aa4a83e5ef00dc638e17cd",
+    "reason": "v1 helper qualification claim missed four trailing-closure fixture calls. v2 qualifies them explicitly; neither version has SDK execution."
+  },
+  "remaining": [
+    "Actual SDK/typechecking and all sixteen methods have not run.",
+    "App dependency/foreground/background product entry and real account/material acquisition are not connected by this controlled coordinator.",
+    "Final installed-material/cold-launch/data handoff, safe transaction retirement and next-cycle policy remain unfinished.",
+    "Persistent retry/backoff, expiry and clock-anomaly policy, interrupted preparation resume/abort and broader storage-failure cases remain unfinished.",
+    "Real Apple authority, same-device route, actual install/cover retention and unattended renewal remain unverified."
+  ],
+  "canonicalSourcesModified": false,
+  "includedIn4af3bfcSDK": false,
+  "fullS5Complete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

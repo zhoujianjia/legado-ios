@@ -5,11 +5,11 @@ import Testing
 
 @Suite("Owned whole-package signing through one live vault and one archive path", .serialized)
 struct SelfRenewalControlledPackageSignerTests {
-    private typealias Signer = SelfRenewalControlledPackageSigner
-    private typealias Vault = SelfRenewalSigningMaterialVault
-    private typealias Unpacker = SelfRenewalIPAUnpacker
-    private typealias Bytes = SelfRenewalControlledPackageFixture
-    private typealias PKI = SelfRenewalSigningOwnedPKIFixture
+    typealias Signer = SelfRenewalControlledPackageSigner
+    typealias Vault = SelfRenewalSigningMaterialVault
+    typealias Unpacker = SelfRenewalIPAUnpacker
+    typealias Bytes = SelfRenewalControlledPackageFixture
+    typealias PKI = SelfRenewalSigningOwnedPKIFixture
 
     @Test("actual three-bundle profile resource nested executable and raw ZIP chain")
     func signsOwnedThreeBundlePackageAndReverifiesActualArchiveBytes() async throws {
@@ -330,7 +330,7 @@ struct SelfRenewalControlledPackageSignerTests {
         for index in 0..<4 { bytes[offset + index] = UInt8(truncatingIfNeeded: word >> (8 * index)) }
     }
 
-    nonisolated private static func fixture(_ action: @escaping @Sendable (Fixture) async throws -> Void) async throws {
+    nonisolated static func fixture(_ action: @escaping @Sendable (Fixture) async throws -> Void) async throws {
         try await Task.detached {
             let fixture = try await Fixture.make()
             do { try await action(fixture); try await fixture.cleanup() }
@@ -362,7 +362,7 @@ struct SelfRenewalControlledPackageSignerTests {
         func waitClosing() async { if !closing { await withCheckedContinuation { closeWaiters.append($0) } } }
         func release() { released = true; releaseWaiter?.resume(); releaseWaiter = nil }
     }
-    private final class Fixture: @unchecked Sendable {
+    final class Fixture: @unchecked Sendable {
         let directory: URL; let input: URL; let originalBytes: Data; let oldAnchor: Data
         let issuer: Vault.KeyMaterial; let vault: Vault; let namespace: Vault.Namespace; let lease: Vault.Lease
         let date: Date
