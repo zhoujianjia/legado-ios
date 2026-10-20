@@ -3,8 +3,8 @@
   "recordedOn": "2026-10-21",
   "frozenDevicePackageBase": "75c87a9e5c970696015715e22ce3288c951a8ffe",
   "mainDevelopmentFix": "25b7e45cffa93b178c8fc3ad4a6e0532ac758245",
-  "reason": "Actual a24 SDK compilation rejected two BookStore.shared defaults. Require the existing caller-owned BookStore and pass the actual owner at four deletion calls.",
-  "productionPatchSHA256": "7707957d21f58dda71b715807b0e6dc249fa351d3ccf75827a135fde18841672",
+  "reason": "Fix all actual compiler errors observed across the terminal a24/75 SDK logs: require caller-owned BookStore and explicitly import LegadoRuntime for DiscoverQuickActions.infoMap/result.",
+  "productionPatchSHA256": "b88e83828f0cf82f8d1cdb3ff6c14e03effaea9a91099ba2fa806a358ba501f6",
   "sources": [
     {
       "path": "Modules/Services/Online/SourceCallBackService.swift",
@@ -25,13 +25,21 @@
       "path": "Modules/Features/BookDetail/AudiobookDetailView.swift",
       "bytes": 35706,
       "sha256": "40f1ad89af48891b835f52364dde14304212f4b76b8fae6d14381e5764a543bd"
+    },
+    {
+      "path": "Modules/Services/Online/DiscoverQuickActions.swift",
+      "bytes": 6009,
+      "sha256": "ad876bf8a3708c84860462d296503f163e8d8c354739655d082238bda638b824"
     }
   ],
-  "scope": "Only four production files and this source receipt differ from build14 base75c87a9. Newer independently staged C2 development and SDK fixture tooling remain on the main development branch and do not delay this device package repair.",
+  "scope": "Only five production files and this source receipt differ from build14 base75c87a9. Newer C2 source-only callbacks, login-info development, desktop helper and SDK fixture tooling remain separate on main.",
   "localAppleSDKExecutions": 0,
   "currentDeviceBuild": 14,
   "allNonDeviceWorkComplete": false,
   "automaticSelfRenewalImplemented": false,
   "fullLegadoCompatibilityEstablished": false,
-  "legalRedistributionClearanceEstablished": false
+  "legalRedistributionClearanceEstablished": false,
+  "mainDevelopmentImportFix": "ff1503db17b0af435f9ebe55f73384da50896732",
+  "supersedesDeviceSource": "e88f6fc9d7c877a932ad958f45b544e5d19d309a",
+  "otherDeterminedMissingModuleImportsAfter26FileSourceAudit": 0
 }
