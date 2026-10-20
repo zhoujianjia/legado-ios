@@ -24,7 +24,7 @@ class OriginalAPIPackageEvidenceTests(unittest.TestCase):
     def setUp(self):
         # Each fixture starts in the original ten-case mode. CI's currentcore
         # selection must only apply inside tests that explicitly select it.
-        selection = patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "all"})
+        selection = patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "all", "YUEDU_RENEWAL_PACKAGE_SELECTION": ""})
         selection.start()
         self.addCleanup(selection.stop)
         self.temp = tempfile.TemporaryDirectory()
@@ -304,6 +304,73 @@ class OriginalAPIPackageEvidenceTests(unittest.TestCase):
             self.write_json('source-inputs.json',inputs)
             log=self.log();self.write(self.work/'tests.log',(log+log.splitlines()[0]+'\n').encode())
             with self.assertRaises(ValueError):api.result(self.work)
+
+
+class PublicBatchPackageSelectionTests(unittest.TestCase):
+    """Synthetic evidence guards only; no Swift, Git or real package execution."""
+    setUp = OriginalAPIPackageEvidenceTests.setUp
+    write = OriginalAPIPackageEvidenceTests.write
+    write_json = OriginalAPIPackageEvidenceTests.write_json
+    git = OriginalAPIPackageEvidenceTests.git
+    context = OriginalAPIPackageEvidenceTests.context
+    xml = OriginalAPIPackageEvidenceTests.xml
+    log = OriginalAPIPackageEvidenceTests.log
+    built = OriginalAPIPackageEvidenceTests.built
+
+    def test_public_batch_is_one_explicit_extra_case_with_same_complete_package_source_boundary(self):
+        extra = "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBatchReturnsMissingChapterIdentitiesAndDoesNotGrantSaves"
+        source = (HERE.parents[1] / "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift").read_text(encoding="utf8")
+        self.assertEqual(len(re.findall(r"func\s+" + extra.split("/")[1] + r"\s*\(", source)), 1)
+        # Fixture default remains the original10 even if this test process was
+        # launched by an environment that selects the explicit public batch.
+        self.assertEqual(api.expected_cases(), api.EXPECTED)
+        self.assertEqual(len(api.EXPECTED), 10)
+        self.assertEqual(len(api.CURRENTCORE_EXPECTED), 16)
+        self.assertEqual(api.PUBLICBATCH_EXPECTED, api.CURRENTCORE_EXPECTED | {extra})
+        self.assertNotIn(extra, api.CURRENTCORE_EXPECTED)
+        with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "currentcore"}):
+            self.assertEqual(api.expected_cases(), api.CURRENTCORE_EXPECTED)
+            self.assertEqual(api.selected_mode(), "original-api-package-currentcore")
+        for flag, mode in (("unknown", "currentcore"), ("publicbatch", "handoffrenewal"), ("publicbatch", "all")):
+            with self.subTest(flag=flag, mode=mode), patch.dict(os.environ,
+                    {"YUEDU_RENEWAL_PACKAGE_SELECTION": flag, "YUEDU_RENEWAL_SELECTION": mode}):
+                with self.assertRaises(ValueError): api.expected_cases()
+                with self.assertRaises(ValueError): api.selected_mode()
+        with self.context(), patch.dict(os.environ,
+                {"YUEDU_RENEWAL_SELECTION": "currentcore", "YUEDU_RENEWAL_PACKAGE_SELECTION": "publicbatch"}):
+            inputs = self.built()
+            self.assertEqual(inputs["selectionMode"], "original-api-package-currentcore-publicbatch")
+            self.assertEqual(inputs["packageSourceInputCount"], 15)
+            self.assertEqual(len(inputs["sourceInputs"]), 22)
+            self.assertEqual({item["path"] for item in inputs["sourceInputs"]}, set(api.PACKAGE_INPUTS + api.CONTROL_INPUTS))
+            self.assertEqual(set(api.PACKAGE_INPUTS), {"Packages/LegadoRuntime/Package.swift"} | {
+                path.relative_to(self.root).as_posix() for directory in ("Sources", "Tests")
+                for path in (self.root / api.PACKAGE / directory).rglob("*") if path.is_file()})
+            result = api.result(self.work)
+            self.assertEqual(result["totalTestCount"], 17)
+            self.assertEqual(result["passedCaseIdentifiers"], sorted(api.PUBLICBATCH_EXPECTED))
+            self.assertEqual(result["verbosePassedCaseIdentifiers"], sorted(api.PUBLICBATCH_EXPECTED))
+            self.assertEqual({case for case in api.PUBLICBATCH_EXPECTED if re.fullmatch(api.selected_filter(), case)}, api.PUBLICBATCH_EXPECTED)
+            self.assertIn(api.selected_filter(), api.test_command(str(self.swift), self.work))
+            original_xml = (self.work / "xunit.xml").read_bytes()
+            for change in ("missing", "duplicate", "skip", "wrongSuite"):
+                root = ET.fromstring(original_xml)
+                node = next(item for item in root.iter("testcase") if item.get("name") == extra.split("/")[1])
+                suite = next(item for item in root.iter("testsuite") if node in list(item))
+                if change == "missing": suite.remove(node)
+                elif change == "duplicate": suite.append(copy.deepcopy(node))
+                elif change == "skip": ET.SubElement(node, "skipped")
+                else: node.set("classname", "UnknownSuite")
+                self.write(self.work / "xunit.xml", ET.tostring(root))
+                with self.subTest(change=change), self.assertRaises(ValueError): api.result(self.work)
+            self.write(self.work / "xunit.xml", original_xml)
+            original_log = (self.work / "tests.log").read_bytes()
+            lines = original_log.decode().splitlines(keepends=True)
+            self.write(self.work / "tests.log", "".join(line for line in lines if extra.split("/")[1] not in line).encode())
+            with self.assertRaises(ValueError): api.result(self.work)
+            self.write(self.work / "tests.log", original_log)
+            with patch.dict(os.environ, {"YUEDU_RENEWAL_PACKAGE_SELECTION": ""}):
+                with self.assertRaises(ValueError): api.result(self.work)
 
 
 if __name__ == "__main__":

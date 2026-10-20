@@ -1,0 +1,21 @@
+{
+  "scope": "Metadata-only correction; original frozen report retained intact",
+  "originalReport": {
+    "path": ".build/renewal-discovery/core-sdk-account-selection-step/new-portable-guards-v1.json",
+    "bytes": 5734,
+    "sha256": "1059aed048531f2e793aa7635224a157ea7ce872d459c2bff5ce527cced43086"
+  },
+  "originalEmbeddedLogFact": {
+    "path": ".build/renewal-discovery/core-sdk-account-selection-step/new-portable-guards-v1.log",
+    "bytes": 1020,
+    "sha256": "fa20066b9907f725f879d4b012232259e2f7c6ba949b757a4af0db589d2bb3a0"
+  },
+  "actualLogBytes": {
+    "path": ".build/renewal-discovery/core-sdk-account-selection-step/new-portable-guards-v1.log",
+    "bytes": 1029,
+    "sha256": "453424ef3520db76b1e9034d6478e417989bd50d01c71a4ee4862eac58ae1304"
+  },
+  "cause": "Runner hashed UTF8 in-memory LF text before Windows write_text translated newlines to CRLF. Actual on-disk log is1029 bytes, not1020. Test outcomes are unchanged; no rerun claims.",
+  "doesNotChangeHarnessSourcesOrPassedTests": true,
+  "actualNewTestExecutions": 0
+}

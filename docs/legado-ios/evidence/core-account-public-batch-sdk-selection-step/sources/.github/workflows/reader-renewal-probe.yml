@@ -1,0 +1,105 @@
+name: Local Reader Renewal Probe Tests
+
+on:
+  push:
+    tags:
+      - 'reader-renewal-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-renewal-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  probe:
+    runs-on: macos-15
+    timeout-minutes: 125
+    env:
+      LEGADO_RUNTIME_SOURCE_ONLY: '1'
+      YUEDU_RENEWAL_SELECTION: currentcore
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify the exact source tag
+        id: source
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-probe-tools.py validate-tag
+      - name: Verify portable evidence guards
+        id: guards
+        run: |
+          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-existing-guards.log
+          python -B scripts/reader-experience/test-renewal-probe-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-guards.log
+          python -B scripts/reader-experience/test-inspect-renewal-report.py -v 2>&1 | tee .build/ci-logs/reader-renewal-report-inspector-guards.log
+          python -B scripts/reader-experience/test-original-api-package-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-original-api-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py -v 2>&1 | tee .build/ci-logs/reader-renewal-producer-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py -v 2>&1 | tee .build/ci-logs/reader-renewal-producer-timeout-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py -v 2>&1 | tee .build/ci-logs/reader-renewal-producer-user-trust-guards.log
+          ruby scripts/check_localizations.rb
+          bash -n scripts/reader-experience/renewal-probe-tests.sh
+          bash -n scripts/reader-experience/original-api-package-tests.sh
+      - name: Select the installed toolchain and Simulator
+        id: toolchain
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
+      - name: Execute353 current-core definitions with355 exact native argument leaves
+        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.toolchain.outcome == 'success' }}
+        env:
+          YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME: ${{ steps.guards.outcome }}
+        run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
+      - name: Execute17 independent current-source macOS package XCTest cases
+        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal' || env.YUEDU_RENEWAL_SELECTION == 'currentcore') }}
+        env:
+          YUEDU_RENEWAL_PACKAGE_SELECTION: ${{ env.YUEDU_RENEWAL_SELECTION == 'currentcore' && 'publicbatch' || '' }}
+        run: bash scripts/reader-experience/original-api-package-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal-original-api.log
+      - name: Preserve independent package XCTest evidence without build products
+        if: ${{ always() && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal' || env.YUEDU_RENEWAL_SELECTION == 'currentcore') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-original-api-evidence
+          path: |
+            .build/reader-renewal-original-api/
+            .build/ci-logs/reader-renewal-original-api*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve native evidence and allowlisted public SDK fixture outputs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-probe-evidence
+          path: |
+            .build/reader-renewal-probe/
+            .build/ci-logs/reader-renewal*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the limited acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This fixed currentcore source boundary requires353 unique qualified native definitions and355 exact execution leaves, including both original Bool false/true pairs and the mandatory SDK-produced method. It is one cold3600-second invocation and one xcresult. It retains canonical retirement/AppOwner/foreground, Cookie text/WK, Unicode/preview/explore ownership and their affected regressions, and adds actual Vault CSR, account material, App-session lifecycle/GSA protocol and public content-batch cases. All eleven old mode sets, parameter identities and budgets remain unchanged; no benchmark, diagnostic UI/network, unmerged later work, or JVM replay is selected.
+
+          Producer/staging/portable failures remain real workflow/full-gate failures while valid-source toolchain/native diagnostics still attempt the complete native selection. Every actual phase must succeed for result.json. Logs, exits/timeouts, raw xcresult Arguments and exact leaf identities, source/resource/built-loader hashes and the required same-job SDK fixture are fail-closed. Missing fixtures fail rather than skip or substitute. The producer uses an owned short-lived Keychain and a formally compiled C bridge; only validated public outputs are uploaded, never private keys/P12/passwords or the raw generation directory.
+
+          Current Package source-only selection is17 exact XCTest methods with15 compilation inputs plus7 controls and a separate result. It explicitly selects publicbatch: retained16 plus the typed public-batch method. Original ten-case and unflagged currentcore sixteen-case selections remain unchanged. Its current tag must actually execute; 9105/a835 or other old ten/sixteen-case evidence is historical, cannot be reused for these changed inputs, and never enters native355.
+
+          The historical independent ten-case source-only SwiftPM pass at a835f8b remains source-scoped history, not current17 acceptance. Controlled fixtures do not establish Apple/device/account authorization; private keys/P12/passwords are never artifact members.
+
+          Definitions and portable guard results are not SDK methods. App fixtures do not prove Apple/account/device authorization, a renewed installed profile, iPhone installation, cold launch, global data retention, full book-source compatibility or unattended renewal. iphoneTransportVerified, physicalDeviceValidationPassed, selfRenewalVerified and unattendedRenewalVerified remain false. Complete default App routing, UI rendering/navigation/buttons, all-source onPause, batch/cache/media and real automatic renewal remain unfinished.
+          TEXT

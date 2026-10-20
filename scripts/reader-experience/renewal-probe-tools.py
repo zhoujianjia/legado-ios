@@ -316,7 +316,63 @@ CURRENTCORE_ADDITIONAL_CASES = {'SelfRenewalTransactionRetirementTests': ['retir
 EXPECTED_CASES["currentcore"] = EXPECTED_CASES["handoffrenewal"] | {
     suite+"/"+method for suite,methods in CURRENTCORE_ADDITIONAL_CASES.items() for method in methods
 }
-assert len(EXPECTED_CASES["currentcore"]) == 314
+CURRENTCORE_ACCOUNT_CASES = {'SelfRenewalSigningMaterialVaultTests': ['requestsCertificateWithPersistedKeyAndIndependentPublicVerification',
+                                          'rejectsStaleRevokedForeignAndMissingCertificateRequestKeys',
+                                          'rejectsInvalidCertificateRequestSubjectsAndCancellationWithoutPublication'],
+ 'SelfRenewalDeveloperAccountClientTests': ['submitsRealVaultCSRAndPublishesOnlyVerifiedOriginalIdentity',
+                                            'rejectsWrongCertificateKeyBeforeProfileRequests',
+                                            'rejectsTamperedRemoteProfilesWithoutChangingPublication',
+                                            'invalidatesExpiredOrChangedPortalSession',
+                                            'cancellationRetainsRemoteIntentAndPreventsDuplicateIssuance',
+                                            'retainsCommittedPublicationWhenAccountFinalizationFails',
+                                            'rejectsStaleKeysAndMissingOriginalAppIDsBeforeRemoteMutation',
+                                            'rejectsUnsafeResponseEnvelopesAndRedactsCredentialDescriptions',
+                                            'erasesStoredCredentialsWithoutMaterialAuthorityAndPreservesIntent',
+                                            'appSessionRefreshesTheActualPublishedKeyAndReopensIt',
+                                            'appSessionChecksDurableRetirementBeforeAcceptingNewMaterialGeneration',
+                                            'appSessionErasesCredentialsAfterExpiryAndRetainsFailedWriteFacts',
+                                            'appSessionSerializesHeldEnrollmentAndPreservesCancelledRemoteIntent'],
+ 'SelfRenewalDeveloperAuthenticationTests': ['matchesIndependentPasswordAndAuthenticatedResponseVectors',
+                                             'refusesInvalidServerKeysAndWorkBudgets',
+                                             'rejectsTamperedProofNegotiationAndTokenEnvelope',
+                                             'connectsOnlyThroughActualMaterialAccountValidation',
+                                             'rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials',
+                                             'submitsTrustedDeviceCodeAndRestartsAuthenticatedHandshake',
+                                             'cancellationTerminatesActualLoginAndClearsPendingState',
+                                             'refusesUnverifiedCryptoMissingMetadataAndStorageFailure',
+                                             'appSessionAuthenticatesThroughSameVaultAndReopensStoredSession',
+                                             'appSessionCancelsSecondaryChallengeAndRejectsOldTicket',
+                                             'appOwnerDrainsHeldLoginBeforeLogoutAndRejectsLateResult']}
+CURRENTCORE_ACCOUNT_SOURCE_PATHS = {
+    "SelfRenewalSigningMaterialVaultTests": ("Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",),
+    "SelfRenewalDeveloperAccountClientTests": ("Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift", "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"),
+    "SelfRenewalDeveloperAuthenticationTests": ("Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",),
+}
+CURRENTCORE_ACCOUNT_QUALIFIED_CASES = {suite+"/"+method for suite,methods in CURRENTCORE_ACCOUNT_CASES.items() for method in methods}
+assert len(EXPECTED_CASES["currentcore"]) == 314  # Preserved prior core definitions, not prior acceptance.
+assert len(CURRENTCORE_ACCOUNT_QUALIFIED_CASES) == 27 and not (EXPECTED_CASES["currentcore"] & CURRENTCORE_ACCOUNT_QUALIFIED_CASES)
+CURRENTCORE_PUBLIC_CASES = {'ChapterCacheTransactionTests': ['cancellationBetweenRenamesRestoresCompleteOldPackage',
+                                  'restorationFailureNeverAcknowledgesOrDeletesBackup',
+                                  'foreignWriteAndLateCleanupPreserveNewestFiles',
+                                  'unchangedAndReconcileDoNotRewriteOrDeleteNewIdentity',
+                                  'legacyReadCannotInstallItsOlderCandidateAfterNewBody'],
+ 'LegadoContentBatchOwnerTests': ['managerToHostToChapterFilesAndRestartPreservesDuplicateUrlIndexes',
+                                  'managerFailureCarriesSavedPrefixWithoutRollingItBack',
+                                  'bodyCasCannotOverwriteOrAdoptAnotherWriter',
+                                  'bodyOwnerUsesTaskGenerationAndCurrentActualToc',
+                                  'finalBookSetterPersistsSmallAndPreservesAcceptedLargeCompanion',
+                                  'finalBookCasRejectsUserEditAndFailedIoWithoutLosingBodyPrefix'],
+ 'ChapterFetchLateFailureTests': ['lateBrowserFailureDoesNotDeleteNewSuccessfulPackage']}
+CURRENTCORE_PUBLIC_SOURCE_PATHS = {
+    suite: ("Tests/iOS/yuedu appTests/"+suite+".swift",) for suite in CURRENTCORE_PUBLIC_CASES
+}
+CURRENTCORE_PUBLIC_QUALIFIED_CASES = {suite+"/"+method for suite,methods in CURRENTCORE_PUBLIC_CASES.items() for method in methods}
+assert len(CURRENTCORE_PUBLIC_QUALIFIED_CASES) == 12
+assert not ((EXPECTED_CASES["currentcore"] | CURRENTCORE_ACCOUNT_QUALIFIED_CASES) & CURRENTCORE_PUBLIC_QUALIFIED_CASES)
+CURRENTCORE_NEW_QUALIFIED_CASES = CURRENTCORE_ACCOUNT_QUALIFIED_CASES | CURRENTCORE_PUBLIC_QUALIFIED_CASES
+CURRENTCORE_NEW_SOURCE_PATHS = CURRENTCORE_ACCOUNT_SOURCE_PATHS | CURRENTCORE_PUBLIC_SOURCE_PATHS
+EXPECTED_CASES["currentcore"] |= CURRENTCORE_NEW_QUALIFIED_CASES
+assert len(EXPECTED_CASES["currentcore"]) == 353
 
 PARAMETER_MODES = ("transactionrenewal", "handoffrenewal", "currentcore")
 SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal", "currentcore")
@@ -464,7 +520,43 @@ def validate_tag():
 
 SOURCE_INPUTS += ("Tests/iOS/yuedu appTests/LegadoCookieReadHostTests.swift",)
 SOURCE_INPUTS += ('Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift', 'Modules/Services/Online/LegadoPreviewStateOwner.swift', 'Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift', 'Modules/Services/SelfRenewal/SelfRenewalAppSession.swift', 'Packages/LegadoRuntime/Package.swift', 'Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m', 'Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h', 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoHTTPHeaders.swift', 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift', 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoSavedDiagnostics.swift', 'Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoCookieTextAPITests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHTTPHeadersTests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHostEffectsTests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift', 'Tests/iOS/yuedu appTests/LegadoCookieBrowserHostTests.swift', 'Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift', 'Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift', 'Tests/iOS/yuedu appTests/LegadoMainJSSourceServiceTests.swift', 'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift', 'scripts/reader-experience/original-api-package-tests.sh', 'scripts/reader-experience/original-api-package-tools.py', 'scripts/reader-experience/test-original-api-package-tools.py')
-assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 205
+SOURCE_INPUTS += ('Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift', 'Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift', 'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift')
+CURRENTCORE_PUBLIC_SOURCE_INPUTS = ('Modules/Core/BookSource/BookSourceFetcher+Chapter.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher.swift',
+ 'Modules/Features/Settings/CacheManagementView.swift',
+ 'Modules/Services/LibraryStore/BookChapterStore.swift',
+ 'Modules/Services/LibraryStore/BookStore.swift',
+ 'Modules/Services/LibraryStore/CacheManagementService.swift',
+ 'Modules/Services/LibraryStore/Models.swift',
+ 'Modules/Services/Offline/OfflineChapterStore.swift',
+ 'Modules/Services/Online/ChapterCacheRepository.swift',
+ 'Modules/Services/Online/LegadoBookStateOwner.swift',
+ 'Modules/Services/Online/LegadoContentBatchOwner.swift',
+ 'Modules/Services/Online/LegadoMainJSSourceService.swift',
+ 'Modules/Services/Online/LegadoPersistentStateHost.swift',
+ 'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+ 'Modules/Services/Online/OnlineChapterContentService.swift',
+ 'Modules/Services/Online/OnlineReadingPipeline.swift',
+ 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+ 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+ 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift',
+ 'Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift',
+ 'Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift',
+ 'Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift',
+ 'Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift',
+ 'Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift',
+ 'Tests/iOS/yuedu appTests/ChapterContentValidationTests.swift',
+ 'Tests/iOS/yuedu appTests/ChapterFetchLateFailureTests.swift',
+ 'Tests/iOS/yuedu appTests/LegadoChapterOwnerPersistenceTests.swift',
+ 'Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift',
+ 'Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift',
+ 'Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift',
+ 'Tests/iOS/yuedu appTests/yuedu_appTests.swift')
+SOURCE_INPUTS += tuple(path for path in CURRENTCORE_PUBLIC_SOURCE_INPUTS if path not in SOURCE_INPUTS)
+CURRENTCORE_TRUST_GUARD_SOURCE = SDK_TOOL_ROOT + "test-producer-user-trust.py"
+SOURCE_INPUTS += (CURRENTCORE_TRUST_GUARD_SOURCE,)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 232
 
 
 def selection_mode():
@@ -1241,11 +1333,11 @@ def result(work):
         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
     if mode == "currentcore":
         output["limitations"] = [
-            "Currentcore requires exactly314 definitions and316 argument leaves in one cold3600-second invocation/xcresult, retaining both Bool false/true pairs and the required same-job SDK fixture case.",
+            "Currentcore requires exactly353 definitions and355 argument leaves in one cold3600-second invocation/xcresult, retaining both Bool false/true pairs and the required same-job SDK fixture case.",
             "All producer/stage/native/export/verification phases and actual portable guards must succeed. Producer or guard failure remains failure while the complete native selection is still attempted for diagnostics.",
-            "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode and explore definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
-            "The independent currentcore SwiftPM selection is16 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native316.",
-            "Existing eleven mode method/parameter identities and budgets remain unchanged. Unmerged future C3 batch work, benchmarks, diagnostic UI and unrelated JVM replay are excluded."]
+            "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode, explore, public content batch and CSR/account/GSA definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
+            "The independent explicitly selected currentcore SwiftPM publicbatch selection is17 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native355.",
+            "Existing eleven mode method/parameter identities and budgets remain unchanged. Benchmarks, diagnostic UI, unmerged later source work and unrelated JVM replay are excluded."]
         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
     return output
 
@@ -1522,7 +1614,7 @@ def _currentcore_source_state(work):
     if (selection_mode() != "currentcore" or prepared.get("selectionMode") != "currentcore"
             or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
             or prepared.get("intendedTests") != {"currentcore": sorted(EXPECTED_CASES["currentcore"])}
-            or prepared.get("intendedQualifiedMethodDefinitions") != 314 or prepared.get("intendedArgumentLeafCount") != 316
+            or prepared.get("intendedQualifiedMethodDefinitions") != 353 or prepared.get("intendedArgumentLeafCount") != 355
             or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}):
         raise ValueError("Current core phase cannot run with changed preparation/source")
     return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
@@ -1648,7 +1740,7 @@ def run_currentcore(work):
         rows.append(_run_currentcore_phase(work, name, command, timeout, source, _currentcore_blockers(name, rows)))
     failure = _currentcore_first_failure(rows)
     ledger = {"schemaVersion": 1, "selectionMode": "currentcore", "source": source,
-              "qualifiedMethodDefinitions": 314, "argumentLeaves": 316,
+              "qualifiedMethodDefinitions": 353, "argumentLeaves": 355,
               "phaseOrder": list(CURRENTCORE_PHASES), "phases": rows, "firstFailure": failure,
               "phaseRecords": [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES],
               "historicalPackageEvidence": _currentcore_fact(work, "historical-package-evidence.json"),
@@ -1673,8 +1765,8 @@ def verify_currentcore_pipeline(work):
     ledger = smoke.read_json(work / "currentcore-pipeline.json")
     source = _currentcore_source_state(work)
     if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "currentcore"
-            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 314
-            or ledger.get("argumentLeaves") != 316 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
+            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 353
+            or ledger.get("argumentLeaves") != 355 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
             or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
         raise ValueError("Missing/failed/changed same-source currentcore pipeline")
     rows = ledger.get("phases")
