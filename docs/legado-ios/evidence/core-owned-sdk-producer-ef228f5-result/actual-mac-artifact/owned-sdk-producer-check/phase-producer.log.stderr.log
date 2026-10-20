@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 714, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 619, in main
+    trust_scope.install()
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 389, in install
+    self.invoke('installOwnedUserTrust')
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 372, in invoke
+    raw=run([self.importer],input=json.dumps(request).encode(),private=True,public_status=operation,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 450, in run
+    raise ToolTimeout('private tool' if private else redacted[0],seconds,result.returncode,result.processStarted) from None
+ToolTimeout: private tool failed: 124
