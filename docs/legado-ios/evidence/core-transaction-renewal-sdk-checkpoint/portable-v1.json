@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "sourceBinding": [
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "bytes": 7321,
+      "sha256": "347bd7b0c921f7542bd5405917107e802322d7e2633f276ad892d5535808dac8"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 86381,
+      "sha256": "d5bb69cb1a17b45539eb6441997d2fb481622cb442763b1a9d99e2639526810e"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "bytes": 40978,
+      "sha256": "c27e155405f3ba65c8975dbed8d8db890dcb4cde1a37ab3b7a2c5541730c6c09"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 103085,
+      "sha256": "323dfd11b242d715cd85617adc955233a4a9f28adfd457520379156ce9f7becc"
+    }
+  ],
+  "commands": [
+    {
+      "name": "renewal-guards",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 18.75,
+      "log": ".build/renewal-discovery/transaction-renewal-selection-gates/renewal-guards-v1.log",
+      "bytes": 9358,
+      "sha256": "4423cc9ed59254a55c58175a549ddf6586152fe4709b3e3e5a79af624a367962"
+    },
+    {
+      "name": "existing-smoke-guards",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-smoke-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.516,
+      "log": ".build/renewal-discovery/transaction-renewal-selection-gates/existing-smoke-guards-v1.log",
+      "bytes": 4250,
+      "sha256": "80bec2e2343656b9b9e2253df071f2b41a20a14e4a62284327ce1b4c4d0e2a28"
+    },
+    {
+      "name": "report-inspector-guards",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-inspect-renewal-report.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.281,
+      "log": ".build/renewal-discovery/transaction-renewal-selection-gates/report-inspector-guards-v1.log",
+      "bytes": 5824,
+      "sha256": "326c17d830a43e936a8f4912ec8736faeda79fdd28da9136a382c280eac61cc0"
+    },
+    {
+      "name": "original-api-guards",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-original-api-package-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.891,
+      "log": ".build/renewal-discovery/transaction-renewal-selection-gates/original-api-guards-v1.log",
+      "bytes": 2520,
+      "sha256": "7b67bc72fc9873f415fbde2d7e9e57bf5d1a39146af507f521991a2fb5e24f65"
+    },
+    {
+      "name": "bash-syntax",
+      "argv": [
+        "D:/app/Git/bin/bash.exe",
+        "-n",
+        "scripts/reader-experience/renewal-probe-tests.sh"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.078,
+      "log": ".build/renewal-discovery/transaction-renewal-selection-gates/bash-syntax-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "workflow-actionlint",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+        "-color",
+        ".github/workflows/reader-renewal-probe.yml"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.063,
+      "log": ".build/renewal-discovery/transaction-renewal-selection-gates/workflow-actionlint-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "sourceUnchangedDuringExecution": true,
+  "SDKExecuted": false,
+  "JVMExecuted": false,
+  "cloudQueried": false
+}

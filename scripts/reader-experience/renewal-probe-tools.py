@@ -15,6 +15,10 @@ import plistlib
 import re
 import sys
 import struct
+import threading
+import signal
+import subprocess
+import time
 
 
 HERE = Path(__file__).resolve().parent
@@ -292,6 +296,15 @@ EXPECTED_CASES["integratedrenewal"] = EXPECTED_CASES["boundmaterials"] | EXPECTE
     suite + "/" + method for suite, methods in INTEGRATED_ADDITIONAL_CASES.items() for method in methods
 }
 assert len(EXPECTED_CASES["integratedrenewal"]) == 140
+TRANSACTION_ADDITIONAL_CASES = {'LegadoBookMetadataOwnerTests': ['actualBookCallbacksRestoreShelfAndReadingVariables', 'olderQueuedMetadataCannotEraseAcceptedVariables', 'queuedTXTBookmarksKeepOtherBookVariables', 'failedTXTBookmarkWriteKeepsOldMetadata', 'exactTXTJournalRecoversPublicationConflicts', 'failedWritesAndCancellationKeepOldMetadata', 'failedShelfReplacementKeepsBothDurableBookCopies'], 'LegadoPersistentStateHostTests': ['malformedStateInputsHaveTypedErrorsAndRetainProofs'], 'BookStoreShelfRecoveryTests': ['unreadableShelfIsKeptAside', 'shelfThatCannotBeKeptAsideIsNotOverwritten', 'relaunchReusesTheExistingCopy'], 'BookStoreMetadataWriteBudgetTests': ['tinyProgressChangesStayInMemoryUntilForcedSave', 'clearingDownloadAnnouncesCacheClear', 'completedOfflineDownloadPersistsImmediately', 'leavingForegroundFlushesDebouncedSave'], 'BookStoreBackgroundPublishTests': ['cacheMarkDoesNotPublish', 'refreshPublishesOnce', 'reparsedUnchangedListIsNoChange'], 'TXTReaderIndexMigrationTests': ['migrationPreservesBookmarksAndReplaysInterruptedCommit', 'newImportPublishesOnlyThroughTheCommitOwner'], 'AozoraTXTTests': ['storedV6LocationsMigrateOnce'], 'WebDAVRestoreIntegrityTests': ['localSummaryAndTXTWriterRespectBoundary'], 'SelfRenewalTransactionJournalTests': ['excludesSecondOwnerAndReopensDurableCheckpoint', 'rejectsContradictoryDurablePhaseInsteadOfResubmitting', 'rejectsFailedCandidateWithoutAcknowledgingOrReplacingState', 'reclaimsAbandonedOwnedTemporaryAfterProcessInterruption'], 'SelfRenewalControlledRenewalCoordinatorTests': ['persistsAndSubmitsActualVerifiedPackageWithoutTouchingUserStores', 'recoversUnknownUpgradeWithoutUploadingOrSubmittingTwice', 'rejectsChangedCandidateBeforeOpeningAuthenticatedTransport', 'rejectsRevokedMaterialBeforeAnyUploadOrUpgrade', 'retainsUploadOwnershipAfterActualPartialAFCFailure', 'recoversActualPackageUploadWithFreshAuthenticatedCleanup'], 'SelfRenewalInstallationRecoveryTests': ['removesPersistedOwnedUploadAfterFreshMutualTLSAndClearsJournalPhase', 'acceptsActualMissingACKAndRetainsRemovalWhenStopDisconnects', 'retainsUnknownSubmittedUpgradeAndUsesOnlyAuthenticatedLookup', 'rejectsStaleMalformedAndWrongDeviceGrantsBeforeAnyRemoval', 'cancellationAndDeadlineReleaseGrantForFreshAuthenticatedRetry', 'keepsOriginalErrorSeparateFromRemoteCleanupAndJournalFailures']}
+PARAMETER_CASES = {"TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt", "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt"}
+EXPECTED_CASES["transactionrenewal"] = EXPECTED_CASES["integratedrenewal"] | {suite + "/" + method for suite, methods in TRANSACTION_ADDITIONAL_CASES.items() for method in methods}
+assert len(EXPECTED_CASES["transactionrenewal"]) == 178
+SDK_MODES = ("integratedrenewal", "transactionrenewal")
+
+def expected_leaf_count(group):
+    return len(EXPECTED_CASES[group]) + (len(PARAMETER_CASES) if group == "transactionrenewal" else 0)
+
 
 SELECTION_GROUPS = {
     # Preserve the historical all-mode contract; new implementation tests have
@@ -305,6 +318,7 @@ SELECTION_GROUPS = {
     "boundmaterials": ("boundmaterials",),
     "controlledsigning": ("controlledsigning",),
     "integratedrenewal": ("integratedrenewal",),
+    "transactionrenewal": ("transactionrenewal",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -410,6 +424,10 @@ SOURCE_INPUTS = (
 ) + tuple("Resources/" + language + ".lproj/" + table
           for language in LANGUAGES for table in ("Localizable.strings", "InfoPlist.strings"))
 
+SOURCE_INPUTS += ('Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift', 'Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift', 'Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift', 'Tests/iOS/yuedu appTests/SelfRenewalTransactionJournalTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalControlledRenewalCoordinatorTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalInstallationRecoveryTests.swift', 'Tests/iOS/yuedu appTests/LegadoBookMetadataOwnerTests.swift', 'Tests/iOS/yuedu appTests/BookStoreShelfRecoveryTests.swift', 'Tests/iOS/yuedu appTests/BookStoreMetadataWriteBudgetTests.swift', 'Tests/iOS/yuedu appTests/BookStoreBackgroundPublishTests.swift', 'Tests/iOS/yuedu appTests/TXTReaderIndexMigrationTests.swift', 'Tests/iOS/yuedu appTests/AozoraTXTTests.swift', 'Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift', 'Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift', 'Modules/Services/LibraryStore/BackgroundTaskHold.swift', 'Modules/Core/TXT/TXTReaderIndexMigrationService.swift', 'Modules/Core/TXT/TXTReaderPreparationService.swift', 'Modules/Core/TXT/TXTLocationMigration.swift', 'Modules/Core/TXT/TXTChapterParser.swift', 'Modules/Core/ReaderCore/ReadingPositionStore.swift', 'Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift', 'Modules/Services/WebDAV/WebDAVRestoreTransaction.swift', 'Modules/Services/WebDAV/WebDAVManager.swift')
+
+SOURCE_INPUTS += ("scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",)
+
 
 def validate_tag():
     selection_mode()
@@ -419,7 +437,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning or integratedrenewal")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning, integratedrenewal or transactionrenewal")
     return mode
 
 
@@ -607,10 +625,10 @@ def _verify_sdk_public(directory, inputs):
 
 
 def stage_sdk_fixture(work, produced):
-    if selection_mode() != "integratedrenewal": raise ValueError("SDK fixture generation belongs only to integratedrenewal")
+    if selection_mode() not in SDK_MODES: raise ValueError("SDK fixture generation belongs only to reviewed owned SDK selections")
     require_source_only()
     inputs = smoke.read_json(work / "source-inputs.json")
-    if inputs.get("selectionMode") != "integratedrenewal" or inputs.get("sourceCommit") != validate_tag():
+    if inputs.get("selectionMode") != selection_mode() or inputs.get("sourceCommit") != validate_tag():
         raise ValueError("SDK fixture preparation source/mode mismatch")
     developer = os.environ.get("DEVELOPER_DIR")
     if not isinstance(developer, str) or not developer: raise ValueError("SDK producer must use selected DEVELOPER_DIR")
@@ -625,7 +643,7 @@ def stage_sdk_fixture(work, produced):
     _verify_sdk_public(artifact, inputs["sourceInputs"])
     with target.open("xb") as stream: stream.write((artifact / "owned-sdk-package.json").read_bytes())
     target.chmod(0o444)
-    record = {"schemaVersion": 1, "sourceCommit": inputs["sourceCommit"], "selectionMode": "integratedrenewal",
+    record = {"schemaVersion": 1, "sourceCommit": inputs["sourceCommit"], "selectionMode": selection_mode(),
               "developerDirectory": developer, **verified}
     smoke.config.write_new_json(work / "sdk-fixture-binding.json", record)
     return record
@@ -648,12 +666,12 @@ def _sdk_runtime_markers(path):
 
 
 def verify_sdk_fixture(work, phase, save=True):
-    if selection_mode() != "integratedrenewal" or phase not in ("before-build", "after-tests"):
+    if selection_mode() not in SDK_MODES or phase not in ("before-build", "after-tests"):
         raise ValueError("Invalid SDK runtime resource phase")
     inputs = smoke.read_json(work / "source-inputs.json")
     binding = smoke.read_json(work / "sdk-fixture-binding.json")
     verified = _verify_sdk_public(work / "sdk-produced-public", inputs["sourceInputs"])
-    if (binding.get("sourceCommit") != validate_tag() or binding.get("selectionMode") != "integratedrenewal"
+    if (binding.get("sourceCommit") != validate_tag() or binding.get("selectionMode") != selection_mode()
             or binding.get("developerDirectory") != os.environ.get("DEVELOPER_DIR")
             or any(binding.get(key) != value for key, value in verified.items())):
         raise ValueError("SDK fixture source/generator/output binding changed")
@@ -664,8 +682,8 @@ def verify_sdk_fixture(work, phase, save=True):
               "bindingSHA256": smoke.config.digest(work / "sdk-fixture-binding.json"),
               "resourceSHA256": actual["sha256"], "resourceBytes": actual["bytes"]}
     if phase == "after-tests":
-        summary = smoke.verify_summary(smoke.read_json(work / "integratedrenewal-summary.json"), 140)
-        actual_cases = verify_cases(smoke.read_json(work / "integratedrenewal-tests.json"), "integratedrenewal")
+        summary = smoke.verify_summary(smoke.read_json(work / (selection_mode() + "-summary.json")), expected_leaf_count(selection_mode()))
+        actual_cases = verify_cases(smoke.read_json(work / (selection_mode() + "-tests.json")), selection_mode())
         if SDK_REQUIRED_CASE not in actual_cases["passedCaseIdentifiers"]: raise ValueError("Actual SDK method did not pass")
         entries = smoke.read_json(work / "sdk-test-build-settings.json")
         matches = [entry["buildSettings"] for entry in entries if entry.get("target") == "yuedu appTests"]
@@ -677,7 +695,7 @@ def verify_sdk_fixture(work, phase, save=True):
         if bundle.suffix != ".xctest": raise ValueError("Expected actual built XCTest bundle")
         _, built = _bounded_fact(bundle / "owned-sdk-package.json", 8_388_608)
         if built != actual: raise ValueError("Built SDK fixture resource hash differs")
-        markers = _sdk_runtime_markers(work / "integratedrenewal-tests.log")
+        markers = _sdk_runtime_markers(work / (selection_mode() + "-tests.log"))
         expected = {"resourceSHA256": actual["sha256"], "resourceBytes": actual["bytes"],
                     "archiveSHA256": verified["archive"]["sha256"], "archiveBytes": verified["archive"]["bytes"]}
         if any(value != expected for value in markers): raise ValueError("Actual runtime loader read a different SDK fixture")
@@ -748,11 +766,249 @@ def prepare(work):
               "sourceInputs": records, "runtimeSourceOnly": True,
               "selectionMode": mode,
               "intendedTests": {key: sorted(value) for key, value in cases.items()}}
+    if mode == "transactionrenewal":
+        record["intendedArgumentCases"] = {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}
+        record["intendedQualifiedMethodDefinitions"] = 178
+        record["intendedArgumentLeafCount"] = 180
     smoke.config.write_new_json(work / "source-inputs.json", record)
     return record
 
 
+def _test_nodes(tree):
+    if not isinstance(tree, dict) or not isinstance(tree.get("testNodes"), list):
+        raise ValueError("Expected actual xcresult testNodes")
+    result = []; count = 0
+    def visit(node, depth=0):
+        nonlocal count
+        count += 1
+        if not isinstance(node, dict) or depth > 32 or count > 10000:
+            raise ValueError("Malformed or oversized xcresult tree")
+        children = node.get("children", [])
+        if not isinstance(children, list): raise ValueError("Malformed xcresult children")
+        if node.get("nodeType") == "Test Case":
+            result.append(node)
+        else:
+            for child in children: visit(child, depth + 1)
+    for node in tree["testNodes"]: visit(node)
+    return result
+
+
+def _qualified_method(identifier):
+    if not isinstance(identifier, str) or len(identifier) > 4096:
+        raise ValueError("Missing bounded qualified test identifier")
+    parts = identifier.split("/")
+    if len(parts) not in (2, 3): raise ValueError("Ambiguous qualified test identifier")
+    method = parts[-1]
+    match = re.fullmatch(r"([A-Za-z_][A-Za-z_0-9]*)(?:\(\)|\(interrupt:\))?", method)
+    if match is None: raise ValueError("Unreviewed qualified method syntax: " + identifier)
+    return parts[-2] + "/" + match[1]
+
+
+def _argument_values(node, expected_parameter):
+    values = []; visited = 0
+    def visit(current, inside_argument=False, depth=0):
+        nonlocal visited
+        visited += 1
+        if not isinstance(current, dict) or visited > 1000 or depth > 16:
+            raise ValueError("Malformed argument execution tree")
+        kind = current.get("nodeType")
+        if kind == "Repetition": raise ValueError("Retry/repetition cannot replace one exact argument execution")
+        if kind in ("Test Case Run", "Arguments", "Device", "Test Plan Configuration") and current.get("result") != "Passed":
+            raise ValueError("Skipped/failed/incomplete argument execution")
+        if kind == "Test Case": raise ValueError("Nested test case cannot impersonate an argument")
+        children = current.get("children", [])
+        if not isinstance(children, list): raise ValueError("Malformed argument children")
+        if kind == "Arguments":
+            if inside_argument: raise ValueError("Nested argument groups are ambiguous")
+            name = current.get("name")
+            # The value field of an actual xcresult Arguments node, bound to its
+            # qualified parent, is distinct from a test's human display title.
+            if not isinstance(name, str): raise ValueError("Missing argument value")
+            match = re.fullmatch(r"(?:" + re.escape(expected_parameter) + r":\s*)?(false|true)", name)
+            if match is None: raise ValueError("Unreviewed/missing exact Bool argument: " + name)
+            runs = []
+            def runs_in(value):
+                if not isinstance(value, dict): raise ValueError("Malformed argument run")
+                if value.get("nodeType") == "Test Case Run": runs.append(value)
+                for child in value.get("children", []): runs_in(child)
+            for child in children: runs_in(child)
+            if len(runs) > 1: raise ValueError("Duplicate actual argument executions")
+            values.append(match[1]); inside_argument = True
+        elif kind == "Test Case Run" and not inside_argument:
+            raise ValueError("Argument execution has no explicit input value")
+        for child in children: visit(child, inside_argument, depth + 1)
+    for child in node.get("children", []): visit(child)
+    if len(values) != 2 or sorted(values) != ["false", "true"]:
+        raise ValueError("Each qualified parameter method requires false and true exactly once")
+    return values
+
+
+def verify_transaction_cases(tree):
+    methods = []; leaves = []; argument_rows = []
+    for node in _test_nodes(tree):
+        method = _qualified_method(node.get("nodeIdentifier"))
+        if method not in EXPECTED_CASES["transactionrenewal"] or node.get("result") != "Passed":
+            raise ValueError("Unexpected/skipped/failed transaction test method")
+        methods.append(method)
+        if method in PARAMETER_CASES:
+            values = _argument_values(node, PARAMETER_CASES[method])
+            argument_rows.append({"method": method, "parameter": PARAMETER_CASES[method], "values": values,
+                                  "nodeIdentifier": node["nodeIdentifier"], "nodeIdentifierURL": node.get("nodeIdentifierURL")})
+            leaves.extend(method + "[interrupt=" + value + "]" for value in values)
+        else:
+            stack = list(node.get("children", [])); runs = 0
+            while stack:
+                child = stack.pop()
+                if not isinstance(child, dict): raise ValueError("Malformed ordinary run")
+                kind = child.get("nodeType")
+                if kind in ("Arguments", "Repetition", "Test Case"): raise ValueError("Unexpected ordinary arguments/retries/duplicate case")
+                if kind == "Test Case Run":
+                    runs += 1
+                    if child.get("result") != "Passed": raise ValueError("Incomplete ordinary test run")
+                stack.extend(child.get("children", []))
+            if runs > 1: raise ValueError("Duplicate actual ordinary executions")
+            leaves.append(method)
+    expected = EXPECTED_CASES["transactionrenewal"]
+    if len(methods) != 178 or set(methods) != expected or len(leaves) != 180 or len(set(leaves)) != 180:
+        raise ValueError("Actual qualified methods or exact argument leaves differ from transactionrenewal")
+    return {"expectedTests": 180, "expectedQualifiedMethodDefinitions": 178,
+            "passedMethodIdentifiers": sorted(methods), "passedCaseIdentifiers": sorted(leaves),
+            "passedArgumentCases": sorted(argument_rows, key=lambda row: row["method"])}
+
+
+def _capture_xcresult(argv, output, seconds=45, maximum=16_777_216):
+    """Fixed public tool, bounded pipes/time; no credentials or shell strings."""
+    if output.exists(): raise ValueError("Refusing to overwrite original xcresult export")
+    started = time.monotonic(); data = bytearray(); stderr = bytearray()
+    lock = threading.Lock(); changed = threading.Event(); state = {"ended": 0, "oversized": False}
+    process = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    def read_pipe(stream, target):
+        try:
+            while True:
+                raw = stream.read1(65536)
+                if not raw: break
+                with lock:
+                    if len(data) + len(stderr) + len(raw) > maximum:
+                        state["oversized"] = True; changed.set(); break
+                    target.extend(raw)
+        finally:
+            with lock: state["ended"] += 1
+            changed.set()
+    readers = [threading.Thread(target=read_pipe, args=(stream, target), daemon=True)
+               for stream, target in ((process.stdout, data), (process.stderr, stderr))]
+    for reader in readers: reader.start()
+    timed_out = False
+    def stop():
+        if os.name == "posix":
+            try: os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError: pass
+        elif process.poll() is None: process.kill()
+    try:
+        while True:
+            with lock: done = state["ended"] == 2; oversized = state["oversized"]
+            if oversized or (done and process.poll() is not None): break
+            remaining = seconds - (time.monotonic() - started)
+            if remaining <= 0: timed_out = True; break
+            changed.wait(min(remaining, 0.1)); changed.clear()
+        if timed_out or oversized: stop()
+        status = process.wait(timeout=5)
+    finally:
+        if process.poll() is None: stop(); process.wait(timeout=5)
+        for reader in readers: reader.join(timeout=5)
+        for stream in (process.stdout, process.stderr): stream.close()
+    if any(reader.is_alive() for reader in readers): raise ValueError("xcresult pipe did not drain after termination")
+    output.write_bytes(data)
+    error_path = output.with_suffix(output.suffix + ".stderr.log"); error_path.write_bytes(stderr)
+    return {"argv": argv, "exitCode": status, "timedOut": timed_out, "oversized": oversized,
+            "output": output.name, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+            "stderr": error_path.name, "stderrBytes": len(stderr), "stderrSHA256": hashlib.sha256(stderr).hexdigest()}
+
+
+def collect_xcresult(work, group, native_exit):
+    if group not in selected_cases() or type(native_exit) is not int or not 0 <= native_exit <= 255:
+        raise ValueError("Invalid selected xcresult export")
+    bundle = smoke.config.checked_path(work / (group + ".xcresult"))
+    commands = []
+    for name in ("summary", "tests"):
+        target = work / (group + ("-summary.json" if name == "summary" else "-tests.json"))
+        if not target.exists():
+            commands.append(_capture_xcresult(["xcrun", "xcresulttool", "get", "test-results", name, "--path", str(bundle)], target))
+    parameter_exports = []
+    if group == "transactionrenewal":
+        for command in ("tests", "test-details"):
+            target = work / ("xcresulttool-" + command + "-help.log")
+            if not target.exists(): commands.append(_capture_xcresult(["xcrun", "xcresulttool", "get", "test-results", command, "--help"], target, maximum=1_048_576))
+        try:
+            nodes = _test_nodes(smoke.read_json(work / (group + "-tests.json")))
+            for index, method in enumerate(sorted(PARAMETER_CASES)):
+                matches = [node for node in nodes if _qualified_method(node.get("nodeIdentifier")) == method]
+                if len(matches) != 1: raise ValueError("Actual parameter method is missing or duplicated")
+                node = matches[0]; identifier = node.get("nodeIdentifierURL") or node["nodeIdentifier"]
+                target = work / ("transaction-parameter-" + str(index) + ".json")
+                if target.exists(): raise ValueError("Refusing to overwrite parameter detail evidence")
+                command = _capture_xcresult(["xcrun", "xcresulttool", "get", "test-results", "test-details", "--path", str(bundle), "--test-id", identifier], target)
+                commands.append(command); parameter_exports.append({"method": method, "testID": identifier, "file": target.name})
+        except (ValueError, KeyError, FileNotFoundError, json.JSONDecodeError) as error:
+            parameter_exports.append({"error": str(error)[:1024]})
+    record = {"schemaVersion": 1, "group": group, "originalXCTestExitCode": native_exit,
+              "commands": commands, "parameterExports": parameter_exports,
+              "meaning": "Original raw exports only; nonzero XCTest exit never becomes passing methods."}
+    smoke.config.write_new_json(work / (group + "-extraction.json"), record)
+    return record
+
+
+def verify_transaction_details(work, tree):
+    cases = verify_transaction_cases(tree)
+    extraction = smoke.read_json(work / "transactionrenewal-extraction.json")
+    if extraction.get("group") != "transactionrenewal" or type(extraction.get("originalXCTestExitCode")) is not int or extraction["originalXCTestExitCode"] != 0:
+        raise ValueError("Actual XCTest invocation did not succeed")
+    commands = extraction.get("commands")
+    if not isinstance(commands, list) or len(commands) != 6 or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0 or row.get("timedOut") is not False or row.get("oversized") is not False for row in commands):
+        raise ValueError("Missing/failed bounded original xcresult exports")
+    bundle = str(smoke.config.checked_path(work / "transactionrenewal.xcresult"))
+    wanted = {
+        "transactionrenewal-summary.json": ["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", bundle],
+        "transactionrenewal-tests.json": ["xcrun", "xcresulttool", "get", "test-results", "tests", "--path", bundle],
+        "xcresulttool-tests-help.log": ["xcrun", "xcresulttool", "get", "test-results", "tests", "--help"],
+        "xcresulttool-test-details-help.log": ["xcrun", "xcresulttool", "get", "test-results", "test-details", "--help"],
+    }
+    for index, row in enumerate(cases["passedArgumentCases"]):
+        wanted["transaction-parameter-" + str(index) + ".json"] = ["xcrun", "xcresulttool", "get", "test-results", "test-details", "--path", bundle, "--test-id", row["nodeIdentifierURL"] or row["nodeIdentifier"]]
+    if len({row.get("output") for row in commands}) != 6 or {row.get("output") for row in commands} != set(wanted):
+        raise ValueError("Missing/duplicate/unreviewed raw exporter command set")
+    for row in commands:
+        if row.get("argv") != wanted[row["output"]]: raise ValueError("Raw export is not bound to this one actual xcresult")
+        for path_key, size_key, hash_key in (("output", "bytes", "sha256"), ("stderr", "stderrBytes", "stderrSHA256")):
+            name = row.get(path_key)
+            if not isinstance(name, str) or Path(name).name != name: raise ValueError("Unsafe xcresult evidence path")
+            raw, fact = _bounded_fact(work / name, 16_777_216)
+            if fact != {"bytes": row.get(size_key), "sha256": row.get(hash_key)}: raise ValueError("xcresult raw export changed")
+    exports = extraction.get("parameterExports")
+    if not isinstance(exports, list) or len(exports) != 2: raise ValueError("Missing actual parameter details")
+    for row in cases["passedArgumentCases"]:
+        export = [item for item in exports if item.get("method") == row["method"]]
+        if len(export) != 1: raise ValueError("Parameter details are duplicated or missing")
+        item = export[0]; expected_id = row["nodeIdentifierURL"] or row["nodeIdentifier"]
+        if item.get("testID") != expected_id or Path(item.get("file", "")).name != item.get("file"):
+            raise ValueError("Parameter detail is not bound to the actual qualified node")
+        detail = smoke.read_json(work / item["file"])
+        if (detail.get("testIdentifier") != row["nodeIdentifier"] or detail.get("testResult") != "Passed"
+                or (row["nodeIdentifierURL"] is not None and detail.get("testIdentifierURL") != row["nodeIdentifierURL"])):
+            raise ValueError("Actual qualified parameter detail identity/result differs")
+        if not isinstance(detail.get("testRuns"), list) or not detail["testRuns"]:
+            raise ValueError("Missing actual detailed parameter runs")
+        # Detailed expression/value nesting varies by Xcode version. Exact Bool
+        # leaves are the Arguments nodes of the qualified tests tree above;
+        # preserve full raw test-details and independently bind its identity/result.
+    tests_help = (work / "xcresulttool-tests-help.log").read_text(encoding="utf-8")
+    details_help = (work / "xcresulttool-test-details-help.log").read_text(encoding="utf-8")
+    if any(field not in tests_help for field in ("Arguments", "nodeIdentifier", "result")) or any(field not in details_help for field in ("testIdentifier", "testResult", "testRuns")):
+        raise ValueError("Installed xcresulttool does not declare the reviewed argument/result schema")
+    return cases
+
+
 def verify_cases(tree, group):
+    if group == "transactionrenewal": return verify_transaction_cases(tree)
     if group not in EXPECTED_CASES:
         raise ValueError("Unknown renewal test group")
     if not isinstance(tree, dict) or not isinstance(tree.get("testNodes"), list):
@@ -804,6 +1060,11 @@ def result(work):
             or inputs.get("selectionMode") != mode
             or inputs.get("intendedTests") != {key: sorted(value) for key, value in cases.items()}):
         raise ValueError("Renewal source-input audit changed or differs from this source")
+    if mode == "transactionrenewal":
+        contract = {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}
+        if json.dumps(inputs.get("intendedArgumentCases"), sort_keys=True) != json.dumps(contract, sort_keys=True) or inputs.get("intendedQualifiedMethodDefinitions") != 178 or inputs.get("intendedArgumentLeafCount") != 180:
+            raise ValueError("Transaction argument source-input audit changed")
+        verify_transaction_details(work, smoke.read_json(work / "transactionrenewal-tests.json"))
     settings = smoke.read_json(work / "build-settings.json")
     matches = [entry["buildSettings"] for entry in settings if entry.get("target") == smoke.config.MAIN_TARGET]
     if len(matches) != 1:
@@ -828,11 +1089,11 @@ def result(work):
     groups = {}
     for group in cases:
         groups[group] = {
-            **smoke.verify_summary(smoke.read_json(work / (group + "-summary.json")), len(EXPECTED_CASES[group])),
+            **smoke.verify_summary(smoke.read_json(work / (group + "-summary.json")), expected_leaf_count(group)),
             **verify_cases(smoke.read_json(work / (group + "-tests.json")), group),
         }
     sdk_evidence = None
-    if mode == "integratedrenewal":
+    if mode in SDK_MODES:
         for phase in ("before-build", "after-tests"):
             stored = smoke.read_json(work / ("sdk-fixture-" + phase + ".json"))
             current = verify_sdk_fixture(work, phase, save=False)
@@ -841,8 +1102,11 @@ def result(work):
     evidence = {}
     evidence_names = ["build-settings.json", "source-inputs.json", "overlays.json", "project-overlay.json", "info-overlay.json"]
     evidence_names += [group + suffix for group in cases for suffix in ("-summary.json", "-tests.json")]
-    if mode == "integratedrenewal":
+    if mode in SDK_MODES:
         evidence_names += ["sdk-fixture-binding.json", "sdk-fixture-before-build.json", "sdk-fixture-after-tests.json", "sdk-test-build-settings.json"]
+    if mode == "transactionrenewal":
+        extraction = smoke.read_json(work / "transactionrenewal-extraction.json")
+        evidence_names += ["transactionrenewal-extraction.json"] + [key for row in extraction["commands"] for key in (row["output"], row["stderr"])]
     for name in evidence_names:
         evidence[name] = smoke.config.digest(work / name)
     return {"schemaVersion": 2, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
@@ -854,8 +1118,8 @@ def result(work):
             "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "sourceInputs": inputs["sourceInputs"], "evidenceSHA256": evidence,
             "builtDiscoveryMetadata": metadata,
-            "runtimeSourceOnly": True, "ipaGenerated": mode == "integratedrenewal", "ipaUploaded": mode == "integratedrenewal",
-            "ipaKind": "owned-sdk-fixture-only" if mode == "integratedrenewal" else "none",
+            "runtimeSourceOnly": True, "ipaGenerated": mode in SDK_MODES, "ipaUploaded": mode in SDK_MODES,
+            "ipaKind": "owned-sdk-fixture-only" if mode in SDK_MODES else "none",
             "distributionIPAGenerated": False, "sdkFixtureRuntimeEvidence": sdk_evidence,
             "appleAccountUsed": False, "pairingRecordUsed": False,
             "iphoneTransportVerified": False, "physicalDeviceValidationPassed": False,
@@ -864,6 +1128,11 @@ def result(work):
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "No Apple login, real pairing, installation or renewal operation is performed."] + (
+                           ["This selection prepares 178 unique qualified method definitions and requires 180 actual leaves: each of the two reviewed Bool parameter methods must show false and true once, with zero retries/skips/failures.",
+                            "One source-bound transactionrenewal xcresult combines the prior 140 with 16 durable transaction/recovery, eight Book owner, ten metadata and four TXT/restore definitions. Actual Arguments nodes bind each Bool to its qualified parent; original raw details and installed help remain independently bound.",
+                            "The unchanged same-job owned SDK producer/resource/built-loader hash chain remains mandatory. Producer diagnostics do not establish codesign success or native methods.",
+                            "The independent ten SwiftPM XCTest cases must be re-executed after their historical compile failure; they have their own exact 19-input result and do not enter the native count.",
+                            "Durable intent and fresh cleanup/Lookup fixtures do not establish real iPhone installation, a renewed installed profile, user data retention, cold launch or automatic renewal."] if mode == "transactionrenewal" else (
                            ["This selection executes exactly 140 unique qualified native methods in one integratedrenewal xcresult: bound78 union controlled23 plus nine App owner, twelve BookChapterStorage methods excluding the benchmark, eleven whole-package and seven authenticated-installation cases.",
                             "Historical modes retain their exact leaf sets and cold/warm budgets; overlaps count once in this selected union and never become additional acceptances.",
                             "The same job executes the fixed xcrun clang/codesign producer with a short-lived owned Keychain identity. Source/commands/public raw Mach-O and generated IPA hashes are bound, the generated JSON is copied as an untracked XCTest resource, and both built bytes and the actual loader's runtime SHA marker must match before acceptance.",
@@ -872,7 +1141,7 @@ def result(work):
                             "App owner fixtures and selected chapter storage regressions do not establish Kotlin/JNI App routing, delivered persistence migration or unattended operation.",
                             "Generic explicit anchors do not establish Apple authority, real account/device/profile authorization, installation permission, cold launch, user data preservation or automatic self-renewal.",
                             "No independent package XCTest run is triggered or accepted by this selection; the earlier ten-method package checkpoint has its own result. No unchanged diagnostic network/UI or replacement-policy suite executes."]
-                             if mode == "integratedrenewal" else [
+                             if mode in SDK_MODES else [
                               "This selection executes exactly 23 owned cases in one controlledsigning xcresult: nine IPA validation/unpack, seven signing-material vault and seven controlled Mach-O signer cases.",
                               "Historical native selections retain their exact method sets and budgets; no prior native group is accepted or rerun by this selection. The independent ten package XCTest methods have a separate result and never enter this count.",
                               "Owned archives exercise bounded stored/deflate bytes and staged whole-material rechecks. Keychain fixtures use owned namespaces, actual software key handles and signed public material with CAS, cancellation, recovery and revocation checks.",
@@ -918,7 +1187,7 @@ def result(work):
                             "The explicit UI operation browses only RemotePairing, filters numeric local ownership, opens TCP and closes without an application payload.",
                             "The existing eight QueryType fixture cases remain separate from sixteen discovery cases and one UI case.",
                             "A bare TCP connection does not establish service identity or an authenticated usable transport.",
-                            "The previous fixed-loopback experiment does not exclude alternate transports; discovery fixtures and Simulator UI do not establish iPhone reachability."])}
+                            "The previous fixed-loopback experiment does not exclude alternate transports; discovery fixtures and Simulator UI do not establish iPhone reachability."]))}
 
 
 def main():
@@ -938,6 +1207,10 @@ def main():
     verify.add_argument("--tests", type=Path, required=True)
     verify.add_argument("--summary", type=Path, required=True)
     verify.add_argument("--group", choices=tuple(EXPECTED_CASES), required=True)
+    collect = commands.add_parser("collect-xcresult")
+    collect.add_argument("--work", type=Path, required=True)
+    collect.add_argument("--group", choices=tuple(EXPECTED_CASES), required=True)
+    collect.add_argument("--native-exit", type=int, required=True)
     args = parser.parse_args()
     try:
         if args.phase == "validate-tag":
@@ -948,10 +1221,12 @@ def main():
             record = stage_sdk_fixture(smoke.config.checked_path(args.work), smoke.config.checked_path(args.produced))
         elif args.phase == "verify-sdk-fixture":
             record = verify_sdk_fixture(smoke.config.checked_path(args.work), args.sdk_phase)
+        elif args.phase == "collect-xcresult":
+            record = collect_xcresult(smoke.config.checked_path(args.work), args.group, args.native_exit)
         elif args.phase == "verify-tests":
             if args.group not in selected_cases():
                 raise ValueError("Test group is not part of YUEDU_RENEWAL_SELECTION")
-            record = {**smoke.verify_summary(smoke.read_json(args.summary), len(EXPECTED_CASES[args.group])),
+            record = {**smoke.verify_summary(smoke.read_json(args.summary), expected_leaf_count(args.group)),
                       **verify_cases(smoke.read_json(args.tests), args.group)}
         else:
             work = smoke.config.checked_path(args.work)

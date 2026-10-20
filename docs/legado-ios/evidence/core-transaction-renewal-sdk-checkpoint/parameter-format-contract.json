@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "primaryReferences": [
+    {
+      "url": "https://developer.apple.com/documentation/Xcode-Release-Notes/xcode-16_3-release-notes",
+      "fact": "Apple directs consumers to installed xcresulttool command help for output format; test-details accepts testIdentifier or testIdentifierURL."
+    },
+    {
+      "url": "https://developer.apple.com/documentation/xcode/running-tests-and-interpreting-results",
+      "fact": "Parameterized tests execute independent argument combinations; qualified only-testing identifiers choose target/suite/function."
+    },
+    {
+      "url": "https://github.com/fastlane/fastlane/blob/master/trainer/lib/trainer/xcresult/test_case.rb",
+      "fact": "Primary implementation of the maintained result consumer enumerates actual Arguments children and takes their name/result under the qualified Test Case. This is corroborating parser source, not an Apple output-version guarantee."
+    }
+  ],
+  "implementedContract": "Actual tests tree Test Case nodeIdentifier must resolve to the selected qualified method. Exactly two Arguments descendants must carry false and true (optionally labeled interrupt:) once each and Passed. Retries, repeats, unexpected inputs, missing/duplicate methods and skipped/failing descendants are rejected. Detailed expression/value nesting is preserved raw without inventing a schema. The detailed qualified identity/result and installed help declarations are independently bound.",
+  "firstActualObservationStillRequired": true,
+  "unsupportedOrUnknownArgumentShape": "Fail closed; preserve original raw tree/details and help for diagnosis. Never infer or suppress duplicate arguments from summary count."
+}

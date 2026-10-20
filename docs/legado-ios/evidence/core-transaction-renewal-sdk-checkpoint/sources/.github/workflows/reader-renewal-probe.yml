@@ -1,0 +1,94 @@
+name: Local Reader Renewal Probe Tests
+
+on:
+  push:
+    tags:
+      - 'reader-renewal-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-renewal-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  probe:
+    runs-on: macos-15
+    timeout-minutes: 95
+    env:
+      LEGADO_RUNTIME_SOURCE_ONLY: '1'
+      YUEDU_RENEWAL_SELECTION: transactionrenewal
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify the exact source tag and portable evidence guards
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-probe-tools.py validate-tag
+          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-existing-guards.log
+          python -B scripts/reader-experience/test-renewal-probe-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-guards.log
+          python -B scripts/reader-experience/test-inspect-renewal-report.py -v 2>&1 | tee .build/ci-logs/reader-renewal-report-inspector-guards.log
+          python -B scripts/reader-experience/test-original-api-package-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-original-api-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py -v 2>&1 | tee .build/ci-logs/reader-renewal-producer-guards.log
+          ruby scripts/check_localizations.rb
+          bash -n scripts/reader-experience/renewal-probe-tests.sh
+          bash -n scripts/reader-experience/original-api-package-tests.sh
+      - name: Select the installed toolchain and Simulator
+        id: toolchain
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
+      - name: Execute 178 transaction definitions with 180 exact native argument leaves
+        run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
+      - name: Execute ten independent source-only macOS package XCTest cases
+        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal') }}
+        run: bash scripts/reader-experience/original-api-package-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal-original-api.log
+      - name: Preserve independent package XCTest evidence without build products
+        if: ${{ always() && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-original-api-evidence
+          path: |
+            .build/reader-renewal-original-api/
+            .build/ci-logs/reader-renewal-original-api*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve native evidence and allowlisted public SDK fixture outputs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-probe-evidence
+          path: |
+            .build/reader-renewal-probe/
+            .build/ci-logs/reader-renewal*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the limited acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This source-only Debug Simulator workflow fixes transactionrenewal. It selects 178 unique qualified native method definitions and requires 180 actual execution leaves: the prior integrated140 plus 16 durable transaction/recovery, eight Book owner, ten metadata and four TXT/restore definitions. The two reviewed Bool parameter methods require false and true exactly once under their qualified test identities. Actual Arguments nodes are checked; duplicate methods/arguments/repetitions, unknown values, failures, skips and missing cases are rejected. Original installed xcresulttool help, test tree and two qualified raw test-details are retained. Definitions and fixtures do not establish executed methods.
+
+          Native execution uses one 2700-second cold shared App/test-target budget and one xcresult. Historical all/replacement/implementation/signature/cryptography/sealedmaterials/boundmaterials/controlledsigning/integratedrenewal selections retain exact identities and budgets; the newly added host method is selected only in this new mode. No unchanged UI/network diagnostic suite, benchmark or JVM payload runs. Failed native invocations still attempt bounded raw xcresult extraction; their original nonzero exit is preserved and no partial result becomes passing acceptance.
+
+          Same-job fixed xcrun clang/codesign production with a short-lived owned Keychain identity remains mandatory. Public output allowlists/hashes, producer sources/commands, before/after source JSON, built XCTest resource and the actual loader SHA marker must agree. The generated JSON is an untracked resource without Swift source mutation. Ad-hoc original signatures cannot satisfy the CMS gate. Only the synthetic public owned IPA/code/certificates are uploaded; raw producer output stays outside the artifact. No private key/P12/password, real account, user IPA or pairing material is published. Public failure diagnostics do not establish codesign or native success.
+
+          Independent macOS SwiftPM ten-case XCTest execution is required again because the prior445 checkpoint failed test-module compilation before executing any method. Its exact19-input XML+verbose result is separate and never counted among native180. A native failure does not suppress this independent selected execution after toolchain selection succeeds.
+
+          Durable upload/Upgrade intents, fresh authenticated cleanup and Lookup-only unknown-submission recovery are controlled fixtures. Book variables/bookmarks use the original App metadata owner and preserve failure/restart boundaries. Generic anchors, Lookup, journal phases, filesystem sentinels and local TLS do not establish Apple/device/account authorization, an installed renewed profile, user data handoff/retention, cold launch, iPhone installation, unattended renewal or companion-free operation. iphoneTransportVerified, physicalDeviceValidationPassed, selfRenewalVerified and unattendedRenewalVerified remain false. Computer-powered-off and absent-companion conditions remain unmeasured.
+          Exact source hashes, reviewed Info/project overlays, synthetic cloud configuration, built local-mode metadata/privacy localizations, raw logs and xcresult are retained. Kotlin/JNI traditional-source product routing and complete compatibility remain unfinished.
+          TEXT

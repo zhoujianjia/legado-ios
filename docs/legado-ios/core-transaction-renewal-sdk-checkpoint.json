@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:20:18.355732+00:00",
+  "status": "coherent-transaction-and-book-checkpoint-prepared-portable-passed-SDK-unexecuted",
+  "canonicalInputs": {
+    "transactionAndCleanup": "c096199",
+    "bookMetadataV3": "e8ada6413357a2cab593645918944fea8b727d95",
+    "nativeAndSPMCompileCorrections": "0d486987",
+    "producerDiagnostics": "d1f705f63b08dae74d06771192edd38eb73cafaf"
+  },
+  "sourceBinding": {
+    "ownedFileCount": 4,
+    "files": [
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 7321,
+        "sha256": "347bd7b0c921f7542bd5405917107e802322d7e2633f276ad892d5535808dac8"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 86381,
+        "sha256": "d5bb69cb1a17b45539eb6441997d2fb481622cb442763b1a9d99e2639526810e"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 40978,
+        "sha256": "c27e155405f3ba65c8975dbed8d8db890dcb4cde1a37ab3b7a2c5541730c6c09"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 103085,
+        "sha256": "323dfd11b242d715cd85617adc955233a4a9f28adfd457520379156ce9f7becc"
+      }
+    ],
+    "sourceInputCount": 134,
+    "sourceSelectionInventory": {
+      "path": ".build/renewal-discovery/transaction-renewal-selection-gates/source-selection-inventory.json",
+      "bytes": 61286,
+      "sha256": "cc802bb6c00892aa9d781823ac65a89d2b67a80276a9087d5d12b0d9f8a15f1f"
+    },
+    "sameBytesAsExecutedPortableSnapshot": true
+  },
+  "nativeSelection": {
+    "mode": "transactionrenewal",
+    "qualifiedMethodDefinitions": 178,
+    "plannedExactArgumentLeaves": 180,
+    "compositionDefinitions": {
+      "priorIntegrated": 140,
+      "transactionAndCleanup": 16,
+      "newBookMetadataAndTypedInput": 8,
+      "existingMetadata": 10,
+      "TXTAndRestore": 4
+    },
+    "argumentContract": {
+      "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": {
+        "parameter": "interrupt",
+        "values": [
+          false,
+          true
+        ]
+      },
+      "AozoraTXTTests/storedV6LocationsMigrateOnce": {
+        "parameter": "interrupt",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    "xcresultCount": 1,
+    "coldTimeoutSeconds": 2700,
+    "allHistoricalModeDefinitionContracts": {
+      "all": 30,
+      "replacement": 5,
+      "implementation": 11,
+      "signature": 9,
+      "cryptography": 25,
+      "sealedmaterials": 48,
+      "boundmaterials": 78,
+      "controlledsigning": 23,
+      "integratedrenewal": 140,
+      "transactionrenewal": 178
+    },
+    "oldHostSelectionsRemainExplicitNineMethods": true,
+    "actualSDKMethodExecutions": 0
+  },
+  "independentSPM": {
+    "requiredRerun": true,
+    "qualifiedXCTestMethods": 10,
+    "sourceInputCount": 19,
+    "nativeCountIncludesSPM": false,
+    "reason": "445 checkpoint actually failed test-module compilation (Bool property called as function), executing zero methods. It cannot be reused as passed.",
+    "historicalActualAudit": {
+      "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/spm-independent-audit/audit.json",
+      "bytes": 16198,
+      "sha256": "6969cba13456a15f0de58a9aae105e7bd1fbdd311fef35ed2f110efdcd52ab48"
+    }
+  },
+  "sdkProducer": {
+    "sameJob": true,
+    "fiveProducerSourceContractUnchanged": true,
+    "allowlistedPublicOutputCount": 43,
+    "untrackedResource": "Tests/iOS/yuedu appTests/owned-sdk-package.json",
+    "beforeAfterSourceBuiltAndRuntimeLoaderHashChainRequired": true,
+    "requiredActualSDKProducedMethod": "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+    "actualProducerExecutedLocally": false,
+    "existingSixPortableDiagnosticsReusedWithoutRerun": {
+      "preparation": {
+        "path": ".build/renewal-discovery/sdk-producer-failure-step/preparation.json",
+        "bytes": 10458,
+        "sha256": "d2ac7ece467b784096ab34271429eaabfaef530be006b37f79a5f357fcb836f8"
+      },
+      "log": {
+        "path": ".build/renewal-discovery/sdk-producer-failure-step/portable-v2.log",
+        "bytes": 1153,
+        "sha256": "b0b6e540a551cdb97afdd8d61a0d8335b743ba60ce66ac745a0a96e82ecdbd12"
+      },
+      "canonicalThreeSourcesSameBytesAsTested": true,
+      "newAcceptanceCountedAgain": false
+    }
+  },
+  "failureEvidence": {
+    "rawSummaryAndTestsPreservedAfterNonzeroXCTest": true,
+    "actualNativeExitAlwaysPreservedEvenIfExportFails": true,
+    "exportsPerCommandTimeoutSeconds": 45,
+    "exportsPerCommandCombinedStdoutStderrBytes": 16777216,
+    "helpByteLimit": 1048576,
+    "privateDataOrCredentialsUsed": false,
+    "oneResultBundleOnly": true,
+    "rawExporterCommandsAndHashesRequiredForAcceptance": true,
+    "unknownParameterShapesNeverAccepted": true
+  },
+  "validation": {
+    "newlyExecutedPortable": [
+      {
+        "name": "renewal-guards",
+        "passed": 47,
+        "failures": 0,
+        "errors": 0,
+        "log": ".build/renewal-discovery/transaction-renewal-selection-gates/renewal-guards-v1.log",
+        "sha256": "4423cc9ed59254a55c58175a549ddf6586152fe4709b3e3e5a79af624a367962"
+      },
+      {
+        "name": "existing-smoke-guards",
+        "passed": 24,
+        "failures": 0,
+        "errors": 0,
+        "log": ".build/renewal-discovery/transaction-renewal-selection-gates/existing-smoke-guards-v1.log",
+        "sha256": "80bec2e2343656b9b9e2253df071f2b41a20a14e4a62284327ce1b4c4d0e2a28"
+      },
+      {
+        "name": "report-inspector-guards",
+        "passed": 32,
+        "failures": 0,
+        "errors": 0,
+        "log": ".build/renewal-discovery/transaction-renewal-selection-gates/report-inspector-guards-v1.log",
+        "sha256": "326c17d830a43e936a8f4912ec8736faeda79fdd28da9136a382c280eac61cc0"
+      },
+      {
+        "name": "original-api-guards",
+        "passed": 12,
+        "failures": 0,
+        "errors": 0,
+        "log": ".build/renewal-discovery/transaction-renewal-selection-gates/original-api-guards-v1.log",
+        "sha256": "7b67bc72fc9873f415fbde2d7e9e57bf5d1a39146af507f521991a2fb5e24f65"
+      }
+    ],
+    "newlyExecutedPortableMethodsTotal": 115,
+    "shellAndWorkflow": [
+      {
+        "name": "bash-syntax",
+        "argv": [
+          "D:/app/Git/bin/bash.exe",
+          "-n",
+          "scripts/reader-experience/renewal-probe-tests.sh"
+        ],
+        "exitCode": 0,
+        "elapsedSeconds": 0.078,
+        "log": ".build/renewal-discovery/transaction-renewal-selection-gates/bash-syntax-v1.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "workflow-actionlint",
+        "argv": [
+          "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+          "-color",
+          ".github/workflows/reader-renewal-probe.yml"
+        ],
+        "exitCode": 0,
+        "elapsedSeconds": 0.063,
+        "log": ".build/renewal-discovery/transaction-renewal-selection-gates/workflow-actionlint-v1.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "firstNecessaryExecutionPassed": true,
+    "pythonSyntaxParsed": true,
+    "SwiftSDKExecuted": false,
+    "SwiftCompilerExecuted": false,
+    "SwiftPMExecuted": false,
+    "JVMExecuted": false,
+    "CIOrCloudRunQueries": 0,
+    "GitCommands": 0
+  },
+  "remaining": [
+    "178 method definitions and 180 planned argument leaves are not actual Simulator passes; exact installed-tool output still requires SDK observation.",
+    "Portable guard fixtures include mock xcresult JSON and actual owned Python child processes; these do not execute Xcode or a real installation.",
+    "Parameter values are read only from actual qualified Arguments nodes, not inferred from method display titles, summary count or source definitions.",
+    "Producer diagnostics do not prove codesign success or resolve the prior framework exit1 without actual public stderr.",
+    "The independent ten SwiftPM methods have a separate exact19-input XML/verbose result and never enter native180.",
+    "No UI diagnostic/benchmark/JVM replay, physical-device installation, installed profile renewal, user data handoff, cold launch, Apple authorization or unattended renewal is established."
+  ],
+  "acceptance": {
+    "iphoneTransportVerified": false,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false
+  },
+  "parameterOutputContract": "docs/legado-ios/evidence/core-transaction-renewal-sdk-checkpoint/parameter-format-contract.json",
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-transaction-renewal-sdk-checkpoint",
+    "manifest": "manifest.json",
+    "rawFiles": 15
+  },
+  "futureInstalledMaterialPositionSourceAndCookieDraftsIncluded": false,
+  "actualNativeAccepted": 0,
+  "actualSPMAccepted": 0,
+  "newCloudBuildRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

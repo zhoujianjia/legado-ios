@@ -11,6 +11,8 @@ import os
 from pathlib import Path
 import plistlib
 import re
+import subprocess
+import sys
 import tempfile
 import zipfile
 import unittest
@@ -76,10 +78,17 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         return stack
 
     def tree(self, group):
-        return {"testNodes": [{"nodeType": "Test Plan", "name": "All tests", "children": [
-            {"nodeType": "Test Case", "nodeIdentifier": "target/" + case + "()",
-             "name": case.split("/")[-1] + "()", "result": "Passed"}
-            for case in sorted(probe.EXPECTED_CASES[group])]}]}
+        cases = []
+        for case in sorted(probe.EXPECTED_CASES[group]):
+            parameter = probe.PARAMETER_CASES.get(case) if group == "transactionrenewal" else None
+            identifier = "target/" + case + ("(interrupt:)" if parameter else "()")
+            node = {"nodeType": "Test Case", "nodeIdentifier": identifier, "name": case.split("/")[-1] + "()", "result": "Passed"}
+            if parameter:
+                node["nodeIdentifierURL"] = "test://owned/" + identifier
+                node["children"] = [{"nodeType": "Arguments", "name": value, "result": "Passed",
+                                     "children": [{"nodeType": "Test Case Run", "result": "Passed"}]} for value in ("false", "true")]
+            cases.append(node)
+        return {"testNodes": [{"nodeType": "Test Plan", "name": "All tests", "children": cases}]}
 
     def built_fixture(self):
         probe.prepare(self.work)
@@ -106,7 +115,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(app.parent),
             "FULL_PRODUCT_NAME": app.name}}])
         for group in probe.selected_cases():
-            count = len(probe.EXPECTED_CASES[group])
+            count = probe.expected_leaf_count(group)
             self.write_json(group + "-summary.json", {"totalTestCount": count, "passedTests": count,
                                                       "failedTests": 0, "skippedTests": 0})
             self.write_json(group + "-tests.json", self.tree(group))
@@ -169,9 +178,33 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         marker = (probe.SDK_MARKER + " resourceSHA256=" + binding["resource"]["sha256"] +
                   " resourceBytes=" + str(len(resource)) + " archiveSHA256=" + binding["archive"]["sha256"] +
                   " archiveBytes=" + str(binding["archive"]["bytes"]) + "\n")
-        self.write(self.work / "integratedrenewal-tests.log", marker.encode())
+        self.write(self.work / (probe.selection_mode() + "-tests.log"), marker.encode())
         probe.verify_sdk_fixture(self.work, "after-tests")
         return directory, bundle
+
+    def transaction_details_fixture(self, native_exit=0):
+        tree = self.tree("transactionrenewal")
+        commands = []; exports = []
+        bundle = str(self.work / "transactionrenewal.xcresult")
+        def command(name, raw, argv):
+            path = self.work / name; self.write(path, raw); self.write(path.with_suffix(path.suffix + ".stderr.log"), b"")
+            commands.append({"argv": argv, "exitCode": 0, "timedOut": False, "oversized": False,
+                "output": name, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+                "stderr": name + ".stderr.log", "stderrBytes": 0, "stderrSHA256": hashlib.sha256(b"").hexdigest()})
+        command("transactionrenewal-summary.json", (self.work / "transactionrenewal-summary.json").read_bytes(), ["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", bundle])
+        command("transactionrenewal-tests.json", (self.work / "transactionrenewal-tests.json").read_bytes(), ["xcrun", "xcresulttool", "get", "test-results", "tests", "--path", bundle])
+        command("xcresulttool-tests-help.log", b"nodeIdentifier result Arguments", ["xcrun", "xcresulttool", "get", "test-results", "tests", "--help"])
+        command("xcresulttool-test-details-help.log", b"testIdentifier testResult testRuns", ["xcrun", "xcresulttool", "get", "test-results", "test-details", "--help"])
+        nodes = probe._test_nodes(tree)
+        for index, method in enumerate(sorted(probe.PARAMETER_CASES)):
+            node = next(node for node in nodes if probe._qualified_method(node["nodeIdentifier"]) == method)
+            name = "transaction-parameter-" + str(index) + ".json"
+            detail = {"testIdentifier": node["nodeIdentifier"], "testIdentifierURL": node["nodeIdentifierURL"],
+                      "testResult": "Passed", "testRuns": node["children"]}
+            command(name, json.dumps(detail).encode(), ["xcrun", "xcresulttool", "get", "test-results", "test-details", "--path", bundle, "--test-id", node["nodeIdentifierURL"]])
+            exports.append({"method": method, "file": name, "testID": node["nodeIdentifierURL"]})
+        self.write_json("transactionrenewal-extraction.json", {"schemaVersion": 1, "group": "transactionrenewal",
+            "originalXCTestExitCode": native_exit, "commands": commands, "parameterExports": exports})
 
     def test_new_tag_is_explicit_and_does_not_widen_default_smoke(self):
         with self.context():
@@ -206,7 +239,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(len(record["intendedTests"]["replacement"]), 5)
             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
             paths = {item["path"] for item in record["sourceInputs"]}
-            self.assertEqual(len(record["sourceInputs"]), 110)
+            self.assertEqual(len(record["sourceInputs"]), 134)
             self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
                              "scripts/reader-experience/renewal-report-schema1.py",
                              "scripts/reader-experience/test-inspect-renewal-report.py",
@@ -248,7 +281,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         for group in probe.EXPECTED_CASES:
             with self.subTest(group=group):
                 result = probe.verify_cases(self.tree(group), group)
-                self.assertEqual(set(result["passedCaseIdentifiers"]), probe.EXPECTED_CASES[group])
+                self.assertEqual(set(result.get("passedMethodIdentifiers", result["passedCaseIdentifiers"])), probe.EXPECTED_CASES[group])
                 for change in ("duplicate", "empty", "unrelated", "skipped", "failed", "missing-id"):
                     tree = self.tree(group)
                     cases = tree["testNodes"][0]["children"]
@@ -277,7 +310,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["targetedTests"]["discovery"]["totalTestCount"], 16)
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
             self.assertEqual(result["targetedTests"]["ui"]["totalTestCount"], 1)
-            self.assertEqual(result["unselectedTestGroups"], ["materials", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"])
+            self.assertEqual(result["unselectedTestGroups"], ["materials", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"])
             self.assertEqual(result["executionPlatform"], "ios-simulator")
             for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",
                         "physicalDeviceValidationPassed", "appleAccountUsed", "pairingRecordUsed",
@@ -459,7 +492,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             inputs = smoke.read_json(self.work / "source-inputs.json")
             self.assertEqual(inputs["selectionMode"], "replacement")
             self.assertEqual(inputs["intendedTests"], {"replacement": sorted(probe.EXPECTED_CASES["replacement"])})
-            for group in ("unit", "discovery", "materials", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            for group in ("unit", "discovery", "materials", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 self.assertFalse((self.work / (group + "-summary.json")).exists())
                 self.assertFalse((self.work / (group + "-tests.json")).exists())
                 # Even unrelated leftover files cannot become accepted test evidence.
@@ -469,8 +502,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["selectionMode"], "replacement")
             self.assertEqual(set(result["targetedTests"]), {"replacement"})
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
-            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "materials", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"})
-            for mode in ("all", "implementation", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "materials", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"})
+            for mode in ("all", "implementation", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -504,7 +537,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                 self.assertEqual(probe.selection_mode(), "all")
             self.built_fixture()
             original = smoke.read_json(self.work / "source-inputs.json")
-            for mode in ("replacement", "implementation", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            for mode in ("replacement", "implementation", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -523,8 +556,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "implementation")
             self.assertEqual(inputs["intendedTests"], expected)
             self.assertEqual(sum(map(len, expected.values())), 11)
-            self.assertEqual(len(inputs["sourceInputs"]), 110)
-            for group in ("unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            self.assertEqual(len(inputs["sourceInputs"]), 134)
+            for group in ("unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
                     self.write(self.work / (group + suffix), b"unselected evidence must not be read")
@@ -532,11 +565,11 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(set(result["targetedTests"]), {"replacement", "materials"})
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
             self.assertEqual(result["targetedTests"]["materials"]["totalTestCount"], 6)
-            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"})
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"})
             for group in result["unselectedTestGroups"]:
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertNotIn(group + suffix, result["evidenceSHA256"])
-            for mode in ("all", "replacement", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            for mode in ("all", "replacement", "signature", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -587,11 +620,11 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         expected = {"all": {"unit", "discovery", "replacement", "ui"},
                     "replacement": {"replacement"}, "implementation": {"replacement", "materials"},
                     "signature": {"signature"}, "cryptography": {"cryptography"},
-                    "sealedmaterials": {"sealedmaterials"}, "boundmaterials": {"boundmaterials"}, "controlledsigning": {"controlledsigning"}, "integratedrenewal": {"integratedrenewal"}}
+                    "sealedmaterials": {"sealedmaterials"}, "boundmaterials": {"boundmaterials"}, "controlledsigning": {"controlledsigning"}, "integratedrenewal": {"integratedrenewal"}, "transactionrenewal": {"transactionrenewal"}}
         with self.context():
             for mode, groups in expected.items():
                 for group in probe.EXPECTED_CASES:
-                    count = len(probe.EXPECTED_CASES[group])
+                    count = probe.expected_leaf_count(group)
                     self.write_json("cli-summary.json", {"totalTestCount": count, "passedTests": count,
                                                          "failedTests": 0, "skippedTests": 0})
                     self.write_json("cli-tests.json", self.tree(group))
@@ -617,15 +650,15 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "signature")
             self.assertEqual(inputs["intendedTests"], {"signature": sorted(probe.EXPECTED_CASES["signature"])})
             self.assertEqual(len(inputs["intendedTests"]["signature"]), 9)
-            self.assertEqual(len(inputs["sourceInputs"]), 110)
-            for group in ("unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            self.assertEqual(len(inputs["sourceInputs"]), 134)
+            for group in ("unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
                     self.write(self.work / (group + suffix), b"unselected evidence is not accepted")
             result = probe.result(self.work)
             self.assertEqual(set(result["targetedTests"]), {"signature"})
             self.assertEqual(result["targetedTests"]["signature"]["totalTestCount"], 9)
-            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"})
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"})
             for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",
                         "physicalDeviceValidationPassed", "appleAccountUsed", "pairingRecordUsed",
                         "ipaGenerated", "ipaUploaded", "serviceIdentityVerified"):
@@ -634,7 +667,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             for group in result["unselectedTestGroups"]:
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertNotIn(group + suffix, result["evidenceSHA256"])
-            for mode in ("all", "replacement", "implementation", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            for mode in ("all", "replacement", "implementation", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -693,7 +726,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "cryptography")
             self.assertEqual(inputs["intendedTests"], {"cryptography": sorted(probe.EXPECTED_CASES["cryptography"])})
             self.assertEqual(len(inputs["intendedTests"]["cryptography"]), 25)
-            self.assertEqual(len(inputs["sourceInputs"]), 110)
+            self.assertEqual(len(inputs["sourceInputs"]), 134)
             for group in probe.EXPECTED_CASES:
                 if group == "cryptography":
                     continue
@@ -715,7 +748,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             for group in result["unselectedTestGroups"]:
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertNotIn(group + suffix, result["evidenceSHA256"])
-            for mode in ("all", "replacement", "implementation", "signature", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            for mode in ("all", "replacement", "implementation", "signature", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -785,7 +818,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             expected = probe.EXPECTED_CASES["sealedmaterials"]
             self.assertEqual(inputs["selectionMode"], "sealedmaterials")
             self.assertEqual(inputs["intendedTests"], {"sealedmaterials": sorted(expected)})
-            self.assertEqual(len(inputs["sourceInputs"]), 110)
+            self.assertEqual(len(inputs["sourceInputs"]), 134)
             self.assertEqual(len(expected), 48)
             self.assertTrue(probe.EXPECTED_CASES["cryptography"] | probe.EXPECTED_CASES["materials"] <= expected)
             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE,
@@ -809,7 +842,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                         "ipaGenerated", "ipaUploaded", "serviceIdentityVerified"):
                 self.assertIs(result[key], False, key)
             self.assertIn("Nested requirements", " ".join(result["limitations"]))
-            for mode in ("all", "replacement", "implementation", "signature", "cryptography", "boundmaterials", "controlledsigning", "integratedrenewal"):
+            for mode in ("all", "replacement", "implementation", "signature", "cryptography", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -887,7 +920,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             expected = probe.EXPECTED_CASES["boundmaterials"]
             self.assertEqual(inputs["selectionMode"], "boundmaterials")
             self.assertEqual(inputs["intendedTests"], {"boundmaterials": sorted(expected)})
-            self.assertEqual(len(inputs["sourceInputs"]), 110)
+            self.assertEqual(len(inputs["sourceInputs"]), 134)
             self.assertEqual(len(expected), 78)
             self.assertTrue(probe.EXPECTED_CASES["sealedmaterials"] <= expected)
             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE, probe.PROFILE_SUITE,
@@ -997,7 +1030,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             # declarations explicitly carrying Swift Testing's @Test are leaves.
             methods = re.findall(r"(?m)^[ \t]*@Test(?:\([^\n]*\))?[ \t]*\n[ \t]*func[ \t]+(\w+)[ \t]*\(", text)
             self.assertEqual(len(methods), len(set(methods)), suite)
-            actual.update(suite + "/" + method for method in methods)
+            actual.update(suite + "/" + method for method in methods if suite != probe.PERSISTENT_STATE_SUITE or suite + "/" + method in probe.EXPECTED_CASES["boundmaterials"])
         self.assertEqual(actual, probe.EXPECTED_CASES["boundmaterials"])
 
     def test_boundmaterials_wrapper_and_workflow_keep_one_cold_result_and_legacy_modes(self):
@@ -1008,10 +1041,11 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(body.count('bash "$REPO_DIR/scripts/xctest.sh"'), 1)
         self.assertIn('-t 2700 --', body)
         self.assertEqual(body.count('-resultBundlePath "$WORK/boundmaterials.xcresult"'), 1)
-        self.assertEqual(set(re.findall(r"-only-testing:'yuedu appTests/([^']+)'", body)),
-                         {probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE, probe.PROFILE_SUITE,
-                          probe.MATERIALS_SUITE, probe.SIGNED_CODE_SUITE, probe.RESOURCE_SUITE,
-                          probe.NESTED_SUITE, probe.MODERN_PROFILE_SUITE, probe.APPLICATION_MATERIAL_SUITE, probe.PERSISTENT_STATE_SUITE})
+        selected = set(re.findall(r"-only-testing:'yuedu appTests/([^']+)'", body))
+        expected = probe.EXPECTED_CASES["boundmaterials"]
+        self.assertEqual({case for case in expected if case in selected or case.split("/")[0] in selected}, expected)
+        self.assertNotIn(probe.PERSISTENT_STATE_SUITE, selected)
+        self.assertEqual(sum(item.startswith(probe.PERSISTENT_STATE_SUITE + "/") for item in selected), 9)
         for forbidden in (probe.UNIT_SUITE, probe.DISCOVERY_SUITE, probe.REPLACEMENT_SUITE, probe.UI_SUITE):
             self.assertNotIn(forbidden, body)
         self.assertIn('$YUEDU_RENEWAL_SELECTION != boundmaterials', wrapper)
@@ -1021,17 +1055,17 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertIsNotNone(old)
             self.assertIn('-t 2700 --', old.group(1))
         workflow = (HERE.parent.parent / ".github/workflows/reader-renewal-probe.yml").read_text(encoding="utf-8")
-        self.assertIn('YUEDU_RENEWAL_SELECTION: integratedrenewal', workflow)
+        self.assertIn('YUEDU_RENEWAL_SELECTION: transactionrenewal', workflow)
         self.assertIn('LEGADO_RUNTIME_SOURCE_ONLY: \'1\'', workflow)
-        self.assertIn('executes exactly 140 unique qualified native methods', workflow)
-        self.assertIn('Generic explicit anchors do not establish Apple', workflow)
+        self.assertIn('selects 178 unique qualified native method definitions', workflow)
+        self.assertIn('do not establish Apple/device/account authorization', workflow)
 
     def test_controlledsigning_requires_only_its_twenty_three_exact_native_leaves(self):
         with self.context(), patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "controlledsigning"}):
             self.built_fixture()
             inputs = smoke.read_json(self.work / "source-inputs.json")
             expected = probe.EXPECTED_CASES["controlledsigning"]
-            self.assertEqual(len(inputs["sourceInputs"]), 110)
+            self.assertEqual(len(inputs["sourceInputs"]), 134)
             self.assertEqual(inputs["intendedTests"], {"controlledsigning": sorted(expected)})
             self.assertEqual(len(expected), 23)
             suites = (probe.IPA_SUITE, probe.VAULT_SUITE, probe.CONTROLLED_SIGNER_SUITE)
@@ -1039,7 +1073,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual({mode: sum(len(probe.EXPECTED_CASES[group]) for group in groups)
                               for mode, groups in probe.SELECTION_GROUPS.items()},
                              {"all": 30, "replacement": 5, "implementation": 11, "signature": 9,
-                              "cryptography": 25, "sealedmaterials": 48, "boundmaterials": 78, "controlledsigning": 23, "integratedrenewal": 140})
+                              "cryptography": 25, "sealedmaterials": 48, "boundmaterials": 78, "controlledsigning": 23, "integratedrenewal": 140, "transactionrenewal": 178})
             for group in probe.EXPECTED_CASES:
                 if group != "controlledsigning":
                     for suffix in ("-summary.json", "-tests.json"):
@@ -1128,10 +1162,10 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertIn('if [[ $YUEDU_RENEWAL_SELECTION == all ]]; then REPLACEMENT_TIMEOUT=900; fi', wrapper)
         self.assertNotIn('LegadoOriginalAPITests', body)
         workflow = (HERE.parents[1] / ".github/workflows/reader-renewal-probe.yml").read_text(encoding="utf-8")
-        self.assertIn('YUEDU_RENEWAL_SELECTION: integratedrenewal', workflow)
-        self.assertIn('executes exactly 140 unique qualified native methods', workflow)
-        self.assertIn('ten macOS Swift Package XCTest cases', workflow)
-        self.assertIn('package-wide', workflow.lower())
+        self.assertIn('YUEDU_RENEWAL_SELECTION: transactionrenewal', workflow)
+        self.assertIn('selects 178 unique qualified native method definitions', workflow)
+        self.assertIn('macOS SwiftPM ten-case XCTest execution', workflow)
+        self.assertIn('unattended renewal', workflow.lower())
 
 
     def test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark(self):
@@ -1141,8 +1175,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(len(additional), 39)
         self.assertEqual(expected, probe.EXPECTED_CASES["boundmaterials"] | probe.EXPECTED_CASES["controlledsigning"] |
                          additional)
-        self.assertEqual(len(probe.SOURCE_INPUTS), 110)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 110)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 134)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 134)
         for path in probe.SOURCE_INPUTS:
             self.assertTrue((HERE.parents[1] / path).is_file(), path)
         selected_suites = {case.split("/")[0] for case in expected}
@@ -1154,7 +1188,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                 self.assertEqual(len(methods), 13)
                 methods = [method for method in methods if "benchmark" not in method.lower()]
                 self.assertEqual(len(methods), 12)
-            actual.update(suite + "/" + method for method in methods)
+            actual.update(suite + "/" + method for method in methods if suite != probe.PERSISTENT_STATE_SUITE or suite + "/" + method in expected)
         self.assertEqual(actual, expected)
         wrapper = (HERE / "renewal-probe-tests.sh").read_text(encoding="utf-8")
         branches = re.findall(r"if \[\[ \$YUEDU_RENEWAL_SELECTION == integratedrenewal \]\]; then\n(.*?)\nfi", wrapper, re.S)
@@ -1283,6 +1317,130 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                 with self.subTest(path=path), self.assertRaisesRegex(ValueError, 'source-input audit'): probe.result(self.work)
             self.write_json('source-inputs.json', inputs)
             self.assertEqual(probe.result(self.work)['status'], 'passed')
+
+
+    def test_transaction_union_has_178_definitions_and_180_exact_bool_leaves(self):
+        expected = probe.EXPECTED_CASES['transactionrenewal']
+        self.assertEqual(len(expected), 178)
+        self.assertEqual(probe.expected_leaf_count('transactionrenewal'), 180)
+        self.assertEqual(expected - probe.EXPECTED_CASES['integratedrenewal'],
+                         {suite + '/' + method for suite, methods in probe.TRANSACTION_ADDITIONAL_CASES.items() for method in methods})
+        self.assertEqual(len(expected - probe.EXPECTED_CASES['integratedrenewal']), 38)
+        checked = probe.verify_cases(self.tree('transactionrenewal'), 'transactionrenewal')
+        self.assertEqual(len(checked['passedMethodIdentifiers']), 178)
+        self.assertEqual(len(checked['passedCaseIdentifiers']), 180)
+        self.assertEqual(len(set(checked['passedCaseIdentifiers'])), 180)
+        for row in checked['passedArgumentCases']:
+            self.assertEqual(sorted(row['values']), ['false', 'true'])
+            self.assertEqual(row['parameter'], 'interrupt')
+        for suite, methods in probe.TRANSACTION_ADDITIONAL_CASES.items():
+            source = (HERE.parents[1] / ('Tests/iOS/yuedu appTests/' + suite + '.swift')).read_text(encoding='utf-8')
+            declared = set(re.findall(r'\bfunc (\w+)\s*\(', source))
+            self.assertLessEqual(set(methods), declared)
+        for suite, method in (case.split('/') for case in probe.PARAMETER_CASES):
+            source = (HERE.parents[1] / ('Tests/iOS/yuedu appTests/' + suite + '.swift')).read_text(encoding='utf-8')
+            self.assertRegex(source, r'@Test[^\n]*arguments: \[false, true\]\)[^\n]*\n\s*func ' + method + r'\(interrupt: Bool\)')
+
+    def test_transaction_rejects_duplicate_missing_renamed_or_skipped_argument_executions(self):
+        for method in probe.PARAMETER_CASES:
+            for mutation in ('missing', 'duplicate-value', 'unknown', 'bool-number', 'skipped', 'failed', 'duplicate-run', 'repetition', 'display-only'):
+                tree = self.tree('transactionrenewal')
+                parent = next(node for node in probe._test_nodes(tree) if probe._qualified_method(node['nodeIdentifier']) == method)
+                args = parent['children']
+                if mutation == 'missing': args.pop()
+                elif mutation == 'duplicate-value': args[1]['name'] = args[0]['name']
+                elif mutation == 'unknown': args[0]['name'] = 'other: false'
+                elif mutation == 'bool-number': args[0]['name'] = '0'
+                elif mutation in ('skipped', 'failed'): args[0]['result'] = mutation.title()
+                elif mutation == 'duplicate-run': args[0]['children'].append(copy.deepcopy(args[0]['children'][0]))
+                elif mutation == 'repetition': args[0]['children'][0]['nodeType'] = 'Repetition'
+                elif mutation == 'display-only': args[0]['nodeType'] = 'Test Value'
+                with self.subTest(method=method, mutation=mutation), self.assertRaises(ValueError):
+                    probe.verify_cases(tree, 'transactionrenewal')
+        tree = self.tree('transactionrenewal'); tree['testNodes'][0]['children'].append(copy.deepcopy(tree['testNodes'][0]['children'][0]))
+        with self.assertRaises(ValueError): probe.verify_cases(tree, 'transactionrenewal')
+        tree = self.tree('transactionrenewal'); node = tree['testNodes'][0]['children'][0]; node['nodeIdentifier'] = 'wrongSuite/wrongMethod()'
+        with self.assertRaises(ValueError): probe.verify_cases(tree, 'transactionrenewal')
+
+    def test_transaction_result_binds_native_exit_arguments_details_and_sdk_resource(self):
+        with self.context(), patch.dict(os.environ, {'YUEDU_RENEWAL_SELECTION': 'transactionrenewal', 'DEVELOPER_DIR': 'owned-toolchain'}):
+            self.built_fixture(); self.sdk_runtime_fixture(); self.transaction_details_fixture()
+            result = probe.result(self.work)
+            self.assertEqual(result['targetedTests']['transactionrenewal']['totalTestCount'], 180)
+            self.assertEqual(result['targetedTests']['transactionrenewal']['expectedQualifiedMethodDefinitions'], 178)
+            for key in ('selfRenewalVerified', 'unattendedRenewalVerified', 'physicalDeviceValidationPassed', 'iphoneTransportVerified'):
+                self.assertIs(result[key], False)
+            path = self.work / 'transactionrenewal-extraction.json'; original = path.read_bytes(); baseline = json.loads(original)
+            for native_exit in (65, 124, 1):
+                self.write(path, json.dumps({**baseline, 'originalXCTestExitCode': native_exit}).encode())
+                with self.subTest(exit=native_exit), self.assertRaises(ValueError): probe.result(self.work)
+            self.write(path, original)
+            for changed in ({'commands': baseline['commands'][:-1]}, {'parameterExports': baseline['parameterExports'][:1]}):
+                self.write(path, json.dumps({**baseline, **changed}).encode())
+                with self.assertRaises(ValueError): probe.result(self.work)
+            self.write(path, original)
+            detail = self.work / 'transaction-parameter-0.json'; original_detail = detail.read_bytes(); detail.write_bytes(original_detail.replace(b'Passed', b'Skipped'))
+            with self.assertRaises(ValueError): probe.result(self.work)
+            detail.write_bytes(original_detail)
+            inputs = smoke.read_json(self.work / 'source-inputs.json'); altered = copy.deepcopy(inputs)
+            altered['intendedArgumentCases'][next(iter(probe.PARAMETER_CASES))]['values'] = [True, True]
+            self.write_json('source-inputs.json', altered)
+            with self.assertRaisesRegex(ValueError, 'argument source-input audit'): probe.result(self.work)
+            self.write_json('source-inputs.json', inputs)
+            self.assertEqual(probe.result(self.work)['status'], 'passed')
+
+    def test_transaction_collector_preserves_actual_failure_and_partial_raw_exports(self):
+        with self.context(), patch.dict(os.environ, {'YUEDU_RENEWAL_SELECTION': 'transactionrenewal'}):
+            probe.prepare(self.work)
+            def capture(argv, target, **kwargs):
+                if '--help' in argv: raw = b'nodeIdentifier result Arguments testIdentifier testResult testRuns'
+                elif 'summary' in argv: raw = b'{"totalTestCount":0,"passedTests":0,"failedTests":0,"skippedTests":0}'
+                else: raw = b'{"testNodes":[]}'
+                self.write(target, raw); self.write(target.with_suffix(target.suffix + '.stderr.log'), b'')
+                return {'argv': argv, 'exitCode': 0, 'timedOut': False, 'oversized': False, 'output': target.name}
+            with patch.object(probe, '_capture_xcresult', side_effect=capture):
+                record = probe.collect_xcresult(self.work, 'transactionrenewal', 65)
+            self.assertEqual(record['originalXCTestExitCode'], 65)
+            self.assertTrue((self.work / 'transactionrenewal-tests.json').exists())
+            self.assertTrue((self.work / 'transactionrenewal-summary.json').exists())
+            self.assertIn('error', record['parameterExports'][0])
+            with self.assertRaises(ValueError): probe.verify_cases(smoke.read_json(self.work / 'transactionrenewal-tests.json'), 'transactionrenewal')
+
+    def test_bounded_export_runs_real_owned_child_and_retains_nonzero_timeout_and_size_outcomes(self):
+        self.work.mkdir(parents=True)
+        row = probe._capture_xcresult([sys.executable, '-c', 'import sys;print("owned compile error");sys.exit(65)'], self.work / 'nonzero.log', seconds=5)
+        self.assertEqual(row['exitCode'], 65); self.assertIs(row['timedOut'], False)
+        self.assertEqual((self.work / 'nonzero.log').read_bytes().strip(), b'owned compile error')
+        row = probe._capture_xcresult([sys.executable, '-c', 'import sys;sys.stdout.buffer.write(b"x"*65536)'], self.work / 'oversize.log', seconds=5, maximum=1024)
+        self.assertIs(row['oversized'], True)
+        self.assertLessEqual((self.work / 'oversize.log').stat().st_size, 1024)
+        row = probe._capture_xcresult([sys.executable, '-c', 'import threading;threading.Event().wait()'], self.work / 'timeout.log', seconds=0.1)
+        self.assertIs(row['timedOut'], True)
+
+    def test_transaction_wrapper_is_one_cold_run_retains_failure_exit_and_rechecks_independent_spm(self):
+        wrapper = (HERE / 'renewal-probe-tests.sh').read_text(encoding='utf-8')
+        body = re.search(r'if \[\[ \$YUEDU_RENEWAL_SELECTION == transactionrenewal \]\]; then\n(.*?)\nfi', wrapper, re.S)[1]
+        self.assertEqual(body.count('bash "$REPO_DIR/scripts/xctest.sh"'), 1)
+        self.assertEqual(body.count('-resultBundlePath "$WORK/transactionrenewal.xcresult"'), 1)
+        self.assertIn('-t 2700 --', body)
+        selectors = set(re.findall(r"-only-testing:'yuedu appTests/([^']+)'", body))
+        expected = {case + ('(interrupt:)' if case in probe.PARAMETER_CASES else '') for case in probe.EXPECTED_CASES['transactionrenewal']}
+        self.assertEqual(selectors, expected)
+        self.assertIn('NATIVE_EXIT=$?', body)
+        self.assertIn('EXPORT_EXIT=$?', body)
+        self.assertLess(body.index('collect-xcresult'), body.index('[[ $NATIVE_EXIT == 0 ]] || exit "$NATIVE_EXIT"'))
+        self.assertLess(body.index('[[ $NATIVE_EXIT == 0 ]]'), body.index('[[ $EXPORT_EXIT == 0 ]]'))
+        self.assertNotIn('benchmark', body.lower())
+        self.assertNotIn('SelfRenewalProbeUITests', body)
+        self.assertIn('trap preserve_failed_xcresults EXIT', wrapper)
+        workflow = (HERE.parents[1] / '.github/workflows/reader-renewal-probe.yml').read_text(encoding='utf-8')
+        self.assertIn("env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal'", workflow)
+        self.assertIn("!cancelled() && steps.toolchain.outcome == 'success'", workflow)
+        self.assertIn('No private key/P12/password', workflow)
+        self.assertIn('original-api-package-tests.sh', workflow)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 134)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 134)
+        for path in probe.SOURCE_INPUTS: self.assertTrue((HERE.parents[1] / path).is_file(), path)
 
 
 if __name__ == "__main__":
