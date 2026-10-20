@@ -1,0 +1,3250 @@
+{
+  "completeSuiteAcceptance": false,
+  "reason": "Invocation exceeded3720 second budget; result exports empty; textual records are partial diagnostics, including restart/unknown-name duplicates.",
+  "log": {
+    "bytes": 15758720,
+    "sha256": "fbbecd58423da137e1ea1a198b556bc2bb489fea1c8d8ef1f42c7496b4ed5dc5"
+  },
+  "observedStartLines": 347,
+  "observedPassedLines": 312,
+  "observedFailedLines": 21,
+  "issueLines": 115,
+  "starts": [
+    {
+      "line": 36935,
+      "text": "◇ Test run started."
+    },
+    {
+      "line": 36939,
+      "text": "◇ Test \"v6 stored reading position and highlight migrate exactly once\" started."
+    },
+    {
+      "line": 36940,
+      "text": "◇ Test case passing 1 argument interrupt → false to \"v6 stored reading position and highlight migrate exactly once\" started."
+    },
+    {
+      "line": 36962,
+      "text": "◇ Test \"the shelf file carries no table of contents\" started."
+    },
+    {
+      "line": 36968,
+      "text": "◇ Test \"a reading-position save leaves every table of contents untouched\" started."
+    },
+    {
+      "line": 36970,
+      "text": "◇ Test \"marking one chapter cached rewrites only that book's table of contents\" started."
+    },
+    {
+      "line": 36972,
+      "text": "◇ Test \"a shelf saved with its tables of contents inside opens complete and moves them out\" started."
+    },
+    {
+      "line": 36974,
+      "text": "◇ Test \"a table of contents an older build wrote into the shelf wins over the list file it left behind\" started."
+    },
+    {
+      "line": 36976,
+      "text": "◇ Test \"deleting a book deletes its table of contents\" started."
+    },
+    {
+      "line": 36982,
+      "text": "◇ Test \"a shelf record carries only a summary; the book opened by id brings its list\" started."
+    },
+    {
+      "line": 36984,
+      "text": "◇ Test \"a book read without shelving keeps its list on its own too\" started."
+    },
+    {
+      "line": 36986,
+      "text": "◇ Test \"sync carries neither the list nor its summary, and applying it keeps this device's\" started."
+    },
+    {
+      "line": 36990,
+      "text": "◇ Test \"a shelf restored without the summary gets it back from the lists on disk\" started."
+    },
+    {
+      "line": 36992,
+      "text": "◇ Test \"a shelf that could not be read leaves every table of contents alone\" started."
+    },
+    {
+      "line": 36998,
+      "text": "◇ Test \"the audiobook player plays the book with its table of contents\" started."
+    },
+    {
+      "line": 37002,
+      "text": "◇ Test \"空白登入欄位不會被當成登入成功\" started."
+    },
+    {
+      "line": 37008,
+      "text": "◇ Test \"登入資訊變更後會重新解析依賴 token 的書源 header\" started."
+    },
+    {
+      "line": 37010,
+      "text": "◇ Test \"WebView 載入前可取得同域名登入 cookie\" started."
+    },
+    {
+      "line": 37012,
+      "text": "◇ Test \"番茄 sessionid 可被 JS cookie bridge 讀取\" started."
+    },
+    {
+      "line": 37085,
+      "text": "◇ Test \"streamed save and a new owner's normal load agree on actual raw bytes\" started."
+    },
+    {
+      "line": 37095,
+      "text": "◇ Test \"normal load hashes the original JSON and distinguishes true missing from failed reads\" started."
+    },
+    {
+      "line": 37105,
+      "text": "◇ Test \"real create and rename failures never issue successful save receipts\" started."
+    },
+    {
+      "line": 37107,
+      "text": "◇ Test \"restore pause and cancellation before admission do not claim a save\" started."
+    },
+    {
+      "line": 37109,
+      "text": "◇ Test \"normal startup records actual bootstrap writes and never hides bootstrap failures\" started."
+    },
+    {
+      "line": 37117,
+      "text": "◇ Test \"admitted cancellation and later edits preserve the existing cross-store queue order\" started."
+    },
+    {
+      "line": 37129,
+      "text": "◇ Test \"a burst of edits persists the newest library\" started."
+    },
+    {
+      "line": 37139,
+      "text": "◇ Test \"the streamed library file holds exactly the sources written\" started."
+    },
+    {
+      "line": 37145,
+      "text": "◇ Test \"a store reloads the library its streamed save wrote\" started."
+    },
+    {
+      "line": 37155,
+      "text": "◇ Test \"marking a chapter cached does not publish the store\" started."
+    },
+    {
+      "line": 37157,
+      "text": "◇ Test \"a table-of-contents refresh replaces the record once, and not at all when nothing changed\" started."
+    },
+    {
+      "line": 37159,
+      "text": "◇ Test \"an unchanged table of contents parsed afresh publishes nothing and keeps chapter ids\" started."
+    },
+    {
+      "line": 37163,
+      "text": "◇ Test \"real writer and the same normal reader report each original raw file exactly\" started."
+    },
+    {
+      "line": 37167,
+      "text": "◇ Test \"unchanged saves really CAS-read both files and reject an external reading-byte change\" started."
+    },
+    {
+      "line": 37169,
+      "text": "◇ Test \"only real ENOENT is absent; unreadable or corrupt normal loads preserve orphan chapters\" started."
+    },
+    {
+      "line": 37179,
+      "text": "◇ Test \"real atomic-write failure has no success receipt, leaves old files, and permits a later retry\" started."
+    },
+    {
+      "line": 37181,
+      "text": "◇ Test \"partial two-file promotion preserves the reading copy until the shelf is durable\" started."
+    },
+    {
+      "line": 37183,
+      "text": "◇ Test \"queued cancellation and a restore pause cannot be acknowledged as persisted metadata\" started."
+    },
+    {
+      "line": 37195,
+      "text": "◇ Test \"an older checked snapshot uses the actual variable owner and cannot erase a successful runtime CAS\" started."
+    },
+    {
+      "line": 37207,
+      "text": "◇ Test \"a failed real chapter flush cannot be replaced by the old swallowed-error save wrapper\" started."
+    },
+    {
+      "line": 37251,
+      "text": "◇ Test \"tiny progress changes stay in memory until a forced save\" started."
+    },
+    {
+      "line": 37257,
+      "text": "◇ Test \"removing a download announces that the chapter cache is gone\" started."
+    },
+    {
+      "line": 37260,
+      "text": "◇ Test \"completed offline download persists without waiting for debounce\" started."
+    },
+    {
+      "line": 37269,
+      "text": "◇ Test \"leaving the foreground writes a debounced shelf save at once\" started."
+    },
+    {
+      "line": 37273,
+      "text": "◇ Test \"an unreadable shelf file is kept aside before anything overwrites it\" started."
+    },
+    {
+      "line": 37279,
+      "text": "◇ Test \"a shelf that could not be kept aside is never overwritten\" started."
+    },
+    {
+      "line": 37287,
+      "text": "◇ Test \"a relaunch recognises the copy it already made\" started."
+    },
+    {
+      "line": 37297,
+      "text": "◇ Test \"a fresh install preserves source options and uses the store URL dedupe rule\" started."
+    },
+    {
+      "line": 37305,
+      "text": "◇ Test \"bad source packs, missing manifests and invalid metadata preserve the existing library\" started."
+    },
+    {
+      "line": 37315,
+      "text": "◇ Test \"an unreadable existing library is not treated as an empty installation or overwritten\" started."
+    },
+    {
+      "line": 37321,
+      "text": "◇ Test \"a failed library write stays pending and a later launch can retry safely\" started."
+    },
+    {
+      "line": 37329,
+      "text": "◇ Test \"revocation after real first-file install restores every old artifact\" started."
+    },
+    {
+      "line": 37335,
+      "text": "◇ Test \"failed restoration is explicit and retains actual previous-file artifacts\" started."
+    },
+    {
+      "line": 37343,
+      "text": "◇ Test \"stale CAS and late rejected-cache cleanup retain a newer verified package\" started."
+    },
+    {
+      "line": 37351,
+      "text": "◇ Test \"unchanged saves and old TOC reconciliation keep current replacement files\" started."
+    },
+    {
+      "line": 37357,
+      "text": "◇ Test \"a queued legacy read rechecks files after the current successful writer\" started."
+    },
+    {
+      "line": 37365,
+      "text": "◇ Test \"a real late browser/import request error cannot remove a newer valid body\" started."
+    },
+    {
+      "line": 37383,
+      "text": "◇ Test \"retries are counted per chapter, per book\" started."
+    },
+    {
+      "line": 37395,
+      "text": "◇ Test \"a success clears the chapter's history\" started."
+    },
+    {
+      "line": 37403,
+      "text": "◇ Test \"a success for one chapter does not clear another\" started."
+    },
+    {
+      "line": 37409,
+      "text": "◇ Test \"a looping chapter is reported once, with the sequence of reasons\" started."
+    },
+    {
+      "line": 37426,
+      "text": "◇ Test \"a chapter that recovers can be reported again if it gets stuck later\" started."
+    },
+    {
+      "line": 37447,
+      "text": "◇ Test \"only a bounded number of chapters is tracked\" started."
+    },
+    {
+      "line": 37849,
+      "text": "◇ Test \"a nil book id does not collide with a real one\" started."
+    },
+    {
+      "line": 37855,
+      "text": "◇ Test \"pagination recovery leaves fetch retries and another engine untouched\" started."
+    },
+    {
+      "line": 37863,
+      "text": "◇ Test \"three unrecovered pagination discards still report and recovery rearms them\" started."
+    },
+    {
+      "line": 37883,
+      "text": "◇ Test \"a taller destination preserves actual CJK and Latin glyph pixels and hit geometry\" started."
+    },
+    {
+      "line": 37903,
+      "text": "◇ Test \"page presentation uses one aspect-preserving transform in both directions\" started."
+    },
+    {
+      "line": 37905,
+      "text": "◇ Test \"a live page replaces its bitmap when its bounds change\" started."
+    },
+    {
+      "line": 37913,
+      "text": "◇ Test authoredCompositionMatchesScroll(nestedBackdrop:) started."
+    },
+    {
+      "line": 37914,
+      "text": "◇ Test case passing 1 argument nestedBackdrop → false to authoredCompositionMatchesScroll(nestedBackdrop:) started."
+    },
+    {
+      "line": 37969,
+      "text": "◇ Test \"vertical RTL pagination stores writing mode and vertical glyph attribute\" started."
+    },
+    {
+      "line": 37971,
+      "text": "◇ Test \"vertical Latin ranges lie on their side, lowered half their font's box\" started."
+    },
+    {
+      "line": 37975,
+      "text": "◇ Test \"a cached category list becomes the page's categories, sections and page links\" started."
+    },
+    {
+      "line": 37979,
+      "text": "◇ Test \"a reload maps fresh items, so every section starts anew\" started."
+    },
+    {
+      "line": 37981,
+      "text": "◇ Test \"with explore off, reload ends with an empty page and no notice\" started."
+    },
+    {
+      "line": 37983,
+      "text": "◇ Test \"a failed original context open cannot publish a valid cached categories list\" started."
+    },
+    {
+      "line": 37989,
+      "text": "◇ Test \"actual state callbacks update only the original shelf or reading file and restore both books after restart\" started."
+    },
+    {
+      "line": 38009,
+      "text": "◇ Test \"an actual older queued full-record save preserves accepted runtime variables and newer reading progress\" started."
+    },
+    {
+      "line": 38013,
+      "text": "◇ Test \"a real offline TXT migration queued behind runtime CAS preserves another book's accepted variables and its own bookmarks\" started."
+    },
+    {
+      "line": 38023,
+      "text": "◇ Test \"failed TXT atomic replacement preserves the old file and does not publish migrated bookmarks\" started."
+    },
+    {
+      "line": 38027,
+      "text": "◇ Test \"four real publication conflicts permit exact journal takeover and restart, while new user bookmarks reject the old journal\" started."
+    },
+    {
+      "line": 38043,
+      "text": "◇ Test \"failed atomic metadata writes and queued caller cancellation retain both original files and variable owner\" started."
+    },
+    {
+      "line": 38049,
+      "text": "◇ Test \"failed shelf replacement keeps reading copies during simultaneous promotion and demotion, then retries safely\" started."
+    },
+    {
+      "line": 38055,
+      "text": "◇ Test \"byte-distinct Java variable keys and values survive actual App edits and reject an older metadata CAS\" started."
+    },
+    {
+      "line": 38063,
+      "text": "◇ Test \"a byte-distinct but canonically equivalent book URL retires the actual prior metadata grant\" started."
+    },
+    {
+      "line": 38069,
+      "text": "◇ Test \"state callback commits the real App chapter file and a new BookStore restores short and large values\" started."
+    },
+    {
+      "line": 38073,
+      "text": "◇ Test \"a new TOC and cancelled task reject old host proofs without changing their real chapter owner\" started."
+    },
+    {
+      "line": 38076,
+      "text": "◇ Test \"source grants cannot invent book UUIDs and cross-owner transactions are rejected before I/O\" started."
+    },
+    {
+      "line": 38085,
+      "text": "◇ Test \"corrupt and unreadable existing chapter files are STATE_IO and never become an empty owner\" started."
+    },
+    {
+      "line": 38091,
+      "text": "◇ Test \"failed actual atomic writes retain disk and memory and generation revocation forbids later writes\" started."
+    },
+    {
+      "line": 38097,
+      "text": "◇ Test \"an overlapping App mutation is ordered after durable CAS and is never overwritten or falsely acknowledged\" started."
+    },
+    {
+      "line": 38099,
+      "text": "◇ Test \"chapter variable CAS preserves its real identity, rejects stale snapshots and never publishes failed I/O\" started."
+    },
+    {
+      "line": 38101,
+      "text": "◇ Test \"a strict owner flush reports a real failed atomic write and retains old disk and dirty state\" started."
+    },
+    {
+      "line": 38105,
+      "text": "◇ Test \"a bound book flush never claims another dirty book and unchanged records do not rewrite\" started."
+    },
+    {
+      "line": 38109,
+      "text": "◇ Test \"actual Host keeps rule output bytes and persists the ordinary image and embedded-media render artifacts\" started."
+    },
+    {
+      "line": 38131,
+      "text": "◇ Test \"equal callback text upgrades missing render files but an identical complete package writes nothing\" started."
+    },
+    {
+      "line": 38173,
+      "text": "◇ Test \"unresolved original image JS refuses before writes while direct audio URLs retain their existing playback contract\" started."
+    },
+    {
+      "line": 38193,
+      "text": "◇ Test \"actual manager jobs pass bounded grants and publish two real saved indexes once\" started."
+    },
+    {
+      "line": 38203,
+      "text": "◇ Test \"ordinary failure preserves the real prefix and its metadata receipt\" started."
+    },
+    {
+      "line": 38211,
+      "text": "◇ Test \"foreign file replacement rejects a stale lease and cannot be legitimized by retry\" started."
+    },
+    {
+      "line": 38225,
+      "text": "◇ Test \"wrong task, revoked grant and changed TOC refuse any body mutation\" started."
+    },
+    {
+      "line": 38231,
+      "text": "◇ Test \"final direct small-map assignment follows the exact accepted large-variable proof\" started."
+    },
+    {
+      "line": 38243,
+      "text": "◇ Test \"App edits or actual final-book write failure retain body prefix and never get success\" started."
+    },
+    {
+      "line": 38259,
+      "text": "◇ Test \"clear uses literal pipe SQL only and the same native owner retains original process CacheManager text\" started."
+    },
+    {
+      "line": 38268,
+      "text": "◇ Test \"setWebCookie removes global WK session cookies then applies pieces without changing original DB raw text\" started."
+    },
+    {
+      "line": 38277,
+      "text": "◇ Test \"remove expires root names only at the original host and subdomain targets after DB/cache removal\" started."
+    },
+    {
+      "line": 38287,
+      "text": "◇ Test \"real issued WK effects survive failed persistence cancellation and source revocation without late owner publication\" started."
+    },
+    {
+      "line": 38305,
+      "text": "◇ Test \"clear write failure preserves previous file and cache and rejected browser grants issue no WK write\" started."
+    },
+    {
+      "line": 38309,
+      "text": "◇ Test \"the existing raw file migrates in place without claiming rich Cookie provenance\" started."
+    },
+    {
+      "line": 38313,
+      "text": "◇ Test \"native browser Cookie arrays keep paths security expiry and unknown host-only provenance after restart\" started."
+    },
+    {
+      "line": 38315,
+      "text": "◇ Test \"corrupt unreadable and unwritable Cookie files remain errors and failed writes preserve native and disk state\" started."
+    },
+    {
+      "line": 38319,
+      "text": "◇ Test \"the existing JS Cookie bridge exposes typed durable-write errors to try-catch\" started."
+    },
+    {
+      "line": 38357,
+      "text": "◇ Test \"fresh WK observations reject late captures and never replay unchanged browser values over newer HTTP state\" started."
+    },
+    {
+      "line": 38363,
+      "text": "◇ Test \"confirmed WK deletion and known HTTP expiry never revive legacy text at get request or restart\" started."
+    },
+    {
+      "line": 38373,
+      "text": "◇ Test \"the actual existing HTTP pool persists redirect and final Cookies before returning and restores the same file\" started."
+    },
+    {
+      "line": 38382,
+      "text": "◇ Test \"actual HTTP cannot return success or follow a redirect when its Cookie file replacement fails\" started."
+    },
+    {
+      "line": 38386,
+      "text": "◇ Test \"cancelling an actual HTTP response before atomic Cookie replacement leaves old disk and native values\" started."
+    },
+    {
+      "line": 38390,
+      "text": "◇ Test \"actual automatic browser and captcha request headers respect Cookie path and Secure while preserving explicit headers\" started."
+    },
+    {
+      "line": 38412,
+      "text": "◇ Test \"a late Cookie response success or failure cannot stop the next real pooled WebView lease\" started."
+    },
+    {
+      "line": 38467,
+      "text": "◇ Test run started."
+    },
+    {
+      "line": 38471,
+      "text": "◇ Test \"native browser preparation carries the typed owner error through its actual async source worker\" started."
+    },
+    {
+      "line": 38496,
+      "text": "◇ Test \"the actual form-login engine removes only header data and retains its owned credentials\" started."
+    },
+    {
+      "line": 38500,
+      "text": "◇ Test \"unknown WK host-only metadata does not block actual Cookie text or RFC-aware header reads\" started."
+    },
+    {
+      "line": 38504,
+      "text": "◇ Test \"actual callback preserves typed IO owner revocation cancellation malformed inputs and absolute deadlines\" started."
+    },
+    {
+      "line": 38508,
+      "text": "◇ Test \"set keeps raw DB bytes and original replace/get preserve case duplicates blank classes and empty-old input\" started."
+    },
+    {
+      "line": 38514,
+      "text": "◇ Test \"response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct\" started."
+    },
+    {
+      "line": 38517,
+      "text": "◇ Test \"original DB strings keep their original expiry semantics while native RFC headers suppress known expired records\" started."
+    },
+    {
+      "line": 38523,
+      "text": "◇ Test \"write failure and a cancelled or revoked queued owner commit retain prior actual file state\" started."
+    },
+    {
+      "line": 38525,
+      "text": "◇ Test \"unknown actions malformed metadata and outward cross-owner batches reject before any Cookie write\" started."
+    },
+    {
+      "line": 38529,
+      "text": "◇ Test \"scope is stable across per-invocation grants but distinct for backing source and revision\" started."
+    },
+    {
+      "line": 38531,
+      "text": "◇ Test \"revoked mismatched cancelled and expired source grants cannot acquire an exploration context\" started."
+    },
+    {
+      "line": 38535,
+      "text": "◇ Test \"pure mainJs goes through search details TOC and native plain-text packaging after reload\" started."
+    },
+    {
+      "line": 38545,
+      "text": "◇ Test \"streaming routes mainJs before the declarative searchUrl guard\" started."
+    },
+    {
+      "line": 38547,
+      "text": "◇ Test \"missing native runtime stays an error even with declarative rules available\" started."
+    },
+    {
+      "line": 38549,
+      "text": "◇ Test \"details TOC and content reject missing original context\" started."
+    },
+    {
+      "line": 38551,
+      "text": "◇ Test \"book references cannot be reused with edited source code\" started."
+    },
+    {
+      "line": 38553,
+      "text": "◇ Test \"a corrupted durable book record is rejected before calling the engine\" started."
+    },
+    {
+      "line": 38555,
+      "text": "◇ Test \"two thousand chapters reference one book record without copying its HTML\" started."
+    },
+    {
+      "line": 38561,
+      "text": "◇ Test \"concurrent calls reuse one session and source edits close the previous session\" started."
+    },
+    {
+      "line": 38563,
+      "text": "◇ Test \"an unchanged newer source clock prevents a delayed changed revision from replacing it\" started."
+    },
+    {
+      "line": 38565,
+      "text": "◇ Test \"cancelling an in-flight executor releases the source gate for the next request\" started."
+    },
+    {
+      "line": 38569,
+      "text": "◇ Test \"a queued operation times out before the first holder is released\" started."
+    },
+    {
+      "line": 38578,
+      "text": "◇ Test \"unsupported media sources and HTML content are explicit errors\" started."
+    },
+    {
+      "line": 38580,
+      "text": "◇ Test \"a previously cached chapter cannot hide an explicit JVM failure\" started."
+    },
+    {
+      "line": 38586,
+      "text": "◇ Test \"App pause visits off-screen sources after another source fails, without ACKing its write\" started."
+    },
+    {
+      "line": 38594,
+      "text": "◇ Test \"a removed or edited source cannot save an old revision, and unopened contexts are never enrolled by pause\" started."
+    },
+    {
+      "line": 38600,
+      "text": "◇ Test \"cancelling pause awaits the outstanding invocation's real completion and keeps the pending map\" started."
+    },
+    {
+      "line": 38602,
+      "text": "◇ Test \"page leave drains a cancelled category invocation and saves before rapid reentry opens again\" started."
+    },
+    {
+      "line": 38610,
+      "text": "◇ Test \"a failed page save keeps its actual pending map and duplicate disappearance does not ACK or retry it\" started."
+    },
+    {
+      "line": 38614,
+      "text": "◇ Test \"page pause resolves the current source and rejects an intervening rule edit\" started."
+    },
+    {
+      "line": 38620,
+      "text": "◇ Test \"original raw login Strings share the existing credential owner and survive reopen\" started."
+    },
+    {
+      "line": 38638,
+      "text": "◇ Test \"rejected secret writes locked reads and cancellation keep precise owner facts\" started."
+    },
+    {
+      "line": 38656,
+      "text": "◇ Test \"legacy credentials migrate add-only and mutation effects are claimed before writes\" started."
+    },
+    {
+      "line": 38690,
+      "text": "◇ Test \"the actual source bridge removes a header while retaining owned credentials\" started."
+    },
+    {
+      "line": 38694,
+      "text": "◇ Test \"explicit owners isolate source variables and the existing cache namespace\" started."
+    },
+    {
+      "line": 38700,
+      "text": "◇ Test \"source edits credential changes and rebindings invalidate stale proofs\" started."
+    },
+    {
+      "line": 38704,
+      "text": "◇ Test \"same-owner source values commit together and unchanged writes keep the revision\" started."
+    },
+    {
+      "line": 38708,
+      "text": "◇ Test \"owner and credential write failures preserve the old values and revision\" started."
+    },
+    {
+      "line": 38714,
+      "text": "◇ Test \"TTL and legacy cache records share the existing persistent key\" started."
+    },
+    {
+      "line": 38716,
+      "text": "◇ Test \"unmapped Cookie book chapter binary and cross-owner transactions fail before writing\" started."
+    },
+    {
+      "line": 38718,
+      "text": "◇ Test \"cancellation deadlines and bounded leases cannot acknowledge stale writes\" started."
+    },
+    {
+      "line": 38722,
+      "text": "◇ Test \"embedding options stay explicit and raw login headers retain their exact bytes\" started."
+    },
+    {
+      "line": 38728,
+      "text": "◇ Test \"one bounded decode rejects malformed JSON and inexact revisions before consuming an owner proof\" started."
+    },
+    {
+      "line": 38736,
+      "text": "◇ Test \"Explicit original four-stage preview uses real Host context files and reopens without a library record\" started."
+    },
+    {
+      "line": 38800,
+      "text": "◇ Test \"Preview source UUID, source revision and business URL cannot be borrowed by another source\" started."
+    },
+    {
+      "line": 38802,
+      "text": "◇ Test \"The shared Host CAS rejects stale leases and details cannot write foreign books or undiscovered chapters\" started."
+    },
+    {
+      "line": 38812,
+      "text": "◇ Test \"A later rule failure preserves accepted short and large Host commits in the same context record\" started."
+    },
+    {
+      "line": 38824,
+      "text": "◇ Test \"A foreign file revision after the task's sealed completion rejects its returned DTO without overwriting newer bytes\" started."
+    },
+    {
+      "line": 38830,
+      "text": "◇ Test \"Durable preview revocation survives restart and never deletes or invents an App file\" started."
+    },
+    {
+      "line": 38832,
+      "text": "◇ Test \"Cancellation closes the operation grant before a stalled executor can make a late Host commit\" started."
+    },
+    {
+      "line": 38836,
+      "text": "◇ Test \"An actual owned context directory write failure preserves old bytes and returns typed STATE_IO\" started."
+    },
+    {
+      "line": 38844,
+      "text": "◇ Test \"Corrupt chapter indexes, repeated identities, oversized files and linked contexts fail before calling the engine\" started."
+    },
+    {
+      "line": 38928,
+      "text": "◇ Test \"Transfer uses a real off-shelf App UUID and original metadata owner, retains its TOC identities and revokes the preview\" started."
+    },
+    {
+      "line": 38954,
+      "text": "◇ Test \"Missing App UUID or conflicting actual book/chapter variables reject transfer before retiring the preview\" started."
+    },
+    {
+      "line": 38976,
+      "text": "◇ Test \"An actual App write failure retains the non-writable transfer intent; reopening resumes into the same off-shelf UUID\" started."
+    },
+    {
+      "line": 38998,
+      "text": "◇ Test \"Both raw Unicode key orders reject before DTO/Host acceptance or nested record decoding; exact duplicates keep last value\" started."
+    },
+    {
+      "line": 39006,
+      "text": "◇ Test \"Both Unicode name orders preserve exact multi-step big get/put and reject cross-compartment or wire aliasing\" started."
+    },
+    {
+      "line": 39058,
+      "text": "◇ Test \"Actual App book/chapter handoff rejects canonically equal variable names or values with different UTF-8 bytes\" started."
+    },
+    {
+      "line": 39200,
+      "text": "◇ Test \"a source page opens with the URL's option headers, then the source's headers and cookies\" started."
+    },
+    {
+      "line": 39275,
+      "text": "◇ Test \"a per-image header option survives the chapter sanitizer\" started."
+    },
+    {
+      "line": 39279,
+      "text": "◇ Test \"an ordinary src is returned untouched by the option codec\" started."
+    },
+    {
+      "line": 39283,
+      "text": "◇ Test \"a chapter that is only a video, an audio or an iframe page is content, not an empty chapter\" started."
+    },
+    {
+      "line": 39285,
+      "text": "◇ Test \"a single-quoted option block carries its headers too, as legado reads it\" started."
+    },
+    {
+      "line": 39287,
+      "text": "◇ Test \"a media tag without headers loses only its option block\" started."
+    },
+    {
+      "line": 39291,
+      "text": "◇ Test \"a completed pagination announces the chapter it laid out\" started."
+    },
+    {
+      "line": 39339,
+      "text": "◇ Test \"joining an abandoned pagination lays the chapter out instead of giving up\" started."
+    },
+    {
+      "line": 39404,
+      "text": "◇ Test \"shared pagination discard counts once and a real layout clears only its owner\" started."
+    },
+    {
+      "line": 39489,
+      "text": "◇ Test \"reopening the same book does not inherit the previous engine's pagination run\" started."
+    },
+    {
+      "line": 39597,
+      "text": "◇ Test \"a ready callback observes recovery and its newer retry survives old awaiters\" started."
+    },
+    {
+      "line": 39658,
+      "text": "◇ Test \"a chapter whose content is not available yet fails fast instead of looping\" started."
+    },
+    {
+      "line": 39702,
+      "text": "◇ Test \"a chapter that lays out reports that it did\" started."
+    },
+    {
+      "line": 39748,
+      "text": "◇ Test \"content that has not been fetched is named, not reported as a failure\" started."
+    },
+    {
+      "line": 39792,
+      "text": "◇ Test \"an index outside the book is named rather than silently ignored\" started."
+    },
+    {
+      "line": 39831,
+      "text": "◇ Test \"a chapter whose layout is thrown away mid-flight says so\" started."
+    },
+    {
+      "line": 39886,
+      "text": "◇ Test \"an unresolved chapter tells the paged view, not just the log\" started."
+    },
+    {
+      "line": 39933,
+      "text": "◇ Test \"a distant TOC destination survives insertion into a full five-chapter cache\" started."
+    },
+    {
+      "line": 40007,
+      "text": "◇ Test \"a rapid reverse jump keeps its destination when the earlier distant build finishes\" started."
+    },
+    {
+      "line": 40098,
+      "text": "◇ Test \"a late ready publication preserves the installed chapter and its revision\" started."
+    },
+    {
+      "line": 40147,
+      "text": "◇ Test \"ready during an existing build joins it without cancelling image work\" started."
+    },
+    {
+      "line": 40196,
+      "text": "◇ Test \"a real content replacement rebuilds an existing chapter with its new text\" started."
+    },
+    {
+      "line": 40254,
+      "text": "◇ Test \"viewport relayout rejects old snapshot results and renders the new dimensions\" started."
+    },
+    {
+      "line": 40324,
+      "text": "◇ Test \"a prefetched page goes on screen as that bitmap, and it is what drawing paints\" started."
+    },
+    {
+      "line": 40387,
+      "text": "◇ Test \"curl back mirrors the complete rendered page material\" started."
+    },
+    {
+      "line": 40391,
+      "text": "◇ Test \"full wire sequence commits before get_headers and a reopened provider reuses the same registration\" started."
+    },
+    {
+      "line": 40399,
+      "text": "◇ Test \"interrupted provisioning retains durable unknown and cannot automatically replay or rotate its ID\" started."
+    },
+    {
+      "line": 40407,
+      "text": "◇ Test \"get_headers rejection preserves registration and does not issue another provisioning session\" started."
+    },
+    {
+      "line": 40413,
+      "text": "◇ Test \"a lost secure success save keeps unknown intent and never starts get_headers or a new registration\" started."
+    },
+    {
+      "line": 40421,
+      "text": "◇ Test \"explicit reset resumes one pending replacement identity after uncertain readback, then provisions it once\" started."
+    },
+    {
+      "line": 40441,
+      "text": "◇ Test \"reset credential barrier detects a storage owner that fails to apply credential removal\" started."
+    },
+    {
+      "line": 40447,
+      "text": "◇ Test \"endpoint selection is local, schema-1 compatible, and excludes private registration state\" started."
+    },
+    {
+      "line": 40452,
+      "text": "◇ Test \"actual shared URLSession constructs only provider fields and account surface refuses a provider URL\" started."
+    },
+    {
+      "line": 40459,
+      "text": "◇ Test \"App owner prepares actual imported bytes then explicitly submits with real owner acknowledgements\" started."
+    },
+    {
+      "line": 42435,
+      "text": "◇ Test \"actual source persistence failure prevents Upgrade through the App owner entry\" started."
+    },
+    {
+      "line": 44430,
+      "text": "◇ Test run started."
+    },
+    {
+      "line": 44434,
+      "text": "◇ Test \"Session cancellation awaits actual TLS drain and durable status before releasing busy\" started."
+    },
+    {
+      "line": 46562,
+      "text": "◇ Test \"expired or actually changed current Bundle revokes cached signing access and retains candidate bytes\" started."
+    },
+    {
+      "line": 49648,
+      "text": "◇ Test \"missing configuration is durably typed and the one journal lock survives repeated bootstrap\" started."
+    },
+    {
+      "line": 49664,
+      "text": "◇ Test \"unconfigured startup retains an actual prior transaction without retirement, network or replacement\" started."
+    },
+    {
+      "line": 49676,
+      "text": "◇ Test \"corrupt, linked and oversized local configuration stays on disk and never becomes a default identity\" started."
+    },
+    {
+      "line": 49698,
+      "text": "◇ Test \"certificate syntax is not a signing lease; unavailable Keychain refs never become pairing handles\" started."
+    },
+    {
+      "line": 49700,
+      "text": "◇ Test \"cancellation and an actual invalid file destination cannot publish a usable bootstrap status\" started."
+    },
+    {
+      "line": 49720,
+      "text": "◇ Test \"App start binds actual owned stores and the same Navigator produces real position acknowledgements\" started."
+    },
+    {
+      "line": 49740,
+      "text": "◇ Test \"actual startup bootstrap crossing background never creates a foreground worker\" started."
+    },
+    {
+      "line": 49746,
+      "text": "◇ Test \"latest activation waits for the actual prior bootstrap and coalesces duplicate requests\" started."
+    },
+    {
+      "line": 49756,
+      "text": "◇ Test \"a live system background grant uses the same actual Session worker without foreground admission\" started."
+    },
+    {
+      "line": 49764,
+      "text": "◇ Test \"caller cancellation during an actual foreground bootstrap cannot create a new worker\" started."
+    },
+    {
+      "line": 49772,
+      "text": "◇ Test \"Real three-bundle bytes traverse one inventory through code/CMS/resources/nested/modern profiles\" started."
+    },
+    {
+      "line": 49872,
+      "text": "◇ Test \"Independently valid signatures cannot hide wrong signer certificate, team, App ID or groups\" started."
+    },
+    {
+      "line": 50266,
+      "text": "◇ Test \"Later profile reads must match any earlier verified resource seal, even for another valid CMS of equal size\" started."
+    },
+    {
+      "line": 50366,
+      "text": "◇ Test \"Renewed profile UUID can change while the signed bundle, App ID, groups and default keychain group stay identical\" started."
+    },
+    {
+      "line": 50564,
+      "text": "◇ Test \"Whole-chain reads reject actual changed resources, authoritative profile expiry and cancellation\" started."
+    },
+    {
+      "line": 50688,
+      "text": "◇ Test uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop() started."
+    },
+    {
+      "line": 50693,
+      "text": "◇ Test rejectsActualWrongDeviceHostAndExpiredTLSCertificates() started."
+    },
+    {
+      "line": 50701,
+      "text": "◇ Test rejectsInvalidSessionServicePortsAndPlaintextDowngrades() started."
+    },
+    {
+      "line": 50714,
+      "text": "◇ Test rejectsActualAFCSequenceTruncationErrorsAndChangedArchiveDigest() started."
+    },
+    {
+      "line": 50776,
+      "text": "◇ Test run started."
+    },
+    {
+      "line": 50780,
+      "text": "◇ Test requiresTerminalCompleteAndExactPostUpgradeLookupIdentity() started."
+    },
+    {
+      "line": 50799,
+      "text": "◇ Test cancellationWakesActualStalledTLSHandshakeWithoutLateWrites() started."
+    },
+    {
+      "line": 50804,
+      "text": "◇ Test enforcesActualFrameProgressDeadlineAndArchiveBudgets() started."
+    },
+    {
+      "line": 50820,
+      "text": "◇ Test \"actual current Bundle becomes a reverified bounded IPA and changed signed bytes cannot enter callback\" started."
+    },
+    {
+      "line": 52423,
+      "text": "◇ Test \"opt-in and clock/throttle survive the same Document reopen without creating a transaction\" started."
+    },
+    {
+      "line": 53705,
+      "text": "◇ Test \"one due trigger captures current Bundle, really signs, persists and sends exact candidate with all three owners\" started."
+    },
+    {
+      "line": 57142,
+      "text": "◇ Test \"caller expiration cancels the actual automatic TLS task and awaits durable candidate recovery\" started."
+    },
+    {
+      "line": 60368,
+      "text": "◇ Test \"OpenSSL RSA attributed, direct, detached and SKI signatures verify actual bytes\" started."
+    },
+    {
+      "line": 60378,
+      "text": "◇ Test \"ECDSA SHA384 and two different signer certificates are independently verified\" started."
+    },
+    {
+      "line": 60384,
+      "text": "◇ Test \"Changed content and direct signature bytes fail actual cryptographic verification\" started."
+    },
+    {
+      "line": 60393,
+      "text": "◇ Test \"Unrelated anchors and expired certificates cannot pass generic chain validation\" started."
+    },
+    {
+      "line": 60401,
+      "text": "◇ Test \"Detached and encapsulated content are never confused or silently substituted\" started."
+    },
+    {
+      "line": 60407,
+      "text": "◇ Test \"DER truncation, trailing bytes, indefinite lengths and hard bounds reject input\" started."
+    },
+    {
+      "line": 60425,
+      "text": "◇ Test \"Cancellation is checked before the first CMS or certificate operation\" started."
+    },
+    {
+      "line": 60429,
+      "text": "◇ Test \"SHA1, SHA256, truncated SHA256 and SHA384 match independent fixed abc vectors\" started."
+    },
+    {
+      "line": 60431,
+      "text": "◇ Test \"Four hash kinds verify every code page, short final page and actual special-slot bytes\" started."
+    },
+    {
+      "line": 60433,
+      "text": "◇ Test \"Changed pages, stored digests and every supported special material reject\" started."
+    },
+    {
+      "line": 60435,
+      "text": "◇ Test \"All slices, alternate directories, unlimited pages and large pages are checked with bounded chunks\" started."
+    },
+    {
+      "line": 60437,
+      "text": "◇ Test \"Missing, extra, unsupported and explicitly absent special slots are distinct\" started."
+    },
+    {
+      "line": 60439,
+      "text": "◇ Test \"Content budgets, operation limits, short reads and cancellation never publish success\" started."
+    },
+    {
+      "line": 60441,
+      "text": "◇ Test \"The real owned app path hashes inventory files and bounded materials without granting trust\" started."
+    },
+    {
+      "line": 60463,
+      "text": "◇ Test \"In-memory RSA and EC keys create actual detached CMS authenticated to their actual certificate\" started."
+    },
+    {
+      "line": 60513,
+      "text": "◇ Test \"SHA1 SHA256 truncated SHA256 SHA384 and the original agile order all rebuild real page digests\" started."
+    },
+    {
+      "line": 60555,
+      "text": "◇ Test \"Identifier team requirements XML DER entitlements Info and CodeResources preserve their actual bytes\" started."
+    },
+    {
+      "line": 60597,
+      "text": "◇ Test \"LC_CODE_SIGNATURE and aligned LINKEDIT are finalized before hashing and old spare signature data is removed\" started."
+    },
+    {
+      "line": 60619,
+      "text": "◇ Test \"Wrong private key certificate trust date or original byte tampering cannot produce a verified result\" started."
+    },
+    {
+      "line": 60660,
+      "text": "◇ Test \"Only supported thin arm64 terminal unencrypted layouts are transformed\" started."
+    },
+    {
+      "line": 60684,
+      "text": "◇ Test \"Fixed byte and external-slot budgets plus propagated cancellation fail without writing files\" started."
+    },
+    {
+      "line": 60694,
+      "text": "◇ Test \"actual three-bundle profile resource nested executable and raw ZIP chain\" started."
+    },
+    {
+      "line": 61612,
+      "text": "◇ Test \"lease raw profile bytes survive actual Keychain publication and reopen\" started."
+    },
+    {
+      "line": 61768,
+      "text": "◇ Test \"revoked and stale generation leases never produce replacement bytes\" started."
+    },
+    {
+      "line": 61916,
+      "text": "◇ Test \"observed cancellation cannot publish a signed archive\" started."
+    },
+    {
+      "line": 62074,
+      "text": "◇ Test \"actual false requirement rejects and unresolved Apple policy remains unresolved\" started."
+    },
+    {
+      "line": 62480,
+      "text": "◇ Test \"same profile allowance cannot substitute different actual signed app-group claims\" started."
+    },
+    {
+      "line": 62894,
+      "text": "◇ Test \"scoped file CAS keeps original bytes and expired capabilities reject reads\" started."
+    },
+    {
+      "line": 63340,
+      "text": "◇ Test \"resource update retains exact requirement and rule values while replacing actual seals\" started."
+    },
+    {
+      "line": 63584,
+      "text": "◇ Test \"actual same-job xcrun main extensions and framework retain their referenced offsets\" started."
+    },
+    {
+      "line": 63602,
+      "text": "◇ Test \"authenticated DYSYMTAB executable and dylib retain table commands and payload offsets\" started."
+    },
+    {
+      "line": 63624,
+      "text": "◇ Test \"all dynamic-symbol table ranges and symbol indexes are bounded before transformation\" started."
+    },
+    {
+      "line": 63648,
+      "text": "◇ Test \"real whole-package signer persisted archive TLS Upgrade and original user-store bytes\" started."
+    },
+    {
+      "line": 64891,
+      "text": "◇ Test \"lost actual Upgrade response reopens durable owner and fresh vault for Lookup only\" started."
+    },
+    {
+      "line": 66250,
+      "text": "◇ Test \"actual corrupted persisted candidate is rejected before any connection\" started."
+    },
+    {
+      "line": 67372,
+      "text": "◇ Test \"a revoked real namespace lease cannot initiate upload\" started."
+    },
+    {
+      "line": 68486,
+      "text": "◇ Test \"actual partial upload persists its random planned path and is never auto-resubmitted\" started."
+    },
+    {
+      "line": 69877,
+      "text": "◇ Test \"actual interrupted package upload reopens its journal and only cleans its owned path\" started."
+    },
+    {
+      "line": 71132,
+      "text": "◇ Test \"first material publication reconnects the same live App owner without another foreground\" started."
+    },
+    {
+      "line": 71714,
+      "text": "◇ Test \"a real published lease cannot authorize a changed current Bundle\" started."
+    },
+    {
+      "line": 72144,
+      "text": "◇ Test \"an acknowledged Vault publication survives cancellation before the App reconnect\" started."
+    },
+    {
+      "line": 72588,
+      "text": "◇ Test \"explicit account finalization reconnects the same owner and retains the earlier real commit\" started."
+    },
+    {
+      "line": 73324,
+      "text": "◇ Test \"App session renews its actual published key and reopens the same credential and material namespace\" started."
+    },
+    {
+      "line": 74094,
+      "text": "◇ Test \"retired prior preparation permits newer material generation only while its actual candidate remains absent\" started."
+    },
+    {
+      "line": 75036,
+      "text": "◇ Test \"unopened expired App session can erase its stored credentials and write failure never enables reuse\" started."
+    },
+    {
+      "line": 75402,
+      "text": "◇ Test \"one App operation owns the actual held CSR and cancellation preserves pending intent without a second issue\" started."
+    },
+    {
+      "line": 75842,
+      "text": "◇ Test \"reopened App session recovers one lost CSR ACK through its same namespace key and preserves owned data bytes\" started."
+    },
+    {
+      "line": 76733,
+      "text": "◇ Test \"expired installed and published profiles permit only same-manifest account enrollment, never signing access\" started."
+    },
+    {
+      "line": 77647,
+      "text": "◇ Test \"expired App reopens its exact unknown CSR intent without a second issue and failed logout remains denied\" started."
+    },
+    {
+      "line": 78386,
+      "text": "◇ Test \"expired account entry refuses actual changed Bundle routing and an unknown configured namespace without HTTP\" started."
+    },
+    {
+      "line": 78834,
+      "text": "◇ Test \"expired enrollment cannot change generation after an actual authenticated upload intent\" started."
+    },
+    {
+      "line": 79417,
+      "text": "◇ Test \"first public configuration creates its own manifest and real CSR key before complete verified publication\" started."
+    },
+    {
+      "line": 80161,
+      "text": "◇ Test \"first enrollment lost ACK reopens the same unpublished key and reconciles without a second CSR\" started."
+    },
+    {
+      "line": 80792,
+      "text": "◇ Test \"first enrollment reuses its pre-CSR key after restart and existing configuration cannot silently reinitialize\" started."
+    },
+    {
+      "line": 81412,
+      "text": "◇ Test \"created initial namespace survives a failed final Document write and restart without a second manifest\" started."
+    },
+    {
+      "line": 81828,
+      "text": "◇ Test \"locked and invalid manifest reads retain the initial UUID and original error without creating a replacement\" started."
+    },
+    {
+      "line": 82430,
+      "text": "◇ Test \"renewal failure after a lost initial-intent ACK preserves the exact binding before the same session retries\" started."
+    },
+    {
+      "line": 82820,
+      "text": "◇ Test \"real CSR signature exact portal fields and all three signed profiles publish through the same Vault\" started."
+    },
+    {
+      "line": 83094,
+      "text": "◇ Test \"wrong returned public key cannot reach profiles or replace the previous publication\" started."
+    },
+    {
+      "line": 83318,
+      "text": "◇ Test \"tampered remote CMS is rejected by the existing Vault and preserves original material\" started."
+    },
+    {
+      "line": 83570,
+      "text": "◇ Test \"server expiry and changed account/team invalidate credential reuse before any remote write\" started."
+    },
+    {
+      "line": 84090,
+      "text": "◇ Test \"cancelled lost CSR ACK retains durable intent and refuses a second issue after client restart\" started."
+    },
+    {
+      "line": 84308,
+      "text": "◇ Test \"failed final account save retains actual Vault commit and reconciles without another request\" started."
+    },
+    {
+      "line": 84598,
+      "text": "◇ Test \"stale revoked keys and absent original App IDs never dispatch a CSR\" started."
+    },
+    {
+      "line": 84814,
+      "text": "◇ Test \"actual transport rejects redirect oversized and unauthenticated responses and redacts candidates\" started."
+    },
+    {
+      "line": 85464,
+      "text": "◇ Test \"erase-only stored logout preserves an unresolved CSR and refuses corrupt storage without needing a lease\" started."
+    },
+    {
+      "line": 85694,
+      "text": "◇ Test \"lost CSR ACK recovers one exact new key-bound list candidate through actual profiles and Vault without another issue\" started."
+    },
+    {
+      "line": 86312,
+      "text": "◇ Test \"same-key reconciliation excludes every baseline DER and the old published leaf even when omitted from the baseline list\" started."
+    },
+    {
+      "line": 87048,
+      "text": "◇ Test \"ambiguous missing or incompletely enumerated remote certificates preserve the exact pending bytes and original publication\" started."
+    },
+    {
+      "line": 89122,
+      "text": "◇ Test \"legacy pending and changed CSR key digest DER binding or actual Vault generation cannot trigger a second CSR or publication\" started."
+    },
+    {
+      "line": 89467,
+      "text": "◇ Test \"observed-certificate recovery reuses exact candidate then preserves actual Vault publication on a lost finalization write\" started."
+    },
+    {
+      "line": 89849,
+      "text": "◇ Test \"cancelling the real held list request preserves durable unknown intent and later resumes without another issue\" started."
+    },
+    {
+      "line": 90188,
+      "text": "◇ Test \"both password protocols match independent Python, SRP proofs, authenticated SPD and 16-byte-IV GCM\" started."
+    },
+    {
+      "line": 90198,
+      "text": "◇ Test \"unsafe public keys and invalid password work budgets reject before secrets or network\" started."
+    },
+    {
+      "line": 90204,
+      "text": "◇ Test \"M2 negotiation MAC and GCM tag are separate mandatory gates\" started."
+    },
+    {
+      "line": 90208,
+      "text": "◇ Test \"actual SRP login reaches the same URLSession client account/team checks before secure storage\" started."
+    },
+    {
+      "line": 90340,
+      "text": "◇ Test \"a valid GSA candidate cannot bypass the sealed personal team pin\" started."
+    },
+    {
+      "line": 90470,
+      "text": "◇ Test \"trusted-device 2FA uses exact GET routes then repeats SRP; challenge is single use\" started."
+    },
+    {
+      "line": 90606,
+      "text": "◇ Test \"actual URLSession cancellation is observed and no account token is saved\" started."
+    },
+    {
+      "line": 90726,
+      "text": "◇ Test \"proof failures missing device metadata and final Keychain failures stay failures without token leaks\" started."
+    },
+    {
+      "line": 91342,
+      "text": "◇ Test \"App login uses the actual published namespace and reopens only the verified stored account\" started."
+    },
+    {
+      "line": 91483,
+      "text": "◇ Test \"App cancellation clears the same pending 2FA state and an old ticket cannot reach validate\" started."
+    },
+    {
+      "line": 91624,
+      "text": "◇ Test \"observable App owner cancels and drains the held login before erasing credentials; old completion stays old\" started."
+    },
+    {
+      "line": 91784,
+      "text": "◇ Test \"nil and unsubmitted records must validate the real expiring lease before returning\" started."
+    },
+    {
+      "line": 93324,
+      "text": "◇ Test \"uploadIntent rechecks actual revocation; only an explicit existing cleanup performs another RPC\" started."
+    },
+    {
+      "line": 94581,
+      "text": "◇ Test \"real App foreground detects signed profile expiry before its still-valid replacement lease without rereading the application\" started."
+    },
+    {
+      "line": 95939,
+      "text": "◇ Test \"the actual App owner downgrades revoked upload material and preserves manual owned cleanup without automatic submission\" started."
+    },
+    {
+      "line": 97588,
+      "text": "◇ Test \"real Keychain corruption remains typed storage failure, while pre-admission cancellation leaves the healthy connection unchanged\" started."
+    },
+    {
+      "line": 98254,
+      "text": "◇ Test \"an owned application test root cannot generate a current-process observation for a completed transport\" started."
+    },
+    {
+      "line": 99597,
+      "text": "◇ Test \"stored owned IPA traverses the actual existing whole-application verifier\" started."
+    },
+    {
+      "line": 99699,
+      "text": "◇ Test \"deflate and signed or unsigned descriptors use the same pinned archive source\" started."
+    },
+    {
+      "line": 99901,
+      "text": "◇ Test \"traversal absolute alternate separator and normalized collision paths are rejected\" started."
+    },
+    {
+      "line": 99903,
+      "text": "◇ Test \"links special files duplicate entries unknown encodings and extra path overrides fail closed\" started."
+    },
+    {
+      "line": 99905,
+      "text": "◇ Test \"EOCD central local and descriptor disagreements cannot reach extraction\" started."
+    },
+    {
+      "line": 99907,
+      "text": "◇ Test \"archive entry compressed expanded and ratio limits reject hostile declarations\" started."
+    },
+    {
+      "line": 99911,
+      "text": "◇ Test \"actual CRC size deflate termination trailing data and truncation are checked before output\" started."
+    },
+    {
+      "line": 99913,
+      "text": "◇ Test \"source leaf symlinks hardlinks and caller cancellation never grant archive ownership\" started."
+    },
+    {
+      "line": 99919,
+      "text": "◇ Test \"failure cleans only the new owned staging directory and retains source and unrelated bytes\" started."
+    },
+    {
+      "line": 99929,
+      "text": "◇ Test removesPersistedOwnedUploadAfterFreshMutualTLSAndClearsJournalPhase() started."
+    },
+    {
+      "line": 99947,
+      "text": "◇ Test acceptsActualMissingACKAndRetainsRemovalWhenStopDisconnects() started."
+    },
+    {
+      "line": 99962,
+      "text": "◇ Test retainsUnknownSubmittedUpgradeAndUsesOnlyAuthenticatedLookup() started."
+    },
+    {
+      "line": 99980,
+      "text": "◇ Test rejectsStaleMalformedAndWrongDeviceGrantsBeforeAnyRemoval() started."
+    },
+    {
+      "line": 100043,
+      "text": "◇ Test run started."
+    },
+    {
+      "line": 100047,
+      "text": "◇ Test cancellationAndDeadlineReleaseGrantForFreshAuthenticatedRetry() started."
+    }
+  ],
+  "passes": [
+    {
+      "line": 36967,
+      "text": "✔ Test \"the shelf file carries no table of contents\" passed after 0.017 seconds."
+    },
+    {
+      "line": 36969,
+      "text": "✔ Test \"a reading-position save leaves every table of contents untouched\" passed after 0.012 seconds."
+    },
+    {
+      "line": 36971,
+      "text": "✔ Test \"marking one chapter cached rewrites only that book's table of contents\" passed after 0.015 seconds."
+    },
+    {
+      "line": 36973,
+      "text": "✔ Test \"a shelf saved with its tables of contents inside opens complete and moves them out\" passed after 0.027 seconds."
+    },
+    {
+      "line": 36975,
+      "text": "✔ Test \"a table of contents an older build wrote into the shelf wins over the list file it left behind\" passed after 0.007 seconds."
+    },
+    {
+      "line": 36981,
+      "text": "✔ Test \"deleting a book deletes its table of contents\" passed after 0.020 seconds."
+    },
+    {
+      "line": 36983,
+      "text": "✔ Test \"a shelf record carries only a summary; the book opened by id brings its list\" passed after 0.011 seconds."
+    },
+    {
+      "line": 36985,
+      "text": "✔ Test \"a book read without shelving keeps its list on its own too\" passed after 0.006 seconds."
+    },
+    {
+      "line": 36989,
+      "text": "✔ Test \"sync carries neither the list nor its summary, and applying it keeps this device's\" passed after 0.019 seconds."
+    },
+    {
+      "line": 36991,
+      "text": "✔ Test \"a shelf restored without the summary gets it back from the lists on disk\" passed after 0.009 seconds."
+    },
+    {
+      "line": 36997,
+      "text": "✔ Test \"a shelf that could not be read leaves every table of contents alone\" passed after 0.015 seconds."
+    },
+    {
+      "line": 36999,
+      "text": "✔ Test \"the audiobook player plays the book with its table of contents\" passed after 0.006 seconds."
+    },
+    {
+      "line": 37007,
+      "text": "✔ Test \"空白登入欄位不會被當成登入成功\" passed after 0.072 seconds."
+    },
+    {
+      "line": 37009,
+      "text": "✔ Test \"登入資訊變更後會重新解析依賴 token 的書源 header\" passed after 0.148 seconds."
+    },
+    {
+      "line": 37011,
+      "text": "✔ Test \"WebView 載入前可取得同域名登入 cookie\" passed after 0.281 seconds."
+    },
+    {
+      "line": 37082,
+      "text": "✔ Test \"番茄 sessionid 可被 JS cookie bridge 讀取\" passed after 0.330 seconds."
+    },
+    {
+      "line": 37094,
+      "text": "✔ Test \"streamed save and a new owner's normal load agree on actual raw bytes\" passed after 0.254 seconds."
+    },
+    {
+      "line": 37104,
+      "text": "✔ Test \"normal load hashes the original JSON and distinguishes true missing from failed reads\" passed after 0.023 seconds."
+    },
+    {
+      "line": 37106,
+      "text": "✔ Test \"real create and rename failures never issue successful save receipts\" passed after 0.004 seconds."
+    },
+    {
+      "line": 37108,
+      "text": "✔ Test \"restore pause and cancellation before admission do not claim a save\" passed after 0.001 seconds."
+    },
+    {
+      "line": 37116,
+      "text": "✔ Test \"normal startup records actual bootstrap writes and never hides bootstrap failures\" passed after 0.039 seconds."
+    },
+    {
+      "line": 37126,
+      "text": "✔ Test \"admitted cancellation and later edits preserve the existing cross-store queue order\" passed after 0.016 seconds."
+    },
+    {
+      "line": 37138,
+      "text": "✔ Test \"a burst of edits persists the newest library\" passed after 0.039 seconds."
+    },
+    {
+      "line": 37144,
+      "text": "✔ Test \"the streamed library file holds exactly the sources written\" passed after 0.473 seconds."
+    },
+    {
+      "line": 37152,
+      "text": "✔ Test \"a store reloads the library its streamed save wrote\" passed after 0.072 seconds."
+    },
+    {
+      "line": 37156,
+      "text": "✔ Test \"marking a chapter cached does not publish the store\" passed after 0.004 seconds."
+    },
+    {
+      "line": 37158,
+      "text": "✔ Test \"a table-of-contents refresh replaces the record once, and not at all when nothing changed\" passed after 0.093 seconds."
+    },
+    {
+      "line": 37160,
+      "text": "✔ Test \"an unchanged table of contents parsed afresh publishes nothing and keeps chapter ids\" passed after 0.080 seconds."
+    },
+    {
+      "line": 37166,
+      "text": "✔ Test \"real writer and the same normal reader report each original raw file exactly\" passed after 0.191 seconds."
+    },
+    {
+      "line": 37168,
+      "text": "✔ Test \"unchanged saves really CAS-read both files and reject an external reading-byte change\" passed after 0.011 seconds."
+    },
+    {
+      "line": 37178,
+      "text": "✔ Test \"only real ENOENT is absent; unreadable or corrupt normal loads preserve orphan chapters\" passed after 0.019 seconds."
+    },
+    {
+      "line": 37180,
+      "text": "✔ Test \"real atomic-write failure has no success receipt, leaves old files, and permits a later retry\" passed after 0.029 seconds."
+    },
+    {
+      "line": 37182,
+      "text": "✔ Test \"partial two-file promotion preserves the reading copy until the shelf is durable\" passed after 0.019 seconds."
+    },
+    {
+      "line": 37194,
+      "text": "✔ Test \"queued cancellation and a restore pause cannot be acknowledged as persisted metadata\" passed after 0.110 seconds."
+    },
+    {
+      "line": 37206,
+      "text": "✔ Test \"an older checked snapshot uses the actual variable owner and cannot erase a successful runtime CAS\" passed after 0.055 seconds."
+    },
+    {
+      "line": 37248,
+      "text": "✔ Test \"a failed real chapter flush cannot be replaced by the old swallowed-error save wrapper\" passed after 0.156 seconds."
+    },
+    {
+      "line": 37256,
+      "text": "✔ Test \"tiny progress changes stay in memory until a forced save\" passed after 0.028 seconds."
+    },
+    {
+      "line": 37259,
+      "text": "✔ Test \"removing a download announces that the chapter cache is gone\" passed after 0.030 seconds."
+    },
+    {
+      "line": 37268,
+      "text": "✔ Test \"completed offline download persists without waiting for debounce\" passed after 0.081 seconds."
+    },
+    {
+      "line": 37270,
+      "text": "✔ Test \"leaving the foreground writes a debounced shelf save at once\" passed after 0.007 seconds."
+    },
+    {
+      "line": 37278,
+      "text": "✔ Test \"an unreadable shelf file is kept aside before anything overwrites it\" passed after 0.007 seconds."
+    },
+    {
+      "line": 37286,
+      "text": "✔ Test \"a shelf that could not be kept aside is never overwritten\" passed after 0.004 seconds."
+    },
+    {
+      "line": 37294,
+      "text": "✔ Test \"a relaunch recognises the copy it already made\" passed after 0.006 seconds."
+    },
+    {
+      "line": 37304,
+      "text": "✔ Test \"a fresh install preserves source options and uses the store URL dedupe rule\" passed after 0.011 seconds."
+    },
+    {
+      "line": 37314,
+      "text": "✔ Test \"bad source packs, missing manifests and invalid metadata preserve the existing library\" passed after 0.023 seconds."
+    },
+    {
+      "line": 37320,
+      "text": "✔ Test \"an unreadable existing library is not treated as an empty installation or overwritten\" passed after 0.002 seconds."
+    },
+    {
+      "line": 37326,
+      "text": "✔ Test \"a failed library write stays pending and a later launch can retry safely\" passed after 0.009 seconds."
+    },
+    {
+      "line": 37334,
+      "text": "✔ Test \"revocation after real first-file install restores every old artifact\" passed after 0.135 seconds."
+    },
+    {
+      "line": 37342,
+      "text": "✔ Test \"failed restoration is explicit and retains actual previous-file artifacts\" passed after 0.044 seconds."
+    },
+    {
+      "line": 37350,
+      "text": "✔ Test \"stale CAS and late rejected-cache cleanup retain a newer verified package\" passed after 0.036 seconds."
+    },
+    {
+      "line": 37356,
+      "text": "✔ Test \"unchanged saves and old TOC reconciliation keep current replacement files\" passed after 0.062 seconds."
+    },
+    {
+      "line": 37362,
+      "text": "✔ Test \"a queued legacy read rechecks files after the current successful writer\" passed after 0.028 seconds."
+    },
+    {
+      "line": 37379,
+      "text": "✔ Test \"a real late browser/import request error cannot remove a newer valid body\" passed after 4.845 seconds."
+    },
+    {
+      "line": 37394,
+      "text": "✔ Test \"retries are counted per chapter, per book\" passed after 0.145 seconds."
+    },
+    {
+      "line": 37402,
+      "text": "✔ Test \"a success clears the chapter's history\" passed after 0.613 seconds."
+    },
+    {
+      "line": 37408,
+      "text": "✔ Test \"a success for one chapter does not clear another\" passed after 0.001 seconds."
+    },
+    {
+      "line": 37425,
+      "text": "✔ Test \"a looping chapter is reported once, with the sequence of reasons\" passed after 0.077 seconds."
+    },
+    {
+      "line": 37446,
+      "text": "✔ Test \"a chapter that recovers can be reported again if it gets stuck later\" passed after 0.375 seconds."
+    },
+    {
+      "line": 37848,
+      "text": "✔ Test \"only a bounded number of chapters is tracked\" passed after 2.340 seconds."
+    },
+    {
+      "line": 37854,
+      "text": "✔ Test \"a nil book id does not collide with a real one\" passed after 0.001 seconds."
+    },
+    {
+      "line": 37862,
+      "text": "✔ Test \"pagination recovery leaves fetch retries and another engine untouched\" passed after 0.001 seconds."
+    },
+    {
+      "line": 37880,
+      "text": "✔ Test \"three unrecovered pagination discards still report and recovery rearms them\" passed after 0.001 seconds."
+    },
+    {
+      "line": 37904,
+      "text": "✔ Test \"page presentation uses one aspect-preserving transform in both directions\" passed after 0.001 seconds."
+    },
+    {
+      "line": 37912,
+      "text": "✔ Test \"a live page replaces its bitmap when its bounds change\" passed after 0.038 seconds."
+    },
+    {
+      "line": 37970,
+      "text": "✔ Test \"vertical RTL pagination stores writing mode and vertical glyph attribute\" passed after 0.002 seconds."
+    },
+    {
+      "line": 37972,
+      "text": "✔ Test \"vertical Latin ranges lie on their side, lowered half their font's box\" passed after 0.020 seconds."
+    },
+    {
+      "line": 37978,
+      "text": "✔ Test \"a cached category list becomes the page's categories, sections and page links\" passed after 0.058 seconds."
+    },
+    {
+      "line": 37980,
+      "text": "✔ Test \"a reload maps fresh items, so every section starts anew\" passed after 0.005 seconds."
+    },
+    {
+      "line": 37982,
+      "text": "✔ Test \"with explore off, reload ends with an empty page and no notice\" passed after 2.078 seconds."
+    },
+    {
+      "line": 37986,
+      "text": "✔ Test \"a failed original context open cannot publish a valid cached categories list\" passed after 0.006 seconds."
+    },
+    {
+      "line": 38008,
+      "text": "✔ Test \"actual state callbacks update only the original shelf or reading file and restore both books after restart\" passed after 4.470 seconds."
+    },
+    {
+      "line": 38012,
+      "text": "✔ Test \"an actual older queued full-record save preserves accepted runtime variables and newer reading progress\" passed after 0.053 seconds."
+    },
+    {
+      "line": 38022,
+      "text": "✔ Test \"a real offline TXT migration queued behind runtime CAS preserves another book's accepted variables and its own bookmarks\" passed after 0.168 seconds."
+    },
+    {
+      "line": 38026,
+      "text": "✔ Test \"failed TXT atomic replacement preserves the old file and does not publish migrated bookmarks\" passed after 0.030 seconds."
+    },
+    {
+      "line": 38042,
+      "text": "✔ Test \"four real publication conflicts permit exact journal takeover and restart, while new user bookmarks reject the old journal\" passed after 0.188 seconds."
+    },
+    {
+      "line": 38048,
+      "text": "✔ Test \"failed atomic metadata writes and queued caller cancellation retain both original files and variable owner\" passed after 0.054 seconds."
+    },
+    {
+      "line": 38054,
+      "text": "✔ Test \"failed shelf replacement keeps reading copies during simultaneous promotion and demotion, then retries safely\" passed after 0.035 seconds."
+    },
+    {
+      "line": 38062,
+      "text": "✔ Test \"byte-distinct Java variable keys and values survive actual App edits and reject an older metadata CAS\" passed after 0.087 seconds."
+    },
+    {
+      "line": 38066,
+      "text": "✔ Test \"a byte-distinct but canonically equivalent book URL retires the actual prior metadata grant\" passed after 0.037 seconds."
+    },
+    {
+      "line": 38072,
+      "text": "✔ Test \"state callback commits the real App chapter file and a new BookStore restores short and large values\" passed after 0.016 seconds."
+    },
+    {
+      "line": 38074,
+      "text": "✔ Test \"a new TOC and cancelled task reject old host proofs without changing their real chapter owner\" passed after 0.023 seconds."
+    },
+    {
+      "line": 38084,
+      "text": "✔ Test \"source grants cannot invent book UUIDs and cross-owner transactions are rejected before I/O\" passed after 0.016 seconds."
+    },
+    {
+      "line": 38090,
+      "text": "✔ Test \"corrupt and unreadable existing chapter files are STATE_IO and never become an empty owner\" passed after 0.059 seconds."
+    },
+    {
+      "line": 38094,
+      "text": "✔ Test \"failed actual atomic writes retain disk and memory and generation revocation forbids later writes\" passed after 0.009 seconds."
+    },
+    {
+      "line": 38098,
+      "text": "✔ Test \"an overlapping App mutation is ordered after durable CAS and is never overwritten or falsely acknowledged\" passed after 0.003 seconds."
+    },
+    {
+      "line": 38100,
+      "text": "✔ Test \"chapter variable CAS preserves its real identity, rejects stale snapshots and never publishes failed I/O\" passed after 0.004 seconds."
+    },
+    {
+      "line": 38104,
+      "text": "✔ Test \"a strict owner flush reports a real failed atomic write and retains old disk and dirty state\" passed after 0.004 seconds."
+    },
+    {
+      "line": 38106,
+      "text": "✔ Test \"a bound book flush never claims another dirty book and unchanged records do not rewrite\" passed after 0.003 seconds."
+    },
+    {
+      "line": 38130,
+      "text": "✔ Test \"actual Host keeps rule output bytes and persists the ordinary image and embedded-media render artifacts\" passed after 0.129 seconds."
+    },
+    {
+      "line": 38172,
+      "text": "✔ Test \"equal callback text upgrades missing render files but an identical complete package writes nothing\" passed after 0.160 seconds."
+    },
+    {
+      "line": 38192,
+      "text": "✔ Test \"unresolved original image JS refuses before writes while direct audio URLs retain their existing playback contract\" passed after 0.086 seconds."
+    },
+    {
+      "line": 38202,
+      "text": "✔ Test \"actual manager jobs pass bounded grants and publish two real saved indexes once\" passed after 0.052 seconds."
+    },
+    {
+      "line": 38210,
+      "text": "✔ Test \"ordinary failure preserves the real prefix and its metadata receipt\" passed after 0.050 seconds."
+    },
+    {
+      "line": 38224,
+      "text": "✔ Test \"foreign file replacement rejects a stale lease and cannot be legitimized by retry\" passed after 0.042 seconds."
+    },
+    {
+      "line": 38230,
+      "text": "✔ Test \"wrong task, revoked grant and changed TOC refuse any body mutation\" passed after 0.015 seconds."
+    },
+    {
+      "line": 38242,
+      "text": "✔ Test \"final direct small-map assignment follows the exact accepted large-variable proof\" passed after 0.056 seconds."
+    },
+    {
+      "line": 38256,
+      "text": "✔ Test \"App edits or actual final-book write failure retain body prefix and never get success\" passed after 0.061 seconds."
+    },
+    {
+      "line": 38267,
+      "text": "✔ Test \"clear uses literal pipe SQL only and the same native owner retains original process CacheManager text\" passed after 6.583 seconds."
+    },
+    {
+      "line": 38276,
+      "text": "✔ Test \"setWebCookie removes global WK session cookies then applies pieces without changing original DB raw text\" passed after 48.822 seconds."
+    },
+    {
+      "line": 38286,
+      "text": "✔ Test \"remove expires root names only at the original host and subdomain targets after DB/cache removal\" passed after 70.857 seconds."
+    },
+    {
+      "line": 38304,
+      "text": "✔ Test \"real issued WK effects survive failed persistence cancellation and source revocation without late owner publication\" passed after 48.133 seconds."
+    },
+    {
+      "line": 38306,
+      "text": "✔ Test \"clear write failure preserves previous file and cache and rejected browser grants issue no WK write\" passed after 0.003 seconds."
+    },
+    {
+      "line": 38312,
+      "text": "✔ Test \"the existing raw file migrates in place without claiming rich Cookie provenance\" passed after 0.031 seconds."
+    },
+    {
+      "line": 38314,
+      "text": "✔ Test \"native browser Cookie arrays keep paths security expiry and unknown host-only provenance after restart\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38318,
+      "text": "✔ Test \"corrupt unreadable and unwritable Cookie files remain errors and failed writes preserve native and disk state\" passed after 0.008 seconds."
+    },
+    {
+      "line": 38356,
+      "text": "✔ Test \"the existing JS Cookie bridge exposes typed durable-write errors to try-catch\" passed after 0.384 seconds."
+    },
+    {
+      "line": 38362,
+      "text": "✔ Test \"fresh WK observations reject late captures and never replay unchanged browser values over newer HTTP state\" passed after 0.009 seconds."
+    },
+    {
+      "line": 38372,
+      "text": "✔ Test \"confirmed WK deletion and known HTTP expiry never revive legacy text at get request or restart\" passed after 0.031 seconds."
+    },
+    {
+      "line": 38381,
+      "text": "✔ Test \"the actual existing HTTP pool persists redirect and final Cookies before returning and restores the same file\" passed after 0.098 seconds."
+    },
+    {
+      "line": 38385,
+      "text": "✔ Test \"actual HTTP cannot return success or follow a redirect when its Cookie file replacement fails\" passed after 0.040 seconds."
+    },
+    {
+      "line": 38389,
+      "text": "✔ Test \"cancelling an actual HTTP response before atomic Cookie replacement leaves old disk and native values\" passed after 0.012 seconds."
+    },
+    {
+      "line": 38411,
+      "text": "✔ Test \"actual automatic browser and captcha request headers respect Cookie path and Secure while preserving explicit headers\" passed after 0.217 seconds."
+    },
+    {
+      "line": 38495,
+      "text": "✔ Test \"native browser preparation carries the typed owner error through its actual async source worker\" passed after 0.325 seconds."
+    },
+    {
+      "line": 38497,
+      "text": "✔ Test \"the actual form-login engine removes only header data and retains its owned credentials\" passed after 0.091 seconds."
+    },
+    {
+      "line": 38503,
+      "text": "✔ Test \"unknown WK host-only metadata does not block actual Cookie text or RFC-aware header reads\" passed after 0.074 seconds."
+    },
+    {
+      "line": 38505,
+      "text": "✔ Test \"actual callback preserves typed IO owner revocation cancellation malformed inputs and absolute deadlines\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38513,
+      "text": "✔ Test \"set keeps raw DB bytes and original replace/get preserve case duplicates blank classes and empty-old input\" passed after 0.030 seconds."
+    },
+    {
+      "line": 38522,
+      "text": "✔ Test \"original DB strings keep their original expiry semantics while native RFC headers suppress known expired records\" passed after 0.013 seconds."
+    },
+    {
+      "line": 38524,
+      "text": "✔ Test \"write failure and a cancelled or revoked queued owner commit retain prior actual file state\" passed after 0.006 seconds."
+    },
+    {
+      "line": 38526,
+      "text": "✔ Test \"unknown actions malformed metadata and outward cross-owner batches reject before any Cookie write\" passed after 0.011 seconds."
+    },
+    {
+      "line": 38530,
+      "text": "✔ Test \"scope is stable across per-invocation grants but distinct for backing source and revision\" passed after 0.004 seconds."
+    },
+    {
+      "line": 38532,
+      "text": "✔ Test \"revoked mismatched cancelled and expired source grants cannot acquire an exploration context\" passed after 0.001 seconds."
+    },
+    {
+      "line": 38544,
+      "text": "✔ Test \"pure mainJs goes through search details TOC and native plain-text packaging after reload\" passed after 0.178 seconds."
+    },
+    {
+      "line": 38546,
+      "text": "✔ Test \"streaming routes mainJs before the declarative searchUrl guard\" passed after 0.001 seconds."
+    },
+    {
+      "line": 38548,
+      "text": "✔ Test \"missing native runtime stays an error even with declarative rules available\" passed after 0.001 seconds."
+    },
+    {
+      "line": 38550,
+      "text": "✔ Test \"details TOC and content reject missing original context\" passed after 0.001 seconds."
+    },
+    {
+      "line": 38552,
+      "text": "✔ Test \"book references cannot be reused with edited source code\" passed after 0.001 seconds."
+    },
+    {
+      "line": 38554,
+      "text": "✔ Test \"a corrupted durable book record is rejected before calling the engine\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38560,
+      "text": "✔ Test \"two thousand chapters reference one book record without copying its HTML\" passed after 0.164 seconds."
+    },
+    {
+      "line": 38562,
+      "text": "✔ Test \"concurrent calls reuse one session and source edits close the previous session\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38564,
+      "text": "✔ Test \"an unchanged newer source clock prevents a delayed changed revision from replacing it\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38568,
+      "text": "✔ Test \"cancelling an in-flight executor releases the source gate for the next request\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38577,
+      "text": "✔ Test \"a queued operation times out before the first holder is released\" passed after 0.254 seconds."
+    },
+    {
+      "line": 38579,
+      "text": "✔ Test \"unsupported media sources and HTML content are explicit errors\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38583,
+      "text": "✔ Test \"a previously cached chapter cannot hide an explicit JVM failure\" passed after 0.007 seconds."
+    },
+    {
+      "line": 38593,
+      "text": "✔ Test \"App pause visits off-screen sources after another source fails, without ACKing its write\" passed after 0.016 seconds."
+    },
+    {
+      "line": 38599,
+      "text": "✔ Test \"a removed or edited source cannot save an old revision, and unopened contexts are never enrolled by pause\" passed after 0.001 seconds."
+    },
+    {
+      "line": 38601,
+      "text": "✔ Test \"cancelling pause awaits the outstanding invocation's real completion and keeps the pending map\" passed after 0.001 seconds."
+    },
+    {
+      "line": 38609,
+      "text": "✔ Test \"page leave drains a cancelled category invocation and saves before rapid reentry opens again\" passed after 0.023 seconds."
+    },
+    {
+      "line": 38613,
+      "text": "✔ Test \"a failed page save keeps its actual pending map and duplicate disappearance does not ACK or retry it\" passed after 0.028 seconds."
+    },
+    {
+      "line": 38617,
+      "text": "✔ Test \"page pause resolves the current source and rejects an intervening rule edit\" passed after 0.003 seconds."
+    },
+    {
+      "line": 38637,
+      "text": "✔ Test \"original raw login Strings share the existing credential owner and survive reopen\" passed after 0.016 seconds."
+    },
+    {
+      "line": 38655,
+      "text": "✔ Test \"rejected secret writes locked reads and cancellation keep precise owner facts\" passed after 0.032 seconds."
+    },
+    {
+      "line": 38689,
+      "text": "✔ Test \"legacy credentials migrate add-only and mutation effects are claimed before writes\" passed after 0.018 seconds."
+    },
+    {
+      "line": 38693,
+      "text": "✔ Test \"the actual source bridge removes a header while retaining owned credentials\" passed after 0.013 seconds."
+    },
+    {
+      "line": 38699,
+      "text": "✔ Test \"explicit owners isolate source variables and the existing cache namespace\" passed after 0.032 seconds."
+    },
+    {
+      "line": 38703,
+      "text": "✔ Test \"source edits credential changes and rebindings invalidate stale proofs\" passed after 0.009 seconds."
+    },
+    {
+      "line": 38707,
+      "text": "✔ Test \"same-owner source values commit together and unchanged writes keep the revision\" passed after 0.006 seconds."
+    },
+    {
+      "line": 38713,
+      "text": "✔ Test \"owner and credential write failures preserve the old values and revision\" passed after 0.009 seconds."
+    },
+    {
+      "line": 38715,
+      "text": "✔ Test \"TTL and legacy cache records share the existing persistent key\" passed after 0.007 seconds."
+    },
+    {
+      "line": 38717,
+      "text": "✔ Test \"unmapped Cookie book chapter binary and cross-owner transactions fail before writing\" passed after 0.004 seconds."
+    },
+    {
+      "line": 38721,
+      "text": "✔ Test \"cancellation deadlines and bounded leases cannot acknowledge stale writes\" passed after 0.042 seconds."
+    },
+    {
+      "line": 38727,
+      "text": "✔ Test \"embedding options stay explicit and raw login headers retain their exact bytes\" passed after 0.016 seconds."
+    },
+    {
+      "line": 38733,
+      "text": "✔ Test \"one bounded decode rejects malformed JSON and inexact revisions before consuming an owner proof\" passed after 0.006 seconds."
+    },
+    {
+      "line": 38799,
+      "text": "✔ Test \"Explicit original four-stage preview uses real Host context files and reopens without a library record\" passed after 0.103 seconds."
+    },
+    {
+      "line": 38801,
+      "text": "✔ Test \"Preview source UUID, source revision and business URL cannot be borrowed by another source\" passed after 0.002 seconds."
+    },
+    {
+      "line": 38811,
+      "text": "✔ Test \"The shared Host CAS rejects stale leases and details cannot write foreign books or undiscovered chapters\" passed after 0.016 seconds."
+    },
+    {
+      "line": 38823,
+      "text": "✔ Test \"A later rule failure preserves accepted short and large Host commits in the same context record\" passed after 0.019 seconds."
+    },
+    {
+      "line": 38829,
+      "text": "✔ Test \"A foreign file revision after the task's sealed completion rejects its returned DTO without overwriting newer bytes\" passed after 0.008 seconds."
+    },
+    {
+      "line": 38831,
+      "text": "✔ Test \"Durable preview revocation survives restart and never deletes or invents an App file\" passed after 0.004 seconds."
+    },
+    {
+      "line": 38835,
+      "text": "✔ Test \"Cancellation closes the operation grant before a stalled executor can make a late Host commit\" passed after 0.003 seconds."
+    },
+    {
+      "line": 38843,
+      "text": "✔ Test \"An actual owned context directory write failure preserves old bytes and returns typed STATE_IO\" passed after 0.009 seconds."
+    },
+    {
+      "line": 38927,
+      "text": "✔ Test \"Corrupt chapter indexes, repeated identities, oversized files and linked contexts fail before calling the engine\" passed after 0.076 seconds."
+    },
+    {
+      "line": 38953,
+      "text": "✔ Test \"Transfer uses a real off-shelf App UUID and original metadata owner, retains its TOC identities and revokes the preview\" passed after 0.186 seconds."
+    },
+    {
+      "line": 38975,
+      "text": "✔ Test \"Missing App UUID or conflicting actual book/chapter variables reject transfer before retiring the preview\" passed after 0.061 seconds."
+    },
+    {
+      "line": 38997,
+      "text": "✔ Test \"An actual App write failure retains the non-writable transfer intent; reopening resumes into the same off-shelf UUID\" passed after 0.067 seconds."
+    },
+    {
+      "line": 39005,
+      "text": "✔ Test \"Both raw Unicode key orders reject before DTO/Host acceptance or nested record decoding; exact duplicates keep last value\" passed after 0.029 seconds."
+    },
+    {
+      "line": 39057,
+      "text": "✔ Test \"Both Unicode name orders preserve exact multi-step big get/put and reject cross-compartment or wire aliasing\" passed after 0.097 seconds."
+    },
+    {
+      "line": 39197,
+      "text": "✔ Test \"Actual App book/chapter handoff rejects canonically equal variable names or values with different UTF-8 bytes\" passed after 0.327 seconds."
+    },
+    {
+      "line": 39272,
+      "text": "✔ Test \"a source page opens with the URL's option headers, then the source's headers and cookies\" passed after 0.151 seconds."
+    },
+    {
+      "line": 39278,
+      "text": "✔ Test \"a per-image header option survives the chapter sanitizer\" passed after 0.003 seconds."
+    },
+    {
+      "line": 39280,
+      "text": "✔ Test \"an ordinary src is returned untouched by the option codec\" passed after 0.001 seconds."
+    },
+    {
+      "line": 39284,
+      "text": "✔ Test \"a chapter that is only a video, an audio or an iframe page is content, not an empty chapter\" passed after 0.002 seconds."
+    },
+    {
+      "line": 39286,
+      "text": "✔ Test \"a single-quoted option block carries its headers too, as legado reads it\" passed after 0.001 seconds."
+    },
+    {
+      "line": 39288,
+      "text": "✔ Test \"a media tag without headers loses only its option block\" passed after 0.001 seconds."
+    },
+    {
+      "line": 39338,
+      "text": "✔ Test \"a completed pagination announces the chapter it laid out\" passed after 0.237 seconds."
+    },
+    {
+      "line": 39403,
+      "text": "✔ Test \"joining an abandoned pagination lays the chapter out instead of giving up\" passed after 0.044 seconds."
+    },
+    {
+      "line": 39488,
+      "text": "✔ Test \"shared pagination discard counts once and a real layout clears only its owner\" passed after 0.036 seconds."
+    },
+    {
+      "line": 39596,
+      "text": "✔ Test \"reopening the same book does not inherit the previous engine's pagination run\" passed after 0.062 seconds."
+    },
+    {
+      "line": 39657,
+      "text": "✔ Test \"a ready callback observes recovery and its newer retry survives old awaiters\" passed after 0.039 seconds."
+    },
+    {
+      "line": 39701,
+      "text": "✔ Test \"a chapter whose content is not available yet fails fast instead of looping\" passed after 0.027 seconds."
+    },
+    {
+      "line": 39747,
+      "text": "✔ Test \"a chapter that lays out reports that it did\" passed after 0.034 seconds."
+    },
+    {
+      "line": 39791,
+      "text": "✔ Test \"content that has not been fetched is named, not reported as a failure\" passed after 0.023 seconds."
+    },
+    {
+      "line": 39830,
+      "text": "✔ Test \"an index outside the book is named rather than silently ignored\" passed after 0.024 seconds."
+    },
+    {
+      "line": 39885,
+      "text": "✔ Test \"a chapter whose layout is thrown away mid-flight says so\" passed after 0.025 seconds."
+    },
+    {
+      "line": 39932,
+      "text": "✔ Test \"an unresolved chapter tells the paged view, not just the log\" passed after 0.035 seconds."
+    },
+    {
+      "line": 40006,
+      "text": "✔ Test \"a distant TOC destination survives insertion into a full five-chapter cache\" passed after 0.060 seconds."
+    },
+    {
+      "line": 40097,
+      "text": "✔ Test \"a rapid reverse jump keeps its destination when the earlier distant build finishes\" passed after 0.083 seconds."
+    },
+    {
+      "line": 40146,
+      "text": "✔ Test \"a late ready publication preserves the installed chapter and its revision\" passed after 0.036 seconds."
+    },
+    {
+      "line": 40195,
+      "text": "✔ Test \"ready during an existing build joins it without cancelling image work\" passed after 0.034 seconds."
+    },
+    {
+      "line": 40251,
+      "text": "✔ Test \"a real content replacement rebuilds an existing chapter with its new text\" passed after 0.034 seconds."
+    },
+    {
+      "line": 40321,
+      "text": "✔ Test \"viewport relayout rejects old snapshot results and renders the new dimensions\" passed after 0.274 seconds."
+    },
+    {
+      "line": 40384,
+      "text": "✔ Test \"a prefetched page goes on screen as that bitmap, and it is what drawing paints\" passed after 0.146 seconds."
+    },
+    {
+      "line": 40388,
+      "text": "✔ Test \"curl back mirrors the complete rendered page material\" passed after 0.003 seconds."
+    },
+    {
+      "line": 40398,
+      "text": "✔ Test \"full wire sequence commits before get_headers and a reopened provider reuses the same registration\" passed after 0.035 seconds."
+    },
+    {
+      "line": 40406,
+      "text": "✔ Test \"interrupted provisioning retains durable unknown and cannot automatically replay or rotate its ID\" passed after 0.001 seconds."
+    },
+    {
+      "line": 40412,
+      "text": "✔ Test \"get_headers rejection preserves registration and does not issue another provisioning session\" passed after 0.001 seconds."
+    },
+    {
+      "line": 40420,
+      "text": "✔ Test \"a lost secure success save keeps unknown intent and never starts get_headers or a new registration\" passed after 0.010 seconds."
+    },
+    {
+      "line": 40440,
+      "text": "✔ Test \"explicit reset resumes one pending replacement identity after uncertain readback, then provisions it once\" passed after 0.008 seconds."
+    },
+    {
+      "line": 40446,
+      "text": "✔ Test \"reset credential barrier detects a storage owner that fails to apply credential removal\" passed after 0.026 seconds."
+    },
+    {
+      "line": 42434,
+      "text": "✔ Test \"App owner prepares actual imported bytes then explicitly submits with real owner acknowledgements\" passed after 4.666 seconds."
+    },
+    {
+      "line": 46561,
+      "text": "✔ Test \"Session cancellation awaits actual TLS drain and durable status before releasing busy\" passed after 5.425 seconds."
+    },
+    {
+      "line": 49645,
+      "text": "✔ Test \"expired or actually changed current Bundle revokes cached signing access and retains candidate bytes\" passed after 2.774 seconds."
+    },
+    {
+      "line": 49663,
+      "text": "✔ Test \"missing configuration is durably typed and the one journal lock survives repeated bootstrap\" passed after 0.004 seconds."
+    },
+    {
+      "line": 49675,
+      "text": "✔ Test \"unconfigured startup retains an actual prior transaction without retirement, network or replacement\" passed after 0.083 seconds."
+    },
+    {
+      "line": 49697,
+      "text": "✔ Test \"corrupt, linked and oversized local configuration stays on disk and never becomes a default identity\" passed after 0.007 seconds."
+    },
+    {
+      "line": 49699,
+      "text": "✔ Test \"certificate syntax is not a signing lease; unavailable Keychain refs never become pairing handles\" passed after 0.205 seconds."
+    },
+    {
+      "line": 49719,
+      "text": "✔ Test \"cancellation and an actual invalid file destination cannot publish a usable bootstrap status\" passed after 0.008 seconds."
+    },
+    {
+      "line": 49739,
+      "text": "✔ Test \"App start binds actual owned stores and the same Navigator produces real position acknowledgements\" passed after 0.057 seconds."
+    },
+    {
+      "line": 49745,
+      "text": "✔ Test \"actual startup bootstrap crossing background never creates a foreground worker\" passed after 0.017 seconds."
+    },
+    {
+      "line": 49755,
+      "text": "✔ Test \"latest activation waits for the actual prior bootstrap and coalesces duplicate requests\" passed after 0.005 seconds."
+    },
+    {
+      "line": 49763,
+      "text": "✔ Test \"a live system background grant uses the same actual Session worker without foreground admission\" passed after 0.005 seconds."
+    },
+    {
+      "line": 49769,
+      "text": "✔ Test \"caller cancellation during an actual foreground bootstrap cannot create a new worker\" passed after 0.007 seconds."
+    },
+    {
+      "line": 49871,
+      "text": "✔ Test \"Real three-bundle bytes traverse one inventory through code/CMS/resources/nested/modern profiles\" passed after 0.053 seconds."
+    },
+    {
+      "line": 50265,
+      "text": "✔ Test \"Independently valid signatures cannot hide wrong signer certificate, team, App ID or groups\" passed after 0.207 seconds."
+    },
+    {
+      "line": 50365,
+      "text": "✔ Test \"Later profile reads must match any earlier verified resource seal, even for another valid CMS of equal size\" passed after 0.067 seconds."
+    },
+    {
+      "line": 50563,
+      "text": "✔ Test \"Renewed profile UUID can change while the signed bundle, App ID, groups and default keychain group stay identical\" passed after 0.095 seconds."
+    },
+    {
+      "line": 50685,
+      "text": "✔ Test \"Whole-chain reads reject actual changed resources, authoritative profile expiry and cancellation\" passed after 0.386 seconds."
+    },
+    {
+      "line": 50700,
+      "text": "✔ Test rejectsActualWrongDeviceHostAndExpiredTLSCertificates() passed after 2.587 seconds."
+    },
+    {
+      "line": 50713,
+      "text": "✔ Test rejectsInvalidSessionServicePortsAndPlaintextDowngrades() passed after 2.438 seconds."
+    },
+    {
+      "line": 50803,
+      "text": "✔ Test cancellationWakesActualStalledTLSHandshakeWithoutLateWrites() passed after 0.807 seconds."
+    },
+    {
+      "line": 50817,
+      "text": "✔ Test enforcesActualFrameProgressDeadlineAndArchiveBudgets() passed after 3.088 seconds."
+    },
+    {
+      "line": 52422,
+      "text": "✔ Test \"actual current Bundle becomes a reverified bounded IPA and changed signed bytes cannot enter callback\" passed after 1.931 seconds."
+    },
+    {
+      "line": 53704,
+      "text": "✔ Test \"opt-in and clock/throttle survive the same Document reopen without creating a transaction\" passed after 1.822 seconds."
+    },
+    {
+      "line": 60365,
+      "text": "✔ Test \"caller expiration cancels the actual automatic TLS task and awaits durable candidate recovery\" passed after 5.404 seconds."
+    },
+    {
+      "line": 60377,
+      "text": "✔ Test \"OpenSSL RSA attributed, direct, detached and SKI signatures verify actual bytes\" passed after 0.008 seconds."
+    },
+    {
+      "line": 60383,
+      "text": "✔ Test \"ECDSA SHA384 and two different signer certificates are independently verified\" passed after 0.003 seconds."
+    },
+    {
+      "line": 60392,
+      "text": "✔ Test \"Changed content and direct signature bytes fail actual cryptographic verification\" passed after 0.062 seconds."
+    },
+    {
+      "line": 60400,
+      "text": "✔ Test \"Unrelated anchors and expired certificates cannot pass generic chain validation\" passed after 0.012 seconds."
+    },
+    {
+      "line": 60406,
+      "text": "✔ Test \"Detached and encapsulated content are never confused or silently substituted\" passed after 0.011 seconds."
+    },
+    {
+      "line": 60424,
+      "text": "✔ Test \"DER truncation, trailing bytes, indefinite lengths and hard bounds reject input\" passed after 0.002 seconds."
+    },
+    {
+      "line": 60426,
+      "text": "✔ Test \"Cancellation is checked before the first CMS or certificate operation\" passed after 0.010 seconds."
+    },
+    {
+      "line": 60430,
+      "text": "✔ Test \"SHA1, SHA256, truncated SHA256 and SHA384 match independent fixed abc vectors\" passed after 0.010 seconds."
+    },
+    {
+      "line": 60432,
+      "text": "✔ Test \"Four hash kinds verify every code page, short final page and actual special-slot bytes\" passed after 0.001 seconds."
+    },
+    {
+      "line": 60434,
+      "text": "✔ Test \"Changed pages, stored digests and every supported special material reject\" passed after 0.006 seconds."
+    },
+    {
+      "line": 60436,
+      "text": "✔ Test \"All slices, alternate directories, unlimited pages and large pages are checked with bounded chunks\" passed after 0.014 seconds."
+    },
+    {
+      "line": 60438,
+      "text": "✔ Test \"Missing, extra, unsupported and explicitly absent special slots are distinct\" passed after 0.001 seconds."
+    },
+    {
+      "line": 60440,
+      "text": "✔ Test \"Content budgets, operation limits, short reads and cancellation never publish success\" passed after 0.003 seconds."
+    },
+    {
+      "line": 60460,
+      "text": "✔ Test \"The real owned app path hashes inventory files and bounded materials without granting trust\" passed after 0.006 seconds."
+    },
+    {
+      "line": 60512,
+      "text": "✔ Test \"In-memory RSA and EC keys create actual detached CMS authenticated to their actual certificate\" passed after 0.169 seconds."
+    },
+    {
+      "line": 60554,
+      "text": "✔ Test \"SHA1 SHA256 truncated SHA256 SHA384 and the original agile order all rebuild real page digests\" passed after 0.032 seconds."
+    },
+    {
+      "line": 60596,
+      "text": "✔ Test \"Identifier team requirements XML DER entitlements Info and CodeResources preserve their actual bytes\" passed after 0.082 seconds."
+    },
+    {
+      "line": 60618,
+      "text": "✔ Test \"LC_CODE_SIGNATURE and aligned LINKEDIT are finalized before hashing and old spare signature data is removed\" passed after 0.106 seconds."
+    },
+    {
+      "line": 60659,
+      "text": "✔ Test \"Wrong private key certificate trust date or original byte tampering cannot produce a verified result\" passed after 0.217 seconds."
+    },
+    {
+      "line": 60683,
+      "text": "✔ Test \"Only supported thin arm64 terminal unencrypted layouts are transformed\" passed after 0.178 seconds."
+    },
+    {
+      "line": 60691,
+      "text": "✔ Test \"Fixed byte and external-slot budgets plus propagated cancellation fail without writing files\" passed after 0.194 seconds."
+    },
+    {
+      "line": 61611,
+      "text": "✔ Test \"actual three-bundle profile resource nested executable and raw ZIP chain\" passed after 0.643 seconds."
+    },
+    {
+      "line": 61767,
+      "text": "✔ Test \"lease raw profile bytes survive actual Keychain publication and reopen\" passed after 0.232 seconds."
+    },
+    {
+      "line": 61915,
+      "text": "✔ Test \"revoked and stale generation leases never produce replacement bytes\" passed after 0.313 seconds."
+    },
+    {
+      "line": 62073,
+      "text": "✔ Test \"observed cancellation cannot publish a signed archive\" passed after 0.297 seconds."
+    },
+    {
+      "line": 62479,
+      "text": "✔ Test \"actual false requirement rejects and unresolved Apple policy remains unresolved\" passed after 0.462 seconds."
+    },
+    {
+      "line": 62893,
+      "text": "✔ Test \"same profile allowance cannot substitute different actual signed app-group claims\" passed after 0.411 seconds."
+    },
+    {
+      "line": 63339,
+      "text": "✔ Test \"scoped file CAS keeps original bytes and expired capabilities reject reads\" passed after 1.004 seconds."
+    },
+    {
+      "line": 63583,
+      "text": "✔ Test \"resource update retains exact requirement and rule values while replacing actual seals\" passed after 0.488 seconds."
+    },
+    {
+      "line": 63623,
+      "text": "✔ Test \"authenticated DYSYMTAB executable and dylib retain table commands and payload offsets\" passed after 0.138 seconds."
+    },
+    {
+      "line": 63645,
+      "text": "✔ Test \"all dynamic-symbol table ranges and symbol indexes are bounded before transformation\" passed after 0.117 seconds."
+    },
+    {
+      "line": 67371,
+      "text": "✔ Test \"actual corrupted persisted candidate is rejected before any connection\" passed after 1.862 seconds."
+    },
+    {
+      "line": 68485,
+      "text": "✔ Test \"a revoked real namespace lease cannot initiate upload\" passed after 2.071 seconds."
+    },
+    {
+      "line": 71713,
+      "text": "✔ Test \"first material publication reconnects the same live App owner without another foreground\" passed after 1.330 seconds."
+    },
+    {
+      "line": 72143,
+      "text": "✔ Test \"a real published lease cannot authorize a changed current Bundle\" passed after 0.671 seconds."
+    },
+    {
+      "line": 72587,
+      "text": "✔ Test \"an acknowledged Vault publication survives cancellation before the App reconnect\" passed after 1.027 seconds."
+    },
+    {
+      "line": 73323,
+      "text": "✔ Test \"explicit account finalization reconnects the same owner and retains the earlier real commit\" passed after 0.788 seconds."
+    },
+    {
+      "line": 74093,
+      "text": "✔ Test \"App session renews its actual published key and reopens the same credential and material namespace\" passed after 1.120 seconds."
+    },
+    {
+      "line": 75035,
+      "text": "✔ Test \"retired prior preparation permits newer material generation only while its actual candidate remains absent\" passed after 1.031 seconds."
+    },
+    {
+      "line": 75401,
+      "text": "✔ Test \"unopened expired App session can erase its stored credentials and write failure never enables reuse\" passed after 0.604 seconds."
+    },
+    {
+      "line": 75841,
+      "text": "✔ Test \"one App operation owns the actual held CSR and cancellation preserves pending intent without a second issue\" passed after 0.647 seconds."
+    },
+    {
+      "line": 76732,
+      "text": "✔ Test \"reopened App session recovers one lost CSR ACK through its same namespace key and preserves owned data bytes\" passed after 0.929 seconds."
+    },
+    {
+      "line": 77646,
+      "text": "✔ Test \"expired installed and published profiles permit only same-manifest account enrollment, never signing access\" passed after 1.241 seconds."
+    },
+    {
+      "line": 78385,
+      "text": "✔ Test \"expired App reopens its exact unknown CSR intent without a second issue and failed logout remains denied\" passed after 2.761 seconds."
+    },
+    {
+      "line": 78833,
+      "text": "✔ Test \"expired account entry refuses actual changed Bundle routing and an unknown configured namespace without HTTP\" passed after 1.186 seconds."
+    },
+    {
+      "line": 80160,
+      "text": "✔ Test \"first public configuration creates its own manifest and real CSR key before complete verified publication\" passed after 1.238 seconds."
+    },
+    {
+      "line": 80791,
+      "text": "✔ Test \"first enrollment lost ACK reopens the same unpublished key and reconciles without a second CSR\" passed after 0.814 seconds."
+    },
+    {
+      "line": 81411,
+      "text": "✔ Test \"first enrollment reuses its pre-CSR key after restart and existing configuration cannot silently reinitialize\" passed after 0.623 seconds."
+    },
+    {
+      "line": 81827,
+      "text": "✔ Test \"created initial namespace survives a failed final Document write and restart without a second manifest\" passed after 0.647 seconds."
+    },
+    {
+      "line": 82429,
+      "text": "✔ Test \"locked and invalid manifest reads retain the initial UUID and original error without creating a replacement\" passed after 0.946 seconds."
+    },
+    {
+      "line": 82819,
+      "text": "✔ Test \"renewal failure after a lost initial-intent ACK preserves the exact binding before the same session retries\" passed after 0.615 seconds."
+    },
+    {
+      "line": 83093,
+      "text": "✔ Test \"real CSR signature exact portal fields and all three signed profiles publish through the same Vault\" passed after 0.492 seconds."
+    },
+    {
+      "line": 83317,
+      "text": "✔ Test \"wrong returned public key cannot reach profiles or replace the previous publication\" passed after 1.064 seconds."
+    },
+    {
+      "line": 83569,
+      "text": "✔ Test \"tampered remote CMS is rejected by the existing Vault and preserves original material\" passed after 0.891 seconds."
+    },
+    {
+      "line": 84089,
+      "text": "✔ Test \"server expiry and changed account/team invalidate credential reuse before any remote write\" passed after 1.390 seconds."
+    },
+    {
+      "line": 84307,
+      "text": "✔ Test \"cancelled lost CSR ACK retains durable intent and refuses a second issue after client restart\" passed after 0.694 seconds."
+    },
+    {
+      "line": 84597,
+      "text": "✔ Test \"failed final account save retains actual Vault commit and reconciles without another request\" passed after 1.053 seconds."
+    },
+    {
+      "line": 84813,
+      "text": "✔ Test \"stale revoked keys and absent original App IDs never dispatch a CSR\" passed after 0.841 seconds."
+    },
+    {
+      "line": 85463,
+      "text": "✔ Test \"actual transport rejects redirect oversized and unauthenticated responses and redacts candidates\" passed after 1.649 seconds."
+    },
+    {
+      "line": 85693,
+      "text": "✔ Test \"erase-only stored logout preserves an unresolved CSR and refuses corrupt storage without needing a lease\" passed after 0.352 seconds."
+    },
+    {
+      "line": 86311,
+      "text": "✔ Test \"lost CSR ACK recovers one exact new key-bound list candidate through actual profiles and Vault without another issue\" passed after 1.365 seconds."
+    },
+    {
+      "line": 87047,
+      "text": "✔ Test \"same-key reconciliation excludes every baseline DER and the old published leaf even when omitted from the baseline list\" passed after 1.148 seconds."
+    },
+    {
+      "line": 89121,
+      "text": "✔ Test \"ambiguous missing or incompletely enumerated remote certificates preserve the exact pending bytes and original publication\" passed after 5.107 seconds."
+    },
+    {
+      "line": 89466,
+      "text": "✔ Test \"legacy pending and changed CSR key digest DER binding or actual Vault generation cannot trigger a second CSR or publication\" passed after 0.685 seconds."
+    },
+    {
+      "line": 89848,
+      "text": "✔ Test \"observed-certificate recovery reuses exact candidate then preserves actual Vault publication on a lost finalization write\" passed after 0.846 seconds."
+    },
+    {
+      "line": 90185,
+      "text": "✔ Test \"cancelling the real held list request preserves durable unknown intent and later resumes without another issue\" passed after 0.945 seconds."
+    },
+    {
+      "line": 90197,
+      "text": "✔ Test \"both password protocols match independent Python, SRP proofs, authenticated SPD and 16-byte-IV GCM\" passed after 3.821 seconds."
+    },
+    {
+      "line": 90203,
+      "text": "✔ Test \"unsafe public keys and invalid password work budgets reject before secrets or network\" passed after 0.447 seconds."
+    },
+    {
+      "line": 90207,
+      "text": "✔ Test \"M2 negotiation MAC and GCM tag are separate mandatory gates\" passed after 1.897 seconds."
+    },
+    {
+      "line": 90339,
+      "text": "✔ Test \"actual SRP login reaches the same URLSession client account/team checks before secure storage\" passed after 1.673 seconds."
+    },
+    {
+      "line": 90469,
+      "text": "✔ Test \"a valid GSA candidate cannot bypass the sealed personal team pin\" passed after 1.641 seconds."
+    },
+    {
+      "line": 90605,
+      "text": "✔ Test \"trusted-device 2FA uses exact GET routes then repeats SRP; challenge is single use\" passed after 3.283 seconds."
+    },
+    {
+      "line": 90725,
+      "text": "✔ Test \"actual URLSession cancellation is observed and no account token is saved\" passed after 0.535 seconds."
+    },
+    {
+      "line": 91341,
+      "text": "✔ Test \"proof failures missing device metadata and final Keychain failures stay failures without token leaks\" passed after 6.782 seconds."
+    },
+    {
+      "line": 91781,
+      "text": "✔ Test \"observable App owner cancels and drains the held login before erasing credentials; old completion stays old\" passed after 0.304 seconds."
+    },
+    {
+      "line": 93323,
+      "text": "✔ Test \"nil and unsubmitted records must validate the real expiring lease before returning\" passed after 1.947 seconds."
+    },
+    {
+      "line": 95938,
+      "text": "✔ Test \"real App foreground detects signed profile expiry before its still-valid replacement lease without rereading the application\" passed after 2.520 seconds."
+    },
+    {
+      "line": 98253,
+      "text": "✔ Test \"real Keychain corruption remains typed storage failure, while pre-admission cancellation leaves the healthy connection unchanged\" passed after 1.089 seconds."
+    },
+    {
+      "line": 99698,
+      "text": "✔ Test \"stored owned IPA traverses the actual existing whole-application verifier\" passed after 0.177 seconds."
+    },
+    {
+      "line": 99900,
+      "text": "✔ Test \"deflate and signed or unsigned descriptors use the same pinned archive source\" passed after 0.299 seconds."
+    },
+    {
+      "line": 99902,
+      "text": "✔ Test \"traversal absolute alternate separator and normalized collision paths are rejected\" passed after 0.003 seconds."
+    },
+    {
+      "line": 99904,
+      "text": "✔ Test \"links special files duplicate entries unknown encodings and extra path overrides fail closed\" passed after 0.001 seconds."
+    },
+    {
+      "line": 99906,
+      "text": "✔ Test \"EOCD central local and descriptor disagreements cannot reach extraction\" passed after 0.001 seconds."
+    },
+    {
+      "line": 99910,
+      "text": "✔ Test \"archive entry compressed expanded and ratio limits reject hostile declarations\" passed after 0.156 seconds."
+    },
+    {
+      "line": 99912,
+      "text": "✔ Test \"actual CRC size deflate termination trailing data and truncation are checked before output\" passed after 0.001 seconds."
+    },
+    {
+      "line": 99918,
+      "text": "✔ Test \"source leaf symlinks hardlinks and caller cancellation never grant archive ownership\" passed after 0.026 seconds."
+    },
+    {
+      "line": 99926,
+      "text": "✔ Test \"failure cleans only the new owned staging directory and retains source and unrelated bytes\" passed after 0.013 seconds."
+    }
+  ],
+  "failures": [
+    {
+      "line": 37902,
+      "text": "✘ Test \"a taller destination preserves actual CJK and Latin glyph pixels and hit geometry\" failed after 0.532 seconds with 2 issues."
+    },
+    {
+      "line": 38516,
+      "text": "✘ Test \"response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct\" failed after 0.022 seconds with 1 issue."
+    },
+    {
+      "line": 40451,
+      "text": "✘ Test \"endpoint selection is local, schema-1 compatible, and excludes private registration state\" failed after 0.018 seconds with 1 issue."
+    },
+    {
+      "line": 40454,
+      "text": "✘ Test \"actual shared URLSession constructs only provider fields and account surface refuses a provider URL\" failed after 0.142 seconds with 1 issue."
+    },
+    {
+      "line": 50692,
+      "text": "✘ Test uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop() failed after 0.721 seconds with 1 issue."
+    },
+    {
+      "line": 50798,
+      "text": "✘ Test requiresTerminalCompleteAndExactPostUpgradeLookupIdentity() failed after 4.160 seconds with 1 issue."
+    },
+    {
+      "line": 57141,
+      "text": "✘ Test \"one due trigger captures current Bundle, really signs, persists and sends exact candidate with all three owners\" failed after 5.214 seconds with 1 issue."
+    },
+    {
+      "line": 63601,
+      "text": "✘ Test \"actual same-job xcrun main extensions and framework retain their referenced offsets\" failed after 0.058 seconds with 1 issue."
+    },
+    {
+      "line": 64890,
+      "text": "✘ Test \"real whole-package signer persisted archive TLS Upgrade and original user-store bytes\" failed after 2.259 seconds with 1 issue."
+    },
+    {
+      "line": 66249,
+      "text": "✘ Test \"lost actual Upgrade response reopens durable owner and fresh vault for Lookup only\" failed after 2.165 seconds with 1 issue."
+    },
+    {
+      "line": 69876,
+      "text": "✘ Test \"actual partial upload persists its random planned path and is never auto-resubmitted\" failed after 355.669 seconds with 1 issue."
+    },
+    {
+      "line": 71129,
+      "text": "✘ Test \"actual interrupted package upload reopens its journal and only cleans its owned path\" failed after 2.216 seconds with 1 issue."
+    },
+    {
+      "line": 79416,
+      "text": "✘ Test \"expired enrollment cannot change generation after an actual authenticated upload intent\" failed after 1.573 seconds with 1 issue."
+    },
+    {
+      "line": 91482,
+      "text": "✘ Test \"App login uses the actual published namespace and reopens only the verified stored account\" failed after 0.591 seconds with 1 issue."
+    },
+    {
+      "line": 91623,
+      "text": "✘ Test \"App cancellation clears the same pending 2FA state and an old ticket cannot reach validate\" failed after 0.407 seconds with 1 issue."
+    },
+    {
+      "line": 94580,
+      "text": "✘ Test \"uploadIntent rechecks actual revocation; only an explicit existing cleanup performs another RPC\" failed after 2.862 seconds with 1 issue."
+    },
+    {
+      "line": 97587,
+      "text": "✘ Test \"the actual App owner downgrades revoked upload material and preserves manual owned cleanup without automatic submission\" failed after 3.150 seconds with 1 issue."
+    },
+    {
+      "line": 99594,
+      "text": "✘ Test \"an owned application test root cannot generate a current-process observation for a completed transport\" failed after 2.358 seconds with 1 issue."
+    },
+    {
+      "line": 99946,
+      "text": "✘ Test removesPersistedOwnedUploadAfterFreshMutualTLSAndClearsJournalPhase() failed after 1.618 seconds with 1 issue."
+    },
+    {
+      "line": 99961,
+      "text": "✘ Test acceptsActualMissingACKAndRetainsRemovalWhenStopDisconnects() failed after 0.707 seconds with 1 issue."
+    },
+    {
+      "line": 99979,
+      "text": "✘ Test retainsUnknownSubmittedUpgradeAndUsesOnlyAuthenticatedLookup() failed after 0.844 seconds with 1 issue."
+    }
+  ],
+  "issues": [
+    {
+      "line": 37890,
+      "text": "✘ Test \"a taller destination preserves actual CJK and Latin glyph pixels and hit geometry\" recorded an issue at CoreTextPagedScrollAppearanceTests.swift:35:13: Expectation failed: (tallerView.debugStringIndex(at:"
+    },
+    {
+      "line": 37900,
+      "text": "✘ Test \"a taller destination preserves actual CJK and Latin glyph pixels and hit geometry\" recorded an issue at CoreTextPagedScrollAppearanceTests.swift:35:13: Expectation failed: (tallerView.debugStringIndex(at:"
+    },
+    {
+      "line": 38424,
+      "text": "✘ Test \"a late Cookie response success or failure cannot stop the next real pooled WebView lease\" recorded an issue at LegadoCookieOwnerTests.swift:408:6: Time limit was exceeded: 60.000 seconds"
+    },
+    {
+      "line": 38515,
+      "text": "✘ Test \"response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct\" recorded an issue at LegadoCookieTextHostTests.swift:125:6: Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)"
+    },
+    {
+      "line": 40450,
+      "text": "✘ Test \"endpoint selection is local, schema-1 compatible, and excludes private registration state\" recorded an issue at SelfRenewalAnisetteV3ProviderTests.swift:171:6: Caught error: storage"
+    },
+    {
+      "line": 40453,
+      "text": "✘ Test \"actual shared URLSession constructs only provider fields and account surface refuses a provider URL\" recorded an issue at SelfRenewalAnisetteV3ProviderTests.swift:207:24: Expectation failed: (request → https://owned-fixture.invalid/v3/get_headers).httpBody → nil → nil"
+    },
+    {
+      "line": 42420,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:47:21: Expectation failed: (status.0?.phase == .receiptObserved → false) && (status.0?.state == .recoveryRequired → <not evaluated>)"
+    },
+    {
+      "line": 42421,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:47:21: Expectation failed: (status.0?.phase == .receiptObserved → false) && (status.0?.state == .recoveryRequired → <not evaluated>)"
+    },
+    {
+      "line": 42422,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:48:21: Expectation failed: (status.1 == nil → false) && (status.2 → <not evaluated>)"
+    },
+    {
+      "line": 42423,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:48:21: Expectation failed: (status.1 == nil → false) && (status.2 → <not evaluated>)"
+    },
+    {
+      "line": 42424,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:51:39: Expectation failed: (completed → Record(schema: 1, id: 87C19CC8-238F-470E-BFFF-6F25DA2EBF41, revision: 2, createdAt: 2026-10-21 00:00:00 +0000, updatedAt: 2026-10-21 00:00:00 +0000, materialNamespace: 8CE897E1-BDC6-44AC-AB7D-E68A2FAB57FC, materialGeneration: 3, originalArchiveSHA256: 32 bytes, identitySHA256: 32 bytes, bundleIdentifier: \"test.owned.reader\", bundleVersion: \"12\", preparationProcessID: Optional(C1CD90A0-CC8A-4146-AAAC-BC3E3390B10C), phase: yuedu_app.SelfRenewalTransactionJournal.Phase.candidateReady, candidate: Optional(yuedu_app.SelfRenewalTransactionJournal.Candidate(byteCount: 102246, sha256: 32 bytes)), submission: nil, lookupReportedSameVersion: nil, installedMaterial: nil, userDataHandoff: nil, userDataRead: nil, safePreSubmissionCleanup: nil, retirement: nil, previousRetirement: nil, remoteHistory: Optional(yuedu_app.SelfRenewalTransactionJournal.RemoteHistory.neverStarted))).userDataHandoff → nil → nil"
+    },
+    {
+      "line": 42425,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:51:39: Expectation failed: (completed → Record(schema: 1, id: 87C19CC8-238F-470E-BFFF-6F25DA2EBF41, revision: 2, createdAt: 2026-10-21 00:00:00 +0000, updatedAt: 2026-10-21 00:00:00 +0000, materialNamespace: 8CE897E1-BDC6-44AC-AB7D-E68A2FAB57FC, materialGeneration: 3, originalArchiveSHA256: 32 bytes, identitySHA256: 32 bytes, bundleIdentifier: \"test.owned.reader\", bundleVersion: \"12\", preparationProcessID: Optional(C1CD90A0-CC8A-4146-AAAC-BC3E3390B10C), phase: yuedu_app.SelfRenewalTransactionJournal.Phase.candidateReady, candidate: Optional(yuedu_app.SelfRenewalTransactionJournal.Candidate(byteCount: 102246, sha256: 32 bytes)), submission: nil, lookupReportedSameVersion: nil, installedMaterial: nil, userDataHandoff: nil, userDataRead: nil, safePreSubmissionCleanup: nil, retirement: nil, previousRetirement: nil, remoteHistory: Optional(yuedu_app.SelfRenewalTransactionJournal.RemoteHistory.neverStarted))).userDataHandoff → nil → nil"
+    },
+    {
+      "line": 44392,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:101:21: Expectation failed: (pending.phase == .uploadIntent → false) && (pending.userDataHandoff == nil → <not evaluated>)"
+    },
+    {
+      "line": 44393,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAppExecutionTests.swift:101:21: Expectation failed: (pending.phase == .uploadIntent → false) && (pending.userDataHandoff == nil → <not evaluated>)"
+    },
+    {
+      "line": 50691,
+      "text": "✘ Test uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop() recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:11:6: Caught error: OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.endOfStream, ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: [])"
+    },
+    {
+      "line": 50710,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:63:17: Expectation failed: (failure?.upgradeMayHaveExecuted → false) == ((mode == .wrongSession) → true)"
+    },
+    {
+      "line": 50711,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:66:21: Expectation failed: (underlying → nil) == .sessionMismatch"
+    },
+    {
+      "line": 50712,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:67:21: Expectation failed: (context.observed.snapshot.removedPaths.count → 0) == 1"
+    },
+    {
+      "line": 50717,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:79:17: Expectation failed: (failure?.stage → .services) == .upload"
+    },
+    {
+      "line": 50720,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:79:17: Expectation failed: (failure?.stage → .services) == .upload"
+    },
+    {
+      "line": 50723,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:79:17: Expectation failed: (failure?.stage → .services) == .upload"
+    },
+    {
+      "line": 50726,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:88:13: Expectation failed: (underlying → nil) == .archiveChanged"
+    },
+    {
+      "line": 50727,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:90:13: Expectation failed: (failure?.remoteStagingRemovalVerified → false) == true"
+    },
+    {
+      "line": 50728,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:91:13: Expectation failed: (failure?.cleanupAttempted → false) == true"
+    },
+    {
+      "line": 50783,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:142:17: Expectation failed: (failure?.upgradeMayHaveExecuted → false) == true"
+    },
+    {
+      "line": 50784,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:143:17: Expectation failed: (context.observed.snapshot.upgradeRequests → 0) == 1"
+    },
+    {
+      "line": 50787,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:142:17: Expectation failed: (failure?.upgradeMayHaveExecuted → false) == true"
+    },
+    {
+      "line": 50788,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:143:17: Expectation failed: (context.observed.snapshot.upgradeRequests → 0) == 1"
+    },
+    {
+      "line": 50791,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:142:17: Expectation failed: (failure?.upgradeMayHaveExecuted → false) == true"
+    },
+    {
+      "line": 50792,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:143:17: Expectation failed: (context.observed.snapshot.upgradeRequests → 0) == 1"
+    },
+    {
+      "line": 50793,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:146:21: Expectation failed: (underlying → nil) == .lookupMismatch"
+    },
+    {
+      "line": 50794,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:147:21: Expectation failed: (context.observed.snapshot.lookupRequests → 0) == 1"
+    },
+    {
+      "line": 50797,
+      "text": "✘ Test requiresTerminalCompleteAndExactPostUpgradeLookupIdentity() recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:136:6: Caught error: posix(32)"
+    },
+    {
+      "line": 50802,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:187:13: Expectation failed: (underlying → nil) == .cancelled"
+    },
+    {
+      "line": 50807,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:199:17: Expectation failed: (failure?.stage → .services) == .upgrade"
+    },
+    {
+      "line": 50808,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:200:17: Expectation failed: (failure?.upgradeMayHaveExecuted → false) == true"
+    },
+    {
+      "line": 50811,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:199:17: Expectation failed: (failure?.stage → .services) == .upgrade"
+    },
+    {
+      "line": 50812,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:200:17: Expectation failed: (failure?.upgradeMayHaveExecuted → false) == true"
+    },
+    {
+      "line": 57018,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:114:21: Expectation failed: (observed.0?.outcome == .receiptObserved → false) && (observed.0?.lastAttemptAt == f.date → <not evaluated>)"
+    },
+    {
+      "line": 57019,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:114:21: Expectation failed: (observed.0?.outcome == .receiptObserved → false) && (observed.0?.lastAttemptAt == f.date → <not evaluated>)"
+    },
+    {
+      "line": 57020,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:115:21: Expectation failed: (observed.1?.phase == .receiptObserved && observed.2 == nil → false) && (!observed.3 → <not evaluated>)"
+    },
+    {
+      "line": 57021,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:115:21: Expectation failed: (observed.1?.phase == .receiptObserved && observed.2 == nil → false) && (!observed.3 → <not evaluated>)"
+    },
+    {
+      "line": 57022,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:119:21: Expectation failed: (record.userDataHandoff?.files.map(\\.role) → nil) == [\"shelf\", \"reading\", \"sources\"]"
+    },
+    {
+      "line": 57023,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:119:21: Expectation failed: (record.userDataHandoff?.files.map(\\.role) → nil) == [\"shelf\", \"reading\", \"sources\"]"
+    },
+    {
+      "line": 57024,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:120:21: Expectation failed: (record.userDataHandoff?.positions.first?.position → nil) == (App.position → CoreTextReadingPosition(spineIndex: 2, charOffset: 31, translationOffset: Optional(4)))"
+    },
+    {
+      "line": 57025,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:120:21: Expectation failed: (record.userDataHandoff?.positions.first?.position → nil) == (App.position → CoreTextReadingPosition(spineIndex: 2, charOffset: 31, translationOffset: Optional(4)))"
+    },
+    {
+      "line": 57026,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:122:21: Expectation failed: (peer.observed.snapshot.uploaded == candidate → false) && (peer.observed.snapshot.upgradeRequests == 1 → <not evaluated>)"
+    },
+    {
+      "line": 57027,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:122:21: Expectation failed: (peer.observed.snapshot.uploaded == candidate → false) && (peer.observed.snapshot.upgradeRequests == 1 → <not evaluated>)"
+    },
+    {
+      "line": 57130,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:129:21: Expectation failed: (peer.observed.snapshot.upgradeRequests → 0) == 1"
+    },
+    {
+      "line": 57131,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAutomaticRenewalTests.swift:129:21: Expectation failed: (peer.observed.snapshot.upgradeRequests → 0) == 1"
+    },
+    {
+      "line": 57140,
+      "text": "✘ Test \"one due trigger captures current Bundle, really signs, persists and sends exact candidate with all three owners\" recorded an issue at SelfRenewalAutomaticRenewalTests.swift:86:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 63600,
+      "text": "✘ Test \"actual same-job xcrun main extensions and framework retain their referenced offsets\" recorded an issue at SelfRenewalControlledPackageSignerTests.swift:215:6: Caught error: malformedDER"
+    },
+    {
+      "line": 64889,
+      "text": "✘ Test \"real whole-package signer persisted archive TLS Upgrade and original user-store bytes\" recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:14:6: Caught error: Interrupted(underlying: yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.endOfStream, ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: []), persistedIntent: nil, persistedUpload: nil, journalUpdateError: nil)"
+    },
+    {
+      "line": 66124,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:65:25: Expectation failed: (failure → Interrupted(underlying: yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.endOfStream, ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: []), persistedIntent: nil, persistedUpload: nil, journalUpdateError: nil)).mayHaveSubmittedUpgrade → false"
+    },
+    {
+      "line": 66125,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:65:25: Expectation failed: (failure → Interrupted(underlying: yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.endOfStream, ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: []), persistedIntent: nil, persistedUpload: nil, journalUpdateError: nil)).mayHaveSubmittedUpgrade → false"
+    },
+    {
+      "line": 66126,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:66:25: Expectation failed: (failure.persistedIntent?.record.phase → nil) == .upgradeIntent"
+    },
+    {
+      "line": 66127,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:66:25: Expectation failed: (failure.persistedIntent?.record.phase → nil) == .upgradeIntent"
+    },
+    {
+      "line": 66128,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:70:21: Expectation failed: (interrupted.record.phase → .candidateReady) == .installationUnknown"
+    },
+    {
+      "line": 66129,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:70:21: Expectation failed: (interrupted.record.phase → .candidateReady) == .installationUnknown"
+    },
+    {
+      "line": 66236,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:83:41: Issue recorded"
+    },
+    {
+      "line": 66238,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:83:41: Issue recorded"
+    },
+    {
+      "line": 66248,
+      "text": "✘ Test \"lost actual Upgrade response reopens durable owner and fresh vault for Lookup only\" recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:50:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 69719,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:163:25: Expectation failed: (interrupted.persistedUpload?.record.phase → nil) == .uploadIntent"
+    },
+    {
+      "line": 69720,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:163:25: Expectation failed: (interrupted.persistedUpload?.record.phase → nil) == .uploadIntent"
+    },
+    {
+      "line": 69721,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:164:25: Expectation failed: (interrupted.persistedUpload?.record.submission → nil) != nil"
+    },
+    {
+      "line": 69722,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:164:25: Expectation failed: (interrupted.persistedUpload?.record.submission → nil) != nil"
+    },
+    {
+      "line": 69723,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:168:21: Expectation failed: (state.record.phase → .candidateReady) == .uploadIntent"
+    },
+    {
+      "line": 69724,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:168:21: Expectation failed: (state.record.phase → .candidateReady) == .uploadIntent"
+    },
+    {
+      "line": 69725,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:170:21: Expectation failed: (peer.observed.snapshot.uploaded → 0 bytes) == (Data(actual.prefix(65_536)) → 65536 bytes)"
+    },
+    {
+      "line": 69727,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:170:21: Expectation failed: (peer.observed.snapshot.uploaded → 0 bytes) == (Data(actual.prefix(65_536)) → 65536 bytes)"
+    },
+    {
+      "line": 69875,
+      "text": "✘ Test \"actual partial upload persists its random planned path and is never auto-resubmitted\" recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:149:6: Caught error: Interrupted(underlying: yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.session, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.deadlineExceeded, ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: []), persistedIntent: nil, persistedUpload: nil, journalUpdateError: nil)"
+    },
+    {
+      "line": 71110,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:195:25: Expectation failed: (!failure.mayHaveSubmittedUpgrade → true) && (failure.persistedUpload != nil → false)"
+    },
+    {
+      "line": 71111,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:195:25: Expectation failed: (!failure.mayHaveSubmittedUpgrade → true) && (failure.persistedUpload != nil → false)"
+    },
+    {
+      "line": 71112,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:198:21: Expectation failed: (beforeRestart?.record.phase → .candidateReady) == .uploadIntent"
+    },
+    {
+      "line": 71113,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:198:21: Expectation failed: (beforeRestart?.record.phase → .candidateReady) == .uploadIntent"
+    },
+    {
+      "line": 71116,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:206:41: Issue recorded"
+    },
+    {
+      "line": 71118,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:206:41: Issue recorded"
+    },
+    {
+      "line": 71128,
+      "text": "✘ Test \"actual interrupted package upload reopens its journal and only cleans its owned path\" recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:180:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 79281,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAccountSessionTests.swift:504:25: Expectation failed: (failure.underlying → .posix(54)) is (EnrollmentFixtureStop → Failure)"
+    },
+    {
+      "line": 79282,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAccountSessionTests.swift:504:25: Expectation failed: (failure.underlying → .posix(54)) is (EnrollmentFixtureStop → Failure)"
+    },
+    {
+      "line": 79283,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAccountSessionTests.swift:512:17: Expectation failed: (loaded.record.phase == .uploadIntent → false) && (loaded.record.remoteHistory == .started → <not evaluated>)"
+    },
+    {
+      "line": 79284,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAccountSessionTests.swift:512:17: Expectation failed: (loaded.record.phase == .uploadIntent → false) && (loaded.record.remoteHistory == .started → <not evaluated>)"
+    },
+    {
+      "line": 79415,
+      "text": "✘ Test \"expired enrollment cannot change generation after an actual authenticated upload intent\" recorded an issue at SelfRenewalAccountSessionTests.swift:475:6: Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalProvisioningProfileVerifier.Failure.profileExpired, remoteCertificateMayHaveBeenIssued: true, remoteProfilesMayHaveBeenRefreshed: true)"
+    },
+    {
+      "line": 91481,
+      "text": "✘ Test \"App login uses the actual published namespace and reopens only the verified stored account\" recorded an issue at SelfRenewalDeveloperAuthenticationTests.swift:133:6: Caught error: storage"
+    },
+    {
+      "line": 91622,
+      "text": "✘ Test \"App cancellation clears the same pending 2FA state and an old ticket cannot reach validate\" recorded an issue at SelfRenewalDeveloperAuthenticationTests.swift:165:6: Caught error: storage"
+    },
+    {
+      "line": 91763,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalDeveloperAuthenticationTests.swift:207:17: Expectation failed: (configured?.access → nil) == .signing"
+    },
+    {
+      "line": 91764,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalDeveloperAuthenticationTests.swift:207:17: Expectation failed: (configured?.access → nil) == .signing"
+    },
+    {
+      "line": 91769,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalDeveloperAuthenticationTests.swift:215:52: Issue recorded"
+    },
+    {
+      "line": 91771,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalDeveloperAuthenticationTests.swift:215:52: Issue recorded"
+    },
+    {
+      "line": 94579,
+      "text": "✘ Test \"uploadIntent rechecks actual revocation; only an explicit existing cleanup performs another RPC\" recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:45:6: Caught error: invalidRecoveryContext"
+    },
+    {
+      "line": 95242,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:107:21: Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .signingMaterials)"
+    },
+    {
+      "line": 95243,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:107:21: Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .signingMaterials)"
+    },
+    {
+      "line": 95920,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:107:21: Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .localStorage)"
+    },
+    {
+      "line": 95921,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:107:21: Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .localStorage)"
+    },
+    {
+      "line": 97432,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:141:79: Expectation failed: (connected?.access == .signing → true) && (connected?.phase == .uploadIntent → false)"
+    },
+    {
+      "line": 97433,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:141:79: Expectation failed: (connected?.access == .signing → true) && (connected?.phase == .uploadIntent → false)"
+    },
+    {
+      "line": 97454,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:150:25: Expectation failed: (downgraded.0?.access == .recoveryOnly → false) && (downgraded.0?.state == .recoveryRequired → <not evaluated>)"
+    },
+    {
+      "line": 97455,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:150:25: Expectation failed: (downgraded.0?.access == .recoveryOnly → false) && (downgraded.0?.state == .recoveryRequired → <not evaluated>)"
+    },
+    {
+      "line": 97456,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:151:25: Expectation failed: (downgraded.1 == .signingMaterials → true) && (downgraded.2 → false)"
+    },
+    {
+      "line": 97457,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:151:25: Expectation failed: (downgraded.1 == .signingMaterials → true) && (downgraded.2 → false)"
+    },
+    {
+      "line": 97462,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:155:25: Expectation failed: (cleaned?.access == .recoveryOnly → false) && (cleaned?.state == .candidateReady → <not evaluated>)"
+    },
+    {
+      "line": 97463,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:155:25: Expectation failed: (cleaned?.access == .recoveryOnly → false) && (cleaned?.state == .candidateReady → <not evaluated>)"
+    },
+    {
+      "line": 97576,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:162:25: Expectation failed: (peer.observed.snapshot.openedFileHandles == 1 → false) && (peer.observed.snapshot.removedPaths.count == 1 → <not evaluated>)"
+    },
+    {
+      "line": 97577,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:162:25: Expectation failed: (peer.observed.snapshot.openedFileHandles == 1 → false) && (peer.observed.snapshot.removedPaths.count == 1 → <not evaluated>)"
+    },
+    {
+      "line": 97586,
+      "text": "✘ Test \"the actual App owner downgrades revoked upload material and preserves manual owned cleanup without automatic submission\" recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:117:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 99593,
+      "text": "✘ Test \"an owned application test root cannot generate a current-process observation for a completed transport\" recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:215:6: Caught error: Interrupted(underlying: yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.posix(32), ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: []), persistedIntent: nil, persistedUpload: nil, journalUpdateError: nil)"
+    },
+    {
+      "line": 99908,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalIPAUnpackerTests.swift:211:32: Expectation failed: (error → .compressionRatioLimit) == (expected → .expandedLimit)"
+    },
+    {
+      "line": 99909,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalIPAUnpackerTests.swift:211:32: Expectation failed: (error → .compressionRatioLimit) == (expected → .expandedLimit)"
+    },
+    {
+      "line": 99942,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalInstallationRecoveryTests.swift:23:17: Expectation failed: (before.record.phase → .candidateReady) == .uploadIntent"
+    },
+    {
+      "line": 99945,
+      "text": "✘ Test removesPersistedOwnedUploadAfterFreshMutualTLSAndClearsJournalPhase() recorded an issue at SelfRenewalInstallationRecoveryTests.swift:15:6: Caught error: RecoveryFailure(underlying: yuedu_app.SelfRenewalTransactionJournal.Failure.invalidTransition, originalOperationError: Optional(yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.posix(32), ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: [])), grantReleaseError: nil, grantID: nil, remotePackagePath: nil, removal: nil, stopSessionAcknowledged: false, afcChannelReleasedLocally: false, lockdownChannelReleasedLocally: false, networkOutcome: nil)"
+    },
+    {
+      "line": 99960,
+      "text": "✘ Test acceptsActualMissingACKAndRetainsRemovalWhenStopDisconnects() recorded an issue at SelfRenewalInstallationRecoveryTests.swift:62:6: Caught error: RecoveryFailure(underlying: yuedu_app.SelfRenewalTransactionJournal.Failure.invalidTransition, originalOperationError: nil, grantReleaseError: nil, grantID: nil, remotePackagePath: nil, removal: nil, stopSessionAcknowledged: false, afcChannelReleasedLocally: false, lockdownChannelReleasedLocally: false, networkOutcome: nil)"
+    },
+    {
+      "line": 99975,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalInstallationRecoveryTests.swift:99:21: Expectation failed: (failure → OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.endOfStream, ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: [])).upgradeMayHaveExecuted → false"
+    },
+    {
+      "line": 99978,
+      "text": "✘ Test retainsUnknownSubmittedUpgradeAndUsesOnlyAuthenticatedLookup() recorded an issue at SelfRenewalInstallationRecoveryTests.swift:90:6: Caught error: RecoveryFailure(underlying: yuedu_app.SelfRenewalTransactionJournal.Failure.invalidTransition, originalOperationError: Optional(yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.services, underlying: yuedu_app.SelfRenewalAuthenticatedDeviceTransport.Failure.endOfStream, ownedRemoteStagingPath: nil, remoteStagingRemovalVerified: false, remoteCreationAttempted: false, cleanupAttempted: false, cleanupErrors: [])), grantReleaseError: nil, grantID: nil, remotePackagePath: nil, removal: nil, stopSessionAcknowledged: false, afcChannelReleasedLocally: false, lockdownChannelReleasedLocally: false, networkOutcome: nil)"
+    },
+    {
+      "line": 99993,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalInstallationRecoveryTests.swift:135:17: Expectation failed: ((staleError as? Recovery.RecoveryFailure)?.underlying as? Journal.Failure → .invalidTransition) == .staleSnapshot"
+    },
+    {
+      "line": 99994,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalInstallationRecoveryTests.swift:142:17: Expectation failed: ((wrongError as? Recovery.RecoveryFailure)?.underlying as? Recovery.Failure → nil) == .wrongDevice"
+    }
+  ],
+  "crashOrRestartLines": [
+    {
+      "line": 38454,
+      "text": "Restarting after unexpected exit, crash, or test timeout; summary will include totals from previous launches."
+    },
+    {
+      "line": 44420,
+      "text": "Restarting after unexpected exit, crash, or test timeout; summary will include totals from previous launches."
+    },
+    {
+      "line": 50754,
+      "text": "Restarting after unexpected exit, crash, or test timeout; summary will include totals from previous launches."
+    },
+    {
+      "line": 99995,
+      "text": "yuedu_appTests/SelfRenewalInstallationRecoveryTests.swift:149: Fatal error: Unexpectedly found nil while unwrapping an Optional value"
+    },
+    {
+      "line": 99996,
+      "text": "2026-10-20 23:17:07.225599+0000 YueduReader[37799:402653] yuedu_appTests/SelfRenewalInstallationRecoveryTests.swift:149: Fatal error: Unexpectedly found nil while unwrapping an Optional value"
+    },
+    {
+      "line": 100023,
+      "text": "Restarting after unexpected exit, crash, or test timeout; summary will include totals from previous launches."
+    }
+  ],
+  "lastLines": [
+    "Test Suite 'yuedu appTests.xctest' passed at 2026-10-20 23:18:17.575.",
+    "\t Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds",
+    "Test Suite 'Selected tests' passed at 2026-10-20 23:18:17.578.",
+    "\t Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.014) seconds",
+    "◇ Test run started.",
+    "↳ Testing Library Version: 1501",
+    "↳ Target Platform: arm64-apple-ios13.0-simulator",
+    "◇ Suite SelfRenewalInstallationRecoveryTests started.",
+    "◇ Test cancellationAndDeadlineReleaseGrantForFreshAuthenticatedRetry() started.",
+    "2026-10-20 23:18:19.756359+0000 YueduReader[63598:412680] [parse] ⏱ renewal.transaction.open 3ms main=false",
+    "[ERROR] ⏱ renewal.transaction.open 3ms main=false",
+    "2026-10-20 23:18:19.780318+0000 YueduReader[63598:412680] [parse] ⏱ renewal.transaction.commit 23ms phase=created main=false",
+    "[ERROR] ⏱ renewal.transaction.commit 23ms phase=created main=false",
+    "2026-10-20 23:18:19.790695+0000 YueduReader[63598:412680] [parse] ⏱ renewal.transaction.commit 1ms phase=signing main=false",
+    "[ERROR] ⏱ renewal.transaction.commit 1ms phase=signing main=false",
+    "2026-10-20 23:18:19.798180+0000 YueduReader[63598:412680] [parse] ⏱ renewal.transaction.commit 6ms phase=candidateReady main=false",
+    "[ERROR] ⏱ renewal.transaction.commit 6ms phase=candidateReady main=false",
+    "2026-10-20 23:18:19.798314+0000 YueduReader[63598:412680] [parse] ⏱ renewal.transaction.candidate 7ms bytes=150001 main=false",
+    "[ERROR] ⏱ renewal.transaction.candidate 7ms bytes=150001 main=false",
+    "2026-10-20 23:18:19.858845+0000 YueduReader[63598:412760] [parse] ⏱ renewal.install.authenticated 56ms bytes=150001 main=false",
+    "[ERROR] ⏱ renewal.install.authenticated 56ms bytes=150001 main=false",
+    "2026-10-20 23:18:22.801169+0000 YueduReader[63598:411984] [general] Failed to terminate process: Error Domain=com.apple.extensionKit.errorDomain Code=18 \"(null)\" UserInfo={NSUnderlyingError=0x600000dba2b0 {Error Domain=RBSRequestErrorDomain Code=3 \"No such process found\" UserInfo={NSLocalizedFailureReason=No such process found}}}"
+  ]
+}

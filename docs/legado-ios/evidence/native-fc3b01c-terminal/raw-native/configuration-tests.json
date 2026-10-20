@@ -1,0 +1,107 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
+      "deviceName" : "iPhone 17 Pro Max",
+      "modelName" : "iPhone 17 Pro Max",
+      "osBuildNumber" : "23C54",
+      "osVersion" : "26.2",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "name" : "local experience requires an explicit Info boolean and defaults off",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/localExperienceRequiresExplicitInfoBoolean()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/localExperienceRequiresExplicitInfoBoolean()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "local reader keeps every local feature available without claiming a purchase",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/localReaderCapabilitiesNeedNoAccountOrTransaction()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/localReaderCapabilitiesNeedNoAccountOrTransaction()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "local account router rejects both routes before any Firebase construction",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/localReaderAccountRoutesAreUnavailable()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/localReaderAccountRoutesAreUnavailable()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "disabled StoreKit resolves without observing or requesting Apple services",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/disabledStoreKitDoesNotStartAutomaticWork()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/disabledStoreKitDoesNotStartAutomaticWork()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "disabled CloudKit sync constructs safely and rejects remote work",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/disabledCloudKitSyncDoesNotConstructContainer()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/disabledCloudKitSyncDoesNotConstructContainer()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "disabled subscription mirror constructs safely and reports disabled",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/disabledSubscriptionMirrorDoesNotConstructContainer()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/disabledSubscriptionMirrorDoesNotConstructContainer()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "main app entitlements enable Apple sign-in and CloudKit",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/mainAppEntitlementsEnableAppleSignInAndCloudKit()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/mainAppEntitlementsEnableAppleSignInAndCloudKit()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "iCloud payload covers existing sync data files",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/iCloudPayloadCoversExistingSyncDataFiles()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/iCloudPayloadCoversExistingSyncDataFiles()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "name" : "sign-in sync waits for choice before overwriting remote backup",
+                  "nodeIdentifier" : "AuthAndICloudConfigurationTests/signInSyncWaitsForChoiceBeforeOverwritingRemoteBackup()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests/signInSyncWaitsForChoiceBeforeOverwritingRemoteBackup()",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Auth and iCloud configuration",
+              "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/AuthAndICloudConfigurationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "yuedu appTests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests",
+          "nodeType" : "Unit test bundle",
+          "result" : "Passed"
+        }
+      ],
+      "name" : "Yuedu-Reader",
+      "nodeType" : "Test Plan",
+      "result" : "Passed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}
