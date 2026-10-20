@@ -1,0 +1,407 @@
+#include "OwnedIdentitySearch.h"
+#include <Security/SecIdentity.h>
+#include <Security/SecIdentitySearch.h>
+#include <Security/SecCertificate.h>
+#include <Security/cssmtype.h>
+#include <Security/cssmapple.h>
+#include <Security/SecItem.h>
+#include <Security/SecKeychainItem.h>
+#include <Security/SecAccess.h>
+#include <Security/SecACL.h>
+#include <Security/SecTrustedApplication.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+/* Public deprecated C APIs, not SPI or an indirect Swift symbol call. Their
+ * Copy/Create results are released on both success and error paths. */
+OSStatus YueduOwnedIdentitySearchCount(SecKeychainRef keychain,
+                                      CFDataRef expectedLeaf,
+                                      uint32_t *matchingCount) {
+    if (matchingCount == NULL) return errSecParam;
+    *matchingCount = 0;
+    if (keychain == NULL || expectedLeaf == NULL ||
+        CFGetTypeID(keychain) != SecKeychainGetTypeID() ||
+        CFGetTypeID(expectedLeaf) != CFDataGetTypeID() ||
+        CFDataGetLength(expectedLeaf) < 1 || CFDataGetLength(expectedLeaf) > 65536) {
+        return errSecParam;
+    }
+    SecIdentitySearchRef search = NULL;
+    uint32_t count = 0;
+    OSStatus status = SecIdentitySearchCreate(keychain, CSSM_KEYUSE_SIGN, &search);
+    if (status != errSecSuccess) goto finish;
+    if (search == NULL) { status = errSecInternalComponent; goto finish; }
+    for (;;) {
+        SecIdentityRef identity = NULL;
+        status = SecIdentitySearchCopyNext(search, &identity);
+        if (status == errSecItemNotFound) {
+            if (identity != NULL) CFRelease(identity);
+            status = count == 1 ? errSecSuccess : errSecItemNotFound;
+            break;
+        }
+        if (status != errSecSuccess) {
+            if (identity != NULL) CFRelease(identity);
+            goto finish;
+        }
+        if (identity == NULL || count >= 16) {
+            if (identity != NULL) CFRelease(identity);
+            status = errSecDecode;
+            goto finish;
+        }
+        SecCertificateRef certificate = NULL;
+        status = SecIdentityCopyCertificate(identity, &certificate);
+        CFRelease(identity);
+        if (status != errSecSuccess || certificate == NULL) {
+            if (certificate != NULL) CFRelease(certificate);
+            if (status == errSecSuccess) status = errSecDecode;
+            goto finish;
+        }
+        CFDataRef actualLeaf = SecCertificateCopyData(certificate);
+        CFRelease(certificate);
+        if (actualLeaf == NULL) { status = errSecDecode; goto finish; }
+        Boolean exact = CFDataGetLength(actualLeaf) >= 1 &&
+                        CFDataGetLength(actualLeaf) <= 65536 &&
+                        CFEqual(actualLeaf, expectedLeaf);
+        CFRelease(actualLeaf);
+        if (!exact) { status = errSecDecode; goto finish; }
+        count += 1;
+    }
+finish:
+    if (search != NULL) CFRelease(search);
+    if (status == errSecSuccess) *matchingCount = count;
+    return status;
+}
+
+/* Only the bounded public ACL metadata below is declassified. In particular
+ * SecTrustedApplicationCopyData is merely a documented path, not the private
+ * API that checks the subject against the code requirement on disk. */
+static OSStatus ownedKey(SecKeychainRef keychain, SecKeyRef key) {
+    OSStatus status = errSecParam;
+    SecKeychainRef actual = NULL;
+    CFArrayRef searchList = NULL;
+    CFDictionaryRef query = NULL;
+    CFTypeRef results = NULL;
+    if (keychain == NULL || key == NULL ||
+        CFGetTypeID(keychain) != SecKeychainGetTypeID() ||
+        CFGetTypeID(key) != SecKeyGetTypeID()) goto finish;
+    status = SecKeychainItemCopyKeychain((SecKeychainItemRef)key, &actual);
+    if (status != errSecSuccess) goto finish;
+    if (actual == NULL) { status = errSecInvalidKeychain; goto finish; }
+    char expectedPath[4096], actualPath[4096];
+    UInt32 expectedLength = sizeof(expectedPath), actualLength = sizeof(actualPath);
+    status = SecKeychainGetPath(keychain, &expectedLength, expectedPath);
+    if (status != errSecSuccess) goto finish;
+    status = SecKeychainGetPath(actual, &actualLength, actualPath);
+    if (status != errSecSuccess) goto finish;
+    if (expectedLength == 0 || expectedLength >= sizeof(expectedPath) ||
+        actualLength != expectedLength || memcmp(expectedPath, actualPath, actualLength) != 0) {
+        status = errSecInvalidKeychain; goto finish;
+    }
+    const void *one[] = { keychain };
+    searchList = CFArrayCreate(NULL, one, 1, &kCFTypeArrayCallBacks);
+    if (searchList == NULL) { status = errSecAllocate; goto finish; }
+    const void *keys[] = { kSecClass, kSecAttrKeyClass, kSecMatchSearchList, kSecReturnRef, kSecMatchLimit };
+    const void *values[] = { kSecClassKey, kSecAttrKeyClassPrivate, searchList, kCFBooleanTrue, kSecMatchLimitAll };
+    query = CFDictionaryCreate(NULL, keys, values, 5, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    if (query == NULL) { status = errSecAllocate; goto finish; }
+    status = SecItemCopyMatching(query, &results);
+    if (status != errSecSuccess) goto finish;
+    if (results == NULL || CFGetTypeID(results) != CFArrayGetTypeID() || CFArrayGetCount(results) != 1) {
+        status = errSecDecode; goto finish;
+    }
+    SecKeyRef candidate = (SecKeyRef)CFArrayGetValueAtIndex(results, 0);
+    if (CFGetTypeID(candidate) != SecKeyGetTypeID()) { status = errSecDecode; goto finish; }
+    /* The single private key must be the actual identity's private key. Its
+     * public representations are safe to compare internally, never exported. */
+    SecKeyRef firstPublic = SecKeyCopyPublicKey(key), secondPublic = SecKeyCopyPublicKey(candidate);
+    CFDataRef firstBytes = firstPublic == NULL ? NULL : SecKeyCopyExternalRepresentation(firstPublic, NULL);
+    CFDataRef secondBytes = secondPublic == NULL ? NULL : SecKeyCopyExternalRepresentation(secondPublic, NULL);
+    Boolean equal = firstBytes != NULL && secondBytes != NULL &&
+        CFDataGetLength(firstBytes) > 0 && CFDataGetLength(firstBytes) <= 65536 &&
+        CFDataGetLength(secondBytes) > 0 && CFDataGetLength(secondBytes) <= 65536 && CFEqual(firstBytes, secondBytes);
+    if (firstBytes != NULL) CFRelease(firstBytes);
+    if (secondBytes != NULL) CFRelease(secondBytes);
+    if (firstPublic != NULL) CFRelease(firstPublic);
+    if (secondPublic != NULL) CFRelease(secondPublic);
+    if (!equal || !SecKeyIsAlgorithmSupported(key, kSecKeyOperationTypeSign, kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA256)) {
+        status = errSecInvalidKeyRef; goto finish;
+    }
+    status = errSecSuccess;
+finish:
+    if (actual != NULL) CFRelease(actual);
+    if (searchList != NULL) CFRelease(searchList);
+    if (query != NULL) CFRelease(query);
+    if (results != NULL) CFRelease(results);
+    return status;
+}
+
+static OSStatus partitions(CFStringRef description, YueduOwnedKeyACLReport *report) {
+    if (description == NULL || CFGetTypeID(description) != CFStringGetTypeID()) return errSecDecode;
+    CFIndex size = CFStringGetLength(description);
+    if (size < 2 || size > 16384 || size % 2 != 0) return errSecDecode;
+    UInt8 bytes[8192];
+    for (CFIndex index = 0; index < size; index += 2) {
+        unsigned value = 0;
+        for (CFIndex digit = 0; digit < 2; ++digit) {
+            UniChar character = CFStringGetCharacterAtIndex(description, index + digit);
+            unsigned nibble;
+            if (character >= '0' && character <= '9') nibble = character - '0';
+            else if (character >= 'a' && character <= 'f') nibble = character - 'a' + 10;
+            else if (character >= 'A' && character <= 'F') nibble = character - 'A' + 10;
+            else return errSecDecode;
+            value = (value << 4) | nibble;
+        }
+        bytes[index / 2] = (UInt8)value;
+    }
+    CFDataRef data = CFDataCreate(NULL, bytes, size / 2);
+    if (data == NULL) return errSecAllocate;
+    CFPropertyListRef plist = CFPropertyListCreateWithData(NULL, data, kCFPropertyListImmutable, NULL, NULL);
+    CFRelease(data);
+    OSStatus status = errSecDecode;
+    if (plist == NULL || CFGetTypeID(plist) != CFDictionaryGetTypeID() || CFDictionaryGetCount(plist) != 1) goto finish;
+    CFArrayRef identifiers = (CFArrayRef)CFDictionaryGetValue(plist, CFSTR("Partitions"));
+    if (identifiers == NULL || CFGetTypeID(identifiers) != CFArrayGetTypeID() || CFArrayGetCount(identifiers) > 16) goto finish;
+    for (CFIndex index = 0; index < CFArrayGetCount(identifiers); ++index) {
+        CFStringRef identifier = (CFStringRef)CFArrayGetValueAtIndex(identifiers, index);
+        if (CFGetTypeID(identifier) != CFStringGetTypeID() || CFStringGetLength(identifier) < 1 || CFStringGetLength(identifier) > 256) goto finish;
+        report->partitionIDCount += 1;
+        if (CFEqual(identifier, CFSTR("apple:"))) report->applePartitionCount += 1;
+        else if (CFEqual(identifier, CFSTR("apple-tool:"))) report->appleToolPartitionCount += 1;
+        else if (CFEqual(identifier, CFSTR("codesign:"))) report->codesignPartitionCount += 1;
+        else report->otherPartitionCount += 1;
+    }
+    status = errSecSuccess;
+finish:
+    if (plist != NULL) CFRelease(plist);
+    return status;
+}
+
+static OSStatus inspectAccess(SecAccessRef access, YueduOwnedKeyACLReport *report, SecACLRef *signACL) {
+    CFArrayRef list = NULL;
+    SecTrustedApplicationRef creator = NULL;
+    CFDataRef creatorPath = NULL;
+    OSStatus status = SecAccessCopyACLList(access, &list);
+    if (status != errSecSuccess) goto finish;
+    if (list == NULL || CFGetTypeID(list) != CFArrayGetTypeID() || CFArrayGetCount(list) < 1 || CFArrayGetCount(list) > 32) {
+        status = errSecDecode; goto finish;
+    }
+    status = SecTrustedApplicationCreateFromPath(NULL, &creator);
+    if (status != errSecSuccess) goto finish;
+    if (creator == NULL) { status = errSecDecode; goto finish; }
+    status = SecTrustedApplicationCopyData(creator, &creatorPath);
+    if (status != errSecSuccess) goto finish;
+    if (creatorPath == NULL || CFDataGetLength(creatorPath) < 1 || CFDataGetLength(creatorPath) > 4096) { status = errSecDecode; goto finish; }
+    report->privateKeyCount = 1; report->sameOwnedKeychain = 1;
+    report->aclCount = (uint32_t)CFArrayGetCount(list);
+    for (CFIndex index = 0; index < CFArrayGetCount(list); ++index) {
+        SecACLRef acl = (SecACLRef)CFArrayGetValueAtIndex(list, index);
+        CFArrayRef applications = NULL;
+        CFStringRef description = NULL;
+        SecKeychainPromptSelector prompt = 0;
+        if (CFGetTypeID(acl) != SecACLGetTypeID()) { status = errSecDecode; goto finish; }
+        /* The newer string-copy API maps unknown numeric authorizations to
+         * Any in Apple's implementation. This public C API retains the real
+         * bounded tags, so unknown counts cannot silently become Any. */
+        CSSM_ACL_AUTHORIZATION_TAG tags[64];
+        uint32_t tagCount = 64;
+        status = SecACLGetAuthorizations(acl, tags, &tagCount);
+        if (status != errSecSuccess) goto finish;
+        if (tagCount < 1 || tagCount > 64) { status = errSecDecode; goto finish; }
+        Boolean isSign = false, isPartition = false;
+        const CSSM_ACL_AUTHORIZATION_TAG known[] = { CSSM_ACL_AUTHORIZATION_ANY, CSSM_ACL_AUTHORIZATION_LOGIN, CSSM_ACL_AUTHORIZATION_GENKEY,
+            CSSM_ACL_AUTHORIZATION_DELETE, CSSM_ACL_AUTHORIZATION_EXPORT_WRAPPED, CSSM_ACL_AUTHORIZATION_EXPORT_CLEAR,
+            CSSM_ACL_AUTHORIZATION_IMPORT_WRAPPED, CSSM_ACL_AUTHORIZATION_IMPORT_CLEAR, CSSM_ACL_AUTHORIZATION_SIGN,
+            CSSM_ACL_AUTHORIZATION_ENCRYPT, CSSM_ACL_AUTHORIZATION_DECRYPT, CSSM_ACL_AUTHORIZATION_MAC, CSSM_ACL_AUTHORIZATION_DERIVE,
+            CSSM_ACL_AUTHORIZATION_CHANGE_ACL, CSSM_ACL_AUTHORIZATION_CHANGE_OWNER, CSSM_ACL_AUTHORIZATION_PARTITION_ID, CSSM_ACL_AUTHORIZATION_INTEGRITY };
+        for (uint32_t t = 0; t < tagCount; ++t) {
+            CSSM_ACL_AUTHORIZATION_TAG tag = tags[t];
+            if (tag == CSSM_ACL_AUTHORIZATION_SIGN) isSign = true;
+            if (tag == CSSM_ACL_AUTHORIZATION_PARTITION_ID) isPartition = true;
+            Boolean found = false;
+            for (size_t k = 0; k < sizeof(known) / sizeof(*known); ++k) if (tag == known[k]) found = true;
+            if (!found) report->unknownAuthorizationCount += 1;
+        }
+        if (isPartition && (isSign || tagCount != 1)) { status = errSecDecode; goto finish; }
+        Boolean isOwner = false;
+        if (tagCount == 1 && tags[0] == CSSM_ACL_AUTHORIZATION_CHANGE_ACL) {
+            /* Apple's public implementation rejects an owner before changing
+             * tags. Same tags are supplied; success is only an ordinary ACL,
+             * never evidence that its subject is the real owner credential. */
+            status = SecACLSetAuthorizations(acl, tags, tagCount);
+            if (status == errSecInvalidOwnerEdit) { isOwner = true; status = errSecSuccess; }
+            else if (status != errSecSuccess) goto finish;
+        }
+        status = SecACLCopyContents(acl, &applications, &description, &prompt);
+        if (status == errSecACLNotSimple && !isSign && !isPartition && !isOwner) {
+            report->opaqueACLCount += 1; status = errSecSuccess;
+        } else if (status == errSecSuccess) {
+            if (description != NULL && CFStringGetLength(description) > 16384) status = errSecDecode;
+            if (applications != NULL && (CFGetTypeID(applications) != CFArrayGetTypeID() || CFArrayGetCount(applications) > 16)) status = errSecDecode;
+            if (status == errSecSuccess && isPartition) {
+                report->partitionACLCount += 1;
+                status = partitions(description, report);
+            }
+            if (status == errSecSuccess && (isSign || isOwner)) {
+                if (isSign) report->signACLCount += 1;
+                if (isOwner) report->ownerACLCount += 1;
+                if (applications == NULL) {
+                    if (isSign) report->signAllowAnyACLCount += 1;
+                    if (isOwner) report->ownerAllowAnyACLCount += 1;
+                }
+                else {
+                    CFIndex count = CFArrayGetCount(applications);
+                    if (isSign) {
+                        report->signAppListACLCount += 1;
+                        if (count == 0) report->signEmptyACLCount += 1;
+                        report->signTrustedApplicationCount += (uint32_t)count;
+                    }
+                    if (isOwner) report->ownerTrustedApplicationCount += (uint32_t)count;
+                    for (CFIndex a = 0; a < count; ++a) {
+                        SecTrustedApplicationRef app = (SecTrustedApplicationRef)CFArrayGetValueAtIndex(applications, a);
+                        CFDataRef path = NULL;
+                        if (CFGetTypeID(app) != SecTrustedApplicationGetTypeID()) { status = errSecDecode; break; }
+                        status = SecTrustedApplicationCopyData(app, &path);
+                        if (status == errSecSuccess && (path == NULL || CFDataGetLength(path) < 1 || CFDataGetLength(path) > 4096)) status = errSecDecode;
+                        const char expected[] = "/usr/bin/codesign";
+                        if (status == errSecSuccess && isSign && CFDataGetLength(path) == sizeof(expected) &&
+                            memcmp(CFDataGetBytePtr(path), expected, sizeof(expected)) == 0) report->codesignPathEntryCount += 1;
+                        if (status == errSecSuccess && isOwner && CFEqual(path, creatorPath)) report->creatorOwnerPathEntryCount += 1;
+                        if (path != NULL) CFRelease(path);
+                        if (status != errSecSuccess) break;
+                    }
+                }
+                if (status == errSecSuccess && isSign && signACL != NULL && *signACL == NULL) { CFRetain(acl); *signACL = acl; }
+            }
+        }
+        if (applications != NULL) CFRelease(applications);
+        if (description != NULL) CFRelease(description);
+        if (status != errSecSuccess) goto finish;
+    }
+    status = errSecSuccess;
+finish:
+    if (list != NULL) CFRelease(list);
+    if (creator != NULL) CFRelease(creator);
+    if (creatorPath != NULL) CFRelease(creatorPath);
+    return status;
+}
+
+OSStatus YueduOwnedAccessAuthorizeCreator(SecAccessRef access) {
+    if (access == NULL || CFGetTypeID(access) != SecAccessGetTypeID()) return errSecParam;
+    CFArrayRef list = NULL, applications = NULL;
+    CFMutableArrayRef extended = NULL;
+    CFStringRef description = NULL;
+    SecACLRef owner = NULL;
+    SecTrustedApplicationRef creator = NULL;
+    SecKeychainPromptSelector prompt = 0;
+    OSStatus status = SecAccessCopyACLList(access, &list);
+    if (status != errSecSuccess) goto finish;
+    if (list == NULL || CFGetTypeID(list) != CFArrayGetTypeID() || CFArrayGetCount(list) < 1 || CFArrayGetCount(list) > 32) { status = errSecDecode; goto finish; }
+    for (CFIndex index = 0; index < CFArrayGetCount(list); ++index) {
+        SecACLRef acl = (SecACLRef)CFArrayGetValueAtIndex(list, index);
+        if (CFGetTypeID(acl) != SecACLGetTypeID()) { status = errSecDecode; goto finish; }
+        CSSM_ACL_AUTHORIZATION_TAG tags[64]; uint32_t count = 64;
+        status = SecACLGetAuthorizations(acl, tags, &count);
+        if (status != errSecSuccess) goto finish;
+        if (count < 1 || count > 64) { status = errSecDecode; goto finish; }
+        if (count != 1 || tags[0] != CSSM_ACL_AUTHORIZATION_CHANGE_ACL) continue;
+        status = SecACLSetAuthorizations(acl, tags, count);
+        if (status == errSecSuccess) continue; /* unchanged ordinary tags, not owner */
+        if (status != errSecInvalidOwnerEdit) goto finish;
+        if (owner != NULL) { status = errSecDecode; goto finish; }
+        CFRetain(acl); owner = acl;
+    }
+    if (owner == NULL) { status = errSecInvalidOwnerEdit; goto finish; }
+    status = SecACLCopyContents(owner, &applications, &description, &prompt);
+    if (status != errSecSuccess) goto finish;
+    if (applications == NULL || CFGetTypeID(applications) != CFArrayGetTypeID() || CFArrayGetCount(applications) >= 16 ||
+        description == NULL || CFGetTypeID(description) != CFStringGetTypeID() || CFStringGetLength(description) > 16384) {
+        status = errSecDecode; goto finish;
+    }
+    /* Only this fresh SecAccess object, before its one PKCS12 import. Original
+     * subjects and prompt survive; creator receives the owner right explicitly
+     * so the later public SetAccess need not invent passphrase credentials or
+     * use the private SetAccessWithPassword entry point. */
+    extended = CFArrayCreateMutableCopy(NULL, 0, applications);
+    if (extended == NULL) { status = errSecAllocate; goto finish; }
+    status = SecTrustedApplicationCreateFromPath(NULL, &creator);
+    if (status != errSecSuccess) goto finish;
+    if (creator == NULL) { status = errSecDecode; goto finish; }
+    CFArrayAppendValue(extended, creator);
+    status = SecACLSetContents(owner, extended, description, prompt);
+finish:
+    if (list != NULL) CFRelease(list);
+    if (owner != NULL) CFRelease(owner);
+    if (applications != NULL) CFRelease(applications);
+    if (extended != NULL) CFRelease(extended);
+    if (description != NULL) CFRelease(description);
+    if (creator != NULL) CFRelease(creator);
+    return status;
+}
+
+OSStatus YueduOwnedKeyACLInspect(SecKeychainRef keychain, SecKeyRef privateKey,
+                               uint32_t appendCurrentCodesign,
+                               YueduOwnedKeyACLReport *before, YueduOwnedKeyACLReport *after,
+                               uint32_t *classicChanged) {
+    if (before == NULL || after == NULL || classicChanged == NULL) return errSecParam;
+    memset(before, 0, sizeof(*before)); memset(after, 0, sizeof(*after)); *classicChanged = false;
+    if (appendCurrentCodesign > 1) return errSecParam;
+    YueduOwnedKeyACLReport initial = {0}, final = {0};
+    SecAccessRef access = NULL, persisted = NULL;
+    SecACLRef signACL = NULL;
+    CFArrayRef applications = NULL;
+    CFMutableArrayRef extended = NULL;
+    CFStringRef description = NULL;
+    SecTrustedApplicationRef codesign = NULL;
+    SecKeychainPromptSelector prompt = 0;
+    OSStatus status = ownedKey(keychain, privateKey);
+    if (status != errSecSuccess) goto finish;
+    status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &access);
+    if (status != errSecSuccess) goto finish;
+    if (access == NULL) { status = errSecNoAccessForItem; goto finish; }
+    status = inspectAccess(access, &initial, &signACL);
+    if (status != errSecSuccess) goto finish;
+    if (initial.ownerACLCount != 1 || initial.ownerAllowAnyACLCount != 0 ||
+        initial.ownerTrustedApplicationCount < 1 || initial.ownerTrustedApplicationCount > 16 ||
+        initial.creatorOwnerPathEntryCount != 1) { status = errSecInvalidOwnerEdit; goto finish; }
+    if (appendCurrentCodesign) {
+        /* Exactly one known, nonempty finite application list, never ANY or a
+         * reconstructed ACL. Preserve all old subjects/authorizations/prompt
+         * and all unrelated entries. The path is not a reason to skip writing
+         * a fresh actual codesign subject from the running platform. */
+        if (initial.signACLCount != 1 || initial.signAppListACLCount != 1 ||
+            initial.signAllowAnyACLCount != 0 || initial.signEmptyACLCount != 0 ||
+            initial.signTrustedApplicationCount >= 16 || signACL == NULL) { status = errSecAuthFailed; goto finish; }
+        status = SecACLCopyContents(signACL, &applications, &description, &prompt);
+        if (status != errSecSuccess) goto finish;
+        if (applications == NULL || description == NULL) { status = errSecDecode; goto finish; }
+        extended = CFArrayCreateMutableCopy(NULL, 0, applications);
+        if (extended == NULL) { status = errSecAllocate; goto finish; }
+        status = SecTrustedApplicationCreateFromPath("/usr/bin/codesign", &codesign);
+        if (status != errSecSuccess) goto finish;
+        if (codesign == NULL) { status = errSecInternalComponent; goto finish; }
+        CFArrayAppendValue(extended, codesign);
+        status = SecACLSetContents(signACL, extended, description, prompt);
+        if (status != errSecSuccess) goto finish;
+        status = SecKeychainItemSetAccess((SecKeychainItemRef)privateKey, access);
+        if (status != errSecSuccess) goto finish;
+        status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &persisted);
+        if (status != errSecSuccess) goto finish;
+        if (persisted == NULL) { status = errSecNoAccessForItem; goto finish; }
+        status = inspectAccess(persisted, &final, NULL);
+        if (status != errSecSuccess) goto finish;
+        YueduOwnedKeyACLReport normalized = final;
+        if (normalized.signTrustedApplicationCount == 0 || normalized.codesignPathEntryCount == 0) { status = errSecDecode; goto finish; }
+        normalized.signTrustedApplicationCount -= 1; normalized.codesignPathEntryCount -= 1;
+        if (memcmp(&initial, &normalized, sizeof(initial)) != 0) { status = errSecDecode; goto finish; }
+    } else final = initial;
+    *before = initial; *after = final; *classicChanged = appendCurrentCodesign;
+finish:
+    if (access != NULL) CFRelease(access);
+    if (persisted != NULL) CFRelease(persisted);
+    if (signACL != NULL) CFRelease(signACL);
+    if (applications != NULL) CFRelease(applications);
+    if (extended != NULL) CFRelease(extended);
+    if (description != NULL) CFRelease(description);
+    if (codesign != NULL) CFRelease(codesign);
+    return status;
+}

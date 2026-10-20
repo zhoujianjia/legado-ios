@@ -1,0 +1,30 @@
+--- frozen-v1/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c
++++ prepared-v2/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c
+@@ -207,7 +207,8 @@
+         status = SecACLGetAuthorizations(acl, tags, &tagCount);
+         if (status != errSecSuccess) goto finish;
+         if (tagCount < 1 || tagCount > 64) { status = errSecDecode; goto finish; }
+-        Boolean isSign = false, isPartition = false;
++        Boolean isSign = false, isPartition = false, hasAny = false;
++        uint32_t unknownTagCount = 0;
+         const CSSM_ACL_AUTHORIZATION_TAG known[] = { CSSM_ACL_AUTHORIZATION_ANY, CSSM_ACL_AUTHORIZATION_LOGIN, CSSM_ACL_AUTHORIZATION_GENKEY,
+             CSSM_ACL_AUTHORIZATION_DELETE, CSSM_ACL_AUTHORIZATION_EXPORT_WRAPPED, CSSM_ACL_AUTHORIZATION_EXPORT_CLEAR,
+             CSSM_ACL_AUTHORIZATION_IMPORT_WRAPPED, CSSM_ACL_AUTHORIZATION_IMPORT_CLEAR, CSSM_ACL_AUTHORIZATION_SIGN,
+@@ -217,10 +218,15 @@
+             CSSM_ACL_AUTHORIZATION_TAG tag = tags[t];
+             if (tag == CSSM_ACL_AUTHORIZATION_SIGN) isSign = true;
+             if (tag == CSSM_ACL_AUTHORIZATION_PARTITION_ID) isPartition = true;
++            if (tag == CSSM_ACL_AUTHORIZATION_ANY) hasAny = true;
+             Boolean found = false;
+             for (size_t k = 0; k < sizeof(known) / sizeof(*known); ++k) if (tag == known[k]) found = true;
+-            if (!found) report->unknownAuthorizationCount += 1;
+-        }
++            if (!found) { unknownTagCount += 1; report->unknownAuthorizationCount += 1; }
++        }
++        /* Appending this subject must not grant every right or an unknown
++         * right through a compound target ACL. This is per-entry: unrelated
++         * ACL authorizations remain intact and do not veto this known target. */
++        if (isSign && (hasAny || unknownTagCount != 0)) { status = errSecAuthFailed; goto finish; }
+         if (isPartition && (isSign || tagCount != 1)) { status = errSecDecode; goto finish; }
+         Boolean isOwner = false;
+         if (tagCount == 1 && tags[0] == CSSM_ACL_AUTHORIZATION_CHANGE_ACL) {

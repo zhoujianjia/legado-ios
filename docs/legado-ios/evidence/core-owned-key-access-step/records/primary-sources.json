@@ -1,0 +1,122 @@
+[
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/keychain_find.c",
+    "lineSegments": "1520-1626, 1691-1813",
+    "meaning": "Existing CLI -s selects canSign; -t private adds key class. It updates existing partition ACLs, preserves application list/prompt and uses an internal password setter. Its exit alone does not prove which entry was changed.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/keychain_find.c",
+      "bytes": 59979,
+      "sha256": "d2c7f006e9bba0585de241e579441662488d4397bafd9587b22df7e0c90216e9"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/securityd/src/acls.cpp",
+    "lineSegments": "119-204",
+    "meaning": "Partition validation is additional to classic ACL validation. A missing partition can be added on a real key operation. Thus missing/valid0 assumptions cannot prove the observed cause.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/acls.cpp",
+      "bytes": 18731,
+      "sha256": "9dcfaa50edcc327c000da89c8bba923bcc7048c028f8362f1b74c5ca1ecdb55b"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/SecACL.cpp",
+    "lineSegments": "124-221, 301-314",
+    "meaning": "Public contents handles owner via the same ACL form; unchanged tags on an actual owner return errSecInvalidOwnerEdit before modification. The contents setter has no owner prohibition and retains the authorization/role.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/SecACL.cpp",
+      "bytes": 10330,
+      "sha256": "6f7d947fc0449cc967b9f6155bc60739808b2d31e13ce4621ed4330f8a9bec00"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/base/SecBase.h",
+    "lineSegments": "301, 379",
+    "meaning": "errSecInvalidOwnerEdit is a public declared status (-25244), not a hand-declared private symbol.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/SecBase.h",
+      "bytes": 65359,
+      "sha256": "a2e2c53dfdc6ebcbfd5c81e351b636de10eb78614f79407049cbbe19eccd872e"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/Access.cpp",
+    "lineSegments": "83-119, 177-214",
+    "meaning": "Standard SecAccess creates the actual owner separately. Public persisted SetAccess uses prompt credentials. Only the new owned access authorizes its creator before import to support that explicit later edit.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/Access.cpp",
+      "bytes": 11636,
+      "sha256": "49f69ea39acdd075c48aa699b7c2f84363b10d2aee5c8371dc3753e3528b61a8"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/SecKeychainItem.cpp",
+    "lineSegments": "324-365",
+    "meaning": "Public SetAccess and internal SetAccessWithPassword differ. This delta uses only the former and public new-access creation, never calls or declares the internal function.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/SecKeychainItem.cpp",
+      "bytes": 31539,
+      "sha256": "6acb73972d9f6a27dcb33d424746d62c9f79a4792d6384bddcfd91246683f876"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/SecTrustedApplication.cpp",
+    "lineSegments": "52-71",
+    "meaning": "Public CreateFromPath makes a real subject; CopyData emits only the documented path including NUL, which is not proof of code-requirement equivalence.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/SecTrustedApplication.cpp",
+      "bytes": 5869,
+      "sha256": "765ba6a8d6aa2e2ab0e2b3c0b847a28b295df5d9393f6276f22c9407dacaebc8"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/TrustedApplication.cpp",
+    "lineSegments": "57-86, 155-175",
+    "meaning": "Real authorization subject has a verifier/requirement; path can be documentation. Fresh codesign subject is appended once without removing any old subject.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/TrustedApplication.cpp",
+      "bytes": 5889,
+      "sha256": "92d91f066c7406499394c2d1e4e9adbb769e253d8675e10193616017c51e5118"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/keychain/headers/SecImportExport.h",
+    "lineSegments": "651-660, 691-715",
+    "meaning": "Public documented file-based macOS PKCS12 import accepts initial SecAccessRef ACL via kSecImportExportAccess; the existing import owner is retained, not replaced with another import path.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/SecImportExport.h",
+      "bytes": 34441,
+      "sha256": "81f36dd1c3f90d4b6d51001a6642f2cef92c2527e62f122f59cb6c7eea7c1a86"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/SecImportExport.c",
+    "lineSegments": "90-115, 132-155",
+    "meaning": "Actual wrapper passes importAccess into the file-backed identity import and returns its keychain-based identity.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/SecImportExport.c",
+      "bytes": 9273,
+      "sha256": "2084ae61b1553ec566267dad2ee8264ed469f9f47efaee14398e37a07c1cd2d1"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/SecACL.h",
+    "lineSegments": "120-178, 184-197",
+    "meaning": "Public bounded contents and C numeric authorization APIs, deprecated but not private. Numeric tags avoid unknown-to-Any mapping in newer string-copy implementation.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/SecACL.h",
+      "bytes": 11652,
+      "sha256": "3e9e7b87c4ee6b34ad0f3b8ccacbf89633dae8505c3ad20f820e2ba945516c61"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/cssm/cssmapple.h",
+    "lineSegments": "127-138",
+    "meaning": "Public numeric Apple authorization constants including real owner-change and partition tags.",
+    "raw": {
+      "path": ".build/renewal-discovery/owned-key-partition-step/primary/cssmapple.h",
+      "bytes": 47104,
+      "sha256": "bfc789ab517801d43659f2b65fbd36fe69c7d935566994b83ba65173c4f2103c"
+    }
+  }
+]

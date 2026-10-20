@@ -14,12 +14,13 @@ struct Input: Decodable {
     let leafCertificate: Data
     let rootCertificate: Data
 }
-enum Operation: String, Decodable { case importIdentity, reopenIdentity }
+enum Operation: String, Decodable { case importIdentity, reopenIdentity, prepareCodesignAccess, inspectCodesignAccess }
 var activeOperation = Operation.importIdentity
 enum Stage: String {
     case readInput, createKeychain, createTrustedApplications, createACL, importPKCS12
     case findImportedIdentity, findStoredIdentity, matchLeaf, findRoot, privateKey, signChallenge, verifyChallenge, complete
     case openKeychain, unlockKeychain, keychainStatus, legacyIdentitySearch
+    case inspectKeyACL, prepareKeyACL
 }
 struct Failure: Error { let stage: Stage; let status: OSStatus }
 func keyFailure(_ stage: Stage, _ error: Unmanaged<CFError>?, fallback: OSStatus) -> Failure {
@@ -48,7 +49,7 @@ func run() throws -> [String: Any] {
           (try inputHandle.read(upToCount: 1) ?? Data()).isEmpty else { throw Failure(stage: .readInput, status: errSecParam) }
     let input = try JSONDecoder().decode(Input.self, from: bytes)
     activeOperation = input.operation ?? .importIdentity
-    guard (activeOperation == .reopenIdentity ? input.p12.isEmpty && input.p12Password.isEmpty : !input.p12.isEmpty && (1...256).contains(input.p12Password.utf8.count)),
+    guard (activeOperation != .importIdentity ? input.p12.isEmpty && input.p12Password.isEmpty : !input.p12.isEmpty && (1...256).contains(input.p12Password.utf8.count)),
           input.p12.count <= 524_288,
           (1...65_536).contains(input.leafCertificate.count), (1...65_536).contains(input.rootCertificate.count),
           (1...256).contains(input.keychainPassword.utf8.count),
@@ -56,7 +57,7 @@ func run() throws -> [String: Any] {
           SecCertificateCreateWithData(nil, input.rootCertificate as CFData) != nil else {
         throw Failure(stage: .readInput, status: errSecParam)
     }
-    if activeOperation == .reopenIdentity {
+    if activeOperation != .importIdentity {
         // Run in a fresh process after import/partition changes. Open only the
         // caller-owned Keychain; neither default nor global search list changes.
         var reopened: SecKeychain?
@@ -76,7 +77,8 @@ func run() throws -> [String: Any] {
         guard unlocked && readable && writable else { throw Failure(stage: .keychainStatus, status: errSecInteractionNotAllowed) }
         let legacyCount = try legacySigningIdentityCount(reopened, expected: input.leafCertificate)
         var value = try verifyStoredIdentity(reopened, input: input, expectedLeaf: expectedLeaf, importedCount: nil)
-        value["schemaVersion"] = 2; value["operation"] = Operation.reopenIdentity.rawValue
+        value["schemaVersion"] = activeOperation == .reopenIdentity ? 2 : 3
+        value["operation"] = activeOperation.rawValue
         value["legacySigningIdentityCount"] = legacyCount
         value["keychainUnlockedBeforeRequest"] = initiallyUnlocked
         value["keychainUnlocked"] = unlocked; value["keychainReadable"] = readable; value["keychainWritable"] = writable
@@ -101,6 +103,11 @@ func run() throws -> [String: Any] {
     var access: SecAccess?
     try require(SecAccessCreate("Owned short-lived fixture" as CFString, [application, thisTool] as CFArray, &access), at: .createACL)
     guard let access else { throw Failure(stage: .createACL, status: errSecInternalComponent) }
+    // This one new owned identity explicitly authorizes the current importer
+    // to edit its ACL before import. The actual owner is recognized by the
+    // public API's owner-edit rejection, not by an ordinary CHANGE_ACL tag.
+    // Existing subjects/prompt survive; no global key or trust setting changes.
+    try require(YueduOwnedAccessAuthorizeCreator(access), at: .createACL)
     let options: [String: Any] = [kSecImportExportPassphrase as String: input.p12Password,
         kSecImportExportKeychain as String: keychain, kSecImportExportAccess as String: access]
     var imported: CFArray?
@@ -172,6 +179,19 @@ func verifyStoredIdentity(_ keychain: SecKeychain, input: Input, expectedLeaf: S
     guard keyBytes == certBytes, SecKeyIsAlgorithmSupported(key, .sign, .rsaSignatureMessagePKCS1v15SHA256) else {
         throw Failure(stage: .privateKey, status: errSecInvalidKeyRef)
     }
+    var aclFacts: [String: Any] = [:]
+    if activeOperation == .prepareCodesignAccess || activeOperation == .inspectCodesignAccess {
+        var before = YueduOwnedKeyACLReport(), after = YueduOwnedKeyACLReport()
+        var changed: UInt32 = 0
+        let preparing = activeOperation == .prepareCodesignAccess
+        try require(YueduOwnedKeyACLInspect(keychain, key, preparing ? 1 : 0, &before, &after, &changed),
+                    at: preparing ? .prepareKeyACL : .inspectKeyACL)
+        guard changed == (preparing ? 1 : 0) else { throw Failure(stage: .inspectKeyACL, status: errSecDecode) }
+        aclFacts = ["aclBefore": aclReport(before), "aclAfter": aclReport(after), "classicACLChanged": changed == 1,
+                    "fixtureOwnerPolicy": "current-importer-subject-before-import"]
+    }
+    // In schema 3 this challenge happens after any actual ACL publication.
+    // Only the following separate codesign process can prove its own access.
     let challenge = Data(("owned-keychain-identity-preflight-v1-" + UUID().uuidString).utf8)
     guard let signature = SecKeyCreateSignature(key, .rsaSignatureMessagePKCS1v15SHA256, challenge as CFData, &error) as Data? else {
         throw keyFailure(.signChallenge, error, fallback: errSecInternalComponent)
@@ -187,13 +207,29 @@ func verifyStoredIdentity(_ keychain: SecKeychain, input: Input, expectedLeaf: S
         // proven only when the subsequent real codesign command succeeds.
         "codesignACLExecutionVerified": false]
     if let importedCount { value["importedItemCount"] = importedCount }
+    value.merge(aclFacts) { _, new in new }
     return value
+}
+
+func aclReport(_ report: YueduOwnedKeyACLReport) -> [String: Any] {
+    ["privateKeyCount": Int(report.privateKeyCount), "sameOwnedKeychain": report.sameOwnedKeychain == 1,
+     "aclCount": Int(report.aclCount), "signACLCount": Int(report.signACLCount),
+     "signAppListACLCount": Int(report.signAppListACLCount), "signAllowAnyACLCount": Int(report.signAllowAnyACLCount),
+     "signEmptyACLCount": Int(report.signEmptyACLCount), "signTrustedApplicationCount": Int(report.signTrustedApplicationCount),
+     "codesignPathEntryCount": Int(report.codesignPathEntryCount), "partitionACLCount": Int(report.partitionACLCount),
+     "partitionIDCount": Int(report.partitionIDCount), "applePartitionCount": Int(report.applePartitionCount),
+     "appleToolPartitionCount": Int(report.appleToolPartitionCount), "codesignPartitionCount": Int(report.codesignPartitionCount),
+     "otherPartitionCount": Int(report.otherPartitionCount), "opaqueACLCount": Int(report.opaqueACLCount),
+     "unknownAuthorizationCount": Int(report.unknownAuthorizationCount),
+     "ownerACLCount": Int(report.ownerACLCount), "ownerAllowAnyACLCount": Int(report.ownerAllowAnyACLCount),
+     "ownerTrustedApplicationCount": Int(report.ownerTrustedApplicationCount),
+     "creatorOwnerPathEntryCount": Int(report.creatorOwnerPathEntryCount)]
 }
 do { report(try run()) } catch {
     let failure = error as? Failure
-    var value: [String: Any] = ["schemaVersion": activeOperation == .reopenIdentity ? 2 : 1,
+    var value: [String: Any] = ["schemaVersion": activeOperation == .importIdentity ? 1 : (activeOperation == .reopenIdentity ? 2 : 3),
         "stage": (failure?.stage ?? .readInput).rawValue, "status": "failed", "osStatus": Int(failure?.status ?? errSecDecode)]
-    if activeOperation == .reopenIdentity { value["operation"] = Operation.reopenIdentity.rawValue }
+    if activeOperation != .importIdentity { value["operation"] = activeOperation.rawValue }
     report(value)
     // Never echo stdin, passwords, key data or Error.userInfo.
     fputs("Owned identity import failed\n", stderr); exit(1)

@@ -1,0 +1,115 @@
+--- canonical-baseline/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
++++ prepared/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
+@@ -207,6 +207,82 @@
+     if type(value['keychainUnlockedBeforeRequest']) is not bool:raise ValueError('Invalid initial owned Keychain status')
+     if value['codesignACLExecutionVerified'] is not False:raise ValueError('Unexecuted codesign is not proven')
+     return value
++ACL_COUNTS={'privateKeyCount','aclCount','signACLCount','signAppListACLCount','signAllowAnyACLCount','signEmptyACLCount',
++            'signTrustedApplicationCount','codesignPathEntryCount','partitionACLCount','partitionIDCount',
++            'applePartitionCount','appleToolPartitionCount','codesignPartitionCount','otherPartitionCount',
++            'opaqueACLCount','unknownAuthorizationCount','ownerACLCount','ownerAllowAnyACLCount',
++            'ownerTrustedApplicationCount','creatorOwnerPathEntryCount'}
++ACL_PARTITIONS={'partitionACLCount','partitionIDCount','applePartitionCount','appleToolPartitionCount',
++                'codesignPartitionCount','otherPartitionCount'}
++
++def key_acl_summary(value):
++    if not isinstance(value,dict) or set(value)!=ACL_COUNTS|{'sameOwnedKeychain'}:
++        raise ValueError('Invalid owned ACL summary fields')
++    for name in ACL_COUNTS:
++        if type(value[name]) is not int or not 0<=value[name]<=2048:raise ValueError('Invalid owned ACL count')
++    if (value['privateKeyCount']!=1 or value['sameOwnedKeychain'] is not True or not 1<=value['aclCount']<=32
++            or value['signACLCount']!=1 or value['signAppListACLCount']!=1 or value['signAllowAnyACLCount']!=0
++            or value['signEmptyACLCount']!=0 or not 1<=value['signTrustedApplicationCount']<=16
++            or value['ownerACLCount']!=1 or value['ownerAllowAnyACLCount']!=0
++            or not 1<=value['ownerTrustedApplicationCount']<=16 or value['creatorOwnerPathEntryCount']!=1
++            or value['codesignPathEntryCount']>value['signTrustedApplicationCount']
++            or value['partitionACLCount']>value['aclCount'] or value['opaqueACLCount']>value['aclCount']
++            or value['partitionIDCount']>16*value['partitionACLCount']
++            or sum(value[name] for name in ('applePartitionCount','appleToolPartitionCount','codesignPartitionCount','otherPartitionCount'))!=value['partitionIDCount']):
++        raise ValueError('Inconsistent owned ACL summary')
++    return value
++
++def key_access_status(raw):
++    # Schema 1 and 2 remain exact and cannot admit ACL extensions. Schema 3
++    # permits only known bounded facts, never ACL strings/paths/labels/hex.
++    if len(raw)>8192:raise ValueError('Owned ACL status byte budget')
++    value=json.loads(raw)
++    common={'schemaVersion','operation','stage','status','osStatus'}
++    if (not isinstance(value,dict) or type(value.get('schemaVersion')) is not int or value.get('schemaVersion')!=3
++            or value.get('operation') not in ('prepareCodesignAccess','inspectCodesignAccess')
++            or type(value.get('osStatus')) is not int or not -(2**31)<=value['osStatus']<2**31):
++        raise ValueError('Invalid owned ACL public status')
++    if value.get('status')=='failed':
++        allowed={'readInput','openKeychain','unlockKeychain','keychainStatus','legacyIdentitySearch',
++                 'findStoredIdentity','matchLeaf','findRoot','privateKey','signChallenge','verifyChallenge','inspectKeyACL','prepareKeyACL'}
++        if set(value)!=common or value['osStatus']==0 or value.get('stage') not in allowed:raise ValueError('Invalid owned ACL failure')
++        return value
++    extended={'aclBefore','aclAfter','classicACLChanged','fixtureOwnerPolicy'}
++    if not extended<=set(value):raise ValueError('Missing owned ACL facts')
++    if value['fixtureOwnerPolicy']!='current-importer-subject-before-import':raise ValueError('Unexpected owned owner policy')
++    base={key:item for key,item in value.items() if key not in extended}
++    base.update({'schemaVersion':2,'operation':'reopenIdentity'})
++    reopened_identity_status(json.dumps(base).encode())
++    before=key_acl_summary(value['aclBefore']); after=key_acl_summary(value['aclAfter'])
++    preparing=value['operation']=='prepareCodesignAccess'
++    if type(value['classicACLChanged']) is not bool or value['classicACLChanged'] is not preparing:
++        raise ValueError('Invalid owned ACL publication fact')
++    expected=dict(before)
++    if preparing:
++        expected['signTrustedApplicationCount']+=1; expected['codesignPathEntryCount']+=1
++    if after!=expected:raise ValueError('Unexpected owned ACL change')
++    return value
++
++def prepare_owned_codesign_access(importer,request,keychain,password):
++    common=dict(request, p12='',p12Password='')
++    prepared=key_access_status(run([importer],input=json.dumps(dict(common,operation='prepareCodesignAccess')).encode(),
++                                  private=True,public_status='aclPrepare'))
++    # The existing partition command is retained, now scoped to private keys
++    # only after the actual one private signing key and owner have been checked.
++    run(['security','set-key-partition-list','-S','apple-tool:,apple:,codesign:','-t','private','-s','-k',password,keychain],private=True)
++    inspected=key_access_status(run([importer],input=json.dumps(dict(common,operation='inspectCodesignAccess')).encode(),
++                                   private=True,public_status='aclInspect'))
++    for name in ('leafSHA256','rootSHA256'):
++        expected=fingerprint(base64.b64decode(request['leafCertificate' if name=='leafSHA256' else 'rootCertificate'],validate=True))
++        if prepared[name]!=expected or inspected[name]!=expected:raise ToolFailure('owned ACL identity mismatch',-1)
++    before=prepared['aclAfter']; after=inspected['aclAfter']
++    if any(before[name]!=after[name] for name in set(before)-ACL_PARTITIONS):
++        raise ToolFailure('owned partition write changed classic ACL facts',-1)
++    if (after['partitionACLCount']!=1 or after['partitionIDCount']!=3 or after['applePartitionCount']!=1
++            or after['appleToolPartitionCount']!=1 or after['codesignPartitionCount']!=1 or after['otherPartitionCount']!=0
++            or after['codesignPathEntryCount']<1):
++        raise ToolFailure('owned partition write lacks actual required entries',-1)
++
+ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=False,public_output_label=None,timeout_seconds=None,cleanup=False):
+     if private and (public_log is not None or public_output_label is not None):
+         raise ValueError('Private tool streams cannot become public logs')
+@@ -250,11 +326,16 @@
+     if public_status:
+         # A malformed/private stdout must remain suppressed even on failure.
+         reopen=public_status=='reopen'
+-        try:status=(reopened_identity_status if reopen else identity_status)(result.stdout)
++        acl=public_status in ('aclPrepare','aclInspect')
++        try:
++            status=(key_access_status if acl else (reopened_identity_status if reopen else identity_status))(result.stdout)
++            if acl and status['operation']!=('prepareCodesignAccess' if public_status=='aclPrepare' else 'inspectCodesignAccess'):
++                raise ValueError('Unexpected owned ACL operation')
+         except (ValueError,UnicodeError,TypeError,RecursionError):
+-            status={'schemaVersion':2 if reopen else 1,'stage':'readInput','status':'failed','osStatus':-1}
+-            if reopen:status['operation']='reopenIdentity'
+-        public_record('OWNED_KEYCHAIN_REOPEN_STATUS' if reopen else 'OWNED_IDENTITY_STATUS',status)
++            status={'schemaVersion':3 if acl else (2 if reopen else 1),'stage':'readInput','status':'failed','osStatus':-1}
++            if acl:status['operation']='prepareCodesignAccess' if public_status=='aclPrepare' else 'inspectCodesignAccess'
++            elif reopen:status['operation']='reopenIdentity'
++        public_record('OWNED_KEY_ACCESS_STATUS' if acl else ('OWNED_KEYCHAIN_REOPEN_STATUS' if reopen else 'OWNED_IDENTITY_STATUS'),status)
+         if result.returncode==0 and (status.get('stage')!='complete' or status.get('status')!='passed'
+                 or status.get('privateKeySignatureVerified') is not True
+                 or status.get('codesignACLExecutionVerified') is not False):
+@@ -380,7 +461,7 @@
+                 'p12':base64.b64encode(p12).decode(),'leafCertificate':base64.b64encode(leaf).decode(),
+                 'rootCertificate':base64.b64encode(root).decode()}
+             run([importer],input=json.dumps(request).encode(),private=True,public_status=True)
+-            run(['security','set-key-partition-list','-S','apple-tool:,apple:,codesign:','-s','-k',keychain_password,keychain],private=True)
++            prepare_owned_codesign_access(importer,request,keychain,keychain_password)
+             # Explicitly unlock only this existing owned Keychain in a fresh
+             # process, then compare SecItem and legacy sign-use searches and
+             # actually sign/verify with its persisted key. This is additional
