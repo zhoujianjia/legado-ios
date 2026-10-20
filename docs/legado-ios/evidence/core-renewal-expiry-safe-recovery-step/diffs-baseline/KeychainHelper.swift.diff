@@ -1,0 +1,95 @@
+--- f4eef0b/Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift
++++ future/Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift
+@@ -6,6 +6,14 @@
+ // Used by LoginManager to store sensitive login credentials instead of UserDefaults.
+ 
+ enum KeychainHelper {
++    enum ReadFailure: Error, Sendable, Equatable {
++        case lookup(OSStatus), unexpectedResult, invalidUTF8, valueLimit
++        case accessibilityMigration(OSStatus)
++    }
++    private struct ReadValue {
++        let value: String?
++        let migrationStatus: OSStatus?
++    }
+ 
+     /// Book-source logins. Callers that store something else pass their own service so two
+     /// unrelated secrets can never collide on one account name — there is deliberately no
+@@ -60,6 +68,40 @@
+         accessibility: CFString? = nil,
+         synchronizable: Bool? = nil
+     ) -> String? {
++        do {
++            let read = try readCore(account: account, service: service, accessibility: accessibility,
++                synchronizable: synchronizable, maximumBytes: nil)
++            if let status = read.migrationStatus { logFailure(operation: "accessibility migration", status: status) }
++            return read.value
++        } catch let error as ReadFailure {
++            if case .lookup(let status) = error { logFailure(operation: "read", status: status) }
++            return nil
++        } catch {
++            AppLogger.error("Keychain read failed", context: ["errorType": String(reflecting: type(of: error))])
++            return nil
++        }
++    }
++
++    /// Strict users distinguish genuine missing items from locked/unreadable,
++    /// malformed or failed-migration data. Uses the same one query and original
++    /// attribute-only migration; it never broadens services/access groups.
++    static func loadChecked(account: String, service: String = loginService,
++        accessibility: CFString? = nil, synchronizable: Bool? = nil, maximumBytes: Int) throws -> String? {
++        precondition(!Thread.isMainThread)
++        try Task.checkCancellation()
++        guard maximumBytes > 0 else { throw ReadFailure.valueLimit }
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.keychain.checked-read",
++            "bytesLimit=\(maximumBytes) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        let read = try readCore(account: account, service: service, accessibility: accessibility,
++            synchronizable: synchronizable, maximumBytes: maximumBytes)
++        if let status = read.migrationStatus { throw ReadFailure.accessibilityMigration(status) }
++        try Task.checkCancellation()
++        return read.value
++    }
++
++    private static func readCore(account: String, service: String, accessibility: CFString?,
++        synchronizable: Bool?, maximumBytes: Int?) throws -> ReadValue {
+         var baseQuery: [String: Any] = [
+             kSecClass as String:       kSecClassGenericPassword,
+             kSecAttrService as String: service,
+@@ -76,28 +118,26 @@
+         ]) { _, new in new }
+         var result: AnyObject?
+         let status = SecItemCopyMatching(query as CFDictionary, &result)
+-        guard status == errSecSuccess else {
+-            if status != errSecItemNotFound { logFailure(operation: "read", status: status) }
+-            return nil
+-        }
++        if status == errSecItemNotFound { return ReadValue(value: nil, migrationStatus: nil) }
++        guard status == errSecSuccess else { throw ReadFailure.lookup(status) }
+         guard let item = result as? [String: Any],
+-              let data = item[kSecValueData as String] as? Data,
+-              let str = String(data: data, encoding: .utf8) else { return nil }
++              let data = item[kSecValueData as String] as? Data else { throw ReadFailure.unexpectedResult }
++        if let maximumBytes, data.count > maximumBytes { throw ReadFailure.valueLimit }
++        guard let str = String(data: data, encoding: .utf8) else { throw ReadFailure.invalidUTF8 }
+ 
+         // Existing installations already have WhenUnlocked items. Migrate their protection
+         // while the item is readable, before the listener locks the device. Update only the
+         // attribute: writing the value we just read could overwrite a concurrent login edit.
++        var failedMigration: OSStatus?
+         if let accessibility,
+            item[kSecAttrAccessible as String] as? String != accessibility as String {
+             let migrationStatus = SecItemUpdate(
+                 baseQuery as CFDictionary,
+                 [kSecAttrAccessible as String: accessibility] as CFDictionary
+             )
+-            if migrationStatus != errSecSuccess {
+-                logFailure(operation: "accessibility migration", status: migrationStatus)
+-            }
++            if migrationStatus != errSecSuccess { failedMigration = migrationStatus }
+         }
+-        return str
++        return ReadValue(value: str, migrationStatus: failedMigration)
+     }
+ 
+     private static func logFailure(operation: String, status: OSStatus) {

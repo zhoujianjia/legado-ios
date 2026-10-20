@@ -1,0 +1,163 @@
+--- f4eef0b/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift
++++ future/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift
+@@ -14,6 +14,7 @@
+     enum Failure: Error, Sendable, Equatable {
+         case busy, missingTransaction, inputChanged, leaseChanged, identityChanged, wrongPeer
+         case candidateNotReady, invalidHook, noSubmissionIntent
++        case signingMaterialsUnavailable, invalidRecoveryContext
+     }
+     struct Interrupted: Error, @unchecked Sendable {
+         let underlying: Error
+@@ -46,8 +47,29 @@
+         var automaticSelfRenewalImplemented: Bool { false }
+     }
+     private let journal: Journal
+-    private let vault: Vault
+-    private let namespace: Vault.Namespace
++    private let vault: Vault?
++    private let namespace: Vault.Namespace?
++    private let recoveryBinding: RecoveryBinding?
++    private struct RecoveryBinding: Sendable {
++        let transactionID: UUID
++        let materialNamespace: UUID
++        let candidate: Journal.Candidate
++        let submission: Journal.Submission
++        let bundleIdentifier: String
++        let bundleVersion: String
++        init(_ snapshot: Journal.Snapshot) throws {
++            guard [.uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(snapshot.record.phase),
++                  let candidate = snapshot.record.candidate, let submission = snapshot.record.submission else { throw Failure.invalidRecoveryContext }
++            transactionID = snapshot.record.id; materialNamespace = snapshot.record.materialNamespace
++            self.candidate = candidate; self.submission = submission
++            bundleIdentifier = snapshot.record.bundleIdentifier; bundleVersion = snapshot.record.bundleVersion
++        }
++        func matches(_ snapshot: Journal.Snapshot) -> Bool {
++            snapshot.record.id == transactionID && snapshot.record.materialNamespace == materialNamespace
++                && snapshot.record.candidate == candidate && snapshot.record.submission == submission
++                && snapshot.record.bundleIdentifier == bundleIdentifier && snapshot.record.bundleVersion == bundleVersion
++        }
++    }
+     private let clock: @Sendable () -> Date
+     private var busy = false
+     private var submitted: Journal.Snapshot?
+@@ -55,11 +77,30 @@
+     init(journal: Journal, vault: Vault, namespace: Vault.Namespace,
+         clock: @escaping @Sendable () -> Date = { Date() }) {
+         self.journal = journal; self.vault = vault; self.namespace = namespace
+-        self.clock = clock
+-    }
++        self.clock = clock; recoveryBinding = nil
++    }
++
++    /// A recovery capability comes only from the actual locked journal record.
++    /// It contains no signing key, namespace handle, lease or candidate proof.
++    /// Caller configuration cannot convert it into preparation/submission power.
++    nonisolated static func recoveryOnly(journal: Journal,
++        clock: @escaping @Sendable () -> Date = { Date() }) async throws -> SelfRenewalControlledRenewalCoordinator {
++        try Task.checkCancellation()
++        guard let snapshot = try await journal.load() else { throw Failure.missingTransaction }
++        let binding = try RecoveryBinding(snapshot)
++        return SelfRenewalControlledRenewalCoordinator(journal: journal, recoveryBinding: binding, clock: clock)
++    }
++
++    private init(journal: Journal, recoveryBinding: RecoveryBinding, clock: @escaping @Sendable () -> Date) {
++        self.journal = journal; self.recoveryBinding = recoveryBinding; self.clock = clock
++        vault = nil; namespace = nil
++    }
++
++    func isRecoveryOnly() -> Bool { recoveryBinding != nil }
+ 
+     func prepare(ipa: URL, lease: Vault.Lease, originalCodeAnchors: [Data],
+         originalProfileAnchors: [Data]) async throws -> Journal.Snapshot {
++        guard let vault, let namespace else { throw Failure.signingMaterialsUnavailable }
+         guard !busy else { throw Failure.busy }
+         busy = true; defer { busy = false }
+         try Task.checkCancellation()
+@@ -134,6 +175,7 @@
+ 
+     private func submit(pairing: Transport.PairingIdentity, endpoint: Transport.Endpoint,
+         timeoutSeconds: TimeInterval, appHandoff: SelfRenewalUserDataHandoff?) async throws -> TransportCompletion {
++        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
+         guard !busy else { throw Failure.busy }
+         busy = true; submitted = nil; uploading = nil
+         defer { busy = false; submitted = nil; uploading = nil }
+@@ -176,7 +218,23 @@
+         timeoutSeconds: TimeInterval = 30) async throws -> Recovery {
+         guard !busy else { throw Failure.busy }
+         busy = true; defer { busy = false }
++        try Task.checkCancellation()
+         guard let snapshot = try await journal.load() else { return .noTransaction }
++        if let binding = recoveryBinding {
++            // Safe cleanup may already have moved this exact transaction back
++            // to ready. Recovery-only never turns that fact into retirement or
++            // another attempt to upload/submit a package.
++            if snapshot.record.id == binding.transactionID, snapshot.record.phase == .candidateReady,
++               snapshot.record.materialNamespace == binding.materialNamespace,
++               snapshot.record.bundleIdentifier == binding.bundleIdentifier,
++               snapshot.record.bundleVersion == binding.bundleVersion,
++               snapshot.record.candidate == binding.candidate,
++               snapshot.record.safePreSubmissionCleanup?.submission == binding.submission {
++                return .candidateReady(snapshot)
++            }
++            guard binding.matches(snapshot),
++                  [.uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(snapshot.record.phase) else { throw Failure.invalidRecoveryContext }
++        }
+         switch snapshot.record.phase {
+         case .created, .signing:
+             return .retiredUnsubmitted(try await journal.retireUnsubmitted(snapshot, reason: .preparationInterrupted, at: clock()))
+@@ -202,6 +260,7 @@
+ 
+     func close() async throws {
+         guard !busy else { throw Failure.busy }
++        busy = true; defer { busy = false }
+         try await journal.close()
+     }
+ 
+@@ -209,6 +268,7 @@
+     /// Repeated foreground events return this process's existing observation;
+     /// they neither synthesize a cold launch nor repeat the full bundle read.
+     func observeCurrentProcess() async throws -> Journal.Snapshot? {
++        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
+         guard !busy else { throw Failure.busy }
+         busy = true; defer { busy = false }
+         guard let snapshot = try await journal.load() else { return nil }
+@@ -234,6 +294,7 @@
+ 
+     private func beforeCreation(_ expected: Journal.Snapshot, intent: Installer.UploadIntent,
+         lease: Vault.Lease, material: App.Materials, expectedPeer: Data) async throws {
++        guard let vault else { throw Failure.signingMaterialsUnavailable }
+         guard busy, uploading == nil, submitted == nil, intent.deviceCertificateSHA256 == expectedPeer else { throw Failure.invalidHook }
+         try Task.checkCancellation()
+         try await vault.validate(lease, for: material)
+@@ -241,6 +302,7 @@
+     }
+ 
+     private func readForUpload(transaction: UUID, at offset: Int, count: Int) async throws -> Data {
++        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
+         guard busy, submitted == nil, let upload = uploading,
+               upload.record.id == transaction, upload.record.phase == .uploadIntent else { throw Failure.invalidHook }
+         return try await journal.readCandidate(upload, at: offset, count: count)
+@@ -249,6 +311,7 @@
+     private func beforeSubmission(submission: Installer.UpgradeSubmission,
+         lease: Vault.Lease, material: App.Materials, expectedPeer: Data,
+         appHandoff: SelfRenewalUserDataHandoff?) async throws {
++        guard let vault else { throw Failure.signingMaterialsUnavailable }
+         guard busy, submitted == nil, let expected = uploading,
+               submission.deviceCertificateSHA256 == expectedPeer else { throw Failure.invalidHook }
+         try Task.checkCancellation()
+@@ -263,6 +326,7 @@
+     }
+ 
+     private func currentLease(_ snapshot: Journal.Snapshot) async throws -> Vault.Lease {
++        guard let vault, let namespace else { throw Failure.signingMaterialsUnavailable }
+         // The namespace remains an opaque vault handle. Reopen uses a real
+         // sealed material proof at the coordinator construction/resume boundary.
+         // A live owner can enumerate its exact namespace by its public UUID.
+@@ -273,6 +337,7 @@
+     }
+ 
+     private func verifyCandidate(_ snapshot: Journal.Snapshot, lease: Vault.Lease) async throws -> Unpacker.Materials {
++        guard let vault else { throw Failure.signingMaterialsUnavailable }
+         guard let candidate = snapshot.record.candidate else { throw Failure.candidateNotReady }
+         let anchors = try Self.verificationAnchors(lease)
+         let input = try await journal.candidateURL(snapshot)

@@ -1,0 +1,63 @@
+--- v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ v2/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -99,10 +99,13 @@
+     private var configurationNeedsReload = false
+     private var busy = false
+     #if DEBUG
+-    enum PublicationFault: Sendable { case loseNextDirectorySyncAcknowledgement }
++    enum PublicationFault: Sendable {
++        case loseNextDirectorySyncAcknowledgement
++        case loseNextAuthenticatedRecoveryDirectorySyncAcknowledgement
++    }
+     private var publicationFault: PublicationFault?
+-    init(root: URL, publicationFault: PublicationFault) {
+-        requestedRoot = root; clock = { Date() }; self.publicationFault = publicationFault
++    init(root: URL, publicationFault: PublicationFault, clock: @escaping @Sendable () -> Date = { Date() }) {
++        requestedRoot = root; self.clock = clock; self.publicationFault = publicationFault
+     }
+     #endif
+     static let maximumConfigurationBytes = 524_288
+@@ -216,19 +219,18 @@
+         }
+         // A successful Lookup/Remove is reported as that observation, never as
+         // installed code, Apple authority, or a completed automatic renewal.
+-        let status: Status
+-        do {
+-            status = access == .recoveryOnly
++        do {
++            let status = access == .recoveryOnly
+                 ? try await observeRecoveryOnly(coordinator, handoff: handoff)
+                 : try await observe(coordinator, handoff: handoff)
++            if status.state == .recoveryRequired {
++                return try publish(state: .authenticatedRecoveryObserved, phase: status.phase,
++                    problem: access == .recoveryOnly ? .signingMaterials : nil)
++            }
++            return status
+         } catch {
+             throw RecoveryFailed(signingMaterials: materialFailure, recoveryError: nil, observationError: error, completedRecovery: completed)
+         }
+-        if status.state == .recoveryRequired {
+-            return try publish(state: .authenticatedRecoveryObserved, phase: status.phase,
+-                problem: access == .recoveryOnly ? .signingMaterials : nil)
+-        }
+-        return status
+     }
+ 
+     func status() -> Status? { lastStatus }
+@@ -522,8 +524,14 @@
+         guard raw.count <= Self.maximumConfigurationBytes else { throw Failure.limit }
+         do {
+             #if DEBUG
+-            let losesAcknowledgement = publicationFault != nil
+-            publicationFault = nil
++            let losesAcknowledgement: Bool
++            switch publicationFault {
++            case .loseNextDirectorySyncAcknowledgement: losesAcknowledgement = true
++            case .loseNextAuthenticatedRecoveryDirectorySyncAcknowledgement:
++                losesAcknowledgement = state == .authenticatedRecoveryObserved
++            case nil: losesAcknowledgement = false
++            }
++            if losesAcknowledgement { publicationFault = nil }
+             try Self.writeDocument(raw, root: root, loseCommitAcknowledgement: losesAcknowledgement)
+             #else
+             try Self.writeDocument(raw, root: root)

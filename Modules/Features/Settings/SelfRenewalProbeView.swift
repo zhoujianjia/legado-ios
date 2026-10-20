@@ -208,8 +208,15 @@ struct SelfRenewalProbeView: View {
                 Text(localized("無法開啟續簽配置"))
                     .foregroundStyle(DSColor.textSecondary)
             }
+            if owner.signingMaterialProblem != nil, owner.problem != .signingMaterials {
+                Text(localized("缺少可用的簽名材料"))
+                    .foregroundStyle(DSColor.textSecondary)
+                    .accessibilityIdentifier("self_renewal_signing_material_problem")
+            }
         } footer: {
-            Text(localized(owner.recoveryAvailable
+            Text(localized(owner.status?.access == .recoveryOnly
+                ? "簽名材料不可用，僅能檢查或清理已有事務，不會重新提交安裝。手動恢復時可能請求本機網路權限。"
+                : owner.recoveryAvailable
                 ? "恢復時可能請求本機網路權限，只檢查或清理已有事務，不重新提交安裝。"
                 : "需先準備有效簽名材料和設備認證；匯入配置不會安裝應用。"))
                 .dsSectionFooter()

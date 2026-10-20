@@ -1,0 +1,83 @@
+--- v1/Tests/iOS/yuedu appTests/SelfRenewalExpirySafeRecoveryTests.swift
++++ v2/Tests/iOS/yuedu appTests/SelfRenewalExpirySafeRecoveryTests.swift
+@@ -126,6 +126,9 @@
+                 }
+             }
+         }
++        #if DEBUG
++        try await Self.retainsCompletedLookupAfterStatusAcknowledgementLoss()
++        #endif
+     }
+ 
+     @Test("wrong peer/cancel and ready records cannot manufacture a recovery signing capability")
+@@ -225,6 +228,70 @@
+         }
+     }
+ 
++    #if DEBUG
++    nonisolated private static func retainsCompletedLookupAfterStatusAcknowledgementLoss() async throws {
++        try await Package.fixture { f in
++            try await Self.withJournal(f) { journal, root in
++                let original = Coordinator(journal: journal, vault: f.vault, namespace: f.namespace, clock: { f.date })
++                let ready = try await Self.prepare(original, f); let bytes = try await Self.bytes(journal, ready)
++                try await Peer.withPeer(.disconnectAfterUpgradeThenRecover, bytes: bytes,
++                    bundle: ready.record.bundleIdentifier, version: ready.record.bundleVersion, at: f.date) { peer in
++                    do { _ = try await original.submit(pairing: peer.pairing, endpoint: peer.endpoint, timeoutSeconds: 12) }
++                    catch let error as Coordinator.Interrupted { #expect(error.mayHaveSubmittedUpgrade) }
++                    try await journal.close()
++                    let session = Session(root: root, publicationFault: .loseNextAuthenticatedRecoveryDirectorySyncAcknowledgement,
++                        clock: { f.date })
++                    let handoff = await MainActor.run { SelfRenewalUserDataHandoff() }
++                    do {
++                        _ = try await session.bootstrap(handoff: handoff)
++                        let device = Session.DeviceConfiguration(identityPersistentReference: try Self.persistentReference(peer.pairing.hostIdentity),
++                            deviceCertificateDER: peer.pairing.deviceCertificateDER, rootCertificateDER: peer.pairing.rootCertificateDER,
++                            hostID: peer.pairing.hostID, systemBUID: peer.pairing.systemBUID,
++                            numericAddress: peer.endpoint.numericAddress, port: peer.endpoint.port, interfaceIndex: peer.endpoint.interfaceIndex)
++                        let configuration = Session.Configuration(schema: 1, namespaceID: ready.record.materialNamespace,
++                            codeAnchors: [f.oldAnchor], profileAnchors: [f.oldAnchor], device: device)
++                        let input = f.directory.appendingPathComponent("owned-recovery-ack-configuration.json")
++                        try JSONEncoder().encode(configuration).write(to: input)
++                        _ = try await session.configure(from: input, handoff: handoff)
++                        do {
++                            _ = try await session.recoverExplicitly(handoff: handoff)
++                            Issue.record("lost post-Lookup status acknowledgement reported success")
++                        } catch let error as Session.RecoveryFailed {
++                            #expect(error.signingMaterials != nil && error.recoveryError == nil)
++                            let observationError = error.observationError as? Session.Failure
++                            #expect(observationError == .commitDurabilityUnknown)
++                            if case .authenticatedLookup(let saved, let observation)? = error.completedRecovery {
++                                #expect(saved.record.phase == .lookupObserved && !saved.record.renewalVerified)
++                                #expect(observation.presence == .reported(bundleIdentifier: peer.bundle, bundleVersion: peer.version))
++                            } else {
++                                Issue.record("completed authenticated Lookup disappeared after local status failure")
++                            }
++                        }
++                        let available = await session.recoveryIsAvailable(); #expect(!available)
++                        let materialError = await session.signingMaterialFailure(); #expect(materialError != nil)
++                        // Fault acknowledgement is withheld only after the actual
++                        // atomic rename and directory fsync. The owned bytes must
++                        // therefore record the real Lookup despite the thrown ACK.
++                        let committed = try Data(contentsOf: root.appendingPathComponent("configuration.json"))
++                        let document = try #require(JSONSerialization.jsonObject(with: committed) as? [String: Any])
++                        let status = try #require(document["status"] as? [String: Any])
++                        #expect(status["state"] as? String == Session.State.authenticatedRecoveryObserved.rawValue)
++                        #expect(status["access"] as? String == Session.Access.recoveryOnly.rawValue)
++                        #expect(status["problem"] as? String == Session.Problem.signingMaterials.rawValue)
++                        let observed = peer.observed.snapshot
++                        #expect(observed.lookupRequests == 1 && observed.upgradeRequests == 1 && observed.removedPaths.isEmpty)
++                        let reloaded = try await session.bootstrap(handoff: handoff)
++                        #expect(reloaded.access == .recoveryOnly && reloaded.phase == .lookupObserved)
++                        #expect(reloaded.problem == .signingMaterials && !reloaded.automaticRenewalVerified)
++                        #expect(peer.observed.snapshot.lookupRequests == 1)
++                        try await session.close()
++                    } catch { do { try await session.close() } catch { Issue.record(error) }; throw error }
++                }
++            }
++        }
++    }
++    #endif
++
+     nonisolated private static func withJournal(_ f: Package.Fixture,
+         _ action: @escaping @Sendable (Journal, URL) async throws -> Void) async throws {
+         let root = f.directory.appendingPathComponent("SelfRenewalApp", isDirectory: true)

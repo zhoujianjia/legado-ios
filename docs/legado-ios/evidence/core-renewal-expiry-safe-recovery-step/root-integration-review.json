@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T07:23:47.377562+00:00",
+  "confirmedRemainingBlockers": [],
+  "sourceFiles": 12,
+  "newNativeDefinitions": 6,
+  "nativeExecuted": 0,
+  "rootReview": [
+    "Coordinator recoveryOnly is constructed from the actual locked remote-phase journal and bound transaction/material namespace/candidate/owned submission path/device pin. All signing/candidate-read/prepare/submit hooks deny missing signing context before work.",
+    "The App keeps startup and foreground local; only the existing explicit authenticated recover path can Lookup or clean the exact owned upload. Unknown Upgrade retains its package and never reuploads or infers renewal from same-version presence.",
+    "Actual public configuration, accessible Keychain persistent identity and existing record namespace/peer binding are required. Missing or expired signing materials confer no Vault.Namespace, signing lease or fresh submission authority.",
+    "Strict KeychainHelper loadChecked shares the one original query/migration with legacy load, preserves actual read/UTF8/bound/migration errors, and only true item-not-found returns nil. No new queue, credential store or key export.",
+    "Successful authenticated recovery stays separate from unavailable signing materials. The final status publish is inside post-recovery error wrapping, preserving actual completedRecovery and the independent local/remote errors.",
+    "Five locales append the same footer without modifying prior bytes. Root fixed the newly noticed inner-try macro call in one test; all original fixture assertions and the same six method names remain.",
+    "Same-process installed-observation cache and uploadIntent early return remain explicit S6 limitations: every foreground does not fully recheck all expiry/revocation. Real lease use/connect still verifies material, with no renewal or device claims."
+  ],
+  "independentReviewSHA256": "23bda6a5c5ea03fb45f368d6c97ac2a38b023a8460a8b6a504fb92a3350f3acf",
+  "reviewScope": "Independent frozen-v2 review plus root known throwing-API macro one-line correction; no SDK typecheck.",
+  "frozenReferenceDelta": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "frozenReferenceSHA256": "ba8d963eaa13902aa7c3c9676240e3ec064847a84619db2fb36490e24d7f23f2",
+      "currentSHA256": "673caa1b651748cca2ef3735b93d2f24c3b53556ad7830c46f2a4df0301e4959",
+      "reason": "Root60d8fe3 lifts the real9105 compiler throwing load out of the require macro. Historical frozen reference is not a future compile closure."
+    }
+  ],
+  "localizations": [
+    {
+      "path": "Resources/zh-Hant.lproj/Localizable.strings",
+      "key": "簽名材料不可用，僅能檢查或清理已有事務，不會重新提交安裝。手動恢復時可能請求本機網路權限。",
+      "appendedBytes": 343,
+      "appendedSHA256": "5be1ed125e71467495c6308552bf2f46430b32828e6cbe9c56edfcbbb6f1c3df",
+      "originalBytesPreserved": true
+    },
+    {
+      "path": "Resources/zh-Hans.lproj/Localizable.strings",
+      "key": "簽名材料不可用，僅能檢查或清理已有事務，不會重新提交安裝。手動恢復時可能請求本機網路權限。",
+      "appendedBytes": 343,
+      "appendedSHA256": "07264aa2214f953f75f1c7714f7af94375b9829b88e186f38e4dc896ede406f5",
+      "originalBytesPreserved": true
+    },
+    {
+      "path": "Resources/en.lproj/Localizable.strings",
+      "key": "簽名材料不可用，僅能檢查或清理已有事務，不會重新提交安裝。手動恢復時可能請求本機網路權限。",
+      "appendedBytes": 381,
+      "appendedSHA256": "f720b6411078ee512703d4187726e2c25fe8e8328bcf12308f95d1ad5b5ed1c1",
+      "originalBytesPreserved": true
+    },
+    {
+      "path": "Resources/ja.lproj/Localizable.strings",
+      "key": "簽名材料不可用，僅能檢查或清理已有事務，不會重新提交安裝。手動恢復時可能請求本機網路權限。",
+      "appendedBytes": 460,
+      "appendedSHA256": "a6413e653918df84faac054c11e4865d69be7e6bd6c2c65c5dcf8143edd4899e",
+      "originalBytesPreserved": true
+    },
+    {
+      "path": "Resources/ko.lproj/Localizable.strings",
+      "key": "簽名材料不可用，僅能檢查或清理已有事務，不會重新提交安裝。手動恢復時可能請求本機網路權限。",
+      "appendedBytes": 418,
+      "appendedSHA256": "d30fa10d19619ffe78aac7562a09e04b61b6aedb6dc6d76648073597515dfece",
+      "originalBytesPreserved": true
+    }
+  ],
+  "rootTestMacroCorrection": {
+    "path": "Tests/iOS/yuedu appTests/SelfRenewalExpirySafeRecoveryTests.swift",
+    "frozenBytes": 27250,
+    "frozenSHA256": "27dcf1329dc772221c250cc1cb795d06f7f38c86cdcdbe10b2aa86a8355e979a",
+    "finalBytes": 27254,
+    "finalSHA256": "581e580ec4526e10b5255478ab77199d4f7046ce79834344823e3bd5d1d5524b",
+    "knownThrowingCall": "JSONSerialization.jsonObject(with:)",
+    "sameMethodsAndAssertions": true,
+    "SDKVerified": false
+  }
+}

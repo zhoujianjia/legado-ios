@@ -1,0 +1,70 @@
+--- f4eef0b/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift
++++ future/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift
+@@ -14,13 +14,14 @@
+     private let session: SelfRenewalAppSession
+     private(set) var status: SelfRenewalAppSession.Status?
+     private(set) var problem: Problem?
++    private(set) var signingMaterialProblem: Problem?
+     private(set) var isWorking = false
+     private(set) var recoveryAvailable = false
+     private var bootstrapped = false
+ 
+-    init(root: URL? = nil) {
++    init(root: URL? = nil, clock: @escaping @Sendable () -> Date = { Date() }) {
+         handoff = SelfRenewalUserDataHandoff()
+-        session = SelfRenewalAppSession(root: root)
++        session = SelfRenewalAppSession(root: root, clock: clock)
+     }
+ 
+     func start(books: BookStore, sources: BookSourceStore, positions: any ReadingPositionStore) async {
+@@ -49,6 +50,7 @@
+             AppLogger.parse("Renewal App bootstrap unavailable type=\(String(reflecting: type(of: error)))")
+         }
+         recoveryAvailable = await session.recoveryIsAvailable()
++        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+     }
+ 
+     /// Foreground observes the same process at most once through the existing
+@@ -72,6 +74,7 @@
+             AppLogger.parse("Renewal configuration unavailable type=\(String(reflecting: type(of: error)))")
+         }
+         recoveryAvailable = await session.recoveryIsAvailable()
++        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+     }
+ 
+     func recoverExplicitly() async {
+@@ -85,18 +88,25 @@
+             AppLogger.parse("Renewal recovery unavailable type=\(String(reflecting: type(of: error)))")
+         }
+         recoveryAvailable = await session.recoveryIsAvailable()
++        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+     }
+ 
+     func close() async throws {
+         guard !isWorking else { throw SelfRenewalAppSession.Failure.busy }
+         isWorking = true; defer { isWorking = false }
+         try await session.close()
+-        status = nil; problem = nil; recoveryAvailable = false; bootstrapped = false
++        status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
+     }
+ 
+     private static func classify(_ error: Error) -> Problem {
+         if error is CancellationError { return .cancelled }
+         if let failure = error as? SelfRenewalAuthenticatedDeviceTransport.Failure, failure == .cancelled { return .cancelled }
++        if let failure = error as? SelfRenewalAppSession.RecoveryFailed {
++            if let error = failure.recoveryError { return classify(error) }
++            if let error = failure.observationError { return classify(error) }
++            return .operationFailed
++        }
++        if let failure = error as? SelfRenewalInstallationRecovery.RecoveryFailure { return classify(failure.underlying) }
+         if let unavailable = error as? SelfRenewalAppSession.Unavailable {
+             if unavailable.statusPersistenceError != nil { return .localStorage }
+             switch unavailable.problem {
+@@ -121,6 +131,7 @@
+         }
+         if error is SelfRenewalSigningMaterialVault.Failure { return .signingMaterials }
+         if error is SelfRenewalTransactionJournal.Failure { return .localStorage }
++        if error is KeychainHelper.ReadFailure { return .localStorage }
+         if error is SelfRenewalAppSession.InitializationFailure { return .localStorage }
+         return .operationFailed
+     }

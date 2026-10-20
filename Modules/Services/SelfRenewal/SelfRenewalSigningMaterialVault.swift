@@ -13,8 +13,9 @@ protocol SelfRenewalSigningManifestStorage: Sendable {
 struct SelfRenewalSigningKeychainManifestStorage: SelfRenewalSigningManifestStorage {
     private let service = "com.yuedu.selfRenewal.publicSigningManifest.v1"
     func load(account: String) throws -> String? {
-        KeychainHelper.load(account: account, service: service,
-            accessibility: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly, synchronizable: false)
+        try KeychainHelper.loadChecked(account: account, service: service,
+            accessibility: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly, synchronizable: false,
+            maximumBytes: SelfRenewalSigningMaterialVault.Limits.manifestBytes)
     }
     func save(account: String, value: String) throws {
         guard KeychainHelper.save(account: account, data: value, service: service,
