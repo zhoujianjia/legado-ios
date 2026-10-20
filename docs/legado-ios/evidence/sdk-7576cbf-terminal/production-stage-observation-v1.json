@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "role": "Limited stage observations from actual rawSDK7576 compiler log, no test acceptance",
+  "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+  "rawLog": {
+    "bytes": 8153999,
+    "sha256": "af26a4909959c6cd21c2a6449649bcc5e9b18eced0d5a71f5814bf743673aa5b"
+  },
+  "events": [
+    {
+      "line": 20333,
+      "text": "SwiftEmitModule normal arm64 Emitting\\ module\\ for\\ yuedu_app (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 20335,
+      "text": "EmitSwiftModule normal arm64 (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 26003,
+      "text": "Ld /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader.debug.dylib normal (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 26012,
+      "text": "Ld /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader normal (in target 'yuedu app' from project 'Yuedu-Reader')"
+    }
+  ],
+  "projectionCompileEvents": [
+    {
+      "line": 21937,
+      "text": "SwiftCompile normal arm64 /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/LegadoOriginalLoginUIForm.swift (in target 'yuedu app' from project 'Yuedu-Reader')"
+    }
+  ],
+  "observations": [
+    "Actual production yuedu_app module emission is recorded at20333/20335 and main/debug-dylib link tasks at26003/26012. All25 compiler diagnostics are in the test file; none is a production-source diagnostic.",
+    "Link tasks require compiled production object inputs, so the compiler gets past the earlier Form projection block for this exact7576 source. These task logs are finite stage evidence, not an overall successful build/test result.",
+    "No final main-app CodeSign or Touch record appears after these link tasks in the captured log. Do not claim a complete signed App build, successful SDK test target or App test execution.",
+    "New Header/V2browser source bytes are outside this frozen7576 source and gain no acceptance from it."
+  ],
+  "productionModuleEmissionObserved": true,
+  "productionMainAndDebugLinkTasksObserved": true,
+  "finalMainAppCodeSignObserved": false,
+  "finalMainAppTouchObserved": false,
+  "overallAppBuildPassClaimed": false,
+  "AppTestsExecuted": 0
+}

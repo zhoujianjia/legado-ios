@@ -1,0 +1,22 @@
+{
+  "candidate": {
+    "ignoredPath": ".build\\sdk-7576-native-login-fixture-repair-step\\final-v1.json",
+    "bytes": 2884,
+    "sha256": "3b92f35e1662836a5e9f57cd45dc52bf1998758abd298740943caa07652668a3"
+  },
+  "independentReview": {
+    "ignoredPath": ".build\\sdk-7576-native-login-fixture-independent-review\\review-v1.json",
+    "bytes": 21806,
+    "sha256": "9d80263e3d13a91e537565c65f8d3e54a0030778963ff4df86d72f8bd6af48fa"
+  },
+  "scope": "Root-authored inherited Native fixture API-shape repair; independently reviewed source candidate, with logical credential-state observations limited as described below",
+  "SwiftSDKExecuted": 0,
+  "NativeExecuted": 0,
+  "sourceReviewIsNotSDKAcceptance": true,
+  "notPartOfFrozen7576ActualResult": true,
+  "proofLimits": [
+    "The removed ActionResult.completedEffects field does not exist in the actual API; replacement checks observe raw owner credential bytes and revision.",
+    "Those checks can prove no completed logical credential change over the observed interval, but do not prove that a MayCommit attempt never occurred or that an identical-value owner call was never made.",
+    "Source review and grammar validation do not establish Swift SDK compilation, Native execution, or renewed credentials."
+  ]
+}

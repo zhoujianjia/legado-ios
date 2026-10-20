@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "role": "Limited stage observations from actual rawSDK7576 compiler log, no test acceptance",
+  "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+  "rawLog": {
+    "bytes": 8153999,
+    "sha256": "af26a4909959c6cd21c2a6449649bcc5e9b18eced0d5a71f5814bf743673aa5b"
+  },
+  "events": [
+    {
+      "line": 20333,
+      "text": "SwiftEmitModule normal arm64 Emitting\\ module\\ for\\ yuedu_app (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 20335,
+      "text": "EmitSwiftModule normal arm64 (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 26003,
+      "text": "Ld /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader.debug.dylib normal (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 26012,
+      "text": "Ld /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader normal (in target 'yuedu app' from project 'Yuedu-Reader')"
+    }
+  ],
+  "projectionCompileEvents": [
+    {
+      "line": 21937,
+      "text": "SwiftCompile normal arm64 /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/LegadoOriginalLoginUIForm.swift (in target 'yuedu app' from project 'Yuedu-Reader')"
+    }
+  ],
+  "observations": [
+    "Production module emission20333/20335 is followed by actual module/doc/ABI/sourceinfo copies21121–21133. Both main/debug links26003/26012 are followed by dSYM stages reading their resulting binaries26016/26659 and AppIntents metadata27900.",
+    "These dependent output stages establish production module compilation and linked-binary output for exact7576, including the previously blocked Form source compile21937. They do not establish final App signing/build completion or any test execution.",
+    "No final main-app CodeSign or Touch record appears after these link tasks in the captured log. Do not claim a complete signed App build, successful SDK test target or App test execution.",
+    "New Header/V2browser source bytes are outside this frozen7576 source and gain no acceptance from it."
+  ],
+  "productionModuleEmissionObserved": true,
+  "productionMainAndDebugLinkTasksObserved": true,
+  "finalMainAppCodeSignObserved": false,
+  "finalMainAppTouchObserved": false,
+  "overallAppBuildPassClaimed": false,
+  "AppTestsExecuted": 0,
+  "version": 2,
+  "predecessor": {
+    "path": "production-stage-observation-v1.json",
+    "bytes": 2444,
+    "sha256": "4baf1951b5a81a65192e65ac0d402029514d06b98b3bac2b7f925d14bc6f134c"
+  },
+  "dependentOutputEvents": [
+    {
+      "line": 21121,
+      "text": "Copy /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/yuedu_app.swiftmodule/arm64-apple-ios-simulator.swiftmodule /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Intermediates.noindex/Yuedu-Reader.build/Debug-iphonesimulator/yuedu\\ app.build/Objects-normal/arm64/yuedu_app.swiftmodule (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 21125,
+      "text": "Copy /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/yuedu_app.swiftmodule/arm64-apple-ios-simulator.swiftdoc /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Intermediates.noindex/Yuedu-Reader.build/Debug-iphonesimulator/yuedu\\ app.build/Objects-normal/arm64/yuedu_app.swiftdoc (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 21129,
+      "text": "Copy /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/yuedu_app.swiftmodule/arm64-apple-ios-simulator.abi.json /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Intermediates.noindex/Yuedu-Reader.build/Debug-iphonesimulator/yuedu\\ app.build/Objects-normal/arm64/yuedu_app.abi.json (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 21133,
+      "text": "Copy /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/yuedu_app.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Intermediates.noindex/Yuedu-Reader.build/Debug-iphonesimulator/yuedu\\ app.build/Objects-normal/arm64/yuedu_app.swiftsourceinfo (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 26016,
+      "text": "GenerateDSYMFile /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app.dSYM /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 26659,
+      "text": "GenerateDSYMFile /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app.dSYM /Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/YueduReader.debug.dylib (in target 'yuedu app' from project 'Yuedu-Reader')"
+    },
+    {
+      "line": 27900,
+      "text": "ExtractAppIntentsMetadata (in target 'yuedu app' from project 'Yuedu-Reader')"
+    }
+  ],
+  "productionModuleCopiedToProducts": true,
+  "bothLinkedBinariesReadByDSYMStage": true
+}

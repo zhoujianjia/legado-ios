@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T22:10:05.299474+00:00",
+  "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+  "workflowRun": 39501414740,
+  "SDKJob": 118899566864,
+  "status": "failed-test-target-compilation",
+  "selection": "currentcore",
+  "AppSDK": {
+    "executedDefinitions": 0,
+    "executedLeaves": 0,
+    "passed": 0,
+    "failedTests": 0,
+    "testTargetCompilationPassed": false,
+    "uniqueCompilerDiagnostics": 25,
+    "errorSource": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+    "cause": "Inherited Native fixture API-shape misuse of optional loginUIEvents and nonexistent ActionResult.completedEffects, with downstream inference diagnostics. Tests cancelled because build failed.",
+    "selectedDefinitions": 463,
+    "expectedLeaves": 466,
+    "requiredSignerSelected": true,
+    "requiredSignerExecuted": false,
+    "xcodebuildExit": 65,
+    "wrapperExit": 1,
+    "timedOut": false,
+    "resultProduced": false
+  },
+  "limitedProductionEvidence": {
+    "moduleEmittedAndCopied": true,
+    "mainAndDebugLinkOutputsConsumedByDSYMStages": true,
+    "projectionSourceCompileLine": 21937,
+    "finalMainAppCodeSignObserved": false,
+    "finalMainAppTouchObserved": false,
+    "overallAppBuildPassClaimed": false,
+    "proof": "evidence/sdk-7576cbf-terminal/production-stage-observation-v2.json",
+    "meaning": "Actual7576 production compilation/link-output progress is supported by dependent raw-log stages; not a complete signed App build or test success. New Header/V2browser bytes are outside this result."
+  },
+  "historicalSourceBinding": {
+    "count": 334,
+    "allGitBlobBytesMatched": true,
+    "gitCatFileBatchProcesses": 1,
+    "worktreeSubstitution": false,
+    "proof": "evidence/sdk-7576cbf-terminal/historical-source-binding-v1.json",
+    "meaning": "Adds historical blob verification after the frozen first factual report; does not alter its SDK failure or elevate any pass."
+  },
+  "phases": {
+    "records": 11,
+    "firstFailure": "native",
+    "failed": [
+      "native",
+      "export",
+      "cases"
+    ],
+    "blocked": [
+      "after-tests",
+      "result"
+    ],
+    "allSucceeded": false
+  },
+  "producer": {
+    "commandsSucceeded": 48,
+    "publicOutputFacts": 43,
+    "actualSDKMachOs": 4,
+    "sameJobResourceAndArchiveBound": true,
+    "requiredAppSignerTestExecuted": false,
+    "meaning": "Controlled SDK producer succeeded; cannot establish App signing test, real account authorization or renewal."
+  },
+  "Package": {
+    "mode": "original-api-package-currentcore-loginv2",
+    "actualXCTestMethods": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0,
+    "sourceInputs": 16,
+    "controls": 7,
+    "meaning": "Independent fresh Package acceptance for its exact source inputs, not App/SDK/JNI/device acceptance."
+  },
+  "sourceRepair": {
+    "sourceOnlyIndependentlyReviewed": true,
+    "actualSDKAfterRepair": 0,
+    "proof": "evidence/sdk-7576cbf-terminal/source-repair-source-only-facts.json"
+  },
+  "evidence": "evidence/sdk-7576cbf-terminal",
+  "claims": {
+    "iphoneTransportVerified": false,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false,
+    "SDKPassed": false,
+    "AppTestsPassed": false,
+    "sourceCompatibilityComplete": false
+  },
+  "observations": {
+    "newTestsExecutedDuringAudit": 0,
+    "cloudQueriesDuringThisArchiveStep": 0,
+    "statusPolled": false,
+    "cloudRestarted": false,
+    "productionSourceChanged": false
+  },
+  "notes": [
+    "Raw compiler8MB log, ZIPs and decoded job log remain ignored and are bound by byte/SHA facts. No private connector response, signed URL, binary or private material is copied into this candidate.",
+    "All copied text uses UTF8/LF, strips trailing line whitespace, retains one EOF newline; original-byte ledger preserves its prior raw identity.",
+    "Both7576 jobs are terminal. The canonical archive owner must update live-handle bookkeeping; this evidence does not relaunch or create tags."
+  ]
+}
