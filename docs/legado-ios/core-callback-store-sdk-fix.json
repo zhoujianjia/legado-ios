@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "actual-SDK-compilation-fix-integrated-awaiting-Apple-SDK",
+  "actualFailure": "docs/legado-ios/core-sdk-a24a41e-terminal-result.json",
+  "preparationSHA256": "1094078b506472d5caf3131c1fdca3e4c8de9755f74b3ca2314b728839262d1e",
+  "preparation": {
+    "stage": "callback-store-sdk-fix",
+    "sourceCommit": "9b6402dacf09abaa089dc3033e99b9fac2a011a5",
+    "frozenAtUTC": "2026-10-20T16:17:38.085172+00:00",
+    "sourceFileCount": 4,
+    "files": [
+      {
+        "path": "Modules/Services/Online/SourceCallBackService.swift",
+        "baselineBytes": 16598,
+        "baselineSHA256": "d7c137f472fbaa0946f6df535c49afcaefacad293bcc748cac0d3f5f3002e38a",
+        "candidateBytes": 16578,
+        "candidateSHA256": "2babad9f6dd5d7280eda3c448d05391f9073f744889d98fd931c61ea4d952f16",
+        "changedLines": 2,
+        "swiftGrammarHasError": false
+      },
+      {
+        "path": "Modules/Features/Bookshelf/HomeView.swift",
+        "baselineBytes": 113969,
+        "baselineSHA256": "65bf598f83947f50cfd1f5b8f834bb095848bcc60d6b70c6177f15bb58029892",
+        "candidateBytes": 113997,
+        "candidateSHA256": "06d801fff994fa2351a8032ee631bca18502776bc68a32fb967c3829e53f72c5",
+        "changedLines": 2,
+        "swiftGrammarHasError": false
+      },
+      {
+        "path": "Modules/Features/BookDetail/OnlineBookView.swift",
+        "baselineBytes": 49970,
+        "baselineSHA256": "ac861ab1b036dc282d28e2d58dfef631e714e8a4b8b48b3fe5b7058b0ebe06a2",
+        "candidateBytes": 49988,
+        "candidateSHA256": "30f3a0fd8687d7a33f1b293e9a58e4cc0a18aae8d252c6746d61c77c44360af1",
+        "changedLines": 1,
+        "swiftGrammarHasError": false
+      },
+      {
+        "path": "Modules/Features/BookDetail/AudiobookDetailView.swift",
+        "baselineBytes": 35688,
+        "baselineSHA256": "d0423e0ae01095cb04cf43c408de83328dbec49665f2fd9f5df95aa1bb9f6041",
+        "candidateBytes": 35706,
+        "candidateSHA256": "40f1ad89af48891b835f52364dde14304212f4b76b8fae6d14381e5764a543bd",
+        "changedLines": 1,
+        "swiftGrammarHasError": false
+      }
+    ],
+    "change": "Require existing BookStore in notify and noteSaveRead; pass existing EnvironmentObject owners at four previously implicit delete calls.",
+    "callSiteAudit": {
+      "roots": [
+        "Modules",
+        "Targets",
+        "Tests"
+      ],
+      "qualifiedExternalCalls": 20,
+      "calls": [
+        {
+          "path": "Modules/Core/TTS/AudiobookPlayer.swift",
+          "line": 1385,
+          "api": "noteSaveRead",
+          "store": "store"
+        },
+        {
+          "path": "Modules/Features/BookDetail/AudiobookDetailView.swift",
+          "line": 672,
+          "api": "notify",
+          "store": "bookStore"
+        },
+        {
+          "path": "Modules/Features/BookDetail/AudiobookDetailView.swift",
+          "line": 697,
+          "api": "notify",
+          "store": "bookStore"
+        },
+        {
+          "path": "Modules/Features/BookDetail/OnlineBookView.swift",
+          "line": 893,
+          "api": "notify",
+          "store": "bookStore"
+        },
+        {
+          "path": "Modules/Features/BookDetail/OnlineBookView.swift",
+          "line": 926,
+          "api": "notify",
+          "store": "bookStore"
+        },
+        {
+          "path": "Modules/Features/BookDetail/OnlineBookView.swift",
+          "line": 965,
+          "api": "notify",
+          "store": "bookStore"
+        },
+        {
+          "path": "Modules/Features/Bookshelf/HomeView.swift",
+          "line": 642,
+          "api": "notify",
+          "store": "store"
+        },
+        {
+          "path": "Modules/Features/Bookshelf/HomeView.swift",
+          "line": 658,
+          "api": "notify",
+          "store": "store"
+        },
+        {
+          "path": "Modules/Features/Reader/ReaderView+SourceCallBack.swift",
+          "line": 22,
+          "api": "notify",
+          "store": "store"
+        },
+        {
+          "path": "Modules/Features/Reader/ReaderView+SourceCallBack.swift",
+          "line": 32,
+          "api": "noteSaveRead",
+          "store": "store"
+        },
+        {
+          "path": "Modules/Features/Reader/ReaderView+SourceCallBack.swift",
+          "line": 43,
+          "api": "notify",
+          "store": "store"
+        },
+        {
+          "path": "Modules/Features/Reader/TTS/AudiobookView.swift",
+          "line": 63,
+          "api": "notify",
+          "store": "store"
+        },
+        {
+          "path": "Modules/Features/Reader/TTS/AudiobookView.swift",
+          "line": 74,
+          "api": "notify",
+          "store": "store"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "line": 372,
+          "api": "notify",
+          "store": "owned.store"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "line": 406,
+          "api": "notify",
+          "store": "owned.store"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "line": 418,
+          "api": "notify",
+          "store": "owned.store"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "line": 426,
+          "api": "notify",
+          "store": "owned.store"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "line": 436,
+          "api": "notify",
+          "store": "owned.store"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "line": 458,
+          "api": "notify",
+          "store": "owned.store"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "line": 484,
+          "api": "notify",
+          "store": "owned.store"
+        }
+      ],
+      "serviceInternalNoteSaveReadForwarding": "existing explicit store forwarded unchanged"
+    },
+    "validation": {
+      "swiftGrammarRoots": 4,
+      "actualSwiftCompilerExecutions": 0,
+      "actualSDKExecutions": 0,
+      "actualJNIExecutions": 0,
+      "JVMExecutions": 0,
+      "newTests": 0
+    },
+    "boundaries": [
+      "No BookStore singleton/new instance/global fallback/optional owner/skip introduced.",
+      "Existing source-only notifyShelfRefresh path unchanged.",
+      "No change to callback event/state/position/authority or deletion behavior; only existing owner supplied.",
+      "SDK rejection reported by parent for a24 only; this stage makes no terminal assertion about other live jobs."
+    ],
+    "canonicalOrGitMutations": 0
+  },
+  "rootReview": "Four exact production diffs require the already-owned BookStore; HomeView uses its existing store and both detail pages use their existing bookStore. No singleton or optional fallback is added. Native fixture and all20 actual external callers already supply that owner. Source-only callbacks are unchanged.",
+  "devicePriority": "Apply only this reviewed six-line production repair onto frozen build14 base75c87a9 in an isolated checkout, then retry package/Native immediately without waiting on unrelated C2 or the SDK fixture generator. Main development retains the newer source-only notification and desktop pairing tool.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

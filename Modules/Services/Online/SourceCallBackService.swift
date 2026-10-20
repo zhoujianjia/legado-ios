@@ -65,7 +65,7 @@ enum SourceCallBackService {
         position: CoreTextReadingPosition? = nil,
         positionStore: (any ReadingPositionStore)? = nil,
         eventTimeMilliseconds: Int64? = nil,
-        store: BookStore = .shared,
+        store: BookStore,
         fetcher: BookSourceFetcher = .shared,
         source suppliedSource: BookSource? = nil
     ) -> Task<SourceCallBackOutcome, Never>? {
@@ -116,7 +116,7 @@ enum SourceCallBackService {
     /// saveRead, as legado's `ReadBook.saveRead` sends it: when the chapter changed, or on a
     /// save that is not a page turn (leaving the reader, going to the background) — not on
     /// every page. `result` is the save time in milliseconds, legado's `durChapterTime`.
-    static func noteSaveRead(book: ReadingBook, chapter: OnlineChapterRef?, isPageTurn: Bool, store: BookStore = .shared,
+    static func noteSaveRead(book: ReadingBook, chapter: OnlineChapterRef?, isPageTurn: Bool, store: BookStore,
         position: CoreTextReadingPosition? = nil, positionStore: (any ReadingPositionStore)? = nil) {
         guard let chapter else { return }
         let changed = lastSavedChapter[book.id] != chapter.index
