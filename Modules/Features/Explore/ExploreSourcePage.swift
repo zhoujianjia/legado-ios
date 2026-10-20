@@ -72,7 +72,8 @@ struct ExploreSourcePage: View {
             .sheet(isPresented: $showsLogin) {
                 BookSourceLoginSheet(source: currentSource) { showsLogin = false }
             }
-            .onAppear { discover.refreshSources() }
+            .onAppear { discover.pageAppeared() }
+            .onDisappear { discover.pageDisappeared() }
             .onReceive(
                 NotificationCenter.default.publisher(for: .bookSourceLoginInfoDidChange)
                     // Source JS posts from its worker; only UI delivery moves to main.

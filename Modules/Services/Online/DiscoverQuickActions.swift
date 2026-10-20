@@ -94,9 +94,10 @@ struct DiscoverQuickActionOutcome {
 
 enum DiscoverQuickActionRunner {
     static func run(_ script: String, title: String, source: BookSource,
-                    presentToast: @escaping @MainActor (String) -> Void) async -> DiscoverQuickActionOutcome {
+                    presentToast: @escaping @MainActor (String) -> Void,
+                    fetcher: BookSourceFetcher = .shared) async -> DiscoverQuickActionOutcome {
         do {
-            _ = try await evaluate(script, source: source)
+            _ = try await evaluate(script, source: source, fetcher: fetcher)
             return .init(refreshesExplore: false, errorMessage: nil)
         } catch {
             AppLogger.error("Original explore action failed", error: error)
@@ -104,26 +105,25 @@ enum DiscoverQuickActionRunner {
         }
     }
 
-    static func displayName(_ script: String, source: BookSource) async -> String {
-        do { let result = try await evaluate(script, source: source); return result.isEmpty ? "null" : result }
+    static func displayName(_ script: String, source: BookSource, fetcher: BookSourceFetcher = .shared) async -> String {
+        do { let result = try await evaluate(script, source: source, fetcher: fetcher); return result.isEmpty ? "null" : result }
         catch { AppLogger.error("Original explore display name failed", error: error); return "err" }
     }
 
-    static func infoMapValues(source: BookSource) async -> [String: String] {
-        do { return try await BookSourceFetcher.shared.openOriginalExploreContext(source: source).infoMap ?? [:] }
+    static func infoMapValues(source: BookSource, fetcher: BookSourceFetcher = .shared) async -> [String: String] {
+        do { return try await fetcher.openOriginalExploreContext(source: source).infoMap ?? [:] }
         catch { AppLogger.error("Original explore values could not be read", error: error); return [:] }
     }
 
-    static func setInfoMapValue(_ value: String, forKey key: String, source: BookSource) async {
+    static func setInfoMapValue(_ value: String, forKey key: String, source: BookSource, fetcher: BookSourceFetcher = .shared) async {
         do {
             let name = String(decoding: try JSONEncoder().encode(key), as: UTF8.self)
             let text = String(decoding: try JSONEncoder().encode(value), as: UTF8.self)
-            _ = try await evaluate("infoMap.put(" + name + "," + text + "); infoMap.save();", source: source)
+            _ = try await evaluate("infoMap.put(" + name + "," + text + "); infoMap.save();", source: source, fetcher: fetcher)
         } catch { AppLogger.error("Original explore value did not change", error: error) }
     }
 
-    private static func evaluate(_ script: String, source: BookSource) async throws -> String {
-        let fetcher = BookSourceFetcher.shared
+    private static func evaluate(_ script: String, source: BookSource, fetcher: BookSourceFetcher) async throws -> String {
         if source.isJsSource { return try await fetcher.mainJSService.evaluateMainJSExplore(script: script, page: 1, source: source) }
         _ = try await fetcher.openOriginalExploreContext(source: source)
         return try await fetcher.evaluateOriginalExploreContext(script: script, source: source).result ?? ""

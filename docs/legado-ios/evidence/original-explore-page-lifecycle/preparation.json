@@ -1,0 +1,341 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-ignored-candidate-awaiting-independent-review",
+  "baselineHead": "7cbeeb3d424f9004734e8636a92c049366295f1b",
+  "currentHeadAtFreeze": "7cbeeb3d424f9004734e8636a92c049366295f1b",
+  "candidateRoot": ".build/original-explore-page-lifecycle-step/work",
+  "files": [
+    {
+      "path": "Modules/Services/Online/DiscoverViewModel.swift",
+      "baseline": {
+        "bytes": 50866,
+        "sha256": "6a6640aa90b8327467b3fe44c895097fbd2ffe18afd8c45c7967c25f1d844c4d"
+      },
+      "candidate": {
+        "bytes": 57750,
+        "sha256": "948c7010408a52d44cbb83d6e128b1f865508529ad51b3db7e4b31727eb3aaff"
+      },
+      "diff": {
+        "path": "diffs/DiscoverViewModel.swift.diff",
+        "bytes": 18520,
+        "sha256": "16ac6cc493de4b1d96bfaff7bcbef410cb603d948e94e615b363657eec25f587"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/DiscoverQuickActions.swift",
+      "baseline": {
+        "bytes": 6009,
+        "sha256": "ad876bf8a3708c84860462d296503f163e8d8c354739655d082238bda638b824"
+      },
+      "candidate": {
+        "bytes": 6199,
+        "sha256": "f952a60e4baefd6f2206ac82916b266b76e64fdbcd7cd7b5eff0d35540ca1dee"
+      },
+      "diff": {
+        "path": "diffs/DiscoverQuickActions.swift.diff",
+        "bytes": 3380,
+        "sha256": "627ce947dda510bc6f108a03cf1adc8c060120e90a7a5b6d82ea59b74efe7b82"
+      }
+    },
+    {
+      "path": "Modules/Features/Explore/ExploreSourcePage.swift",
+      "baseline": {
+        "bytes": 5320,
+        "sha256": "6f44615dd2d4ba666813cbdf4667b622b8d8478076a4b3a5038b8a46038775cc"
+      },
+      "candidate": {
+        "bytes": 5374,
+        "sha256": "aca8441c1ce53ba307755a31844686147816697a93f60d96ecd61c24330bbe31"
+      },
+      "diff": {
+        "path": "diffs/ExploreSourcePage.swift.diff",
+        "bytes": 652,
+        "sha256": "19315c2cc0af08eb6ebeb88ff6d590c0adf3f4c021039c545ff53845fba3e731"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+      "baseline": {
+        "bytes": 5127,
+        "sha256": "2f0a71140ef57afe8525bae9e3ba4a0f2dd96bc5195929b90f1e99b5a6a3308e"
+      },
+      "candidate": {
+        "bytes": 6924,
+        "sha256": "0b9a24c79cf1ae7b719c8e82fb0a95f5a47f3d060cf8ce8d327280f832de7c40"
+      },
+      "diff": {
+        "path": "diffs/DiscoverViewModelReloadTests.swift.diff",
+        "bytes": 6075,
+        "sha256": "a502c0649039f39a50ace30cca4d8cee307d0b006369658e69113cfc5e3c10f6"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "baseline": {
+        "bytes": 7612,
+        "sha256": "ea9123d5e632a1b61cf9996cda810ef74ed9a4e5fd1cf526ad3e1dc708e54cf5"
+      },
+      "candidate": {
+        "bytes": 12955,
+        "sha256": "4a644c54f0fdfcadcc49df4d1b7f3558f2208f06343589a806d265dc736cf796"
+      },
+      "diff": {
+        "path": "diffs/LegadoOriginalExploreLifecycleTests.swift.diff",
+        "bytes": 8170,
+        "sha256": "e11b45ab09303983f6e8aa80efcc1f460ae9f8a06b4e3b8aa3f46b7a3c99742d"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 68347,
+        "sha256": "3a48be2d9d724983ac24a9fe6432d0da559700757fae40b946d648617cbdd559"
+      },
+      "candidate": {
+        "bytes": 72317,
+        "sha256": "6afedef94dcfce03daca1fad06f98fa8b5104b5735124a2bb969af05ae1edcdb"
+      },
+      "diff": {
+        "path": "diffs/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 4507,
+        "sha256": "16839c81d0fbbc28ba8d5967a3e24414df29f2523fcee26488ca1229a9e9263c"
+      }
+    }
+  ],
+  "sourceReview": {
+    "path": ".build/original-webbook-core-gap-review-step/review.json",
+    "bytes": 12586,
+    "sha256": "c69ce861638da748de9154de11c4bc2b68749530dc34392a1962bcd47c874b0c"
+  },
+  "implementation": [
+    "The existing same BookSourceFetcher instance is injected into DiscoverViewModel and forwarded to existing quick-action helpers. No runtime/state owner/store/body/category cache is created.",
+    "Every eligible traditional category reload opens its existing original context before accepting a disk category cache hit. Failed/cancelled opens cannot publish cached categories or start sections.",
+    "ExploreSourcePage appearance/disappearance forward lifecycle only. Existing layout, tokens, localized UI, presentations and previews are untouched.",
+    "The same VM tracks category/section/automatic-controls/user-controls tasks. Leave invalidates publication token, cancels then awaits captured actual terminal tasks before per-source pending save. Repeat disappearance reuses its one pause task; rapid reentry waits the previous pause before its open/load.",
+    "Page save resolves the current source by UUID, compares current rule/settings identity off main, and invokes the existing savePendingOriginalExploreContext through the same service. A failed/revised/removed source is logged without clearing or ACKing original needSave.",
+    "Native JNI fixture uses the actual cached VM route, an original infoMap-dependent loopback explore request, actual pending cache absence, actual page-leave save and durable cache readback. The second disappearance must not advance the real cache revision.",
+    "Cache characterization fixtures now replace only the native executor and await the returned load task instead of timing-based polling. The prior source-only no-native cache assumption no longer hides context initialization."
+  ],
+  "testDefinitions": {
+    "newApp": [
+      "DiscoverViewModelReloadTests/failedContextOpenDoesNotPublishCachedCategories",
+      "LegadoOriginalExploreLifecycleTests/pagePauseDrainsCategoryLoadBeforeReentry",
+      "LegadoOriginalExploreLifecycleTests/failedPagePauseRetainsPendingUntilNextPageLifetime",
+      "LegadoOriginalExploreLifecycleTests/pagePauseRejectsEditedSourceBeforeSaving"
+    ],
+    "changedExistingAppSelected": [
+      "DiscoverViewModelReloadTests/cachedCategoriesBuildThePage",
+      "DiscoverViewModelReloadTests/reloadStartsSectionsAnew",
+      "DiscoverViewModelReloadTests/exploreOffGivesAnEmptyPage"
+    ],
+    "newNative": [
+      "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave"
+    ],
+    "newAppDefinitionCount": 4,
+    "newNativeDefinitionCount": 1,
+    "allNewDefinitionsUnparameterized": true,
+    "existingAppLifecycleDefinitionsRetained": 3,
+    "existingReaderNativeDefinitionsRetained": 10,
+    "actualNewSwiftTestsExecuted": 0,
+    "actualNewJNIExecuted": 0
+  },
+  "staticValidation": {
+    "grammar": {
+      "path": "grammar.json",
+      "bytes": 936,
+      "sha256": "fcf20f57ff85fd4d9881445b006342ccb3f08969f8ed2bbb36b13b9a82decff3"
+    },
+    "grammarLog": {
+      "path": "preparation/grammar.log",
+      "bytes": 936,
+      "sha256": "fcf20f57ff85fd4d9881445b006342ccb3f08969f8ed2bbb36b13b9a82decff3"
+    },
+    "baselineGrammarRoots": 6,
+    "candidateGrammarRoots": 6,
+    "grammarErrors": 0,
+    "diffWhitespaceAddedErrors": 0,
+    "canonicalBaselineSixFilesMatch": true,
+    "swiftTypecheck": false,
+    "testsExecuted": 0
+  },
+  "futureHarnessAdvice": {
+    "scopeOnly": "Do not change or retag the current f2 checkpoint. Root combines later independently reviewed UI/C3 inputs before any future SDK checkpoint.",
+    "currentcoreBaselineDefinitions": 452,
+    "currentcoreBaselineArgumentLeaves": 455,
+    "appendCurrentcoreOnly": [
+      "DiscoverViewModelReloadTests/failedContextOpenDoesNotPublishCachedCategories",
+      "LegadoOriginalExploreLifecycleTests/pagePauseDrainsCategoryLoadBeforeReentry",
+      "LegadoOriginalExploreLifecycleTests/failedPagePauseRetainsPendingUntilNextPageLifetime",
+      "LegadoOriginalExploreLifecycleTests/pagePauseRejectsEditedSourceBeforeSaving",
+      "DiscoverViewModelReloadTests/cachedCategoriesBuildThePage",
+      "DiscoverViewModelReloadTests/reloadStartsSectionsAnew",
+      "DiscoverViewModelReloadTests/exploreOffGivesAnEmptyPage"
+    ],
+    "projectedThisSliceOnlyDefinitions": 459,
+    "projectedThisSliceOnlyLeaves": 462,
+    "nativeOriginalCurrent": 14,
+    "nativeOriginalProjectedThisSliceOnly": 15,
+    "nativeMainJSRemainsSeparate": 1,
+    "nativeNewSelector": "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+    "sourceCoverage": [
+      {
+        "path": "Modules/Services/Online/DiscoverViewModel.swift",
+        "bytes": 57750,
+        "sha256": "948c7010408a52d44cbb83d6e128b1f865508529ad51b3db7e4b31727eb3aaff",
+        "candidateOverlay": true,
+        "boundCurrentcore": false,
+        "boundNative": false
+      },
+      {
+        "path": "Modules/Services/Online/DiscoverQuickActions.swift",
+        "bytes": 6199,
+        "sha256": "f952a60e4baefd6f2206ac82916b266b76e64fdbcd7cd7b5eff0d35540ca1dee",
+        "candidateOverlay": true,
+        "boundCurrentcore": true,
+        "boundNative": true
+      },
+      {
+        "path": "Modules/Features/Explore/ExploreSourcePage.swift",
+        "bytes": 5374,
+        "sha256": "aca8441c1ce53ba307755a31844686147816697a93f60d96ecd61c24330bbe31",
+        "candidateOverlay": true,
+        "boundCurrentcore": false,
+        "boundNative": false
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+        "bytes": 6924,
+        "sha256": "0b9a24c79cf1ae7b719c8e82fb0a95f5a47f3d060cf8ce8d327280f832de7c40",
+        "candidateOverlay": true,
+        "boundCurrentcore": false,
+        "boundNative": false
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+        "bytes": 12955,
+        "sha256": "4a644c54f0fdfcadcc49df4d1b7f3558f2208f06343589a806d265dc736cf796",
+        "candidateOverlay": true,
+        "boundCurrentcore": true,
+        "boundNative": false
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 72317,
+        "sha256": "6afedef94dcfce03daca1fad06f98fa8b5104b5735124a2bb969af05ae1edcdb",
+        "candidateOverlay": true,
+        "boundCurrentcore": true,
+        "boundNative": true
+      },
+      {
+        "path": "Modules/Services/Online/DiscoverKindsCache.swift",
+        "bytes": 3033,
+        "sha256": "f814ab6767abb48f5305b9b8218925bff34ed79d280f77e2c3092b8cf3b71a34",
+        "candidateOverlay": false,
+        "boundCurrentcore": false,
+        "boundNative": false
+      },
+      {
+        "path": "Modules/Services/Online/ExploreSettings.swift",
+        "bytes": 7068,
+        "sha256": "a3be3f0357369ad67a44aeb0e03ccf53f0a67278dcc28b3dd1524c1350c2f184",
+        "candidateOverlay": false,
+        "boundCurrentcore": false,
+        "boundNative": false
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BackgroundTaskHold.swift",
+        "bytes": 1239,
+        "sha256": "0f22c56ed218e89b26c6ccfe95cb0de52d0010a2e2ba2acca1600b3cdcfa32ef",
+        "candidateOverlay": false,
+        "boundCurrentcore": true,
+        "boundNative": false
+      }
+    ],
+    "appendCurrentcoreInputs": [
+      "Modules/Services/Online/DiscoverViewModel.swift",
+      "Modules/Features/Explore/ExploreSourcePage.swift",
+      "Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+      "Modules/Services/Online/DiscoverKindsCache.swift",
+      "Modules/Services/Online/ExploreSettings.swift"
+    ],
+    "appendNativeInputs": [
+      "Modules/Services/Online/DiscoverViewModel.swift",
+      "Modules/Features/Explore/ExploreSourcePage.swift",
+      "Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+      "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "Modules/Services/Online/DiscoverKindsCache.swift",
+      "Modules/Services/Online/ExploreSettings.swift",
+      "Modules/Services/LibraryStore/BackgroundTaskHold.swift"
+    ],
+    "currentcoreInputsBefore": 308,
+    "projectedCurrentcoreInputsThisSliceOnly": 313,
+    "nativeInputsBefore": 91,
+    "projectedNativeInputsThisSliceOnly": 98,
+    "unchangedGates": [
+      "all historical selectors/modes/parameter identities",
+      "three currentcore Boolean pairs",
+      "3600-second one-invocation currentcore budget",
+      "mandatory same-job signed SDK producer fixture",
+      "Package18 independent execution/result",
+      "Native real-runtime admission and separate mainJs host"
+    ],
+    "reuseBoundary": "This slice changes no Kotlin/vendor/manifest/Package Swift bytes. No new JVM run was necessary or claimed. A future existing-runtime/Package evidence reuse requires actual terminal success plus exact corresponding compilation-input hashes; live f2 results are not assumed. App/Native changed source needs actual SDK/JNI execution."
+  },
+  "unchangedProductionBoundary": [
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 113280,
+      "sha256": "04652c8ec27e30517f74a06b75004dbbb7a23081457a643d25276cb58cdcca7b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "bytes": 19043,
+      "sha256": "9d691325dc5cc314b9c73ff0db43dc71c0bcb45a51e53071fe6c9843fcafd989"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+      "bytes": 4609,
+      "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/utils/InfoMap.kt",
+      "bytes": 3232,
+      "sha256": "3015f667fcb3607dc8aaaa73ece342d881be9c1b21f79eb1031a70cea04b23de"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "bytes": 28167,
+      "sha256": "adfe65cab7e935c776ee2fc6a536c1c331c852f6fd2d42d4018caa7484d154f5"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "bytes": 7683,
+      "sha256": "b8d4d2a2815f0bc62cf7df71ea73910603b41e4032b7243864e38b1987353fc3"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 133256,
+      "sha256": "aac1c61e75487a8cab92b5d7931ab161c5655942604940c46dd2e18b4859c2f2"
+    }
+  ],
+  "risksAndNotProven": [
+    "Static grammar does not prove Swift actor/type correctness or native runtime behavior.",
+    "Page-source comparison is a bounded current-source observation; do not claim a global atomic source-edit lock. Existing retained service revision/Host checks remain authoritative.",
+    "Background execution opportunity and actual device navigation remain unverified.",
+    "Full original source/media/selector compatibility and C3 acceptance remain incomplete."
+  ],
+  "flags": {
+    "sdkAccepted": false,
+    "jniAccepted": false,
+    "deviceAccepted": false,
+    "fullC3Accepted": false
+  },
+  "operations": {
+    "canonicalModified": false,
+    "gitModified": false,
+    "cloudQueries": 0,
+    "cloudWrites": 0,
+    "tagsCreated": 0,
+    "privateUserDataRead": false
+  }
+}

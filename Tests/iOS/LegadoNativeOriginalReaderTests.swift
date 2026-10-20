@@ -230,6 +230,63 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         }
     }
 
+    func testNativeOriginalCachedExplorePageOpensAndSavesOnLeave() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            var edited = fixture.source
+            edited.bookSourceUrl += "/page-lifecycle-" + fixture.runID
+            edited.enabledExplore = true
+            edited.exploreUrl = "Cached::https://native-page.invalid/category"
+            let source = edited
+            let requestURL = fixture.baseURL + fixture.prefix + "/search?key=native-original&page=2"
+            let script = "@js:if(infoMap==null)throw new Error('cached page omitted original map');infoMap.put('page','left');infoMap.save();'" + requestURL + "'"
+            let raw = ModernParserBridge.DiscoverItem(title: "Cached", url: script)
+            let key = DiscoverKindsCache.key(sourceUrl: source.bookSourceUrl, exploreUrl: source.exploreUrl, variableJSON: nil)
+            let fetcher = BookSourceFetcher(mainJSService: fixture.service)
+            var operationError: Error?
+            do {
+                let model = await MainActor.run { () -> DiscoverViewModel in
+                    DiscoverKindsCache.shared.store([raw], forKey: key)
+                    return DiscoverViewModel(source: source, fetcher: fetcher, sourceResolver: { $0 == source.id ? source : nil })
+                }
+                let load = await MainActor.run { model.reload() }
+                await load?.value
+                let categories = await MainActor.run { model.rawItems }
+                XCTAssertEqual(categories.map(\.title), ["Cached"])
+                let books = try await fetcher.discoverBooks(from: raw, page: 2, in: source)
+                XCTAssertEqual(books.map(\.name), ["Original JNI"])
+                let before = try await Task.detached {
+                    try LegadoCacheBridge.runtimeSnapshot(sourceId: source.bookSourceUrl, key: "infoMap_" + source.bookSourceUrl)
+                }.value
+                XCTAssertTrue(before.values.isEmpty)
+                let pause = await MainActor.run { model.pageDisappeared() }
+                await pause?.value
+                let saved = try await Task.detached { () -> (UInt64, String?) in
+                    let snapshot = try LegadoCacheBridge.runtimeSnapshot(sourceId: source.bookSourceUrl, key: "infoMap_" + source.bookSourceUrl)
+                    let text = try snapshot.values["value"].map { try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: $0).text() }
+                    return (snapshot.revision, text)
+                }.value
+                let text = try XCTUnwrap(saved.1)
+                XCTAssertEqual(try JSONDecoder().decode([String: String].self, from: Data(text.utf8)), ["page": "left"])
+                let repeated = await MainActor.run { model.pageDisappeared() }
+                await repeated?.value
+                let clean = try await Task.detached {
+                    try LegadoCacheBridge.runtimeSnapshot(sourceId: source.bookSourceUrl, key: "infoMap_" + source.bookSourceUrl).revision
+                }.value
+                XCTAssertEqual(clean, saved.0)
+                XCTAssertEqual(fixture.peer.snapshot.requests.map(\.target), [fixture.prefix + "/search?key=native-original&page=2"])
+            } catch { operationError = error }
+            // Delete only this fixture's run-unique original map and category key.
+            try await Task.detached {
+                LegadoCacheBridge(sourceId: source.bookSourceUrl).delete("infoMap_" + source.bookSourceUrl)
+                let categoryFile = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent("DiscoverKindsCache", isDirectory: true).appendingPathComponent(key + ".json")
+                if FileManager.default.fileExists(atPath: categoryFile.path) { try FileManager.default.removeItem(at: categoryFile) }
+            }.value
+            if let operationError { throw operationError }
+        }
+    }
+
     func testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities() async throws {
         executionTimeAllowance = 180
         try await withFixture { fixture in

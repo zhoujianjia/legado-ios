@@ -1,4 +1,5 @@
 import Foundation
+import LegadoRuntime
 import Testing
 @testable import yuedu_app
 
@@ -9,9 +10,9 @@ import Testing
 /// no runtime variable. Entries use fixed keys under `phase0-discover.test`, so a rerun
 /// overwrites them instead of adding more.
 ///
-/// Gap, on purpose: `reload(forceRefresh: true)`, a cache miss for a source with explore on,
-/// `loadSection` and paging all reach the network through the JS bridge's own `URLSession`,
-/// which no stub can answer without a production change (Phase 0 plan, decision 2).
+/// The existing injected fetcher owns context open/save on cache hits too. These
+/// characterization fixtures replace only the native invocation boundary; actual
+/// JNI/loopback coverage remains in LegadoNativeOriginalReaderTests.
 @MainActor
 @Suite("Discover reload (characterization)", .serialized)
 struct DiscoverViewModelReloadTests {
@@ -28,10 +29,11 @@ struct DiscoverViewModelReloadTests {
         ]
         DiscoverKindsCache.shared.store(raw, forKey: cacheKey(for: source))
 
-        let model = DiscoverViewModel(source: source)
-        model.reload()
-        try await waitUntil { !model.isLoadingItems }
+        let executor = ReloadExploreExecutor()
+        let model = model(source: source, executor: executor)
+        await model.reload()?.value
 
+        #expect(await executor.openCount() == 1, "Cached categories must open the original context before publication")
         #expect(model.rawItems.count == raw.count)
         // The label is not a category; the repeated 熱門 is one category; the page link
         // is an item but not a section.
@@ -48,13 +50,12 @@ struct DiscoverViewModelReloadTests {
         let source = makeSource("fresh-sections", exploreEnabled: true)
         DiscoverKindsCache.shared.store([item("熱門", path: "hot")], forKey: cacheKey(for: source))
 
-        let model = DiscoverViewModel(source: source)
-        model.reload()
-        try await waitUntil { !model.isLoadingItems }
+        let executor = ReloadExploreExecutor()
+        let model = model(source: source, executor: executor)
+        await model.reload()?.value
         let firstID = try #require(model.sections.first?.id)
 
-        model.reload()
-        try await waitUntil { !model.isLoadingItems && !model.sections.isEmpty }
+        await model.reload()?.value
 
         #expect(model.sections.map(\.title) == ["熱門"])
         #expect(model.sections.first?.id != firstID)
@@ -64,9 +65,9 @@ struct DiscoverViewModelReloadTests {
     func exploreOffGivesAnEmptyPage() async throws {
         let source = makeSource("explore-off", exploreEnabled: false)
 
-        let model = DiscoverViewModel(source: source)
-        model.reload()
-        try await waitUntil { !model.isLoadingItems }
+        let executor = ReloadExploreExecutor()
+        let model = model(source: source, executor: executor)
+        await model.reload()?.value
 
         #expect(model.rawItems.isEmpty)
         #expect(model.items.isEmpty)
@@ -88,7 +89,28 @@ struct DiscoverViewModelReloadTests {
         #expect(!model.isLoadingItems)
     }
 
+    @Test("a failed original context open cannot publish a valid cached categories list")
+    func failedContextOpenDoesNotPublishCachedCategories() async throws {
+        let source = makeSource("failed-open", exploreEnabled: true)
+        DiscoverKindsCache.shared.store([item("Cached", path: "hot")], forKey: cacheKey(for: source))
+        let executor = ReloadExploreExecutor(failOpen: true)
+        let model = model(source: source, executor: executor)
+        let load = try #require(model.reload())
+        await load.value
+        #expect(await executor.openCount() == 1)
+        #expect(!model.isLoadingItems)
+        #expect(model.items.isEmpty && model.rawItems.isEmpty && model.sections.isEmpty)
+        #expect(DiscoverKindsCache.shared.items(forKey: cacheKey(for: source))?.count == 1)
+    }
+
     // MARK: - Helpers
+
+    private func model(source: BookSource, executor: ReloadExploreExecutor) -> DiscoverViewModel {
+        DiscoverViewModel(source: source,
+            fetcher: BookSourceFetcher(mainJSService: LegadoMainJSSourceService(originalExecutor: executor)),
+            sourceResolver: { $0 == source.id ? source : nil })
+    }
+
 
     private func makeSource(_ name: String, exploreEnabled: Bool) -> BookSource {
         var source = BookSource()
@@ -108,15 +130,23 @@ struct DiscoverViewModelReloadTests {
         DiscoverKindsCache.key(sourceUrl: source.bookSourceUrl, exploreUrl: source.exploreUrl, variableJSON: nil)
     }
 
-    private func waitUntil(
-        timeout: TimeInterval = 10,
-        condition: @MainActor @escaping () -> Bool
-    ) async throws {
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if condition() { return }
-            try await Task.sleep(nanoseconds: 20_000_000)
+
+}
+
+private actor ReloadExploreExecutor: LegadoOriginalPreviewExecuting {
+    private var opens = 0
+    private let failOpen: Bool
+    init(failOpen: Bool = false) { self.failOpen = failOpen }
+    func openCount() -> Int { opens }
+    func execute(sourceJSON: String, sourceURL: String, sourceRevision: String,
+                 grant: OriginalRuntimePreviewGrant?, operation: LegadoOriginalPreviewOperation,
+                 deadline: Date) async throws -> LegadoOriginalPreviewResult {
+        guard case .openExploreContext = operation else {
+            throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Reload fixture only opens the existing context")
         }
-        Issue.record("Timed out waiting for reload to finish")
+        opens += 1
+        if failOpen { throw LegadoRuntimeError(code: "STATE_IO", message: "Controlled open failure") }
+        return .exploreContext(try JSONDecoder().decode(LegadoOriginalExploreContextResult.self,
+            from: Data("{\"infoMap\":{},\"needSave\":false,\"result\":null}".utf8)))
     }
 }

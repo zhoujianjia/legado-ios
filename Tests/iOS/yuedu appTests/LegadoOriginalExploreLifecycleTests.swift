@@ -75,6 +75,83 @@ struct LegadoOriginalExploreLifecycleTests {
         #expect(await executor.savedSources().isEmpty)
     }
 
+    @MainActor
+    @Test("page leave drains a cancelled category invocation and saves before rapid reentry opens again")
+    func pagePauseDrainsCategoryLoadBeforeReentry() async throws {
+        let executor = ExploreLifecycleExecutor()
+        let service = LegadoMainJSSourceService(originalExecutor: executor)
+        var current = source("page-drain")
+        current.enabledExplore = true; current.exploreUrl = "@js: '[]'"
+        let selected = current
+        let model = DiscoverViewModel(source: selected, fetcher: BookSourceFetcher(mainJSService: service),
+            sourceResolver: { $0 == selected.id ? selected : nil })
+        await executor.holdNextEvaluation()
+        var entered = executor.entered.makeAsyncIterator()
+        let load = try #require(model.reload(forceRefresh: true))
+        #expect(await entered.next() == true)
+        let pause = try #require(model.pageDisappeared())
+        _ = model.pageDisappeared()
+        let reentry = try #require(model.pageAppeared())
+        #expect(await executor.saveAttempts().isEmpty)
+        #expect(await executor.finishedHeldEvaluations() == 0)
+        await executor.releaseEvaluation()
+        await load.value; await pause.value; await reentry.value
+        #expect(await executor.finishedHeldEvaluations() == 1)
+        let events = await executor.lifecycleEvents()
+        let finished = try #require(events.firstIndex(of: "evaluation-finished"))
+        let saved = try #require(events.firstIndex(of: "saved"))
+        let reopened = try #require(events.lastIndex(of: "open"))
+        #expect(finished < saved && saved < reopened)
+        #expect(await executor.saveAttempts() == [selected.bookSourceUrl])
+        #expect(model.rawItems.isEmpty)
+        await model.pageDisappeared()?.value
+    }
+
+    @MainActor
+    @Test("a failed page save keeps its actual pending map and duplicate disappearance does not ACK or retry it")
+    func failedPagePauseRetainsPendingUntilNextPageLifetime() async throws {
+        let executor = ExploreLifecycleExecutor()
+        let service = LegadoMainJSSourceService(originalExecutor: executor)
+        var current = source("page-failure")
+        current.enabledExplore = true; current.exploreUrl = "One::https://explore-page.invalid/category"
+        let selected = current
+        let model = DiscoverViewModel(source: selected, fetcher: BookSourceFetcher(mainJSService: service),
+            sourceResolver: { $0 == selected.id ? selected : nil })
+        await model.reload()?.value
+        _ = try await service.evaluateOriginalExploreContext(script: "pending", source: selected)
+        await executor.failSave(for: selected.bookSourceUrl)
+        await model.pageDisappeared()?.value
+        #expect(await executor.isPending(selected.bookSourceUrl))
+        #expect(await executor.savedSources().isEmpty)
+        await model.pageDisappeared()?.value
+        #expect(await executor.saveAttempts() == [selected.bookSourceUrl])
+        await executor.failSave(for: nil)
+        await model.pageAppeared()?.value
+        await model.pageDisappeared()?.value
+        #expect(!(await executor.isPending(selected.bookSourceUrl)))
+        #expect(await executor.savedSources() == [selected.bookSourceUrl])
+        #expect(await executor.saveAttempts() == [selected.bookSourceUrl, selected.bookSourceUrl])
+    }
+
+    @MainActor
+    @Test("page pause resolves the current source and rejects an intervening rule edit")
+    func pagePauseRejectsEditedSourceBeforeSaving() async throws {
+        let executor = ExploreLifecycleExecutor()
+        let service = LegadoMainJSSourceService(originalExecutor: executor)
+        var initial = source("page-edited")
+        initial.enabledExplore = true; initial.exploreUrl = "One::https://explore-page.invalid/category"
+        let selected = initial
+        var current = selected
+        let model = DiscoverViewModel(source: selected, fetcher: BookSourceFetcher(mainJSService: service),
+            sourceResolver: { $0 == current.id ? current : nil })
+        await model.reload()?.value
+        _ = try await service.evaluateOriginalExploreContext(script: "pending", source: selected)
+        current.ruleExplore.name = "intervening-rule-edit"; current.lastUpdateTime += 1
+        await model.pageDisappeared()?.value
+        #expect(await executor.saveAttempts().isEmpty)
+        #expect(await executor.isPending(selected.bookSourceUrl))
+    }
+
     private func source(_ name: String) -> BookSource {
         BookSource(bookSourceUrl: "https://explore-lifecycle-" + name + ".invalid", bookSourceName: name)
     }
@@ -90,6 +167,10 @@ private actor ExploreLifecycleExecutor: LegadoOriginalPreviewExecuting {
     private var shouldHold = false
     private var gate: CheckedContinuation<Void, Never>?
     private var heldFinished = 0
+    private var holdEvaluation = false
+    private var evaluationGate: CheckedContinuation<Void, Never>?
+    private var heldEvaluationsFinished = 0
+    private var events: [String] = []
 
     init() {
         let events = AsyncStream<Bool>.makeStream()
@@ -102,17 +183,32 @@ private actor ExploreLifecycleExecutor: LegadoOriginalPreviewExecuting {
     func holdNextSave() { shouldHold = true }
     func releaseSave() { gate?.resume(); gate = nil }
     func finishedHeldSaves() -> Int { heldFinished }
+    func holdNextEvaluation() { holdEvaluation = true }
+    func releaseEvaluation() { evaluationGate?.resume(); evaluationGate = nil }
+    func finishedHeldEvaluations() -> Int { heldEvaluationsFinished }
+    func lifecycleEvents() -> [String] { events }
 
     func execute(sourceJSON: String, sourceURL: String, sourceRevision: String,
                  grant: OriginalRuntimePreviewGrant?, operation: LegadoOriginalPreviewOperation,
                  deadline: Date) async throws -> LegadoOriginalPreviewResult {
         #expect(grant == nil)
+        var result: Any = NSNull()
         switch operation {
         case .openExploreContext:
+            events.append("open")
             if maps[sourceURL] == nil { maps[sourceURL] = false }
         case .evaluateExploreContext:
             guard maps[sourceURL] != nil else { throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Not opened") }
             maps[sourceURL] = true
+            if holdEvaluation {
+                holdEvaluation = false
+                await withCheckedContinuation { continuation in
+                    evaluationGate = continuation; enteredContinuation.yield(true)
+                }
+                heldEvaluationsFinished += 1; events.append("evaluation-finished")
+                try Task.checkCancellation()
+            }
+            result = "[]"
         case .savePendingExploreContext:
             attempts.append(sourceURL)
             if shouldHold {
@@ -124,13 +220,13 @@ private actor ExploreLifecycleExecutor: LegadoOriginalPreviewExecuting {
                 try Task.checkCancellation()
             }
             if failingSource == sourceURL { throw LegadoRuntimeError(code: "STATE_IO", message: "Controlled save failed") }
-            if maps[sourceURL] == true { saved.append(sourceURL); maps[sourceURL] = false }
+            if maps[sourceURL] == true { saved.append(sourceURL); maps[sourceURL] = false; events.append("saved") }
         default:
             throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Fixture only executes context lifecycle")
         }
         let currentMap: Any = maps[sourceURL] == nil ? NSNull() : [String: String]()
         let value: [String: Any] = ["infoMap": currentMap,
-                                   "needSave": maps[sourceURL] ?? false, "result": NSNull()]
+                                   "needSave": maps[sourceURL] ?? false, "result": result]
         return .exploreContext(try JSONDecoder().decode(LegadoOriginalExploreContextResult.self,
             from: JSONSerialization.data(withJSONObject: value)))
     }

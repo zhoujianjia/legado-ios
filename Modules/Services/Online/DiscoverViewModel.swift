@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import LegadoRuntime
 import SwiftUI
 
 // MARK: - Discover Card Item
@@ -169,6 +170,16 @@ final class DiscoverViewModel: ObservableObject {
     private let filterKeysPrefix = "discover.filterKeys."
     nonisolated static let defaultDiscoverPlatform = "全部"
     private var loadItemsTask: Task<Void, Never>?
+    private var sectionTask: Task<Void, Never>?
+    private var quickActionsTask: Task<Void, Never>?
+    private var controlTask: Task<Void, Never>?
+    private var controlToken: UUID?
+    private var pagePauseTask: Task<Void, Never>?
+    private var pageIsVisible = true
+    private var loadToken = UUID()
+    private var openedPageSource: BookSource?
+    private let fetcher: BookSourceFetcher
+    private let resolvePageSource: @MainActor (UUID) -> BookSource?
     /// Guards the one-shot "reset poisoned discover variable + reload" recovery so a source
     /// that genuinely returns no filters can't loop. Cleared whenever the selected source changes.
     private var didAutoResetDiscoverVariable = false
@@ -185,7 +196,10 @@ final class DiscoverViewModel: ObservableObject {
 
     var hasExploreSource: Bool { selectedSource != nil }
 
-    init(source: BookSource) {
+    init(source: BookSource, fetcher: BookSourceFetcher = .shared,
+         sourceResolver: @escaping @MainActor (UUID) -> BookSource? = { BookSourceStore.shared.source(id: $0) }) {
+        self.fetcher = fetcher
+        self.resolvePageSource = sourceResolver
         sourceURL = source.bookSourceUrl
         exploreSources = [source]
         selectedSourceId = source.id
@@ -225,7 +239,9 @@ final class DiscoverViewModel: ObservableObject {
     /// first time.
     func refreshSources() {
         let previousSourceId = selectedSourceId
-        if let source = sourceStore.sources.first(where: { $0.bookSourceUrl == sourceURL }) {
+        let indexed = selectedSourceId.flatMap { resolvePageSource($0) }
+        if let source = indexed?.bookSourceUrl == sourceURL ? indexed
+            : sourceStore.sources.first(where: { $0.bookSourceUrl == sourceURL }) {
             exploreSources = [source]
             selectedSourceId = source.id
         } else {
@@ -234,6 +250,71 @@ final class DiscoverViewModel: ObservableObject {
         }
         if selectedSourceId != previousSourceId { loadCategorySelection() }
         if items.isEmpty, hasExploreSource { reload() }
+    }
+
+    /// One page lifetime owns its loads and its pending original context save.
+    /// Reentry waits for the preceding pause; neither navigation nor a sheet creates
+    /// a second runtime, state owner or persistent category cache.
+    @discardableResult
+    func pageAppeared() -> Task<Void, Never>? {
+        let wasVisible = pageIsVisible
+        pageIsVisible = true
+        refreshSources()
+        if !wasVisible, !items.isEmpty { reload() }
+        return loadItemsTask
+    }
+
+    @discardableResult
+    func pageDisappeared() -> Task<Void, Never>? {
+        guard pageIsVisible else { return pagePauseTask }
+        pageIsVisible = false
+        loadToken = UUID()
+        let load = loadItemsTask, section = sectionTask
+        let quick = quickActionsTask, control = controlTask
+        load?.cancel(); quick?.cancel(); control?.cancel()
+        cancelSectionTasks()
+        isLoadingItems = false
+        let source = openedPageSource
+        openedPageSource = nil
+        let previousPause = pagePauseTask
+        let fetcher = fetcher, resolve = resolvePageSource
+        let hold = BackgroundTaskHold(name: "legado.explore.page.pause")
+        let pause = Task { @MainActor in
+            defer { hold.release() }
+            await previousPause?.value
+            // Native invocation cancellation is not completion. Await its actual
+            // terminal result before saving this same original InfoMap.
+            await load?.value; await section?.value
+            await quick?.value; await control?.value
+            guard let source, !source.isJsSource else { return }
+            do {
+                guard let current = resolve(source.id), current.id == source.id,
+                      await Self.sameOriginalPageSource(source, current) else {
+                    throw LegadoRuntimeError(code: "SOURCE_CHANGED",
+                        message: "Original exploration source changed before page pause")
+                }
+                _ = try await fetcher.savePendingOriginalExploreContext(source: current)
+            } catch {
+                // savePending alone clears needSave after its real owner ACK.
+                // Failed/removed/revised sources keep pending state for diagnosis
+                // and the existing app-pause sweep; never mark them saved here.
+                AppLogger.error("Original exploration page pause retained pending state", error: error)
+            }
+        }
+        pagePauseTask = pause
+        return pause
+    }
+
+    nonisolated private static func sameOriginalPageSource(_ expected: BookSource, _ current: BookSource) async -> Bool {
+        var expected = expected, current = current
+        // Match the retained context's rule/settings identity: response timing and
+        // the sync clock do not change original source rules or owner scope.
+        expected.respondTime = 180000; current.respondTime = 180000
+        return expected.hasSameContent(as: current)
+    }
+
+    private func isCurrentPage(_ source: BookSource, token: UUID) -> Bool {
+        pageIsVisible && loadToken == token && selectedSourceId == source.id
     }
 
     // MARK: - 發現頁設定
@@ -327,32 +408,45 @@ final class DiscoverViewModel: ObservableObject {
     /// Reads the controls' values and display names from the source's scripts. A toggle
     /// with nothing stored takes its default and keeps it, as legado-E and MD3 do.
     func refreshQuickActions() async {
-        guard let source = selectedSource else { return }
+        guard pageIsVisible, let source = selectedSource else { return }
+        let token = loadToken
         let actions = quickActions
         guard !actions.isEmpty else {
             quickActionValues = [:]
             quickActionNames = [:]
             return
         }
-        var values = await DiscoverQuickActionRunner.infoMapValues(source: source)
+        var values = await DiscoverQuickActionRunner.infoMapValues(source: source, fetcher: fetcher)
+        guard isCurrentPage(source, token: token), !Task.isCancelled else { return }
         for action in actions where action.kind == .toggle && (values[action.title] ?? "").isEmpty {
             let value = action.toggleValue(in: values)
-            await DiscoverQuickActionRunner.setInfoMapValue(value, forKey: action.title, source: source)
+            await DiscoverQuickActionRunner.setInfoMapValue(value, forKey: action.title, source: source, fetcher: fetcher)
+            guard isCurrentPage(source, token: token), !Task.isCancelled else { return }
             values[action.title] = value
         }
         quickActionValues = values
         var names: [String: String] = [:]
         for action in actions {
             if let script = action.displayNameScript {
-                names[action.id] = await DiscoverQuickActionRunner.displayName(script, source: source)
+                names[action.id] = await DiscoverQuickActionRunner.displayName(script, source: source, fetcher: fetcher)
             }
         }
+        guard isCurrentPage(source, token: token), !Task.isCancelled else { return }
         quickActionNames = names
     }
 
     /// A button's tap: runs its script.
     func runButton(_ action: DiscoverQuickAction, presentToast: @escaping @MainActor (String) -> Void) async {
-        await perform(action, presentToast: presentToast)
+        await runPageControl { await self.perform(action, presentToast: presentToast) }
+    }
+
+    private func runPageControl(_ operation: @escaping @MainActor () async -> Void) async {
+        guard pageIsVisible, controlTask == nil else { return }
+        let token = UUID()
+        let task = Task { @MainActor in await operation() }
+        controlToken = token; controlTask = task
+        await withTaskCancellationHandler { await task.value } onCancel: { task.cancel() }
+        if controlToken == token { controlTask = nil; controlToken = nil }
     }
 
     /// An input's new text: stored in `infoMap`, then its script runs if it has one.
@@ -361,35 +455,45 @@ final class DiscoverViewModel: ObservableObject {
         for action: DiscoverQuickAction,
         presentToast: @escaping @MainActor (String) -> Void
     ) async {
-        guard let source = selectedSource else { return }
-        await DiscoverQuickActionRunner.setInfoMapValue(text, forKey: action.title, source: source)
-        quickActionValues[action.title] = text
-        await perform(action, presentToast: presentToast)
+        await runPageControl {
+            guard let source = self.selectedSource else { return }
+            let token = self.loadToken
+            await DiscoverQuickActionRunner.setInfoMapValue(text, forKey: action.title, source: source, fetcher: self.fetcher)
+            guard self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
+            self.quickActionValues[action.title] = text
+            await self.perform(action, presentToast: presentToast)
+        }
     }
 
     /// A toggle's tap: the next value, stored in `infoMap`, then its script.
     func cycleToggle(_ action: DiscoverQuickAction, presentToast: @escaping @MainActor (String) -> Void) async {
-        guard let source = selectedSource else { return }
-        let next = action.toggleValue(after: action.toggleValue(in: quickActionValues))
-        await DiscoverQuickActionRunner.setInfoMapValue(next, forKey: action.title, source: source)
-        quickActionValues[action.title] = next
-        await perform(action, presentToast: presentToast)
+        await runPageControl {
+            guard let source = self.selectedSource else { return }
+            let token = self.loadToken
+            let next = action.toggleValue(after: action.toggleValue(in: self.quickActionValues))
+            await DiscoverQuickActionRunner.setInfoMapValue(next, forKey: action.title, source: source, fetcher: self.fetcher)
+            guard self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
+            self.quickActionValues[action.title] = next
+            await self.perform(action, presentToast: presentToast)
+        }
     }
 
     /// Runs a control's script, then reloads the categories when it called
     /// `java.refreshExplore()` and reads the controls again — a script often changes
     /// what they show.
     private func perform(_ action: DiscoverQuickAction, presentToast: @escaping @MainActor (String) -> Void) async {
-        guard runningQuickActionID == nil, let source = selectedSource else { return }
+        guard pageIsVisible, runningQuickActionID == nil, let source = selectedSource else { return }
+        let token = loadToken
         guard let script = action.script else { return }
         runningQuickActionID = action.id
         let outcome = await DiscoverQuickActionRunner.run(
             script,
             title: action.title,
             source: source,
-            presentToast: presentToast
+            presentToast: presentToast, fetcher: fetcher
         )
         runningQuickActionID = nil
+        guard isCurrentPage(source, token: token), !Task.isCancelled else { return }
         if let error = outcome.errorMessage {
             presentToast(String(format: localized("%@：%@"), localized("來源配置腳本錯誤"), error))
         }
@@ -444,29 +548,46 @@ final class DiscoverViewModel: ObservableObject {
 
     // MARK: - Loading
 
-    func reload(forceRefresh: Bool = false) {
+    @discardableResult
+    func reload(forceRefresh: Bool = false) -> Task<Void, Never>? {
+        guard pageIsVisible else { return nil }
         guard let source = selectedSource else {
             items = []
             cancelSectionTasks()
             sections = []
             rawItems = []
             filters = []
-            return
+            isLoadingItems = false
+            return nil
         }
         repairHardcodedDiscoverSourceIfNeeded(for: source)
-        loadItemsTask?.cancel()
+        let previousLoad = loadItemsTask, previousSection = sectionTask
+        let previousQuick = quickActionsTask, previousControl = controlTask
+        previousLoad?.cancel(); previousQuick?.cancel(); previousControl?.cancel()
         cancelSectionTasks()
+        let token = UUID(); loadToken = token
+        let pendingPause = pagePauseTask
         rawItems = []
         items = []
         sections = []
         isLoadingItems = true
         let cacheKey = discoverKindsCacheKey(for: source)
         loadItemsTask = Task { [weak self] in
-            // Some sources' 榜單/分類 read a site cookie inline (起点 _csrfToken) that's only set by
-            // browsing the site — without it every section loads 0 books and 发现页 looks empty.
-            // Prime it before the sections start fetching books. No-op when not needed / already set.
-            await BookSourceFetcher.shared.primeDiscoverCookies(in: source)
-            guard let self, !Task.isCancelled else { return }
+            await previousLoad?.value; await previousSection?.value
+            await previousQuick?.value; await previousControl?.value
+            await pendingPause?.value
+            guard let self, self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
+            if !source.isJsSource, source.enabledExplore, !source.exploreUrl.isEmpty {
+                do { _ = try await self.fetcher.openOriginalExploreContext(source: source) }
+                catch {
+                    guard self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
+                    self.isLoadingItems = false
+                    AppLogger.error("Original exploration page could not open its context", error: error)
+                    return
+                }
+                guard self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
+                self.openedPageSource = source
+            }
 
             // Category list cache (Legado exploreKinds-style): `@js:` exploreUrls
             // re-run their JS (often with network calls) on every open just to
@@ -477,8 +598,8 @@ final class DiscoverViewModel: ObservableObject {
                 return
             }
 
-            var raw = await BookSourceFetcher.shared.discoverItems(page: 1, in: source)
-            guard !Task.isCancelled else { return }
+            var raw = await self.fetcher.discoverItems(page: 1, in: source)
+            guard self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
 
             // Recover from a poisoned discover variable. A JS exploreUrl that builds
             // `type:"select"` filters (createFilter) but returns NONE means the source's
@@ -494,8 +615,8 @@ final class DiscoverViewModel: ObservableObject {
                Self.exploreLikelyDegraded(source: source, items: raw) {
                 self.didAutoResetDiscoverVariable = true
                 if self.resetDiscoverFilterValues(for: source) {
-                    raw = await BookSourceFetcher.shared.discoverItems(page: 1, in: source)
-                    guard !Task.isCancelled else { return }
+                    raw = await self.fetcher.discoverItems(page: 1, in: source)
+                    guard self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
                 }
             }
 
@@ -509,6 +630,7 @@ final class DiscoverViewModel: ObservableObject {
 
             self.applyDiscoverItems(raw)
         }
+        return loadItemsTask
     }
 
     /// Shared tail of `reload()` for both the cache-hit and network paths.
@@ -524,7 +646,14 @@ final class DiscoverViewModel: ObservableObject {
         items = mapped
         isLoadingItems = false
         buildSections(from: mapped)
-        Task { await refreshQuickActions() }
+        let previous = quickActionsTask
+        previous?.cancel()
+        let token = loadToken
+        quickActionsTask = Task { [weak self] in
+            await previous?.value
+            guard let self, self.pageIsVisible, self.loadToken == token, !Task.isCancelled else { return }
+            await self.refreshQuickActions()
+        }
     }
 
     /// A message the source put in place of its categories.
@@ -656,7 +785,7 @@ final class DiscoverViewModel: ObservableObject {
     }
 
     private func pumpSectionQueue() {
-        guard !isPumpingSections, let id = sectionQueue.first else { return }
+        guard pageIsVisible, !isPumpingSections, let id = sectionQueue.first else { return }
         guard let source = selectedSource,
               let index = sections.firstIndex(where: { $0.id == id }) else {
             if !sectionQueue.isEmpty { sectionQueue.removeFirst() }
@@ -666,19 +795,21 @@ final class DiscoverViewModel: ObservableObject {
         isPumpingSections = true
         sections[index].phase = .loading
         let raw = sections[index].item.raw
-        Task { [weak self] in
+        let token = loadToken
+        let fetcher = fetcher
+        sectionTask = Task { [weak self] in
             var loaded: [OnlineBook] = []
             var displays: [DiscoverBookDisplay] = []
             var reason: String?
             var ok = false
             do {
-                loaded = try await BookSourceFetcher.shared.discoverBooks(from: raw, page: 1, in: source)
+                loaded = try await fetcher.discoverBooks(from: raw, page: 1, in: source)
                 displays = await Self.makeDisplays(loaded, source: source)
                 ok = true
             } catch {
                 reason = (error as NSError).localizedDescription
             }
-            guard let self else { return }
+            guard let self, self.isCurrentPage(source, token: token), !Task.isCancelled else { return }
             // A reload may have cleared/rebuilt the queue mid-flight; only the
             // active pump (its id still at the front) advances shared state.
             guard self.sectionQueue.first == id else { return }
@@ -733,6 +864,7 @@ final class DiscoverViewModel: ObservableObject {
     }
 
     private func cancelSectionTasks() {
+        sectionTask?.cancel()
         sectionQueue = []
         isPumpingSections = false
     }
