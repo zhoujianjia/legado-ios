@@ -1,0 +1,517 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T22:28:49.177965+00:00",
+  "scope": "Independent review of Root-authorized S4 bounded terminal Lookup gap candidate. Three exact Swift sources, one production method only; no compile/SDK/TLS/device execution or canonical/cloud changes by reviewer.",
+  "decision": "No confirmed P1/P2 found. Lookup observations now publish only after a successful terminal Complete on the existing authenticated channel; interim matching identity cannot become a success. Runtime/typecheck proof remains pending.",
+  "final": {
+    "path": ".build\\s4-authenticated-installation-gap-step\\final-v1.json",
+    "bytes": 5643,
+    "sha256": "125da7b151d0d6621f65dc56bd4d5bc9b218211c7c8636f0165db158a4fb2b1d"
+  },
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "baseline": {
+        "bytes": 27643,
+        "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+      },
+      "candidate": {
+        "bytes": 29023,
+        "sha256": "1b917b4b678e7b1df40f2f0e6d32210852cf9604ce759c8723b357aa274e1ec5"
+      },
+      "diff": {
+        "path": "diffs/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift.diff",
+        "bytes": 3366,
+        "sha256": "2cda8a78b36d4860fc539ac8e860aff127c8572c7b09fb689e31abf5a2a143bb"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "baseline": {
+        "bytes": 29854,
+        "sha256": "0e77ffc87d2dc66cb69aa90bc3bfeafeacec459b5ccc4cbe489a48804e6c5488"
+      },
+      "candidate": {
+        "bytes": 30962,
+        "sha256": "97c60dc187d739dbde19efb2ca44e1765880bfc6601113e4d2c54905e0d40f4e"
+      },
+      "diff": {
+        "path": "diffs/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift.diff",
+        "bytes": 5971,
+        "sha256": "f00dcbbe67b4c98215f1c88a7aed22bdded9b931c1df42ea83f48bfb1b0de6bd"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "baseline": {
+        "bytes": 12428,
+        "sha256": "4523c5ba86b945d67cc812ea8c5504920278ae8f664c7f0e06ef044cceb54083"
+      },
+      "candidate": {
+        "bytes": 18085,
+        "sha256": "605fa0c1e4cef249759fe673b9bf7699e6bf3b0cc5f2935239694557a55f77eb"
+      },
+      "diff": {
+        "path": "diffs/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift.diff",
+        "bytes": 6597,
+        "sha256": "a3c01c12b1a10d4e7b2e180d29f2dba41927bc62e1fbc9dcc62353835ddd9896"
+      }
+    }
+  ],
+  "primaryCommit": "fa0f79190142bc309307967c058f89c1b36eb6b8",
+  "primaryFiles": [
+    {
+      "path": ".build/s4-authenticated-installation-gap-step/primary/lockdown.c",
+      "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/lockdown.c",
+      "bytes": 45926,
+      "sha256": "cd484ee9d2250ec34c0304743ca56226d5622becec7012377821f52af4f46fb8"
+    },
+    {
+      "path": ".build/s4-authenticated-installation-gap-step/primary/service.c",
+      "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/service.c",
+      "bytes": 6244,
+      "sha256": "55a433fab5d283b46878067bb81bfe01e436f1d6f694976c29b1116890238f86"
+    },
+    {
+      "path": ".build/s4-authenticated-installation-gap-step/primary/installation_proxy.c",
+      "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/installation_proxy.c",
+      "bytes": 33997,
+      "sha256": "f8f752da1afbfe09daaae88fb85e28e1b1d3325dd5712de4c092d4f23e967aa3"
+    }
+  ],
+  "review": [
+    {
+      "source": "Client.lookupOn:301-338",
+      "result": "Same Lookup request and channel. Loop counts existing256 frames/8MiB including framing, accepts missing/intermediate Status while waiting; malformed result/status/percent and foreign bundle/version fail. Latest entire LookupResult replaces prior observation, including empty snapshot. Complete without any result fails; only validated Complete returns presence."
+    },
+    {
+      "source": "PlistChannel.receive:359-374 unchanged",
+      "result": "Per-frame4byte length and262144byte cap remain. Error/ErrorDescription rejected before any caller result processing, so same-frame matching result+Complete+Error cannot publish. EOF, actual cancellation and shared absolute deadline propagate through old Transport socket/TLS owner. No new connection/fallback/deadline reset."
+    },
+    {
+      "source": "Client.lookup/execute/RemoteUpload.cleanupIfSafe unchanged",
+      "result": "Lookup stopSession and observation publication occur only after new terminal loop succeeds. UpgradeComplete followed by failed Lookup produces existing lookup OperationFailure with UpgradeMayHaveExecuted, retains primary and cleanup facts; no successful install Receipt. Post-Upgrade safe staging cleanup logic is byte-identical. No profile, archive identity or unattended-renewal verification gains."
+    },
+    {
+      "source": "libimobiledevice installation_proxy.c:321-407,600-608,644-650",
+      "result": "Pinned primary snapshot actual lines show synchronous terminal/error loop; copy_lookup_result_cb assigns plist_copy(node), replacing snapshot rather than merging; lookup invokes INSTPROXY_COMMAND_TYPE_SYNC and returns result only on success. Contract broad568-619 range includes callback but precise callback is600-608, not author message568-575."
+    },
+    {
+      "source": "Controlled fixture/tests",
+      "result": "Same real loopback TLS and existing generated keys/transport. Default server now sends terminal Complete. Optional packets traverse actual PlistChannel.send; cancellation signal follows real sends and peer waits on sameTLS socket, no settle delay. Existing7 test definitions remain;3 methods add10 vectors: splitComplete, both snapshot directions, lateError/EOF/noResult, postUpgrade uncertainty, cancellation, frame and byte budgets. They are authored but unexecuted."
+    }
+  ],
+  "productionScope": {
+    "functionCount": 23,
+    "changedFunction": "lookupOn",
+    "wholeOutsideChangedFunctionByteExact": true,
+    "transportOwner": {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+      "bytes": 22419,
+      "sha256": "d5763684d33f58212fc1e08761da08f4267acde4ea057942dce6087fe3b66687"
+    },
+    "otherFunctionsByteExact": true
+  },
+  "tests": {
+    "definitions": 7,
+    "newDefinitions": 0,
+    "changedExistingMethods": [
+      "requiresTerminalCompleteAndExactPostUpgradeLookupIdentity",
+      "cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+      "enforcesActualFrameProgressDeadlineAndArchiveBudgets"
+    ],
+    "newAuthoredVectors": 10,
+    "actualTLSExecutions": 0,
+    "actualSDK": 0
+  },
+  "grammar": {
+    "roots": [
+      {
+        "kind": "rawbaseline",
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 27643,
+        "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e",
+        "errors": []
+      },
+      {
+        "kind": "work",
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 29023,
+        "sha256": "1b917b4b678e7b1df40f2f0e6d32210852cf9604ce759c8723b357aa274e1ec5",
+        "errors": []
+      },
+      {
+        "kind": "rawbaseline",
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 29854,
+        "sha256": "0e77ffc87d2dc66cb69aa90bc3bfeafeacec459b5ccc4cbe489a48804e6c5488",
+        "errors": []
+      },
+      {
+        "kind": "work",
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 30962,
+        "sha256": "97c60dc187d739dbde19efb2ca44e1765880bfc6601113e4d2c54905e0d40f4e",
+        "errors": []
+      },
+      {
+        "kind": "rawbaseline",
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 12428,
+        "sha256": "4523c5ba86b945d67cc812ea8c5504920278ae8f664c7f0e06ef044cceb54083",
+        "errors": []
+      },
+      {
+        "kind": "work",
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 18085,
+        "sha256": "605fa0c1e4cef249759fe673b9bf7699e6bf3b0cc5f2935239694557a55f77eb",
+        "errors": []
+      }
+    ],
+    "count": 6,
+    "errors": 0,
+    "kind": "syntax parser only, no Swift typechecking"
+  },
+  "remainingConfirmedFindings": [],
+  "limits": [
+    "No AppleSDK typecheck or controlledTLS execution occurred here. Source/grammar review cannot prove real TLS handshake/framing/cancellation or iPhone installation behavior.",
+    "Retained directTCP policy rejects missing/false serviceSSL; supporting plaintext only through an independently authenticated provider is a separate task, not a boolean relaxation.",
+    "Terminal bundle/version Lookup is an observation only. It does not verify installed renewed profile, entitlements/archive digest, samephysicaldevice, noVPN route or automatic/unattended renewal.",
+    "Multiple snapshots follow pinned upstream replacement semantics. This bounded single-bundle embedding is stricter than an arbitrarymulti-bundle browser; it does not claim a general lookup merge implementation.",
+    "Prior source and cloud artifacts remain immutable. The currently running fc3 batch excludes these later source bytes."
+  ],
+  "checks": [
+    {
+      "check": "final manifest",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\final-v1.json",
+        "bytes": 5643,
+        "sha256": "125da7b151d0d6621f65dc56bd4d5bc9b218211c7c8636f0165db158a4fb2b1d"
+      }
+    },
+    {
+      "check": "baseline Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\rawbaseline\\Modules\\Services\\SelfRenewal\\SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 27643,
+        "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+      }
+    },
+    {
+      "check": "candidate Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\work\\Modules\\Services\\SelfRenewal\\SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 29023,
+        "sha256": "1b917b4b678e7b1df40f2f0e6d32210852cf9604ce759c8723b357aa274e1ec5"
+      }
+    },
+    {
+      "check": "diff Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\diffs\\Modules\\Services\\SelfRenewal\\SelfRenewalAuthenticatedInstallationClient.swift.diff",
+        "bytes": 3366,
+        "sha256": "2cda8a78b36d4860fc539ac8e860aff127c8572c7b09fb689e31abf5a2a143bb"
+      }
+    },
+    {
+      "check": "whole diff exact Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "passed": true
+    },
+    {
+      "check": "baseline Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\rawbaseline\\Tests\\iOS\\yuedu appTests\\SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 29854,
+        "sha256": "0e77ffc87d2dc66cb69aa90bc3bfeafeacec459b5ccc4cbe489a48804e6c5488"
+      }
+    },
+    {
+      "check": "candidate Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\work\\Tests\\iOS\\yuedu appTests\\SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 30962,
+        "sha256": "97c60dc187d739dbde19efb2ca44e1765880bfc6601113e4d2c54905e0d40f4e"
+      }
+    },
+    {
+      "check": "diff Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\diffs\\Tests\\iOS\\yuedu appTests\\SelfRenewalAuthenticatedInstallationFixture.swift.diff",
+        "bytes": 5971,
+        "sha256": "f00dcbbe67b4c98215f1c88a7aed22bdded9b931c1df42ea83f48bfb1b0de6bd"
+      }
+    },
+    {
+      "check": "whole diff exact Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "passed": true
+    },
+    {
+      "check": "baseline Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\rawbaseline\\Tests\\iOS\\yuedu appTests\\SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 12428,
+        "sha256": "4523c5ba86b945d67cc812ea8c5504920278ae8f664c7f0e06ef044cceb54083"
+      }
+    },
+    {
+      "check": "candidate Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\work\\Tests\\iOS\\yuedu appTests\\SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 18085,
+        "sha256": "605fa0c1e4cef249759fe673b9bf7699e6bf3b0cc5f2935239694557a55f77eb"
+      }
+    },
+    {
+      "check": "diff Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\diffs\\Tests\\iOS\\yuedu appTests\\SelfRenewalAuthenticatedInstallationClientTests.swift.diff",
+        "bytes": 6597,
+        "sha256": "a3c01c12b1a10d4e7b2e180d29f2dba41927bc62e1fbc9dcc62353835ddd9896"
+      }
+    },
+    {
+      "check": "whole diff exact Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "passed": true
+    },
+    {
+      "check": "evidence primary-binding.json",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\primary-binding.json",
+        "bytes": 1366,
+        "sha256": "d46d25c69ea17024e66aacfe1e6db6c83883ff7d04ceaf72d8d43dd419bfc809"
+      }
+    },
+    {
+      "check": "evidence contract-v1.json",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\contract-v1.json",
+        "bytes": 3481,
+        "sha256": "ab9c035b9a9853391795c17ba4ffc2ffffeb15f3cc7382ee38f0f972306ce93f"
+      }
+    },
+    {
+      "check": "evidence source-api-fixture-facts.json",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\source-api-fixture-facts.json",
+        "bytes": 4571,
+        "sha256": "354bafaa42e0096141041a85de7155f021d67c6c648e7f839afae491dedd7acf"
+      }
+    },
+    {
+      "check": "evidence swift-grammar.json",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\swift-grammar.json",
+        "bytes": 1840,
+        "sha256": "3b39d10688b3fdc096791e2d2c1cbbc24d1efd297af8ca3384759881a793b551"
+      }
+    },
+    {
+      "check": "evidence verify-and-freeze.py",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\verify-and-freeze.py",
+        "bytes": 9686,
+        "sha256": "cdb9f160429d4c31bfc8010005bdb12bfae7a8dc1c0f641c19d3736093944d5d"
+      }
+    },
+    {
+      "check": "evidence patch-tests.py",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\patch-tests.py",
+        "bytes": 6607,
+        "sha256": "8eb77b883847e43341893baec6088debdc256774852bb6fc7ebeda7a2faeafb2"
+      }
+    },
+    {
+      "check": "primary snapshot .build/s4-authenticated-installation-gap-step/primary/lockdown.c",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\primary\\lockdown.c",
+        "bytes": 45926,
+        "sha256": "cd484ee9d2250ec34c0304743ca56226d5622becec7012377821f52af4f46fb8"
+      }
+    },
+    {
+      "check": "primary snapshot .build/s4-authenticated-installation-gap-step/primary/service.c",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\primary\\service.c",
+        "bytes": 6244,
+        "sha256": "55a433fab5d283b46878067bb81bfe01e436f1d6f694976c29b1116890238f86"
+      }
+    },
+    {
+      "check": "primary snapshot .build/s4-authenticated-installation-gap-step/primary/installation_proxy.c",
+      "passed": true,
+      "detail": {
+        "path": ".build\\s4-authenticated-installation-gap-step\\primary\\installation_proxy.c",
+        "bytes": 33997,
+        "sha256": "f8f752da1afbfe09daaae88fb85e28e1b1d3325dd5712de4c092d4f23e967aa3"
+      }
+    },
+    {
+      "check": "primary pinned commit and exact facts",
+      "passed": true
+    },
+    {
+      "check": "unchanged actual TLS/transport owner",
+      "passed": true,
+      "detail": {
+        "path": "Modules\\Services\\SelfRenewal\\SelfRenewalAuthenticatedDeviceStream.swift",
+        "bytes": 22419,
+        "sha256": "d5763684d33f58212fc1e08761da08f4267acde4ea057942dce6087fe3b66687"
+      }
+    },
+    {
+      "check": "syntaxonly noerrors rawbaseline Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "passed": true
+    },
+    {
+      "check": "syntaxonly noerrors work Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "passed": true
+    },
+    {
+      "check": "syntaxonly noerrors rawbaseline Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "passed": true
+    },
+    {
+      "check": "syntaxonly noerrors work Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "passed": true
+    },
+    {
+      "check": "syntaxonly noerrors rawbaseline Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "passed": true
+    },
+    {
+      "check": "syntaxonly noerrors work Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "passed": true
+    },
+    {
+      "check": "all production function identities/order exact",
+      "passed": true
+    },
+    {
+      "check": "only production lookupOn changed",
+      "passed": true
+    },
+    {
+      "check": "whole production outside lookup byteexact",
+      "passed": true
+    },
+    {
+      "check": "lookup same channel receives bounded loop",
+      "passed": true
+    },
+    {
+      "check": "no interim result return",
+      "passed": true
+    },
+    {
+      "check": "lookup snapshotreplace notmerge",
+      "passed": true
+    },
+    {
+      "check": "single identity version guards retained",
+      "passed": true
+    },
+    {
+      "check": "Error rejected before caller observes frame",
+      "passed": true
+    },
+    {
+      "check": "one absolute deadline/TLS route retained",
+      "passed": true
+    },
+    {
+      "check": "256 and8MiB existing bounds",
+      "passed": true
+    },
+    {
+      "check": "existing plaintextservice rejection retained",
+      "passed": true
+    },
+    {
+      "check": "lookup/upgrade publish afterterminal call",
+      "passed": true
+    },
+    {
+      "check": "upstream callback last result replace",
+      "passed": true
+    },
+    {
+      "check": "upstream lookup sync invocation",
+      "passed": true
+    },
+    {
+      "check": "upstream terminalComplete/error loop",
+      "passed": true
+    },
+    {
+      "check": "7 Test identities unchanged",
+      "passed": true
+    },
+    {
+      "check": "exact3 existing methods enhanced",
+      "passed": true
+    },
+    {
+      "check": "real fixture default terminalComplete",
+      "passed": true
+    },
+    {
+      "check": "actual TLS send before cancellation signal",
+      "passed": true
+    },
+    {
+      "check": "no settle sleep in newvectors",
+      "passed": true
+    },
+    {
+      "check": "EOF/noresult/errorvectors andsnapshot directions",
+      "passed": true
+    },
+    {
+      "check": "bounded streamvectors andpending cancellation",
+      "passed": true
+    },
+    {
+      "check": "UpgradeComplete thenlookupfailure remains uncertain",
+      "passed": true
+    }
+  ],
+  "checkCount": 53,
+  "failedChecks": 0,
+  "operations": {
+    "authorStageMutated": false,
+    "canonicalMutated": false,
+    "GitMutated": false,
+    "cloudQueried": false,
+    "testsRerun": false,
+    "compilerRerun": false,
+    "privatePairingOrCredentialsRead": false
+  },
+  "flags": {
+    "fullS4Complete": false,
+    "SwiftSDKPassed": false,
+    "controlledTLSExecutionPassed": false,
+    "installedRenewedProfileVerified": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false
+  }
+}

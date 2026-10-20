@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-20T22:25:57.814317+00:00",
+  "status": "S4 bounded Lookup terminal-completion production candidate; Swift SDK/runtime execution pending",
+  "scope": "Exactly one production method plus existing controlled real-TLS fixture and existing test vectors; no service TLS downgrade, new owner, new helper-only path, or profile verification claim",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "baseline": {
+        "bytes": 27643,
+        "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+      },
+      "candidate": {
+        "bytes": 29023,
+        "sha256": "1b917b4b678e7b1df40f2f0e6d32210852cf9604ce759c8723b357aa274e1ec5"
+      },
+      "diff": {
+        "path": "diffs/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift.diff",
+        "bytes": 3366,
+        "sha256": "2cda8a78b36d4860fc539ac8e860aff127c8572c7b09fb689e31abf5a2a143bb"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "baseline": {
+        "bytes": 29854,
+        "sha256": "0e77ffc87d2dc66cb69aa90bc3bfeafeacec459b5ccc4cbe489a48804e6c5488"
+      },
+      "candidate": {
+        "bytes": 30962,
+        "sha256": "97c60dc187d739dbde19efb2ca44e1765880bfc6601113e4d2c54905e0d40f4e"
+      },
+      "diff": {
+        "path": "diffs/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift.diff",
+        "bytes": 5971,
+        "sha256": "f00dcbbe67b4c98215f1c88a7aed22bdded9b931c1df42ea83f48bfb1b0de6bd"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "baseline": {
+        "bytes": 12428,
+        "sha256": "4523c5ba86b945d67cc812ea8c5504920278ae8f664c7f0e06ef044cceb54083"
+      },
+      "candidate": {
+        "bytes": 18085,
+        "sha256": "605fa0c1e4cef249759fe673b9bf7699e6bf3b0cc5f2935239694557a55f77eb"
+      },
+      "diff": {
+        "path": "diffs/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift.diff",
+        "bytes": 6597,
+        "sha256": "a3c01c12b1a10d4e7b2e180d29f2dba41927bc62e1fbc9dcc62353835ddd9896"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "path": "primary-binding.json",
+      "bytes": 1366,
+      "sha256": "d46d25c69ea17024e66aacfe1e6db6c83883ff7d04ceaf72d8d43dd419bfc809"
+    },
+    {
+      "path": "contract-v1.json",
+      "bytes": 3481,
+      "sha256": "ab9c035b9a9853391795c17ba4ffc2ffffeb15f3cc7382ee38f0f972306ce93f"
+    },
+    {
+      "path": "source-api-fixture-facts.json",
+      "bytes": 4571,
+      "sha256": "354bafaa42e0096141041a85de7155f021d67c6c648e7f839afae491dedd7acf"
+    },
+    {
+      "path": "swift-grammar.json",
+      "bytes": 1840,
+      "sha256": "3b39d10688b3fdc096791e2d2c1cbbc24d1efd297af8ca3384759881a793b551"
+    },
+    {
+      "path": "verify-and-freeze.py",
+      "bytes": 9686,
+      "sha256": "cdb9f160429d4c31bfc8010005bdb12bfae7a8dc1c0f641c19d3736093944d5d"
+    },
+    {
+      "path": "patch-tests.py",
+      "bytes": 6607,
+      "sha256": "8eb77b883847e43341893baec6088debdc256774852bb6fc7ebeda7a2faeafb2"
+    }
+  ],
+  "primaryFiles": [
+    {
+      "path": ".build/s4-authenticated-installation-gap-step/primary/lockdown.c",
+      "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/lockdown.c",
+      "bytes": 45926,
+      "sha256": "cd484ee9d2250ec34c0304743ca56226d5622becec7012377821f52af4f46fb8"
+    },
+    {
+      "path": ".build/s4-authenticated-installation-gap-step/primary/service.c",
+      "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/service.c",
+      "bytes": 6244,
+      "sha256": "55a433fab5d283b46878067bb81bfe01e436f1d6f694976c29b1116890238f86"
+    },
+    {
+      "path": ".build/s4-authenticated-installation-gap-step/primary/installation_proxy.c",
+      "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/installation_proxy.c",
+      "bytes": 33997,
+      "sha256": "f8f752da1afbfe09daaae88fb85e28e1b1d3325dd5712de4c092d4f23e967aa3"
+    }
+  ],
+  "definitionCount": 7,
+  "newDefinitions": 0,
+  "affectedExistingDefinitions": [
+    "enforcesActualFrameProgressDeadlineAndArchiveBudgets",
+    "cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+    "requiresTerminalCompleteAndExactPostUpgradeLookupIdentity"
+  ],
+  "validation": {
+    "syntaxRoots": 6,
+    "syntaxErrors": 0,
+    "SwiftSDK": 0,
+    "Native": 0,
+    "controlledTLSVectors": 0,
+    "JVM": 0,
+    "device": 0
+  },
+  "sourceContract": "contract-v1.json",
+  "interactionFacts": "source-api-fixture-facts.json",
+  "limits": [
+    "The new controlled TLS definitions have not run on an Apple SDK; grammar and source observations are not typechecking or runtime success.",
+    "Source comparison demonstrates intended sequencing, not a real iPhone service response or installation authorization.",
+    "No installed profile/digest, same physical device, no-VPN route or unattended renewal proof is added."
+  ],
+  "operations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "privatePairingOrCredentialsRead": false,
+    "newStore": false,
+    "newTransportOwner": false
+  },
+  "flags": {
+    "fullS4Complete": false,
+    "SwiftSDKPassed": false,
+    "controlledTLSExecutionPassed": false,
+    "installedRenewedProfileVerified": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false
+  }
+}

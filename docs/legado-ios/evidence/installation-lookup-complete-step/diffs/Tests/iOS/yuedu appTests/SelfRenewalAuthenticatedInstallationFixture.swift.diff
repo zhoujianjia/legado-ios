@@ -1,0 +1,84 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift
+@@ -37,6 +37,7 @@
+         var uploaded = Data()
+         var upgradeRequests = 0
+         var lookupRequests = 0
++        var lookupRepliesSent = 0
+         var removedPaths: [String] = []
+         var stoppedSessions: [String] = []
+         var authenticatedChannels = 0
+@@ -61,6 +62,7 @@
+         let observed: Observations
+         let sessionRequestReceived: AsyncStream<Bool>
+         let recoveryRemoveRequestReceived: AsyncStream<Bool>
++        let lookupRepliesSent: AsyncStream<Bool>
+         let wrongDeviceCertificateDER: Data
+         func upgrade(timeout: TimeInterval = 8, archive alternate: Client.ArchiveInput? = nil,
+             beforeCreation: @escaping @Sendable (Client.UploadIntent) async throws -> Void = { _ in },
+@@ -190,6 +192,7 @@
+         bundle: String = "owned.reader", version: String = "42", at date: Date = Date(),
+         beforeRecoveryRemoveReply: @escaping @Sendable () throws -> Void = {},
+         expectedUploadedArchive: (@Sendable () throws -> Data)? = nil,
++        lookupResponses: [[String: Client.Value]]? = nil, holdLookupAfterReplies: Bool = false,
+         _ action: @escaping @Sendable (Context) async throws -> Void) async throws {
+         let cancellation = Transport.Cancellation()
+         let worker = Task.detached(priority: .utility) {
+@@ -202,6 +205,7 @@
+             let observed = Observations()
+             let signal = AsyncStream<Bool>.makeStream(bufferingPolicy: .bufferingNewest(1))
+             let removalSignal = AsyncStream<Bool>.makeStream(bufferingPolicy: .bufferingNewest(1))
++            let lookupSignal = AsyncStream<Bool>.makeStream(bufferingPolicy: .bufferingNewest(1))
+             let bytes = overrideBytes ?? Data((0..<150_001).map { UInt8(truncatingIfNeeded: $0 * 37) })
+             guard !bytes.isEmpty, bytes.count <= 67_108_864 else { throw FixtureFailure.invalidRequest }
+             let pairing = try Transport.PairingIdentity(hostIdentity: host.identity,
+@@ -353,7 +357,11 @@
+                         observed.update { $0.lookupRequests += 1 }
+                         let result: [String: Client.Value] = mode == .lookupMissing || mode == .disconnectAfterUpgradeThenLookupMissing ? [:] : [bundle: .dictionary([
+                             "CFBundleIdentifier": .string(bundle), "CFBundleVersion": .string(version)])]
+-                        try channel.send(["LookupResult": .dictionary(result)]); return
++                        let replies = lookupResponses ?? [["Status": .string("Complete"), "LookupResult": .dictionary(result)]]
++                        for reply in replies { try channel.send(reply); observed.update { $0.lookupRepliesSent += 1 } }
++                        lookupSignal.continuation.yield(true)
++                        if holdLookupAfterReplies { _ = try stream.read(count: 1) }
++                        return
+                     }
+                     let upgrade: [String: Client.Value]
+                     do { upgrade = try channel.receive() }
+@@ -373,8 +381,12 @@
+                     guard lookup["Command"] == .string("Lookup"),
+                           lookup["ClientOptions"] == .dictionary(["ApplicationType": .string("Any"), "BundleIDs": .array([.string(bundle)])]) else { throw FixtureFailure.invalidRequest }
+                     observed.update { $0.lookupRequests += 1 }
+-                    try channel.send(["LookupResult": .dictionary([bundle: .dictionary([
+-                        "CFBundleIdentifier": .string(bundle), "CFBundleVersion": .string(mode == .wrongLookup ? "other" : version)])])])
++                    let result: [String: Client.Value] = [bundle: .dictionary([
++                        "CFBundleIdentifier": .string(bundle), "CFBundleVersion": .string(mode == .wrongLookup ? "other" : version)])]
++                    let replies = lookupResponses ?? [["Status": .string("Complete"), "LookupResult": .dictionary(result)]]
++                    for reply in replies { try channel.send(reply); observed.update { $0.lookupRepliesSent += 1 } }
++                    lookupSignal.continuation.yield(true)
++                    if holdLookupAfterReplies { _ = try stream.read(count: 1) }
+                     }
+                 },
+             ]
+@@ -383,7 +395,8 @@
+                     Data(bytes[offset..<(offset + count)])
+                 }, bytes: bytes, date: mode == .expiredPeer ? date.addingTimeInterval(86_400 * 31) : date,
+                 bundle: bundle, version: version, observed: observed, sessionRequestReceived: signal.stream,
+-                recoveryRemoveRequestReceived: removalSignal.stream, wrongDeviceCertificateDER: wrong.certificate)
++                recoveryRemoveRequestReceived: removalSignal.stream, lookupRepliesSent: lookupSignal.stream,
++                wrongDeviceCertificateDER: wrong.certificate)
+             do {
+                 try await action(context)
+                 let requirePeerSuccess = mode == .normal || mode.isUnknownUpgradeRecovery || (mode.cleanupSessionCount > 1 && mode != .cleanupWrongServerCertificate)
+@@ -392,9 +405,9 @@
+                     let result = await peer.value
+                     if requirePeerSuccess, let error = result.error { throw error }
+                 }
+-                signal.continuation.finish(); removalSignal.continuation.finish(); cancellation.cancel()
++                signal.continuation.finish(); removalSignal.continuation.finish(); lookupSignal.continuation.finish(); cancellation.cancel()
+             } catch {
+-                cancellation.cancel(); signal.continuation.finish(); removalSignal.continuation.finish()
++                cancellation.cancel(); signal.continuation.finish(); removalSignal.continuation.finish(); lookupSignal.continuation.finish()
+                 for peer in peers { _ = await peer.value }
+                 throw error
+             }

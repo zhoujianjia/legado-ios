@@ -1,0 +1,48 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift
+@@ -301,13 +301,38 @@
+     private static func lookupOn(_ channel: PlistChannel, bundle: String) throws -> LookupObservation.Presence {
+         try channel.send(["Command": .string("Lookup"), "ClientOptions": .dictionary([
+             "ApplicationType": .string("Any"), "BundleIDs": .array([.string(bundle)])])])
+-        let response = try channel.receive()
+-        guard case .dictionary(let result)? = response["LookupResult"] else { throw Failure.malformedResponse }
+-        if result.isEmpty { return .notFound }
+-        guard result.count == 1, case .dictionary(let application)? = result[bundle],
+-              application["CFBundleIdentifier"] == .string(bundle), case .string(let version)? = application["CFBundleVersion"],
+-              !version.isEmpty, version.utf8.count <= 256, !version.utf8.contains(0) else { throw Failure.lookupMismatch }
+-        return .reported(bundleIdentifier: bundle, bundleVersion: version)
++        var observation: LookupObservation.Presence?
++        var messages = 0
++        var bytes = 0
++        while true {
++            // receive() rejects Error before any LookupResult from that frame.
++            // A matching interim result is not a terminal Lookup ACK.
++            let response = try channel.receive()
++            messages += 1; bytes += channel.lastResponseBytes
++            guard messages <= Limits.progressMessages, bytes <= Limits.progressBytes else { throw Failure.progressLimit }
++            if let value = response["LookupResult"] {
++                guard case .dictionary(let result) = value else { throw Failure.malformedResponse }
++                // Upstream's lookup callback replaces the prior result, rather
++                // than merging distinct snapshots. This query has one BundleID.
++                if result.isEmpty { observation = .notFound }
++                else {
++                    guard result.count == 1, case .dictionary(let application)? = result[bundle],
++                          application["CFBundleIdentifier"] == .string(bundle), case .string(let version)? = application["CFBundleVersion"],
++                          !version.isEmpty, version.utf8.count <= 256, !version.utf8.contains(0) else { throw Failure.lookupMismatch }
++                    observation = .reported(bundleIdentifier: bundle, bundleVersion: version)
++                }
++            }
++            if let percent = response["PercentComplete"] {
++                guard case .integer(let value) = percent, (0...100).contains(value) else { throw Failure.malformedResponse }
++            }
++            if response["Status"] == .string("Complete") {
++                guard let observation else { throw Failure.malformedResponse }
++                return observation
++            }
++            if let status = response["Status"] {
++                guard case .string(let name) = status, !name.isEmpty, name.utf8.count <= 256 else { throw Failure.malformedResponse }
++            }
++        }
+     }
+     static func startService(_ name: String, on channel: PlistChannel, endpoint: Transport.Endpoint) throws -> Transport.Endpoint {
+         try channel.send(["Request": .string("StartService"), "Service": .string(name)])

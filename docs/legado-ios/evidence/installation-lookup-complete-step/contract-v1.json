@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "observedUTC": "2026-10-20T22:23:12.404200+00:00",
+    "repository": "https://github.com/libimobiledevice/libimobiledevice",
+    "commit": "fa0f79190142bc309307967c058f89c1b36eb6b8",
+    "files": [
+      {
+        "path": ".build/s4-authenticated-installation-gap-step/primary/lockdown.c",
+        "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/lockdown.c",
+        "bytes": 45926,
+        "sha256": "cd484ee9d2250ec34c0304743ca56226d5622becec7012377821f52af4f46fb8"
+      },
+      {
+        "path": ".build/s4-authenticated-installation-gap-step/primary/service.c",
+        "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/service.c",
+        "bytes": 6244,
+        "sha256": "55a433fab5d283b46878067bb81bfe01e436f1d6f694976c29b1116890238f86"
+      },
+      {
+        "path": ".build/s4-authenticated-installation-gap-step/primary/installation_proxy.c",
+        "url": "https://raw.githubusercontent.com/libimobiledevice/libimobiledevice/fa0f79190142bc309307967c058f89c1b36eb6b8/src/installation_proxy.c",
+        "bytes": 33997,
+        "sha256": "f8f752da1afbfe09daaae88fb85e28e1b1d3325dd5712de4c092d4f23e967aa3"
+      }
+    ],
+    "scope": "Primary upstream protocol reference snapshot; not an actual iPhone authorization or interoperability observation."
+  },
+  "localBounds": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "baseline": {
+        "bytes": 27643,
+        "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+      },
+      "legacyLookupLines": [
+        301,
+        310
+      ],
+      "startServiceLines": [
+        312,
+        320
+      ]
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+      "bytes": 22419,
+      "sha256": "d5763684d33f58212fc1e08761da08f4267acde4ea057942dce6087fe3b66687",
+      "authenticateLines": [
+        254,
+        312
+      ]
+    }
+  ],
+  "primaryContract": [
+    {
+      "file": "installation_proxy.c",
+      "lines": [
+        307,
+        381
+      ],
+      "claim": "Synchronous command processing reads until Complete or an error. Missing Status alone is not terminal."
+    },
+    {
+      "file": "installation_proxy.c",
+      "lines": [
+        568,
+        619
+      ],
+      "claim": "Lookup uses that synchronous loop; callback retains each supplied LookupResult by replacement, not merge."
+    },
+    {
+      "file": "service.c",
+      "lines": [
+        55,
+        75
+      ],
+      "claim": "Generic service client performs service TLS when ssl_enabled=1."
+    },
+    {
+      "file": "lockdown.c",
+      "lines": [
+        1285,
+        1305
+      ],
+      "claim": "StartService yields port and EnableServiceSSL, not a same-physical-device/profile installation guarantee."
+    }
+  ],
+  "retainedDirectTCPPolicy": "Local provider still rejects missing/false EnableServiceSSL and independently performs pinned fresh mutual TLS on the session, AFC and installation_proxy streams. Supporting unauthenticated/plaintext services would need a separately authenticated mux/tunnel provider, not a relaxed boolean guard.",
+  "candidate": "Bounded synchronous Lookup stream completion with final observation publication after Complete; other TLS and installation authority policies unchanged."
+}

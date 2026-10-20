@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "scope": "Source/API/fixture interaction observations, not executed Swift or mirrored protocol-test pass",
+  "production": {
+    "onlyChangedMethod": "SelfRenewalAuthenticatedInstallationClient.lookupOn",
+    "unchangedOtherProductionFunctions": [
+      "cleanupIfSafe",
+      "close",
+      "ensureStagingDirectory",
+      "exchange",
+      "execute",
+      "integer",
+      "lookup",
+      "object",
+      "open",
+      "openSession",
+      "path",
+      "receive",
+      "remove",
+      "requireMissing",
+      "send",
+      "startService",
+      "status",
+      "stopSession",
+      "unsigned",
+      "upgrade",
+      "write"
+    ],
+    "transportOwner": {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+      "bytes": 22419,
+      "sha256": "d5763684d33f58212fc1e08761da08f4267acde4ea057942dce6087fe3b66687"
+    },
+    "TLSAndStartServicePolicyUnchanged": true,
+    "samePlistChannelDeadlineCancellationAndSocket": true,
+    "maximumMessages": 256,
+    "maximumResponseBytes": 8388608,
+    "errorFrameRejectedBeforeResultProcessing": true,
+    "sameOrSeparateCompleteAndLookupResultAccepted": true,
+    "multipleResultSemantics": "Last complete LookupResult snapshot replaces the prior one, matching upstream callback; not dictionary merging. Single BundleID guard remains strict.",
+    "lookupAndReceiptPublishedOnlyAfterComplete": true,
+    "priorUpgradeReportedCompleteFailureCleanupPreserved": true,
+    "profileAndAuthorityFalseFlagBytesUnchanged": true
+  },
+  "fixture": {
+    "sameOwnedLoopbackTLSAndKeys": true,
+    "defaultLookupRepliesNowIncludeStatusComplete": true,
+    "customReplyPacketsGoThroughActualPlistChannelSendAndTLSStream": true,
+    "lookupCancellationSynchronization": "Per-fixture AsyncStream yielded after actual reply send, then peer blocks on same TLS stream; no sleep/poll or fabricated ACK.",
+    "rejectedPeerJoinMode": "Existing lookupOnly/unusedInput modes join deliberately rejected peers; normal success peer checks remain intact.",
+    "newOwnersStoresFallbacks": 0
+  },
+  "definitions": {
+    "suite": "SelfRenewalAuthenticatedInstallationClientTests",
+    "namesUnchanged": [
+      "uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop",
+      "rejectsActualWrongDeviceHostAndExpiredTLSCertificates",
+      "rejectsInvalidSessionServicePortsAndPlaintextDowngrades",
+      "rejectsActualAFCSequenceTruncationErrorsAndChangedArchiveDigest",
+      "requiresTerminalCompleteAndExactPostUpgradeLookupIdentity",
+      "cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+      "enforcesActualFrameProgressDeadlineAndArchiveBudgets"
+    ],
+    "newDefinitions": 0,
+    "changedExistingMethods": [
+      "enforcesActualFrameProgressDeadlineAndArchiveBudgets",
+      "cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+      "requiresTerminalCompleteAndExactPostUpgradeLookupIdentity"
+    ],
+    "unaffectedMethodsByteExact": [
+      "rejected",
+      "rejectsActualAFCSequenceTruncationErrorsAndChangedArchiveDigest",
+      "rejectsActualWrongDeviceHostAndExpiredTLSCertificates",
+      "rejectsInvalidSessionServicePortsAndPlaintextDowngrades",
+      "uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop"
+    ]
+  },
+  "newVectors": [
+    "LookupResult without Status, intermediate status, separate Complete",
+    "Matching interim result replaced by empty final snapshot",
+    "Empty interim result replaced by matching final snapshot",
+    "Matching result plus late same-frame Error/Complete rejected",
+    "Matching interim result followed by EOF rejected",
+    "Complete without any LookupResult rejected",
+    "Upgrade Complete then Lookup interim/late Error cannot publish success Receipt",
+    "Cancellation after actual interim reply wakes pending TLS receive and drains operation",
+    "257 Lookup status frames exceed existing256 budget",
+    "43 frames each with200000 payload characters exceed existing8MiB budget with each frame below262144-byte cap"
+  ],
+  "executed": {
+    "syntaxRoots": 6,
+    "syntaxErrors": 0,
+    "SwiftSDK": 0,
+    "Native": 0,
+    "controlledTLSVectors": 0,
+    "JVM": 0,
+    "device": 0
+  },
+  "limits": [
+    "The new controlled TLS definitions have not run on an Apple SDK; grammar and source observations are not typechecking or runtime success.",
+    "Source comparison demonstrates intended sequencing, not a real iPhone service response or installation authorization.",
+    "No installed profile/digest, same physical device, no-VPN route or unattended renewal proof is added."
+  ]
+}
