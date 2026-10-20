@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-read-only-ci-draft-review",
+  "reviewer": "/root/implementation_checkpoint_result",
+  "observedAtUTC": "2026-10-20T06:12:40.513215+00:00",
+  "status": "no-confirmed-blocker-in-current-draft",
+  "sourceBinding": [
+    {
+      "path": ".build/renewal-discovery/cookie-read-sdk-repair-step/work-v2/scripts/reader-experience/renewal-probe-tools.py",
+      "snapshot": ".build/renewal-discovery/cookie-read-sdk-repair-step/independent-ci-review-v2-sources/scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 118487,
+      "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1"
+    },
+    {
+      "path": ".build/renewal-discovery/cookie-read-sdk-repair-step/work-v2/scripts/reader-experience/test-renewal-probe-tools.py",
+      "snapshot": ".build/renewal-discovery/cookie-read-sdk-repair-step/independent-ci-review-v2-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 121250,
+      "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93"
+    },
+    {
+      "path": ".build/renewal-discovery/cookie-read-sdk-repair-step/work-v2/.github/workflows/reader-renewal-probe.yml",
+      "snapshot": ".build/renewal-discovery/cookie-read-sdk-repair-step/independent-ci-review-v2-sources/.github/workflows/reader-renewal-probe.yml",
+      "bytes": 7881,
+      "sha256": "555da2b33c48bc4ba5e25918bac8ed721652e99606fdc9bdc256ce1c94258138"
+    }
+  ],
+  "ownerMayStillChangeDraft": true,
+  "confirmedBlockingFindings": [],
+  "scope": {
+    "mode": "handoffrenewal",
+    "nativeQualifiedDefinitions": 253,
+    "plannedNativeArgumentLeaves": 255,
+    "uniqueSourceInputs": 175,
+    "newReadCallbackDefinitions": 2,
+    "independentSwiftPackageMethodsToExecute": 10,
+    "independentPackageSourceInputs": 19
+  },
+  "checks": [
+    {
+      "subject": "Source validity and portable outcome are distinct gates",
+      "conclusion": "Workflow source step validates the exact source tag. guards has its own real failure outcome and no continue-on-error. !cancelled status-check conditions allow toolchain and complete native diagnostics after guard failure while still requiring source/toolchain success.",
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "primarySource": "https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#status-check-functions",
+      "primaryMeaning": "An explicit status check overrides the implicit success condition; !cancelled permits steps after a previous failure without executing cancelled work.",
+      "locations": [
+        {
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "line": 34,
+          "entry": "id: source"
+        },
+        {
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "line": 39,
+          "entry": "id: guards"
+        },
+        {
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "line": 52,
+          "entry": "!cancelled() && steps.source.outcome == 'success'"
+        },
+        {
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "line": 62,
+          "entry": "YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME:"
+        }
+      ]
+    },
+    {
+      "subject": "Native success cannot cover failed portable guards",
+      "conclusion": "Workflow injects the actual steps.guards.outcome. _handoff_source_state binds it before/after every phase; result rejects absent, failure, skipped or cancelled unless literal success. Diagnostic native phases remain permitted for those outcomes, but no full passing result can be produced.",
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1263,
+          "endLine": 1280
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1067,
+          "endLine": 1222
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1392,
+          "endLine": 1426
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1429,
+          "endLine": 1480
+        }
+      ]
+    },
+    {
+      "subject": "No historical Swift Package reuse after changing a compilation input",
+      "conclusion": "The handoff workflow explicitly executes the independent package10 after toolchain success, including when native or guard steps failed. The independent evidence artifact is always retained. Historical a835 evidence remains separately labeled and not used as a current Package12/19 pass. Current methods never enter native255.",
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "locations": [
+        {
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "line": 64,
+          "entry": "name: Execute ten independent"
+        },
+        {
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "line": 67,
+          "entry": "name: Preserve independent package"
+        },
+        {
+          "path": ".github/workflows/reader-renewal-probe.yml",
+          "line": 97,
+          "entry": "Package12"
+        }
+      ]
+    },
+    {
+      "subject": "Exact selection and old contracts",
+      "conclusion": "Static literal-data expansion confirms 253 native method identities plus two Bool false/true expansions to planned255,175 distinct source inputs, and unchanged case sets/group maps for all previous ten modes. No wrapper source was changed by this three-file delta.",
+      "oldModeMethodSetsAndGroupMapsUnchanged": true,
+      "historical19ComparisonConstantsUnchanged": true
+    },
+    {
+      "subject": "Public artifact scope",
+      "conclusion": "Only existing native and independent package evidence directories/logs are uploaded. The raw producer public directory and private Keychain/P12/input streams are not newly included; no JVM payload or extra benchmark/UI selection was introduced."
+    }
+  ],
+  "resolvedFindings": [
+    {
+      "subject": "Stale workflow SPM/native summary",
+      "before": "Draft incorrectly stated that new-tag package10 was not rerun and still used native253 in its summary.",
+      "resolution": "Root corrected the workflow summary to current independent new-tag package execution and native255 before this exact source snapshot.",
+      "codeModifiedByReviewer": false
+    }
+  ],
+  "limitations": [
+    "This is a static review of the three recorded draft hashes, not a new workflow or SDK execution.",
+    "Root owns the single necessary53 affected portable/actionlint run. Reviewer ran no tests or cloud queries.",
+    "Native result and separate independent Package10 evidence must be accepted separately for the new exact source after execution; definitions and conditional structure are not passing methods.",
+    "Later draft changes require hash comparison and targeted review."
+  ],
+  "reviewerActions": {
+    "testExecutions": 0,
+    "cloudQueries": 0,
+    "gitOperations": 0,
+    "canonicalEdits": 0
+  }
+}

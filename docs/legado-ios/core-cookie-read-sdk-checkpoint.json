@@ -1,0 +1,956 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T06:14:53.855936+00:00",
+  "status": "coherent-source-only-SDK-repair-and-original-cookie-read-stage-prepared",
+  "sourceBinding": {
+    "changedCIFiles": [
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "snapshot": ".build/renewal-discovery/cookie-read-sdk-repair-step/portable-v1-sources/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 118487,
+        "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "snapshot": ".build/renewal-discovery/cookie-read-sdk-repair-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 121250,
+        "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93"
+      },
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "snapshot": ".build/renewal-discovery/cookie-read-sdk-repair-step/portable-v1-sources/.github/workflows/reader-renewal-probe.yml",
+        "bytes": 7881,
+        "sha256": "555da2b33c48bc4ba5e25918bac8ed721652e99606fdc9bdc256ce1c94258138"
+      }
+    ],
+    "sourceInputCount": 175,
+    "sourceInputs": [
+      {
+        "path": "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+        "bytes": 12818,
+        "sha256": "10f3ddfaddb05672dcd21eb0cb6274349d88a37bed4c292e3ecc7727c2c4ff08"
+      },
+      {
+        "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+        "bytes": 5954,
+        "sha256": "b46dc66a783217a91b60c3d3bf1233c758bd4d64ecdea72feee0428783e529d2"
+      },
+      {
+        "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+        "bytes": 17886,
+        "sha256": "7b7e0f66dd218ea4bf406a7b978a46a387260e6e15f2d0e34f2ed0150fcc8459"
+      },
+      {
+        "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+        "bytes": 24042,
+        "sha256": "da8339177b721d17f82e11a54316bf9a05b800b84ad611ff434152240c8015c5"
+      },
+      {
+        "path": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+        "bytes": 11995,
+        "sha256": "377e3913aa64ba4e18bd1f1cec4af58264505bd351648c8cdcbbb00c4e66403c"
+      },
+      {
+        "path": "Modules/Features/Settings/ProfileView.swift",
+        "bytes": 15885,
+        "sha256": "b9e3aa17582334166d4ef9c134db4b86f379165d428e7a238b5d719bb4bbbc0e"
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/AppDependencies.swift",
+        "bytes": 14527,
+        "sha256": "5477e4195a436e4ac79f8e434f3007d1b474c544eef2a09bf77534d2f2c11c63"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalTransportProbeTests.swift",
+        "bytes": 14787,
+        "sha256": "e0cf39b6f18693321d7307926e31553135cb1c5b7fbb4f1859a6e5357c42113f"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+        "bytes": 38717,
+        "sha256": "5abd8c20b26220f59971f22c02f23b78addc74fc3d98a248a99cc3a33e4aecc1"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
+        "bytes": 14675,
+        "sha256": "8d8c3c6f890d5bfc81ac9501ac59c3a9cb2a7049e075dc98f009653cdb534541"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
+        "bytes": 12456,
+        "sha256": "c6e0b9e146c12e605f56a38b3004cd53296092f78ca984be8bc76484a705ad90"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+        "bytes": 20349,
+        "sha256": "01089bc66d6dda4552733991d604a1d6a8871ab04ae12761624ee3c1b0446ec9"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift",
+        "bytes": 12377,
+        "sha256": "b295f587833e081771e3575f13ec5ca7763ab9d2f096ccf5926a50570e5e920d"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+        "bytes": 35758,
+        "sha256": "3234c9f95724cbe25646a03df7e975232c1cb1b3f2d77fe21ec2b1a623b33360"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
+        "bytes": 18684,
+        "sha256": "4c6bdda7ce187ae1e207fda2a62e0cc8fb859e4b2a2a8c203046b8ac5faf96f3"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+        "bytes": 13377,
+        "sha256": "281f0dca9aed6ccb62ad23d4783f3d4aaf885fa5ca250611a9f9b9fb284bc320"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalCodeDirectoryHashVerifierTests.swift",
+        "bytes": 24584,
+        "sha256": "c1d4eedc8116907166ef59953da3d7aa8f9f25131209609eeed57210c6dd7058"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 25565,
+        "sha256": "d835a75bdeb280173b388a943a018a672476898d50b309b1c21a04aaa28c9c57"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+        "bytes": 16456,
+        "sha256": "e7fc2366b6149ff5a5b1dde04e3f0c854cc3a8205135a8ed4dd60c42c934b8d2"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+        "bytes": 42388,
+        "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+        "bytes": 7474,
+        "sha256": "8bc4a8346c0e4c2e0f8b6f3e0fd454305a0241a096ad600bbc3ddb7ef9eaa8e9"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+        "bytes": 4163,
+        "sha256": "96b48293a4ff0eb9e0f3bd239cbdf79e4625d27901d3210fbe4c6bc398f127fc"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+        "bytes": 12752,
+        "sha256": "f62872ca82474ddfad24ef7a588312f4db78e6ddbe55e7541120d7fb3884ba3d"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeFixture.swift",
+        "bytes": 50946,
+        "sha256": "a553951f335fe9c88d657cc07a46735efd36b2289b6ca9d85cc23edc7320796a"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeVerifierTests.swift",
+        "bytes": 18365,
+        "sha256": "9a93c0756e5477a2244e80fa6145e8b220640a94c4c689b576c0b77ec7c7f119"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
+        "bytes": 31110,
+        "sha256": "4f3f7dce504d160abb4f4cd4b3ec709e106d6b69189c1afc57df9765bc9db6da"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalResourceFixture.swift",
+        "bytes": 3409,
+        "sha256": "e9f108cd9f3a811283daef171bb645dd7f2aff8729997d6d4c923b331cf9f6a2"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalResourceSealVerifierTests.swift",
+        "bytes": 15950,
+        "sha256": "33ae60052b44d549812841f033b16383cd6741a063f731e15b0acbacca1247cd"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalNestedCodeRequirementsVerifier.swift",
+        "bytes": 37070,
+        "sha256": "db9041d2dbb4d55a2f00b92ff1bd4826880354e4567fd01dec9bbe31cc715c0d"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift",
+        "bytes": 14983,
+        "sha256": "5c817ee56c006cc59e6365bd9b2306f9d8188c0a2c02d0127a634002ef309c77"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalNestedResourceFixture.swift",
+        "bytes": 134285,
+        "sha256": "c957d208e45c42be5d7ceb36ad13049aacbd1f164e5cd4ddf6ee7fffc049e2c0"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift",
+        "bytes": 8386,
+        "sha256": "93461f503492f663854eb97569efb010fb57257f3f29ac75605ef8ea874b5666"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+        "bytes": 12873,
+        "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalModernProfileFixture.swift",
+        "bytes": 60026,
+        "sha256": "48b6fc3bf16bfc98e634fe1890d7c8575bd66705cf9ea1768e581d7449201af0"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalModernProfileVerifierTests.swift",
+        "bytes": 9382,
+        "sha256": "7071edd4cdac7fecb34b0b0f5832d5ccab7d92bb8eb13c115399ffd2b6d87665"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+        "bytes": 140748,
+        "sha256": "eb9b966c9843518796926c5df2b932f571c88c8549e24531281eab1aa42f11f7"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialVerifierTests.swift",
+        "bytes": 8236,
+        "sha256": "13433ec41dc1e138cde39a7f8df115b44b772836d84b1009b24be5090b35c0e4"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/ModernParserBridge.swift",
+        "bytes": 137016,
+        "sha256": "e2593677fc90cf8cd0fe6c7e829103a7b7f9c4cdaaf0b23f83fb53a9c530f341"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/BookSourceRuntimeStateStore.swift",
+        "bytes": 10365,
+        "sha256": "1e519aa986e5514f0da6c4bd2244e1b153271cfdbeeba09d80b54263d0dedc82"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+        "bytes": 31235,
+        "sha256": "4eea6dad147dd4e5899d8a8d2fe574d5136e7127c0803c69a5c7312dca708a55"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift",
+        "bytes": 5730,
+        "sha256": "148daeed3604ead5d4aa8714bf3120c22bba8df10dbbe428521aba8b82d06844"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 32226,
+        "sha256": "152b28542a577294cdade7df29725879bc75d10881028736be049cc5820f3148"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 23985,
+        "sha256": "b9fc2b76fdd663730170f12742f641efcac651f371a4e206787c6cab84c8a800"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 18826,
+        "sha256": "74755c15ffc9298ab823463f42592e00967668f9e52c9f9d766701790394eaad"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+        "bytes": 25750,
+        "sha256": "5d1b7983a788f0c196e508866556d776d130f69d6d60ca4126a136c201f3a53c"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalIPAArchiveValidator.swift",
+        "bytes": 14905,
+        "sha256": "b963fd28cb91d89cccfa7ee9bf235cdf885c925f10f3c64fc82bcaeefbfe44bb"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+        "bytes": 42942,
+        "sha256": "98a16d46b88fbcaf135d1ebcde199f3f307357206254d356cbb8fad97862e1e7"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalIPAArchiveFixture.swift",
+        "bytes": 6376,
+        "sha256": "2d048181fbd7c73ec23e2f0cc13b510649119c786083c54361407db0809ebb45"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalIPAUnpackerTests.swift",
+        "bytes": 14845,
+        "sha256": "37ac273c2ceb41bdfdad3c1688cead40acdb030463645dfa796fe2a6b5af9150"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 30790,
+        "sha256": "c1a509098a9fc82193045549981ff32aafa5e545c4517442f68b4375ef834cd5"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+        "bytes": 9327,
+        "sha256": "86f6804669188243b3b7d24da999c427e79c13c20d60caf3636c870e6e7e26a1"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 21874,
+        "sha256": "ba8d963eaa13902aa7c3c9676240e3ec064847a84619db2fb36490e24d7f23f2"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+        "bytes": 38218,
+        "sha256": "eea8f0caae7d57ebfd39d0acedb6acab5e4a8840cfee53ab82d8509f35af6ca6"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift",
+        "bytes": 17372,
+        "sha256": "1dab5cb7bac5a581b7c21beeea4934591547a11892716d735324c8ec3c64ed26"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledSigningFixture.swift",
+        "bytes": 324858,
+        "sha256": "96e34dd3ea7da9da9b7cdcca5fb4eac48b6da68deec8f0a1f8ec365124112b79"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+        "bytes": 5373,
+        "sha256": "19a0a52211c83ee22810db32fcc9d4dabcc3e89d13f06ead3e5fa824dcc60593"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "bytes": 4792,
+        "sha256": "e52ff760d2d8ffa094283f531ae140962bb38f91e990771f353cf357c7b99a60"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+        "bytes": 18839,
+        "sha256": "62a4c1d185253d5498f74a9875d18ac0b1f56ce0e8c5b1a08866f3097d4b715c"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift",
+        "bytes": 11996,
+        "sha256": "e6996f827b983ee99ee783e05a49231df7986f0f12743fbb74d368316c119bbe"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+        "bytes": 27606,
+        "sha256": "4c7203df3802cb9280fe3652ceb41ef5f936db033b1a9ec9e7dcb65d5ae72abc"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "bytes": 657444,
+        "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSDKOwnedPackageFixture.swift",
+        "bytes": 2177,
+        "sha256": "a74dcba19485897625b560fb4ec4b4424a278b0d6d58e58ac4c2acf95ceb4461"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+        "bytes": 22419,
+        "sha256": "d5763684d33f58212fc1e08761da08f4267acde4ea057942dce6087fe3b66687"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 27643,
+        "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 29747,
+        "sha256": "57215e622bbf0a1196e5c056d5ec2c87b8ecee5109214f3903998e40360cd467"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 12428,
+        "sha256": "4523c5ba86b945d67cc812ea8c5504920278ae8f664c7f0e06ef044cceb54083"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BookChapterStore.swift",
+        "bytes": 18475,
+        "sha256": "c00618a89d7a1b5035962a18cb0d5a0ff56f81e5a340050408412aa356461849"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BookStore.swift",
+        "bytes": 204268,
+        "sha256": "ec72751bbb5f30fa8337010d67678ab45c27ef0e8e7fb1677dde728993f6e189"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+        "bytes": 762,
+        "sha256": "b7e8deae03869cc8ffb7998baa70fae785b95cf7c39ecafcae27ccd9438bef18"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoBookStateOwner.swift",
+        "bytes": 10077,
+        "sha256": "bf7260d8d34ccfd56dc4386aa21cb6df7f03321848a82d689c7ea1eec8b9f9aa"
+      },
+      {
+        "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+        "bytes": 52164,
+        "sha256": "c3439fc44757c2dc056786c5e40f91dc074e335b86d4ca1b7d05835b6fa5ca2c"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoChapterOwnerPersistenceTests.swift",
+        "bytes": 9271,
+        "sha256": "be7dcd4200cdb87fd9c7ca48b6489e064614606561f95dd34e79f3a0b2de1f0d"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoBookStateOwnerTests.swift",
+        "bytes": 12763,
+        "sha256": "6eebe2e0370796c9cccfad0696d994cbe9af774fc3a3114f4e92942b8b8b4c36"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookChapterStorageTests.swift",
+        "bytes": 19979,
+        "sha256": "220a93d04334922d16e003e90e673c47a1ffe1ea278ee400212305d32c2a1d05"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/Models.swift",
+        "bytes": 48575,
+        "sha256": "5cc34425e1edbea44972a9f7277e1d0f29cd4ffce0f48d2d5017067dcc746478"
+      },
+      {
+        "path": "Modules/Core/BookSource/BookSource.swift",
+        "bytes": 46931,
+        "sha256": "682cdd47ee99602a49c8b9389e049ad2b9c3b2e827b4a8e354485243a7a30c2f"
+      },
+      {
+        "path": "Modules/Core/BookSource/SourcePerfTrace.swift",
+        "bytes": 3788,
+        "sha256": "d77b01929cde847fb62c9a4820c9135286abc783d4af1f94056dc0c476f0a934"
+      },
+      {
+        "path": "Modules/Core/TTS/AudiobookPlayer.swift",
+        "bytes": 70001,
+        "sha256": "9581645c7cf0b0017dec9f966f41069e678b5d7cf42776ab321a638317ffef93"
+      },
+      {
+        "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+        "bytes": 23240,
+        "sha256": "ad2e75d395b8a7578e760aa01a301297b6ce2d998395fc8509625d61d6e4d7bd"
+      },
+      {
+        "path": "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+        "bytes": 7779,
+        "sha256": "c75489cf86de2c4d29140463da3aa310783290d8df66c70c0ac99cb93671168e"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 121250,
+        "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 30463,
+        "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 9258,
+        "sha256": "17ecc9cd83eadc5ae1ebbc37762636bbc90664f71106f89f1e011d50c516d6ba"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-independent-package-fixtures.py",
+        "bytes": 15349,
+        "sha256": "a6162cc1153bc36438171a78e97e106a93e184860dffcbd24723f176d21a4fc3"
+      },
+      {
+        "path": "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
+        "bytes": 3370,
+        "sha256": "301f8bbfa39ad2d3de8db6ca25206265d02b3aac34cb04863b7f6df02dca67eb"
+      },
+      {
+        "path": "Info.plist",
+        "bytes": 8513,
+        "sha256": "0bfbe9427cda288367228f1c990976c09b40371c13f6f1ccf89fd1efbd8eb7c8"
+      },
+      {
+        "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+        "bytes": 55843,
+        "sha256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 118487,
+        "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1"
+      },
+      {
+        "path": "scripts/reader-experience/inspect-renewal-report.py",
+        "bytes": 23173,
+        "sha256": "c163c643583218d46088a3bbe84b01b8bb9337c5e0ad872a7682aadb3f41e26f"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-report-schema1.py",
+        "bytes": 13187,
+        "sha256": "fcc1d82ec99af4ce4a576cce9e2992f0099b7da0f3c7f8933dd018178890bd8b"
+      },
+      {
+        "path": "scripts/reader-experience/test-inspect-renewal-report.py",
+        "bytes": 28632,
+        "sha256": "4a0f315319320527ecd5e775044d15bab08ec69ed6fd0763918d747740c72641"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 41311,
+        "sha256": "e68f243ddf7792a89f8c922e8bfd9a0076c01bee3b3c167d89e83a7cb082ea66"
+      },
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+      },
+      {
+        "path": "scripts/reader-experience/stage-config.py",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+      },
+      {
+        "path": "scripts/xctest.sh",
+        "bytes": 7631,
+        "sha256": "fc3b9a2c45506b07d75945c571866396ad02f4cbe12f7125b3e930ef5b180da2"
+      },
+      {
+        "path": "scripts/sim.sh",
+        "bytes": 10507,
+        "sha256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a"
+      },
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 7881,
+        "sha256": "555da2b33c48bc4ba5e25918bac8ed721652e99606fdc9bdc256ce1c94258138"
+      },
+      {
+        "path": "Resources/zh-Hant.lproj/Localizable.strings",
+        "bytes": 247585,
+        "sha256": "c032f2f1b5ba98472d781d8a807001d1538ce22e7dae6a676c4d89b909f12516"
+      },
+      {
+        "path": "Resources/zh-Hant.lproj/InfoPlist.strings",
+        "bytes": 623,
+        "sha256": "8a97713e4a0a3e3635b5bb81ed0adc2b752d4176abc8119f7ccdad05bbe29f40"
+      },
+      {
+        "path": "Resources/zh-Hans.lproj/Localizable.strings",
+        "bytes": 249786,
+        "sha256": "5892c6636a9277b9093b86d1223eed5bdc52f6f89a7b5fce87e574eb077651ec"
+      },
+      {
+        "path": "Resources/zh-Hans.lproj/InfoPlist.strings",
+        "bytes": 626,
+        "sha256": "09fc597771f0ad39c27906290da9bca6a7c928c24f2dbb7d25393e12c272755f"
+      },
+      {
+        "path": "Resources/en.lproj/Localizable.strings",
+        "bytes": 262488,
+        "sha256": "18dcce0bcc51c3e6921255ae106fc8cbb0559d51ae1ac2f11a650b98a1d764b5"
+      },
+      {
+        "path": "Resources/en.lproj/InfoPlist.strings",
+        "bytes": 664,
+        "sha256": "d135897be4c7f182d3fa976ed8eea5ca0f60e4676920de573da4aa613ed0a65e"
+      },
+      {
+        "path": "Resources/ja.lproj/Localizable.strings",
+        "bytes": 318658,
+        "sha256": "2605387b9f0427c22c6594a9a1c0dfd90ffbdcc3f764dfd42d1370c90ed94c3b"
+      },
+      {
+        "path": "Resources/ja.lproj/InfoPlist.strings",
+        "bytes": 785,
+        "sha256": "cc0854793b15756eaca678083b8fc2e4d5fdb9e7653597cfb43116219f573c34"
+      },
+      {
+        "path": "Resources/ko.lproj/Localizable.strings",
+        "bytes": 295460,
+        "sha256": "18d908b9d46c947290ffa9185b67cecf3fb60ace2cfbb2c70ef227a08d829d64"
+      },
+      {
+        "path": "Resources/ko.lproj/InfoPlist.strings",
+        "bytes": 703,
+        "sha256": "387327bf9e4664bb3f449d14189dd1c6252d0ac43c3ac1e3df101277d2331c6b"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+        "bytes": 42289,
+        "sha256": "db70372fe0a2ca6083d350cd07846fd9431406899e1a22c414cb6f16058a7ecc"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+        "bytes": 17307,
+        "sha256": "92dce2dc1f8154a506c3dd107fadd68a63b0369481d20217a9eaf2f1903538f5"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift",
+        "bytes": 12137,
+        "sha256": "038e79c42b6305bf6c06a173bd08c78a968d068c36ccf5f0d25f627a4c71389c"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalTransactionJournalTests.swift",
+        "bytes": 8366,
+        "sha256": "1547b6fb8e9063c97db9c0e2f958ca42e71b2bda72fb75ef116c1dfa4e154747"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledRenewalCoordinatorTests.swift",
+        "bytes": 16471,
+        "sha256": "d47813428392b3186fd9c06f2f60a4c037278b2868d8f20631a3ff742b24fd00"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalInstallationRecoveryTests.swift",
+        "bytes": 21179,
+        "sha256": "4d04c099a28dbdef01ab642f2ab9e401edeb443a17907ec5b3b97b7fa43688aa"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoBookMetadataOwnerTests.swift",
+        "bytes": 19836,
+        "sha256": "0f7a143d4daf89829b83abf05f3d36a079b4861fbe46a01c588279d0735f2fb1"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookStoreShelfRecoveryTests.swift",
+        "bytes": 4419,
+        "sha256": "89b7aba03e52911f3cdb532078a542b7c1c1e4ffa5aaa6013bdb1a1c06028464"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookStoreMetadataWriteBudgetTests.swift",
+        "bytes": 6123,
+        "sha256": "9562a3945a974bfe80ff8ec20a1f93db4ef9bd7893ae940b24a02f787fba23f0"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookStoreBackgroundPublishTests.swift",
+        "bytes": 8310,
+        "sha256": "5d0425f543502e906fe8baab76301d104fb3085a4c1efa71d00b0e9eeba38642"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/TXTReaderIndexMigrationTests.swift",
+        "bytes": 11647,
+        "sha256": "37c9785515e30db7f28cb75461d7535449c4c3724e891bc5674dbb50fe49b996"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/AozoraTXTTests.swift",
+        "bytes": 15547,
+        "sha256": "a980c7164e970f82947ab724c9f81799cdb657ea760ddbb8b5c166eaeadcba82"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
+        "bytes": 21155,
+        "sha256": "dba0dddea02f696d82f73dd80d39a5d60d26b3e3ff81ce533ff273770bd274eb"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift",
+        "bytes": 10804,
+        "sha256": "6e7c9d9ae4c00db60e5a04b9bc0917be1c1b653f8190c39f00c900fb1b260ca7"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BackgroundTaskHold.swift",
+        "bytes": 1239,
+        "sha256": "0f22c56ed218e89b26c6ccfe95cb0de52d0010a2e2ba2acca1600b3cdcfa32ef"
+      },
+      {
+        "path": "Modules/Core/TXT/TXTReaderIndexMigrationService.swift",
+        "bytes": 11856,
+        "sha256": "353cfa17eea1bf783b3540df690a6ade139200978782d08b32f664d6912a3c32"
+      },
+      {
+        "path": "Modules/Core/TXT/TXTReaderPreparationService.swift",
+        "bytes": 4156,
+        "sha256": "f48e5b80f7623e815d93cb666551ab47845b48fd0fb5b7e2ed8791978e76d99f"
+      },
+      {
+        "path": "Modules/Core/TXT/TXTLocationMigration.swift",
+        "bytes": 5721,
+        "sha256": "d6891977c68d4deb2c59f9c7a684ac06b16b57cb8d69b8a67d5f1773fa704246"
+      },
+      {
+        "path": "Modules/Core/TXT/TXTChapterParser.swift",
+        "bytes": 42463,
+        "sha256": "f1ca0cf6a7960a83dce730a0239d328ddb72875f9960604dde13e973ff11b87c"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+        "bytes": 15862,
+        "sha256": "97fab13d790e908f898551f23b47e024971de4bb2433660a5d9a8a85424f959f"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+        "bytes": 6133,
+        "sha256": "4e7d2a454531b3a50e23c5787b4f708b222b62035b9cd529e477917525b41136"
+      },
+      {
+        "path": "Modules/Services/WebDAV/WebDAVRestoreTransaction.swift",
+        "bytes": 17842,
+        "sha256": "a6340681111e439bf6e66de56b1e43b3ce98402e3c54fa17169a000580f0e773"
+      },
+      {
+        "path": "Modules/Services/WebDAV/WebDAVManager.swift",
+        "bytes": 18617,
+        "sha256": "93a88acf6efda4c1b9de07f5764e0806d08eecd64601e9ba8f3c3ad15c94f636"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+      },
+      {
+        "path": "Modules/Core/BookSource/BookSourceStore.swift",
+        "bytes": 66909,
+        "sha256": "c25e62b035d987bece0a73f96023cb63c7a7e760cec769d59cc61a004d36b503"
+      },
+      {
+        "path": "Modules/Core/BookSource/BuiltInBookSourceBootstrap.swift",
+        "bytes": 8820,
+        "sha256": "a7ba7a308038e531fa69b8c59dc95199ddf28d4581693757835da3b43d62d669"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReaderNavigator.swift",
+        "bytes": 10987,
+        "sha256": "270f7a8be63fd235ae6a9386ff63dd8a8106e19da6bae7a3465be8566e1d15d6"
+      },
+      {
+        "path": "Modules/Features/Reader/ReaderView.swift",
+        "bytes": 151280,
+        "sha256": "b4fcb9fc49c442557938bf2641a8b26e9bd8f57cec5def959c957972fbf33336"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalInstalledMaterialObserver.swift",
+        "bytes": 9704,
+        "sha256": "51ce7f14efffe7524a0f1de6e3d815182853086f47b1ecc348491e975bd6055b"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift",
+        "bytes": 8838,
+        "sha256": "3e21a869f1279fb5127842ed0aa2538ff277039a3e0372783a01961974435a03"
+      },
+      {
+        "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+        "bytes": 25865,
+        "sha256": "ab701eb65888d443fa4ea137d4061052a448f3bc25f8880f4f899a0103167b6f"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalInstalledMaterialObserverTests.swift",
+        "bytes": 7245,
+        "sha256": "bf50f1b5ce9811d03a5cbd74857e2204f900e49c5e5a5fa2e1517549e4efecb5"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+        "bytes": 13470,
+        "sha256": "79fb69cd8ba2e24d53154da685e6110614167c4023b6ff856a85988f24484c1d"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookStoreMetadataHandoffTests.swift",
+        "bytes": 27594,
+        "sha256": "694297f4722bf753f62d795297aa3570c8514e076354a57a042e72f53db465f8"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceStoreHandoffTests.swift",
+        "bytes": 18317,
+        "sha256": "fbf968792591e8efcd897d2dfabaee60093614cc3ed22a98acf8a121b9a4f1a4"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+        "bytes": 16610,
+        "sha256": "db94b429841a70992b2b0bca762b45eb9ff5c3b7cfcfe8dd977bfa0998e05d62"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+        "bytes": 25425,
+        "sha256": "046758252dfd596f023f716751e08e034460182268c5a9a42051344fb84e9181"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceStoreTests.swift",
+        "bytes": 23471,
+        "sha256": "0b039dac9aeaf6896cbc2b3d54cb67676b26e8f784b27ef43a9b319247d21ec2"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BuiltInBookSourcesTests.swift",
+        "bytes": 17259,
+        "sha256": "9769a172836ab75b1dc8a97ec41c7ffa6cea2d66c02909c1727335a2b7815435"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "bytes": 11655,
+        "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+        "bytes": 24656,
+        "sha256": "4f792b3b6043f6c2116692e8199da72302654d26cf2d01739450fa9bf966718f"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookieStore.swift",
+        "bytes": 9550,
+        "sha256": "d52525b8710640aef3b176457ab7e2609165844ed4fb2880206b81b1fcac683d"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/JS/JSCoreEngine.swift",
+        "bytes": 80587,
+        "sha256": "81cf7b8841269323f9e4ef1bf66ffc75efb7c853c6f03e10f2e8630642141f31"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+        "bytes": 9291,
+        "sha256": "e0934fb37b1085b5af79911c6696d910258c155d53726da70c06b31de3a634af"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoJSBridge.swift",
+        "bytes": 109307,
+        "sha256": "1ef604b1b84e6aa4bc386f7b543b43246f6c59448a2ea0f80f6938cbfbb1b752"
+      },
+      {
+        "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+        "bytes": 45513,
+        "sha256": "29f14beb342e494be38f6c59f5f9410269c82a4d85f8791984cbedbb5a5bbb2f"
+      },
+      {
+        "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+        "bytes": 42245,
+        "sha256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47"
+      },
+      {
+        "path": "Modules/Features/Reader/ReaderView+Toolbars.swift",
+        "bytes": 30189,
+        "sha256": "fac942d0f9227ba4e23f08d04eeb20ced65ccbf69db50c0e5fb00b31508250f6"
+      },
+      {
+        "path": "Modules/Features/WebBrowser/BrowserView.swift",
+        "bytes": 51848,
+        "sha256": "2685742aa8bc6ec3a9d412b2adce5f06728082b84df71a3e06a692bc5779e56a"
+      },
+      {
+        "path": "Modules/Services/Network/CookieStore+HTTP.swift",
+        "bytes": 5399,
+        "sha256": "a7efafbaf5e9fce3744f3d4564544cf89d7bf3354d6a9a20d4937482502d153f"
+      },
+      {
+        "path": "Modules/Services/Network/CookieStore+WebKit.swift",
+        "bytes": 1080,
+        "sha256": "8e1d77ae6ecbf233c5c01b7f0918bb3c099bfc8d3d39523cf0c5dccc219f70a9"
+      },
+      {
+        "path": "Modules/Services/Network/WebFetcher.swift",
+        "bytes": 9130,
+        "sha256": "fecb558cbea54895716dc8bc64f817976a31e93f043c8bc97e6f8e546bd9ebb8"
+      },
+      {
+        "path": "Modules/Services/Network/WebViewCookieMirror.swift",
+        "bytes": 3146,
+        "sha256": "f995e49eb78b5f8ce8f4f9828b80598f0fec2b7469c0fac84dc46d32c8531723"
+      },
+      {
+        "path": "Modules/Services/Network/WebViewFetcher.swift",
+        "bytes": 37020,
+        "sha256": "43f550f773927845b23ef918aa847eb7bfab374f4f83f34f006c084527364dd7"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoReviewActionRunner.swift",
+        "bytes": 20510,
+        "sha256": "d06faeadacb1650e0aaa68ae0a74632601a919298ba3bf80f6118ac55bbb0b1c"
+      },
+      {
+        "path": "Modules/SharedUI/Components/SourceLoginWebView.swift",
+        "bytes": 12942,
+        "sha256": "28bf848be9279b0c55b23c81eef61067e6a10d8322769b5cce71c30c1f6b8289"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+        "bytes": 35210,
+        "sha256": "151bca86965fb5d5e7ada000616b747602f8c06aef83c83716c28ecc16bc5aa8"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SourceBrowserAuthenticationTests.swift",
+        "bytes": 14407,
+        "sha256": "8202016900cbaf3e3b90658dacca0e0b6ce26471055a69b5d34d84a042999c40"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/WebFetcherPersistedCookieTests.swift",
+        "bytes": 3376,
+        "sha256": "df79684c1ad004896fd4345a07455a500a9c9ccc3ce5686ca91ef157234cd1ef"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/WebFetcherChallengeResponseTests.swift",
+        "bytes": 3893,
+        "sha256": "e2e58b3f471895f8a27161139b229afe211af0d452e372a346bf7825f8844df5"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/StageLoginCheckTests.swift",
+        "bytes": 5808,
+        "sha256": "900b9cb3d371605fc32738be02a4097c5c21a2d27f386a1b8a49e613577cbcb7"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+        "bytes": 34104,
+        "sha256": "52780868727ef37a28d2ca81d71550fdcd8ab64165d32fdb598eed7365710322"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ModernParserTests.swift",
+        "bytes": 176580,
+        "sha256": "74b120c4d21e073639b6c7a739b849a1471b26629b65680bf88c61b283439d63"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/WebViewNavigationWaitTests.swift",
+        "bytes": 1190,
+        "sha256": "d321f63b1ab6a44ec06b344294014c9ed177f8fecdabd57a19bb59c7bbfd3046"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoCookieReadHostTests.swift",
+        "bytes": 6950,
+        "sha256": "288c21ae57e32df49be25c6077852d6471019fee2af1e1716fa813d5ed538b50"
+      }
+    ]
+  },
+  "nativeSelection": {
+    "mode": "handoffrenewal",
+    "qualifiedMethodDefinitions": 253,
+    "exactPlannedArgumentLeaves": 255,
+    "previousDefinitionsRetained": 251,
+    "newCookieReadDefinitions": 2,
+    "singleColdNativeBudgetSeconds": 2700,
+    "requiredSameJobSDKFixture": true,
+    "actualSDKExecuted": 0
+  },
+  "separateSwiftPM": {
+    "methodDefinitions": 10,
+    "exactSourceInputs": 19,
+    "compilationInputs": 12,
+    "newTagRerunRequired": true,
+    "reason": "The integrated Cookie read option changes Package LegadoRuntime.swift; the historical Package12 pass cannot be reused for this compilation source.",
+    "actualNewTagExecutions": 0,
+    "neverCountedInNative255": true
+  },
+  "actualCIChanges": [
+    "Separate immutable source validation from portable guards. Actual guard failure remains red while source-valid toolchain/native diagnostics get their independent allocation.",
+    "Pass the actual guards step outcome into the native process and hash-bound phase source state. Final result rejects every outcome except success, including missing metadata.",
+    "Retain all old251 native definitions and required SDK-produced case, add both actual Cookie-read host methods and bind their source file.",
+    "Preserve the earlier real phase ledger/first failure, single cold build, exact arguments, strict original xcresult exports and same-job source/built/runtime SDK resource requirements.",
+    "Re-execute independent Package10 after its real compilation input changed. Historical ten-case evidence stays separate and cannot satisfy this tag."
+  ],
+  "validation": {
+    "actualLocalPortableMethodsPassed": 53,
+    "failed": 0,
+    "skipped": 0,
+    "actualActionlintExitCode": 0,
+    "unchangedBashSyntaxReusedFrom": "docs/legado-ios/evidence/core-handoff-renewal-sdk-checkpoint/initial-run/renewal-shell-syntax.log",
+    "independentStaticReview": "evidence/core-cookie-read-sdk-checkpoint/independent-ci-review-v2.json",
+    "actualMacRepairOrNativeExecution": 0
+  },
+  "remaining": [
+    "Real Mac timeout cleanup and actual codesign identity acceptance remain unverified.",
+    "All255 exact native leaves and new-tag independent Package10 still need real SDK evidence.",
+    "Separate original Cookie text-write and S5 retirement drafts are excluded from this immutable stage until their source reviews finish.",
+    "Full App traditional route/JNI, S2 authority/configuration, S5 startup, S6 triggers, real installation/cold launch/all data retention and unattended renewal remain unfinished."
+  ],
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-cookie-read-sdk-checkpoint",
+    "manifest": "manifest.json",
+    "rawFiles": 7
+  },
+  "newCloudBuildRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

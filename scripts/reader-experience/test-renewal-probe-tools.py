@@ -50,7 +50,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.write(self.root / path, data)
         self.environment = {"GITHUB_SHA": SOURCE, "GITHUB_REF_NAME": "reader-renewal-aaaaaaa",
                             "LEGADO_RUNTIME_SOURCE_ONLY": "1", "YUEDU_DEST": "id=synthetic-simulator",
-                            "YUEDU_RENEWAL_SELECTION": "all"}
+                            "YUEDU_RENEWAL_SELECTION": "all", "YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME": "success"}
 
     def write(self, path, data):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -241,7 +241,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(len(record["intendedTests"]["replacement"]), 5)
             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
             paths = {item["path"] for item in record["sourceInputs"]}
-            self.assertEqual(len(record["sourceInputs"]), 174)
+            self.assertEqual(len(record["sourceInputs"]), 175)
             self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
                              "scripts/reader-experience/renewal-report-schema1.py",
                              "scripts/reader-experience/test-inspect-renewal-report.py",
@@ -558,7 +558,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "implementation")
             self.assertEqual(inputs["intendedTests"], expected)
             self.assertEqual(sum(map(len, expected.values())), 11)
-            self.assertEqual(len(inputs["sourceInputs"]), 174)
+            self.assertEqual(len(inputs["sourceInputs"]), 175)
             for group in ("unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
@@ -656,7 +656,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "signature")
             self.assertEqual(inputs["intendedTests"], {"signature": sorted(probe.EXPECTED_CASES["signature"])})
             self.assertEqual(len(inputs["intendedTests"]["signature"]), 9)
-            self.assertEqual(len(inputs["sourceInputs"]), 174)
+            self.assertEqual(len(inputs["sourceInputs"]), 175)
             for group in ("unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
@@ -732,7 +732,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "cryptography")
             self.assertEqual(inputs["intendedTests"], {"cryptography": sorted(probe.EXPECTED_CASES["cryptography"])})
             self.assertEqual(len(inputs["intendedTests"]["cryptography"]), 25)
-            self.assertEqual(len(inputs["sourceInputs"]), 174)
+            self.assertEqual(len(inputs["sourceInputs"]), 175)
             for group in probe.EXPECTED_CASES:
                 if group == "cryptography":
                     continue
@@ -824,7 +824,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             expected = probe.EXPECTED_CASES["sealedmaterials"]
             self.assertEqual(inputs["selectionMode"], "sealedmaterials")
             self.assertEqual(inputs["intendedTests"], {"sealedmaterials": sorted(expected)})
-            self.assertEqual(len(inputs["sourceInputs"]), 174)
+            self.assertEqual(len(inputs["sourceInputs"]), 175)
             self.assertEqual(len(expected), 48)
             self.assertTrue(probe.EXPECTED_CASES["cryptography"] | probe.EXPECTED_CASES["materials"] <= expected)
             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE,
@@ -926,7 +926,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             expected = probe.EXPECTED_CASES["boundmaterials"]
             self.assertEqual(inputs["selectionMode"], "boundmaterials")
             self.assertEqual(inputs["intendedTests"], {"boundmaterials": sorted(expected)})
-            self.assertEqual(len(inputs["sourceInputs"]), 174)
+            self.assertEqual(len(inputs["sourceInputs"]), 175)
             self.assertEqual(len(expected), 78)
             self.assertTrue(probe.EXPECTED_CASES["sealedmaterials"] <= expected)
             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE, probe.PROFILE_SUITE,
@@ -1063,7 +1063,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         workflow = (HERE.parent.parent / ".github/workflows/reader-renewal-probe.yml").read_text(encoding="utf-8")
         self.assertIn('YUEDU_RENEWAL_SELECTION: handoffrenewal', workflow)
         self.assertIn('LEGADO_RUNTIME_SOURCE_ONLY: \'1\'', workflow)
-        self.assertIn('251 unique qualified native method definitions', workflow)
+        self.assertIn('253 unique qualified native method definitions', workflow)
         self.assertIn('do not establish Apple/device/account authorization', workflow)
 
     def test_controlledsigning_requires_only_its_twenty_three_exact_native_leaves(self):
@@ -1071,7 +1071,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.built_fixture()
             inputs = smoke.read_json(self.work / "source-inputs.json")
             expected = probe.EXPECTED_CASES["controlledsigning"]
-            self.assertEqual(len(inputs["sourceInputs"]), 174)
+            self.assertEqual(len(inputs["sourceInputs"]), 175)
             self.assertEqual(inputs["intendedTests"], {"controlledsigning": sorted(expected)})
             self.assertEqual(len(expected), 23)
             suites = (probe.IPA_SUITE, probe.VAULT_SUITE, probe.CONTROLLED_SIGNER_SUITE)
@@ -1079,7 +1079,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual({mode: sum(len(probe.EXPECTED_CASES[group]) for group in groups)
                               for mode, groups in probe.SELECTION_GROUPS.items()},
                              {"all": 30, "replacement": 5, "implementation": 11, "signature": 9,
-                              "cryptography": 25, "sealedmaterials": 48, "boundmaterials": 78, "controlledsigning": 23, "integratedrenewal": 140, "transactionrenewal": 178, "handoffrenewal": 251})
+                              "cryptography": 25, "sealedmaterials": 48, "boundmaterials": 78, "controlledsigning": 23, "integratedrenewal": 140, "transactionrenewal": 178, "handoffrenewal": 253})
             for group in probe.EXPECTED_CASES:
                 if group != "controlledsigning":
                     for suffix in ("-summary.json", "-tests.json"):
@@ -1169,7 +1169,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertNotIn('LegadoOriginalAPITests', body)
         workflow = (HERE.parents[1] / ".github/workflows/reader-renewal-probe.yml").read_text(encoding="utf-8")
         self.assertIn('YUEDU_RENEWAL_SELECTION: handoffrenewal', workflow)
-        self.assertIn('251 unique qualified native method definitions', workflow)
+        self.assertIn('253 unique qualified native method definitions', workflow)
         self.assertIn('ten-case source-only SwiftPM pass at a835f8b', workflow)
         self.assertIn('unattended renewal', workflow.lower())
 
@@ -1181,8 +1181,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(len(additional), 39)
         self.assertEqual(expected, probe.EXPECTED_CASES["boundmaterials"] | probe.EXPECTED_CASES["controlledsigning"] |
                          additional)
-        self.assertEqual(len(probe.SOURCE_INPUTS), 174)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 174)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 175)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 175)
         for path in probe.SOURCE_INPUTS:
             self.assertTrue((HERE.parents[1] / path).is_file(), path)
         selected_suites = {case.split("/")[0] for case in expected}
@@ -1444,8 +1444,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertIn("!cancelled() && steps.toolchain.outcome == 'success'", workflow)
         self.assertIn('private keys/P12/passwords are never artifact members', workflow)
         self.assertIn('original-api-package-tests.sh', workflow)
-        self.assertEqual(len(probe.SOURCE_INPUTS), 174)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 174)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 175)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 175)
         for path in probe.SOURCE_INPUTS: self.assertTrue((HERE.parents[1] / path).is_file(), path)
 
 
@@ -1473,7 +1473,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                 row['wrapperReportedBudgetTimeout'] = False
             self.write_json('handoff-phase-' + name + '.json', row); rows.append(row)
         ledger = {'schemaVersion': 1, 'selectionMode': 'handoffrenewal', 'source': source,
-                  'qualifiedMethodDefinitions': 251, 'argumentLeaves': 253, 'phaseOrder': list(probe.HANDOFF_PHASES),
+                  'qualifiedMethodDefinitions': 253, 'argumentLeaves': 255, 'phaseOrder': list(probe.HANDOFF_PHASES),
                   'phases': rows, 'firstFailure': None, 'allPhasesSucceeded': True}
         self.write_json('historical-package-evidence.json', probe.historical_package_evidence())
         ledger['phaseRecords']=[probe._handoff_fact(self.work,'handoff-phase-'+name+'.json') for name in probe.HANDOFF_PHASES]
@@ -1486,15 +1486,15 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(expected, probe.EXPECTED_CASES['transactionrenewal'] | probe.HANDOFF_ADDITIONAL_CASES)
         self.assertEqual(sum(map(len, probe.HANDOFF_NEW_CASES.values())), 27)
         self.assertEqual(sum(map(len, probe.HANDOFF_REGRESSION_CASES.values())), 17)
-        self.assertEqual(len(expected), 251); self.assertEqual(probe.expected_leaf_count('handoffrenewal'), 253)
+        self.assertEqual(len(expected), 253); self.assertEqual(probe.expected_leaf_count('handoffrenewal'), 255)
         self.assertIn(probe.SDK_REQUIRED_CASE, expected)
         self.assertEqual(probe.expected_leaf_count('transactionrenewal'), 180)
         self.assertEqual(len(probe.EXPECTED_CASES['integratedrenewal']), 140)
         actual = set()
-        for suite in set(probe.HANDOFF_NEW_CASES) | set(probe.HANDOFF_REGRESSION_CASES):
+        for suite in set(probe.HANDOFF_NEW_CASES) | set(probe.HANDOFF_REGRESSION_CASES) | set(probe.HANDOFF_COOKIE_READ_CASES):
             source = (HERE.parents[1] / ('Tests/iOS/yuedu appTests/' + suite + '.swift')).read_text(encoding='utf-8')
             methods = set(re.findall(r'(?m)^\s*func\s+(\w+)\s*\(', source))
-            selected = set(probe.HANDOFF_NEW_CASES.get(suite, [])) | set(probe.HANDOFF_REGRESSION_CASES.get(suite, []))
+            selected = set(probe.HANDOFF_NEW_CASES.get(suite, [])) | set(probe.HANDOFF_REGRESSION_CASES.get(suite, [])) | set(probe.HANDOFF_COOKIE_READ_CASES.get(suite, []))
             self.assertLessEqual(selected, methods)
             if suite.startswith('ReadingPosition'):
                 self.assertEqual(selected, {name for name in methods if name.startswith('test')})
@@ -1513,7 +1513,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(sum(map(len,probe.HANDOFF_COOKIE_REGRESSION_CASES.values())),16)
         self.assertEqual(actual, probe.HANDOFF_ADDITIONAL_CASES)
         checked = probe.verify_cases(self.tree('handoffrenewal'), 'handoffrenewal')
-        self.assertEqual(checked['expectedTests'], 253)
+        self.assertEqual(checked['expectedTests'], 255)
         for mode in probe.SELECTION_GROUPS:
             if mode == 'handoffrenewal': continue
             with self.subTest(mode=mode), self.assertRaises(ValueError):
@@ -1536,7 +1536,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(native[native.index('-t')+1], '2700')
             selected = [value.removeprefix('-only-testing:yuedu appTests/') for value in native if value.startswith('-only-testing:')]
             expected = {case + ('(interrupt:)' if case in probe.PARAMETER_CASES else '') for case in probe.EXPECTED_CASES['handoffrenewal']}
-            self.assertEqual(set(selected), expected); self.assertEqual(len(selected), 251)
+            self.assertEqual(set(selected), expected); self.assertEqual(len(selected), 253)
             self.assertNotIn('test', commands['build-settings'])
             self.assertEqual(commands['test-settings'][-1], 'test')
             self.assertIn('-showBuildSettings', commands['test-settings'])
@@ -1546,8 +1546,10 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertLess(wrapper.index('run-handoff --work'), wrapper.index('generate-sdk-owned-package.py'))
         workflow = (HERE.parents[1]/'.github/workflows/reader-renewal-probe.yml').read_text(encoding='utf-8')
         self.assertIn('YUEDU_RENEWAL_SELECTION: handoffrenewal', workflow)
-        self.assertIn('253 actual execution leaves', workflow)
-        self.assertNotIn("env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal'", workflow)
+        self.assertIn('255 actual execution leaves', workflow)
+        self.assertIn("env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal'", workflow)
+        self.assertIn("steps.source.outcome == 'success'", workflow)
+        self.assertIn("YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME: ${{ steps.guards.outcome }}", workflow)
         self.assertNotIn('.build/reader-renewal-sdk-produced-public/', workflow)
         self.assertIn('test-producer-timeouts.py', workflow)
 
@@ -1608,9 +1610,12 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         with self.context(), patch.dict(os.environ, {'YUEDU_RENEWAL_SELECTION':'handoffrenewal','DEVELOPER_DIR':'owned-toolchain'}), patch.object(probe,'historical_package_evidence',return_value={'historicalOnly':True}):
             self.built_fixture(); self.sdk_runtime_fixture(); self.transaction_details_fixture(group='handoffrenewal')
             with self.assertRaises(FileNotFoundError): probe.result(self.work)
-            ledger = self.handoff_ledger_fixture(); accepted = probe.result(self.work)
-            self.assertEqual(accepted['targetedTests']['handoffrenewal']['expectedTests'],253)
-            self.assertEqual(accepted['targetedTests']['handoffrenewal']['expectedQualifiedMethodDefinitions'],251)
+            ledger = self.handoff_ledger_fixture()
+            with patch.dict(os.environ,{"YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME":"failure"}), self.assertRaises(ValueError):
+                probe.result(self.work)
+            accepted = probe.result(self.work)
+            self.assertEqual(accepted['targetedTests']['handoffrenewal']['expectedTests'],255)
+            self.assertEqual(accepted['targetedTests']['handoffrenewal']['expectedQualifiedMethodDefinitions'],253)
             self.assertEqual(len(accepted['limitations']),6)
             self.assertEqual(accepted['historicalIndependentPackageEvidence'],{'historicalOnly':True})
             for change in ('missing','duplicate','timeout','blocked','source','command'):
@@ -1634,8 +1639,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
     def test_handoff_preparation_binding_and_historical_comparisons_cannot_imply_new_tag_pass(self):
         with self.context(),patch.dict(os.environ,{'YUEDU_RENEWAL_SELECTION':'handoffrenewal'}):
             record=probe.prepare(self.work)
-            self.assertEqual(record['intendedQualifiedMethodDefinitions'],251)
-            self.assertEqual(record['intendedArgumentLeafCount'],253)
+            self.assertEqual(record['intendedQualifiedMethodDefinitions'],253)
+            self.assertEqual(record['intendedArgumentLeafCount'],255)
             self.assertEqual(set(record['intendedTests']),{'handoffrenewal'})
             for field,value in (('intendedQualifiedMethodDefinitions',178),('intendedArgumentLeafCount',180)):
                 changed=copy.deepcopy(record);changed[field]=value;self.write_json('source-inputs.json',changed)

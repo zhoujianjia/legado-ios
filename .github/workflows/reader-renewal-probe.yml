@@ -30,10 +30,14 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - name: Verify the exact source tag and portable evidence guards
+      - name: Verify the exact source tag
+        id: source
         run: |
           mkdir -p .build/ci-logs
           python -B scripts/reader-experience/renewal-probe-tools.py validate-tag
+      - name: Verify portable evidence guards
+        id: guards
+        run: |
           python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-existing-guards.log
           python -B scripts/reader-experience/test-renewal-probe-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-guards.log
           python -B scripts/reader-experience/test-inspect-renewal-report.py -v 2>&1 | tee .build/ci-logs/reader-renewal-report-inspector-guards.log
@@ -45,19 +49,23 @@ jobs:
           bash -n scripts/reader-experience/original-api-package-tests.sh
       - name: Select the installed toolchain and Simulator
         id: toolchain
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         run: |
           export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
           export YUEDU_DEST="$(bash scripts/sim.sh dest)"
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
-      - name: Execute 251 handoff definitions with 253 exact native argument leaves
+      - name: Execute 253 handoff definitions with 255 exact native argument leaves
+        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.toolchain.outcome == 'success' }}
+        env:
+          YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME: ${{ steps.guards.outcome }}
         run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
       - name: Execute ten independent source-only macOS package XCTest cases
-        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal') }}
+        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal') }}
         run: bash scripts/reader-experience/original-api-package-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal-original-api.log
       - name: Preserve independent package XCTest evidence without build products
-        if: ${{ always() && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal') }}
+        if: ${{ always() && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal') }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: reader-renewal-original-api-evidence
@@ -82,11 +90,11 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This source-only Debug Simulator workflow fixes handoffrenewal: 251 unique qualified native method definitions and 253 actual execution leaves in one cold 2700-second invocation and one xcresult. It retains all transaction178 definitions, both Bool false/true pairs and the required SDK-produced method; adds 27 actual App handoff/installed observer/Book/Source/Position definitions, ten existing position regressions and seven precise source writer/bootstrap regressions, plus thirteen Cookie owner/ingress definitions and sixteen exact affected Cookie/HTTP/WebView/login regressions. No unselected benchmark, unchanged network/UI diagnostic or JVM payload is included. All ten historical mode identities and budgets remain unchanged.
+          This source-only Debug Simulator workflow fixes handoffrenewal: 253 unique qualified native method definitions and 255 actual execution leaves in one cold 2700-second invocation and one xcresult. It retains all transaction178 definitions, both Bool false/true pairs and the required SDK-produced method; adds 27 actual App handoff/installed observer/Book/Source/Position definitions, ten existing position regressions and seven precise source writer/bootstrap regressions, plus thirteen Cookie owner/ingress definitions, sixteen affected Cookie/HTTP/WebView/login regressions and two actual original Cookie owner-read callbacks. No unselected benchmark, unchanged network/UI diagnostic or JVM payload is included. All ten historical mode identities and budgets remain unchanged.
 
           Producer/staging failure preserves its real exit and bounded public diagnostics, while the same source still executes the entire native selection. Missing SDK JSON throws from the actual loader; no test is skipped and no ad-hoc/fake resource is substituted. The phase ledger binds actual commands/exits/timeouts/blocked dependencies and before/after source hashes. Only every real phase succeeding, zero failures/skips and the exact leaf set can produce result.json. Failed native invocations retain bounded original xcresult exports; partial compile/test observations are diagnostic, never passing acceptance.
 
-          Same-job clang/codesign production, short-lived owned Keychain identity, allowlisted public outputs, original CMS verification, source/resource/built-loader hash binding remain mandatory. Raw producer output and private keys/P12/passwords are never artifact members. An independent ten-case source-only SwiftPM pass at a835f8b has actual XML/verbose evidence. This new stage does not rerun or accept those ten for its own tag: it records all 19 historical input comparisons and separately the Package12 closure. Any changed input prevents exact-source reuse; package cases never enter native253.
+          Same-job clang/codesign production, short-lived owned Keychain identity, allowlisted public outputs, original CMS verification, source/resource/built-loader hash binding remain mandatory. Raw producer output and private keys/P12/passwords are never artifact members. An independent ten-case source-only SwiftPM pass at a835f8b has actual XML/verbose evidence. Cookie read changes a Package12 compilation input, so this stage requires a separate new-tag ten-case SwiftPM rerun with its own exact19 closure. Historical comparison remains separate; package cases never enter native255. Portable guard failure remains a workflow/full-gate failure while valid-source toolchain/native diagnostics still run; a native result is rejected unless the actual workflow guards succeeded.
 
           App receipts prove only the selected concrete owner I/O, not fsync, atomic preservation of every file or future writes. Installed material and normal-load APIs do not automatically open the real App coordinator/journal/vault, call startup observations or establish a cold launch. Generic anchors and controlled TLS/Lookup do not establish Apple/device/account authorization, a renewed installed profile, iPhone installation, user data retention or unattended renewal. iphoneTransportVerified, physicalDeviceValidationPassed, selfRenewalVerified and unattendedRenewalVerified remain false; powered-off/absent-companion conditions remain unmeasured.
           Exact source hashes, reviewed local-mode overlays, synthetic configuration, toolchain, raw logs and the sole xcresult are retained. Definitions/portable fixtures are not executed SDK methods. Cookie owner ingress does not complete original storedSnapshot/cross-owner CAS handoff; the separate Kotlin/Package text draft is excluded. Kotlin/JNI full source compatibility and automatic App renewal remain unfinished.

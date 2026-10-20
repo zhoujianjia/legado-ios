@@ -305,9 +305,10 @@ HANDOFF_REGRESSION_CASES = {'ReadingPositionStorePersistenceTests': ['testSaving
 HANDOFF_COOKIE_NEW_CASES = {'LegadoCookieOwnerTests': ['legacyFileMigratesWithoutInventedProofs', 'nativeAttributesSurviveActualFileRestart', 'failedOwnerIOPreservesOldCookieState', 'scriptWritesExposeTypedOwnerFailure', 'browserObservationKeepsNewerHTTPState', 'browserRemovalDoesNotReviveLegacyText', 'actualHTTPRedirectAndRestart', 'actualHTTPWriteFailureDoesNotAcknowledge', 'cancelledHTTPCommitKeepsOldCookieState', 'actualBrowserRequestRespectsCookieScope', 'staleWebViewCookieDecisionCannotEndReusedLease', 'nativeBrowserPreparationFailureRemainsTyped', 'formLoginRemovalPreservesCredentials']}
 HANDOFF_COOKIE_REGRESSION_CASES = {'WebFetcherPersistedCookieTests': ['nativeRequestRestoresPersistedCookie'], 'WebFetcherChallengeResponseTests': ['challengeStatusIsAnHTTPError', 'challengeBodyIsReturned'], 'StageLoginCheckTests': ['forbiddenResponseCanBeReplaced', 'untouchedForbiddenResponseThrows', 'successfulResponsePassesThrough', 'sourceWithoutCheckIsUnchanged'], 'SourceBrowserAuthenticationTests': ['authenticatedFirstLoad', 'currentCredentialsAndIsolation', 'nativeMarkerAuthentication'], 'BookSourceLoginTests': ['browserInitialLoadUsesStoredCookies', 'fanqieSessionCookieReadableByJSBridge', 'loginInfoChangeInvalidatesResolvedHeaderCache'], 'JSCoreEngineTests': ['sourceBrowserRequestCarriesHeaders'], 'WebViewNavigationWaitTests': ['cancellationResumesSuspendedWait', 'resultResumesWaiter']}
 HANDOFF_COOKIE_SOURCE_PATHS = {'WebFetcherPersistedCookieTests': 'Tests/iOS/yuedu appTests/WebFetcherPersistedCookieTests.swift', 'WebFetcherChallengeResponseTests': 'Tests/iOS/yuedu appTests/WebFetcherChallengeResponseTests.swift', 'StageLoginCheckTests': 'Tests/iOS/yuedu appTests/StageLoginCheckTests.swift', 'SourceBrowserAuthenticationTests': 'Tests/iOS/yuedu appTests/SourceBrowserAuthenticationTests.swift', 'BookSourceLoginTests': 'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift', 'JSCoreEngineTests': 'Tests/iOS/yuedu appTests/ModernParserTests.swift', 'WebViewNavigationWaitTests': 'Tests/iOS/yuedu appTests/WebViewNavigationWaitTests.swift'}
-HANDOFF_ADDITIONAL_CASES = {suite + "/" + method for table in (HANDOFF_NEW_CASES, HANDOFF_REGRESSION_CASES, HANDOFF_COOKIE_NEW_CASES, HANDOFF_COOKIE_REGRESSION_CASES) for suite, methods in table.items() for method in methods}
+HANDOFF_COOKIE_READ_CASES = {'LegadoCookieReadHostTests': ['actualUnknownWKValuesReachReadCallbackWithoutJarReconstruction', 'actualReadCallbackKeepsOwnerAndFailureBoundaries']}
+HANDOFF_ADDITIONAL_CASES = {suite + "/" + method for table in (HANDOFF_NEW_CASES, HANDOFF_REGRESSION_CASES, HANDOFF_COOKIE_NEW_CASES, HANDOFF_COOKIE_REGRESSION_CASES, HANDOFF_COOKIE_READ_CASES) for suite, methods in table.items() for method in methods}
 EXPECTED_CASES["handoffrenewal"] = EXPECTED_CASES["transactionrenewal"] | HANDOFF_ADDITIONAL_CASES
-assert len(HANDOFF_ADDITIONAL_CASES) == 73 and len(EXPECTED_CASES["handoffrenewal"]) == 251
+assert len(HANDOFF_ADDITIONAL_CASES) == 75 and len(EXPECTED_CASES["handoffrenewal"]) == 253
 PARAMETER_MODES = ("transactionrenewal", "handoffrenewal")
 SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal")
 
@@ -448,6 +449,8 @@ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS))
 def validate_tag():
     selection_mode()
     return smoke.validate_tag(TAG_PREFIX)
+
+SOURCE_INPUTS += ("Tests/iOS/yuedu appTests/LegadoCookieReadHostTests.swift",)
 
 
 def selection_mode():
@@ -1083,6 +1086,8 @@ def result(work):
             raise ValueError("Transaction argument source-input audit changed")
         verify_transaction_details(work, smoke.read_json(work / (mode + "-tests.json")), mode)
     if mode == "handoffrenewal":
+        if os.environ.get("YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME") != "success":
+            raise ValueError("Required workflow portable guards did not succeed; native diagnostics cannot accept the full gate")
         verify_handoff_pipeline(work)
     settings = smoke.read_json(work / "build-settings.json")
     matches = [entry["buildSettings"] for entry in settings if entry.get("target") == smoke.config.MAIN_TARGET]
@@ -1147,7 +1152,7 @@ def result(work):
             "serviceIdentityVerified": False,
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
-            "limitations": (["handoffrenewal requires 251 unique definitions and 253 exact leaves in one cold 2700-second native invocation; all 178 prior definitions and the required SDK-produced case remain mandatory.", "Every producer/staging/native/export/verification phase must actually succeed. The first nonzero exit is preserved while the full native selection still runs after producer failure. Missing owned SDK resources are real test failures, never skips or fallback fixtures.", "The a835f8b independent source-only package ten-case pass is historical evidence only. This stage does not rerun or accept package cases for its new tag; exact 19-input and separate Package12 comparisons are recorded.", "App data-owner receipts and installed-material entry points do not implement automatic App startup orchestration, real cold launch, Apple authorization, kernel replacement or complete user-data retention. Cookie ingress cases do not complete original storedSnapshot or cross-owner CAS handoff."] if mode == "handoffrenewal" else []) + ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
+            "limitations": (["handoffrenewal requires 253 unique definitions and 255 exact leaves in one cold 2700-second native invocation; all 178 prior definitions and the required SDK-produced case remain mandatory.", "Every producer/staging/native/export/verification phase must actually succeed. The first nonzero exit is preserved while the full native selection still runs after producer failure. Missing owned SDK resources are real test failures, never skips or fallback fixtures.", "The a835f8b package ten-case pass remains historical only. Cookie read changes a Package12 compilation input; the workflow now requires a separate new-tag ten-case SwiftPM execution with its own exact19 closure, never counted in native255.", "App data-owner receipts and installed-material entry points do not implement automatic App startup orchestration, real cold launch, Apple authorization, kernel replacement or complete user-data retention. Cookie ingress cases do not complete original storedSnapshot or cross-owner CAS handoff."] if mode == "handoffrenewal" else []) + ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "No Apple login, real pairing, installation or renewal operation is performed."] + (
                            ["This selection prepares 178 unique qualified method definitions and requires 180 actual leaves: each of the two reviewed Bool parameter methods must show false and true once, with zero retries/skips/failures.",
                             "One source-bound transactionrenewal xcresult combines the prior 140 with 16 durable transaction/recovery, eight Book owner, ten metadata and four TXT/restore definitions. Actual Arguments nodes bind each Bool to its qualified parent; original raw details and installed help remain independently bound.",
@@ -1262,7 +1267,7 @@ def _handoff_source_state(work):
     if (selection_mode() != "handoffrenewal" or prepared.get("selectionMode") != "handoffrenewal"
             or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
             or prepared.get("intendedTests") != {"handoffrenewal": sorted(EXPECTED_CASES["handoffrenewal"])}
-            or prepared.get("intendedQualifiedMethodDefinitions") != 251 or prepared.get("intendedArgumentLeafCount") != 253
+            or prepared.get("intendedQualifiedMethodDefinitions") != 253 or prepared.get("intendedArgumentLeafCount") != 255
             or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}):
         raise ValueError("Handoff phase cannot run with changed preparation/source")
     return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
@@ -1271,7 +1276,8 @@ def _handoff_source_state(work):
             "overlays": _handoff_fact(work, "overlays.json"),
             "xcodeVersion": _handoff_fact(work, "xcode-version.log"),
             "runtimeSourceOnly": True, "developerDirectory": os.environ.get("DEVELOPER_DIR"),
-            "simulatorDestination": os.environ.get("YUEDU_DEST")}
+            "simulatorDestination": os.environ.get("YUEDU_DEST"),
+            "requiredPortableGuardsOutcome": os.environ.get("YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME")}
 
 
 def _handoff_build_args():
@@ -1399,7 +1405,7 @@ def run_handoff(work):
         rows.append(_run_handoff_phase(work, name, command, timeout, source, _handoff_blockers(name, rows)))
     failure = _handoff_first_failure(rows)
     ledger = {"schemaVersion": 1, "selectionMode": "handoffrenewal", "source": source,
-              "qualifiedMethodDefinitions": 251, "argumentLeaves": 253,
+              "qualifiedMethodDefinitions": 253, "argumentLeaves": 255,
               "phaseOrder": list(HANDOFF_PHASES), "phases": rows, "firstFailure": failure,
               "phaseRecords": [_handoff_fact(work, "handoff-phase-" + name + ".json") for name in HANDOFF_PHASES],
               "historicalPackageEvidence": _handoff_fact(work, "historical-package-evidence.json"),
@@ -1424,8 +1430,8 @@ def verify_handoff_pipeline(work):
     ledger = smoke.read_json(work / "handoff-pipeline.json")
     source = _handoff_source_state(work)
     if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "handoffrenewal"
-            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 251
-            or ledger.get("argumentLeaves") != 253 or ledger.get("phaseOrder") != list(HANDOFF_PHASES)
+            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 253
+            or ledger.get("argumentLeaves") != 255 or ledger.get("phaseOrder") != list(HANDOFF_PHASES)
             or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
         raise ValueError("Missing/failed/changed same-source handoff pipeline")
     rows = ledger.get("phases")
