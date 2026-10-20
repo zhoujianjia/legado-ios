@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "frozenUTC": "2026-10-20T21:13:46.719147+00:00",
+  "scope": "Owned App Host/DTO and authored actual Native regression, plus unchanged Package host wire. Native same selector additionally exercises actual WK seed callback held across cancellation/drain; UI3 v2 awaits whole binding.",
+  "files": [
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "baseline": {
+        "bytes": 76100,
+        "sha256": "fc7ac06d0d1f06bb20914419335cc641d5111da30cf5cc49b079ccaef740c2da"
+      },
+      "candidate": {
+        "bytes": 78781,
+        "sha256": "c15e270e4e27c9f678f9e6fb7070a264aa65b1bade227a41f2d22f786900f8eb"
+      },
+      "changed": true,
+      "diff": {
+        "path": "host-native-snapshot-v2/diffs/Modules/Services/Online/LegadoPersistentStateHost.swift.diff",
+        "bytes": 6852,
+        "sha256": "2b78ebba971cc013c844cab15d800bf82ffe098df8361d134710fba2f84b3351"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 43106,
+        "sha256": "e586769b61450e857b749b4d98a129a534829dd13eb4d9229e7a7b8d8901a535"
+      },
+      "candidate": {
+        "bytes": 60076,
+        "sha256": "7b61b7754d1c9129598492cc07d19978018b82d7a5644d495750cca834f6035a"
+      },
+      "changed": true,
+      "diff": {
+        "path": "host-native-snapshot-v2/diffs/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 17734,
+        "sha256": "3741543d06a01f09656d619865cee5e0f4bc15bc730ad0c059a9ca13e20253bc"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "baseline": {
+        "bytes": 8119,
+        "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+      },
+      "candidate": {
+        "bytes": 8119,
+        "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+      },
+      "changed": false,
+      "diff": {
+        "path": "host-native-snapshot-v2/diffs/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "grammar": {
+    "path": "host-native-grammar-v2.json",
+    "bytes": 1591,
+    "sha256": "872e1bdcff45eb0a97d55c53ef31b6bc83ed7b53a90193a7e132942996433f62"
+  },
+  "native": {
+    "path": "native-definition-v2.json",
+    "bytes": 1622,
+    "sha256": "4c3b57f5bdcc2173f7fa3cad1d17958ed794e519b2333dfb62edf6da24073e97"
+  },
+  "SwiftSDK": 0,
+  "NativeExecuted": 0,
+  "UIKitExecuted": 0,
+  "canonicalMutated": false
+}

@@ -1,0 +1,8 @@
+{
+  "member": "legado-master/app/src/main/java/io/legado/app/help/webView/WebJsExtensions.kt",
+  "bytes": 18552,
+  "sha256": "0a2fdc129460ab3a2b92ab70d45dac2c183fdb920d595d590c5f6a9bbdc02a73",
+  "first": 407,
+  "last": 426,
+  "text": "        val basicJs by lazy { \"\"\"\n            (function() {\n            if (screen.orientation) {\n                screen.orientation.lock = function(orientation) {\n                    return new Promise((resolve, reject) => {\n                        window.$nameBasic.lockOrientation(orientation);\n                        resolve()\n                    });\n                };\n                screen.orientation.unlock = function() {\n                    return new Promise((resolve, reject) => {\n                        window.$nameBasic.lockOrientation('unlock');\n                        resolve()\n                    });\n                };\n            };\n            window.close = function() {\n                window.$nameBasic.onCloseRequested();\n            };\n            })();\"\"\".trimIndent()"
+}

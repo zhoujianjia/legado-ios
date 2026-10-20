@@ -201,8 +201,19 @@ extension LegadoOriginalLoginUIForm {
         values: [String: String], controls: [String: LegadoOriginalLoginUIControl],
         layout: LegadoOriginalLoginUILayout? = nil
     ) throws -> LegadoOriginalLoginUIUpdate {
-        try validateNameBridge(rows.map(\.name) + (layout?.names ?? [])
-            + (layout?.children.map { $0.row.name } ?? []) + Array(values.keys) + (entries?.map(\.key) ?? []))
+        let rowNames: [String] = rows.map { (row: LegadoOriginalLoginUIRow) -> String in row.name }
+        let layoutNames: [String] = layout?.names ?? []
+        let physicalNames: [String] = layout?.children.map { (child: LegadoOriginalLoginUIChild) -> String in
+            child.row.name
+        } ?? []
+        let valueNames: [String] = Array(values.keys)
+        let entryNames: [String] = entries?.map { (entry: LegadoOriginalLoginUIEntry) -> String in entry.key } ?? []
+        var bridgeNames: [String] = rowNames
+        bridgeNames.append(contentsOf: layoutNames)
+        bridgeNames.append(contentsOf: physicalNames)
+        bridgeNames.append(contentsOf: valueNames)
+        bridgeNames.append(contentsOf: entryNames)
+        try validateNameBridge(bridgeNames)
         var map = values, edited = controls, captions = labels
         var changedText: [LoginField] = [], actions: [LegadoOriginalLoginUIListenerAction] = []
         let byID = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })

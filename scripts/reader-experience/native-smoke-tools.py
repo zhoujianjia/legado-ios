@@ -51,7 +51,8 @@ NATIVE_GROUPS = {
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS',
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite',
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose',
-            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal')},
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal',
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite')},
 }
 SOURCE_INPUTS = (
     ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
@@ -352,6 +353,24 @@ ORIGINAL_LOGIN_BROWSER_INPUTS = (
 )
 SOURCE_INPUTS += tuple(path for path in ORIGINAL_LOGIN_BROWSER_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 134
+ORIGINAL_LOGIN_BROWSER_AWAIT_INPUTS = (
+    'Modules/Features/BookSource/JsBridgeBrowserView.swift',
+    'Modules/Features/BookSource/SourceBrowserPresenter.swift',
+    'Modules/Services/Online/LegadoPersistentStateHost.swift',
+    'Modules/SharedUI/Components/SourceWebUIDelegate.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift',
+)
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_LOGIN_BROWSER_AWAIT_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 136
 
 CACHE_CASES = {
     'ChapterCacheMigrationTests': ('packageLoaderUpgradesDownloadedLegacyChapter()',

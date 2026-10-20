@@ -1,0 +1,269 @@
+--- a/Modules/Features/BookSource/SourceBrowserPresenter.swift
++++ b/Modules/Features/BookSource/SourceBrowserPresenter.swift
+@@ -13,6 +13,8 @@
+ /// therefore queue their sheets instead of stacking them.
+ @MainActor
+ enum SourceBrowserPresenter {
++    /// State-only signal from actual UIKit completion; no page text or secrets.
++    static let originalPageDidPresent = Notification.Name("YueduOriginalBrowserPageDidPresent")
+     /// Installs this as `LegadoJSBridge.sharedBrowserPresenter` and
+     /// `sharedCaptchaPresenter`. Called once at launch.
+     static func install() {
+@@ -66,14 +68,14 @@
+         presentNextIfIdle()
+     }
+
+-    /// The original JVM waits only for a real presentation receipt. The accepted
+-    /// nonawait page then belongs to this existing UI lifecycle, not producer cleanup.
+-    static func presentOriginal(_ presentation: LegadoOriginalBrowserPresentation) async throws {
++    /// Nonawait returns only a real presentation receipt. Await holds the same
++    /// ticket until a real confirmation or cancellation and UIKit dismissal.
++    static func presentOriginal(_ presentation: LegadoOriginalBrowserPresentation) async throws -> LegadoOriginalBrowserCompletion {
+         let ticket = OriginalPageTicket(presentation)
+         let id = ticket.id
+-        try await withTaskCancellationHandler {
++        return try await withTaskCancellationHandler {
+             try Task.checkCancellation()
+-            try await withCheckedThrowingContinuation { (receipt: CheckedContinuation<Void, any Error>) in
++            return try await withCheckedThrowingContinuation { (receipt: CheckedContinuation<LegadoOriginalBrowserCompletion, any Error>) in
+                 ticket.receipt = receipt
+                 waiting.append(Pending(completion: { _ in }, content: .originalPage(ticket)))
+                 presentNextIfIdle()
+@@ -104,18 +106,33 @@
+         return ticket.completedPresentation && !ticket.ended
+     }
+
++    /// Same page-authored close path as WKUIDelegate, including challenge
++    /// suppression and the mounted View's real checked confirmation flow.
++    static func requestOriginalPageClose(taskID: String) {
++        guard let ticket = activeOriginal, ticket.presentation.taskID == taskID,
++              ticket.presentation.awaitsResult, ticket.completedPresentation,
++              !ticket.ended, !ticket.closing,
++              let controller = ticket.controller as? OriginalPageController else { return }
++        controller.pageControls?.requestClose()
++    }
++
+     @MainActor
+     private final class OriginalPageTicket {
+         let id = UUID()
+         let presentation: LegadoOriginalBrowserPresentation
+-        var receipt: CheckedContinuation<Void, any Error>?
++        var receipt: CheckedContinuation<LegadoOriginalBrowserCompletion, any Error>?
+         var work: Task<Void, Never>?
++        let cookieCancellation = OriginalRuntimeCommitCancellation()
++        var terminal: Result<LegadoOriginalBrowserCompletion, any Error>?
+         weak var controller: UIViewController?
+         var cancelled = false
+         var startedPresentation = false
+         var completedPresentation = false
+         var closing = false
++        var closeRequested = false
+         var ended = false
++        var finishing = false
++        var drain: Task<Void, Never>?
+         private var endedWaiters: [CheckedContinuation<Void, Never>] = []
+
+         func waitUntilEnded() async {
+@@ -131,21 +148,25 @@
+         }
+
+         init(_ presentation: LegadoOriginalBrowserPresentation) { self.presentation = presentation }
+-        func accept() {
+-            guard let receipt else { return }
+-            self.receipt = nil
+-            receipt.resume()
+-        }
+-        func resolve(_ result: Result<Void, any Error>) {
++        func acceptPresentation() {
++            guard !presentation.awaitsResult else { return }
++            resolve(.success(.presented))
++        }
++        func resolve(_ result: Result<LegadoOriginalBrowserCompletion, any Error>) {
+             guard let receipt else { return }
+             self.receipt = nil
+             receipt.resume(with: result)
+         }
++        func setTerminal(_ result: Result<LegadoOriginalBrowserCompletion, any Error>) {
++            guard terminal == nil, !ended else { return }
++            terminal = result
++        }
+     }
+
+     @MainActor
+     private final class OriginalPageController: UIHostingController<JsBridgeBrowserView> {
+         var removed: (() -> Void)?
++        var pageControls: OriginalBrowserPageControls?
+         override func viewDidDisappear(_ animated: Bool) {
+             super.viewDidDisappear(animated)
+             if isBeingDismissed || presentingViewController == nil { removed?() }
+@@ -160,14 +181,19 @@
+             return false
+         }), case .originalPage(let ticket) = waiting.remove(at: index).content {
+             ticket.cancelled = true
++            ticket.cookieCancellation.cancel()
+             ticket.resolve(.failure(CancellationError()))
+             ticket.end()
+             return
+         }
+         guard let ticket = activeOriginal, ticket.id == id, !ticket.ended else { return }
+         ticket.cancelled = true
++        ticket.cookieCancellation.cancel()
++        (ticket.controller as? OriginalPageController)?.pageControls?.stopLoading()
+         ticket.work?.cancel()
+-        ticket.resolve(.failure(CancellationError()))
++        // A task cancellation always wins over an unfinished confirmation.
++        ticket.terminal = .failure(CancellationError())
++        if !ticket.presentation.awaitsResult { ticket.resolve(.failure(CancellationError())) }
+         // UIKit owns an in-flight transition until its completion signal.
+         // Closing it from that callback avoids releasing the shared queue early.
+         if !ticket.startedPresentation { finishOriginal(ticket) }
+@@ -177,25 +203,63 @@
+     }
+
+     private static func finishOriginal(_ ticket: OriginalPageTicket) {
+-        guard !ticket.ended else { return }
+-        ticket.end()
+-        ticket.resolve(.failure(LegadoRuntimeError(code: "BROWSER_NOT_PRESENTED", message: "The original browser page was not accepted")))
++        guard !ticket.ended, !ticket.finishing else { return }
++        ticket.finishing = true
++        ticket.cookieCancellation.cancel()
+         ticket.work?.cancel()
+         ticket.work = nil
+-        guard activeOriginal?.id == ticket.id else { return }
+-        activeOriginal = nil
+-        isShowingSheet = false
+-        presentNextIfIdle()
++        let controls = (ticket.controller as? OriginalPageController)?.pageControls
++        // This separate owned drain never awaits the Coordinator from its own
++        // completion callback. Release the shared queue only after both owners end.
++        ticket.drain = Task { @MainActor in
++            await controls?.cancelAndDrain()
++            ticket.end()
++            if let terminal = ticket.terminal { ticket.resolve(terminal) }
++            else {
++                ticket.resolve(.failure(LegadoRuntimeError(
++                    code: ticket.completedPresentation && ticket.presentation.awaitsResult ? "BROWSER_CANCELLED" : "BROWSER_NOT_PRESENTED",
++                    message: "The original browser page ended without a result")))
++            }
++            ticket.drain = nil
++            guard activeOriginal?.id == ticket.id else { return }
++            activeOriginal = nil
++            isShowingSheet = false
++            presentNextIfIdle()
++        }
+     }
+
+     private static func closeOriginal(_ ticket: OriginalPageTicket) {
+         guard !ticket.ended, !ticket.closing else { return }
++        (ticket.controller as? OriginalPageController)?.pageControls?.stopLoading()
++        if ticket.startedPresentation && !ticket.completedPresentation {
++            ticket.closeRequested = true
++            return
++        }
+         guard let controller = ticket.controller, controller.presentingViewController != nil else {
+             finishOriginal(ticket)
+             return
+         }
+         ticket.closing = true
+         controller.dismiss(animated: true) { finishOriginal(ticket) }
++    }
++
++    private static func completeOriginal(_ ticket: OriginalPageTicket,
++        result: Result<LegadoOriginalBrowserCompletion, any Error>) {
++        guard ticket.presentation.awaitsResult, !ticket.cancelled, !ticket.ended,
++              ticket.terminal == nil else { return }
++        // The await continuation is resumed by finishOriginal only after the
++        // actual controller disappearance/dismissal, never by this UI callback.
++        ticket.setTerminal(result)
++        closeOriginal(ticket)
++    }
++
++    private static func userCancelledOriginal(_ ticket: OriginalPageTicket) {
++        if ticket.presentation.awaitsResult {
++            ticket.cookieCancellation.cancel()
++            ticket.setTerminal(.failure(LegadoRuntimeError(code: "BROWSER_CANCELLED",
++                message: "The awaited browser was cancelled")))
++        }
++        closeOriginal(ticket)
+     }
+
+     private static func startOriginal(_ ticket: OriginalPageTicket) {
+@@ -219,13 +283,39 @@
+                     return request
+                 }
+                 let userAgent = request.value(forHTTPHeaderField: "User-Agent")
++                let packet = ticket.presentation
++                let cancellation = ticket.cookieCancellation
++                let awaitPolicy: OriginalBrowserAwaitPolicy? = packet.awaitsResult ? .init(
++                    refetchAfterSuccess: packet.refetchAfterSuccess, deadline: packet.deadline,
++                    authorize: {
++                        try await packet.authorize()
++                        try cancellation.check(deadline: packet.deadline)
++                    }, validateCommit: {
++                        try packet.validateCommit()
++                        try cancellation.check(deadline: packet.deadline)
++                    }, recordEffect: packet.recordEffect) : nil
+                 let controller = OriginalPageController(rootView: JsBridgeBrowserView(
+                     urlString: url.absoluteString, title: ticket.presentation.title,
+                     initialRequest: request, sourceRunHandler: nil,
+                     userAgent: userAgent?.isEmpty == false ? userAgent : nil,
+-                    onDismiss: { _ in closeOriginal(ticket) }
++                    finishesWhenChallengeClears: packet.awaitsResult,
++                    originalAwaitPolicy: awaitPolicy,
++                    originalPageLoadCheck: {
++                        // Normal nonawait producer cleanup does not revoke the
++                        // accepted page; only its explicit UI lifetime cancels it.
++                        try cancellation.check(deadline: packet.awaitsResult ? packet.deadline : .distantFuture)
++                    },
++                    onOriginalAwaitCompletion: { completeOriginal(ticket, result: $0) },
++                    onOriginalPageReady: { [weak ticket] controls in
++                        (ticket?.controller as? OriginalPageController)?.pageControls = controls
++                    },
++                    onDismiss: { _ in userCancelledOriginal(ticket) }
+                 ))
+-                controller.removed = { finishOriginal(ticket) }
++                controller.removed = {
++                    // Owned dismissal uses its completion callback; external
++                    // removal still has this actual UIKit lifecycle signal.
++                    if !ticket.closing { finishOriginal(ticket) }
++                }
+                 // A native full-screen browser keeps the parent form mounted.
+                 // Removing that form's view would trigger its real exit/cancel
+                 // handler while this child presentation is still in flight.
+@@ -238,26 +328,31 @@
+                     // This effect describes an actual page, even if authorization
+                     // was revoked while UIKit was presenting it.
+                     let recorded = ticket.presentation.recordEffect("sourceBrowserPresented")
+-                    if ticket.cancelled || ticket.ended || !recorded {
+-                        ticket.resolve(.failure(CancellationError()))
++                    if ticket.cancelled || ticket.ended || !recorded || ticket.closeRequested {
++                        if ticket.terminal == nil { ticket.terminal = .failure(CancellationError()) }
++                        if !ticket.presentation.awaitsResult { ticket.resolve(.failure(CancellationError())) }
+                         closeOriginal(ticket)
+                         return
+                     }
++                    NotificationCenter.default.post(name: originalPageDidPresent, object: nil,
++                        userInfo: ["taskID": ticket.presentation.taskID])
+                     ticket.work = Task { @MainActor in
+                         do {
+                             try await ticket.presentation.authorize()
+                             try Task.checkCancellation()
+                             guard !ticket.cancelled, !ticket.ended else { throw CancellationError() }
+-                            ticket.accept()
++                            ticket.acceptPresentation()
+                             ticket.work = nil
+                         } catch {
+-                            ticket.resolve(.failure(error))
++                            ticket.setTerminal(.failure(error))
++                            if !ticket.presentation.awaitsResult { ticket.resolve(.failure(error)) }
+                             closeOriginal(ticket)
+                         }
+                     }
+                 }
+             } catch {
+-                ticket.resolve(.failure(error))
++                ticket.setTerminal(.failure(error))
++                if !ticket.presentation.awaitsResult { ticket.resolve(.failure(error)) }
+                 if ticket.startedPresentation { closeOriginal(ticket) }
+                 else { finishOriginal(ticket) }
+             }

@@ -1,0 +1,113 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -1,4 +1,5 @@
+ import Foundation
++import CoreFoundation
+ import WebKit
+ import CoreFoundation
+ import LegadoRuntime
+@@ -105,8 +106,22 @@
+     let url: String
+     let title: String
+     let headers: [String: String]
++    let awaitsResult: Bool
++    let refetchAfterSuccess: Bool
++    let deadline: Date
+     let authorize: @Sendable () async throws -> Void
++    /// Synchronous commit guard for the existing Cookie actor. Source revision
++    /// revocation cancels this same grant; Presenter adds its own task token.
++    let validateCommit: @Sendable () throws -> Void
+     let recordEffect: @Sendable (String) -> Bool
++}
++
++/// Finite live page receipt, separate from deduplicated status/effect strings.
++/// Presented never counts as an awaited terminal result.
++enum LegadoOriginalBrowserCompletion: Sendable {
++    case presented
++    case response(finalURL: String, body: String)
++    case refetchConfirmed
+ }
+
+ actor LegadoPersistentStateHost: LegadoPlatformHost {
+@@ -139,7 +154,7 @@
+     private let exploreScopeIdentity = UUID().uuidString
+     private let cookieOwner: CookieStore
+     private let originalWebCookieStore: @MainActor @Sendable () -> WKHTTPCookieStore
+-    private let originalBrowserPresenter: @MainActor @Sendable (LegadoOriginalBrowserPresentation) async throws -> Void
++    private let originalBrowserPresenter: @MainActor @Sendable (LegadoOriginalBrowserPresentation) async throws -> LegadoOriginalBrowserCompletion
+     private let backing: any LegadoOwnedStateBacking
+     private let fallback: any LegadoPlatformHost
+     private var bindings: [String: Binding] = [:]
+@@ -171,7 +186,7 @@
+
+     init(backing: any LegadoOwnedStateBacking, fallback: any LegadoPlatformHost = UnsupportedLegadoHost(), cookieOwner: CookieStore = .shared,
+          originalWebCookieStore: @escaping @MainActor @Sendable () -> WKHTTPCookieStore = { WKWebsiteDataStore.default().httpCookieStore },
+-         originalBrowserPresenter: @escaping @MainActor @Sendable (LegadoOriginalBrowserPresentation) async throws -> Void = {
++         originalBrowserPresenter: @escaping @MainActor @Sendable (LegadoOriginalBrowserPresentation) async throws -> LegadoOriginalBrowserCompletion = {
+              try await SourceBrowserPresenter.presentOriginal($0)
+          }) {
+         self.cookieOwner = cookieOwner
+@@ -437,7 +452,7 @@
+         do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
+         catch { throw failure("INVALID_STATE_REQUEST", "Browser presentation request is not JSON") }
+         guard let input = decoded as? [String: Any],
+-              Set(input.keys).isSubset(of: ["owner", "sourceURL", "url", "title", "headers", "deadlineEpochMs", "remainingTimeoutMs"]),
++              Set(input.keys).isSubset(of: ["owner", "sourceURL", "url", "title", "headers", "awaitsResult", "refetchAfterSuccess", "deadlineEpochMs", "remainingTimeoutMs"]),
+               let owner = input["owner"] as? String, let sourceURL = input["sourceURL"] as? String,
+               let url = input["url"] as? String, url.utf8.count < 65_536,
+               let target = URL(string: url), target.host?.isEmpty == false,
+@@ -458,19 +473,51 @@
+             headerBytes += name.utf8.count + value.utf8.count
+         }
+         guard headerBytes <= 65_536 else { throw failure("STATE_LIMIT", "Browser headers exceed their budget") }
++        func flag(_ name: String, default defaultValue: Bool) throws -> Bool {
++            guard let value = input[name] else { return defaultValue }
++            guard let number = value as? NSNumber, CFGetTypeID(number) == CFBooleanGetTypeID() else {
++                throw failure("INVALID_STATE_REQUEST", "Browser flags must be Boolean")
++            }
++            return number.boolValue
++        }
++        let awaitsResult = try flag("awaitsResult", default: false)
++        let refetchAfterSuccess = try flag("refetchAfterSuccess", default: true)
+         let deadline = try cookieReadDeadline(input)
+         try authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)
++        guard let binding = bindings[owner] else { throw CancellationError() }
+         let presentation = LegadoOriginalBrowserPresentation(taskID: request.taskID, url: url, title: title,
+-            headers: headers, authorize: { [weak self] in
++            headers: headers, awaitsResult: awaitsResult, refetchAfterSuccess: refetchAfterSuccess, deadline: deadline,
++            authorize: { [weak self] in
+                 guard let self else { throw CancellationError() }
+                 try await self.authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)
++            }, validateCommit: {
++                try Task.checkCancellation()
++                try binding.cookieCancellation.check(deadline: deadline)
+             }, recordEffect: { request.recordPossibleEffect($0) })
+         // This awaits MainActor/UI only. It never reenters the source service or
+         // the JVM/source gate currently waiting for this synchronous Host call.
+         do {
+-            try await originalBrowserPresenter(presentation)
++            let completion = try await originalBrowserPresenter(presentation)
+             try authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)
+-            return try encoded(["presented": true])
++            switch completion {
++            case .presented:
++                guard !awaitsResult else {
++                    throw failure("INVALID_BROWSER_RESULT", "Page presentation is not an awaited result")
++                }
++                return try encoded(["presented": true])
++            case .refetchConfirmed:
++                guard awaitsResult && refetchAfterSuccess else {
++                    throw failure("INVALID_BROWSER_RESULT", "Unexpected browser refetch confirmation")
++                }
++                return try encoded(["mode": "refetchConfirmed"])
++            case .response(let finalURL, let body):
++                guard awaitsResult && !refetchAfterSuccess, finalURL.utf8.count < 65_536,
++                      body.utf8.count <= 4 * 1024 * 1024 else {
++                    throw failure("INVALID_BROWSER_RESULT", "Unexpected or oversized awaited page result")
++                }
++                guard !body.isEmpty else { throw failure("BROWSER_EMPTY_RESULT", "The awaited browser returned an empty result") }
++                return try encoded(["mode": "response", "finalURL": finalURL, "body": body])
++            }
+         } catch {
+             // Admission may have changed after UIKit accepted the page. This is
+             // still an unacknowledged task, not normal producer cleanup.

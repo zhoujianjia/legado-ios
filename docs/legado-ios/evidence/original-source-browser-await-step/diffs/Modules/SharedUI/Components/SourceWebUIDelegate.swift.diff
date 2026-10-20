@@ -1,0 +1,16 @@
+--- a/Modules/SharedUI/Components/SourceWebUIDelegate.swift
++++ b/Modules/SharedUI/Components/SourceWebUIDelegate.swift
+@@ -30,6 +30,14 @@
+     /// finishes its request off the main thread.
+     static let sourceBridgePromptName = "__yuedu_source_java_bridge__"
+     var sourceBridgePromptHandler: ((String, @escaping (String?) -> Void) -> Void)?
++    /// Optional native page-close signal. Existing callers keep their current
++    /// behavior; an awaited source page decides whether a challenge can close.
++    var onCloseRequested: (@MainActor () -> Void)?
++
++    @MainActor
++    func webViewDidClose(_ webView: WKWebView) {
++        onCloseRequested?()
++    }
+
+     // MARK: - Popups

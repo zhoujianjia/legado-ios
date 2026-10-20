@@ -1,0 +1,27 @@
+--- a/scripts/reader-experience/renewal-probe-tools.py
++++ b/scripts/reader-experience/renewal-probe-tools.py
+@@ -1031,6 +1031,24 @@
+ )
+ SOURCE_INPUTS += tuple(path for path in CURRENTCORE_ORIGINAL_LOGIN_BROWSER_INPUTS if path not in SOURCE_INPUTS)
+ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 332
++CURRENTCORE_ORIGINAL_LOGIN_BROWSER_AWAIT_INPUTS = (
++    'Modules/Features/BookSource/JsBridgeBrowserView.swift',
++    'Modules/Features/BookSource/SourceBrowserPresenter.swift',
++    'Modules/Services/Online/LegadoPersistentStateHost.swift',
++    'Modules/SharedUI/Components/SourceWebUIDelegate.swift',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt',
++    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
++    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt',
++    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift',
++)
++SOURCE_INPUTS += tuple(path for path in CURRENTCORE_ORIGINAL_LOGIN_BROWSER_AWAIT_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 334
+
+
+ def selection_mode():

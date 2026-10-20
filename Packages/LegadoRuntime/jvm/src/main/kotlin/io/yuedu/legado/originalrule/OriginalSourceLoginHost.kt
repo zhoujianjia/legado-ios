@@ -32,7 +32,10 @@ class OriginalSourceLoginHost(private val source: BookSource) : RuleJsExtensions
         if (html != null) unsupportedRule("original local HTML WebJS browser")
         getRuleEnvironment().platform.startLoginBrowser(source, url, title)
     }
-    @JvmOverloads fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean = true, html: String? = null): StrResponse = unsupportedRule("form login awaited browser navigation")
+    @JvmOverloads fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean = true, html: String? = null): StrResponse {
+        if (html != null) unsupportedRule("original local HTML WebJS browser")
+        return getRuleEnvironment().platform.awaitLoginBrowser(source, url, title, refetchAfterSuccess)
+    }
     @JvmOverloads fun showBrowser(url: String, html: String? = null, preloadJs: String? = null, config: String? = null): Nothing = unsupportedRule("form login browser presentation")
     fun upLoginData(data: Map<String, Any?>?) = getRuleEnvironment().platform.updateLoginUI(source, data)
     @JvmOverloads fun reLoginView(deltaUp: Boolean = false) = getRuleEnvironment().platform.renderLoginUI(source, deltaUp)

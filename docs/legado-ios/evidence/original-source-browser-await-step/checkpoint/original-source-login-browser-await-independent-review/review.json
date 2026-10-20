@@ -1,0 +1,648 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T21:16:48.357325+00:00",
+  "scope": "Independent final GET-await browser source/runtime-evidence review. Approves this frozen bounded slice for integration; no actual SDK/JNI/UIKit/device acceptance.",
+  "manifest": {
+    "path": ".build/original-source-login-browser-await-step/final-v1.json",
+    "bytes": 20899,
+    "sha256": "127b01c4442e18d10d0ce3855cc9cef38d109b3d8753c4dc303264f33aeb22c4"
+  },
+  "decision": {
+    "sourceReviewPassed": true,
+    "evidenceBindingPassed": true,
+    "remainingConfirmedP1": 0,
+    "remainingConfirmedP2": 0,
+    "canIntegrateExactFrozenSources": true,
+    "SwiftSDKPassed": false,
+    "NativePassed": false,
+    "devicePassed": false,
+    "fullBrowserCompatibility": false
+  },
+  "sourceBindings": [
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "baseline": {
+        "bytes": 42245,
+        "sha256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47"
+      },
+      "candidate": {
+        "bytes": 61555,
+        "sha256": "cd81da562dd5f3c1eb142d1139a0a86f81b63d64d4728c3c841826b1ea354109"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Modules/Features/BookSource/JsBridgeBrowserView.swift.diff",
+        "bytes": 28949,
+        "sha256": "3cadde5b89278282f037ccc08dd28314173de2d1b780e9d157cc59401ad66dc7"
+      }
+    },
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "baseline": {
+        "bytes": 16013,
+        "sha256": "5e6f8460ddd6c4029e6cfd44fa0d10284438194e824a0fa99f934fb7a6180f07"
+      },
+      "candidate": {
+        "bytes": 21764,
+        "sha256": "e0669669ae286e0f0c3be7e14acd9eaddeccf00f413714e60055617d43628659"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Modules/Features/BookSource/SourceBrowserPresenter.swift.diff",
+        "bytes": 14021,
+        "sha256": "172eafe7a9cc05d47bf3010d35d7dce4c171c618ef67d4dc9072f25d2c93e8fd"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "baseline": {
+        "bytes": 76100,
+        "sha256": "fc7ac06d0d1f06bb20914419335cc641d5111da30cf5cc49b079ccaef740c2da"
+      },
+      "candidate": {
+        "bytes": 78781,
+        "sha256": "c15e270e4e27c9f678f9e6fb7070a264aa65b1bade227a41f2d22f786900f8eb"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Modules/Services/Online/LegadoPersistentStateHost.swift.diff",
+        "bytes": 6852,
+        "sha256": "2b78ebba971cc013c844cab15d800bf82ffe098df8361d134710fba2f84b3351"
+      }
+    },
+    {
+      "path": "Modules/SharedUI/Components/SourceWebUIDelegate.swift",
+      "baseline": {
+        "bytes": 6239,
+        "sha256": "08d8c39e7c2b66bfee9f89de82805c3a405b8ca657bf0fb279ea49b8dec580bb"
+      },
+      "candidate": {
+        "bytes": 6548,
+        "sha256": "770f369e1cfc0bb6ad0c1a979aafc5f30867814c6bd017dbf6b77da0c87f36cb"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Modules/SharedUI/Components/SourceWebUIDelegate.swift.diff",
+        "bytes": 706,
+        "sha256": "20a1a37d732564c4013be4dc4e5395546ae0f7f2ba401b3d1301579a8c865ac1"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "baseline": {
+        "bytes": 3445,
+        "sha256": "24f93aa8aa2523e6040717e2787516a3a11c511338a62c499551cc97b6b2d396"
+      },
+      "candidate": {
+        "bytes": 3577,
+        "sha256": "aeec014168c22ed26003d74bb48a69d1c413fe38d37b6a21f0329af06374cdc5"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt.diff",
+        "bytes": 1357,
+        "sha256": "db8a9cd7c153a5c0c86ad212082e129b55b777833d1042aa166c6fb35f33e71e"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 25573,
+        "sha256": "0b7e7522f6e032d6610c0b095c8364a8721b726af70e9f883eb125b14513826a"
+      },
+      "candidate": {
+        "bytes": 28909,
+        "sha256": "dfe1539ed709ca4c0c232880916da5f0e9ad76e63a8579f2186c2b4dedc40fb4"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 6253,
+        "sha256": "df95247cf16501b86470e4c59d72ffce66aeb668dfcb16a1fa4067ba2fe6647a"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "bytes": 9827,
+        "sha256": "3b81b001f01443f925df19c4efeb236a203be0131e26f930e66bbd83ff138c6a"
+      },
+      "candidate": {
+        "bytes": 10009,
+        "sha256": "3928cf760b6f58292adccb14aab5432edb750e3b28c9029043661254453c87e7"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 923,
+        "sha256": "bc21629af87afcdd8050d196826ee4071d196e5751671a9f535d933cadbb43b3"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 10292,
+        "sha256": "1f7225ac94868b8c94a21b50b2144e699492f35ab81b0371b613982731aadc66"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt.diff",
+        "bytes": 10654,
+        "sha256": "c122fe532094db91db13584babaadd02ca5cf66fd6f70d6e008ed8a6b80e6c6e"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt",
+      "baseline": {
+        "bytes": 7833,
+        "sha256": "885286e9efe0ddc0764afd3e875037e4a3b90c42ac6ba75657404631731d72b2"
+      },
+      "candidate": {
+        "bytes": 7735,
+        "sha256": "05254be64abba0b5f91b56d6b61939796f756ab0fafc2744ce29424e7f16cc6e"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt.diff",
+        "bytes": 981,
+        "sha256": "98cae55929dffec77e07bb00e493e0c54620dfde81f559e32c7ba41d01c22717"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134720,
+        "sha256": "1adeb053084dbfeb1e5b7315b8adf8f6f09764a7b220d0875d8b4097f19bd6c6"
+      },
+      "candidate": {
+        "bytes": 134721,
+        "sha256": "0b61a4aec3046f94f7b6ee40ac16923b58ee45c899e02eeedfbd6a240e70ea2a"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 1587,
+        "sha256": "25623339b0da7e9eab23dd33a53aacf0d1ce5ae811ea1081b146ac7d2b5320f4"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 43106,
+        "sha256": "e586769b61450e857b749b4d98a129a534829dd13eb4d9229e7a7b8d8901a535"
+      },
+      "candidate": {
+        "bytes": 60076,
+        "sha256": "7b61b7754d1c9129598492cc07d19978018b82d7a5644d495750cca834f6035a"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 17734,
+        "sha256": "3741543d06a01f09656d619865cee5e0f4bc15bc730ad0c059a9ca13e20253bc"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "unchanged": {
+        "bytes": 21030,
+        "sha256": "d4bbb59df06a966fac9e903eb3429a3522cc07ae831d49622b2756252607ed0f"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "unchanged": {
+        "bytes": 8960,
+        "sha256": "81c25a8ce0a566314cd9af53449928786672b9c451cc321cf3c7d651baf18267"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "unchanged": {
+        "bytes": 8119,
+        "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+      }
+    }
+  ],
+  "changedPortedRows": [
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt"
+  ],
+  "portedRowsChecked": 58,
+  "lockedOriginalLicenseArchiveResourceMetadataUnchanged": true,
+  "subreviews": [
+    {
+      "path": ".build/original-source-login-browser-await-independent-review/ui-review-v1.json",
+      "bytes": 6843,
+      "sha256": "770f98dac3f896a0c1f853717997527617f5eb572232f9e70841c66323339fd5"
+    },
+    {
+      "path": ".build/original-source-login-browser-await-independent-review/ui-review-v2.json",
+      "bytes": 8417,
+      "sha256": "06077f9db93f084248c2296876855721d947beac71c0bcc0cac4a4ada7411d28"
+    },
+    {
+      "path": ".build/original-source-login-browser-await-independent-review/backend-evidence-verification-v1.json",
+      "bytes": 35842,
+      "sha256": "879f1955d7c82fd372785bdd2de8efe34c880cb2e058fe05f82074cf01a8ef23"
+    }
+  ],
+  "sourceAssessment": [
+    {
+      "area": "Actual legacy route",
+      "fact": "Existing OriginalSourceLoginHost startBrowserAwait now uses the same task/environment/source owner ProductionRulePlatform. Explicit HTML and unsupported POST/scheme/WebJS/V2 routes continue typed refusals. No old JSC/parser fallback, new JVM, state store, credential writer or replacement HTTP owner is created."
+    },
+    {
+      "area": "Original default true and false response contracts",
+      "fact": "Default true first snapshots the original AnalyzeUrl URL/headers, waits for real Host confirmation/Cookies/dismissal, then reparses the original input with headerMapF initial.headerMap on the same original JVM HTTP/Cookie owner. It returns the first analyzed URL, and the locked StrResponse synthetic raw200/OK/HTTP1.1/empty response headers. False accepts only real response mode and one WebKit URL/outerHTML snapshot. Presentation-only, wrong mode, empty or oversized results fail."
+    },
+    {
+      "area": "Host permission and deadlock boundary",
+      "fact": "Host strictly validates actual JSON Bool types, bounded HTTP(S)/headers/text, exact sourceURL bytes/current revision/task/deadline/cancellation. Completion shape must match await/refetch flags. Its authorize closure reenters only the same reentrant Host actor, never the source service/JVM gate waiting for this Host call. Catch cancels and awaits actual Presenter drain before propagating the original failure."
+    },
+    {
+      "area": "Ordered actual effects and failure",
+      "fact": "Live MayPresent/Presented, seed issued/completed and capture issued/completed facts use the same request effect collector. Page cancellation/error is typed and cannot become an empty successful response; already-issued native Cookie effects remain possible/completed facts rather than claimed rollback. JVM checks active owner/task again after Host and before returning, preventing later credential writes."
+    },
+    {
+      "area": "One real UI owner and closed P1",
+      "fact": "Ticket receipt is installed before queue admission and released only after actual UIKit dismissal plus mounted Coordinator initial/confirmation drain. Explicit cancel seals ticket token and navigation synchronously. UIv1 old seed notify no longer loads requests; generation/token/await-Host checks surround native seeding and resumed load, latest reload retains/cancels/drains predecessor, and all actual callbacks are awaited. Nonawait accepted pages use the ticket-only lifetime check, preserving normal producer cleanup while explicit cancel stops them."
+    },
+    {
+      "area": "Page close/basicJs/challenge/Cookie contract",
+      "fact": "Finite window.close shim and real WKUIDelegate.webViewDidClose reach the mounted confirmation path. Observed active challenge suppresses page-authored close, true-to-false confirms, manual Done and visible Cancel remain distinct. Await didFinish does not itself confirm or issue the prior unguarded Cookie capture. Source Java/cache/run bridges stay absent because sourceRunHandler is nil."
+    },
+    {
+      "area": "Authored Native actual entry and P1 regression",
+      "fact": "One new Native method uses the sole process/shared executor/bind/revoke, default real Presenter and loopback peer for confirmation/dismissal and real task cancellation. In the same method a direct actual WK/Coordinator subcase seeds an isolated nonPersistent WK store, holds delivery only after real setCookie callback, cancels the same production controls, asserts drain remains pending until release, then checks no webView URL/loopback HTTP and retained seed-issued/completed facts. Its policy in that isolated helper is synthetic; the main Native branch uses the real Host. Eleven old Native method AST byte ranges remain exact. None of this Native method has executed."
+    }
+  ],
+  "actualRuntimeEvidence": {
+    "JVMXMLMethods": 8,
+    "failuresErrorsSkips": 0,
+    "ordinaryJavaSessions": 5,
+    "ordinarySources": 2,
+    "ordinaryOriginalHTTPRequests": 2,
+    "implicitCredentialCalls": 0,
+    "genericHTTPHostCalls": 0,
+    "packagingGuards": 6,
+    "ordinaryJar": {
+      "path": "snapshot-v1/legado-runtime.jar",
+      "bytes": 10856474,
+      "sha256": "8c1b27e315cf4cf5779a83b97e45149d698a1d96d8b0332d4ddbb5281cdb7972"
+    },
+    "sourceBuildInputs": 127,
+    "mainRoots": 124,
+    "freshlyCompiledRoots": 4,
+    "unchangedRoots": 120,
+    "classBlobs": 347,
+    "actualCompiledClassBlobs": 20,
+    "retainedBoundBaseClassBlobs": 327,
+    "freshFullGradle": false,
+    "reviewerRepeatedSuites": 0,
+    "SwiftSDK": 0,
+    "JNI": 0,
+    "UIKit": 0,
+    "device": 0
+  },
+  "newDefinitionInventory": {
+    "App": 0,
+    "Package": 0,
+    "JVM": 4,
+    "existingAffectedJVMExecuted": 4,
+    "NativeAdded": [
+      "testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite"
+    ],
+    "NativeBefore": 11,
+    "NativeAfter": 12,
+    "oldNativeBodiesExact": true,
+    "seedCaseAddsDefinition": false
+  },
+  "lineEvidence": {
+    "Modules/Services/Online/LegadoPersistentStateHost.swift": [
+      {
+        "needle": "func flag(",
+        "lines": [
+          476
+        ]
+      },
+      {
+        "needle": "CFBooleanGetTypeID",
+        "lines": [
+          478,
+          800,
+          835,
+          852,
+          924,
+          955
+        ]
+      },
+      {
+        "needle": "let presentation = LegadoOriginalBrowserPresentation",
+        "lines": [
+          488
+        ]
+      },
+      {
+        "needle": "switch completion",
+        "lines": [
+          502
+        ]
+      },
+      {
+        "needle": "await SourceBrowserPresenter.cancelOriginal",
+        "lines": [
+          524,
+          884
+        ]
+      },
+      {
+        "needle": "private func authorizeSourceBrowser",
+        "lines": [
+          529
+        ]
+      }
+    ],
+    "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift": [
+      {
+        "needle": "testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite",
+        "lines": [
+          528
+        ]
+      },
+      {
+        "needle": "LegadoRuntimeProcess.shared",
+        "lines": [
+          93,
+          425,
+          484,
+          536,
+          842
+        ]
+      },
+      {
+        "needle": "exerciseCancelledInitialCookieSeed",
+        "lines": [
+          545,
+          637
+        ]
+      },
+      {
+        "needle": "store.setCookie(cookie)",
+        "lines": [
+          659
+        ]
+      },
+      {
+        "needle": "barrier.hold(completion)",
+        "lines": [
+          660
+        ]
+      },
+      {
+        "needle": "XCTAssertFalse(barrier.didDrain",
+        "lines": [
+          685
+        ]
+      },
+      {
+        "needle": "barrier.release()",
+        "lines": [
+          687
+        ]
+      },
+      {
+        "needle": "XCTAssertNil(webView.url)",
+        "lines": [
+          691
+        ]
+      }
+    ]
+  },
+  "evidenceBindings": [
+    {
+      "path": "baseline.json",
+      "bytes": 3473,
+      "sha256": "86837b0e05d7c455816830d67f311832d4c08e3c1a6016abf04dd6ce0d1619c7"
+    },
+    {
+      "path": "reader-production-baseline.json",
+      "bytes": 367,
+      "sha256": "03d8fe39bc63f5610b901fccc5a0ef30cc3878282833147a47184b1f4a4849a2"
+    },
+    {
+      "path": "ui-delegate-baseline.json",
+      "bytes": 302,
+      "sha256": "1c4c4c7577e87469491bdb0a7eb82040895c513d34624a7b175b3b0391e2377a"
+    },
+    {
+      "path": "current-canonical-baseline-proof.json",
+      "bytes": 2840,
+      "sha256": "eb499c3dea8fc63218c5cd1a5d66db1aff214f7602767d5c861920b859e712f3"
+    },
+    {
+      "path": "locked-await-contracts.json",
+      "bytes": 4276,
+      "sha256": "8d1867b35132b6278c58e0556607b8036490310dc036843f83fe8de743018182"
+    },
+    {
+      "path": "backend-final-v1.json",
+      "bytes": 7063,
+      "sha256": "56fb3ee2e1db78d5f8e835ca19b32c9868b6b4ff979c9b88042fd0af53da62aa"
+    },
+    {
+      "path": "host-native-final-v1.json",
+      "bytes": 2552,
+      "sha256": "4df54972c5121dbb53a5e8351ac8edd1fd893cbc541489915da23514c0552a71"
+    },
+    {
+      "path": "host-native-final-v2.json",
+      "bytes": 2635,
+      "sha256": "e6820aa4a74f2a6fb8cafeb924f57c88099c303bc5a8a6e90c5e4642678a344f"
+    },
+    {
+      "path": "ui-final-v1.json",
+      "bytes": 6739,
+      "sha256": "fdbce52950e5f922e31374786dbadcf0e0585e851f87fce56755d10a0bad85e4"
+    },
+    {
+      "path": "ui-final-v2.json",
+      "bytes": 10900,
+      "sha256": "b57f0c56929c6f5570413ccbb8510c81d5e9b86fa365c95149dd1c7629e7a2a6"
+    },
+    {
+      "path": "ui-grammar-v1.json",
+      "bytes": 1531,
+      "sha256": "f7d8079831626cedb88a9b320933142cbfdf02f3e64a98137fb64e5e0e71d887"
+    },
+    {
+      "path": "ui-grammar-v2.json",
+      "bytes": 1523,
+      "sha256": "4adc92cfee7c88f8d6b654bc8406f4b15696a8206ce969423275d71dff9955c2"
+    },
+    {
+      "path": "ui-basic-close-contract.json",
+      "bytes": 1061,
+      "sha256": "e186355323edb3a1da6922eb743039652255f0f43c2a17b4e4f7558406ddb3fd"
+    },
+    {
+      "path": "host-native-grammar-v1.json",
+      "bytes": 1591,
+      "sha256": "fb80509a3b1d56f4cbdf6147f5ac30aad99cd36531a37212b78849daf654607b"
+    },
+    {
+      "path": "host-native-grammar-v2.json",
+      "bytes": 1591,
+      "sha256": "872e1bdcff45eb0a97d55c53ef31b6bc83ed7b53a90193a7e132942996433f62"
+    },
+    {
+      "path": "native-definition-v1.json",
+      "bytes": 1622,
+      "sha256": "2ffee35f42a02f2c439f0e818b7bc56368646fa3f7d1f2e5568992c319fadda4"
+    },
+    {
+      "path": "native-definition-v2.json",
+      "bytes": 1622,
+      "sha256": "4c3b57f5bdcc2173f7fa3cad1d17958ed794e519b2333dfb62edf6da24073e97"
+    },
+    {
+      "path": "whole-swift-grammar-v1.json",
+      "bytes": 2949,
+      "sha256": "f5ef5c3f93400624bcefd3fb54afaacc436d716f0e32a3aabcd138a9c6cee230"
+    },
+    {
+      "path": "validation-build-input-normalization.json",
+      "bytes": 774,
+      "sha256": "b33e5d19b807907c056f94dfd6233eea13e01266f3c7a566b7464966bdff73ea"
+    },
+    {
+      "path": "actual-jvm-compilation-inputs.json",
+      "bytes": 29346,
+      "sha256": "f9093f75e41461ab796c8f86642d3674d4bd0dd7d509492b9ba3ec629d8397d3"
+    },
+    {
+      "path": "ordinary-jar-production-class-binding.json",
+      "bytes": 88315,
+      "sha256": "30ec6773572e8cfa39d715902e1c982e1f6af437838db135af8bdd901f675b39"
+    },
+    {
+      "path": "ordinary-jar-inspected.json",
+      "bytes": 880,
+      "sha256": "5abcf4ccfdc03952783c1b5202605892443f28397e4cf5fe2cf6f87a5184a631"
+    },
+    {
+      "path": "actual-jvm-tests.json",
+      "bytes": 2625,
+      "sha256": "b9682c0287031c8b40d784257a7d7f7ec2ec75975e16710ab8d1f2a62f78ecf9"
+    },
+    {
+      "path": "packaging-tests.log",
+      "bytes": 1232,
+      "sha256": "7c0018ac332fc9f15f746865c700b82257c7820f0d15a94ba883263dcd142f6b"
+    },
+    {
+      "path": "execution-v1/production-binding.json",
+      "bytes": 10694,
+      "sha256": "7a144f4e1e4d38f343439d3ffb5ba56a946f63a2b69a3f30b864ebc610592d6b"
+    },
+    {
+      "path": "execution-v1/commands.json",
+      "bytes": 8867,
+      "sha256": "2658f8460dca84c694285e887bfec4bc7feac574daeeb74f71ab884acd538e8c"
+    },
+    {
+      "path": "execution-v1/compile-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/compile-junit-runner.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/junit-await-and-first-browser.log",
+      "bytes": 795,
+      "sha256": "8e3721027dcbf74ffdc96a9a32d770aa2bc5de9dc08d7743c854fc46b805014e"
+    },
+    {
+      "path": "execution-v1/actual-tests.xml",
+      "bytes": 1558,
+      "sha256": "b4a0f123ddc994a9852e95f09f58cfe5fdda65f6494b040f622a7dd9a41f2808"
+    },
+    {
+      "path": "execution-v1/ordinary-final/commands.json",
+      "bytes": 1323,
+      "sha256": "1f16bb23b497e1d0f961316aaf83beb266fee35ad71e4c0dcfcaa6cb03c4f928"
+    },
+    {
+      "path": "execution-v1/ordinary-final/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/ordinary-final/execute.log",
+      "bytes": 8064,
+      "sha256": "7ba0baf8a1125febb9ddc0a15ee37a709cd654eb5384816f513eacc54c70164e"
+    },
+    {
+      "path": "execution-v1/ordinary-final/consumer-attempt1.java.txt",
+      "bytes": 6144,
+      "sha256": "cb04510fa7418c9d29cb4924b7e54747462d94f476cc389a3b6a85c007f8f22a"
+    },
+    {
+      "path": "execution-v1/ordinary-final-v2/commands.json",
+      "bytes": 1329,
+      "sha256": "1cf248cb263c8a6a238b7c1078c0a1c2ad052dcee04a4f396061e3191eb42b27"
+    },
+    {
+      "path": "execution-v1/ordinary-final-v2/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/ordinary-final-v2/execute.log",
+      "bytes": 207,
+      "sha256": "042a87b63d1204cfdcf43522f70f81ff3f5dffac497a30eac30b821d72c6c560"
+    },
+    {
+      "path": "OrdinaryLoginBrowserAwaitSmoke.java",
+      "bytes": 6214,
+      "sha256": "eead97c013132b202f2c0f2ee1ef2eebec361b7a00d1b03833c036ffd7eec66b"
+    },
+    {
+      "path": "SelectedAwaitTests.java",
+      "bytes": 2376,
+      "sha256": "50cb468c269a477758a4ab2212fea9f34a7af6d08a10498490a2bfa7a570494d"
+    },
+    {
+      "path": "validate-bounded.py",
+      "bytes": 8943,
+      "sha256": "a6d899b1b85fe7b4f4274e34b4edc70dfc9e317b9b8f4a7ab28fc3be171bacbf"
+    },
+    {
+      "path": "validate-java-v2.py",
+      "bytes": 1341,
+      "sha256": "6ecf5b8dfdd21b4d58a1e126dad7c0b17c832ea4d68d7537b89de5fabaa51494"
+    }
+  ],
+  "limits": [
+    "Source-only review and author grammar evidence cannot establish Swift typechecking/actor rules, actual UIKit presentation/dismissal/parent lifecycle, WK network/Cookie timing, Native JNI behavior or physical-device success.",
+    "The new Native method is authored and exact-source bound but has zero execution; the source P1 is closed without inventing a Native pass.",
+    "POST prefetch/HTML reuse, explicit local HTML, showBrowser, broad/V2 browser/WebJS and cross-task verification-flight owner/follower coalescing remain unsupported/unported. This finite legacy GET slice does not complete all book-source compatibility.",
+    "Original task deadline and URL/header/body limits remain embedding constraints; current source-revision checks do not claim atomic exclusion of later arbitrary source-store deletion.",
+    "JAR validation is an exact4-source incremental K2 overlay plus bound retained classes, not a fresh full Gradle build or an SDK result. Runtime evidence command arrays record argv/log paths without individual exit fields; actual XML/log/class binding supports the executed result, not an invented complete per-command exit ledger.",
+    "Current separate SDK8d terminal and still-live Native8d are outside this candidate review. No cloud handles or artifacts were queried or upgraded."
+  ],
+  "history": [
+    "UIv1 P1 before-fix evidence and immutable snapshots are retained; frozen UIv2 source closes it and final Native source adds an authored actual held-callback regression in the same selector.",
+    "Author external Java first compilation succeeded but fixture execution omitted existing state.commit. Old failed source/log is retained; only Java fixture was corrected and5sessions rerun. Kotlin/JVM8 was not repeated.",
+    "Reviewer backend checker initially expected literal state.commit in the redacted exception log. Actual log says Unexpected host operation with HostRulePersistenceAdapter.compareAndSet stack; checker was corrected to bind that raw fact plus corrected Java source, then succeeded. This was a reviewer assertion correction, not a production/test-suite fix.",
+    "Prior firstBrowser validation-only128MiB testworker build tail is precisely documented; current127-source-build roster matches canonical build bytes, neither Gradle script executed during direct K2/JUnit."
+  ],
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloud": false,
+    "tags": false,
+    "peerStage": false,
+    "privateSources": false,
+    "ownIgnoredEvidenceOnly": true
+  }
+}

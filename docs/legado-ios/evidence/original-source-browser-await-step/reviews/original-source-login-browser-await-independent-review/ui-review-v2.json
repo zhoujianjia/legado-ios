@@ -1,0 +1,219 @@
+{
+  "version": 2,
+  "frozenUTC": "2026-10-20T21:14:55.624115+00:00",
+  "scope": "Independent frozen UI3 v2 source review; backend exact runtime evidence separately verified, Host/Native whole snapshot still pending.",
+  "manifest": {
+    "path": ".build/original-source-login-browser-await-step/ui-final-v2.json",
+    "bytes": 10900,
+    "sha256": "b57f0c56929c6f5570413ccbb8510c81d5e9b86fa365c95149dd1c7629e7a2a6"
+  },
+  "sources": [
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "baseline": {
+        "bytes": 16013,
+        "sha256": "5e6f8460ddd6c4029e6cfd44fa0d10284438194e824a0fa99f934fb7a6180f07"
+      },
+      "candidate": {
+        "bytes": 21764,
+        "sha256": "e0669669ae286e0f0c3be7e14acd9eaddeccf00f413714e60055617d43628659"
+      },
+      "snapshot": {
+        "bytes": 21764,
+        "sha256": "e0669669ae286e0f0c3be7e14acd9eaddeccf00f413714e60055617d43628659"
+      },
+      "diff": {
+        "path": "ui-diffs-v2/Modules/Features/BookSource/SourceBrowserPresenter.swift.diff",
+        "bytes": 14021,
+        "sha256": "172eafe7a9cc05d47bf3010d35d7dce4c171c618ef67d4dc9072f25d2c93e8fd"
+      }
+    },
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "baseline": {
+        "bytes": 42245,
+        "sha256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47"
+      },
+      "candidate": {
+        "bytes": 61555,
+        "sha256": "cd81da562dd5f3c1eb142d1139a0a86f81b63d64d4728c3c841826b1ea354109"
+      },
+      "snapshot": {
+        "bytes": 61555,
+        "sha256": "cd81da562dd5f3c1eb142d1139a0a86f81b63d64d4728c3c841826b1ea354109"
+      },
+      "diff": {
+        "path": "ui-diffs-v2/Modules/Features/BookSource/JsBridgeBrowserView.swift.diff",
+        "bytes": 28949,
+        "sha256": "3cadde5b89278282f037ccc08dd28314173de2d1b780e9d157cc59401ad66dc7"
+      }
+    },
+    {
+      "path": "Modules/SharedUI/Components/SourceWebUIDelegate.swift",
+      "baseline": {
+        "bytes": 6239,
+        "sha256": "08d8c39e7c2b66bfee9f89de82805c3a405b8ca657bf0fb279ea49b8dec580bb"
+      },
+      "candidate": {
+        "bytes": 6548,
+        "sha256": "770f369e1cfc0bb6ad0c1a979aafc5f30867814c6bd017dbf6b77da0c87f36cb"
+      },
+      "snapshot": {
+        "bytes": 6548,
+        "sha256": "770f369e1cfc0bb6ad0c1a979aafc5f30867814c6bd017dbf6b77da0c87f36cb"
+      },
+      "diff": {
+        "path": "ui-diffs-v2/Modules/SharedUI/Components/SourceWebUIDelegate.swift.diff",
+        "bytes": 706,
+        "sha256": "20a1a37d732564c4013be4dc4e5395546ae0f7f2ba401b3d1301579a8c865ac1"
+      }
+    }
+  ],
+  "decision": {
+    "UI3SourceApproval": true,
+    "remainingConfirmedP1": 0,
+    "remainingConfirmedP2": 0,
+    "wholeSliceApproval": false,
+    "SwiftSDK": false,
+    "JNI": false,
+    "UIKit": false
+  },
+  "closedFindings": [
+    {
+      "id": "AWAIT-INITIAL-LOAD-CANCELLATION",
+      "priority": "P1",
+      "status": "closed in frozen source; actual Native regression remains authored/unexecuted",
+      "before": {
+        "path": ".build/original-source-login-browser-await-independent-review/ui-review-v1.json",
+        "bytes": 6843,
+        "sha256": "770f98dac3f896a0c1f853717997527617f5eb572232f9e70841c66323339fd5"
+      },
+      "resolution": "Initial load/reload now belongs to the same Coordinator task/generation. A replacement captures, cancels and awaits its predecessor. Native setCookie callbacks are all awaited without cancellation short-circuit; notify only resumes and never starts HTTP. Every initial admission, pre-IPC step and resumed load checks the current generation/page token, with awaited pages also rechecking the real Host/deadline. Explicit stop seals future loads/navigation before stopping WebKit/cancelling handles; final Presenter drain awaits latest initial chain and confirmation before releasing receipt/queue.",
+      "nonawaitBoundary": "All original pages install controls and an explicit ticket-only load check. Nonawait uses the same ticket token with distantFuture, allowing its accepted page and pending initial load to survive normal producer/session/revoke completion. Explicit UI cancellation invalidates that token and seals/stops/drains navigation. No normal producer cleanup is reinterpreted as page cancellation.",
+      "effectsBoundary": "SeedIssued is recorded before real IPC and SeedCompleted only after real callbacks. Already-issued native Cookie changes cannot be rolled back and are not claimed undone; preventing later HTTP/load and awaiting issued callbacks are the repair guarantees."
+    }
+  ],
+  "rechecked": [
+    "The latest initial task retains the complete reload chain; old-task defer clears only its own still-current generation, and cancellation seals generation first so it cannot erase the captured drain handle.",
+    "Separate Presenter finish task drains initial/confirmation. An initial or confirmation callback may request dismissal but never awaits that drain, so this path does not create self-await.",
+    "Internal per-Coordinator seeder defaults to actual WKHTTPCookieStore.setCookie. Test-only holding is permitted only after a real native callback; no global success override/new Cookie store/network/owner is added.",
+    "Original same-page close/challenge/manual Done versus visible Cancel, atomic URL+DOM snapshot, true refetch confirmation, strict sourceRunHandler:nil and guarded terminal Cookie capture retain the reviewed v1 contract.",
+    "Delegate candidate is byte-identical to frozen v1. Its only change from baseline is optional webViewDidClose forwarding; existing popup/dialog/prompt behavior remains unchanged."
+  ],
+  "lineEvidence": {
+    "Modules/Features/BookSource/SourceBrowserPresenter.swift": [
+      {
+        "needle": "pageControls?.stopLoading()",
+        "lines": [
+          192,
+          233
+        ]
+      },
+      {
+        "needle": "packet.awaitsResult ? packet.deadline",
+        "lines": [
+          306
+        ]
+      },
+      {
+        "needle": "await controls?.cancelAndDrain()",
+        "lines": [
+          215
+        ]
+      }
+    ],
+    "Modules/Features/BookSource/JsBridgeBrowserView.swift": [
+      {
+        "needle": "onOriginalPageReady?(coordinator.originalPageControls())",
+        "lines": [
+          634
+        ]
+      },
+      {
+        "needle": "let previous = initialLoadWork",
+        "lines": [
+          766
+        ]
+      },
+      {
+        "needle": "if let previous { await previous.value }",
+        "lines": [
+          773
+        ]
+      },
+      {
+        "needle": "initialLoadGeneration == generation",
+        "lines": [
+          780,
+          832,
+          859
+        ]
+      },
+      {
+        "needle": "sourceBrowserCookieSeedIssued",
+        "lines": [
+          805,
+          806
+        ]
+      },
+      {
+        "needle": "self.initialCookieSeeder",
+        "lines": [
+          811
+        ]
+      },
+      {
+        "needle": "group.notify(queue: .main) { continuation.resume() }",
+        "lines": [
+          817
+        ]
+      },
+      {
+        "needle": "webView.load(request)",
+        "lines": [
+          830
+        ]
+      },
+      {
+        "needle": "func stopPageLoading()",
+        "lines": [
+          864
+        ]
+      },
+      {
+        "needle": "if let initial { await initial.value }",
+        "lines": [
+          883
+        ]
+      },
+      {
+        "needle": "if let confirmation { await confirmation.value }",
+        "lines": [
+          884
+        ]
+      }
+    ]
+  },
+  "evidenceReuse": {
+    "grammarRoots": 6,
+    "grammarErrors": 0,
+    "reviewerSuitesRepeated": 0,
+    "backendVerification": {
+      "path": ".build/original-source-login-browser-await-independent-review/backend-evidence-verification-v1.json",
+      "bytes": 35842,
+      "sha256": "879f1955d7c82fd372785bdd2de8efe34c880cb2e058fe05f82074cf01a8ef23"
+    }
+  },
+  "remainingBoundary": [
+    "Whole frozen Host/DTO/Native and final source/manifest composition must bind these exact UI3 v2 bytes before overall approval.",
+    "Native seed-held regression is being appended to the existing selector; no UIKit/SDK/JNI execution occurred locally.",
+    "POST/localHTML/WebJS/showBrowser/V2 browser and shared-flight coalescing remain outside this GET await slice."
+  ],
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloud": false,
+    "peerStage": false,
+    "ownIgnoredEvidenceOnly": true
+  }
+}

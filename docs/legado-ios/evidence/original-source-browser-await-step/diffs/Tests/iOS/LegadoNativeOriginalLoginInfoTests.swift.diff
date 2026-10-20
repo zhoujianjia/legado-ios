@@ -1,0 +1,324 @@
+--- a/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
+@@ -1,5 +1,7 @@
+ import Foundation
+ import LegadoRuntime
++import Network
++import WebKit
+ import XCTest
+ @testable import yuedu_app
+
+@@ -520,6 +522,313 @@
+         if let problem { throw problem }
+     }
+
++    /// Executes the ordinary JAR through the sole product process, the default
++    /// Presenter, real WK page confirmation, Cookie owner and UIKit dismissal.
++    /// The loopback server is only a synthetic HTTP peer; no Host receipt is mocked.
++    func testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite() async throws {
++        executionTimeAllowance = 180
++        try await requireNativeRuntime()
++        let fixture = try await Task.detached { try Fixture() }.value
++        let peer = try OriginalAwaitHTTPPeer()
++        let ready = expectation(description: "Synthetic await HTTP peer ready")
++        peer.start { ready.fulfill() }
++        await fulfillment(of: [ready], timeout: 10)
++        let process = LegadoRuntimeProcess.shared
++        let runtime = try await process.executor()
++        let owner = try await process.bindPersistentSource(sourceURL: fixture.a, sourceRevision: "native-browser-await-v1")
++        var session: LegadoSourceSession?
++        var problem: Error?
++        let confirmedTaskID = UUID().uuidString
++        let cancelledTaskID = UUID().uuidString
++        do {
++            let url = try peer.readyURL()
++            try await exerciseCancelledInitialCookieSeed(url: XCTUnwrap(URL(string: url)), peer: peer)
++            var source = BookSource()
++            source.bookSourceUrl = fixture.a; source.enabledCookieJar = true
++            source.loginUrl = "var browserAwaitPrelude=true;"
++            let admittedSource = source
++            let sourceJSON = try await Task.detached {
++                String(decoding: try JSONEncoder().encode(admittedSource), as: UTF8.self)
++            }.value
++            let current = try await runtime.createSession(sourceJSON: sourceJSON,
++                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner,
++                    sourceMode: .originalTraditional, cookieAccess: .appOwnerText))
++            session = current
++            let presented = expectation(description: "Real awaited page presented")
++            let pageDidPresent = await SourceBrowserPresenter.originalPageDidPresent
++            let firstObserver = NotificationCenter.default.addObserver(forName: pageDidPresent,
++                object: nil, queue: nil) { event in
++                if event.userInfo?["taskID"] as? String == confirmedTaskID { presented.fulfill() }
++            }
++            defer { NotificationCenter.default.removeObserver(firstObserver) }
++            let effects = OriginalBrowserEffects()
++            let pending = Task {
++                try await runtime.loginActionOriginal(session: current,
++                    action: "var r=java.startBrowserAwait('\(url)','Synthetic await');if(String(r.body())!=='<html>synthetic-await-body</html>'||String(r.url())!=='\(url)'||r.code()!==200||String(r.message())!=='OK'||r.headers().size()!==0)throw new Error('wrong original owner result');",
++                    credentials: [:], taskID: confirmedTaskID,
++                    onReportedEffects: { effects.record($0) })
++            }
++            await fulfillment(of: [presented], timeout: 15)
++            // This calls the mounted Coordinator's page-close path, not a fake
++            // Completion. Success waits for Cookie capture and actual dismissal.
++            await SourceBrowserPresenter.requestOriginalPageClose(taskID: confirmedTaskID)
++            do {
++                let result = try await pending.value
++                XCTAssertTrue(result.executed)
++            } catch {
++                pending.cancel(); _ = await pending.result
++                throw error
++            }
++            XCTAssertTrue(effects.snapshot().contains("sourceBrowserPresented"))
++            XCTAssertTrue(effects.snapshot().contains("sourceBrowserCookieCaptureCompleted"))
++            let activeAfterConfirm = await SourceBrowserPresenter.isOriginalPageActive(taskID: confirmedTaskID)
++            XCTAssertFalse(activeAfterConfirm)
++            XCTAssertGreaterThanOrEqual(peer.requestCount, 1)
++
++            let secondPresented = expectation(description: "Second real awaited page presented")
++            let secondObserver = NotificationCenter.default.addObserver(forName: pageDidPresent,
++                object: nil, queue: nil) { event in
++                if event.userInfo?["taskID"] as? String == cancelledTaskID { secondPresented.fulfill() }
++            }
++            defer { NotificationCenter.default.removeObserver(secondObserver) }
++            let cancelled = Task {
++                try await runtime.loginActionOriginal(session: current,
++                    action: "java.startBrowserAwait('\(url)','Cancelled await',false);source.putLoginInfo('must-not-write');",
++                    credentials: [:], taskID: cancelledTaskID)
++            }
++            await fulfillment(of: [secondPresented], timeout: 15)
++            cancelled.cancel()
++            do {
++                try await runtime.cancel(taskID: cancelledTaskID)
++                do { _ = try await cancelled.value; XCTFail("Await must fail after actual task cancellation") }
++                catch let failure as LegadoRuntimeError {
++                    XCTAssertEqual(failure.code, "CANCELLED")
++                    XCTAssertTrue(failure.completedEffects?.contains("sourceBrowserPresented") == true)
++                }
++            } catch {
++                cancelled.cancel(); _ = await cancelled.result
++                throw error
++            }
++            _ = await cancelled.result
++            await SourceBrowserPresenter.cancelOriginal(taskID: cancelledTaskID)
++            let activeAfterCancel = await SourceBrowserPresenter.isOriginalPageActive(taskID: cancelledTaskID)
++            XCTAssertFalse(activeAfterCancel)
++            let raw = try await Task.detached {
++                try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
++            }.value
++            XCTAssertNil(raw)
++            let header = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(header, "kept-header")
++        } catch { problem = error }
++        await SourceBrowserPresenter.cancelOriginal(taskID: confirmedTaskID)
++        await SourceBrowserPresenter.cancelOriginal(taskID: cancelledTaskID)
++        if let session {
++            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
++        }
++        await process.revokePersistentSource(owner: owner)
++        let stopped = expectation(description: "Synthetic HTTP peer stopped and all connections drained")
++        peer.stop { stopped.fulfill() }
++        await fulfillment(of: [stopped], timeout: 10)
++        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
++        if let problem { throw problem }
++    }
++
++    @MainActor
++    private func exerciseCancelledInitialCookieSeed(url: URL, peer: OriginalAwaitHTTPPeer) async throws {
++        let name = "synthetic_initial_seed_" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
++        let cookie = try XCTUnwrap(HTTPCookie(properties: [.domain: "127.0.0.1", .path: "/", .name: name, .value: "synthetic"]))
++        HTTPCookieStorage.shared.setCookie(cookie)
++        defer { HTTPCookieStorage.shared.deleteCookie(cookie) }
++        let configuration = WKWebViewConfiguration()
++        configuration.websiteDataStore = .nonPersistent()
++        let webView = WKWebView(frame: .zero, configuration: configuration)
++        let coordinator = JsBridgeBrowserRepresentable.Coordinator()
++        coordinator.webView = webView
++        webView.navigationDelegate = coordinator
++        let barrier = OriginalCookieSeedBarrier()
++        let cancellation = OriginalRuntimeCommitCancellation()
++        let deadline = Date().addingTimeInterval(30)
++        coordinator.originalAwaitPolicy = .init(refetchAfterSuccess: true, deadline: deadline,
++            authorize: { try cancellation.check(deadline: deadline) },
++            validateCommit: { try cancellation.check(deadline: deadline) },
++            recordEffect: { barrier.record($0); return true })
++        coordinator.originalPageLoadCheck = { try cancellation.check(deadline: deadline) }
++        let seeded = expectation(description: "Actual WK setCookie completed but its notification remains held")
++        coordinator.initialCookieSeeder = { store, cookie, completion in
++            let holdThisCallback = cookie.name == name
++            store.setCookie(cookie) {
++                if holdThisCallback { barrier.hold(completion); seeded.fulfill() }
++                else { completion() }
++            }
++        }
++        var request = URLRequest(url: url)
++        request.setValue("synthetic-must-not-load", forHTTPHeaderField: "X-Synthetic-Initial")
++        coordinator.load(url: url, request: request, in: webView)
++        await fulfillment(of: [seeded], timeout: 10)
++        // The real mutation has already happened. Only delivery of its actual
++        // completion is delayed; no fake Cookie or presentation ACK is injected.
++        guard barrier.isHeld else {
++            coordinator.originalPageControls().stopLoading()
++            throw LegadoRuntimeError(code: "fixture_seed_failed", message: "Actual Cookie callback was not held")
++        }
++        XCTAssertEqual(peer.requestCount, 0)
++        let controls = coordinator.originalPageControls()
++        cancellation.cancel()
++        controls.stopLoading()
++        let drainStarted = expectation(description: "Cancellation has entered the actual seed drain")
++        let drain = Task { @MainActor in
++            drainStarted.fulfill()
++            await controls.cancelAndDrain()
++            barrier.markDrained()
++        }
++        await fulfillment(of: [drainStarted], timeout: 10)
++        XCTAssertFalse(barrier.didDrain, "Cancellation must await the already issued native callback")
++        XCTAssertEqual(peer.requestCount, 0)
++        barrier.release()
++        await drain.value
++        XCTAssertTrue(barrier.didDrain)
++        XCTAssertEqual(peer.requestCount, 0, "Releasing the old Cookie callback must never load its old URL or header")
++        XCTAssertNil(webView.url)
++        XCTAssertTrue(barrier.effects.contains("sourceBrowserCookieSeedIssued"))
++        XCTAssertTrue(barrier.effects.contains("sourceBrowserCookieSeedCompleted"), "Already accepted Cookie mutation remains a completed fact after cancellation")
++        let actualCookieExists = await withCheckedContinuation { continuation in
++            configuration.websiteDataStore.httpCookieStore.getAllCookies { cookies in
++                continuation.resume(returning: cookies.contains { $0.name == name })
++            }
++        }
++        XCTAssertTrue(actualCookieExists)
++        webView.navigationDelegate = nil
++    }
++
++    private final class OriginalCookieSeedBarrier: @unchecked Sendable {
++        private let lock = NSLock()
++        private var callback: (@Sendable () -> Void)?
++        private var drained = false
++        private var recorded: [String] = []
++        var isHeld: Bool { lock.withLock { callback != nil } }
++        var didDrain: Bool { lock.withLock { drained } }
++        var effects: [String] { lock.withLock { recorded } }
++        func hold(_ completion: @escaping @Sendable () -> Void) { lock.withLock { callback = completion } }
++        func release() {
++            let completion = lock.withLock { let value = callback; callback = nil; return value }
++            completion?()
++        }
++        func markDrained() { lock.withLock { drained = true } }
++        func record(_ value: String) { lock.withLock { recorded.append(value) } }
++    }
++
++    /// Bounded test-only HTTP peer. Ready/stop are actual NWListener signals.
++    private final class OriginalAwaitHTTPPeer: @unchecked Sendable {
++        private let listener: NWListener
++        private let queue = DispatchQueue(label: "native.original.await.http.peer")
++        private let lock = NSLock()
++        private var url: String?
++        private var count = 0
++        private var failure: String?
++        private var connections: [UUID: NWConnection] = [:]
++        private var stopping = false
++        private var cancelled = false
++        private var ready: (@Sendable () -> Void)?
++        private var stopped: (@Sendable () -> Void)?
++        init() throws {
++            let parameters = NWParameters.tcp
++            parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
++            listener = try NWListener(using: parameters)
++        }
++        var requestCount: Int { lock.withLock { count } }
++        func readyURL() throws -> String {
++            try lock.withLock {
++                guard let url, failure == nil else {
++                    throw LegadoRuntimeError(code: "fixture_peer_failed", message: "Synthetic HTTP peer did not become ready")
++                }
++                return url
++            }
++        }
++        func start(ready: @escaping @Sendable () -> Void) {
++            lock.withLock { self.ready = ready }
++            listener.stateUpdateHandler = { [weak self] state in
++                guard let self else { return }
++                switch state {
++                case .ready:
++                    self.lock.withLock {
++                        if let port = self.listener.port { self.url = "http://127.0.0.1:\(port.rawValue)/synthetic-await" }
++                        else { self.failure = "Missing port" }
++                    }
++                    self.signalReady()
++                case .failed:
++                    self.lock.withLock { self.failure = "Listener failed" }
++                    self.signalReady()
++                case .cancelled:
++                    self.lock.withLock { self.cancelled = true }
++                    self.signalReady(); self.finishStop()
++                default: break
++                }
++            }
++            listener.newConnectionHandler = { [weak self] connection in self?.accept(connection) }
++            listener.start(queue: queue)
++        }
++        func stop(completed: @escaping @Sendable () -> Void) {
++            let active = lock.withLock {
++                stopping = true; stopped = completed
++                return Array(connections.values)
++            }
++            listener.newConnectionHandler = nil
++            listener.cancel()
++            active.forEach { $0.cancel() }
++            finishStop()
++        }
++        private func signalReady() {
++            let callback = lock.withLock { let value = ready; ready = nil; return value }
++            callback?()
++        }
++        private func finishStop() {
++            let callback = lock.withLock { () -> (@Sendable () -> Void)? in
++                guard stopping, cancelled, connections.isEmpty else { return nil }
++                let value = stopped; stopped = nil; return value
++            }
++            callback?()
++        }
++        private func accept(_ connection: NWConnection) {
++            let id = UUID()
++            let accepted = lock.withLock {
++                guard !stopping else { return false }
++                connections[id] = connection
++                return true
++            }
++            guard accepted else { connection.cancel(); return }
++            connection.stateUpdateHandler = { [weak self] state in
++                guard let self else { return }
++                switch state {
++                case .failed: connection.cancel()
++                case .cancelled:
++                    connection.stateUpdateHandler = nil
++                    _ = self.lock.withLock { self.connections.removeValue(forKey: id) }
++                    self.finishStop()
++                default: break
++                }
++            }
++            connection.start(queue: queue)
++            receive(connection, bytes: Data())
++        }
++        private func receive(_ connection: NWConnection, bytes: Data) {
++            connection.receive(minimumIncompleteLength: 1, maximumLength: 16_384) { [weak self] data, _, done, error in
++                guard let self else { connection.cancel(); return }
++                var current = bytes
++                if let data { current.append(data) }
++                guard error == nil, current.count < 65_536 else { connection.cancel(); return }
++                if current.range(of: Data("\r\n\r\n".utf8)) != nil {
++                    let accepted = self.lock.withLock { self.count += 1; return self.count <= 16 }
++                    guard accepted else { connection.cancel(); return }
++                    let body = "<html>synthetic-await-body</html>"
++                    let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: \(body.utf8.count)\r\nConnection: close\r\n\r\n\(body)"
++                    connection.send(content: Data(response.utf8), contentContext: .finalMessage, isComplete: true,
++                        completion: .contentProcessed { _ in connection.cancel() })
++                } else if !done { self.receive(connection, bytes: current) }
++                else { connection.cancel() }
++            }
++        }
++    }
++
+     private final class OriginalBrowserEffects: @unchecked Sendable {
+         private let lock = NSLock()
+         private var values: [String] = []

@@ -1,0 +1,53 @@
+import com.google.gson.*;
+import com.sun.net.httpserver.HttpServer;
+import io.yuedu.legado.LegadoRuntime;
+import java.net.*;
+import java.util.*;
+public final class OrdinaryLoginBrowserAwaitSmoke {
+ private static int sessions,pages,credentialCalls,httpHostCalls,refetchRequests;
+ private static String mode="response",body="DOM",finalURL="https://synthetic-await.invalid/final",failure;
+ private static JsonObject object(String text){return JsonParser.parseString(text).getAsJsonObject();}
+ private static JsonObject checked(String text){var v=object(text);if(!v.get("ok").getAsBoolean())throw new AssertionError("Unexpected runtime failure");return v;}
+ private static JsonObject call(String origin,String script,boolean success){
+  var source=object("{\"loginUi\":\"[]\",\"enabledCookieJar\":true,\"ruleContent\":{}}");source.addProperty("bookSourceUrl",origin);source.addProperty("loginUrl","var awaitPrelude=true;");source.addProperty("header","{\"X-First\":\"synthetic-header\"}");
+  var opts=object("{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\"}");opts.addProperty("stateOwner","await:"+origin);
+  String id=checked(LegadoRuntime.createSession(source.toString(),opts.toString())).get("sessionId").getAsString();sessions++;
+  try{var input=object("{\"credentials\":{},\"timeoutMs\":20000}");input.addProperty("action",script);var result=object(LegadoRuntime.execute(id,"outside-await-"+UUID.randomUUID(),"loginAction",input.toString()));if(result.get("ok").getAsBoolean()!=success)throw new AssertionError("Wrong await terminal state");return result;}
+  finally{checked(LegadoRuntime.closeSession(id));}
+ }
+ public static void main(String[]args)throws Exception{
+  var server=HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}),0),0);
+  server.createContext("/",exchange->{try{
+   refetchRequests++;if(!"synthetic-header".equals(exchange.getRequestHeaders().getFirst("X-First")))throw new AssertionError("Initial AnalyzeUrl header lost");
+   if(exchange.getRequestURI().getPath().equals("/original")){exchange.getResponseHeaders().add("Location","/landed");exchange.sendResponseHeaders(302,-1);}
+   else{byte[]bytes="wire-body".getBytes(java.nio.charset.StandardCharsets.UTF_8);exchange.getResponseHeaders().add("X-Peer","must-not-escape");exchange.sendResponseHeaders(202,bytes.length);exchange.getResponseBody().write(bytes);}
+  }finally{exchange.close();}});server.start();String peer="http://127.0.0.1:"+server.getAddress().getPort();
+  LegadoRuntime.setHostCallback((task,operation,raw)->{
+   if(operation.equals("task.cancel"))return "{}";var input=object(raw);
+   if(operation.equals("state.read"))return "{\"revision\":0,\"values\":{}}";
+   if(operation.equals("source.login-info")){credentialCalls++;throw new AssertionError("Implicit credential mutation");}
+   if(operation.equals("http.request")){httpHostCalls++;throw new AssertionError("Refetch used generic HTTP host");}
+   if(!operation.equals("source.browser"))throw new AssertionError("Unexpected host operation");pages++;
+   if(!input.get("owner").getAsString().equals("await:"+input.get("sourceURL").getAsString())||!input.get("awaitsResult").getAsBoolean())throw new AssertionError("Wrong awaited owner");
+   var effects=JsonParser.parseString("[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\",\"sourceBrowserCookieCaptureIssued\",\"sourceBrowserCookieCaptureCompleted\"]");
+   if(failure!=null){var err=new JsonObject();err.addProperty("code",failure);err.addProperty("message","SYNTHETIC-AWAIT-PRIVATE");err.add("completedEffects",effects);var out=new JsonObject();out.addProperty("ok",false);out.add("error",err);return out.toString();}
+   var out=new JsonObject();out.add("hostEffects",effects);
+   if(mode.equals("presented")){out.addProperty("presented",true);}else{out.addProperty("mode",mode);out.addProperty("body",body);out.addProperty("finalURL",finalURL);}return out.toString();
+  });
+  try{
+   String a="https://ordinary-await-a.invalid",b="https://ordinary-await-b.invalid";
+   body="<html>snapshot</html>";finalURL=peer+"/dom-final";
+   call(a,"var r=java.startBrowserAwait('"+peer+"/original','DOM',false);if(String(r.url())!=='"+finalURL+"'||String(r.body())!=='<html>snapshot</html>'||r.code()!==200||String(r.message())!=='OK'||r.headers().size()!==0)throw new Error('DOM response lost');",true);
+   mode="refetchConfirmed";
+   call(b,"var r=java.startBrowserAwait('"+peer+"/original','Refetch');if(String(r.body())!=='wire-body'||String(r.url())!=='"+peer+"/original'||r.code()!==200||String(r.message())!=='OK'||r.headers().size()!==0)throw new Error('wrong synthetic owner response');",true);
+   mode="presented";var notDone=call(a,"java.startBrowserAwait('"+peer+"/original','Not terminal',false);",false);
+   if(!notDone.getAsJsonObject("error").get("code").getAsString().equals("INVALID_BROWSER_RESULT"))throw new AssertionError("Presentation counted as await completion");
+   mode="response";body="";var empty=call(a,"java.startBrowserAwait('"+peer+"/original','Empty',false);",false);
+   if(!empty.getAsJsonObject("error").get("code").getAsString().equals("BROWSER_EMPTY_RESULT"))throw new AssertionError("Empty body succeeded");
+   failure="BROWSER_CANCELLED";var cancel=call(b,"java.startBrowserAwait('"+peer+"/original','Cancelled',false);source.putLoginInfo('late');",false);
+   if(!cancel.getAsJsonObject("error").get("code").getAsString().equals("BROWSER_CANCELLED")||cancel.toString().contains("SYNTHETIC-AWAIT-PRIVATE")||!cancel.getAsJsonObject("error").getAsJsonArray("completedEffects").toString().contains("sourceBrowserCookieCaptureCompleted"))throw new AssertionError("Cancel lost accepted effects or leaked body");
+   if(sessions!=5||pages!=5||refetchRequests!=2||credentialCalls!=0||httpHostCalls!=0)throw new AssertionError("Unexpected owner routing");
+   System.out.println("ORDINARY_BROWSER_AWAIT_OK sessions=5 sources=2 syntheticPageTerminals=5 dom=1 defaultRefetch=1 originalHTTPRequests=2 presentationRejected=1 emptyRejected=1 userCancel=1 credentialCalls=0 genericHTTPHost=0");
+  }finally{LegadoRuntime.setHostCallback(null);server.stop(0);}
+ }
+}

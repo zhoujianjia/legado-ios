@@ -1,0 +1,563 @@
+--- a/Modules/Features/BookSource/JsBridgeBrowserView.swift
++++ b/Modules/Features/BookSource/JsBridgeBrowserView.swift
+@@ -2,6 +2,7 @@
+ import WebKit
+ import Combine
+ import ObjectiveC
++import LegadoRuntime
+
+ /// Paragraph-review sheets deliberately use only the source page's own UI.
+ /// Login and other source browsers keep `JsBridgeBrowserView`'s normal toolbar.
+@@ -50,6 +51,24 @@
+ // slow login/key servers don't appear as a frozen blank sheet, plus an error
+ // state with retry. Syncs WKWebView cookies into CookieStore and
+ // HTTPCookieStorage when the user taps "Done" (and on each navigation finish).
++
++/// A single awaited page borrows the existing task/source grant. No page data
++/// or credential state is persisted here; Cookie writes use the existing owner.
++struct OriginalBrowserAwaitPolicy: Sendable {
++    let refetchAfterSuccess: Bool
++    let deadline: Date
++    let authorize: @Sendable () async throws -> Void
++    let validateCommit: @Sendable () throws -> Void
++    let recordEffect: @Sendable (String) -> Bool
++}
++
++/// Handles only the mounted Coordinator's existing task and page-close event.
++/// The Presenter retains these until the actual controller has disappeared.
++struct OriginalBrowserPageControls {
++    let requestClose: @MainActor () -> Void
++    let stopLoading: @MainActor () -> Void
++    let cancelAndDrain: @MainActor () async -> Void
++}
+
+ struct JsBridgeBrowserView: View {
+     let urlString: String
+@@ -68,6 +87,10 @@
+     /// Legado's `sourceVerificationEnable` (a page `java.startBrowserAwait` waits for): once
+     /// a Cloudflare challenge on the page clears, the page finishes as if ✓ were tapped.
+     let finishesWhenChallengeClears: Bool
++    let originalAwaitPolicy: OriginalBrowserAwaitPolicy?
++    let originalPageLoadCheck: (@Sendable () throws -> Void)?
++    let onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)?
++    let onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)?
+
+     init(
+         urlString: String,
+@@ -80,6 +103,10 @@
+         sourceConfigurationUpdateHandler: ((String) -> Void)? = nil,
+         userAgent: String? = nil,
+         finishesWhenChallengeClears: Bool = false,
++        originalAwaitPolicy: OriginalBrowserAwaitPolicy? = nil,
++        originalPageLoadCheck: (@Sendable () throws -> Void)? = nil,
++        onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)? = nil,
++        onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)? = nil,
+         onDismiss: @escaping (_ body: String?) -> Void
+     ) {
+         self.urlString = urlString
+@@ -92,6 +119,10 @@
+         self.sourceConfigurationUpdateHandler = sourceConfigurationUpdateHandler
+         self.userAgent = userAgent
+         self.finishesWhenChallengeClears = finishesWhenChallengeClears
++        self.originalAwaitPolicy = originalAwaitPolicy
++        self.originalPageLoadCheck = originalPageLoadCheck
++        self.onOriginalAwaitCompletion = onOriginalAwaitCompletion
++        self.onOriginalPageReady = onOriginalPageReady
+         self.onDismiss = onDismiss
+     }
+
+@@ -111,6 +142,12 @@
+                     .toolbar {
+                         ToolbarItem(placement: .navigationBarLeading) {
+                             Button {
++                                if originalAwaitPolicy != nil {
++                                    isSyncing = true
++                                    if let cancel = bridge.cancelOriginalAwait { cancel() }
++                                    else { onDismiss(nil) }
++                                    return
++                                }
+                                 // XHR-based login can set cookies after the last
+                                 // navigation finished. Persist that final jar even
+                                 // on cancellation; nil still tells source JS that
+@@ -155,13 +192,26 @@
+                     .onChange(of: bridge.challengeCleared) { _, cleared in
+                         if cleared, !isSyncing { confirm() }
+                     }
++                    .onChange(of: bridge.originalCloseRequested) { _, requested in
++                        if requested, !isSyncing { confirm() }
++                    }
+             }
+         }
+     }
+
+     /// ✓: keep the page's cookies and hand its HTML back.
+     private func confirm() {
++        guard !isSyncing else { return }
+         isSyncing = true
++        if originalAwaitPolicy != nil {
++            guard let complete = bridge.completeOriginalAwait else {
++                onOriginalAwaitCompletion?(.failure(LegadoRuntimeError(code: "BROWSER_NOT_PRESENTED",
++                    message: "The awaited browser is not available")))
++                return
++            }
++            complete()
++            return
++        }
+         guard let sync = bridge.syncCookiesAndDismiss else {
+             onDismiss(nil)
+             return
+@@ -180,7 +230,11 @@
+                 bridge: bridge,
+                 initialRequest: initialRequest,
+                 userAgent: userAgent,
+-                finishesWhenChallengeClears: finishesWhenChallengeClears
++                finishesWhenChallengeClears: finishesWhenChallengeClears,
++                originalAwaitPolicy: originalAwaitPolicy,
++                originalPageLoadCheck: originalPageLoadCheck,
++                onOriginalAwaitCompletion: onOriginalAwaitCompletion,
++                onOriginalPageReady: onOriginalPageReady
+             )
+                 .edgesIgnoringSafeArea(hidesToolbar ? .all : [])
+
+@@ -319,12 +373,15 @@
+
+     var syncCookiesAndDismiss: ((@escaping (String?) -> Void) -> Void)?
+     var reload: (() -> Void)?
++    var completeOriginalAwait: (() -> Void)?
++    var cancelOriginalAwait: (() -> Void)?
+
+     @Published var progress: Double = 0
+     @Published var phase: Phase = .loading
+     @Published var errorText: String?
+     /// A Cloudflare challenge on the page has cleared (see `finishesWhenChallengeClears`).
+     @Published var challengeCleared = false
++    @Published var originalCloseRequested = false
+ }
+
+ // MARK: - UIViewRepresentable
+@@ -339,6 +396,10 @@
+     var initialRequest: URLRequest? = nil
+     var userAgent: String? = nil
+     var finishesWhenChallengeClears = false
++    var originalAwaitPolicy: OriginalBrowserAwaitPolicy? = nil
++    var originalPageLoadCheck: (@Sendable () throws -> Void)? = nil
++    var onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)? = nil
++    var onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)? = nil
+
+     static let sourceJavaPromptName = SourceWebUIDelegate.sourceBridgePromptName
+
+@@ -526,6 +587,23 @@
+             wv.customUserAgent = userAgent
+         }
+         context.coordinator.finishesWhenChallengeClears = finishesWhenChallengeClears
++        context.coordinator.originalAwaitPolicy = originalAwaitPolicy
++        context.coordinator.originalPageLoadCheck = originalPageLoadCheck
++        context.coordinator.onOriginalAwaitCompletion = onOriginalAwaitCompletion
++        if originalAwaitPolicy != nil {
++            context.coordinator.uiDelegate.onCloseRequested = { [weak coordinator = context.coordinator] in
++                coordinator?.requestOriginalPageClose()
++            }
++            // Locked basicJs overrides only the page's close function here.
++            // This finite signal installs no source Java/cache/run evaluator.
++            config.userContentController.addScriptMessageHandler(context.coordinator,
++                contentWorld: .page, name: Coordinator.originalCloseMessageName)
++            config.userContentController.addUserScript(WKUserScript(source: """
++                window.close = function() {
++                    window.webkit.messageHandlers.\(Coordinator.originalCloseMessageName).postMessage(null);
++                };
++                """, injectionTime: .atDocumentStart, forMainFrameOnly: true))
++        }
+         wv.navigationDelegate = context.coordinator
+         // `uiDelegate` is weak — the Coordinator owns it. Without it the page's
+         // `window.open` / `alert` / `confirm` are dropped without a trace.
+@@ -545,6 +623,15 @@
+             guard let wv = coordinator?.webView else { completion(nil); return }
+             coordinator?.syncCookiesAndDismiss(from: wv, completion: completion)
+         }
++        bridge.completeOriginalAwait = { [weak coordinator] in
++            guard let coordinator, let webView = coordinator.webView else { return }
++            coordinator.completeOriginalAwait(from: webView)
++        }
++        bridge.cancelOriginalAwait = { [weak coordinator] in
++            guard let coordinator, let webView = coordinator.webView else { return }
++            coordinator.cancelOriginalAwait(from: webView)
++        }
++        onOriginalPageReady?(coordinator.originalPageControls())
+         bridge.reload = { [weak coordinator, weak bridge] in
+             guard let coordinator, let wv = coordinator.webView else { return }
+             bridge?.phase = .loading
+@@ -566,15 +653,20 @@
+     func makeCoordinator() -> Coordinator { Coordinator() }
+
+     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
++        coordinator.stopPageLoading()
++        coordinator.uiDelegate.onCloseRequested = nil
+         uiView.configuration.userContentController.removeScriptMessageHandler(
+             forName: Coordinator.sourceRunMessageName,
+             contentWorld: .page
+         )
++        uiView.configuration.userContentController.removeScriptMessageHandler(
++            forName: Coordinator.originalCloseMessageName, contentWorld: .page)
+         coordinator.clipboardBridge.remove(from: uiView.configuration.userContentController)
+     }
+
+     final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandlerWithReply {
+         static let sourceRunMessageName = "yueduSourceRun"
++        static let originalCloseMessageName = "yueduOriginalBrowserClose"
+
+         weak var webView: WKWebView?
+         weak var bridge: JsBridgeBrowserBridge?
+@@ -582,6 +674,18 @@
+         var sourceRunHandler: ((String) async throws -> String)?
+         var sourceConfigurationUpdateHandler: ((String) -> Void)?
+         var finishesWhenChallengeClears = false
++        var originalAwaitPolicy: OriginalBrowserAwaitPolicy?
++        var originalPageLoadCheck: (@Sendable () throws -> Void)?
++        var onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)?
++        var originalAwaitWork: Task<Void, Never>?
++        private var initialLoadWork: Task<Void, Never>?
++        private var initialLoadGeneration = UUID()
++        private var pageLoadStopped = false
++        /// Tests may hold delivery only after this same real WK operation calls
++        /// back. Production always uses the actual existing Cookie store.
++        var initialCookieSeeder: @MainActor (WKHTTPCookieStore, HTTPCookie, @escaping @Sendable () -> Void) -> Void = {
++            store, cookie, completion in store.setCookie(cookie, completionHandler: completion)
++        }
+         /// A page of this navigation history was a Cloudflare challenge.
+         private(set) var sawChallenge = false
+         /// Strongly held: `WKWebView.uiDelegate` is weak.
+@@ -624,6 +728,10 @@
+             decidePolicyFor navigationAction: WKNavigationAction,
+             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+         ) {
++            do {
++                guard !pageLoadStopped else { decisionHandler(.cancel); return }
++                try originalPageLoadCheck?()
++            } catch { decisionHandler(.cancel); return }
+             // Intercept book-source import deep links so WKWebView doesn't try to
+             // navigate to them (an unhandled custom scheme fails as "unsupported URL").
+             // We handle our own `yuedu://` scheme (來源配置 and module links) plus Legado's
+@@ -645,7 +753,9 @@
+             decisionHandler(.cancel)
+         }
+
++        @MainActor
+         func load(url: URL, request initialRequest: URLRequest? = nil, in webView: WKWebView) {
++            guard !pageLoadStopped else { return }
+             // Attach source credentials only to the exact destination prepared by its runtime.
+             let request: URLRequest
+             if let initialRequest, initialRequest.url == url {
+@@ -653,31 +763,128 @@
+             } else {
+                 request = URLRequest(url: url)
+             }
+-            let cookies = Self.cookiesForInitialLoad(url: url)
+-            guard !cookies.isEmpty else {
+-                webView.load(request)
+-                return
+-            }
+-
+-            let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
+-            let group = DispatchGroup()
+-            for cookie in cookies {
+-                group.enter()
+-                cookieStore.setCookie(cookie) {
+-                    group.leave()
+-                }
+-            }
+-            group.notify(queue: .main) {
+-                webView.load(request)
+-            }
+-        }
+-
++            let previous = initialLoadWork
++            previous?.cancel()
++            let generation = UUID()
++            initialLoadGeneration = generation
++            // Each replacement drains its predecessor, including native Cookie
++            // callbacks that cannot be retracted by cancelling a Swift Task.
++            initialLoadWork = Task { @MainActor [weak self, weak webView] in
++                if let previous { await previous.value }
++                guard let self, let webView else { return }
++                let started = SourcePerfTrace.now
++                var seededCookieCount = 0
++                defer {
++                    SourcePerfTrace.record("legado.original.browser.initial",
++                        "main=\(Thread.isMainThread) cookies=\(seededCookieCount)", since: started)
++                    if self.initialLoadGeneration == generation { self.initialLoadWork = nil }
++                }
++                var effects: [String] = []
++                do {
++                    try self.checkInitialLoad(generation)
++                    if let policy = self.originalAwaitPolicy {
++                        try await policy.authorize()
++                        try policy.validateCommit()
++                        try self.checkInitialLoad(generation)
++                    }
++                    let cookies = Self.cookiesForInitialLoad(url: url)
++                    seededCookieCount = cookies.count
++                    if self.originalAwaitPolicy != nil, cookies.count > 16_384 {
++                        throw LegadoRuntimeError(code: "STATE_LIMIT", message: "Too many initial browser Cookies")
++                    }
++                    let store = webView.configuration.websiteDataStore.httpCookieStore
++                    let group = DispatchGroup()
++                    var issued = 0
++                    var issueError: (any Error)?
++                    for cookie in cookies {
++                        do {
++                            try self.checkInitialLoad(generation)
++                            if let policy = self.originalAwaitPolicy {
++                                try policy.validateCommit()
++                                if issued == 0 {
++                                    guard policy.recordEffect("sourceBrowserCookieSeedIssued") else { throw CancellationError() }
++                                    effects.append("sourceBrowserCookieSeedIssued")
++                                }
++                            }
++                            group.enter()
++                            issued += 1
++                            self.initialCookieSeeder(store, cookie) { group.leave() }
++                        } catch { issueError = error; break }
++                    }
++                    // Cancellation never short-circuits this continuation. All
++                    // issued setCookie callbacks must finish before the task ends.
++                    await withCheckedContinuation { continuation in
++                        group.notify(queue: .main) { continuation.resume() }
++                    }
++                    if issued > 0, issued == cookies.count, let policy = self.originalAwaitPolicy {
++                        effects.append("sourceBrowserCookieSeedCompleted")
++                        _ = policy.recordEffect("sourceBrowserCookieSeedCompleted")
++                    }
++                    if let issueError { throw issueError }
++                    try self.checkInitialLoad(generation)
++                    if let policy = self.originalAwaitPolicy {
++                        try await policy.authorize()
++                        try policy.validateCommit()
++                        try self.checkInitialLoad(generation)
++                    }
++                    webView.load(request)
++                } catch {
++                    guard self.initialLoadGeneration == generation, !self.pageLoadStopped else { return }
++                    if self.originalAwaitPolicy != nil {
++                        let typed = error as? LegadoRuntimeError
++                        let retained = (effects + (typed?.completedEffects ?? [])).reduce(into: [String]()) {
++                            if !$0.contains($1) { $0.append($1) }
++                        }
++                        self.onOriginalAwaitCompletion?(.failure(LegadoRuntimeError(
++                            code: error is CancellationError ? "CANCELLED" : (typed?.code ?? "STATE_IO"),
++                            message: "The awaited browser could not start", completedEffects: retained)))
++                    } else { self.setPhase(.failed, error: localized("載入失敗")) }
++                }
++            }
++        }
++
++        @MainActor
+         func loadInitial(urlString: String, html: String?, request: URLRequest? = nil, in webView: WKWebView) {
++            guard !pageLoadStopped else { return }
+             if let html {
+                 webView.loadHTMLString(html, baseURL: URL(string: urlString))
+             } else if let url = URL(string: urlString) {
+                 load(url: url, request: request, in: webView)
+             }
++        }
++
++        @MainActor
++        private func checkInitialLoad(_ generation: UUID) throws {
++            try Task.checkCancellation()
++            guard !pageLoadStopped, initialLoadGeneration == generation else { throw CancellationError() }
++            try originalPageLoadCheck?()
++        }
++
++        @MainActor
++        func stopPageLoading() {
++            // Seal future reload/notify/navigation admission before touching
++            // handles; the latest task still retains its complete reload chain.
++            pageLoadStopped = true
++            initialLoadGeneration = UUID()
++            webView?.stopLoading()
++            initialLoadWork?.cancel()
++            originalAwaitWork?.cancel()
++        }
++
++        @MainActor
++        func originalPageControls() -> OriginalBrowserPageControls {
++            .init(requestClose: { [weak self] in self?.requestOriginalPageClose() },
++                stopLoading: { [weak self] in self?.stopPageLoading() },
++                cancelAndDrain: { [weak self] in
++                    guard let self else { return }
++                    let initial = self.initialLoadWork
++                    let confirmation = self.originalAwaitWork
++                    self.stopPageLoading()
++                    if let initial { await initial.value }
++                    if let confirmation { await confirmation.value }
++                    self.initialLoadWork = nil
++                    self.originalAwaitWork = nil
++                })
+         }
+
+         // Matches the SDK requirement exactly (`WK_SWIFT_UI_ACTOR` on the protocol and the reply
+@@ -688,6 +895,15 @@
+             didReceive message: WKScriptMessage,
+             replyHandler: @escaping @MainActor (Any?, String?) -> Void
+         ) {
++            if message.name == Self.originalCloseMessageName {
++                guard originalAwaitPolicy != nil, message.frameInfo.isMainFrame else {
++                    replyHandler(nil, "BROWSER_CLOSE_UNAVAILABLE")
++                    return
++                }
++                requestOriginalPageClose()
++                replyHandler(nil, nil)
++                return
++            }
+             guard message.name == Self.sourceRunMessageName,
+                   let script = message.body as? String,
+                   let sourceRunHandler else {
+@@ -764,7 +980,9 @@
+                 self?.bridge?.progress = 1
+                 self?.bridge?.phase = .finished
+             }
+-            syncCookiesAndDismiss(from: webView, completion: nil)
++            // An awaited page must not launch an unguarded Cookie write from
++            // didFinish. Its checked confirmation owns the terminal capture.
++            if originalAwaitPolicy == nil { syncCookiesAndDismiss(from: webView, completion: nil) }
+             if finishesWhenChallengeClears {
+                 checkCloudflareChallenge(in: webView)
+             }
+@@ -777,9 +995,13 @@
+             webView.evaluateJavaScript("!!window._cf_chl_opt") { [weak self] result, error in
+                 guard let self else { return }
+                 if let error {
+-                    AppLogger.parse("source page Cloudflare check failed", context: [
+-                        "error": error.localizedDescription
+-                    ])
++                    if self.originalAwaitPolicy == nil {
++                        AppLogger.parse("source page Cloudflare check failed", context: [
++                            "error": error.localizedDescription
++                        ])
++                    } else {
++                        AppLogger.parse("original browser challenge check failed", context: ["code": "BROWSER_EVALUATION_FAILED"])
++                    }
+                     return
+                 }
+                 if (result as? Bool) == true {
+@@ -818,6 +1040,122 @@
+                         completion?(nil)
+                     }
+                 }
++            }
++        }
++
++        /// Real confirmation only. A normal navigation finish never calls this.
++        @MainActor
++        func requestOriginalPageClose() {
++            // Locked Activity.close ignores page-authored close while the
++            // current page remains a challenge. User Cancel is separate.
++            guard originalAwaitPolicy != nil, !sawChallenge else { return }
++            bridge?.originalCloseRequested = true
++        }
++
++        @MainActor
++        func completeOriginalAwait(from webView: WKWebView) {
++            runOriginalAwait(from: webView, confirmed: true)
++        }
++
++        @MainActor
++        func cancelOriginalAwait(from webView: WKWebView) {
++            runOriginalAwait(from: webView, confirmed: false)
++        }
++
++        @MainActor
++        private func runOriginalAwait(from webView: WKWebView, confirmed: Bool) {
++            guard let policy = originalAwaitPolicy, originalAwaitWork == nil else { return }
++            originalAwaitWork = Task { @MainActor [weak self, weak webView] in
++                guard let self, let webView else { return }
++                var effects: [String] = []
++                do {
++                    try await policy.authorize()
++                    try Task.checkCancellation()
++                    try policy.validateCommit()
++                    let completion: LegadoOriginalBrowserCompletion?
++                    if !confirmed {
++                        // User Cancel keeps the existing page's Cookie capture,
++                        // but is never a successful empty browser response.
++                        completion = nil
++                    } else if policy.refetchAfterSuccess {
++                        // Locked true branch requires confirmation/Cookies, not DOM.
++                        completion = .refetchConfirmed
++                    } else {
++                        completion = try await self.originalSnapshot(from: webView)
++                    }
++                    try await policy.authorize()
++                    try Task.checkCancellation()
++                    try policy.validateCommit()
++                    guard policy.recordEffect("sourceBrowserCookieCaptureIssued") else { throw CancellationError() }
++                    effects.append("sourceBrowserCookieCaptureIssued")
++                    let scope: URL?
++                    if case .response(let finalURL, _)? = completion { scope = URL(string: finalURL) }
++                    else { scope = webView.url }
++                    _ = try await CookieStore.shared.captureWebKit(
++                        webView.configuration.websiteDataStore.httpCookieStore, confirming: scope,
++                        validate: policy.validateCommit)
++                    effects.append("sourceBrowserCookieCaptureCompleted")
++                    _ = policy.recordEffect("sourceBrowserCookieCaptureCompleted")
++                    try await policy.authorize()
++                    try Task.checkCancellation()
++                    try policy.validateCommit()
++                    if let completion { self.onOriginalAwaitCompletion?(.success(completion)) }
++                    else {
++                        self.onOriginalAwaitCompletion?(.failure(LegadoRuntimeError(code: "BROWSER_CANCELLED",
++                            message: "The awaited browser was cancelled", completedEffects: effects)))
++                    }
++                } catch {
++                    let typed = error as? LegadoRuntimeError
++                    let code: String
++                    if error is CancellationError { code = "CANCELLED" }
++                    else if let typed { code = typed.code }
++                    else if let owner = error as? CookieOwnerError { code = owner.code }
++                    else { code = "STATE_IO" }
++                    let retained = (effects + (typed?.completedEffects ?? [])).reduce(into: [String]()) {
++                        if !$0.contains($1) { $0.append($1) }
++                    }
++                    self.onOriginalAwaitCompletion?(.failure(LegadoRuntimeError(code: code,
++                        message: "The awaited browser could not complete", completedEffects: retained)))
++                }
++                self.originalAwaitWork = nil
++            }
++        }
++
++        @MainActor
++        private func originalSnapshot(from webView: WKWebView) async throws -> LegadoOriginalBrowserCompletion {
++            let encoded: String = try await withCheckedThrowingContinuation { continuation in
++                // One page-side evaluation pairs URL and HTML before navigation
++                // can make two separate WebKit callbacks describe different pages.
++                webView.evaluateJavaScript("JSON.stringify({finalURL:window.location.href,body:document.documentElement.outerHTML})") { value, error in
++                    guard error == nil, let encoded = value as? String else {
++                        continuation.resume(throwing: LegadoRuntimeError(code: "BROWSER_EVALUATION_FAILED",
++                            message: "The awaited browser page could not be read"))
++                        return
++                    }
++                    continuation.resume(returning: encoded)
++                }
++            }
++            try Task.checkCancellation()
++            return try await Self.decodeOriginalSnapshot(encoded)
++        }
++
++        nonisolated private static func decodeOriginalSnapshot(_ encoded: String) async throws -> LegadoOriginalBrowserCompletion {
++            try SourcePerfTrace.span("legado.original.browser.snapshot",
++                "main=\(Thread.isMainThread) bytes=\(encoded.utf8.count)") {
++                struct Snapshot: Decodable { let finalURL: String; let body: String }
++                let maximumBodyBytes = 4 * 1024 * 1024
++                guard encoded.utf8.count <= maximumBodyBytes * 6 + 65_536 * 6 + 128 else {
++                    throw LegadoRuntimeError(code: "STATE_LIMIT", message: "The awaited browser page exceeds its budget")
++                }
++                let snapshot: Snapshot
++                do { snapshot = try JSONDecoder().decode(Snapshot.self, from: Data(encoded.utf8)) }
++                catch { throw LegadoRuntimeError(code: "BROWSER_EVALUATION_FAILED", message: "The awaited browser page is invalid") }
++                guard snapshot.finalURL.utf8.count < 65_536, !snapshot.body.isEmpty,
++                      snapshot.body.utf8.count <= maximumBodyBytes else {
++                    throw LegadoRuntimeError(code: snapshot.body.isEmpty ? "BROWSER_EMPTY_RESULT" : "STATE_LIMIT",
++                        message: "The awaited browser page is empty or exceeds its budget")
++                }
++                return .response(finalURL: snapshot.finalURL, body: snapshot.body)
+             }
+         }

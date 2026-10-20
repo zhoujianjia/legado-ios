@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T21:08:14.540109+00:00",
+  "scope": "Independent UI-only source review. Backend/DTO/Host/JVM/Native are not accepted by this partial report.",
+  "manifest": {
+    "path": ".build/original-source-login-browser-await-step/ui-final-v1.json",
+    "bytes": 6739,
+    "sha256": "fdbce52950e5f922e31374786dbadcf0e0585e851f87fce56755d10a0bad85e4"
+  },
+  "decision": {
+    "sourceApproval": false,
+    "confirmedP1": 1,
+    "confirmedP2": 0,
+    "SDK": false,
+    "JNI": false,
+    "UIKit": false,
+    "wholeSlice": false
+  },
+  "sources": [
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "baseline": {
+        "bytes": 16013,
+        "sha256": "5e6f8460ddd6c4029e6cfd44fa0d10284438194e824a0fa99f934fb7a6180f07"
+      },
+      "candidate": {
+        "bytes": 21251,
+        "sha256": "21aa82825f7be5182f61f736b0893140679f69b9e2ec620206d91ff207ca5c01"
+      },
+      "diff": {
+        "path": "ui-diffs-v1/Modules/Features/BookSource/SourceBrowserPresenter.swift.diff",
+        "bytes": 13501,
+        "sha256": "9991aa5a7fcf0a919a153c7d775728f9ed9b013db826540cd59bd402f0120cef"
+      }
+    },
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "baseline": {
+        "bytes": 42245,
+        "sha256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47"
+      },
+      "candidate": {
+        "bytes": 55104,
+        "sha256": "0ba45dad26d50917b1767a7f1ce338ef0b788907c5cc0320f9f31f9ca69faf74"
+      },
+      "diff": {
+        "path": "ui-diffs-v1/Modules/Features/BookSource/JsBridgeBrowserView.swift.diff",
+        "bytes": 19812,
+        "sha256": "e05eedd2f17b28a02f8f1a60b99f37415e78cb1041c8e8e5aeff3e73332d0e7e"
+      }
+    },
+    {
+      "path": "Modules/SharedUI/Components/SourceWebUIDelegate.swift",
+      "baseline": {
+        "bytes": 6239,
+        "sha256": "08d8c39e7c2b66bfee9f89de82805c3a405b8ca657bf0fb279ea49b8dec580bb"
+      },
+      "candidate": {
+        "bytes": 6548,
+        "sha256": "770f369e1cfc0bb6ad0c1a979aafc5f30867814c6bd017dbf6b77da0c87f36cb"
+      },
+      "diff": {
+        "path": "ui-diffs-v1/Modules/SharedUI/Components/SourceWebUIDelegate.swift.diff",
+        "bytes": 706,
+        "sha256": "20a1a37d732564c4013be4dc4e5395546ae0f7f2ba401b3d1301579a8c865ac1"
+      }
+    }
+  ],
+  "context": [
+    {
+      "path": "Modules/Services/Network/CookieStore+WebKit.swift",
+      "bytes": 14333,
+      "sha256": "ddcfab7e764d556a9fef86299b6f35e8af0bf0e0867c13687cad00124af0a2b4"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/CookieStore.swift",
+      "bytes": 11229,
+      "sha256": "26aaa57b348497d67ac3f2be4682a538cfc3345a82f43af8dde2432c235a38f6"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+      "bytes": 43599,
+      "sha256": "e3faed0e0b4d22d9463a702c0e1fc76fe9ad4a83ccd300d25744bbf7dab9b08b"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+      "bytes": 762,
+      "sha256": "b7e8deae03869cc8ffb7998baa70fae785b95cf7c39ecafcae27ccd9438bef18"
+    }
+  ],
+  "contracts": {
+    "path": ".build/original-source-login-browser-await-independent-review/locked-ui-contracts-v1.json",
+    "bytes": 11530,
+    "sha256": "92811451451b5a9892a064351efa0052059c749f05f9a029798baa2c374b1f05"
+  },
+  "findings": [
+    {
+      "id": "AWAIT-INITIAL-LOAD-CANCELLATION",
+      "priority": "P1",
+      "status": "open; root confirmed P1 and authorized same-Coordinator v2 fix",
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "first": 745,
+      "last": 769,
+      "cause": "When cookiesForInitialLoad is nonempty, the existing Coordinator issues native setCookie and schedules DispatchGroup.notify that strongly retains webView and unconditionally calls load(request). The callback does not check the ticket token, source authorization or an owned load generation.",
+      "reachableOrder": [
+        "page mounts and initial Cookie seeding remains pending",
+        "explicit task cancellation invalidates ticket and dismisses page",
+        "finishOriginal drains originalAwaitWork only, which is nil before Done/Cancel",
+        "late seed completion invokes old notify and loads the old source request/headers after owned page dismissal"
+      ],
+      "boundary": "This is inherited shell code now entered by awaited pages, distinct from the correctly guarded terminal Cookie capture. No UIKit execution was performed. Already-issued native Cookie effects cannot be retracted and must not be claimed rolled back.",
+      "minimalDirection": "Keep the same Coordinator/Presenter/Cookie owner. Make pending initial navigation participate in owned cancellation/source admission, prevent a late notify from launching old requests, and retain any actually-issued effects. Root/author own the production fix."
+    }
+  ],
+  "checked": [
+    "Ticket receipt is installed before queue admission, cleared before resume, and awaited success is released only after actual dismissal and Coordinator drain.",
+    "Explicit cancellation invalidates the shared commit token and overrides unfinished confirmation; terminal Cookie capture checks source/deadline/cancellation before publication.",
+    "Done true returns refetchConfirmed without requiring DOM. False reads finalURL and outerHTML in one WebKit evaluation, then validates size and captures Cookies. Whole same-JVM original URL/header refetch remains to be reviewed after backend freeze.",
+    "The original basicJs window.close and WKUIDelegate close both enter the mounted Coordinator. Observed challenge-active close is suppressed; observed challenge true-to-false confirms. Ordinary didFinish neither confirms nor starts the old unguarded terminal Cookie capture on awaited pages.",
+    "SourceWebUIDelegate adds only an optional native close handler. Existing popup/dialog/prompt behavior is untouched; original route keeps sourceRunHandler nil and installs no Java/cache/run bridge.",
+    "No new store, VM, parser or replacement Cookie owner. Snapshot error/trace paths use static codes and counts rather than URL, body, headers or credentials."
+  ],
+  "evidenceReuse": {
+    "authorGrammarRoots": 6,
+    "authorGrammarErrors": 0,
+    "reviewerSuitesRun": 0,
+    "note": "Verified frozen grammar evidence hashes; no grammar rerun or compiler/UIKit claim."
+  },
+  "reviewPreparationNotes": [
+    "A read attempted without explicit UTF-8 failed under the Windows default encoding, then was repeated read-only with UTF-8; no production validation failed. Initial path searches with unsupported glob operands were corrected to explicit paths."
+  ],
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloud": false,
+    "peerStage": false,
+    "onlyOwnIgnoredEvidence": true
+  }
+}

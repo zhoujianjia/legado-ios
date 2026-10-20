@@ -1,0 +1,13 @@
+{
+  "path": "Packages/LegadoRuntime/jvm/build.gradle.kts",
+  "previousValidationOnlyBuild": {
+    "bytes": 10341,
+    "sha256": "a2b9fb98330cc826a69a95211a592d8772caeb4c71f1112e4d278426017717a5"
+  },
+  "currentCanonicalBuild": {
+    "bytes": 10234,
+    "sha256": "d6d85c57b9af52e14cfbbce226f408bc9edc2f7954d5d5d9a2e067d27108ca21"
+  },
+  "exactDifference": "\ntasks.test {maxHeapSize=\"128m\";minHeapSize=\"16m\";jvmArgs(\"-XX:+UseSerialGC\",\"-XX:MaxMetaspaceSize=128m\")}\n",
+  "meaning": "Old first-browser evidence inherited validation-only testworker128MiB stanza. Current validation uses exact canonical build bytes without it. Neither build script is executed by direct K2/JUnit; actual argv carry VM options. Production source120 unchanged; no canonical mutation."
+}

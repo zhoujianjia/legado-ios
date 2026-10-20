@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-20T21:27:45.088981+00:00",
+  "scope": "Actual Native8d external-link compiler-overload repair",
+  "file": {
+    "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+    "baseline": {
+      "bytes": 99435,
+      "sha256": "8691b485cdb4a1cb4651fe34cf5f6ec806cabf1bf92b8309c0677e571a09e275"
+    },
+    "candidate": {
+      "bytes": 99473,
+      "sha256": "f5e5b692fcff631968a374d5cd0f8833f5ce219944640041c4b4bfa75baf1db5"
+    },
+    "snapshot": {
+      "bytes": 99473,
+      "sha256": "f5e5b692fcff631968a374d5cd0f8833f5ce219944640041c4b4bfa75baf1db5"
+    }
+  },
+  "actualFailure": {
+    "runID": 39495414820,
+    "jobID": 118879092115,
+    "diagnostic": "BookSourceFormLoginView.swift:1253:64 expression is async but is not marked with await",
+    "NativeHostTestsExecuted": 0
+  },
+  "change": "Select UIKit existing open(_:options:completionHandler:) completion-handler overload explicitly, retaining external-link fire-and-forget dispatch and queue continuation without creating a new task or awaiting application switch.",
+  "singleFragmentRestorationByteExact": true,
+  "unchanged": [
+    "All queue ownership/cancellation/generation guards and original JVM login action behavior.",
+    "All other file bytes, selectors, app permissions, original HTTP/browser routes, UI and actor settings."
+  ],
+  "validation": {
+    "grammarRoots": 2,
+    "grammarErrors": 0,
+    "actualSwiftSDK": 0,
+    "actualJNI": 0,
+    "testsRepeated": 0
+  },
+  "evidence": [
+    {
+      "path": "baseline.json",
+      "bytes": 800,
+      "sha256": "259fae696cdb22730c372832ecd309776c94941ecee8aa619ff6f11b3d3346d8"
+    },
+    {
+      "path": "actual-compiler-error.txt",
+      "bytes": 773,
+      "sha256": "8a1fdf359d4a06f7a085ee32829be98998596e73863868e3f8f90ea5c2653739"
+    },
+    {
+      "path": "source.diff",
+      "bytes": 707,
+      "sha256": "ab9c6e38a422fb48512ace99dc9f2e56e18dda7ef7cdd37c7ce66e09d4660047"
+    },
+    {
+      "path": "grammar.json",
+      "bytes": 422,
+      "sha256": "b16584617c771f397435452c71426204486a3284255515ca689d81a30292398c"
+    }
+  ],
+  "limits": [
+    "The exact actual compiler diagnostic is repaired at its call site; only the next real Apple SDK build can establish overload acceptance.",
+    "This single call change does not prove actual device external application opening or renewal."
+  ],
+  "operations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false
+  }
+}

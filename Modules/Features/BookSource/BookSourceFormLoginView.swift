@@ -1250,7 +1250,7 @@ struct BookSourceFormLoginView: View {
                 originalActionQueueHead += 1
                 // Preserve the existing external-link route; browser/WebJS remains separate.
                 if request.action.hasPrefix("http://") || request.action.hasPrefix("https://") {
-                    if let url = URL(string: request.action) { UIApplication.shared.open(url) }
+                    if let url = URL(string: request.action) { UIApplication.shared.open(url, options: [:], completionHandler: nil) }
                     continue
                 }
                 do {

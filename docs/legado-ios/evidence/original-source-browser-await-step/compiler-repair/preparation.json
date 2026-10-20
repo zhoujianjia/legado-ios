@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T21:17:45.488828+00:00",
+  "scope": "Actual SDK8d single-file compiler constraint repair; no row projection behavior change.",
+  "file": {
+    "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+    "baseline": {
+      "bytes": 25841,
+      "sha256": "7527f08e72d24cec346f79d8abc416987afbece3e78140fab17c4a4bd16cd7f9"
+    },
+    "candidate": {
+      "bytes": 26435,
+      "sha256": "ce1cb1e734c6054c79003a565852a52b77fe42d7ee00d9f35b72e1d9363e7e28"
+    },
+    "snapshot": {
+      "bytes": 26435,
+      "sha256": "ce1cb1e734c6054c79003a565852a52b77fe42d7ee00d9f35b72e1d9363e7e28"
+    }
+  },
+  "evidence": [
+    {
+      "path": "baseline.json",
+      "bytes": 1309,
+      "sha256": "e13a64891a4aae71b8b78fdfd19080262c85727f578694b8dda97b17a390a338"
+    },
+    {
+      "path": "actual-compiler-error.txt",
+      "bytes": 390,
+      "sha256": "aaa7fe6f1551f71fb0659c9a4401c6e631030841fff4fb53fb74446ba72cfc57"
+    },
+    {
+      "path": "replaced-expression.json",
+      "bytes": 1006,
+      "sha256": "b4727693ee8e72a3574879ccd79f4a8544d9867096b7dee23ea0abb0d7c6203a"
+    },
+    {
+      "path": "projection-ast-facts.json",
+      "bytes": 10282,
+      "sha256": "5e0b84d1213beac767edd592da6f97f7d814c2ea251602191c991333d010bb7d"
+    },
+    {
+      "path": "swift-grammar.json",
+      "bytes": 560,
+      "sha256": "60a3b13156e628475760f2875dbfd6d5895558e08524a2aa3cca7b59269f67f8"
+    },
+    {
+      "path": "projection.diff",
+      "bytes": 1561,
+      "sha256": "93fb2596b69e17710cfb2e3012034500ee857b69d15e063bfda61d638700ba54"
+    }
+  ],
+  "actualFailure": {
+    "SDK": "8d934dd",
+    "compilerDiagnostic": "LegadoOriginalLoginUIForm.swift:204:9 compiler unable to type-check expression in reasonable time",
+    "location": "legacy applying(...): concatenation of five row/layout/value/entry name arrays",
+    "AppTestsExecuted": 0,
+    "Package24SeparatePassDoesNotCoverAppFile": true
+  },
+  "change": "Break the reported long overloaded +/map/optional expression into explicit [String] intermediate values and four append(contentsOf:) calls. Exact order/input/content and validation point preserved.",
+  "validation": {
+    "SwiftGrammarRoots": 2,
+    "grammarErrors": 0,
+    "maximalUnchangedNamedASTSubtrees": 57,
+    "singleFragmentRestorationByteExact": true,
+    "actualSwiftCompilerHere": 0,
+    "swiftcOnPath": null,
+    "actualAppleSDK": 0,
+    "actualAppTestsHere": 0,
+    "JVMJavaRerun": 0
+  },
+  "nonChanges": [
+    "No compiler flags/fallback, no selector/UI/permission/store/actor modifications.",
+    "V2 row/control/state/delta/nullable-option branches and every other member are byte/AST unchanged.",
+    "Await frozen whole/UI3 and canonical/Git/cloud/tags untouched."
+  ],
+  "limits": [
+    "Syntax/AST identity establishes scope and unchanged source semantics; only a future real Apple SDK build can prove the compiler now accepts this expression.",
+    "Existing JVM/Java and Package passes reused only for their unchanged inputs; no App test or compiler pass is inferred."
+  ]
+}

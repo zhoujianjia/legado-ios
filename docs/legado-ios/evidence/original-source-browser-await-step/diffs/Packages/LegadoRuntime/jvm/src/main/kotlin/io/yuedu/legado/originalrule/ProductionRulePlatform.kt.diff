@@ -1,0 +1,85 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
+@@ -80,24 +80,76 @@
+         check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
+         task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "render", "deltaUp" to deltaUp))
+     }
+-    override fun startLoginBrowser(source: BaseSource, url: String, title: String) {
++    private fun prepareLoginBrowser(source: BaseSource, url: String, title: String): Pair<AnalyzeUrl, JsonObject> {
+         ensureOwnerOpen(); task.ensureActiveForRuntime()
+         check(source.getRuleEnvironment() === environment()) { "Browser source belongs to another environment" }
+         if (!task.sensitiveSourceOperation) unsupportedRule("original browser requires an explicit login task")
+         require(url.length < 65_536 && title.toByteArray(Charsets.UTF_8).size <= 8_192) { "Browser request text exceeds its budget" }
+         val owner = task.session.options.stateOwner ?: unsupportedRule("original browser requires the checked source owner")
+-        // Locked WebViewModel74-78 uses original AnalyzeUrl for URL and headers.
+-        // POST's initial HTTP prefetch and explicit HTML WebJS stay separate.
++        // Locked WebViewModel74-78: the initial AnalyzeUrl owns URL/header
++        // preparation. POST prefetch and explicit local HTML remain unported.
+         val analyze = AnalyzeUrl(url, source = source, environment = environment(), coroutineContext = source.getRuleCoroutineContext())
+         if (analyze.isPost()) unsupportedRule("original browser POST prefetch")
+         val parsed = java.net.URI(analyze.url)
+         if (parsed.scheme?.lowercase() !in setOf("http", "https")) unsupportedRule("original browser URL scheme")
+-        val reply = hostDispatch(task, "source.browser", io.yuedu.legado.jsonObject(
+-            "owner" to owner, "sourceURL" to source.getKey(), "url" to analyze.url,
+-            "title" to title, "headers" to analyze.headerMap))
++        return analyze to io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to source.getKey(),
++            "url" to analyze.url, "title" to title, "headers" to analyze.headerMap)
++    }
++
++    override fun startLoginBrowser(source: BaseSource, url: String, title: String) {
++        val (_, input) = prepareLoginBrowser(source, url, title)
++        val reply = hostDispatch(task, "source.browser", input)
+         ensureOwnerOpen(); task.ensureActiveForRuntime()
+         if (reply["presented"]?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } != true)
+             throw io.yuedu.legado.RuntimeFailure("BROWSER_NOT_PRESENTED", "The original browser was not presented")
++    }
++
++    override fun awaitLoginBrowser(source: BaseSource, url: String, title: String, refetchAfterSuccess: Boolean): StrResponse {
++        val (initial, input) = prepareLoginBrowser(source, url, title)
++        input.addProperty("awaitsResult", true)
++        input.addProperty("refetchAfterSuccess", refetchAfterSuccess)
++        val reply = hostDispatch(task, "source.browser", input)
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        fun requiredText(name: String): String {
++            val raw = reply[name]
++            if (raw == null || !raw.isJsonPrimitive || !raw.asJsonPrimitive.isString)
++                throw io.yuedu.legado.RuntimeFailure("INVALID_BROWSER_RESULT", "The awaited browser omitted its terminal result")
++            return raw.asString
++        }
++        val mode = requiredText("mode")
++        val body: String
++        val responseURL: String
++        if (refetchAfterSuccess) {
++            if (mode != "refetchConfirmed")
++                throw io.yuedu.legado.RuntimeFailure("INVALID_BROWSER_RESULT", "Awaited refetch needs an actual confirmation")
++            // The synchronous Host has returned. Reuse the original AnalyzeUrl
++            // and HTTP/Cookie owners on this same task, never reenter the App
++            // source gate from a MainActor page callback. Locked owner behavior
++            // snapshots the first headers, reparses the original input URL, and
++            // returns its initial analyzed URL rather than HTTP redirect URL.
++            val fetched = runBlocking(source.getRuleCoroutineContext()) {
++                AnalyzeUrl(url, source = source, environment = environment(),
++                    coroutineContext = source.getRuleCoroutineContext(), headerMapF = initial.headerMap)
++                    .getStrResponseAwait(useWebView = false)
++            }
++            body = fetched.body()
++            responseURL = initial.url.ifEmpty { url }
++        } else {
++            if (mode != "response")
++                throw io.yuedu.legado.RuntimeFailure("INVALID_BROWSER_RESULT", "Awaited page needs its DOM response")
++            body = requiredText("body")
++            responseURL = requiredText("finalURL").ifEmpty { url }
++        }
++        if (body.isEmpty()) throw io.yuedu.legado.RuntimeFailure("BROWSER_EMPTY_RESULT", "The awaited browser returned an empty result")
++        if (body.toByteArray(Charsets.UTF_8).size > 4 * 1024 * 1024 || responseURL.length >= 65_536)
++            throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "The awaited browser result exceeds its budget")
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        // JsExtensions426-428 uses the original StrResponse(url,body) owner
++        // constructor: synthetic raw200/OK/HTTP1.1 and empty response headers.
++        val request = try { Request.Builder().url(responseURL).build() }
++            catch (_: IllegalArgumentException) { Request.Builder().url("http://localhost/").build() }
++        val raw = Response.Builder().request(request).code(200).message("OK").protocol(Protocol.HTTP_1_1).build()
++        return StrResponse(raw.request.url.toString(), 200, body, emptyMap(), raw)
+     }
+     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
+     init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }

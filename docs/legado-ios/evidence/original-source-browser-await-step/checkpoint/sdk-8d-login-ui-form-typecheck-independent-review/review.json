@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T21:19:32.942661+00:00",
+  "decision": "approve-exact-single-expression-source-repair-await-real-SDK",
+  "manifest": {
+    "path": ".build/sdk-8d-login-ui-form-typecheck-repair-step/final-v1.json",
+    "bytes": 3062,
+    "sha256": "f2ade48b48db66e1aea31d37425877ac3f264874ea730000879a4e33b164a61b"
+  },
+  "file": {
+    "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+    "baseline": {
+      "bytes": 25841,
+      "sha256": "7527f08e72d24cec346f79d8abc416987afbece3e78140fab17c4a4bd16cd7f9"
+    },
+    "candidate": {
+      "bytes": 26435,
+      "sha256": "ce1cb1e734c6054c79003a565852a52b77fe42d7ee00d9f35b72e1d9363e7e28"
+    },
+    "snapshot": {
+      "bytes": 26435,
+      "sha256": "ce1cb1e734c6054c79003a565852a52b77fe42d7ee00d9f35b72e1d9363e7e28"
+    }
+  },
+  "evidence": [
+    {
+      "path": "baseline.json",
+      "bytes": 1309,
+      "sha256": "e13a64891a4aae71b8b78fdfd19080262c85727f578694b8dda97b17a390a338"
+    },
+    {
+      "path": "actual-compiler-error.txt",
+      "bytes": 390,
+      "sha256": "aaa7fe6f1551f71fb0659c9a4401c6e631030841fff4fb53fb74446ba72cfc57"
+    },
+    {
+      "path": "replaced-expression.json",
+      "bytes": 1006,
+      "sha256": "b4727693ee8e72a3574879ccd79f4a8544d9867096b7dee23ea0abb0d7c6203a"
+    },
+    {
+      "path": "projection-ast-facts.json",
+      "bytes": 10282,
+      "sha256": "5e0b84d1213beac767edd592da6f97f7d814c2ea251602191c991333d010bb7d"
+    },
+    {
+      "path": "swift-grammar.json",
+      "bytes": 560,
+      "sha256": "60a3b13156e628475760f2875dbfd6d5895558e08524a2aa3cca7b59269f67f8"
+    },
+    {
+      "path": "projection.diff",
+      "bytes": 1561,
+      "sha256": "93fb2596b69e17710cfb2e3012034500ee857b69d15e063bfda61d638700ba54"
+    }
+  ],
+  "readOnlyTypeContext": {
+    "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+    "bytes": 13619,
+    "sha256": "251c7fa44624f367f726ac9464d95a4cfef2c6872b373dac56a0d3da248755f9"
+  },
+  "findings": [],
+  "facts": [
+    "Current canonical/rawbaseline/candidate snapshot byte hashes and regenerated single diff match. Replacing exactly the new fragment by its recorded old expression reproduces the entire original file byte-for-byte.",
+    "The actual diagnosed legacy applying expression builds the same five String arrays in the same order. Explicit element types match current Package DTO declarations. Four ordered append(contentsOf:) calls preserve duplicates and Array(values.keys) enumeration without sorting/filtering/deduplication.",
+    "validateNameBridge still runs before any update work; its thrown errors and all downstream state/value/control/listener logic are unchanged. V2 projection and57 other maximal named AST subtrees are outside the one edited fragment.",
+    "No selectors, new tests, actor/task/owner/store/permission/compiler flags or fallback behavior change."
+  ],
+  "validationBoundary": {
+    "reviewerSuitesRun": 0,
+    "authorGrammarRoots": 2,
+    "grammarErrors": 0,
+    "SwiftCompilerHere": 0,
+    "AppleSDKHere": 0,
+    "AppTestsHere": 0,
+    "note": "Actual diagnostic excerpt is bound; this source review neither rereads the root-owned entire terminal artifact nor proves the compiler accepts the replacement. Existing JVM/Java/Package evidence does not validate this App file."
+  },
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloud": false,
+    "peerStage": false,
+    "ownIgnoredEvidenceOnly": true
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T21:28:38.959929+00:00",
+  "decision": "approve-exact-one-call-overload-source-repair-await-real-SDK",
+  "manifest": {
+    "path": ".build/native-8d-external-open-repair-step/final-v1.json",
+    "bytes": 2466,
+    "sha256": "691e543d498f2517446051cee7ecf8b6bfa4612b7096af31ee04cd5aa473ea6d"
+  },
+  "file": {
+    "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+    "baseline": {
+      "bytes": 99435,
+      "sha256": "8691b485cdb4a1cb4651fe34cf5f6ec806cabf1bf92b8309c0677e571a09e275"
+    },
+    "candidate": {
+      "bytes": 99473,
+      "sha256": "f5e5b692fcff631968a374d5cd0f8833f5ce219944640041c4b4bfa75baf1db5"
+    },
+    "snapshot": {
+      "bytes": 99473,
+      "sha256": "f5e5b692fcff631968a374d5cd0f8833f5ce219944640041c4b4bfa75baf1db5"
+    }
+  },
+  "evidence": [
+    {
+      "path": "baseline.json",
+      "bytes": 800,
+      "sha256": "259fae696cdb22730c372832ecd309776c94941ecee8aa619ff6f11b3d3346d8"
+    },
+    {
+      "path": "actual-compiler-error.txt",
+      "bytes": 773,
+      "sha256": "8a1fdf359d4a06f7a085ee32829be98998596e73863868e3f8f90ea5c2653739"
+    },
+    {
+      "path": "source.diff",
+      "bytes": 707,
+      "sha256": "ab9c6e38a422fb48512ace99dc9f2e56e18dda7ef7cdd37c7ce66e09d4660047"
+    },
+    {
+      "path": "grammar.json",
+      "bytes": 422,
+      "sha256": "b16584617c771f397435452c71426204486a3284255515ca689d81a30292398c"
+    }
+  ],
+  "findings": [],
+  "facts": [
+    "The baseline matches current canonical and actual8d reported call. Candidate snapshot/diff hashes are exact; restoring this one call reproduces every original file byte.",
+    "Explicit options and completionHandler labels select the existing synchronous completion-handler API rather than the async convenience overload. An empty options dictionary and nil completion retain the intended external-link dispatch without awaiting the external application result.",
+    "The URL/scheme check, owned task cancellation/source-generation checks, queue-head advancement and immediate continue are outside the edit and byte-identical. No new Task, continuation, actor hop, owner, state, permission or browser/JSC route is introduced.",
+    "The call remains in the same existing View-owned Task/UI isolation. The separate synchronous handleButton open call near1190 and all other source bytes are untouched. The source change is a reasonable direct repair for the reported overload diagnostic, not proof of future compiler/runtime success."
+  ],
+  "validationBoundary": {
+    "authorGrammarRoots": 2,
+    "grammarErrors": 0,
+    "reviewerSuitesRun": 0,
+    "SwiftCompilerHere": 0,
+    "AppleSDKHere": 0,
+    "NativeExecutedHere": 0,
+    "UIKitExecutedHere": 0,
+    "actualNativeDiagnostic": "1253:64 missing await; prior Native build-for-testing failed and no Native host cases executed.",
+    "nextRealSDKRequired": true
+  },
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloud": false,
+    "peerStage": false,
+    "ownIgnoredEvidenceOnly": true
+  }
+}

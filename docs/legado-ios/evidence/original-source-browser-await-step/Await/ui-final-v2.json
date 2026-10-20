@@ -1,0 +1,187 @@
+{
+  "version": 2,
+  "frozenUTC": "2026-10-20T21:13:41.956300+00:00",
+  "scope": "Only three App UI sources over ready-browser eff5 baseline, coordinated with backend owner. Production GET await consumer; no alternate engine/store/HTTP/browser owner.",
+  "files": [
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "baseline": {
+        "bytes": 16013,
+        "sha256": "5e6f8460ddd6c4029e6cfd44fa0d10284438194e824a0fa99f934fb7a6180f07"
+      },
+      "candidate": {
+        "bytes": 21764,
+        "sha256": "e0669669ae286e0f0c3be7e14acd9eaddeccf00f413714e60055617d43628659"
+      },
+      "snapshot": {
+        "bytes": 21764,
+        "sha256": "e0669669ae286e0f0c3be7e14acd9eaddeccf00f413714e60055617d43628659"
+      },
+      "diff": {
+        "path": "ui-diffs-v2/Modules/Features/BookSource/SourceBrowserPresenter.swift.diff",
+        "bytes": 14021,
+        "sha256": "172eafe7a9cc05d47bf3010d35d7dce4c171c618ef67d4dc9072f25d2c93e8fd"
+      }
+    },
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "baseline": {
+        "bytes": 42245,
+        "sha256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47"
+      },
+      "candidate": {
+        "bytes": 61555,
+        "sha256": "cd81da562dd5f3c1eb142d1139a0a86f81b63d64d4728c3c841826b1ea354109"
+      },
+      "snapshot": {
+        "bytes": 61555,
+        "sha256": "cd81da562dd5f3c1eb142d1139a0a86f81b63d64d4728c3c841826b1ea354109"
+      },
+      "diff": {
+        "path": "ui-diffs-v2/Modules/Features/BookSource/JsBridgeBrowserView.swift.diff",
+        "bytes": 28949,
+        "sha256": "3cadde5b89278282f037ccc08dd28314173de2d1b780e9d157cc59401ad66dc7"
+      }
+    },
+    {
+      "path": "Modules/SharedUI/Components/SourceWebUIDelegate.swift",
+      "baseline": {
+        "bytes": 6239,
+        "sha256": "08d8c39e7c2b66bfee9f89de82805c3a405b8ca657bf0fb279ea49b8dec580bb"
+      },
+      "candidate": {
+        "bytes": 6548,
+        "sha256": "770f369e1cfc0bb6ad0c1a979aafc5f30867814c6bd017dbf6b77da0c87f36cb"
+      },
+      "snapshot": {
+        "bytes": 6548,
+        "sha256": "770f369e1cfc0bb6ad0c1a979aafc5f30867814c6bd017dbf6b77da0c87f36cb"
+      },
+      "diff": {
+        "path": "ui-diffs-v2/Modules/SharedUI/Components/SourceWebUIDelegate.swift.diff",
+        "bytes": 706,
+        "sha256": "20a1a37d732564c4013be4dc4e5395546ae0f7f2ba401b3d1301579a8c865ac1"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "path": "ui-grammar-v2.json",
+      "bytes": 1523,
+      "sha256": "4adc92cfee7c88f8d6b654bc8406f4b15696a8206ce969423275d71dff9955c2"
+    },
+    {
+      "path": "ui-basic-close-contract.json",
+      "bytes": 1061,
+      "sha256": "e186355323edb3a1da6922eb743039652255f0f43c2a17b4e4f7558406ddb3fd"
+    },
+    {
+      "path": "ui-delegate-baseline.json",
+      "bytes": 302,
+      "sha256": "1c4c4c7577e87469491bdb0a7eb82040895c513d34624a7b175b3b0391e2377a"
+    }
+  ],
+  "API": {
+    "presentation": "presentOriginal(_ presentation: LegadoOriginalBrowserPresentation) async throws -> LegadoOriginalBrowserCompletion",
+    "completionCases": [
+      "presented",
+      "response(finalURL:String,body:String)",
+      "refetchConfirmed"
+    ],
+    "actualPresentationNotification": "SourceBrowserPresenter.originalPageDidPresent; userInfo[taskID] only, actual UIKit completion after accepted Presented effect.",
+    "actualPageClose": "@MainActor SourceBrowserPresenter.requestOriginalPageClose(taskID:String); routes mounted Coordinator→bridge→View.confirm, not a fabricated result."
+  },
+  "behavior": [
+    "Await continuation remains pending after real UIKit presentation; nonawait keeps its existing presented ACK/later page lifetime.",
+    "Done false evaluates one real WebKit JSON snapshot of window.location.href plus outerHTML, off-main JSON decode/UTF8 body<=4MiB/nonempty/URL budget, then checked Cookie capture. True does not require DOM and only returns refetchConfirmed after checked capture; same existing JVM performs its original HTTP request.",
+    "Visible Cancel uses the same guarded Cookie capture then typed BROWSER_CANCELLED, or actual capture failure. Explicit task cancellation first cancels ticket commit token, invalidates late Cookie writes, dismisses actual controller, cancels/drains mounted Coordinator task before resolving await and releasing existing queue.",
+    "Actual owned dismiss completion is authoritative; external UIKit removal has its actual viewDidDisappear signal. Pending close during present waits for real presentation completion. Completion/cancel is first terminal except explicit task cancellation before unfinished result publication.",
+    "Only awaited pages get the finite basicJs window.close signal. Existing WKUIDelegate.webViewDidClose and injected close both enter the same Coordinator; challenge-active page close is suppressed, while menu Done/visible Cancel keep their distinct original meanings. Existing challenge true→false signal confirms; ordinary didFinish does not complete await or issue an unguarded Cookie write.",
+    "Source Java/window.run/cache bridges remain absent on original route (sourceRunHandler:nil). Cookie capture uses existing CookieStore.captureWebKit with same Host grant validate plus ticket token/deadline; status effects Issued/Completed describe capture, not a fabricated persistence mutation. Errors/trace never include URL, HTML, headers or credentials."
+  ],
+  "taskOwnership": "Presenter ticket owns presentation/finish drain. Existing Coordinator owns initial load/reload chain and confirmation; each new load awaits prior load; independent final drain awaits both latest initial and confirmation. No task awaits itself; callback semaphore/group never blocks main.",
+  "validation": {
+    "grammarRoots": 6,
+    "grammarErrors": 0,
+    "actualSDK": 0,
+    "actualJNI": 0,
+    "actualUIKit": 0,
+    "newTestDefinitionsHere": 0,
+    "NativeDefinitionOwnedByBackendAuthor": "Existing awaited Native method gets real held-WK-seed/cancel regression; author binds final bytes/selector with whole snapshot."
+  },
+  "limits": [
+    "Grammar is not Swift typechecking; SDK/UIKit execution remains necessary for actor/continuation, WK, animation and Cookie behavior.",
+    "Backend/JVM/Host/Native/manifest are independently owned and not frozen by this UI-only artifact; whole author must bind all final sources and actual regression evidence.",
+    "POST/localHTML/WebJS/showBrowser/V2/browser shared-flight coalescing and raw network-result parity remain outside this GET await UI slice as declared by backend."
+  ],
+  "mutations": {
+    "canonical": false,
+    "git": false,
+    "cloud": false,
+    "immutableFirstSlice11": false,
+    "backendSources": false
+  },
+  "supersedes": {
+    "path": "ui-final-v1.json",
+    "bytes": 6739,
+    "sha256": "fdbce52950e5f922e31374786dbadcf0e0585e851f87fce56755d10a0bad85e4",
+    "reason": "Independent P1: pending initial Cookie seed notify could issue an old URL/header request after cancellation. V1 retained immutable and not accepted as final."
+  },
+  "beforeFixReview": {
+    "path": ".build\\original-source-login-browser-await-independent-review\\ui-review-v1.json",
+    "bytes": 6843,
+    "sha256": "770f98dac3f896a0c1f853717997527617f5eb572232f9e70841c66323339fd5"
+  },
+  "changesFromV1": [
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "v1": {
+        "bytes": 21251,
+        "sha256": "21aa82825f7be5182f61f736b0893140679f69b9e2ec620206d91ff207ca5c01"
+      },
+      "v2": {
+        "bytes": 21764,
+        "sha256": "e0669669ae286e0f0c3be7e14acd9eaddeccf00f413714e60055617d43628659"
+      },
+      "diff": {
+        "path": "ui-v1-to-v2-diffs/Modules/Features/BookSource/SourceBrowserPresenter.swift.diff",
+        "bytes": 1789,
+        "sha256": "23b168a4e642dbb187080cd9efb9199da08662a3e5c0b1d3083207267dd9af79"
+      }
+    },
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "v1": {
+        "bytes": 55104,
+        "sha256": "0ba45dad26d50917b1767a7f1ce338ef0b788907c5cc0320f9f31f9ca69faf74"
+      },
+      "v2": {
+        "bytes": 61555,
+        "sha256": "cd81da562dd5f3c1eb142d1139a0a86f81b63d64d4728c3c841826b1ea354109"
+      },
+      "diff": {
+        "path": "ui-v1-to-v2-diffs/Modules/Features/BookSource/JsBridgeBrowserView.swift.diff",
+        "bytes": 14072,
+        "sha256": "41703aa9607fa7c64f870c09287da569788c7e3e9c587985d77241b6f0c8c0db"
+      }
+    }
+  ],
+  "initialLoadRepair": [
+    "Existing Coordinator owns initialLoadWork and generation. Reload cancels and awaits the predecessor before new admission/IPC, retaining the entire chain. An old defer clears a handle only for its own still-current generation.",
+    "stopPageLoading seals future loads/navigation, rotates generation, stops the actual WKWebView and cancels handles. Explicit Presenter cancellation/close invokes it synchronously. Mounted controls are registered for BOTH original await and nonawait pages; final cancelAndDrain captures latest initial/confirmation tasks and awaits their actual completion.",
+    "All real issued WK setCookie callbacks are awaited via a nonthrowing continuation/DispatchGroup notify that only resumes. Cancellation never resumes it early; notify never issues HTTP. Before each seed IPC and before eventual webView.load, recheck generation, page lifetime/token and (await only) current Host grant/deadline.",
+    "Await seed records sourceBrowserCookieSeedIssued before first native IPC and SeedCompleted only when all requested native callbacks actually completed. Cancellation cannot roll back issued Cookie operations; no rollback or invented persistence fact is claimed. Subsequent guarded load is forbidden after cancel even for identical URL.",
+    "Original nonawait page uses only its explicit UI ticket token with distantFuture, so normal producer/session/revoke cleanup keeps the accepted page and any valid pending load alive. Explicit UI cancellation is distinct and closes/stops/drains it.",
+    "Per-Coordinator initialCookieSeeder defaults to actual existing WKHTTPCookieStore.setCookie. Its internal callback seam permits a Native regression to first invoke actual WK, hold delivery of that actual callback, observe cancel/drain pending, then release and verify no late loopback request. No global override, second store/engine/HTTP adapter or synthetic ACK."
+  ],
+  "definitionBoundary": {
+    "UIProductionAPI": [
+      "Coordinator.initialCookieSeeder",
+      "Coordinator.load(url:request:in:)",
+      "Coordinator.originalPageControls()",
+      "OriginalBrowserPageControls.stopLoading/cancelAndDrain"
+    ],
+    "actualNativeRegression": "Backend author owns separate Native-v2 extension to existing single new await method; selector count unchanged. Must bind its exact frozen source separately; authored/unexecuted is not a pass.",
+    "localUIKitExecution": 0
+  }
+}

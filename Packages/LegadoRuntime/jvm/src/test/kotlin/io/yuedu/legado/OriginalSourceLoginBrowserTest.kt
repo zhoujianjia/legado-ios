@@ -30,10 +30,9 @@ class OriginalSourceLoginBrowserTest {
             assertEquals(0,owned.credentialCalls);assertEquals(0,owned.httpCalls)
         }
     }
-    @Test(timeout=20_000) fun unsupportedAwaitHtmlPostAndNonWebSchemesDoNotFakePresentation() {
+    @Test(timeout=20_000) fun unsupportedHtmlPostAndNonWebSchemesDoNotFakePresentation() {
         Owned().use { owned ->
             for(script in listOf(
-                "java.startBrowserAwait('https://synthetic-browser.invalid/page','Await');",
                 "java.showBrowser('https://synthetic-browser.invalid/page');",
                 "java.startBrowser('https://synthetic-browser.invalid/page','HTML','');",
                 "java.startBrowser('https://synthetic-browser.invalid/page,{\"method\":\"POST\",\"body\":\"x=y\"}','Post');",
