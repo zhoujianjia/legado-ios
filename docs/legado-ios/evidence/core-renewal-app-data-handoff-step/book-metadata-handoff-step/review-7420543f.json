@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T05:32:22.915430+00:00",
+  "scope": "Independent read-only narrow review of the two BookStore handoff drafts, not tests or SDK execution",
+  "reviewedSources": [
+    {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/work/BookStore.swift",
+      "bytes": 199178,
+      "sha256": "7420543feb475d34d0b07f47d49881bf353b08252dc7b9f25e69dfe90a9f2b04"
+    },
+    {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/work/BookStoreMetadataHandoffTests.swift",
+      "bytes": 19098,
+      "sha256": "6f098d7fb8d8699e31f279cb9ecf73e5415ebdf18ad7fa48202a5a97f8951b8a"
+    }
+  ],
+  "currentAtReport": [
+    {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/work/BookStore.swift",
+      "bytes": 201176,
+      "sha256": "afcd8a0961818189201794d319c37c0bac5b46d6c859f13276ebd1c9fd5a2fdd",
+      "matchesReviewedSnapshot": false
+    },
+    {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/work/BookStoreMetadataHandoffTests.swift",
+      "bytes": 19098,
+      "sha256": "6f098d7fb8d8699e31f279cb9ecf73e5415ebdf18ad7fa48202a5a97f8951b8a",
+      "matchesReviewedSnapshot": true
+    }
+  ],
+  "confirmedFindings": [
+    {
+      "id": "metadata-handoff-legacy-chapter-migration-order",
+      "reviewedSourceSHA256": "7420543feb475d34d0b07f47d49881bf353b08252dc7b9f25e69dfe90a9f2b04",
+      "source": "BookStore.swift",
+      "lines": [
+        207,
+        215,
+        3883,
+        3892
+      ],
+      "relatedCanonicalSource": "Modules/Services/LibraryStore/BookChapterStore.swift:207-222",
+      "problem": "Migration assigns decoded records; the original owner moves inline chapter arrays into chapterStore and strips them from metadata. chapterStore.flush is nonthrowing and only enqueues on the original worker when called from this initializer. The direct atomic metadata write and legacy UserDefaults deletion then occur before actual chapter persistence completion, and chapter IO errors are swallowed. A crash or actual chapter failure can remove the only durable inline TOC copy.",
+      "receiptQualification": "The new normal-load receipt correctly rejects migrations because there is no normal-load observation; that does not prevent the actual legacy migration data-loss window.",
+      "recommendedFix": "On the existing persistence queue complete flushReportingFailure before committing the migrated metadata and removing only the exact still-current original legacy payload. Preserve legacy state on failure, and do not use a new queue or main-thread synchronous wait.",
+      "notified": [
+        "root",
+        "implementation_checkpoint_result"
+      ],
+      "authorResponse": "Confirmed actual data-loss blocker; author is implementing an independent subsequent draft and owned legacy defaults/TOC failure+recovery definitions. No author changes were made by this reviewer."
+    }
+  ],
+  "noOtherConfirmedBlockerInInspectedPaths": [
+    "Checked core reads both actual metadata files even for unchanged saves, compares real raw bytes to the queue-owned baseline, and hashes those actual observed bytes.",
+    "Checked path observes actual chapter flush failure before metadata mutation and returns typed partial file facts for later failures, rather than complete success.",
+    "Protected reading copies are written before shelf changes and reading pruning, preserving the old copy when a later two-file save fails.",
+    "Runtime book metadata projection is applied on the same persistence queue before encoding, so the inspected old-snapshot checked writer does not erase a successful variable-owner CAS.",
+    "Checked UI publication guards local mutation revision/restore/sequence; older completed file IO is not unconditionally marked as current memory persisted.",
+    "Normal-load receipt uses the original normal loader byte observations and remains historical evidence rather than a second file loader."
+  ],
+  "boundaries": [
+    "This review does not claim generic two-file atomicity, fsync durability, a cross-process CAS lock, all chapter/user-data preservation, or no future writes.",
+    "The explicit asynchronous constructor uses the actual normal initializer off main; the legacy ordinary initializer and synchronous reload still have existing blocking/IO boundaries.",
+    "Unchanged/read facts are point-in-time raw byte observations; later external or admitted changes require their own handling.",
+    "Author has begun fixing the single confirmed blocker; this record reviews only the listed hashes, and does not accept or reject a later unreviewed draft."
+  ],
+  "verification": {
+    "SwiftSDKCompileOrTypecheck": 0,
+    "SwiftTestsExecuted": 0,
+    "GrammarRerun": false,
+    "CloudQueries": 0,
+    "SourceFilesModified": false,
+    "CanonicalOrCIOrDocsOrGitModified": false,
+    "OnlyThisIgnoredReviewJSONWritten": true
+  }
+}

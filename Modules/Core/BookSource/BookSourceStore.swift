@@ -1,6 +1,47 @@
 import Foundation
 import Combine
 import os
+import CryptoKit
+import Darwin
+
+/// Checked results come only from this file's real library reader/writer. A queue
+/// barrier, bootstrap callback, or an in-memory array cannot construct one.
+struct BookSourcePersistenceReceipt: Sendable, Equatable {
+    enum Operation: Sendable, Equatable { case normalFileRead, normalMissingFile, normalBootstrapWrite, atomicWriteCompleted }
+    let operation: Operation
+    let rawSHA256: Data?
+    let rawByteCount: Int
+    let sourceCount: Int
+    /// Local to this store, not a cross-launch revision or a disk generation lock.
+    let mutationRevision: Int
+
+    fileprivate init(_ evidence: BookSourceLibraryEvidence, revision: Int) {
+        operation = evidence.operation
+        rawSHA256 = evidence.rawSHA256
+        rawByteCount = evidence.rawByteCount
+        sourceCount = evidence.sourceCount
+        mutationRevision = revision
+    }
+}
+
+enum BookSourcePersistenceFailure: Error, @unchecked Sendable {
+    enum WriteStage: Sendable { case createTemporary, openTemporary, encodeOrWrite, close, replace }
+    case notLoaded
+    case restoreInProgress
+    case invalidFileType
+    case readFailed(Error)
+    case closeFailed(Error)
+    case corruptJSON(Error)
+    case bootstrapFailed(Error)
+    case writeFailed(WriteStage, Error)
+}
+
+fileprivate struct BookSourceLibraryEvidence: Sendable {
+    let operation: BookSourcePersistenceReceipt.Operation
+    let rawSHA256: Data?
+    let rawByteCount: Int
+    let sourceCount: Int
+}
 
 // MARK: - Pin State
 
@@ -137,6 +178,8 @@ class BookSourceStore: ObservableObject {
         var read: [BookSource]?
         var readError: Error?
         var bootstrapError: Error?
+        var evidence: BookSourceLibraryEvidence?
+        var normalLoadReceipt: BookSourcePersistenceReceipt?
         /// Set once the read result has been assigned to `library` on the main thread.
         var applied = false
     }
@@ -165,12 +208,23 @@ class BookSourceStore: ObservableObject {
             var read: [BookSource]?
             var readError: Error?
             var bootstrapError: Error?
+            var evidence: BookSourceLibraryEvidence?
             do {
-                let existing = try Self.readLibrary(at: url)
+                let loaded = try Self.readLibraryWithEvidence(at: url)
+                let existing = loaded.sources
+                evidence = loaded.evidence
                 read = existing
                 if let package {
                     do {
-                        read = try BuiltInBookSourceBootstrap.apply(package, to: existing, libraryURL: url, pins: pins)
+                        read = try BuiltInBookSourceBootstrap.apply(package, to: existing, libraryURL: url, pins: pins) { sources, destination in
+                            // The optional bootstrap uses the same concrete writer.
+                            // Its callback returning normally is not the proof.
+                            evidence = try Self.writeLibraryWithEvidence(sources, to: destination)
+                        }
+                        if let actual = evidence, actual.operation == .atomicWriteCompleted {
+                            evidence = BookSourceLibraryEvidence(operation: .normalBootstrapWrite,
+                                rawSHA256: actual.rawSHA256, rawByteCount: actual.rawByteCount, sourceCount: actual.sourceCount)
+                        }
                     } catch {
                         bootstrapError = error
                         AppLogger.cache("Built-in book sources could not be imported", error: error)
@@ -184,6 +238,7 @@ class BookSourceStore: ObservableObject {
                 $0.read = read
                 $0.readError = readError
                 $0.bootstrapError = bootstrapError
+                $0.evidence = evidence
             }
             self?.readDone.leave()
             DispatchQueue.main.async { self?.applyLoadedLibrary() }
@@ -213,6 +268,11 @@ class BookSourceStore: ObservableObject {
             library = read
             prunePins()
         }
+        loadState.withLock { state in
+            if state.readError == nil, state.bootstrapError == nil, let evidence = state.evidence {
+                state.normalLoadReceipt = BookSourcePersistenceReceipt(evidence, revision: mutationRevision)
+            }
+        }
         let waiters = loadWaiters
         loadWaiters.removeAll()
         for waiter in waiters { waiter(library) }
@@ -236,18 +296,109 @@ class BookSourceStore: ObservableObject {
     /// Only a genuinely missing file is an empty library. Decode/access errors
     /// preserve the original file and prevent automatic seeding or later saves.
     private static func readLibrary(at url: URL) throws -> [BookSource] {
+        // Keep the existing synchronous explicit-reload boundary unchanged; it
+        // shares the reader but does not add a new whole-file hash on main.
+        try readLibraryData(at: url).sources
+    }
+
+    private static func readLibraryWithEvidence(at url: URL) throws -> (sources: [BookSource], evidence: BookSourceLibraryEvidence) {
+        let loaded = try readLibraryData(at: url)
+        let evidence = SourcePerfTrace.span("bookSources.load.hash", "main=\(Thread.isMainThread) bytes=\(loaded.data?.count ?? 0)") {
+            BookSourceLibraryEvidence(operation: loaded.data == nil ? .normalMissingFile : .normalFileRead,
+                rawSHA256: loaded.data.map { Data(SHA256.hash(data: $0)) },
+                rawByteCount: loaded.data?.count ?? 0, sourceCount: loaded.sources.count)
+        }
+        return (loaded.sources, evidence)
+    }
+
+    private static func readLibraryData(at url: URL) throws -> (sources: [BookSource], data: Data?) {
         return try SourcePerfTrace.span("bookSources.load", "main=\(Thread.isMainThread) file=\(url.lastPathComponent)", thresholdMs: 1) {
-            let data: Data
-            do {
-                data = try Data(contentsOf: url)
-            } catch let error as CocoaError where error.code == .fileReadNoSuchFile || error.code == .fileNoSuchFile {
-                return []
+            // Use the one normal read, distinguishing actual ENOENT from corrupt,
+            // directory, permission, and ENOTDIR errors. No save-after-readback.
+            let fd = Darwin.open(url.path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
+            if fd < 0 {
+                if errno == ENOENT {
+                    return ([], nil)
+                }
+                throw BookSourcePersistenceFailure.readFailed(POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO))
             }
+            let handle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)
+            let reading: Result<Data, Error> = Result {
+                var info = stat()
+                guard fstat(fd, &info) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
+                guard info.st_mode & mode_t(S_IFMT) == mode_t(S_IFREG) else { throw BookSourcePersistenceFailure.invalidFileType }
+                return try handle.readToEnd() ?? Data()
+            }
+            let closing: Result<Void, Error> = Result { try handle.close() }
+            let data: Data
+            do { data = try reading.get() }
+            catch let failure as BookSourcePersistenceFailure { throw failure }
+            catch { throw BookSourcePersistenceFailure.readFailed(error) }
+            do { try closing.get() }
+            catch { throw BookSourcePersistenceFailure.closeFailed(error) }
             return try SourcePerfTrace.span("bookSources.decode", "main=\(Thread.isMainThread) bytes=\(data.count)") {
-                let decoded = try JSONDecoder().decode([BookSource].self, from: data)
-                return dedupedByURL(decoded)
+                let decoded: [BookSource]
+                do { decoded = try JSONDecoder().decode([BookSource].self, from: data) }
+                catch { throw BookSourcePersistenceFailure.corruptJSON(error) }
+                let sources = dedupedByURL(decoded)
+                return (sources, data)
             }
         }
+    }
+
+    /// The initial normal load, including a real optional bootstrap write. This
+    /// never rereads the library and never claims that later UI edits were saved.
+    @MainActor
+    func normalLoadReceiptForRenewalHandoff() async throws -> BookSourcePersistenceReceipt {
+        try Task.checkCancellation()
+        await waitUntilLoaded()
+        try Task.checkCancellation()
+        return try loadState.withLock { state in
+            if let error = state.readError { throw error }
+            if let error = state.bootstrapError { throw BookSourcePersistenceFailure.bootstrapFailed(error) }
+            guard let receipt = state.normalLoadReceipt else { throw BookSourcePersistenceFailure.notLoaded }
+            return receipt
+        }
+    }
+
+    /// Once admitted to the original persist queue, the real write and receipt
+    /// finish even if the awaiting task is cancelled. No fsync or freeze of later
+    /// edits is implied, and pins/runtime state are outside this JSON receipt.
+    @MainActor
+    func saveForRenewalHandoff() async throws -> BookSourcePersistenceReceipt {
+        try Task.checkCancellation()
+        await waitUntilLoaded()
+        return try await admitRenewalHandoffSave().value
+    }
+
+    /// Synchronous admission is also observable in deterministic queue-order
+    /// tests. The returned task waits for this already-enqueued concrete job;
+    /// cancelling it does not retract the admitted atomic write.
+    @MainActor
+    func admitRenewalHandoffSave() throws -> Task<BookSourcePersistenceReceipt, Error> {
+        try Task.checkCancellation()
+        guard isLoaded else { throw BookSourcePersistenceFailure.notLoaded }
+        guard !validatedRestorePausesWrites else { throw BookSourcePersistenceFailure.restoreInProgress }
+        if let error = loadError { throw error }
+        // A bootstrap may have completed its library rename before its marker
+        // failed. Do not checkpoint an ambiguous pre-bootstrap memory snapshot.
+        if let error = builtInBootstrapError { throw BookSourcePersistenceFailure.bootstrapFailed(error) }
+        let snapshot = library // O(1) copy-on-write borrow on the UI owner.
+        let revision = mutationRevision
+        let url = fileURL
+        // Earlier batches keep their own snapshot; later UI saves get a new
+        // batch queued after this checkpoint, rather than being taken early by
+        // an older closure and overwritten with this checkpoint's older bytes.
+        pendingWrite.sealPendingBatch()
+        let completion = BookSourceSaveCompletion()
+        let task = Task.detached { try await completion.value() }
+        Self.persistQueue.async {
+            do {
+                let evidence = try Self.writeLibraryWithEvidence(snapshot, to: url)
+                completion.resolve(.success(BookSourcePersistenceReceipt(evidence, revision: revision)))
+            } catch { completion.resolve(.failure(error)) }
+        }
+        return task
     }
 
     /// Persisted 置頂／置底 pin state, keyed by source id. Kept OUT of `BookSource` (and thus
@@ -1060,11 +1211,11 @@ class BookSourceStore: ObservableObject {
             AppLogger.cache("BookSourceStore preserved an unreadable library instead of replacing it", error: error)
             return
         }
-        guard pendingWrite.replace(with: sources) else { return }
+        guard let batch = pendingWrite.replace(with: sources) else { return }
         let url = fileURL
         let pendingWrite = self.pendingWrite
         Self.persistQueue.async {
-            guard let snapshot = pendingWrite.take() else { return }
+            guard let snapshot = pendingWrite.take(batch) else { return }
             do {
                 try Self.writeLibrary(snapshot, to: url)
             } catch {
@@ -1120,23 +1271,40 @@ class BookSourceStore: ObservableObject {
     /// the headroom a 3 GB iPhone leaves the app. Here the extra memory is one chunk of
     /// encoded sources.
     static func writeLibrary(_ sources: [BookSource], to url: URL) throws {
+        _ = try writeLibraryWithEvidence(sources, to: url)
+    }
+
+    private static func writeLibraryWithEvidence(_ sources: [BookSource], to url: URL) throws -> BookSourceLibraryEvidence {
+        try SourcePerfTrace.span("bookSources.persist", "main=\(Thread.isMainThread) sources=\(sources.count)") {
+            try writeLibraryFile(sources, to: url)
+        }
+    }
+
+    private static func writeLibraryFile(_ sources: [BookSource], to url: URL) throws -> BookSourceLibraryEvidence {
         let fileManager = FileManager.default
         let temporaryURL = url.deletingLastPathComponent()
             .appendingPathComponent(".\(url.lastPathComponent).\(UUID().uuidString).tmp")
         guard fileManager.createFile(atPath: temporaryURL.path, contents: nil) else {
-            throw CocoaError(.fileWriteUnknown, userInfo: [NSFilePathErrorKey: temporaryURL.path])
+            throw BookSourcePersistenceFailure.writeFailed(.createTemporary,
+                CocoaError(.fileWriteUnknown, userInfo: [NSFilePathErrorKey: temporaryURL.path]))
         }
         do {
-            let handle = try FileHandle(forWritingTo: temporaryURL)
+            let handle: FileHandle
+            do { handle = try FileHandle(forWritingTo: temporaryURL) }
+            catch { throw BookSourcePersistenceFailure.writeFailed(.openTemporary, error) }
             let written = Result { try writeLibraryJSON(sources, to: handle) }
             let closed = Result { try handle.close() }
-            try written.get()
-            try closed.get()
+            let evidence: BookSourceLibraryEvidence
+            do { evidence = try written.get() }
+            catch { throw BookSourcePersistenceFailure.writeFailed(.encodeOrWrite, error) }
+            do { try closed.get() }
+            catch { throw BookSourcePersistenceFailure.writeFailed(.close, error) }
             // rename(2) replaces the old file in one step: a crash mid-write leaves the
             // previous library in place, never half a file.
             guard rename(temporaryURL.path, url.path) == 0 else {
-                throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+                throw BookSourcePersistenceFailure.writeFailed(.replace, POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO))
             }
+            return evidence
         } catch {
             do {
                 try fileManager.removeItem(at: temporaryURL)
@@ -1147,8 +1315,10 @@ class BookSourceStore: ObservableObject {
         }
     }
 
-    private static func writeLibraryJSON(_ sources: [BookSource], to handle: FileHandle) throws {
+    private static func writeLibraryJSON(_ sources: [BookSource], to handle: FileHandle) throws -> BookSourceLibraryEvidence {
         let encoder = JSONEncoder()
+        var hasher = SHA256()
+        var byteCount = 0
         var chunk = Data()
         chunk.reserveCapacity(libraryWriteChunkBytes)
         chunk.append(UInt8(ascii: "["))
@@ -1158,12 +1328,18 @@ class BookSourceStore: ObservableObject {
                 chunk.append(try encoder.encode(sources[index]))
                 if chunk.count >= libraryWriteChunkBytes {
                     try handle.write(contentsOf: chunk)
+                    hasher.update(data: chunk)
+                    byteCount += chunk.count
                     chunk.removeAll(keepingCapacity: true)
                 }
             }
         }
         chunk.append(UInt8(ascii: "]"))
         try handle.write(contentsOf: chunk)
+        hasher.update(data: chunk)
+        byteCount += chunk.count
+        return BookSourceLibraryEvidence(operation: .atomicWriteCompleted,
+            rawSHA256: Data(hasher.finalize()), rawByteCount: byteCount, sourceCount: sources.count)
     }
 
     /// Keeps the app running until every queued write has landed.
@@ -1182,6 +1358,14 @@ class BookSourceStore: ObservableObject {
     func waitForQueuedWrites() {
         Self.persistQueue.sync {}
     }
+
+    #if DEBUG
+    /// Test-only queue observation; it cannot replace the writer or mint a proof.
+    /// Held test jobs run on the existing worker, never block the UI thread.
+    static func enqueuePersistenceTestJob(_ body: @escaping () -> Void) {
+        persistQueue.async(execute: body)
+    }
+    #endif
 
 
     // MARK: Errors
@@ -1207,24 +1391,67 @@ class BookSourceStore: ObservableObject {
 
 /// Lock-guarded hand-off of the newest library snapshot from `save()` to the persist queue.
 private final class PendingSourceWrite: @unchecked Sendable {
+    /// The enclosing owner's lock guards every access to this batch's array.
+    final class Batch: @unchecked Sendable {
+        fileprivate var snapshot: [BookSource]?
+        fileprivate init(_ snapshot: [BookSource]) { self.snapshot = snapshot }
+    }
     private let lock = NSLock()
-    private var snapshot: [BookSource]?
+    private var pending: Batch?
 
-    /// Stores the newest snapshot. True when no write was waiting for one, so the caller
-    /// has to queue it.
-    func replace(with newSnapshot: [BookSource]) -> Bool {
+    /// Stores the newest snapshot. A new batch is returned only when a queue
+    /// closure is needed. The closure owns its batch even after a checkpoint.
+    func replace(with newSnapshot: [BookSource]) -> Batch? {
         lock.lock()
         defer { lock.unlock() }
-        let needsWrite = snapshot == nil
-        snapshot = newSnapshot
-        return needsWrite
+        if let pending { pending.snapshot = newSnapshot; return nil }
+        let batch = Batch(newSnapshot)
+        pending = batch
+        return batch
     }
 
-    func take() -> [BookSource]? {
+    func sealPendingBatch() {
         lock.lock()
         defer { lock.unlock() }
-        let current = snapshot
-        snapshot = nil
+        pending = nil
+    }
+
+    func take(_ batch: Batch) -> [BookSource]? {
+        lock.lock()
+        defer { lock.unlock() }
+        let current = batch.snapshot
+        batch.snapshot = nil
+        if pending === batch { pending = nil }
         return current
+    }
+}
+
+/// A single admitted job's completion, not another library/queue/cache. The
+/// worker may finish before the awaiting task starts, so retain just its result.
+private final class BookSourceSaveCompletion: @unchecked Sendable {
+    private let lock = NSLock()
+    private var result: Result<BookSourcePersistenceReceipt, Error>?
+    private var waiter: CheckedContinuation<BookSourcePersistenceReceipt, Error>?
+
+    func value() async throws -> BookSourcePersistenceReceipt {
+        try await withCheckedThrowingContinuation { continuation in
+            lock.lock()
+            if let result {
+                lock.unlock()
+                continuation.resume(with: result)
+            } else {
+                waiter = continuation
+                lock.unlock()
+            }
+        }
+    }
+
+    func resolve(_ result: Result<BookSourcePersistenceReceipt, Error>) {
+        lock.lock()
+        self.result = result
+        let waiter = self.waiter
+        self.waiter = nil
+        lock.unlock()
+        waiter?.resume(with: result)
     }
 }

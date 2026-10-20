@@ -351,6 +351,8 @@ struct AppDependencies {
     var legadoPrototype = LegadoPrototypeProbeService()
     /// Stateless read-only transport diagnostic; no connection is opened at initialization.
     var selfRenewalTransportProbe = SelfRenewalTransportProbe()
+    /// The App supplies its single handoff owner, bound to its actual stores.
+    var selfRenewalDataHandoff: SelfRenewalUserDataHandoff? = nil
     var webContentFetcher: WebContentFetching
     var bookSourceFetcher: BookSourceFetching
     var chapterFetcher: ChapterFetching

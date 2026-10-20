@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T05:36:56.230939+00:00",
+  "scope": "Read-only independent narrow review of App handoff final10 bound to grammar-app-handoff-v2; no source edits or new validation execution",
+  "binding": {
+    "grammarPath": ".build/renewal-discovery/installed-material-handoff-step/grammar-app-handoff-v2.json",
+    "bytes": 2549,
+    "sha256": "666a553eadf0ae17c1ff0db8c9110ae061de40fa35e69c6a69426836edca9982",
+    "sourceFiles": [
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/AppDependencies.swift",
+        "bytes": 14527,
+        "sha256": "5477e4195a436e4ac79f8e434f3007d1b474c544eef2a09bf77534d2f2c11c63"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/ReaderNavigator.swift",
+        "bytes": 10987,
+        "sha256": "270f7a8be63fd235ae6a9386ff63dd8a8106e19da6bae7a3465be8566e1d15d6"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/ReaderView.swift",
+        "bytes": 151280,
+        "sha256": "b4fcb9fc49c442557938bf2641a8b26e9bd8f57cec5def959c957972fbf33336"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/SelfRenewalControlledRenewalCoordinator.swift",
+        "bytes": 17307,
+        "sha256": "92dce2dc1f8154a506c3dd107fadd68a63b0369481d20217a9eaf2f1903538f5"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/SelfRenewalInstalledMaterialObserver.swift",
+        "bytes": 9704,
+        "sha256": "51ce7f14efffe7524a0f1de6e3d815182853086f47b1ecc348491e975bd6055b"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/SelfRenewalInstalledMaterialObserverTests.swift",
+        "bytes": 7245,
+        "sha256": "bf50f1b5ce9811d03a5cbd74857e2204f900e49c5e5a5fa2e1517549e4efecb5"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/SelfRenewalTransactionJournal.swift",
+        "bytes": 42289,
+        "sha256": "db70372fe0a2ca6083d350cd07846fd9431406899e1a22c414cb6f16058a7ecc"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/SelfRenewalUserDataHandoff.swift",
+        "bytes": 8838,
+        "sha256": "3e21a869f1279fb5127842ed0aa2538ff277039a3e0372783a01961974435a03"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/SelfRenewalUserDataHandoffTests.swift",
+        "bytes": 13470,
+        "sha256": "79fb69cd8ba2e24d53154da685e6110614167c4023b6ff856a85988f24484c1d"
+      },
+      {
+        "path": ".build/renewal-discovery/installed-material-handoff-step/work/yuedu_appApp.swift",
+        "bytes": 25865,
+        "sha256": "ab701eb65888d443fa4ea137d4061052a448f3bc25f8880f4f899a0103167b6f"
+      }
+    ],
+    "allTenStillMatchAtReviewCompletion": true
+  },
+  "dependencyBindings": [
+    {
+      "path": ".build/renewal-discovery/book-source-handoff-step/preparation.json",
+      "bytes": 8729,
+      "sha256": "46903313cb473026319803512a4d58555c2ab0df9f89c3d4a100e58bd03e12da",
+      "scope": "Frozen owner preparation"
+    },
+    {
+      "path": ".build/renewal-discovery/position-handoff-step/preparation.json",
+      "bytes": 10962,
+      "sha256": "80692401eac5a2106c9a6aba65949e215a98e729454d6656c678d3cae240d635",
+      "scope": "Frozen owner preparation"
+    },
+    {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/work/BookStore.swift",
+      "bytes": 204268,
+      "sha256": "ec72751bbb5f30fa8337010d67678ab45c27ef0e8e7fb1677dde728993f6e189",
+      "scope": "Current BookStore interface compatibility only; not a reacceptance of its evolving migration/body implementation"
+    }
+  ],
+  "confirmedBlockingFindings": [],
+  "inspectedActualConnections": [
+    "One App @State SelfRenewalUserDataHandoff is supplied through the existing AppDependencies copy; its bind uses the actual App BookStore, shared BookSourceStore and the same existing readingPositionStore reference. No second store/queue/cache is introduced by handoff.",
+    "The actual ReaderView passes the injected handoff into ReaderNavigator initialization. All Navigator stored properties are initialized before synchronous registration; the registry retains only weak navigators and bounds coverage at eight, refusing overflow/duplicate books/foreign position owner.",
+    "ReadingPositionStore is explicitly AnyObject, so the handoff and Navigator existential identity checks are valid class-owner checks. New Navigator helpers preserve the existing actual three-field checked save and its original file owner.",
+    "prepareForSubmission awaits each actual active Navigator checked position write, actual BookStore checked two-file save, and actual SourceStore checked stream save. Revision/current-location/coverage checks reject changes during awaits rather than asserting an atomic multi-owner freeze.",
+    "Coordinator submitWithAppDataHandoff invokes this preparation only from the real Installer beforeUpgradeSubmission hook, then revalidates the real vault lease and records the sealed receipt in the same durable Journal upgradeIntent before returning permission for the first Upgrade frame byte.",
+    "Handoff Receipt and NormalLoadObservation constructors are fileprivate, as are the original persistence receipt factories. Journal transition requires the actual typed objects; a plain Boolean/hash/version Lookup does not construct them.",
+    "UserDataCheckpoint persists exact file role order, validated raw hash bytes/counts, source local revision/count and bounded position values; the Journal validates/recomputes recorded selectedFilesMatch from the stored facts rather than trusting a supplied success Boolean.",
+    "Normal observation consumes the original BookStore and SourceStore normal-loader proof and at most eight checked position file reads of the existing 4 KiB budget. It does not call reloadFromDisk or perform a separate whole-library scan/readback.",
+    "Sources startup bootstrap write is distinguished from normal read and prevents selectedFilesMatch. Local mutation revisions are not used as cross-owner/cross-process equality proofs.",
+    "Actual per-process identity remains static across Coordinator/owner reopens. Same-process selected-file equality remains independent from userDataReadInDifferentProcess; no same-process reopen is promoted into cold-launch proof.",
+    "Installed material observation obtains actual Bundle.main via the existing full verifier, compares authenticated raw CodeDirectory/CMS signer/profile/identity projection against the actual verified candidate, and exposes no arbitrary-root constructor for CurrentProcessObservation.",
+    "Journal material/user-data observations preserve upgradeIntent/installationUnknown/receiptObserved/lookupObserved uncertainty. Cleanup continues to permit only Lookup on unknown submission phases; these observations do not authorize an Upgrade retry or remote removal.",
+    "Cancellation and stale-Journal/active-cleanup/stream exclusions are preserved at actual async and durable publication boundaries. No new main queue.sync, full-main-library encode/hash/IO, or timer-based settling path is added by these ten source changes."
+  ],
+  "remainingExplicitlyConfirmedByRoot": [
+    "The real App startup currently binds data owners and Navigator DI only. It does not open/configure the Journal/Vault/Coordinator or automatically invoke observeCurrentProcess / observeUserDataAfterNormalLoad.",
+    "Actual App startup coordinator factory, authorized material/anchor configuration and observation invocation remain S5/S6 work. No default empty anchors, fixture identity, automatic install trigger, account, pairing or permission is invented in this checkpoint.",
+    "Current Bundle comparison and selected normal-file comparison have new callable entry points plus owned test definitions, not real App cold-launch acceptance.",
+    "Selected initial metadata/source reads and later bounded position reads are distinct point-in-time observations, not one atomic launch instant or protection against later edits.",
+    "No kernel-loaded-image, Apple installation authority, automatic self-renewal, complete cold launch, whole user-data preservation, downloads/content files, Cookie/Login/Keychain/pins preservation or crash fsync guarantee is claimed by these receipts.",
+    "The independent BookStore legacy migration finding and its later author fix are separately tracked by that owner; current interface compatibility here is not acceptance of unreviewed body changes."
+  ],
+  "preparedTestMethods": {
+    "SelfRenewalInstalledMaterialObserverTests.swift": [
+      "matchesActualCodeDirectoriesCertificatesProfilesAndOrderedGroups",
+      "rejectsOldSignedMaterialWithTheSameReportedIdentityAndVersion",
+      "unavailableCurrentProcessDoesNotAdvanceOrEraseThePendingTransaction",
+      "preservesOneActualProcessIdentityWithoutObservingAnUnsubmittedCandidate"
+    ],
+    "SelfRenewalUserDataHandoffTests.swift": [
+      "submitsOnlyAfterActualAppOwnerReceiptsAreDurable",
+      "actualSourceWriteFailurePreventsUpgradeAndKeepsPendingOwnership",
+      "rejectsUnboundAndForeignPositionOwnersBeforeSaving"
+    ]
+  },
+  "verification": {
+    "SwiftSDKCompileOrTypecheck": 0,
+    "SwiftTestsExecuted": 0,
+    "DeviceTests": 0,
+    "GrammarRerun": false,
+    "ExistingGrammarRecordOnly": true,
+    "CloudQueries": 0,
+    "SourceFilesModified": false,
+    "CanonicalCIOrGitModified": false,
+    "OnlyThisIgnoredReviewJSONWritten": true
+  },
+  "conclusion": "No confirmed new blocker found in the ten exact bound sources during this narrow source review. Real SDK compilation/execution and the remaining App startup wiring are still required."
+}

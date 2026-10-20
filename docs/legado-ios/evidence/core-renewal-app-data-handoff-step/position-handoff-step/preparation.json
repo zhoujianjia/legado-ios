@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:15:17.245588+00:00",
+  "stage": "S5 actual ReaderNavigator to existing position-owner checked handoff",
+  "status": "ignored-four-source-frozen-for-root-integration-SDK-unexecuted",
+  "sourceBinding": {
+    "files": [
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReadingPositionStore.swift",
+        "bytes": 15862,
+        "sha256": "97fab13d790e908f898551f23b47e024971de4bb2433660a5d9a8a85424f959f",
+        "intendedPath": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+        "snapshot": {
+          "path": ".build/renewal-discovery/position-handoff-step/sources/ReadingPositionStore.swift",
+          "bytes": 15862,
+          "sha256": "97fab13d790e908f898551f23b47e024971de4bb2433660a5d9a8a85424f959f"
+        }
+      },
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReaderNavigator.swift",
+        "bytes": 10665,
+        "sha256": "f7b84c750f92db9d2a452601c13bb21485be2332d808a5548be0200555142204",
+        "intendedPath": "Modules/Core/ReaderCore/ReaderNavigator.swift",
+        "snapshot": {
+          "path": ".build/renewal-discovery/position-handoff-step/sources/ReaderNavigator.swift",
+          "bytes": 10665,
+          "sha256": "f7b84c750f92db9d2a452601c13bb21485be2332d808a5548be0200555142204"
+        }
+      },
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReadingPositionStorePersistenceTests.swift",
+        "bytes": 16610,
+        "sha256": "db94b429841a70992b2b0bca762b45eb9ff5c3b7cfcfe8dd977bfa0998e05d62",
+        "intendedPath": "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+        "snapshot": {
+          "path": ".build/renewal-discovery/position-handoff-step/sources/ReadingPositionStorePersistenceTests.swift",
+          "bytes": 16610,
+          "sha256": "db94b429841a70992b2b0bca762b45eb9ff5c3b7cfcfe8dd977bfa0998e05d62"
+        }
+      },
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReadingPositionWriteOrderingTests.swift",
+        "bytes": 25425,
+        "sha256": "046758252dfd596f023f716751e08e034460182268c5a9a42051344fb84e9181",
+        "intendedPath": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+        "snapshot": {
+          "path": ".build/renewal-discovery/position-handoff-step/sources/ReadingPositionWriteOrderingTests.swift",
+          "bytes": 25425,
+          "sha256": "046758252dfd596f023f716751e08e034460182268c5a9a42051344fb84e9181"
+        }
+      }
+    ],
+    "canonicalSourcesAtFreeze": [
+      {
+        "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+        "bytes": 7976,
+        "sha256": "8a3e8aecdf41f757e813ec77fc5adc8665c3e4a415d60f239180e46e174bdd2f"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReaderNavigator.swift",
+        "bytes": 10166,
+        "sha256": "d0099d3abaec7b71892a534587ff5c48630de7ae45c094e0c69bb62a83c744dc"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+        "bytes": 6844,
+        "sha256": "b6b7d964fb24e439bee7d00be35c680e7d0d0c9b980e5501b99d86351e973abd"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+        "bytes": 18767,
+        "sha256": "9964c23181d32269189e88218635e37e70341d2a6bddaa40cc00146891c41275"
+      }
+    ],
+    "existingFileJobsActorNormalizedSHA256": "e82f097730034d2821fe9c32c4bfed4472518140e38fb0eba8a70532742fe5ee",
+    "existingFileJobsActorUnchanged": true,
+    "oldTestMethodBodiesByteEqualAfterNewlineNormalization": true
+  },
+  "api": {
+    "receipt": "ReadingPositionPersistenceReceipt: Sendable, Equatable; fileprivate init; bookId/position(spineIndex,charOffset,translationOffset)/rawSHA256/rawByteCount/operation",
+    "save": "ReadingPositionStore.saveChecked(_:for:) async throws -> ReadingPositionPersistenceReceipt",
+    "load": "ReadingPositionStore.loadChecked(for:) async throws -> ReadingPositionPersistenceReceipt?; nil only for real ENOENT",
+    "navigator": "ReaderNavigator.flushForRenewalHandoff() async throws -> ReadingPositionPersistenceReceipt",
+    "unsupported": "Protocol default strict APIs and JSON custom legacy writer save return ReadingPositionPersistenceFailure.unsupported",
+    "atomicProof": "Only default actual Data.write(.atomic) completion issues atomicWriteCompleted; no reread, caller booleans or new queue/cache/file",
+    "loadProof": "Same fileJobs .load admission; fixed 4096 bytes; no-follow/nonblocking regular FD; actual raw read and pre/post FD identity/size/timestamps; raw JSON digest, never re-encoding",
+    "limits": {
+      "positionBytes": 4096,
+      "bookIdentityUTF8Bytes": 128
+    }
+  },
+  "nativeDefinition": {
+    "suite": "ReadingPositionStorePersistenceTests",
+    "newMethods": [
+      "testCheckedAtomicReceiptMatchesRawFileAndReopenedOwner",
+      "testCheckedLoadHashesOriginalJSONAndDistinguishesMissingCorruptAndBounds",
+      "testCheckedWriteFailureAndUnsupportedBackendsNeverReturnSuccess",
+      "testNavigatorHandoffPersistsCapturedTranslationAndRejectsLegacyOwner",
+      "testCheckedAdmissionCompletesAfterCancellationBehindTheExistingWriter",
+      "testNavigatorHandoffAndOtherBooksKeepTheSameCrossInstanceAdmissionOrder"
+    ],
+    "newCount": 6,
+    "oldMethodsRetained": [
+      "testSavingRecreatesAReadingPositionDirectoryRemovedAfterInitialization",
+      "testFailedWritePreservesPreviousFileAndDoesNotPublishASuccess",
+      "testCorruptProgressIsPreservedAndNeverPublishedAsASuccess",
+      "testCompletedSaveIsRestoredByANewStoreIncludingTranslationOffset",
+      "testMissingProgressDoesNotCreateOrPublishAReplacement",
+      "testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled",
+      "testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits",
+      "testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave",
+      "testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave",
+      "testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave"
+    ],
+    "oldCount": 10,
+    "totalDefinedCount": 16,
+    "SDKExecuted": 0,
+    "typechecked": false,
+    "oldPassedCarriedForward": 0
+  },
+  "grammar": {
+    "tool": "tree-sitter-swift",
+    "files": [
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReadingPositionStore.swift",
+        "bytes": 15862,
+        "sha256": "97fab13d790e908f898551f23b47e024971de4bb2433660a5d9a8a85424f959f",
+        "errors": []
+      },
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReaderNavigator.swift",
+        "bytes": 10665,
+        "sha256": "f7b84c750f92db9d2a452601c13bb21485be2332d808a5548be0200555142204",
+        "errors": []
+      },
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReadingPositionStorePersistenceTests.swift",
+        "bytes": 16610,
+        "sha256": "db94b429841a70992b2b0bca762b45eb9ff5c3b7cfcfe8dd977bfa0998e05d62",
+        "errors": []
+      },
+      {
+        "path": ".build/renewal-discovery/position-handoff-step/work/ReadingPositionWriteOrderingTests.swift",
+        "bytes": 25425,
+        "sha256": "046758252dfd596f023f716751e08e034460182268c5a9a42051344fb84e9181",
+        "errors": []
+      }
+    ],
+    "errorCount": 0,
+    "SwiftSDKExecuted": false
+  },
+  "ownedRegressionDefinitions": [
+    "Actual platform atomic output matches independent raw file digest/byte count, includes translationOffset and reopens through a new actual owner.",
+    "An independently hashed whitespace-preserving JSON literal proves read receipts bind original bytes rather than encoder output.",
+    "True missing creates no directory/file; corrupt/oversized/directory input throws and preserves original bytes.",
+    "Real directory-versus-file atomic replacement failure returns no receipt or onSave; custom no-op legacy writer/mocks cannot mint success.",
+    "Actual ReaderNavigator cancels debounce, captures current three-field position and awaits default platform owner; no store/legacy mock remains unsupported.",
+    "Legacy held writer plus strict default owner share the unchanged static actor; actual admission/completion signals show post-admission cancellation retains the actual write and onSave.",
+    "Navigator capture, another book, another instance, actual checked load and legacy flush retain the existing global admission order; later navigation/other-book writes cannot alter an earlier immutable receipt."
+  ],
+  "independentVector": {
+    "path": ".build/renewal-discovery/position-handoff-step/raw-position-hash-vector.json",
+    "bytes": 335,
+    "sha256": "228bff6f963c11a5151f92d93390309988c4641a18ff5c35fd265a23940e29a3"
+  },
+  "review": {
+    "rootReadOnlyProductionReview": true,
+    "confirmedProductionBlockersRemaining": 0,
+    "finalSmallGuard": "After review, added no-I/O file-URL/query/fragment validation and coverage in an existing new method; method count and interfaces unchanged."
+  },
+  "preservedBehavior": [
+    "Legacy save/load/flush and sync replacement reuse the same actual core and original fileJobs owner; no new store/queue/cache/file.",
+    "Legacy save logging and successful onSave order remain, sync replacement still does not echo onSave.",
+    "A strict caller cancelled before admission throws; once admitted, detached actual write/onSave/receipt completes even if its caller is cancelled.",
+    "Original writeData-injection callers remain source-compatible and legacy fault/ordering tests are unchanged; injected writer cannot issue checked-save success."
+  ],
+  "limitations": [
+    "All six new native methods and all ten retained methods are definitions only in this stage. Windows grammar and independent hashlib vector are not SDK execution or Swift typechecking.",
+    "Atomic write completion is not fsync durability, proof of no later mutation, process relaunch or preservation of any other user data.",
+    "Legacy loadSync remains its existing immediate synchronous read contract and may be called by existing MainActor paths; no new main-thread I/O call was added. New strict async read/write and handoff run I/O only on existing detached file jobs.",
+    "S5 journal/coordinator/App startup/data-handoff caller are not connected to these new APIs yet.",
+    "Position receipt alone does not establish books/source JSON, runtime defaults, credentials, content files, installed profile or actual automatic renewal.",
+    "No real user position files or library records were read; no native environment or device was used."
+  ],
+  "canonicalOrCIOrDocsModified": false,
+  "GitActions": false,
+  "cloudQueries": false,
+  "newSwiftSDKExecutions": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false
+}

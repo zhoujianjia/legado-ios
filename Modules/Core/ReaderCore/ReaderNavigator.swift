@@ -73,11 +73,13 @@ final class ReaderNavigator: ObservableObject {
     init(
         initialState: ReaderPresentationState,
         positionStore: (any ReadingPositionStore)? = nil,
-        bookId: String
+        bookId: String,
+        renewalHandoff: SelfRenewalUserDataHandoff? = nil
     ) {
         self.sessionStore = ReaderSessionStore(initialState: initialState)
         self.positionStore = positionStore
         self.bookId = bookId
+        renewalHandoff?.register(self)
     }
 
     var state: ReaderPresentationState {
@@ -87,6 +89,13 @@ final class ReaderNavigator: ObservableObject {
     var currentLocation: CoreTextReadingPosition {
         state.location.coreTextPosition
     }
+
+    func usesPositionStore(_ owner: any ReadingPositionStore) -> Bool {
+        guard let positionStore else { return false }
+        return positionStore === owner
+    }
+
+    var persistenceBookIdentity: String { bookId }
 
     // MARK: - Unified Navigation API
 
@@ -252,6 +261,15 @@ final class ReaderNavigator: ObservableObject {
         guard let positionStore else { return }
         await positionStore.save(state.location.coreTextPosition, for: bookId)
         await positionStore.flush(for: bookId)
+    }
+
+    /// Captures the actual current three-field location before awaiting the
+    /// existing file owner. A void legacy flush is never a successful receipt.
+    func flushForRenewalHandoff() async throws -> ReadingPositionPersistenceReceipt {
+        saveTask?.cancel()
+        let position = state.location.coreTextPosition
+        guard let positionStore else { throw ReadingPositionPersistenceFailure.unsupported }
+        return try await positionStore.saveChecked(position, for: bookId)
     }
 
     func clearExternalTarget() {

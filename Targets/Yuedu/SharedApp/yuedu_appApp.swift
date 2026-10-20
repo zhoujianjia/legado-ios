@@ -15,6 +15,7 @@ struct yuedu_appApp: App {
     )
     @StateObject private var subscriptionStore = SubscriptionStore.shared
     @StateObject private var bookSourceDeepLinkHandler = BookSourceDeepLinkHandler()
+    @State private var renewalDataHandoff = SelfRenewalUserDataHandoff()
     @Environment(\.scenePhase) private var scenePhase
 
     #if DEBUG
@@ -189,6 +190,12 @@ struct yuedu_appApp: App {
         )
     }
 
+    private var dependenciesWithRenewalHandoff: AppDependencies {
+        var dependencies = AppDependencies.live
+        dependencies.selfRenewalDataHandoff = renewalDataHandoff
+        return dependencies
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {
@@ -209,7 +216,15 @@ struct yuedu_appApp: App {
                 .environmentObject(bookStore)
                 .environment(bookStore.filledCovers)
                 .environmentObject(subscriptionStore)
-                .environment(\.appDependencies, .live)
+                .environment(\.appDependencies, dependenciesWithRenewalHandoff)
+                .task {
+                    do {
+                        try renewalDataHandoff.bind(books: bookStore, sources: BookSourceStore.shared,
+                            positions: AppDependencies.live.readingPositionStore)
+                    } catch {
+                        AppLogger.error("Renewal handoff could not bind the App persistence owners", error: error)
+                    }
+                }
                 #if DEBUG
                 .task {
                     await Self.runAutoImportIfNeeded(bookStore: bookStore)

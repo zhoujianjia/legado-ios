@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "stage": "S5 book_sources.json real-owner handoff receipts",
+  "state": "ignored-source-frozen-awaiting-root-integration-and-real-SDK",
+  "preparedAtUTC": "2026-10-20T05:25:49.065332+00:00",
+  "scope": {
+    "canonicalFilesEdited": false,
+    "ciEdited": false,
+    "docsEdited": false,
+    "gitCommandsIssued": false,
+    "cloudQueried": false,
+    "current180SourceBoundaryChanged": false,
+    "newStoreQueueDatabaseOrLibraryCache": false,
+    "cookieOwnerNoOverlapConfirmed": true,
+    "normalColdLoadUsesExistingStartLoading": true,
+    "wholeDataHandoffComplete": false
+  },
+  "sourceBinding": {
+    "files": [
+      {
+        "workPath": ".build/renewal-discovery/book-source-handoff-step/work/BookSourceStore.swift",
+        "snapshotPath": ".build/renewal-discovery/book-source-handoff-step/sources/BookSourceStore.swift",
+        "intendedPath": "Modules/Core/BookSource/BookSourceStore.swift",
+        "bytes": 66909,
+        "sha256": "c25e62b035d987bece0a73f96023cb63c7a7e760cec769d59cc61a004d36b503"
+      },
+      {
+        "workPath": ".build/renewal-discovery/book-source-handoff-step/work/BookSourceStoreHandoffTests.swift",
+        "snapshotPath": ".build/renewal-discovery/book-source-handoff-step/sources/BookSourceStoreHandoffTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/BookSourceStoreHandoffTests.swift",
+        "bytes": 18317,
+        "sha256": "fbf968792591e8efcd897d2dfabaee60093614cc3ed22a98acf8a121b9a4f1a4"
+      }
+    ],
+    "baselineUneditedInputs": [
+      {
+        "path": "Modules/Core/BookSource/BookSourceStore.swift",
+        "bytes": 55607,
+        "sha256": "d87ff6800b49de00addd4559f0bc5129fe604b69cd1d03406b80d380f1ccbfc1"
+      },
+      {
+        "path": "Modules/Core/BookSource/BookSource.swift",
+        "bytes": 46931,
+        "sha256": "682cdd47ee99602a49c8b9389e049ad2b9c3b2e827b4a8e354485243a7a30c2f"
+      },
+      {
+        "path": "Modules/Core/BookSource/BuiltInBookSourceBootstrap.swift",
+        "bytes": 8820,
+        "sha256": "a7ba7a308038e531fa69b8c59dc95199ddf28d4581693757835da3b43d62d669"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceStoreTests.swift",
+        "bytes": 23471,
+        "sha256": "0b039dac9aeaf6896cbc2b3d54cb67676b26e8f784b27ef43a9b319247d21ec2"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourcePersistenceTests.swift",
+        "bytes": 10914,
+        "sha256": "2298b494124525408cbd47764c8be45784ab3bae5678da4113c5c15eff3978bb"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BuiltInBookSourcesTests.swift",
+        "bytes": 17259,
+        "sha256": "9769a172836ab75b1dc8a97ec41c7ffa6cea2d66c02909c1727335a2b7815435"
+      }
+    ],
+    "allWorkMatchesSnapshots": true
+  },
+  "productionAPIs": [
+    "@MainActor BookSourceStore.saveForRenewalHandoff() async throws -> BookSourcePersistenceReceipt",
+    "@MainActor BookSourceStore.admitRenewalHandoffSave() throws -> Task<BookSourcePersistenceReceipt, Error>",
+    "@MainActor BookSourceStore.normalLoadReceiptForRenewalHandoff() async throws -> BookSourcePersistenceReceipt"
+  ],
+  "receipt": {
+    "initializer": "fileprivate in existing BookSourceStore owner file",
+    "fields": [
+      "operation",
+      "rawSHA256: Data?",
+      "rawByteCount: Int",
+      "sourceCount: Int",
+      "mutationRevision: Int"
+    ],
+    "operations": [
+      "normalFileRead",
+      "normalMissingFile",
+      "normalBootstrapWrite",
+      "atomicWriteCompleted"
+    ],
+    "missingFileSHA256": null,
+    "revisionScope": "Local store revision only; never compare across owners/relaunches. Normal load binds the initial application revision, not later unsaved memory.",
+    "sourceCountMeaning": "Published deduped source count on normal reads; actual written snapshot count on saves."
+  },
+  "ioContract": [
+    "MainActor awaits the original normal loader, then borrows the immutable COW library and revision in O(1). No encoding, hashing, source-ID scan, or file IO is added at checkpoint admission.",
+    "All saves reuse the existing static persistQueue and concrete streamed writer. SHA256 updates exactly the existing successful 1 MiB chunk writes; returned evidence is exposed as a receipt only after actual FileHandle.close and atomic rename both succeed.",
+    "PendingSourceWrite batches are sealed at strict admission; earlier queue closures retain their own batch, and later UI writes cannot be consumed before an older checkpoint and then overwritten by it.",
+    "Before-admission cancellation throws; after-admission cancellation does not retract the committed write job or its actual completion receipt. DEBUG exposes one queue observation only, never an arbitrary writer callback or receipt factory.",
+    "The existing normal loader opens one final-component no-follow regular-file FD, reads once, closes it, decodes/dedupes, and hashes those original bytes on its existing loadQueue. Only actual POSIX ENOENT produces normalMissingFile; no decode/access/directory/ENOTDIR error becomes missing.",
+    "Optional bootstrap calls the same private concrete writer. A successful startup write is explicitly normalBootstrapWrite. Any bootstrap error blocks checked normal-load/save proofs, including an ambiguous rename-before-marker failure.",
+    "Legacy UI save, static writeLibrary Void API, reload, logging, flush and queue-barrier APIs are retained and share the real IO primitives. No save-after-readback, alternate cold reload, repair, or new source queue/cache/database is added."
+  ],
+  "validation": {
+    "grammar": {
+      "path": ".build/renewal-discovery/book-source-handoff-step/grammar.json",
+      "swiftFiles": 2,
+      "errors": 0,
+      "isSDKTypecheck": false
+    },
+    "newSuite": "BookSourceStoreHandoffTests",
+    "newExactMethods": [
+      "streamedSaveMatchesNewOwnerNormalLoad()",
+      "normalLoadPreservesRawBytesAndTypedFailures()",
+      "actualWriteFailuresPreserveOriginalTargets()",
+      "restoreAndPreAdmissionCancellationAreExplicit()",
+      "bootstrapUsesTheSameConcreteWriterProof()",
+      "admittedCancellationAndCoalescingKeepActualFileOrder()"
+    ],
+    "newDefinedMethods": 6,
+    "newSwiftMethodsExecuted": 0,
+    "existingTestsExecuted": 0,
+    "sdkTypechecks": 0,
+    "deviceTests": 0,
+    "ownedRuntimeFixturesDefinedNotExecuted": [
+      "900-source multi-chunk real streamed save + reopened normal owner raw-hash equality",
+      "5-byte original whitespace JSON + literal independent expected digest",
+      "real absent file/corrupt JSON/directory/ENOTDIR",
+      "real temporary-create and atomic-rename failures preserve actual target bytes and remove partial temp",
+      "restore-paused checkpoint and actual pre-admission Task cancellation",
+      "actual optional bootstrap write + reopened normal read; invalid manifest preserves original bytes and blocks checked save",
+      "held existing persistQueue, real old coalesced write, admitted cancelled checkpoint, intermediate actual bytes, later edit, and independent other-store write"
+    ],
+    "independentLiteralDigest": {
+      "path": ".build/renewal-discovery/book-source-handoff-step/raw-json-sha256-vector.json",
+      "pythonHashlibChecked": true,
+      "isSwiftExecution": false
+    }
+  },
+  "limitations": [
+    "Swift grammar checks are not SDK compilation, XCTest/Testing execution, or real device validation; 6 methods are definitions only.",
+    "Only book_sources.json is covered. Pins sidecar, Cookie/Login/runtime state, book metadata/reading positions, UserDefaults/Keychain and full user-data preservation remain outside this receipt.",
+    "Atomic write/close/rename completion is not fsync durability, directory fsync, immunity from later admitted writes, or a multi-file transaction/frozen library.",
+    "Initial normal-load proof is immutable historical IO evidence, not proof that current memory or a later disk generation is unchanged. No cross-process or cross-owner generation lock is added.",
+    "Legacy constructor pin IO, synchronous ensureLoaded/reloadFromDisk, and existing index/prune work on main remain existing boundaries; new handoff APIs do not use a second reload or add whole-file hashing to the explicit synchronous reload.",
+    "The normal loader retains its existing whole-JSON allocation/decoder behavior and practical source capacity; this step does not introduce a new giant-library limit or claim streaming decode.",
+    "S5 coordinator/data-handoff caller is not connected in this ignored step; integration and SDK selection must occur after the current 180-source checkpoint."
+  ]
+}

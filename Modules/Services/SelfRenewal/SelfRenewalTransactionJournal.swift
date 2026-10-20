@@ -26,6 +26,76 @@ actor SelfRenewalTransactionJournal {
         let remotePackagePath: String
         let deviceCertificateSHA256: Data
     }
+    struct InstalledMaterialObservation: Sendable, Codable, Equatable {
+        let candidateArchiveSHA256: Data
+        let authenticatedMaterialSHA256: Data
+        let processID: UUID
+        let observedAt: Date
+    }
+    struct UserDataCheckpoint: Sendable, Codable, Equatable {
+        struct File: Sendable, Codable, Equatable {
+            let role: String
+            let operation: String
+            let rawSHA256: Data?
+            let rawByteCount: Int
+        }
+        struct Position: Sendable, Codable, Equatable {
+            let bookID: String
+            let position: CoreTextReadingPosition
+            let rawSHA256: Data
+            let rawByteCount: Int
+        }
+        let processID: UUID
+        let capturedAt: Date
+        let bookMutationRevision: UInt64
+        let sourceMutationRevision: Int
+        let sourceCount: Int
+        let files: [File]
+        let positions: [Position]
+        /// Only these selected owner files/active positions were observed.
+        var allUserDataPreservationVerified: Bool { false }
+
+        fileprivate init(_ receipt: SelfRenewalUserDataHandoff.Receipt) throws {
+            guard receipt.books.phase == .save,
+                  receipt.books.files.map(\.role) == [.shelf, .reading],
+                  receipt.sources.operation == .atomicWriteCompleted,
+                  receipt.positions.allSatisfy({ $0.operation == .atomicWriteCompleted }) else { throw Failure.invalidTransition }
+            processID = receipt.processID; capturedAt = receipt.capturedAt
+            bookMutationRevision = receipt.books.localRevision
+            sourceMutationRevision = receipt.sources.mutationRevision
+            sourceCount = receipt.sources.sourceCount
+            files = try receipt.books.files.map { file in
+                File(role: file.role.rawValue, operation: file.operation.rawValue,
+                    rawSHA256: try file.rawSHA256.map(Self.decodeHash), rawByteCount: file.rawByteCount)
+            } + [File(role: "sources", operation: "atomicWriteCompleted",
+                rawSHA256: receipt.sources.rawSHA256, rawByteCount: receipt.sources.rawByteCount)]
+            positions = receipt.positions.map { Position(bookID: $0.bookId, position: $0.position,
+                rawSHA256: $0.rawSHA256, rawByteCount: $0.rawByteCount) }
+        }
+        fileprivate static func decodeHash(_ hex: String) throws -> Data {
+            let bytes = Array(hex.utf8)
+            guard bytes.count == 64, bytes.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }) else { throw Failure.invalidTransition }
+            var result = Data(); result.reserveCapacity(32)
+            func digit(_ byte: UInt8) -> UInt8 { byte <= 57 ? byte - 48 : byte - 87 }
+            for offset in stride(from: 0, to: 64, by: 2) { result.append(digit(bytes[offset]) << 4 | digit(bytes[offset + 1])) }
+            return result
+        }
+    }
+    struct UserDataReadObservation: Sendable, Codable, Equatable {
+        struct Position: Sendable, Codable, Equatable {
+            let bookID: String
+            let position: CoreTextReadingPosition?
+            let rawSHA256: Data?
+            let rawByteCount: Int
+        }
+        let processID: UUID
+        let observedAt: Date
+        let files: [UserDataCheckpoint.File]
+        let positions: [Position]
+        let selectedFilesMatch: Bool
+        let sourceWasBootstrapped: Bool
+        var allUserDataPreservationVerified: Bool { false }
+    }
     struct Record: Sendable, Codable, Equatable {
         let schema: Int
         let id: UUID
@@ -38,10 +108,22 @@ actor SelfRenewalTransactionJournal {
         let identitySHA256: Data
         let bundleIdentifier: String
         let bundleVersion: String
+        let preparationProcessID: UUID?
         var phase: Phase
         var candidate: Candidate?
         var submission: Submission?
         var lookupReportedSameVersion: Bool?
+        var installedMaterial: InstalledMaterialObservation?
+        var userDataHandoff: UserDataCheckpoint?
+        var userDataRead: UserDataReadObservation?
+        var userDataReadInDifferentProcess: Bool? {
+            guard let userDataHandoff, let userDataRead else { return nil }
+            return userDataHandoff.processID != userDataRead.processID
+        }
+        var observedDifferentProcess: Bool? {
+            guard let preparationProcessID, let installedMaterial else { return nil }
+            return preparationProcessID != installedMaterial.processID
+        }
         /// No phase here proves a renewed profile, cold launch or retained data.
         var renewalVerified: Bool { false }
     }
@@ -152,14 +234,17 @@ actor SelfRenewalTransactionJournal {
     }
 
     func create(namespace: UUID, generation: UInt64, originalSHA256: Data, identitySHA256: Data,
-        bundleIdentifier: String, bundleVersion: String, at date: Date) throws -> Snapshot {
+        bundleIdentifier: String, bundleVersion: String, at date: Date,
+        process: SelfRenewalInstalledMaterialObserver.ProcessIdentity = .current) throws -> Snapshot {
         guard !streamingCandidate, activeRemoteCleanup == nil else { throw Failure.activeTransaction }
         guard try load() == nil else { throw Failure.activeTransaction }
         let record = Record(schema: 1, id: UUID(), revision: 0, createdAt: date, updatedAt: date,
             materialNamespace: namespace, materialGeneration: generation,
             originalArchiveSHA256: originalSHA256, identitySHA256: identitySHA256,
             bundleIdentifier: bundleIdentifier, bundleVersion: bundleVersion,
-            phase: .created, candidate: nil, submission: nil, lookupReportedSameVersion: nil)
+            preparationProcessID: process.id,
+            phase: .created, candidate: nil, submission: nil, lookupReportedSameVersion: nil,
+            installedMaterial: nil, userDataHandoff: nil, userDataRead: nil)
         return try publish(record)
     }
 
@@ -221,13 +306,15 @@ actor SelfRenewalTransactionJournal {
     }
 
     /// Called by the real install client's before-first-Upgrade-byte hook.
-    func noteUpgradeIntent(_ expected: Snapshot, submission: Installer.UpgradeSubmission, at date: Date) throws -> Snapshot {
+    func noteUpgradeIntent(_ expected: Snapshot, submission: Installer.UpgradeSubmission, at date: Date,
+        handoff: SelfRenewalUserDataHandoff.Receipt? = nil) throws -> Snapshot {
         var value = try current(expected)
         guard value.phase == .uploadIntent, let candidate = value.candidate, let planned = value.submission,
               candidate.sha256 == submission.archiveSHA256, candidate.byteCount == submission.uploadedBytes,
               value.bundleIdentifier == submission.bundleIdentifier, value.bundleVersion == submission.bundleVersion,
               planned.deviceCertificateSHA256 == submission.deviceCertificateSHA256,
               planned.remotePackagePath == submission.remotePackagePath else { throw Failure.invalidTransition }
+        value.userDataHandoff = try handoff.map(UserDataCheckpoint.init)
         value.phase = .upgradeIntent
         return try advance(value, at: date)
     }
@@ -247,6 +334,65 @@ actor SelfRenewalTransactionJournal {
         var value = try current(expected)
         guard value.phase == .upgradeIntent else { throw Failure.invalidTransition }
         value.phase = .installationUnknown
+        return try advance(value, at: date)
+    }
+
+    /// Accepts only the observer's actual Bundle.main verification result.
+    /// Does not erase an uncertain Upgrade, authorize remote deletion or assert
+    /// that the kernel ran the new image or that user files survived an install.
+    func noteCurrentProcessMaterial(_ expected: Snapshot,
+        observation: SelfRenewalInstalledMaterialObserver.CurrentProcessObservation, at date: Date) throws -> Snapshot {
+        var value = try current(expected)
+        guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase),
+              value.submission != nil, let candidate = value.candidate,
+              observation.match.candidateArchiveSHA256 == candidate.sha256,
+              observation.match.candidateArchiveBytes == candidate.byteCount,
+              observation.match.bundleIdentifier == value.bundleIdentifier,
+              observation.match.bundleVersion == value.bundleVersion,
+              observation.match.authenticatedMaterialSHA256.count == 32,
+              observation.observedAt >= value.createdAt, date >= observation.observedAt else { throw Failure.invalidTransition }
+        if let old = value.installedMaterial, old.processID == observation.process.id,
+           old.authenticatedMaterialSHA256 == observation.match.authenticatedMaterialSHA256,
+           old.candidateArchiveSHA256 == candidate.sha256 { return expected }
+        value.installedMaterial = InstalledMaterialObservation(candidateArchiveSHA256: candidate.sha256,
+            authenticatedMaterialSHA256: observation.match.authenticatedMaterialSHA256,
+            processID: observation.process.id, observedAt: observation.observedAt)
+        return try advance(value, at: date)
+    }
+
+    /// The proof can only come from normal App file owners and actual checked
+    /// position reads. Neither a version Lookup nor a supplied file hash fits.
+    func noteNormalUserDataRead(_ expected: Snapshot,
+        observation: SelfRenewalUserDataHandoff.NormalLoadObservation, at date: Date) throws -> Snapshot {
+        var value = try current(expected)
+        guard let handoff = value.userDataHandoff, handoff == observation.expected,
+              [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase),
+              observation.books.phase == .normalLoad,
+              observation.books.files.map(\.role) == [.shelf, .reading],
+              observation.positions.count == handoff.positions.count,
+              observation.observedAt >= handoff.capturedAt, date >= observation.observedAt else { throw Failure.invalidTransition }
+        if value.userDataRead?.processID == observation.processID { return expected }
+        var files = try observation.books.files.map { file in
+            UserDataCheckpoint.File(role: file.role.rawValue, operation: file.operation.rawValue,
+                rawSHA256: try file.rawSHA256.map(UserDataCheckpoint.decodeHash), rawByteCount: file.rawByteCount)
+        }
+        let sourceOperation: String
+        switch observation.sources.operation {
+        case .normalFileRead: sourceOperation = "normalFileRead"
+        case .normalMissingFile: sourceOperation = "normalMissingFile"
+        case .normalBootstrapWrite: sourceOperation = "normalBootstrapWrite"
+        case .atomicWriteCompleted: throw Failure.invalidTransition
+        }
+        files.append(.init(role: "sources", operation: sourceOperation,
+            rawSHA256: observation.sources.rawSHA256, rawByteCount: observation.sources.rawByteCount))
+        let positions = zip(handoff.positions, observation.positions).map { pair in
+            UserDataReadObservation.Position(bookID: pair.0.bookID, position: pair.1?.position,
+                rawSHA256: pair.1?.rawSHA256, rawByteCount: pair.1?.rawByteCount ?? 0)
+        }
+        value.userDataRead = UserDataReadObservation(processID: observation.processID,
+            observedAt: observation.observedAt, files: files, positions: positions,
+            selectedFilesMatch: observation.selectedFilesMatch,
+            sourceWasBootstrapped: observation.sources.operation == .normalBootstrapWrite)
         return try advance(value, at: date)
     }
 
@@ -350,6 +496,83 @@ actor SelfRenewalTransactionJournal {
                   submission.remotePackagePath.hasPrefix(prefix), submission.remotePackagePath.hasSuffix(suffix),
                   let id = UUID(uuidString: String(submission.remotePackagePath.dropFirst(prefix.count).dropLast(suffix.count))),
                   submission.remotePackagePath == prefix + id.uuidString.lowercased() + suffix else { throw Failure.malformedRecord }
+        }
+        if let observed = value.installedMaterial {
+            guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase),
+                  value.submission != nil, observed.candidateArchiveSHA256.count == 32,
+                  observed.candidateArchiveSHA256 == value.candidate?.sha256,
+                  observed.authenticatedMaterialSHA256.count == 32,
+                  observed.observedAt.timeIntervalSinceReferenceDate.isFinite,
+                  observed.observedAt >= value.createdAt, observed.observedAt <= value.updatedAt else { throw Failure.malformedRecord }
+        }
+        if let handoff = value.userDataHandoff {
+            guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase),
+                  value.submission != nil, handoff.capturedAt.timeIntervalSinceReferenceDate.isFinite,
+                  handoff.capturedAt >= value.createdAt, handoff.capturedAt <= value.updatedAt,
+                  handoff.sourceCount >= 0, handoff.sourceMutationRevision >= 0,
+                  handoff.files.map(\.role) == ["shelf", "reading", "sources"],
+                  handoff.positions.count <= 8,
+                  Set(handoff.positions.map(\.bookID)).count == handoff.positions.count else { throw Failure.malformedRecord }
+            for file in handoff.files {
+                guard file.rawByteCount >= 0 else { throw Failure.malformedRecord }
+                if file.role == "sources" {
+                    guard file.operation == "atomicWriteCompleted", file.rawByteCount > 0,
+                          file.rawSHA256?.count == 32 else { throw Failure.malformedRecord }
+                } else if file.operation == "absent" {
+                    guard file.rawByteCount == 0, file.rawSHA256 == nil else { throw Failure.malformedRecord }
+                } else {
+                    guard ["written", "unchanged"].contains(file.operation),
+                          file.rawSHA256?.count == 32 else { throw Failure.malformedRecord }
+                }
+            }
+            for position in handoff.positions {
+                guard !position.bookID.isEmpty, position.bookID.utf8.count <= 128,
+                      !position.bookID.contains("/"), !position.bookID.contains("\\"),
+                      !position.bookID.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains),
+                      position.rawSHA256.count == 32, (1...4096).contains(position.rawByteCount),
+                      position.position.spineIndex >= 0, position.position.charOffset >= 0,
+                      position.position.translationOffset.map({ $0 >= 0 }) ?? true else { throw Failure.malformedRecord }
+            }
+        }
+        if let read = value.userDataRead {
+            guard let handoff = value.userDataHandoff,
+                  read.observedAt.timeIntervalSinceReferenceDate.isFinite,
+                  read.observedAt >= handoff.capturedAt, read.observedAt <= value.updatedAt,
+                  read.files.map(\.role) == ["shelf", "reading", "sources"],
+                  read.positions.map(\.bookID) == handoff.positions.map(\.bookID),
+                  !read.sourceWasBootstrapped || !read.selectedFilesMatch else { throw Failure.malformedRecord }
+            for file in read.files {
+                guard file.rawByteCount >= 0 else { throw Failure.malformedRecord }
+                let allowed = file.role == "sources" ? ["normalFileRead", "normalMissingFile", "normalBootstrapWrite"] : ["read", "absent"]
+                guard allowed.contains(file.operation) else { throw Failure.malformedRecord }
+                let missing = file.operation == "absent" || file.operation == "normalMissingFile"
+                if missing {
+                    guard file.rawByteCount == 0, file.rawSHA256 == nil else { throw Failure.malformedRecord }
+                } else {
+                    guard ["read", "normalFileRead", "normalBootstrapWrite"].contains(file.operation),
+                          file.rawSHA256?.count == 32 else { throw Failure.malformedRecord }
+                }
+            }
+            for position in read.positions {
+                if let actual = position.position {
+                    guard actual.spineIndex >= 0, actual.charOffset >= 0,
+                          actual.translationOffset.map({ $0 >= 0 }) ?? true,
+                          position.rawSHA256?.count == 32, (1...4096).contains(position.rawByteCount) else { throw Failure.malformedRecord }
+                } else {
+                    guard position.rawSHA256 == nil, position.rawByteCount == 0 else { throw Failure.malformedRecord }
+                }
+            }
+            let filesMatch = zip(handoff.files, read.files).allSatisfy { pair in
+                let operationMatches = pair.1.role == "sources" ? pair.1.operation == "normalFileRead" : ["read", "absent"].contains(pair.1.operation)
+                return operationMatches && pair.0.role == pair.1.role
+                    && pair.0.rawSHA256 == pair.1.rawSHA256 && pair.0.rawByteCount == pair.1.rawByteCount
+            }
+            let positionsMatch = zip(handoff.positions, read.positions).allSatisfy { pair in
+                pair.0.bookID == pair.1.bookID && pair.0.position == pair.1.position
+                    && pair.0.rawSHA256 == pair.1.rawSHA256 && pair.0.rawByteCount == pair.1.rawByteCount
+            }
+            guard read.selectedFilesMatch == (filesMatch && positionsMatch),
+                  read.sourceWasBootstrapped == (read.files.last?.operation == "normalBootstrapWrite") else { throw Failure.malformedRecord }
         }
         switch value.phase {
         case .created, .signing:

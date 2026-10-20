@@ -857,7 +857,8 @@ struct ReaderView: View {
             let navigator = ReaderNavigator(
                 initialState: state,
                 positionStore: dependencies.readingPositionStore,
-                bookId: book?.id.uuidString ?? bookId.uuidString
+                bookId: book?.id.uuidString ?? bookId.uuidString,
+                renewalHandoff: dependencies.selfRenewalDataHandoff
             )
             readerSessionCoordinator = ReaderSessionCoordinator(navigator: navigator)
             // One book per session coordinator, so this is the per-book reset point.

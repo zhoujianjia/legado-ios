@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "stage": "book-metadata-renewal-handoff",
+  "state": "final-frozen-owned-Swift-definitions-SDK-unexecuted",
+  "preparedAtUTC": "2026-10-20T05:37:18.580003+00:00",
+  "scope": "Ignored-only real BookStore two-file write and initial normal-load receipts; canonical sources, CI, docs and Git unmodified by this task.",
+  "sourceBinding": {
+    "files": [
+      {
+        "workPath": ".build/renewal-discovery/book-metadata-handoff-step/work/BookStore.swift",
+        "snapshotPath": ".build/renewal-discovery/book-metadata-handoff-step/sources/BookStore.swift",
+        "intendedPath": "Modules/Services/LibraryStore/BookStore.swift",
+        "bytes": 204268,
+        "sha256": "ec72751bbb5f30fa8337010d67678ab45c27ef0e8e7fb1677dde728993f6e189"
+      },
+      {
+        "workPath": ".build/renewal-discovery/book-metadata-handoff-step/work/BookStoreMetadataHandoffTests.swift",
+        "snapshotPath": ".build/renewal-discovery/book-metadata-handoff-step/sources/BookStoreMetadataHandoffTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/BookStoreMetadataHandoffTests.swift",
+        "bytes": 27594,
+        "sha256": "694297f4722bf753f62d795297aa3570c8514e076354a57a042e72f53db465f8"
+      }
+    ],
+    "baselineUneditedInputs": [
+      {
+        "path": "Modules/Services/LibraryStore/BookStore.swift",
+        "bytes": 184037,
+        "sha256": "873224f9e6b53b5e9eee98a312b806e4d5f9cb87a6c41318ac56c650118d3c47"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BookChapterStore.swift",
+        "bytes": 18475,
+        "sha256": "c00618a89d7a1b5035962a18cb0d5a0ff56f81e5a340050408412aa356461849"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift",
+        "bytes": 10804,
+        "sha256": "6e7c9d9ae4c00db60e5a04b9bc0917be1c1b653f8190c39f00c900fb1b260ca7"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+        "bytes": 762,
+        "sha256": "b7e8deae03869cc8ffb7998baa70fae785b95cf7c39ecafcae27ccd9438bef18"
+      },
+      {
+        "path": "Modules/Core/BookSource/SourcePerfTrace.swift",
+        "bytes": 3788,
+        "sha256": "d77b01929cde847fb62c9a4820c9135286abc783d4af1f94056dc0c476f0a934"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoBookMetadataOwnerTests.swift",
+        "bytes": 19836,
+        "sha256": "0f7a143d4daf89829b83abf05f3d36a079b4861fbe46a01c588279d0735f2fb1"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/BookChapterStorageTests.swift",
+        "bytes": 19979,
+        "sha256": "220a93d04334922d16e003e90e673c47a1ffe1ea278ee400212305d32c2a1d05"
+      }
+    ],
+    "allWorkMatchesSnapshots": true
+  },
+  "productionAPIs": [
+    "BookStore.saveForRenewalHandoff() async throws -> BookMetadataPersistenceReceipt (@MainActor)",
+    "BookStore.normalLoadReceiptForRenewalHandoff() async throws -> BookMetadataPersistenceReceipt",
+    "BookStore.admitRenewalHandoffSave(beforeWrite:) throws -> Task<BookMetadataPersistenceReceipt, Error> (@MainActor, synchronous same-FIFO admission)",
+    "BookStore.openForRenewalHandoff(metadataFileURL:) async throws -> BookStore (explicit new owner only, same normal initializer off main)"
+  ],
+  "receipt": {
+    "construction": "private complete-receipt initializer + file-scoped verified factory and file facts; unavailable outside actual reader/writer file",
+    "phase": [
+      "normalLoad",
+      "save"
+    ],
+    "localRevision": "UInt64, local to this BookStore only; not cross-process CAS, not a durable generation",
+    "filesExactOrder": [
+      "shelf",
+      "reading"
+    ],
+    "fileFields": [
+      "role",
+      "operation",
+      "rawSHA256:String?",
+      "rawByteCount:Int"
+    ],
+    "operations": [
+      "read",
+      "written",
+      "unchanged",
+      "absent"
+    ],
+    "absent": "Only POSIX ENOENT, rawSHA256 nil/rawByteCount 0; ENOTDIR/permissions/corrupt JSON never absence"
+  },
+  "ioContract": [
+    "No new queue, record cache, second whole-file read or save barrier proof. Existing persistQueue and runtimeBookMetadata remain the only writers/merge owner.",
+    "Strict save borrows the immutable record Array on Main in O(1) and synchronously admits its job to the original FIFO; later UI payloads cannot be enqueued before this older snapshot.",
+    "Strict original shelf and reading bytes are read exactly once via existing runtimeMetadataBytes; both are compared to existing queue-owned baselines even when desired bytes are unchanged. Per-file hash derives from those raw bytes or actual successful atomic-write input, never a post-write readback.",
+    "All ordinary and checked callers execute exactly one real chapterStore.flushReportingFailure before the first metadata mutation. Ordinary callers still get their existing logged-error wrapper, but a failed chapter flush now stops instead of overwriting the sole inline TOC copy.",
+    "Reading protect-union then shelf durable then final reading prune remains the actual metadata order. Two files are not a transaction; partial successful writes update existing queue baselines, but error carries only actual partialFiles and never a complete receipt.",
+    "Strict failure/partial/stale publication does not call noteMetadataWritten/markMetadataPersisted/cleanup or acknowledge current UI snapshot as durable. Atomic writes are not undone; later retry may complete the preserved partial state.",
+    "Blocked/unreadable/restore-paused/failed-initial-load owners reject checked saves; original normal-loader decode/read failures reject its frozen proof.",
+    "Initial normal-load proof captures exactly the original normal loader Data/missing observations. Existing persistQueue hashes these values off main then releases raw inputs; the frozen proof remains the initial load despite later saves/reloads.",
+    "Main receives only prepared dictionary/Data assignments after revision+restore+sequence checks. Encoding/filtering/runtime merge/raw hash/position bookkeeping execute on original worker queue with trace and dispatch preconditions.",
+    "Cancellation handle is checked before mutation even if its returned Task body has not begun. Cancellation during partial writes throws partial facts; cancellation after synchronous completed writer cannot revoke already written bytes.",
+    "Legacy migration is asynchronously admitted on the same persistQueue as the final constructor/reload action, borrowing the final normal record Array including all legacy off-shelf and existing reading records. It reuses writeMetadataCore(strict) for real chapter flush and both protected metadata files. Only complete success plus unchanged legacy raw input permits deletion of the old key. Failure keeps the key and blocks ordinary whole-shelf overwrites; Main releases only this completed migration protection, keeps independent unreadable/restore guards, assigns prepared bookkeeping under revision/sequence, and queues the current UI snapshot after success.",
+    "Legacy defaults are injectable for owned suite tests; the production default remains the original UserDefaults.standard. No test mutates the actual user domain."
+  ],
+  "validation": {
+    "grammar": {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/grammar-final.json",
+      "swiftFiles": 2,
+      "errors": 0,
+      "isSDKTypecheck": false
+    },
+    "newSuite": "BookStoreMetadataHandoffTests",
+    "newExactMethods": [
+      "actualSaveAndNormalReopenBindBothRawFiles()",
+      "unchangedSaveCannotUseOnlyCachedBytes()",
+      "missingAndFailedNormalLoadsRemainDifferent()",
+      "realWriteFailureRetainsOldFilesAndRetry()",
+      "partialSaveReportsRealFilesAndRetainsProtectedCopy()",
+      "cancellationAndRestorePauseCannotAcknowledgeAWrite()",
+      "checkedWriterPreservesAcceptedRuntimeVariables()",
+      "realChapterFlushFailurePreventsMetadataReceipt()"
+    ],
+    "newDefinedMethods": 8,
+    "newSwiftMethodsExecuted": 0,
+    "existingTestsExecuted": 0,
+    "sdkTypechecks": 0,
+    "deviceTests": 0,
+    "ownedRuntimeFixturesDefinedNotExecuted": [
+      "Actual two-file writer/normal reopen + immutable initial read receipt + raw per-file bytes/hash and unchanged role",
+      "Actual changed original reading bytes including whitespace force externalChange even desired cached bytes are unchanged; reopened normal receipt hashes raw whitespace",
+      "Real ENOENT absence vs corrupt JSON/ENOTDIR; orphan chapter preservation on incomplete load",
+      "Actual readonly-directory atomic-write failure retains old files, no receipt, and retry succeeds",
+      "Actual final reading-prune failure after successful shelf promotion preserves same-UUID reading copy, reports partial facts, and retry finishes",
+      "Actual gated original persistence queue pre-write cancellation and restore pause",
+      "Actual runtime-book CAS followed by older checked whole-record snapshot preserves accepted variables through existing projection and reopen",
+      "Actual BookChapterStore write failure, normal-file inline TOC ordinary autosave failure, owned legacy inline TOC flush failure, and legacy off-shelf reading-directory failure all preserve their sole raw copy; repaired storage migrates both actual files and real reopened normal reader restores original book/chapter UUID and variables."
+    ],
+    "preservedOwnerAudit": {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/preserved-owner-audit.json",
+      "bytes": 1886,
+      "sha256": "b33a4886facc135a24652cea41dbe5651a96e733ce1131bb928b0dd1b9733e09"
+    },
+    "reviewDiff": {
+      "path": ".build/renewal-discovery/book-metadata-handoff-step/review.diff",
+      "bytes": 40481,
+      "sha256": "19f4eb8b75d4ffeed30909aa83ee798564947ba5070b4c125d9b33efe3b8896f"
+    },
+    "priorIntermediateGrammarIndices": [
+      "grammar-v1.json",
+      "grammar-v2.json",
+      "grammar-v3.json"
+    ]
+  },
+  "limitations": [
+    "SDK typechecks/executed Swift tests 0. Grammar and source audits are not functional acceptance.",
+    "Existing App synchronous BookStore initializer/reload still performs main-thread queue waits/IO and has not been product-migrated to async construction. Explicit async new-owner factory is implemented; no cold-launch performance completion claim.",
+    "Two metadata files are individually atomic replacement, not cross-file transaction; no fsync/crash durable guarantee is newly claimed.",
+    "Local owner/revision/baseline comparison is not interprocess CAS and does not freeze external writers after their checked read.",
+    "Receipt covers only shelf/reading metadata raw bytes, not books content files, sources, chapter digests, full backups or external provider state.",
+    "S5 actual AppDependencies/active Navigator aggregate/before-Upgrade hook and receipt journaling are parent-owned future work, not completed here.",
+    "No Apple account/private credentials/real user book sources/books/IPA were read; only source and controlled fixture definitions were used.",
+    "Legacy migration initial owner remains incomplete and never emits checked initial normal-load evidence; a real subsequent normal file reopen is required. Same-instance legacy failure is protected until repaired/reloaded or reopened; no rollback of completed partial IO is claimed."
+  ],
+  "reviewCorrections": [
+    "Pre-final draft retained unsafe legacy asynchronous flush and shelf-only migration; these were never accepted/executed and are superseded by the shared two-file throws core.",
+    "Ordinary inline-TOC autosaves now report/stop the real chapter flush error instead of preserving the historical swallowed-error overwrite behavior."
+  ]
+}

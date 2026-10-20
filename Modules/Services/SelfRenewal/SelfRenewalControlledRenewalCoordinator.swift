@@ -82,6 +82,18 @@ actor SelfRenewalControlledRenewalCoordinator {
 
     func submit(pairing: Transport.PairingIdentity, endpoint: Transport.Endpoint,
         timeoutSeconds: TimeInterval = 300) async throws -> TransportCompletion {
+        try await submit(pairing: pairing, endpoint: endpoint, timeoutSeconds: timeoutSeconds, appHandoff: nil)
+    }
+
+    /// App submission must await the injected real persistence owners. The old
+    /// explicit controlled-fixture entry above does not assert this coverage.
+    func submitWithAppDataHandoff(pairing: Transport.PairingIdentity, endpoint: Transport.Endpoint,
+        handoff: SelfRenewalUserDataHandoff, timeoutSeconds: TimeInterval = 300) async throws -> TransportCompletion {
+        try await submit(pairing: pairing, endpoint: endpoint, timeoutSeconds: timeoutSeconds, appHandoff: handoff)
+    }
+
+    private func submit(pairing: Transport.PairingIdentity, endpoint: Transport.Endpoint,
+        timeoutSeconds: TimeInterval, appHandoff: SelfRenewalUserDataHandoff?) async throws -> TransportCompletion {
         guard !busy else { throw Failure.busy }
         busy = true; submitted = nil; uploading = nil
         defer { busy = false; submitted = nil; uploading = nil }
@@ -100,7 +112,7 @@ actor SelfRenewalControlledRenewalCoordinator {
                         material: proof.application, expectedPeer: expectedPeer)
                 }, beforeUpgradeSubmission: { [self] submission in
                     try await beforeSubmission(submission: submission, lease: lease,
-                        material: proof.application, expectedPeer: expectedPeer)
+                        material: proof.application, expectedPeer: expectedPeer, appHandoff: appHandoff)
                 })
             guard let intent = submitted else { throw Failure.noSubmissionIntent }
             let saved = try await journal.noteTransportReceipt(intent, receipt: receipt, at: clock())
@@ -146,6 +158,33 @@ actor SelfRenewalControlledRenewalCoordinator {
         try await journal.close()
     }
 
+    /// A timestamped file-material observation of this actual process bundle.
+    /// Repeated foreground events return this process's existing observation;
+    /// they neither synthesize a cold launch nor repeat the full bundle read.
+    func observeCurrentProcess() async throws -> Journal.Snapshot? {
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        guard let snapshot = try await journal.load() else { return nil }
+        guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(snapshot.record.phase) else { return snapshot }
+        if snapshot.record.installedMaterial?.processID == SelfRenewalInstalledMaterialObserver.ProcessIdentity.current.id { return snapshot }
+        let lease = try await currentLease(snapshot)
+        let candidate = try await verifyCandidate(snapshot, lease: lease)
+        let anchors = try Self.verificationAnchors(lease)
+        let observation = try await SelfRenewalInstalledMaterialObserver.readCurrentProcess(expected: candidate,
+            codeAnchors: anchors.code, profileAnchors: anchors.profiles, at: clock())
+        return try await journal.noteCurrentProcessMaterial(snapshot, observation: observation, at: clock())
+    }
+
+    func observeUserDataAfterNormalLoad(handoff: SelfRenewalUserDataHandoff) async throws -> Journal.Snapshot? {
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        guard let snapshot = try await journal.load() else { return nil }
+        guard let checkpoint = snapshot.record.userDataHandoff else { return snapshot }
+        if snapshot.record.userDataRead?.processID == SelfRenewalInstalledMaterialObserver.ProcessIdentity.current.id { return snapshot }
+        let observation = try await handoff.observeNormalLoad(expected: checkpoint)
+        return try await journal.noteNormalUserDataRead(snapshot, observation: observation, at: clock())
+    }
+
     private func beforeCreation(_ expected: Journal.Snapshot, intent: Installer.UploadIntent,
         lease: Vault.Lease, material: App.Materials, expectedPeer: Data) async throws {
         guard busy, uploading == nil, submitted == nil, intent.deviceCertificateSHA256 == expectedPeer else { throw Failure.invalidHook }
@@ -161,15 +200,19 @@ actor SelfRenewalControlledRenewalCoordinator {
     }
 
     private func beforeSubmission(submission: Installer.UpgradeSubmission,
-        lease: Vault.Lease, material: App.Materials, expectedPeer: Data) async throws {
+        lease: Vault.Lease, material: App.Materials, expectedPeer: Data,
+        appHandoff: SelfRenewalUserDataHandoff?) async throws {
         guard busy, submitted == nil, let expected = uploading,
               submission.deviceCertificateSHA256 == expectedPeer else { throw Failure.invalidHook }
         try Task.checkCancellation()
         try await vault.validate(lease, for: material)
         guard try Self.identityDigest(material) == expected.record.identitySHA256 else { throw Failure.identityChanged }
+        let handoff = try await appHandoff?.prepareForSubmission()
+        try Task.checkCancellation()
+        try await vault.validate(lease, for: material)
         // This fsync/rename boundary completes before the transport is allowed
         // to write the first byte of its Upgrade request frame.
-        submitted = try await journal.noteUpgradeIntent(expected, submission: submission, at: clock())
+        submitted = try await journal.noteUpgradeIntent(expected, submission: submission, at: clock(), handoff: handoff)
     }
 
     private func currentLease(_ snapshot: Journal.Snapshot) async throws -> Vault.Lease {
@@ -183,8 +226,18 @@ actor SelfRenewalControlledRenewalCoordinator {
     }
 
     private func verifyCandidate(_ snapshot: Journal.Snapshot, lease: Vault.Lease) async throws -> Unpacker.Materials {
-        guard let candidate = snapshot.record.candidate,
-              let codeAnchor = lease.keyMaterial.certificateChainDER.last else { throw Failure.candidateNotReady }
+        guard let candidate = snapshot.record.candidate else { throw Failure.candidateNotReady }
+        let anchors = try Self.verificationAnchors(lease)
+        let input = try await journal.candidateURL(snapshot)
+        let material = try await Unpacker.verify(ipa: input, codeAnchors: anchors.code, profileAnchors: anchors.profiles, at: clock())
+        guard material.archiveSHA256 == candidate.sha256, material.archiveBytes == candidate.byteCount,
+              try Self.identityDigest(material.application) == snapshot.record.identitySHA256 else { throw Failure.inputChanged }
+        try await vault.validate(lease, for: material.application)
+        return material
+    }
+
+    private static func verificationAnchors(_ lease: Vault.Lease) throws -> (code: [Data], profiles: [Data]) {
+        guard let codeAnchor = lease.keyMaterial.certificateChainDER.last else { throw Failure.candidateNotReady }
         var anchors: [Data] = []
         for profile in lease.profiles {
             for signer in profile.outerEnvelope.signers + profile.derEnvelope.signers {
@@ -193,12 +246,7 @@ actor SelfRenewalControlledRenewalCoordinator {
             }
         }
         guard !anchors.isEmpty else { throw Failure.identityChanged }
-        let input = try await journal.candidateURL(snapshot)
-        let material = try await Unpacker.verify(ipa: input, codeAnchors: [codeAnchor], profileAnchors: anchors, at: clock())
-        guard material.archiveSHA256 == candidate.sha256, material.archiveBytes == candidate.byteCount,
-              try Self.identityDigest(material.application) == snapshot.record.identitySHA256 else { throw Failure.inputChanged }
-        try await vault.validate(lease, for: material.application)
-        return material
+        return ([codeAnchor], anchors)
     }
 
     private static func target(_ material: App.Materials) throws -> (identifier: String, build: String) {
