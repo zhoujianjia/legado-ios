@@ -1,0 +1,73 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -1323,6 +1323,7 @@
+               let cookies = input["cookies"] as? [[String: Any]], !cookies.isEmpty, cookies.count <= 256 else {
+             throw failure("INVALID_STATE_REQUEST", "Original response Cookies require bounded actual HTTP provenance")
+         }
++        return try SourcePerfTrace.span("legado.cookie.response.decode", "main=\(Thread.isMainThread) cookies=\(cookies.count)") {
+         var records: [CookiePersistenceOwner.Record] = []
+         var persistentValues: [String] = [], sessionValues: [String] = []
+         for cookie in cookies {
+@@ -1338,21 +1339,41 @@
+                   hostOnly ? host == domain : (host == domain || host.hasSuffix("." + domain)) else {
+                 throw failure("INVALID_STATE_REQUEST", "Original parsed Cookie attributes are malformed")
+             }
+-            var properties: [HTTPCookiePropertyKey: Any] = [.name: name, .value: value,
+-                .domain: hostOnly ? domain : "." + domain, .path: path, .originURL: url]
+-            if secure { properties[.secure] = "TRUE" }
+-            if httpOnly { properties[HTTPCookiePropertyKey("HttpOnly")] = "TRUE" }
++            // Use the system's actual response-cookie property representation,
++            // including HttpOnly. That attribute has no public property-key
++            // constant, so guessing its initializer key/value is not portable.
++            let parsed = HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": raw], for: url)
++            guard parsed.count == 1, let seed = parsed.first, var properties = seed.properties else {
++                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [responseParser]")
++            }
++            let nativeDomain = hostOnly ? domain : "." + domain
++            properties[.name] = name; properties[.value] = value
++            properties[.domain] = nativeDomain; properties[.path] = path; properties[.originURL] = url
++            // OkHttp already resolved Max-Age to one absolute millisecond date.
++            // Replaying its relative value here would start a second clock.
++            properties.removeValue(forKey: .maximumAge)
++            properties[.version] = "0"
++            properties[.discard] = persistent ? "FALSE" : "TRUE"
+             let nativeExpiry = expiresAt == Int64.min ? Date(timeIntervalSince1970: 0)
+                 : Date(timeIntervalSince1970: Double(expiresAt) / 1000)
+-            if persistent {
+-                // OkHttp Long.MIN_VALUE is an explicit deletion marker. Keep
+-                // that exact integer in provenance and use an expired native date.
+-                properties[.expires] = nativeExpiry
+-            } else { properties[.discard] = "TRUE" }
+-            guard let native = HTTPCookie(properties: properties), native.name == name, native.value == value,
+-                  native.path == path, native.isSecure == secure, native.isHTTPOnly == httpOnly,
+-                  native.isSessionOnly == !persistent, native.expiresDate == (persistent ? nativeExpiry : nil) else {
+-                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner")
++            if persistent { properties[.expires] = nativeExpiry }
++            else { properties.removeValue(forKey: .expires) }
++            guard let native = HTTPCookie(properties: properties) else {
++                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [construction]")
++            }
++            // Only fixed field labels enter diagnostics. Never include Cookie
++            // names/values/domains/paths/header bytes or actual expiry dates.
++            var mismatches: [String] = []
++            if !native.name.utf8.elementsEqual(name.utf8) { mismatches.append("name") }
++            if !native.value.utf8.elementsEqual(value.utf8) { mismatches.append("value") }
++            if !native.domain.utf8.elementsEqual(nativeDomain.utf8) { mismatches.append("domain") }
++            if !native.path.utf8.elementsEqual(path.utf8) { mismatches.append("path") }
++            if native.isSecure != secure { mismatches.append("secure") }
++            if native.isHTTPOnly != httpOnly { mismatches.append("httpOnly") }
++            if native.isSessionOnly != !persistent { mismatches.append("session") }
++            if native.expiresDate != (persistent ? nativeExpiry : nil) { mismatches.append("expiry") }
++            guard mismatches.isEmpty else {
++                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [\(mismatches.joined(separator: ","))]")
+             }
+             records.append(try CookiePersistenceOwner.Record(cookie: native, provenance: .httpResponse,
+                 originURL: url, hostOnly: hostOnly, originalExpiresAtMs: expiresAt,
+@@ -1365,6 +1386,7 @@
+             throw failure("INVALID_STATE_REQUEST", "Original response text does not match its parsed attributes")
+         }
+         return (records, persistent, session)
++        }
+     }
+
+     private func cookieBoolean(_ raw: Any?) -> Bool? {

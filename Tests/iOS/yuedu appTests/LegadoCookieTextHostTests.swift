@@ -140,6 +140,15 @@ struct LegadoCookieTextHostTests {
         #expect(accepted.cookies.first?.originalDomain == "example.co.uk")
         #expect(accepted.cookies.first?.originalExpiresAtMs == expiry)
         #expect(accepted.cookies.first?.originalSetCookieHeader == (persistent["setCookieHeader"] as? String))
+        let firstRecord = try #require(accepted.cookies.first)
+        let nativePersistent = try firstRecord.native()
+        #expect(nativePersistent.isSecure && nativePersistent.isHTTPOnly && !nativePersistent.isSessionOnly)
+        #expect(nativePersistent.domain == ".example.co.uk" && nativePersistent.path == "/private")
+        #expect(nativePersistent.expiresDate == Date(timeIntervalSince1970: Double(expiry) / 1000))
+        let sessionRecord = try #require(accepted.cookies.dropFirst().first)
+        let nativeSession = try sessionRecord.native()
+        #expect(nativeSession.isSessionOnly && nativeSession.expiresDate == nil)
+        #expect(!nativeSession.isSecure && !nativeSession.isHTTPOnly)
         let privateURL = try #require(URL(string: "https://reader.example.co.uk/private/chapter"))
         #expect(try await f.cookies.requestHeader(url: privateURL)?.contains("sid=persistent") == true)
         let publicHTTP = try #require(URL(string: "http://reader.example.co.uk/public"))
@@ -151,6 +160,19 @@ struct LegadoCookieTextHostTests {
         // Native/App session records may remain durable; they never reconstruct
         // the original per-owner CacheManager session-text memory after restart.
         #expect(try await reopened.originalSession(domain: "example.co.uk").isEmpty)
+        // The original parsed millisecond deadline stays absolute even when
+        // Foundation's response parser also sees a relative Max-Age attribute.
+        let absolute = Int64(Date().timeIntervalSince1970 * 1000) + 3_600_000
+        var maxAge = parsedCookie(name: "relative", value: "absolute", domain: "reader.example.co.uk", path: "/private",
+            persistent: true, expiry: absolute, hostOnly: true, secure: true, httpOnly: true)
+        maxAge["setCookieHeader"] = "relative=absolute; Path=/private; Secure; HttpOnly; Max-Age=3600"
+        _ = try await f.host.dispatch(response(owner: f.owner, cookies: [maxAge]))
+        let afterRelative = try await f.cookies.snapshot()
+        let relativeRecord = try #require(afterRelative.cookies.first { $0.originalExpiresAtMs == absolute })
+        let relativeNative = try relativeRecord.native()
+        #expect(relativeRecord.originalExpiresAtMs == absolute)
+        #expect(relativeNative.expiresDate == Date(timeIntervalSince1970: Double(absolute) / 1000))
+        #expect(relativeNative.isHTTPOnly && relativeNative.isSecure && !relativeNative.isSessionOnly)
         try await f.cookies.clearAllOwned()
         #expect(try await result(f, action: "get").isEmpty)
     }
@@ -221,6 +243,17 @@ struct LegadoCookieTextHostTests {
         let json = try JSONSerialization.data(withJSONObject: ["owner": f.owner, "keys": keys])
         do { _ = try await f.host.dispatch(.init(taskID: "atomic-batch", operation: "state.read", requestJSON: String(decoding: json, as: UTF8.self))); Issue.record("Cross-owner atomic Cookie batch must reject") }
         catch let error as LegadoRuntimeError { #expect(error.code == "UNSUPPORTED_CAPABILITY") }
+        // Native HttpOnly metadata cannot be silently dropped to fit a false
+        // producer flag. The failed response cannot replace old owner bytes.
+        var wrongHTTPOnly = parsedCookie(value: "must-not-commit", path: "/private", persistent: true,
+            expiry: 4_071_686_400_000, hostOnly: false, secure: true, httpOnly: true)
+        wrongHTTPOnly["httpOnly"] = false
+        do { _ = try await f.host.dispatch(response(owner: f.owner, cookies: [wrongHTTPOnly])); Issue.record("HttpOnly mismatch must reject") }
+        catch let error as LegadoRuntimeError {
+            #expect(error.code == "UNSUPPORTED_CAPABILITY")
+            #expect(error.message.contains("httpOnly"))
+            #expect(!error.message.contains("must-not-commit") && !error.message.contains("example.co.uk"))
+        }
         #expect(try Data(contentsOf: f.file) == before)
         #expect(try await f.cookies.originalText(domain: "example.co.uk") == "sid=old")
     }
