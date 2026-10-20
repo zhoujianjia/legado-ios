@@ -1,0 +1,34 @@
+{
+  "recordedAtUTC": "2026-10-20T13:01:38.831777+00:00",
+  "baseSources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 67743,
+      "sha256": "2fdf7a0291496da7f3ffefbfc5f584d65e09e5e3a9a1ad8107846008df522131"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 32262,
+      "sha256": "df3414df77b6eda6f58420dd9b5932930fa93e1cf793b5f39dca4e2c5874b56e"
+    }
+  ],
+  "actualFailureSource": "docs/legado-ios/core-owned-sdk-producer-4b6f5dc-result.json",
+  "facts": [
+    "Actual4b append setter returns through run, then strict parsed readback differs from expected tuple. No target codesign executed.",
+    "Observed public cleanup only reports ToolFailure exit-1, so child/decode/conflict/final compare cannot be distinguished.",
+    "Original/expected/observed path tuples and their counts or membership were not published; alias/order/concurrent cause remains unknown."
+  ],
+  "localPrimaryScope": {
+    "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/StorageManager.cpp",
+    "domainGetLines": [
+      1155,
+      1176
+    ],
+    "domainSetLines": [
+      1185,
+      1214
+    ],
+    "finding": "Domain methods convert between KeychainList and DLDbList and save preferences; this cached source does not establish raw CLI path representation equivalence or actual4b root cause."
+  },
+  "implementationBoundary": "Add only bounded integer/boolean relation facts and fixed operation/stage labels. No path hashes, raw private metadata, alias normalization, extra child calls or weakened equality/conflict handling. Keep real codesign and CMS/MachO/package body exact."
+}

@@ -544,26 +544,53 @@ class OwnedUserSearchListScope:
             raise ValueError('Invalid owned keychain path')
         self.original=None;self.expected=None;self.cleanup_intent=False
         self.registered=False;self.restored=False
+        self.operation='admission';self.failure_stage='comparison'
+    def report_readback(self, observed):
+        # Fixed-size relation facts only. Raw paths (and dictionary-guessable
+        # hashes of them) remain private; no filesystem/alias interpretation.
+        public_record('OWNED_USER_SEARCH_LIST_READBACK',{'schemaVersion':1,'operation':self.operation,
+            'readChildExitCode':0,'strictPathRepresentationParsed':True,
+            'originalEntryCount':None if self.original is None else len(self.original),
+            'expectedEntryCount':None if self.expected is None else len(self.expected),
+            'observedEntryCount':len(observed),'ownedKeychainPresent':self.owned in observed,
+            'observedEqualsOriginal':None if self.original is None else observed==self.original,
+            'observedEqualsExpected':None if self.expected is None else observed==self.expected,
+            'observedIsOriginalPermutation':None if self.original is None else set(observed)==set(self.original),
+            'observedIsExpectedPermutation':None if self.expected is None else set(observed)==set(self.expected),
+            'privatePathsPublished':False,'userAdminSystemTrustChanged':False,'codesignExecutionVerified':False})
     def read(self, *, cleanup=False):
         # These paths are private metadata. They stay only in parent memory;
         # stdout/stderr and set argv are suppressed by the existing runner.
-        return owned_user_search_list(run(['security','list-keychains','-d','user'],private=True,
-            cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None))
+        self.failure_stage='child'
+        raw=run(['security','list-keychains','-d','user'],private=True,
+            cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
+        self.failure_stage='decode'
+        observed=owned_user_search_list(raw)
+        self.report_readback(observed)
+        self.failure_stage='comparison'
+        return observed
     def write(self, paths, *, cleanup=False):
+        self.failure_stage='child'
         run(['security','list-keychains','-d','user','-s',*paths],private=True,
             cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
+        self.failure_stage='complete'
     def install(self):
         if self.original is not None:raise ToolFailure('owned search list already admitted',-1)
+        self.operation='readOriginal'
         self.original=self.read()
+        self.operation='admission'
         if self.owned in self.original:raise ToolFailure('owned keychain already registered',-1)
         if len(self.original)>=128:raise ToolFailure('owned search list has no append capacity',-1)
         self.expected=(*self.original,self.owned)
         # The public setter has no compare-and-swap API. Refuse every observed
         # conflict before mutation and on readback; this is not an atomic lock
         # against another same-user process writing between these two calls.
+        self.operation='verifyBeforeAppend'
         if self.read()!=self.original:raise ToolFailure('owned search list changed before append',-1)
         self.cleanup_intent=True  # Publication may complete before a lost ACK.
+        self.operation='append'
         self.write(self.expected)
+        self.operation='verifyAfterAppend'
         if self.read()!=self.expected:raise ToolFailure('owned search list append not exact',-1)
         self.registered=True
         public_record('OWNED_USER_SEARCH_LIST_REGISTERED',{'schemaVersion':1,'status':'passed',
@@ -572,10 +599,15 @@ class OwnedUserSearchListScope:
             'userAdminSystemTrustChanged':False,'codesignExecutionVerified':False})
     def cleanup(self):
         if not self.cleanup_intent:return
+        self.operation='readBeforeRestore'
         current=self.read(cleanup=True)
         if current!=self.original:
-            if current!=self.expected:raise ToolFailure('owned search list restore conflict',-1)
+            if current!=self.expected:
+                self.failure_stage='conflict'
+                raise ToolFailure('owned search list restore conflict',-1)
+            self.operation='restore'
             self.write(self.original,cleanup=True)
+        self.operation='verifyAfterRestore'
         if self.read(cleanup=True)!=self.original:raise ToolFailure('owned search list restore not exact',-1)
         self.restored=True;self.cleanup_intent=False
         public_record('OWNED_USER_SEARCH_LIST_RESTORED',{'schemaVersion':1,'status':'passed',
@@ -587,6 +619,7 @@ def finish_owned_user_search_list(scope, primary_error):
     try:scope.cleanup()
     except BaseException as error:
         public_record('OWNED_USER_SEARCH_LIST_CLEANUP_FAILURE',{'schemaVersion':1,'status':'failed',
+            'operation':scope.operation,'failureStage':scope.failure_stage,
             'exitCode':error.code if isinstance(error,ToolFailure) else None,
             'originalToolFailureRetained':primary_error is not None,'temporaryUserSearchListMayRemain':True,
             'userAdminSystemTrustChanged':False,'privatePathsPublished':False})

@@ -116,6 +116,8 @@ final class BookSourceFetcher: @unchecked Sendable {
     let pipeline = BookSourceParsingPipeline()
     let webFetcher: WebFetcher
     let mainJSService: LegadoMainJSSourceService
+    @MainActor var originalExplorePauseTask: Task<Void, Never>?
+    @MainActor var originalExplorePauseRequested = false
 
     enum FetchTimeoutError: LocalizedError {
         case chapterTimeout

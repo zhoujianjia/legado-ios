@@ -75,6 +75,8 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
             let result: LegadoOriginalPreviewResult
             switch operation {
             case .search: throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Unexpected search state")
+            case .explore, .openExploreContext, .evaluateExploreContext, .savePendingExploreContext:
+                throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "This entity fixture does not execute exploration contexts")
             case .details(var book):
                 calls.append("details")
                 let small = try key(grant, chapter: nil); let big = try key(grant, chapter: nil, large: "large")

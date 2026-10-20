@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T13:22:12.839309+00:00",
+  "status": "production-lifecycle-and-failure-diagnostics-integrated-consolidated-SDK-pending",
+  "sources": [
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "bytes": 4192,
+      "sha256": "176daa81eaae1bbd3f27aa5e4753cd85acb46fb67c2c0780b606b13677f3303a"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher.swift",
+      "bytes": 15141,
+      "sha256": "b2e9359ad1787de072bf8576663ee1470b196df744462b773edf9a4de9078883"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 91561,
+      "sha256": "7999115ca030a15eb07fc9b97ea4d60df01129a8f0ded285fa2eed5760cb24a8"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "bytes": 23686,
+      "sha256": "65425fa3fbe94db227338986f03af0b637fc84060655af4157c4bc07b49a8d08"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "bytes": 25788,
+      "sha256": "95f80d2fb798e07c34629824839e46ebc8bc7eba518b8cb5ed5d443b2fdd7db9"
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/AppDependencies.swift",
+      "bytes": 15055,
+      "sha256": "b2cdd0f8f489d072e1ce292733277df4413e84e714911393808e10d7edb629ec"
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "bytes": 25908,
+      "sha256": "ce469e20bdc2edc11a855dc07a23dd45ab05bbc742200c1fe23f572fcef8166d"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 37850,
+      "sha256": "5783ef532db997044f624884ea2c638bab920e05cb1a3deec42b18e07cac0ba7"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "bytes": 7612,
+      "sha256": "ea9123d5e632a1b61cf9996cda810ef74ed9a4e5fd1cf526ad3e1dc708e54cf5"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "bytes": 43902,
+      "sha256": "0f315500cb6bc32fe98c19216cb4cd2f97213d3a62b8ad34e0d7c3327ec06c3b"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 69709,
+      "sha256": "fc3df7ed1a0f0ec5edcb70fb1e4fdec9c5c935365dc8b36063e0b298998075bb"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 37995,
+      "sha256": "c9c1e9182fdbd3adf46e42c6ab3ed23a892745f7c0ade4abd533cf07aa9ff4ec"
+    }
+  ],
+  "implementation": [
+    "Same original runtime/executor exposes explore and context open/evaluate/savePending; existing typed error and effect receipts retained.",
+    "App non-active scene events notify the same DI fetcher. One stored task drains sequential source saves, re-resolves UUID/current source signature, and reports individual failures without acknowledging them.",
+    "Registry is bounded to99 UUID/URL/revision records. InfoMap remains solely in the original JVM LRU; no second map/cache/VM or network owner.",
+    "Signing producer exposes only fixed-size private-list relation facts and precise cleanup stage; ordered comparison, conflict refusal and real codesign/CMS/MachO gates are unchanged."
+  ],
+  "rootReview": {
+    "readProductionDiffs": true,
+    "registrySnapshotCorrection": "Retain UUID/URL/signature/access only, instead of full old BookSource values. No performance measurement or speedup claim.",
+    "signingFailureBoundary": "Actual4b failed before codesign. No path aliases/order cause was measured; these diagnostics do not fix or establish a cause."
+  },
+  "checks": {
+    "readbackFocusedPortablePassed": 4,
+    "newReadbackControls": 2,
+    "oldReadbackControls": 2,
+    "C3PreparedSwiftGrammarFiles": 10,
+    "additionalAffectedGrammarFiles": 1,
+    "SwiftCompilerExecuted": false,
+    "SwiftTestsExecuted": 0,
+    "JNIExecuted": 0,
+    "SDKExecuted": false
+  },
+  "newReadingRegressionDefinitions": {
+    "nativeCoordinationSuite": "LegadoOriginalExploreLifecycleTests",
+    "nativeCoordinationMethods": [
+      "pauseVisitsEveryOpenedSourceAndRetainsIndividualFailure",
+      "pauseRejectsChangedSourceWithoutGrantingUnopenedContext",
+      "cancelledPauseDrainsBeforeItReturns"
+    ],
+    "actualJNICase": "LegadoNativeOriginalReaderTests.testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+    "actualJNICasePurpose": "Two opened source maps mark save without immediate disk write; real native original explore reads its source map; all-source pause writes through the actual shared cache owner; repeated clean pause leaves cache revisions unchanged; unique controlled cache keys are deleted afterward.",
+    "oldFixtureChange": "The existing PreviewFixtureExecutor explicitly rejects the four newly added exploration operation cases instead of pretending to grant preview-entity authority."
+  },
+  "limits": [
+    "Actual Discover/category/quick action and Reader default traditional routes remain unchanged; this does not complete C3 or full compatibility.",
+    "The new native lifecycle fixture and source-coordination fixtures are definitions only until the consolidated SDK batch.",
+    "No new cloud job is triggered for these individual changes; the user-directed all-core implementation batch remains in force."
+  ],
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/metadata-only-registry-grammar.json",
+      "bytes": 443,
+      "sha256": "b08672fe47893d25543f02105d60255b80abea60e246543715fbdaff3215aeca"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/original-lifecycle-grammar.json",
+      "bytes": 1056,
+      "sha256": "183ef32c4d9329e2bcdb54ede450a3700a680383225c7d74b239ab239fd36804"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/original-lifecycle-preparation.json",
+      "bytes": 10014,
+      "sha256": "7d3467e0fa86b41982cb45c1b8282d2f937141c2314c635f5aeaed2bd8819c86"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/owned-readback-preparation.json",
+      "bytes": 4002,
+      "sha256": "6f115aa9974380f915d0c4060ff45800f5c7578b06e839ab0681c16ace834075"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/readback-diagnosis.json",
+      "bytes": 1737,
+      "sha256": "619b48cc97fa4275994c09c29c116016baaba135fa7c4b24656a255384618699"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/readback-focused.json",
+      "bytes": 2429,
+      "sha256": "6c50abd13771bb93b80f697722fda03cdb0ec251c5ea23501091550a93af06fa"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/readback-focused.log",
+      "bytes": 1003,
+      "sha256": "cf57260fb96e9158fb1f6ff08d06f67de86dd48cc7fbc9687c8dafe630625692"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-lifecycle-and-readback-batch/readback-review.json",
+      "bytes": 4126,
+      "sha256": "ba7dbd25402b4c34fa22e54d24166beafeb40fd6e7729dd7b9f0b47277465bd5"
+    }
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "physicalDeviceValidationPerformed": false
+}

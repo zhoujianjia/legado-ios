@@ -334,7 +334,8 @@ class OwnedTemporaryUserSearchListTests(unittest.TestCase):
         with patch.object(producer,'require_owned_hosted_runner'):
             return producer.OwnedUserSearchListScope(self.owned)
 
-    def route(self,state,commands,*,lost_append=False,lost_restore=False):
+    def route(self,state,commands,*,lost_append=False,lost_restore=False,
+              append_observed=None,restore_observed=None,read_fault=None):
         actual=producer.bounded_child
         def child(args,input,env,seconds):
             commands.append(tuple(args))
@@ -342,12 +343,19 @@ class OwnedTemporaryUserSearchListTests(unittest.TestCase):
             self.assertIsNone(input)
             prefix='import json,pathlib,sys;p=pathlib.Path('+repr(str(state))+');'
             if len(args)==4:
-                action='v=json.loads(p.read_text());sys.stdout.buffer.write("".join(\'    "\'+x+\'"\\n\' for x in v).encode());'
-                code=0
+                if read_fault is not None:
+                    self.assertIn(read_fault,('child','decode'))
+                    action='sys.stdout.buffer.write(b"private-readback-path-canary");'
+                    code=7 if read_fault=='child' else 0
+                else:
+                    action='v=json.loads(p.read_text());sys.stdout.buffer.write("".join(\'    "\'+x+\'"\\n\' for x in v).encode());'
+                    code=0
             else:
                 self.assertEqual(args[4],'-s');values=list(args[5:])
-                action='p.write_text('+repr(json.dumps(values))+');'
                 code=7 if ((lost_append and values==[*self.original,self.owned]) or (lost_restore and values==list(self.original))) else 0
+                if append_observed is not None and values==[*self.original,self.owned]:values=list(append_observed)
+                if restore_observed is not None and values==list(self.original):values=list(restore_observed)
+                action='p.write_text('+repr(json.dumps(values))+');'
             # Execute real process effects through the production run() and
             # its private stream/argv recording boundary; substitute only OS tool.
             command=[sys.executable,'-c',prefix+action+'sys.stderr.write("private-list-stderr-canary");sys.exit('+str(code)+')']
@@ -425,6 +433,62 @@ class OwnedTemporaryUserSearchListTests(unittest.TestCase):
                 self.assertIsNone(producer.finish_owned_user_search_list(scope,failure.exception))
             self.assertTrue(scope.restored);self.assertFalse(scope.cleanup_intent)
             self.assertEqual(len([a for a in commands if len(a)>4]),2)
+
+    def test_failed_append_reports_bounded_relations_without_paths_or_relaxing_exact_order(self):
+        foreign='/private/foreign-path-canary.keychain-db'
+        for observed,permutation,owned in [((self.owned,*self.original),True,True),
+                                          ((*self.original,foreign),False,False)]:
+            with self.subTest(permutation=permutation),tempfile.TemporaryDirectory() as directory:
+                state=Path(directory)/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope();out=io.StringIO()
+                with patch.object(producer,'bounded_child',self.route(state,commands,append_observed=observed)),redirect_stdout(out):
+                    with self.assertRaises(producer.ToolFailure) as primary:scope.install()
+                    self.assertEqual(primary.exception.tool,'owned search list append not exact')
+                    self.assertEqual(primary.exception.code,-1)
+                    failure=producer.finish_owned_user_search_list(scope,primary.exception)
+                self.assertIsInstance(failure,producer.ToolFailure)
+                self.assertFalse(scope.registered or scope.restored);self.assertTrue(scope.cleanup_intent)
+                self.assertEqual(json.loads(state.read_text()),list(observed))
+                self.assertEqual(len([a for a in commands if len(a)>4]),1)
+                records=[(line.split(' ',1)[0],json.loads(line.split(' ',1)[1])) for line in out.getvalue().splitlines()]
+                readback=next(value for label,value in records if label=='OWNED_USER_SEARCH_LIST_READBACK' and value['operation']=='verifyAfterAppend')
+                self.assertEqual((readback['originalEntryCount'],readback['expectedEntryCount'],readback['observedEntryCount']),(2,3,3))
+                self.assertFalse(readback['observedEqualsExpected'] or readback['observedEqualsOriginal'])
+                self.assertEqual(readback['observedIsExpectedPermutation'],permutation)
+                self.assertEqual(readback['ownedKeychainPresent'],owned)
+                self.assertEqual(readback['readChildExitCode'],0)
+                self.assertTrue(readback['strictPathRepresentationParsed'])
+                self.assertLess(len(json.dumps(readback).encode()),1024)
+                cleanup=next(value for label,value in records if label=='OWNED_USER_SEARCH_LIST_CLEANUP_FAILURE')
+                self.assertEqual((cleanup['operation'],cleanup['failureStage']),('readBeforeRestore','conflict'))
+                self.assertTrue(cleanup['originalToolFailureRetained'] and cleanup['temporaryUserSearchListMayRemain'])
+                public=out.getvalue()+json.dumps(producer.RECORDS)
+                for secret in [*self.original,self.owned,foreign,'private-list-stderr-canary']:
+                    self.assertNotIn(secret,public)
+                    self.assertNotIn(producer.hashlib.sha256(secret.encode()).hexdigest(),public)
+
+    def test_cleanup_failure_records_exact_read_child_decode_restore_child_and_final_comparison(self):
+        foreign=(*self.original,'/private/foreign-path-canary.keychain-db')
+        cases=[('read-child',{'read_fault':'child'},'readBeforeRestore','child',7),
+               ('read-decode',{'read_fault':'decode'},'readBeforeRestore','decode',None),
+               ('restore-child',{'lost_restore':True},'restore','child',7),
+               ('restore-comparison',{'restore_observed':foreign},'verifyAfterRestore','comparison',-1)]
+        for name,options,operation,stage,code in cases:
+            with self.subTest(failure=name),tempfile.TemporaryDirectory() as directory:
+                state=Path(directory)/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope();out=io.StringIO()
+                with patch.object(producer,'bounded_child',self.route(state,commands)),redirect_stdout(out):scope.install()
+                primary=producer.ToolFailure('actual target codesign',1)
+                with patch.object(producer,'bounded_child',self.route(state,commands,**options)),redirect_stdout(out):
+                    failure=producer.finish_owned_user_search_list(scope,primary)
+                self.assertIsNotNone(failure);self.assertEqual(primary.code,1)
+                self.assertTrue(scope.cleanup_intent);self.assertFalse(scope.restored)
+                records=[(line.split(' ',1)[0],json.loads(line.split(' ',1)[1])) for line in out.getvalue().splitlines()]
+                cleanup=next(value for label,value in records if label=='OWNED_USER_SEARCH_LIST_CLEANUP_FAILURE')
+                self.assertEqual((cleanup['operation'],cleanup['failureStage'],cleanup['exitCode']),(operation,stage,code))
+                self.assertTrue(cleanup['originalToolFailureRetained'] and cleanup['temporaryUserSearchListMayRemain'])
+                self.assertFalse(any(label=='OWNED_USER_SEARCH_LIST_RESTORED' for label,value in records))
+                public=out.getvalue()+json.dumps(producer.RECORDS)
+                for secret in [*self.original,self.owned,*foreign,'private-list-stderr-canary','private-readback-path-canary']:
+                    self.assertNotIn(secret,public)
 
 
 if __name__=='__main__':unittest.main()

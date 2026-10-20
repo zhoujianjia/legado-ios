@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T13:03:53.680669+00:00",
+  "stage": "owned-searchlist-readback-step",
+  "status": "two-source-bounded-readback-and-cleanup-diagnostics-prepared-four-focused-portable-passed-Mac0",
+  "sources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 69709,
+      "sha256": "fc3df7ed1a0f0ec5edcb70fb1e4fdec9c5c935365dc8b36063e0b298998075bb",
+      "stagedPath": ".build/renewal-discovery/owned-searchlist-readback-step/final-sources/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 37995,
+      "sha256": "c9c1e9182fdbd3adf46e42c6ab3ed23a892745f7c0ade4abd533cf07aa9ff4ec",
+      "stagedPath": ".build/renewal-discovery/owned-searchlist-readback-step/final-sources/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py"
+    }
+  ],
+  "baselineSources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 67743,
+      "sha256": "2fdf7a0291496da7f3ffefbfc5f584d65e09e5e3a9a1ad8107846008df522131"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 32262,
+      "sha256": "df3414df77b6eda6f58420dd9b5932930fa93e1cf793b5f39dca4e2c5874b56e"
+    }
+  ],
+  "diffs": [
+    {
+      "path": ".build/renewal-discovery/owned-searchlist-readback-step/generate-sdk-owned-package.py.diff",
+      "bytes": 5469,
+      "sha256": "e212afbf9f017679a3cc3c3da299704b75cbe37192d8a9cf579346c04178a056"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-searchlist-readback-step/test-producer-user-trust.py.diff",
+      "bytes": 7828,
+      "sha256": "273466dea55bcfa2a294ff45d4e4a5905e2cacd939a85d64806e9f5a09b73dc5"
+    }
+  ],
+  "sourceFirstDiagnosis": {
+    "path": ".build/renewal-discovery/owned-searchlist-readback-step/source-first-diagnosis.json",
+    "bytes": 1737,
+    "sha256": "619b48cc97fa4275994c09c29c116016baaba135fa7c4b24656a255384618699"
+  },
+  "sourceReview": {
+    "path": ".build/renewal-discovery/owned-searchlist-readback-step/source-review.json",
+    "bytes": 4126,
+    "sha256": "ba7dbd25402b4c34fa22e54d24166beafeb40fd6e7729dd7b9f0b47277465bd5"
+  },
+  "actualPortable": {
+    "executedUniqueMethods": 4,
+    "passed": 4,
+    "newMethods": 2,
+    "oldMethods": 2,
+    "elapsedSeconds": 2.557681,
+    "execution": {
+      "path": ".build/renewal-discovery/owned-searchlist-readback-step/focused-relations-and-cleanup.json",
+      "bytes": 2429,
+      "sha256": "6c50abd13771bb93b80f697722fda03cdb0ec251c5ea23501091550a93af06fa"
+    },
+    "rawLog": {
+      "path": ".build/renewal-discovery/owned-searchlist-readback-step/focused-relations-and-cleanup.log",
+      "bytes": 1003,
+      "sha256": "cf57260fb96e9158fb1f6ff08d06f67de86dd48cc7fbc9687c8dafe630625692"
+    },
+    "boundary": "Actual marker child effects through original runner; only security CLI OS boundary substituted; no Mac/trust/codesign run."
+  },
+  "futureFullPortableMethodCount": 67,
+  "fullPortableSuiteRerun": false,
+  "SDKExecution": false,
+  "cloudRequestMade": false,
+  "originalTrackedInputCount": 20,
+  "inputRosterExpanded": false,
+  "integration": "Copy exactly2 source files; retain current twenty-source roster. Fold into next whole-code SDK check. No independent diagnostic tag requested.",
+  "limits": [
+    "Actual4b original/expected/observed private tuples are unavailable; no cause is inferred.",
+    "No Mac readback record exists for these new bytes. Search-list append/restore and target codesign remain unverified.",
+    "Relationship records do not authorize a permutation or alias as equality; exact ordered comparison remains the only admission."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "physicalDeviceValidationPerformed": false
+}

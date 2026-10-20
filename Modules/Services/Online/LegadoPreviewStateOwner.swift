@@ -305,6 +305,10 @@ struct LegadoPreviewStateOwner: LegadoEntityStateBacking {
 /// Explicit original-business execution only. No route selection, JSC or second HTTP jar.
 enum LegadoOriginalPreviewOperation: Sendable {
     case search(String, Int32?)
+    case explore(String, Int32?)
+    case openExploreContext
+    case evaluateExploreContext(String)
+    case savePendingExploreContext
     case details(LegadoOriginalBook)
     case toc(LegadoOriginalBook, runPreUpdateJS: Bool)
     case content(LegadoOriginalBook, LegadoOriginalChapter, nextChapterURL: String?)
@@ -312,6 +316,8 @@ enum LegadoOriginalPreviewOperation: Sendable {
 
 enum LegadoOriginalPreviewResult: Sendable {
     case search([LegadoOriginalBook])
+    case explore([LegadoOriginalBook])
+    case exploreContext(LegadoOriginalExploreContextResult)
     case details(LegadoOriginalBook)
     case toc(LegadoOriginalBook, [LegadoOriginalChapter])
     case content(LegadoOriginalBook, LegadoOriginalChapter, String)
@@ -348,6 +354,18 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 switch operation {
                 case .search(let key, let page):
                     result = .search(try await runtime.searchOriginal(session: session, key: key, page: page, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects).books)
+                case .explore(let url, let page):
+                    result = .explore(try await runtime.exploreOriginal(session: session, url: url, page: page,
+                        timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects).books)
+                case .openExploreContext:
+                    result = .exploreContext(try await runtime.openExploreContextOriginal(session: session,
+                        timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects))
+                case .evaluateExploreContext(let script):
+                    result = .exploreContext(try await runtime.evaluateExploreContextOriginal(session: session, script: script,
+                        timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects))
+                case .savePendingExploreContext:
+                    result = .exploreContext(try await runtime.savePendingExploreContextOriginal(session: session,
+                        timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects))
                 case .details(let book):
                     result = .details(try await runtime.detailsOriginal(session: session, book: book, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects).book)
                 case .toc(let book, let runPreUpdate):

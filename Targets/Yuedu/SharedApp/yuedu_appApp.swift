@@ -333,7 +333,10 @@ struct yuedu_appApp: App {
                     }
                     // Inactive, not only background: the app switcher kills the app
                     // while it is inactive, before a debounced shelf save has run.
-                    if newPhase != .active { bookStore.flushPendingMetadataSave() }
+                    if newPhase != .active {
+                        bookStore.flushPendingMetadataSave()
+                        AppDependencies.live.bookSourceFetcher.noteOriginalExploreAppPause()
+                    }
                     // Pick up sources shared while the app was backgrounded.
                     if newPhase == .active {
                         Task { await renewalOwner.becameActive() }

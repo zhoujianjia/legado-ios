@@ -68,6 +68,70 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         }
     }
 
+    func testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            var first = fixture.source, second = fixture.source
+            first.id = UUID(); second.id = UUID()
+            first.bookSourceUrl += "/explore-first-" + fixture.runID
+            second.bookSourceUrl += "/explore-second-" + fixture.runID
+            let firstSource = first, secondSource = second
+            let sources = [firstSource.id: firstSource, secondSource.id: secondSource]
+            var operationError: Error?
+            do {
+                let firstOpened = try await fixture.service.openOriginalExploreContext(source: firstSource)
+                let secondOpened = try await fixture.service.openOriginalExploreContext(source: secondSource)
+                XCTAssertEqual(firstOpened.infoMap, [:]); XCTAssertEqual(secondOpened.infoMap, [:])
+                let firstPending = try await fixture.service.evaluateOriginalExploreContext(
+                    script: "infoMap.put('genre','first'); infoMap.save(); 'first-ready'", source: firstSource)
+                let secondPending = try await fixture.service.evaluateOriginalExploreContext(
+                    script: "infoMap.put('genre','second'); infoMap.save(); 'second-ready'", source: secondSource)
+                XCTAssertTrue(firstPending.needSave); XCTAssertTrue(secondPending.needSave)
+                let before = try await Task.detached {
+                    try [firstSource, secondSource].map { source in
+                        try LegadoCacheBridge.runtimeSnapshot(sourceId: source.bookSourceUrl, key: "infoMap_" + source.bookSourceUrl)
+                    }
+                }.value
+                XCTAssertTrue(before.allSatisfy { $0.values.isEmpty })
+                let requestedURL = fixture.baseURL + fixture.prefix + "/search?key=native-original&page=2"
+                let script = "@js:if(infoMap.get('genre')!=='first')throw new Error('wrong original context');'" + requestedURL + "'"
+                let explored = try await fixture.service.originalExplore(url: script, page: 2, source: firstSource)
+                XCTAssertEqual(explored.map(\.name), ["Original JNI"])
+                XCTAssertEqual(explored.first?.sourceId, firstSource.id)
+                let pause = try await fixture.service.savePendingOriginalExploreContexts(sourceResolver: { sources[$0] })
+                XCTAssertEqual(Set(pause.acknowledgedSourceIDs), Set([firstSource.id, secondSource.id]))
+                XCTAssertTrue(pause.failures.isEmpty)
+                let stored = try await Task.detached {
+                    try [firstSource, secondSource].map { source -> (UInt64, String?) in
+                        let current = try LegadoCacheBridge.runtimeSnapshot(sourceId: source.bookSourceUrl, key: "infoMap_" + source.bookSourceUrl)
+                        let text = try current.values["value"].map { try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: $0).text() }
+                        return (current.revision, text)
+                    }
+                }.value
+                let firstText = try XCTUnwrap(stored[0].1), secondText = try XCTUnwrap(stored[1].1)
+                XCTAssertEqual(try JSONDecoder().decode([String: String].self, from: Data(firstText.utf8)), ["genre": "first"])
+                XCTAssertEqual(try JSONDecoder().decode([String: String].self, from: Data(secondText.utf8)), ["genre": "second"])
+                // Neither per-operation session close nor leaving a category removes
+                // the original process map. A clean second pause must write nothing.
+                _ = try await fixture.service.savePendingOriginalExploreContexts(sourceResolver: { sources[$0] })
+                let clean = try await Task.detached {
+                    try [firstSource, secondSource].map { source in
+                        try LegadoCacheBridge.runtimeSnapshot(sourceId: source.bookSourceUrl, key: "infoMap_" + source.bookSourceUrl).revision
+                    }
+                }.value
+                XCTAssertEqual(clean, stored.map { $0.0 })
+                XCTAssertEqual(fixture.peer.snapshot.requests.map(\.target), [fixture.prefix + "/search?key=native-original&page=2"])
+            } catch { operationError = error }
+            // These are two run-unique controlled cache keys, never user source data.
+            await Task.detached {
+                for source in [firstSource, secondSource] {
+                    LegadoCacheBridge(sourceId: source.bookSourceUrl).delete("infoMap_" + source.bookSourceUrl)
+                }
+            }.value
+            if let operationError { throw operationError }
+        }
+    }
+
     func testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities() async throws {
         executionTimeAllowance = 180
         try await withFixture { fixture in

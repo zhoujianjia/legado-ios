@@ -129,6 +129,17 @@ struct LegadoPreviewTOCStateSnapshot: Sendable {
     let value: Data?
 }
 
+struct LegadoOriginalExplorePauseReport: Sendable {
+    struct Failure: Sendable {
+        let sourceID: UUID
+        let code: String
+        let completedEffects: [String]
+    }
+    /// Successful savePending replies; an already-clean or evicted map causes no write.
+    let acknowledgedSourceIDs: [UUID]
+    let failures: [Failure]
+}
+
 struct LegadoOriginalPreviewTransferReceipt: Sendable {
     let recordID: String
     let bookID: UUID
@@ -169,6 +180,16 @@ actor LegadoMainJSSourceService {
     private let contentBatchExecutor: any LegadoOriginalContentBatchExecuting
     private let originalExecutor: any LegadoOriginalPreviewExecuting
     private var originalSourceRevisions: [String: (signature: String, clock: Int64)] = [:]
+    /// Only immutable source identities for contexts actually opened here. The Java
+    /// InfoMap remains solely in OriginalExploreContexts' process LRU(99).
+    private struct OpenOriginalExploreSource {
+        let sourceID: UUID
+        let sourceURL: String
+        let signature: String
+        var access: UInt64
+    }
+    private var openOriginalExploreSources: [String: OpenOriginalExploreSource] = [:]
+    private var originalExploreAccess: UInt64 = 0
     private let configuredDirectory: URL?
     private let operationTimeout: TimeInterval
     private var preparedDirectory: URL?
@@ -553,6 +574,122 @@ extension LegadoMainJSSourceService {
             try writePreview(bytes, id: id, deadline: deadline)
             let reference = previewReference(record, id: id)
             return try previewOnlineBook(record, reference: reference, previous: nil, source: source)
+        }
+    }
+
+    /// Explicit navigation seam: explore does not implicitly open its InfoMap, matching
+    /// WebBook. The returned book keeps the same owned preview record as search.
+    func originalExplore(url: String, page: Int32? = 1, source: BookSource) async throws -> [OnlineBook] {
+        let signature = try originalSignature(source); let deadline = try operationDeadline()
+        try await acquire(source.bookSourceUrl, deadline: deadline)
+        defer { release(source.bookSourceUrl) }
+        try acceptOriginalRevision(source, signature: signature)
+        let result = try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+            sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+            operation: .explore(url, page), deadline: deadline)
+        try previewCheck(deadline)
+        touchOriginalExploreSource(source, signature: signature, register: false)
+        guard case .explore(let books) = result, books.count <= 2_000 else { throw failure("INVALID_RESULT", "Original explore must return bounded books") }
+        return try books.map { book in
+            try validateOriginalBook(book, sourceURL: source.bookSourceUrl)
+            let record = PreviewRecord(version: 2, nonce: UUID(), sourceID: source.id,
+                sourceURL: source.bookSourceUrl, sourceSignature: signature, revision: 0,
+                status: .active, book: book, chapters: [])
+            let id = try previewID(record)
+            try writePreview(try encoded(record), id: id, deadline: deadline)
+            return try previewOnlineBook(record, reference: previewReference(record, id: id), previous: nil, source: source)
+        }
+    }
+
+    func openOriginalExploreContext(source: BookSource) async throws -> LegadoOriginalExploreContextResult {
+        try await performOriginalExploreContext(source: source, operation: .openExploreContext)
+    }
+
+    func evaluateOriginalExploreContext(script: String, source: BookSource) async throws -> LegadoOriginalExploreContextResult {
+        guard script.utf8.count <= 1_048_576 else { throw failure("STATE_LIMIT", "Original exploration expression exceeds its byte budget") }
+        return try await performOriginalExploreContext(source: source, operation: .evaluateExploreContext(script))
+    }
+
+    /// Page pause/close persists only this existing context. It does not remove the
+    /// process context: returning to a category must retain its unsaved in-memory map.
+    func savePendingOriginalExploreContext(source: BookSource) async throws -> LegadoOriginalExploreContextResult {
+        try await performOriginalExploreContext(source: source, operation: .savePendingExploreContext)
+    }
+
+    private func performOriginalExploreContext(source: BookSource, operation: LegadoOriginalPreviewOperation,
+                                               absoluteDeadline: Date? = nil) async throws -> LegadoOriginalExploreContextResult {
+        let signature = try originalSignature(source)
+        let deadline = try absoluteDeadline ?? operationDeadline()
+        try await acquire(source.bookSourceUrl, deadline: deadline)
+        defer { release(source.bookSourceUrl) }
+        try acceptOriginalRevision(source, signature: signature)
+        let result = try await SourcePerfTrace.spanAsync("legado.original.explore.context", "main=\(Thread.isMainThread) sourceBytes=\(source.exploreUrl.utf8.count)") {
+            try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil, operation: operation, deadline: deadline)
+        }
+        try previewCheck(deadline)
+        guard case .exploreContext(let value) = result else { throw failure("INVALID_RESULT", "Original exploration context omitted its result") }
+        if case .savePendingExploreContext = operation, value.needSave {
+            throw failure("STATE_IO", "Original exploration context did not acknowledge its pending save")
+        }
+        let register: Bool
+        if case .openExploreContext = operation {
+            guard value.infoMap != nil else { throw failure("INVALID_RESULT", "Opened original exploration context omitted its map") }
+            register = true
+        } else { register = false }
+        // Evaluation/save of an unopened context cannot manufacture a pause registry entry.
+        touchOriginalExploreSource(source, signature: signature, register: register)
+        return value
+    }
+
+    private func touchOriginalExploreSource(_ source: BookSource, signature: String, register: Bool) {
+        let key = LegadoPreviewIdentity.key(source.bookSourceUrl)
+        guard register || openOriginalExploreSources[key]?.signature == signature else { return }
+        originalExploreAccess += 1
+        openOriginalExploreSources[key] = .init(sourceID: source.id, sourceURL: source.bookSourceUrl, signature: signature, access: originalExploreAccess)
+        // Match the original process lifetime bound. Eviction does not invent a save
+        // that upstream did not request, and carries no second copy of InfoMap values.
+        if openOriginalExploreSources.count > 99,
+           let oldest = openOriginalExploreSources.min(by: { $0.value.access < $1.value.access })?.key {
+            openOriginalExploreSources.removeValue(forKey: oldest)
+        }
+    }
+
+    /// App pause visits every source opened by this actual DI service, including pages
+    /// no longer on screen. Resolve by the store's UUID index before granting a write:
+    /// a removed or edited source must not silently publish its stale cached snapshot.
+    func savePendingOriginalExploreContexts(
+        sourceResolver: @escaping @MainActor @Sendable (UUID) -> BookSource? = { BookSourceStore.shared.source(id: $0) }
+    ) async throws -> LegadoOriginalExplorePauseReport {
+        let opened = openOriginalExploreSources.values.sorted { $0.access < $1.access }
+        guard !opened.isEmpty else { return .init(acknowledgedSourceIDs: [], failures: []) }
+        let deadline = try operationDeadline()
+        return try await SourcePerfTrace.spanAsync("legado.original.explore.pause", "main=\(Thread.isMainThread) sources=\(opened.count)") {
+            var acknowledged: [UUID] = []
+            var failures: [LegadoOriginalExplorePauseReport.Failure] = []
+            for previous in opened {
+                try Task.checkCancellation()
+                do {
+                    guard let source = await sourceResolver(previous.sourceID), source.id == previous.sourceID,
+                          LegadoPreviewIdentity.same(source.bookSourceUrl, previous.sourceURL),
+                          try originalSignature(source) == previous.signature else {
+                        throw failure("SOURCE_CHANGED", "Original exploration source was removed or changed before pause")
+                    }
+                    _ = try await performOriginalExploreContext(source: source, operation: .savePendingExploreContext, absoluteDeadline: deadline)
+                    acknowledged.append(source.id)
+                } catch {
+                    if error is CancellationError || Task.isCancelled { throw error }
+                    let runtime = error as? LegadoRuntimeError
+                    failures.append(.init(sourceID: previous.sourceID, code: runtime?.code ?? "STATE_IO",
+                        completedEffects: runtime?.completedEffects ?? []))
+                    AppLogger.error("Original exploration pending save failed", error: error,
+                        context: ["sourceID": previous.sourceID.uuidString])
+                    // An individual failed write is never ACKed and cannot prevent the
+                    // remaining independent sources from attempting their own save.
+                }
+            }
+            try Task.checkCancellation()
+            return .init(acknowledgedSourceIDs: acknowledged, failures: failures)
         }
     }
 

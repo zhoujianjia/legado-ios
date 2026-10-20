@@ -13,6 +13,10 @@ protocol WebContentFetching {
 }
 
 protocol BookSourceFetching {
+    /// Lifecycle notification only; original context ownership stays in the concrete
+    /// fetcher's existing service. Implementations without original contexts do no work.
+    @MainActor func noteOriginalExploreAppPause()
+
     func fetchBookInfoPackage(
         url: String,
         source: BookSource,
@@ -69,6 +73,8 @@ protocol BookSourceFetching {
 }
 
 extension BookSourceFetching {
+    @MainActor func noteOriginalExploreAppPause() {}
+
     /// Cache lookup is an optional acceleration capability. Test doubles and
     /// alternate implementations without persistent TOC storage skip it and
     /// continue through the normal fetch path.
@@ -196,6 +202,10 @@ struct LiveWebContentFetcher: WebContentFetching {
 
 struct LiveBookSourceFetcher: BookSourceFetching {
     let bookSourceFetcher: BookSourceFetcher
+
+    @MainActor func noteOriginalExploreAppPause() {
+        bookSourceFetcher.noteOriginalExploreAppPause()
+    }
 
     func cachedTOCPackage(
         tocUrl: String,
