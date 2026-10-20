@@ -408,13 +408,135 @@ CURRENTCORE_NEW_QUALIFIED_CASES = (CURRENTCORE_ACCOUNT_QUALIFIED_CASES | CURRENT
 CURRENTCORE_NEW_SOURCE_PATHS = (CURRENTCORE_ACCOUNT_SOURCE_PATHS | CURRENTCORE_PUBLIC_SOURCE_PATHS |
     CURRENTCORE_RENDERER_SOURCE_PATHS)
 EXPECTED_CASES["currentcore"] |= CURRENTCORE_NEW_QUALIFIED_CASES
-assert len(EXPECTED_CASES["currentcore"]) == 373
+assert len(EXPECTED_CASES["currentcore"]) == 373  # Retained source boundary; not prior acceptance.
+
+# Later production owners extend currentcore only. Historical modes retain
+# their exact selections, parameter identities, SDK requirement and budgets.
+CURRENTCORE_LIVE_CASES = {'SelfRenewalAppExecutionTests': ('appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry',
+                                  'appSubmissionKeepsUploadIntentWhenActualSourceSaveFails',
+                                  'appSessionCancellationDrainsActualTransportAndKeepsCandidate',
+                                  'appOwnerRevokesFailedFreshSigningProofAndKeepsActualCandidate'),
+ 'SelfRenewalAutomaticRenewalTests': ('capturesActualCurrentBundleAndRejectsChangedSignedResources',
+                                      'persistsOptInThrottleAndClockRollbackWithoutRemoteWork',
+                                      'performsFullActualAutomaticRenewalAndNeverRepostsAReceipt',
+                                      'cancellationDrainsActualAutomaticTransportAndPersistsInterruption'),
+ 'SelfRenewalRealBundleBoundsTests': ('distinguishesShippedJavaClassHeaderWithoutFilenameBypass',
+                                      'inventoriesSeventeenThousandClassResourcesWithinHardBounds',
+                                      'reopensOwnedDirectoriesWithoutHoldingOneDescriptorPerDirectory',
+                                      'rejectsReboundDirectoryAndPreservesUnrelatedReplacementBytes',
+                                      'streamsStoredArchiveOnceAndUsesExactMetadataBudget',
+                                      'rejectsTruncatedStoredProviderAndCleansStaging'),
+ 'SelfRenewalRealResourceEnvelopeTests': ('verifiesJavaSizedXMLAndRejectsChangedClassDigest',),
+ 'SelfRenewalAnisetteV3ProviderTests': ('persistsSuccessBeforeHeadersAndReopensWithoutProvisioning',
+                                        'interruptedProvisioningRequiresExplicitRecovery',
+                                        'rejectedRegistrationNeverReprovisions',
+                                        'failedSuccessSaveRetainsUnknownIntent',
+                                        'resetsUnknownRegistrationAndReusesTheSameNewIdentity',
+                                        'confirmsCredentialRemovalBeforeRegistrationResetCanProceed',
+                                        'endpointSelectionIsLocalAndBackwardCompatible',
+                                        'realTransportSeparatesProviderAndAppleRequests'),
+ 'SelfRenewalPairingIdentityImportTests': ('realIdentityReadBackAndBoundedRejections',
+                                           'sameSessionReopenFailureAndActiveTransaction',
+                                           'lostAcknowledgementRetainsBothRealIdentitiesAndRetrySelector'),
+ 'LegadoOriginalExploreLifecycleTests': ('pauseVisitsEveryOpenedSourceAndRetainsIndividualFailure',
+                                         'pauseRejectsChangedSourceWithoutGrantingUnopenedContext',
+                                         'cancelledPauseDrainsBeforeItReturns'),
+ 'SelfRenewalDeveloperAccountClientTests': ('appSessionInitialEnrollmentCreatesNamespaceAndPublishesRealMaterials',
+                                            'appSessionInitialEnrollmentReconcilesItsActualUnknownCSR',
+                                            'appSessionInitialEnrollmentReusesKeyAfterPreCSRFailure',
+                                            'appSessionInitialBindingReopensExactNamespaceAfterFinalWriteFailure',
+                                            'appSessionInitialBindingLockedReadNeverCreatesAndOwnerPreservesClassification',
+                                            'appSessionInitialBindingLostAckSurvivesRenewalFailure'),
+ 'ChapterRetryLogTests': ('countsArePerChapter',
+                          'successClearsHistory',
+                          'successIsScoped',
+                          'loopingChapterEscalatesOnce',
+                          'escalationRearmsAfterSuccess',
+                          'trackingIsBounded',
+                          'nilBookIdIsItsOwnBucket',
+                          'paginationRecoveryIsOwnerScoped',
+                          'paginationLoopStillEscalates'),
+ 'ReaderChapterSupplyTests': ('completedPaginationAnnouncesChapter',
+                              'joiningAbandonedPaginationRetries',
+                              'sharedPaginationRecoveryClearsOnlyLayoutRetries',
+                              'reopenedEngineStartsItsOwnRetryRun',
+                              'readyCallbackDoesNotLoseNewerRetryHistory',
+                              'unavailableChapterDoesNotLoop',
+                              'laidOutChapterReportsLaidOut',
+                              'missingContentReportsContentUnavailable',
+                              'outOfRangeChapterReportsOutOfRange',
+                              'supersededChapterReportsSuperseded',
+                              'unresolvedChapterNotifiesTheView',
+                              'distantDestinationSurvivesFullLayoutCache',
+                              'reverseJumpKeepsLatestDestination',
+                              'availabilityPreservesInstalledDocument',
+                              'availabilityJoinsExistingDocumentBuild',
+                              'replacementStillInvalidatesOldDocument')}
+CURRENTCORE_LIVE_SOURCE_PATHS = {'SelfRenewalAppExecutionTests': ('Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift',),
+ 'SelfRenewalAutomaticRenewalTests': ('Tests/iOS/yuedu '
+                                      'appTests/SelfRenewalAutomaticRenewalTests.swift',),
+ 'SelfRenewalRealBundleBoundsTests': ('Tests/iOS/yuedu '
+                                      'appTests/SelfRenewalRealBundleBoundsTests.swift',),
+ 'SelfRenewalRealResourceEnvelopeTests': ('Tests/iOS/yuedu '
+                                          'appTests/SelfRenewalRealResourceEnvelopeTests.swift',),
+ 'SelfRenewalAnisetteV3ProviderTests': ('Tests/iOS/yuedu '
+                                        'appTests/SelfRenewalAnisetteV3ProviderTests.swift',),
+ 'SelfRenewalPairingIdentityImportTests': ('Tests/iOS/yuedu '
+                                           'appTests/SelfRenewalPairingIdentityImportTests.swift',),
+ 'LegadoOriginalExploreLifecycleTests': ('Tests/iOS/yuedu '
+                                         'appTests/LegadoOriginalExploreLifecycleTests.swift',),
+ 'SelfRenewalDeveloperAccountClientTests': ('Tests/iOS/yuedu '
+                                            'appTests/SelfRenewalAccountSessionTests.swift',),
+ 'ChapterRetryLogTests': ('Tests/iOS/yuedu appTests/ChapterRetryLogTests.swift',),
+ 'ReaderChapterSupplyTests': ('Tests/iOS/yuedu appTests/ReaderChapterSupplyTests.swift',)}
+CURRENTCORE_LIVE_QUALIFIED_CASES = {suite + "/" + method
+    for suite, methods in CURRENTCORE_LIVE_CASES.items() for method in methods}
+assert len(CURRENTCORE_LIVE_QUALIFIED_CASES) == 60
+assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_LIVE_QUALIFIED_CASES)
+EXPECTED_CASES["currentcore"] |= CURRENTCORE_LIVE_QUALIFIED_CASES
+assert len(EXPECTED_CASES["currentcore"]) == 433
+
+# The glyph checkpoint selects only its four new methods and seven named regressions.
+CURRENTCORE_GLYPH_CASES = {'CoreTextPagedScrollAppearanceTests': ('tallerPagePreservesGlyphPixelsAndSelection',
+                                        'pageGeometryPreservesAspectAndRoundTrips',
+                                        'resizedLivePageRedrawsWithoutStretching',
+                                        'authoredCompositionMatchesScroll'),
+ 'ReaderViewportSizeObserverHostingTests': ('testFullBleedProbeMatchesReaderSurfaceWithSafeAreaInsets',
+                                            'testBackgroundMeasuresReaderSurfaceInsteadOfWindowAndReportsResize'),
+ 'ReaderPageTurnSmoothnessTests': ('prefetchedPageIsShownWithoutDrawing',),
+ 'ReaderPageSnapshotPerformanceTests': ('resizedLayoutInvalidatesSnapshots',),
+ 'ReaderPresentationContractTests': ('curlBackMirrorsRenderedPageMaterial',),
+ 'CoreTextWritingModeTests': ('verticalPaginationStoresWritingModeAndVerticalGlyphAttribute',
+                              'verticalLatinRangesLieOnTheirSideCentred')}
+CURRENTCORE_GLYPH_SOURCE_PATHS = {'CoreTextPagedScrollAppearanceTests': ('Tests/iOS/yuedu '
+                                        'appTests/CoreTextPagedScrollAppearanceTests.swift',),
+ 'ReaderViewportSizeObserverHostingTests': ('Tests/iOS/yuedu '
+                                            'appTests/ReaderViewportSizeObserverTests.swift',),
+ 'ReaderPageTurnSmoothnessTests': ('Tests/iOS/yuedu appTests/ReaderPageTurnSmoothnessTests.swift',),
+ 'ReaderPageSnapshotPerformanceTests': ('Tests/iOS/yuedu '
+                                        'appTests/ReaderPageSnapshotPerformanceTests.swift',),
+ 'ReaderPresentationContractTests': ('Tests/iOS/yuedu appTests/ReaderPresentationContractTests.swift',),
+ 'CoreTextWritingModeTests': ('Tests/iOS/yuedu appTests/CoreTextWritingModeTests.swift',)}
+CURRENTCORE_GLYPH_QUALIFIED_CASES = {suite + "/" + method
+    for suite, methods in CURRENTCORE_GLYPH_CASES.items() for method in methods}
+assert len(CURRENTCORE_GLYPH_QUALIFIED_CASES) == 11
+assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_GLYPH_QUALIFIED_CASES)
+EXPECTED_CASES["currentcore"] |= CURRENTCORE_GLYPH_QUALIFIED_CASES
+assert len(EXPECTED_CASES["currentcore"]) == 444
 
 PARAMETER_MODES = ("transactionrenewal", "handoffrenewal", "currentcore")
 SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal", "currentcore")
 
+CURRENTCORE_GLYPH_PARAMETER_CASES = {
+    "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll": "nestedBackdrop",
+}
+
+def parameter_cases(group):
+    if group not in PARAMETER_MODES: return {}
+    return PARAMETER_CASES | CURRENTCORE_GLYPH_PARAMETER_CASES if group == "currentcore" else PARAMETER_CASES
+
 def expected_leaf_count(group):
-    return len(EXPECTED_CASES[group]) + (len(PARAMETER_CASES) if group in PARAMETER_MODES else 0)
+    return len(EXPECTED_CASES[group]) + len(parameter_cases(group))
 
 
 SELECTION_GROUPS = {
@@ -607,10 +729,60 @@ SOURCE_INPUTS += tuple(path for path in CURRENTCORE_RENDERER_SOURCE_INPUTS if pa
 CURRENTCORE_HEALTH_CONFORMANCE_SOURCE = "Modules/Core/BookSource/BookSourceHealthChecker.swift"
 SOURCE_INPUTS += (CURRENTCORE_HEALTH_CONFORMANCE_SOURCE,)
 # The filesystem-synchronized App test target compiles this real JNI fixture
-# even though currentcore does not select its three cases (native-reader does).
+# even though currentcore does not select its JNI cases (native-reader does).
 CURRENTCORE_NATIVE_READER_COMPILE_SOURCE = "Tests/iOS/LegadoNativeOriginalReaderTests.swift"
 SOURCE_INPUTS += (CURRENTCORE_NATIVE_READER_COMPILE_SOURCE,)
-assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 241
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 241  # Preserved prior input roster.
+CURRENTCORE_LIVE_SOURCE_INPUTS = ('Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift',
+ 'Modules/Features/Settings/SelfRenewalSettingsView.swift',
+ 'Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift',
+ 'Modules/Services/RSS/RSSNotificationManager.swift',
+ 'Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift',
+ 'Tests/iOS/yuedu appTests/SelfRenewalRealBundleBoundsTests.swift',
+ 'Tests/iOS/yuedu appTests/SelfRenewalRealResourceEnvelopeTests.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+Search.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+BookInfo.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+TOC.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+Discover.swift',
+ 'Modules/Services/Online/DiscoverQuickActions.swift',
+ 'Modules/Features/BookDetail/OnlineBookView.swift',
+ 'Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift',
+ 'Modules/Services/SelfRenewal/SelfRenewalPairingIdentityImport.swift',
+ 'Tests/iOS/yuedu appTests/SelfRenewalAnisetteV3ProviderTests.swift',
+ 'Tests/iOS/yuedu appTests/SelfRenewalPairingIdentityImportTests.swift',
+ 'Tests/iOS/yuedu appTests/SelfRenewalPairingOwnedPKCS12Fixture.swift',
+ 'Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift',
+ 'Modules/Core/ReaderCore/CoreText/CoreTextPageEngine.swift',
+ 'Modules/Services/Diagnostics/ChapterRetryLog.swift',
+ 'Tests/iOS/yuedu appTests/ChapterRetryLogTests.swift',
+ 'Tests/iOS/yuedu appTests/ReaderChapterSupplyTests.swift',
+ 'Tests/iOS/yuedu appTests/CoverImagePipelineTests.swift',
+ 'Modules/Services/Diagnostics/DiagnosticLog.swift',
+ 'Targets/Yuedu/SharedApp/AppLogger.swift',
+ 'Modules/Core/ReaderCore/CoreText/CharOffsetStore.swift',
+ 'Modules/Core/ReaderCore/CoreText/CoreTextPaginator.swift',
+ 'Modules/Core/ReaderCore/CoreText/AttributedStringBuilding.swift',
+ 'Modules/Core/ReaderCore/ReaderChapterPresentation.swift',
+ 'Modules/Features/BookDetail/AudiobookDetailView.swift',
+ 'Modules/Features/Reader/ReaderView+SourceCallBack.swift',
+ 'Modules/Features/Reader/TTS/AudiobookView.swift',
+ 'Modules/Services/Online/SourceCallBackService.swift',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+ 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalBookCallbackTest.kt',
+ 'Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift',
+ 'Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift',
+ 'Tests/iOS/yuedu appTests/ReaderPresentationContractTests.swift',
+ 'Tests/iOS/yuedu appTests/ReaderViewportSizeObserverTests.swift',
+ 'Tests/iOS/yuedu appTests/ReaderPageTurnSmoothnessTests.swift',
+ 'Tests/iOS/yuedu appTests/ReaderPageSnapshotPerformanceTests.swift',
+ 'Tests/iOS/yuedu appTests/CoreTextWritingModeTests.swift',
+ 'Modules/Features/Reader/ReaderViewportSizeObserver.swift',
+ 'Tests/iOS/yuedu appTests/EPUBTestFixtures.swift')
+assert not (set(SOURCE_INPUTS) & set(CURRENTCORE_LIVE_SOURCE_INPUTS))
+SOURCE_INPUTS += CURRENTCORE_LIVE_SOURCE_INPUTS
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 288
 
 
 def selection_mode():
@@ -946,7 +1118,7 @@ def prepare(work):
               "selectionMode": mode,
               "intendedTests": {key: sorted(value) for key, value in cases.items()}}
     if mode in PARAMETER_MODES:
-        record["intendedArgumentCases"] = {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}
+        record["intendedArgumentCases"] = {case: {"parameter": name, "values": [False, True]} for case, name in parameter_cases(mode).items()}
         record["intendedQualifiedMethodDefinitions"] = len(EXPECTED_CASES[mode])
         record["intendedArgumentLeafCount"] = expected_leaf_count(mode)
     smoke.config.write_new_json(work / "source-inputs.json", record)
@@ -978,9 +1150,14 @@ def _qualified_method(identifier):
     parts = identifier.split("/")
     if len(parts) not in (2, 3): raise ValueError("Ambiguous qualified test identifier")
     method = parts[-1]
-    match = re.fullmatch(r"([A-Za-z_][A-Za-z_0-9]*)(?:\(\)|\(interrupt:\))?", method)
+    match = re.fullmatch(r"([A-Za-z_][A-Za-z_0-9]*)(?:\(\)|\(interrupt:\)|\(nestedBackdrop:\))?", method)
     if match is None: raise ValueError("Unreviewed qualified method syntax: " + identifier)
-    return parts[-2] + "/" + match[1]
+    qualified = parts[-2] + "/" + match[1]
+    if method.endswith("(nestedBackdrop:)") and qualified not in CURRENTCORE_GLYPH_PARAMETER_CASES:
+        raise ValueError("Unreviewed qualified argument label")
+    if method.endswith("(interrupt:)") and qualified in CURRENTCORE_GLYPH_PARAMETER_CASES:
+        raise ValueError("Wrong qualified glyph argument label")
+    return qualified
 
 
 def _argument_values(node, expected_parameter):
@@ -1024,16 +1201,17 @@ def _argument_values(node, expected_parameter):
 
 def verify_transaction_cases(tree, group="transactionrenewal"):
     methods = []; leaves = []; argument_rows = []
+    parameters = parameter_cases(group)
     for node in _test_nodes(tree):
         method = _qualified_method(node.get("nodeIdentifier"))
         if method not in EXPECTED_CASES[group] or node.get("result") != "Passed":
             raise ValueError("Unexpected/skipped/failed transaction test method")
         methods.append(method)
-        if method in PARAMETER_CASES:
-            values = _argument_values(node, PARAMETER_CASES[method])
-            argument_rows.append({"method": method, "parameter": PARAMETER_CASES[method], "values": values,
+        if method in parameters:
+            values = _argument_values(node, parameters[method])
+            argument_rows.append({"method": method, "parameter": parameters[method], "values": values,
                                   "nodeIdentifier": node["nodeIdentifier"], "nodeIdentifierURL": node.get("nodeIdentifierURL")})
-            leaves.extend(method + "[interrupt=" + value + "]" for value in values)
+            leaves.extend(method + "[" + parameters[method] + "=" + value + "]" for value in values)
         else:
             stack = list(node.get("children", [])); runs = 0
             while stack:
@@ -1120,7 +1298,7 @@ def collect_xcresult(work, group, native_exit):
             if not target.exists(): commands.append(_capture_xcresult(["xcrun", "xcresulttool", "get", "test-results", command, "--help"], target, maximum=1_048_576))
         try:
             nodes = _test_nodes(smoke.read_json(work / (group + "-tests.json")))
-            for index, method in enumerate(sorted(PARAMETER_CASES)):
+            for index, method in enumerate(sorted(parameter_cases(group))):
                 matches = [node for node in nodes if _qualified_method(node.get("nodeIdentifier")) == method]
                 if len(matches) != 1: raise ValueError("Actual parameter method is missing or duplicated")
                 node = matches[0]; identifier = node.get("nodeIdentifierURL") or node["nodeIdentifier"]
@@ -1143,7 +1321,7 @@ def verify_transaction_details(work, tree, group="transactionrenewal"):
     if extraction.get("group") != group or type(extraction.get("originalXCTestExitCode")) is not int or extraction["originalXCTestExitCode"] != 0:
         raise ValueError("Actual XCTest invocation did not succeed")
     commands = extraction.get("commands")
-    if not isinstance(commands, list) or len(commands) != 6 or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0 or row.get("timedOut") is not False or row.get("oversized") is not False for row in commands):
+    if not isinstance(commands, list) or len(commands) != 4 + len(parameter_cases(group)) or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0 or row.get("timedOut") is not False or row.get("oversized") is not False for row in commands):
         raise ValueError("Missing/failed bounded original xcresult exports")
     bundle = str(smoke.config.checked_path(work / (group + ".xcresult")))
     wanted = {
@@ -1154,7 +1332,7 @@ def verify_transaction_details(work, tree, group="transactionrenewal"):
     }
     for index, row in enumerate(cases["passedArgumentCases"]):
         wanted["transaction-parameter-" + str(index) + ".json"] = ["xcrun", "xcresulttool", "get", "test-results", "test-details", "--path", bundle, "--test-id", row["nodeIdentifierURL"] or row["nodeIdentifier"]]
-    if len({row.get("output") for row in commands}) != 6 or {row.get("output") for row in commands} != set(wanted):
+    if len({row.get("output") for row in commands}) != 4 + len(parameter_cases(group)) or {row.get("output") for row in commands} != set(wanted):
         raise ValueError("Missing/duplicate/unreviewed raw exporter command set")
     for row in commands:
         if row.get("argv") != wanted[row["output"]]: raise ValueError("Raw export is not bound to this one actual xcresult")
@@ -1164,7 +1342,7 @@ def verify_transaction_details(work, tree, group="transactionrenewal"):
             raw, fact = _bounded_fact(work / name, 16_777_216)
             if fact != {"bytes": row.get(size_key), "sha256": row.get(hash_key)}: raise ValueError("xcresult raw export changed")
     exports = extraction.get("parameterExports")
-    if not isinstance(exports, list) or len(exports) != 2: raise ValueError("Missing actual parameter details")
+    if not isinstance(exports, list) or len(exports) != len(parameter_cases(group)): raise ValueError("Missing actual parameter details")
     for row in cases["passedArgumentCases"]:
         export = [item for item in exports if item.get("method") == row["method"]]
         if len(export) != 1: raise ValueError("Parameter details are duplicated or missing")
@@ -1241,7 +1419,7 @@ def result(work):
             or inputs.get("intendedTests") != {key: sorted(value) for key, value in cases.items()}):
         raise ValueError("Renewal source-input audit changed or differs from this source")
     if mode in PARAMETER_MODES:
-        contract = {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}
+        contract = {case: {"parameter": name, "values": [False, True]} for case, name in parameter_cases(mode).items()}
         if json.dumps(inputs.get("intendedArgumentCases"), sort_keys=True) != json.dumps(contract, sort_keys=True) or inputs.get("intendedQualifiedMethodDefinitions") != len(EXPECTED_CASES[mode]) or inputs.get("intendedArgumentLeafCount") != expected_leaf_count(mode):
             raise ValueError("Transaction argument source-input audit changed")
         verify_transaction_details(work, smoke.read_json(work / (mode + "-tests.json")), mode)
@@ -1387,10 +1565,10 @@ def result(work):
         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
     if mode == "currentcore":
         output["limitations"] = [
-            "Currentcore requires exactly373 definitions and375 argument leaves in one cold3600-second invocation/xcresult, retaining both Bool false/true pairs and the required same-job SDK fixture case.",
+            "Currentcore requires exactly444 definitions and447 argument leaves in one cold3600-second invocation/xcresult, retaining both original Bool false/true pairs and the glyph nestedBackdrop pair and the required same-job SDK fixture case.",
             "All producer/stage/native/export/verification phases and actual portable guards must succeed. Producer or guard failure remains failure while the complete native selection is still attempted for diagnostics.",
-            "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode, explore, public content batch and CSR/account/GSA definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
-            "The independent explicitly selected currentcore SwiftPM effects selection is18 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native375.",
+            "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode, all-source pause, public content batch, first enrollment/durable binding, explicit and automatic execution, measured JVM bundle bounds, anisette v3, pairing import, pagination recovery and CSR/account/GSA definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
+            "The independent explicitly selected currentcore SwiftPM effects selection is18 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native447.",
             "Existing eleven mode method/parameter identities and budgets remain unchanged. Benchmarks, diagnostic UI, unmerged later source work and unrelated JVM replay are excluded."]
         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
     return output
@@ -1668,8 +1846,8 @@ def _currentcore_source_state(work):
     if (selection_mode() != "currentcore" or prepared.get("selectionMode") != "currentcore"
             or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
             or prepared.get("intendedTests") != {"currentcore": sorted(EXPECTED_CASES["currentcore"])}
-            or prepared.get("intendedQualifiedMethodDefinitions") != 373 or prepared.get("intendedArgumentLeafCount") != 375
-            or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}):
+            or prepared.get("intendedQualifiedMethodDefinitions") != 444 or prepared.get("intendedArgumentLeafCount") != 447
+            or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in parameter_cases("currentcore").items()}):
         raise ValueError("Current core phase cannot run with changed preparation/source")
     return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
             "sourceInputCount": len(current), "sourceInputsSHA256": _source_closure_sha(current),
@@ -1696,7 +1874,7 @@ def _currentcore_commands(work, native_exit=1):
     tool = [sys.executable, str(script)]; args = _currentcore_build_args()
     settings = ["xcodebuild", "-project", str(repo / "Yuedu-Reader.xcodeproj"), "-scheme", "Yuedu-Reader",
                 "-destination", os.environ.get("YUEDU_DEST", ""), *args, "-showBuildSettings", "-json"]
-    only = ["-only-testing:yuedu appTests/" + case + ("(interrupt:)" if case in PARAMETER_CASES else "")
+    only = ["-only-testing:yuedu appTests/" + case + ("(" + parameter_cases("currentcore")[case] + ":)" if case in parameter_cases("currentcore") else "")
             for case in sorted(EXPECTED_CASES["currentcore"])]
     return {
         "producer": [sys.executable, str(repo / (SDK_TOOL_ROOT + "generate-sdk-owned-package.py")), "--output", str(repo / ".build/reader-renewal-sdk-produced-public")],
@@ -1794,7 +1972,7 @@ def run_currentcore(work):
         rows.append(_run_currentcore_phase(work, name, command, timeout, source, _currentcore_blockers(name, rows)))
     failure = _currentcore_first_failure(rows)
     ledger = {"schemaVersion": 1, "selectionMode": "currentcore", "source": source,
-              "qualifiedMethodDefinitions": 373, "argumentLeaves": 375,
+              "qualifiedMethodDefinitions": 444, "argumentLeaves": 447,
               "phaseOrder": list(CURRENTCORE_PHASES), "phases": rows, "firstFailure": failure,
               "phaseRecords": [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES],
               "historicalPackageEvidence": _currentcore_fact(work, "historical-package-evidence.json"),
@@ -1819,8 +1997,8 @@ def verify_currentcore_pipeline(work):
     ledger = smoke.read_json(work / "currentcore-pipeline.json")
     source = _currentcore_source_state(work)
     if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "currentcore"
-            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 373
-            or ledger.get("argumentLeaves") != 375 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
+            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 444
+            or ledger.get("argumentLeaves") != 447 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
             or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
         raise ValueError("Missing/failed/changed same-source currentcore pipeline")
     rows = ledger.get("phases")
@@ -1913,9 +2091,9 @@ def main():
             record = collect_xcresult(smoke.config.checked_path(args.work), args.group, args.native_exit)
             if args.group in ("handoffrenewal", "currentcore"):
                 rows = record["commands"]
-                if (len(rows) != 6 or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0
+                if (len(rows) != 4 + len(parameter_cases(args.group)) or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0
                         or row.get("timedOut") is not False or row.get("oversized") is not False for row in rows)
-                        or len(record["parameterExports"]) != 2 or any("error" in row for row in record["parameterExports"])):
+                        or len(record["parameterExports"]) != len(parameter_cases(args.group)) or any("error" in row for row in record["parameterExports"])):
                     print(json.dumps(record, indent=2))
                     return 1
         elif args.phase == "verify-tests":

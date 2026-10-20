@@ -80,7 +80,7 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
             result = native.result(self.root)
             self.assertEqual(result["sourceCommitStamped"], SOURCE)
             self.assertEqual(result["sourceOverlays"]["infoOverlay"]["sourceCommitStamped"], SOURCE)
-            self.assertEqual(result["originalReaderTests"]["expectedTests"], 3)
+            self.assertEqual(result["originalReaderTests"]["expectedTests"], 8)
             self.assertFalse(result["deviceValidationPassed"])
             for key, value in (("YueduExperienceSourceCommit", "b" * 40), ("GitCommitSHA", "b" * 7),
                                ("YueduExperienceSourceCommit", None)):
@@ -214,7 +214,7 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
         self.assertEqual(len(native.SOURCE_INPUTS), len(set(native.SOURCE_INPUTS)))
         self.assertEqual(native.NATIVE_GROUPS["mainjs"]["seconds"], 2700)
         self.assertEqual(len(native.NATIVE_GROUPS["mainjs"]["methods"]), 1)
-        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 3)
+        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 8)
         self.assertIn("unset LEGADO_RUNTIME_SOURCE_ONLY", workflow)
         self.assertIn("LEGADO_REQUIRE_NATIVE_MAINJS", workflow)
         self.assertIn("verify-native-exports.py", workflow)

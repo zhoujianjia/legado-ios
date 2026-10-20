@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-source-checkpoint-prepared-for-currentcore-native-JNI-and-build14",
+  "preparationSHA256": "4940ef4401d384acd2cf6d7113b6b7274358bfc25bc8da9d4c1f11cd21d987e2",
+  "harnessPreparation": {
+    "status": "frozen-ignored-final-v2-ready-for-root-consolidated-SDK",
+    "baselineCommit": "ef069390f5986c0a3f55b662cfbba95ab615e420",
+    "candidateFiles": [
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "baseline": {
+          "bytes": 155420,
+          "sha256": "c56534602337cffdc0d60342494469f1212877051b2fc2358d0371afff507d7c"
+        },
+        "candidate": {
+          "bytes": 169100,
+          "sha256": "7fd593ae9f2e2b185ea7592ca90e4430724e9be05dc8615487d7af6a3f63511d"
+        },
+        "diffPath": "diffs/v2/scripts__reader-experience__renewal-probe-tools.py.diff",
+        "diff": {
+          "bytes": 28889,
+          "sha256": "d8a5e9352bca1bcd8b72d8914d9a935a2dc39791090a55b4fc528fe43fadc344"
+        }
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "baseline": {
+          "bytes": 148130,
+          "sha256": "4fedac6207c53daad466bcb073bfdfe8356c3ec09e3bdbbd0b894042544b74c8"
+        },
+        "candidate": {
+          "bytes": 158190,
+          "sha256": "4fcdb12d64b7e1bda0d9301bcfc722be813b822215be70fcb11bd5b748a873bd"
+        },
+        "diffPath": "diffs/v2/scripts__reader-experience__test-renewal-probe-tools.py.diff",
+        "diff": {
+          "bytes": 32994,
+          "sha256": "1dd53cd2333467c5c382f25b8cc4d2b6ef25257bd8fdfa6a87d13a3ff38428d7"
+        }
+      },
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "baseline": {
+          "bytes": 7838,
+          "sha256": "92bd2895bcdea2778389ec36ac24d0f06588b376354f05b57e21add56a19568a"
+        },
+        "candidate": {
+          "bytes": 8697,
+          "sha256": "1ddb0831ce84b7fe9da9a7cccca5e49fdd5f41cc8d8ffef947ba24e1c1efb37c"
+        },
+        "diffPath": "diffs/v2/.github__workflows__reader-renewal-probe.yml.diff",
+        "diff": {
+          "bytes": 6195,
+          "sha256": "95718b05a2c6043af9790142e384eb18ce6f61b8f0f2e46a220fd28aca797773"
+        }
+      },
+      {
+        "path": "scripts/reader-experience/native-smoke-tools.py",
+        "baseline": {
+          "bytes": 18777,
+          "sha256": "6bf813494b5d9dd01f48e212b2cea96c99a070b99f4f3af37a59a114779d8d84"
+        },
+        "candidate": {
+          "bytes": 22372,
+          "sha256": "ee60387f0b7fb7cf3e74841f12c1502d5f77b1f0c646dc093a5107cec5796044"
+        },
+        "diffPath": "diffs/v2/scripts__reader-experience__native-smoke-tools.py.diff",
+        "diff": {
+          "bytes": 5554,
+          "sha256": "dbcacc4e6b9d989cf3b4104d92a905c4df8fb82dc663e67e3937963504f6c642"
+        }
+      },
+      {
+        "path": "scripts/reader-experience/test-native-smoke-tools.py",
+        "baseline": {
+          "bytes": 16266,
+          "sha256": "f2d919de36c9d762f9ba3b93d919a42d9d83b9935a4f70aec8a6a4f33b0c375b"
+        },
+        "candidate": {
+          "bytes": 16266,
+          "sha256": "1680eff6db2afa299c590a506354175e580e6a415bf318c2cf9b1a52ca9a8f78"
+        },
+        "diffPath": "diffs/v2/scripts__reader-experience__test-native-smoke-tools.py.diff",
+        "diff": {
+          "bytes": 1364,
+          "sha256": "b1028a863dde42ff606d80c9422c93ad3fd6450721dd0280ba4b1bf17d3a9b21"
+        }
+      }
+    ],
+    "unchangedControls": [
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 43217,
+        "sha256": "7079c1920dbef39f5ec7cc1a03fd151a3628e29f4b621ebc30f466baf09a3396"
+      },
+      {
+        "path": ".github/workflows/legado-native-reader-test.yml",
+        "bytes": 10146,
+        "sha256": "e5eedfbfe67cdf3f30909af1d0a9550555b2e0d24ae7ba35b412e7581be3bc9a"
+      }
+    ],
+    "selection": {
+      "currentcoreQualifiedDefinitions": 444,
+      "currentcoreArgumentLeaves": 447,
+      "retainedPriorCurrentcoreDefinitions": 373,
+      "newlySelectedDefinitions": 71,
+      "newlyAuthoredDefinitions": 44,
+      "retainedAffectedPaginationRegressions": 20,
+      "currentcoreSourceInputs": 288,
+      "nativeOriginalMethods": [
+        "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix"
+      ],
+      "nativeSourceInputs": 57,
+      "singleCurrentcoreNativeInvocationSeconds": 3600,
+      "independentPackageMethods": 18,
+      "independentPackageCompilationInputs": 15,
+      "independentPackageControls": 7,
+      "oldModeSelectionsAndBudgetsUnchanged": true,
+      "originalBoolParameterPairsUnchanged": true,
+      "mandatorySameJobSDKFixtureRetained": true,
+      "additionalGlyphDefinitions": 11,
+      "newGlyphDefinitions": 4,
+      "namedRequiredGlyphRegressions": 7,
+      "originalParameterCases": {
+        "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt",
+        "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt"
+      },
+      "currentcoreParameterCases": {
+        "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt",
+        "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt",
+        "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll": "nestedBackdrop"
+      }
+    },
+    "dependencies": {
+      "callbacksFrozenPreparation": {
+        "bytes": 12403,
+        "sha256": "57946b9d3afccba2ca8e585dd67b992efab5f0ca205834053382033727c00e86"
+      },
+      "layoutFrozenPreparation": {
+        "bytes": 5957,
+        "sha256": "333a8f16b3f782c3d3511c79fd01822696e830155e0f39402e5b7b82654ef050"
+      },
+      "liveAccountPairingSettingsCommittedSource": "docs/legado-ios/core-live-account-pairing-settings-step.json",
+      "callbacksV2": {
+        "bytes": 13533,
+        "sha256": "578b96b00674f1440221f26cf42fcaa24900ee4ea0e5739cc9fd74f30dae7ad7"
+      },
+      "glyphV2": {
+        "bytes": 8726,
+        "sha256": "c564fd9157d1e1176633a67d1bdeba37afa25030281bc61f8c8feb724919b4d5"
+      },
+      "composedReaderViewSHA256": "5f04362f10e1c20ef75c1c318e60d511d397980824a63fecd93eafa311574a7b"
+    },
+    "actualValidation": {
+      "platform": "Windows / Python 3.12",
+      "v2AffectedGuards": {
+        "passed": 13,
+        "failed": 0,
+        "batches": [
+          {
+            "tests": 9,
+            "seconds": 12.109,
+            "scope": "glyph parameter/source/export guards; currentcore source/SDK-required/first-failure; enrollment and live-core selection"
+          },
+          {
+            "tests": 4,
+            "seconds": 3.491,
+            "scope": "legacy transaction/handoff exact parameters/raw details and SDK-required result preservation",
+            "logPath": "preparation/parameter-legacy-v2.log",
+            "log": {
+              "bytes": 101,
+              "sha256": "8d18e30b73346447c2995e368f002c2db5ef2f68e0fcc32fafb0d098ca5da1b7"
+            }
+          }
+        ]
+      },
+      "priorV1PortableEvidenceReused": {
+        "renewalGuardTests": 62,
+        "nativeGuardTests": 8,
+        "scope": "unchanged guards only; previous final.json remains source-scoped, not v2 SDK acceptance"
+      },
+      "diffWhitespaceCheckPassed": true,
+      "all288SourceSnapshotsMatchCurrentCanonicalExceptFiveHarnessCandidates": true,
+      "sourceSnapshotRefresh": "stage-config.py only changed four manifest-description strings; copied current canonical bytes, no called guard API change",
+      "SwiftTestsExecuted": 0,
+      "SDKExecuted": false,
+      "cloudRunsTriggered": 0,
+      "canonicalOrGitMutations": false
+    },
+    "remainingDelta": null,
+    "limits": [
+      "Portable guard fixtures are not SDK, JNI, Apple/account/device or installed-renewal acceptance.",
+      "Previous 4c SDK18 Package pass retains its exact original source/case scope and is not new callback API coverage.",
+      "No full book-source compatibility, installed profile extension, same-device installation or unattended renewal claim.",
+      "Glyph snapshot/crop/CoreText type source review is not SDK execution or visual/device verification."
+    ],
+    "supersedes": "preparation/final.json"
+  },
+  "review": "Root reviewed selected-mode and source-input diffs; exact-byte integration retains existing modes/budgets and mandatory SDK fixture. Portable guard results are source-selection evidence only.",
+  "sourceRecords": [
+    "docs/legado-ios/core-app-enrollment-execution-settings-step.json",
+    "docs/legado-ios/core-automatic-renewal-device-package-step.json",
+    "docs/legado-ios/core-default-original-consumers-step.json",
+    "docs/legado-ios/core-real-jvm-bundle-renewal-step.json",
+    "docs/legado-ios/core-live-account-pairing-settings-step.json",
+    "docs/legado-ios/core-original-reader-callbacks-step.json",
+    "docs/legado-ios/reader-build13-layout-retry-fix.json",
+    "docs/legado-ios/reader-glyph-aspect-correction.json"
+  ],
+  "checkpoint": {
+    "submission": "After this commit, freeze exact HEAD for reader-renewal, legado-native-reader-test and reader-legado source tags. Query actual handles separately; a tag is not a started job.",
+    "build": 14,
+    "liveRunsAtPreparation": [],
+    "actualNewAppleSDKExecutionAtPreparation": false,
+    "actualNewJNIExecutionAtPreparation": false,
+    "actualDeviceRenewalAcceptance": false
+  },
+  "priority": "Current renewal device validation proceeds now; remaining original source-host compatibility continues independently and is unfinished.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

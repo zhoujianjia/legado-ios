@@ -30,6 +30,11 @@ NATIVE_GROUPS = {
         "methods": ("LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain",)},
     "original": {"stem": "original-product-chain", "summary": "original-summary.json", "tests": "original-tests.json", "seconds": 1800,
         "methods": ("LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+            "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+            "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+            "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+            "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+            "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
             "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
             "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix")},
 }
@@ -55,6 +60,53 @@ SOURCE_INPUTS = (
     "Modules/Services/Online/OnlineReadingPipeline.swift", "Modules/Services/Online/ChapterCacheRepository.swift",
     "Modules/Services/LibraryStore/BookStore.swift", "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
 )
+
+
+# Exact production consumers for public original reading and all-source pause.
+ORIGINAL_CONSUMER_SOURCE_INPUTS = ('Modules/Core/BookSource/BookSourceFetcher+Search.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+BookInfo.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+TOC.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+Chapter.swift',
+ 'Modules/Services/Online/OnlineReadingPipeline.swift',
+ 'Modules/Services/Online/LegadoMainJSSourceService.swift',
+ 'Modules/Services/LibraryStore/BookChapterStore.swift',
+ 'Modules/Services/LibraryStore/BookStore.swift',
+ 'Modules/Services/Online/LegadoBookStateOwner.swift',
+ 'Modules/Services/Online/LegadoContentBatchOwner.swift',
+ 'Modules/Services/Online/LegadoPersistentStateHost.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+Discover.swift',
+ 'Modules/Services/Online/DiscoverQuickActions.swift',
+ 'Modules/Features/BookDetail/OnlineBookView.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift',
+ 'Tests/iOS/LegadoNativeOriginalReaderTests.swift',
+ 'Targets/Yuedu/SharedApp/AppDependencies.swift',
+ 'Modules/Core/BookSource/BookSourceFetcher.swift',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt')
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_CONSUMER_SOURCE_INPUTS if path not in SOURCE_INPUTS)
+ORIGINAL_CALLBACK_SOURCE_INPUTS = ('Modules/Core/TTS/AudiobookPlayer.swift',
+ 'Modules/Features/BookDetail/AudiobookDetailView.swift',
+ 'Modules/Features/BookDetail/OnlineBookView.swift',
+ 'Modules/Features/Reader/ReaderView+SourceCallBack.swift',
+ 'Modules/Features/Reader/ReaderView.swift',
+ 'Modules/Features/Reader/TTS/AudiobookView.swift',
+ 'Modules/Services/LibraryStore/BookStore.swift',
+ 'Modules/Services/Online/LegadoBookStateOwner.swift',
+ 'Modules/Services/Online/LegadoMainJSSourceService.swift',
+ 'Modules/Services/Online/LegadoPersistentStateHost.swift',
+ 'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+ 'Modules/Services/Online/LegadoReviewActionRunner.swift',
+ 'Modules/Services/Online/SourceCallBackService.swift',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt',
+ 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+ 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+ 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+ 'Tests/iOS/LegadoNativeOriginalReaderTests.swift',
+ 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalBookCallbackTest.kt')
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_CALLBACK_SOURCE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 57
 
 
 def _fact(path):
@@ -312,7 +364,7 @@ def result(work):
             "testedApp": str(app), "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "runtime": smoke.config.verify_jvm_payload(app), "sourceOverlays": audit,
             "nativeProductChainExecuted": True,
-            "scope": "Independent hosts: retained MainJS chain, then three original WebBook/preview/real App grant-cache-reopen/cancel-drain chains through the ordinary JAR and JNI. Controlled loopback sources only.",
+            "scope": "Independent hosts: retained MainJS chain, then eight original WebBook/preview/public Reader/all-source pause/book notification/real App grant-cache-reopen/cancel-drain chains through the ordinary JAR and JNI. Controlled loopback sources only.",
             "readerUIRendered": False, "realBookSourcesValidated": False,
             "deliveredIPAExecuted": False, "deviceValidationPassed": False,
             "g4ValidationPassed": False, "fullFeatureParityEstablished": False}
