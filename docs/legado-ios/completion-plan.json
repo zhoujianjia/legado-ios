@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-build14-44f125b-delivery-result.json",
+  "activeBatchRecord": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,67 +169,35 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Deliver frozen44 IPA immediately (done), preserve fa48 terminal producer/native/Package evidence and collect remaining Native outcome. Consolidate existing six module-import repairs, original login Map/defaults and the actual material-publication session refresh repair before one affected SDK/Native checkpoint; no new IPA tag solely for C2 changes.",
-      "alreadyRunningTasks": "Build14 source44f125b Release succeeded and the actual IPA was audited and delivered; do not repoll. Currentcore fa48eb3 is now observed terminal failure and its producer/native/Package evidence is being archived; no execution success is inferred. Only Native fa48eb3 was last observed live. All older terminal runs remain archived.",
+      "nextPlannedCheckpoint": "Complete and independently review the bounded same-session material-publication refresh and original login-action slice, update only affected fixed selections/source closures, then submit one coherent SDK/Native checkpoint. Retain prior source-scoped evidence and freshly execute changed affected inputs; do not respin the delivered44 IPA solely for C2 changes.",
+      "alreadyRunningTasks": "No cloud run remains live. Build14 source44f125b actual IPA succeeded, was audited and delivered to Downloads. Both fa48 SDK and Native are archived terminal compilation failures: currentcore ReaderWritingMode missing import and original Native horizontal missing import; six related imports already repaired in main413ac2f. The actual SDK producer passed codesign/four OpenSSL CMS checks/file-identity search-list cleanup, and independent SwiftPM18 passed. App/JNI selected tests executed0. Do not repoll any terminal run.",
       "latestOwnedProducerTerminal": {
-        "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
-        "sourceTag": "reader-owned-sdk-4b6f5dc",
-        "runID": 39423517671,
-        "jobID": 118630160224,
+        "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
+        "sourceTag": "reader-renewal-fa48eb3",
+        "runID": 39459762202,
+        "jobID": 118755854457,
         "status": "completed",
-        "conclusion": "failure",
-        "record": "docs/legado-ios/core-owned-sdk-producer-4b6f5dc-result.json",
+        "conclusion": "success-for-producer-phase-only",
+        "record": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json",
         "queryAgain": false,
-        "portableMethodsPassed": 65,
-        "nativeMethodsAccepted": 0,
-        "actualCodesignExecuted": false,
-        "actualCodesignPassed": false,
-        "userSearchListCleanupVerified": false
+        "actualCodesignExecuted": true,
+        "actualCodesignPassed": true,
+        "userSearchListCleanupVerified": true,
+        "nativeMethodsAccepted": 0
       },
       "currentCoreLatestTerminal": {
-        "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
-        "sourceTag": "reader-renewal-a24a41e",
-        "runID": 39451829856,
-        "jobID": 118728357125,
+        "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
+        "sourceTag": "reader-renewal-fa48eb3",
+        "runID": 39459762202,
+        "jobID": 118755854457,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
-        "record": "docs/legado-ios/core-sdk-a24a41e-terminal-result.json",
+        "record": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json",
         "nativeMethodsAccepted": 0,
         "independentPackageMethodsPassed": 18
       },
-      "onlyLiveSDKHandles": [
-        {
-          "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
-          "sourceTag": "legado-native-reader-test-fa48eb3",
-          "runID": 39459762176,
-          "jobID": 118755854302,
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39459762176",
-          "createdAt": "2026-10-20T16:42:12Z",
-          "status": "in_progress",
-          "conclusion": null,
-          "current": [
-            "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
-          ],
-          "queryAgain": true,
-          "record": "docs/legado-ios/core-sdk-fa48eb3-request.json"
-        },
-        {
-          "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
-          "sourceTag": "reader-renewal-fa48eb3",
-          "runID": 39459762202,
-          "jobID": 118755854457,
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39459762202",
-          "createdAt": "2026-10-20T16:42:12Z",
-          "status": "in_progress",
-          "conclusion": null,
-          "current": [
-            "Select the installed toolchain and Simulator"
-          ],
-          "queryAgain": true,
-          "record": "docs/legado-ios/core-sdk-fa48eb3-request.json"
-        }
-      ],
+      "onlyLiveSDKHandles": [],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -1046,19 +1014,19 @@
         "actualSDKAccepted": false
       },
       "currentReviewedConsolidatedCheckpoint": {
-        "record": "docs/legado-ios/core-build14-consolidated-sdk-checkpoint.json",
-        "status": "currentcore-terminal-failure-package-and-Native-still-live",
-        "currentcoreDefinitions": 444,
-        "currentcoreLeaves": 447,
-        "originalNativeMethods": 8,
+        "record": "docs/legado-ios/core-sdk-shelf-login-checkpoint.json",
+        "status": "terminal-test-target-compilation-failure-actual-IPA-delivered",
+        "currentcoreDefinitions": 447,
+        "currentcoreLeaves": 450,
+        "originalNativeMethods": 12,
         "deviceBuild": 14,
         "actualAccepted": false,
-        "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
-        "request": "docs/legado-ios/core-build14-a24a41e-request.json",
+        "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
+        "request": "docs/legado-ios/core-sdk-fa48eb3-request.json",
         "preflightRepair": "docs/legado-ios/core-build14-a24a41e-preflight-repair.json",
         "correctedRequest": "docs/legado-ios/core-build14-75c87a9-request.json",
         "correctedPackageSource": "75c87a9e5c970696015715e22ce3288c951a8ffe",
-        "SDKTerminalRecord": "docs/legado-ios/core-sdk-a24a41e-terminal-result.json"
+        "SDKTerminalRecord": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json"
       },
       "originalSourceNotificationImplementation": {
         "record": "docs/legado-ios/core-original-source-callbacks-step.json",

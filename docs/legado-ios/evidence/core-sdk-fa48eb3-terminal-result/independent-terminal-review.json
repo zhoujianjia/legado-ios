@@ -1,0 +1,185 @@
+{
+  "kind": "independent-terminal-artifact-review",
+  "reviewer": "/root/login_info_v2_review",
+  "reviewedAtUTC": "2026-10-20T17:19:02.063107+00:00",
+  "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
+  "status": "producer-and-package-pass-App-and-Native-compilation-fail-no-test-execution",
+  "artifacts": [
+    {
+      "artifactId": "12282609900",
+      "bytes": 1254484,
+      "sha256": "3c9301ad030bef8f58139c9b944914bd66a7022a70a9889ec77037269bf7dcbb",
+      "members": 122,
+      "allMemberCRCsVerified": true
+    },
+    {
+      "artifactId": "12283329141",
+      "bytes": 27428,
+      "sha256": "8a762335c3898f495772f6af88e49f81ad2bfe52bebacce660f0a0e8f6828f19",
+      "members": 10,
+      "allMemberCRCsVerified": true
+    },
+    {
+      "artifactId": "12284585434",
+      "bytes": 398172,
+      "sha256": "d3ade777c282cc04dac8551c83394c3a12970ba56e1430bed2b038f4f6a02fae",
+      "members": 60,
+      "allMemberCRCsVerified": true
+    }
+  ],
+  "sdk": {
+    "selectedQualifiedMethodDefinitions": 447,
+    "selectedArgumentLeaves": 450,
+    "actualAppTestExecutions": 0,
+    "actualArgumentCaseExecutions": 0,
+    "uniqueCompileErrors": [
+      "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift:89:57: error: cannot find type 'ReaderWritingMode' in scope"
+    ],
+    "phaseStates": {
+      "producer": "succeeded",
+      "stage": "succeeded",
+      "before-build": "succeeded",
+      "boot": "succeeded",
+      "native": "failed",
+      "export": "failed",
+      "cases": "failed",
+      "test-settings": "succeeded",
+      "after-tests": "blocked",
+      "build-settings": "succeeded"
+    },
+    "firstFailure": {
+      "phase": "native",
+      "exitCode": 1
+    },
+    "finalResultProduced": false,
+    "testNodesEmpty": true
+  },
+  "producer": {
+    "phaseSucceeded": true,
+    "phaseElapsedSeconds": 21.996947,
+    "executedCommands": 48,
+    "allCommandsExitZeroWithoutTimeout": true,
+    "actualCodesignCommands": 4,
+    "actualDetachedCMSVerifications": 4,
+    "verifiedMachORoles": [
+      "main",
+      "share",
+      "widget",
+      "framework"
+    ],
+    "temporaryOwnedKeychainDeleteExitCode": 0,
+    "sevenProducerSourcesMatchFrozenGitBlobs": true,
+    "publicAllowlistMatchesFrozenVerifier": true,
+    "publicOutputsCount": 43,
+    "allPublicOutputHashesMatchManifestAndStageBinding": true,
+    "privatePEMMarkersAbsentFromPublicOutputs": true,
+    "actualOwnedFileIdentityReadback": {
+      "observedMatchesExpectedOwnedFile": true,
+      "ownedFileIdentityEntryCount": 1,
+      "ownedPathIdentityUnchanged": true,
+      "literalPathEquality": false
+    },
+    "originalUserListRestoredExactly": true,
+    "ownedAbsentAfterRestore": true,
+    "userAdminSystemTrustChanged": false,
+    "realAppleAccountUsed": false,
+    "SwiftPackageCoordinatorExecuted": false
+  },
+  "package": {
+    "actualTestsPassed": 18,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "actualXMLIdentitiesMatchSelectedMethods": true,
+    "fifteenCompilationInputsPlusSevenControlsMatchFrozenGitBlobs": true,
+    "frozenSourceRecordsVerified": 22,
+    "actualAppTests": 0,
+    "actualJVMOrNativeJNI": 0
+  },
+  "native": {
+    "uniqueCompileErrors": [
+      "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift:192:45: error: enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'"
+    ],
+    "actualNativeXCTestExecutions": 0,
+    "actualNativeJNIExecutions": 0,
+    "ordinaryJvmBuildVerdict": "BUILD SUCCESSFUL in 2m 39s",
+    "ordinaryJvmXMLSuiteCount": 39,
+    "ordinaryJvmXMLCounts": {
+      "tests": 293,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "noOtherErrorDiagnosticsFound": true
+  },
+  "additionalUnknownErrorsFound": false,
+  "keyEvidenceMembers": [
+    {
+      "member": "reader-renewal-probe/currentcore-pipeline.json",
+      "bytes": 151800,
+      "sha256": "a20a0303132f45ad52a4eb7142050da7eb2e05582b71d1efa7b772dc542e88d5"
+    },
+    {
+      "member": "reader-renewal-probe/currentcore-completion.json",
+      "bytes": 3824,
+      "sha256": "4bd3bbcaf4682993f142267ac1da6adae67c677bc1b4e07aa017ff63e6c22204"
+    },
+    {
+      "member": "reader-renewal-probe/currentcore-tests.log",
+      "bytes": 7603567,
+      "sha256": "03408bcd044301423666d3b36393da4443bd8f56804ec48e53792e17662a3693"
+    },
+    {
+      "member": "reader-renewal-probe/currentcore-tests.json",
+      "bytes": 367,
+      "sha256": "2429e425b42400c05e5b7a87fac4883a36512e078d921878f64e992f26075789"
+    },
+    {
+      "member": "reader-renewal-probe/currentcore-producer.log",
+      "bytes": 9915,
+      "sha256": "099cc0af6df9d67faf340019d571915be18485dfdb313a336a79d2f937024192"
+    },
+    {
+      "member": "reader-renewal-probe/currentcore-phase-stage.json",
+      "bytes": 3320,
+      "sha256": "218aaf573e81ddee21cdfec3232522e62131e8c77c21fc4658b086dc193672a9"
+    },
+    {
+      "member": "reader-renewal-probe/sdk-produced-public/sdk-produced-fixture-manifest.json",
+      "bytes": 46008,
+      "sha256": "423773695315bcd91c90e55c6e8b27cbcedf3d04ab9b7892787fd943948542d5"
+    },
+    {
+      "member": "reader-renewal-probe/sdk-fixture-binding.json",
+      "bytes": 9839,
+      "sha256": "523931f7c3ba6660a9e79b7d8de1ef10be903f2e6c7dc7e89913eda1e7ef6549"
+    },
+    {
+      "member": "reader-renewal-original-api/xunit.xml",
+      "bytes": 3122,
+      "sha256": "a61ec5d3085a6de08e49947f1d112bf8bd0e0f47b05577481107a1d460a53edb"
+    },
+    {
+      "member": "reader-renewal-original-api/source-inputs.json",
+      "bytes": 8701,
+      "sha256": "76e75c272087bb328a7089310f29bc4df45cb55abdd929ad6e7fa1e24768f692"
+    },
+    {
+      "member": ".build/native-reader-test/native-build.log",
+      "bytes": 7533413,
+      "sha256": "0d6fd311caafa7765093199b5d85ca0ee9172654a01be2f5bac59f52b9748e95"
+    },
+    {
+      "member": ".build/ci-logs/native-reader-jvm.log",
+      "bytes": 9471,
+      "sha256": "52b4407efdbef21891e91cecb69b31893d89e71bb238d63817cd874c887c1a39"
+    }
+  ],
+  "boundaries": [
+    "Only downloaded terminal artifacts and frozen Git blobs were read. No cloud query, new test run, canonical mutation, Git mutation or checkpoint widening occurred.",
+    "The SDK full archived log contains one unique error, not six. Six proposed import repairs must not be described as six observed compiler errors. The Native full archived log contains one distinct import-related error.",
+    "Producer success proves synthetic owned macOS SDK fixture generation, codesign/CMS and bounded cleanup in this job. It proves no real Apple-account signing, same-device installation, unattended self-renewal, computer-off reachability or physical-device acceptance.",
+    "SwiftPM 18 cases are source-only package API tests and do not establish App target, glyph visual, Keychain native or JNI acceptance.",
+    "The public output marker/hash/allowlist checks are finite artifact checks, not a general guarantee that arbitrary binary data cannot contain private information."
+  ]
+}
