@@ -1,0 +1,12 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt
+@@ -147,6 +147,9 @@
+         }
+     }
+
++    /** Original WebViewModel branches only POST before presenting its page. */
++    fun isPost(): Boolean = method == "POST"
++
+     internal fun prepareRequest(cookieForUrl: (String) -> String): JsonObject {
+         val requestUrl = if (method == "POST") urlNoQuery else urlNoQuery + (encodedQuery?.let { "?$it" } ?: "")
+         val savedCookie = cookieForUrl(requestUrl)

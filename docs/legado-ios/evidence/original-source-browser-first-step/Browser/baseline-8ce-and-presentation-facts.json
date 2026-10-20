@@ -1,0 +1,73 @@
+{
+  "canonical": "8cebe20",
+  "allExistingBaselinesMatch": true,
+  "files": [
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "baselineSHA256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47",
+      "canonical8ceSHA256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47",
+      "matches": true
+    },
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "baselineSHA256": "5a7b17ca7473d308d556082c9b1acc34ba27253efb2138e31ac5071480b50d70",
+      "canonical8ceSHA256": "5a7b17ca7473d308d556082c9b1acc34ba27253efb2138e31ac5071480b50d70",
+      "matches": true
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "baselineSHA256": "0b2acf872d699e788ef6c1826f2511900c47961269b912b405414920f72075ba",
+      "canonical8ceSHA256": "0b2acf872d699e788ef6c1826f2511900c47961269b912b405414920f72075ba",
+      "matches": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "baselineSHA256": "3668fc3c37abb27a4beb45e9324e36e776d37bcbaeebe1953066effd3959334f",
+      "canonical8ceSHA256": "3668fc3c37abb27a4beb45e9324e36e776d37bcbaeebe1953066effd3959334f",
+      "matches": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "baselineSHA256": "bd773758c8e6bb376b8d8ebdfd1d5553d8d8be77a6833bb41b13c163753d55bc",
+      "canonical8ceSHA256": "bd773758c8e6bb376b8d8ebdfd1d5553d8d8be77a6833bb41b13c163753d55bc",
+      "matches": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baselineSHA256": "ce04bc5150afa51afc5275e8fc8c723248353f824e46dedb3ce7802fda3fbcf4",
+      "canonical8ceSHA256": "ce04bc5150afa51afc5275e8fc8c723248353f824e46dedb3ce7802fda3fbcf4",
+      "matches": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baselineSHA256": "fc80252452e5157b8250696f9f7eef8876175e550b94772b1ece1f0490bf07f1",
+      "canonical8ceSHA256": "fc80252452e5157b8250696f9f7eef8876175e550b94772b1ece1f0490bf07f1",
+      "matches": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "baselineSHA256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091",
+      "canonical8ceSHA256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091",
+      "matches": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baselineSHA256": "05f7f6a3782463aed0141e37262decf8743d400ff8910dfaa24596c2866c9d32",
+      "canonical8ceSHA256": "05f7f6a3782463aed0141e37262decf8743d400ff8910dfaa24596c2866c9d32",
+      "matches": true
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baselineSHA256": "59702ae34dfad3e9527c641dff298e1343e51fdfb1fb3241c150eae9825a7876",
+      "canonical8ceSHA256": "59702ae34dfad3e9527c641dff298e1343e51fdfb1fb3241c150eae9825a7876",
+      "matches": true
+    }
+  ],
+  "actualBuildSourceFact": "legado-native-reader-test.yml lines74-75 invokes full Yuedu-Reader.xcodeproj build-for-testing. sourceInputs115 is evidence closure, not source exclusion. Prior claimed Presenter compile dependency risk withdrawn; no global adapter/no-op was implemented.",
+  "presentationPolicy": {
+    "style": "overFullScreen on only new original page route",
+    "primaryDoc": "https://developer.apple.com/library/archive/featuredarticles/ViewControllerPGforiPhoneOS/PresentingaViewController.html",
+    "lines": "34-36",
+    "inference": "UIKit retains underlying views. Chosen to keep the existing form owner mounted while its child browser presents; actual SwiftUI/UIKit behavior still awaits SDK execution."
+  }
+}

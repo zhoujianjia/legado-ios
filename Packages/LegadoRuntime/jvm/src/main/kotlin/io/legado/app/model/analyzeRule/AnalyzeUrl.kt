@@ -147,6 +147,9 @@ class AnalyzeUrl(
         }
     }
 
+    /** Original WebViewModel branches only POST before presenting its page. */
+    fun isPost(): Boolean = method == "POST"
+
     internal fun prepareRequest(cookieForUrl: (String) -> String): JsonObject {
         val requestUrl = if (method == "POST") urlNoQuery else urlNoQuery + (encodedQuery?.let { "?$it" } ?: "")
         val savedCookie = cookieForUrl(requestUrl)

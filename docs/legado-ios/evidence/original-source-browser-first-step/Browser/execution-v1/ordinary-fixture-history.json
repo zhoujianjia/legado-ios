@@ -1,0 +1,13 @@
+{
+  "priorFailure": "Initial external consumer tried to create an original-traditional session without stateOwner, but the existing admission rejects that before creation. No production bug or failed JVM test.",
+  "correction": "Fifth actual created session uses explicit owner and exercises typed unsupported Await. First4 prior sessions ran; final isolated consumer reran5 fresh sessions. No Kotlin source/test suite rerun.",
+  "classpath": "Final Java compilation uses ONLY ordinary production JAR; execution uses JAR plus external consumer classes, no JUnit/test-classpath.",
+  "priorJavaSource": {
+    "bytes": 5338,
+    "sha256": "1ea5a37f06fb1bbe388c228eae527005a1a34b73a5f9139246440106f72c185d"
+  },
+  "finalJavaSource": {
+    "bytes": 5349,
+    "sha256": "57ec106c83c745787dc609783d236a0edcce9a743ba1a435a0c455199fc33ef1"
+  }
+}

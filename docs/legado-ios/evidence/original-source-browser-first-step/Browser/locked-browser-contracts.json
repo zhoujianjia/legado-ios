@@ -1,0 +1,69 @@
+{
+  "archive": {
+    "path": "F:/legado-master.zip",
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd"
+  },
+  "members": [
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+      "bytes": 45719,
+      "sha256": "b587bd35e58898a0197abedb352a2acbe8c1a3c5c24573d77d2b7a98b6d7be6c",
+      "contractLines": [
+        {
+          "first": 399,
+          "last": 435,
+          "text": "    fun startBrowser(url: String, title: String) {\n        return startBrowser(url, title, null)\n    }\n\n    fun startBrowser(url: String, title: String, html: String?) {\n        rhinoContext.ensureActive()\n        if (!canOpenSourceUi()) return\n        SourceVerificationHelp.startBrowser(getSource(), url, title, html=html)\n    }\n\n    /**\n     * 使用内置浏览器打开链接，并等待网页结果\n     */\n    fun startBrowserAwait(url: String, title: String): StrResponse {\n        return startBrowserAwait(url, title, true, null)\n    }\n\n    fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean): StrResponse {\n        return startBrowserAwait(url, title, refetchAfterSuccess, null)\n    }\n\n    fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean, html: String?): StrResponse {\n        rhinoContext.ensureActive()\n        if (!canOpenSourceUi()) throw NoStackTraceException(\"已阻止当前操作中的书源网页跳转\")\n        return when (val result = SourceVerificationHelp.getVerificationResult(\n            getSource(), url, title, true, refetchAfterSuccess, html, context\n        )) {\n            is VerificationResult.Response -> {\n                val (url2, body) = result.value\n                StrResponse(url2.ifEmpty { url }, body)\n            }\n\n            VerificationResult.Refetch -> AnalyzeUrl(\n                url,\n                source = getSource(),\n                coroutineContext = context\n            ).getStrResponse(useWebView = false)"
+        }
+      ]
+    },
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/help/source/SourceVerificationHelp.kt",
+      "bytes": 13958,
+      "sha256": "e3f0cb0c71c581c6e5f18c08173e09cca1d2fb0ffc154da760c8d056b7a5b283",
+      "contractLines": [
+        {
+          "first": 348,
+          "last": 372,
+          "text": "    fun startBrowser(\n        source: BaseSource?,\n        url: String,\n        title: String,\n        saveResult: Boolean? = false,\n        refetchAfterSuccess: Boolean? = true,\n        html: String? = null,\n        verificationResultKey: String? = null,\n    ) {\n        source ?: throw NoStackTraceException(\"startBrowser parameter source cannot be null\")\n        require(url.length < 64 * 1024) { \"startBrowser parameter url too long\" }\n        require(saveResult != true || verificationResultKey != null) {\n            \"verificationResultKey is required when saveResult is enabled\"\n        }\n        appCtx.startActivity<WebViewActivity> {\n            putExtra(\"title\", title)\n            putExtra(\"url\", url)\n            putExtra(\"sourceOrigin\", source.getKey())\n            putExtra(\"sourceName\", source.getTag())\n            putExtra(\"sourceType\", source.getSourceType())\n            putExtra(\"sourceVerificationEnable\", saveResult)\n            putExtra(\"refetchAfterSuccess\", refetchAfterSuccess)\n            putExtra(\"html\", html)\n            putExtra(\"verificationResultKey\", verificationResultKey)\n        }"
+        }
+      ]
+    },
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/ui/browser/WebViewModel.kt",
+      "bytes": 6536,
+      "sha256": "698464861863800d341b33705eec98bc7cc3ca1e9b4c38f7705b62428521f6fa",
+      "contractLines": [
+        {
+          "first": 44,
+          "last": 80,
+          "text": "    fun initData(\n        intent: Intent,\n        success: () -> Unit\n    ) {\n        execute {\n            this@WebViewModel.intent = intent\n            val url = intent.getStringExtra(\"url\")\n                ?: throw NoStackTraceException(\"url不能为空\")\n            sourceName = intent.getStringExtra(\"sourceName\") ?: \"\"\n            sourceOrigin = intent.getStringExtra(\"sourceOrigin\") ?: \"\"\n            sourceType = intent.getIntExtra(\"sourceType\", SourceType.book)\n            sourceVerificationEnable = intent.getBooleanExtra(\"sourceVerificationEnable\", false)\n            refetchAfterSuccess = intent.getBooleanExtra(\"refetchAfterSuccess\", true)\n            verificationResultKey = intent.getStringExtra(\"verificationResultKey\")\n            html = intent.getStringExtra(\"html\")?.let{\n                localHtml = true\n                val headIndex = it.indexOf(\"<head\", ignoreCase = true)\n                if (headIndex >= 0) {\n                    val closingHeadIndex = it.indexOf('>', startIndex = headIndex)\n                    if (closingHeadIndex >= 0) {\n                        val insertPos = closingHeadIndex + 1\n                        StringBuilder(it).insert(insertPos, \"<script>$JS_INJECTION2</script>\").toString()\n                    } else {\n                        \"<head><script>$JS_INJECTION2</script></head>$it\"\n                    }\n                } else {\n                    \"<head><script>$JS_INJECTION2</script></head>$it\"\n                }\n            }\n            source = SourceHelp.getSource(sourceOrigin, sourceType)\n            val analyzeUrl = AnalyzeUrl(url, source = source, coroutineContext = coroutineContext)\n            baseUrl = analyzeUrl.url\n            headerMap.putAll(analyzeUrl.headerMap)\n            if (analyzeUrl.isPost()) {\n                html = analyzeUrl.getStrResponseAwait(useWebView = false).body\n            }\n        }.onSuccess {"
+        }
+      ]
+    },
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/ui/browser/WebViewActivity.kt",
+      "bytes": 20149,
+      "sha256": "777bd10e19c7686014a23a02547368562cdb85153bfaab2e79a5236e43805e34",
+      "contractLines": [
+        {
+          "first": 124,
+          "last": 141,
+          "text": "        binding.titleBar.subtitle = intent.getStringExtra(\"sourceName\")\n        viewModel.initData(intent) {\n            val url = viewModel.baseUrl\n            val headerMap = viewModel.headerMap\n            val requestConfig = headerMap.toWebViewRequestConfig(AppConfig.userAgent)\n            initWebView(url, requestConfig.userAgent)\n            val html = viewModel.html\n            if (html.isNullOrEmpty()) {\n                currentWebView.loadUrl(url, requestConfig.additionalHeaders)\n            } else {\n                if (viewModel.localHtml) {\n                    viewModel.source?.let {\n                        val webJsExtensions = WebJsExtensions(it, this, currentWebView)\n                        currentWebView.addJavascriptInterface(webJsExtensions, nameJava)\n                    }\n                    currentWebView.addJavascriptInterface(WebCacheManager, nameCache)\n                }\n                currentWebView.loadDataWithBaseURL(url, html, \"text/html\", \"utf-8\", url)"
+        }
+      ]
+    },
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/ui/login/SourceLoginJsExtensions.kt",
+      "bytes": 2583,
+      "sha256": "cde38b9275e02e28af3cd34438ef6ef97ebea013acdb37cee5ac75d52c78378e",
+      "contractLines": [
+        {
+          "first": 64,
+          "last": 81,
+          "text": "    override fun showBrowser(\n        url: String,\n        html: String?,\n        preloadJs: String?,\n        config: String?\n    ) {\n        val activity = activityRef.get() ?: return\n        val source = getSource() ?: return\n        activity.showDialogFragment(\n            BottomWebViewDialog(\n                source.getKey(),\n                bookType,\n                url,\n                html,\n                preloadJs,\n                config\n            ).apply { customButtonKey = this@SourceLoginJsExtensions.customButtonKey }\n        )"
+        }
+      ]
+    }
+  ],
+  "scope": "Exact first nonawait plain HTTP(S) GET page: same AnalyzeUrl URL/header, explicit task/source admission, real UIKit ACK; other capabilities remain unsupported."
+}

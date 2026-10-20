@@ -4,9 +4,9 @@ import io.legado.app.data.entities.BookSource
 import io.legado.app.model.analyzeRule.AnalyzeRule
 import io.yuedu.legado.StrResponse
 
-/** Finite non-UI SourceLoginJsExtensions/RssJsExtensions contract. All parsing,
- * HTTP and source values borrow the exact existing environment/task. Browser,
- * clipboard and UI mutation capabilities fail explicitly, never via JSC. */
+/** Finite SourceLoginJsExtensions/RssJsExtensions contract. Parsing, HTTP, source
+ * state and checked nonawait GET presentation borrow the same environment/task.
+ * Unported browser/clipboard capabilities fail explicitly, never via JSC. */
 class OriginalSourceLoginHost(private val source: BookSource) : RuleJsExtensions, AutoCloseable {
     private val analysisDelegate = lazy { AnalyzeRule(source = source) }
     private val analyzeRule get() = analysisDelegate.value
@@ -26,7 +26,12 @@ class OriginalSourceLoginHost(private val source: BookSource) : RuleJsExtensions
     fun getString(rule: String?, unescape: Boolean) = analyzeRule.getString(rule, unescape)
     fun getElement(rule: String) = analyzeRule.getElement(rule)
     fun getElements(rule: String) = analyzeRule.getElements(rule)
-    @JvmOverloads fun startBrowser(url: String, title: String, html: String? = null): Nothing = unsupportedRule("form login browser navigation")
+    @JvmOverloads fun startBrowser(url: String, title: String, html: String? = null) {
+        // Explicit local HTML installs WebJsExtensions in the locked Activity;
+        // a plain WK page must not silently pretend to provide that host.
+        if (html != null) unsupportedRule("original local HTML WebJS browser")
+        getRuleEnvironment().platform.startLoginBrowser(source, url, title)
+    }
     @JvmOverloads fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean = true, html: String? = null): StrResponse = unsupportedRule("form login awaited browser navigation")
     @JvmOverloads fun showBrowser(url: String, html: String? = null, preloadJs: String? = null, config: String? = null): Nothing = unsupportedRule("form login browser presentation")
     fun upLoginData(data: Map<String, Any?>?) = getRuleEnvironment().platform.updateLoginUI(source, data)

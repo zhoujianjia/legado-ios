@@ -1,0 +1,443 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T20:47:42.424723+00:00",
+  "stage": "FIRST bounded original login nonawait plain HTTP(S) GET browser: actual product route, awaiting SDK/UIKit gate",
+  "sourcePreparation": {
+    "path": "source-candidate-v1.json",
+    "bytes": 10124,
+    "sha256": "3a3e9d0ece9bb0178dc76e5455a6f4764622255586f20556f7b6630bba57133a",
+    "immutableSourceSnapshot": "source-snapshot-v1/work",
+    "all11SourceBytesUnchanged": true,
+    "validationOnlyUpdates": "External Java fifth vector changed from impossible unowned session creation to admitted owned Await rejection. PowerShell runner UTF8 BOM removed. No production/Kotlin test source changed; previous evidence/history retained."
+  },
+  "sourceIndependentReview": {
+    "path": ".build\\original-source-login-browser-source-independent-review\\review.json",
+    "bytes": 16986,
+    "sha256": "d63c583975b9fc4307dd7763f287f0aa013587c0efac6406af2a48e93e380f05",
+    "scope": "Source-only review; runtime evidence supplement independently pending, not claimed through this source report."
+  },
+  "files": [
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "baseline": {
+        "bytes": 6195,
+        "sha256": "5a7b17ca7473d308d556082c9b1acc34ba27253efb2138e31ac5071480b50d70"
+      },
+      "candidate": {
+        "bytes": 16013,
+        "sha256": "5e6f8460ddd6c4029e6cfd44fa0d10284438194e824a0fa99f934fb7a6180f07"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Modules/Features/BookSource/SourceBrowserPresenter.swift.diff",
+        "bytes": 11125,
+        "sha256": "5fc4976f3ac3afcd6f778e44dac7b9ae3f64092c9808ce81fb96465613d85e14"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "baseline": {
+        "bytes": 70576,
+        "sha256": "0b2acf872d699e788ef6c1826f2511900c47961269b912b405414920f72075ba"
+      },
+      "candidate": {
+        "bytes": 76100,
+        "sha256": "fc7ac06d0d1f06bb20914419335cc641d5111da30cf5cc49b079ccaef740c2da"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Modules/Services/Online/LegadoPersistentStateHost.swift.diff",
+        "bytes": 8087,
+        "sha256": "7bc6d0a7f886a2de4812ceca84a95b38cc29a3f95ce14911cef5659621ed4a3c"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "baseline": {
+        "bytes": 20904,
+        "sha256": "3668fc3c37abb27a4beb45e9324e36e776d37bcbaeebe1953066effd3959334f"
+      },
+      "candidate": {
+        "bytes": 21030,
+        "sha256": "d4bbb59df06a966fac9e903eb3429a3522cc07ae831d49622b2756252607ed0f"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt.diff",
+        "bytes": 606,
+        "sha256": "a564a457947e3a757164945c28a0759a81052ace6b72d509fe21a1cbca87cca8"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "baseline": {
+        "bytes": 3182,
+        "sha256": "bd773758c8e6bb376b8d8ebdfd1d5553d8d8be77a6833bb41b13c163753d55bc"
+      },
+      "candidate": {
+        "bytes": 3445,
+        "sha256": "24f93aa8aa2523e6040717e2787516a3a11c511338a62c499551cc97b6b2d396"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt.diff",
+        "bytes": 2323,
+        "sha256": "35d4b66199040451d1fcf031c11f132cf9bbcca0f8505ccef3fe184afb502c9a"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 23804,
+        "sha256": "ce04bc5150afa51afc5275e8fc8c723248353f824e46dedb3ce7802fda3fbcf4"
+      },
+      "candidate": {
+        "bytes": 25573,
+        "sha256": "0b7e7522f6e032d6610c0b095c8364a8721b726af70e9f883eb125b14513826a"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 3000,
+        "sha256": "597df16ed819601b25af26e95828461aeffa949a2b27b01fb9592bd2b5bdff77"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "bytes": 9596,
+        "sha256": "fc80252452e5157b8250696f9f7eef8876175e550b94772b1ece1f0490bf07f1"
+      },
+      "candidate": {
+        "bytes": 9827,
+        "sha256": "3b81b001f01443f925df19c4efeb236a203be0131e26f930e66bbd83ff138c6a"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 903,
+        "sha256": "4a600ee31994649481709966a56773a33ca984708aa341f5e03b6d1466056b15"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 7833,
+        "sha256": "885286e9efe0ddc0764afd3e875037e4a3b90c42ac6ba75657404631731d72b2"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt.diff",
+        "bytes": 8155,
+        "sha256": "15ef008e4fb24f2adefd4d852c52bdf46d25e1c35d6c4d8f9c571e22f817dc8e"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134720,
+        "sha256": "05f7f6a3782463aed0141e37262decf8743d400ff8910dfaa24596c2866c9d32"
+      },
+      "candidate": {
+        "bytes": 134720,
+        "sha256": "b91c54f65af246c498735f1f3faff98e1472c5d759f29ee8a5b95811058d8e24"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 2063,
+        "sha256": "221b3c4419fa49cb3ddfae01c96e414764d90e5a7c795cc4d60956b5adaf6e44"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 39596,
+        "sha256": "59702ae34dfad3e9527c641dff298e1343e51fdfb1fb3241c150eae9825a7876"
+      },
+      "candidate": {
+        "bytes": 43106,
+        "sha256": "e586769b61450e857b749b4d98a129a534829dd13eb4d9229e7a7b8d8901a535"
+      },
+      "diff": {
+        "path": "source-diffs-v1/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 3969,
+        "sha256": "f8bbe65ec6712eb9491bb0ac5e04e5d7229de95e445458bbceb968bc7cfc553a"
+      }
+    }
+  ],
+  "unchangedInputs": [
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "bytes": 42245,
+      "sha256": "c521a0f01963d0b9478df1c552484235c5c689725e865662c13cbe76a0045a47"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "bytes": 8119,
+      "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "source-candidate-v1.json",
+      "bytes": 10124,
+      "sha256": "3a3e9d0ece9bb0178dc76e5455a6f4764622255586f20556f7b6630bba57133a"
+    },
+    {
+      "path": "baseline.json",
+      "bytes": 2217,
+      "sha256": "7c354e7be1c9c979fbabda5ab67168228bb929ab695a5d8d04eb64b7956c3123"
+    },
+    {
+      "path": "additional-baseline-v1.json",
+      "bytes": 235,
+      "sha256": "9bc2349411ef1b72e45b31e180f2a044ba8b46bb543de00ae2fbaa422e6f3ede"
+    },
+    {
+      "path": "native-regression-baseline.json",
+      "bytes": 569,
+      "sha256": "0252239b09a412d5b6fa73515d9184d712db56e3c275fe71f45ed1958fb636b5"
+    },
+    {
+      "path": "baseline-8ce-and-presentation-facts.json",
+      "bytes": 3935,
+      "sha256": "1afe281defd8e021458df91fa8bd9672ae24b9b8dda92dee5f86a5b2d9f0a93a"
+    },
+    {
+      "path": "locked-browser-contracts.json",
+      "bytes": 8270,
+      "sha256": "888e7f9bf3d9b4fdc8599cdfe258b5fa15b8f4d6fb75af97bdc10a5b036e7828"
+    },
+    {
+      "path": "swift-grammar-draft-v1.json",
+      "bytes": 2467,
+      "sha256": "3becd32f568681fdfe3d2b6b24f61569776f72789011bde4f170de72bbbca114"
+    },
+    {
+      "path": "packaging-tests.log",
+      "bytes": 1244,
+      "sha256": "7787dc8d7187a036bfd5ec5648ac07fb32e828e02ee9d4be918189e5c1db184a"
+    },
+    {
+      "path": "actual-jvm-tests.json",
+      "bytes": 1446,
+      "sha256": "ead21e76bb93a9626452694e07b43177958762857d4b58ac752fbce9621bb3f8"
+    },
+    {
+      "path": "actual-jvm-compilation-inputs.json",
+      "bytes": 29813,
+      "sha256": "fa266f7a5600468f58aa577de333831fb24733dc5910054f8082df47e169dd47"
+    },
+    {
+      "path": "ordinary-jar-inspected.json",
+      "bytes": 880,
+      "sha256": "0f2b506ce155419240111f50913b71487ad905690d80cbe2690b25a6e42d2574"
+    },
+    {
+      "path": "ordinary-jar-production-class-binding.json",
+      "bytes": 86737,
+      "sha256": "ea66acaf8792836406e94a9f394283c487ccf71091797d4642dce4e61635597b"
+    },
+    {
+      "path": "SelectedBrowserTests.java",
+      "bytes": 1751,
+      "sha256": "1e758edaf067f466ff6ec785e2a265e4a8e6dbcca39a0850a16c66b617e93737"
+    },
+    {
+      "path": "OrdinaryLoginBrowserSmoke.java",
+      "bytes": 5349,
+      "sha256": "57ec106c83c745787dc609783d236a0edcce9a743ba1a435a0c455199fc33ef1"
+    },
+    {
+      "path": "validate-bounded.py",
+      "bytes": 8739,
+      "sha256": "a71d16e4b97328a45e04b0d83c3ef56e555254fd12e9e9d8ba6ac6b719173221"
+    },
+    {
+      "path": "resume-java-no-bom.py",
+      "bytes": 1966,
+      "sha256": "6ac68dd476c2ae30cfd8b59978676a2b8b7445ab6b1020eaaa7a7001e7a83cfe"
+    },
+    {
+      "path": "validate-ordinary-final.py",
+      "bytes": 6117,
+      "sha256": "8222ded5b66245a7bd35448bf38da1d70e1b536045d6b1defaa7c737edb6f316"
+    },
+    {
+      "path": "execution-v1/commands.json",
+      "bytes": 10692,
+      "sha256": "e3b96df14976bd23f2f75b8bdfa7decbfbf2850dcac7b8718badbd5f17e38526"
+    },
+    {
+      "path": "execution-v1/production-binding.json",
+      "bytes": 11867,
+      "sha256": "238fb29240478ca5bdbf36c25e4d1b6ad2bf78a32ad9730c04ef5fa72e52953f"
+    },
+    {
+      "path": "execution-v1/compile-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/compile-java.log",
+      "bytes": 866,
+      "sha256": "ea0f2d15d03deb25b261600fda459a67d72bd1b3f9ff2383729ce88aa83280a9"
+    },
+    {
+      "path": "execution-v1/compile-java-no-bom.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/junit-browser.log",
+      "bytes": 383,
+      "sha256": "ffd8db3cd28473df289790bbd4b147c445bbce1c07994bd2207433b553672df0"
+    },
+    {
+      "path": "execution-v1/actual-tests.xml",
+      "bytes": 839,
+      "sha256": "d592eb9286a51159d8e2ef7118b231742ec8d1d030f2733a8f847f113e99af85"
+    },
+    {
+      "path": "execution-v1/ordinary-java.log",
+      "bytes": 297,
+      "sha256": "aa718a7b67129e65ac7aae2585ad24d74b9514b2797d19b101f78c931056442f"
+    },
+    {
+      "path": "execution-v1/ordinary-final/commands.json",
+      "bytes": 1278,
+      "sha256": "5d944f720a31ee787db01e0e026643d78a5fd65ba2f372188027605af3827af7"
+    },
+    {
+      "path": "execution-v1/ordinary-final/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "execution-v1/ordinary-final/execute.log",
+      "bytes": 165,
+      "sha256": "e2c2b4a93fa49c1a490f10c4757748797e384e19b20a16ef82494e4ff6ece531"
+    },
+    {
+      "path": "execution-v1/validation-inspection-history.json",
+      "bytes": 427,
+      "sha256": "4895e485dfa7bc197a6e7b49b7b81da3b66765c0292b41e20e415524f4aa383a"
+    },
+    {
+      "path": "execution-v1/validator-before-inline-owner-fix.py",
+      "bytes": 7543,
+      "sha256": "545805e942fe66aa381887cc8904dd52bfe2099b5a499ad7a9dda84f9e2bcb12"
+    },
+    {
+      "path": "execution-v1/runner-encoding-history.json",
+      "bytes": 289,
+      "sha256": "d9cf3a93276831d5d6a0086e08881d4ef028a47e2eec97fce92ad4f36a281299"
+    },
+    {
+      "path": "execution-v1/SelectedBrowserTests-with-BOM.java",
+      "bytes": 1754,
+      "sha256": "ce06260abe8e7f02f05b345057f823a29ea85b059571917ca8d07001e20e775c"
+    },
+    {
+      "path": "execution-v1/ordinary-fixture-history.json",
+      "bytes": 837,
+      "sha256": "4195e9126e68c2b98fb368114e6bed610b18f482ca86669b5d2240a9f5fb069a"
+    },
+    {
+      "path": "execution-v1/OrdinaryLoginBrowserSmoke-before-admission-fixture-fix.java",
+      "bytes": 5338,
+      "sha256": "1ea5a37f06fb1bbe388c228eae527005a1a34b73a5f9139246440106f72c185d"
+    }
+  ],
+  "actual": {
+    "JVMTests": 4,
+    "JVMFailures": 0,
+    "JVMErrors": 0,
+    "JVMSkipped": 0,
+    "ordinaryIncrementalJar": {
+      "path": "snapshot-v1/legado-runtime.jar",
+      "bytes": 10853062,
+      "sha256": "fb94087bc6cb7e067c85808a524ee5c2622aa825617d38602a361dd2c726d33b"
+    },
+    "JVMValidationKind": "Exact4-source K2 incremental recompile,25 freshly emitted class blobs,321 unchanged compiled blobs from exact final V2 44b8 base; NOT fresh whole Gradle build.",
+    "baseV2Jar": {
+      "path": "../original-source-login-v2-protocol-step/backend-snapshot-v3/legado-runtime.jar",
+      "bytes": 10851875,
+      "sha256": "44b8d573a52b4f33dd2a3fd6df845ac6cb6f13d1c148e169eef1f80f6d51a8f7"
+    },
+    "mainRoots": 124,
+    "recompiledMainRoots": 4,
+    "unchangedMainRoots": 120,
+    "recordedMainAndBuildInputs": 127,
+    "matchedProductionKotlinClasses": 346,
+    "recompiledProductionClassBlobs": 25,
+    "retainedV2ProductionClassBlobs": 321,
+    "portedSources": 58,
+    "requiredRuntimeClasses": 48,
+    "JavaConsumerCreatedSessions": 5,
+    "JavaConsumerSources": 2,
+    "JavaSyntheticPresentationRequests": 3,
+    "JavaSyntheticAccepted": 2,
+    "JavaRefused": 1,
+    "JavaExplicitUnsupported": 2,
+    "credentialCalls": 0,
+    "genericHTTPHostCalls": 0,
+    "ordinaryClasspath": "Final consumer compilation uses only final ordinary JAR; execution uses only JAR and external consumer class directory. No test dirs/JUnit runtime.",
+    "CRC": true,
+    "portablePackagingGuards": 6,
+    "swiftGrammarRoots": 10,
+    "swiftGrammarErrors": 0,
+    "fullGradleBuild": 0,
+    "SDK": 0,
+    "JNI": 0,
+    "UIKit": 0,
+    "device": 0
+  },
+  "newDefinitions": {
+    "JVM": 4,
+    "Native": "testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+    "Package": 0,
+    "App": 0,
+    "NativeOldTenDefinitionsUnchanged": true,
+    "NativeUsesSharedProcessOnly": true
+  },
+  "implementation": [
+    "Legacy finite login Host startBrowser only: original AnalyzeUrl GET URL/headers, current task/source binding and deadline, source.browser checked receipt.",
+    "Existing Presenter queue displays JsBridgeBrowserView with sourceRunHandler=nil, preserving sole Rhino evaluator and existing CookieStore owner.",
+    "Real UIKit completion followed by authorization checks is the only presentation success ACK. Before/during cancellation or admission failure retracts page, keeps issued-side-effect status and prevents later JS writes.",
+    "Accepted nonawait page outlives normal producer/session/revoke cleanup. Existing UI then owns Cookie capture, which is not claimed as this original task committed Cookie effects.",
+    "Async explicit cancel waits for actual UIKit dismissal callback. New original page uses overFullScreen to keep underlying form mounted; no fixed delay, extra store/VM/global UI adapter."
+  ],
+  "validationHistory": [
+    "First direct production compile succeeded. Validation-only ownership assertion then rejected7 nested inline classes whose SourceFile reports RuleCompat.kt; corrected to bind actual outer class roots plus SourceFile, preserved script/log, no production recompile.",
+    "First javac rejected a BOM in the synthetic JUnit runner before any test execution. Original runner/log retained; BOM-only fix then javac/JUnit4 passed.",
+    "First external Java first4 sessions passed; fifth original-traditional unowned createSession was correctly refused by existing admission, before browser execution. Vector corrected to fifth admitted owned Await-unsupported session; only isolated external Java recompiled/reran, not Kotlin/JUnit4."
+  ],
+  "limits": [
+    "Browser compatibility remains incomplete: only finite legacy SourceLoginJsExtensions startBrowser nonawait plain HTTP(S) GET is admitted in this slice.",
+    "startBrowserAwait/finalURL+body/refetch, POST initial prefetch, explicit local HTML WebJS, showBrowser, general/V2 java=source browser methods remain explicitly unsupported/unported.",
+    "The reused browser UI has no sourceRunHandler and installs no legacy source/JSC bridge. Its future Cookie capture stays under existing browser/CookieStore owner and is not a completed Cookie effect of the producer.",
+    "Existing single-sheet queue differs from Android independent concurrent Activity opening. Waiting/presentation deadline and bounded URL/header representability limits remain embedding boundaries.",
+    "Source revision checks use existing current binding/revocation snapshots, not an atomic transaction with arbitrary later source-store removal.",
+    "overFullScreen preserves underlying views per UIKit docs; actual SwiftUI parent onDisappear, transitions, cancellation, WK navigation and Cookie behavior still require SDK/device execution.",
+    "Authored Native1 now uses real shared process/JNI/default UIKit Presenter and awaits actual dismissal, retaining all Root10 prior methods/Fixture. It has NOT run.",
+    "Only grammar checked Swift; no SDK/typechecking or actual Native test pass. Exact incremental JVM evidence must not be restated as fresh full Gradle compile."
+  ],
+  "mutations": {
+    "canonical": false,
+    "git": false,
+    "cloud": false,
+    "tag": false,
+    "privateSourcesRead": false,
+    "newStore": false,
+    "newVM": false,
+    "newJSC": false,
+    "newHTTP": false
+  },
+  "claims": {
+    "fullBrowserCompatibility": false,
+    "SDKPassed": false,
+    "NativeTestPassed": false,
+    "DevicePassed": false,
+    "fullGradlePassed": false
+  }
+}

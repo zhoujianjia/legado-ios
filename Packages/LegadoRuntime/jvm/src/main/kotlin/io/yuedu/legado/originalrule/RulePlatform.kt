@@ -57,6 +57,9 @@ open class RulePlatform {
         unsupportedRule("form login UI data updates")
     open fun renderLoginUI(source: BaseSource, deltaUp: Boolean): Unit =
         unsupportedRule("form login UI refresh")
+    /** Live checked presentation request, never a terminal UI-event payload. */
+    open fun startLoginBrowser(source: BaseSource, url: String, title: String): Unit =
+        unsupportedRule("original login browser presentation")
     /** Existing parser/URL diagnostic sink; production may protect the current login task. */
     open fun ruleDiagnostic(error: Throwable, loggerName: String = "io.yuedu.legado.originalrule",
                             message: String = "Original rule evaluation diagnostic") {

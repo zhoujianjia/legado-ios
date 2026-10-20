@@ -1,0 +1,38 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
+@@ -27,7 +27,8 @@
+  * runs retained AnalyzeUrl header, URL and request stages, then reuses the
+  * single HTTP dispatch/response boundary shared with mainJs. Unported options remain
+  * explicit capability failures; this is not the complete AnalyzeUrl port.
+- * No browser, persistent source state or App reader routing is implied here.
++ * Additional finite platform methods below use the explicit App owner; they do
++ * not grant a general browser/WebJS host or independent source authority.
+  */
+ @OptIn(InternalCoroutinesApi::class)
+ internal class ProductionRulePlatform(
+@@ -78,6 +79,25 @@
+         ensureOwnerOpen(); task.ensureActiveForRuntime()
+         check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
+         task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "render", "deltaUp" to deltaUp))
++    }
++    override fun startLoginBrowser(source: BaseSource, url: String, title: String) {
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        check(source.getRuleEnvironment() === environment()) { "Browser source belongs to another environment" }
++        if (!task.sensitiveSourceOperation) unsupportedRule("original browser requires an explicit login task")
++        require(url.length < 65_536 && title.toByteArray(Charsets.UTF_8).size <= 8_192) { "Browser request text exceeds its budget" }
++        val owner = task.session.options.stateOwner ?: unsupportedRule("original browser requires the checked source owner")
++        // Locked WebViewModel74-78 uses original AnalyzeUrl for URL and headers.
++        // POST's initial HTTP prefetch and explicit HTML WebJS stay separate.
++        val analyze = AnalyzeUrl(url, source = source, environment = environment(), coroutineContext = source.getRuleCoroutineContext())
++        if (analyze.isPost()) unsupportedRule("original browser POST prefetch")
++        val parsed = java.net.URI(analyze.url)
++        if (parsed.scheme?.lowercase() !in setOf("http", "https")) unsupportedRule("original browser URL scheme")
++        val reply = hostDispatch(task, "source.browser", io.yuedu.legado.jsonObject(
++            "owner" to owner, "sourceURL" to source.getKey(), "url" to analyze.url,
++            "title" to title, "headers" to analyze.headerMap))
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        if (reply["presented"]?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } != true)
++            throw io.yuedu.legado.RuntimeFailure("BROWSER_NOT_PRESENTED", "The original browser was not presented")
+     }
+     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
+     init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }

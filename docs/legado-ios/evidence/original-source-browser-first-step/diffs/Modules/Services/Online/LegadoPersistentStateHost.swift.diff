@@ -1,0 +1,135 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -98,6 +98,17 @@
+ /// Bindings are granted by the embedding App; imported JSON never grants an
+ /// owner or selects a filesystem path. Book/chapter identity requires bindBook; complete
+ /// Cookie storage and transactions spanning independent App owners remain unsupported.
++/// One live presentation request borrows its existing checked source/task.
++/// No credentials, JS evaluator, persistent state or new source owner live here.
++struct LegadoOriginalBrowserPresentation: Sendable {
++    let taskID: String
++    let url: String
++    let title: String
++    let headers: [String: String]
++    let authorize: @Sendable () async throws -> Void
++    let recordEffect: @Sendable (String) -> Bool
++}
++
+ actor LegadoPersistentStateHost: LegadoPlatformHost {
+     private struct Binding {
+         let sourceURL: String
+@@ -128,6 +139,7 @@
+     private let exploreScopeIdentity = UUID().uuidString
+     private let cookieOwner: CookieStore
+     private let originalWebCookieStore: @MainActor @Sendable () -> WKHTTPCookieStore
++    private let originalBrowserPresenter: @MainActor @Sendable (LegadoOriginalBrowserPresentation) async throws -> Void
+     private let backing: any LegadoOwnedStateBacking
+     private let fallback: any LegadoPlatformHost
+     private var bindings: [String: Binding] = [:]
+@@ -158,9 +170,13 @@
+     private var cancellationOrder: [String] = []
+
+     init(backing: any LegadoOwnedStateBacking, fallback: any LegadoPlatformHost = UnsupportedLegadoHost(), cookieOwner: CookieStore = .shared,
+-         originalWebCookieStore: @escaping @MainActor @Sendable () -> WKHTTPCookieStore = { WKWebsiteDataStore.default().httpCookieStore }) {
++         originalWebCookieStore: @escaping @MainActor @Sendable () -> WKHTTPCookieStore = { WKWebsiteDataStore.default().httpCookieStore },
++         originalBrowserPresenter: @escaping @MainActor @Sendable (LegadoOriginalBrowserPresentation) async throws -> Void = {
++             try await SourceBrowserPresenter.presentOriginal($0)
++         }) {
+         self.cookieOwner = cookieOwner
+         self.originalWebCookieStore = originalWebCookieStore
++        self.originalBrowserPresenter = originalBrowserPresenter
+         self.backing = backing
+         self.fallback = fallback
+     }
+@@ -312,6 +328,7 @@
+     }
+
+     func dispatch(_ request: LegadoHostRequest) async throws -> String {
++        if request.operation == "source.browser" { return try await presentSourceBrowser(request) }
+         if request.operation == "source.login-info" { return try sourceLoginInfo(request) }
+         if request.operation == "content.batch.authorize" { return try authorizeContentBatch(request) }
+         if request.operation == "explore.owner.scope" { return try explorationOwnerScope(request) }
+@@ -402,6 +419,76 @@
+         }
+     }
+
++    /// An accepted nonawait page outlives normal producer cleanup, as the original
++    /// Activity does. It is acknowledged only after real UIKit presentation;
++    /// its later user-driven Cookie capture belongs to that existing page owner.
++    private func presentSourceBrowser(_ request: LegadoHostRequest) async throws -> String {
++        try await SourcePerfTrace.spanAsync("legado.original.browser.present",
++            "main=\(Thread.isMainThread) bytes=\(request.requestJSON.utf8.count)") {
++            try await presentSourceBrowserRequest(request)
++        }
++    }
++
++    private func presentSourceBrowserRequest(_ request: LegadoHostRequest) async throws -> String {
++        guard request.requestJSON.utf8.count <= 262_144 else {
++            throw failure("STATE_LIMIT", "Browser presentation request exceeds its budget")
++        }
++        let decoded: Any
++        do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
++        catch { throw failure("INVALID_STATE_REQUEST", "Browser presentation request is not JSON") }
++        guard let input = decoded as? [String: Any],
++              Set(input.keys).isSubset(of: ["owner", "sourceURL", "url", "title", "headers", "deadlineEpochMs", "remainingTimeoutMs"]),
++              let owner = input["owner"] as? String, let sourceURL = input["sourceURL"] as? String,
++              let url = input["url"] as? String, url.utf8.count < 65_536,
++              let target = URL(string: url), target.host?.isEmpty == false,
++              ["http", "https"].contains(target.scheme?.lowercased() ?? ""),
++              let title = input["title"] as? String, title.utf8.count <= 8_192,
++              let headers = input["headers"] as? [String: String], headers.count <= 256 else {
++            throw failure("INVALID_STATE_REQUEST", "Browser presentation requires bounded page fields")
++        }
++        let headerToken = Set("!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".utf8)
++        var normalizedHeaders = Set<String>(), headerBytes = 0
++        for (name, value) in headers {
++            guard !name.isEmpty, name.utf8.count <= 1_024, value.utf8.count <= 16_384,
++                  name.utf8.allSatisfy({ headerToken.contains($0) }),
++                  value.utf8.allSatisfy({ $0 == 9 || (32...126).contains($0) }),
++                  normalizedHeaders.insert(name.lowercased()).inserted else {
++                throw failure("UNSUPPORTED_CAPABILITY", "Browser headers cannot be represented safely")
++            }
++            headerBytes += name.utf8.count + value.utf8.count
++        }
++        guard headerBytes <= 65_536 else { throw failure("STATE_LIMIT", "Browser headers exceed their budget") }
++        let deadline = try cookieReadDeadline(input)
++        try authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)
++        let presentation = LegadoOriginalBrowserPresentation(taskID: request.taskID, url: url, title: title,
++            headers: headers, authorize: { [weak self] in
++                guard let self else { throw CancellationError() }
++                try await self.authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)
++            }, recordEffect: { request.recordPossibleEffect($0) })
++        // This awaits MainActor/UI only. It never reenters the source service or
++        // the JVM/source gate currently waiting for this synchronous Host call.
++        do {
++            try await originalBrowserPresenter(presentation)
++            try authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)
++            return try encoded(["presented": true])
++        } catch {
++            // Admission may have changed after UIKit accepted the page. This is
++            // still an unacknowledged task, not normal producer cleanup.
++            await SourceBrowserPresenter.cancelOriginal(taskID: request.taskID)
++            throw error
++        }
++    }
++
++    private func authorizeSourceBrowser(_ request: LegadoHostRequest, owner: String,
++                                        sourceURL: String, deadline: Date) throws {
++        try checkCookieRead(request, deadline: deadline)
++        guard let binding = bindings[owner], sourceURL.utf8.elementsEqual(binding.sourceURL.utf8),
++              revisions[binding.sourceURL] == binding.sourceRevision else {
++            throw failure("INVALID_STATE_OWNER", "Browser requires its current explicit source owner")
++        }
++        try binding.cookieCancellation.check(deadline: deadline)
++    }
++
+     /// Credentials use their own checked LoginManager boundary, never the
+     /// general cache/state domains. The grant still binds the exact same source
+     /// revision and task deadline as every other original-host operation.
+@@ -747,6 +834,7 @@
+             backing.revoke()
+         }
+         if let pending = pendingWebCookieOperations[taskID] { for operation in pending.values { operation.task.cancel() } }
++        await SourceBrowserPresenter.cancelOriginal(taskID: taskID)
+         await fallback.cancel(taskID: taskID)
+     }

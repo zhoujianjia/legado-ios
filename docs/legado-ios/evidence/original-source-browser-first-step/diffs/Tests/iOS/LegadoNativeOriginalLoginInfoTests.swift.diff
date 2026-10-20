@@ -1,0 +1,63 @@
+--- a/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
+@@ -473,6 +473,60 @@
+         if let problem { throw problem }
+     }
+
++    /// Actual product JNI and UIKit. No second Runtime/HostBox or synthetic
++    /// presentation ACK is installed; only the existing process opens this page.
++    func testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal() async throws {
++        executionTimeAllowance = 180
++        try await requireNativeRuntime()
++        let fixture = try await Task.detached { try Fixture() }.value
++        let process = LegadoRuntimeProcess.shared
++        let runtime = try await process.executor()
++        let owner = try await process.bindPersistentSource(sourceURL: fixture.a, sourceRevision: "native-browser-v1")
++        let taskID = UUID().uuidString
++        let effects = OriginalBrowserEffects()
++        var session: LegadoSourceSession?
++        var problem: Error?
++        do {
++            let current = try await runtime.createSession(sourceJSON: fixture.source(fixture.a, loginUrl: "var browserPrelude=true;"),
++                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
++            session = current
++            let accepted = try await runtime.loginActionOriginal(session: current,
++                action: "java.startBrowser('https://synthetic-browser.invalid/page,{\"headers\":{\"X-Page\":\"synthetic\"}}','Synthetic browser');",
++                credentials: [:], taskID: taskID, onReportedEffects: { effects.record($0) })
++            XCTAssertTrue(accepted.executed)
++            XCTAssertTrue(effects.snapshot().contains("sourceBrowserPresented"))
++            let activeAfterProducer = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
++            XCTAssertTrue(activeAfterProducer)
++            try await runtime.close(session: current)
++            session = nil
++            await process.revokePersistentSource(owner: owner)
++            let activeAfterNormalCleanup = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
++            XCTAssertTrue(activeAfterNormalCleanup, "Normal producer/session cleanup must leave an accepted nonawait page open")
++            await SourceBrowserPresenter.cancelOriginal(taskID: taskID)
++            let activeAfterDismissal = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
++            XCTAssertFalse(activeAfterDismissal, "Explicit close waits for actual UIKit dismissal, without a fixed delay")
++            let info = await Task.detached { fixture.login.getLoginInfo(sourceUrl: fixture.a) }.value
++            XCTAssertNil(info)
++            let header = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(header, "kept-header")
++        } catch { problem = error }
++        // Drain the same page even after a failed assertion path or source error.
++        await SourceBrowserPresenter.cancelOriginal(taskID: taskID)
++        if let session {
++            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
++        }
++        await process.revokePersistentSource(owner: owner)
++        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
++        if let problem { throw problem }
++    }
++
++    private final class OriginalBrowserEffects: @unchecked Sendable {
++        private let lock = NSLock()
++        private var values: [String] = []
++        func record(_ effects: [String]) { lock.withLock { values = effects } }
++        func snapshot() -> [String] { lock.withLock { values } }
++    }
++
+     private func exercise(_ fixture: Fixture, source: String? = nil, loginUi: String? = nil, loginUrl: String? = nil,
+         script: String, expected: String) async throws {
+         let source = source ?? fixture.a
