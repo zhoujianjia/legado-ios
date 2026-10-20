@@ -211,8 +211,15 @@ class BookSource(
         if (environment.platform.storeLoginHeader(this, null)) return
         environment.cache.delete("loginHeader_${getKey()}"); environment.cookie.removeCookie(getKey())
     }
-    fun getLoginInfo(): Nothing = unsupportedRule("source login-info encryption/storage")
-    fun putLoginInfo(value: String): Nothing = unsupportedRule("source login-info encryption/storage")
+    /** BaseSource's nullable Java String and Boolean result are preserved.
+     * Android encrypts its cache using androidId; the iOS embedding delegates to
+     * its existing Keychain credential owner, never the ordinary cache map. */
+    fun getLoginInfo(): String? { environment.ensureOpen(); return environment.platform.loginInfo(this) }
+    fun putLoginInfo(value: String): Boolean { environment.ensureOpen(); return environment.platform.storeLoginInfo(this, value) }
+    fun removeLoginInfo() {
+        environment.ensureOpen()
+        if (!environment.platform.storeLoginInfo(this, null)) throw RulePersistenceException("The login-info owner rejected removal")
+    }
     fun refreshJSLib() { environment.scopes.remove(jsLib) }
     override fun ajax(url: Any): String? = connect(url.toString()).body()
     fun evalJS(js: String, bindingsConfig: ScriptBindings.() -> Unit = {}): Any? {

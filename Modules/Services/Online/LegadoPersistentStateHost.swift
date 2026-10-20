@@ -43,6 +43,17 @@ protocol LegadoOwnedStateBacking: Sendable {
     /// False promises that this transaction changed no value.
     func commit(sourceURL: String, domain: LegadoOwnedStateDomain, expected: LegadoOwnedStateSnapshot,
                 changes: [String: Data?]) throws -> Bool
+    func loginInfo(sourceURL: String, validate: () throws -> Void, recordEffect: (String) -> Bool) throws -> String?
+    func storeLoginInfo(sourceURL: String, value: String?, validate: () throws -> Void, recordEffect: (String) -> Bool) throws -> Bool
+}
+
+extension LegadoOwnedStateBacking {
+    func loginInfo(sourceURL: String, validate: () throws -> Void, recordEffect: (String) -> Bool) throws -> String? {
+        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "The checked App login-info owner is not connected")
+    }
+    func storeLoginInfo(sourceURL: String, value: String?, validate: () throws -> Void, recordEffect: (String) -> Bool) throws -> Bool {
+        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "The checked App login-info owner is not connected")
+    }
 }
 
 /// Reuses the shipped source, login and cache owners. It never writes a second
@@ -50,6 +61,13 @@ protocol LegadoOwnedStateBacking: Sendable {
 struct AppLegadoOwnedStateBacking: @unchecked Sendable, LegadoOwnedStateBacking {
     let sources: BookSourceRuntimeStateStore
     let login: LoginManager
+
+    func loginInfo(sourceURL: String, validate: () throws -> Void, recordEffect: (String) -> Bool) throws -> String? {
+        try login.runtimeLoginInfo(sourceUrl: sourceURL, validate: validate, recordEffect: recordEffect)
+    }
+    func storeLoginInfo(sourceURL: String, value: String?, validate: () throws -> Void, recordEffect: (String) -> Bool) throws -> Bool {
+        try login.storeRuntimeLoginInfo(sourceUrl: sourceURL, value: value, validate: validate, recordEffect: recordEffect)
+    }
 
     func read(sourceURL: String, domain: LegadoOwnedStateDomain, fields: Set<String>) throws -> LegadoOwnedStateSnapshot {
         switch domain {
@@ -294,6 +312,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     }
 
     func dispatch(_ request: LegadoHostRequest) async throws -> String {
+        if request.operation == "source.login-info" { return try sourceLoginInfo(request) }
         if request.operation == "content.batch.authorize" { return try authorizeContentBatch(request) }
         if request.operation == "explore.owner.scope" { return try explorationOwnerScope(request) }
         if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
@@ -380,6 +399,57 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         catch {
             AppLogger.error("JVM source state owner failed", error: error)
             throw failure("STATE_IO", "The App state owner did not complete the request")
+        }
+    }
+
+    /// Credentials use their own checked LoginManager boundary, never the
+    /// general cache/state domains. The grant still binds the exact same source
+    /// revision and task deadline as every other original-host operation.
+    private func sourceLoginInfo(_ request: LegadoHostRequest) throws -> String {
+        guard request.requestJSON.utf8.count <= 524_288 else { throw failure("STATE_LIMIT", "Login-info request exceeds its byte budget") }
+        let decoded: Any
+        do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
+        catch { throw failure("INVALID_STATE_REQUEST", "Login-info request is not valid JSON") }
+        guard let input = decoded as? [String: Any], let owner = input["owner"] as? String,
+              let sourceURL = input["sourceURL"] as? String,
+              let binding = bindings[owner], sourceURL.utf8.elementsEqual(binding.sourceURL.utf8),
+              revisions[binding.sourceURL] == binding.sourceRevision else {
+            throw failure("INVALID_STATE_OWNER", "Login-info requires its current explicit source owner")
+        }
+        guard let action = input["action"] as? String, ["get", "put", "remove"].contains(action) else {
+            throw failure("INVALID_STATE_REQUEST", "Unknown login-info action")
+        }
+        let deadline = try cookieReadDeadline(input)
+        let validate = {
+            try self.checkCookieRead(request, deadline: deadline)
+            try binding.cookieCancellation.check(deadline: deadline)
+        }
+        try validate()
+        do {
+            if action == "get" {
+                let value = try backing.loginInfo(sourceURL: sourceURL, validate: validate,
+                    recordEffect: { request.recordPossibleEffect($0) })
+                return try encoded(["value": value.map { $0 as Any } ?? NSNull()])
+            }
+            let value: String?
+            if action == "put" {
+                guard let raw = input["value"] as? String, raw.utf8.count <= 65_536 else {
+                    throw failure("STATE_LIMIT", "Login-info requires a bounded String")
+                }
+                value = raw
+            } else { value = nil }
+            let accepted = try backing.storeLoginInfo(sourceURL: sourceURL, value: value, validate: validate,
+                recordEffect: { request.recordPossibleEffect($0) })
+            if action == "remove", !accepted { throw failure("STATE_IO", "The App credential owner rejected removal") }
+            return try encoded(["committed": accepted])
+        } catch let error as LegadoRuntimeError { throw error }
+        catch is CancellationError { throw CancellationError() }
+        catch LoginCredentialOwnerFailure.valueLimit { throw failure("STATE_LIMIT", "Login-info exceeds its byte budget") }
+        catch {
+            // Do not log the request, source URL, credential payload or an
+            // injected storage error's possibly secret-bearing description.
+            AppLogger.error("JVM login-info owner failed", context: ["errorType": String(reflecting: type(of: error))])
+            throw failure("STATE_IO", "The App credential owner did not complete the request")
         }
     }
 

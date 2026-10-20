@@ -175,6 +175,35 @@ internal class ProductionRulePlatform(
         return true
     }
 
+    override fun loginInfo(source: BaseSource): String? {
+        val result = loginInfoCall(source, "get")
+        val value = result["value"] ?: throw RulePersistenceException("App login-info owner omitted its nullable result")
+        if (value.isJsonNull) return null
+        if (!value.isJsonPrimitive || !value.asJsonPrimitive.isString || value.asString.toByteArray(Charsets.UTF_8).size > 65_536)
+            throw RulePersistenceException("App login-info owner returned an invalid String")
+        return value.asString
+    }
+
+    override fun storeLoginInfo(source: BaseSource, value: String?): Boolean {
+        if ((value?.toByteArray(Charsets.UTF_8)?.size ?: 0) > 65_536)
+            throw RulePersistenceException("Login-info exceeds its native bridge byte budget")
+        val result = loginInfoCall(source, if (value == null) "remove" else "put", value)
+        val accepted = result["committed"] ?: throw RulePersistenceException("App login-info owner omitted its mutation result")
+        if (!accepted.isJsonPrimitive || !accepted.asJsonPrimitive.isBoolean)
+            throw RulePersistenceException("App login-info owner returned an invalid Boolean")
+        return accepted.asBoolean
+    }
+
+    private fun loginInfoCall(source: BaseSource, action: String, value: String? = null): JsonObject {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
+        val owner = task.session.options.stateOwner ?: unsupportedRule("original login-info needs the explicit App credential owner")
+        val result = hostDispatch(task, "source.login-info", io.yuedu.legado.jsonObject("owner" to owner,
+            "sourceURL" to source.getKey(), "action" to action).apply { if (action == "put") addProperty("value", value) })
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        return result
+    }
+
     override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
         requestOwned(url, headers, callTimeout, context, null)
 

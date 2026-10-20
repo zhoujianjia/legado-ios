@@ -49,6 +49,8 @@ open class RulePlatform {
         unsupportedRule("original public batch requires the App book/chapter-generation save owner")
     }
     open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
+    open fun loginInfo(source: BaseSource): String? = unsupportedRule("checked source login-info owner")
+    open fun storeLoginInfo(source: BaseSource, value: String?): Boolean = unsupportedRule("checked source login-info owner")
     open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()
     open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =

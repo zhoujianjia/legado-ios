@@ -5,6 +5,103 @@ import Testing
 
 @Suite("Explicit App-owned Legado persistence", .serialized)
 struct LegadoPersistentStateHostTests {
+    @Test("original raw login Strings share the existing credential owner and survive reopen")
+    func rawLoginInfoUsesCredentialOwnerAndSurvivesReopen() async throws {
+        try await Self.fixture { f in
+            let host = f.host()
+            let owner = try await host.bind(sourceURL: f.a, sourceRevision: "r1")
+            let missing = try await Self.login(host, owner: owner, source: f.a, action: "get")
+            #expect(missing["value"] is NSNull)
+            let raw = "  synthetic non-JSON \n\t"
+            let saved = try await Self.login(host, owner: owner, source: f.a, action: "put", value: raw)
+            #expect(saved["committed"] as? Bool == true)
+            let reopened = LoginManager(defaults: f.loginDefaults, credentials: f.credentials)
+            #expect(try reopened.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == raw)
+            #expect(f.loginDefaults.string(forKey: "userInfo_" + f.a) == nil)
+            #expect(LegadoCacheBridge(sourceId: f.a).get("userInfo_" + f.a) == nil)
+            let ownerB = try await host.bind(sourceURL: f.b, sourceRevision: "r1")
+            let other = try await Self.login(host, owner: ownerB, source: f.b, action: "get")
+            #expect(other["value"] is NSNull)
+            try await Self.error("INVALID_STATE_OWNER") { _ = try await Self.login(host, owner: owner, source: f.b, action: "get") }
+            let empty = try await Self.login(host, owner: owner, source: f.a, action: "put", value: "")
+            #expect(empty["committed"] as? Bool == true)
+            let readEmpty = try await Self.login(host, owner: owner, source: f.a, action: "get")
+            #expect(readEmpty["value"] as? String == "")
+            f.login.storeLoginHeader(sourceUrl: f.a, raw: "kept-header")
+            _ = try await Self.login(host, owner: owner, source: f.a, action: "remove")
+            #expect(f.login.getLoginHeader(sourceUrl: f.a) == "kept-header")
+            #expect(try reopened.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == nil)
+        }
+    }
+
+    @Test("rejected secret writes locked reads and cancellation keep precise owner facts")
+    func rawLoginInfoRejectsFailedWritesAndCancelledMutations() async throws {
+        try await Self.fixture { f in
+            let host = f.host()
+            let owner = try await host.bind(sourceURL: f.a, sourceRevision: "r1")
+            _ = try await Self.login(host, owner: owner, source: f.a, action: "put", value: "kept-synthetic")
+            let revision = f.login.loginInfoRevision(sourceUrl: f.a)
+            f.credentials.failNextSave()
+            let rejected = try await Self.login(host, owner: owner, source: f.a, action: "put", value: "rejected-synthetic")
+            #expect(rejected["committed"] as? Bool == false)
+            #expect(f.login.loginInfoRevision(sourceUrl: f.a) == revision)
+            #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == "kept-synthetic")
+            f.credentials.failNextDelete()
+            try await Self.error("STATE_IO") { _ = try await Self.login(host, owner: owner, source: f.a, action: "remove") }
+            #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == "kept-synthetic")
+            f.credentials.failNextRead()
+            try await Self.error("STATE_IO") { _ = try await Self.login(host, owner: owner, source: f.a, action: "get") }
+            let denied = try Self.request("source.login-info", ["owner": owner, "sourceURL": f.a, "action": "put", "value": "cancelled"], task: "cancelled-login")
+            await host.cancel(taskID: "cancelled-login")
+            do { _ = try await host.dispatch(denied); Issue.record("Expected cancellation") } catch is CancellationError { }
+            #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == "kept-synthetic")
+            _ = try await host.bind(sourceURL: f.a, sourceRevision: "r2")
+            try await Self.error("INVALID_STATE_OWNER") { _ = try await Self.login(host, owner: owner, source: f.a, action: "get") }
+        }
+    }
+
+    @Test("legacy credentials migrate add-only and mutation effects are claimed before writes")
+    func rawLoginInfoMigratesLegacyAndClaimsCommitBeforeMutation() async throws {
+        try await Self.fixture { f in
+            let legacy = "{\"password\":\"synthetic-legacy\"}"
+            f.loginDefaults.set(legacy, forKey: "userInfo_" + f.a)
+            var effects: [String] = []
+            let actual = try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { effects.append($0); return true })
+            #expect(actual == legacy)
+            #expect(f.loginDefaults.object(forKey: "userInfo_" + f.a) == nil)
+            #expect(effects == ["sourceLoginInfoMigrationMayCommit", "sourceLoginInfoMigrationCommitted"])
+            do {
+                _ = try f.login.storeRuntimeLoginInfo(sourceUrl: f.a, value: "denied", validate: {}, recordEffect: { _ in false })
+                Issue.record("Expected sealed callback cancellation")
+            } catch is CancellationError { }
+            #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == legacy)
+            effects.removeAll()
+            let accepted = try f.login.storeRuntimeLoginInfo(sourceUrl: f.a, value: "accepted", validate: {}, recordEffect: { effects.append($0); return true })
+            #expect(accepted)
+            #expect(effects == ["sourceLoginInfoMayCommit", "sourceLoginInfoCommitted"])
+            // A competing raw Keychain winner leaves a stale legacy Map. The
+            // existing form getter must not confuse non-JSON/empty with missing
+            // and overwrite that winner when the UI next reads the same owner.
+            for winner in ["raw-synthetic-winner", ""] {
+                #expect(try f.login.storeRuntimeLoginInfo(sourceUrl: f.a, value: nil, validate: {}, recordEffect: { _ in true }))
+                f.loginDefaults.set(legacy, forKey: "userInfo_" + f.a)
+                f.credentials.raceNextInsert(winner: winner)
+                #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == winner)
+                #expect(f.loginDefaults.string(forKey: "userInfo_" + f.a) == legacy)
+                #expect(f.login.getLoginInfo(sourceUrl: f.a) == nil)
+                #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == winner)
+                f.credentials.failNextRead()
+                #expect(f.login.getLoginInfo(sourceUrl: f.a) == nil)
+                #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == winner)
+            }
+            #expect(try f.login.storeRuntimeLoginInfo(sourceUrl: f.a, value: nil, validate: {}, recordEffect: { _ in true }))
+            f.loginDefaults.set(legacy, forKey: "userInfo_" + f.a)
+            f.credentials.raceNextInsert(winner: "{\"password\":\"new-synthetic-winner\"}")
+            #expect(f.login.getLoginInfo(sourceUrl: f.a) == ["password": "new-synthetic-winner"])
+            #expect(try f.login.runtimeLoginInfo(sourceUrl: f.a, validate: {}, recordEffect: { _ in true }) == "{\"password\":\"new-synthetic-winner\"}")
+        }
+    }
+
     @Test("the actual source bridge removes a header while retaining owned credentials")
     func sourceBridgeRemovalPreservesCredentials() async throws {
         try await Self.fixture { f in
@@ -357,6 +454,13 @@ struct LegadoPersistentStateHostTests {
         .init(taskID: task, operation: operation,
             requestJSON: String(decoding: try JSONSerialization.data(withJSONObject: input, options: [.sortedKeys]), as: UTF8.self))
     }
+    nonisolated private static func login(_ host: LegadoPersistentStateHost, owner: String, source: String,
+        action: String, value: String? = nil) async throws -> [String: Any] {
+        var input: [String: Any] = ["owner": owner, "sourceURL": source, "action": action]
+        if let value { input["value"] = value }
+        let raw = try await host.dispatch(request("source.login-info", input))
+        return try #require(JSONSerialization.jsonObject(with: Data(raw.utf8)) as? [String: Any])
+    }
     nonisolated private static func read(_ host: LegadoPersistentStateHost, owner: String, keys: [String]) async throws -> ReadReply {
         let json = try await host.dispatch(request("state.read", ["owner": owner, "keys": keys]))
         return try JSONDecoder().decode(ReadReply.self, from: Data(json.utf8))
@@ -376,7 +480,13 @@ struct LegadoPersistentStateHostTests {
         private let lock = NSLock()
         private var records: [String: String] = [:]
         private var fail = false
+        private var failRead = false
+        private var failDelete = false
+        private var nextInsertWinner: String?
         func failNextSave() { lock.lock(); defer { lock.unlock() }; fail = true }
+        func failNextRead() { lock.lock(); defer { lock.unlock() }; failRead = true }
+        func failNextDelete() { lock.lock(); defer { lock.unlock() }; failDelete = true }
+        func raceNextInsert(winner: String) { lock.lock(); defer { lock.unlock() }; nextInsertWinner = winner }
         func load(account: String) -> String? { lock.lock(); defer { lock.unlock() }; return records[account] }
         func save(account: String, json: String) -> Bool {
             lock.lock(); defer { lock.unlock() }
@@ -385,6 +495,24 @@ struct LegadoPersistentStateHostTests {
             return true
         }
         func delete(account: String) { lock.lock(); defer { lock.unlock() }; records.removeValue(forKey: account) }
+        func loadChecked(account: String, maximumBytes: Int) throws -> String? {
+            lock.lock(); defer { lock.unlock() }
+            if failRead { failRead = false; throw CocoaError(.fileReadNoPermission) }
+            guard (records[account]?.utf8.count ?? 0) <= maximumBytes else { throw LoginCredentialOwnerFailure.valueLimit }
+            return records[account]
+        }
+        func saveChecked(account: String, raw: String) throws -> Bool { save(account: account, json: raw) }
+        func deleteChecked(account: String) throws -> Bool {
+            lock.lock(); defer { lock.unlock() }
+            if failDelete { failDelete = false; return false }
+            records.removeValue(forKey: account); return true
+        }
+        func insertLegacyIfMissing(account: String, raw: String) throws -> Bool {
+            lock.lock(); defer { lock.unlock() }
+            if let winner = nextInsertWinner { nextInsertWinner = nil; records[account] = winner; return false }
+            guard records[account] == nil else { return false }
+            records[account] = raw; return true
+        }
     }
 
     private final class ControlledBacking: @unchecked Sendable, LegadoOwnedStateBacking {

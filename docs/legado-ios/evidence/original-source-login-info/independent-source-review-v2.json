@@ -1,0 +1,108 @@
+{
+  "kind": "independent-targeted-source-review",
+  "reviewer": "/root/login_info_v2_review",
+  "reviewedAtUTC": "2026-10-20T16:31:03.697591+00:00",
+  "status": "prior-P1-closed-at-source-review-boundary-no-new-determined-findings",
+  "manifest": {
+    "path": ".build/original-source-login-info-step/final-v2.json",
+    "bytes": 15798,
+    "sha256": "778694eb13732ce37c318769fbd3002812d08eeb69c8462191cce61df4f48a3d"
+  },
+  "priorReview": {
+    "path": ".build/original-source-login-info-step/independent-source-review-v1.json",
+    "bytes": 6939,
+    "sha256": "d0d8d0ff1a6d8acafe7fd6d21a2ca31bfb63cbc04a4cf6023a7d5798a16b000f"
+  },
+  "reviewScope": "Only the four v1-to-v2 changed sources and the relevant shared raw-read/Keychain/protocol/fixture control flow. The unchanged original JVM and Host implementation are not re-reviewed or re-executed.",
+  "sourceFiles": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "bytes": 10954,
+      "sha256": "621ae13b5563053ad0b389e4ed45153490e2459763df446faccae4f4b7d0117c"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 37297,
+      "sha256": "c20fbc05bcb4852d27ed6c1ce1b91f2c7cc89a1a65f3d3e67d174b5a8e585faf"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 35918,
+      "sha256": "20f4fa48480fbb000752048d6553d21f81cce1c7c454e2b21d3728dd70d29440"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+      "bytes": 35157,
+      "sha256": "9f0a716cdee9f0210cca9b82d97a58de7be03cec511b0f90dad9a1a7bfcc4ca8"
+    }
+  ],
+  "diffs": [
+    {
+      "path": ".build/original-source-login-info-step/diffs-v1-to-v2/Modules__Core__RuleEngine__ModernParser__Login__KeychainHelper.swift.diff",
+      "bytes": 3106,
+      "sha256": "ac63e39ce387ca4a44462fee383c28dad3a968b7211767f4a6f4a37446c8e296"
+    },
+    {
+      "path": ".build/original-source-login-info-step/diffs-v1-to-v2/Modules__Core__RuleEngine__ModernParser__Login__LoginManager.swift.diff",
+      "bytes": 5432,
+      "sha256": "9f54a6b5a53958b3219f8dad1caf292935fa406ded9b6022b6edc88fab045077"
+    },
+    {
+      "path": ".build/original-source-login-info-step/diffs-v1-to-v2/Tests__iOS__yuedu appTests__LegadoCookieOwnerTests.swift.diff",
+      "bytes": 1220,
+      "sha256": "dd7e8e52e9a66301fad72e5ed38dee2f624468b14c5d0e216943a0fca602e78c"
+    },
+    {
+      "path": ".build/original-source-login-info-step/diffs-v1-to-v2/Tests__iOS__yuedu appTests__LegadoPersistentStateHostTests.swift.diff",
+      "bytes": 3404,
+      "sha256": "8d3d9897cc8c58e07378750bda80526762dc369579ba0cc27242aaf9dac52eff"
+    }
+  ],
+  "allElevenCandidateSourceHashesVerified": true,
+  "fourDiffsReconstructedByteExactly": true,
+  "unchangedKotlinAndManifestHashesComparedToV1": true,
+  "closedFindings": [
+    {
+      "id": "P1-legacy-map-reader-must-not-overwrite-winning-raw-credential",
+      "sourceConclusion": "getLoginInfo no longer conflates an absent Keychain item with an existing non-JSON, empty or unreadable value. It uses readRawLoginInfo before Map parsing, so those present values cannot reach legacy migration.",
+      "locations": [
+        "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift:735",
+        "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift:833",
+        "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift:82",
+        "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift:149"
+      ],
+      "remainingRuntimeAcceptance": "The new and extended Swift tests have not executed against the SDK or actual Keychain."
+    }
+  ],
+  "findings": [],
+  "actualChecks": [
+    "Read CLAUDE.md and yuedu-swift SKILL.md; no root AGENTS.md was present. Read the prior P1 review and the four exact v1-to-v2 diffs.",
+    "readCore returns nil only for errSecItemNotFound; non-success lookup, malformed result, invalid UTF-8, oversized value and failed accessibility migration throw. checkedReadCore preserves those errors.",
+    "The shared raw reader reaches UserDefaults only after a checked missing result. Present non-JSON and empty Strings return before legacy access; the Map getter parses only after that proof and returns nil for a non-Map value without mutation.",
+    "Legacy migration uses SecItemAdd through insertCore. Only errSecDuplicateItem becomes false. It never falls back to SecItemUpdate/upsert; a competing insert is reread with the same checked read. The legacy value is removed only after accepted insertion and an unchanged legacy snapshot.",
+    "The old optional Map signature catches and logs only the error type, then returns nil. It never attempts migration following a locked/unreadable/malformed owner. The raw runtime path retains its worker precondition and caller validator/effect callbacks.",
+    "The new Keychain entry points share the existing readCore/insertCore and service/account/accessibility. No second credential owner, queue, synchronous wait, generic cache credential copy, or new UI path was introduced.",
+    "Successful migration returns its accepted logical value without an additional read; no new revision-queue work is added to the old synchronous form getter. Runtime put/remove retain their existing revision updates.",
+    "The extended existing App method scripts a competing raw winner and an empty winner while stale legacy data remains, checks Map reads do not overwrite either, exercises a checked-read failure, and tests a Map-initiated insert race returning the newer JSON winner.",
+    "OwnedCredentials uses an existing locked dictionary with explicit checked read failure and insert-only behavior. CookieFixtureCredentials now opts into checked size/read, save/delete and insert-only behavior using its same existing dictionary/lock. The repository search found no additional concrete LoginCredentialStorage conformer requiring this checked compatibility update.",
+    "Verified all 11 frozen candidate source hashes, reconstructed the four changed diffs byte exactly, and verified unchanged Kotlin/manifest hashes against v1. No canonical source, Git state or cloud job was changed."
+  ],
+  "testBoundary": {
+    "newTestsExecutedByThisReview": 0,
+    "actualSwiftSDKExecutions": 0,
+    "actualNativeJNIExecutions": 0,
+    "jvmRerun": false,
+    "reason": "Only Swift source and existing Swift fixture assertions changed. Unchanged Kotlin evidence remains the earlier stage evidence; source review is not SDK or secure-persistence acceptance.",
+    "existingAppMethodsExtended": 1,
+    "newTestDefinitionsInV2": 0
+  },
+  "limitsAndRemainingWork": [
+    "SDK compilation, actual Keychain behavior and actual JNI execution remain unproven for this candidate. The scripted dictionary winner tests define a race regression; they do not establish a native Keychain race result.",
+    "The existing synchronous form Keychain read/migration boundary is retained; this correction does not claim complete main-thread I/O modernization.",
+    "The optional legacy Map API logs a sanitized storage failure and returns nil because its signature cannot throw. The runtime raw API can still surface typed STATE_IO; no success is manufactured.",
+    "Root must compose the Host independent hunks with current source callback effect receipts and update only the three login manifest rows, preserving the current OriginalTraditionalRuntime callback row.",
+    "getLoginInfoMap loginUi defaults, loginUrl/loginAction/browser hosts, Android ciphertext cache mirroring and full C2/source compatibility remain outside this correction."
+  ],
+  "canonicalOrGitOrCloudMutations": false,
+  "rawUserDataRead": false
+}

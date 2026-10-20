@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "raw-original-credential-owner-integrated-SDK-and-JNI-pending",
+  "preparation": {
+    "schemaVersion": 1,
+    "scope": "Actual raw BaseSource login-info binding to the same App LoginManager/Keychain owner; not full C2 or full source compatibility.",
+    "baseline": {
+      "head": "4034c3d0da27afe3e400ddc244d3f5629f3572a1",
+      "files": [
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+          "bytes": 31235,
+          "sha256": "4eea6dad147dd4e5899d8a8d2fe574d5136e7127c0803c69a5c7312dca708a55"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "bytes": 65782,
+          "sha256": "9ea0d7cad346db6d2982c91e6f32c45ae3729454540f12c7c2261e87226ab7fe"
+        },
+        {
+          "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+          "bytes": 12338,
+          "sha256": "dbf6c4677f6d454a3e6cec62eddbdfd5bbf94685b61a800061fc3984a2a64c61"
+        },
+        {
+          "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+          "bytes": 8588,
+          "sha256": "1e21376a86a7f0c7aa4c7ffccf560685813647003e75dd4f74baf2a6e170d192"
+        },
+        {
+          "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "bytes": 19120,
+          "sha256": "d667c502ac78fe47e612eff855e34d11b90e5f21778ae878157f1c1c237b4198"
+        },
+        {
+          "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+          "bytes": 131504,
+          "sha256": "1c0688f8add71b16f2c88b9314f275246395c1ed002bcb8f9b3b18e1fbf45e2c"
+        },
+        {
+          "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+          "bytes": 25750,
+          "sha256": "5d1b7983a788f0c196e508866556d776d130f69d6d60ca4126a136c201f3a53c"
+        }
+      ]
+    },
+    "files": [
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+        "bytes": 10954,
+        "sha256": "621ae13b5563053ad0b389e4ed45153490e2459763df446faccae4f4b7d0117c",
+        "baseline": {
+          "bytes": 9070,
+          "sha256": "706bad7f9cef253574f80b5ee70a9379a9b033790fe4fa06e51b2f6c6a385365"
+        },
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+        "bytes": 37297,
+        "sha256": "c20fbc05bcb4852d27ed6c1ce1b91f2c7cc89a1a65f3d3e67d174b5a8e585faf",
+        "baseline": {
+          "bytes": 31235,
+          "sha256": "4eea6dad147dd4e5899d8a8d2fe574d5136e7127c0803c69a5c7312dca708a55"
+        },
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 70380,
+        "sha256": "32db6bdfbf6ccb4696bf5c01948da9b933943590daedbda8ec195c4e4c4ca413",
+        "baseline": {
+          "bytes": 65782,
+          "sha256": "9ea0d7cad346db6d2982c91e6f32c45ae3729454540f12c7c2261e87226ab7fe"
+        },
+        "canonicalMatchesBaselineAtFreeze": false
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "bytes": 12821,
+        "sha256": "2f8aa853a889930bb23918d733ce957c30abb280a18a57c461ba8df045f26fe5",
+        "baseline": {
+          "bytes": 12338,
+          "sha256": "dbf6c4677f6d454a3e6cec62eddbdfd5bbf94685b61a800061fc3984a2a64c61"
+        },
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 21052,
+        "sha256": "6fd814d05798dd966f69e0910b9ad4ba813c626a005b838d7f11b1a7ce299235",
+        "baseline": {
+          "bytes": 19120,
+          "sha256": "d667c502ac78fe47e612eff855e34d11b90e5f21778ae878157f1c1c237b4198"
+        },
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 8819,
+        "sha256": "ea138dd0561d5e4db2227954b331387c433d03106ee1cd9a4a2cff94c59d31e4",
+        "baseline": {
+          "bytes": 8588,
+          "sha256": "1e21376a86a7f0c7aa4c7ffccf560685813647003e75dd4f74baf2a6e170d192"
+        },
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginInfoTest.kt",
+        "bytes": 9141,
+        "sha256": "1fee50e494583f53882db5244a62136be3d57acb975894d1bc931509b42d847c",
+        "baseline": null,
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 131504,
+        "sha256": "dc5f2dcb35a9b91b9955a86ae1cb0fc78e98f617b3ced010dfc3f6c606c79aaf",
+        "baseline": {
+          "bytes": 131504,
+          "sha256": "1c0688f8add71b16f2c88b9314f275246395c1ed002bcb8f9b3b18e1fbf45e2c"
+        },
+        "canonicalMatchesBaselineAtFreeze": false
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "bytes": 9518,
+        "sha256": "30d35220c894eb0ae0b4e24f8b8c2eda3b553501fc239dcd7dcdb2f79ec7c30d",
+        "baseline": null,
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+        "bytes": 35918,
+        "sha256": "20f4fa48480fbb000752048d6553d21f81cce1c7c454e2b21d3728dd70d29440",
+        "baseline": {
+          "bytes": 35210,
+          "sha256": "151bca86965fb5d5e7ada000616b747602f8c06aef83c83716c28ecc16bc5aa8"
+        },
+        "canonicalMatchesBaselineAtFreeze": true
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+        "bytes": 35157,
+        "sha256": "9f0a716cdee9f0210cca9b82d97a58de7be03cec511b0f90dad9a1a7bfcc4ca8",
+        "baseline": {
+          "bytes": 25750,
+          "sha256": "5d1b7983a788f0c196e508866556d776d130f69d6d60ca4126a136c201f3a53c"
+        },
+        "canonicalMatchesBaselineAtFreeze": true
+      }
+    ],
+    "originalContract": {
+      "sources": [
+        {
+          "archivePath": "legado-master/app/src/main/java/io/legado/app/data/entities/BaseSource.kt",
+          "bytes": 12803,
+          "sha256": "080160e06a23fdfc7f4dbe5975a370473eee5d13ad0638b46aa2075276516243"
+        },
+        {
+          "archivePath": "legado-master/app/src/main/java/io/legado/app/help/crypto/SymmetricCryptoAndroid.kt",
+          "bytes": 1318,
+          "sha256": "7931f52d94435f9fdca29b6a060f668a51341890422ba49847d412295d9f2db7"
+        },
+        {
+          "archivePath": "legado-master/app/src/main/java/io/legado/app/help/CacheManager.kt",
+          "bytes": 5423,
+          "sha256": "c280f649202c23391e9d6455f901ed7ca4e842beaef3932c138e8faef0d98474"
+        },
+        {
+          "archivePath": "legado-master/app/src/main/java/io/legado/app/constant/AppConst.kt",
+          "bytes": 4852,
+          "sha256": "cc6e077d75494e16275dee2d193bec603641ec933725d6d0e1deba392c8aa5f9"
+        }
+      ],
+      "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+      "javaABI": [
+        "getLoginInfo(): java.lang.String?",
+        "putLoginInfo(java.lang.String): boolean",
+        "removeLoginInfo(): void"
+      ],
+      "androidStorage": "CacheManager userInfo_<getKey()> stores AES ciphertext. get/put derive the key from AppConst.androidId UTF-8 bytes [0,16); put returns false on encryption/storage exceptions; get catches and returns null on failures.",
+      "iosStorageMapping": "Same existing LoginManager userInfo_<sourceURL> account in KeychainHelper.loginService, AfterFirstUnlock protection and existing system Keychain encryption. No Android-ID/AES key is fabricated, stored in generic variables or exported. This preserves plaintext API values but does not expose an Android AES ciphertext mirror through cache.get(userInfo_...)."
+    },
+    "production": [
+      "BookSource raw nullable String/Boolean/Unit delegate only to ProductionRulePlatform, using the same RuntimeTask, HTTP/Rhino environment, explicit stateOwner/source URL and original deadline.",
+      "Dedicated source.login-info operation on existing LegadoPersistentStateHost validates exact source bytes/current revision. It never grants generic cache keys, chooses a path or instantiates another store/VM/network stack.",
+      "AppLegadoOwnedStateBacking delegates to the same injected LoginManager and same credential storage. Existing form Map writes are visible as raw JSON; raw JSON writes remain visible to the existing form parser; arbitrary non-JSON and empty Strings remain byte-exact.",
+      "Strict Keychain reads distinguish missing from locked/malformed/read failure. Known rejected put writes return false; failed remove throws STATE_IO. Unchanged values do not write or advance revision. Same-item writes retain original immediate last-writer-wins behavior; no CAS or atomic multi-owner transaction is invented.",
+      "Legacy UserDefaults credentials migrate through one shared insert-only Keychain core used by both runtime raw and existing Map reads. Present non-JSON/empty values never authorize migration. A failed insert rereads the winner; accepted insert returns the identical logical credential without another read. Migration changes protection/storage only and adds no synchronous revision-queue work to existing forms.",
+      "Checks and callback effect-seal claim precede noninterruptible mutation. Accepted writes advance existing loginInfoRevision and notification. MayCommit/Committed receipts survive a late native cancellation; later JS statements do not execute. Source revoke and already-cancelled tasks reject before owner access.",
+      "Credential I/O executes off main with SourcePerfTrace and counts only; source URLs, raw values and arbitrary storage error descriptions are excluded from new diagnostics."
+    ],
+    "validation": {
+      "actualWindowsJvm": {
+        "class": "io.yuedu.legado.OriginalSourceLoginInfoTest",
+        "tests": 3,
+        "passed": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "methods": [
+          "nullableJavaStringBooleanAndVerbatimValuesSurviveSessionReopen",
+          "knownWriteFailureUnreadableOwnerAndMissingAuthorityNeverBecomeSuccess",
+          "cancelledAfterAcceptedSecretWriteRetainsEffectAndNeverRunsLaterStatements"
+        ],
+        "xml": {
+          "path": "validation-root\\Packages\\LegadoRuntime\\jvm\\build\\test-results\\test\\TEST-io.yuedu.legado.OriginalSourceLoginInfoTest.xml",
+          "bytes": 819,
+          "sha256": "971364e250a6ca3d797c8d80ddf8179ab464f6aea752e5dbe05ba7210d4149b9"
+        },
+        "log": {
+          "path": "jvm-tests-v3.log",
+          "bytes": 6474,
+          "sha256": "813b8155621e86df6bf458206054c6c5d48e0536db704fc68ac6f5a0ba5817c4"
+        },
+        "settings": "Isolated full production JVM sources, offline Gradle8.14.3/JDK21; only this test and existing FileRulePersistenceAdapter support root; in-process compiler and 128MiB SerialGC test VM. Production build settings unchanged.",
+        "earlierFixtureCorrections": "First execution: protected Rhino reflection made raw.getClass().getName() invalid (Java ABI is instead verified directly by Kotlin reflection), and absent-owner option construction was wrong. Second execution: original session validation correctly rejected missing authority before execute, so the fixture now accepts that expected creation failure. No production weakening was made; final all three passed."
+      },
+      "portablePackaging": {
+        "passed": 6,
+        "log": {
+          "path": "packaging-tests.txt",
+          "bytes": 1207,
+          "sha256": "fc5a4097bf1f34f7094aed3b286279c6f1c5c17a244e0896e27345bf396a012e"
+        }
+      },
+      "swiftGrammarRoots": 6,
+      "swiftSDKExecutions": 0,
+      "nativeJNIExecutions": 0,
+      "newAppDefinitions": [
+        "LegadoPersistentStateHostTests/rawLoginInfoUsesCredentialOwnerAndSurvivesReopen",
+        "LegadoPersistentStateHostTests/rawLoginInfoRejectsFailedWritesAndCancelledMutations",
+        "LegadoPersistentStateHostTests/rawLoginInfoMigratesLegacyAndClaimsCommitBeforeMutation"
+      ],
+      "newNativeDefinitions": [
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect"
+      ]
+    },
+    "limits": [
+      "Actual Swift SDK/Keychain/JNI executions remain zero for these changed inputs. Native fixtures are definitions, not passing evidence. Windows peer stores only synthetic credentials and does not establish secure native persistence.",
+      "iOS deliberately fails closed with typed STATE_IO on locked/unreadable credentials instead of converting operational failures to original Android getLoginInfo null. Put false denotes a known rejected native write; cancellation/unknown effects remain typed.",
+      "Raw credential values are bounded to 65536 UTF-8 bytes and request JSON to524288 bytes at this native boundary; Android does not define this native transport ceiling.",
+      "getLoginInfoMap dynamic/static loginUi defaults, loginUrl/login/loginAction, browser/WebJS and the rest of source Java host ABI remain unfinished; this raw credential binding is not complete login UI compatibility.",
+      "No raw user logs, private bookSource.json or actual credentials were read. No canonical/Git/cloud mutation was performed by this stage.",
+      "The existing optional Map getter logs a sanitized owner failure and returns nil because its shipped synchronous signature cannot throw; it never uses that failure to migrate. The runtime raw API retains typed STATE_IO. Existing UI synchronous Keychain callers remain as before and are not claimed fully modernized."
+    ],
+    "integration": "LegadoPersistentStateHost.swift overlaps the source-callback stage by independent hunks. Compose additions with its existing generic-state effect receipt lines; do not copy this whole baseline file over that candidate. manifest.json portedSources entries for RuleModels/RulePlatform/ProductionRulePlatform must be combined with source-callback OriginalTraditionalRuntime entry; retain all original archive/license/resource records.",
+    "revision": 2,
+    "supersedes": {
+      "path": "final-v1.json",
+      "bytes": 12752,
+      "sha256": "5b91531defcd4c31b0ae42273660cebdece80085e61b62678e0539c28bf53fd9",
+      "independentReview": "independent-source-review-v1.json",
+      "finding": "P1-legacy-map-reader-must-not-overwrite-winning-raw-credential"
+    },
+    "v1ToV2": {
+      "changedSources": [
+        "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+        "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+        "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+        "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift"
+      ],
+      "productionCorrection": "The existing optional Map getter distinguishes true missing, present non-Map and unreadable owner. It shares raw checked read/add-only migration, never legacy upsert; insert race rereads the real winner. A successful migration returns its accepted identical value without an additional Keychain read.",
+      "existingUIBoundary": "Existing login forms retain their prior synchronous single-item Keychain read/migration boundary. KeychainHelper exposes strict results from the same readCore/insertCore; no background wait, extra queue.sync or UI async refactor was added. The raw runtime entry remains worker-only. Complete UI I/O modernization remains outside this correction.",
+      "unchangedKotlin": true,
+      "actualJVMTestsReused": 3,
+      "packagingTestsReused": 6,
+      "fixtures": "The same three App method definitions now cover stale legacy + raw/empty winning credentials, locked Map reads and a Map-initiated insert race. Existing CookieFixtureCredentials explicitly implements checked behavior so existing Cookie tests retain their same storage capability; zero test definitions added.",
+      "newSwiftSDKExecutions": 0,
+      "newJNIExecutions": 0
+    }
+  },
+  "preparationSHA256": "778694eb13732ce37c318769fbd3002812d08eeb69c8462191cce61df4f48a3d",
+  "independentReview": {
+    "path": "docs/legado-ios/evidence/original-source-login-info/independent-source-review-v2.json",
+    "bytes": 7700,
+    "sha256": "bcc92625c725ce6c5ee9eb832d1c4b7f22be2513ac913471b4551198c6180472"
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/original-source-login-info/jvm-tests.xml",
+      "bytes": 810,
+      "sha256": "bc89d4aef803f51024c2fd217b26d107ec880b8342aec6cd313425cfe9333c6b",
+      "sourceBytesBeforeTextNormalization": {
+        "bytes": 819,
+        "sha256": "971364e250a6ca3d797c8d80ddf8179ab464f6aea752e5dbe05ba7210d4149b9"
+      },
+      "normalization": "CRLF to LF only for repository text; original source hash retained above and in preparation. Test identities/results unchanged."
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-source-login-info/packaging-tests.txt",
+      "bytes": 1196,
+      "sha256": "bd3b6cec1e85968423d2dfcdd350ba56520da3b6f7ae32607bd9fe102de5b0c3",
+      "sourceBytesBeforeTextNormalization": {
+        "bytes": 1207,
+        "sha256": "fc5a4097bf1f34f7094aed3b286279c6f1c5c17a244e0896e27345bf396a012e"
+      },
+      "normalization": "CRLF to LF only for repository text; original source hash retained above and in preparation. Test identities/results unchanged."
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-source-login-info/independent-source-review-v2.json",
+      "bytes": 7700,
+      "sha256": "bcc92625c725ce6c5ee9eb832d1c4b7f22be2513ac913471b4551198c6180472"
+    }
+  ],
+  "actualIntegratedSources": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "bytes": 10954,
+      "sha256": "621ae13b5563053ad0b389e4ed45153490e2459763df446faccae4f4b7d0117c",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 37297,
+      "sha256": "c20fbc05bcb4852d27ed6c1ce1b91f2c7cc89a1a65f3d3e67d174b5a8e585faf",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 70576,
+      "sha256": "0b2acf872d699e788ef6c1826f2511900c47961269b912b405414920f72075ba",
+      "composedWithExistingCallbackReceipts": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "bytes": 12821,
+      "sha256": "2f8aa853a889930bb23918d733ce957c30abb280a18a57c461ba8df045f26fe5",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "bytes": 21052,
+      "sha256": "6fd814d05798dd966f69e0910b9ad4ba813c626a005b838d7f11b1a7ce299235",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "bytes": 8819,
+      "sha256": "ea138dd0561d5e4db2227954b331387c433d03106ee1cd9a4a2cff94c59d31e4",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginInfoTest.kt",
+      "bytes": 9141,
+      "sha256": "1fee50e494583f53882db5244a62136be3d57acb975894d1bc931509b42d847c",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 131504,
+      "sha256": "98a2b76dbe1990754063ab73439b6a521d428386106bc998828831206207dcca",
+      "composedWithExistingCallbackReceipts": true
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "bytes": 9518,
+      "sha256": "30d35220c894eb0ae0b4e24f8b8c2eda3b553501fc239dcd7dcdb2f79ec7c30d",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 35918,
+      "sha256": "20f4fa48480fbb000752048d6553d21f81cce1c7c454e2b21d3728dd70d29440",
+      "composedWithExistingCallbackReceipts": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+      "bytes": 35157,
+      "sha256": "9f0a716cdee9f0210cca9b82d97a58de7be03cec511b0f90dad9a1a7bfcc4ca8",
+      "composedWithExistingCallbackReceipts": false
+    }
+  ],
+  "rootCompositionReview": "Host matches frozen baseline plus exactly the two already-integrated sourceStateMayCommit/sourceStateCommitted lines; retained those lines in the new login-info host. Manifest updated only the three login rows and preserved current OriginalTraditionalRuntime source callback hash plus every original archive/license/resource/control field. All50 ported source hashes match actual final bytes.",
+  "actualEvidenceBoundary": {
+    "JVMMethodsPassed": 3,
+    "XMLMethodIdentitiesAndHashesVerified": true,
+    "unchangedKotlinEvidenceReusedAfterSwiftV2": true,
+    "portablePackagingPassed": 6,
+    "composedHostGrammarRoots": 1,
+    "newSwiftSDKExecutions": 0,
+    "newNativeJNIExecutions": 0
+  },
+  "devicePackageBoundary": "The device44f125b package is frozen independently and does not include this later C2 change. No new package retry is started for this change.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

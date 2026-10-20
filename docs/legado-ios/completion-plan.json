@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-build14-44f125b-request.json",
+  "activeBatchRecord": "docs/legado-ios/core-original-source-login-info-step.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -471,6 +471,10 @@
               "record": "docs/legado-ios/core-original-source-callbacks-step.json",
               "actualSDKAccepted": false,
               "scope": "Real source-only shelf notifications, original null entities, source/Cookie state and cancellation ownership; interactive/delete/login/browser still unfinished."
+            },
+            {
+              "record": "docs/legado-ios/core-original-source-login-info-step.json",
+              "scope": "Original raw nullable String/Boolean/Unit login-info APIs use the same existing LoginManager/Keychain owner; old Map/raw credential interoperability protected. JVM3 passed, App/Keychain/JNI pending; loginUi/loginUrl/browser incomplete."
             }
           ],
           "implementedSubtasksZh": [
@@ -487,7 +491,7 @@
             "已补同Host既有backing/source/revision稳定explore scope，独立于每次opaque grant，原InfoMap仅留受检String map、LRU99及显式当前源savePending；不留task/environment，不以scope字符串授予持久权限。Native2/Package2未执行，完整C2仍未验收。",
             "公开批量正文的现有 App 状态与正文 owner 已接入：同一 BookStore 持久化队列处理文件证明、真实章节身份/任务代际、变量最终 CAS 与提交事实；晚到失败和读取错误不能删除新正文。当前仅源码审查与语法检查，原生 SDK/JNI 尚未验收，C2 仍进行中。"
           ],
-          "nextActionZh": "集中验证Cookie5项、Package2项、预览15项及受影响旧owner；继续原始字符串、缓存寿命完整合同与普通JAR/JNI/App真实路线，不以JVM或语法记录验收C2。"
+          "nextActionZh": "集中验证现有源状态/Cookie/通知及原始登录信息的App/Keychain/JNI链路；随后按原接口补齐getLoginInfoMap与loginUi/loginUrl/browser宿主，完整C2仍未完成。build14独立源码先完成续签与字形验证，不因后续兼容开发延迟。"
         },
         {
           "id": "C3",
@@ -1100,6 +1104,14 @@
         "record": "docs/legado-ios/core-discover-sdk-import-fix.json",
         "sourceFiles": 1,
         "actualSDKAccepted": false
+      },
+      "originalRawLoginInfoOwner": {
+        "record": "docs/legado-ios/core-original-source-login-info-step.json",
+        "sourceFiles": 11,
+        "actualJVMMethodsPassed": 3,
+        "actualSwiftSDKAccepted": false,
+        "actualJNIAccepted": false,
+        "fullLoginCompatibility": false
       }
     }
   },

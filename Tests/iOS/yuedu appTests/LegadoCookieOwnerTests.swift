@@ -10,6 +10,20 @@ private final class CookieFixtureCredentials: @unchecked Sendable, LoginCredenti
     func load(account: String) -> String? { lock.withLock { values[account] } }
     func save(account: String, json: String) -> Bool { lock.withLock { values[account] = json }; return true }
     func delete(account: String) { lock.withLock { _ = values.removeValue(forKey: account) } }
+    func loadChecked(account: String, maximumBytes: Int) throws -> String? {
+        try lock.withLock {
+            guard (values[account]?.utf8.count ?? 0) <= maximumBytes else { throw LoginCredentialOwnerFailure.valueLimit }
+            return values[account]
+        }
+    }
+    func saveChecked(account: String, raw: String) throws -> Bool { save(account: account, json: raw) }
+    func deleteChecked(account: String) throws -> Bool { delete(account: account); return true }
+    func insertLegacyIfMissing(account: String, raw: String) throws -> Bool {
+        lock.withLock {
+            guard values[account] == nil else { return false }
+            values[account] = raw; return true
+        }
+    }
 }
 
 private final class CookieOwnerWriteGate: @unchecked Sendable {

@@ -71,6 +71,23 @@ enum KeychainHelper {
         let started = SourcePerfTrace.now
         defer { SourcePerfTrace.record("renewal.keychain.checked-insert",
             "bytes=\(data.utf8.count) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        try insertCore(account: account, data: data, service: service,
+            accessibility: accessibility, synchronizable: synchronizable)
+    }
+
+    /// Existing synchronous login forms already read/migrate one item on their
+    /// caller. Preserve that boundary while making migration add-only; this is
+    /// not a new queue or a worker-only API called from MainActor.
+    static func insertExistingLoginIfMissing(account: String, raw: String) throws -> Bool {
+        do {
+            try insertCore(account: account, data: raw, service: loginService,
+                accessibility: kSecAttrAccessibleAfterFirstUnlock, synchronizable: false)
+            return true
+        } catch WriteFailure.insert(errSecDuplicateItem) { return false }
+    }
+
+    private static func insertCore(account: String, data: String, service: String,
+        accessibility: CFString, synchronizable: Bool) throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service, kSecAttrAccount as String: account,
@@ -117,10 +134,26 @@ enum KeychainHelper {
         let started = SourcePerfTrace.now
         defer { SourcePerfTrace.record("renewal.keychain.checked-read",
             "bytesLimit=\(maximumBytes) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        let value = try checkedReadCore(account: account, service: service, accessibility: accessibility,
+            synchronizable: synchronizable, maximumBytes: maximumBytes)
+        try Task.checkCancellation()
+        return value
+    }
+
+    /// The original form getter cannot change signature or become async in a
+    /// credential interoperation fix. One existing read now reports true missing
+    /// separately from locked/malformed data instead of enabling legacy upsert.
+    static func loadExistingLoginChecked(account: String, maximumBytes: Int) throws -> String? {
+        guard maximumBytes > 0 else { throw ReadFailure.valueLimit }
+        return try checkedReadCore(account: account, service: loginService,
+            accessibility: kSecAttrAccessibleAfterFirstUnlock, synchronizable: nil, maximumBytes: maximumBytes)
+    }
+
+    private static func checkedReadCore(account: String, service: String, accessibility: CFString?,
+        synchronizable: Bool?, maximumBytes: Int) throws -> String? {
         let read = try readCore(account: account, service: service, accessibility: accessibility,
             synchronizable: synchronizable, maximumBytes: maximumBytes)
         if let status = read.migrationStatus { throw ReadFailure.accessibilityMigration(status) }
-        try Task.checkCancellation()
         return read.value
     }
 

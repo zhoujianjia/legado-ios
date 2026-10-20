@@ -166,6 +166,22 @@ protocol LoginCredentialStorage: Sendable {
     func load(account: String) -> String?
     func save(account: String, json: String) -> Bool
     func delete(account: String)
+    func loadChecked(account: String, maximumBytes: Int) throws -> String?
+    func saveChecked(account: String, raw: String) throws -> Bool
+    func deleteChecked(account: String) throws -> Bool
+    /// False means an existing item won; never overwrite it during migration.
+    func insertLegacyIfMissing(account: String, raw: String) throws -> Bool
+}
+
+enum LoginCredentialOwnerFailure: Error { case checkedStorageUnavailable, valueLimit }
+
+extension LoginCredentialStorage {
+    // Existing lightweight fixtures/embedders must opt in to checked semantics.
+    // A nil-returning legacy load cannot distinguish missing from locked data.
+    func loadChecked(account: String, maximumBytes: Int) throws -> String? { throw LoginCredentialOwnerFailure.checkedStorageUnavailable }
+    func saveChecked(account: String, raw: String) throws -> Bool { throw LoginCredentialOwnerFailure.checkedStorageUnavailable }
+    func deleteChecked(account: String) throws -> Bool { throw LoginCredentialOwnerFailure.checkedStorageUnavailable }
+    func insertLegacyIfMissing(account: String, raw: String) throws -> Bool { throw LoginCredentialOwnerFailure.checkedStorageUnavailable }
 }
 
 struct KeychainLoginCredentialStorage: LoginCredentialStorage {
@@ -176,6 +192,16 @@ struct KeychainLoginCredentialStorage: LoginCredentialStorage {
         KeychainHelper.save(account: account, data: json, accessibility: kSecAttrAccessibleAfterFirstUnlock)
     }
     func delete(account: String) { _ = KeychainHelper.delete(account: account) }
+    func loadChecked(account: String, maximumBytes: Int) throws -> String? {
+        try KeychainHelper.loadExistingLoginChecked(account: account, maximumBytes: maximumBytes)
+    }
+    func saveChecked(account: String, raw: String) throws -> Bool {
+        KeychainHelper.save(account: account, data: raw, accessibility: kSecAttrAccessibleAfterFirstUnlock)
+    }
+    func deleteChecked(account: String) throws -> Bool { KeychainHelper.delete(account: account) }
+    func insertLegacyIfMissing(account: String, raw: String) throws -> Bool {
+        try KeychainHelper.insertExistingLoginIfMissing(account: account, raw: raw)
+    }
 }
 
 /// Singleton that manages book-source authentication.
@@ -691,6 +717,79 @@ final class LoginManager {
 
     // MARK: - Login Info (Credential) Storage
 
+    /// Original BaseSource returns the stored String verbatim, including empty
+    /// or non-JSON text. iOS protects this same existing userInfo_ account with
+    /// Keychain; it does not derive/store a second Android-ID AES key or write a
+    /// plaintext userInfo_ entry into the generic Legado cache.
+    func runtimeLoginInfo(sourceUrl: String, validate: () throws -> Void,
+        recordEffect: (String) -> Bool) throws -> String? {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("legado.login-info.read", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        return try readRawLoginInfo(sourceUrl: sourceUrl, validate: validate, recordEffect: recordEffect)
+    }
+
+    /// The same missing/present proof and add-only migration serve both the raw
+    /// runtime API and the existing synchronous Map getter. A non-Map String is
+    /// still a present credential and must never authorize migration/upsert.
+    private func readRawLoginInfo(sourceUrl: String, validate: () throws -> Void,
+        recordEffect: (String) -> Bool) throws -> String? {
+        try validate()
+        let account = LoginManager.loginInfoPrefix + sourceUrl
+        if let raw = try credentials.loadChecked(account: account, maximumBytes: 65_536) {
+            try validate(); return raw
+        }
+        guard let legacy = defaults.string(forKey: account) else { try validate(); return nil }
+        guard legacy.utf8.count <= 65_536 else { throw LoginCredentialOwnerFailure.valueLimit }
+        try validate()
+        guard recordEffect("sourceLoginInfoMigrationMayCommit") else { throw CancellationError() }
+        let inserted = try credentials.insertLegacyIfMissing(account: account, raw: legacy)
+        if inserted {
+            // Remove only the exact legacy value we migrated. A concurrent
+            // Keychain writer wins rather than being overwritten by migration.
+            if defaults.string(forKey: account) == legacy { defaults.removeObject(forKey: account) }
+            // Migration changes protection/storage, not the logical credential
+            // value. Do not add synchronous revision-queue work to the old form
+            // getter; its existing synchronous I/O boundary is unchanged here.
+            recordEffect("sourceLoginInfoMigrationCommitted")
+            try validate(); return legacy
+        }
+        // A competing insert may contain newer credentials; return the actual
+        // Keychain owner, never the stale legacy snapshot.
+        let actual = try credentials.loadChecked(account: account, maximumBytes: 65_536)
+        try validate(); return actual
+    }
+
+    /// Single Keychain-item last-writer-wins mutation, matching BaseSource's
+    /// immediate put/remove. False is a known rejected write, never cancellation
+    /// or an unreadable owner. An accepted write remains an accepted effect even
+    /// if its caller is cancelled before the host response reaches Rhino.
+    func storeRuntimeLoginInfo(sourceUrl: String, value: String?, validate: () throws -> Void,
+        recordEffect: (String) -> Bool) throws -> Bool {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("legado.login-info.write", "bytes=\(value?.utf8.count ?? 0) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        guard (value?.utf8.count ?? 0) <= 65_536 else { throw LoginCredentialOwnerFailure.valueLimit }
+        try validate()
+        let account = LoginManager.loginInfoPrefix + sourceUrl
+        let previous = try credentials.loadChecked(account: account, maximumBytes: 65_536)
+        if previous == value, value != nil || defaults.object(forKey: account) == nil { try validate(); return true }
+        try validate()
+        guard recordEffect("sourceLoginInfoMayCommit") else { throw CancellationError() }
+        let accepted = try value.map { try credentials.saveChecked(account: account, raw: $0) }
+            ?? credentials.deleteChecked(account: account)
+        guard accepted else { return false }
+        defaults.removeObject(forKey: account)
+        advanceRuntimeLoginInfoRevision(sourceUrl: sourceUrl)
+        recordEffect("sourceLoginInfoCommitted")
+        return true
+    }
+
+    private func advanceRuntimeLoginInfoRevision(sourceUrl: String) {
+        queue.sync(flags: .barrier) { loginInfoRevisions[sourceUrl, default: 0] &+= 1 }
+        notifyLoginInfoChanged(sourceUrl: sourceUrl)
+    }
+
     /// Store user-provided login credentials in the **Keychain** (Legado `putLoginInfo`).
     /// Passwords are never stored in UserDefaults — Keychain is the only accepted location
     /// for sensitive data on iOS.
@@ -732,30 +831,19 @@ final class LoginManager {
     /// Retrieve stored login credentials (Legado `getLoginInfo`).
     /// Reads from Keychain; migrates legacy UserDefaults data transparently on first access.
     func getLoginInfo(sourceUrl: String) -> [String: String]? {
-        let account = LoginManager.loginInfoPrefix + sourceUrl
-
-        // Primary: Keychain
-        // TTS rules read this for every segment, including locked-screen playback and
-        // authenticated chapter transitions. Keep it in Keychain, but allow access after
-        // the first unlock; the default WhenUnlocked class made a saved MiMo key disappear
-        // mid-session. load also migrates credentials saved by earlier app versions.
-        if let json = credentials.load(account: account),
-           let data = json.data(using: .utf8),
-           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
-            return dict
+        let raw: String
+        do {
+            guard let value = try readRawLoginInfo(sourceUrl: sourceUrl, validate: {}, recordEffect: { _ in true }) else { return nil }
+            raw = value
+        } catch {
+            // The legacy optional Map signature cannot expose a typed error.
+            // Preserve/log failure without treating locked data as missing or
+            // starting migration. The original runtime API still throws it.
+            AppLogger.error("Source credential Map owner could not be read", context: ["errorType": String(reflecting: type(of: error))])
+            return nil
         }
-
-        // Legacy: UserDefaults (migrate and remove)
-        if let json = defaults.string(forKey: account),
-           let data = json.data(using: .utf8),
-           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
-            if credentials.save(account: account, json: json) {
-                defaults.removeObject(forKey: account)
-            }
-            return dict
-        }
-
-        return nil
+        do { return try JSONSerialization.jsonObject(with: Data(raw.utf8)) as? [String: String] }
+        catch { return nil } // A present raw non-JSON/empty String is valid for the raw API, not a Map.
     }
 
     // MARK: - Persistence Helpers
