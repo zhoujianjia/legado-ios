@@ -105,7 +105,9 @@ struct LegadoCookieBrowserHostTests {
         #expect(try await freshOwner.originalText(domain: "http|owned").isEmpty)
         #expect(try await freshOwner.originalText(domain: "ordinary") == "kept=yes")
         let browserAfter = await browserCookies(f)
-        #expect(browserBefore.map { $0.name + "=" + $0.value } == browserAfter.map { $0.name + "=" + $0.value })
+        let expectedBrowserValues: [String] = browserBefore.map { cookie in cookie.name + "=" + cookie.value }
+        let actualBrowserValues: [String] = browserAfter.map { cookie in cookie.name + "=" + cookie.value }
+        #expect(expectedBrowserValues == actualBrowserValues)
     }
 
     @Test("setWebCookie removes global WK session cookies then applies pieces without changing original DB raw text")

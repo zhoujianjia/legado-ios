@@ -1,0 +1,97 @@
+{
+  "OWNED_IDENTITY_STATUS": {
+    "codesignACLExecutionVerified": false,
+    "importedItemCount": 1,
+    "leafSHA256": "80f289d5a9765706e1cde3b73c302cd0bcd1dfb6dbc54602ef3a7cc7bd6361be",
+    "osStatus": 0,
+    "privateKeySignatureVerified": true,
+    "rootSHA256": "8fb939795034b7a5218db0199ffb76110caea7c9c8ba17a71c256a627b1c4330",
+    "schemaVersion": 1,
+    "stage": "complete",
+    "status": "passed",
+    "storedIdentityCount": 1
+  },
+  "OWNED_KEYCHAIN_REOPEN_STATUS": {
+    "codesignACLExecutionVerified": false,
+    "keychainReadable": true,
+    "keychainUnlocked": true,
+    "keychainUnlockedBeforeRequest": true,
+    "keychainWritable": true,
+    "leafSHA256": "80f289d5a9765706e1cde3b73c302cd0bcd1dfb6dbc54602ef3a7cc7bd6361be",
+    "legacySigningIdentityCount": 1,
+    "operation": "reopenIdentity",
+    "osStatus": 0,
+    "privateKeySignatureVerified": true,
+    "rootSHA256": "8fb939795034b7a5218db0199ffb76110caea7c9c8ba17a71c256a627b1c4330",
+    "schemaVersion": 2,
+    "stage": "complete",
+    "status": "passed",
+    "storedIdentityCount": 1
+  },
+  "OWNED_CODESIGN_IDENTITY_SEARCH": {
+    "argv": [
+      "security",
+      "find-identity",
+      "-p",
+      "codesigning",
+      "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-a4xnvc_j/synthetic.keychain-db"
+    ],
+    "exitCode": 0,
+    "stderr": "",
+    "stdout": "\nPolicy: Code Signing\n  Matching identities\n  1) FBFDC8B79940269FE6190C62A40E847DA067F1A2 \"Owned SDK Fixture Code\" (CSSMERR_TP_NOT_TRUSTED)\n     1 identities found\n\n  Valid identities only\n     0 valid identities found\n",
+    "truncated": false
+  },
+  "OWNED_EXPLICIT_ANCHOR_CODE_SIGN_POLICY": {
+    "argv": [
+      "security",
+      "verify-cert",
+      "-c",
+      "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/leaf.cert.der",
+      "-c",
+      "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.der",
+      "-r",
+      "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.der",
+      "-p",
+      "codeSign",
+      "-L",
+      "-N",
+      "-q"
+    ],
+    "exitCode": 0,
+    "stderr": "",
+    "stdout": "",
+    "truncated": false
+  },
+  "OWNED_PUBLIC_TOOL_FAILURE": {
+    "argv": [
+      "codesign",
+      "--verbose=4",
+      "--force",
+      "--sign",
+      "FBFDC8B79940269FE6190C62A40E847DA067F1A2",
+      "--keychain",
+      "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-a4xnvc_j/synthetic.keychain-db",
+      "--timestamp=none",
+      "--identifier",
+      "test.owned.reader.framework",
+      "--requirements",
+      "=designated => identifier \"test.owned.reader.framework\"",
+      "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-a4xnvc_j/Payload/Owned.app/Frameworks/OwnedFramework.framework"
+    ],
+    "codesignSuccessEstablishedByThisFailureRecord": false,
+    "exitCode": 1,
+    "failedToolSucceeded": false,
+    "nativeTestsExecuted": 0,
+    "publicLog": "test.owned.reader.framework.codesign.log",
+    "schemaVersion": 1,
+    "status": "failed",
+    "stderr": "error: The specified item could not be found in the keychain.\n",
+    "stdout": "",
+    "truncated": false
+  },
+  "OWNED_KEYCHAIN_CLEANUP": {
+    "exitCode": 0,
+    "privateCommandPublished": false,
+    "status": "passed"
+  }
+}
