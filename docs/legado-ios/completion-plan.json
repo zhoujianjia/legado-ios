@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-login-ui-explore-actions-sdk-checkpoint.json",
+  "activeBatchRecord": "docs/legado-ios/core-sdk-f2d7160-terminal-result.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,53 +169,38 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Final reviewed UI/C3/action/compile-fix batch is ready: App459/462, core320/native107, original17 plus independentmainjs1, fresh Package18. First collect and fully diagnose the only live frozenf2 currentcore terminal; then submit one coherent affected SDK/Native pair, incorporating only any determined additional repair with reviewed provenance. Later callback/debounce code stays isolated and must not delay or mutate this fixed batch. No per-item or new device IPA tag.",
-      "alreadyRunningTasks": "Only frozen sourcef2 currentcore run39468451426/job118785910864 remains live. Native39468452458 is terminal archived: App test compilation failed before selected XCTest/JNI, while fresh ordinary JVM301 passed. All prior jobs remain closed. No new retry or device-package tag.",
+      "nextPlannedCheckpoint": "Submit the now reviewed and repaired UI/C3/action/compile-fix App459/462, core320/native107, originalNative17 plus independentmainjs1 and fresh Package18 pair after independent terminal review. The complete actual SDK/Native11 diagnostics are already covered by the integrated three-source repair; no unexplained actual additional failure warrants a new code change. Later ordered callbacks/debounce remain isolated. No per-item/device-package tag.",
+      "alreadyRunningTasks": "No previous SDK/Native run remains live. Both frozenf2 terminals are archived: actual producer and independent Package18 passed; App/JNI methods0 after the same3 test-file errors. All earlier jobs remain closed and must not be repolled.",
       "latestOwnedProducerTerminal": {
-        "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
-        "sourceTag": "reader-renewal-fa48eb3",
-        "runID": 39459762202,
-        "jobID": 118755854457,
+        "sourceCommit": "f2d7160d2dc5d5c5585baab4afe3d1da294df70a",
+        "sourceTag": "reader-renewal-f2d7160",
+        "runID": 39468451426,
+        "jobID": 118785910864,
         "status": "completed",
         "conclusion": "failure",
-        "record": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json",
         "queryAgain": false,
+        "record": "docs/legado-ios/core-sdk-f2d7160-terminal-result.json",
+        "AppMethodsExecuted": 0,
+        "independentPackageMethodsPassed": 18,
+        "producerPhaseConclusion": "success",
         "actualCodesignExecuted": true,
         "actualCodesignPassed": true,
         "userSearchListCleanupVerified": true,
-        "nativeMethodsAccepted": 0,
-        "producerPhaseConclusion": "success",
-        "scope": "Integrated producer phase succeeded; containing SDK workflow ended with test-target compilation failure."
+        "scope": "The integrated producer succeeded; containing SDK workflow failed during App test compilation."
       },
       "currentCoreLatestTerminal": {
-        "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
-        "sourceTag": "reader-renewal-fa48eb3",
-        "runID": 39459762202,
-        "jobID": 118755854457,
+        "sourceCommit": "f2d7160d2dc5d5c5585baab4afe3d1da294df70a",
+        "sourceTag": "reader-renewal-f2d7160",
+        "runID": 39468451426,
+        "jobID": 118785910864,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
-        "record": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json",
-        "nativeMethodsAccepted": 0,
+        "record": "docs/legado-ios/core-sdk-f2d7160-terminal-result.json",
+        "AppMethodsExecuted": 0,
         "independentPackageMethodsPassed": 18
       },
-      "onlyLiveSDKHandles": [
-        {
-          "sourceCommit": "f2d7160d2dc5d5c5585baab4afe3d1da294df70a",
-          "sourceTag": "reader-renewal-f2d7160",
-          "runID": 39468451426,
-          "jobID": 118785910864,
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39468451426",
-          "createdAt": "2026-10-20T17:42:45Z",
-          "status": "in_progress",
-          "conclusion": null,
-          "current": [
-            "Verify portable evidence guards"
-          ],
-          "queryAgain": true,
-          "record": "docs/legado-ios/core-sdk-f2d7160-request.json"
-        }
-      ],
+      "onlyLiveSDKHandles": [],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -1267,6 +1252,14 @@
         "productionSources": 29,
         "sourceOwnerClosurePaths": 32,
         "actualSDKOrJNIAccepted": false
+      },
+      "loginActionMaterialSDKTerminal": {
+        "record": "docs/legado-ios/core-sdk-f2d7160-terminal-result.json",
+        "producerCommandsPassed": 48,
+        "independentPackageMethodsPassed": 18,
+        "actualAppMethods": 0,
+        "uniqueCompilerDiagnostics": 11,
+        "allDeterminedCausesRepaired": true
       }
     }
   },
