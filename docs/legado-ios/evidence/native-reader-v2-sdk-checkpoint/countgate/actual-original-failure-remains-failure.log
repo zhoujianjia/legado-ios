@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\native-210-count-gate-repair-step\validation-root\scripts\reader-experience\native-smoke-tools.py", line 688, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "F:\yuedu-reader\.build\native-210-count-gate-repair-step\validation-root\scripts\reader-experience\native-smoke-tools.py", line 673, in main
+    record = verify_cache(smoke.read_json(args.summary), smoke.read_json(args.tests))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\native-210-count-gate-repair-step\validation-root\scripts\reader-experience\native-smoke-tools.py", line 352, in verify_cache
+    counts = smoke.verify_summary(summary, 6, 8)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\native-210-count-gate-repair-step\validation-root\scripts\reader-experience\smoke-tools.py", line 341, in verify_summary
+    raise ValueError("Smoke test count/failure/skip gate failed: " + json.dumps(fields))
+ValueError: Smoke test count/failure/skip gate failed: {"totalTestCount": 17, "passedTests": 4, "failedTests": 13, "skippedTests": 0}

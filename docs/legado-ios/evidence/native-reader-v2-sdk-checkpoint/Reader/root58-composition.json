@@ -1,0 +1,97 @@
+{
+  "status": "Reader-three-exact-reviewed-candidates-plus-current58-ported-row-merge-awaiting-independent-review",
+  "canonicalBaseline": "8cebe2023d0f3b9b3d8143d964b0c9bb2a6e7978",
+  "ReaderPreparation": {
+    "path": ".build/native-210-reader-repair-step/final-v1.json",
+    "bytes": 17750,
+    "sha256": "350f664aefc1fad829c9a5a239caa9483a52a6e851fe9304329d32ce7a2f533f"
+  },
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "baseline": {
+        "bytes": 8685,
+        "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+      },
+      "candidate": {
+        "bytes": 8960,
+        "sha256": "81c25a8ce0a566314cd9af53449928786672b9c451cc321cf3c7d651baf18267"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt.diff",
+        "bytes": 1561,
+        "sha256": "a4f9bde03481681e9cf0564f11bdb225a75c724cd2a78338eed6186ce36a8d63"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "baseline": {
+        "bytes": 22670,
+        "sha256": "dc91b9622a01a04f88d2f028a805b943a16a8bc11835ff659bc1c6f21ab7f8e1"
+      },
+      "candidate": {
+        "bytes": 28059,
+        "sha256": "c686baa5844f9784df504907d78046bc6a8f8830da36583f49caa0e94a8ff27c"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt.diff",
+        "bytes": 7345,
+        "sha256": "dc7a13297ebacb14d7c4caee23024c6311d45ac47f864e58c06604898024f2e9"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 72317,
+        "sha256": "6afedef94dcfce03daca1fad06f98fa8b5104b5735124a2bb969af05ae1edcdb"
+      },
+      "candidate": {
+        "bytes": 72777,
+        "sha256": "6910a7b966b7a83ce730871ee7ff57d666c3bda86acae202163663f45cd4f487"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 9591,
+        "sha256": "318d4e2c712472c3de7915e0220f85db3dfddbc7c44e633e8b59a3422108e57d"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134720,
+        "sha256": "05f7f6a3782463aed0141e37262decf8743d400ff8910dfaa24596c2866c9d32"
+      },
+      "candidate": {
+        "bytes": 134720,
+        "sha256": "c7b5eb81406f6d33b1a50b0cdf4335b983677927ffd5d96195b65b3f7ce70695"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 616,
+        "sha256": "c26c042a69c10c2c96d361e525d0bebe7f47922efb5700db09f747c053349d24"
+      }
+    }
+  ],
+  "portedSources": 58,
+  "portedMerge": {
+    "changedRows": 1,
+    "before": {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "bytes": 8685,
+      "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+    },
+    "after": {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "bytes": 8960,
+      "sha256": "81c25a8ce0a566314cd9af53449928786672b9c451cc321cf3c7d651baf18267"
+    },
+    "retainedAllOtherRowsAndMetadata": true
+  },
+  "actualNewJVMorSDK": 0,
+  "validationReuse": "Original one-source incremental production validation predates V2. Its exact three distinct JVM methods and outside-consumer evidence apply only to that explicit source closure, not a fresh combined V2 production JAR or SDK/JNI acceptance.",
+  "operations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false
+  }
+}

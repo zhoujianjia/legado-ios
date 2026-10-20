@@ -1,0 +1,134 @@
+
+F:\yuedu-reader>if "Windows_NT" == "Windows_NT" setlocal
+
+F:\yuedu-reader>set DIRNAME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\
+
+F:\yuedu-reader>if "F:\yuedu-reader\.tools\gradle-8.14.3\bin\" == "" set DIRNAME=.
+
+F:\yuedu-reader>set APP_BASE_NAME=gradle
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\..
+
+F:\yuedu-reader>for %i in ("F:\yuedu-reader\.tools\gradle-8.14.3\bin\..") do set APP_HOME=%~fi
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3
+
+F:\yuedu-reader>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar"
+
+F:\yuedu-reader>if defined JAVA_HOME goto findJavaFromJavaHome
+
+F:\yuedu-reader>set JAVA_HOME=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1
+
+F:\yuedu-reader>set JAVA_EXE=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe
+
+F:\yuedu-reader>if exist "F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" goto execute
+
+F:\yuedu-reader>set CLASSPATH=
+
+F:\yuedu-reader>"F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" "-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar"   "-Dorg.gradle.appname=gradle" -classpath "" -jar "F:\yuedu-reader\.tools\gradle-8.14.3\lib\gradle-gradle-cli-main-8.14.3.jar" -p .build/native-210-reader-repair-step/validation-root/Packages/LegadoRuntime/jvm --offline --no-daemon "-Dorg.gradle.jvmargs=-Xms32m -Xmx384m -XX:MaxMetaspaceSize=256m -XX:CompressedClassSpaceSize=64m -XX:ReservedCodeCacheSize=64m -XX:ActiveProcessorCount=2 -Xss512k -XX:+UseSerialGC" --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process test --tests io.yuedu.legado.OriginalWebBookExecutionTest.lastChapterDirectoryLookupKeepsSingleChapterVariableGrantAndCurrentRestore --tests io.yuedu.legado.OriginalWebBookExecutionTest.originalExploreJavaMapStringRequiresExplicitStringForStrictIdentity --tests io.yuedu.legado.OriginalWebBookExecutionTest.cssSearchXpathDetailsJsonTocAndPagedContentUseSameEntitiesAndTransport runtimeJar
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+
+> Configure project :
+w: [33m[1mDeprecated Gradle Version[0m[0m
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+[32m[1mSolution:[0m[0m
+[32m[3mPlease update the Gradle version to at least Gradle 8.14.4.[0m[0m
+
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+gradle.bat : The message received from the daemon indicates that the daemon has disappeared.
+所在位置 行:4 字符: 1
++ & 'F:\yuedu-reader\.tools\gradle-8.14.3\bin\gradle.bat' -p '.build/na ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (The message rec...as disappeared.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Build request sent: Build{id=b0b2f61c-c702-4ee4-9ff8-198899cf2115, currentDir=F:\yuedu-reader}
+Attempting to read last messages from the daemon log...
+Daemon pid: 86868
+  log file: F:\yuedu-reader\.tools\gradle-user-home\daemon\8.14.3\daemon-86868.out.log
+----- Last 20 lines from daemon log file - daemon-86868.out.log -----
+2026-10-21T04:13:01.689+0800 [INFO] [org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy] Daemon is abou
+t to start building Build{id=b0b2f61c-c702-4ee4-9ff8-198899cf2115, currentDir=F:\yuedu-reader}. Dispatching build start
+ed information...
+2026-10-21T04:13:01.689+0800 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 23: disp
+atching org.gradle.launcher.daemon.protocol.BuildStarted@4cdcfd52
+2026-10-21T04:13:01.690+0800 [DEBUG] [org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment] Configuring env
+ variables: [PATH, USERDOMAIN_ROAMINGPROFILE, NOVEL_DEEPSEEK_TOKEN, PROCESSOR_LEVEL, GIT_PAGER, SESSIONNAME, ALLUSERSPR
+OFILE, PROCESSOR_ARCHITECTURE, PSModulePath, VSCODE_PID, HF_HOME, SystemDrive, NOVEL_OPENAI_TOKEN, GH_PAGER, COLORTERM,
+ DIRNAME, USERNAME, ProgramFiles(x86), VSCODE_NLS_CONFIG, CHROME_CRASHPAD_PIPE_NAME, CODEX_INTERNAL_ORIGINATOR_OVERRIDE
+, APP_HOME, DEFAULT_JVM_OPTS, PATHEXT, DriverData, VSCODE_CRASH_REPORTER_PROCESS_TYPE, PAGER, NoDefaultCurrentDirectory
+InExePath, MXC_BIN_DIR, CODEX_PERMISSION_PROFILE, VSCODE_CODE_CACHE_PATH, ProgramData, =F:, ProgramW6432, HOMEPATH, LC_
+ALL, PROCESSOR_IDENTIFIER, VSCODE_NODE_COMPILE_CACHE_ROOT, ProgramFiles, PUBLIC, ANTHROPIC_BASE_URL, windir, LC_CTYPE,
+CODEX_SESSION_ID, ZES_ENABLE_SYSMAN, IGCCSVC_DB, NOVEL_CLAUDE_TOKEN, LOCALAPPDATA, ChocolateyLastPathUpdate, COPILOT_OT
+EL_FILE_EXPORTER_PATH, USERDOMAIN, VSCODE_HANDLES_UNCAUGHT_ERRORS, LOGONSERVER, JAVA_HOME, PROMPT, RUST_LOG, TERM, LANG
+, NOVEL_NEO4J_PASSWORD, ANTHROPIC_API_KEY, GRADLE_HOME, ELECTRON_RUN_AS_NODE, OneDrive, APPDATA, GRADLE_USER_HOME, CODE
+X_APPLY_PATCH_PRESERVE_LINE_ENDINGS, JAVA_EXE, ChocolateyInstall, CODEX_THREAD_ID, NO_COLOR, CODEX_CI, CommonProgramFil
+es, APPLICATION_INSIGHTS_NO_STATSBEAT, VSCODE_CWD, OS, COMPUTERNAME, VSCODE_ESM_ENTRYPOINT, VSCODE_NODE_COMPILE_CACHE_K
+IND, PROCESSOR_REVISION, CommonProgramW6432, DEBUG, ComSpec, APP_BASE_NAME, CLAUDE_CODE_MAX_OUTPUT_TOKENS, SystemRoot,
+TEMP, HOMEDRIVE, USERPROFILE, TMP, CommonProgramFiles(x86), CODEX_VERSION, NUMBER_OF_PROCESSORS, NOVEL_CLAUDE_API_URL,
+NOVEL_OPENAI_API_URL, VSCODE_IPC_HOOK]
+2026-10-21T04:13:01.693+0800 [DEBUG] [org.gradle.launcher.daemon.server.exec.LogToClient] About to start relaying all l
+ogs to the client via the connection.
+2026-10-21T04:13:01.694+0800 [INFO] [org.gradle.launcher.daemon.server.exec.LogToClient] The client will now receive al
+l logging from the daemon (pid: 86868). The daemon log file: F:\yuedu-reader\.tools\gradle-user-home\daemon\8.14.3\daem
+on-86868.out.log
+2026-10-21T04:13:01.694+0800 [DEBUG] [org.gradle.launcher.daemon.server.exec.RequestStopIfSingleUsedDaemon] Requesting
+daemon stop after processing Build{id=b0b2f61c-c702-4ee4-9ff8-198899cf2115, currentDir=F:\yuedu-reader}
+2026-10-21T04:13:01.694+0800 [LIFECYCLE] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Daemon will be stop
+ped at the end of the build
+2026-10-21T04:13:01.695+0800 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Stop as soon as idle re
+quested. The daemon is busy
+2026-10-21T04:13:01.695+0800 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon stop has been re
+quested. Sleeping until state changes.
+2026-10-21T04:13:01.695+0800 [DEBUG] [org.gradle.launcher.daemon.server.exec.ExecuteBuild] The daemon has started execu
+ting the build.
+2026-10-21T04:13:01.695+0800 [DEBUG] [org.gradle.launcher.daemon.server.exec.ExecuteBuild] Executing build with daemon
+context: DefaultDaemonContext[uid=ba63fa03-fc0f-44bf-8c02-b602963370be,javaHome=F:\yuedu-reader\.tools\jdk21\jdk-21.0.1
+2.1+1,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=F:\yuedu-reader\.tools\gradle-user-home\daemon,pid=8
+6868,idleTimeout=120000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMet
+aspaceSize=256m,-XX:CompressedClassSpaceSize=64m,-XX:ReservedCodeCacheSize=64m,-XX:ActiveProcessorCount=2,-Xss512k,-XX:
++UseSerialGC,-Xms32m,-Xmx384m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]
+w: [33m[1mDeprecated Gradle Version[0m[0m
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases
+.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+[32m[1mSolution:[0m[0m
+[32m[3mPlease update the Gradle version to at least Gradle 8.14.4.[0m[0m
+----- End of the daemon log -----
+
+JVM crash log found: file:///F:/yuedu-reader/hs_err_pid86868.log
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Gradle build daemon disappeared unexpectedly (it may have been killed or may have crashed)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+> Task :compileKotlin
+
+F:\yuedu-reader>if 1 EQU 0 goto mainEnd
+
+F:\yuedu-reader>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
+
+F:\yuedu-reader>rem the _cmd.exe /c_ return code!
+
+F:\yuedu-reader>set EXIT_CODE=1
+
+F:\yuedu-reader>if 1 EQU 0 set EXIT_CODE=1
+
+F:\yuedu-reader>if not "" == "" exit 1
+
+F:\yuedu-reader>exit /b 1

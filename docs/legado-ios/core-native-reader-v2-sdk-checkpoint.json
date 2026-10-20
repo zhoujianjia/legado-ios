@@ -1,0 +1,1755 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "reviewed-Native210-production-and-fixture-repairs-integrated-with-ready-V2-one-unified-cohort-pending",
+  "reviewedCanonicalParent": "8cebe2023d0f3b9b3d8143d964b0c9bb2a6e7978",
+  "sourceFiles": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "baseline": {
+        "bytes": 8685,
+        "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+      },
+      "candidate": {
+        "bytes": 8960,
+        "sha256": "81c25a8ce0a566314cd9af53449928786672b9c451cc321cf3c7d651baf18267"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt.diff",
+        "bytes": 1561,
+        "sha256": "a4f9bde03481681e9cf0564f11bdb225a75c724cd2a78338eed6186ce36a8d63"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "baseline": {
+        "bytes": 22670,
+        "sha256": "dc91b9622a01a04f88d2f028a805b943a16a8bc11835ff659bc1c6f21ab7f8e1"
+      },
+      "candidate": {
+        "bytes": 28059,
+        "sha256": "c686baa5844f9784df504907d78046bc6a8f8830da36583f49caa0e94a8ff27c"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt.diff",
+        "bytes": 7345,
+        "sha256": "dc7a13297ebacb14d7c4caee23024c6311d45ac47f864e58c06604898024f2e9"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 72317,
+        "sha256": "6afedef94dcfce03daca1fad06f98fa8b5104b5735124a2bb969af05ae1edcdb"
+      },
+      "candidate": {
+        "bytes": 72777,
+        "sha256": "6910a7b966b7a83ce730871ee7ff57d666c3bda86acae202163663f45cd4f487"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 9591,
+        "sha256": "318d4e2c712472c3de7915e0220f85db3dfddbc7c44e633e8b59a3422108e57d"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134720,
+        "sha256": "05f7f6a3782463aed0141e37262decf8743d400ff8910dfaa24596c2866c9d32"
+      },
+      "candidate": {
+        "bytes": 134720,
+        "sha256": "c7b5eb81406f6d33b1a50b0cdf4335b983677927ffd5d96195b65b3f7ce70695"
+      },
+      "diff": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 616,
+        "sha256": "c26c042a69c10c2c96d361e525d0bebe7f47922efb5700db09f747c053349d24"
+      }
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "bytes": 10149,
+        "sha256": "939171cc6f63c75ace1cc29f1ecfb9cb2825ce90eaca0dda88db83810d217893"
+      },
+      "candidate": {
+        "bytes": 10489,
+        "sha256": "136efb498a55a9382459fad881d7b3f0c1eaa1fb1fb9e5d640b6fdb4b025c364"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 2737,
+        "sha256": "4abba74076d7669772b2df2b86345b40fb6d06f2dc72b070647d5db08cb29de1"
+      }
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "baseline": {
+        "bytes": 10078,
+        "sha256": "47c847e4025ea29ba90fc3344c172b200e9480baeb676895505b4ac26b6118c7"
+      },
+      "candidate": {
+        "bytes": 10275,
+        "sha256": "55643df8e6d352f2727938cb33fb174458bd227233c9aaccb08e2c80b330eaa6"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/.github/workflows/reader-renewal-probe.yml.diff",
+        "bytes": 9826,
+        "sha256": "5aa1f188b086c8ebbacd2e8c4c2e90fc4bd6b5ce282ae3bfe7f7770a62845657"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "bytes": 36976,
+        "sha256": "f26dd14c275dc630d8d8451af0fcd8fbe904732b1e294551913720f9122d9811"
+      },
+      "candidate": {
+        "bytes": 45974,
+        "sha256": "016f0cc03332c0ad0a2dad58b22cc0a36c6df70b6f8467bac65651e5a9a88bf0"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 11323,
+        "sha256": "1009ed13d497b0d46e0310c71f6a20f6b808b9c764c7a05bd3640d9acfe06130"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/original-api-package-tools.py",
+      "baseline": {
+        "bytes": 22513,
+        "sha256": "667af4c2a8ac34464fed290a5865b19f64ce2dc7122e3c7f5f2863b40643d495"
+      },
+      "candidate": {
+        "bytes": 23222,
+        "sha256": "5055db43531bb0e390e87320e33a10fa2a4f7370e98edff03293ce8fc4591d77"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/original-api-package-tools.py.diff",
+        "bytes": 4639,
+        "sha256": "26f30225b95c5087910710ad08459d21d58e1ac0c71ac8983fb0e33cdec0881a"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "baseline": {
+        "bytes": 43377,
+        "sha256": "99725bb0fe04b97c3677f37a56f7536a2e150fc0eb5611bcb4cc8ad519d4568b"
+      },
+      "candidate": {
+        "bytes": 43377,
+        "sha256": "99725bb0fe04b97c3677f37a56f7536a2e150fc0eb5611bcb4cc8ad519d4568b"
+      },
+      "changed": false,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/renewal-probe-tests.sh.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 186884,
+        "sha256": "e5e148dc9c53514b27f1b374f0dc54cd0a4d107be7d1a194f793130a9d7dc478"
+      },
+      "candidate": {
+        "bytes": 189248,
+        "sha256": "1b6d3fac14867add0c93d2d9ec92ed580498519b73eabbd76c732bf51255ed73"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 4703,
+        "sha256": "e0ef94feee03b15b011097a3ab7e9ee12bcde56e6f99d1cb1a83b633b4c16918"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "bytes": 19402,
+        "sha256": "10b06d2f8cdd497a01be667837803b3a8c899e14afb7c73adf5e1e43497e38cf"
+      },
+      "candidate": {
+        "bytes": 24065,
+        "sha256": "0bd8faf6e64f86cc3ced87e6052f57c312a27b13b106b64e5e2494b7506d0957"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 8651,
+        "sha256": "9aa05787111d7800e118577033739ffa185e7330600ad34550848c715399ba38"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-original-api-package-tools.py",
+      "baseline": {
+        "bytes": 38254,
+        "sha256": "36a0898fa52908efce1f1a562c55cf12f262337b8abce7ab7b919809f9435a9b"
+      },
+      "candidate": {
+        "bytes": 43750,
+        "sha256": "2f537a5067edaa4392d3ae435165b5ed8a6b43b40567b3d5f3a121d33dfd1d2d"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/test-original-api-package-tools.py.diff",
+        "bytes": 10584,
+        "sha256": "8db4e84d16b8487de7c389151882d8043435b68a43c8371e6f11ec4f1e72f73c"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 187860,
+        "sha256": "548c998633ef69f05d7b8d6f6f34da6e6d69560e7ba9a7dba13356f086cf3959"
+      },
+      "candidate": {
+        "bytes": 188340,
+        "sha256": "243df413a322e6a4f0f56f87775b11a5fb0c4b570418fa4a234b986e97b9d9b9"
+      },
+      "changed": true,
+      "diff": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 16513,
+        "sha256": "824c5de65e22c09cc518f9d08b5dcef0bbfbd3d2bdbbbd94b6cddd3759023157"
+      }
+    }
+  ],
+  "changedSourceFiles": 12,
+  "retainedControlShell": 1,
+  "sourceOwnerUnion": [
+    {
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "bytes": 99435,
+      "sha256": "8691b485cdb4a1cb4651fe34cf5f6ec806cabf1bf92b8309c0677e571a09e275"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 125643,
+      "sha256": "1663078c52fad289fd86d9bb60298db645e374ba5131023acd94e096845e2e50"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "bytes": 25841,
+      "sha256": "7527f08e72d24cec346f79d8abc416987afbece3e78140fab17c4a4bd16cd7f9"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "bytes": 29934,
+      "sha256": "9cc0b0e61e8ffad6ee6db1f9f4b0cb59f7ebfa648773f4f805f52b94a38d17c4"
+    },
+    {
+      "path": "Modules/SharedUI/Components/LoginFormGrid.swift",
+      "bytes": 30988,
+      "sha256": "6673bd22de60639257f5b2b39d3e7728513799c7a7c66642f0b7363eb517b6de"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "bytes": 17980,
+      "sha256": "fbcdd3497dea8e578cfb3ac06233bc810c458570a18f0956557af5205e5eb72b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/login/LoginUiV2.kt",
+      "bytes": 4196,
+      "sha256": "2e23fb7bd06287d730e7f6aea59b54709e0282d17b66d51805b41eb781d211cb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "bytes": 30841,
+      "sha256": "c09fcedc8d7934f47eda3122404d1d91923f5bc94c422d8e11fea7a3496e4ded"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt",
+      "bytes": 6312,
+      "sha256": "f8a55418401807e1ce752d80ca59e2cd9c94aa695bd8f9cb980a3bc703a5acce"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginV2Runtime.kt",
+      "bytes": 3801,
+      "sha256": "6358b41beb9e8f00c671b4962c792bc2faa4c5a306d24829dd7f6e623901c7f5"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "bytes": 21307,
+      "sha256": "422aa2262f740b0f154d5b79221571e26141483119949b46550e6e7846255b20"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt",
+      "bytes": 11050,
+      "sha256": "828ffd38e249be3447dddec1a9b91dda38e5022045a6ec8e89dbe038298be2d3"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2Test.kt",
+      "bytes": 11361,
+      "sha256": "2588867d2aece342a2fff641dc75bad4be8be93370bf57474069260ebe5955aa"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift",
+      "bytes": 1494,
+      "sha256": "d047a0cff2b65b2c6a9e0e40815075c636e62920430d8cc3f7cb8eb1335c6b1a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "bytes": 35221,
+      "sha256": "03ec2bf8f3c662690c400bfdb9502a46a6176912ea4b22b9bb728729950ae538"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "bytes": 30376,
+      "sha256": "bcf93c4dbaf18cc0a379e2b9b7e21da3abe67f8ecd241f760d043d6130f30dae"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 134720,
+      "sha256": "c7b5eb81406f6d33b1a50b0cdf4335b983677927ffd5d96195b65b3f7ce70695"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "bytes": 39596,
+      "sha256": "59702ae34dfad3e9527c641dff298e1343e51fdfb1fb3241c150eae9825a7876"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+      "bytes": 62945,
+      "sha256": "03fd854b9dda28cd0a15b442702056783ad6a6a44afdda7301068e6dc625dc69"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "bytes": 44002,
+      "sha256": "62e93456a757c9a7e8b236384e4e49c814df1ecc1766a025c7c0791405180ced"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 37954,
+      "sha256": "2f3c4cbfa02786f794ca024e059e57c2d0af10d0fc7305229688c91511400fbf"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "bytes": 8960,
+      "sha256": "81c25a8ce0a566314cd9af53449928786672b9c451cc321cf3c7d651baf18267"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "bytes": 28059,
+      "sha256": "c686baa5844f9784df504907d78046bc6a8f8830da36583f49caa0e94a8ff27c"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 72777,
+      "sha256": "6910a7b966b7a83ce730871ee7ff57d666c3bda86acae202163663f45cd4f487"
+    }
+  ],
+  "counts": {
+    "AppDefinitions": 463,
+    "AppLeaves": 466,
+    "coreInputs": 330,
+    "NativeOriginalDefinitions": 21,
+    "NativeMainJSDefinitions": 1,
+    "nativeInputs": 131,
+    "PackageMethods": 24,
+    "PackageCompileInputs": 16,
+    "PackageControls": 7,
+    "PackageAllInputs": 23
+  },
+  "uniqueSourceInputs": 348,
+  "nonControlInputs": 339,
+  "ReaderRootCausesAndFixes": [
+    {
+      "kind": "production P1",
+      "cause": "Cold TOC metadata construction eagerly restored variables on every stored chapter; last-chapter next=nil boundary lookup accessed foreign chapters outside a single-current-chapter grant.",
+      "fix": "StoredChapter.restore passes restorePersistentVariables=false only for TOC metadata; explicit OriginalRuleDto.chapter still restores variables and retains existing host rejection."
+    },
+    {
+      "kind": "fixture",
+      "cause": "readyBaseURL already includes the run namespace; nine call sites duplicated it.",
+      "fix": "Use baseURL plus only route suffix, assert baseURL.path and /held target identity; retain all real HTTP, cancellation, held socket and request assertions."
+    },
+    {
+      "kind": "fixture",
+      "cause": "Three batch expectations omitted original two U+3000 indentation characters.",
+      "fix": "Exact original output expectations; no trimming or formatter change."
+    },
+    {
+      "kind": "fixture",
+      "cause": "Original InfoMap.get returns a Rhino Java string whose JS strict identity differs from a JS string literal.",
+      "fix": "Explicit String(infoMap.get(...)) strict value assertion plus separate original two-source map value checks. Actual original-Rhino vector [false,true] confirmed; no context/permission production change."
+    }
+  ],
+  "ReaderValidation": {
+    "JVM": {
+      "kind": "Exact one-source Kotlin2.4.20 incremental friend/module overlay over bound c26 ordinary337-class JAR, with all121 unchanged main roots byte-matched; not fresh full Gradle.",
+      "firstCandidateActual": {
+        "tests": 3,
+        "pass": 2,
+        "failure": 1,
+        "reason": "New synthetic #text@html expectation omitted retained outer-element/paragraph whitespace."
+      },
+      "correctedOnlyFailedActual": {
+        "tests": 1,
+        "pass": 1,
+        "failure": 0
+      },
+      "finalDistinctMethods": [
+        "lastChapterDirectoryLookupKeepsSingleChapterVariableGrantAndCurrentRestore",
+        "originalExploreJavaMapStringRequiresExplicitStringForStrictIdentity",
+        "cssSearchXpathDetailsJsonTocAndPagedContentUseSameEntitiesAndTransport"
+      ],
+      "finalDistinctPassing": 3,
+      "baselineCounterfactual": {
+        "tests": 1,
+        "expectedFailure": 1,
+        "confirmed": "Original c26 fails on foreign chapter variables during cold TOC metadata restoration."
+      },
+      "compiler": "Kotlin2.4.20 / target21 / module io.yuedu_legado-runtime / explicit friend bound ordinary JAR / 128MiB SerialGC; exact argv and compiler dependency bytes recorded."
+    },
+    "ordinaryJava": {
+      "finalActualSessions": 3,
+      "sources": 1,
+      "realLoopbackHTTP": 2,
+      "foreignChapterDenied": true,
+      "currentChapterVariablesRetained": true,
+      "originalMapStrictIdentityVector": "[false,true]",
+      "classpath": "Final compile/execute only incremental production JAR and separately compiled outside consumer classes, no JUnit or test classes.",
+      "priorFailureHistory": "Two earlier outside-consumer attempts omitted public content needSave=false; existing guard rejected both. Corrected explicit false follows the unchanged public API contract; all logs retained."
+    },
+    "packaging": {
+      "actualGuardsPassed": 6,
+      "jar": "incremental/legado-runtime-incremental.jar",
+      "jarFacts": {
+        "bytes": 10827184,
+        "sha256": "f1faa8387e9c8f2f34a4b6781329ad1b825c86dd4195625400e540d3a0b67536"
+      },
+      "ordinaryTestPayload": false,
+      "note": "CRC, provenance/resources, class major and test-exclusion guards passed for the precise incremental overlay; no fresh whole Gradle producer claim."
+    },
+    "Swift": {
+      "grammarFiles": 2,
+      "errors": 0,
+      "nativeReaderMethodIdentities": [
+        "testNativeOriginalWebBookPreviewTransferAndReopen",
+        "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+        "testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+        "testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "testNativeOriginalBookNotificationCancellationDrains",
+        "testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+        "testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority"
+      ],
+      "newNativeMethods": 0,
+      "actualAppleSDK": 0,
+      "actualJNI": 0,
+      "actualDevice": 0
+    },
+    "preTestFailures": [
+      {
+        "log": "jvm-targeted-v1.log",
+        "actualJUnit": 0,
+        "reason": "Windows commit/pagefile exhausted before daemon startup, 768MiB G1 allocation failure."
+      },
+      {
+        "log": "jvm-targeted-v2.log",
+        "actualJUnit": 0,
+        "reason": "512MiB Serial daemon native malloc failure at configuration."
+      },
+      {
+        "log": "jvm-targeted-v3.log",
+        "actualJUnit": 0,
+        "reason": "384MiB Serial daemon native malloc failure at compileKotlin."
+      }
+    ]
+  },
+  "controlsValidation": {
+    "fixedAffectedMethods": 7,
+    "newReaderBindingMethod": 1,
+    "totalThisSuccessorMethodExecutions": 8,
+    "priorCountGate3AndActualRawPositiveNegativeChecksReused": true,
+    "newBindingGuard": {
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "DeltaReuseCheckpointSelectionTests.test_delta_source_mutations_fail_closed_with_same_single_cold_invocation_and_sdk_case",
+        "-v"
+      ],
+      "exitCode": 0,
+      "seconds": 1.078,
+      "log": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-reader-source-binding-guard.log",
+        "bytes": 328,
+        "sha256": "06c805051f204fed5b622c6a2e162573ed59e278a28f551848a6aee09d2d7cde"
+      }
+    },
+    "oldSuccessfulJVMSuiteReruns": 0,
+    "SwiftSDK": 0,
+    "JNI": 0,
+    "cloud": 0
+  },
+  "failClosedInvariants": {
+    "AppExpectedModeSetsAndThreeParameterPairsExact": true,
+    "allCoreProducerFixturePhaseSelectorTimeoutFunctionsExact": true,
+    "coreResultOnlyLimitationsStringsChanged": true,
+    "allNativeFunctionsExactFrozenCountgate": true,
+    "NativeOld20PrefixAndIndependentMainJSExact": true,
+    "PackageOld10_16_17_18_22_23SetsExact": true,
+    "coldOneInvocationSeconds": 3600,
+    "mandatorySameJobSDKFixture": true,
+    "PackageFresh24Required": true
+  },
+  "review": {
+    "schemaVersion": 1,
+    "status": "root-independent-final13-source-and-coherent-controls-approved-fresh-combined-execution-required",
+    "reviewedManifest": {
+      "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/preparation/final-v1.json",
+      "bytes": 19814,
+      "sha256": "2f1a17e2a176a0021bf81ca9db069a9b4f535cf9154c346efffdea1e4dbef1fe"
+    },
+    "reviewedReader": {
+      "path": ".build/native-210-reader-independent-review/review-v2.json",
+      "bytes": 18671,
+      "sha256": "56ffe1b7aafa37b44582fb0707923fa99476e0221cae09ca526eb9c476856424"
+    },
+    "sourceFiles": 13,
+    "changedSourceFiles": 12,
+    "portedSources": 58,
+    "verifiedUniqueSourceInputs": 348,
+    "nonControlInputs": 339,
+    "productionOwners": 24,
+    "counts": {
+      "AppDefinitions": 463,
+      "AppLeaves": 466,
+      "coreInputs": 330,
+      "NativeOriginalDefinitions": 21,
+      "NativeMainJSDefinitions": 1,
+      "nativeInputs": 131,
+      "PackageMethods": 24,
+      "PackageCompileInputs": 16,
+      "PackageControls": 7,
+      "PackageAllInputs": 23
+    },
+    "checks": [
+      "Exact baselines,13 candidates and all source/diff/evidence hashes verified against canonical8ce and final Reader58 row merge.",
+      "All330/131/23 source rosters verified against the final13 overlays plus unchanged canonical bytes.",
+      "All old App mode identities unchanged,463 definitions/466 leaves retained; Native old20 plus one V2 and independentMainJS1 retained.",
+      "All existing core producer,fixture,phase,selector,timeout and command functions unchanged; result differs only in reviewed Package limitations strings.",
+      "All Native functions exactly equal independently reviewed strict countgate3; fresh local-product50/68 and cache6/8 gates remain in required final status.",
+      "Old Package expected sets unchanged; new explicit loginv2 adds only its one typed request method; closure16+7 verified.",
+      "Reader metadata restore retains inlineTOC attributes while explicit current/foreign chapter variable restore still uses the existing authorization owner."
+    ],
+    "validationReuse": {
+      "fixedPortableMethodExecutions": 7,
+      "ReaderRebindingMethodExecutions": 1,
+      "distinctMethods": 7,
+      "ReaderIncrementalDistinctJVMPassed": 3,
+      "ReaderBaselineCounterfactualFailedAsExpected": 1,
+      "ReaderOutsideJavaSessions": 3,
+      "ReaderPackagingGuards": 6,
+      "rootRepeatedTests": 0,
+      "actualNewSDKorJNI": 0
+    },
+    "findings": [],
+    "limits": [
+      "Fresh combined V2+Reader production JAR,Swift compilation,JNI and required selected methods have not executed.",
+      "Browser remains excluded; no device package tag or acceptance."
+    ],
+    "reviewPreparationHistory": {
+      "initialAttempt": "Read-only source review stopped on KeyError after assuming the Native selection key was cases. Corrected to the actual existing methods key; no production changes, test commands, cloud actions or output review occurred in that failed attempt."
+    }
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/unified-preparation.json",
+      "bytes": 19814,
+      "sha256": "2f1a17e2a176a0021bf81ca9db069a9b4f535cf9154c346efffdea1e4dbef1fe",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/preparation/final-v1.json",
+        "bytes": 19814,
+        "sha256": "2f1a17e2a176a0021bf81ca9db069a9b4f535cf9154c346efffdea1e4dbef1fe"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/root-final-review.json",
+      "bytes": 2914,
+      "sha256": "b9d5f6b2bf439396a820ef3c06f0e2e4e89ab5adb852c20427307ee77cfbbd91",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/preparation/root-final-review.json",
+        "bytes": 2914,
+        "sha256": "b9d5f6b2bf439396a820ef3c06f0e2e4e89ab5adb852c20427307ee77cfbbd91"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/preparation.json",
+      "bytes": 17750,
+      "sha256": "350f664aefc1fad829c9a5a239caa9483a52a6e851fe9304329d32ce7a2f533f",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/final-v1.json",
+        "bytes": 17750,
+        "sha256": "350f664aefc1fad829c9a5a239caa9483a52a6e851fe9304329d32ce7a2f533f"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/root58-composition.json",
+      "bytes": 3981,
+      "sha256": "d37f00136bf69373ebcb6081e96f410c9d5faa1e2e292aab8481bfca209da092",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-reader-final-source/preparation-v1.json",
+        "bytes": 3981,
+        "sha256": "d37f00136bf69373ebcb6081e96f410c9d5faa1e2e292aab8481bfca209da092"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/independent-review.json",
+      "bytes": 18671,
+      "sha256": "56ffe1b7aafa37b44582fb0707923fa99476e0221cae09ca526eb9c476856424",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-independent-review/review-v2.json",
+        "bytes": 18671,
+        "sha256": "56ffe1b7aafa37b44582fb0707923fa99476e0221cae09ca526eb9c476856424"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/preparation.json",
+      "bytes": 39331,
+      "sha256": "fd98f5c3ac9854b7e9edca38726e353d5fd21529c35f8640861b76cd1563bab5",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/preparation/final-v1.json",
+        "bytes": 39331,
+        "sha256": "fd98f5c3ac9854b7e9edca38726e353d5fd21529c35f8640861b76cd1563bab5"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/root-review.json",
+      "bytes": 3303,
+      "sha256": "00121802766d77547ec6c502e5c05ba4f0cfdeb026d031143ed7297db4bd84b6",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/preparation/root-review.json",
+        "bytes": 3303,
+        "sha256": "00121802766d77547ec6c502e5c05ba4f0cfdeb026d031143ed7297db4bd84b6"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/freeze.py",
+      "bytes": 8856,
+      "sha256": "0910da59ef0611d3f9130046cb974e89dff488ab6892147d8a0d18dc52c3beb9",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/freeze.py",
+        "bytes": 8856,
+        "sha256": "0910da59ef0611d3f9130046cb974e89dff488ab6892147d8a0d18dc52c3beb9"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/actual-tests.xml",
+      "bytes": 2932,
+      "sha256": "219198a13b2c97ae0f117758ee6b3e9814339a7c57c85e5e9c65482b38990357",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/actual-tests.xml",
+        "bytes": 2957,
+        "sha256": "1eaf671e00784b7bdc6ac209116af0257bc8fb48dca4ec8a64530d6d946519a1"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/baseline-counterfactual/actual-tests.xml",
+      "bytes": 4613,
+      "sha256": "9298a8fdfd1a457ed469dbc83b31aac00802e2d3fc5bd761c74d3bf6b7c49f2a",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/baseline-counterfactual/actual-tests.xml",
+        "bytes": 4660,
+        "sha256": "59c1167ac4f01b570caee5ba7544806f93820adf2f40e99df4f74d8813471340"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/baseline-counterfactual/command.json",
+      "bytes": 1068,
+      "sha256": "858a7926c357fb0d3e91b028c29889c495b02053d1f6eaff4bf3e5f8fcedde81",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/baseline-counterfactual/command.json",
+        "bytes": 1084,
+        "sha256": "9ffabc96077a9693509a414eba92d0b719b21558584238a1d9b3b259ac0ffdfb"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/baseline-counterfactual/execute.log",
+      "bytes": 4401,
+      "sha256": "e4be80736d47f48fae2d92e38ced7b09160c1d8bfe24fdeedccdca8e03947123",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/baseline-counterfactual/execute.log",
+        "bytes": 4450,
+        "sha256": "ece10688964f9d8c386db76931e3ef0a57840ae0b42afdb96bd39976d468f8b8"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/binding.json",
+      "bytes": 4611,
+      "sha256": "2a1d482184579c8c2054b6c16649352e1243d0149d0e844229642e4622edc5ae",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/binding.json",
+        "bytes": 4697,
+        "sha256": "103c66a2efae71dc68733a023f60aa704fa7f364673dfc6a13d4dfeb0b94faa5"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/commands.json",
+      "bytes": 8131,
+      "sha256": "cdc8cfe4443e27ba7de43e0dbd52f804e6271b7258e1e96c4fe6df3c69f851bf",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/commands.json",
+        "bytes": 8225,
+        "sha256": "29cd19a5ebbfa689ee9835e34059cdff7ee6c0c49c173e9dfaf44a559c3b9300"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/compile-java.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/compile-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/compile-production.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/compile-tests.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/history/attempt1/actual-tests.xml",
+      "bytes": 2932,
+      "sha256": "219198a13b2c97ae0f117758ee6b3e9814339a7c57c85e5e9c65482b38990357",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/history/attempt1/actual-tests.xml",
+        "bytes": 2957,
+        "sha256": "1eaf671e00784b7bdc6ac209116af0257bc8fb48dca4ec8a64530d6d946519a1"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/history/attempt1/binding.json",
+      "bytes": 4611,
+      "sha256": "2a1d482184579c8c2054b6c16649352e1243d0149d0e844229642e4622edc5ae",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/history/attempt1/binding.json",
+        "bytes": 4697,
+        "sha256": "103c66a2efae71dc68733a023f60aa704fa7f364673dfc6a13d4dfeb0b94faa5"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/history/attempt1/commands.json",
+      "bytes": 8131,
+      "sha256": "cdc8cfe4443e27ba7de43e0dbd52f804e6271b7258e1e96c4fe6df3c69f851bf",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/history/attempt1/commands.json",
+        "bytes": 8225,
+        "sha256": "29cd19a5ebbfa689ee9835e34059cdff7ee6c0c49c173e9dfaf44a559c3b9300"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/history/attempt1/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/history/attempt1/compile-java.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/history/attempt1/compile-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/history/attempt1/compile-production.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/history/attempt1/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/history/attempt1/compile-tests.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/history/attempt1/junit-selected.log",
+      "bytes": 2762,
+      "sha256": "5f9e0bb17f504a9801c250b9c064afc2583604fe8b9eee9a16298b1b52f7e9e8",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/history/attempt1/junit-selected.log",
+        "bytes": 2786,
+        "sha256": "14efc276f82e14f09da579ca5f3420822fada99f37b907973bcc90d3bbca9766"
+      },
+      "originalEncoding": "gb18030",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/java-retry/commands.json",
+      "bytes": 1946,
+      "sha256": "b4bf987041656c179737129d7654fadab8a030ce728094e0aee2ec3f055943e0",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/java-retry/commands.json",
+        "bytes": 1979,
+        "sha256": "9b33da3ba9c3aaeb1fd4d717d4248533c9f9486531800a40e1ba2a055261d479"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/java-retry/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/java-retry/compile-java.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/java-retry/ordinary-java.log",
+      "bytes": 341,
+      "sha256": "94f6170c5d0818f90dbe80cf0e5e5babd8f9ee02d1d395e00f96ff9ecd93f171",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/java-retry/ordinary-java.log",
+        "bytes": 344,
+        "sha256": "5c5c50a2374f509f2c6af7f6af7eae71a852535818a804224445745fb0a862dd"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/java-retry-v2/commands.json",
+      "bytes": 1946,
+      "sha256": "b4bf987041656c179737129d7654fadab8a030ce728094e0aee2ec3f055943e0",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/java-retry-v2/commands.json",
+        "bytes": 1979,
+        "sha256": "9b33da3ba9c3aaeb1fd4d717d4248533c9f9486531800a40e1ba2a055261d479"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/java-retry-v2/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/java-retry-v2/compile-java.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/java-retry-v2/ordinary-java.log",
+      "bytes": 141,
+      "sha256": "f77259f2dae05bb4160c5211dabf5e17d9b32d8cd6c38a29caf59132f3fab3a8",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/java-retry-v2/ordinary-java.log",
+        "bytes": 142,
+        "sha256": "727b86737f8814b956b655477916a4283e904eb4f8638510edf391f5741519f9"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/junit-selected.log",
+      "bytes": 2762,
+      "sha256": "5f9e0bb17f504a9801c250b9c064afc2583604fe8b9eee9a16298b1b52f7e9e8",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/junit-selected.log",
+        "bytes": 2786,
+        "sha256": "14efc276f82e14f09da579ca5f3420822fada99f37b907973bcc90d3bbca9766"
+      },
+      "originalEncoding": "gb18030",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/ordinary-final/commands.json",
+      "bytes": 1123,
+      "sha256": "26cb60c9fe5cc103e6ff9876d13ebfa21a5d0f337d22796fc7033176efcb005c",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/ordinary-final/commands.json",
+        "bytes": 1155,
+        "sha256": "14f356144616986876e539394ff5febe5c5224041a3a6086cfbd4cf7d38a9d22"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/ordinary-final/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/ordinary-final/compile.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/ordinary-final/execute.log",
+      "bytes": 141,
+      "sha256": "f77259f2dae05bb4160c5211dabf5e17d9b32d8cd6c38a29caf59132f3fab3a8",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/ordinary-final/execute.log",
+        "bytes": 142,
+        "sha256": "727b86737f8814b956b655477916a4283e904eb4f8638510edf391f5741519f9"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/retry/actual-tests.xml",
+      "bytes": 336,
+      "sha256": "6205984c792f8c35780adf81e9905fb426bdc636e1ed57a12885375c5241d141",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/retry/actual-tests.xml",
+        "bytes": 336,
+        "sha256": "6205984c792f8c35780adf81e9905fb426bdc636e1ed57a12885375c5241d141"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/retry/commands.json",
+      "bytes": 6373,
+      "sha256": "c83952f0269979cde9f0b8f6e6c242b5eb75f5a49e047343404199bcd687482b",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/retry/commands.json",
+        "bytes": 6456,
+        "sha256": "c6797559282a8dd7683f699135bfcec05fd3262e29676ebccefa2845abb84f6b"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/retry/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/retry/compile-java.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/retry/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/retry/compile-tests.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/retry/junit-selected.log",
+      "bytes": 102,
+      "sha256": "9844a83fc90005519feb5038845aee19700ad7735154924b05b415ce4fc20b86",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/retry/junit-selected.log",
+        "bytes": 103,
+        "sha256": "aa97b5e950beb57a68f66d3a11b0be24486c295dd19fc3ad50358c296858217d"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/incremental/retry/ordinary-java.log",
+      "bytes": 219,
+      "sha256": "65bab9491e723becc2d273b27c5877984478f683f689334b403b7d9522dc3bdd",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/incremental/retry/ordinary-java.log",
+        "bytes": 222,
+        "sha256": "ba225c0ca74c6d51a6a16bc26afde9c5a8e264c7a8509e2926cb3b78c6777f3e"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/jvm-targeted-v1.log",
+      "bytes": 4953,
+      "sha256": "20829c65496f52b44f943c68da1d8342f3b4a42f064ede6da21576a9f9008fc8",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/jvm-targeted-v1.log",
+        "bytes": 10016,
+        "sha256": "796e3bd0efa537049ba1cbb823d7e8b78f63ccb94a67eb472bf4c6a7a754955a"
+      },
+      "originalEncoding": "utf-16",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/jvm-targeted-v2.log",
+      "bytes": 9277,
+      "sha256": "1fa0ad72f362b3662374a099e71395582f1a5ba1131fab25b5c2f443afa9adf3",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/jvm-targeted-v2.log",
+        "bytes": 18850,
+        "sha256": "46e64fe2d901f3dddbd096d28776b438507cd1165b7c62e698fea576f274e2a0"
+      },
+      "originalEncoding": "utf-16",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/jvm-targeted-v3.log",
+      "bytes": 9064,
+      "sha256": "fce57c7bbe0c84894d6645b2d111873c1379909c123e7e68dc2524c4e5febf13",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/jvm-targeted-v3.log",
+        "bytes": 18426,
+        "sha256": "ce0172b21683d56ffb70db3668a6c2f93506302f20bc40f23ed128dded5f58d3"
+      },
+      "originalEncoding": "utf-16",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/locked-contract-facts.json",
+      "bytes": 4731,
+      "sha256": "f499d0703c3f82ab5f7f5f72270fea596bb9b8c3173bb0c7ebc88e3a56cd2e17",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/locked-contract-facts.json",
+        "bytes": 4770,
+        "sha256": "d24dbb850cdec879cc6292e3c1e049c7247bf4a50e2081889931b464a00b30fa"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/ordinary-incremental-jar-inspected.json",
+      "bytes": 880,
+      "sha256": "df8e48e15a88f8d7ac04ffaa23d4d7bda430bde91645c91211c07d7260d5b763",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/ordinary-incremental-jar-inspected.json",
+        "bytes": 902,
+        "sha256": "b1a843c4df294b2c29c45b535107f3ed631601a62eec8ec1c6ba6d63631fc03c"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/OrdinaryReaderRepairSmoke.java",
+      "bytes": 8340,
+      "sha256": "7cc09d37f81257ce64fdc3f8aff49e3619dbc91bd480c80551fd44fd6dbda654",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/OrdinaryReaderRepairSmoke.java",
+        "bytes": 8340,
+        "sha256": "7cc09d37f81257ce64fdc3f8aff49e3619dbc91bd480c80551fd44fd6dbda654"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/packaging-tests.log",
+      "bytes": 1280,
+      "sha256": "efb6c6d7b4bca6fd1ad3d874446cb40c779ab66fa625b45be56bebf7aeec2246",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/packaging-tests.log",
+        "bytes": 1291,
+        "sha256": "84e19e7baf7508d3ed8d12a54aaa574e7ab207fd291b7aaa072bff97a5e63bf2"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/prepare-validation.py",
+      "bytes": 1597,
+      "sha256": "14d0d577932fdc0c0d559b500a861eea1f72455876f3bc2561b7982ab4d84ed0",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/prepare-validation.py",
+        "bytes": 1597,
+        "sha256": "14d0d577932fdc0c0d559b500a861eea1f72455876f3bc2561b7982ab4d84ed0"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/SelectedReaderRepairTests.java",
+      "bytes": 2131,
+      "sha256": "e64c17136894807b2a8d73f0a0a1a058ba6dbd576911c43b3e63bd34d484719a",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/SelectedReaderRepairTests.java",
+        "bytes": 2131,
+        "sha256": "e64c17136894807b2a8d73f0a0a1a058ba6dbd576911c43b3e63bd34d484719a"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/swift-grammar.json",
+      "bytes": 579,
+      "sha256": "43ec6ed6f013ff8bb6ce09da39467d567ebccac24dd302ee2ff3c09187cc36c3",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/swift-grammar.json",
+        "bytes": 579,
+        "sha256": "43ec6ed6f013ff8bb6ce09da39467d567ebccac24dd302ee2ff3c09187cc36c3"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/validate-baseline-counterfactual.py",
+      "bytes": 1177,
+      "sha256": "17bc6599fc0c94c1d2a395d62036664287e65e14bb72c5f99a9894eff77acc33",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/validate-baseline-counterfactual.py",
+        "bytes": 1177,
+        "sha256": "17bc6599fc0c94c1d2a395d62036664287e65e14bb72c5f99a9894eff77acc33"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/validate-incremental.py",
+      "bytes": 5815,
+      "sha256": "dfcd26d8ba50672928977972cbcea85e1652b729981d52f02882bf7cea63d23e",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/validate-incremental.py",
+        "bytes": 5815,
+        "sha256": "dfcd26d8ba50672928977972cbcea85e1652b729981d52f02882bf7cea63d23e"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/validate-java-only.py",
+      "bytes": 816,
+      "sha256": "02a6762c53d6fa62f72c62b99e89ccfc14e5bf7b7616d5bbb674f9b660a33dcd",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/validate-java-only.py",
+        "bytes": 816,
+        "sha256": "02a6762c53d6fa62f72c62b99e89ccfc14e5bf7b7616d5bbb674f9b660a33dcd"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/validate-ordinary-final.py",
+      "bytes": 2010,
+      "sha256": "d9e69c116483ca2d77d251d662f48b573c8cd5918bf98c0254d744b2f76d30f7",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/validate-ordinary-final.py",
+        "bytes": 2010,
+        "sha256": "d9e69c116483ca2d77d251d662f48b573c8cd5918bf98c0254d744b2f76d30f7"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/validate-retry.py",
+      "bytes": 1200,
+      "sha256": "adb02cf1a950407f1765eba7d08ffa083c913397289b8a00bf30a4200434c747",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/validate-retry.py",
+        "bytes": 1200,
+        "sha256": "adb02cf1a950407f1765eba7d08ffa083c913397289b8a00bf30a4200434c747"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/ready-v2-native-login-composition-step/preparation-v1.json",
+      "bytes": 20002,
+      "sha256": "189dde29ef364fbea3d52e67bcc1a835261793ee94f7f248cc93cc93867f9563",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-login-composition-step/preparation-v1.json",
+        "bytes": 20002,
+        "sha256": "189dde29ef364fbea3d52e67bcc1a835261793ee94f7f248cc93cc93867f9563"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/ready-v2-native-login-composition-independent-review/review.json",
+      "bytes": 17958,
+      "sha256": "8656dcac9f69dee8fe7dcc999b15a30f973688483cf1d2d788cbb73e135355e6",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-login-composition-independent-review/review.json",
+        "bytes": 17958,
+        "sha256": "8656dcac9f69dee8fe7dcc999b15a30f973688483cf1d2d788cbb73e135355e6"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/native-210-count-gate-repair-step/preparation/final-v1.json",
+      "bytes": 39331,
+      "sha256": "fd98f5c3ac9854b7e9edca38726e353d5fd21529c35f8640861b76cd1563bab5",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/preparation/final-v1.json",
+        "bytes": 39331,
+        "sha256": "fd98f5c3ac9854b7e9edca38726e353d5fd21529c35f8640861b76cd1563bab5"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/native-210-count-gate-repair-step/preparation/root-review.json",
+      "bytes": 3303,
+      "sha256": "00121802766d77547ec6c502e5c05ba4f0cfdeb026d031143ed7297db4bd84b6",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/preparation/root-review.json",
+        "bytes": 3303,
+        "sha256": "00121802766d77547ec6c502e5c05ba4f0cfdeb026d031143ed7297db4bd84b6"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/validation.json",
+      "bytes": 1839,
+      "sha256": "932abd72eae5a204a47e3eda597cb292cbe595a1c26fa9b656a98b1e022a36db",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/validation.json",
+        "bytes": 1899,
+        "sha256": "fed304d106099c6af4eb7c8dc25a9ac93a5c2ffa665755a2f30da8502eb9382c"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/validation-source-inputs.json",
+      "bytes": 78909,
+      "sha256": "68446f2fc4fc983adcde89f7c95df9cb5acafe936f67d89c75bb7c21c207710e",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/validation-source-inputs.json",
+        "bytes": 80999,
+        "sha256": "59ea445e10bf0cb8a829ce115c545f67c5923fed5c49ccc78b83c0691ee0d04d"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/affected-core-attempt1.log",
+      "bytes": 558,
+      "sha256": "789abb14e74c30072bfda8edc49b404068b0e47663f68d8ebc546203ffb837b0",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/affected-core-attempt1.log",
+        "bytes": 565,
+        "sha256": "cc360d8fce1705718abf4c44daa1bd233e56c06526a6230ee198d5007add4602"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/affected-native-attempt1.log",
+      "bytes": 302,
+      "sha256": "15e2b5bd8f91233361dfd0bebc54af3d0b0eae2ebadf1e729b5a7f6f1b6165f0",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/affected-native-attempt1.log",
+        "bytes": 308,
+        "sha256": "106a50bab0284f23373bda29f8b7c59b6e1c6b4a1ae2756f77503e004695cb72"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/affected-package-attempt1.log",
+      "bytes": 994,
+      "sha256": "6c6c776de6293a5f9f29844665c323c024fd99e64d0dedc075c82e4a6600baa0",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/affected-package-attempt1.log",
+        "bytes": 1003,
+        "sha256": "ae0f7a479b2339ffc872cec2bff2b86ddaeab58d0f913316848c60ed1105cd30"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/native-210-reader-repair-step/final-v1.json",
+      "bytes": 17750,
+      "sha256": "350f664aefc1fad829c9a5a239caa9483a52a6e851fe9304329d32ce7a2f533f",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-repair-step/final-v1.json",
+        "bytes": 17750,
+        "sha256": "350f664aefc1fad829c9a5a239caa9483a52a6e851fe9304329d32ce7a2f533f"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/native-210-reader-independent-review/review-v2.json",
+      "bytes": 18671,
+      "sha256": "56ffe1b7aafa37b44582fb0707923fa99476e0221cae09ca526eb9c476856424",
+      "originalEvidence": {
+        "path": ".build/native-210-reader-independent-review/review-v2.json",
+        "bytes": 18671,
+        "sha256": "56ffe1b7aafa37b44582fb0707923fa99476e0221cae09ca526eb9c476856424"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/ready-v2-native-reader-final-source/preparation-v1.json",
+      "bytes": 3981,
+      "sha256": "d37f00136bf69373ebcb6081e96f410c9d5faa1e2e292aab8481bfca209da092",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-reader-final-source/preparation-v1.json",
+        "bytes": 3981,
+        "sha256": "d37f00136bf69373ebcb6081e96f410c9d5faa1e2e292aab8481bfca209da092"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/preparation/fixed-v1.json",
+      "bytes": 10953,
+      "sha256": "8dd6d6d41986b73e4f2b3fb23045c5c3064e26713f5b8cc2a4770c1934d148bf",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/preparation/fixed-v1.json",
+        "bytes": 10953,
+        "sha256": "8dd6d6d41986b73e4f2b3fb23045c5c3064e26713f5b8cc2a4770c1934d148bf"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/final-reader-source-binding-guard.log",
+      "bytes": 322,
+      "sha256": "af1da3e4c5d87033e43d6bda827a278ceda110ed222ead3882b6182cfca29988",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-reader-source-binding-guard.log",
+        "bytes": 328,
+        "sha256": "06c805051f204fed5b622c6a2e162573ed59e278a28f551848a6aee09d2d7cde"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/core-final-source-inputs.json",
+      "bytes": 61618,
+      "sha256": "02009a9782280cad2edbee2a4dd3ee5a3906af8eac71bfd98ecdd4ff0c8faaca",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/core-final-source-inputs.json",
+        "bytes": 63270,
+        "sha256": "d383efa33ebefd599f54b5ab6ad736bfe7d03cf3cc31f5d00d76afe02549824d"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/native-final-source-inputs.json",
+      "bytes": 24723,
+      "sha256": "880ea07c46859bf2c8800cabef7af83b59842349b82745421ff101c2900b3161",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/native-final-source-inputs.json",
+        "bytes": 25380,
+        "sha256": "71873e3391888eb55aa6a008615d39a44ac3ca90e3d99adc19dd0487723312db"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/consolidated-sdk-v2-native-repair-checkpoint/Package-final-source-inputs.json",
+      "bytes": 4293,
+      "sha256": "cb7633de60b337d08519f35502f44ba357b8c420a34e08c3160681fced1f16b5",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/Package-final-source-inputs.json",
+        "bytes": 4410,
+        "sha256": "a3c1ae6b949c9452a5b23d261040631e491cabf643c50651cafcf46562afb524"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/validation.json",
+      "bytes": 4499,
+      "sha256": "35f3f5cc48a7921ad3c34a08040ed94015787c43bc8ce3c250cfdd0a8712a14d",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/validation.json",
+        "bytes": 4603,
+        "sha256": "fe9b1c47f633acab81e37672ed794dd55c81ff4c56f03df2a4d9c8ed3c719f07"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/source-inputs-validation.json",
+      "bytes": 27445,
+      "sha256": "56ed175371d0595c6f9e2b2eba8a47342cc2a599a6895b1af1205fec0c8f84c4",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/source-inputs-validation.json",
+        "bytes": 28197,
+        "sha256": "97f2814d1e362f9fe9a8ebd95b4357298e15a8b713328a92d1e5a257ad732f73"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/changed-workflow-block.sh",
+      "bytes": 5463,
+      "sha256": "ac689216cf3af2f93f7a37269406cac350ba61f3006d0f0916f4f1d4ee540797",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/changed-workflow-block.sh",
+        "bytes": 5550,
+        "sha256": "489f1f76907b64036cc0f74c26ce9583c9953cea2eebfe2e484feae6e11f6dca"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/bash-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/bash-syntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/affected-native-guards.log",
+      "bytes": 1613,
+      "sha256": "b354af3b8cdad672007550339c3e774be8f9197271ae3effa3b99aa822d0c586",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/affected-native-guards.log",
+        "bytes": 1631,
+        "sha256": "5bb4fb89d3ee33e5ccf3781cf4c93ce0dde8c8f33fb202309b9204e0eaf96b86"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/affected-native-guards-attempt2.log",
+      "bytes": 683,
+      "sha256": "fd5e9a60c4ffeba9da7759563b1bb2f73b95a81b4ec9ff559b2ddb610502603e",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/affected-native-guards-attempt2.log",
+        "bytes": 691,
+        "sha256": "e74b059387e2850a6742b8f8af28a464c0090b4242385778bda206eaf7c00c3d"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/actual-cache-gate.log",
+      "bytes": 1302,
+      "sha256": "24b5226a0ffe89c2a8389f8ba3978aa8885ce81f35fa01ada2d76d057d6fd41b",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/actual-cache-gate.log",
+        "bytes": 1340,
+        "sha256": "b01fa1a6b94c2c8e9f57774b3ac4f6e5f8ad56dfb207950bb17c12308a5905c7"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/actual-local-product-gate.log",
+      "bytes": 12616,
+      "sha256": "721296ea5bc2ab694f337eca27597c3e2c7f2a7b69fda2e4c8ef5f4f195ad454",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/actual-local-product-gate.log",
+        "bytes": 12832,
+        "sha256": "95d0cc60d3018c8f462174db9546988307b813cf95531d8dba6a1f62ce019d48"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/countgate/actual-original-failure-remains-failure.log",
+      "bytes": 1196,
+      "sha256": "1440f531f5ff78c2c74afbec4dbac4a8af5ace94a6db150559e83afd81e7a119",
+      "originalEvidence": {
+        "path": ".build/native-210-count-gate-repair-step/actual-original-failure-remains-failure.log",
+        "bytes": 1209,
+        "sha256": "e4305594b70f6906d837539e9289d4151182d87f56fdb122e799a70165998753"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt.diff",
+      "bytes": 1561,
+      "sha256": "a4f9bde03481681e9cf0564f11bdb225a75c724cd2a78338eed6186ce36a8d63",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt.diff",
+        "bytes": 1561,
+        "sha256": "a4f9bde03481681e9cf0564f11bdb225a75c724cd2a78338eed6186ce36a8d63"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt.diff",
+      "bytes": 7343,
+      "sha256": "ec09ee371ad07f5cfa1082fd0042f6d0753428c946e8a2a311cc488dd6b9b14e",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt.diff",
+        "bytes": 7345,
+        "sha256": "dc7a13297ebacb14d7c4caee23024c6311d45ac47f864e58c06604898024f2e9"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+      "bytes": 9591,
+      "sha256": "318d4e2c712472c3de7915e0220f85db3dfddbc7c44e633e8b59a3422108e57d",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 9591,
+        "sha256": "318d4e2c712472c3de7915e0220f85db3dfddbc7c44e633e8b59a3422108e57d"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/Reader/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+      "bytes": 616,
+      "sha256": "c26c042a69c10c2c96d361e525d0bebe7f47922efb5700db09f747c053349d24",
+      "originalEvidence": {
+        "path": ".build/ready-v2-native-reader-final-source/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 616,
+        "sha256": "c26c042a69c10c2c96d361e525d0bebe7f47922efb5700db09f747c053349d24"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+      "bytes": 2737,
+      "sha256": "4abba74076d7669772b2df2b86345b40fb6d06f2dc72b070647d5db08cb29de1",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 2737,
+        "sha256": "4abba74076d7669772b2df2b86345b40fb6d06f2dc72b070647d5db08cb29de1"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/.github/workflows/reader-renewal-probe.yml.diff",
+      "bytes": 9821,
+      "sha256": "79119dec4bec689e2411b90be731bfc7d520aa384c069ea3df83a1533a8e70f3",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/.github/workflows/reader-renewal-probe.yml.diff",
+        "bytes": 9826,
+        "sha256": "5aa1f188b086c8ebbacd2e8c4c2e90fc4bd6b5ce282ae3bfe7f7770a62845657"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+      "bytes": 11320,
+      "sha256": "f7daed8621c9a2743c0fd8ca73443cfdc0b0d15c01055be7f18ec30bc9d63cd5",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 11323,
+        "sha256": "1009ed13d497b0d46e0310c71f6a20f6b808b9c764c7a05bd3640d9acfe06130"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/scripts/reader-experience/original-api-package-tools.py.diff",
+      "bytes": 4634,
+      "sha256": "0f93c4d31a111200df3e4953e0b12e8f530e1be17ce77ea6de2ad50f84fe8355",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/original-api-package-tools.py.diff",
+        "bytes": 4639,
+        "sha256": "26f30225b95c5087910710ad08459d21d58e1ac0c71ac8983fb0e33cdec0881a"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/scripts/reader-experience/renewal-probe-tests.sh.diff",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/renewal-probe-tests.sh.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+      "bytes": 4701,
+      "sha256": "a0503da464618536f11537ae8724e2f3a632cfe33a64aec5e5aa32a2f43ac295",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 4703,
+        "sha256": "e0ef94feee03b15b011097a3ab7e9ee12bcde56e6f99d1cb1a83b633b4c16918"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+      "bytes": 8650,
+      "sha256": "668360e3f7ca65fb52bba0a9fc6d628c28bd386ed4b9199bc360e4db56249171",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 8651,
+        "sha256": "9aa05787111d7800e118577033739ffa185e7330600ad34550848c715399ba38"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/scripts/reader-experience/test-original-api-package-tools.py.diff",
+      "bytes": 10583,
+      "sha256": "11ca660b6cd08dd3e7c3577a6c9702089f84e4c36609e451ad23d21b9a626058",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/test-original-api-package-tools.py.diff",
+        "bytes": 10584,
+        "sha256": "8db4e84d16b8487de7c389151882d8043435b68a43c8371e6f11ec4f1e72f73c"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/controls/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+      "bytes": 16504,
+      "sha256": "16ee72c179ccf70bb3b50c333ba0a613d42d83c9d014824bf615ad2a503ec2db",
+      "originalEvidence": {
+        "path": ".build/consolidated-sdk-v2-native-repair-checkpoint/final-diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 16513,
+        "sha256": "824c5de65e22c09cc518f9d08b5dcef0bbfbd3d2bdbbbd94b6cddd3759023157"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/scripts/compose-ready-v2-native-reader-final-source.py",
+      "bytes": 4309,
+      "sha256": "2ae610f9d495e34651dbf35be170114e16b46d2041dd88af44ab8a120effb111",
+      "originalEvidence": {
+        "path": ".build/compose-ready-v2-native-reader-final-source.py",
+        "bytes": 4309,
+        "sha256": "2ae610f9d495e34651dbf35be170114e16b46d2041dd88af44ab8a120effb111"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/scripts/review-final-v2-native-reader-checkpoint.py",
+      "bytes": 8511,
+      "sha256": "fa9956d309c9c410da02dfb005380fa4d8adfa1f9e2c365da7802bc0556393c1",
+      "originalEvidence": {
+        "path": ".build/review-final-v2-native-reader-checkpoint.py",
+        "bytes": 8511,
+        "sha256": "fa9956d309c9c410da02dfb005380fa4d8adfa1f9e2c365da7802bc0556393c1"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-reader-v2-sdk-checkpoint/scripts/integrate-final-v2-native-reader-checkpoint.py",
+      "bytes": 9965,
+      "sha256": "6d79ddb3e99275ea70dc930ec0f8bed2d682ac1d47e68e96447394f7e404391d",
+      "originalEvidence": {
+        "path": ".build/integrate-final-v2-native-reader-checkpoint.py",
+        "bytes": 9965,
+        "sha256": "6d79ddb3e99275ea70dc930ec0f8bed2d682ac1d47e68e96447394f7e404391d"
+      },
+      "originalEncoding": "utf-8-sig",
+      "normalization": "BOM-aware UTF8/LF with exact round-trip GB18030 decoding for the two Windows JUnit console logs; trailing horizontal/empty EOF whitespace removed; original exact byte facts retained"
+    }
+  ],
+  "productionOwnerRecord": "docs/legado-ios/core-original-source-login-v2-step.json",
+  "terminalNativeRecord": "docs/legado-ios/core-native-210fb05-terminal-result.json",
+  "terminalSDKRecord": "docs/legado-ios/core-sdk-210fb05-terminal-result.json",
+  "scope": "Ready V2 and single-process login/accepted-effect ordering are canonical8ce; this checkpoint adds actual cold TOC metadata authorization repair, exact Native HTTP/HTML/InfoMap fixture corrections, required real local/cache result gates and final exact source inventories.",
+  "cohortPolicy": "Submit exactly one reader-renewal and one legado-native-reader-test tag at the immutable next reviewed Git commit. App463 definitions/466 execution leaves in one required cold invocation, Native21 original and separateMainJS1, fresh explicit independent Package loginv224. All old mode sets and mandatory SDK-produced fixture remain; no IPA tag.",
+  "limits": [
+    "The Reader337-class incremental f1 payload and V2 standalone346-class44 payload validate their own source closures. Neither is a fresh combined payload; the next cloud producer must freshly compile the combined source.",
+    "Reader3 distinct JVM methods finally passed via initial2pass/1fail then only corrected1pass, with baseline foreign-grant counterfactual and ordinary3-session/2HTTP checks. No claim of a fresh full Gradle or actual repaired Native run.",
+    "Browser host work is independently staged and excluded from this cohort. Full source compatibility, account authority, authenticated installation, expiry extension, relaunch and data retention remain incomplete."
+  ],
+  "deliveredBuild14Unchanged": true,
+  "newCloudTagsYet": false,
+  "untrackedDebugLogUntouched": true,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "integrationHistory": {
+    "initialAttempt": "Stopped during archive decoding at the first of two GB18030 JUnit console logs. No production/control source, plan or final record had been written. Existing partial UTF8 evidence files were revalidated byte-for-byte before resuming.",
+    "encodingCorrection": "Both exact known console logs round-trip through GB18030 and each preserves eight U+3000 characters; no replacement decoding or dropped text."
+  }
+}

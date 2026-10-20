@@ -1,0 +1,15 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt
+@@ -87,8 +87,11 @@
+     private data class StoredChapter(val url: String, val title: String, val isVolume: Boolean, val baseUrl: String,
+         val bookUrl: String, val index: Int, val isVip: Boolean, val isPay: Boolean, val resourceUrl: String?, val tag: String?,
+         val wordCount: String?, val start: Long?, val end: Long?, val startFragmentId: String?, val endFragmentId: String?, val variable: String?, val imgUrl: String?) {
++        // A TOC lookup supplies directory metadata for next-page boundaries;
++        // it does not grant variable access to every chapter in that directory.
++        // The explicitly requested DTO still restores its own owner variables.
+         fun restore(env: RuleEnvironment) = BookChapter(env, url, title, isVolume, baseUrl, bookUrl, index, isVip, isPay, resourceUrl, tag,
+-            wordCount, start, end, startFragmentId, endFragmentId, variable, imgUrl)
++            wordCount, start, end, startFragmentId, endFragmentId, variable, imgUrl, restorePersistentVariables = false)
+     }
+     private fun encodeChapters(value: List<BookChapter>) = GSON.toJson(value.map { c -> StoredChapter(c.url, c.title, c.isVolume, c.baseUrl,
+         c.bookUrl, c.index, c.isVip, c.isPay, c.resourceUrl, c.tag, c.wordCount, c.start, c.end, c.startFragmentId, c.endFragmentId, c.variable, c.imgUrl) }).toByteArray(Charsets.UTF_8)

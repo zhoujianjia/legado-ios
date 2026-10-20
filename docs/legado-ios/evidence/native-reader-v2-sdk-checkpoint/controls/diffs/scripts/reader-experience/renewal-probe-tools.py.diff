@@ -1,0 +1,51 @@
+--- a/scripts/reader-experience/renewal-probe-tools.py
++++ b/scripts/reader-experience/renewal-probe-tools.py
+@@ -983,6 +983,39 @@
+ )
+ SOURCE_INPUTS += tuple(path for path in CURRENTCORE_DELTA_REUSE_INPUTS if path not in SOURCE_INPUTS)
+ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 324
++CURRENTCORE_LOGIN_V2_NATIVE_REPAIR_INPUTS = (
++    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
++    'Modules/Services/Online/LegadoMainJSSourceService.swift',
++    'Modules/Services/Online/LegadoOriginalLoginUIForm.swift',
++    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
++    'Modules/SharedUI/Components/LoginFormGrid.swift',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/login/LoginUiV2.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginV2Runtime.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2Test.kt',
++    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift',
++    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
++    'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift',
++    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
++    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
++    'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift',
++    'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift',
++    'Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift',
++)
++SOURCE_INPUTS += tuple(path for path in CURRENTCORE_LOGIN_V2_NATIVE_REPAIR_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 328
++CURRENTCORE_NATIVE_READER_REPAIR_INPUTS = (
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt',
++    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
++    'Tests/iOS/LegadoNativeOriginalReaderTests.swift',
++)
++SOURCE_INPUTS += tuple(path for path in CURRENTCORE_NATIVE_READER_REPAIR_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 330
+
+
+ def selection_mode():
+@@ -1768,7 +1801,7 @@
+             "Currentcore requires exactly463 definitions and466 argument leaves in one cold3600-second invocation/xcresult, retaining both original Bool false/true pairs and the glyph nestedBackdrop pair and the required same-job SDK fixture case.",
+             "All producer/stage/native/export/verification phases and actual portable guards must succeed. Producer or guard failure remains failure while the complete native selection is still attempted for diagnostics.",
+             "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode, all-source pause, public content batch, first enrollment/durable binding, explicit and automatic execution, measured JVM bundle bounds, anisette v3, pairing import, pagination recovery, raw source login-info and CSR/account/GSA definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
+-            "The independent explicitly selected currentcore SwiftPM deltareuse selection is23 methods with15 actual compilation inputs plus7 controls. It must execute freshly for these changed inputs; historical10/default16/publicbatch17/effects18/loginui22 modes retain their exact sets and are not included in native466.",
++            "The independent explicitly selected currentcore SwiftPM loginv2 selection is24 methods with16 actual compilation inputs plus7 controls. It must execute freshly for these changed inputs; historical10/default16/publicbatch17/effects18/loginui22/deltareuse23 modes retain their exact sets and are not included in native466.",
+             "Existing eleven mode method/parameter identities and budgets remain unchanged. Benchmarks, diagnostic UI, unmerged later source work and unrelated JVM replay are excluded."]
+         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
+     return output

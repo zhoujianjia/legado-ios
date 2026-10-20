@@ -1,0 +1,112 @@
+--- a/scripts/reader-experience/test-native-smoke-tools.py
++++ b/scripts/reader-experience/test-native-smoke-tools.py
+@@ -80,7 +80,7 @@
+             result = native.result(self.root)
+             self.assertEqual(result["sourceCommitStamped"], SOURCE)
+             self.assertEqual(result["sourceOverlays"]["infoOverlay"]["sourceCommitStamped"], SOURCE)
+-            self.assertEqual(result["originalReaderTests"]["expectedTests"], 20)
++            self.assertEqual(result["originalReaderTests"]["expectedTests"], 21)
+             self.assertFalse(result["deviceValidationPassed"])
+             for key, value in (("YueduExperienceSourceCommit", "b" * 40), ("GitCommitSHA", "b" * 7),
+                                ("YueduExperienceSourceCommit", None)):
+@@ -208,18 +208,80 @@
+             with patch.dict(os.environ, {"LEGADO_RUNTIME_SOURCE_ONLY": "1"}), self.assertRaisesRegex(ValueError, "unset"):
+                 native._source_state(self.root)
+
++
++    def test_cache_gate_rejects_wrong_summary_methods_bool_leaves_and_source(self):
++        repo = Path(__file__).resolve().parents[2]
++        for suite in native.CACHE_CASES:
++            relative = 'Tests/iOS/yuedu appTests/' + suite + '.swift'
++            path = self.root / relative; path.parent.mkdir(parents=True, exist_ok=True)
++            path.write_bytes((repo / relative).read_bytes())
++        summary = {'totalTestCount': 6, 'passedTests': 6, 'failedTests': 0, 'skippedTests': 0,
++            'expectedFailures': 0, 'devicesAndConfigurations': [
++                {'passedTests': 8, 'failedTests': 0, 'skippedTests': 0, 'expectedFailures': 0}]}
++        rows = []
++        for identity, count in native.CACHE_EXECUTIONS.items():
++            row = {'nodeType': 'Test Case', 'nodeIdentifier': identity, 'result': 'Passed'}
++            if count == 2: row['children'] = [{'nodeType':'Arguments','name':v,'result':'Passed'} for v in ['false','true']]
++            rows.append(row)
++        tree = {'testNodes': rows}
++        result = native.verify_cache(summary, tree, self.root)
++        self.assertEqual(result['expectedTests'], 6)
++        self.assertEqual(result['expectedExecutions'], 8)
++        for fault in ('empty', 'missing', 'duplicate', 'foreign', 'wrongTarget', 'skip', 'failed',
++                      'zeroExecution', 'wrongGrain', 'missingDevice', 'extraDevice', 'expectedFailure',
++                      'boolCounter', 'argumentMissing', 'argumentDuplicate', 'argumentChanged', 'argumentSkipped', 'retry'):
++            with self.subTest(fault=fault), self.assertRaises(ValueError):
++                s, t = copy.deepcopy(summary), copy.deepcopy(tree)
++                parameter = next(row for row in t['testNodes'] if row.get('children'))
++                if fault == 'empty': t['testNodes'] = []
++                elif fault == 'missing': t['testNodes'].pop()
++                elif fault == 'duplicate': t['testNodes'].append(copy.deepcopy(t['testNodes'][0]))
++                elif fault == 'foreign': t['testNodes'][0]['nodeIdentifier'] = 'Other/test()'
++                elif fault == 'wrongTarget': t['testNodes'][0]['nodeIdentifier'] = 'otherTests/' + t['testNodes'][0]['nodeIdentifier']
++                elif fault in ('skip','failed'): t['testNodes'][0]['result'] = 'Skipped' if fault == 'skip' else 'Failed'
++                elif fault == 'zeroExecution': s['devicesAndConfigurations'][0]['passedTests'] = 0
++                elif fault == 'wrongGrain': s['totalTestCount'] = s['passedTests'] = 8
++                elif fault == 'missingDevice': s['devicesAndConfigurations'] = []
++                elif fault == 'extraDevice': s['devicesAndConfigurations'] *= 2
++                elif fault == 'expectedFailure': s['devicesAndConfigurations'][0]['expectedFailures'] = 1
++                elif fault == 'boolCounter': s['failedTests'] = False
++                elif fault == 'argumentMissing': parameter['children'].pop()
++                elif fault == 'argumentDuplicate': parameter['children'][1]['name'] = 'false'
++                elif fault == 'argumentChanged': parameter['children'][0]['name'] = '0'
++                elif fault == 'argumentSkipped': parameter['children'][0]['result'] = 'Skipped'
++                else: parameter['children'] = [{'nodeType':'Repetition','result':'Passed'}]
++                native.verify_cache(s, t, self.root)
++        source = self.root / 'Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift'
++        original = source.read_bytes()
++        for before, after in [(b'[false, true]',b'[false, false]'),
++                              (b'hasCachedState: Bool',b'hasCachedState: Int'),
++                              (b'packageLoaderUpgradesDownloadedLegacyChapter',b'foreignCacheMethod')]:
++            source.write_bytes(original.replace(before, after))
++            with self.assertRaises(ValueError): native.verify_cache(summary, tree, self.root)
++        source.write_bytes(original)
++
+     def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
+         repo = Path(__file__).resolve().parents[2]
+         workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
+-        self.assertEqual(len(native.SOURCE_INPUTS), 115)
++        self.assertEqual(len(native.SOURCE_INPUTS), 131)
+         self.assertEqual(len(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS), 23)
+         self.assertTrue(set(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS) <= set(native.SOURCE_INPUTS))
+-        self.assertIn("Execute1 MainJS and20 original methods in separate required hosts", workflow)
++        self.assertIn("Execute1 MainJS and21 original methods in separate required hosts", workflow)
+         self.assertEqual(len(native.NATIVE_CORETEXT_COMPILE_INPUTS), 6)
+         self.assertTrue(set(native.NATIVE_CORETEXT_COMPILE_INPUTS) <= set(native.SOURCE_INPUTS))
+         for relative in native.NATIVE_CORETEXT_COMPILE_INPUTS:
+             self.assertIn("import YueduCoreText", (repo / relative).read_text(encoding="utf-8").splitlines())
+         self.assertEqual(len(native.SOURCE_INPUTS), len(set(native.SOURCE_INPUTS)))
++        self.assertEqual(len(native.NATIVE_READER_REPAIR_INPUTS), 4)
++        self.assertTrue(set(native.NATIVE_READER_REPAIR_INPUTS) <= set(native.SOURCE_INPUTS))
++        self.assertEqual(len(native.LOGIN_V2_NATIVE_REPAIR_INPUTS), 21)
++        self.assertTrue(set(native.LOGIN_V2_NATIVE_REPAIR_INPUTS) <= set(native.SOURCE_INPUTS))
++        self.assertEqual(len(native.LOCAL_PRODUCT_CACHE_INPUTS), 10)
++        self.assertTrue(set(native.LOCAL_PRODUCT_CACHE_INPUTS) <= set(native.SOURCE_INPUTS))
++        self.assertIn("smoke-tools.py verify-local-product", workflow)
++        self.assertIn("native-smoke-tools.py verify-cache", workflow)
++        self.assertIn("$CACHE_COUNT_STATUS == 0", workflow)
++        self.assertNotIn("--expected 41", workflow)
+         self.assertTrue(set(native.LOGIN_EVENTS_DISMISS_LIFECYCLE_INPUTS) <= set(native.SOURCE_INPUTS))
+         self.assertTrue(set(native.DELTA_REUSE_INPUTS) <= set(native.SOURCE_INPUTS))
+         self.assertEqual(len(native.ORIGINAL_SOURCE_STATE_INPUTS), 20)
+@@ -234,7 +296,7 @@
+         self.assertTrue(set(native.ORIGINAL_LOGIN_MAP_INPUTS) <= set(native.SOURCE_INPUTS))
+         self.assertEqual(native.NATIVE_GROUPS["mainjs"]["seconds"], 2700)
+         self.assertEqual(len(native.NATIVE_GROUPS["mainjs"]["methods"]), 1)
+-        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 20)
++        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 21)
+         self.assertIn("unset LEGADO_RUNTIME_SOURCE_ONLY", workflow)
+         self.assertIn("LEGADO_REQUIRE_NATIVE_MAINJS", workflow)
+         self.assertIn("verify-native-exports.py", workflow)
+@@ -264,7 +326,7 @@
+                 if suite == "LegadoNativeOriginalLoginInfoTests":
+                     # This suite throws directly under the required-native flag.
+                     # Its source-only fallback must never run in this workflow.
+-                    self.assertEqual(source.count("try await requireNativeRuntime()"), 9)
++                    self.assertEqual(source.count("try await requireNativeRuntime()"), 10)
+                     self.assertRegex(source, r"#if LEGADO_REQUIRE_NATIVE_MAINJS\s+throw LegadoRuntimeError\(code: \"missing_runtime\"")
+                     self.assertRegex(source, r'#else\s+if ProcessInfo\.processInfo\.environment\["LEGADO_REQUIRE_NATIVE_MAINJS"\] == "1"\s*\{\s*throw LegadoRuntimeError\(code: "missing_runtime"')
+                     self.assertIn('throw XCTSkip("Requires real ordinary JAR/JNI and Keychain; source-only cannot pass")', source)

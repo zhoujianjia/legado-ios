@@ -1,0 +1,104 @@
+{
+  "commands": [
+    {
+      "name": "affected-native-guards",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-native-smoke-tools.py",
+        "NativeSmokeProvenanceTests.test_cache_gate_rejects_wrong_summary_methods_bool_leaves_and_source",
+        "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+        "NativeSmokeProvenanceTests.test_source_closure_rejects_changed_bytes_wrong_source_and_source_only_mode",
+        "-v"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\native-210-count-gate-repair-step\\validation-root",
+      "exitCode": 1,
+      "expectedExit": 0,
+      "seconds": 0.172,
+      "log": ".build/native-210-count-gate-repair-step/affected-native-guards.log",
+      "bytes": 1631,
+      "sha256": "5bb4fb89d3ee33e5ccf3781cf4c93ce0dde8c8f33fb202309b9204e0eaf96b86"
+    },
+    {
+      "name": "affected-native-guards",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-native-smoke-tools.py",
+        "NativeSmokeProvenanceTests.test_cache_gate_rejects_wrong_summary_methods_bool_leaves_and_source",
+        "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+        "NativeSmokeProvenanceTests.test_source_closure_rejects_changed_bytes_wrong_source_and_source_only_mode",
+        "-v"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\native-210-count-gate-repair-step\\validation-root",
+      "exitCode": 0,
+      "expectedExit": 0,
+      "seconds": 0.218,
+      "log": ".build/native-210-count-gate-repair-step/affected-native-guards-attempt2.log",
+      "bytes": 691,
+      "sha256": "e74b059387e2850a6742b8f8af28a464c0090b4242385778bda206eaf7c00c3d"
+    },
+    {
+      "name": "actual-cache-gate",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/native-smoke-tools.py",
+        "verify-cache",
+        "--summary",
+        "F:\\yuedu-reader\\.build\\consolidated-native-210fb05\\extracted\\.build\\native-reader-test\\cache-summary.json",
+        "--tests",
+        "F:\\yuedu-reader\\.build\\consolidated-native-210fb05\\extracted\\.build\\native-reader-test\\cache-tests.json"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\native-210-count-gate-repair-step\\validation-root",
+      "exitCode": 0,
+      "expectedExit": 0,
+      "seconds": 0.11,
+      "log": ".build/native-210-count-gate-repair-step/actual-cache-gate.log",
+      "bytes": 1340,
+      "sha256": "b01fa1a6b94c2c8e9f57774b3ac4f6e5f8ad56dfb207950bb17c12308a5905c7"
+    },
+    {
+      "name": "actual-local-product-gate",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/smoke-tools.py",
+        "verify-local-product",
+        "--summary",
+        "F:\\yuedu-reader\\.build\\consolidated-native-210fb05\\extracted\\.build\\native-reader-test\\local-product-summary.json",
+        "--tests",
+        "F:\\yuedu-reader\\.build\\consolidated-native-210fb05\\extracted\\.build\\native-reader-test\\local-product-tests.json"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\native-210-count-gate-repair-step\\validation-root",
+      "exitCode": 0,
+      "expectedExit": 0,
+      "seconds": 0.078,
+      "log": ".build/native-210-count-gate-repair-step/actual-local-product-gate.log",
+      "bytes": 12832,
+      "sha256": "95d0cc60d3018c8f462174db9546988307b813cf95531d8dba6a1f62ce019d48"
+    },
+    {
+      "name": "actual-original-failure-remains-failure",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/native-smoke-tools.py",
+        "verify-cache",
+        "--summary",
+        "F:\\yuedu-reader\\.build\\consolidated-native-210fb05\\extracted\\.build\\native-reader-test\\original-summary.json",
+        "--tests",
+        "F:\\yuedu-reader\\.build\\consolidated-native-210fb05\\extracted\\.build\\native-reader-test\\original-tests.json"
+      ],
+      "cwd": "F:\\yuedu-reader\\.build\\native-210-count-gate-repair-step\\validation-root",
+      "exitCode": 1,
+      "expectedExit": 1,
+      "seconds": 0.125,
+      "log": ".build/native-210-count-gate-repair-step/actual-original-failure-remains-failure.log",
+      "bytes": 1209,
+      "sha256": "e4305594b70f6906d837539e9289d4151182d87f56fdb122e799a70165998753"
+    }
+  ],
+  "allExpectedExits": false,
+  "existingProductionFunctionsASTUnchangedExceptCLI": true
+}

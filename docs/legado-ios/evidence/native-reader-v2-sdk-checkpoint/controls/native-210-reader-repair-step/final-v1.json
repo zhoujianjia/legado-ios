@@ -1,0 +1,460 @@
+{
+  "version": 1,
+  "stage": "native-210-reader-repair-step",
+  "frozenUTC": "2026-10-20T20:42:32.584991+00:00",
+  "baseline": {
+    "source": "Canonical55a trueDelta snapshot; Reader bytes also matched actual Native210 execution source-input row. Later canonical V2 files are excluded from this incremental test closure.",
+    "actualNativeSummary": {
+      "path": ".build\\consolidated-native-210fb05\\extracted\\.build\\native-reader-test\\original-summary.json",
+      "bytes": 10643,
+      "sha256": "1b20496e42c94446cbf8716fad7f4c1cc01f59c62773ba86abc4dbb539d09804"
+    }
+  },
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "baseline": {
+        "bytes": 8685,
+        "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+      },
+      "candidate": {
+        "bytes": 8960,
+        "sha256": "81c25a8ce0a566314cd9af53449928786672b9c451cc321cf3c7d651baf18267"
+      },
+      "snapshot": {
+        "bytes": 8960,
+        "sha256": "81c25a8ce0a566314cd9af53449928786672b9c451cc321cf3c7d651baf18267"
+      },
+      "diff": {
+        "path": "diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt.diff",
+        "bytes": 1576,
+        "sha256": "f3ba508d2d295e2f390a997605c02770f02224c188d6a1efb2b2aff105c25550"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "baseline": {
+        "bytes": 22670,
+        "sha256": "dc91b9622a01a04f88d2f028a805b943a16a8bc11835ff659bc1c6f21ab7f8e1"
+      },
+      "candidate": {
+        "bytes": 28059,
+        "sha256": "c686baa5844f9784df504907d78046bc6a8f8830da36583f49caa0e94a8ff27c"
+      },
+      "snapshot": {
+        "bytes": 28059,
+        "sha256": "c686baa5844f9784df504907d78046bc6a8f8830da36583f49caa0e94a8ff27c"
+      },
+      "diff": {
+        "path": "diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt.diff",
+        "bytes": 7360,
+        "sha256": "784eccb30a2922b49f9881c5b7db57089666faa0335c70ef175ce1ba81dca3d9"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134140,
+        "sha256": "195a0dc72550d597a7e826e6cbac56285138c2849b0eb4dc56a430257184ccb1"
+      },
+      "candidate": {
+        "bytes": 134140,
+        "sha256": "939bfaee9a3448224fcad3592dca793584d41c8d86fb4e5dcbd7d6d05e476b55"
+      },
+      "snapshot": {
+        "bytes": 134140,
+        "sha256": "939bfaee9a3448224fcad3592dca793584d41c8d86fb4e5dcbd7d6d05e476b55"
+      },
+      "diff": {
+        "path": "diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 631,
+        "sha256": "16a0ade23fe46b083f3a22111e9328fc056afc2fce4f93b7aa49c90754b7cb88"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 72317,
+        "sha256": "6afedef94dcfce03daca1fad06f98fa8b5104b5735124a2bb969af05ae1edcdb"
+      },
+      "candidate": {
+        "bytes": 72777,
+        "sha256": "6910a7b966b7a83ce730871ee7ff57d666c3bda86acae202163663f45cd4f487"
+      },
+      "snapshot": {
+        "bytes": 72777,
+        "sha256": "6910a7b966b7a83ce730871ee7ff57d666c3bda86acae202163663f45cd4f487"
+      },
+      "diff": {
+        "path": "diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 9606,
+        "sha256": "3f7727c6f1292fadcc36d21a552cc48c5dfbec15290478a308f395edf31bc53c"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "path": "freeze.py",
+      "bytes": 8856,
+      "sha256": "0910da59ef0611d3f9130046cb974e89dff488ab6892147d8a0d18dc52c3beb9"
+    },
+    {
+      "path": "incremental/actual-tests.xml",
+      "bytes": 2957,
+      "sha256": "1eaf671e00784b7bdc6ac209116af0257bc8fb48dca4ec8a64530d6d946519a1"
+    },
+    {
+      "path": "incremental/baseline-counterfactual/actual-tests.xml",
+      "bytes": 4660,
+      "sha256": "59c1167ac4f01b570caee5ba7544806f93820adf2f40e99df4f74d8813471340"
+    },
+    {
+      "path": "incremental/baseline-counterfactual/command.json",
+      "bytes": 1084,
+      "sha256": "9ffabc96077a9693509a414eba92d0b719b21558584238a1d9b3b259ac0ffdfb"
+    },
+    {
+      "path": "incremental/baseline-counterfactual/execute.log",
+      "bytes": 4450,
+      "sha256": "ece10688964f9d8c386db76931e3ef0a57840ae0b42afdb96bd39976d468f8b8"
+    },
+    {
+      "path": "incremental/binding.json",
+      "bytes": 4697,
+      "sha256": "103c66a2efae71dc68733a023f60aa704fa7f364673dfc6a13d4dfeb0b94faa5"
+    },
+    {
+      "path": "incremental/commands.json",
+      "bytes": 8225,
+      "sha256": "29cd19a5ebbfa689ee9835e34059cdff7ee6c0c49c173e9dfaf44a559c3b9300"
+    },
+    {
+      "path": "incremental/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/compile-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/history/attempt1/actual-tests.xml",
+      "bytes": 2957,
+      "sha256": "1eaf671e00784b7bdc6ac209116af0257bc8fb48dca4ec8a64530d6d946519a1"
+    },
+    {
+      "path": "incremental/history/attempt1/binding.json",
+      "bytes": 4697,
+      "sha256": "103c66a2efae71dc68733a023f60aa704fa7f364673dfc6a13d4dfeb0b94faa5"
+    },
+    {
+      "path": "incremental/history/attempt1/commands.json",
+      "bytes": 8225,
+      "sha256": "29cd19a5ebbfa689ee9835e34059cdff7ee6c0c49c173e9dfaf44a559c3b9300"
+    },
+    {
+      "path": "incremental/history/attempt1/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/history/attempt1/compile-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/history/attempt1/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/history/attempt1/junit-selected.log",
+      "bytes": 2786,
+      "sha256": "14efc276f82e14f09da579ca5f3420822fada99f37b907973bcc90d3bbca9766"
+    },
+    {
+      "path": "incremental/java-retry/commands.json",
+      "bytes": 1979,
+      "sha256": "9b33da3ba9c3aaeb1fd4d717d4248533c9f9486531800a40e1ba2a055261d479"
+    },
+    {
+      "path": "incremental/java-retry/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/java-retry/ordinary-java.log",
+      "bytes": 344,
+      "sha256": "5c5c50a2374f509f2c6af7f6af7eae71a852535818a804224445745fb0a862dd"
+    },
+    {
+      "path": "incremental/java-retry-v2/commands.json",
+      "bytes": 1979,
+      "sha256": "9b33da3ba9c3aaeb1fd4d717d4248533c9f9486531800a40e1ba2a055261d479"
+    },
+    {
+      "path": "incremental/java-retry-v2/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/java-retry-v2/ordinary-java.log",
+      "bytes": 142,
+      "sha256": "727b86737f8814b956b655477916a4283e904eb4f8638510edf391f5741519f9"
+    },
+    {
+      "path": "incremental/junit-selected.log",
+      "bytes": 2786,
+      "sha256": "14efc276f82e14f09da579ca5f3420822fada99f37b907973bcc90d3bbca9766"
+    },
+    {
+      "path": "incremental/ordinary-final/commands.json",
+      "bytes": 1155,
+      "sha256": "14f356144616986876e539394ff5febe5c5224041a3a6086cfbd4cf7d38a9d22"
+    },
+    {
+      "path": "incremental/ordinary-final/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/ordinary-final/execute.log",
+      "bytes": 142,
+      "sha256": "727b86737f8814b956b655477916a4283e904eb4f8638510edf391f5741519f9"
+    },
+    {
+      "path": "incremental/retry/actual-tests.xml",
+      "bytes": 336,
+      "sha256": "6205984c792f8c35780adf81e9905fb426bdc636e1ed57a12885375c5241d141"
+    },
+    {
+      "path": "incremental/retry/commands.json",
+      "bytes": 6456,
+      "sha256": "c6797559282a8dd7683f699135bfcec05fd3262e29676ebccefa2845abb84f6b"
+    },
+    {
+      "path": "incremental/retry/compile-java.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/retry/compile-tests.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "incremental/retry/junit-selected.log",
+      "bytes": 103,
+      "sha256": "aa97b5e950beb57a68f66d3a11b0be24486c295dd19fc3ad50358c296858217d"
+    },
+    {
+      "path": "incremental/retry/ordinary-java.log",
+      "bytes": 222,
+      "sha256": "ba225c0ca74c6d51a6a16bc26afde9c5a8e264c7a8509e2926cb3b78c6777f3e"
+    },
+    {
+      "path": "jvm-targeted-v1.log",
+      "bytes": 10016,
+      "sha256": "796e3bd0efa537049ba1cbb823d7e8b78f63ccb94a67eb472bf4c6a7a754955a"
+    },
+    {
+      "path": "jvm-targeted-v2.log",
+      "bytes": 18850,
+      "sha256": "46e64fe2d901f3dddbd096d28776b438507cd1165b7c62e698fea576f274e2a0"
+    },
+    {
+      "path": "jvm-targeted-v3.log",
+      "bytes": 18426,
+      "sha256": "ce0172b21683d56ffb70db3668a6c2f93506302f20bc40f23ed128dded5f58d3"
+    },
+    {
+      "path": "locked-contract-facts.json",
+      "bytes": 4770,
+      "sha256": "d24dbb850cdec879cc6292e3c1e049c7247bf4a50e2081889931b464a00b30fa"
+    },
+    {
+      "path": "ordinary-incremental-jar-inspected.json",
+      "bytes": 902,
+      "sha256": "b1a843c4df294b2c29c45b535107f3ed631601a62eec8ec1c6ba6d63631fc03c"
+    },
+    {
+      "path": "OrdinaryReaderRepairSmoke.java",
+      "bytes": 8340,
+      "sha256": "7cc09d37f81257ce64fdc3f8aff49e3619dbc91bd480c80551fd44fd6dbda654"
+    },
+    {
+      "path": "packaging-tests.log",
+      "bytes": 1291,
+      "sha256": "84e19e7baf7508d3ed8d12a54aaa574e7ab207fd291b7aaa072bff97a5e63bf2"
+    },
+    {
+      "path": "prepare-validation.py",
+      "bytes": 1597,
+      "sha256": "14d0d577932fdc0c0d559b500a861eea1f72455876f3bc2561b7982ab4d84ed0"
+    },
+    {
+      "path": "SelectedReaderRepairTests.java",
+      "bytes": 2131,
+      "sha256": "e64c17136894807b2a8d73f0a0a1a058ba6dbd576911c43b3e63bd34d484719a"
+    },
+    {
+      "path": "swift-grammar.json",
+      "bytes": 579,
+      "sha256": "43ec6ed6f013ff8bb6ce09da39467d567ebccac24dd302ee2ff3c09187cc36c3"
+    },
+    {
+      "path": "validate-baseline-counterfactual.py",
+      "bytes": 1177,
+      "sha256": "17bc6599fc0c94c1d2a395d62036664287e65e14bb72c5f99a9894eff77acc33"
+    },
+    {
+      "path": "validate-incremental.py",
+      "bytes": 5815,
+      "sha256": "dfcd26d8ba50672928977972cbcea85e1652b729981d52f02882bf7cea63d23e"
+    },
+    {
+      "path": "validate-java-only.py",
+      "bytes": 816,
+      "sha256": "02a6762c53d6fa62f72c62b99e89ccfc14e5bf7b7616d5bbb674f9b660a33dcd"
+    },
+    {
+      "path": "validate-ordinary-final.py",
+      "bytes": 2010,
+      "sha256": "d9e69c116483ca2d77d251d662f48b573c8cd5918bf98c0254d744b2f76d30f7"
+    },
+    {
+      "path": "validate-retry.py",
+      "bytes": 1200,
+      "sha256": "adb02cf1a950407f1765eba7d08ffa083c913397289b8a00bf30a4200434c747"
+    }
+  ],
+  "rootCauses": [
+    {
+      "kind": "production P1",
+      "cause": "Cold TOC metadata construction eagerly restored variables on every stored chapter; last-chapter next=nil boundary lookup accessed foreign chapters outside a single-current-chapter grant.",
+      "fix": "StoredChapter.restore passes restorePersistentVariables=false only for TOC metadata; explicit OriginalRuleDto.chapter still restores variables and retains existing host rejection."
+    },
+    {
+      "kind": "fixture",
+      "cause": "readyBaseURL already includes the run namespace; nine call sites duplicated it.",
+      "fix": "Use baseURL plus only route suffix, assert baseURL.path and /held target identity; retain all real HTTP, cancellation, held socket and request assertions."
+    },
+    {
+      "kind": "fixture",
+      "cause": "Three batch expectations omitted original two U+3000 indentation characters.",
+      "fix": "Exact original output expectations; no trimming or formatter change."
+    },
+    {
+      "kind": "fixture",
+      "cause": "Original InfoMap.get returns a Rhino Java string whose JS strict identity differs from a JS string literal.",
+      "fix": "Explicit String(infoMap.get(...)) strict value assertion plus separate original two-source map value checks. Actual original-Rhino vector [false,true] confirmed; no context/permission production change."
+    }
+  ],
+  "validation": {
+    "JVM": {
+      "kind": "Exact one-source Kotlin2.4.20 incremental friend/module overlay over bound c26 ordinary337-class JAR, with all121 unchanged main roots byte-matched; not fresh full Gradle.",
+      "firstCandidateActual": {
+        "tests": 3,
+        "pass": 2,
+        "failure": 1,
+        "reason": "New synthetic #text@html expectation omitted retained outer-element/paragraph whitespace."
+      },
+      "correctedOnlyFailedActual": {
+        "tests": 1,
+        "pass": 1,
+        "failure": 0
+      },
+      "finalDistinctMethods": [
+        "lastChapterDirectoryLookupKeepsSingleChapterVariableGrantAndCurrentRestore",
+        "originalExploreJavaMapStringRequiresExplicitStringForStrictIdentity",
+        "cssSearchXpathDetailsJsonTocAndPagedContentUseSameEntitiesAndTransport"
+      ],
+      "finalDistinctPassing": 3,
+      "baselineCounterfactual": {
+        "tests": 1,
+        "expectedFailure": 1,
+        "confirmed": "Original c26 fails on foreign chapter variables during cold TOC metadata restoration."
+      },
+      "compiler": "Kotlin2.4.20 / target21 / module io.yuedu_legado-runtime / explicit friend bound ordinary JAR / 128MiB SerialGC; exact argv and compiler dependency bytes recorded."
+    },
+    "ordinaryJava": {
+      "finalActualSessions": 3,
+      "sources": 1,
+      "realLoopbackHTTP": 2,
+      "foreignChapterDenied": true,
+      "currentChapterVariablesRetained": true,
+      "originalMapStrictIdentityVector": "[false,true]",
+      "classpath": "Final compile/execute only incremental production JAR and separately compiled outside consumer classes, no JUnit or test classes.",
+      "priorFailureHistory": "Two earlier outside-consumer attempts omitted public content needSave=false; existing guard rejected both. Corrected explicit false follows the unchanged public API contract; all logs retained."
+    },
+    "packaging": {
+      "actualGuardsPassed": 6,
+      "jar": "incremental/legado-runtime-incremental.jar",
+      "jarFacts": {
+        "bytes": 10827184,
+        "sha256": "f1faa8387e9c8f2f34a4b6781329ad1b825c86dd4195625400e540d3a0b67536"
+      },
+      "ordinaryTestPayload": false,
+      "note": "CRC, provenance/resources, class major and test-exclusion guards passed for the precise incremental overlay; no fresh whole Gradle producer claim."
+    },
+    "Swift": {
+      "grammarFiles": 2,
+      "errors": 0,
+      "nativeReaderMethodIdentities": [
+        "testNativeOriginalWebBookPreviewTransferAndReopen",
+        "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+        "testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+        "testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "testNativeOriginalBookNotificationCancellationDrains",
+        "testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+        "testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority"
+      ],
+      "newNativeMethods": 0,
+      "actualAppleSDK": 0,
+      "actualJNI": 0,
+      "actualDevice": 0
+    },
+    "preTestFailures": [
+      {
+        "log": "jvm-targeted-v1.log",
+        "actualJUnit": 0,
+        "reason": "Windows commit/pagefile exhausted before daemon startup, 768MiB G1 allocation failure."
+      },
+      {
+        "log": "jvm-targeted-v2.log",
+        "actualJUnit": 0,
+        "reason": "512MiB Serial daemon native malloc failure at configuration."
+      },
+      {
+        "log": "jvm-targeted-v3.log",
+        "actualJUnit": 0,
+        "reason": "384MiB Serial daemon native malloc failure at compileKotlin."
+      }
+    ]
+  },
+  "integration": {
+    "portedManifestCandidateCount": 56,
+    "mergeRule": "Root must apply ONLY RuleWebBookState portedSources bytes/SHA row to current58-entry V2 manifest; do not overwrite current archive/resources/license or newer ported rows.",
+    "requiresNextCohort": "Fresh combined production JAR/SDK/JNI and actual NativeReader11 methods under the existing mandatory fixture and strict gates. This stage does not execute or pass them."
+  },
+  "nonChanges": [
+    "No host grant expansion, no new store/owner/engine/HTTP stack, no fabricated nextChapterUrl, no content trimming.",
+    "No canonical/Git/cloud/tag mutation."
+  ],
+  "flags": {
+    "fullBookSourceCompatibility": false,
+    "deviceValidationComplete": false,
+    "automaticRenewalComplete": false,
+    "selfSigningComplete": false
+  }
+}

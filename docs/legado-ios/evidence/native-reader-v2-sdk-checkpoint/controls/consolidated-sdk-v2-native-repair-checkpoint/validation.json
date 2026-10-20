@@ -1,0 +1,60 @@
+{
+  "commands": [
+    {
+      "name": "affected-core",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "DeltaReuseCheckpointSelectionTests",
+        "-v"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0,
+      "seconds": 1.407,
+      "log": ".build/consolidated-sdk-v2-native-repair-checkpoint/affected-core-attempt1.log",
+      "bytes": 565,
+      "sha256": "cc360d8fce1705718abf4c44daa1bd233e56c06526a6230ee198d5007add4602"
+    },
+    {
+      "name": "affected-native",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-native-smoke-tools.py",
+        "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+        "-v"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0,
+      "seconds": 0.203,
+      "log": ".build/consolidated-sdk-v2-native-repair-checkpoint/affected-native-attempt1.log",
+      "bytes": 308,
+      "sha256": "106a50bab0284f23373bda29f8b7c59b6e1c6b4a1ae2756f77503e004695cb72"
+    },
+    {
+      "name": "affected-package",
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-original-api-package-tools.py",
+        "LoginV2PackageSelectionTests",
+        "DeltaReusePackageSelectionTests",
+        "-v"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0,
+      "seconds": 0.484,
+      "log": ".build/consolidated-sdk-v2-native-repair-checkpoint/affected-package-attempt1.log",
+      "bytes": 1003,
+      "sha256": "ae0f7a479b2339ffc872cec2bff2b86ddaeab58d0f913316848c60ed1105cd30"
+    }
+  ],
+  "AppSelectionsAndParametersUnchanged": true,
+  "oldPackageSetsUnchanged": true,
+  "fixedCounts": {
+    "core": 328,
+    "native": 129,
+    "package": 23
+  }
+}

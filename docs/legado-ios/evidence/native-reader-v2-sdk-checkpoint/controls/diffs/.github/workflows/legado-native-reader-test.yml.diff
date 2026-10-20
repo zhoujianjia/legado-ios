@@ -1,0 +1,37 @@
+--- a/.github/workflows/legado-native-reader-test.yml
++++ b/.github/workflows/legado-native-reader-test.yml
+@@ -58,7 +58,7 @@
+           xcrun simctl bootstatus "$(bash scripts/sim.sh udid)" -b > .build/native-reader-test/simulator-boot.log 2>&1
+           python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime
+           python -B scripts/reader-experience/native-smoke-tools.py prepare
+-      - name: Execute1 MainJS and20 original methods in separate required hosts
++      - name: Execute1 MainJS and21 original methods in separate required hosts
+         run: |
+           unset LEGADO_RUNTIME_SOURCE_ONLY
+           ARGS=(
+@@ -130,9 +130,14 @@
+           python -B scripts/reader-experience/smoke-tools.py verify-summary \
+             --summary .build/native-reader-test/configuration-summary.json --expected 9
+           CONFIGURATION_COUNT_STATUS=$?
+-          python -B scripts/reader-experience/smoke-tools.py verify-summary \
+-            --summary .build/native-reader-test/local-product-summary.json --expected 41
++          python -B scripts/reader-experience/smoke-tools.py verify-local-product \
++            --summary .build/native-reader-test/local-product-summary.json \
++            --tests .build/native-reader-test/local-product-tests.json
+           LOCAL_PRODUCT_COUNT_STATUS=$?
++          python -B scripts/reader-experience/native-smoke-tools.py verify-cache \
++            --summary .build/native-reader-test/cache-summary.json \
++            --tests .build/native-reader-test/cache-tests.json
++          CACHE_COUNT_STATUS=$?
+           NATIVE_RESULT_STATUS=1
+           if [[ $NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0 ]]; then
+             python -B scripts/reader-experience/native-smoke-tools.py result
+@@ -141,7 +146,7 @@
+           set -e
+           [[ $CONFIGURATION_STATUS == 0 && $LOCAL_PRODUCT_STATUS == 0 && $CACHE_STATUS == 0 && $NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0 \
+             && $CONFIGURATION_EXPORT_STATUS == 0 && $LOCAL_PRODUCT_EXPORT_STATUS == 0 && $CACHE_EXPORT_STATUS == 0 \
+-            && $CONFIGURATION_COUNT_STATUS == 0 && $LOCAL_PRODUCT_COUNT_STATUS == 0 && $NATIVE_RESULT_STATUS == 0 ]]
++            && $CONFIGURATION_COUNT_STATUS == 0 && $LOCAL_PRODUCT_COUNT_STATUS == 0 && $CACHE_COUNT_STATUS == 0 && $NATIVE_RESULT_STATUS == 0 ]]
+       - name: Preserve this Simulator run's JVM diagnostics and crash reports
+         if: ${{ always() && hashFiles('.build/native-reader-test/overlays.json') != '' }}
+         run: python -B scripts/reader-experience/collect-native-diagnostics.py --udid "$(bash scripts/sim.sh udid)"

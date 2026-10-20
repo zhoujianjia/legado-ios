@@ -1,0 +1,68 @@
+--- a/scripts/reader-experience/original-api-package-tools.py
++++ b/scripts/reader-experience/original-api-package-tools.py
+@@ -69,12 +69,15 @@
+ DELTAREUSE_EXTRA = {"LegadoRuntimeTests.LegadoOriginalAPITests/testLoginUIDeltaReuseRequestAndTypedControlStateKeepRawRowsSeparate"}
+ DELTAREUSE_EXPECTED = LOGINUI_EXPECTED | DELTAREUSE_EXTRA
+ assert len(DELTAREUSE_EXPECTED) == 23 and not (DELTAREUSE_EXTRA & LOGINUI_EXPECTED)
++LOGINV2_EXTRA = {"LegadoRuntimeTests.LegadoOriginalAPITests/testLoginV2TypedRequestsKeepStateFormAndCheckedCloseCommandsDistinct"}
++LOGINV2_EXPECTED = DELTAREUSE_EXPECTED | LOGINV2_EXTRA
++assert len(LOGINV2_EXPECTED) == 24 and not (LOGINV2_EXTRA & DELTAREUSE_EXPECTED)
+
+ def publicbatch_selected():
+     value = os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "")
+-    if value not in ("", "publicbatch", "effects", "loginui", "deltareuse"):
++    if value not in ("", "publicbatch", "effects", "loginui", "deltareuse", "loginv2"):
+         raise ValueError("Unknown independent Package selection")
+-    if value in ("publicbatch", "effects", "loginui", "deltareuse") and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
++    if value in ("publicbatch", "effects", "loginui", "deltareuse", "loginv2") and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
+         raise ValueError("Explicit Package selection requires the currentcore native boundary")
+     return value == "publicbatch"
+
+@@ -93,7 +96,13 @@
+     return os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "") == "deltareuse"
+
+
++def loginv2_selected():
++    publicbatch_selected()  # Retain exact currentcore-only explicit flag admission.
++    return os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "") == "loginv2"
++
++
+ def expected_cases():
++    if loginv2_selected(): return LOGINV2_EXPECTED
+     if deltareuse_selected(): return DELTAREUSE_EXPECTED
+     if loginui_selected(): return LOGINUI_EXPECTED
+     if effects_selected(): return EFFECTS_EXPECTED
+@@ -104,6 +113,7 @@
+     return "^(" + "|".join(re.escape(case) for case in sorted(expected_cases())) + ")$"
+
+ def selected_mode():
++    if loginv2_selected(): return "original-api-package-currentcore-loginv2"
+     if deltareuse_selected(): return "original-api-package-currentcore-deltareuse"
+     if loginui_selected(): return "original-api-package-currentcore-loginui"
+     if effects_selected(): return "original-api-package-currentcore-effects"
+@@ -134,6 +144,7 @@
+     "scripts/sim.sh",
+     ".github/workflows/reader-renewal-probe.yml",
+ )
++PACKAGE_INPUTS += (PACKAGE + "/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift",)
+ SOURCE_INPUTS = PACKAGE_INPUTS + CONTROL_INPUTS
+ EVIDENCE = ("swift-executable.log", "swift-version.log", "swift-test-help.log", "tests.log", "xunit.xml", "execution.json")
+ REQUIRED_FLAGS = ("--parallel", "--num-workers", "--xunit-output", "--filter", "--verbose", "--disable-swift-testing")
+@@ -166,7 +177,7 @@
+             if path.is_file():
+                 actual.add(path.relative_to(REPO).as_posix())
+     if actual != set(PACKAGE_INPUTS):
+-        raise ValueError("Package source closure differs from the reviewed fifteen inputs")
++        raise ValueError("Package source closure differs from the reviewed sixteen inputs")
+     records = []
+     for path in SOURCE_INPUTS:
+         target = REPO / path
+@@ -329,7 +340,7 @@
+             "evidenceSHA256": {name: hashlib.sha256(value).hexdigest() for name, value in raw.items()},
+             "appSimulatorCaseCount": 0, "jvmExecuted": False, "physicalDeviceValidationPassed": False,
+             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
+-            "limitations": ["Exactly the selected10 historical-mode,16 unflagged currentcore,17 explicit publicbatch,18 effects,22 loginui or23 deltareuse macOS package XCTest cases; unchanged source closure15+7 is independently bound and App Simulator results remain independent.",
++            "limitations": ["Exactly the selected10 historical-mode,16 unflagged currentcore,17 explicit publicbatch,18 effects,22 loginui or23 deltareuse or24 loginv2 macOS package XCTest cases; unchanged source closure16+7 is independently bound and App Simulator results remain independent.",
+                             "Injected transport and owned DTO cases do not execute the original Kotlin WebBook or JVM/JNI runtime.",
+                             "No Apple account, private pairing material, device, App install, package signing or renewal is used.",
+                             "XML and actual verbose XCTest case outcomes are required together; process/log summaries alone never establish passing tests."]}

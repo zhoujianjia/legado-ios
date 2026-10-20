@@ -1,0 +1,32 @@
+[
+  {
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+      "-J-Xmx64m",
+      "-J-XX:+UseSerialGC",
+      "-cp",
+      "F:\\yuedu-reader\\.build\\native-210-reader-repair-step\\incremental\\legado-runtime-incremental.jar",
+      "-d",
+      "F:\\yuedu-reader\\.build\\native-210-reader-repair-step\\incremental\\ordinary-final\\classes",
+      "F:\\yuedu-reader\\.build\\native-210-reader-repair-step\\OrdinaryReaderRepairSmoke.java"
+    ],
+    "log": "compile.log"
+  },
+  {
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+      "-Xms16m",
+      "-Xmx128m",
+      "-XX:MaxMetaspaceSize=128m",
+      "-XX:CompressedClassSpaceSize=32m",
+      "-XX:ReservedCodeCacheSize=32m",
+      "-XX:ActiveProcessorCount=2",
+      "-Xss512k",
+      "-XX:+UseSerialGC",
+      "-cp",
+      "F:\\yuedu-reader\\.build\\native-210-reader-repair-step\\incremental\\legado-runtime-incremental.jar;F:\\yuedu-reader\\.build\\native-210-reader-repair-step\\incremental\\ordinary-final\\classes",
+      "OrdinaryReaderRepairSmoke"
+    ],
+    "log": "execute.log"
+  }
+]

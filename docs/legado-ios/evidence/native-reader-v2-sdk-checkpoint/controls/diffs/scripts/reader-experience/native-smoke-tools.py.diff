@@ -1,0 +1,185 @@
+--- a/scripts/reader-experience/native-smoke-tools.py
++++ b/scripts/reader-experience/native-smoke-tools.py
+@@ -5,6 +5,7 @@
+ import importlib.util
+ import json
+ import os
++import re
+ from pathlib import Path
+ import signal
+ import subprocess
+@@ -48,7 +49,8 @@
+             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite',
+             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease',
+             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS',
+-            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite')},
++            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite',
++            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose')},
+ }
+ SOURCE_INPUTS = (
+     ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
+@@ -284,6 +286,140 @@
+ SOURCE_INPUTS += tuple(path for path in DELTA_REUSE_INPUTS if path not in SOURCE_INPUTS)
+ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 115
+
++# The existing local-product verifier reads seven suites in eight source files.
++# Keep those files, including the font transaction extension, in both Native
++# command/source ledgers together with the two cache suites checked below.
++LOCAL_PRODUCT_CACHE_INPUTS = (
++    'Tests/iOS/yuedu appTests/ReaderLocalProductTests.swift',
++    'Tests/iOS/yuedu appTests/ReaderFontCatalogTests.swift',
++    'Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift',
++    'Tests/iOS/yuedu appTests/UserFontSettingsTests.swift',
++    'Tests/iOS/yuedu appTests/UserFontTransactionTests.swift',
++    'Tests/iOS/yuedu appTests/SubscriptionPublicationTests.swift',
++    'Tests/iOS/yuedu appTests/PublicLibraryAvailabilityTests.swift',
++    'Tests/iOS/yuedu appTests/RemoteLibraryHTTPTests.swift',
++    'Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift',
++    'Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift',
++)
++SOURCE_INPUTS += tuple(path for path in LOCAL_PRODUCT_CACHE_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 125
++LOGIN_V2_NATIVE_REPAIR_INPUTS = (
++    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
++    'Modules/Services/Online/LegadoMainJSSourceService.swift',
++    'Modules/Services/Online/LegadoOriginalLoginUIForm.swift',
++    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
++    'Modules/SharedUI/Components/LoginFormGrid.swift',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/login/LoginUiV2.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginV2Runtime.kt',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2Test.kt',
++    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift',
++    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
++    'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift',
++    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
++    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
++    'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift',
++    'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift',
++    'Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift',
++)
++SOURCE_INPUTS += tuple(path for path in LOGIN_V2_NATIVE_REPAIR_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 129
++NATIVE_READER_REPAIR_INPUTS = (
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt',
++    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
++    'Tests/iOS/LegadoNativeOriginalReaderTests.swift',
++)
++SOURCE_INPUTS += tuple(path for path in NATIVE_READER_REPAIR_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 131
++
++CACHE_CASES = {
++    'ChapterCacheMigrationTests': ('packageLoaderUpgradesDownloadedLegacyChapter()',
++        'corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState:)',
++        'legacyBodyWithoutChecksumRemainsUpgradeable(hasCachedState:)'),
++    'ChapterCacheRepositoryWriteTests': ('emptyContentRejected()', 'bodyFailurePropagates()', 'writeIsReloadable()'),
++}
++CACHE_EXECUTIONS = {suite + '/' + method: (2 if 'hasCachedState:' in method else 1)
++    for suite, methods in CACHE_CASES.items() for method in methods}
++
++
++def cache_source_inputs(repo=None):
++    """Fail closed on changes to these six declarations and two Bool matrices."""
++    repo = smoke.REPO if repo is None else Path(repo)
++    pattern = re.compile(r'^[ \t]*@Test(?:\(([^\r\n]*)\))?\s+func (\w+)\(([^)]*)\)', re.MULTILINE)
++    records = []
++    for suite, expected in CACHE_CASES.items():
++        relative = 'Tests/iOS/yuedu appTests/' + suite + '.swift'
++        data = (repo / relative).read_bytes(); text = data.decode('utf-8-sig')
++        if (re.search(r'\bstruct\s+' + re.escape(suite) + r'\b', text) is None
++                or re.search(r'@Suite\([^\r\n]*\.serialized[^\r\n]*\)', text) is None):
++            raise ValueError('Selected cache suite is missing or not serialized: ' + suite)
++        declarations = pattern.findall(text)
++        if len(declarations) != len(re.findall(r'^[ \t]*@Test\b', text, re.MULTILINE)):
++            raise ValueError('Unsupported selected cache declaration: ' + relative)
++        actual = []
++        for attributes, name, parameters in declarations:
++            normalized = re.sub(r'\s+', '', parameters)
++            if normalized:
++                if normalized != 'hasCachedState:Bool' or 'arguments:' not in attributes:
++                    raise ValueError('Unexpected cache parameter signature: ' + name)
++                arguments = json.loads(attributes.split('arguments:', 1)[1].strip())
++                if arguments != [False, True] or any(type(value) is not bool for value in arguments):
++                    raise ValueError('Cache Bool arguments differ from false/true: ' + name)
++                method = name + '(hasCachedState:)'
++            else:
++                if 'arguments:' in attributes:
++                    raise ValueError('Unexpected cache arguments: ' + name)
++                method = name + '()'
++            actual.append(method)
++        if len(actual) != len(set(actual)) or set(actual) != set(expected):
++            raise ValueError('Selected cache source identities differ: ' + suite)
++        records.append({'path': relative, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
++    return {'methodCount': 6, 'plannedExecutionCount': 8, 'sourceInputs': records}
++
++
++def verify_cache(summary, tests, repo=None):
++    counts = smoke.verify_summary(summary, 6, 8)
++    sources = cache_source_inputs(repo)
++    if not isinstance(tests, dict) or not isinstance(tests.get('testNodes'), list):
++        raise ValueError('Cache gate requires xcresult testNodes')
++    found = {}
++    def visit(node):
++        if not isinstance(node, dict) or not isinstance(node.get('children', []), list):
++            raise ValueError('Malformed cache test node')
++        kind, children = node.get('nodeType'), node.get('children', [])
++        if kind == 'Test Case':
++            identifier = node.get('nodeIdentifier')
++            if not isinstance(identifier, str): raise ValueError('Cache case lacks source identity')
++            identity = identifier.removeprefix('yuedu appTests/')
++            expected = CACHE_EXECUTIONS.get(identity)
++            if expected is None or identity in found or node.get('result') != 'Passed':
++                raise ValueError('Unexpected, duplicate, failed or skipped cache case: ' + identifier)
++            if expected == 1:
++                if children: raise ValueError('Unexpected cache execution children: ' + identity)
++            else:
++                names = []
++                for child in children:
++                    if (not isinstance(child, dict) or child.get('nodeType') != 'Arguments'
++                            or child.get('result') != 'Passed' or child.get('children', []) != []
++                            or not isinstance(child.get('name'), str)):
++                        raise ValueError('Malformed, failed or skipped cache Bool execution: ' + identity)
++                    names.append(child['name'])
++                if len(names) != 2 or set(names) != {'false', 'true'}:
++                    raise ValueError('Missing, duplicate or changed cache Bool execution: ' + identity)
++            found[identity] = expected
++            return
++        if kind not in ('Test Plan', 'Unit test bundle', 'Test Suite') or node.get('result', 'Passed') != 'Passed':
++            raise ValueError('Unexpected, failed or skipped cache container')
++        for child in children: visit(child)
++    for node in tests['testNodes']: visit(node)
++    if found != CACHE_EXECUTIONS: raise ValueError('Cache source case selection differs from six methods/eight executions')
++    return {**counts, 'passedExecutionsByMethod': dict(sorted(found.items())), 'sourceMethodInventory': sources}
++
+
+ def _fact(path):
+     path = smoke.config.checked_path(path)
+@@ -548,9 +684,11 @@
+
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare", "run-group", "result"))
++    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare", "run-group", "verify-cache", "result"))
+     parser.add_argument("--work", type=Path, default=smoke.config.REPO / ".build/native-reader-test")
+     parser.add_argument("--group", choices=tuple(NATIVE_GROUPS))
++    parser.add_argument("--summary", type=Path)
++    parser.add_argument("--tests", type=Path)
+     args = parser.parse_args()
+     work = smoke.config.checked_path(args.work)
+     if args.phase == "validate-tag":
+@@ -563,6 +701,10 @@
+         smoke.config.write_new_json(work / "native-restore.json", record)
+     elif args.phase == "prepare":
+         record = prepare(work)
++    elif args.phase == "verify-cache":
++        if args.summary is None or args.tests is None:
++            parser.error("verify-cache requires --summary and --tests")
++        record = verify_cache(smoke.read_json(args.summary), smoke.read_json(args.tests))
+     elif args.phase == "run-group":
+         if args.group is None:
+             parser.error("run-group requires --group")

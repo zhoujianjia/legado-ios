@@ -1,0 +1,104 @@
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt
+@@ -19,6 +19,8 @@
+ import java.net.InetAddress
+ import java.net.InetSocketAddress
+ import java.util.UUID
++import java.nio.file.Files
++import java.util.concurrent.atomic.AtomicBoolean
+ import java.util.concurrent.CopyOnWriteArrayList
+ import java.util.concurrent.CountDownLatch
+ import java.util.concurrent.ExecutionException
+@@ -27,6 +29,81 @@
+
+ /** Actual original four-stage orchestration and owned HTTP. No invented Android observation. */
+ class OriginalWebBookExecutionTest {
++    @Test(timeout = 20_000) fun lastChapterDirectoryLookupKeepsSingleChapterVariableGrantAndCurrentRestore() {
++        Peer { e ->
++            check(e.requestURI.path == "/last") { "Last chapter must not cross the TOC boundary" }
++            respond(e, "<div id='text'>last-granted-body</div><a class='next' href='/first'>next book boundary</a>")
++        }.use { peer ->
++            val directory = Files.createTempDirectory("single-chapter-toc-grant-")
++            val host = RulePersistenceHost(FileRulePersistenceAdapter(directory))
++            val restricted = AtomicBoolean(false)
++            val variableReads = CopyOnWriteArrayList<String>()
++            LegadoRuntime.setHostCallback { _, operation, raw ->
++                if (operation == "task.cancel") "{}" else {
++                    val request = parseObject(raw)
++                    val foreign = if (operation == "state.read") request["keys"].asJsonArray.mapNotNull { value ->
++                        val key = JsonParser.parseString(value.asString).asJsonArray.map { it.asString }
++                        if (key.size >= 5 && key[1] == "variables" && key[2] == "chapter") key[4] else null
++                    } else emptyList()
++                    if (restricted.get()) variableReads.addAll(foreign)
++                    if (restricted.get() && foreign.any { it != "/last" }) {
++                        jsonObject("ok" to false, "error" to jsonObject("code" to "UNSUPPORTED_CAPABILITY",
++                            "message" to "Only the explicitly requested chapter has a variable grant")).toString()
++                    } else host.dispatch(operation, request).toString()
++                }
++            }
++            try {
++                Owned(peer.origin, stateOwner = "single-chapter-owner").use { owned -> runBlocking {
++                    val env = owned.environment
++                    val book = Book(env, bookUrl = peer.origin + "/book", tocUrl = peer.origin + "/toc")
++                    val first = BookChapter(env, url = "/first", title = "First", baseUrl = peer.origin,
++                        bookUrl = book.bookUrl, index = 0, restorePersistentVariables = false)
++                    val last = BookChapter(env, url = "/last", title = "Last", baseUrl = peer.origin,
++                        bookUrl = book.bookUrl, index = 1, restorePersistentVariables = false)
++                    env.webBook.publish(book.bookUrl, listOf(first, last))
++                    last.putVariable("current", "kept")
++                    env.webBook.clear() // A reopened operation must use the real persisted TOC.
++                    restricted.set(true)
++                    val granted = OriginalRuleDto.chapter(OriginalRuleDto.chapter(last), env, book)
++                    assertEquals("kept", granted.getVariable("current"))
++                    owned.source.ruleContent = ContentRule(content = "#text@html", nextContentUrl = ".next@href",
++                        title = "@js:if(String(chapter.getVariable('current'))!=='kept')throw Error('lost current grant');chapter.putVariable('parsed','yes');String(chapter.title)")
++                    val content = WebBook.getContentAwait(owned.source, book, granted, nextChapterUrl = null, needSave = false)
++                    // The original HTML pipeline preserves both formatting passes, including
++                    // the trailing empty paragraph. Directory authorization must not trim it.
++                    assertEquals("\u3000\u3000\u3000\u3000last-granted-body\n\u3000\u3000", content)
++                    assertTrue(variableReads.toString(), variableReads.isNotEmpty() && variableReads.all { it == "/last" })
++                    assertEquals("yes", granted.getVariable("parsed"))
++                    assertEquals(listOf("/last"), peer.requests.map { it.path })
++                    assertEquals(listOf("/first", "/last"), env.webBook.chapters(book.bookUrl).map { it.url })
++                    // Metadata projection is not authority to restore another chapter.
++                    assertThrows(UnsupportedRuleCapability::class.java) {
++                        OriginalRuleDto.chapter(OriginalRuleDto.chapter(first), env, book)
++                    }
++                    assertEquals("/first", variableReads.last())
++                } }
++            } finally {
++                LegadoRuntime.setHostCallback(null)
++                directory.toFile().deleteRecursively()
++            }
++        }
++    }
++
++    @Test(timeout = 15_000) fun originalExploreJavaMapStringRequiresExplicitStringForStrictIdentity() {
++        Peer { error("Map identity probe must not use HTTP") }.use { peer -> Owned(peer.origin).use { owned -> runBlocking {
++            OriginalExploreContexts.withScope(UUID.randomUUID().toString(), peer.origin, owned.environment, create = true) { info ->
++                val map = requireNotNull(info)
++                map.put("genre", "first")
++                val result = owned.source.evalJS("JSON.stringify([infoMap.get('genre')==='first',String(infoMap.get('genre'))==='first'])") {
++                    put("infoMap", map)
++                }
++                assertEquals("[false,true]", result.toString())
++                assertEquals("first", map.get("genre"))
++                assertTrue(peer.requests.isEmpty())
++            }
++        } } }
++    }
++
+     @Test(timeout = 20_000) fun cssSearchXpathDetailsJsonTocAndPagedContentUseSameEntitiesAndTransport() {
+         Peer { e -> when (e.requestURI.path) {
+             "/search" -> { e.responseHeaders.add("Set-Cookie", "owned=1; Path=/"); respond(e, "<div class='book'><a href='/book'>原书</a><b>作者：甲</b></div>") }
+@@ -256,8 +333,8 @@
+         }
+     }
+
+-    private class Owned(origin: String, timeoutMs: Long = 10_000, source: JsonObject = jsonObject("bookSourceUrl" to origin, "bookSourceName" to "Owned", "enabledCookieJar" to true)) : Closeable {
+-        val session = RuntimeSession(UUID.randomUUID().toString(), source, RuntimeSessionOptions("jvm-okhttp", "owned-agent"))
++    private class Owned(origin: String, timeoutMs: Long = 10_000, source: JsonObject = jsonObject("bookSourceUrl" to origin, "bookSourceName" to "Owned", "enabledCookieJar" to true), stateOwner: String? = null) : Closeable {
++        val session = RuntimeSession(UUID.randomUUID().toString(), source, RuntimeSessionOptions("jvm-okhttp", "owned-agent", stateOwner = stateOwner))
+         val task = RuntimeTask(UUID.randomUUID().toString(), session, Job(), System.currentTimeMillis() + timeoutMs)
+         val environment = LegadoRuntime.originalRuleEnvironment(task)
+         val source = LegadoRuntime.originalBookSource(task, environment)

@@ -1,0 +1,124 @@
+--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift
+@@ -23,6 +23,7 @@
+                 runtimeVariables: detail.runtimeVariables, runPreUpdateJS: true)
+             XCTAssertEqual(toc.chapters.count, 2)
+             XCTAssertEqual(toc.chapters.map(\.index), [0, 1])
++            XCTAssertEqual(toc.chapters.map(\.url), [fixture.prefix + "/c1", fixture.prefix + "/c2"])
+             let originalIDs = toc.chapters.map(\.id)
+             let firstChapter = try XCTUnwrap(toc.chapters.first)
+             let secondChapter = try XCTUnwrap(toc.chapters.dropFirst().first)
+@@ -89,7 +90,7 @@
+                     bookSourceFetcher: LiveBookSourceFetcher(bookSourceFetcher: fetcher),
+                     sourceResolver: { _ in fixture.source })
+                 await BookStore.queuedWritesLanded()
+-                XCTAssertEqual(refreshed.tocURL, fixture.baseURL + fixture.prefix + "/toc-rewritten")
++                XCTAssertEqual(refreshed.tocURL, fixture.baseURL + "/toc-rewritten")
+                 XCTAssertEqual(refreshed.onlineChapters?.map(\.id), owned.chapters.map(\.id))
+                 XCTAssertEqual(refreshed.onlineChapters?.first?.runtimeVariables?["nativeParsed"], "yes")
+                 let unchangedFileFacts = try await self.publicMetadataFileFacts(fixture, bookID: owned.book.id)
+@@ -185,14 +186,16 @@
+                 let secondPending = try await fixture.service.evaluateOriginalExploreContext(
+                     script: "infoMap.put('genre','second'); infoMap.save(); 'second-ready'", source: secondSource)
+                 XCTAssertTrue(firstPending.needSave); XCTAssertTrue(secondPending.needSave)
++                XCTAssertEqual(firstPending.infoMap?["genre"], "first")
++                XCTAssertEqual(secondPending.infoMap?["genre"], "second")
+                 let before = try await Task.detached {
+                     try [firstSource, secondSource].map { source in
+                         try LegadoCacheBridge.runtimeSnapshot(sourceId: source.bookSourceUrl, key: "infoMap_" + source.bookSourceUrl)
+                     }
+                 }.value
+                 XCTAssertTrue(before.allSatisfy { $0.values.isEmpty })
+-                let requestedURL = fixture.baseURL + fixture.prefix + "/search?key=native-original&page=2"
+-                let script = "@js:if(infoMap.get('genre')!=='first')throw new Error('wrong original context');'" + requestedURL + "'"
++                let requestedURL = fixture.baseURL + "/search?key=native-original&page=2"
++                let script = "@js:if(String(infoMap.get('genre'))!=='first')throw new Error('wrong original context');'" + requestedURL + "'"
+                 let explored = try await fixture.service.originalExplore(url: script, page: 2, source: firstSource)
+                 XCTAssertEqual(explored.map(\.name), ["Original JNI"])
+                 XCTAssertEqual(explored.first?.sourceId, firstSource.id)
+@@ -238,7 +241,7 @@
+             edited.enabledExplore = true
+             edited.exploreUrl = "Cached::https://native-page.invalid/category"
+             let source = edited
+-            let requestURL = fixture.baseURL + fixture.prefix + "/search?key=native-original&page=2"
++            let requestURL = fixture.baseURL + "/search?key=native-original&page=2"
+             let script = "@js:if(infoMap==null)throw new Error('cached page omitted original map');infoMap.put('page','left');infoMap.save();'" + requestURL + "'"
+             let raw = ModernParserBridge.DiscoverItem(title: "Cached", url: script)
+             let key = DiscoverKindsCache.key(sourceUrl: source.bookSourceUrl, exploreUrl: source.exploreUrl, variableJSON: nil)
+@@ -310,8 +313,8 @@
+                 return (one, two, raw, normalized,
+                     freshCache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 2))
+             }
+-            XCTAssertEqual(saved.0.content, "Batch wire content INDEX_0")
+-            XCTAssertEqual(saved.1.content, "<usehtml><p>Batch wire content INDEX_1</p><img src='media.png'></usehtml>")
++            XCTAssertEqual(saved.0.content, "\u{3000}\u{3000}Batch wire content INDEX_0")
++            XCTAssertEqual(saved.1.content, "\u{3000}\u{3000}<usehtml><p>Batch wire content INDEX_1</p><img src='media.png'></usehtml>")
+             XCTAssertEqual(saved.2, saved.1.content)
+             XCTAssertTrue(saved.3.contains(fixture.baseURL + "/media.png"))
+             XCTAssertFalse(saved.3.contains("<usehtml"))
+@@ -373,7 +376,7 @@
+                     expectedSourceURL: owned.chapters[0].url, expectedTOCTitle: owned.chapters[0].title),
+                  cache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 1))
+             }
+-            XCTAssertEqual(saved.0?.content, "Batch wire content INDEX_0")
++            XCTAssertEqual(saved.0?.content, "\u{3000}\u{3000}Batch wire content INDEX_0")
+             XCTAssertNil(saved.1)
+             for chapter in owned.chapters {
+                 let generation = await manager.originalRuntimeGeneration(bookID: owned.book.id, chapter: chapter)
+@@ -406,7 +409,7 @@
+                     chapter.putVariable('nativeCallbackEvent',event);
+                     chapter.putVariable('nativeCallbackBig','C'.repeat(10000));
+                 }
+-                java.ajax('\(fixture.baseURL)\(fixture.prefix)/duplicate');
++                java.ajax('\(fixture.baseURL)/duplicate');
+                 // Notification returns are ignored, including objects Java cannot serialize.
+                 source;
+                 """
+@@ -529,7 +532,7 @@
+             try await self.withPublicOwnedBook(fixture) { fetcher, owned in
+                 var authored = fixture.source
+                 authored.eventListener = true
+-                authored.ruleContent.callBackJs = "book.putVariable('nativeCallbackBeforeCancel','kept');java.ajax('\(fixture.baseURL)\(fixture.prefix)/held');book.putVariable('nativeCallbackAfterCancel','bad')"
++                authored.ruleContent.callBackJs = "book.putVariable('nativeCallbackBeforeCancel','kept');java.ajax('\(fixture.baseURL)/held');book.putVariable('nativeCallbackAfterCancel','bad')"
+                 let source = authored
+                 let positionOwner = JSONFileReadingPositionStore(
+                     baseURL: fixture.root.appendingPathComponent("positions", isDirectory: true), onSave: { _, _ in })
+@@ -577,12 +580,12 @@
+             source.put('nativeShelfEvents',prior+(prior?'|':'')+String(event));
+             source.put('nativeShelfLarge','S'.repeat(10000));
+             if(String(source.get('nativeShelfLarge')).length!==10000)throw new Error('lost source cache owner');
+-            java.ajax('\(fixture.baseURL)\(fixture.prefix)/duplicate');
++            java.ajax('\(fixture.baseURL)/duplicate');
+             ({toString:function(){throw new Error('notification result must be ignored');}});
+             """
+             let source = authored
+             let fetcher = BookSourceFetcher(mainJSService: fixture.service)
+-            var referenced = ReadingBook(title: "Refresh source reference", source: fixture.baseURL + fixture.prefix + "/book", contentFilename: "")
++            var referenced = ReadingBook(title: "Refresh source reference", source: fixture.baseURL + "/book", contentFilename: "")
+             referenced.isOnline = true; referenced.bookSourceId = source.id
+             let actualRefreshSnapshot = [referenced, referenced]
+             let before = fixture.peer.snapshot.requests.count
+@@ -619,10 +622,10 @@
+         try await withFixture { fixture in
+             var authored = fixture.source
+             authored.eventListener = true
+-            authored.ruleContent.callBackJs = "if(book!==null||chapter!==null||result!==null)throw new Error('fake source entities');source.put('nativeShelfBeforeCancel','kept');java.ajax('\(fixture.baseURL)\(fixture.prefix)/held');source.put('nativeShelfAfterCancel','bad')"
++            authored.ruleContent.callBackJs = "if(book!==null||chapter!==null||result!==null)throw new Error('fake source entities');source.put('nativeShelfBeforeCancel','kept');java.ajax('\(fixture.baseURL)/held');source.put('nativeShelfAfterCancel','bad')"
+             let source = authored
+             let fetcher = BookSourceFetcher(mainJSService: fixture.service)
+-            var referenced = ReadingBook(title: "Source cancellation reference", source: fixture.baseURL + fixture.prefix + "/book", contentFilename: "")
++            var referenced = ReadingBook(title: "Source cancellation reference", source: fixture.baseURL + "/book", contentFilename: "")
+             referenced.isOnline = true; referenced.bookSourceId = source.id
+             let refreshSnapshot = [referenced]
+             let headers = self.expectation(description: "Actual source notification HTTP is held")
+@@ -695,6 +698,10 @@
+         var fixture: Fixture?
+         do {
+             let base = try peer.readyBaseURL()
++            // readyBaseURL already owns this run's namespace. Append only the
++            // route suffix; adding prefix again bypasses the real held target.
++            XCTAssertEqual(URL(string: base)?.path, "/" + runID)
++            XCTAssertEqual(URL(string: base + "/held")?.path, "/" + runID + "/held")
+             let root = FileManager.default.temporaryDirectory.appendingPathComponent("NativeOriginal-" + runID, isDirectory: true)
+             try await Task.detached { try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true) }.value
+             let context = root.appendingPathComponent("contexts", isDirectory: true)

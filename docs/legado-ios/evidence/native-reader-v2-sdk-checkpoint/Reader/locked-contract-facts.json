@@ -1,0 +1,39 @@
+{
+  "archive": "F:/legado-master.zip",
+  "facts": [
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/model/webBook/BookContent.kt",
+      "bytes": 14702,
+      "sha256": "b1a685ca969174ecc83886cde3a37ba7155f828ccbfe7507d87d02fb53c8dc07",
+      "lines": {
+        "first": 39,
+        "last": 85
+      },
+      "excerpt": "\n    @Throws(Exception::class)\n    suspend fun analyzeContent(\n        bookSource: BookSource,\n        book: Book,\n        bookChapter: BookChapter,\n        baseUrl: String,\n        redirectUrl: String,\n        body: String?,\n        nextChapterUrl: String?,\n        needSave: Boolean = true\n    ): String {\n        body ?: throw NoStackTraceException(\n            appCtx.getString(R.string.error_get_web_content, baseUrl)\n        )\n        Debug.log(bookSource.bookSourceUrl, \"≡获取成功:${baseUrl}\")\n        Debug.log(bookSource.bookSourceUrl, body, state = 40)\n        val mNextChapterUrl = if (nextChapterUrl.isNullOrEmpty()) {\n            appDb.bookChapterDao.getChapter(book.bookUrl, bookChapter.index + 1)?.url\n                ?: appDb.bookChapterDao.getChapter(book.bookUrl, 0)?.url\n        } else {\n            nextChapterUrl\n        }\n        val contentList = arrayListOf<String>()\n        val nextUrlList = arrayListOf(redirectUrl)\n        val contentRule = bookSource.getContentRule()\n        val analyzeRule = AnalyzeRule(book, bookSource)\n        analyzeRule.setContent(body, baseUrl)\n        analyzeRule.setRedirectUrl(redirectUrl)\n        analyzeRule.setCoroutineContext(currentCoroutineContext())\n        analyzeRule.setChapter(bookChapter)\n        analyzeRule.setNextChapterUrl(mNextChapterUrl)\n        currentCoroutineContext().ensureActive()\n        var contentData = analyzeContent(\n            book, baseUrl, redirectUrl, body, contentRule, bookChapter, bookSource, mNextChapterUrl\n        )\n        contentList.add(contentData.first)\n        if (contentData.second.size == 1) {\n            val webJs = contentRule.webJs\n            var nextUrl = contentData.second[0]\n            while (nextUrl.isNotEmpty() && !nextUrlList.contains(nextUrl)) {\n                if (!mNextChapterUrl.isNullOrEmpty()\n                    && NetworkUtils.getAbsoluteURL(redirectUrl, nextUrl)\n                    == NetworkUtils.getAbsoluteURL(redirectUrl, mNextChapterUrl)\n                ) break\n                nextUrlList.add(nextUrl)\n                currentCoroutineContext().ensureActive()"
+    },
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/utils/HtmlFormatter.kt",
+      "bytes": 3653,
+      "sha256": "760ff7a6cad39aae273fb80f846c7eaf1d18a2abd6664c6a421d0bed071c366a",
+      "lines": {
+        "first": 25,
+        "last": 57
+      },
+      "excerpt": "        return text\n            .replace(\"\\\\r\\\\n\", \"\\n\")\n            .replace(\"\\\\n\", \"\\n\")\n            .replace(\"\\\\r\", \"\\n\")\n    }\n\n    fun format(html: String?, otherRegex: Regex = otherHtmlRegex): String {\n        return formatText(html, otherRegex, \"　　\")\n    }\n\n    fun formatIntro(html: String?): String {\n        return formatText(html, otherHtmlRegex, \"\")\n    }\n\n    private fun formatText(html: String?, otherRegex: Regex, paragraphIndent: String): String {\n        html ?: return \"\"\n        return normalizeEscapedLineBreaks(html)\n            .replace(nbspRegex, \" \")\n            .replace(espRegex, \" \")\n            .replace(noPrintRegex, \"\")\n            .replace(wrapHtmlRegex, \"\\n\")\n            .replace(commentRegex, \"\")\n            .replace(otherRegex, \"\")\n            .replace(indent1Regex, \"\\n$paragraphIndent\")\n            .replace(indent2Regex, paragraphIndent)\n            .replace(lastRegex, \"\")\n    }\n\n    fun formatKeepImg(html: String?, redirectUrl: URL? = null): String {\n        html ?: return \"\"\n        val keepImgHtml = format(html, notImgHtmlRegex)\n\n        //正则的“|”处于顶端而不处于（）中时，具有类似||的熔断效果，故以此机制简化原来的代码"
+    },
+    {
+      "member": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 35401,
+      "sha256": "f7ba074137c8e3a847dc7bbf9465c7fd9318646c5670c144300e7959fb931a9b",
+      "lines": {
+        "first": 1,
+        "last": 0
+      },
+      "excerpt": "No custom URL normalization change; retained original AnalyzeUrl route resolution."
+    }
+  ],
+  "interpretation": [
+    "Last chapter without nextChapterUrl reads only next/first TOC metadata, not every chapter variable.",
+    "Original formatter inserts two U+3000 paragraph indent characters. Native fixture expectations must preserve these."
+  ]
+}
