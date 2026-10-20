@@ -1,0 +1,370 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "20f4cd60565b53a40a6cd4e5bb9fefc84cbdbcd7",
+  "sourceTag": "reader-renewal-20f4cd6",
+  "status": "passed",
+  "configuration": "Debug",
+  "executionPlatform": "ios-simulator",
+  "simulatorDestination": "id=4C675116-265D-488F-BFFA-836A4545674C",
+  "developerDirectory": "/Applications/Xcode_26.2.0.app/Contents/Developer",
+  "selectionMode": "signature",
+  "targetedTests": {
+    "signature": {
+      "expectedTests": 9,
+      "totalTestCount": 9,
+      "passedTests": 9,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "passedCaseIdentifiers": [
+        "SelfRenewalMachOSignatureReaderTests/handlesUnsignedTruncatedAndCancelledInputs",
+        "SelfRenewalMachOSignatureReaderTests/readsFat32And64InBothByteOrders",
+        "SelfRenewalMachOSignatureReaderTests/readsKnownDirectoryVersionsAndEmptyCMSWithoutAssumingTrust",
+        "SelfRenewalMachOSignatureReaderTests/readsOwnedUnpackedAppThroughInventoryAndRejectsLinkedCode",
+        "SelfRenewalMachOSignatureReaderTests/readsThinSignaturesWithoutReadingExecutableBodiesOrClaimingTrust",
+        "SelfRenewalMachOSignatureReaderTests/rejectsDamagedEmbeddedSignatureStructures",
+        "SelfRenewalMachOSignatureReaderTests/rejectsInvalidCodeDirectoryOffsetsAndUnsupportedLayouts",
+        "SelfRenewalMachOSignatureReaderTests/rejectsMalformedAndUnknownRequiredLoadCommands",
+        "SelfRenewalMachOSignatureReaderTests/rejectsMalformedFatTablesAndOverlappingSlices"
+      ]
+    }
+  },
+  "unselectedTestGroups": [
+    "unit",
+    "discovery",
+    "replacement",
+    "materials",
+    "ui"
+  ],
+  "testedInfoSHA256": "87fef9c489a0c1c4063fdbb6f499eedde101ebb9d2c9ed65542b6bc1c13d98bc",
+  "sourceOverlays": {
+    "schemaVersion": 1,
+    "sourceCommit": "20f4cd60565b53a40a6cd4e5bb9fefc84cbdbcd7",
+    "preparedAt": "2026-10-20T02:29:36.716551+00:00",
+    "expectedTrackedChanges": [
+      "Info.plist"
+    ],
+    "projectOverlay": {
+      "schemaVersion": 1,
+      "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "replacementCount": 0,
+      "identifiersAlreadyIndependent": true,
+      "originalSHA256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e",
+      "overlaySHA256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e",
+      "expectedTrackedOverlay": false,
+      "settings": [
+        {
+          "before": "local.zhoujianjia.legado-reader",
+          "after": "local.zhoujianjia.legado-reader",
+          "count": 2
+        },
+        {
+          "before": "local.zhoujianjia.legado-reader.widget",
+          "after": "local.zhoujianjia.legado-reader.widget",
+          "count": 2
+        },
+        {
+          "before": "local.zhoujianjia.legado-reader.shareextension",
+          "after": "local.zhoujianjia.legado-reader.shareextension",
+          "count": 2
+        },
+        {
+          "before": "local.zhoujianjia.legado-reader.tests",
+          "after": "local.zhoujianjia.legado-reader.tests",
+          "count": 2
+        },
+        {
+          "before": "local.zhoujianjia.legado-reader.uitests",
+          "after": "local.zhoujianjia.legado-reader.uitests",
+          "count": 2
+        }
+      ],
+      "scope": "Only PRODUCT_BUNDLE_IDENTIFIER settings; entitlements and other identifiers are unchanged in source."
+    },
+    "infoOverlay": {
+      "path": "Info.plist",
+      "originalSHA256": "0bfbe9427cda288367228f1c990976c09b40371c13f6f1ccf89fd1efbd8eb7c8",
+      "overlaySHA256": "dea15d6a166d8932b18b529c8265211c754d840d29b425f394ce8635548d3ae2",
+      "localFlags": {
+        "YueduLocalExperience": true,
+        "FirebaseDataCollectionDefaultEnabled": false,
+        "FIREBASE_ANALYTICS_COLLECTION_ENABLED": false,
+        "FirebaseCrashlyticsCollectionEnabled": false,
+        "firebase_performance_collection_enabled": false,
+        "firebase_performance_instrumentation_enabled": false
+      },
+      "gatewayConfigured": false,
+      "upstreamOAuthReplaced": true,
+      "expectedTrackedOverlay": true,
+      "sourceCommitStamped": "20f4cd60565b53a40a6cd4e5bb9fefc84cbdbcd7"
+    },
+    "syntheticConfiguration": {
+      "syntheticConfiguration": true,
+      "path": "/Users/runner/work/legado-ios/legado-ios/GoogleService-Info.plist",
+      "sha256": "e742892e78e4e9c208dad42c8e1f77cb871b2e4ad00ce0e1e1dcb0d3dac636ca",
+      "bytes": 1213,
+      "upstreamCredentialsUsed": false
+    },
+    "paidFeatureOverrides": false,
+    "deliveredIPAModified": false,
+    "configuration": "Debug"
+  },
+  "sourceInputs": [
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+      "sha256": "10f3ddfaddb05672dcd21eb0cb6274349d88a37bed4c292e3ecc7727c2c4ff08",
+      "bytes": 12818
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+      "sha256": "b46dc66a783217a91b60c3d3bf1233c758bd4d64ecdea72feee0428783e529d2",
+      "bytes": 5954
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+      "sha256": "7b7e0f66dd218ea4bf406a7b978a46a387260e6e15f2d0e34f2ed0150fcc8459",
+      "bytes": 17886
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryNativeDriver.swift",
+      "sha256": "da8339177b721d17f82e11a54316bf9a05b800b84ad611ff434152240c8015c5",
+      "bytes": 24042
+    },
+    {
+      "path": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+      "sha256": "377e3913aa64ba4e18bd1f1cec4af58264505bd351648c8cdcbbb00c4e66403c",
+      "bytes": 11995
+    },
+    {
+      "path": "Modules/Features/Settings/ProfileView.swift",
+      "sha256": "b9e3aa17582334166d4ef9c134db4b86f379165d428e7a238b5d719bb4bbbc0e",
+      "bytes": 15885
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/AppDependencies.swift",
+      "sha256": "f128019eec83f6e07e0bdcc1cd4ecaeb761a19cd5452bb0b46aa08a08aaaa56e",
+      "bytes": 14382
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalTransportProbeTests.swift",
+      "sha256": "e0cf39b6f18693321d7307926e31553135cb1c5b7fbb4f1859a6e5357c42113f",
+      "bytes": 14787
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+      "sha256": "5abd8c20b26220f59971f22c02f23b78addc74fc3d98a248a99cc3a33e4aecc1",
+      "bytes": 38717
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
+      "sha256": "8d8c3c6f890d5bfc81ac9501ac59c3a9cb2a7049e075dc98f009653cdb534541",
+      "bytes": 14675
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
+      "sha256": "c6e0b9e146c12e605f56a38b3004cd53296092f78ca984be8bc76484a705ad90",
+      "bytes": 12456
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "sha256": "0413ed33cab03f10783833b300b4597c00d0414ea23949fdb7867f1e1c658c9b",
+      "bytes": 19826
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift",
+      "sha256": "b2280c74cc71493ea5eeeefcf1205d494ab71508f0af68f18b066a120fb07551",
+      "bytes": 12125
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "sha256": "5db6ead9ed0cd22fce5cf4833ed86602233cf0e3da99e6267824c2064ed36c52",
+      "bytes": 25896
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
+      "sha256": "4c6bdda7ce187ae1e207fda2a62e0cc8fb859e4b2a2a8c203046b8ac5faf96f3",
+      "bytes": 18684
+    },
+    {
+      "path": "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
+      "sha256": "301f8bbfa39ad2d3de8db6ca25206265d02b3aac34cb04863b7f6df02dca67eb",
+      "bytes": 3370
+    },
+    {
+      "path": "Info.plist",
+      "sha256": "0bfbe9427cda288367228f1c990976c09b40371c13f6f1ccf89fd1efbd8eb7c8",
+      "bytes": 8513
+    },
+    {
+      "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "sha256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e",
+      "bytes": 55843
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "sha256": "9eafcb085ce4fd20f6e12038f7f2b47ec598fd27c3972751a3c0c5c5b5d6b435",
+      "bytes": 22057
+    },
+    {
+      "path": "scripts/reader-experience/inspect-renewal-report.py",
+      "sha256": "c163c643583218d46088a3bbe84b01b8bb9337c5e0ad872a7682aadb3f41e26f",
+      "bytes": 23173
+    },
+    {
+      "path": "scripts/reader-experience/renewal-report-schema1.py",
+      "sha256": "fcc1d82ec99af4ce4a576cce9e2992f0099b7da0f3c7f8933dd018178890bd8b",
+      "bytes": 13187
+    },
+    {
+      "path": "scripts/reader-experience/test-inspect-renewal-report.py",
+      "sha256": "4a0f315319320527ecd5e775044d15bab08ec69ed6fd0763918d747740c72641",
+      "bytes": 28632
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "sha256": "ed09d38c996dc7f05855bd4c4fe730a99a68d07eb23bba3fb35923fb53ad3080",
+      "bytes": 6416
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765",
+      "bytes": 27526
+    },
+    {
+      "path": "scripts/reader-experience/stage-config.py",
+      "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607",
+      "bytes": 26097
+    },
+    {
+      "path": "scripts/xctest.sh",
+      "sha256": "fc3b9a2c45506b07d75945c571866396ad02f4cbe12f7125b3e930ef5b180da2",
+      "bytes": 7631
+    },
+    {
+      "path": "scripts/sim.sh",
+      "sha256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a",
+      "bytes": 10507
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "sha256": "2b09a0f87cadb542ee7328a88ad5decea81e8aeb15be8f67eb2fc37b9c5c556d",
+      "bytes": 5205
+    },
+    {
+      "path": "Resources/zh-Hant.lproj/Localizable.strings",
+      "sha256": "c032f2f1b5ba98472d781d8a807001d1538ce22e7dae6a676c4d89b909f12516",
+      "bytes": 247585
+    },
+    {
+      "path": "Resources/zh-Hant.lproj/InfoPlist.strings",
+      "sha256": "8a97713e4a0a3e3635b5bb81ed0adc2b752d4176abc8119f7ccdad05bbe29f40",
+      "bytes": 623
+    },
+    {
+      "path": "Resources/zh-Hans.lproj/Localizable.strings",
+      "sha256": "5892c6636a9277b9093b86d1223eed5bdc52f6f89a7b5fce87e574eb077651ec",
+      "bytes": 249786
+    },
+    {
+      "path": "Resources/zh-Hans.lproj/InfoPlist.strings",
+      "sha256": "09fc597771f0ad39c27906290da9bca6a7c928c24f2dbb7d25393e12c272755f",
+      "bytes": 626
+    },
+    {
+      "path": "Resources/en.lproj/Localizable.strings",
+      "sha256": "18dcce0bcc51c3e6921255ae106fc8cbb0559d51ae1ac2f11a650b98a1d764b5",
+      "bytes": 262488
+    },
+    {
+      "path": "Resources/en.lproj/InfoPlist.strings",
+      "sha256": "d135897be4c7f182d3fa976ed8eea5ca0f60e4676920de573da4aa613ed0a65e",
+      "bytes": 664
+    },
+    {
+      "path": "Resources/ja.lproj/Localizable.strings",
+      "sha256": "2605387b9f0427c22c6594a9a1c0dfd90ffbdcc3f764dfd42d1370c90ed94c3b",
+      "bytes": 318658
+    },
+    {
+      "path": "Resources/ja.lproj/InfoPlist.strings",
+      "sha256": "cc0854793b15756eaca678083b8fc2e4d5fdb9e7653597cfb43116219f573c34",
+      "bytes": 785
+    },
+    {
+      "path": "Resources/ko.lproj/Localizable.strings",
+      "sha256": "18d908b9d46c947290ffa9185b67cecf3fb60ace2cfbb2c70ef227a08d829d64",
+      "bytes": 295460
+    },
+    {
+      "path": "Resources/ko.lproj/InfoPlist.strings",
+      "sha256": "387327bf9e4664bb3f449d14189dd1c6252d0ac43c3ac1e3df101277d2331c6b",
+      "bytes": 703
+    }
+  ],
+  "evidenceSHA256": {
+    "build-settings.json": "6fd47b3287e515885af74058252c0f8ec84d24ea2881a42cff19b1a19183d6f8",
+    "source-inputs.json": "459630559dd766f1e5709e14a03bdc7964ca128ef1fde014f02c37a8056a424f",
+    "overlays.json": "34dd5df0b1f83284787d48662aff523620d3d11afc3ee4784e8d1f71743f5253",
+    "project-overlay.json": "ce2b597f6ac6c9cfeae2576ebb344f1f478cac96bfe850903ce0bfdad1f685e8",
+    "info-overlay.json": "2244f1d536c0d45772bafb4accb2c815b8531e048cc9303be63ad8467639f4e5",
+    "signature-summary.json": "bd58b1263cb094fef403cefec908739b870bc248d8f60132080e37a8a9177d67",
+    "signature-tests.json": "5ebadb67d5634ed952d2365932c76a872d8ba3270005d856f192233c4976df4a"
+  },
+  "builtDiscoveryMetadata": {
+    "bonjourServices": [
+      "_calibresmartdeviceapp._tcp",
+      "_remotepairing._tcp"
+    ],
+    "fallbackMatchesBothSourceConfigurations": true,
+    "localizedUsageDescriptions": [
+      {
+        "language": "zh-Hant",
+        "sourceSHA256": "8a97713e4a0a3e3635b5bb81ed0adc2b752d4176abc8119f7ccdad05bbe29f40",
+        "builtSHA256": "02d48630c530a144455914694a21dd0e0a53874837a317f83e60ad40f27a9d38",
+        "usageDescriptionMatchesSource": true
+      },
+      {
+        "language": "zh-Hans",
+        "sourceSHA256": "09fc597771f0ad39c27906290da9bca6a7c928c24f2dbb7d25393e12c272755f",
+        "builtSHA256": "748ede04604af4bc9329c4bacd768a0b034fcc99de4b517a924694cd33b6a940",
+        "usageDescriptionMatchesSource": true
+      },
+      {
+        "language": "en",
+        "sourceSHA256": "d135897be4c7f182d3fa976ed8eea5ca0f60e4676920de573da4aa613ed0a65e",
+        "builtSHA256": "44e58650c5b27be705702cf43e66296dcba7ce77cbd643a56f45b01f843d723a",
+        "usageDescriptionMatchesSource": true
+      },
+      {
+        "language": "ja",
+        "sourceSHA256": "cc0854793b15756eaca678083b8fc2e4d5fdb9e7653597cfb43116219f573c34",
+        "builtSHA256": "b8fbd0e56c61099ea0f0b8cf5bc6f60ad769c9fd154542a2c0a1f2383de37987",
+        "usageDescriptionMatchesSource": true
+      },
+      {
+        "language": "ko",
+        "sourceSHA256": "387327bf9e4664bb3f449d14189dd1c6252d0ac43c3ac1e3df101277d2331c6b",
+        "builtSHA256": "9fba7102bcc3224e9562aec4ad724276ff541b0df7557623ebb9574913be5f76",
+        "usageDescriptionMatchesSource": true
+      }
+    ]
+  },
+  "runtimeSourceOnly": true,
+  "ipaGenerated": false,
+  "ipaUploaded": false,
+  "appleAccountUsed": false,
+  "pairingRecordUsed": false,
+  "iphoneTransportVerified": false,
+  "physicalDeviceValidationPassed": false,
+  "serviceIdentityVerified": false,
+  "selfRenewalVerified": false,
+  "unattendedRenewalVerified": false,
+  "computerPoweredOff": "notMeasured",
+  "companionAppsAbsent": "notMeasured",
+  "limitations": [
+    "Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
+    "No Apple login, pairing, signing, installation or renewal operation is performed.",
+    "This selection executes exactly nine owned-fixture Mach-O signature-structure cases; unit, discovery, replacement, materials and UI groups are not executed or accepted.",
+    "Thin/fat Mach-O, load commands, SuperBlob, CodeDirectory and CMS slot observations remain untrusted; no CMS ASN.1, certificate-chain, page-hash, resource-seal or profile authenticity is established.",
+    "No QueryType fixture listener, RemotePairing browsing or diagnostic TCP probe is invoked."
+  ]
+}

@@ -12,7 +12,7 @@ struct SelfRenewalCodeDirectoryHashVerifierTests {
         let expected: [UInt8: String] = [
             1: "a9993e364706816aba3e25717850c26c9cd0d89d",
             2: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
-            3: "ba7816bf8f01cfea414140de5dae2223b00361a396",
+            3: "ba7816bf8f01cfea414140de5dae2223b00361a3",
             4: "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7",
         ]
         for (kind, hex) in expected {

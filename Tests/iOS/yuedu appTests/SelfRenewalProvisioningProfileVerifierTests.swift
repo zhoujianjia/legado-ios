@@ -44,7 +44,8 @@ struct SelfRenewalProvisioningProfileVerifierTests {
         let result = try await Profile.read(unpackedApplication: root, anchors: [Fixture.rootCertificate], at: Fixture.validationDate)
         #expect(result.profiles.count == 1 && result.profileBytesRead == Fixture.embedded.count)
         let profile = try #require(result.profiles.first)
-        #expect(profile.envelope.signers.allSatisfy(\.signatureVerified))
+        let everySignatureVerified = profile.envelope.signers.allSatisfy { signer in signer.signatureVerified }
+        #expect(everySignatureVerified)
         #expect(!profile.appleProvisioningAuthorityEstablished && !profile.entitlementAuthorizationEstablished)
         #expect(!result.accountIdentityEstablished && !result.replacementAuthorized)
         try Fixture.profilePayload.write(to: path)

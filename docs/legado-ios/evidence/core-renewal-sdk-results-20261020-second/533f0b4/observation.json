@@ -1,0 +1,94 @@
+{
+  "sourceCommit": "533f0b49d466bc1e9f747301213c62b226bf86c1",
+  "sourceTag": "reader-renewal-533f0b4",
+  "workflow": ".github/workflows/reader-renewal-probe.yml",
+  "selectionMode": "cryptography",
+  "plannedMethods": {
+    "cryptography": 25
+  },
+  "runID": 39360670819,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39360670819",
+  "observedAtUTC": "2026-10-20T03:16:48.330684+00:00",
+  "status": "completed",
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "id": 118425849479,
+      "name": "probe",
+      "status": "completed",
+      "conclusion": "failure",
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 2,
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 3,
+          "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 4,
+          "name": "Verify the exact source tag and portable evidence guards",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 5,
+          "name": "Select the installed toolchain and Simulator",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 6,
+          "name": "Execute 25 signature hash CMS and provisioning fixture cases",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "number": 7,
+          "name": "Preserve probe test evidence without application binaries",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 8,
+          "name": "State the limited acceptance boundary",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 15,
+          "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "number": 16,
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 17,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "APIRequests": 2,
+  "CITriggered": false,
+  "actualNativeCasesAccepted": 0,
+  "polling": false
+}

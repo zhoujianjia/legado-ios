@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T03:30:37.433497+00:00",
+  "sourceCommit": "533f0b49d466bc1e9f747301213c62b226bf86c1",
+  "sourceTag": "reader-renewal-533f0b4",
+  "runID": 39360670819,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39360670819",
+  "runConclusion": "failure",
+  "selectionMode": "cryptography",
+  "sourceInputs": 45,
+  "executedNativeMethods": 0,
+  "acceptedNativeMethods": 0,
+  "artifact": {
+    "path": ".build/renewal-discovery/sealed-material-SDK-results/533f0b4/evidence.zip",
+    "bytes": 950507,
+    "sha256": "5441f4e22257ff659bd6583d66e7f4b97e92127f535cd6284d2cb9f6b743efae"
+  },
+  "audit": "docs/legado-ios/evidence/core-renewal-sdk-results-20261020-second/533f0b4/independent-audit.json",
+  "evidenceManifest": "docs/legado-ios/evidence/core-renewal-sdk-results-20261020-second/manifest.json",
+  "currentEditedSourcesAccepted": false,
+  "newSDKRequestedWhileRecording": false,
+  "automaticSelfRenewalImplemented": false,
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "status": "test-target-compilation-failed-zero-methods-executed",
+  "failureKind": "Swift Testing macro expansion typecheck failure; test host did not compile.",
+  "failureSource": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+  "failureSourceLine": 47,
+  "compilerError": "call can throw, but it is not marked with 'try' and the error is not handled",
+  "repairStatus": "source-fixed-SDK-not-yet-revalidated",
+  "fixes": [
+    "Compute allSatisfy with a nonthrowing closure before #expect, preserving the assertion.",
+    "Independent review also corrected the abc type3 fixture from 21 bytes to the real first 20 SHA256 bytes; this was not an executed SDK assertion failure."
+  ]
+}
