@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import plistlib
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -142,7 +143,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(len(record["intendedTests"]["replacement"]), 5)
             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
             paths = {item["path"] for item in record["sourceInputs"]}
-            self.assertEqual(len(record["sourceInputs"]), 45)
+            self.assertEqual(len(record["sourceInputs"]), 51)
             self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
                              "scripts/reader-experience/renewal-report-schema1.py",
                              "scripts/reader-experience/test-inspect-renewal-report.py",
@@ -213,7 +214,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["targetedTests"]["discovery"]["totalTestCount"], 16)
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
             self.assertEqual(result["targetedTests"]["ui"]["totalTestCount"], 1)
-            self.assertEqual(result["unselectedTestGroups"], ["materials", "signature", "cryptography"])
+            self.assertEqual(result["unselectedTestGroups"], ["materials", "signature", "cryptography", "sealedmaterials"])
             self.assertEqual(result["executionPlatform"], "ios-simulator")
             for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",
                         "physicalDeviceValidationPassed", "appleAccountUsed", "pairingRecordUsed",
@@ -395,7 +396,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             inputs = smoke.read_json(self.work / "source-inputs.json")
             self.assertEqual(inputs["selectionMode"], "replacement")
             self.assertEqual(inputs["intendedTests"], {"replacement": sorted(probe.EXPECTED_CASES["replacement"])})
-            for group in ("unit", "discovery", "materials", "signature", "ui", "cryptography"):
+            for group in ("unit", "discovery", "materials", "signature", "ui", "cryptography", "sealedmaterials"):
                 self.assertFalse((self.work / (group + "-summary.json")).exists())
                 self.assertFalse((self.work / (group + "-tests.json")).exists())
                 # Even unrelated leftover files cannot become accepted test evidence.
@@ -405,8 +406,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["selectionMode"], "replacement")
             self.assertEqual(set(result["targetedTests"]), {"replacement"})
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
-            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "materials", "signature", "ui", "cryptography"})
-            for mode in ("all", "implementation", "signature", "cryptography"):
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "materials", "signature", "ui", "cryptography", "sealedmaterials"})
+            for mode in ("all", "implementation", "signature", "cryptography", "sealedmaterials"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -428,8 +429,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
 
     def test_selection_rejects_invalid_values_before_prepare_and_prepare_result_mode_changes(self):
         with self.context():
-            for mode in ("", "Replacement", "Implementation", "Signature", "Cryptography", "materials", "unit",
-                         "all,replacement", "replacement,materials", "signature,materials", "signature,cryptography"):
+            for mode in ("", "Replacement", "Implementation", "Signature", "Cryptography", "Sealedmaterials", "materials", "unit",
+                         "all,replacement", "replacement,materials", "signature,materials", "signature,cryptography", "cryptography,sealedmaterials"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         patch.object(smoke, "prepare") as prepare, self.assertRaisesRegex(ValueError, "YUEDU_RENEWAL_SELECTION"):
                     probe.prepare(self.work)
@@ -440,7 +441,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                 self.assertEqual(probe.selection_mode(), "all")
             self.built_fixture()
             original = smoke.read_json(self.work / "source-inputs.json")
-            for mode in ("replacement", "implementation", "signature", "cryptography"):
+            for mode in ("replacement", "implementation", "signature", "cryptography", "sealedmaterials"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -459,8 +460,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "implementation")
             self.assertEqual(inputs["intendedTests"], expected)
             self.assertEqual(sum(map(len, expected.values())), 11)
-            self.assertEqual(len(inputs["sourceInputs"]), 45)
-            for group in ("unit", "discovery", "signature", "ui", "cryptography"):
+            self.assertEqual(len(inputs["sourceInputs"]), 51)
+            for group in ("unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
                     self.write(self.work / (group + suffix), b"unselected evidence must not be read")
@@ -468,11 +469,11 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(set(result["targetedTests"]), {"replacement", "materials"})
             self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
             self.assertEqual(result["targetedTests"]["materials"]["totalTestCount"], 6)
-            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "signature", "ui", "cryptography"})
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials"})
             for group in result["unselectedTestGroups"]:
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertNotIn(group + suffix, result["evidenceSHA256"])
-            for mode in ("all", "replacement", "signature", "cryptography"):
+            for mode in ("all", "replacement", "signature", "cryptography", "sealedmaterials"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -522,7 +523,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
     def test_cli_verification_rejects_groups_outside_each_exact_mode(self):
         expected = {"all": {"unit", "discovery", "replacement", "ui"},
                     "replacement": {"replacement"}, "implementation": {"replacement", "materials"},
-                    "signature": {"signature"}, "cryptography": {"cryptography"}}
+                    "signature": {"signature"}, "cryptography": {"cryptography"},
+                    "sealedmaterials": {"sealedmaterials"}}
         with self.context():
             for mode, groups in expected.items():
                 for group in probe.EXPECTED_CASES:
@@ -552,15 +554,15 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "signature")
             self.assertEqual(inputs["intendedTests"], {"signature": sorted(probe.EXPECTED_CASES["signature"])})
             self.assertEqual(len(inputs["intendedTests"]["signature"]), 9)
-            self.assertEqual(len(inputs["sourceInputs"]), 45)
-            for group in ("unit", "discovery", "replacement", "materials", "ui", "cryptography"):
+            self.assertEqual(len(inputs["sourceInputs"]), 51)
+            for group in ("unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
                     self.write(self.work / (group + suffix), b"unselected evidence is not accepted")
             result = probe.result(self.work)
             self.assertEqual(set(result["targetedTests"]), {"signature"})
             self.assertEqual(result["targetedTests"]["signature"]["totalTestCount"], 9)
-            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "replacement", "materials", "ui", "cryptography"})
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials"})
             for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",
                         "physicalDeviceValidationPassed", "appleAccountUsed", "pairingRecordUsed",
                         "ipaGenerated", "ipaUploaded", "serviceIdentityVerified"):
@@ -569,7 +571,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             for group in result["unselectedTestGroups"]:
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertNotIn(group + suffix, result["evidenceSHA256"])
-            for mode in ("all", "replacement", "implementation", "cryptography"):
+            for mode in ("all", "replacement", "implementation", "cryptography", "sealedmaterials"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -628,7 +630,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "cryptography")
             self.assertEqual(inputs["intendedTests"], {"cryptography": sorted(probe.EXPECTED_CASES["cryptography"])})
             self.assertEqual(len(inputs["intendedTests"]["cryptography"]), 25)
-            self.assertEqual(len(inputs["sourceInputs"]), 45)
+            self.assertEqual(len(inputs["sourceInputs"]), 51)
             for group in probe.EXPECTED_CASES:
                 if group == "cryptography":
                     continue
@@ -650,7 +652,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             for group in result["unselectedTestGroups"]:
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertNotIn(group + suffix, result["evidenceSHA256"])
-            for mode in ("all", "replacement", "implementation", "signature"):
+            for mode in ("all", "replacement", "implementation", "signature", "sealedmaterials"):
                 with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
                         self.assertRaisesRegex(ValueError, "source-input audit"):
                     probe.result(self.work)
@@ -712,6 +714,108 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                     with self.subTest(path=path, change=change), self.assertRaisesRegex(ValueError, "source-input audit"):
                         probe.result(self.work)
             self.write_json("source-inputs.json", inputs)
+
+    def test_sealedmaterials_accepts_only_the_exact_forty_eight_affected_methods(self):
+        with self.context(), patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "sealedmaterials"}):
+            self.built_fixture()
+            inputs = smoke.read_json(self.work / "source-inputs.json")
+            expected = probe.EXPECTED_CASES["sealedmaterials"]
+            self.assertEqual(inputs["selectionMode"], "sealedmaterials")
+            self.assertEqual(inputs["intendedTests"], {"sealedmaterials": sorted(expected)})
+            self.assertEqual(len(inputs["sourceInputs"]), 51)
+            self.assertEqual(len(expected), 48)
+            self.assertTrue(probe.EXPECTED_CASES["cryptography"] | probe.EXPECTED_CASES["materials"] <= expected)
+            suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE,
+                      probe.PROFILE_SUITE, probe.MATERIALS_SUITE, probe.SIGNED_CODE_SUITE, probe.RESOURCE_SUITE)
+            self.assertEqual([sum(case.startswith(suite + "/") for case in expected) for suite in suites],
+                             [9, 7, 7, 2, 6, 7, 10])
+            for group in probe.EXPECTED_CASES:
+                if group != "sealedmaterials":
+                    for suffix in ("-summary.json", "-tests.json"):
+                        self.assertFalse((self.work / (group + suffix)).exists())
+                        self.write(self.work / (group + suffix), b"unselected historical evidence must not be accepted")
+            result = probe.result(self.work)
+            self.assertEqual(set(result["targetedTests"]), {"sealedmaterials"})
+            self.assertEqual(result["targetedTests"]["sealedmaterials"]["totalTestCount"], 48)
+            self.assertEqual(set(result["targetedTests"]["sealedmaterials"]["passedCaseIdentifiers"]), expected)
+            for group in result["unselectedTestGroups"]:
+                for suffix in ("-summary.json", "-tests.json"):
+                    self.assertNotIn(group + suffix, result["evidenceSHA256"])
+            for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",
+                        "physicalDeviceValidationPassed", "appleAccountUsed", "pairingRecordUsed",
+                        "ipaGenerated", "ipaUploaded", "serviceIdentityVerified"):
+                self.assertIs(result[key], False, key)
+            self.assertIn("Nested requirements", " ".join(result["limitations"]))
+            for mode in ("all", "replacement", "implementation", "signature", "cryptography"):
+                with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
+                        self.assertRaisesRegex(ValueError, "source-input audit"):
+                    probe.result(self.work)
+            for suffix in ("-summary.json", "-tests.json"):
+                path = self.work / ("sealedmaterials" + suffix)
+                original = path.read_bytes()
+                path.unlink()
+                with self.assertRaises(FileNotFoundError):
+                    probe.result(self.work)
+                self.write(path, original)
+            summary = smoke.read_json(self.work / "sealedmaterials-summary.json")
+            for change in ({"skippedTests": 1}, {"failedTests": 1}, {"totalTestCount": 47}, {"passedTests": True}):
+                self.write_json("sealedmaterials-summary.json", {**summary, **change})
+                with self.subTest(change=change), self.assertRaises(ValueError):
+                    probe.result(self.work)
+            self.write_json("sealedmaterials-summary.json", summary)
+            for suite in suites:
+                tree = self.tree("sealedmaterials")
+                leaf = next(node for node in tree["testNodes"][0]["children"]
+                            if "/" + suite + "/" in node["nodeIdentifier"])
+                leaf["result"] = "Skipped"
+                self.write_json("sealedmaterials-tests.json", tree)
+                with self.subTest(suite=suite), self.assertRaisesRegex(ValueError, "Unexpected"):
+                    probe.result(self.work)
+
+    def test_sealedmaterials_new_inputs_are_required_and_cannot_hide_source_changes(self):
+        paths = ("Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+                 "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeFixture.swift",
+                 "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeVerifierTests.swift",
+                 "Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
+                 "Tests/iOS/yuedu appTests/SelfRenewalResourceFixture.swift",
+                 "Tests/iOS/yuedu appTests/SelfRenewalResourceSealVerifierTests.swift")
+        with self.context(), patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "sealedmaterials"}):
+            for path in paths:
+                self.assertIn(path, probe.SOURCE_INPUTS)
+                self.write(self.root / path, b"uncommitted sealed-material input")
+                with self.subTest(path=path), self.assertRaisesRegex(ValueError, "differs from checked-out HEAD"):
+                    probe.prepare(self.work)
+                self.assertFalse((self.work / "source-inputs.json").exists())
+                self.write(self.root / path, self.originals[path])
+            self.built_fixture()
+            inputs = smoke.read_json(self.work / "source-inputs.json")
+            for path in paths:
+                for change in ("digest", "remove"):
+                    changed = copy.deepcopy(inputs)
+                    item = next(item for item in changed["sourceInputs"] if item["path"] == path)
+                    if change == "digest":
+                        item["sha256"] = "0" * 64
+                    else:
+                        changed["sourceInputs"].remove(item)
+                    self.write_json("source-inputs.json", changed)
+                    with self.subTest(path=path, change=change), self.assertRaisesRegex(ValueError, "source-input audit"):
+                        probe.result(self.work)
+            self.write_json("source-inputs.json", inputs)
+
+    def test_sealedmaterials_expected_identities_match_real_swift_test_declarations(self):
+        # Read the checked-out Swift declarations independently of the synthetic
+        # xcresult trees, so a renamed or accidentally selected extra method
+        # cannot be hidden by the generated portable fixtures.
+        actual = set()
+        for suite in (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE,
+                      probe.PROFILE_SUITE, probe.MATERIALS_SUITE, probe.SIGNED_CODE_SUITE, probe.RESOURCE_SUITE):
+            relative = "Tests/iOS/yuedu appTests/" + suite + ".swift"
+            self.assertIn(relative, probe.SOURCE_INPUTS)
+            text = (HERE.parent.parent / relative).read_text(encoding="utf-8")
+            methods = re.findall(r"(?m)^\s*func\s+(\w+)\s*\(", text)
+            self.assertEqual(len(methods), len(set(methods)), suite)
+            actual.update(suite + "/" + method for method in methods)
+        self.assertEqual(actual, probe.EXPECTED_CASES["sealedmaterials"])
 
 
 if __name__ == "__main__":

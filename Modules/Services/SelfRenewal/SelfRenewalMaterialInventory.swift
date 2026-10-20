@@ -62,6 +62,10 @@ enum SelfRenewalMaterialInventory {
         /// Includes header-recognized Mach-O files at arbitrary relative paths,
         /// and .dylib files even when their header cannot be recognized.
         let codeFiles: [CodeFile]
+        /// The same bounded enumeration used above; consumers must not rescan
+        /// the tree to discover resources. Paths are relative to the app root.
+        let files: [FileFact]
+        let directories: [String]
         let issues: [Issue]
         let entriesVisited: Int
         let declaredFileBytes: Int64
@@ -269,6 +273,10 @@ enum SelfRenewalMaterialInventory {
             if roleCounts[role, default: 0] > 1 { issues.append(.duplicateRole(role)) }
         }
         return Inventory(components: components, codeFiles: codes.values.sorted { $0.file.relativePath < $1.file.relativePath },
+            files: entries.compactMap { path, entry in
+                entry.directory ? nil : FileFact(relativePath: path, byteCount: entry.bytes)
+            }.sorted { $0.relativePath < $1.relativePath },
+            directories: entries.compactMap { $0.value.directory ? $0.key : nil }.sorted(),
             issues: issues, entriesVisited: visited, declaredFileBytes: declaredBytes, bytesRead: readBytes)
     }
 

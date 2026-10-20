@@ -29,6 +29,8 @@ SIGNATURE_SUITE = "SelfRenewalMachOSignatureReaderTests"
 HASH_SUITE = "SelfRenewalCodeDirectoryHashVerifierTests"
 CMS_SUITE = "SelfRenewalCMSVerifierTests"
 PROFILE_SUITE = "SelfRenewalProvisioningProfileVerifierTests"
+SIGNED_CODE_SUITE = "SelfRenewalSignedCodeVerifierTests"
+RESOURCE_SUITE = "SelfRenewalResourceSealVerifierTests"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -115,6 +117,30 @@ EXPECTED_CASES["cryptography"] = EXPECTED_CASES["signature"] | {
         "verifiesOwnedProfileThroughInventory",
     )
 }
+EXPECTED_CASES["sealedmaterials"] = EXPECTED_CASES["cryptography"] | EXPECTED_CASES["materials"] | {
+    SIGNED_CODE_SUITE + "/" + name for name in (
+        "authenticatesDetachedPrimaryAndPreservesLegacyUnboundAlternate",
+        "bindsOriginalHashAgilityEncodingsAndRejectsWrongValues",
+        "supportsOriginalTruncatedCDHashAndRejectsAgilityOIDCollisions",
+        "preservesOriginalAlternateOrderAndAdHocSemantics",
+        "rejectsChangedReadBudgetsAndCancellationAcrossSlices",
+        "readsOwnedAppAndKeepsGenericAnchorsSeparateFromAppleAuthority",
+        "enforcesSharedOwnedFileReadBoundaryIncludingEmptyFiles",
+    )
+} | {
+    RESOURCE_SUITE + "/" + name for name in (
+        "hashesIndependentVectorsWithBoundedChunks",
+        "selectsEnvelopeVersionAndLegacyHashFallback",
+        "appliesPOSIXWeightedRules",
+        "preservesOptionalSealSemantics",
+        "rejectsChangedAddedMissingAndWrongTypes",
+        "traversesNestedAndOmittedDirectoriesWithoutTrustClaims",
+        "rejectsMalformedEnvelopeAndLimits",
+        "verifiesOwnedApplicationAndRejectsResourceChanges",
+        "rejectsEnvelopeOrCodeDirectoryChangedAfterHashPass",
+        "rejectsShortReadsAndCancellation",
+    )
+}
 SELECTION_GROUPS = {
     # Preserve the historical all-mode contract; new implementation tests have
     # an explicit independent selection rather than silently widening it.
@@ -123,6 +149,7 @@ SELECTION_GROUPS = {
     "implementation": ("replacement", "materials"),
     "signature": ("signature",),
     "cryptography": ("cryptography",),
+    "sealedmaterials": ("sealedmaterials",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -147,6 +174,12 @@ SOURCE_INPUTS = (
     "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeVerifierTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalResourceFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalResourceSealVerifierTests.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -172,7 +205,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature or cryptography")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography or sealedmaterials")
     return mode
 
 
@@ -370,7 +403,14 @@ def result(work):
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "No Apple login, pairing, signing, installation or renewal operation is performed."] + (
-                           ["This selection executes exactly 25 cases in one cryptography xcresult: nine signature-structure, seven CodeDirectory content-hash, seven generic CMS and two owned provisioning-envelope cases.",
+                           ["This selection executes exactly 48 cases in one sealedmaterials xcresult: nine signature-structure, seven CodeDirectory content-hash, seven generic CMS, two provisioning-envelope, six material-inventory, seven signed-code and ten resource-seal cases.",
+                             "Signature, cryptography and materials artifact groups are not accepted separately; their method identities are included in the single sealedmaterials group because shared inventory, reader and CMS production inputs changed.",
+                             "Detached CodeDirectory CMS and supported hash-agility encodings bind owned signatures to original CodeDirectory bytes; generic explicit anchors do not establish Apple provisioning authority.",
+                             "Resource checks bind the consumed CodeResources bytes to re-read CodeDirectory slot 3 and check bounded resource digests and traversal. Nested requirements, strict Apple resource policy and Apple signing authority remain unverified.",
+                             "Apple-specific profile DER content, entitlement/device eligibility, trusted replacement adapter, signer and installer integration remain unverified.",
+                             "Unit, discovery, replacement and UI suites are not executed; no QueryType listener, RemotePairing browsing or diagnostic TCP probe is invoked."]
+                            if mode == "sealedmaterials" else [
+                             "This selection executes exactly 25 cases in one cryptography xcresult: nine signature-structure, seven CodeDirectory content-hash, seven generic CMS and two owned provisioning-envelope cases.",
                             "The independently named signature artifact group is not accepted separately; its nine test identities are executed inside this cryptography group because the shared reader changed.",
                             "Content-digest matching is checked against untrusted CodeDirectories; generic CMS signatures and explicit owned anchors do not establish Apple provisioning authority.",
                             "Apple-specific profile DER content, entitlement/device eligibility, resource-tree seals, signer and installer integration remain unverified.",

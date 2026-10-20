@@ -1,0 +1,92 @@
+{
+  "recordedAtUTC": "2026-10-20T03:04:45.792227+00:00",
+  "status": "prepared_not_sdk_executed",
+  "sourceInputs": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "bytes": 20349,
+      "sha256": "01089bc66d6dda4552733991d604a1d6a8871ab04ae12761624ee3c1b0446ec9",
+      "grammarErrors": []
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
+      "bytes": 24000,
+      "sha256": "6ec88bde962b46263096c8606012610fa50278a9f6f34ed50f32f82fca83af08",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift",
+      "bytes": 12377,
+      "sha256": "b295f587833e081771e3575f13ec5ca7763ab9d2f096ccf5926a50570e5e920d",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalResourceFixture.swift",
+      "bytes": 3409,
+      "sha256": "e9f108cd9f3a811283daef171bb645dd7f2aff8729997d6d4c923b331cf9f6a2",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalResourceSealVerifierTests.swift",
+      "bytes": 15686,
+      "sha256": "cf7da8989598c5e61df31c46059b554f55f4f0bdf91bd1144902b7b3d4b0f895",
+      "grammarErrors": []
+    }
+  ],
+  "preparedNewSwiftMethods": [
+    "hashesIndependentVectorsWithBoundedChunks",
+    "selectsEnvelopeVersionAndLegacyHashFallback",
+    "appliesPOSIXWeightedRules",
+    "preservesOptionalSealSemantics",
+    "rejectsChangedAddedMissingAndWrongTypes",
+    "traversesNestedAndOmittedDirectoriesWithoutTrustClaims",
+    "rejectsMalformedEnvelopeAndLimits",
+    "verifiesOwnedApplicationAndRejectsResourceChanges",
+    "rejectsEnvelopeOrCodeDirectoryChangedAfterHashPass",
+    "rejectsShortReadsAndCancellation"
+  ],
+  "preparedNewSwiftTests": 10,
+  "existingInventoryMethodIdentitiesRevalidatedOnNextSDK": 6,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0,
+  "grammarOnlyNotTypeChecking": true,
+  "independentPythonFixtureAudit": {
+    "passed": true,
+    "digestVectors": 12,
+    "actualResourceSeals": 3,
+    "actualCodePages": 3,
+    "actualExternalSpecialSlots": [
+      1,
+      3
+    ]
+  },
+  "productionConnection": "Existing content-hash inventory -> same nofollow owned-file helper -> exact CodeDirectory SHA256 re-read and actual envelope slot3 -> original POSIX weighted traversal -> streamed real resource digests",
+  "chunkBytes": 65536,
+  "resourceAndEnvelopeReadBudgetBytes": 2147483648,
+  "codeDirectoryReadBudgetBytes": 67108864,
+  "quiescentOwnedStagingRequired": true,
+  "atomicConcurrentMutationSealClaimed": false,
+  "primaryReferences": [
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/resources.cpp",
+      "bytes": 15498,
+      "sha256": "1a911c38fd9aaa4ddda0e041d5711317e92b312fe62d9b99674f7eca8c5b85c4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/StaticCode.cpp",
+      "bytes": 115505,
+      "sha256": "c770611cd6a9de47ddef4652dbf105a6bd165e62ef3a2ad614762a035a546581"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/bundlediskrep.cpp",
+      "bytes": 36190,
+      "sha256": "c69c5976a70a33292e5d565c1c7e6411a5c97aba829332f89a899d8cd89fbcb4"
+    }
+  ],
+  "remainingUnverified": [
+    "Nested code designated-requirement evaluation and nested authority",
+    "Strict Apple resource policy and signature-metadata directory policy",
+    "Apple provisioning/entitlement/account authorization",
+    "Signer/installer/automatic renewal and real-device acceptance"
+  ]
+}

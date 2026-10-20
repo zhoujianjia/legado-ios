@@ -445,14 +445,16 @@
           "implementedSubtasksZh": [
             "已解包.app真实材料清单读取器已实现，6个测试定义与2文件grammar通过；IPA解包、密码学验签和实际SDK执行尚未完成。",
             "Mach-O结构读取器已接到原材料清单读取，支持有界thin/fat 32/64、load commands、SuperBlob、CodeDirectory与CMS槽结构。新增9个测试定义、2文件grammar通过；SDK执行为0，页面哈希、CMS/profile/证书链、资源封印及可信替换适配仍未完成。",
-            "已接入真实CodeDirectory页/特殊槽摘要计算与profile CMS签名、显式根证书链校验；hash7、CMS7、profile2共16新增方法已定义，连同变更reader的结构9共25待SDK执行。10组Python摘要fixture审计与OpenSSL6正/1篡改样本验证通过；不算Swift通过或Apple/profile安装授权。"
+            "已接入真实CodeDirectory页/特殊槽摘要计算与profile CMS签名、显式根证书链校验；hash7、CMS7、profile2共16新增方法已定义，连同变更reader的结构9共25待SDK执行。10组Python摘要fixture审计与OpenSSL6正/1篡改样本验证通过；不算Swift通过或Apple/profile安装授权。",
+            "已接通实际raw CodeDirectory CMS与V1/V2 signed agility、每目录认证事实及CodeResources规则/真实文件流式摘要；新增17项Swift方法，选中48项相关方法，实际SDK尚未验收。嵌套requirement、Apple授权及实际签名安装仍未完成。"
           ],
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-sequence-first-step.json",
             "docs/legado-ios/core-renewal-url-signature-step.json",
-            "docs/legado-ios/core-renewal-request-crypto-step.json"
+            "docs/legado-ios/core-renewal-request-crypto-step.json",
+            "docs/legado-ios/core-renewal-signed-resource-step.json"
           ],
-          "nextActionZh": "继续打通CodeDirectory CMS及alternate hash-agility绑定、资源封印、权威DER profile与Apple签名者策略、可信材料适配和受控IPA；集中检查25方法真实SDK结果并先修实际失败，当前不请求真机。"
+          "nextActionZh": "收取本阶段固定源码SDK结果并先修实际失败；继续嵌套代码requirement/身份验证、Apple profile DER及授权材料绑定，不将通用根CMS或资源一致性当成可安装或自动续签。"
         },
         {
           "id": "S2",
@@ -608,7 +610,8 @@
       },
       "signatureSDKSubmission": "docs/legado-ios/core-renewal-20f4cd6-initial.json",
       "cryptographySDKSubmission": "docs/legado-ios/core-renewal-533f0b4-initial.json",
-      "implementationSDKResult": "docs/legado-ios/core-renewal-0a0c740-result.json"
+      "implementationSDKResult": "docs/legado-ios/core-renewal-0a0c740-result.json",
+      "signedResourceImplementation": "docs/legado-ios/core-renewal-signed-resource-step.json"
     }
   },
   "stages": [
@@ -4499,6 +4502,10 @@
     "original-request-options-step": {
       "path": "docs/legado-ios/core-original-url-options-step.json",
       "scope": "Actual114 selected Windows JVM methods and ordinaryJAR/smoke; task/source header, URL/options/error boundary wiring only. Source-bound original-method/reference comparisons are not Android/iOS/App/full-source acceptance."
+    },
+    "signed-code-resource-production-step": {
+      "path": "docs/legado-ios/core-renewal-signed-resource-step.json",
+      "scope": "真实受控暂存.app文件上的页/特殊槽摘要、raw主CodeDirectory detached CMS、V1/V2 signed agility及按原POSIX规则的资源摘要已接通。只接受调用方保持静止的有界目录；通用指定根信任与资源一致性不等于Apple授权、严格资源策略或安装许可。"
     }
   },
   "retainedExistingWork": [

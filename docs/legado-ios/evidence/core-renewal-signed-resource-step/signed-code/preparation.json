@@ -1,0 +1,305 @@
+{
+  "recordedAtUTC": "2026-10-20T03:06:32.607474+00:00",
+  "status": "prepared_not_sdk_executed",
+  "sourceInputs": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "bytes": 35758,
+      "sha256": "3234c9f95724cbe25646a03df7e975232c1cb1b3f2d77fe21ec2b1a623b33360",
+      "grammarErrors": [],
+      "modifiedInThisStep": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+      "bytes": 13377,
+      "sha256": "281f0dca9aed6ccb62ad23d4783f3d4aaf885fa5ca250611a9f9b9fb284bc320",
+      "grammarErrors": [],
+      "modifiedInThisStep": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+      "bytes": 23837,
+      "sha256": "79992d053d92d516fcf91b90199042c2b28eacf19aae011f3aec5e82be3aa892",
+      "grammarErrors": [],
+      "modifiedInThisStep": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+      "bytes": 12752,
+      "sha256": "f62872ca82474ddfad24ef7a588312f4db78e6ddbe55e7541120d7fb3884ba3d",
+      "grammarErrors": [],
+      "modifiedInThisStep": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCodeDirectoryHashVerifierTests.swift",
+      "bytes": 24586,
+      "sha256": "6ebda6025f333a84dc9e2704c356fa94c14e2a84cd275c7f64359f318f032354",
+      "grammarErrors": [],
+      "modifiedInThisStep": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeFixture.swift",
+      "bytes": 50946,
+      "sha256": "a553951f335fe9c88d657cc07a46735efd36b2289b6ca9d85cc23edc7320796a",
+      "grammarErrors": [],
+      "modifiedInThisStep": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSignedCodeVerifierTests.swift",
+      "bytes": 18365,
+      "sha256": "9a93c0756e5477a2244e80fa6145e8b220640a94c4c689b576c0b77ec7c7f119",
+      "grammarErrors": [],
+      "modifiedInThisStep": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
+      "bytes": 18684,
+      "sha256": "4c6bdda7ce187ae1e207fda2a62e0cc8fb859e4b2a2a8c203046b8ac5faf96f3",
+      "grammarErrors": [],
+      "modifiedInThisStep": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+      "bytes": 7360,
+      "sha256": "5e958f5836b77a0cc7e65770312d6efb49dca01b59b74dcac6b35d5ffecf3c80",
+      "grammarErrors": [],
+      "modifiedInThisStep": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+      "bytes": 4085,
+      "sha256": "2413d85949b311157601bb9da09331eb23243739bb6c36116c1e88a852ccc70c",
+      "grammarErrors": [],
+      "modifiedInThisStep": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+      "bytes": 42388,
+      "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e",
+      "grammarErrors": [],
+      "modifiedInThisStep": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+      "bytes": 8299,
+      "sha256": "786503e7fc6c1920acfe67ab9e8241b666355b679247c34916b176f28c28c766",
+      "grammarErrors": [],
+      "modifiedInThisStep": false
+    }
+  ],
+  "grammarParsedFiles": 12,
+  "newSwiftSuite": "SelfRenewalSignedCodeVerifierTests",
+  "preparedNewSwiftMethods": [
+    "authenticatesDetachedPrimaryAndPreservesLegacyUnboundAlternate",
+    "bindsOriginalHashAgilityEncodingsAndRejectsWrongValues",
+    "supportsOriginalTruncatedCDHashAndRejectsAgilityOIDCollisions",
+    "preservesOriginalAlternateOrderAndAdHocSemantics",
+    "rejectsChangedReadBudgetsAndCancellationAcrossSlices",
+    "readsOwnedAppAndKeepsGenericAnchorsSeparateFromAppleAuthority",
+    "enforcesSharedOwnedFileReadBoundaryIncludingEmptyFiles"
+  ],
+  "preparedNewSwiftTests": 7,
+  "preservedOriginalSwiftSuites": {
+    "SelfRenewalCodeDirectoryHashVerifierTests": 7,
+    "SelfRenewalMachOSignatureReaderTests": 9,
+    "SelfRenewalCMSVerifierTests": 7,
+    "SelfRenewalProvisioningProfileVerifierTests": 2
+  },
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0,
+  "fixtureAudit": [
+    {
+      "fixture": "legacy",
+      "fileSHA256": "ae3165e38c493d4d06b58e9c0b05eabbd5ce9598493f329ab692afe8547e226c",
+      "independentPageDigestsChecked": 6,
+      "independentNonzeroSpecialDigestsChecked": 10,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "v1",
+      "fileSHA256": "1416aa4d73cd4515c609162e469d760cbd5969d600e29a56ebe3b9edce9624d8",
+      "independentPageDigestsChecked": 9,
+      "independentNonzeroSpecialDigestsChecked": 15,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "v2",
+      "fileSHA256": "2612742a565eb56df583dba9f8a37bd6d38f3de453f4423e1fb8afaf96beacf1",
+      "independentPageDigestsChecked": 9,
+      "independentNonzeroSpecialDigestsChecked": 15,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "both",
+      "fileSHA256": "90920d69f30ea2842deae74f7fd9be59897eb118722a5432d4c8ab3cc2065105",
+      "independentPageDigestsChecked": 9,
+      "independentNonzeroSpecialDigestsChecked": 15,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "v2Truncated",
+      "fileSHA256": "e59d27e29a1bfaeedc22ad1e6aff1b7e7394bd2c585dc1d66083f79dcf57de39",
+      "independentPageDigestsChecked": 3,
+      "independentNonzeroSpecialDigestsChecked": 5,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "v2WrongLength",
+      "fileSHA256": "103bf4d602da7f61cfc869b7558c9d795dce98e85c0331ce5df007d5f6147f00",
+      "independentPageDigestsChecked": 3,
+      "independentNonzeroSpecialDigestsChecked": 5,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "v2DuplicateOID",
+      "fileSHA256": "ccbe92ebed930e313bf9b59a24ea82b637ffa6f40def21af56215088570d0d69",
+      "independentPageDigestsChecked": 6,
+      "independentNonzeroSpecialDigestsChecked": 10,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "v1WrongOrder",
+      "fileSHA256": "a430e5cebeae7beb0f637c98b54e070340b944008e2bea2e6496b17ccd8a4ab4",
+      "independentPageDigestsChecked": 9,
+      "independentNonzeroSpecialDigestsChecked": 15,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "v2WrongDigest",
+      "fileSHA256": "f8d11dd46b27a479c6916ff2db275d7e0d49d550d444d99d2ad8c499ba852db5",
+      "independentPageDigestsChecked": 9,
+      "independentNonzeroSpecialDigestsChecked": 15,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "gap",
+      "fileSHA256": "e930b3b62d07ab362f607e3ef83d521862c171fdf58a427db44ac6255277d259",
+      "independentPageDigestsChecked": 6,
+      "independentNonzeroSpecialDigestsChecked": 10,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "adHoc",
+      "fileSHA256": "302872edbdc41a7c7f28195b601aee28bd1a7b804962702b719d16439b4035d5",
+      "independentPageDigestsChecked": 6,
+      "independentNonzeroSpecialDigestsChecked": 10,
+      "opensslDetachedCMSVerified": false,
+      "swiftExecuted": false
+    },
+    {
+      "fixture": "duplicateHashType",
+      "fileSHA256": "3557b8518f38b58980189a4e9d41a6342e1e1aea5092f8176357d324d84b4412",
+      "independentPageDigestsChecked": 6,
+      "independentNonzeroSpecialDigestsChecked": 10,
+      "opensslDetachedCMSVerified": true,
+      "swiftExecuted": false
+    }
+  ],
+  "opensslValidDetachedSignatures": 11,
+  "opensslChangedRawPrimaryRejections": 11,
+  "productionConnection": "SignedCodeVerifier.read -> Inventory -> cancellable detached reader worker -> same checked executable FD -> structure+all page/special digests -> raw CD SHA256 recheck -> exact raw primary detached CMS+signedAttrs -> final fstat -> publish",
+  "genericExplicitAnchorsOnly": true,
+  "appleSigningAuthorityEstablished": false,
+  "provisioningProfileAuthorized": false,
+  "resourceTreeVerified": false,
+  "replacementAuthorized": false,
+  "acceptanceContract": {
+    "primaryRawSlotZero": true,
+    "firstSignerAgility": true,
+    "alternateStopFirstMissing": true,
+    "duplicateLoadedHashTypesRejected": true,
+    "bestHashPriority": [
+      4,
+      2,
+      3,
+      1
+    ],
+    "adHocSelectedDirectorySkipsCMSButNeverClaimsAuthentication": true,
+    "missingAgilityPreservesPrimaryOnlyAuthentication": true,
+    "v1": "one OCTET STRING containing plist dictionary cdhashes; exact ascending loaded hashType array of canonical <=20-byte digests; unknown plist keys accepted",
+    "v2": "SET values SEQUENCE(OID,OCTET STRING); no AlgorithmIdentifier wrapper; duplicate algorithm OIDs/count mismatch reject; all full actual CD hasher outputs match",
+    "hashTypeThreeFullCDHashBytes": 20,
+    "hashTypesTwoAndThreeV2OIDCollision": "actual original dictionary collision rejected, not blanket rejection of hashType3"
+  },
+  "sharedOwnedFileIO": {
+    "zeroBudgetAllowed": true,
+    "perReadBytes": 65536,
+    "maximumTotalReadBytes": 1073741824,
+    "readOwnedMaterialHardCapBytes": 2097152,
+    "openatNoFollow": true,
+    "regularWithoutHardLinks": true,
+    "beforeAfterFDIdentityRecheck": true,
+    "callerOwnedQuiescentRequired": true,
+    "atomicSealClaimed": false
+  },
+  "originalInventoryOrStructureBudgetsIncreased": false,
+  "realAccountsIPAsOrDeviceMaterialsUsed": false,
+  "primaryReferences": [
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/signer.cpp",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/signer.cpp",
+      "sha256": "83c1cd525934c0b7d0c5f08322b02e347a5cbf9f521a67edd36023387a8559a2",
+      "bytes": 47386
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/StaticCode.cpp",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/StaticCode.cpp",
+      "sha256": "c770611cd6a9de47ddef4652dbf105a6bd165e62ef3a2ad614762a035a546581",
+      "bytes": 115505
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/codedirectory.cpp",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/codedirectory.cpp",
+      "sha256": "9a4b47e6cee40983d71e3214286415ed7b83b22b403d5a7e89fad50d776646af",
+      "bytes": 14776
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/codedirectory.h",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/codedirectory.h",
+      "sha256": "dfc86acb9a1aaacdaf0f37aae0902df854c6cb384831caf8ca230eaa89189804",
+      "bytes": 16793
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/signerutils.cpp",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/signerutils.cpp",
+      "sha256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699",
+      "bytes": 14378
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_utilities/lib/hashing.h",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/hashing.h",
+      "sha256": "5aab045e3628427eae232ace34d8b9bc3517b8e9c85b5300c3da81a9bf1dd6ab",
+      "bytes": 5906
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_smime/lib/cmsattr.c",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/cmsattr.c",
+      "sha256": "cf1b3dfe9c7a203dc7058f60354bfb66c62dd4bf41494b6ef94e7f2d6be19a0d",
+      "bytes": 13865
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_smime/lib/cmssiginfo.c",
+      "path": ".build/renewal-discovery/code-directory-cms-step/primary/cmssiginfo.c",
+      "sha256": "6c3e7268f87d57e16230b3ef55093e7aaef36c49210a1cb4fd17ba4166a74918",
+      "bytes": 59017
+    }
+  ],
+  "remainingUnverified": [
+    "Apple-specific signing/provisioning policy, profile DER/entitlement/device/application matching",
+    "CodeResources resource tree authorization and nested-code requirements (separate root work)",
+    "timestamp/revocation authority and unsupported CMS encodings or algorithms",
+    "scatter/pre-encrypted/linkage code directory formats",
+    "actual SDK build/tests and installer/replacement/automatic-renewal integration"
+  ],
+  "ciOrGitTouchedInThisStep": false
+}

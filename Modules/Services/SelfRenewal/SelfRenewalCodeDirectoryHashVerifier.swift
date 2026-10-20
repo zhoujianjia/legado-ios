@@ -27,9 +27,10 @@ enum SelfRenewalCodeDirectoryHashVerifier {
         let verifiedSpecialSlots: [UInt32]
         let absentSpecialSlots: [UInt32]
         let codeBytesHashed: UInt64
+        let codeDirectorySHA256: Data
         fileprivate init(sliceOffset: UInt64, directorySlot: UInt32, hashType: UInt8,
             verifiedCodeSlots: UInt32, verifiedSpecialSlots: [UInt32], absentSpecialSlots: [UInt32],
-            codeBytesHashed: UInt64) {
+            codeBytesHashed: UInt64, codeDirectorySHA256: Data) {
             self.sliceOffset = sliceOffset
             self.directorySlot = directorySlot
             self.hashType = hashType
@@ -37,6 +38,7 @@ enum SelfRenewalCodeDirectoryHashVerifier {
             self.verifiedSpecialSlots = verifiedSpecialSlots
             self.absentSpecialSlots = absentSpecialSlots
             self.codeBytesHashed = codeBytesHashed
+            self.codeDirectorySHA256 = codeDirectorySHA256
         }
     }
     struct Verification: Sendable, Equatable {
@@ -123,6 +125,9 @@ enum SelfRenewalCodeDirectoryHashVerifier {
                 let reread = try Reader.parseCodeDirectory(blob, slot: directory.slot,
                     blobRange: directory.blobRange, codeBytesAvailable: signature.range.offset - slice.range.offset)
                 guard reread == directory else { throw Failure.changedDirectory }
+                guard operations < maximumHashOperations else { throw Failure.hashOperationLimit }
+                operations += 1
+                let directoryDigest = try digest(blob, hashType: 2)
                 let pageBytes = directory.pageSizeLog2 == 0 ? directory.codeLimit : UInt64(1) << directory.pageSizeLog2
                 for slot in 0..<directory.codeSlotCount {
                     let relative = UInt64(slot) * pageBytes
@@ -178,7 +183,8 @@ enum SelfRenewalCodeDirectoryHashVerifier {
                 verified.append(DirectoryVerification(sliceOffset: slice.range.offset,
                     directorySlot: directory.slot, hashType: directory.hashType,
                     verifiedCodeSlots: directory.codeSlotCount, verifiedSpecialSlots: special,
-                    absentSpecialSlots: absent, codeBytesHashed: directory.codeLimit))
+                    absentSpecialSlots: absent, codeBytesHashed: directory.codeLimit,
+                    codeDirectorySHA256: directoryDigest))
             }
         }
         return VerifiedFile(structure: structure, verification: Verification(directories: verified,

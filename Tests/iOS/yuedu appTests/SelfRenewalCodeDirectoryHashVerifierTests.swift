@@ -35,7 +35,7 @@ struct SelfRenewalCodeDirectoryHashVerifierTests {
             #expect(directory.verifiedSpecialSlots == [1, 2, 3, 5, 7])
             #expect(directory.absentSpecialSlots == [4, 6, 8, 9, 10, 11])
             #expect(ranges.contains { $0.offset == 128 && $0.byteCount == 45 })
-            #expect(result.verification.hashOperations == 8)
+            #expect(result.verification.hashOperations == 9)
             #expect(result.verification.contentDigestsVerified)
             #expect(!result.verification.signatureAuthenticityVerified)
             #expect(!result.verification.provisioningProfileVerified)

@@ -1,10 +1,10 @@
 import Darwin
 import Foundation
 
-/// Structural observations, never a signature/trust verification or an account
-/// identity assertion. Layouts follow Apple's mach-o/{loader,fat}.h and
-/// osfmk/kern/cs_blobs.h. The explicit content-hash entry verifies only digests;
-/// CMS, entitlement semantics and certificate authenticity stay unverified.
+/// The basic entry publishes structural observations, never signing authority
+/// or an account identity assertion. Layouts follow Apple's mach-o/{loader,fat}.h
+/// and osfmk/kern/cs_blobs.h. Explicit content-hash/signature entries add their
+/// separate bounded proofs; Apple authority and entitlement semantics stay unverified.
 enum SelfRenewalMachOSignatureReader {
     enum Failure: Error, Sendable, Equatable {
         case invalidRoot, invalidPath, unreadableFile, linkNotAllowed, fileChangedDuringRead
@@ -74,6 +74,7 @@ enum SelfRenewalMachOSignatureReader {
         let file: SelfRenewalMaterialInventory.FileFact
         let structure: ParsedFile
         let contentHashVerification: SelfRenewalCodeDirectoryHashVerifier.Verification?
+        let signedCodeVerification: SelfRenewalSignedCodeVerifier.Verification?
     }
     struct Materials: Sendable, Equatable {
         let inventory: SelfRenewalMaterialInventory.Inventory
@@ -81,6 +82,7 @@ enum SelfRenewalMachOSignatureReader {
         /// Additional reads only; does not alter the inventory's separate budget.
         let signatureStructureBytesRead: Int
         let contentHashBytesRead: Int
+        let signatureVerificationBytesRead: Int
         var cryptographicVerificationPerformed: Bool { false }
         var accountIdentityEstablished: Bool { false }
         var replacementAuthorized: Bool { false }
@@ -94,24 +96,38 @@ enum SelfRenewalMachOSignatureReader {
         static let stringBytes = 255
         static let totalReadBytes = 67_108_864
         static let ownedMaterialBytes = 2_097_152
+        static let ownedFileReadBytes = 1_073_741_824
+        static let ownedFileChunkBytes = 65_536
     }
 
     /// The supplied app must be a caller-owned, already unpacked, quiescent
     /// staging directory. No app data or executable is changed. Each descendant
     /// is opened relative to a directory FD with O_NOFOLLOW, then rechecked.
     nonisolated static func read(unpackedApplication root: URL) async throws -> Materials {
-        try await read(unpackedApplication: root, verifyContentHashes: false)
+        try await read(unpackedApplication: root, verifyContentHashes: false, signatureTrust: nil)
     }
 
     nonisolated static func readVerifyingContentHashes(unpackedApplication root: URL) async throws -> Materials {
-        try await read(unpackedApplication: root, verifyContentHashes: true)
+        try await read(unpackedApplication: root, verifyContentHashes: true, signatureTrust: nil)
     }
 
-    private nonisolated static func read(unpackedApplication root: URL, verifyContentHashes: Bool) async throws -> Materials {
+    nonisolated static func readVerifyingSignatures(unpackedApplication root: URL,
+        anchors: [Data], at date: Date) async throws -> Materials {
+        try await read(unpackedApplication: root, verifyContentHashes: true,
+            signatureTrust: SignatureTrust(anchors: anchors, date: date))
+    }
+    private struct SignatureTrust: Sendable {
+        let anchors: [Data]
+        let date: Date
+    }
+
+    private nonisolated static func read(unpackedApplication root: URL, verifyContentHashes: Bool,
+        signatureTrust: SignatureTrust?) async throws -> Materials {
         let inventory = try await SelfRenewalMaterialInventory.read(unpackedApplication: root)
         try Task.checkCancellation()
         let worker = Task.detached(priority: .utility) {
-            try readSynchronously(root: root, inventory: inventory, verifyContentHashes: verifyContentHashes)
+            try readSynchronously(root: root, inventory: inventory, verifyContentHashes: verifyContentHashes,
+                signatureTrust: signatureTrust)
         }
         return try await withTaskCancellationHandler {
             try await worker.value
@@ -401,7 +417,8 @@ enum SelfRenewalMachOSignatureReader {
     }
 
     private static func readSynchronously(root suppliedRoot: URL,
-        inventory: SelfRenewalMaterialInventory.Inventory, verifyContentHashes: Bool) throws -> Materials {
+        inventory: SelfRenewalMaterialInventory.Inventory, verifyContentHashes: Bool,
+        signatureTrust: SignatureTrust?) throws -> Materials {
         precondition(!Thread.isMainThread, "Renewal signature reads must stay off main")
         try Task.checkCancellation()
         let rootFD = try openRoot(suppliedRoot)
@@ -410,10 +427,11 @@ enum SelfRenewalMachOSignatureReader {
         var bytesRead = 0
         var contentReadBytes = 0
         var hashOperations = 0
+        var signatureReadBytes = 0
         var code: [CodeMaterial] = []
         defer {
             SourcePerfTrace.record("renewal.material.macho",
-                "files=\(code.count) bytes=\(bytesRead) hashBytes=\(contentReadBytes) hashOperations=\(hashOperations) main=\(Thread.isMainThread)",
+                "files=\(code.count) bytes=\(bytesRead) hashBytes=\(contentReadBytes) signatureBytes=\(signatureReadBytes) hashOperations=\(hashOperations) main=\(Thread.isMainThread)",
                 since: started, thresholdMs: 0)
         }
         for item in inventory.codeFiles {
@@ -424,6 +442,7 @@ enum SelfRenewalMachOSignatureReader {
             let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: false)
             let parsed: ParsedFile
             let verification: SelfRenewalCodeDirectoryHashVerifier.Verification?
+            let signedVerification: SelfRenewalSignedCodeVerifier.Verification?
             if verifyContentHashes {
                 let component = inventory.components.first { $0.executable?.file.relativePath == item.file.relativePath }
                 let verified = try SelfRenewalCodeDirectoryHashVerifier.verify(fileByteCount: UInt64(item.file.byteCount),
@@ -453,33 +472,64 @@ enum SelfRenewalMachOSignatureReader {
                 parsed = verified.structure
                 verification = verified.verification
                 hashOperations += verified.verification.hashOperations
+                if let signatureTrust {
+                    let bound = try SelfRenewalSignedCodeVerifier.bind(verified,
+                        anchors: signatureTrust.anchors, at: signatureTrust.date,
+                        maximumReadBytes: SelfRenewalSignedCodeVerifier.Limits.additionalReadBytes - signatureReadBytes) { range in
+                            try readRange(handle, range: range, budget: &contentReadBytes,
+                                maximum: SelfRenewalCodeDirectoryHashVerifier.Limits.totalContentReadBytes)
+                        }
+                    signedVerification = bound
+                    signatureReadBytes += bound.additionalBytesRead
+                } else { signedVerification = nil }
             } else {
                 parsed = try parse(fileByteCount: UInt64(item.file.byteCount)) { range in
                     try readRange(handle, range: range, budget: &bytesRead, maximum: Limits.totalReadBytes)
                 }
                 verification = nil
+                signedVerification = nil
             }
             let after = try status(descriptor, expectedBytes: item.file.byteCount)
             try unchanged(before, after)
-            code.append(CodeMaterial(file: item.file, structure: parsed, contentHashVerification: verification))
+            code.append(CodeMaterial(file: item.file, structure: parsed, contentHashVerification: verification,
+                signedCodeVerification: signedVerification))
         }
         return Materials(inventory: inventory, code: code, signatureStructureBytesRead: bytesRead,
-            contentHashBytesRead: contentReadBytes)
+            contentHashBytesRead: contentReadBytes, signatureVerificationBytesRead: signatureReadBytes)
     }
     /// One bounded, read-only small-material path shared by hash/profile readers.
     /// Call only on a worker with caller-owned quiescent staging; not an atomic
     /// seal. maximumBytes may tighten but never increase the fixed 2 MiB cap.
     static func readOwnedMaterial(root: URL, fact: SelfRenewalMaterialInventory.FileFact,
         maximumBytes: Int) throws -> Data {
-        precondition(!Thread.isMainThread, "Renewal material reads must stay off main")
-        try Task.checkCancellation()
         guard (1...Limits.ownedMaterialBytes).contains(maximumBytes), fact.byteCount >= 0,
               fact.byteCount <= Int64(maximumBytes) else { throw Failure.fileSizeLimit }
+        return try withOwnedFile(root: root, fact: fact, maximumReadBytes: maximumBytes) { read in
+            var bytes = Data()
+            var offset: UInt64 = 0
+            while offset < UInt64(fact.byteCount) {
+                let count = Int(min(UInt64(Limits.ownedFileChunkBytes), UInt64(fact.byteCount) - offset))
+                bytes.append(try read(ByteRange(offset: offset, byteCount: count)))
+                offset += UInt64(count)
+            }
+            return bytes
+        }
+    }
+    /// Shared streaming path. The callback cannot escape or read outside this
+    /// one regular file without hard links. A zero budget permits empty hashes.
+    /// File identity checks apply before publishing success, not an atomic seal
+    /// against a caller that mutates its staging directory concurrently.
+    static func withOwnedFile<T>(root: URL, fact: SelfRenewalMaterialInventory.FileFact,
+        maximumReadBytes: Int, _ action: ((ByteRange) throws -> Data) throws -> T) throws -> T {
+        precondition(!Thread.isMainThread, "Renewal material reads must stay off main")
+        try Task.checkCancellation()
+        guard (0...Limits.ownedFileReadBytes).contains(maximumReadBytes), fact.byteCount >= 0,
+              fact.byteCount <= Int64(Limits.ownedFileReadBytes) else { throw Failure.fileSizeLimit }
         let started = SourcePerfTrace.now
         var bytesRead = 0
         defer {
-            SourcePerfTrace.record("renewal.material.owned-read",
-                "bytes=\(bytesRead) main=\(Thread.isMainThread)", since: started, thresholdMs: 0)
+            SourcePerfTrace.record("renewal.material.owned-file",
+                "bytes=\(bytesRead) declaredBytes=\(fact.byteCount) main=\(Thread.isMainThread)", since: started, thresholdMs: 0)
         }
         let rootFD = try openRoot(root)
         defer { Darwin.close(rootFD) }
@@ -487,10 +537,15 @@ enum SelfRenewalMachOSignatureReader {
         defer { Darwin.close(descriptor) }
         let before = try status(descriptor, expectedBytes: fact.byteCount)
         let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: false)
-        let bytes = try readRange(handle, range: ByteRange(offset: 0, byteCount: Int(fact.byteCount)),
-            budget: &bytesRead, maximum: maximumBytes)
+        let value = try action { range in
+            guard range.byteCount >= 0, range.byteCount <= Limits.ownedFileChunkBytes,
+                  range.offset <= UInt64(fact.byteCount),
+                  UInt64(range.byteCount) <= UInt64(fact.byteCount) - range.offset else { throw Failure.truncatedRead }
+            return try readRange(handle, range: range, budget: &bytesRead, maximum: maximumReadBytes)
+        }
         try unchanged(before, status(descriptor, expectedBytes: fact.byteCount))
-        return bytes
+        try Task.checkCancellation()
+        return value
     }
     private static func openRoot(_ root: URL) throws -> Int32 {
         guard root.isFileURL, root.query == nil, root.fragment == nil,

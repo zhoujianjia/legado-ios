@@ -12,17 +12,43 @@ enum SelfRenewalCMSVerifier {
         case certificateLimit, malformedCertificate, signerNotFound, ambiguousSigner
         case invalidSignature, invalidAnchors, trustConfiguration, untrustedChain
     }
+    struct SignedAttribute: Sendable, Equatable {
+        struct Value: Sendable, Equatable {
+            let tag: UInt8
+            let body: Data
+            let originalDER: Data
+            fileprivate init(_ node: Node) {
+                tag = node.tag
+                body = node.body
+                originalDER = node.full
+            }
+        }
+        let oid: Data
+        let values: [Value]
+        let originalDER: Data
+        fileprivate init(oid: Data, values: [Value], originalDER: Data) {
+            self.oid = oid
+            self.values = values
+            self.originalDER = originalDER
+        }
+    }
     struct Signer: Sendable, Equatable {
         let certificateSHA256: Data
         let explicitAnchorSHA256: [Data]
         let verifiedAt: Date
+        /// Exposed only after this signer's actual signature and chain pass.
+        let signedAttributes: [SignedAttribute]
+        let signedAttributesDER: Data?
         var signatureVerified: Bool { true }
         var chainValidatedToExplicitAnchors: Bool { true }
         var appleProvisioningAuthorityEstablished: Bool { false }
-        fileprivate init(certificateSHA256: Data, explicitAnchorSHA256: [Data], verifiedAt: Date) {
+        fileprivate init(certificateSHA256: Data, explicitAnchorSHA256: [Data], verifiedAt: Date,
+            signedAttributes: [SignedAttribute], signedAttributesDER: Data?) {
             self.certificateSHA256 = certificateSHA256
             self.explicitAnchorSHA256 = explicitAnchorSHA256
             self.verifiedAt = verifiedAt
+            self.signedAttributes = signedAttributes
+            self.signedAttributesDER = signedAttributesDER
         }
     }
     struct VerifiedContent: Sendable, Equatable {
@@ -111,11 +137,18 @@ enum SelfRenewalCMSVerifier {
             guard seenSigners.insert(leafHash).inserted else { throw Failure.ambiguousSigner }
             var position = 3
             let signatureInput: Data
+            let authenticatedAttributes: [SignedAttribute]
+            let authenticatedDER: Data?
             if fields[position].tag == 0xa0 {
-                signatureInput = try validateAttributes(fields[position], content: content, digest: digest)
+                let checked = try validateAttributes(fields[position], content: content, digest: digest)
+                signatureInput = checked.encoded
+                authenticatedAttributes = checked.attributes
+                authenticatedDER = checked.encoded
                 position += 1
             } else {
                 signatureInput = content
+                authenticatedAttributes = []
+                authenticatedDER = nil
             }
             guard fields.count == position + 2 || fields.count == position + 3,
                   fields[position + 1].tag == 0x04,
@@ -146,7 +179,8 @@ enum SelfRenewalCMSVerifier {
             guard SecTrustEvaluateWithError(trust, &trustError) else { throw Failure.untrustedChain }
             try Task.checkCancellation()
             results.append(Signer(certificateSHA256: leafHash,
-                explicitAnchorSHA256: anchors.map { Data(SHA256.hash(data: $0)) }, verifiedAt: date))
+                explicitAnchorSHA256: anchors.map { Data(SHA256.hash(data: $0)) }, verifiedAt: date,
+                signedAttributes: authenticatedAttributes, signedAttributesDER: authenticatedDER))
         }
         return VerifiedContent(content: content, signers: results)
     }
@@ -215,7 +249,8 @@ enum SelfRenewalCMSVerifier {
         guard let boundDigest = ecDigests[fields[0].body], boundDigest == digest, fields.count == 1 else { throw Failure.unsupportedAlgorithm }
         return digest.ecdsa
     }
-    private static func validateAttributes(_ node: Node, content: Data, digest: Digest) throws -> Data {
+    private static func validateAttributes(_ node: Node, content: Data, digest: Digest) throws
+        -> (encoded: Data, attributes: [SignedAttribute]) {
         let attributes = try children(node)
         guard !attributes.isEmpty, attributes.count <= Limits.attributes else { throw Failure.invalidAttributes }
         var previous: Data?
@@ -223,6 +258,7 @@ enum SelfRenewalCMSVerifier {
         var expectedDigest: Data?
         var hasContentType = false
         var derNodes = 0
+        var checked: [SignedAttribute] = []
         for attribute in attributes {
             try validateAttributeDER(attribute, depth: 0, nodes: &derNodes)
             if let previous, attribute.full.lexicographicallyPrecedes(previous) { throw Failure.invalidAttributes }
@@ -232,6 +268,8 @@ enum SelfRenewalCMSVerifier {
                   fields[1].tag == 0x31, seen.insert(fields[0].body).inserted else { throw Failure.invalidAttributes }
             let values = try children(fields[1])
             guard !values.isEmpty else { throw Failure.invalidAttributes }
+            checked.append(SignedAttribute(oid: fields[0].body,
+                values: values.map { SignedAttribute.Value($0) }, originalDER: attribute.full))
             if fields[0].body == OID.contentType {
                 guard values.count == 1, values[0].tag == 0x06, values[0].body == OID.data else { throw Failure.invalidAttributes }
                 hasContentType = true
@@ -246,7 +284,13 @@ enum SelfRenewalCMSVerifier {
         // implicit context tag only; its canonical length/contents stay intact.
         var encoded = node.full
         encoded[encoded.startIndex] = 0x31
-        return encoded
+        return (encoded, checked)
+    }
+    /// Decode children using the same bounded DER parser; no re-encoding of
+    /// authenticated attribute values or second ASN.1 parser is introduced.
+    static func children(of value: SignedAttribute.Value) throws -> [SignedAttribute.Value] {
+        try children(Node(tag: value.tag, full: value.originalDER, body: value.body))
+            .map { SignedAttribute.Value($0) }
     }
     private static func validateAttributeDER(_ node: Node, depth: Int, nodes: inout Int) throws {
         try Task.checkCancellation()
@@ -321,7 +365,7 @@ enum SelfRenewalCMSVerifier {
         return found == sid.body
     }
 
-    private struct Node {
+    fileprivate struct Node {
         let tag: UInt8
         let full: Data
         let body: Data
