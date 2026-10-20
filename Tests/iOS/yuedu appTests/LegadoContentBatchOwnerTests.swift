@@ -180,7 +180,7 @@ struct LegadoContentBatchOwnerTests {
             _ = try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: read,
                 body: "<img src=\"data:image/png;base64,,{\"js\":\"result='must-use-original-task'\"}\">")
             Issue.record("A deferred image cannot borrow another JS session")
-        } catch let error as LegadoRuntimeError { #expect(error.code == "UNSUPPORTED_CAPABILITY" && error.completedEffects.isEmpty) }
+        } catch let error as LegadoRuntimeError { #expect(error.code == "UNSUPPORTED_CAPABILITY" && (error.completedEffects ?? []).isEmpty) }
         let unchanged = try await f.cache.originalBatchSnapshot(bookID: f.book.id, index: 0,
             sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, validateGrant: {})
         #expect(unchanged.fingerprints == before.fingerprints)

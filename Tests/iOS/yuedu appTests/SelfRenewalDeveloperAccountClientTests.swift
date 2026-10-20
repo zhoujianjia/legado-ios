@@ -489,6 +489,8 @@ struct SelfRenewalDeveloperAccountClientTests {
         var paths: [String] = []
         var validCSRs = 0, profileRequests = 0
         var certificate: Data?
+        private let acceptsInitialCSR: Bool
+        private var initialRequestPublicKey: SecKey?
         var certificateMachineID: UUID?
         let priorCertificates: [Data]
         var certificateListMode: CertificateListMode = .normal
@@ -501,8 +503,9 @@ struct SelfRenewalDeveloperAccountClientTests {
         private var firstEnrollmentEvent: EnrollmentEvent?
         private var enrollmentWaiters: [CheckedContinuation<EnrollmentEvent, Never>] = []
         init(material: SelfRenewalApplicationMaterialVerifier.Materials, issuer: Vault.KeyMaterial, key: Vault.KeyMaterial,
-            date: Date, priorCertificates: [Data]? = nil) {
+            date: Date, priorCertificates: [Data]? = nil, acceptsInitialCSR: Bool = false) {
             self.material = material; self.issuer = issuer; self.key = key; self.date = date
+            self.acceptsInitialCSR = acceptsInitialCSR
             issuedMaterialDate = date
             self.priorCertificates = priorCertificates ?? key.certificateChainDER.first.map { [$0] } ?? []
         }
@@ -563,7 +566,7 @@ struct SelfRenewalDeveloperAccountClientTests {
             case "ios/submitDevelopmentCSR.action":
                 #expect(body["teamId"] as? String == material.bundles[0].slices[0].teamIdentifier)
                 let pem = try #require(body["csrContent"] as? String)
-                try verifyCSR(pem)
+                initialRequestPublicKey = try verifyCSR(pem)
                 validCSRs += 1
                 observe(.csrArrived)
                 if mode == .holdCSR {
@@ -571,7 +574,10 @@ struct SelfRenewalDeveloperAccountClientTests {
                     for await _ in pair.stream {}
                     throw CancellationError()
                 }
-                let signerKey = mode == .wrongCertificate ? issuer.privateKey : key.privateKey
+                let requestedKey: SecKey
+                if acceptsInitialCSR { requestedKey = try #require(initialRequestPublicKey) }
+                else { requestedKey = key.privateKey }
+                let signerKey = mode == .wrongCertificate ? issuer.privateKey : requestedKey
                 // A same-key issue must actually be a different signed
                 // certificate, rather than deterministic DER of its old leaf.
                 let leaf = try PKI.certificate(for: signerKey, signedBy: issuer, at: issuedMaterialDate.addingTimeInterval(60))
@@ -641,7 +647,7 @@ struct SelfRenewalDeveloperAccountClientTests {
             if certificateListMode == .truncatedMetadata { result["meta"] = ["paging": ["total": rows.count, "limit": 256], "truncated": true] }
             return try JSONSerialization.data(withJSONObject: result, options: [.sortedKeys])
         }
-        private func verifyCSR(_ pem: String) throws {
+        private func verifyCSR(_ pem: String) throws -> SecKey {
             let lines = pem.split(separator: "\n")
             #expect(lines.first == "-----BEGIN CERTIFICATE REQUEST-----" && lines.last == "-----END CERTIFICATE REQUEST-----")
             let encoded = lines.dropFirst().dropLast().joined()
@@ -658,9 +664,12 @@ struct SelfRenewalDeveloperAccountClientTests {
             let publicKey = try #require(rawKey)
             #expect(SecKeyVerifySignature(publicKey, .rsaSignatureMessagePKCS1v15SHA256, fields[0].originalDER as CFData,
                 Data(fields[2].body.dropFirst()) as CFData, nil))
-            let keyPublic = try #require(SecKeyCopyPublicKey(key.privateKey))
-            let expected = try #require(SecKeyCopyExternalRepresentation(keyPublic, nil) as Data?)
-            #expect(publicBytes == expected)
+            if !acceptsInitialCSR {
+                let keyPublic = try #require(SecKeyCopyPublicKey(key.privateKey))
+                let expected = try #require(SecKeyCopyExternalRepresentation(keyPublic, nil) as Data?)
+                #expect(publicBytes == expected)
+            }
+            return publicKey
         }
         private static func plist(_ value: [String: Any]) throws -> Data {
             try PropertyListSerialization.data(fromPropertyList: value, format: .xml, options: 0)

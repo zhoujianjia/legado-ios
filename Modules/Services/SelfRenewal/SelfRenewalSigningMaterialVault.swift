@@ -7,6 +7,7 @@ import Security
 protocol SelfRenewalSigningManifestStorage: Sendable {
     func load(account: String) throws -> String?
     func save(account: String, value: String) throws
+    func insert(account: String, value: String) throws
     func delete(account: String) throws
 }
 
@@ -22,6 +23,10 @@ struct SelfRenewalSigningKeychainManifestStorage: SelfRenewalSigningManifestStor
             accessibility: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly, synchronizable: false) else {
             throw SelfRenewalSigningMaterialVault.Failure.manifestWrite
         }
+    }
+    func insert(account: String, value: String) throws {
+        try KeychainHelper.insertChecked(account: account, data: value, service: service,
+            accessibility: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly, synchronizable: false)
     }
     func delete(account: String) throws {
         guard KeychainHelper.delete(account: account, service: service, synchronizable: false) else {
@@ -193,6 +198,9 @@ actor SelfRenewalSigningMaterialVault {
         var generation: UInt64
         var keys: [KeyRecord]
         var published: Published?
+        // Public issuer candidates from the originally verified Bundle. Old
+        // schema-1 manifests decode this as nil; these are never trust anchors.
+        var enrollmentIssuerCertificates: [Data]? = nil
     }
     private struct Session { var manifest: Manifest; var encoded: String }
     private let codeAnchors: [Data]
@@ -216,12 +224,46 @@ actor SelfRenewalSigningMaterialVault {
         guard sessions.count < Limits.namespaces else { throw Failure.limit }
         let identity = try Self.identity(material)
         let namespace = Namespace(UUID())
-        let manifest = Manifest(schema: 1, namespace: namespace.id, identity: identity, generation: 0, keys: [], published: nil)
+        let manifest = Manifest(schema: 1, namespace: namespace.id, identity: identity, generation: 0, keys: [], published: nil,
+            enrollmentIssuerCertificates: try Self.enrollmentIssuers(material))
         let encoded = try Self.encode(manifest)
         try Task.checkCancellation()
         try storage.save(account: Self.account(namespace.id), value: encoded)
         sessions[namespace.id] = Session(manifest: manifest, encoded: encoded)
         return namespace
+    }
+
+    /// Only the App session can mint this capability, after its exact UUID and
+    /// input identity have been fsynced in the existing configuration Document.
+    /// A checked missing read permits only an add, never replacement of an item.
+    func resumeOrCreateInitialEnrollment(_ authorization: SelfRenewalAppSession.InitialNamespaceCreationAuthorization,
+        identity material: SelfRenewalApplicationMaterialVerifier.Materials) throws -> Namespace {
+        precondition(!Thread.isMainThread)
+        let started = SourcePerfTrace.now
+        defer { trace("resume-or-create-initial", bytes: 0, since: started) }
+        try Task.checkCancellation()
+        let id = authorization.namespaceID
+        guard authorization.identitySHA256 == (try Self.initialEnrollmentIdentityDigest(material)) else { throw Failure.identityChanged }
+        guard sessions[id] != nil || sessions.count < Limits.namespaces else { throw Failure.limit }
+        if let encoded = try storage.load(account: Self.account(id)) {
+            let manifest = try Self.decode(encoded, namespace: id)
+            guard manifest.identity == (try Self.identity(material)), manifest.published == nil else { throw Failure.identityChanged }
+            return try resume(namespaceID: id, identity: material)
+        }
+        let manifest = Manifest(schema: 1, namespace: id, identity: try Self.identity(material), generation: 0,
+            keys: [], published: nil, enrollmentIssuerCertificates: try Self.enrollmentIssuers(material))
+        let encoded = try Self.encode(manifest)
+        try Task.checkCancellation()
+        try storage.insert(account: Self.account(id), value: encoded)
+        sessions[id] = Session(manifest: manifest, encoded: encoded)
+        return Namespace(id)
+    }
+
+    /// A digest of the existing verified identity fields binds an interrupted
+    /// initial transaction; it grants no signing or profile authority itself.
+    static func initialEnrollmentIdentityDigest(_ material: SelfRenewalApplicationMaterialVerifier.Materials) throws -> Data {
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        return Data(SHA256.hash(data: try encoder.encode(Self.identity(material))))
     }
 
     /// The namespace identifier is App-owned metadata, never an Apple account ID.
@@ -280,12 +322,13 @@ actor SelfRenewalSigningMaterialVault {
                   }) else { throw Failure.identityChanged }
             return EnrollmentIdentity.Bundle(identity, sliceCount: code.structure.slices.count)
         }
-        let chain = manifest.published?.chain ?? []
+        let chain = manifest.published?.chain ?? manifest.enrollmentIssuerCertificates ?? []
         guard chain.count <= Limits.certificates, Set(chain).count == chain.count,
               chain.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }) else { throw Failure.malformedManifest }
         try Task.checkCancellation()
         sessions[namespaceID] = Session(manifest: manifest, encoded: encoded)
-        return EnrollmentIdentity(namespace: Namespace(namespaceID), bundles: bundles, issuerChainDER: Array(chain.dropFirst()))
+        let issuers = manifest.published == nil ? chain : Array(chain.dropFirst())
+        return EnrollmentIdentity(namespace: Namespace(namespaceID), bundles: bundles, issuerChainDER: issuers)
     }
 
     func generation(in namespace: Namespace) throws -> UInt64 { try current(namespace).manifest.generation }
@@ -301,6 +344,51 @@ actor SelfRenewalSigningMaterialVault {
         }
         return PublicationBaseline(namespace: namespace, generation: session.manifest.generation,
             keyID: published.keyID, leafHash: Data(SHA256.hash(data: leaf)))
+    }
+
+    /// Called only after the App has refused unresolved account intent and
+    /// retired any unsubmitted installation transaction. Ready keys are never
+    /// guessed: exactly one is reused, none creates one, multiple refuse.
+    func initialEnrollmentKey(in namespace: Namespace, expectedGeneration: UInt64) throws -> PendingKey {
+        let started = SourcePerfTrace.now
+        defer { trace("initial-enrollment-key", bytes: 0, since: started) }
+        var session = try current(namespace)
+        guard session.manifest.generation == expectedGeneration else { throw Failure.staleGeneration }
+        guard session.manifest.published == nil else { throw Failure.staleGeneration }
+        let unfinished = session.manifest.keys.filter { $0.state == .pending }
+        for record in unfinished { try Self.deleteKey(namespace: namespace.id, id: record.id) }
+        if !unfinished.isEmpty {
+            session.manifest.keys.removeAll { $0.state == .pending }
+            try publishManifest(&session, namespace: namespace)
+        }
+        let ready = session.manifest.keys.filter { $0.state == .ready }
+        guard ready.count <= 1 else { throw Failure.malformedManifest }
+        if let record = ready.first {
+            let key = try Self.loadKey(namespace: namespace.id, id: record.id)
+            let hash = try Self.publicHash(key)
+            guard hash == record.publicHash else { throw Failure.keyMismatch }
+            return PendingKey(namespace: namespace, id: record.id, generation: session.manifest.generation, hash: hash, key: key)
+        }
+        return try generateKey(in: namespace, expectedGeneration: session.manifest.generation)
+    }
+
+    /// Resolve public issuer candidates at the real current date with only the
+    /// configured anchors and network fetching disabled. The selected exact
+    /// chain still passes the existing complete publication verifier below.
+    func enrollmentCertificateChain(in namespace: Namespace, expectedGeneration: UInt64,
+        leaf: Data, issuerCandidates: [Data]) throws -> [Data] {
+        let started = SourcePerfTrace.now
+        defer { trace("enrollment-chain", bytes: leaf.count, since: started) }
+        let session = try current(namespace)
+        guard session.manifest.generation == expectedGeneration else { throw Failure.staleGeneration }
+        var candidates = [leaf]
+        for der in issuerCandidates + (session.manifest.enrollmentIssuerCertificates ?? []) {
+            if !candidates.contains(der) { candidates.append(der) }
+        }
+        let chain = try Self.selectedChain(candidates, anchors: codeAnchors, at: clock())
+        guard chain.first == leaf else { throw Failure.untrustedCertificate }
+        _ = try Self.validateChain(chain, anchors: codeAnchors, at: clock())
+        return chain
     }
 
     func generateKey(in namespace: Namespace, expectedGeneration: UInt64) throws -> PendingKey {
@@ -601,6 +689,25 @@ actor SelfRenewalSigningMaterialVault {
         return (key, profiles)
     }
 
+    private static func enrollmentIssuers(_ material: SelfRenewalApplicationMaterialVerifier.Materials) throws -> [Data] {
+        var result: [Data] = []
+        for bundle in material.bundles {
+            guard let component = material.resources.executableMaterials.inventory.components.first(where: { $0.relativePath == bundle.componentRelativePath }),
+                  let executable = component.executable,
+                  let code = material.resources.executableMaterials.code.first(where: { $0.file == executable.file }),
+                  let signed = code.signedCodeVerification else { throw Failure.identityChanged }
+            for slice in signed.slices {
+                guard !slice.isAdHoc, slice.selectedDirectoryAuthenticated, !slice.signers.isEmpty else { throw Failure.identityChanged }
+                for signer in slice.signers {
+                    for der in signer.verifiedCertificateChainDER.dropFirst() where !result.contains(der) { result.append(der) }
+                }
+            }
+        }
+        guard result.count < Limits.certificates,
+              result.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }) else { throw Failure.limit }
+        return result
+    }
+
     private static func identity(_ material: SelfRenewalApplicationMaterialVerifier.Materials) throws -> [Identity] {
         guard !material.bundles.isEmpty, material.bundles.count <= Limits.bundles else { throw Failure.limit }
         return try material.bundles.map { bundle in
@@ -617,6 +724,32 @@ actor SelfRenewalSigningMaterialVault {
                 profileEntitlementsSHA256: try digest(entitlements))
         }.sorted { $0.component < $1.component }
     }
+    private static func selectedChain(_ candidates: [Data], anchors: [Data], at date: Date) throws -> [Data] {
+        guard date.timeIntervalSince1970.isFinite, !candidates.isEmpty, candidates.count <= Limits.certificates,
+              Set(candidates).count == candidates.count,
+              candidates.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }),
+              !anchors.isEmpty, anchors.count <= Limits.certificates, Set(anchors).count == anchors.count,
+              anchors.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }) else { throw Failure.invalidCertificate }
+        func certificate(_ data: Data) throws -> SecCertificate {
+            guard let value = SecCertificateCreateWithData(nil, data as CFData) else { throw Failure.invalidCertificate }; return value
+        }
+        let certificates = try candidates.map(certificate), roots = try anchors.map(certificate)
+        var trust: SecTrust?
+        guard SecTrustCreateWithCertificates(certificates as CFArray, SecPolicyCreateBasicX509(), &trust) == errSecSuccess,
+              let trust, SecTrustSetAnchorCertificates(trust, roots as CFArray) == errSecSuccess,
+              SecTrustSetAnchorCertificatesOnly(trust, true) == errSecSuccess,
+              SecTrustSetNetworkFetchAllowed(trust, false) == errSecSuccess,
+              SecTrustSetVerifyDate(trust, date as CFDate) == errSecSuccess else { throw Failure.untrustedCertificate }
+        var error: CFError?
+        guard SecTrustEvaluateWithError(trust, &error),
+              let selected = SecTrustCopyCertificateChain(trust) as? [SecCertificate],
+              !selected.isEmpty, selected.count <= Limits.certificates else { throw Failure.untrustedCertificate }
+        let result = selected.map { SecCertificateCopyData($0) as Data }
+        guard result.first == candidates.first, let root = result.last, anchors.contains(root),
+              result.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }) else { throw Failure.untrustedCertificate }
+        return result
+    }
+
     private static func validateChain(_ chain: [Data], anchors: [Data], at date: Date) throws -> [SecCertificate] {
         guard !anchors.isEmpty, anchors.count <= Limits.certificates,
               anchors.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }), Set(anchors).count == anchors.count else { throw Failure.invalidCertificate }
@@ -689,7 +822,9 @@ actor SelfRenewalSigningMaterialVault {
               Set(value.keys.map(\.id)).count == value.keys.count,
               value.keys.allSatisfy({ ($0.state != .ready || $0.publicHash?.count == 32)
                 && ($0.publicHash == nil || $0.publicHash?.count == 32) }),
-              value.published.map({ publication in value.keys.contains { $0.id == publication.keyID && $0.state == .ready } }) ?? true else {
+              value.published.map({ publication in value.keys.contains { $0.id == publication.keyID && $0.state == .ready } }) ?? true,
+              value.enrollmentIssuerCertificates.map({ issuers in issuers.count < Limits.certificates &&
+                  Set(issuers).count == issuers.count && issuers.allSatisfy { !$0.isEmpty && $0.count <= Limits.certificateBytes } }) ?? true else {
             throw Failure.malformedManifest
         }
         return value

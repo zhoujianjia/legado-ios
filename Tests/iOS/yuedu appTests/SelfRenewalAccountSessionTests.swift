@@ -419,6 +419,383 @@ extension SelfRenewalDeveloperAccountClientTests {
         }
     }
 
+    @Test("first public configuration creates its own manifest and real CSR key before complete verified publication")
+    func appSessionInitialEnrollmentCreatesNamespaceAndPublishesRealMaterials() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            // Real signed Info changes must fail before a namespace is made.
+            let infoURL = c.fixture.directory.appendingPathComponent("Owned.app/Info.plist")
+            let originalInfo = try Data(contentsOf: infoURL)
+            var info = try #require(try PropertyListSerialization.propertyList(from: originalInfo, format: nil) as? [String: Any])
+            info["CFBundleIdentifier"] = "invalid.changed.original.bundle"
+            try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0).write(to: infoURL)
+            do { _ = try await c.session.initializeSigningNamespace(from: c.input); Issue.record("Changed signed Info initialized a namespace") }
+            catch let failure as SelfRenewalCodeDirectoryHashVerifier.Failure { #expect(failure == .specialSlotMismatch(1)) }
+            #expect(!FileManager.default.fileExists(atPath: c.root.appendingPathComponent("configuration.json").path))
+            try originalInfo.write(to: infoURL)
+            let anchors = [SelfRenewalCMSFixture.rootCertificate] + c.fixture.issuer.certificateChainDER
+            let missing = SelfRenewalAppSession.EnrollmentConfiguration(schema: 1, namespaceID: UUID(),
+                codeAnchors: anchors, profileAnchors: anchors, device: nil)
+            let input = try Data(contentsOf: c.input)
+            try JSONEncoder().encode(missing).write(to: c.input)
+            do { _ = try await c.session.initializeSigningNamespace(from: c.input); Issue.record("Unknown explicit namespace silently created a manifest") }
+            catch let failure as Vault.Failure { #expect(failure == .namespaceUnavailable) }
+            #expect(!FileManager.default.fileExists(atPath: c.root.appendingPathComponent("configuration.json").path))
+            let untouched = await c.peer.facts()
+            #expect(untouched.paths.isEmpty && untouched.validCSRs == 0)
+            try input.write(to: c.input)
+            let status = try await c.session.initializeSigningNamespace(from: c.input)
+            #expect(status.state == .unavailable && status.access == nil && status.problem == .signingMaterials)
+            let configuration = try c.configuration()
+            #expect(configuration.namespaceID != c.fixture.namespace.id)
+            let namespace = try await c.vault.resume(namespaceID: configuration.namespaceID, identity: c.fixture.material)
+            let originalGeneration = try await c.vault.generation(in: namespace)
+            #expect(try await c.vault.publicationBaseline(in: namespace, expectedGeneration: originalGeneration) == nil)
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            let published = try await c.session.refreshDeveloperMaterials(machineName: "Owned first enrollment")
+            #expect(published.namespaceID == namespace.id && published.keyID != c.fixture.oldKeyID && published.keyID != c.fixture.pending.id)
+            #expect(published.generation == originalGeneration + 3)
+            #expect(!published.appleAuthorizationEstablished && !published.installedApplicationRenewed)
+            let currentNamespace = try await c.vault.resume(namespaceID: namespace.id, identity: c.fixture.material)
+            let lease = try await c.vault.lease(in: currentNamespace)
+            try await c.vault.validate(lease, for: c.fixture.material)
+            #expect(lease.profiles.count == 3 && lease.keyID == published.keyID)
+            let facts = await c.peer.facts()
+            #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+            #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)
+            try await c.session.close()
+            let reopened = c.newSession()
+            do {
+                let observed = try await reopened.observeDeveloperAccount()
+                #expect(observed.personalTeamMatched)
+                let after = await c.peer.facts()
+                #expect(after.paths == facts.paths + ["viewDeveloper.action", "listTeams.action"])
+                #expect(after.validCSRs == 1)
+                try await reopened.close()
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("first enrollment lost ACK reopens the same unpublished key and reconciles without a second CSR")
+    func appSessionInitialEnrollmentReconcilesItsActualUnknownCSR() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            _ = try await c.session.initializeSigningNamespace(from: c.input)
+            let configuration = try c.configuration()
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            await c.peer.set(.lostCSRACK)
+            do { _ = try await c.session.refreshDeveloperMaterials(machineName: "Owned initial lost ACK"); Issue.record("Unknown first issue became publication") }
+            catch let failure as Client.EnrollmentFailure { #expect(failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed) }
+            let encoded = try #require(try c.fixture.storage.load(namespace: configuration.namespaceID))
+            let object = try #require(try JSONSerialization.jsonObject(with: Data(encoded.utf8)) as? [String: Any])
+            let pendingObject = try #require(object["pending"] as? [String: Any])
+            let expectedKey = try #require((pendingObject["keyID"] as? String).flatMap(UUID.init(uuidString:)))
+            try await c.session.close()
+            let reopened = c.newSession()
+            do {
+                await c.peer.set(.normal)
+                let before = await c.peer.facts()
+                do { _ = try await reopened.refreshDeveloperMaterials(machineName: "Owned no duplicate initial issue"); Issue.record("Unknown initial CSR repeated") }
+                catch let failure as Client.Failure { #expect(failure == .reconciliationRequired) }
+                let refused = await c.peer.facts()
+                #expect(refused.paths == before.paths)
+                let published = try await reopened.reconcileDeveloperMaterials()
+                #expect(published.namespaceID == configuration.namespaceID && published.keyID == expectedKey)
+                let after = await c.peer.facts()
+                #expect(after.validCSRs == 1 && after.profileRequests == 3)
+                #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)
+                try await reopened.close()
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("first enrollment reuses its pre-CSR key after restart and existing configuration cannot silently reinitialize")
+    func appSessionInitialEnrollmentReusesKeyAfterPreCSRFailure() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            _ = try await c.session.initializeSigningNamespace(from: c.input)
+            let configuration = try c.configuration()
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            await c.peer.set(.missingApp)
+            do { _ = try await c.session.refreshDeveloperMaterials(machineName: "Owned missing App ID"); Issue.record("Missing original App ID was registered implicitly") }
+            catch let failure as Client.EnrollmentFailure { #expect(failure.underlying as? Client.Failure == .appIdentifierMissing && !failure.remoteCertificateMayHaveBeenIssued) }
+            let namespace = try await c.vault.resume(namespaceID: configuration.namespaceID, identity: c.fixture.material)
+            let generation = try await c.vault.generation(in: namespace)
+            let key = try await c.vault.initialEnrollmentKey(in: namespace, expectedGeneration: generation)
+            do { _ = try await c.session.initializeSigningNamespace(from: c.input); Issue.record("Existing namespace overwritten by first-use registration") }
+            catch let failure as SelfRenewalAppSession.Failure { #expect(failure == .configurationInUse) }
+            #expect(try c.configuration() == configuration)
+            try await c.session.close()
+            let reopened = c.newSession()
+            do {
+                await c.peer.set(.normal)
+                let published = try await reopened.refreshDeveloperMaterials(machineName: "Owned retry after pre-CSR failure")
+                #expect(published.keyID == key.id && published.generation == key.generation + 1)
+                let facts = await c.peer.facts()
+                #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+                try await reopened.close()
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("created initial namespace survives a failed final Document write and restart without a second manifest")
+    func appSessionInitialBindingReopensExactNamespaceAfterFinalWriteFailure() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            let storage = InitialBindingManifestStorage()
+            let first = c.newSession(publicationFault: .failInitialConfigurationBeforeWrite, initialNamespaceStorage: storage)
+            let namespaceID: UUID
+            do {
+                _ = try await first.initializeSigningNamespace(from: c.input)
+                throw InitialBindingTestFailure.expectedFailure
+            } catch let failure as SelfRenewalAppSession.InitialNamespaceBindingFailure {
+                namespaceID = failure.namespaceID
+                #expect(failure.underlying as? SelfRenewalAppSession.Failure == .storage)
+            }
+            let rawIntent = try Data(contentsOf: c.root.appendingPathComponent("configuration.json"))
+            let pending = try JSONDecoder().decode(InitialBindingStoredDocument.self, from: rawIntent)
+            #expect(pending.configuration == nil && pending.initialNamespaceBinding?.configuration.namespaceID == namespaceID)
+            #expect(pending.initialNamespaceBinding?.identitySHA256.count == 32 && pending.initialNamespaceBinding?.allowsCreate == true)
+            let namespace = try await c.vault.resume(namespaceID: namespaceID, identity: c.fixture.material)
+            #expect(try await c.vault.generation(in: namespace) == 0)
+            let account = "owned-v1-" + namespaceID.uuidString.lowercased()
+            #expect(storage.facts().insertedAccounts == [account])
+            let actualStorage = SelfRenewalSigningKeychainManifestStorage()
+            let originalManifest = try #require(try actualStorage.load(account: account))
+            do { try actualStorage.insert(account: account, value: "{}"); Issue.record("Checked insert replaced an existing manifest") }
+            catch let failure as KeychainHelper.WriteFailure { #expect(failure == .insert(errSecDuplicateItem)) }
+            #expect(try actualStorage.load(account: account) == originalManifest)
+            try await first.close()
+            let reopened = c.newSession(initialNamespaceStorage: storage)
+            do {
+                // A well-formed but different fixed trust input cannot replace
+                // a durable intent even while its final configuration is nil.
+                let original = try Data(contentsOf: c.input)
+                let request = try JSONDecoder().decode(SelfRenewalAppSession.EnrollmentConfiguration.self, from: original)
+                let changed = SelfRenewalAppSession.EnrollmentConfiguration(schema: 1, namespaceID: nil,
+                    codeAnchors: Array(request.codeAnchors.reversed()), profileAnchors: request.profileAnchors, device: request.device)
+                try JSONEncoder().encode(changed).write(to: c.input)
+                do { _ = try await reopened.initializeSigningNamespace(from: c.input); Issue.record("Different anchors replaced durable initial intent") }
+                catch let failure as SelfRenewalAppSession.Failure { #expect(failure == .configurationInUse) }
+                #expect(try Data(contentsOf: c.root.appendingPathComponent("configuration.json")) == rawIntent)
+                try original.write(to: c.input)
+                _ = try await reopened.initializeSigningNamespace(from: c.input)
+                let current = try c.configuration()
+                #expect(current.namespaceID == namespaceID)
+                let finalized = try JSONDecoder().decode(InitialBindingStoredDocument.self,
+                    from: Data(contentsOf: c.root.appendingPathComponent("configuration.json")))
+                #expect(finalized.configuration == current && finalized.initialNamespaceBinding == nil)
+                #expect(storage.facts().insertedAccounts.count == 1)
+                #expect(try await c.vault.generation(in: namespace) == 0)
+                #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)
+                let peerFacts = await c.peer.facts()
+                #expect(peerFacts.paths.isEmpty)
+                try await reopened.close()
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("locked and invalid manifest reads retain the initial UUID and original error without creating a replacement")
+    func appSessionInitialBindingLockedReadNeverCreatesAndOwnerPreservesClassification() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            let storage = InitialBindingManifestStorage()
+            storage.failNextRead(.lookup(errSecInteractionNotAllowed))
+            let first = c.newSession(initialNamespaceStorage: storage)
+            let namespaceID: UUID
+            do {
+                _ = try await first.initializeSigningNamespace(from: c.input)
+                throw InitialBindingTestFailure.expectedFailure
+            } catch let failure as SelfRenewalAppSession.InitialNamespaceBindingFailure {
+                namespaceID = failure.namespaceID
+                #expect(failure.underlying as? KeychainHelper.ReadFailure == .lookup(errSecInteractionNotAllowed))
+            }
+            #expect(storage.facts().insertedAccounts.isEmpty)
+            let documentURL = c.root.appendingPathComponent("configuration.json")
+            let intent = try Data(contentsOf: documentURL)
+            let document = try JSONDecoder().decode(InitialBindingStoredDocument.self, from: intent)
+            #expect(document.initialNamespaceBinding?.configuration.namespaceID == namespaceID)
+            try await first.close()
+            storage.failNextRead(.invalidUTF8)
+            let unreadable = c.newSession(initialNamespaceStorage: storage)
+            do {
+                _ = try await unreadable.initializeSigningNamespace(from: c.input)
+                throw InitialBindingTestFailure.expectedFailure
+            } catch let failure as SelfRenewalAppSession.InitialNamespaceBindingFailure {
+                #expect(failure.namespaceID == namespaceID && failure.underlying as? KeychainHelper.ReadFailure == .invalidUTF8)
+            }
+            #expect(storage.facts().insertedAccounts.isEmpty && (try Data(contentsOf: documentURL)) == intent)
+            try await unreadable.close()
+            storage.failNextRead(.lookup(errSecInteractionNotAllowed))
+            let date = c.fixture.date
+            let owner = await MainActor.run {
+                SelfRenewalAppOwner(root: c.root, currentApplicationRoot: c.fixture.directory.appendingPathComponent("Owned.app"),
+                    developerServices: c.services, initialNamespaceStorage: storage, clock: { date })
+            }
+            await owner.initializeConfiguration(from: c.input)
+            let ownerProblem = await owner.problem
+            #expect(ownerProblem == .localStorage)
+            #expect(storage.facts().insertedAccounts.isEmpty && (try Data(contentsOf: documentURL)) == intent)
+            try await owner.close()
+            let recovered = c.newSession(initialNamespaceStorage: storage)
+            do {
+                _ = try await recovered.initializeSigningNamespace(from: c.input)
+                #expect(try c.configuration().namespaceID == namespaceID)
+                #expect(storage.facts().insertedAccounts == ["owned-v1-" + namespaceID.uuidString.lowercased()])
+                #expect(Set(storage.facts().loadedAccounts) == ["owned-v1-" + namespaceID.uuidString.lowercased()])
+                #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)
+                let peerFacts = await c.peer.facts()
+                #expect(peerFacts.paths.isEmpty)
+                try await recovered.close()
+            } catch { do { try await recovered.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("renewal failure after a lost initial-intent ACK preserves the exact binding before the same session retries")
+    func appSessionInitialBindingLostAckSurvivesRenewalFailure() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            let storage = InitialBindingManifestStorage()
+            let first = c.newSession(publicationFault: .loseNextDirectorySyncAcknowledgement,
+                initialNamespaceStorage: storage)
+            do {
+                let namespaceID: UUID
+                do {
+                    _ = try await first.initializeSigningNamespace(from: c.input)
+                    throw InitialBindingTestFailure.expectedFailure
+                } catch let failure as SelfRenewalAppSession.InitialNamespaceBindingFailure {
+                    namespaceID = failure.namespaceID
+                    #expect(failure.underlying as? SelfRenewalAppSession.Failure == .commitDurabilityUnknown)
+                }
+                let documentURL = c.root.appendingPathComponent("configuration.json")
+                let pending = try JSONDecoder().decode(InitialBindingStoredDocument.self,
+                    from: Data(contentsOf: documentURL))
+                #expect(pending.initialNamespaceBinding?.configuration.namespaceID == namespaceID)
+                #expect(storage.facts().insertedAccounts.isEmpty)
+                do {
+                    _ = try await first.prepareRenewal(from: c.root.appendingPathComponent("absent.ipa"))
+                    Issue.record("Unconfigured renewal unexpectedly prepared an archive")
+                } catch let failure as SelfRenewalAppSession.RenewalExecutionFailure {
+                    #expect(failure.statusPersistenceError == nil)
+                    #expect(failure.underlying as? SelfRenewalAppSession.Coordinator.Failure == .signingMaterialsUnavailable)
+                }
+                let after = try JSONDecoder().decode(InitialBindingStoredDocument.self,
+                    from: Data(contentsOf: documentURL))
+                #expect(after.configuration == nil)
+                #expect(after.initialNamespaceBinding?.configuration == pending.initialNamespaceBinding?.configuration)
+                #expect(after.initialNamespaceBinding?.identitySHA256 == pending.initialNamespaceBinding?.identitySHA256)
+                #expect(after.initialNamespaceBinding?.allowsCreate == true)
+                #expect(storage.facts().insertedAccounts.isEmpty)
+                _ = try await first.initializeSigningNamespace(from: c.input)
+                #expect(try c.configuration().namespaceID == namespaceID)
+                #expect(storage.facts().insertedAccounts == ["owned-v1-" + namespaceID.uuidString.lowercased()])
+                #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)
+                try await first.close()
+            } catch { do { try await first.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    private enum InitialBindingTestFailure: Error { case expectedFailure }
+    private struct InitialBindingStoredDocument: Decodable {
+        let configuration: SelfRenewalAppSession.Configuration?
+        let initialNamespaceBinding: InitialBindingStoredIntent?
+    }
+    private struct InitialBindingStoredIntent: Decodable {
+        let configuration: SelfRenewalAppSession.Configuration
+        let identitySHA256: Data
+        let allowsCreate: Bool
+    }
+    /// Faults replace only one checked storage read. Successful paths still use
+    /// the actual exact-service Keychain load and add-only insert implementation.
+    private final class InitialBindingManifestStorage: @unchecked Sendable, SelfRenewalSigningManifestStorage {
+        private let base = SelfRenewalSigningKeychainManifestStorage()
+        private let lock = NSLock()
+        private var nextFailure: KeychainHelper.ReadFailure?
+        private var insertedAccounts: [String] = []
+        private var loadedAccounts: [String] = []
+        func failNextRead(_ failure: KeychainHelper.ReadFailure) { lock.lock(); defer { lock.unlock() }; nextFailure = failure }
+        func facts() -> (insertedAccounts: [String], loadedAccounts: [String]) {
+            lock.lock(); defer { lock.unlock() }; return (insertedAccounts, loadedAccounts)
+        }
+        func load(account: String) throws -> String? {
+            lock.lock(); loadedAccounts.append(account); let failure = nextFailure; nextFailure = nil; lock.unlock()
+            if let failure { throw failure }
+            return try base.load(account: account)
+        }
+        func insert(account: String, value: String) throws {
+            try base.insert(account: account, value: value)
+            lock.lock(); insertedAccounts.append(account); lock.unlock()
+        }
+        func save(account: String, value: String) throws { try base.save(account: account, value: value) }
+        func delete(account: String) throws { try base.delete(account: account) }
+    }
+
+    private struct InitialAccountAppContext: @unchecked Sendable {
+        let fixture: Fixture
+        let root: URL
+        let input: URL
+        let session: SelfRenewalAppSession
+        let services: SelfRenewalAppSession.DeveloperServices
+        let peer: Peer
+        let vault: Vault
+        let sentinel: URL
+        let sentinelBytes: Data
+        func configuration() throws -> SelfRenewalAppSession.Configuration {
+            try JSONDecoder().decode(AccountStoredConfiguration.self,
+                from: Data(contentsOf: root.appendingPathComponent("configuration.json"))).configuration
+        }
+        func newSession(publicationFault: SelfRenewalAppSession.PublicationFault? = nil,
+            initialNamespaceStorage: any SelfRenewalSigningManifestStorage = SelfRenewalSigningKeychainManifestStorage()) -> SelfRenewalAppSession {
+            let date = fixture.date
+            return SelfRenewalAppSession(root: root,
+                currentApplicationRoot: fixture.directory.appendingPathComponent("Owned.app"), developerServices: services,
+                publicationFault: publicationFault, initialNamespaceStorage: initialNamespaceStorage, clock: { date })
+        }
+    }
+
+    nonisolated private static func withInitialAccountAppSession(
+        _ action: @escaping @Sendable (InitialAccountAppContext) async throws -> Void) async throws {
+        try await Self.fixture { f in
+            let root = f.directory.appendingPathComponent("SelfRenewalApp")
+            try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false,
+                attributes: [.posixPermissions: 0o700])
+            let old = try await f.vault.lease(in: f.namespace)
+            let peer = Peer(material: f.material, issuer: f.issuer, key: old.keyMaterial, date: f.date,
+                priorCertificates: [], acceptsInitialCSR: true)
+            PeerProtocol.install(peer)
+            let date = f.date
+            let services = SelfRenewalAppSession.DeveloperServices(
+                transport: SelfRenewalDeveloperURLSessionTransport(protocolClasses: [PeerProtocol.self]), storage: f.storage,
+                freshAnisette: { Client.Anisette(machineID: "owned-machine", oneTimePassword: "owned-fresh-otp",
+                    localUserID: "owned-local-user", routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled initial enrollment",
+                    issuedAt: date, locale: "en_US", timeZone: "UTC") })
+            let anchors = [SelfRenewalCMSFixture.rootCertificate] + f.issuer.certificateChainDER
+            let request = SelfRenewalAppSession.EnrollmentConfiguration(schema: 1, namespaceID: nil,
+                codeAnchors: anchors, profileAnchors: anchors, device: nil)
+            let input = f.directory.appendingPathComponent("initial-public-configuration.json")
+            try JSONEncoder().encode(request).write(to: input)
+            let sentinel = f.directory.appendingPathComponent("owned-books-sources-progress.json")
+            let bytes = Data("{\"bookID\":\"owned-original-id\",\"sourceID\":\"owned-source-id\",\"spineIndex\":7,\"charOffset\":113}".utf8)
+            try bytes.write(to: sentinel)
+            let session = SelfRenewalAppSession(root: root, currentApplicationRoot: f.directory.appendingPathComponent("Owned.app"),
+                developerServices: services, clock: { date })
+            let vault = Vault(codeAnchors: anchors, profileAnchors: anchors, clock: { date })
+            let context = InitialAccountAppContext(fixture: f, root: root, input: input, session: session,
+                services: services, peer: peer, vault: vault, sentinel: sentinel, sentinelBytes: bytes)
+            do {
+                try await action(context)
+                try await session.close()
+                let configuration = try context.configuration()
+                let namespace = try await vault.resume(namespaceID: configuration.namespaceID, identity: f.material)
+                let generation = try await vault.generation(in: namespace)
+                try await vault.destroy(namespace, expectedGeneration: generation)
+            } catch {
+                do { try await session.close() } catch { Issue.record(error) }
+                do {
+                    let configuration = try context.configuration()
+                    let namespace = try await vault.resume(namespaceID: configuration.namespaceID, identity: f.material)
+                    let generation = try await vault.generation(in: namespace)
+                    try await vault.destroy(namespace, expectedGeneration: generation)
+                } catch { Issue.record(error) }
+                throw error
+            }
+        }
+    }
+
     private struct AccountStoredConfiguration: Decodable {
         let configuration: SelfRenewalAppSession.Configuration
     }
@@ -445,7 +822,7 @@ extension SelfRenewalDeveloperAccountClientTests {
     nonisolated private static func withAccountAppSession(seedUnsubmitted: Bool = false, nearOriginalProfileExpiry: Bool = false,
         _ action: @escaping @Sendable (AccountAppContext) async throws -> Void) async throws {
         try await Self.fixture(nearOriginalProfileExpiry: nearOriginalProfileExpiry) { f in
-            let root = f.directory.appendingPathComponent("AccountSession")
+            let root = f.directory.appendingPathComponent("SelfRenewalApp")
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false,
                 attributes: [.posixPermissions: 0o700])
             let original = try await f.vault.lease(in: f.namespace)

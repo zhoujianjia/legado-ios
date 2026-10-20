@@ -78,12 +78,22 @@ enum SelfRenewalSigningOwnedPKIFixture {
         return result
     }
     private static func publicBytes(_ key: SecKey) throws -> Data {
-        guard let publicKey = SecKeyCopyPublicKey(key) else { throw CocoaError(.coderInvalidValue) }
+        let publicKey: SecKey
+        let attributes = try requireAttributes(key)
+        if attributes[kSecAttrKeyClass as String] as? String == kSecAttrKeyClassPublic as String { publicKey = key }
+        else {
+            guard let copied = SecKeyCopyPublicKey(key) else { throw CocoaError(.coderInvalidValue) }
+            publicKey = copied
+        }
         var error: Unmanaged<CFError>?
         guard let bytes = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else {
             if let error { _ = error.takeRetainedValue() }; throw CocoaError(.coderInvalidValue)
         }
         return bytes
+    }
+    private static func requireAttributes(_ key: SecKey) throws -> [String: Any] {
+        guard let attributes = SecKeyCopyAttributes(key) as? [String: Any] else { throw CocoaError(.coderInvalidValue) }
+        return attributes
     }
     private static func isEC(_ key: SecKey) throws -> Bool {
         guard let attributes = SecKeyCopyAttributes(key) as? [String: Any], let kind = attributes[kSecAttrKeyType as String] as? String else {

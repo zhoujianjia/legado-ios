@@ -27,6 +27,14 @@ final class SelfRenewalProbeUITests: XCTestCase {
         XCTAssertTrue(entry.exists && entry.isHittable, app.debugDescription)
         entry.tap()
 
+        let diagnostics = app.buttons["self_renewal_open_diagnostics"].firstMatch
+        for _ in 0..<8 {
+            if diagnostics.exists && diagnostics.isHittable { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(diagnostics.exists && diagnostics.isHittable, app.debugDescription)
+        diagnostics.tap()
+
         let run = app.buttons["self_renewal_run_probe"].firstMatch
         let export = app.buttons["self_renewal_export_report"].firstMatch
         XCTAssertTrue(run.waitForExistence(timeout: 10), app.debugDescription)

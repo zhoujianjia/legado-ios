@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "status": "production-integrated-awaiting-consolidated-Apple-SDK-build",
+  "changes": [
+    "First enrollment binds the exact namespace intent durably before an add-only Keychain manifest creation and retains the UUID across failures.",
+    "Real App owner exposes preparation and separately confirmed authenticated installation with the existing Coordinator and three data owners.",
+    "Fresh material failures revoke signing capability; all Document writers reject stale state, and renewal finalization reloads the same locked Document.",
+    "Native Settings exposes initialization, account/material lifecycle, preparation, explicit submission and existing diagnostics with five-language text."
+  ],
+  "sources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 19863,
+      "sha256": "dbaf3aa384680f40d4912753f446a6ad64c43f05ee71229e7a1f7ec16f3fbf45"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 86478,
+      "sha256": "c20c26138f3781d0f42b1683841af9428b00bfc794427bb83fa89e00d41da1c1"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 56030,
+      "sha256": "1d0b7517974d5f84449256962cf6b1e3bee44b031331b59e8b3858a5248c2cac"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 54233,
+      "sha256": "d27ca57eda321ee8f57edc3b85e25738faeb3241c38a0ca45d50b8fe9ba1ac02"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "bytes": 60174,
+      "sha256": "4da8fee3590fd84cf42f75ff65c3cc8ddfa3d1a347b49fc19759ed5018d69c66"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 57069,
+      "sha256": "2617c0bd824956f42df9d9b94a70a19085d2ec88bea068a46494626b3a9306be"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+      "bytes": 9819,
+      "sha256": "e97757b283bf11a5c6041506e6c2118aef198318299109440c9e56958182bc3e"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "bytes": 9070,
+      "sha256": "706bad7f9cef253574f80b5ee70a9379a9b033790fe4fa06e51b2f6c6a385365"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "bytes": 36075,
+      "sha256": "8c39d1102b80c6e115d41ee78355c9b45f9d2577f2c6c19489554444913fc401"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "bytes": 20973,
+      "sha256": "ad64f4982c5f919db13dbe2d5ce13e74d995e6aced2a02409f5d3e32e25bc2b3"
+    },
+    {
+      "path": "Modules/Features/Settings/ProfileView.swift",
+      "bytes": 15890,
+      "sha256": "765a49a66f9765354399a59e6d682ac6d32e6a37b62f29603cb2530c67850058"
+    },
+    {
+      "path": "Modules/Features/Settings/SelfRenewalSettingsView.swift",
+      "bytes": 14576,
+      "sha256": "30f27571c6ad43bd57722271c824d2479c9c39e4493aacacd779e6bec5d02f06"
+    },
+    {
+      "path": "Resources/en.lproj/Localizable.strings",
+      "bytes": 266706,
+      "sha256": "2f4f89ff66db80a2e6822842ca2e30f27f924be8c64e1856205552cd11683fdc"
+    },
+    {
+      "path": "Resources/ja.lproj/Localizable.strings",
+      "bytes": 323402,
+      "sha256": "1fdd359a4a880f5895346c88bccc6226b94f4026efb8ffc0cb7610e7c5e680ab"
+    },
+    {
+      "path": "Resources/ko.lproj/Localizable.strings",
+      "bytes": 299998,
+      "sha256": "c576287997ffd2590739a95e8a4123f8d6d1a23a587da239778b2cb23fa83c60"
+    },
+    {
+      "path": "Resources/zh-Hans.lproj/Localizable.strings",
+      "bytes": 253478,
+      "sha256": "b6c835b399fa0759a0a446a768b36838a535cce0191dddb8b4a3f395b8d202b3"
+    },
+    {
+      "path": "Resources/zh-Hant.lproj/Localizable.strings",
+      "bytes": 251274,
+      "sha256": "1591659f6e1bff03bf99461d344af8b054938a6587f05532a8463db3801e99f1"
+    },
+    {
+      "path": "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
+      "bytes": 3700,
+      "sha256": "9113b33d7b456ef8e9ceb31366b9567db19eb795967869ee3cb051500f809f48"
+    }
+  ],
+  "newRegressionDefinition": "appSessionInitialBindingLostAckSurvivesRenewalFailure",
+  "validation": {
+    "sourceCompositionReviewed": true,
+    "SwiftCompilerExecuted": false,
+    "newTestsExecuted": false,
+    "note": "Staged syntax screens are not Apple SDK or device acceptance."
+  },
+  "knownPrerequisites": [
+    "Live DeveloperServices/anisette injection is absent in the current production App owner.",
+    "Signing materials and an authenticated installation endpoint/pairing require actual provisioning.",
+    "System scheduling, real account authorization, installation and data retention remain unverified."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "physicalDeviceValidationPerformed": false
+}

@@ -184,9 +184,9 @@ struct SettingsView: View {
                     // ── Advanced ──
                     Section(header: Text(localized("進階")).foregroundStyle(DSColor.textSecondary)) {
                         NavigationLink {
-                            SelfRenewalProbeView()
+                            SelfRenewalSettingsView()
                         } label: {
-                            SettingsRowLabel(localized("自續簽驗證"), systemImage: "network")
+                            SettingsRowLabel(localized("自簽與續簽"), systemImage: "signature")
                         }
                         .accessibilityIdentifier("settings_self_renewal_probe")
                         NavigationLink {

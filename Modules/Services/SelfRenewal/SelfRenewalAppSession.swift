@@ -46,6 +46,13 @@ actor SelfRenewalAppSession {
             profileExpiresAt = lease.profiles.map(\.summary.expiresAt).min(); verifiedAt = lease.verifiedAt
         }
     }
+    /// The existing Document retains the initial binding before any create.
+    /// A failed final acknowledgement cannot discard that durable UUID or
+    /// substitute a new namespace on the next retry/process.
+    struct InitialNamespaceBindingFailure: Error, @unchecked Sendable {
+        let namespaceID: UUID
+        let underlying: Error
+    }
     struct DeveloperMaterialFinalizationFailure: Error, @unchecked Sendable {
         let published: DeveloperMaterialObservation
         let underlying: Error
@@ -137,9 +144,34 @@ actor SelfRenewalAppSession {
         let profileAnchors: [Data]
         let device: DeviceConfiguration?
     }
+    /// First-use public input omits namespaceID. An explicit ID only resumes
+    /// an existing manifest or the same already-persisted initial intent.
+    struct EnrollmentConfiguration: Sendable, Codable, Equatable {
+        let schema: Int
+        let namespaceID: UUID?
+        let codeAnchors: [Data]
+        let profileAnchors: [Data]
+        let device: DeviceConfiguration?
+    }
+    private struct InitialNamespaceBinding: Codable, Equatable {
+        let schema: Int
+        let configuration: Configuration
+        let identitySHA256: Data
+        let allowsCreate: Bool
+    }
+    /// This capability is not Codable and has no public memberwise initializer.
+    /// Only this file mints it after the Document's durable intent is confirmed.
+    struct InitialNamespaceCreationAuthorization: Sendable {
+        let namespaceID: UUID
+        let identitySHA256: Data
+        fileprivate init(namespaceID: UUID, identitySHA256: Data) {
+            self.namespaceID = namespaceID; self.identitySHA256 = identitySHA256
+        }
+    }
     private struct Document: Codable {
         let schema: Int
         let configuration: Configuration?
+        let initialNamespaceBinding: InitialNamespaceBinding?
         let status: Status
     }
     private let requestedRoot: URL?
@@ -169,6 +201,8 @@ actor SelfRenewalAppSession {
     private var configuration: Configuration?
     private var lastStatus: Status?
     private var persistedConfiguration: Configuration?
+    private var initialNamespaceBinding: InitialNamespaceBinding?
+    private var persistedInitialNamespaceBinding: InitialNamespaceBinding?
     private var configurationNeedsReload = false
     private var busy = false
     #if DEBUG
@@ -176,8 +210,10 @@ actor SelfRenewalAppSession {
     enum PublicationFault: Sendable {
         case loseNextDirectorySyncAcknowledgement
         case loseNextAuthenticatedRecoveryDirectorySyncAcknowledgement
+        case failInitialConfigurationBeforeWrite
     }
     private var publicationFault: PublicationFault?
+    private var initialNamespaceStorage: any SelfRenewalSigningManifestStorage = SelfRenewalSigningKeychainManifestStorage()
     init(root: URL, publicationFault: PublicationFault, developerServices: DeveloperServices? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         requestedRoot = root; ownedApplicationRoot = nil; self.clock = clock; self.publicationFault = publicationFault
@@ -186,11 +222,14 @@ actor SelfRenewalAppSession {
     /// An owned test root still goes through the real complete verifier and
     /// Vault. It can never produce a current-process file observation.
     init(root: URL, currentApplicationRoot: URL, developerServices: DeveloperServices? = nil,
+        publicationFault: PublicationFault? = nil,
+        initialNamespaceStorage: any SelfRenewalSigningManifestStorage = SelfRenewalSigningKeychainManifestStorage(),
         developerAuthenticationRandom: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         requestedRoot = root; ownedApplicationRoot = currentApplicationRoot; self.clock = clock
         self.developerServices = developerServices
         self.developerAuthenticationRandom = developerAuthenticationRandom
+        self.publicationFault = publicationFault; self.initialNamespaceStorage = initialNamespaceStorage
     }
     #endif
     static let maximumConfigurationBytes = 524_288
@@ -237,6 +276,112 @@ actor SelfRenewalAppSession {
         return try await observe(candidate.coordinator, handoff: handoff)
     }
 
+    /// Explicit first-use registration through the same strong Bundle verifier
+    /// and sole Vault. An unreadable/missing configured manifest never selects
+    /// this path, and no existing transaction or configuration is overwritten.
+    func initializeSigningNamespace(from input: URL) async throws -> Status {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        let started = SourcePerfTrace.now
+        defer { trace("initialize-signing-namespace", since: started) }
+        try await openLocalOwner()
+        guard configuration == nil, let journal, try await journal.load() == nil else { throw Failure.configurationInUse }
+        let scope = input.startAccessingSecurityScopedResource()
+        defer { if scope { input.stopAccessingSecurityScopedResource() } }
+        let raw = try Self.readBounded(input, maximum: Self.maximumConfigurationBytes)
+        let request: EnrollmentConfiguration
+        do { request = try JSONDecoder().decode(EnrollmentConfiguration.self, from: raw) }
+        catch { throw Failure.invalidConfiguration }
+        // Validate the original public trust/pairing schema and complete actual
+        // Bundle before persisting an intent or touching its exact manifest.
+        let validation = Configuration(schema: request.schema,
+            namespaceID: request.namespaceID ?? UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)),
+            codeAnchors: request.codeAnchors, profileAnchors: request.profileAnchors, device: request.device)
+        try Self.validate(validation)
+        if let device = request.device { _ = try Self.pairing(device) }
+        if let pending = initialNamespaceBinding {
+            guard request.namespaceID == nil || request.namespaceID == pending.configuration.namespaceID,
+                  request.schema == pending.configuration.schema,
+                  request.codeAnchors == pending.configuration.codeAnchors,
+                  request.profileAnchors == pending.configuration.profileAnchors,
+                  request.device == pending.configuration.device else { throw Failure.configurationInUse }
+        }
+        let material = try await SelfRenewalApplicationMaterialVerifier.read(
+            unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
+            codeAnchors: request.codeAnchors, profileAnchors: request.profileAnchors, at: clock())
+        let identitySHA256 = try Vault.initialEnrollmentIdentityDigest(material)
+        try Task.checkCancellation()
+        let requestedID = request.namespaceID ?? initialNamespaceBinding?.configuration.namespaceID ?? UUID()
+        let proposed = Configuration(schema: request.schema, namespaceID: requestedID,
+            codeAnchors: request.codeAnchors, profileAnchors: request.profileAnchors, device: request.device)
+        #if DEBUG
+        let ownedVault = Vault(codeAnchors: request.codeAnchors, profileAnchors: request.profileAnchors,
+            storage: initialNamespaceStorage, clock: clock)
+        #else
+        let ownedVault = Vault(codeAnchors: request.codeAnchors, profileAnchors: request.profileAnchors, clock: clock)
+        #endif
+        let pending: InitialNamespaceBinding
+        if let existing = initialNamespaceBinding {
+            guard existing.identitySHA256 == identitySHA256 else { throw Failure.configurationInUse }
+            // A prior process may have lost the rename's directory-sync ACK.
+            // Confirm this exact on-disk intent is durable before minting the
+            // creation capability, even on the first open after a restart.
+            do {
+                guard let root else { throw Failure.storage }
+                try Self.synchronizeConfigurationRoot(root)
+            } catch {
+                configurationNeedsReload = true
+                throw InitialNamespaceBindingFailure(namespaceID: requestedID, underlying: error)
+            }
+            pending = existing
+        } else {
+            // Explicit foreign IDs keep their prior resume-only semantics. A
+            // missing/locked/malformed manifest must not establish a new intent.
+            if let requested = request.namespaceID {
+                let resumed = try await ownedVault.resume(namespaceID: requested, identity: material)
+                let generation = try await ownedVault.generation(in: resumed)
+                guard try await ownedVault.publicationBaseline(in: resumed, expectedGeneration: generation) == nil else {
+                    throw Failure.configurationInUse
+                }
+            }
+            pending = InitialNamespaceBinding(schema: 1, configuration: proposed,
+                identitySHA256: identitySHA256, allowsCreate: request.namespaceID == nil)
+            initialNamespaceBinding = pending
+            do { _ = try publish(state: .unconfigured, phase: nil) }
+            catch {
+                // No manifest was touched; a lost rename/fsync acknowledgement
+                // is re-read under the same journal lock before any retry.
+                initialNamespaceBinding = nil; configurationNeedsReload = true
+                throw InitialNamespaceBindingFailure(namespaceID: requestedID, underlying: error)
+            }
+        }
+        do {
+            let ownedNamespace: Vault.Namespace
+            if pending.allowsCreate {
+                let authorization = InitialNamespaceCreationAuthorization(namespaceID: requestedID, identitySHA256: identitySHA256)
+                ownedNamespace = try await ownedVault.resumeOrCreateInitialEnrollment(authorization, identity: material)
+            } else {
+                ownedNamespace = try await ownedVault.resume(namespaceID: requestedID, identity: material)
+                let generation = try await ownedVault.generation(in: ownedNamespace)
+                guard try await ownedVault.publicationBaseline(in: ownedNamespace, expectedGeneration: generation) == nil else {
+                    throw Failure.configurationInUse
+                }
+            }
+            configuration = pending.configuration
+            vault = ownedVault; namespace = ownedNamespace
+            coordinator = nil; access = nil; profileValidity = nil; materialFailure = nil
+            developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+            developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+            initialNamespaceBinding = nil
+            // Only this durable final Document clears the initial intent. The
+            // namespace itself still grants no signing lease before enrollment.
+            return try publish(state: .unavailable, phase: nil, problem: .signingMaterials)
+        } catch {
+            configuration = nil; vault = nil; namespace = nil
+            initialNamespaceBinding = pending; configurationNeedsReload = true
+            throw InitialNamespaceBindingFailure(namespaceID: requestedID, underlying: error)
+        }
+    }
+
     /// Only an explicit Settings action imports public configuration. A live
     /// transaction cannot be rebound to another namespace, trust set or peer.
     func configure(from input: URL, handoff: SelfRenewalUserDataHandoff) async throws -> Status {
@@ -250,6 +395,7 @@ actor SelfRenewalAppSession {
         defer { if scope { input.stopAccessingSecurityScopedResource() } }
         let raw = try Self.readBounded(input, maximum: Self.maximumConfigurationBytes)
         let proposed = try Self.decodeConfiguration(raw)
+        guard initialNamespaceBinding == nil else { throw Failure.configurationInUse }
         let existing = try await journal?.load()
         if existing != nil, let configuration {
             // Authentication may be supplied later, but the live transaction's
@@ -286,6 +432,196 @@ actor SelfRenewalAppSession {
         catch is CancellationError { throw CancellationError() }
         catch { throw await unavailable(error, problem: .storage) }
         return try await observe(candidate.coordinator, handoff: handoff)
+    }
+
+    /// Keep exact operation/transport facts even when the final local status
+    /// write fails. A receipt does not prove installation or renewed profiles.
+    struct RenewalExecutionFailure: Error, @unchecked Sendable {
+        let underlying: Error
+        let problem: Problem
+        let preparedCandidate: Journal.Snapshot?
+        let completedSubmission: Coordinator.TransportCompletion?
+        let statusPersistenceError: Error?
+    }
+
+    /// Explicit file import prepares one candidate only. The external scope
+    /// stays live through both existing bounded snapshots and their digest
+    /// comparison; neither an imported path nor a Bundle ZIP grants authority.
+    func prepareRenewal(from ipa: URL) async throws -> Status {
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        let started = SourcePerfTrace.now
+        var candidateBytes = 0
+        defer { SourcePerfTrace.record("renewal.app.prepare",
+            "bytes=\(candidateBytes) inputLimit=\(SelfRenewalIPAArchiveValidator.Limits.archiveBytes) main=\(Thread.isMainThread)",
+            since: started, thresholdMs: 0) }
+        guard let journal else { throw Failure.notConfigured }
+        let prepared: Journal.Snapshot
+        do {
+            try Task.checkCancellation()
+            if let phase = try await journal.load()?.record.phase,
+               [.uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved, .attentionRequired].contains(phase) {
+                throw Journal.Failure.activeTransaction
+            }
+            let context = try await renewalSigningContext()
+            guard ipa.isFileURL, ipa.query == nil, ipa.fragment == nil else { throw SelfRenewalIPAUnpacker.Failure.invalidInput }
+            let scoped = ipa.startAccessingSecurityScopedResource()
+            defer { if scoped { ipa.stopAccessingSecurityScopedResource() } }
+            prepared = try await context.coordinator.prepare(ipa: ipa, lease: context.lease,
+                originalCodeAnchors: context.configuration.codeAnchors,
+                originalProfileAnchors: context.configuration.profileAnchors)
+            candidateBytes = prepared.record.candidate?.byteCount ?? 0
+        } catch {
+            return try await finishRenewalExecution(failure: error)
+        }
+        return try await finishRenewalExecution(prepared: prepared)
+    }
+
+    /// A distinct explicit action submits the already-persisted candidate.
+    /// Unknown upload/Upgrade phases are recovery-only; the Coordinator's real
+    /// before-Upgrade hook saves the same three injected App persistence owners.
+    func submitPreparedRenewal(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        let started = SourcePerfTrace.now
+        var candidateBytes = 0
+        defer { SourcePerfTrace.record("renewal.app.submit",
+            "bytes=\(candidateBytes) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        guard let journal else { throw Failure.notConfigured }
+        let completed: Coordinator.TransportCompletion
+        do {
+            try Task.checkCancellation()
+            guard let ready = try await journal.load(), ready.record.phase == .candidateReady,
+                  let candidate = ready.record.candidate else { throw Coordinator.Failure.candidateNotReady }
+            candidateBytes = candidate.byteCount
+            guard let device = configuration?.device else { throw Failure.authenticationNotConfigured }
+            let pairing = try Self.pairing(device)
+            let context = try await renewalSigningContext()
+            let endpoint = Transport.Endpoint(numericAddress: device.numericAddress,
+                port: device.port, interfaceIndex: device.interfaceIndex)
+            completed = try await context.coordinator.submitWithAppDataHandoff(pairing: pairing,
+                endpoint: endpoint, handoff: handoff)
+        } catch {
+            return try await finishRenewalExecution(failure: error)
+        }
+        return try await finishRenewalExecution(submitted: completed)
+    }
+
+    private func renewalSigningContext() async throws -> (configuration: Configuration,
+        coordinator: Coordinator, lease: Vault.Lease) {
+        guard !configurationNeedsReload, access == .signing, let configuration,
+              let coordinator, let vault, let namespace, let profileValidity else {
+            throw Coordinator.Failure.signingMaterialsUnavailable
+        }
+        do {
+            try Task.checkCancellation()
+            try profileValidity.validate(at: clock())
+            let actual = try await SelfRenewalApplicationMaterialVerifier.read(
+                unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
+                codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: clock())
+            let lease = try await vault.lease(in: namespace)
+            try await vault.validate(lease, for: actual)
+            return (configuration, coordinator, lease)
+        } catch is CancellationError { throw CancellationError() }
+        catch {
+            let original = error
+            // Same revoke-before-await barrier as observe(): a failed fresh
+            // proof cannot leave cached signing access usable by a later call.
+            self.vault = nil; self.namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil
+            developerAuthentication = nil; developerMaterial = nil
+            developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+            self.coordinator = nil; access = nil; self.profileValidity = nil
+            let unavailable = SigningMaterialUnavailable(underlying: original, recoveryContextError: nil)
+            materialFailure = unavailable
+            guard Self.isSigningMaterialUnavailable(original) else { throw unavailable }
+            do {
+                let recovery = try await recoveryConnection(configuration, materialError: original)
+                activate(recovery)
+            } catch {
+                // Preserve the already-observed proof failure if recovery I/O
+                // is cancelled/fails. No candidate is retired or resubmitted.
+                let combined = (error as? SigningMaterialUnavailable)
+                    ?? SigningMaterialUnavailable(underlying: original, recoveryContextError: error)
+                materialFailure = combined
+                throw combined
+            }
+            throw unavailable
+        }
+    }
+
+    /// The awaited Coordinator call has already drained its archive/transport
+    /// workers. Keep busy until a fresh, uncancelled bounded journal read/status
+    /// write also finishes, so cancellation cannot leave a false ready state.
+    private func finishRenewalExecution(prepared: Journal.Snapshot? = nil,
+        submitted: Coordinator.TransportCompletion? = nil, failure: Error? = nil) async throws -> Status {
+        let observation = Task { [self] in
+            // A prior rename may have committed even when its durability ACK
+            // was lost. Reload under this journal owner before any status
+            // publication so an initial binding can never be erased by stale
+            // in-memory configuration during a failed renewal attempt.
+            try await openLocalOwner()
+            let phase = try await journal?.load()?.record.phase
+            let problem: Problem?
+            if let failure {
+                let actual = Self.renewalExecutionProblem(failure)
+                if actual == .cancelled || actual == .storage { problem = actual }
+                else if access != .signing, let materialFailure { problem = Self.renewalExecutionProblem(materialFailure) }
+                else { problem = actual }
+            } else if access != .signing, let materialFailure {
+                problem = Self.renewalExecutionProblem(materialFailure)
+            } else { problem = nil }
+            let state: State
+            if problem == .storage || (configuration != nil && access == nil) { state = .unavailable }
+            else if access == .recoveryOnly { state = .recoveryRequired }
+            else {
+                switch phase {
+                case nil: state = configuration == nil ? .unconfigured : .ready
+                case .candidateReady: state = .candidateReady
+                case .retired: state = .retiredUnsubmitted
+                case .created, .signing, .retirementPending, .attentionRequired: state = .attentionRequired
+                case .uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved: state = .recoveryRequired
+                }
+            }
+            return try publish(state: state, phase: phase, problem: problem)
+        }
+        let terminal = await observation.result
+        switch terminal {
+        case .success(let status):
+            if let failure {
+                throw RenewalExecutionFailure(underlying: failure, problem: status.problem ?? .observation, preparedCandidate: prepared,
+                    completedSubmission: submitted, statusPersistenceError: nil)
+            }
+            return status
+        case .failure(let observationError):
+            throw RenewalExecutionFailure(underlying: failure ?? observationError, problem: .storage, preparedCandidate: prepared,
+                completedSubmission: submitted, statusPersistenceError: observationError)
+        }
+    }
+
+    private static func renewalWasCancelled(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        if let failure = error as? BookMetadataPersistenceFailure, failure.code == .cancelled { return true }
+        if let failure = error as? Coordinator.PreparationFailure { return renewalWasCancelled(failure.underlying) }
+        if let failure = error as? Coordinator.Interrupted { return renewalWasCancelled(failure.underlying) }
+        if let failure = error as? SelfRenewalAuthenticatedInstallationClient.OperationFailure { return renewalWasCancelled(failure.underlying) }
+        return (error as? Transport.Failure) == .cancelled
+    }
+
+    private static func renewalExecutionProblem(_ error: Error) -> Problem {
+        if renewalWasCancelled(error) { return .cancelled }
+        if let failure = error as? SigningMaterialUnavailable {
+            if let context = failure.recoveryContextError, isLocalStorageFailure(context) { return .storage }
+            return renewalExecutionProblem(failure.underlying)
+        }
+        if let failure = error as? Coordinator.PreparationFailure { return renewalExecutionProblem(failure.underlying) }
+        if let failure = error as? Coordinator.Interrupted { return renewalExecutionProblem(failure.underlying) }
+        if let failure = error as? SelfRenewalAuthenticatedInstallationClient.OperationFailure { return renewalExecutionProblem(failure.underlying) }
+        if error is BookMetadataPersistenceFailure || error is BookSourcePersistenceFailure || error is ReadingPositionPersistenceFailure { return .storage }
+        if isLocalStorageFailure(error) { return .storage }
+        if isSigningMaterialUnavailable(error) { return .signingMaterials }
+        if let failure = error as? Coordinator.Failure, failure == .signingMaterialsUnavailable { return .signingMaterials }
+        if let failure = error as? Failure, failure == .authenticationNotConfigured { return .authentication }
+        return .observation
     }
 
     /// Recover the existing journal through its unique authenticated installer.
@@ -436,8 +772,8 @@ actor SelfRenewalAppSession {
         return try await developerAccountOwner().observeSession()
     }
 
-    /// The current real persisted signing key is reused for renewal. This
-    /// avoids creating orphan keys on a failed request or after App restart.
+    /// A published key is reused for renewal. First enrollment prepares one
+    /// permanent Vault key and reuses it after a pre-CSR failure or App restart.
     /// Prior candidates retire through the existing transaction owner first;
     /// a possible upload/submission blocks every remote enrollment mutation.
     func refreshDeveloperMaterials(machineName: String) async throws -> DeveloperMaterialObservation {
@@ -452,12 +788,19 @@ actor SelfRenewalAppSession {
         guard let journal, let vault, let namespace, let developerEnrollmentIdentity else { throw Failure.notConfigured }
         try await Coordinator.retireBeforeEnrollmentRefresh(journal: journal, identity: developerEnrollmentIdentity, at: clock())
         let generation = try await vault.generation(in: namespace)
-        guard let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: generation) else {
-            throw Vault.Failure.namespaceUnavailable
+        let keyID: UUID
+        let materialGeneration: UInt64
+        if let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: generation) {
+            keyID = publication.keyID; materialGeneration = publication.generation
+        } else {
+            // A pre-CSR failure or restart reuses the exact permanent owned
+            // key. An unresolved remote intent was refused before this point.
+            let key = try await vault.initialEnrollmentKey(in: namespace, expectedGeneration: generation)
+            keyID = key.id; materialGeneration = key.generation
         }
         do {
-            let published = try await account.refreshMaterials(keyID: publication.keyID,
-                expectedGeneration: publication.generation, machineName: machineName)
+            let published = try await account.refreshMaterials(keyID: keyID,
+                expectedGeneration: materialGeneration, machineName: machineName)
             let observation = DeveloperMaterialObservation(published)
             developerMaterial = observation
             return observation
@@ -574,6 +917,7 @@ actor SelfRenewalAppSession {
         developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
         coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
         configuration = nil; persistedConfiguration = nil; lastStatus = nil; configurationNeedsReload = false
+        initialNamespaceBinding = nil; persistedInitialNamespaceBinding = nil
     }
 
     private func openLocalOwner() async throws {
@@ -584,6 +928,7 @@ actor SelfRenewalAppSession {
                 let document = try Self.loadDocument(root)
                 try Self.removeUncommittedDocument(root)
                 configuration = document?.configuration; persistedConfiguration = configuration; lastStatus = document?.status
+                initialNamespaceBinding = document?.initialNamespaceBinding; persistedInitialNamespaceBinding = initialNamespaceBinding
                 configurationNeedsReload = false
             }
             return
@@ -598,6 +943,7 @@ actor SelfRenewalAppSession {
             try Self.removeUncommittedDocument(directory)
             root = directory; journal = opened
             configuration = document?.configuration; persistedConfiguration = configuration; lastStatus = document?.status
+                initialNamespaceBinding = document?.initialNamespaceBinding; persistedInitialNamespaceBinding = initialNamespaceBinding
         } catch {
             let original = error
             do { try await opened.close() }
@@ -895,11 +1241,13 @@ actor SelfRenewalAppSession {
     }
 
     private func publish(state: State, phase: Journal.Phase?, problem: Problem? = nil) throws -> Status {
+        guard !configurationNeedsReload else { throw Failure.storage }
         guard let root else { throw Failure.storage }
         if let lastStatus, lastStatus.state == state, lastStatus.phase == phase,
-           lastStatus.problem == problem, lastStatus.access == access, configuration == persistedConfiguration { return lastStatus }
+           lastStatus.problem == problem, lastStatus.access == access, configuration == persistedConfiguration,
+           initialNamespaceBinding == persistedInitialNamespaceBinding { return lastStatus }
         let status = Status(state: state, phase: phase, observedAt: clock(), problem: problem, access: access)
-        let document = Document(schema: 1, configuration: configuration, status: status)
+        let document = Document(schema: 1, configuration: configuration, initialNamespaceBinding: initialNamespaceBinding, status: status)
         let raw = try JSONEncoder().encode(document)
         guard raw.count <= Self.maximumConfigurationBytes else { throw Failure.limit }
         do {
@@ -909,6 +1257,12 @@ actor SelfRenewalAppSession {
             case .loseNextDirectorySyncAcknowledgement: losesAcknowledgement = true
             case .loseNextAuthenticatedRecoveryDirectorySyncAcknowledgement:
                 losesAcknowledgement = state == .authenticatedRecoveryObserved
+            case .failInitialConfigurationBeforeWrite:
+                if configuration != nil, persistedInitialNamespaceBinding != nil {
+                    publicationFault = nil
+                    throw Failure.storage
+                }
+                losesAcknowledgement = false
             case nil: losesAcknowledgement = false
             }
             if losesAcknowledgement { publicationFault = nil }
@@ -929,6 +1283,7 @@ actor SelfRenewalAppSession {
         }
         lastStatus = status
         persistedConfiguration = configuration
+        persistedInitialNamespaceBinding = initialNamespaceBinding
         return status
     }
 
@@ -1019,6 +1374,13 @@ actor SelfRenewalAppSession {
         guard document.schema == 1, document.status.observedAt.timeIntervalSince1970.isFinite else { throw Failure.invalidConfiguration }
         guard document.configuration != nil || document.status.state == .unconfigured else { throw Failure.invalidConfiguration }
         if let configuration = document.configuration { try validate(configuration) }
+        if let pending = document.initialNamespaceBinding {
+            guard document.configuration == nil, pending.schema == 1, pending.identitySHA256.count == 32,
+                  document.status.state == .unconfigured, document.status.phase == nil, document.status.access == nil else {
+                throw Failure.invalidConfiguration
+            }
+            try validate(pending.configuration)
+        }
         return document
     }
 

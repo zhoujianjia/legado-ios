@@ -11,6 +11,8 @@ final class SelfRenewalAppOwner {
         case operationFailed, cancelled
     }
     let handoff: SelfRenewalUserDataHandoff
+    /// O(1) injection availability only; this grants no account/Apple authority.
+    let developerServicesConfigured: Bool
     private let session: SelfRenewalAppSession
     private(set) var status: SelfRenewalAppSession.Status?
     private(set) var problem: Problem?
@@ -27,17 +29,23 @@ final class SelfRenewalAppOwner {
     init(root: URL? = nil, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff()
+        developerServicesConfigured = developerServices != nil
         session = SelfRenewalAppSession(root: root, developerServices: developerServices, clock: clock)
     }
     #if DEBUG
     /// Only owned tests choose another verified application directory. This
     /// parameter is absent from configuration and production initialization.
     init(root: URL, currentApplicationRoot: URL, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
+        publicationFault: SelfRenewalAppSession.PublicationFault? = nil,
+        initialNamespaceStorage: any SelfRenewalSigningManifestStorage = SelfRenewalSigningKeychainManifestStorage(),
         developerAuthenticationRandom: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff()
+        developerServicesConfigured = developerServices != nil
         session = SelfRenewalAppSession(root: root, currentApplicationRoot: currentApplicationRoot,
-            developerServices: developerServices, developerAuthenticationRandom: developerAuthenticationRandom, clock: clock)
+            developerServices: developerServices, publicationFault: publicationFault,
+            initialNamespaceStorage: initialNamespaceStorage,
+            developerAuthenticationRandom: developerAuthenticationRandom, clock: clock)
     }
     #endif
 
@@ -89,6 +97,54 @@ final class SelfRenewalAppOwner {
             status = await session.status()
             problem = Self.classify(error)
             AppLogger.parse("Renewal configuration unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        recoveryAvailable = await session.recoveryIsAvailable()
+        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+    }
+
+    func initializeConfiguration(from url: URL) async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil
+        do {
+            status = try await session.initializeSigningNamespace(from: url)
+            bootstrapped = true
+        } catch {
+            status = await session.status()
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal namespace initialization unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        recoveryAvailable = await session.recoveryIsAvailable()
+        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+    }
+
+    /// Preparing an imported IPA never uploads or submits it. The session owns
+    /// the security scope, original input verification and durable candidate.
+    func prepareRenewal(from ipa: URL) async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil
+        do { status = try await session.prepareRenewal(from: ipa) }
+        catch {
+            status = await session.status()
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal preparation unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        recoveryAvailable = await session.recoveryIsAvailable()
+        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+    }
+
+    /// A separate user action reaches the actual Coordinator hook with this
+    /// owner's same BookStore, source and reading-position handoff instance.
+    func submitPreparedRenewal() async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil
+        do { status = try await session.submitPreparedRenewal(handoff: handoff) }
+        catch {
+            status = await session.status()
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal submission unavailable type=\(String(reflecting: type(of: error)))")
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -263,8 +319,25 @@ final class SelfRenewalAppOwner {
 
     private static func classify(_ error: Error) -> Problem {
         if error is CancellationError { return .cancelled }
+        if let failure = error as? SelfRenewalAppSession.RenewalExecutionFailure {
+            if failure.statusPersistenceError != nil { return .localStorage }
+            switch failure.problem {
+            case .signingMaterials: return .signingMaterials
+            case .storage: return .localStorage
+            case .cancelled: return .cancelled
+            case .authentication: return .authenticationNotConfigured
+            case .configuration: return .invalidConfiguration
+            case .observation: return classify(failure.underlying)
+            }
+        }
+        if let failure = error as? SelfRenewalControlledRenewalCoordinator.PreparationFailure { return classify(failure.underlying) }
+        if let failure = error as? SelfRenewalControlledRenewalCoordinator.Interrupted { return classify(failure.underlying) }
+        if let failure = error as? SelfRenewalAuthenticatedInstallationClient.OperationFailure { return classify(failure.underlying) }
+        if let failure = error as? SelfRenewalControlledRenewalCoordinator.Failure,
+           failure == .signingMaterialsUnavailable { return .signingMaterials }
         if error is SelfRenewalAppSession.DeveloperServicesFailure { return .authenticationNotConfigured }
         if error is SelfRenewalDeveloperAuthentication.Failure || error is SelfRenewalGSASRP.Failure { return .authenticationUnavailable }
+        if let failure = error as? SelfRenewalAppSession.InitialNamespaceBindingFailure { return classify(failure.underlying) }
         if let failure = error as? SelfRenewalAppSession.DeveloperMaterialFinalizationFailure { return classify(failure.underlying) }
         if let failure = error as? SelfRenewalDeveloperAccountClient.EnrollmentFailure { return classify(failure.underlying) }
         if let failure = error as? SelfRenewalDeveloperAccountClient.SessionInvalidationFailure { return classify(failure.storageError) }
@@ -307,7 +380,7 @@ final class SelfRenewalAppOwner {
         }
         if error is SelfRenewalSigningMaterialVault.Failure { return .signingMaterials }
         if error is SelfRenewalTransactionJournal.Failure { return .localStorage }
-        if error is KeychainHelper.ReadFailure { return .localStorage }
+        if error is KeychainHelper.ReadFailure || error is KeychainHelper.WriteFailure { return .localStorage }
         if error is SelfRenewalAppSession.InitializationFailure { return .localStorage }
         return .operationFailed
     }

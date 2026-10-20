@@ -468,6 +468,7 @@ struct SelfRenewalSigningMaterialVaultTests {
             if fail { throw Vault.Failure.manifestWrite }
             try base.save(account: account, value: value)
         }
+        func insert(account: String, value: String) throws { try base.insert(account: account, value: value) }
         func delete(account: String) throws { try base.delete(account: account) }
     }
     private struct Candidate: Sendable { let chain: [Data]; let profiles: [Vault.ProfileInput] }

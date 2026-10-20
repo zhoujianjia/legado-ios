@@ -10,6 +10,7 @@ enum KeychainHelper {
         case lookup(OSStatus), unexpectedResult, invalidUTF8, valueLimit
         case accessibilityMigration(OSStatus)
     }
+    enum WriteFailure: Error, Sendable, Equatable { case insert(OSStatus) }
     private struct ReadValue {
         let value: String?
         let migrationStatus: OSStatus?
@@ -59,6 +60,29 @@ enum KeychainHelper {
         let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
         if addStatus != errSecSuccess { logFailure(operation: "add", status: addStatus) }
         return addStatus == errSecSuccess
+    }
+
+    /// Add exactly one new owned item. Duplicate, locked and failed writes are
+    /// explicit errors; this boundary never falls back to an update/upsert.
+    static func insertChecked(account: String, data: String, service: String,
+        accessibility: CFString, synchronizable: Bool) throws {
+        precondition(!Thread.isMainThread)
+        try Task.checkCancellation()
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("renewal.keychain.checked-insert",
+            "bytes=\(data.utf8.count) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service, kSecAttrAccount as String: account,
+            kSecValueData as String: Data(data.utf8),
+            kSecAttrAccessible as String: accessibility,
+            kSecAttrSynchronizable as String: synchronizable as CFBoolean,
+        ]
+        let status = SecItemAdd(query as CFDictionary, nil)
+        guard status == errSecSuccess else {
+            logFailure(operation: "checked insert", status: status)
+            throw WriteFailure.insert(status)
+        }
     }
 
     /// Load a previously saved string value from the Keychain. Returns `nil` if not found.

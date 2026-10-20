@@ -341,8 +341,11 @@ actor SelfRenewalDeveloperAccountClient {
             expectedGeneration: csr.generation, commonName: account.commonName, emailAddress: account.pin.email)
         guard currentCSR.publicKeySHA256 == csr.publicKeySHA256, currentCSR.der == csr.der else { throw Failure.keyMismatch }
         try check(operationEpoch)
+        let chain = try await vault.enrollmentCertificateChain(in: namespace, expectedGeneration: csr.generation,
+            leaf: certificate, issuerCandidates: issuerChainDER)
+        try check(operationEpoch)
         let lease = try await vault.publish(in: namespace, keyID: csr.keyID, expectedGeneration: csr.generation,
-            certificateChainDER: [certificate] + issuerChainDER, profiles: profiles)
+            certificateChainDER: chain, profiles: profiles)
         // No cancellation check after this acknowledged Vault commit.
         // The later credential write cannot roll it back or hide its fact.
         do {
