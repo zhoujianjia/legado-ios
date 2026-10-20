@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:38:43.600392+00:00",
+  "sourceCommit": "a835f8b0bae9d77bc2bb43d11cd8fdcf32d00804",
+  "sourceTag": "reader-renewal-a835f8b",
+  "runID": 39374412189,
+  "status": "actual-SDK-producer-identity-selection-failed-before-xcodebuild",
+  "selectionMode": "transactionrenewal",
+  "sourceInputs": 134,
+  "plannedMethodDefinitions": 178,
+  "plannedArgumentLeaves": 180,
+  "allInputsComparedToImmutableCommit": true,
+  "artifact": {
+    "path": ".build/renewal-discovery/transaction-renewal-sdk-first-observation/reader-renewal-probe-evidence.zip",
+    "bytes": 41351,
+    "sha256": "ae8a0fa266be20293698a79a7fd66647144b4ef0ef6267746a8a75549e30d241"
+  },
+  "artifactID": 12242961197,
+  "safeHashMatchedMembers": 15,
+  "wrapperLog": {
+    "path": ".build/sdk-evidence/a835f8b/native/ci-logs/reader-renewal.log",
+    "bytes": 926,
+    "sha256": "45e64487cf131adbc38e7646e3c439a6264833a1c866a3e574d31fc30093ecce"
+  },
+  "producerLog": {
+    "path": ".build/sdk-evidence/a835f8b/native/reader-renewal-probe/sdk-producer.log",
+    "bytes": 1810,
+    "sha256": "7d924348631d28cae9b427d1a0c232091ed31109bf40244e192a8c57504aa077"
+  },
+  "exportedSourceInputs": {
+    "path": ".build/sdk-evidence/a835f8b/native/reader-renewal-probe/source-inputs.json",
+    "bytes": 42901,
+    "sha256": "8a0ca925dcbec51aa3ebe0337f7080fffa11258a6effcc2fc89f981fbbebe8f1"
+  },
+  "overlays": {
+    "path": ".build/sdk-evidence/a835f8b/native/reader-renewal-probe/overlays.json",
+    "bytes": 2624,
+    "sha256": "c88e7e57bcd586f1110fbe73014f737baa6955b09b3bfad1dd22e1e09ff67c3a"
+  },
+  "actualIdentityImportAndPrivateKeySelfCheck": {
+    "codesignACLExecutionVerified": false,
+    "importedItemCount": 1,
+    "leafSHA256": "d6858a22ac5ac0a587d73a643851ecbac26b60da47bc72e17a95e51608b6414a",
+    "osStatus": 0,
+    "privateKeySignatureVerified": true,
+    "rootSHA256": "52f3bf860b3d58c6a59c25872ee3451d15de8520b9fc21bad5a336aafb4565bc",
+    "schemaVersion": 1,
+    "stage": "complete",
+    "status": "passed",
+    "storedIdentityCount": 1
+  },
+  "actualCodesigningPolicyObservation": {
+    "argv": [
+      "security",
+      "find-identity",
+      "-p",
+      "codesigning",
+      "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-7vo920a7/synthetic.keychain-db"
+    ],
+    "exitCode": 0,
+    "stderr": "",
+    "stdout": "\nPolicy: Code Signing\n  Matching identities\n  1) A3961731B7D01EEFB91CD55AA8A8B5227228000B \"Owned SDK Fixture Code\" (CSSMERR_TP_NOT_TRUSTED)\n     1 identities found\n\n  Valid identities only\n     0 valid identities found\n",
+    "truncated": false
+  },
+  "actualFailedCodesign": {
+    "argv": [
+      "codesign",
+      "--force",
+      "--sign",
+      "A3961731B7D01EEFB91CD55AA8A8B5227228000B",
+      "--keychain",
+      "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-7vo920a7/synthetic.keychain-db",
+      "--timestamp=none",
+      "--identifier",
+      "test.owned.reader.framework",
+      "--requirements",
+      "=designated => identifier \"test.owned.reader.framework\"",
+      "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-7vo920a7/Payload/Owned.app/Frameworks/OwnedFramework.framework"
+    ],
+    "codesignSuccessEstablishedByThisFailureRecord": false,
+    "exitCode": 1,
+    "failedToolSucceeded": false,
+    "nativeTestsExecuted": 0,
+    "publicLog": "test.owned.reader.framework.codesign.log",
+    "schemaVersion": 1,
+    "status": "failed",
+    "stderr": "error: The specified item could not be found in the keychain.\n",
+    "stdout": "",
+    "truncated": false
+  },
+  "actualOwnedKeychainCleanup": {
+    "exitCode": 0,
+    "privateCommandPublished": false,
+    "status": "passed"
+  },
+  "privateKeySelfCheckDoesNotEstablishCodesignACL": true,
+  "knownDiagnosticNowAvailable": true,
+  "failureRootCauseFixed": false,
+  "nextAction": "Trace the actual codesign identity selection and code-signing policy failure against primary Apple implementation; fix the owned fixture without changing user/system trust or substituting ad-hoc signatures. Recheck once at the next coherent SDK checkpoint.",
+  "executedNativeMethods": 0,
+  "acceptedNativeMethods": 0,
+  "actualPlatformFixtureAccepted": false,
+  "networkRequestsDuringAudit": 0,
+  "newBuildTriggered": false,
+  "AppleOrDeviceAuthorityEstablished": false
+}
