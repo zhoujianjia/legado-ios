@@ -1,0 +1,236 @@
+{
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "baselineDeclarations": [
+        [
+          "persistsUnconfiguredStatusAndReopensTheSameLocalOwner",
+          ""
+        ],
+        [
+          "retainsExistingTransactionWhenSigningMaterialsAreMissing",
+          ""
+        ],
+        [
+          "rejectsCorruptLinkedAndOversizedConfigurationWithoutReset",
+          ""
+        ],
+        [
+          "validatesRealCertificateInputsAndRejectsMissingAuthenticationHandles",
+          ""
+        ],
+        [
+          "preservesCancelledAndFailedConfigurationWrites",
+          ""
+        ],
+        [
+          "appOwnerBootstrapsItsSharedHandoffWithoutCreatingSigningCredentials",
+          ""
+        ]
+      ],
+      "candidateDeclarations": [
+        [
+          "persistsUnconfiguredStatusAndReopensTheSameLocalOwner",
+          ""
+        ],
+        [
+          "retainsExistingTransactionWhenSigningMaterialsAreMissing",
+          ""
+        ],
+        [
+          "rejectsCorruptLinkedAndOversizedConfigurationWithoutReset",
+          ""
+        ],
+        [
+          "validatesRealCertificateInputsAndRejectsMissingAuthenticationHandles",
+          ""
+        ],
+        [
+          "preservesCancelledAndFailedConfigurationWrites",
+          ""
+        ],
+        [
+          "appOwnerBootstrapsItsSharedHandoffWithoutCreatingSigningCredentials",
+          ""
+        ],
+        [
+          "startupBootstrapCannotLaunchAfterBackground",
+          ""
+        ],
+        [
+          "latestActivationWaitsForBootstrapAndRunsOnce",
+          ""
+        ],
+        [
+          "backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup",
+          ""
+        ],
+        [
+          "cancelledForegroundBootstrapCannotCreateWorker",
+          ""
+        ]
+      ],
+      "newDeclarations": [
+        [
+          "startupBootstrapCannotLaunchAfterBackground",
+          ""
+        ],
+        [
+          "latestActivationWaitsForBootstrapAndRunsOnce",
+          ""
+        ],
+        [
+          "backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup",
+          ""
+        ],
+        [
+          "cancelledForegroundBootstrapCannotCreateWorker",
+          ""
+        ]
+      ],
+      "allExistingExpectLinesRetained": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "baselineDeclarations": [
+        [
+          "capturesActualCurrentBundleAndRejectsChangedSignedResources",
+          ""
+        ],
+        [
+          "persistsOptInThrottleAndClockRollbackWithoutRemoteWork",
+          ""
+        ],
+        [
+          "performsFullActualAutomaticRenewalAndNeverRepostsAReceipt",
+          ""
+        ],
+        [
+          "cancellationDrainsActualAutomaticTransportAndPersistsInterruption",
+          ""
+        ]
+      ],
+      "candidateDeclarations": [
+        [
+          "capturesActualCurrentBundleAndRejectsChangedSignedResources",
+          ""
+        ],
+        [
+          "persistsOptInThrottleAndClockRollbackWithoutRemoteWork",
+          ""
+        ],
+        [
+          "performsFullActualAutomaticRenewalAndNeverRepostsAReceipt",
+          ""
+        ],
+        [
+          "cancellationDrainsActualAutomaticTransportAndPersistsInterruption",
+          ""
+        ]
+      ],
+      "newDeclarations": [],
+      "allExistingExpectLinesRetained": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "baselineDeclarations": [
+        [
+          "revalidatesActualLeaseBeforeNilAndUnsubmittedReturns",
+          ""
+        ],
+        [
+          "revokedUploadRetainsOnlyExistingAuthenticatedRecovery",
+          ""
+        ],
+        [
+          "appForegroundExpiresKnownProfileWithoutRereadingApplication",
+          ""
+        ],
+        [
+          "appForegroundRevocationKeepsUploadCleanupExplicit",
+          ""
+        ],
+        [
+          "preservesTypedKeychainFailureAndForegroundCancellation",
+          ""
+        ],
+        [
+          "refusesOwnedApplicationAsCurrentProcessEvidence",
+          ""
+        ]
+      ],
+      "candidateDeclarations": [
+        [
+          "revalidatesActualLeaseBeforeNilAndUnsubmittedReturns",
+          ""
+        ],
+        [
+          "revokedUploadRetainsOnlyExistingAuthenticatedRecovery",
+          ""
+        ],
+        [
+          "appForegroundExpiresKnownProfileWithoutRereadingApplication",
+          ""
+        ],
+        [
+          "appForegroundRevocationKeepsUploadCleanupExplicit",
+          ""
+        ],
+        [
+          "preservesTypedKeychainFailureAndForegroundCancellation",
+          ""
+        ],
+        [
+          "refusesOwnedApplicationAsCurrentProcessEvidence",
+          ""
+        ]
+      ],
+      "newDeclarations": [],
+      "allExistingExpectLinesRetained": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "baselineDeclarations": [
+        [
+          "appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry",
+          ""
+        ],
+        [
+          "appSubmissionKeepsUploadIntentWhenActualSourceSaveFails",
+          ""
+        ],
+        [
+          "appSessionCancellationDrainsActualTransportAndKeepsCandidate",
+          ""
+        ],
+        [
+          "appOwnerRevokesFailedFreshSigningProofAndKeepsActualCandidate",
+          ""
+        ]
+      ],
+      "candidateDeclarations": [
+        [
+          "appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry",
+          ""
+        ],
+        [
+          "appSubmissionKeepsUploadIntentWhenActualSourceSaveFails",
+          ""
+        ],
+        [
+          "appSessionCancellationDrainsActualTransportAndKeepsCandidate",
+          ""
+        ],
+        [
+          "appOwnerRevokesFailedFreshSigningProofAndKeepsActualCandidate",
+          ""
+        ]
+      ],
+      "newDeclarations": [],
+      "allExistingExpectLinesRetained": true
+    }
+  ],
+  "newDefinitions": 4,
+  "newArgumentLeaves": 4,
+  "SDKExecuted": false
+}

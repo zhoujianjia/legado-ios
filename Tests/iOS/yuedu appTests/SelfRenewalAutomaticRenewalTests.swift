@@ -91,7 +91,12 @@ struct SelfRenewalAutomaticRenewalTests {
             let root = f.directory.appendingPathComponent("SelfRenewalApp")
             let owner = await MainActor.run { SelfRenewalAppOwner(root: root, currentApplicationRoot: application, clock: { f.date }) }
             let owners = try await App.library(in: f.directory, at: f.date, handoff: owner.handoff)
-            await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions)
+            let foreground = await MainActor.run {
+                owner.noteScenePhase(.inactive)
+                return owner.noteScenePhase(.active)
+            }
+            await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions,
+                foregroundGeneration: foreground)
             // The fixture peer validates the exact real persisted candidate at
             // AFC Close; the test independently verifies that ZIP afterwards.
             let current = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: application,

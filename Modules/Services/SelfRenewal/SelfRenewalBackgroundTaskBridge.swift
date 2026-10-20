@@ -95,8 +95,8 @@ final class SelfRenewalBackgroundTaskBridge {
             await start()
             let success: Bool
             if Task.isCancelled { success = false }
-            else { success = await owner.runAutomaticRenewalNow() }
-            // runAutomaticRenewalNow forwards cancellation and awaits the same
+            else { success = await owner.runAutomaticRenewalWithBackgroundGrant() }
+            // The background-granted entry forwards cancellation and awaits the same
             // Session/Coordinator/stream workers before this single completion.
             runtime.complete(success && !Task.isCancelled)
             if self?.pending === runtime { self?.pending = nil }

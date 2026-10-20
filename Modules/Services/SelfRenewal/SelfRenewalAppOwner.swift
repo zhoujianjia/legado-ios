@@ -20,7 +20,14 @@ final class SelfRenewalAppOwner {
     private(set) var status: SelfRenewalAppSession.Status?
     private(set) var problem: Problem?
     private(set) var signingMaterialProblem: Problem?
-    private(set) var isWorking = false
+    private(set) var isWorking = false {
+        didSet { if !isWorking { resumeForegroundWaiters() } }
+    }
+    enum ExecutionPhase: Equatable, Sendable { case active, inactive, background }
+    @ObservationIgnored private var executionPhase = ExecutionPhase.inactive
+    @ObservationIgnored private var foregroundGeneration = UUID()
+    @ObservationIgnored private var requestedActivationGeneration: UUID?
+    @ObservationIgnored private var foregroundWaiters: [CheckedContinuation<Void, Never>] = []
     private(set) var recoveryAvailable = false
     private(set) var developerSession: SelfRenewalDeveloperAccountClient.SessionObservation?
     private(set) var developerMaterial: SelfRenewalAppSession.DeveloperMaterialObservation?
@@ -29,7 +36,9 @@ final class SelfRenewalAppOwner {
     private var authenticatingOperationID: UUID?
     private var bootstrapped = false
     private(set) var automaticRenewal: SelfRenewalAppSession.AutomaticRenewalObservation?
+    private enum AutomaticTrigger { case foreground(UUID), systemBackground }
     private struct AutomaticOperation {
+        let trigger: AutomaticTrigger
         let id: UUID
         let task: Task<SelfRenewalAppSession.AutomaticRenewalObservation, Error>
     }
@@ -48,15 +57,24 @@ final class SelfRenewalAppOwner {
         session = SelfRenewalAppSession(root: root, developerServices: developerServices, clock: clock)
     }
     #if DEBUG
+    @ObservationIgnored private var bootstrapObservation: (@Sendable () async -> Void)?
+    @ObservationIgnored private var automaticWorkerObservation: (@Sendable () async -> Void)?
+    @ObservationIgnored private var foregroundWaitObservation: (@MainActor () -> Void)?
     /// Only owned tests choose another verified application directory. This
     /// parameter is absent from configuration and production initialization.
     init(root: URL, currentApplicationRoot: URL, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
         publicationFault: SelfRenewalAppSession.PublicationFault? = nil,
         initialNamespaceStorage: any SelfRenewalSigningManifestStorage = SelfRenewalSigningKeychainManifestStorage(),
+        bootstrapObservation: (@Sendable () async -> Void)? = nil,
+        automaticWorkerObservation: (@Sendable () async -> Void)? = nil,
+        foregroundWaitObservation: (@MainActor () -> Void)? = nil,
         developerAuthenticationRandom: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff()
         developerServicesConfigured = developerServices != nil
+        self.bootstrapObservation = bootstrapObservation
+        self.automaticWorkerObservation = automaticWorkerObservation
+        self.foregroundWaitObservation = foregroundWaitObservation
         session = SelfRenewalAppSession(root: root, currentApplicationRoot: currentApplicationRoot,
             developerServices: developerServices, publicationFault: publicationFault,
             initialNamespaceStorage: initialNamespaceStorage,
@@ -64,15 +82,57 @@ final class SelfRenewalAppOwner {
     }
     #endif
 
-    func start(books: BookStore, sources: BookSourceStore, positions: any ReadingPositionStore, automatically: Bool = true) async {
+    /// Synchronous scene facts are recorded before App lifecycle Tasks are queued.
+    /// Repeated reads of the same phase keep the same epoch; late Tasks cannot
+    /// announce active on behalf of an obsolete scene event.
+    @discardableResult func noteScenePhase(_ phase: ExecutionPhase) -> UUID {
+        if executionPhase != phase {
+            executionPhase = phase
+            foregroundGeneration = UUID()
+            resumeForegroundWaiters()
+        }
+        return foregroundGeneration
+    }
+    private func acceptsForeground(_ generation: UUID) -> Bool {
+        !Task.isCancelled && executionPhase == .active && foregroundGeneration == generation
+    }
+    private func reserveActivation(_ generation: UUID?) -> UUID? {
+        let generation = generation ?? foregroundGeneration
+        guard acceptsForeground(generation), requestedActivationGeneration != generation else { return nil }
+        requestedActivationGeneration = generation
+        return generation
+    }
+    private func resumeForegroundWaiters() {
+        let waiters = foregroundWaiters
+        foregroundWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
+    }
+    private func foregroundAvailable(_ generation: UUID) async -> Bool {
+        while isWorking {
+            guard acceptsForeground(generation) else { return false }
+            await withCheckedContinuation {
+                foregroundWaiters.append($0)
+                #if DEBUG
+                foregroundWaitObservation?()
+                #endif
+            }
+        }
+        return acceptsForeground(generation)
+    }
+
+    func start(books: BookStore, sources: BookSourceStore, positions: any ReadingPositionStore,
+        automatically: Bool = true, foregroundGeneration: UUID? = nil) async {
         do { try handoff.bind(books: books, sources: sources, positions: positions) }
         catch {
             problem = .operationFailed
             AppLogger.parse("Renewal App persistence binding unavailable type=\(String(reflecting: type(of: error)))")
             return
         }
+        let generation = automatically ? reserveActivation(foregroundGeneration) : nil
         await bootstrap()
-        if automatically { await runAutomaticRenewalNow() }
+        if let generation, await foregroundAvailable(generation) {
+            await runAutomaticRenewal(.foreground(generation))
+        }
     }
 
     /// Called only after the App binds its actual BookStore, BookSourceStore and
@@ -83,6 +143,9 @@ final class SelfRenewalAppOwner {
         problem = nil
         do {
             status = try await session.bootstrap(handoff: handoff)
+            #if DEBUG
+            await bootstrapObservation?()
+            #endif
             bootstrapped = true
         } catch {
             status = await session.status()
@@ -102,24 +165,34 @@ final class SelfRenewalAppOwner {
     /// Foreground preserves normal material observations and then attempts the
     /// same opt-in, durably throttled renewal use case. A foreground is never
     /// cold-launch or installation evidence.
-    func becameActive() async {
-        guard !isWorking else { return }
+    func becameActive(generation: UUID? = nil) async {
+        guard let generation = reserveActivation(generation),
+              await foregroundAvailable(generation) else { return }
         await bootstrap()
-        await runAutomaticRenewalNow()
+        guard acceptsForeground(generation) else { return }
+        await runAutomaticRenewal(.foreground(generation))
     }
 
     func installAutomaticScheduling(_ schedule: @escaping @MainActor (Date?) -> Void) {
         automaticSchedule = schedule
         scheduleAutomaticRenewal()
     }
-    func enteredBackground() async {
-        // Foreground work does not keep running without a system runtime grant.
-        // Cancellation awaits actual transport/archive drain before returning.
-        await cancelAutomaticRenewal()
+    func enteredBackground(generation: UUID? = nil) async {
+        let generation = generation ?? foregroundGeneration
+        guard executionPhase == .background, foregroundGeneration == generation else { return }
+        // A real BGProcessingTask owns a distinct runtime grant. Scene cleanup
+        // only cancels foreground work, then awaits the existing full drain.
+        if let operation = automaticOperation, case .foreground = operation.trigger {
+            operation.task.cancel()
+            let result = await operation.task.result
+            await finishAutomaticOperation(operation.id, result: result)
+        }
+        guard executionPhase == .background, foregroundGeneration == generation else { return }
         await cancelPairingIdentityImport()
         scheduleAutomaticRenewal()
     }
     func setAutomaticRenewalEnabled(_ enabled: Bool) async {
+        let generation = foregroundGeneration
         if !enabled { await cancelAutomaticRenewal() }
         guard !isWorking else { return }
         isWorking = true
@@ -127,17 +200,38 @@ final class SelfRenewalAppOwner {
         catch { problem = Self.classify(error) }
         isWorking = false
         scheduleAutomaticRenewal()
-        if enabled { await runAutomaticRenewalNow() }
+        if enabled, acceptsForeground(generation) {
+            await runAutomaticRenewal(.foreground(generation))
+        }
     }
     /// Both foreground and a system-granted BGProcessingTask await this exact
     /// owned worker. A caller cancellation is forwarded, then fully drained.
     @discardableResult func runAutomaticRenewalNow() async -> Bool {
-        guard !isWorking else { return false }
+        await runAutomaticRenewal(.foreground(foregroundGeneration))
+    }
+    /// Only the existing BGTask bridge calls this while its system task is live.
+    /// Expiration cancellation still reaches and drains the exact same worker.
+    @discardableResult func runAutomaticRenewalWithBackgroundGrant() async -> Bool {
+        await runAutomaticRenewal(.systemBackground)
+    }
+    @discardableResult private func runAutomaticRenewal(_ trigger: AutomaticTrigger) async -> Bool {
+        guard !isWorking, !Task.isCancelled else { return false }
+        if case .foreground(let generation) = trigger {
+            guard acceptsForeground(generation) else { return false }
+        }
         isWorking = true
         problem = nil
         let id = UUID(), session = self.session, handoff = self.handoff
-        let worker = Task { try await session.runAutomaticRenewal(handoff: handoff) }
-        automaticOperation = AutomaticOperation(id: id, task: worker)
+        #if DEBUG
+        let observation = automaticWorkerObservation
+        #endif
+        let worker = Task {
+            #if DEBUG
+            await observation?()
+            #endif
+            return try await session.runAutomaticRenewal(handoff: handoff)
+        }
+        automaticOperation = AutomaticOperation(trigger: trigger, id: id, task: worker)
         let result = await withTaskCancellationHandler { await worker.result } onCancel: { worker.cancel() }
         await finishAutomaticOperation(id, result: result)
         switch result {
@@ -523,6 +617,7 @@ final class SelfRenewalAppOwner {
     }
 
     func close() async throws {
+        noteScenePhase(.inactive)
         await cancelAutomaticRenewal()
         await cancelPairingIdentityImport()
         guard !isWorking else { throw SelfRenewalAppSession.Failure.busy }

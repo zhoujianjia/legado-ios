@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "sourcePreparation": {
+    "bytes": 14534,
+    "sha256": "570364a7515ff24d68cc93ea0def2441f0ae4540d1d6c71d088a87093cac01d3"
+  },
+  "sourceFilesReviewed": 7,
+  "grammarRootsBound": 14,
+  "actualSDKExecuted": false,
+  "actualNewBehaviorTestsExecuted": false,
+  "oldAssertionLinesPreserved": true,
+  "currentBecameActiveCallsWithExplicitEpoch": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: reopenedForeground"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: first"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: current"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: current"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: generation"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: healthyForeground"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: expiredForeground"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: revokedForeground"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "entry": "becameActive",
+      "arguments": "generation: recoveredForeground"
+    }
+  ],
+  "findingsResolved": [
+    "Root confirmed the actual bootstrap/background race in the existing App and Owner. Source phase is recorded synchronously before lifecycle Tasks and every foreground entry rechecks current phase/epoch/cancellation. Latest activeB waits on the existing owner busy state; stale A cannot borrow B authority.",
+    "Root reviewed trigger origin, background expiration path and common worker cancellation/drain, plus stale background-cleanup gates. The system background grant keeps the original worker and is not subject to foreground scene admission. No second signer/installer/session or data owner was added.",
+    "Root found old foreground material/AppOwner tests would stop exercising their required bootstrap after the new phase gate. Finalv2 migrates all existing activation/start fixtures to actual inactive/active epochs, preserving assertion lines, test identities and parameters.",
+    "The four latch tests reach the real Session local bootstrap and common disabled worker; DEBUG hooks only observe/hold those operations. They do not replace Session, networking, authorization or installation. They remain unexecuted until a future coherent SDK run."
+  ],
+  "limitations": [
+    "BG bridge busy behavior remains unchanged; this does not prove that every granted OS runtime is used.",
+    "No real-device/Apple/installation/expiry/data-retention or unattended success is claimed.",
+    "Local Swift grammar does not prove macros, types, actor correctness or runtime lifecycle behavior."
+  ]
+}

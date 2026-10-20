@@ -24,7 +24,12 @@ struct SelfRenewalAppExecutionTests {
             }
             let owners = try await Self.library(in: f.directory, at: f.date, handoff: owner.handoff)
             do {
-                await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions)
+                let foreground = await MainActor.run {
+                    owner.noteScenePhase(.inactive)
+                    return owner.noteScenePhase(.active)
+                }
+                await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions,
+                    foregroundGeneration: foreground)
                 await owner.importConfiguration(try Self.configuration(f, device: nil))
                 await owner.prepareRenewal(from: f.input)
                 let ready = await MainActor.run { (owner.status, owner.problem, owner.isWorking) }
@@ -75,7 +80,12 @@ struct SelfRenewalAppExecutionTests {
             }
             let owners = try await Self.library(in: f.directory, at: f.date, handoff: owner.handoff)
             do {
-                await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions)
+                let foreground = await MainActor.run {
+                    owner.noteScenePhase(.inactive)
+                    return owner.noteScenePhase(.active)
+                }
+                await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions,
+                    foregroundGeneration: foreground)
                 await owner.importConfiguration(try Self.configuration(f, device: nil))
                 await owner.prepareRenewal(from: f.input)
                 let ready = try Self.record(root)
@@ -171,7 +181,12 @@ struct SelfRenewalAppExecutionTests {
                 }
                 let owners = try await Self.library(in: f.directory, at: f.date, handoff: owner.handoff)
                 do {
-                    await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions)
+                    let foreground = await MainActor.run {
+                        owner.noteScenePhase(.inactive)
+                        return owner.noteScenePhase(.active)
+                    }
+                    await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions,
+                        foregroundGeneration: foreground)
                     await owner.importConfiguration(try Self.configuration(f, device: nil))
                     await owner.prepareRenewal(from: f.input)
                     let ready = try Self.record(root)

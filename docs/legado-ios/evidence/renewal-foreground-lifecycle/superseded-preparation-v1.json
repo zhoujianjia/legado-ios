@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-ignored-foreground-lifecycle-candidate-awaiting-root-independent-review",
+  "baselineCommit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b",
+  "currentHeadAtFreeze": "9895ec6bc2ea5402ad71828258a051b2869b6a6b",
+  "activeFrozenCICommitUntouched": "210fb0597dcc4081db9324876c4be922ba186367",
+  "candidateRoot": ".build/renewal-foreground-lifecycle-step/work",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "baseline": {
+        "bytes": 31711,
+        "sha256": "a198d0968b3a39ed1f7bba07bc5fda860cf6ffdaffd6d5019f54309458ec6fde"
+      },
+      "candidate": {
+        "bytes": 36529,
+        "sha256": "457c631a88f8f7b2e282e878084df577e4f6c10e86b8fa39ee3bb24e6acaaf57"
+      },
+      "diff": {
+        "path": "diffs/Modules__Services__SelfRenewal__SelfRenewalAppOwner.swift.diff",
+        "bytes": 10946,
+        "sha256": "4534911563b6350a077a3849c660ddb58f5885c26a24db84644f39bb1ce471c1"
+      }
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "baseline": {
+        "bytes": 26328,
+        "sha256": "e5f00ae67de4bd625f88e43ccce81ff1dc6f7f1f97f31816b157a2cf1007bd49"
+      },
+      "candidate": {
+        "bytes": 26799,
+        "sha256": "26b8ecf72165eabd06dd6df16d6457e7a037b62bdf4cd5c00bee00ac95f065b1"
+      },
+      "diff": {
+        "path": "diffs/Targets__Yuedu__SharedApp__yuedu_appApp.swift.diff",
+        "bytes": 2928,
+        "sha256": "103c08d61b343ec50815af9bbae73291eff9a3e72e952cc6febe325d7940a0a2"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+      "baseline": {
+        "bytes": 4772,
+        "sha256": "8817f110dea8a022fe8ecedc1153b65b1427c0ca6f065a79080e3c210bbb2166"
+      },
+      "candidate": {
+        "bytes": 4794,
+        "sha256": "d82f34662f993493bf48e219734c65241c2411549a6b70311959c3370c64f1fe"
+      },
+      "diff": {
+        "path": "diffs/Modules__Services__SelfRenewal__SelfRenewalBackgroundTaskBridge.swift.diff",
+        "bytes": 805,
+        "sha256": "98968216dc0fb3033332567146723a821d5918f1beb9970ffbea5f242d6c08c9"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "baseline": {
+        "bytes": 16950,
+        "sha256": "3d5d8ade02eb5ef26ffaec9030e9759ab82e61b23d1996a4e68c457f48448fd0"
+      },
+      "candidate": {
+        "bytes": 24793,
+        "sha256": "20c50a9968749689e20f5b51e9760bdfbc994efa08ed0fbda1e4d98588e10cf3"
+      },
+      "diff": {
+        "path": "diffs/Tests__iOS__yuedu appTests__SelfRenewalAppOwnerTests.swift.diff",
+        "bytes": 8463,
+        "sha256": "35126c8e154f12bc2b6c57c41076b26807018a024ecbdb47c85b06927b02ff3a"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "baseline": {
+        "bytes": 13753,
+        "sha256": "675cdffcbe0c1d8033f58ed257599dc2b313d5092f7eed0ebc0882650ec81e1a"
+      },
+      "candidate": {
+        "bytes": 13819,
+        "sha256": "3e94c79a3d3dcb01545019827770885480591e3f90d12cedeb5cb0d0d0be674c"
+      },
+      "diff": {
+        "path": "diffs/Tests__iOS__yuedu appTests__SelfRenewalAutomaticRenewalTests.swift.diff",
+        "bytes": 807,
+        "sha256": "f8ba0e2b56b822660fb244447295f62990d6c586aed8317e1f67bc6cb8484768"
+      }
+    }
+  ],
+  "confirmedRace": {
+    "before": "start and becameActive await bootstrap with isWorking=true and automaticOperation=nil. Async enteredBackground sees no automatic worker to cancel; old bootstrap resumes and creates a new ungranted background automatic worker. A rapid current activeB was also dropped by becameActive early isWorking return.",
+    "sourceBindings": {
+      "owner": {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+        "baseline": {
+          "bytes": 31711,
+          "sha256": "a198d0968b3a39ed1f7bba07bc5fda860cf6ffdaffd6d5019f54309458ec6fde"
+        }
+      },
+      "app": {
+        "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+        "baseline": {
+          "bytes": 26328,
+          "sha256": "e5f00ae67de4bd625f88e43ccce81ff1dc6f7f1f97f31816b157a2cf1007bd49"
+        }
+      },
+      "bridge": {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+        "baseline": {
+          "bytes": 4772,
+          "sha256": "8817f110dea8a022fe8ecedc1153b65b1427c0ca6f065a79080e3c210bbb2166"
+        }
+      }
+    },
+    "notClaimed": "This race is source-proven. It is not a reproduction of a specific device failure, and the fix does not establish Apple authorization, successful installation or unattended renewal."
+  },
+  "behavior": [
+    "One existing Owner holds ignored O(1) scene phase/epoch facts. The App records the actual initial scene synchronously and captures that epoch for .task; scene-change handlers record before enqueueing any async cleanup/activation. Late Tasks cannot announce a new active phase.",
+    "Each active epoch reserves at most one activation request across startup and becameActive. Latest activeB waits on actual Owner idle continuations while A bootstraps or another Owner operation drains. It rechecks its own phase/epoch/cancellation after every relevant await; obsolete A cannot adopt B authority. No sleeps, timer polling, new owner, store or worker pipeline are added.",
+    "Enabling captures its foreground epoch before the persistence await and only admits a worker if still active/current/uncancelled afterward. Manual run uses the same foreground admission. Local opt-in publication is not rolled back merely because the scene changed.",
+    "The system BGProcessingTask bridge calls an explicit background-granted entry into the same existing worker. Scene cleanup cancels only foreground-origin workers; it still waits for their actual cancellation/drain and preserves pairing cancellation. Expiration cancellation reaches the common worker and final result exactly as before.",
+    "An obsolete background cleanup checks its epoch before touching work and again after awaiting foreground drain, preventing it from cancelling a later active epoch. Close invalidates foreground admissions before its existing cancellation/drain.",
+    "Three DEBUG-only observation hooks provide signals after real Session bootstrap, after actual idle-wait registration, and inside the actual automatic worker. They replace no Session operation, use no real credential/phone, and are absent from Release."
+  ],
+  "regressions": {
+    "newDefinitions": [
+      "SelfRenewalAppOwnerTests/startupBootstrapCannotLaunchAfterBackground",
+      "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+      "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup",
+      "SelfRenewalAppOwnerTests/cancelledForegroundBootstrapCannotCreateWorker"
+    ],
+    "parameters": {
+      "SelfRenewalAppOwnerTests/startupBootstrapCannotLaunchAfterBackground": [],
+      "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce": [],
+      "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup": [],
+      "SelfRenewalAppOwnerTests/cancelledForegroundBootstrapCannotCreateWorker": []
+    },
+    "existingSuiteDefinitionsRetained": 10,
+    "totalDefinitionsInTwoTouchedTestFiles": 14,
+    "newCases": [
+      {
+        "method": "SelfRenewalAppOwnerTests/startupBootstrapCannotLaunchAfterBackground",
+        "fact": "Hold the real startup bootstrap, record background, drain scene cleanup, release bootstrap; actual Session publishes unconfigured status and no automatic worker is created."
+      },
+      {
+        "method": "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+        "fact": "Hold A bootstrap, move background then activeB, wait for actual B idle-registration signal before release, submit duplicate B; require two real bootstrap observations and exactly one actual B worker, then reject delayed old-background cleanup."
+      },
+      {
+        "method": "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup",
+        "fact": "At background, perform actual automatically:false startup; hold the common background-granted worker, invoke scene cleanup, release; actual disabled Session result succeeds and foreground manual entry is refused."
+      },
+      {
+        "method": "SelfRenewalAppOwnerTests/cancelledForegroundBootstrapCannotCreateWorker",
+        "fact": "Cancel the real foreground activation while its bootstrap observation is held; release, drain the caller and assert no new automatic worker."
+      }
+    ],
+    "existingPositiveFixtureChange": "SelfRenewalAutomaticRenewalTests/performsFullActualAutomaticRenewalAndNeverRepostsAReceipt explicitly records active before its existing Owner start/enable/full peer flow. All prior definition/argument identities and assertions remain unchanged."
+  },
+  "validation": {
+    "grammar": {
+      "path": "grammar.json",
+      "bytes": 2267,
+      "sha256": "9aaaa72cc6283d431a44ab800c62f9c1f54c394c959b89b0ce9c73cc09be2961"
+    },
+    "declarations": {
+      "path": "test-declarations.json",
+      "bytes": 3375,
+      "sha256": "fd60b1882c72d2157dae7ae151671308383df94426c8ee00449b9b761d5f3c67"
+    },
+    "baselineGrammarRoots": 5,
+    "candidateGrammarRoots": 5,
+    "candidateGrammarErrors": 0,
+    "lineEndingAndWhitespaceChecks": "All five preserve original LF, no added trailing whitespace; canonical baselines still match both source commit and frozen210fb05.",
+    "SwiftTypechecks": 0,
+    "macroExpansions": 0,
+    "SDKExecutions": 0,
+    "JNIExecutions": 0,
+    "PackageExecutions": 0,
+    "newBehaviorTestsExecuted": 0,
+    "boundary": "Local grammar and source/declaration checks cannot prove Swift macro expansion, actor/type correctness, lifecycle runtime or test behavior. Four regression definitions are added, not reported passed. Required next evidence is coherent actual App SDK compilation/execution."
+  },
+  "futureHarnessAdvice": {
+    "baseCurrentcoreDefinitions": 459,
+    "baseCurrentcoreLeaves": 462,
+    "deltaDefinitions": 4,
+    "deltaLeaves": 4,
+    "ifThisSliceAloneDefinitions": 463,
+    "ifThisSliceAloneLeaves": 466,
+    "currentcoreSourceInputsAlreadyContainAllFive": true,
+    "currentcoreSourceInputs": 320,
+    "nativeSourceInputsAlreadyContainAllFive": false,
+    "nativeCurrentSourceInputs": 107,
+    "nativeRequiredAddedInputs": [
+      "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift"
+    ],
+    "nativeIfThisSliceAloneSourceInputs": 109,
+    "newSwiftFiles": [],
+    "nativeSelectorDelta": 0,
+    "PackageSourceDeltaInThisSlice": 0,
+    "coordination": "Root composes other separately frozen callback/dismiss slices before selecting any later full checkpoint. Do not add these4 to currently running210fb05 tags or assume their results accept this changed snapshot."
+  },
+  "previousEvidence": [
+    {
+      "path": ".build/210fb05-sdk-preflight-independent-review/review.json",
+      "bytes": 7752,
+      "sha256": "4d24151de9c1fdf2c23c379647168819d651b4f90f5bf879a99da705096ea7bd"
+    },
+    {
+      "path": ".build/consolidated-sdk-f2-independent-review-step/review.json",
+      "bytes": 18106,
+      "sha256": "77e2b627c94a805000a1831c370eb83a9afddb3cdb863d2d23e349f910a3543e"
+    }
+  ],
+  "UIBoundary": "Only App lifecycle admission bindings changed; no user-visible string, title route, layout or styling is added. Ruby/macOS plutil localization checker is unavailable in this Windows environment and is not claimed run.",
+  "operations": {
+    "canonicalModified": false,
+    "gitMutated": false,
+    "cloudQueried": false,
+    "cloudSubmitted": false,
+    "tagCreated": false,
+    "currentCIChanged": false,
+    "privateDataRead": false
+  },
+  "flags": {
+    "sdkAccepted": false,
+    "jniAccepted": false,
+    "deviceAccepted": false,
+    "unattendedRenewalAccepted": false
+  }
+}

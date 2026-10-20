@@ -203,7 +203,12 @@ struct SelfRenewalAppOwnerTests {
             let positions = JSONFileReadingPositionStore(baseURL: app.appendingPathComponent("positions"), onSave: { _, _ in })
             let owner = await MainActor.run { SelfRenewalAppOwner(root: root) }
             let identity = await MainActor.run { ObjectIdentifier(owner.handoff) }
-            await owner.start(books: books, sources: sources, positions: positions)
+            let initialForeground = await MainActor.run {
+                owner.noteScenePhase(.inactive)
+                return owner.noteScenePhase(.active)
+            }
+            await owner.start(books: books, sources: sources, positions: positions,
+                foregroundGeneration: initialForeground)
             let state = await MainActor.run { owner.status?.state }
             #expect(state == .unconfigured)
             let bookID = book.id.uuidString
@@ -223,7 +228,11 @@ struct SelfRenewalAppOwnerTests {
             let positionSHA = Data(SHA256.hash(data: raw))
             #expect(receipt.positions.first?.rawSHA256 == positionSHA)
             _ = await MainActor.run { navigator.currentLocation }
-            await owner.becameActive()
+            let reopenedForeground = await MainActor.run {
+                owner.noteScenePhase(.inactive)
+                return owner.noteScenePhase(.active)
+            }
+            await owner.becameActive(generation: reopenedForeground)
             let again = await MainActor.run { ObjectIdentifier(owner.handoff) }
             #expect(identity == again)
             // This test never manufactures a lease or PairingIdentity and never
@@ -231,6 +240,157 @@ struct SelfRenewalAppOwnerTests {
             try await owner.close()
         }
     }
+
+    #if DEBUG
+    @Test("actual startup bootstrap crossing background never creates a foreground worker")
+    func startupBootstrapCannotLaunchAfterBackground() async throws {
+        try await Self.lifecycleFixture { owner, owners, bootstrap, workers, _ in
+            let active = await MainActor.run { owner.noteScenePhase(.active) }
+            let starting = Task {
+                await owner.start(books: owners.books, sources: owners.sources,
+                    positions: owners.positions, foregroundGeneration: active)
+            }
+            await bootstrap.waitForCount(1)
+            let background = await MainActor.run { owner.noteScenePhase(.background) }
+            await owner.enteredBackground(generation: background)
+            await bootstrap.release()
+            await starting.value
+            let workerCount = await workers.count
+            let state = await MainActor.run { (owner.status?.state, owner.isWorking) }
+            #expect(workerCount == 0)
+            #expect(state.0 == .unconfigured && !state.1)
+        }
+    }
+
+    @Test("latest activation waits for the actual prior bootstrap and coalesces duplicate requests")
+    func latestActivationWaitsForBootstrapAndRunsOnce() async throws {
+        try await Self.lifecycleFixture { owner, _, bootstrap, workers, waiting in
+            let first = await MainActor.run { owner.noteScenePhase(.active) }
+            let old = Task { await owner.becameActive(generation: first) }
+            await bootstrap.waitForCount(1)
+            let background = await MainActor.run { owner.noteScenePhase(.background) }
+            await owner.enteredBackground(generation: background)
+            let current = await MainActor.run { owner.noteScenePhase(.active) }
+            let latest = Task { await owner.becameActive(generation: current) }
+            await waiting.waitForCount(1) // Observes the real owner idle-wait registration.
+            let duplicate = Task { await owner.becameActive(generation: current) }
+            await bootstrap.release()
+            await old.value; await latest.value; await duplicate.value
+            let observedBootstraps = await bootstrap.count
+            let observedWorkers = await workers.count
+            #expect(first != current)
+            #expect(observedBootstraps == 2)
+            #expect(observedWorkers == 1)
+            // A delayed old background cleanup cannot cancel/reopen the new epoch.
+            await owner.enteredBackground(generation: background)
+            let afterOldCleanup = await workers.count
+            #expect(afterOldCleanup == 1)
+        }
+    }
+
+    @Test("a live system background grant uses the same actual Session worker without foreground admission")
+    func backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup() async throws {
+        try await Self.lifecycleFixture(holdBootstrap: false, holdWorker: true) { owner, owners, _, workers, _ in
+            let generation = await MainActor.run { owner.noteScenePhase(.background) }
+            await owner.start(books: owners.books, sources: owners.sources,
+                positions: owners.positions, automatically: false)
+            let operation = Task { await owner.runAutomaticRenewalWithBackgroundGrant() }
+            await workers.waitForCount(1)
+            await owner.enteredBackground(generation: generation)
+            await workers.release()
+            let completed = await operation.value
+            let foreground = await owner.runAutomaticRenewalNow()
+            let count = await workers.count
+            let observation = await MainActor.run { (owner.automaticRenewal?.outcome, owner.problem) }
+            #expect(completed && !foreground)
+            #expect(count == 1)
+            #expect(observation.0 == .disabled && observation.1 == nil)
+        }
+    }
+
+    @Test("caller cancellation during an actual foreground bootstrap cannot create a new worker")
+    func cancelledForegroundBootstrapCannotCreateWorker() async throws {
+        try await Self.lifecycleFixture { owner, _, bootstrap, workers, _ in
+            let generation = await MainActor.run { owner.noteScenePhase(.active) }
+            let operation = Task { await owner.becameActive(generation: generation) }
+            await bootstrap.waitForCount(1)
+            operation.cancel()
+            await bootstrap.release()
+            await operation.value
+            let count = await workers.count
+            let busy = await MainActor.run { owner.isWorking }
+            #expect(count == 0 && !busy)
+        }
+    }
+
+    private actor LifecycleGate {
+        private(set) var count = 0
+        private var holdsFirst: Bool
+        private var releaseContinuation: CheckedContinuation<Void, Never>?
+        private var observers: [(Int, CheckedContinuation<Void, Never>)] = []
+        init(holdFirst: Bool) { holdsFirst = holdFirst }
+        func arrive() async {
+            count += 1
+            let ready = observers.filter { $0.0 <= count }
+            observers.removeAll { $0.0 <= count }
+            for (_, continuation) in ready { continuation.resume() }
+            if count == 1 && holdsFirst {
+                await withCheckedContinuation { releaseContinuation = $0 }
+            }
+        }
+        func waitForCount(_ target: Int) async {
+            guard count < target else { return }
+            await withCheckedContinuation { observers.append((target, $0)) }
+        }
+        func release() {
+            holdsFirst = false
+            let continuation = releaseContinuation
+            releaseContinuation = nil
+            continuation?.resume()
+        }
+    }
+    @MainActor private final class LifecycleWaitingSignal {
+        private var count = 0
+        private var observers: [(Int, CheckedContinuation<Void, Never>)] = []
+        func record() {
+            count += 1
+            let ready = observers.filter { $0.0 <= count }
+            observers.removeAll { $0.0 <= count }
+            for (_, continuation) in ready { continuation.resume() }
+        }
+        func waitForCount(_ target: Int) async {
+            guard count < target else { return }
+            await withCheckedContinuation { observers.append((target, $0)) }
+        }
+    }
+    nonisolated private static func lifecycleFixture(holdBootstrap: Bool = true, holdWorker: Bool = false,
+        _ action: @escaping @Sendable (SelfRenewalAppOwner, SelfRenewalAppExecutionTests.Owners,
+            LifecycleGate, LifecycleGate, LifecycleWaitingSignal) async throws -> Void) async throws {
+        try await Self.root { root in
+            let bootstrap = LifecycleGate(holdFirst: holdBootstrap), workers = LifecycleGate(holdFirst: holdWorker)
+            let waiting = await MainActor.run { LifecycleWaitingSignal() }
+            let owner = await MainActor.run {
+                SelfRenewalAppOwner(root: root,
+                    currentApplicationRoot: root.deletingLastPathComponent().appendingPathComponent("unread-owned-application"),
+                    bootstrapObservation: { await bootstrap.arrive() },
+                    automaticWorkerObservation: { await workers.arrive() },
+                    foregroundWaitObservation: { waiting.record() })
+            }
+            let owners = try await SelfRenewalAppExecutionTests.library(in: root.deletingLastPathComponent(),
+                at: Date(), handoff: owner.handoff)
+            do {
+                try await action(owner, owners, bootstrap, workers, waiting)
+                await bootstrap.release(); await workers.release()
+                try await owner.close()
+            } catch {
+                await bootstrap.release(); await workers.release()
+                await owner.cancelAutomaticRenewal()
+                do { try await owner.close() } catch { Issue.record(error) }
+                throw error
+            }
+        }
+    }
+    #endif
 
     nonisolated private static func root(_ action: @escaping @Sendable (URL) async throws -> Void) async throws {
         let worker = Task.detached(priority: .utility) {

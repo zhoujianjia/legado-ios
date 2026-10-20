@@ -86,14 +86,22 @@ struct SelfRenewalForegroundMaterialRevalidationTests {
                     // old path proves a healthy foreground does not reread it;
                     // no owned fixture is asserted to be the current process.
                     try FileManager.default.moveItem(at: f.application, to: f.application.appendingPathExtension("not-read-again"))
-                    await owner.becameActive()
+                    let healthyForeground = await MainActor.run {
+                        owner.noteScenePhase(.inactive)
+                        return owner.noteScenePhase(.active)
+                    }
+                    await owner.becameActive(generation: healthyForeground)
                     let unchanged = try Data(contentsOf: configuration); #expect(unchanged == before)
                     f.clock.set(f.profileExpiry.addingTimeInterval(1))
                     let liveLease = try await f.vault.lease(in: f.namespace)
                     #expect(liveLease.profiles.allSatisfy { $0.summary.expiresAt > f.clock.now })
                     if denyStatusWrite { guard chmod(f.root.path, 0o500) == 0 else { throw POSIXError(.EIO) } }
                     defer { if denyStatusWrite && chmod(f.root.path, 0o700) != 0 { Issue.record("owned status directory permissions not restored") } }
-                    await owner.becameActive()
+                    let expiredForeground = await MainActor.run {
+                        owner.noteScenePhase(.inactive)
+                        return owner.noteScenePhase(.active)
+                    }
+                    await owner.becameActive(generation: expiredForeground)
                     let failed = await MainActor.run { (owner.status, owner.problem, owner.signingMaterialProblem, owner.recoveryAvailable) }
                     #expect(failed.0?.access == nil && failed.0?.state == .unavailable)
                     #expect(failed.1 == (denyStatusWrite ? .localStorage : .signingMaterials))
@@ -133,7 +141,11 @@ struct SelfRenewalForegroundMaterialRevalidationTests {
                         let connected = await MainActor.run { owner.status }; #expect(connected?.access == .signing && connected?.phase == .uploadIntent)
                         let generation = try await f.vault.generation(in: f.namespace)
                         try await f.vault.revoke(f.lease.keyID, in: f.namespace, expectedGeneration: generation)
-                        await owner.becameActive()
+                        let revokedForeground = await MainActor.run {
+                            owner.noteScenePhase(.inactive)
+                            return owner.noteScenePhase(.active)
+                        }
+                        await owner.becameActive(generation: revokedForeground)
                         let downgraded = await MainActor.run { (owner.status, owner.signingMaterialProblem, owner.recoveryAvailable) }
                         #expect(downgraded.0?.access == .recoveryOnly && downgraded.0?.state == .recoveryRequired)
                         #expect(downgraded.1 == .signingMaterials && downgraded.2)
@@ -141,7 +153,11 @@ struct SelfRenewalForegroundMaterialRevalidationTests {
                         await owner.recoverExplicitly()
                         let cleaned = await MainActor.run { owner.status }
                         #expect(cleaned?.access == .recoveryOnly && cleaned?.state == .candidateReady)
-                        await owner.becameActive()
+                        let recoveredForeground = await MainActor.run {
+                            owner.noteScenePhase(.inactive)
+                            return owner.noteScenePhase(.active)
+                        }
+                        await owner.becameActive(generation: recoveredForeground)
                         let retained = try Data(contentsOf: candidate); #expect(retained == bytes)
                         #expect(peer.observed.snapshot.openedFileHandles == 1 && peer.observed.snapshot.removedPaths.count == 1)
                         #expect(peer.observed.snapshot.upgradeRequests == 0 && peer.observed.snapshot.lookupRequests == 0)
