@@ -348,14 +348,16 @@
             "docs/legado-ios/core-renewal-bound-material-step.json",
             "docs/legado-ios/core-original-state-persistence-step.json",
             "docs/legado-ios/core-original-search-owner-correction.json",
-            "docs/legado-ios/core-original-app-chapter-owner-step.json"
+            "docs/legado-ios/core-original-app-chapter-owner-step.json",
+            "docs/legado-ios/core-original-app-book-owner-step.json"
           ],
           "implementedSubtasksZh": [
             "Swift宿主已复用现有源变量/键值、登录头与文本缓存owner，绑定显式来源revision与CAS，删除登录头保留独立凭据；9项原owner与actor测试待SDK。完整Cookie属性、书URL/UUID/章节generation及正文保存App接线仍未完成，相关未接能力显式拒绝，传统产品入口未切换。",
             "已接通显式stateOwner与原source/book/chapter变量、缓存/TTL、完整Cookie快照及原始登录头的同owner事务；原WebBook默认needSave=true可在受控backend保存目录/正文并跨两个独立Java进程恢复。实际165唯一JVM方法（12新+153相关旧）及普通JAR/smoke通过，47个原调用属于1项方法内参考。App完整Cookie、UUID/generation和正文发布映射及完整失败编辑/删除/资源栅栏仍未完成。",
-            "显式App书UUID/来源/URL及真实章节generation已接入state.read/commit，经同一BookStore后台持久化队列写回原章节文件；并发编辑排在已提交写后，写失败/损坏文件明确报错。增加最多256个已授权实体的有界身份索引，首次定位在后台，进度保存不扫描全库。新增9项及相关21项Swift方法待SDK；书变量持久写、预览、完整Cookie及传统产品路由仍未完成。"
+            "显式App书UUID/来源/URL及真实章节generation已接入state.read/commit，经同一BookStore后台持久化队列写回原章节文件；并发编辑排在已提交写后，写失败/损坏文件明确报错。增加最多256个已授权实体的有界身份索引，首次定位在后台，进度保存不扫描全库。新增9项及相关21项Swift方法待SDK；书变量持久写、预览、完整Cookie及传统产品路由仍未完成。",
+            "Book变量回调已接原BookStore书架/阅读记录同persistQueue，实际文件读取/CAS/原子替换后才确认；small/large同变量map。旧整文件队列写入合并已接受投影，跨文件迁移先保Reader并集→Shelf耐久→最后修剪。TXT书签迁移原旁路已改真实async caller，offmain合并/拷贝后短main发布；4次晚期冲突可仅凭精确原journal接管，保新用户书签。8项新方法含实际失败/交错/重启，尚未SDK执行。"
           ],
-          "nextActionZh": "集中执行章节owner新9项及旧21项相关SDK并处理实际失败；继续书变量的原metadata写后确认、预览/完整Cookie，再将原运行时接入产品唯一入口和正文保存generation。"
+          "nextActionZh": "集中重验新Book8与受影响旧方法，保两个Bool参数各false/true真实叶。继续原Cookie完整owner/登录/预览及默认原引擎产品入口，修原存储失败回执和旧同步等待；不将仅Book/Chapter回调通过升级完整兼容。"
         },
         {
           "id": "C3",
@@ -708,7 +710,8 @@
       "integratedRenewalSDKCheckpoint": "docs/legado-ios/core-integrated-renewal-sdk-checkpoint.json",
       "integratedRenewalSDKRequest": "docs/legado-ios/core-integrated-renewal-sdk-request.json",
       "integratedRenewalSDKFirstResults": "docs/legado-ios/core-integrated-renewal-sdk-first-results.json",
-      "controlledTransactionImplementation": "docs/legado-ios/core-renewal-controlled-transaction-step.json"
+      "controlledTransactionImplementation": "docs/legado-ios/core-renewal-controlled-transaction-step.json",
+      "appBookOwnerImplementation": "docs/legado-ios/core-original-app-book-owner-step.json"
     }
   },
   "stages": [
@@ -4683,6 +4686,10 @@
     "controlled-renewal-transaction": {
       "path": "docs/legado-ios/core-renewal-controlled-transaction-step.json",
       "scope": "Actual signer/archive/vault/journal/authenticated install and recovery orchestration. Sixteen new SDK-unexecuted native definitions; ten independent wire cases are not Swift or Journal acceptance. No App trigger/cold data handoff yet."
+    },
+    "app-book-metadata-owner": {
+      "path": "docs/legado-ios/core-original-app-book-owner-step.json",
+      "scope": "Actual original callbacks to existing BookStore file owner and queued TXT bookmark repair, eight SDK-unexecuted new definitions. Cookie/preview/default original runtime and all real native/JNI execution remain incomplete."
     }
   },
   "retainedExistingWork": [

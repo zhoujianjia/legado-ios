@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:09:17.776544+00:00",
+  "status": "C2-App-book-variable-owner-and-TXT-bookmark-writer-connected-SDK-and-full-runtime-route-pending",
+  "sourceBinding": {
+    "files": [
+      {
+        "path": "Modules/Core/TXT/TXTReaderIndexMigrationService.swift",
+        "bytes": 11856,
+        "sha256": "353cfa17eea1bf783b3540df690a6ade139200978782d08b32f664d6912a3c32"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BookStore.swift",
+        "bytes": 184037,
+        "sha256": "873224f9e6b53b5e9eee98a312b806e4d5f9cb87a6c41318ac56c650118d3c47"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift",
+        "bytes": 10804,
+        "sha256": "6e7c9d9ae4c00db60e5a04b9bc0917be1c1b653f8190c39f00c900fb1b260ca7"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoBookStateOwner.swift",
+        "bytes": 10077,
+        "sha256": "bf7260d8d34ccfd56dc4386aa21cb6df7f03321848a82d689c7ea1eec8b9f9aa"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 26971,
+        "sha256": "f40499237cd82211a4eb4e230daf2868882de20416064da4fb5440a89e193476"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoBookMetadataOwnerTests.swift",
+        "bytes": 19836,
+        "sha256": "0f7a143d4daf89829b83abf05f3d36a079b4861fbe46a01c588279d0735f2fb1"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoBookStateOwnerTests.swift",
+        "bytes": 12763,
+        "sha256": "6eebe2e0370796c9cccfad0696d994cbe9af774fc3a3114f4e92942b8b8b4c36"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+        "bytes": 25750,
+        "sha256": "5d1b7983a788f0c196e508866556d776d130f69d6d60ca4126a136c201f3a53c"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
+        "bytes": 21155,
+        "sha256": "dba0dddea02f696d82f73dd80d39a5d60d26b3e3ff81ce533ff273770bd274eb"
+      }
+    ],
+    "count": 9,
+    "baseChapterCommit": "85f1f59001b67cef6b0d0c23262ffe52c7494ea6"
+  },
+  "implementedBoundaries": [
+    "Original state.read/commit Book keys reach the explicitly bound BookStore, strict actual shelf/reading metadata and same existing persistQueue; small/large variable companions use the single ReadingBook.runtimeVariables map.",
+    "The bounded book owner revisions and publication proofs prevent old queued full-record payloads from replacing accepted variables. All existing normal encoded/record writes merge current owned variables on the existing writer.",
+    "The former separate synchronous reading-file writer is removed. Ordinary metadata now receives an immutable all-records value, partitions off main, keeps a protected reading union before shelf replacement, and prunes redundant reading records only after the shelf is durable. It is copy preservation, not a claim of atomic multi-file commit.",
+    "Book CAS reads both actual metadata files, rejects corrupt/unreadable/ambiguous/outside-baseline identities, atomically changes only the file owning that real UUID, updates the existing persisted-file baseline, and acknowledges after owned UI publication attempts. Failed writes preserve the old file and owner state.",
+    "Publication checks a bounded accepted revision proof, preserves concurrent explicit App variable/source edits, and keeps a projection pinned if publication cannot stabilize; it never drops unconsumed accepted variables merely to free the cache.",
+    "Entity reads and writes share actual task cancel/deadline/grant tickets before queued I/O. Late cancellation after accepted replacement does not pretend the durable mutation was rolled back.",
+    "State callbacks decode one bounded request object and each read key once. Malformed JSON/key formats or inexact/bool/overflow revisions are typed INVALID_STATE_REQUEST; unknown connected capabilities remain typed unsupported. Classification has no try? fallback.",
+    "Eight new future SDK methods define actual callback/files/restart, stale whole payload plus progress, real failed writes/caller cancellation, failed shelf replacement copy preservation, and malformed-input proof retention."
+  ],
+  "repairedReviewFindings": [
+    "commitTXTBookmarks was a main-thread encoder and persistQueue.sync whole-record writer bypassing accepted runtime variable projections. It now reads the latest actual target file on the existing async writer, applies the same owner, flushes chapters with real error reporting, atomically replaces before acknowledgement and has actual async TXT service/restore callers.",
+    "Async bookmark persistence also needs protection from older queued whole-record payloads. A bounded in-flight bookmark proof in the same metadata owner supplies this projection until UI publication and its existing-writer barrier. Ordinary bookmark changes follow the same bounded record index; large bookmark comparisons and structural lookup run off main.",
+    "The new runtime variable UI publication performed full-array copy and contains on main. Both variable and bookmark publication now borrow the array in O(1), locate/copy/modify off main, and perform one revision-checked assignment with chapter lists already moved. Bookmark publication does not re-scan every position or synchronously rebuild the widget.",
+    "Two added SDK definitions queue an offline TXT migration behind an online book runtime CAS in the same actual file, add an older full-record progress snapshot, reopen the original store and verify both accepted variables and migrated marks; the second makes the actual directory unwritable and verifies original files/UI remain old before retry.",
+    "The v2 in-process pinned bookmark lease had no takeover path after four post-durable publication conflicts. V3 retains the protection but marks the lease retryable, fingerprints the exact journal off main, and permits only matching owner/file/migrated proof reuse. It never drops a newer explicit user bookmark update."
+  ],
+  "integrationClarification": "The old remaining-work sentence conflated encoded merge with latency/error propagation. V3 encoded writes all use applying; original frozen preparation is retained unchanged.",
+  "derivedBoundedStateDisclosure": "Existing max-256 runtime book variable projection plus max-256 in-flight TXT bookmark proofs/offsets in that same metadata owner; no extra file, queue or second user database.",
+  "nativeTests": {
+    "newDefined": 8,
+    "newMethods": [
+      {
+        "suite": "LegadoBookMetadataOwnerTests",
+        "method": "actualBookCallbacksRestoreShelfAndReadingVariables"
+      },
+      {
+        "suite": "LegadoBookMetadataOwnerTests",
+        "method": "olderQueuedMetadataCannotEraseAcceptedVariables"
+      },
+      {
+        "suite": "LegadoBookMetadataOwnerTests",
+        "method": "queuedTXTBookmarksKeepOtherBookVariables"
+      },
+      {
+        "suite": "LegadoBookMetadataOwnerTests",
+        "method": "failedTXTBookmarkWriteKeepsOldMetadata"
+      },
+      {
+        "suite": "LegadoBookMetadataOwnerTests",
+        "method": "exactTXTJournalRecoversPublicationConflicts"
+      },
+      {
+        "suite": "LegadoBookMetadataOwnerTests",
+        "method": "failedWritesAndCancellationKeepOldMetadata"
+      },
+      {
+        "suite": "LegadoBookMetadataOwnerTests",
+        "method": "failedShelfReplacementKeepsBothDurableBookCopies"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "malformedStateInputsHaveTypedErrorsAndRetainProofs"
+      }
+    ],
+    "actualSDKExecuted": 0,
+    "relatedPlannedMethodDefinitions": 52,
+    "definitionsAreNotParameterLeafCount": true,
+    "old30RecheckedWithNew8AndOldMetadata10TXT4": true
+  },
+  "remaining": [
+    "The old startup UserDefaults shelf migration still uses try? migrated.write then markMetadataPersisted; it is before ordinary grants and is not repaired or claimed durable here.",
+    "Legacy inBackground:false import/sync APIs still synchronously wait on persistQueue; decode/merge/encode latency and old regular-writer catch/log error propagation remain unfinished. All encoded payloads do pass the actual runtime overlay; no remaining accepted-variable overwrite bypass was established by this review.",
+    "Four post-durable publication conflicts return failure with a protected projection and retryable lease. Only an exact original/migrated/book-content journal fingerprint may reclaim the same lease, and the writer rechecks accepted migrated marks in both projection and actual file. Different/active journals or newer user marks remain rejected; the new recovery definition is prepared, not SDK-executed.",
+    "Preview ownership, full Cookie shared-owner rich CAS and atomic login/Cookie transactions remain unconnected. The separate ignored Cookie WIP is excluded from this freeze.",
+    "The default traditional-source App service route is not selected. needSave=false body results are not yet wired through the existing Pipeline/ChapterCacheRepository product route.",
+    "Ordinary JAR -> JNI -> actual native App reading chain and complete grant lifecycle have not executed. No C2/C3/C4 completion or full compatibility is claimed."
+  ],
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-original-app-book-owner-step",
+    "manifest": "manifest.json",
+    "rawFiles": 23
+  },
+  "newCloudBuildRequested": false,
+  "physicalDeviceValidationRequested": false,
+  "fullC2Complete": false,
+  "fullC3Complete": false,
+  "fullC4Complete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

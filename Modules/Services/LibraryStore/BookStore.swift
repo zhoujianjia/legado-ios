@@ -1,4 +1,5 @@
 import Combine
+import CryptoKit
 import Foundation
 import OSLog
 import os
@@ -7,6 +8,7 @@ import SwiftUI
 import UIKit
 import WidgetKit
 import ReadiumShared
+import LegadoRuntime
 
 extension OnlineBookContentKind {
     var pipelineKind: BookPipelineKind {
@@ -64,29 +66,84 @@ class BookStore: ObservableObject, BookProvider {
     let objectWillChange = ObservableObjectPublisher()
     private let recordStorage = BookRecordStorage()
     private struct RuntimeRecordEntry { let offset: Int; var snapshot: RuntimeBookSnapshot }
+    private struct BookmarkRecordEntry {
+        let lease: UUID
+        let identity: OriginalRuntimeBookMetadataOwner.BookmarkIdentity
+        let offset: Int
+        var bookmarks: [Bookmark]
+        var current = true
+        let journalDigest: String
+        var inUse = true
+    }
     private struct RuntimeRecordIndex {
         var entries: [UUID: RuntimeRecordEntry] = [:]
         var recency: [UUID] = []
+        var bookmarks: [UUID: BookmarkRecordEntry] = [:]
+        var metadataWritesAllowed = true
     }
     /// Only explicitly granted records, bounded independently of library size. Structural
     /// moves invalidate their old offsets; the next explicit bind locates them off main.
     private let runtimeRecordIndex = OSAllocatedUnfairLock(initialState: RuntimeRecordIndex())
+    private let runtimeBookMetadata = OriginalRuntimeBookMetadataOwner(persistenceQueue: BookStore.persistQueue)
     private var records: [ReadingBook] {
         get { recordStorage.values }
         set { replaceRecords(newValue) }
     }
 
-    private func replaceRecords(_ value: [ReadingBook], notifyLibraryViews: Bool = true) {
+    private func replaceRecords(_ value: [ReadingBook], notifyLibraryViews: Bool = true, runtimePublication: UUID? = nil,
+                                chapterListsAlreadyMoved: Bool = false, bookmarkPublication: UUID? = nil) {
         if notifyLibraryViews { objectWillChange.send() }
-        recordStorage.values = movingChapterListsToStore(value)
+        recordStorage.values = chapterListsAlreadyMoved ? value : movingChapterListsToStore(value)
         let current = recordStorage.values
         runtimeRecordIndex.withLock { index in
+            // Only in-flight TXT migrations, bounded at their explicit begin.
+            // Structural lookup remains on the existing background writer.
+            for (id, old) in index.bookmarks where id != bookmarkPublication {
+                if current.indices.contains(old.offset), current[old.offset].id == id {
+                    let record = current[old.offset]
+                    let identity = OriginalRuntimeBookMetadataOwner.BookmarkIdentity(record)
+                    index.bookmarks[id]?.bookmarks = record.bookmarks
+                    if old.identity != identity { index.bookmarks[id]?.current = false }
+                    Self.persistQueue.async { [runtimeBookMetadata] in
+                        do { try runtimeBookMetadata.noteBookmarkChange(identity: identity, previous: old.bookmarks, bookmarks: record.bookmarks) }
+                        catch { AppLogger.error("Bookmark owner could not follow an App edit", error: error) }
+                    }
+                } else {
+                    index.bookmarks[id]?.current = false
+                    Self.persistQueue.async { [runtimeBookMetadata] in
+                        let found = current.first { $0.id == id }
+                        do { try runtimeBookMetadata.noteBookmarkChange(identity: found.map(OriginalRuntimeBookMetadataOwner.BookmarkIdentity.init) ?? old.identity,
+                            previous: old.bookmarks, bookmarks: found?.bookmarks) }
+                        catch { AppLogger.error("Bookmark owner could not follow a structural edit", error: error) }
+                    }
+                }
+            }
+            var moved: [RuntimeBookSnapshot] = []
             for id in Array(index.entries.keys) {
                 guard let entry = index.entries[id], current.indices.contains(entry.offset), current[entry.offset].id == id else {
+                    if let old = index.entries[id]?.snapshot { moved.append(old) }
                     index.entries.removeValue(forKey: id); index.recency.removeAll { $0 == id }
                     continue
                 }
-                index.entries[id]?.snapshot = Self.runtimeSnapshot(current[entry.offset])
+                let next = Self.runtimeSnapshot(current[entry.offset])
+                if id != runtimePublication, next != entry.snapshot {
+                    Self.persistQueue.async { [runtimeBookMetadata] in
+                        do { try runtimeBookMetadata.noteAppChange(previous: entry.snapshot, current: next) }
+                        catch { AppLogger.error("App book runtime owner could not follow an edit", error: error) }
+                    }
+                }
+                index.entries[id]?.snapshot = next
+            }
+            if !moved.isEmpty {
+                let movedSnapshots = moved
+                Self.persistQueue.async { [runtimeBookMetadata] in
+                    let ids = Set(movedSnapshots.map(\.id))
+                    let found = Dictionary(uniqueKeysWithValues: current.filter { ids.contains($0.id) }.map { ($0.id, Self.runtimeSnapshot($0)) })
+                    for old in movedSnapshots {
+                        do { try runtimeBookMetadata.noteAppChange(previous: old, current: found[old.id]) }
+                        catch { AppLogger.error("App book runtime owner could not follow a structural edit", error: error) }
+                    }
+                }
             }
         }
         mutationRevision &+= 1
@@ -237,13 +294,197 @@ class BookStore: ObservableObject, BookProvider {
             variables: record.runtimeVariables)
     }
 
-    func originalRuntimeChapterSnapshot(bookID: UUID, index: Int, url: String) async throws -> BookChapterStore.RuntimeVariablesSnapshot? {
-        try await withCheckedThrowingContinuation { continuation in
-            Self.persistQueue.async { [chapterStore] in
-                do { continuation.resume(returning: try chapterStore.runtimeVariablesSnapshot(bookID: bookID, index: index, url: url)) }
-                catch { continuation.resume(throwing: error) }
+    func originalRuntimeBookVariableSnapshot(bookID: UUID, sourceID: UUID, bookURL: String,
+                                            deadline: Date = Date().addingTimeInterval(180),
+                                            cancellation: OriginalRuntimeCommitCancellation = OriginalRuntimeCommitCancellation(),
+                                            validateGrant: @escaping @Sendable () throws -> Void = {}) async throws -> OriginalRuntimeBookMetadataOwner.Snapshot {
+        try Task.checkCancellation()
+        await MainActor.run { self.flushPendingMetadataSave() }
+        return try await withTaskCancellationHandler {
+          try await withCheckedThrowingContinuation { continuation in
+            Self.persistQueue.async { [self] in
+                do {
+                    try cancellation.check(deadline: deadline); try validateGrant()
+                    try validateRuntimeMetadataPermission()
+                    guard let current = originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) else {
+                        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "The App book owner is no longer current")
+                    }
+                    _ = try runtimeMetadataLocation(for: current)
+                    try cancellation.check(deadline: deadline); try validateGrant()
+                    continuation.resume(returning: try runtimeBookMetadata.register(current))
+                } catch { continuation.resume(throwing: error) }
+            }
+          }
+        } onCancel: { cancellation.cancel() }
+    }
+
+    private struct RuntimeMetadataLocation {
+        let shelf: Bool
+        let before: Data
+        var records: [ReadingBook]
+        let offset: Int
+    }
+
+    /// Strict snapshots of both original metadata files. A duplicate book, malformed file
+    /// or baseline changed outside this owner must be repaired by the App before writing.
+    private func runtimeMetadataLocation(for book: RuntimeBookSnapshot) throws -> RuntimeMetadataLocation {
+        let location = try metadataLocation(id: book.id)
+        let record = location.records[location.offset]
+        guard record.isOnline, record.bookSourceId == book.sourceID,
+              (record.bookInfoURL ?? record.source) == book.bookURL else {
+            throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "The durable App book identity differs from its grant")
+        }
+        return location
+    }
+
+    private func metadataLocation(id: UUID) throws -> RuntimeMetadataLocation {
+        dispatchPrecondition(condition: .onQueue(Self.persistQueue))
+        let shelf = try runtimeMetadataBytes(metadataFileURL)
+        let reading = try runtimeMetadataBytes(readingMetadataFileURL)
+        guard shelf == persistedFiles.shelfData, reading == persistedFiles.readingData else {
+            throw LegadoRuntimeError(code: "STATE_IO", message: "App metadata changed outside its current owner baseline")
+        }
+        let shelfRecords = try shelf.map { try JSONDecoder().decode([ReadingBook].self, from: $0) } ?? []
+        let readingRecords = try reading.map { try JSONDecoder().decode([ReadingBook].self, from: $0) } ?? []
+        let a = shelfRecords.firstIndex { $0.id == id }; let b = readingRecords.firstIndex { $0.id == id }
+        guard (a != nil) != (b != nil),
+              shelfRecords.lazy.filter({ $0.id == id }).count + readingRecords.lazy.filter({ $0.id == id }).count == 1 else {
+            throw LegadoRuntimeError(code: "STATE_IO", message: "The App book has no unique durable shelf/reading record")
+        }
+        let records = a != nil ? shelfRecords : readingRecords
+        let offset = a ?? b!
+        return .init(shelf: a != nil, before: (a != nil ? shelf : reading)!, records: records, offset: offset)
+    }
+
+    private func runtimeMetadataBytes(_ url: URL) throws -> Data? {
+        do {
+            var byteCount = 0
+            return try SourcePerfTrace.span("legado.state.book.metadata.read", "bytes=\(byteCount) main=\(Thread.isMainThread)") {
+                let data = try Data(contentsOf: url)
+                byteCount = data.count
+                return data
             }
         }
+        catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == CocoaError.fileReadNoSuchFile.rawValue { return nil }
+    }
+
+    private func refreshRuntimeMetadataPermission() {
+        runtimeRecordIndex.withLock { $0.metadataWritesAllowed = !metadataWritesBlocked && !validatedRestorePausesWrites }
+    }
+    private func validateRuntimeMetadataPermission() throws {
+        guard runtimeRecordIndex.withLock({ $0.metadataWritesAllowed }) else {
+            throw LegadoRuntimeError(code: "STATE_IO", message: "The App metadata owner is unreadable or paused for restore")
+        }
+    }
+
+    private func validateTXTBookmarkView(id: UUID, lease: UUID, original: [Bookmark], migrated: [Bookmark]) throws {
+        let entry = runtimeRecordIndex.withLock { $0.bookmarks[id] }
+        guard let entry, entry.lease == lease, entry.current,
+              entry.bookmarks == original || entry.bookmarks == migrated else { throw TXTLocationMigration.Failure.missingSourceIdentity }
+    }
+
+    func compareOriginalRuntimeBook(expected: OriginalRuntimeBookMetadataOwner.Snapshot, expectedView: RuntimeBookSnapshot,
+                                    variables: [String: String]?,
+                                    deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                                    beforeWrite: @escaping @Sendable () throws -> Void = {},
+                                    validateGrant: @escaping @Sendable () throws -> Void) async throws -> Bool {
+        try Task.checkCancellation()
+        guard let sourceID = expected.book.sourceID else {
+            throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "An App source UUID is required for book writes")
+        }
+        let written: (OriginalRuntimeBookMetadataOwner.Snapshot, RuntimeMetadataLocation, Data)? = try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                Self.persistQueue.async { [self] in
+                    do {
+                        try cancellation.check(deadline: deadline); try validateGrant(); try validateRuntimeMetadataPermission()
+                        guard let candidate = try runtimeBookMetadata.candidate(expected, variables: variables) else {
+                            continuation.resume(returning: nil); return
+                        }
+                        var location = try runtimeMetadataLocation(for: expected.book)
+                        location.records[location.offset].runtimeVariables = variables
+                        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+                        let bytes = try encoder.encode(location.records)
+                        try beforeWrite()
+                        try cancellation.check(deadline: deadline); try validateGrant(); try validateRuntimeMetadataPermission()
+                        let url = location.shelf ? metadataFileURL : readingMetadataFileURL
+                        guard try runtimeMetadataBytes(url) == location.before else {
+                            throw LegadoRuntimeError(code: "STATE_IO", message: "App metadata changed before atomic book commit")
+                        }
+                        if bytes != location.before {
+                            try SourcePerfTrace.span("legado.state.book.commit", "books=\(location.records.count) bytes=\(bytes.count) main=\(Thread.isMainThread)") {
+                                try bytes.write(to: url, options: .atomic)
+                            }
+                        }
+                        if location.shelf { persistedFiles.shelfData = bytes } else { persistedFiles.readingData = bytes }
+                        runtimeBookMetadata.accepted(expected, candidate: candidate)
+                        continuation.resume(returning: (candidate, location, bytes))
+                    } catch { continuation.resume(throwing: error) }
+                }
+            }
+        } onCancel: { cancellation.cancel() }
+        guard let (accepted, _, _) = written else { return false }
+        // Late cancellation cannot undo the durable write. Publication is an owned
+        // operation and preserves a concurrent App variable/source change.
+        // persistedFiles was updated on its one queue. Do not mark the entire current UI
+        // record array/position snapshot durable just because one variable map was saved.
+        var published = false
+        for _ in 0..<4 {
+            let input = await MainActor.run { (self.recordStorage.values, self.mutationRevision) }
+            let candidate = SourcePerfTrace.span("legado.state.book.publish.prepare", "books=\(input.0.count) main=\(Thread.isMainThread)") {
+                () -> (offset: Int, revision: UInt64, snapshot: RuntimeBookSnapshot, records: [ReadingBook])? in
+                guard let offset = input.0.firstIndex(where: { $0.id == expected.book.id }) else { return nil }
+                var next = input.0
+                let snapshot = Self.runtimeSnapshot(next[offset])
+                next[offset].runtimeVariables = variables
+                return (offset, input.1, snapshot, next)
+            }
+            guard let candidate else { break }
+            published = await MainActor.run {
+                guard self.mutationRevision == candidate.revision,
+                      self.recordStorage.values.indices.contains(candidate.offset),
+                      self.recordStorage.values[candidate.offset].id == expected.book.id else { return false }
+                let current = Self.runtimeSnapshot(self.recordStorage.values[candidate.offset])
+                guard current.sourceID == sourceID, current.bookURL == expected.book.bookURL,
+                      self.runtimeBookMetadata.permitsPublication(accepted),
+                      current.variables == expectedView.variables || current.variables == expected.book.variables else { return false }
+                self.runtimeRecordIndex.withLock { index in
+                    index.entries[expected.book.id] = .init(offset: candidate.offset, snapshot: current)
+                    index.recency.removeAll { $0 == expected.book.id }; index.recency.append(expected.book.id)
+                    if index.recency.count > 256 { index.entries.removeValue(forKey: index.recency.removeFirst()) }
+                }
+                self.replaceRecords(candidate.records, runtimePublication: expected.book.id, chapterListsAlreadyMoved: true)
+                return true
+            }
+            if published { break }
+        }
+        let didPublish = published
+        await withCheckedContinuation { continuation in
+            Self.persistQueue.async { [runtimeBookMetadata] in
+                if didPublish { runtimeBookMetadata.publicationFinished(accepted) }
+                continuation.resume()
+            }
+        }
+        return true
+    }
+
+    func originalRuntimeChapterSnapshot(bookID: UUID, index: Int, url: String,
+                                       deadline: Date = Date().addingTimeInterval(180),
+                                       cancellation: OriginalRuntimeCommitCancellation = OriginalRuntimeCommitCancellation(),
+                                       validateGrant: @escaping @Sendable () throws -> Void = {}) async throws -> BookChapterStore.RuntimeVariablesSnapshot? {
+        try Task.checkCancellation()
+        return try await withTaskCancellationHandler {
+          try await withCheckedThrowingContinuation { continuation in
+            Self.persistQueue.async { [chapterStore] in
+                do {
+                    try cancellation.check(deadline: deadline); try validateGrant()
+                    let snapshot = try chapterStore.runtimeVariablesSnapshot(bookID: bookID, index: index, url: url)
+                    try cancellation.check(deadline: deadline); try validateGrant()
+                    continuation.resume(returning: snapshot)
+                }
+                catch { continuation.resume(throwing: error) }
+            }
+          }
+        } onCancel: { cancellation.cancel() }
     }
 
     func originalRuntimeChapters(bookID: UUID) async throws -> [OnlineChapterRef] {
@@ -312,8 +553,8 @@ class BookStore: ObservableObject, BookProvider {
     private var lastPersistedMetadataData: Data?
     /// Set when the shelf file could not be read, or did not decode and could not be copied
     /// aside. Writing would replace the only copy of data nobody has seen.
-    private var metadataWritesBlocked = false
-    private var validatedRestorePausesWrites = false
+    private var metadataWritesBlocked = false { didSet { refreshRuntimeMetadataPermission() } }
+    private var validatedRestorePausesWrites = false { didSet { refreshRuntimeMetadataPermission() } }
     private var metadataWriteDeferredByRestore = false
     private var lastPersistedPositionSnapshots: [UUID: PersistedPositionSnapshot] = [:]
     private var lastPersistedPositionSaveUptimeByBook: [UUID: TimeInterval] = [:]
@@ -1566,7 +1807,6 @@ class BookStore: ObservableObject, BookProvider {
                 // Removing a remote shelf reference keeps the same reading record
                 // and explicit offline copy available from its library detail.
                 records[idx].isInBookshelf = false
-                persistReadingRecords()
                 saveMetaImmediately()
                 return
             }
@@ -2824,33 +3064,165 @@ class BookStore: ObservableObject, BookProvider {
     /// Reindexing changes the meaning of chapter numbers. Publish bookmark changes
     /// only after their full metadata snapshot is durably written, and reject edits
     /// made while the migration was measuring source/rendered correspondence.
-    @MainActor
-    func commitTXTBookmarks(bookId: UUID, original: [Bookmark], migrated: [Bookmark]) throws {
-        guard !validatedRestorePausesWrites else { throw CocoaError(.fileLocking) }
-        guard let index = records.firstIndex(where: { $0.id == bookId }),
-              records[index].bookmarks == original || records[index].bookmarks == migrated else {
-            throw TXTLocationMigration.Failure.missingSourceIdentity
+    func commitTXTBookmarks(bookId: UUID, original: [Bookmark], migrated: [Bookmark],
+                            beforeWrite: @escaping @Sendable () throws -> Void = {},
+                            onEnqueued: @escaping @Sendable () -> Void = {},
+                            beforePublication: @escaping @Sendable (Int) async -> Void = { _ in }) async throws {
+        try Task.checkCancellation()
+        let proposedLease = UUID()
+        struct JournalFingerprint: Encodable {
+            let identity: OriginalRuntimeBookMetadataOwner.BookmarkIdentity
+            let original: [Bookmark]
+            let migrated: [Bookmark]
         }
-        var updated = records[index]
-        updated.bookmarks = migrated
-        let output = records.map { $0.id == bookId ? updated : $0 }
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        let data = try encoder.encode(output.filter { $0.isInBookshelf == updated.isInBookshelf })
-        // Changed lists become durable with this write, as when they rode inside the shelf.
-        // On `persistQueue`, after any background write in flight.
-        let files = persistedFiles
-        try Self.persistQueue.sync {
-            chapterStore.flush()
-            try data.write(to: updated.isInBookshelf ? metadataFileURL : readingMetadataFileURL, options: .atomic)
-            if updated.isInBookshelf { files.shelfData = data } else { files.readingData = data }
+        var prepared: (identity: OriginalRuntimeBookMetadataOwner.BookmarkIdentity, offset: Int, sequence: UInt64, lease: UUID, recovering: Bool)?
+        for _ in 0..<4 {
+            let input = try await MainActor.run { () -> ([ReadingBook], UInt64) in
+                guard !self.validatedRestorePausesWrites, !self.metadataWritesBlocked else { throw CocoaError(.fileLocking) }
+                self.flushPendingMetadataSave()
+                return (self.recordStorage.values, self.mutationRevision)
+            }
+            let candidate = try SourcePerfTrace.span("library.bookmarks.prepare", "books=\(input.0.count) main=\(Thread.isMainThread)") {
+                () -> (OriginalRuntimeBookMetadataOwner.BookmarkIdentity, Int, [Bookmark], String) in
+                guard let offset = input.0.firstIndex(where: { $0.id == bookId }),
+                      input.0[offset].bookmarks == original || input.0[offset].bookmarks == migrated else {
+                    throw TXTLocationMigration.Failure.missingSourceIdentity
+                }
+                let identity = OriginalRuntimeBookMetadataOwner.BookmarkIdentity(input.0[offset])
+                let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+                let digest = SHA256.hash(data: try encoder.encode(JournalFingerprint(identity: identity, original: original, migrated: migrated)))
+                    .map { String(format: "%02x", $0) }.joined()
+                return (identity, offset, input.0[offset].bookmarks, digest)
+            }
+            let accepted = try await MainActor.run { () -> (UInt64, UUID, Bool)? in
+                guard self.mutationRevision == input.1 else { return nil }
+                let grant = try self.runtimeRecordIndex.withLock { index -> (UUID, Bool) in
+                    if let previous = index.bookmarks[bookId] {
+                        guard !previous.inUse, previous.identity == candidate.0, previous.journalDigest == candidate.3 else {
+                            throw LegadoRuntimeError(code: "STATE_LIMIT", message: "A different or active bookmark migration is pending")
+                        }
+                        index.bookmarks[bookId] = .init(lease: previous.lease, identity: candidate.0, offset: candidate.1,
+                            bookmarks: candidate.2, journalDigest: candidate.3)
+                        return (previous.lease, true)
+                    }
+                    guard index.bookmarks.count < 256 else { throw LegadoRuntimeError(code: "STATE_LIMIT", message: "The bookmark owner is full") }
+                    index.bookmarks[bookId] = .init(lease: proposedLease, identity: candidate.0, offset: candidate.1,
+                        bookmarks: candidate.2, journalDigest: candidate.3)
+                    return (proposedLease, false)
+                }
+                self.persistSequence &+= 1
+                return (self.persistSequence, grant.0, grant.1)
+            }
+            if let accepted { prepared = (candidate.0, candidate.1, accepted.0, accepted.1, accepted.2); break }
         }
-        records[index] = updated
-        persistSequence &+= 1
-        lastAppliedPersistSequence = persistSequence
-        if updated.isInBookshelf { markMetadataPersisted(data, records: output, queueKnows: true); syncWidgetData() }
-        else { notePersistedReadingData(data, queueKnows: true) }
+        guard let prepared else { throw TXTLocationMigration.Failure.missingSourceIdentity }
+        let lease = prepared.lease
+        let cancellation = OriginalRuntimeCommitCancellation()
+        var durable = false
+        do {
+            let written: (OriginalRuntimeBookMetadataOwner.BookmarkProof, RuntimeMetadataLocation, Data) = try await withTaskCancellationHandler {
+                try await withCheckedThrowingContinuation { continuation in
+                    Self.persistQueue.async { [self] in
+                        do {
+                            try cancellation.check(deadline: .distantFuture); try validateRuntimeMetadataPermission()
+                            try validateTXTBookmarkView(id: bookId, lease: lease, original: original, migrated: migrated)
+                            var location = try metadataLocation(id: bookId)
+                            let current = location.records[location.offset]
+                            guard OriginalRuntimeBookMetadataOwner.BookmarkIdentity(current) == prepared.identity,
+                                  current.bookmarks == original || current.bookmarks == migrated else {
+                                throw TXTLocationMigration.Failure.missingSourceIdentity
+                            }
+                            let expected = try runtimeBookMetadata.beginBookmarks(identity: prepared.identity, bookmarks: current.bookmarks,
+                                lease: lease, recovering: prepared.recovering, migrated: migrated)
+                            let accepted = try runtimeBookMetadata.bookmarkCandidate(expected, bookmarks: migrated)
+                            // Read the latest actual file on the one writer, then merge all
+                            // accepted variable/bookmark projections before encoding.
+                            location.records = runtimeBookMetadata.applying(to: location.records)
+                            location.records[location.offset].bookmarks = migrated
+                            let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+                            let bytes = try encoder.encode(location.records)
+                            try chapterStore.flushReportingFailure()
+                            try beforeWrite()
+                            try cancellation.check(deadline: .distantFuture); try validateRuntimeMetadataPermission()
+                            try validateTXTBookmarkView(id: bookId, lease: lease, original: original, migrated: migrated)
+                            let target = location.shelf ? metadataFileURL : readingMetadataFileURL
+                            guard try runtimeMetadataBytes(target) == location.before else {
+                                throw LegadoRuntimeError(code: "STATE_IO", message: "Metadata changed before the bookmark replacement")
+                            }
+                            try SourcePerfTrace.span("library.bookmarks.commit", "books=\(location.records.count) bytes=\(bytes.count) main=\(Thread.isMainThread)") {
+                                if bytes != location.before { try bytes.write(to: target, options: .atomic) }
+                            }
+                            if location.shelf { persistedFiles.shelfData = bytes } else { persistedFiles.readingData = bytes }
+                            runtimeBookMetadata.acceptBookmarks(accepted)
+                            continuation.resume(returning: (accepted, location, bytes))
+                        } catch {
+                            if !prepared.recovering { runtimeBookMetadata.releaseBookmarks(id: bookId, lease: lease) }
+                            continuation.resume(throwing: error)
+                        }
+                    }
+                    onEnqueued()
+                }
+            } onCancel: { cancellation.cancel() }
+            durable = true
+            var published = false
+            for attempt in 0..<4 {
+                let input = await MainActor.run { (self.recordStorage.values, self.mutationRevision) }
+                let candidate = SourcePerfTrace.span("library.bookmarks.publish.prepare", "books=\(input.0.count) main=\(Thread.isMainThread)") {
+                    () -> (Int, [ReadingBook])? in
+                    guard let offset = input.0.firstIndex(where: { $0.id == bookId }),
+                          OriginalRuntimeBookMetadataOwner.BookmarkIdentity(input.0[offset]) == prepared.identity,
+                          input.0[offset].bookmarks == original || input.0[offset].bookmarks == migrated else { return nil }
+                    var next = input.0; next[offset].bookmarks = migrated
+                    return (offset, next)
+                }
+                guard let candidate else { break }
+                await beforePublication(attempt)
+                published = await MainActor.run {
+                    guard self.mutationRevision == input.1,
+                          self.runtimeBookMetadata.permitsBookmarkPublication(written.0) else { return false }
+                    self.replaceRecords(candidate.1, chapterListsAlreadyMoved: true, bookmarkPublication: bookId)
+                    if prepared.sequence > self.lastAppliedPersistSequence {
+                        self.lastAppliedPersistSequence = prepared.sequence
+                        if written.1.shelf { self.lastPersistedMetadataData = written.2 }
+                        else { self.notePersistedReadingData(written.2, queueKnows: true) }
+                    }
+                    return true
+                }
+                if published { break }
+            }
+            guard published else {
+                // The journal remains, and the bounded owner retains its accepted
+                // projection. Never acknowledge indexes with un-published bookmarks.
+                throw TXTLocationMigration.Failure.missingSourceIdentity
+            }
+            await releaseTXTBookmarkLease(id: bookId, lease: lease)
+        } catch {
+            if !durable && !prepared.recovering { await releaseTXTBookmarkLease(id: bookId, lease: lease) }
+            else {
+                await MainActor.run {
+                    self.runtimeRecordIndex.withLock { index in
+                        if index.bookmarks[bookId]?.lease == lease { index.bookmarks[bookId]?.inUse = false }
+                    }
+                }
+            }
+            throw error
+        }
+    }
 
+    private func releaseTXTBookmarkLease(id: UUID, lease: UUID) async {
+        // This barrier follows UI publication, so every older captured ordinary
+        // payload has passed the exact same overlay before it is released.
+        await withCheckedContinuation { continuation in
+            Self.persistQueue.async { [runtimeBookMetadata] in
+                runtimeBookMetadata.releaseBookmarks(id: id, lease: lease)
+                continuation.resume()
+            }
+        }
+        await MainActor.run {
+            self.runtimeRecordIndex.withLock { index in
+                if index.bookmarks[id]?.lease == lease { index.bookmarks.removeValue(forKey: id) }
+            }
+        }
     }
 
     private func persistPositionUpdateIfNeeded(
@@ -2926,7 +3298,7 @@ class BookStore: ObservableObject, BookProvider {
 
     private struct MetadataWriteInput {
         enum Payload {
-            case records(shelf: [ReadingBook], reading: [ReadingBook])
+            case allRecords([ReadingBook])
             case encoded(shelf: Data, reading: Data)
         }
         let payload: Payload
@@ -2943,7 +3315,7 @@ class BookStore: ObservableObject, BookProvider {
     private func persistMetadataIfChanged(inBackground: Bool) {
         persist(
             MetadataWriteInput(
-                payload: .records(shelf: books, reading: records.filter { !$0.isInBookshelf }),
+                payload: .allRecords(records),
                 writesBlocked: metadataWritesBlocked,
                 records: records
             ),
@@ -2980,18 +3352,31 @@ class BookStore: ObservableObject, BookProvider {
         }
     }
 
-    /// Runs on `persistQueue`. Touches no store state beyond `chapterStore`, which has its own lock.
+    /// Runs on the existing `persistQueue`; source records are immutable inputs, while the
+    /// chapter and explicitly granted book variable owners share this same writer order.
     private func writeMetadata(_ input: MetadataWriteInput) -> MetadataWritten {
-        let shelfData: Data?
-        let readingData: Data?
-        switch input.payload {
-        case .records(let shelf, let reading):
-            shelfData = Self.encodeShelf(shelf)
-            readingData = Self.encodeShelf(reading)
-        case .encoded(let shelf, let reading):
-            shelfData = shelf
-            readingData = reading
+        let payload: (Data?, Data?)
+        do {
+            payload = try SourcePerfTrace.span("library.shelf.prepare", "books=\(input.records.count) main=\(Thread.isMainThread)") {
+                switch input.payload {
+                case .allRecords(let records):
+                    let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+                    let current = runtimeBookMetadata.applying(to: records)
+                    return (try encoder.encode(current.filter(\.isInBookshelf)), try encoder.encode(current.filter { !$0.isInBookshelf }))
+                case .encoded(let shelf, let reading):
+                    if runtimeBookMetadata.isEmpty { return (shelf, reading) }
+                    else {
+                        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+                        return (try encoder.encode(runtimeBookMetadata.applying(to: JSONDecoder().decode([ReadingBook].self, from: shelf))),
+                            try encoder.encode(runtimeBookMetadata.applying(to: JSONDecoder().decode([ReadingBook].self, from: reading))))
+                    }
+                }
+            }
+        } catch {
+            AppLogger.error("App metadata could not encode its current runtime owner variables", error: error)
+            return MetadataWritten()
         }
+        let (shelfData, readingData) = payload
         var written = MetadataWritten()
         let files = persistedFiles
         SourcePerfTrace.span(
@@ -3000,8 +3385,25 @@ class BookStore: ObservableObject, BookProvider {
             thresholdMs: 5
         ) {
             do {
-                // Write the shelf first: a crash while promoting a reading record must
-                // leave at least one durable copy. Loading gives shelf IDs precedence.
+                // Add durable reading copies before pruning either file. A promotion and
+                // demotion can happen together; retaining the old reading records until
+                // the shelf is durable avoids losing either copy if a later write fails.
+                var shelfReady = false
+                if let readingData, readingData != files.readingData {
+                    guard try runtimeMetadataBytes(readingMetadataFileURL) == files.readingData else {
+                        throw LegadoRuntimeError(code: "STATE_IO", message: "Reading metadata changed outside its owner")
+                    }
+                    let incoming = try JSONDecoder().decode([ReadingBook].self, from: readingData)
+                    let existing = try files.readingData.map { try JSONDecoder().decode([ReadingBook].self, from: $0) } ?? []
+                    let ids = Set(incoming.map(\.id))
+                    let protected = runtimeBookMetadata.applying(to: incoming + existing.filter { !ids.contains($0.id) })
+                    let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+                    let protectedData = try encoder.encode(protected)
+                    if protectedData != files.readingData {
+                        try protectedData.write(to: readingMetadataFileURL, options: .atomic)
+                        files.readingData = protectedData; written.readingData = protectedData
+                    }
+                }
                 if input.writesBlocked {
                     // What is on disk is the only copy of a shelf this launch could not read.
                     AppLogger.cache("Bookshelf metadata is unreadable and was not kept aside; leaving it as it is")
@@ -3009,21 +3411,24 @@ class BookStore: ObservableObject, BookProvider {
                     // The lists go before the shelf that no longer carries them: a shelf moved out
                     // of an older build's file must not be written until its lists are on disk.
                     chapterStore.flush()
-                    if let shelfData, shelfData != files.shelfData {
+                    if let shelfData {
                         // A restore (iCloud, WebDAV) replaces the file from outside the store and
                         // reloads it afterwards. A write queued before that must not put the old
                         // shelf back over it: the file is only overwritten while it still holds
                         // what this store last wrote.
-                        if Self.file(metadataFileURL, holds: files.shelfData) {
-                            try shelfData.write(to: metadataFileURL, options: .atomic)
-                            files.shelfData = shelfData
-                            written.shelfData = shelfData
+                        if try runtimeMetadataBytes(metadataFileURL) == files.shelfData {
+                            if shelfData != files.shelfData {
+                                try shelfData.write(to: metadataFileURL, options: .atomic)
+                                files.shelfData = shelfData
+                                written.shelfData = shelfData
+                            }
+                            shelfReady = true
                         } else {
                             AppLogger.cache("Bookshelf file changed outside the store; keeping it")
                         }
                     }
                 }
-                if let readingData, readingData != files.readingData {
+                if shelfReady, let readingData, readingData != files.readingData {
                     try readingData.write(to: readingMetadataFileURL, options: .atomic)
                     files.readingData = readingData
                     written.readingData = readingData
@@ -3033,11 +3438,6 @@ class BookStore: ObservableObject, BookProvider {
             }
         }
         return written
-    }
-
-    private static func file(_ url: URL, holds data: Data?) -> Bool {
-        guard let data else { return !FileManager.default.fileExists(atPath: url.path) }
-        return (try? Data(contentsOf: url)) == data
     }
 
     /// Main thread: records what the files now hold. A write that an immediate one has
@@ -3292,25 +3692,6 @@ class BookStore: ObservableObject, BookProvider {
             AppLogger.error("Remote reading records could not be loaded", error: error)
             return false
         }
-    }
-
-    private func persistReadingRecords() {
-        do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.sortedKeys]
-            let data = try encoder.encode(records.filter { !$0.isInBookshelf })
-            try persistEncodedReadingRecords(data)
-        } catch { AppLogger.error("Remote reading records could not be saved", error: error) }
-    }
-
-    private func persistEncodedReadingRecords(_ data: Data) throws {
-        guard data != lastPersistedReadingData else { return }
-        let files = persistedFiles
-        try Self.persistQueue.sync {
-            try data.write(to: readingMetadataFileURL, options: .atomic)
-            files.readingData = data
-        }
-        notePersistedReadingData(data, queueKnows: true)
     }
 
     /// Cleans the chapter URLs of lists read from inside a shelf file: replaces URLs

@@ -121,7 +121,7 @@ struct LegadoBookStateOwnerTests {
         } catch is CancellationError { }
     }
 
-    @Test("source grants cannot invent book UUIDs and cross-owner or book writes are rejected before I/O")
+    @Test("source grants cannot invent book UUIDs and cross-owner transactions are rejected before I/O")
     func rejectsUnmappedIdentityAndUnsupportedTransactions() async throws {
         let f = try fixture(); defer { cleanup(f) }
         await error("UNSUPPORTED_CAPABILITY") {
@@ -131,10 +131,9 @@ struct LegadoBookStateOwnerTests {
         let grant = try await owner(f); let bookKey = try key(f, chapter: false); let chapterKey = try key(f, chapter: true)
         await error("UNSUPPORTED_CAPABILITY") { _ = try await read(f, owner: grant, keys: [bookKey, chapterKey]) }
         let proof = try await read(f, owner: grant, keys: [bookKey])
-        await error("UNSUPPORTED_CAPABILITY") {
-            _ = try await commit(f, owner: grant, revision: proof, changes: [bookKey: Data("{}".utf8).base64EncodedString()])
-        }
-        #expect(f.store.originalRuntimeBookSnapshot(id: f.book.id, sourceID: f.sourceID, bookURL: f.book.source)?.variables == ["book": "existing"])
+        #expect(try await commit(f, owner: grant, revision: proof,
+            changes: [bookKey: Data("{\"book\":\"owned metadata\"}".utf8).base64EncodedString()]))
+        #expect(f.store.originalRuntimeBookSnapshot(id: f.book.id, sourceID: f.sourceID, bookURL: f.book.source)?.variables == ["book": "owned metadata"])
         await f.host.revoke(owner: grant)
         await error("INVALID_STATE_OWNER") { _ = try await read(f, owner: grant, keys: [chapterKey]) }
     }

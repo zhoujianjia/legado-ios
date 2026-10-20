@@ -1,0 +1,110 @@
+--- a/Modules/Services/Online/LegadoBookStateOwner.swift
++++ b/Modules/Services/Online/LegadoBookStateOwner.swift
+@@ -29,12 +29,14 @@
+ struct LegadoEntityStateSnapshot: Sendable {
+     let book: BookStore.RuntimeBookSnapshot
+     let chapter: BookChapterStore.RuntimeVariablesSnapshot?
++    let bookVariables: OriginalRuntimeBookMetadataOwner.Snapshot?
+     let state: LegadoOwnedStateSnapshot
+ }
+ 
+ /// Uses an explicitly supplied App store and its existing UUIDs. This adapter reads the
+ /// owned book record and durably commits chapter variables to that store's chapter file.
+-/// Shelf/reading metadata writes and cross-owner transactions remain typed unsupported.
++/// Book variables use the existing shelf/reading metadata writer; transactions spanning
++/// independent App owners remain typed unsupported.
+ final class AppLegadoBookStateOwner: @unchecked Sendable {
+     let bookID: UUID
+     let sourceID: UUID
+@@ -66,11 +68,10 @@
+         if chapter != nil { try generation?.check(deadline: deadline) }
+     }
+ 
+-    func parse(_ wires: [String], sourceURL: String) throws -> [LegadoEntityStateKey] {
++    func parse(_ wires: [String], sourceURL: String, decodedParts: [String: [String]]) throws -> [LegadoEntityStateKey] {
+         var result: [LegadoEntityStateKey] = []
+         for wire in wires {
+-            guard wire.utf8.count <= 16_384,
+-                  let parts = try JSONSerialization.jsonObject(with: Data(wire.utf8)) as? [String],
++            guard let parts = decodedParts[wire],
+                   parts.first == sourceURL, parts.count == 5 || parts.count == 6,
+                   parts[1] == "variables" || parts[1] == "big-variable",
+                   (parts[1] == "variables" ? parts.count == 5 : parts.count == 6),
+@@ -87,18 +88,26 @@
+         return result
+     }
+ 
+-    func read(keys: [LegadoEntityStateKey], deadline: Date) async throws -> LegadoEntityStateSnapshot {
++    func read(keys: [LegadoEntityStateKey], deadline: Date,
++              cancellation: OriginalRuntimeCommitCancellation) async throws -> LegadoEntityStateSnapshot {
++        try cancellation.check(deadline: deadline)
+         let book = try currentBook(deadline: deadline)
+         let ownedChapter: BookChapterStore.RuntimeVariablesSnapshot?
++        let ownedBook: OriginalRuntimeBookMetadataOwner.Snapshot?
+         let variables: [String: String]?
+         if keys[0].chapterURL != nil {
+             guard let chapter, let found = try await store.originalRuntimeChapterSnapshot(bookID: bookID,
+-                index: chapter.index, url: chapter.url), found.chapterID == chapter.id else {
++                index: chapter.index, url: chapter.url, deadline: deadline, cancellation: cancellation,
++                validateGrant: { [self] in _ = try currentBook(deadline: deadline); try generation?.check(deadline: deadline) }), found.chapterID == chapter.id else {
+                 throw Self.failure("The granted App chapter has changed or been removed")
+             }
+             try generation?.check(deadline: deadline)
+-            ownedChapter = found; variables = found.variables
+-        } else { ownedChapter = nil; variables = book.variables }
++            ownedChapter = found; ownedBook = nil; variables = found.variables
++        } else {
++            let snapshot = try await store.originalRuntimeBookVariableSnapshot(bookID: bookID, sourceID: sourceID, bookURL: bookURL,
++                deadline: deadline, cancellation: cancellation, validateGrant: { [self] in _ = try currentBook(deadline: deadline) })
++            ownedBook = snapshot; ownedChapter = nil; variables = snapshot.book.variables
++        }
+         guard try currentBook(deadline: deadline) == book else { throw Self.failure("The granted App book changed during its snapshot") }
+         var values: [String: Data] = [:]
+         for key in keys {
+@@ -108,18 +117,17 @@
+                 values[key.wire] = try JSONSerialization.data(withJSONObject: variables.filter { $0.value.utf16.count < 10_000 }, options: [.sortedKeys])
+             }
+         }
+-        return .init(book: book, chapter: ownedChapter,
+-            state: .init(revision: UInt64(ownedChapter?.revision ?? 0), values: values))
++        return .init(book: book, chapter: ownedChapter, bookVariables: ownedBook,
++            state: .init(revision: ownedBook?.revision ?? UInt64(ownedChapter?.revision ?? 0), values: values))
+     }
+ 
+     func commit(snapshot: LegadoEntityStateSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
+                 deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
+-        guard let expected = snapshot.chapter else {
+-            throw Self.failure("Durable App book-variable writes require the shelf metadata owner transaction")
+-        }
++        guard snapshot.chapter != nil || snapshot.bookVariables != nil else { throw Self.failure("Entity snapshot has no App owner proof") }
+         guard try currentBook(deadline: deadline) == snapshot.book else { return false }
+-        var small = expected.variables?.filter { $0.value.utf16.count < 10_000 } ?? [:]
+-        var large = expected.variables?.filter { $0.value.utf16.count >= 10_000 } ?? [:]
++        let priorVariables = snapshot.chapter?.variables ?? snapshot.bookVariables?.book.variables
++        var small = priorVariables?.filter { $0.value.utf16.count < 10_000 } ?? [:]
++        var large = priorVariables?.filter { $0.value.utf16.count >= 10_000 } ?? [:]
+         var deletedSmall = false
+         for key in keys {
+             guard let change = changes[key.wire] else { continue }
+@@ -140,12 +148,20 @@
+         }
+         guard Set(small.keys).isDisjoint(with: large.keys) else { throw Self.failure("Entity variable companions disagree") }
+         let variables: [String: String]? = deletedSmall && large.isEmpty ? nil : small.merging(large) { first, _ in first }
+-        return try await store.compareOriginalRuntimeChapter(expected: expected, variables: variables,
++        if let expected = snapshot.chapter {
++          return try await store.compareOriginalRuntimeChapter(expected: expected, variables: variables,
+             deadline: deadline, cancellation: cancellation) { [self] in
+                 guard try currentBook(deadline: deadline) == snapshot.book else {
+                     throw Self.failure("The granted App book changed before its chapter write")
+                 }
+                 try generation?.check(deadline: deadline)
++            }
++        }
++        return try await store.compareOriginalRuntimeBook(expected: snapshot.bookVariables!, expectedView: snapshot.book,
++            variables: variables, deadline: deadline, cancellation: cancellation) { [self] in
++                guard try currentBook(deadline: deadline) == snapshot.book else {
++                    throw Self.failure("The App book changed before its metadata write")
++                }
+             }
+     }
+ 

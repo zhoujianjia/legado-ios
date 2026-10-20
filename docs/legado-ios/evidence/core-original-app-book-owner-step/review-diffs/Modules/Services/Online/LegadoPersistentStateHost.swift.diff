@@ -1,0 +1,184 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -1,4 +1,5 @@
+ import Foundation
++import CoreFoundation
+ import LegadoRuntime
+ 
+ /// A short-lived revision proof from the existing App owner, not another store.
+@@ -109,7 +110,7 @@
+     private var leases: [Int64: Lease] = [:]
+     private var bookOwners: [String: AppLegadoBookStateOwner] = [:]
+     private var entityLeases: [Int64: EntityLease] = [:]
+-    private var pendingEntityCommits: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
++    private var pendingEntityOperations: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
+     private var leaseOrder: [Int64] = []
+     private var nextLease: Int64 = 0
+     private var cancelled = Set<String>()
+@@ -195,21 +196,13 @@
+         }
+         try check(request)
+         do {
+-          if let result = try await dispatchEntityStateIfNeeded(request) { return result }
++          let decoded = try decodeStateRequest(request)
++          let input = decoded.input; let owner = decoded.owner; let binding = decoded.binding
++          if let result = try await dispatchEntityStateIfNeeded(request, decoded: decoded) { return result }
+           return try SourcePerfTrace.span("legado.state.host", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+-            guard request.requestJSON.utf8.count <= 2_097_152,
+-                  let bytes = request.requestJSON.data(using: .utf8),
+-                  let input = try JSONSerialization.jsonObject(with: bytes) as? [String: Any],
+-                  let owner = input["owner"] as? String, let binding = bindings[owner],
+-                  revisions[binding.sourceURL] == binding.sourceRevision else {
+-                throw failure("INVALID_STATE_OWNER", "State request has no current embedding-owner grant")
+-            }
+             if request.operation == "state.read" {
+-                guard let rawKeys = input["keys"] as? [String], !rawKeys.isEmpty,
+-                      rawKeys.count <= 64, Set(rawKeys).count == rawKeys.count else {
+-                    throw failure("STATE_LIMIT", "State read requires 1...64 unique keys")
+-                }
+-                let keys = try parse(rawKeys, binding: binding)
++                let rawKeys = decoded.keys!
++                let keys = try parse(rawKeys, binding: binding, decodedParts: decoded.parts)
+                 let snapshot = try backing.read(sourceURL: binding.sourceURL, domain: keys[0].domain,
+                     fields: Set(keys.filter { !$0.binaryCompanion }.map(\.field)))
+                 try check(request)
+@@ -230,13 +223,10 @@
+                 trimLeases()
+                 return try encoded(["revision": nextLease, "values": values])
+             }
+-            struct Commit: Decodable { let revision: Int64 }
+-            let commit = try JSONDecoder().decode(Commit.self, from: bytes)
+-            guard commit.revision > 0,
++            guard let revision = decoded.revision,
+                   let rawChanges = input["changes"] as? [String: Any], !rawChanges.isEmpty, rawChanges.count <= 64 else {
+                 throw failure("INVALID_STATE_REQUEST", "State commit requires a revision and bounded changes")
+             }
+-            let revision = commit.revision
+             guard let lease = leases.removeValue(forKey: revision), lease.owner == owner,
+                   lease.binding.sourceURL == binding.sourceURL,
+                   lease.binding.sourceRevision == binding.sourceRevision else { return try encoded(["committed": false]) }
+@@ -285,8 +275,50 @@
+     func cancel(taskID: String) async {
+         if cancelled.insert(taskID).inserted { cancellationOrder.append(taskID) }
+         if cancellationOrder.count > 1_024 { cancelled.remove(cancellationOrder.removeFirst()) }
+-        if let pending = pendingEntityCommits[taskID] { for ticket in pending.values { ticket.cancel() } }
++        if let pending = pendingEntityOperations[taskID] { for ticket in pending.values { ticket.cancel() } }
+         await fallback.cancel(taskID: taskID)
++    }
++
++    private struct DecodedStateInput {
++        let input: [String: Any]
++        let owner: String
++        let binding: Binding
++        let keys: [String]?
++        let parts: [String: [String]]
++        let revision: Int64?
++    }
++
++    /// Exactly one bounded request decode, and one decode of each read key. Bad JSON,
++    /// numeric revisions and unknown capabilities are explicit typed failures.
++    private func decodeStateRequest(_ request: LegadoHostRequest) throws -> DecodedStateInput {
++        guard request.requestJSON.utf8.count <= 2_097_152 else { throw failure("STATE_LIMIT", "State payload is oversized") }
++        let object: Any
++        do { object = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
++        catch { throw failure("INVALID_STATE_REQUEST", "State payload is not valid JSON") }
++        guard let input = object as? [String: Any] else { throw failure("INVALID_STATE_REQUEST", "State payload requires an object") }
++        guard let owner = input["owner"] as? String, let binding = bindings[owner],
++              revisions[binding.sourceURL] == binding.sourceRevision else {
++            throw failure("INVALID_STATE_OWNER", "State request has no current embedding-owner grant")
++        }
++        if request.operation == "state.read" {
++            guard let keys = input["keys"] as? [String], !keys.isEmpty, keys.count <= 64,
++                  Set(keys).count == keys.count else { throw failure("STATE_LIMIT", "State read requires 1...64 unique keys") }
++            var decoded: [String: [String]] = [:]
++            for wire in keys {
++                guard wire.utf8.count <= 16_384 else { throw failure("STATE_LIMIT", "State key is oversized") }
++                let key: Any
++                do { key = try JSONSerialization.jsonObject(with: Data(wire.utf8)) }
++                catch { throw failure("INVALID_STATE_REQUEST", "State key is not valid JSON") }
++                guard let parts = key as? [String], parts.count >= 2 else { throw failure("INVALID_STATE_REQUEST", "State key requires identity components") }
++                decoded[wire] = parts
++            }
++            return .init(input: input, owner: owner, binding: binding, keys: keys, parts: decoded, revision: nil)
++        }
++        guard let number = input["revision"] as? NSNumber,
++              CFGetTypeID(number) != CFBooleanGetTypeID(), let revision = Int64(number.stringValue), revision > 0 else {
++            throw failure("INVALID_STATE_REQUEST", "State commit requires an exact positive Int64 revision")
++        }
++        return .init(input: input, owner: owner, binding: binding, keys: nil, parts: [:], revision: revision)
+     }
+ 
+     private func trimLeases() {
+@@ -299,21 +331,11 @@
+ 
+     /// Entity records use raw variable bytes, unlike the CacheManager envelope used by
+     /// source/cache keys. The actual App owner performs every async snapshot and write.
+-    private func dispatchEntityStateIfNeeded(_ request: LegadoHostRequest) async throws -> String? {
+-        guard request.requestJSON.utf8.count <= 2_097_152,
+-              let input = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) as? [String: Any] else { return nil }
+-        let rawKeys = input["keys"] as? [String]
+-        let isEntityRead = request.operation == "state.read" && (rawKeys?.contains { wire in
+-            guard let parts = try? JSONSerialization.jsonObject(with: Data(wire.utf8)) as? [String], parts.count > 1 else { return false }
+-            return parts[1] == "variables" || parts[1] == "big-variable"
+-        } ?? false)
+-        struct Revision: Decodable { let revision: Int64 }
+-        let revision = request.operation == "state.commit" ? (try? JSONDecoder().decode(Revision.self, from: Data(request.requestJSON.utf8)))?.revision : nil
++    private func dispatchEntityStateIfNeeded(_ request: LegadoHostRequest, decoded: DecodedStateInput) async throws -> String? {
++        let input = decoded.input; let owner = decoded.owner; let binding = decoded.binding
++        let rawKeys = decoded.keys; let revision = decoded.revision
++        let isEntityRead = request.operation == "state.read" && decoded.parts.values.contains { $0[1] == "variables" || $0[1] == "big-variable" }
+         guard isEntityRead || revision.flatMap({ entityLeases[$0] }) != nil else { return nil }
+-        guard let owner = input["owner"] as? String, let binding = bindings[owner],
+-              revisions[binding.sourceURL] == binding.sourceRevision else {
+-            throw failure("INVALID_STATE_OWNER", "Entity state requires its current App book owner")
+-        }
+         guard let backing = bookOwners[owner] else {
+             throw failure("UNSUPPORTED_CAPABILITY", "Entity state has no explicitly connected App book owner")
+         }
+@@ -323,8 +345,16 @@
+                 guard let rawKeys, !rawKeys.isEmpty, rawKeys.count <= 64, Set(rawKeys).count == rawKeys.count else {
+                     throw failure("STATE_LIMIT", "Entity read requires 1...64 unique keys")
+                 }
+-                let keys = try backing.parse(rawKeys, sourceURL: binding.sourceURL)
+-                let snapshot = try await backing.read(keys: keys, deadline: deadline)
++                let keys = try backing.parse(rawKeys, sourceURL: binding.sourceURL, decodedParts: decoded.parts)
++                let ticket = OriginalRuntimeCommitCancellation(); let requestID = UUID()
++                pendingEntityOperations[request.taskID, default: [:]][requestID] = ticket
++                defer {
++                    pendingEntityOperations[request.taskID]?.removeValue(forKey: requestID)
++                    if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
++                }
++                let snapshot = try await withTaskCancellationHandler {
++                    try await backing.read(keys: keys, deadline: deadline, cancellation: ticket)
++                } onCancel: { ticket.cancel() }
+                 try check(request)
+                 try currentEntityBinding(owner: owner, binding: binding)
+                 guard nextLease < Int64.max else { throw failure("STATE_LIMIT", "State revision space exhausted") }
+@@ -363,10 +393,10 @@
+             try check(request)
+             try currentEntityBinding(owner: owner, binding: binding)
+             let ticket = OriginalRuntimeCommitCancellation(); let requestID = UUID()
+-            pendingEntityCommits[request.taskID, default: [:]][requestID] = ticket
++            pendingEntityOperations[request.taskID, default: [:]][requestID] = ticket
+             defer {
+-                pendingEntityCommits[request.taskID]?.removeValue(forKey: requestID)
+-                if pendingEntityCommits[request.taskID]?.isEmpty == true { pendingEntityCommits.removeValue(forKey: request.taskID) }
++                pendingEntityOperations[request.taskID]?.removeValue(forKey: requestID)
++                if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
+             }
+             let committed = try await withTaskCancellationHandler {
+                 try await backing.commit(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
+@@ -390,11 +420,10 @@
+         guard request.remainingTimeoutSeconds > 0 else { throw failure("STATE_TIMEOUT", "State request deadline expired") }
+     }
+ 
+-    private func parse(_ values: [String], binding: Binding) throws -> [Key] {
++    private func parse(_ values: [String], binding: Binding, decodedParts: [String: [String]]) throws -> [Key] {
+         var result: [Key] = []
+         for wire in values {
+-            guard wire.utf8.count <= 16_384, let data = wire.data(using: .utf8),
+-                  let parts = try JSONSerialization.jsonObject(with: data) as? [String], parts.count == 3,
++            guard let parts = decodedParts[wire], parts.count == 3,
+                   parts[0] == binding.sourceURL, ["cache-text", "cache-binary"].contains(parts[1]) else {
+                 throw failure("UNSUPPORTED_CAPABILITY", "State key has no connected App source owner")
+             }

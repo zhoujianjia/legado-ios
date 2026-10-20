@@ -1,0 +1,37 @@
+--- a/Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift
++++ b/Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift
+@@ -300,6 +300,34 @@
+         }
+     }
+ 
++    @Test("one bounded decode rejects malformed JSON and inexact revisions before consuming an owner proof")
++    func malformedStateInputsHaveTypedErrorsAndRetainProofs() async throws {
++        try await Self.fixture { f in
++            let host = f.host(); let owner = try await host.bind(sourceURL: f.a, sourceRevision: "r1")
++            let key = try Self.key(f.a, "v_" + f.a + "_typed")
++            let proof = try await Self.read(host, owner: owner, keys: [key])
++            try await Self.error("INVALID_STATE_REQUEST") {
++                _ = try await host.dispatch(.init(taskID: "malformed-json", operation: "state.read", requestJSON: "{"))
++            }
++            try await Self.error("INVALID_STATE_REQUEST") {
++                _ = try await Self.read(host, owner: owner, keys: ["not a JSON key"])
++            }
++            for revision in [true as Any, 1.5 as Any, "1" as Any] {
++                let request = try Self.request("state.commit", ["owner": owner, "revision": revision, "changes": [key: Self.value("must-not-write")]])
++                try await Self.error("INVALID_STATE_REQUEST") { _ = try await host.dispatch(request) }
++            }
++            try await Self.error("INVALID_STATE_REQUEST") {
++                _ = try await host.dispatch(.init(taskID: "too-large-revision", operation: "state.commit",
++                    requestJSON: "{\"owner\":\"\(owner)\",\"revision\":9223372036854775808,\"changes\":{}}"))
++            }
++            let unknown = try Self.keyParts([f.a, "cookies", "*"])
++            try await Self.error("UNSUPPORTED_CAPABILITY") { _ = try await Self.read(host, owner: owner, keys: [unknown]) }
++            #expect(f.sources.sourceValue(for: f.a, key: "typed") == nil)
++            #expect(try await Self.commit(host, owner: owner, revision: proof.revision, changes: [key: Self.value("accepted")]))
++            #expect(f.sources.sourceValue(for: f.a, key: "typed") == "accepted")
++        }
++    }
++
+     private struct ReadReply: Decodable, Sendable { let revision: Int64; let values: [String: String] }
+     private struct CommitReply: Decodable { let committed: Bool }
+ 

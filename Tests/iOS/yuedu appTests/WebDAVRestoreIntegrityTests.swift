@@ -253,7 +253,7 @@ struct WebDAVRestoreIntegrityTests {
         await BookStore.queuedWritesLanded()
         let before = try await fixture.readDestinations()
         do {
-            try store.commitTXTBookmarks(bookId: local.id, original: [], migrated: [])
+            try await store.commitTXTBookmarks(bookId: local.id, original: [], migrated: [])
             Issue.record("TXT migration must reject an active restore lease")
         } catch { #expect((error as NSError).code == CocoaError.fileLocking.rawValue) }
         #expect(try await fixture.readDestinations() == before)
