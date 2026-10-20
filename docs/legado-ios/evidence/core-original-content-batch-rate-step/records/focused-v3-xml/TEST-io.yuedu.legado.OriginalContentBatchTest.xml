@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.OriginalContentBatchTest" tests="7" skipped="0" failures="2" errors="0" timestamp="2026-10-20T08:36:16.377Z" hostname="DESKTOP-2E0OC06" time="3.664">
+  <properties/>
+  <testcase name="realBatchSavesTwoChaptersReturnsOnlyMissingAndKeepsSameBookHttpAndCookieOwner" classname="io.yuedu.legado.OriginalContentBatchTest" time="1.039">
+    <failure message="org.junit.ComparisonFailure: expected:&lt;[same-book]&gt; but was:&lt;[]&gt;" type="org.junit.ComparisonFailure">org.junit.ComparisonFailure: expected:&lt;[same-book]&gt; but was:&lt;[]&gt;
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at io.yuedu.legado.OriginalContentBatchTest$realBatchSavesTwoChaptersReturnsOnlyMissingAndKeepsSameBookHttpAndCookieOwner$1$1$1.invokeSuspend(OriginalContentBatchTest.kt:40)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)
+	at kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)
+	at kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)
+	at kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source)
+	at io.yuedu.legado.OriginalContentBatchTest.realBatchSavesTwoChaptersReturnsOnlyMissingAndKeepsSameBookHttpAndCookieOwner(OriginalContentBatchTest.kt:28)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="originalWrappersAndBareJsUseSameCallbackAndOrdinaryErrorKeepsCommittedPrefixWithoutFallback" classname="io.yuedu.legado.OriginalContentBatchTest" time="0.129">
+    <failure message="kotlinx.coroutines.JobCancellationException: UndispatchedCoroutine was cancelled; job=&quot;coroutine#2&quot;:UndispatchedCoroutine{Cancelled}@1613674b" type="kotlinx.coroutines.JobCancellationException">kotlinx.coroutines.JobCancellationException: UndispatchedCoroutine was cancelled; job=&quot;coroutine#2&quot;:UndispatchedCoroutine{Cancelled}@1613674b
+	at app//kotlinx.coroutines.JobSupport.toCancellationException(JobSupport.kt:1646)
+	at app//kotlinx.coroutines.JobSupport.toCancellationException$default(JobSupport.kt:421)
+	at app//kotlinx.coroutines.JobSupport.getCancellationException(JobSupport.kt:417)
+	at app//kotlinx.coroutines.JobKt__JobKt.ensureActive(Job.kt:585)
+	at app//kotlinx.coroutines.JobKt.ensureActive(Unknown Source)
+	at app//kotlinx.coroutines.JobKt__JobKt.ensureActive(Job.kt:603)
+	at app//kotlinx.coroutines.JobKt.ensureActive(Unknown Source)
+	at app//io.legado.app.model.BatchContentContext.saveContent(BatchContentContext.kt:124)
+	at app//io.yuedu.legado.OriginalContentBatchTest$originalWrappersAndBareJsUseSameCallbackAndOrdinaryErrorKeepsCommittedPrefixWithoutFallback$1$1$1.invokeSuspend(OriginalContentBatchTest.kt:70)
+	at app//kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at app//kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at app//kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)
+	at app//kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)
+	at app//kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)
+	at app//kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source)
+	at app//kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)
+	at app//kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source)
+	at app//kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)
+	at app//kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source)
+	at app//io.yuedu.legado.OriginalContentBatchTest.originalWrappersAndBareJsUseSameCallbackAndOrdinaryErrorKeepsCommittedPrefixWithoutFallback(OriginalContentBatchTest.kt:58)
+	at java.base@21.0.12.1/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at app//org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at app//org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at app//org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at app//org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at app//org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at app//org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base@21.0.12.1/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.script.ScriptException: Error: actual-script-error
+Source context:
+&gt; 1: cache.putMemory('context',java.getBatchContext());java.cacheContent(chapters[0],'prefix');throw Error('actual-script-error') in &lt;script-9&gt; at line number 1
+	at app//com.script.rhino.RhinoScriptEngine.createScriptException$io_yuedu_legado_runtime(RhinoScriptEngine.kt:227)
+	at app//com.script.rhino.RhinoScriptEngine.createScriptException$io_yuedu_legado_runtime$default(RhinoScriptEngine.kt:205)
+	at app//com.script.rhino.RhinoCompiledScript.eval(RhinoCompiledScript.kt:35)
+	at app//io.legado.app.model.analyzeRule.AnalyzeRule.evalJS(AnalyzeRule.kt:922)
+	at app//io.legado.app.model.webBook.BookContent.analyzeContentBatch(BookContent.kt:274)
+	at app//io.legado.app.model.webBook.WebBook$getContentBatchAwait$2.invokeSuspend(WebBook.kt:47)
+	at app//io.legado.app.model.webBook.WebBook$getContentBatchAwait$2.invoke(WebBook.kt)
+	at app//io.legado.app.model.webBook.WebBook$getContentBatchAwait$2.invoke(WebBook.kt)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform$runWebBook$result$1.invokeSuspend(ProductionRulePlatform.kt:87)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform$runWebBook$result$1.invoke(ProductionRulePlatform.kt)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform$runWebBook$result$1.invoke(ProductionRulePlatform.kt)
+	at app//kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatched(Undispatched.kt:66)
+	at app//kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:43)
+	at app//kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:497)
+	at app//kotlinx.coroutines.BuildersKt.withContext(Unknown Source)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform.runWebBook(ProductionRulePlatform.kt:87)
+	at app//io.legado.app.model.webBook.WebBook.owned(WebBook.kt:29)
+	at app//io.legado.app.model.webBook.WebBook.owned$default(WebBook.kt:23)
+	at app//io.legado.app.model.webBook.WebBook.getContentBatchAwait(WebBook.kt:45)
+	at app//io.yuedu.legado.OriginalContentBatchTest$originalWrappersAndBareJsUseSameCallbackAndOrdinaryErrorKeepsCommittedPrefixWithoutFallback$1$1$1.invokeSuspend(OriginalContentBatchTest.kt:66)
+	... 21 more
+Caused by: org.htmlunit.corejs.javascript.JavaScriptException: Error: actual-script-error (&lt;script-9&gt;#1)
+	at app//org.htmlunit.corejs.javascript.Interpreter$DoThrow.throwObject(Interpreter.java:1355)
+	at app//org.htmlunit.corejs.javascript.Interpreter$DoThrow.execute(Interpreter.java:1330)
+	at app//org.htmlunit.corejs.javascript.Interpreter.interpretFunction(Interpreter.java:1087)
+	at app//org.htmlunit.corejs.javascript.Interpreter.interpretLoop(Interpreter.java:863)
+	at app//org.htmlunit.corejs.javascript.Interpreter.interpret(Interpreter.java:448)
+	at app//org.htmlunit.corejs.javascript.InterpreterData.execute(InterpreterData.java:102)
+	at app//org.htmlunit.corejs.javascript.JSScript.exec(JSScript.java:42)
+	at app//org.htmlunit.corejs.javascript.ContextFactory.doTopCall(ContextFactory.java:354)
+	at app//com.script.rhino.RhinoScriptEngine$1.doTopCall(RhinoScriptEngine.kt:342)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.doTopCall(ScriptRuntime.java:4961)
+	at app//org.htmlunit.corejs.javascript.JSScript.exec(JSScript.java:36)
+	at app//com.script.rhino.RhinoCompiledScript.eval(RhinoCompiledScript.kt:32)
+	... 38 more
+</failure>
+  </testcase>
+  <testcase name="ambiguousUrlsAndBlankCallbacksNeverMarkSavedAndSaveIoFailureReturnsFalseAndPreservesOldFile" classname="io.yuedu.legado.OriginalContentBatchTest" time="0.106"/>
+  <testcase name="cancellationDeadlineAndCloseKeepSavedPrefixButRejectSecondCallbackAndCloseItsContext" classname="io.yuedu.legado.OriginalContentBatchTest" time="2.209"/>
+  <testcase name="staleReplacementGenerationAndRefreshedTocRejectOlderBatchCallbackWithoutOverwritingCurrentState" classname="io.yuedu.legado.OriginalContentBatchTest" time="0.109"/>
+  <testcase name="missingRuleEmptyBatchAndPublicSaveAuthorityRemainExplicitWithoutRunningAuthoredScripts" classname="io.yuedu.legado.OriginalContentBatchTest" time="0.025"/>
+  <testcase name="pinnedContextOracleMatchesIndexUrlAmbiguityLiveCallbacksReplacementAndCloseContract" classname="io.yuedu.legado.OriginalContentBatchTest" time="0.047"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

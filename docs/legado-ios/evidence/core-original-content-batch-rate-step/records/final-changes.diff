@@ -1,0 +1,2130 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt
+@@ -0,0 +1,8 @@
++@file:Suppress("unused")
++
++package io.legado.app.exception
++
++/**
++ * 并发限制
++ */
++class ConcurrentException(msg: String, val waitTime: Long) : NoStackTraceException(msg)--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt
+@@ -0,0 +1,100 @@
++package io.legado.app.help
++
++import io.legado.app.data.entities.BaseSource
++import io.legado.app.exception.ConcurrentException
++import io.legado.app.model.analyzeRule.AnalyzeUrl.ConcurrentRecord
++import io.yuedu.legado.originalrule.unsupportedRule
++import kotlinx.coroutines.currentCoroutineContext
++import kotlinx.coroutines.delay
++import kotlinx.coroutines.ensureActive
++import kotlinx.coroutines.runBlocking
++import java.util.concurrent.ConcurrentHashMap
++import kotlin.coroutines.EmptyCoroutineContext
++
++/** Locked original window algorithm with bounded, actual owner/source/revision
++ * identity. Registry never retains an old task/environment or grants cache IO.
++ * Unscoped Android UI/static-map mutation has not been ported. */
++class ConcurrentRateLimiter(private val source: BaseSource?) {
++    companion object {
++        val concurrentRecordMap: ConcurrentHashMap<String, ConcurrentRecord>
++            get() = unsupportedRule("unscoped original global concurrent-rate map")
++        fun updateConcurrentRate(key: String, concurrentRate: String) {
++            unsupportedRule("original rate UI update needs current source/revision ownership")
++        }
++    }
++    private val concurrentRate = source?.concurrentRate
++    private val key = source?.getKey()
++
++    /** Original retry/delay algorithm; current task's absolute deadline bounds
++     * a long window without installing a second timeout/job/thread. */
++    suspend fun getConcurrentRecord(): ConcurrentRecord? {
++        if (concurrentRate.isNullOrEmpty() || concurrentRate == "0" || key == null) return null
++        val currentSource = source ?: return null
++        val environment = currentSource.getRuleEnvironment()
++        while (true) {
++            currentCoroutineContext().ensureActive()
++            environment.ensureOpen()
++            val budget = environment.platform.originalRateDelayBudgetMillis(currentSource)
++            try { return OwnedConcurrentWindows.admit(currentSource, concurrentRate) }
++            catch (error: ConcurrentException) { delay(minOf(error.waitTime,budget.coerceAtLeast(1L))) }
++        }
++    }
++    fun getConcurrentRecordBlocking(): ConcurrentRecord? =
++        runBlocking(source?.getRuleCoroutineContext() ?: EmptyCoroutineContext) { getConcurrentRecord() }
++    suspend inline fun <T> withLimit(block: () -> T): T { getConcurrentRecord(); return block() }
++    inline fun <T> withLimitBlocking(block: () -> T): T { getConcurrentRecordBlocking(); return block() }
++}
++
++/** One process-local registry, no companion field accessor returning a raw Map.
++ * Every callable admission takes the real source and validates its current Host
++ * grant itself. Lookup, expired-row pruning and the original counter update are
++ * a single critical section: no admission can revive an already-pruned row. */
++private object OwnedConcurrentWindows {
++    private const val maximumRecords = 256
++    private val records = LinkedHashMap<String, ConcurrentRecord>()
++    fun admit(source: BaseSource, concurrentRate: String): ConcurrentRecord {
++        val environment = source.getRuleEnvironment()
++        environment.ensureOpen()
++        val ownedKey = environment.platform.exploreOwnerScope(source)
++        if(ownedKey.isEmpty() || ownedKey.toByteArray(Charsets.UTF_8).size > 32_768)
++            unsupportedRule("original concurrent rate needs a bounded actual owner scope")
++        // Host ownership/deadline calls happen outside the registry lock.
++        environment.platform.originalRateDelayBudgetMillis(source)
++        return synchronized(records) {
++            var fetchRecord = records[ownedKey]
++            if (fetchRecord == null) {
++                val now = System.currentTimeMillis()
++                val iterator = records.iterator()
++                while (iterator.hasNext()) {
++                    val row = iterator.next().value
++                    if (synchronized(row) { now >= row.time + row.interval.toLong() }) iterator.remove()
++                }
++                if(records.size >= maximumRecords) unsupportedRule("original concurrent-rate active-owner limit (256); retry after an existing window expires")
++                val rateIndex = concurrentRate.indexOf("/")
++                fetchRecord = if (rateIndex > 0) {
++                    val accessLimit = concurrentRate.take(rateIndex).toIntOrNull() ?: 1
++                    val interval = concurrentRate.substring(rateIndex + 1).toIntOrNull() ?: 0
++                    ConcurrentRecord(System.currentTimeMillis(), accessLimit, interval, 1)
++                } else ConcurrentRecord(System.currentTimeMillis(),1,concurrentRate.toIntOrNull() ?: 0,1)
++                records[ownedKey] = fetchRecord
++                return@synchronized fetchRecord
++            }
++            val current = fetchRecord
++            val waitTime: Long = synchronized(current) {
++                val nextTime = current.time + current.interval.toLong()
++                val nowTime = System.currentTimeMillis()
++                if (nowTime >= nextTime) {
++                    current.time = nowTime
++                    current.frequency = 1
++                    return@synchronized 0L
++                }
++                if (current.frequency < current.accessLimit) {
++                    current.frequency++
++                    return@synchronized 0L
++                } else return@synchronized nextTime - nowTime
++            }
++            if (waitTime > 0) throw ConcurrentException("根据并发率还需等待"+waitTime+"毫秒才可以访问",waitTime=waitTime)
++            current
++        }
++    }
++}
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt
+@@ -63,7 +63,7 @@
+ 
+     private var chapter: BookChapter? = null
+     private var nextChapterUrl: String? = null
+-    private var batchContext: RuleBatchContext? = null
++    private var batchContext: io.legado.app.model.BatchContentContext? = null
+     private var content: Any? = null
+     private var baseUrl: String? = null
+     private var redirectUrl: URL? = null
+@@ -933,7 +933,7 @@
+         return source
+     }
+ 
+-    override fun getBatchContext(): RuleBatchContext? {
++    override fun getBatchContext(): io.legado.app.model.BatchContentContext? {
+         return batchContext
+     }
+ 
+@@ -1008,8 +1008,7 @@
+             return this
+         }
+ 
+-        fun AnalyzeRule.setBatchContext(batchContext: RuleBatchContext?): AnalyzeRule {
+-            if (batchContext != null) unsupportedRule("original-rule batch context")
++        fun AnalyzeRule.setBatchContext(batchContext: io.legado.app.model.BatchContentContext?): AnalyzeRule {
+             this.batchContext = batchContext
+             return this
+         }
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt
+@@ -6,6 +6,7 @@
+ import com.google.gson.JsonObject
+ import com.google.gson.JsonParser
+ import com.google.gson.annotations.SerializedName
++import io.legado.app.help.ConcurrentRateLimiter
+ import io.legado.app.data.entities.BaseSource
+ import io.legado.app.data.entities.Book
+ import io.legado.app.data.entities.BookChapter
+@@ -25,7 +26,8 @@
+ /**
+  * Retained URL/header/request preparation and JVM request-option subset.
+  * Header initialization precedes URL scripts; URL options then override it.
+- * WebView/media/server upload/rate limiting and Android persistence are unported.
++ * WebView/media/server upload and Android persistence are unported; original
++ * rate windows use the same explicitly authorized owner and task deadline.
+  * Keeping the original FQN does not imply those capabilities are available.
+  */
+ class AnalyzeUrl(
+@@ -44,8 +46,11 @@
+     private val infoMap: io.legado.app.utils.InfoMap? = null,
+ ) : RuleJsExtensions {
+     private val context = coroutineContext.minusKey(ContinuationInterceptor)
+-    suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null): io.yuedu.legado.StrResponse {
++    private val concurrentRateLimiter = ConcurrentRateLimiter(source)
++    suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null, useWebView: Boolean = true, isTest: Boolean = false, skipRateLimit: Boolean = false): io.yuedu.legado.StrResponse {
+         if (!jsStr.isNullOrBlank() || !sourceRegex.isNullOrBlank()) unsupportedRule("original WebBook browser/webJs/sourceRegex")
++        if (isTest) unsupportedRule("original AnalyzeUrl isTest timing/error probes")
++        if (!skipRateLimit) concurrentRateLimiter.getConcurrentRecord()
+         return environment.platform.executeUrl(this)
+     }
+     fun getErrStrResponse(error: Throwable): io.yuedu.legado.StrResponse {
+@@ -534,4 +539,6 @@
+         }
+     }
+ 
++    data class ConcurrentRecord(var time: Long, var accessLimit: Int, var interval: Int, var frequency: Int)
++
+ }
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt
+@@ -0,0 +1,167 @@
++// Locked BatchContentContext body; Android BookHelp persistence redirected to the existing owned RuleWebBookState.
++package io.legado.app.model
++
++import io.legado.app.model.webBook.AppPattern
++import io.yuedu.legado.originalrule.*
++import io.legado.app.data.entities.Book
++import io.legado.app.data.entities.BookChapter
++import io.legado.app.data.entities.BookSource
++import io.legado.app.exception.NoStackTraceException
++import io.yuedu.legado.originalrule.RuleWebBookState.ContentSaveToken
++import io.legado.app.model.webBook.isOriginalOnlineText
++import kotlinx.coroutines.ensureActive
++import io.legado.app.model.analyzeRule.AnalyzeRule
++import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setChapter
++import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setCoroutineContext
++import io.yuedu.legado.originalrule.NetworkUtils
++import kotlin.coroutines.CoroutineContext
++import kotlin.coroutines.EmptyCoroutineContext
++
++/**
++ * 批量正文下载上下文。
++ *
++ * 书源在 contentBatch 规则(或 JS 源的 getContentBatch 函数)里拿到本批章节数组后,
++ * 每处理完一章就调用 java.cacheContent(chapter, content) 主动回存。
++ *
++ * 章节身份一律用 [BookChapter.index] 判定,不用 url:目录允许多章共用同一 url
++ * (靠序号/标题/tag 区分),缓存文件名也是按 index + 标题生成的。按 url 认章会把
++ * 正文写到错误章节,并让同 url 的其余章节被误判为已完成。
++ *
++ * JS 侧可能在多个线程/协程里并发回调,所有可变状态都在 lock 下访问。
++ */
++class BatchContentContext internal constructor(
++    val bookSource: BookSource,
++    val book: Book,
++    val chapters: List<BookChapter>,
++    private val coroutineContext: CoroutineContext = EmptyCoroutineContext,
++    private val saveTokens: Map<Int, ContentSaveToken> = emptyMap(),
++) {
++
++    private val lock = Any()
++    private var closed = false
++
++    /** 已经通过 cacheContent 回存的章节序号 */
++    private val savedIndexes = linkedSetOf<Int>()
++
++    private val baseUrl: String
++        get() = book.tocUrl.ifBlank { bookSource.bookSourceUrl }
++
++    /**
++     * url -> 候选章节。同一 url 可能对应多章,值一律是列表。
++     * 同时登记原始 url、绝对 url 和规范化 url,书源回传哪种形式都能匹配。
++     */
++    private val chaptersByUrl: Map<String, List<BookChapter>> =
++        buildMap<String, MutableList<BookChapter>> {
++            chapters.forEach { chapter ->
++                sequenceOf(
++                    chapter.url,
++                    runCatching { chapter.getAbsoluteURL() }.getOrNull(),
++                    normalize(chapter.url)
++                ).filterNot { it.isNullOrBlank() }
++                    .distinct()
++                    .forEach { key ->
++                        val candidates = getOrPut(key!!) { mutableListOf() }
++                        if (candidates.none { it.index == chapter.index }) {
++                            candidates.add(chapter)
++                        }
++                    }
++            }
++        }
++
++    /**
++     * 解析书源回传的章节标识。
++     *
++     * 支持两种形式:
++     * - 章节对象:直接取本批数组里的元素,重复 url 也不会认错;
++     * - url 字符串:仅接受唯一命中;多章共用该 url 时始终拒绝,必须传章节对象。
++     *
++     * 刻意不接受纯数字:书源循环里传数组下标和传 chapter.index 无法区分,认错即静默写错章节。
++     */
++    fun resolveChapter(identifier: Any?): BookChapter? {
++        return when (identifier) {
++            is BookChapter -> chapters.firstOrNull { it.index == identifier.index }
++            is CharSequence -> resolveByUrl(identifier.toString())
++            else -> null
++        }
++    }
++
++    private fun resolveByUrl(url: String): BookChapter? {
++        val trimmedUrl = url.trim()
++        if (trimmedUrl.isEmpty()) return null
++        val candidates = chaptersByUrl[trimmedUrl].orEmpty() +
++            normalize(trimmedUrl)?.let { chaptersByUrl[it] }.orEmpty()
++        //回调可能乱序,已保存状态不能消除 URL 的歧义。唯一 URL 仍允许重复回存。
++        return candidates.distinctBy { it.index }.singleOrNull()
++    }
++
++    private fun normalize(url: String?): String? {
++        if (url.isNullOrBlank()) return null
++        return runCatching { NetworkUtils.getAbsoluteURL(baseUrl, url) }
++            .getOrNull()?.takeIf { it.isNotBlank() }
++    }
++
++    /**
++     * 对批量回传的正文套用书源的正文替换规则,与单章流程保持一致。
++     * 未配置 replaceRegex 时原样返回。
++     */
++    fun applyContentReplace(chapter: BookChapter, content: String): String {
++        val replaceRegex = bookSource.getContentRule().replaceRegex
++        if (replaceRegex.isNullOrEmpty()) return content
++        val analyzeRule = AnalyzeRule(book, bookSource)
++        analyzeRule.setCoroutineContext(coroutineContext)
++        analyzeRule.setChapter(chapter)
++        analyzeRule.setBaseUrl(chapter.getAbsoluteURL())
++        var contentStr = content.split(AppPattern.LFRegex).joinToString("\n") { it.trim() }
++        contentStr = analyzeRule.getString(replaceRegex, contentStr)
++        if (book.isOriginalOnlineText) {
++            contentStr = contentStr.split(AppPattern.LFRegex).joinToString("\n") { "　　$it" }
++        }
++        return contentStr
++    }
++
++    /** Resolve, replace and save under one lock, including duplicate-URL callbacks. */
++    fun saveContent(identifier: Any?, content: String): Boolean = synchronized(lock) {
++        coroutineContext.ensureActive()
++        if (closed) return false
++        val chapter = resolveChapter(identifier)
++            ?: throw NoStackTraceException("java.cacheContent 未唯一匹配到本批次章节,重复 URL 请传章节对象: $identifier")
++        val replaced = applyContentReplace(chapter, content)
++        if (replaced.isBlank()) return false
++        val token = saveTokens[chapter.index]
++            ?: throw NoStackTraceException("批量正文缺少请求开始时的缓存版本")
++        coroutineContext.ensureActive()
++        // Original BookHelp.saveContent catches ordinary save failures and returns
++        // false; primitive cancellation/unsupported and known committed effects
++        // remain typed at the embedding boundary. No parallel App file cache.
++        val saved = try {
++            book.environment.webBook.saveContent(book, chapter, replaced, token, saveChapterMetadata = false)
++        } catch (error: Exception) {
++            if (error !is RulePersistenceException || error.completedEffect != null) rethrowRuleControlFailure(error)
++            coroutineContext.ensureActive()
++            book.environment.ensureOpen()
++            bookSource.environment.platform.log("Original batch content save failed ${book.name} ${chapter.title}: ${error.javaClass.name}")
++            false
++        }
++        if (saved) savedIndexes.add(chapter.index)
++        saved
++    }
++
++    fun close() = synchronized(lock) { closed = true }
++
++    fun markSaved(chapter: BookChapter) {
++        synchronized(lock) {
++            savedIndexes.add(chapter.index)
++        }
++    }
++
++    fun isSaved(chapter: BookChapter): Boolean = synchronized(lock) {
++        savedIndexes.contains(chapter.index)
++    }
++
++    fun savedCount(): Int = synchronized(lock) { savedIndexes.size }
++
++    /** 本批次中书源没有回存的章节,交由调用方按普通单章流程重试 */
++    fun missingChapters(): List<BookChapter> = synchronized(lock) {
++        chapters.filterNot { savedIndexes.contains(it.index) }
++    }
++}
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt
+@@ -1,4 +1,4 @@
+-// Retained original single/multiple-page content algorithm; transient no-save text contract only.
++// Retained original page/content and batch algorithms; batch saves use the existing explicit owned state.
+ package io.legado.app.model.webBook
+ 
+ import io.yuedu.legado.originalrule.*
+@@ -12,6 +12,9 @@
+ import io.legado.app.data.entities.rule.ContentRule
+ import io.legado.app.model.analyzeRule.AnalyzeRule
+ import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setChapter
++import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setBatchContext
++import io.legado.app.model.BatchContentContext
++import io.legado.app.help.ConcurrentRateLimiter
+ import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setCoroutineContext
+ import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setNextChapterUrl
+ import io.legado.app.model.analyzeRule.AnalyzeUrl
+@@ -228,4 +231,55 @@
+         return Pair(content, nextUrlList)
+     }
+ 
++    @Throws(Exception::class)
++    suspend fun analyzeContentBatch(
++        bookSource: BookSource,
++        book: Book,
++        chapters: List<BookChapter>
++    ): List<BookChapter> {
++        val contentRule = bookSource.getContentRule()
++        val contentBatch = contentRule.contentBatch
++        if (contentBatch.isNullOrBlank()) {
++            throw NoStackTraceException("书源未配置批量正文规则")
++        }
++        if (chapters.isEmpty()) {
++            return emptyList()
++        }
++        val batchContext =
++            BatchContentContext(bookSource, book, chapters, currentCoroutineContext(),
++                chapters.associate { it.index to book.environment.webBook.contentSaveToken(book, it) })
++        val analyzeRule = AnalyzeRule(book, bookSource)
++        analyzeRule.setCoroutineContext(currentCoroutineContext())
++        analyzeRule.setChapter(chapters.first())
++        analyzeRule.setBatchContext(batchContext)
++        analyzeRule.setBaseUrl(book.tocUrl.ifBlank { bookSource.bookSourceUrl })
++        Debug.log(bookSource.bookSourceUrl, "≡开始批量下载,本批${chapters.size}章")
++        currentCoroutineContext().ensureActive()
++        //每批算一次并发,批内书源自己发的请求由 AnalyzeUrl 各自限流
++        ConcurrentRateLimiter(bookSource).getConcurrentRecord()
++        try {
++            val script = contentBatch.trim()
++            if (script.startsWith("<js>", true) || script.startsWith("@js:", true)) {
++                // Reuse ordinary-rule wrappers, including consecutive <js> blocks.
++                for (rule in analyzeRule.splitSourceRule(script)) {
++                    if (rule.mode != AnalyzeRule.Mode.Js) {
++                        throw NoStackTraceException("批量正文规则只能包含 JavaScript")
++                    }
++                    analyzeRule.evalJS(rule.rule, chapters)
++                }
++            } else {
++                // Bare JS may itself contain a string such as "<js>"; do not parse its contents.
++                analyzeRule.evalJS(script, chapters)
++            }
++            currentCoroutineContext().ensureActive()
++        } finally {
++            batchContext.close()
++        }
++        val missing = batchContext.missingChapters()
++        Debug.log(
++            bookSource.bookSourceUrl,
++            "≡批量下载完成,成功${batchContext.savedCount()}章,未回存${missing.size}章"
++        )
++        return missing
++    }
+ }
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt
+@@ -15,7 +15,8 @@
+ 
+ /** Retained WebBook await orchestration through the single task-owned JVM HTTP.
+  * Android launch/UI wrappers, durable saving, mainJs, media, file downloads,
+- * explore UI navigation/rendering and contentBatch remain explicit unsupported.
++ * explore UI navigation/rendering remain explicit unsupported. Batch persistence
++ * requires the existing explicitly injected owner; this is not App save authorization.
+  * This class name does not imply the full Android WebBook ABI or App routing.
+  */
+ object WebBook {
+@@ -41,7 +42,10 @@
+     suspend fun preciseSearchAwait(bookSource: BookSource, name: String, author: String): Result<Book> =
+         owned(bookSource) { preciseSearchAwaitOwned(bookSource, name, author) }
+     suspend fun getContentBatchAwait(bookSource: BookSource, book: Book, chapters: List<BookChapter>): List<BookChapter> =
+-        unsupportedRule("original WebBook contentBatch persistence")
++        owned(bookSource, book) {
++            require(chapters.all { it.environment === book.environment && it.bookUrl == book.bookUrl }) { "Batch chapter belongs to another book/owner" }
++            BookContent.analyzeContentBatch(bookSource, book, chapters)
++        }
+     suspend fun exploreBookAwait(bookSource: BookSource, url: String, page: Int? = 1): ArrayList<SearchBook> =
+         owned(bookSource) { exploreBookAwaitOwned(bookSource, url, page) }
+     private suspend fun exploreBookAwaitOwned(bookSource: BookSource, url: String, page: Int?): ArrayList<SearchBook> {
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
+@@ -14,6 +14,7 @@
+ import kotlinx.coroutines.Job
+ import kotlinx.coroutines.ensureActive
+ import kotlinx.coroutines.withContext
++import kotlinx.coroutines.runBlocking
+ import okhttp3.HttpUrl.Companion.toHttpUrl
+ import okhttp3.Protocol
+ import okhttp3.Request
+@@ -68,6 +69,12 @@
+         return scope.asString
+     }
+ 
++    override fun originalRateDelayBudgetMillis(source: BaseSource): Long {
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        check(source.getRuleEnvironment() === environment()) { "Rate source belongs to another environment" }
++        return (task.deadlineEpochMs - System.currentTimeMillis()).coerceAtLeast(1L)
++    }
++
+     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
+         check(current === task && operation == "http.request") { "Unexpected original-rule host operation" }
+         ensureOwnerOpen()
+@@ -212,9 +219,10 @@
+             // As in JsExtensions/AnalyzeRule, construction is outside recovery.
+             // Only getStrResponse-equivalent execution errors become text.
+             val response = try {
+-                val request = analyzed.prepareRequest { target -> requestCookieHeader(target.toHttpUrl().toString()) }
+-                checkRequestCookieCapability(request)
+-                http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
++                // Same original AnalyzeUrl execution as WebBook, including its
++                // shared owner-scoped admission. Do not count redirects/retries
++                // separately or install another HTTP/rate/task authority.
++                runBlocking(scriptContext) { analyzed.getStrResponseAwait() }
+             } catch (error: Exception) {
+                 ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+                 rethrowRuleControlFailure(error)
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
+@@ -9,6 +9,7 @@
+ import kotlin.coroutines.CoroutineContext
+ import java.util.logging.Logger
+ import kotlinx.coroutines.CancellationException
++import kotlinx.coroutines.ensureActive
+ import io.yuedu.legado.RuntimeFailure
+ import org.htmlunit.corejs.javascript.WrappedException
+ 
+@@ -40,6 +41,9 @@
+         unsupportedRule("original WebBook execution owner")
+     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
+     open fun exploreOwnerScope(source: BaseSource): String = unsupportedRule("original explore owner scope")
++    /** Existing task deadline; no fresh rate-wait budget or scheduling owner. */
++    open fun originalRateDelayBudgetMillis(source: BaseSource): Long =
++        unsupportedRule("original concurrent rate needs the existing task deadline")
+     open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
+     open val userAgent: String? = null
+     open val cookie: RuleCookieHost = RuleCookieHost()
+@@ -79,7 +83,7 @@
+ interface RuleJsExtensions {
+     fun getSource(): BaseSource?
+     fun getTag(): String?
+-    fun getBatchContext(): RuleBatchContext? = null
++    fun getBatchContext(): io.legado.app.model.BatchContentContext? = null
+     fun getRuleEnvironment(): RuleEnvironment
+     fun getRuleCoroutineContext(): CoroutineContext
+     fun ajax(url: Any): String?
+@@ -91,7 +95,15 @@
+         return getRuleEnvironment().platform.request(url, header, callTimeout, getRuleCoroutineContext(), this)
+     }
+     fun webView(html: String?, url: String?, js: String?): Nothing = unsupportedRule("original-rule browser")
+-    fun cacheContent(chapter: Any?, content: String): Nothing = unsupportedRule("original-rule batch content")
++    fun cacheContent(chapter: Any?, content: String): Boolean {
++        com.script.rhino.rhinoContextOrNull?.ensureActive()
++        getRuleEnvironment().ensureOpen()
++        getRuleCoroutineContext().ensureActive()
++        val batchContext = getBatchContext()
++            ?: throw io.legado.app.exception.NoStackTraceException("java.cacheContent 只能在批量正文规则中调用")
++        val identifier = if (chapter is org.htmlunit.corejs.javascript.Wrapper) chapter.unwrap() else chapter
++        return batchContext.saveContent(identifier, content)
++    }
+     fun refreshBookInfo(): Nothing = unsupportedRule("original-rule refreshBookInfo")
+     fun refreshBookToc(): Nothing = unsupportedRule("original-rule refreshBookToc")
+     fun refreshContent(): Nothing = unsupportedRule("original-rule refreshContent")
+@@ -112,5 +124,4 @@
+     fun bytesToStr(value: ByteArray, charset: String): String = String(value, charset(charset))
+ }
+ 
+-/** The accepted slice rejects non-null batch context instead of fabricating chapter state. */
+-class RuleBatchContext(val chapters: List<RuleChapter>)
++
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt
+@@ -52,7 +52,7 @@
+         token.bookUrl == book.bookUrl && token.index == chapter.index && token.chapterUrl == chapter.url && token.name == book.name && token.author == book.author
+ 
+     /** Retained ContentSaveFence writeIfCurrent: a normal download does not advance the edit generation. */
+-    internal fun saveContent(book: Book, chapter: BookChapter, content: String, token: ContentSaveToken): Boolean {
++    internal fun saveContent(book: Book, chapter: BookChapter, content: String, token: ContentSaveToken, saveChapterMetadata: Boolean = true): Boolean {
+         ensureOpen()
+         if (!matches(book, chapter, token)) return false
+         val store = store(); val contentKey = contentKey(book.bookUrl, chapter.index); val tocKey = store.key("toc", book.bookUrl)
+@@ -68,12 +68,12 @@
+                 it.name == book.name && it.author == book.author && it.title == chapter.title }
+             val row = ContentRecord(token.version, book.bookUrl, chapter.index, chapter.url, book.name, book.author, chapter.title, chapter.imgUrl, content.ifEmpty { sameContent?.body.orEmpty() })
+             val changes = mutableMapOf<String, ByteArray?>(contentKey to GSON.toJson(row).toByteArray(Charsets.UTF_8))
+-            toc?.let { list ->
++            if (saveChapterMetadata) toc?.let { list ->
+                 changes[tocKey] = GSON.toJson(list.map { if (it.index == chapter.index && it.url == chapter.url) it.copy(title = chapter.title, imgUrl = chapter.imgUrl) else it }).toByteArray(Charsets.UTF_8)
+             }
+             changes to true
+         }
+-        if (saved) chapters[book.bookUrl]?.firstOrNull { it.index == chapter.index && it.url == chapter.url }?.let { it.title = chapter.title; it.imgUrl = chapter.imgUrl }
++        if (saved && saveChapterMetadata) chapters[book.bookUrl]?.firstOrNull { it.index == chapter.index && it.url == chapter.url }?.let { it.title = chapter.title; it.imgUrl = chapter.imgUrl }
+         return saved
+     }
+     /** Successful atomic owner replacement invalidates older network save tokens. */
+--- a/Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java
++++ b/Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java
+@@ -37,6 +37,7 @@
+         originalTraditionalSmoke(true, true);
+         originalBrowserProtocolSmoke();
+         originalExploreInfoMapSmoke();
++        originalContentBatchRateSmoke();
+     }
+ 
+     // ASCII-only controlled smoke fixture. Production uses retained original
+@@ -286,4 +287,78 @@
+             System.out.println("PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK pages=2 sameContextAcrossSessions=true explicitSave=true nativeExecuted=false");
+         }finally{LegadoRuntime.setHostCallback(null);server.stop(0);}
+     }
++
++    /** Internal original embedding contract in the ordinary JAR only. This does
++     * not authorize the public App batch/body-save route or claim JNI/native IO.
++     * Real file restart/generation/cancellation checks live in the JVM suite. */
++    static void originalContentBatchRateSmoke() throws Exception {
++        var values=new HashMap<String,String>(); var revision=new long[]{0};
++        var requests=new AtomicInteger(); var writes=new AtomicInteger();
++        var server=HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}),0),0);
++        server.createContext("/", exchange -> {
++            var n=requests.incrementAndGet();
++            if(n==1)exchange.getResponseHeaders().add("Set-Cookie","batch=owned; Path=/");
++            else if(!String.valueOf(exchange.getRequestHeaders().getFirst("Cookie")).contains("batch=owned"))throw new AssertionError("Batch lost the same HTTP Cookie jar");
++            var bytes=("body-"+exchange.getRequestURI().getPath()).getBytes(StandardCharsets.UTF_8);
++            exchange.sendResponseHeaders(200,bytes.length);
++            try(var out=exchange.getResponseBody()){out.write(bytes);}finally{exchange.close();}
++        });server.start();
++        var origin="http://127.0.0.1:"+server.getAddress().getPort();
++        var owner="ordinary-batch-owner";var taskID="ordinary-batch-task";
++        LegadoRuntime.setHostCallback((task,operation,raw)->{
++            var input=JsonParser.parseString(raw).getAsJsonObject();
++            if(!task.equals(taskID) || !input.get("owner").getAsString().equals(owner) || !input.has("deadlineEpochMs"))throw new AssertionError("Batch changed owner/task/deadline");
++            var out=new JsonObject();
++            synchronized(values){
++                if(operation.equals("explore.owner.scope"))out.addProperty("scope","ordinary-batch-backing-source-revision");
++                else if(operation.equals("state.read")){
++                    out.addProperty("revision",revision[0]);var selected=new JsonObject();
++                    for(var key:input.getAsJsonArray("keys")){var value=values.get(key.getAsString());if(value!=null)selected.addProperty(key.getAsString(),value);}
++                    out.add("values",selected);
++                }else if(operation.equals("state.commit")){
++                    var matches=input.get("revision").getAsLong()==revision[0];
++                    if(matches){for(var e:input.getAsJsonObject("changes").entrySet()){if(e.getValue().isJsonNull())values.remove(e.getKey());else values.put(e.getKey(),e.getValue().getAsString());}revision[0]++;writes.incrementAndGet();}
++                    out.addProperty("committed",matches);
++                }else throw new AssertionError(operation);
++            }return out.toString();
++        });
++        var sourceJson=new JsonObject();sourceJson.addProperty("bookSourceUrl",origin);sourceJson.addProperty("enabledCookieJar",true);sourceJson.addProperty("concurrentRate","6/60000");
++        var contentRule=new JsonObject();contentRule.addProperty("contentBatch","for(var i=0;i<2;i++){if(!java.cacheContent(result.get(i),java.ajax(result.get(i).getAbsoluteURL())))throw new Error('save failed')}");sourceJson.add("ruleContent",contentRule);
++        var options=new io.yuedu.legado.RuntimeSessionOptions("jvm-okhttp",null,owner,"existing","session-jar");
++        var session=new io.yuedu.legado.RuntimeSession("ordinary-batch-session",sourceJson,options);
++        var job=kotlinx.coroutines.JobKt.Job((kotlinx.coroutines.Job)null);
++        var task=new io.yuedu.legado.RuntimeTask(taskID,session,job,System.currentTimeMillis()+15000,null);
++        var environment=LegadoRuntime.INSTANCE.originalRuleEnvironment$io_yuedu_legado_runtime(task);
++        try {
++            var source=LegadoRuntime.INSTANCE.originalBookSource$io_yuedu_legado_runtime(task,environment);
++            var bookJson=new JsonObject();bookJson.addProperty("origin",origin);bookJson.addProperty("bookUrl",origin+"/book");bookJson.addProperty("tocUrl",origin+"/toc");bookJson.addProperty("name","Batch");bookJson.addProperty("author","Owned");
++            var book=io.yuedu.legado.OriginalRuleDto.INSTANCE.book(bookJson,environment,origin);
++            var chapters=new java.util.ArrayList<io.legado.app.data.entities.BookChapter>();
++            for(int i=0;i<3;i++){
++                var chapter=new JsonObject();chapter.addProperty("bookUrl",book.getBookUrl());chapter.addProperty("url",origin+"/chapter-"+i);chapter.addProperty("title","C"+i);chapter.addProperty("baseUrl",book.getTocUrl());chapter.addProperty("index",i);
++                chapters.add(io.yuedu.legado.OriginalRuleDto.INSTANCE.chapter(chapter,environment,book));
++            }
++            environment.getWebBook().publish$io_yuedu_legado_runtime(book.getBookUrl(),chapters);
++            var missing=session.withCurrentTask$io_yuedu_legado_runtime(task,()->{
++                try {
++                    return kotlinx.coroutines.BuildersKt.<java.util.List<io.legado.app.data.entities.BookChapter>>runBlocking(job,
++                        (scope,continuation)->io.legado.app.model.webBook.WebBook.INSTANCE.getContentBatchAwait(source,book,chapters,continuation));
++                }catch(InterruptedException e){throw new RuntimeException(e);}
++            });
++            if(missing.size()!=1 || missing.get(0)!=chapters.get(2))throw new AssertionError("Batch did not return original missing chapter identity");
++            for(int i=0;i<2;i++){
++                var chapter=chapters.get(i);var state=environment.getWebBook();
++                var body=state.getContent$io_yuedu_legado_runtime(book,chapter,state.contentSaveToken$io_yuedu_legado_runtime(book,chapter));
++                if(!("body-/chapter-"+i).equals(body))throw new AssertionError("Batch did not save original body through the same owner");
++            }
++            var record=new io.legado.app.help.ConcurrentRateLimiter(source).getConcurrentRecordBlocking();
++            if(record.getFrequency()!=4 || requests.get()!=2 || writes.get()<3)throw new AssertionError("Batch and nested HTTP did not share the original rate window");
++            var publicSession=checked(LegadoRuntime.createSession(sourceJson.toString(),"{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\""+owner+"\"}")).get("sessionId").getAsString();
++            try {
++                var denied=JsonParser.parseString(LegadoRuntime.execute(publicSession,"ordinary-batch-ungranted","contentBatch","{}")).getAsJsonObject();
++                if(denied.get("ok").getAsBoolean() || !denied.getAsJsonObject("error").get("code").getAsString().equals("UNSUPPORTED_OPERATION"))throw new AssertionError("Public App batch must remain ungranted");
++            }finally{checked(LegadoRuntime.closeSession(publicSession));}
++            System.out.println("PACKAGED_ORIGINAL_BATCH_RATE_OK saved=2 missing=1 sameOwner=true rateAdmissions=4 publicAppSaveEnabled=false nativeExecuted=false");
++        }finally{environment.close();job.cancel(null);session.getClosed().set(true);session.getHttp().close();LegadoRuntime.setHostCallback(null);server.stop(0);}
++    }
+ }
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt
+@@ -0,0 +1,294 @@
++package io.yuedu.legado
++
++import com.google.gson.JsonObject
++import com.script.rhino.runScriptWithContext
++import com.sun.net.httpserver.HttpServer
++import io.legado.app.data.entities.*
++import io.legado.app.data.entities.rule.ContentRule
++import io.legado.app.help.ConcurrentRateLimiter
++import io.legado.app.model.analyzeRule.AnalyzeRule
++import io.legado.app.model.analyzeRule.AnalyzeUrl
++import io.legado.app.model.webBook.WebBook
++import io.yuedu.legado.originalrule.*
++import io.yuedu.legado.reference.OriginalConcurrentRateLimiterOracle
++import kotlinx.coroutines.*
++import org.junit.Assert.*
++import org.junit.Test
++import java.io.Closeable
++import java.net.InetAddress
++import java.net.InetSocketAddress
++import java.nio.file.Files
++import java.util.UUID
++import java.util.concurrent.*
++import java.util.concurrent.atomic.AtomicInteger
++
++/** Actual owned task/host/loopback; pinned original limiter is a test-only oracle. */
++class OriginalConcurrentRateTest {
++    @Test(timeout = 25_000) fun pinnedRateCounterBodiesMatchNullMalformedWindowParsingFrequencyAndReset() {
++        Peer().use { peer -> Factory(peer.origin).use { f ->
++            for (rate in listOf(null,"","0","bad","2/no","2/100000","3","0/9","-1","/100")) {
++                f.revision++; f.rate = rate
++                f.open(sourceID = UUID.randomUUID().toString()).use { o -> runBlocking {
++                    val oracle = OriginalConcurrentRateLimiterOracle(o.source)
++                    val actual = ConcurrentRateLimiter(o.source)
++                    val expected = oracle.getConcurrentRecord(); val record = actual.getConcurrentRecord()
++                    if(expected == null) assertNull(record)
++                    else {
++                        assertNotNull(record); record!!
++                        assertEquals(expected.accessLimit,record.accessLimit); assertEquals(expected.interval,record.interval); assertEquals(expected.frequency,record.frequency)
++                        if(rate == "2/100000") {
++                            assertSame(expected,oracle.getConcurrentRecord()); assertSame(record,actual.getConcurrentRecord())
++                            assertEquals(2,record.frequency); assertEquals(expected.frequency,record.frequency)
++                        }
++                        expected.time = 0; record.time = 0
++                        val expectedReset = oracle.getConcurrentRecord()!!; val actualReset = actual.getConcurrentRecord()!!
++                        assertEquals(expectedReset.frequency,actualReset.frequency)
++                        assertEquals(1,actualReset.frequency)
++                        actualReset.time = 0; actualReset.interval = 0
++                    }
++                } }
++            }
++            assertTrue(peer.requests.isEmpty())
++        } }
++    }
++
++    @Test(timeout = 20_000) fun originalDelayReallyBlocksCommonAjaxAndRedirectCountsAsOneAdmission() {
++        Peer().use { peer -> Factory(peer.origin).use { f ->
++            f.rate = "1/220"
++            f.open().use { o -> runBlocking {
++                val record = ConcurrentRateLimiter(o.source).getConcurrentRecord()!!
++                val start = System.nanoTime()
++                AnalyzeRule(source=o.source).use { assertTrue(it.connect(peer.origin+"/limited").body()!!.contains("body")) }
++                val elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start)
++                assertTrue("Actual original window delay elapsed="+elapsed,elapsed >= 140)
++                assertEquals(listOf("/limited"),peer.requests.map { it.first })
++                record.time = 0; record.interval = 0
++            } }
++            f.revision++; f.rate = "5/60000"; peer.requests.clear()
++            f.open().use { o -> runBlocking {
++                AnalyzeRule(source=o.source).use { rule ->
++                    rule.connect(peer.origin+"/first")
++                    rule.ajax(peer.origin+"/redirect")
++                }
++                val record = ConcurrentRateLimiter(o.source).getConcurrentRecord()!!
++                assertEquals(3,record.frequency) // Two source requests plus this inspection; redirect uses same admission.
++                assertEquals(listOf("/first","/redirect","/target"),peer.requests.map { it.first })
++                record.time = 0; record.interval = 0
++            } }
++        } }
++    }
++
++    @Test(timeout = 25_000) fun batchAndNestedRequestsShareCounterWithWebBookAndExplicitSkipRateLimit() {
++        Peer().use { peer -> Factory(peer.origin).use { f ->
++            f.rate = "10/60000"
++            f.open().use { o -> runBlocking {
++                val chapters = listOf(o.chapter(0),o.chapter(1)); o.environment.webBook.publish(o.book.bookUrl,chapters)
++                o.source.ruleContent = ContentRule(content="#text@text",contentBatch="java.cacheContent(chapters[0],java.ajax(book.origin+'/first'));java.cacheContent(chapters[1],java.ajax(book.origin+'/second'))")
++                assertTrue(WebBook.getContentBatchAwait(o.source,o.book,chapters).isEmpty()) // Batch admission=1, ajax=2,3.
++                WebBook.getContentAwait(o.source,o.book,o.chapter(2),needSave=false) // Admission4.
++                val record = ConcurrentRateLimiter(o.source).getConcurrentRecord()!!; assertEquals(5,record.frequency)
++                val before = f.scopeCalls.get()
++                AnalyzeUrl(peer.origin+"/skip",source=o.source,environment=o.environment,coroutineContext=coroutineContext)
++                    .getStrResponseAwait(skipRateLimit=true)
++                assertEquals(before,f.scopeCalls.get())
++                assertSame(record,ConcurrentRateLimiter(o.source).getConcurrentRecord()); assertEquals(6,record.frequency)
++                assertEquals(4,peer.requests.size)
++                record.time=0;record.interval=0
++            } }
++        } }
++    }
++
++    @Test(timeout = 25_000) fun waitingRateUsesActualCallerDeadlineRevokeAndOwnerCloseWithoutStartingHttp() {
++        for(reason in listOf("caller","deadline","revoke","environment","session")) Peer().use { peer -> Factory(peer.origin).use { f ->
++            f.rate = if(reason in listOf("caller","deadline")) "1/60000" else "1/300"
++            f.open(timeoutMs=1_600).use { o ->
++                val record = runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord()!! }
++                f.awaitScope = f.scopeCalls.get()+1
++                val caller=Job();val pool=Executors.newSingleThreadExecutor()
++                try {
++                    val future=pool.submit<String> { runBlocking(caller) { WebBook.getContentAwait(o.source,o.book,o.chapter(0),needSave=false) } }
++                    assertTrue(f.waiting.await(3,TimeUnit.SECONDS))
++                    when(reason) {
++                        "caller" -> caller.cancel()
++                        "revoke" -> f.revoked = true
++                        "environment" -> o.environment.close()
++                        "session" -> o.session.closed.set(true)
++                    }
++                    val failure=assertThrows(ExecutionException::class.java) { future.get(4,TimeUnit.SECONDS) }
++                    if(reason=="revoke") assertTrue(failure.cause.toString(),failure.cause is UnsupportedRuleCapability)
++                    else assertTrue(failure.cause.toString(),failure.cause is kotlinx.coroutines.CancellationException)
++                    assertEquals(reason=="deadline",o.task.timedOut.get())
++                    assertTrue(peer.requests.isEmpty())
++                } finally {
++                    caller.cancel();o.task.job.cancel();pool.shutdownNow();check(pool.awaitTermination(3,TimeUnit.SECONDS))
++                    record.time=0;record.interval=0
++                }
++            }
++        } }
++    }
++
++    @Test(timeout = 20_000) fun stableBackingScopeSurvivesNewTaskGrantsButSourceRevisionAndInjectedOwnerStayIsolated() {
++        Peer().use { peer -> Factory(peer.origin).use { f ->
++            f.rate="9/60000"
++            val first=f.open().use { o -> runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord()!! } }
++            f.open().use { o -> runBlocking {
++                val second=ConcurrentRateLimiter(o.source).getConcurrentRecord()!!
++                assertSame(first,second);assertEquals(2,second.frequency) // First task/grant is closed, so it cannot be a retained check authority.
++            } }
++            f.revision++
++            val changed=f.open().use { o -> runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord()!! } }
++            assertNotSame(first,changed);assertEquals(1,changed.frequency)
++            val otherSource=f.open(sourceID="different").use { o -> runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord()!! } }
++            assertNotSame(changed,otherSource)
++            Factory(peer.origin).use { other ->
++                other.rate=f.rate
++                val otherBacking=other.open().use { o -> runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord()!! } }
++                assertNotSame(changed,otherBacking);otherBacking.time=0;otherBacking.interval=0
++            }
++            for(record in listOf(first,changed,otherSource)){record.time=0;record.interval=0}
++            assertTrue(peer.requests.isEmpty())
++        } }
++    }
++
++    @Test(timeout = 25_000) fun concurrentExpiryPruningAndSameOwnerAdmissionKeepOneOriginalWindow() {
++        Peer().use { peer -> Factory(peer.origin).use { f ->
++            f.rate="1/3600000"
++            val pool=Executors.newFixedThreadPool(16)
++            try { repeat(6) { round ->
++                val id="raced-expiry-"+round
++                val expired=f.open(sourceID=id).use { o -> runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord()!! } }
++                expired.time=0
++                val start=CountDownLatch(1);val ready=CountDownLatch(16)
++                val invocations=(0 until 16).map { index -> f.open(timeoutMs=600,sourceID=if(index<8)id else "raced-prune-$round-$index") }
++                val futures=invocations.map { o -> pool.submit(Callable {
++                    ready.countDown();check(start.await(3,TimeUnit.SECONDS))
++                    try { runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord() } }
++                    catch(_:kotlinx.coroutines.CancellationException){null}
++                }) }
++                try {
++                    check(ready.await(3,TimeUnit.SECONDS));start.countDown()
++                    val outcomes=futures.map { it.get(3,TimeUnit.SECONDS) }
++                    assertEquals("Pruning must not detach a row that is being reset/admitted",1,outcomes.take(8).count{it!=null})
++                    assertTrue(outcomes.drop(8).all{it!=null})
++                    for(record in outcomes.filterNotNull()){record.time=0;record.interval=0}
++                } finally { start.countDown();invocations.forEach{it.close()};futures.forEach{it.cancel(true)};expired.time=0;expired.interval=0 }
++            } } finally { pool.shutdownNow();check(pool.awaitTermination(3,TimeUnit.SECONDS)) }
++            assertTrue(peer.requests.isEmpty())
++        } }
++    }
++
++    @Test(timeout = 40_000) fun boundedActiveOwnerRegistryAndRawGlobalMapStayClosedWithoutEvictingLiveWindows() {
++        Peer().use { peer -> Factory(peer.origin).use { f ->
++            f.rate="1/3600000"
++            val records=mutableListOf<AnalyzeUrl.ConcurrentRecord>()
++            try {
++                var limited=false
++                for(index in 0..256) {
++                    f.revision++
++                    try {
++                        val record=f.open(sourceID="capacity-"+index).use { o -> runBlocking { ConcurrentRateLimiter(o.source).getConcurrentRecord()!! } }
++                        records+=record
++                    } catch(error:UnsupportedRuleCapability) {
++                        assertTrue(error.message.orEmpty(),error.message.orEmpty().contains("256"));limited=true;break
++                    }
++                }
++                assertTrue(limited);assertTrue(records.isNotEmpty());assertTrue(records.size<=256)
++                f.open(sourceID="no-unscoped-map").use { o -> runBlocking {
++                    val escaped = o.environment.platform.runWebBook(coroutineContext) {
++                        runScriptWithContext(currentCoroutineContext()) {
++                            o.source.evalJS("var cls=Packages.io.legado.app.help.ConcurrentRateLimiter; var escaped=false; try{if(cls['access\$getRecords\$cp']() instanceof java.util.Map)escaped=true}catch(ignored){}; for(var name in cls){if(String(name).indexOf('access$')===0){try{if(cls[name]() instanceof java.util.Map)escaped=true}catch(ignored){}}}; escaped")
++                        }
++                    }
++                    assertEquals("Compiler-generated static accessors must not expose a raw owner registry", false, escaped)
++                    assertTrue(ConcurrentRateLimiter::class.java.methods.none { it.name.startsWith("access"+"$") && java.util.Map::class.java.isAssignableFrom(it.returnType) })
++                    val registry=Class.forName("io.legado.app.help.OwnedConcurrentWindows")
++                    assertTrue(registry.methods.none { java.util.Map::class.java.isAssignableFrom(it.returnType) })
++                    try {
++                        o.environment.platform.runWebBook(coroutineContext) {
++                            runScriptWithContext(currentCoroutineContext()) {
++                                o.source.evalJS("Packages.io.legado.app.help.ConcurrentRateLimiter.Companion.getConcurrentRecordMap()")
++                            }
++                        }
++                        fail("Raw global registry must not be exposed to erased Java Map writes")
++                    } catch(error:Exception) {
++                        try { rethrowRuleControlFailure(error);throw error }
++                        catch(_:UnsupportedRuleCapability) {}
++                    }
++                } }
++                assertTrue(peer.requests.isEmpty())
++            } finally {
++                for(record in records){record.time=0;record.interval=0}
++                // Original owned API reclaims expired records; no privileged clear/test hook.
++                f.revision++;f.open(sourceID="after-expiry").use { o -> runBlocking {
++                    val next=ConcurrentRateLimiter(o.source).getConcurrentRecord()!!;next.time=0;next.interval=0
++                } }
++            }
++        } }
++    }
++
++    private class Factory(private val origin:String):Closeable {
++        private val directory=Files.createTempDirectory("owned-original-rate-")
++        private val adapter=FileRulePersistenceAdapter(directory)
++        private val identity=UUID.randomUUID().toString()
++        private data class Grant(val sourceURL:String,val revision:Int,val taskID:String)
++        private val grants=ConcurrentHashMap<String,Grant>()
++        var revision=0;var rate:String?=null
++        @Volatile var revoked=false
++        @Volatile var awaitScope=Int.MAX_VALUE
++        val scopeCalls=AtomicInteger()
++        val waiting=CountDownLatch(1)
++        fun open(timeoutMs:Long=10_000,sourceID:String="main"):Invocation {
++            val id=UUID.randomUUID().toString();val grant="rate-grant-"+UUID.randomUUID()
++            val sourceURL=origin+"/source-"+sourceID
++            grants[grant]=Grant(sourceURL,revision,id)
++            val state=RulePersistenceHost(adapter)
++            LegadoRuntime.setHostCallback { task,op,raw ->
++                if(op=="task.cancel") "{}" else {
++                    val input=parseObject(raw);val binding=grants[input["owner"].asString] ?: throw RuntimeFailure("UNSUPPORTED_CAPABILITY","Revoked actual controlled source grant")
++                    check(binding.taskID==task && input.has("deadlineEpochMs"))
++                    if(revoked) throw RuntimeFailure("UNSUPPORTED_CAPABILITY","Controlled existing source revision was revoked")
++                    if(op=="explore.owner.scope") {
++                        check(input["sourceURL"].asString==binding.sourceURL)
++                        if(scopeCalls.incrementAndGet()==awaitScope)waiting.countDown()
++                        jsonObject("scope" to GSON.toJson(listOf(identity,binding.sourceURL,binding.revision))).toString()
++                    } else {
++                        input.addProperty("owner",identity)
++                        state.dispatch(op,input).toString()
++                    }
++                }
++            }
++            return Invocation(id,grant,sourceURL,timeoutMs)
++        }
++        inner class Invocation(id:String,private val grant:String,sourceURL:String,timeoutMs:Long):Closeable {
++            val session=RuntimeSession(UUID.randomUUID().toString(),jsonObject("bookSourceUrl" to sourceURL,"concurrentRate" to rate,"enabledCookieJar" to true),
++                RuntimeSessionOptions("jvm-okhttp",stateOwner=grant))
++            val task=RuntimeTask(id,session,Job(),System.currentTimeMillis()+timeoutMs)
++            val environment=LegadoRuntime.originalRuleEnvironment(task)
++            val source=LegadoRuntime.originalBookSource(task,environment)
++            val book=Book(environment,name="RateBook",author="Owned",bookUrl=origin+"/book",tocUrl=origin+"/toc",origin=origin)
++            fun chapter(index:Int)=BookChapter(environment,url=origin+"/chapter-"+index,title="chapter-"+index,bookUrl=book.bookUrl,index=index,baseUrl=origin+"/toc")
++            init { source.ruleContent=ContentRule(content="#text@text") }
++            override fun close() { environment.close();task.job.cancel();session.closed.set(true);session.http!!.close();grants.remove(grant) }
++        }
++        override fun close() { LegadoRuntime.setHostCallback(null);check(directory.toFile().deleteRecursively()) }
++    }
++    private class Peer:Closeable {
++        val requests=CopyOnWriteArrayList<Pair<String,Long>>()
++        private val executor=Executors.newCachedThreadPool()
++        private val server=HttpServer.create(InetSocketAddress(InetAddress.getByAddress(byteArrayOf(127,0,0,1)),0),0).apply {
++            this.executor=this@Peer.executor
++            createContext("/") { e ->
++                requests+=e.requestURI.path to System.nanoTime()
++                if(e.requestURI.path=="/redirect") {
++                    e.responseHeaders.add("Location","/target");e.sendResponseHeaders(302,-1)
++                } else {
++                    val body="<div id='text'>body</div>".toByteArray(Charsets.UTF_8)
++                    e.sendResponseHeaders(200,body.size.toLong());e.responseBody.use{it.write(body)}
++                }
++                e.close()
++            };start()
++        }
++        val origin="http://127.0.0.1:"+server.address.port
++        override fun close() { server.stop(0);executor.shutdownNow();check(executor.awaitTermination(3,TimeUnit.SECONDS)) }
++    }
++}
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt
+@@ -0,0 +1,261 @@
++package io.yuedu.legado
++
++import com.google.gson.JsonObject
++import com.sun.net.httpserver.HttpServer
++import io.legado.app.data.entities.*
++import io.legado.app.data.entities.rule.ContentRule
++import io.legado.app.exception.NoStackTraceException
++import io.legado.app.model.BatchContentContext
++import io.legado.app.model.analyzeRule.AnalyzeRule
++import io.legado.app.model.webBook.WebBook
++import io.yuedu.legado.originalrule.*
++import io.yuedu.legado.reference.OriginalBatchContextOracle
++import io.yuedu.legado.reference.ReferenceBatchBookHelp
++import kotlinx.coroutines.*
++import org.junit.Assert.*
++import org.junit.Test
++import java.io.Closeable
++import java.net.InetAddress
++import java.net.InetSocketAddress
++import java.nio.file.Files
++import java.util.UUID
++import java.util.concurrent.*
++import java.util.concurrent.atomic.AtomicBoolean
++
++/** Retained original batch body, same real task/HTTP/state host and temporary file owner. */
++class OriginalContentBatchTest {
++    @Test(timeout = 25_000) fun realBatchSavesTwoChaptersReturnsOnlyMissingAndKeepsSameBookHttpAndCookieOwner() {
++        Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
++            val chapters = o.chapters(3); o.environment.webBook.publish(o.book.bookUrl, chapters)
++            o.source.ruleContent = ContentRule(contentBatch = """
++                if(chapters.size()!=result.size() || chapter.index!=0) throw Error('bindings');
++                if(!(book instanceof Packages.io.legado.app.data.entities.Book)) throw Error('book');
++                java.put('batch','first-chapter'); book.putVariable('owner','same-book');
++                chapters[0].imgUrl='new-not-toc-metadata';
++                java.cacheContent(chapters[0],java.ajax(book.origin+'/c0'));
++                java.cacheContent(chapters[1],java.ajax(book.origin+'/c1'));
++            """.trimIndent(), replaceRegex = "##DROP##")
++            val missing = WebBook.getContentBatchAwait(o.source, o.book, chapters)
++            assertEquals(listOf(chapters[2]), missing); assertSame(chapters[2], missing.single())
++            assertEquals("same-book", o.book.getVariable("owner")); assertEquals("first-chapter", chapters[0].getVariable("batch"))
++            assertEquals("\u3000\u3000-A\n\u3000\u3000-B", o.environment.webBook.getContent(o.book, chapters[0]))
++            assertEquals("\u3000\u3000-C", o.environment.webBook.getContent(o.book, chapters[1]))
++            assertEquals(listOf("/c0", "/c1"), peer.requests.map { it.first })
++            assertTrue(peer.requests[1].second.contains("owned=1"))
++            assertEquals(2, o.session.requests.size)
++            o.reopen { env, book ->
++                val restored = env.webBook.chapters(book.bookUrl)
++                assertEquals(3, restored.size)
++                assertEquals("original-image-0", restored[0].imgUrl) // Original cacheContent does not update TOC metadata.
++                assertEquals("\u3000\u3000-A\n\u3000\u3000-B", env.webBook.getContent(book, restored[0]))
++                assertEquals("\u3000\u3000-C", env.webBook.getContent(book, restored[1]))
++                assertNull(env.webBook.getContent(book, restored[2]))
++            }
++        } } }
++    }
++
++    @Test(timeout = 25_000) fun originalWrappersAndBareJsUseSameCallbackAndOrdinaryErrorKeepsCommittedPrefixWithoutFallback() {
++        Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
++            val chapters = o.chapters(2); o.environment.webBook.publish(o.book.bookUrl, chapters)
++            o.source.ruleContent = ContentRule(contentBatch = "<js>java.cacheContent(chapters[0],'first')</js><js>java.cacheContent(chapters[1],'second')</js>")
++            assertTrue(WebBook.getContentBatchAwait(o.source, o.book, chapters).isEmpty())
++            o.source.ruleContent!!.contentBatch = "var literal='<js>'; java.cacheContent(chapters[0],literal+'bare')"
++            assertEquals(listOf(chapters[1]), WebBook.getContentBatchAwait(o.source, o.book, chapters))
++            assertEquals("<js>bare", o.environment.webBook.getContent(o.book, chapters[0]))
++            o.source.ruleContent!!.contentBatch = "cache.putMemory('context',java.getBatchContext());java.cacheContent(chapters[0],'prefix');throw Error('actual-script-error')"
++            try { WebBook.getContentBatchAwait(o.source, o.book, chapters); fail("ordinary script error must escape") }
++            catch (e: Exception) { assertTrue(e.toString(), e.toString().contains("actual-script-error")) }
++            val context = o.environment.cache.getFromMemory("context") as BatchContentContext
++            assertEquals(1, context.savedCount()); assertEquals(listOf(chapters[1]), context.missingChapters())
++            assertThrows(kotlinx.coroutines.CancellationException::class.java) { context.saveContent(chapters[1], "late") } // The failed invocation context is cancelled before its closed check, as upstream.
++            assertEquals("prefix", o.environment.webBook.getContent(o.book, chapters[0]))
++            assertEquals("second", o.environment.webBook.getContent(o.book, chapters[1]))
++            assertTrue(peer.requests.isEmpty()) // Single-chapter fallback belongs to the original caller, not WebBook.
++            o.reopen { env, book -> assertEquals("prefix", env.webBook.getContent(book, env.webBook.chapters(book.bookUrl)[0])) }
++        } } }
++    }
++
++    @Test(timeout = 20_000) fun pinnedContextOracleMatchesIndexUrlAmbiguityLiveCallbacksReplacementAndCloseContract() {
++        Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
++            val chapters = o.chapters(3); chapters[1].url = chapters[0].url
++            o.environment.webBook.publish(o.book.bookUrl, chapters)
++            o.source.ruleContent = ContentRule(replaceRegex = "@js:result+'|'+chapter.index+'|'+baseUrl")
++            val tokens = chapters.associate { it.index to o.environment.webBook.contentSaveToken(o.book, it) }
++            val port = BatchContentContext(o.source, o.book, chapters, coroutineContext, tokens)
++            val oracle = OriginalBatchContextOracle(o.source, o.book, chapters, coroutineContext, tokens)
++            for (identifier in listOf(chapters[0], chapters[1], BookChapter(o.environment, index = 1), chapters[0].url,
++                peer.origin + chapters[0].url, " " + chapters[2].url + " ", chapters[2].getAbsoluteURL(), 1, null, "/unknown")) {
++                assertSame(oracle.resolveChapter(identifier), port.resolveChapter(identifier))
++            }
++            assertNull(port.resolveChapter(chapters[0].url))
++            assertSame(chapters[1], port.resolveChapter(BookChapter(o.environment, index = 1)))
++            assertEquals(oracle.applyContentReplace(chapters[2], "  A \n B "), port.applyContentReplace(chapters[2], "  A \n B "))
++            val captured = mutableListOf<Pair<Int, String>>()
++            ReferenceBatchBookHelp.capture = { _,_,chapter,body,_ -> captured += chapter.index to body; true }
++            try {
++                assertEquals(oracle.saveContent(chapters[0], "body"), port.saveContent(chapters[0], "body"))
++                assertEquals(captured.single().second, o.environment.webBook.getContent(o.book, chapters[0]))
++                oracle.markSaved(chapters[2]); port.markSaved(chapters[2])
++                assertEquals(oracle.missingChapters(), port.missingChapters())
++                assertEquals(oracle.savedCount(), port.savedCount())
++                assertEquals(oracle.isSaved(chapters[2]), port.isSaved(chapters[2]))
++                oracle.close(); port.close()
++                assertFalse(oracle.saveContent(chapters[1], "late")); assertFalse(port.saveContent(chapters[1], "late"))
++            } finally { ReferenceBatchBookHelp.capture = { _,_,_,_,_ -> true } }
++        } } }
++    }
++
++    @Test(timeout = 20_000) fun ambiguousUrlsAndBlankCallbacksNeverMarkSavedAndSaveIoFailureReturnsFalseAndPreservesOldFile() {
++        Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
++            val chapters = o.chapters(2); chapters[1].url = chapters[0].url
++            o.environment.webBook.publish(o.book.bookUrl, chapters)
++            o.source.ruleContent = ContentRule(contentBatch = "java.cacheContent(chapters[0].url,'wrong')")
++            try { WebBook.getContentBatchAwait(o.source, o.book, chapters); fail("duplicate URL needs the chapter object") }
++            catch (e: Exception) { assertTrue(e.toString(), e.toString().contains("cacheContent")) }
++            o.source.ruleContent!!.contentBatch = "cache.putMemory('blank',java.cacheContent(chapters[0],'  '));cache.putMemory('attempt',java.cacheContent(chapters[1],'not-committed'));"
++            val before = o.fileBytes(); o.failCommit.set(true)
++            assertEquals(chapters, WebBook.getContentBatchAwait(o.source, o.book, chapters))
++            assertEquals(false, o.environment.cache.getFromMemory("blank")); assertEquals(false, o.environment.cache.getFromMemory("attempt"))
++            assertArrayEquals(before, o.fileBytes())
++            o.failCommit.set(false)
++            o.source.ruleContent!!.contentBatch = "java.cacheContent(chapters[0],'index-zero');java.cacheContent(chapters[1],'index-one')"
++            assertTrue(WebBook.getContentBatchAwait(o.source, o.book, chapters).isEmpty())
++            assertEquals("index-zero", o.environment.webBook.getContent(o.book, chapters[0]))
++            assertEquals("index-one", o.environment.webBook.getContent(o.book, chapters[1]))
++        } } }
++    }
++
++    @Test(timeout = 30_000) fun cancellationDeadlineAndCloseKeepSavedPrefixButRejectSecondCallbackAndCloseItsContext() {
++        for (reason in listOf("caller", "deadline", "environment")) Peer().use { peer ->
++            Owned(peer.origin, if (reason == "deadline") 2_000 else 10_000).use { o ->
++                val chapters = o.chapters(2); o.environment.webBook.publish(o.book.bookUrl, chapters)
++                val entered = CountDownLatch(1); val release = CountDownLatch(1)
++                o.environment.cache.putMemory("entered", entered); o.environment.cache.putMemory("release", release)
++                o.source.ruleContent = ContentRule(contentBatch = "cache.putMemory('context',java.getBatchContext());java.cacheContent(chapters[0],'saved-before-cancel');cache.getFromMemory('entered').countDown();cache.getFromMemory('release').await();java.cacheContent(chapters[1],'forbidden-after-cancel')")
++                o.source.evalJS("1") // Uses the same absolute task deadline, including library initialization.
++                val caller = Job(); val pool = Executors.newSingleThreadExecutor()
++                try {
++                    val future = pool.submit<List<BookChapter>> { runBlocking(caller) { WebBook.getContentBatchAwait(o.source, o.book, chapters) } }
++                    assertTrue(entered.await(3, TimeUnit.SECONDS))
++                    val context = o.environment.cache.getFromMemory("context") as BatchContentContext
++                    when(reason) {
++                        "caller" -> caller.cancel()
++                        "environment" -> o.environment.close()
++                        else -> CountDownLatch(1).await(maxOf(1L, o.task.deadlineEpochMs - System.currentTimeMillis() + 30L), TimeUnit.MILLISECONDS)
++                    }
++                    release.countDown()
++                    val failure = assertThrows(ExecutionException::class.java) { future.get(4, TimeUnit.SECONDS) }
++                    assertTrue(failure.cause.toString(), failure.cause is kotlinx.coroutines.CancellationException)
++                    assertEquals(1, context.savedCount()); assertEquals(listOf(chapters[1]), context.missingChapters())
++                    o.reopen { env, book ->
++                        val restored = env.webBook.chapters(book.bookUrl)
++                        assertEquals("saved-before-cancel", env.webBook.getContent(book, restored[0]))
++                        assertNull(env.webBook.getContent(book, restored[1]))
++                    }
++                } finally { release.countDown(); caller.cancel(); pool.shutdownNow(); check(pool.awaitTermination(3, TimeUnit.SECONDS)) }
++            }
++        }
++    }
++
++    @Test(timeout = 25_000) fun staleReplacementGenerationAndRefreshedTocRejectOlderBatchCallbackWithoutOverwritingCurrentState() {
++        for (change in listOf("edit", "toc")) Peer().use { peer -> Owned(peer.origin).use { o ->
++            val chapters = o.chapters(2); o.environment.webBook.publish(o.book.bookUrl, chapters)
++            val entered = CountDownLatch(1); val release = CountDownLatch(1)
++            o.environment.cache.putMemory("entered", entered); o.environment.cache.putMemory("release", release)
++            o.source.ruleContent = ContentRule(contentBatch = "java.cacheContent(chapters[0],'prefix');cache.getFromMemory('entered').countDown();cache.getFromMemory('release').await();cache.putMemory('saved',java.cacheContent(chapters[1],'stale-network'))")
++            val pool = Executors.newSingleThreadExecutor()
++            try {
++                val future = pool.submit<List<BookChapter>> { runBlocking { WebBook.getContentBatchAwait(o.source, o.book, chapters) } }
++                assertTrue(entered.await(3, TimeUnit.SECONDS))
++                o.reopen { env, book ->
++                    val current = env.webBook.chapters(book.bookUrl)
++                    if(change == "edit") env.webBook.replaceContent(book, current[1], "current-edit")
++                    else { current[1].url = "/new-chapter"; current[1].title = "new-title"; env.webBook.publish(book.bookUrl, current) }
++                }
++                release.countDown()
++                assertEquals(listOf(chapters[1]), future.get(4, TimeUnit.SECONDS))
++                assertEquals(false, o.environment.cache.getFromMemory("saved"))
++                o.reopen { env, book ->
++                    val restored = env.webBook.chapters(book.bookUrl)
++                    assertEquals("prefix", env.webBook.getContent(book, restored[0]))
++                    if(change == "edit") assertEquals("current-edit", env.webBook.getContent(book, restored[1]))
++                    else { assertEquals("/new-chapter", restored[1].url); assertEquals("new-title", restored[1].title); assertNull(env.webBook.getContent(book, restored[1])) }
++                }
++            } finally { release.countDown(); pool.shutdownNow(); check(pool.awaitTermination(3, TimeUnit.SECONDS)) }
++        } }
++    }
++
++    @Test(timeout = 20_000) fun missingRuleEmptyBatchAndPublicSaveAuthorityRemainExplicitWithoutRunningAuthoredScripts() {
++        Peer().use { peer -> Owned(peer.origin).use { o -> runBlocking {
++            try { WebBook.getContentBatchAwait(o.source, o.book, emptyList()); fail("rule validation precedes empty list") } catch (_: NoStackTraceException) {}
++            o.source.ruleContent = ContentRule(contentBatch = "throw Error('must-not-run-empty')")
++            assertTrue(WebBook.getContentBatchAwait(o.source, o.book, emptyList()).isEmpty())
++            AnalyzeRule(o.book,o.source).use { rule ->
++                assertThrows(NoStackTraceException::class.java) { rule.cacheContent(null,"outside-batch") }
++            }
++            val snapshot = jsonObject("bookSourceUrl" to peer.origin, "ruleContent" to jsonObject("contentBatch" to "throw Error('no-save-grant')"))
++            val created = parseObject(LegadoRuntime.createSession(snapshot.toString(),jsonObject("sourceMode" to "original-traditional","httpTransport" to "jvm-okhttp","stateOwner" to "not-an-App-body-grant").toString()))
++            val session = created["sessionId"].asString
++            try {
++                val reply = parseObject(LegadoRuntime.execute(session,"no-body-grant","contentBatch","{}"))
++                assertEquals("UNSUPPORTED_OPERATION",reply["error"].asJsonObject["code"].asString)
++            } finally { LegadoRuntime.closeSession(session) }
++            assertTrue(peer.requests.isEmpty())
++        } } }
++    }
++
++    private class Owned(val origin: String, timeoutMs: Long = 10_000) : Closeable {
++        private val directory = Files.createTempDirectory("owned-original-batch-")
++        private val adapter = FileRulePersistenceAdapter(directory)
++        private val owner = "existing-batch-owner-" + UUID.randomUUID()
++        val failCommit = AtomicBoolean(false)
++        private val wrapped = object : RulePersistenceAdapter {
++            override fun read(owner: String, keys: Set<String>) = adapter.read(owner,keys)
++            override fun compareAndSet(owner: String, revision: Long, changes: Map<String,ByteArray?>): Boolean {
++                if(failCommit.get()) throw RulePersistenceException("Actual controlled owner refused content commit")
++                return adapter.compareAndSet(owner,revision,changes)
++            }
++        }
++        val session: RuntimeSession
++        val task: RuntimeTask
++        val environment: RuleEnvironment
++        val source: BookSource
++        val book: Book
++        init {
++            val host = RulePersistenceHost(wrapped)
++            LegadoRuntime.setHostCallback { _,op,raw -> if(op == "task.cancel") "{}" else host.dispatch(op,parseObject(raw)).toString() }
++            session = RuntimeSession(UUID.randomUUID().toString(),jsonObject("bookSourceUrl" to origin,"enabledCookieJar" to true),
++                RuntimeSessionOptions("jvm-okhttp",stateOwner = owner))
++            task = RuntimeTask(UUID.randomUUID().toString(),session,Job(),System.currentTimeMillis()+timeoutMs)
++            environment = LegadoRuntime.originalRuleEnvironment(task)
++            source = LegadoRuntime.originalBookSource(task,environment)
++            book = makeBook(environment)
++        }
++        private fun makeBook(env: RuleEnvironment) = Book(env,name="BatchBook",author="BatchAuthor",bookUrl=origin+"/book",tocUrl=origin+"/toc",origin=origin)
++        fun chapters(count: Int) = (0 until count).map { BookChapter(environment,url="/c"+it,title="chapter-"+it,bookUrl=book.bookUrl,index=it,baseUrl=origin+"/toc",imgUrl="original-image-"+it) }
++        fun fileBytes() = Files.readAllBytes(adapter.file(owner))
++        fun reopen(action: (RuleEnvironment,Book)->Unit) {
++            RuleEnvironment(persistence=RulePersistenceBinding(adapter,owner,origin)).use { action(it,makeBook(it)) }
++        }
++        override fun close() {
++            environment.close(); task.job.cancel(); session.closed.set(true); session.http!!.close()
++            LegadoRuntime.setHostCallback(null); check(directory.toFile().deleteRecursively())
++        }
++    }
++    private class Peer : Closeable {
++        val requests = CopyOnWriteArrayList<Pair<String,String>>()
++        private val executor = Executors.newCachedThreadPool()
++        private val server = HttpServer.create(InetSocketAddress(InetAddress.getByAddress(byteArrayOf(127,0,0,1)),0),0).apply {
++            this.executor = this@Peer.executor
++            createContext("/") { e ->
++                requests += e.requestURI.path to e.requestHeaders.getFirst("Cookie").orEmpty()
++                if(e.requestURI.path == "/c0") e.responseHeaders.add("Set-Cookie","owned=1; Path=/")
++                val text = if(e.requestURI.path == "/c0") "  DROP-A \n DROP-B " else "DROP-C"
++                val bytes = text.toByteArray(Charsets.UTF_8)
++                e.sendResponseHeaders(200,bytes.size.toLong()); e.responseBody.use { it.write(bytes) }; e.close()
++            };start()
++        }
++        val origin = "http://127.0.0.1:"+server.address.port
++        override fun close() { server.stop(0); executor.shutdownNow(); check(executor.awaitTermination(3,TimeUnit.SECONDS)) }
++    }
++}
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt
+@@ -141,11 +141,12 @@
+         } } }
+     }
+ 
+-    @Test(timeout = 15_000) fun unsupportedSavingBatchAndNestedCapabilitiesAreTypedWithoutPublication() {
++    @Test(timeout = 15_000) fun savingWithoutGrantMissingBatchRuleAndNestedCapabilitiesFailWithoutPublication() {
+         Peer { respond(it, "<a href='/book'>Book</a>") }.use { peer -> Owned(peer.origin).use { owned -> runBlocking {
+             val source = owned.source; val book = Book(owned.environment); val chapter = BookChapter(owned.environment)
+             assertThrows(UnsupportedRuleCapability::class.java) { runBlocking { WebBook.getContentAwait(source, book, chapter) } }
+-            assertThrows(UnsupportedRuleCapability::class.java) { runBlocking { WebBook.getContentBatchAwait(source, book, listOf(chapter)) } }
++            // Batch is now implemented internally: the original missing-rule error precedes any save/HTTP.
++            assertThrows(io.legado.app.exception.NoStackTraceException::class.java) { runBlocking { WebBook.getContentBatchAwait(source, book, listOf(chapter)) } }
+             source.searchUrl = "/search"; source.ruleSearch = SearchRule(bookList = "a", name = "text", author = "@js:java.connect(source.getKey()+'/bad,{\"webView\":true}'); 'ignored'", bookUrl = "href")
+             assertThrows(UnsupportedRuleCapability::class.java) { runBlocking { WebBook.searchBookAwait(source, "x") } }
+             assertEquals(1, peer.requests.size)
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt
+@@ -0,0 +1,161 @@
++package io.yuedu.legado.reference
++
++import io.legado.app.model.webBook.AppPattern
++import io.legado.app.data.entities.Book
++import io.legado.app.data.entities.BookChapter
++import io.legado.app.data.entities.BookSource
++import io.legado.app.exception.NoStackTraceException
++import io.yuedu.legado.reference.ReferenceBatchBookHelp as BookHelp
++import io.yuedu.legado.originalrule.RuleWebBookState.ContentSaveToken
++import io.legado.app.model.webBook.isOriginalOnlineText
++import kotlinx.coroutines.ensureActive
++import io.legado.app.model.analyzeRule.AnalyzeRule
++import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setChapter
++import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setCoroutineContext
++import io.yuedu.legado.originalrule.NetworkUtils
++import kotlin.coroutines.CoroutineContext
++import kotlin.coroutines.EmptyCoroutineContext
++
++/**
++ * 批量正文下载上下文。
++ *
++ * 书源在 contentBatch 规则(或 JS 源的 getContentBatch 函数)里拿到本批章节数组后,
++ * 每处理完一章就调用 java.cacheContent(chapter, content) 主动回存。
++ *
++ * 章节身份一律用 [BookChapter.index] 判定,不用 url:目录允许多章共用同一 url
++ * (靠序号/标题/tag 区分),缓存文件名也是按 index + 标题生成的。按 url 认章会把
++ * 正文写到错误章节,并让同 url 的其余章节被误判为已完成。
++ *
++ * JS 侧可能在多个线程/协程里并发回调,所有可变状态都在 lock 下访问。
++ */
++internal class OriginalBatchContextOracle(
++    val bookSource: BookSource,
++    val book: Book,
++    val chapters: List<BookChapter>,
++    private val coroutineContext: CoroutineContext = EmptyCoroutineContext,
++    private val saveTokens: Map<Int, ContentSaveToken> = emptyMap(),
++) {
++
++    private val lock = Any()
++    private var closed = false
++
++    /** 已经通过 cacheContent 回存的章节序号 */
++    private val savedIndexes = linkedSetOf<Int>()
++
++    private val baseUrl: String
++        get() = book.tocUrl.ifBlank { bookSource.bookSourceUrl }
++
++    /**
++     * url -> 候选章节。同一 url 可能对应多章,值一律是列表。
++     * 同时登记原始 url、绝对 url 和规范化 url,书源回传哪种形式都能匹配。
++     */
++    private val chaptersByUrl: Map<String, List<BookChapter>> =
++        buildMap<String, MutableList<BookChapter>> {
++            chapters.forEach { chapter ->
++                sequenceOf(
++                    chapter.url,
++                    runCatching { chapter.getAbsoluteURL() }.getOrNull(),
++                    normalize(chapter.url)
++                ).filterNot { it.isNullOrBlank() }
++                    .distinct()
++                    .forEach { key ->
++                        val candidates = getOrPut(key!!) { mutableListOf() }
++                        if (candidates.none { it.index == chapter.index }) {
++                            candidates.add(chapter)
++                        }
++                    }
++            }
++        }
++
++    /**
++     * 解析书源回传的章节标识。
++     *
++     * 支持两种形式:
++     * - 章节对象:直接取本批数组里的元素,重复 url 也不会认错;
++     * - url 字符串:仅接受唯一命中;多章共用该 url 时始终拒绝,必须传章节对象。
++     *
++     * 刻意不接受纯数字:书源循环里传数组下标和传 chapter.index 无法区分,认错即静默写错章节。
++     */
++    fun resolveChapter(identifier: Any?): BookChapter? {
++        return when (identifier) {
++            is BookChapter -> chapters.firstOrNull { it.index == identifier.index }
++            is CharSequence -> resolveByUrl(identifier.toString())
++            else -> null
++        }
++    }
++
++    private fun resolveByUrl(url: String): BookChapter? {
++        val trimmedUrl = url.trim()
++        if (trimmedUrl.isEmpty()) return null
++        val candidates = chaptersByUrl[trimmedUrl].orEmpty() +
++            normalize(trimmedUrl)?.let { chaptersByUrl[it] }.orEmpty()
++        //回调可能乱序,已保存状态不能消除 URL 的歧义。唯一 URL 仍允许重复回存。
++        return candidates.distinctBy { it.index }.singleOrNull()
++    }
++
++    private fun normalize(url: String?): String? {
++        if (url.isNullOrBlank()) return null
++        return runCatching { NetworkUtils.getAbsoluteURL(baseUrl, url) }
++            .getOrNull()?.takeIf { it.isNotBlank() }
++    }
++
++    /**
++     * 对批量回传的正文套用书源的正文替换规则,与单章流程保持一致。
++     * 未配置 replaceRegex 时原样返回。
++     */
++    fun applyContentReplace(chapter: BookChapter, content: String): String {
++        val replaceRegex = bookSource.getContentRule().replaceRegex
++        if (replaceRegex.isNullOrEmpty()) return content
++        val analyzeRule = AnalyzeRule(book, bookSource)
++        analyzeRule.setCoroutineContext(coroutineContext)
++        analyzeRule.setChapter(chapter)
++        analyzeRule.setBaseUrl(chapter.getAbsoluteURL())
++        var contentStr = content.split(AppPattern.LFRegex).joinToString("\n") { it.trim() }
++        contentStr = analyzeRule.getString(replaceRegex, contentStr)
++        if (book.isOriginalOnlineText) {
++            contentStr = contentStr.split(AppPattern.LFRegex).joinToString("\n") { "　　$it" }
++        }
++        return contentStr
++    }
++
++    /** Resolve, replace and save under one lock, including duplicate-URL callbacks. */
++    fun saveContent(identifier: Any?, content: String): Boolean = synchronized(lock) {
++        coroutineContext.ensureActive()
++        if (closed) return false
++        val chapter = resolveChapter(identifier)
++            ?: throw NoStackTraceException("java.cacheContent 未唯一匹配到本批次章节,重复 URL 请传章节对象: $identifier")
++        val replaced = applyContentReplace(chapter, content)
++        if (replaced.isBlank()) return false
++        val token = saveTokens[chapter.index]
++            ?: throw NoStackTraceException("批量正文缺少请求开始时的缓存版本")
++        coroutineContext.ensureActive()
++        val saved = BookHelp.saveContent(bookSource, book, chapter, replaced, token)
++        if (saved) savedIndexes.add(chapter.index)
++        saved
++    }
++
++    fun close() = synchronized(lock) { closed = true }
++
++    fun markSaved(chapter: BookChapter) {
++        synchronized(lock) {
++            savedIndexes.add(chapter.index)
++        }
++    }
++
++    fun isSaved(chapter: BookChapter): Boolean = synchronized(lock) {
++        savedIndexes.contains(chapter.index)
++    }
++
++    fun savedCount(): Int = synchronized(lock) { savedIndexes.size }
++
++    /** 本批次中书源没有回存的章节,交由调用方按普通单章流程重试 */
++    fun missingChapters(): List<BookChapter> = synchronized(lock) {
++        chapters.filterNot { savedIndexes.contains(it.index) }
++    }
++}
++
++internal object ReferenceBatchBookHelp {
++    var capture: (BookSource, Book, BookChapter, String, ContentSaveToken) -> Boolean = { _,_,_,_,_ -> true }
++    fun saveContent(source: BookSource, book: Book, chapter: BookChapter, body: String, token: ContentSaveToken): Boolean =
++        capture(source, book, chapter, body, token)
++}
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt
+@@ -0,0 +1,133 @@
++package io.yuedu.legado.reference
++
++import io.legado.app.data.entities.BaseSource
++import io.legado.app.exception.ConcurrentException
++import io.legado.app.model.analyzeRule.AnalyzeUrl.ConcurrentRecord
++import kotlinx.coroutines.delay
++import java.util.concurrent.ConcurrentHashMap
++
++internal class OriginalConcurrentRateLimiterOracle(source: BaseSource?) {
++
++    companion object {
++        val concurrentRecordMap = ConcurrentHashMap<String, ConcurrentRecord>()
++        /**
++         * 更新并发率
++         */
++        fun updateConcurrentRate(key: String, concurrentRate: String) {
++            concurrentRecordMap.compute(key) { _, record ->
++                try {
++                    val rateIndex = concurrentRate.indexOf("/")
++                    when {
++                        rateIndex > 0 -> {
++                            val accessLimit = concurrentRate.take(rateIndex).toInt()
++                            val interval = concurrentRate.substring(rateIndex + 1).toInt()
++                            if (accessLimit <= 0 || interval <= 0) throw NumberFormatException()
++                            ConcurrentRecord(
++                                record?.time ?: System.currentTimeMillis(),
++                                accessLimit,
++                                interval,
++                                record?.frequency ?: 0
++                            )
++                        }
++                        concurrentRate.toInt() > 0 -> {
++                            ConcurrentRecord(
++                                record?.time ?: System.currentTimeMillis(),
++                                1,
++                                concurrentRate.toInt(),
++                                record?.frequency ?: 0
++                            )
++                        }
++                        else -> record
++                    }
++                } catch (_: NumberFormatException) {
++                    record
++                }
++            }
++        }
++    }
++
++    private val concurrentRate = source?.concurrentRate
++    private val key = source?.getKey()
++    /**
++     * 开始访问,并发判断
++     */
++    @Throws(ConcurrentException::class)
++    private fun fetchStart(): ConcurrentRecord? {
++        if (concurrentRate.isNullOrEmpty() || concurrentRate == "0") {
++            return null
++        }
++        val key = key ?: return null
++        var isNewRecord = false
++        val fetchRecord = concurrentRecordMap.computeIfAbsent(key) {
++            isNewRecord = true
++            val rateIndex = concurrentRate.indexOf("/")
++            if (rateIndex > 0) {
++                val accessLimit = concurrentRate.take(rateIndex).toIntOrNull() ?: 1
++                val interval = concurrentRate.substring(rateIndex + 1).toIntOrNull() ?: 0
++                ConcurrentRecord(System.currentTimeMillis(), accessLimit, interval, 1)
++            }
++            else {
++                ConcurrentRecord(System.currentTimeMillis(),1,concurrentRate.toIntOrNull() ?: 0, 1)
++            }
++        }
++        if (isNewRecord) return fetchRecord
++        val waitTime: Long = synchronized(fetchRecord) {
++            //并发控制为 次数/毫秒 , 非并发实际为1/毫秒
++            val nextTime = fetchRecord.time + fetchRecord.interval.toLong()
++            val nowTime = System.currentTimeMillis()
++            if (nowTime >= nextTime) {
++                //已经过了限制时间,重置开始时间
++                fetchRecord.time = nowTime
++                fetchRecord.frequency = 1
++                return@synchronized 0
++            }
++            if (fetchRecord.frequency < fetchRecord.accessLimit) {
++                fetchRecord.frequency ++
++                return@synchronized 0
++            } else {
++                return@synchronized nextTime - nowTime
++            }
++        }
++        if (waitTime > 0) {
++            throw ConcurrentException(
++                "根据并发率还需等待${waitTime}毫秒才可以访问",
++                waitTime = waitTime
++            )
++        }
++        return fetchRecord
++    }
++
++    /**
++     * 获取并发记录，若处于并发限制状态下则会等待
++     */
++    suspend fun getConcurrentRecord(): ConcurrentRecord? {
++        while (true) {
++            try {
++                return fetchStart()
++            } catch (e: ConcurrentException) {
++                delay(e.waitTime)
++            }
++        }
++    }
++
++    fun getConcurrentRecordBlocking(): ConcurrentRecord? {
++        while (true) {
++            try {
++                return fetchStart()
++            } catch (e: ConcurrentException) {
++                Thread.sleep(e.waitTime)
++            }
++        }
++    }
++
++    suspend inline fun <T> withLimit(block: () -> T): T {
++        getConcurrentRecord()
++        return block()
++    }
++
++    inline fun <T> withLimitBlocking(block: () -> T): T {
++        getConcurrentRecordBlocking()
++        return block()
++    }
++
++}
+--- a/Packages/LegadoRuntime/vendor/original-rule/manifest.json
++++ b/Packages/LegadoRuntime/vendor/original-rule/manifest.json
+@@ -326,6 +326,24 @@
+       "vendorPath": "sources/ui/main/explore/ExploreAdapter.kt",
+       "bytes": 34274,
+       "sha256": "30b54cb1d14180b0ef339777da3c2153c964e1a3365535fe217a0115ca706187"
++    },
++    {
++      "archivePath": "legado-master/app/src/main/java/io/legado/app/model/BatchContentContext.kt",
++      "vendorPath": "sources/model/BatchContentContext.kt",
++      "bytes": 6635,
++      "sha256": "270b131144e96910fbdbcfd80499c61f8f86486dab6cfdaeb8533f7d014dcaf6"
++    },
++    {
++      "archivePath": "legado-master/app/src/main/java/io/legado/app/help/ConcurrentRateLimiter.kt",
++      "vendorPath": "sources/help/ConcurrentRateLimiter.kt",
++      "bytes": 4806,
++      "sha256": "786d0b5fbfc57eb600e8fca5951700a3ef158c7256853ee0929080aa714ca9bd"
++    },
++    {
++      "archivePath": "legado-master/app/src/main/java/io/legado/app/exception/ConcurrentException.kt",
++      "vendorPath": "sources/exception/ConcurrentException.kt",
++      "bytes": 170,
++      "sha256": "c3f5a1f8ccad7946937c2e9bbc0d70673a865c253e2e7bd551a2e226b2f4ee9b"
+     }
+   ],
+   "retainedAlgorithms": {
+@@ -681,6 +699,18 @@
+     },
+     {
+       "path": "io/yuedu/legado/originalrule/OriginalExploreContexts.class"
++    },
++    {
++      "path": "io/legado/app/model/BatchContentContext.class"
++    },
++    {
++      "path": "io/legado/app/help/ConcurrentRateLimiter.class"
++    },
++    {
++      "path": "io/legado/app/exception/ConcurrentException.class"
++    },
++    {
++      "path": "io/legado/app/model/analyzeRule/AnalyzeUrl$ConcurrentRecord.class"
+     }
+   ],
+   "runtimeResources": [
+@@ -713,8 +743,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+-      "bytes": 36992,
+-      "sha256": "4c5c0f37c5744bdbc385c4098ea16256b511afecdbd480d182bd59896c6555f2"
++      "bytes": 36976,
++      "sha256": "05c239973d1e5f448627835324e8d83f760b0a982cce9d4d9be52bddd7cf2a1f"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/RuleData.kt",
+@@ -748,8 +778,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+-      "bytes": 7674,
+-      "sha256": "2485935ea97e03b113e03192a2a03eafe06aa32d05b2ff646490592c1ad203af"
++      "bytes": 8275,
++      "sha256": "f826e67c5c254323afd878011ee28c1d65be3a871b5f089d641973089ed97860"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
+@@ -763,8 +793,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+-      "bytes": 20318,
+-      "sha256": "e00675f3658b8322214dc1670cf63515ad64f5eac2f8b868bea86de281214d31"
++      "bytes": 20860,
++      "sha256": "e11e3449c4fc68fdd9a55cb7f547fd78e1035d46d5f3fc99dca08ef126e171f1"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptions.kt",
+@@ -788,8 +818,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+-      "bytes": 19864,
+-      "sha256": "363476432d0184114886e89fd4c47908b1cc1564baa2cb09b6e173af7d974fa5"
++      "bytes": 20154,
++      "sha256": "5b93376940bddabb8473583f3835722d6e24d2aa5b9a54ebecbc888aabe4403e"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookList.kt",
+@@ -808,8 +838,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+-      "bytes": 10584,
+-      "sha256": "fb9ec680b871e13906a5a359b4b2d3a43fca85bf5a2ec881568c3341e62191f3"
++      "bytes": 13184,
++      "sha256": "388c4966229d0121c0c276b26ba6a07897bcf4a7145ed894fba9a18ec940b091"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBookCompat.kt",
+@@ -878,8 +908,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+-      "bytes": 8600,
+-      "sha256": "c82cba9d6c7af15055b4616891de1d3567aaafeb6b1da31330047965b80fbc46"
++      "bytes": 8685,
++      "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalWebBookSession.kt",
+@@ -918,13 +948,28 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+-      "bytes": 17638,
+-      "sha256": "0738fb170412061ad9b8a7cae3727026daa4577eb55d33de17f8d850ed9205bb"
++      "bytes": 18046,
++      "sha256": "5202f0631f55551544fdb8eb6ef351f3290d01db1e4ae7acabb4e397ba45cf67"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+       "bytes": 9231,
+       "sha256": "875e3e5afeb73b3145b8db09b373a02b10fc42a20fc8e3d32993386c15577b97"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt",
++      "bytes": 170,
++      "sha256": "c3f5a1f8ccad7946937c2e9bbc0d70673a865c253e2e7bd551a2e226b2f4ee9b"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
++      "bytes": 5499,
++      "sha256": "ef4c59f013858881b4ad466f9b1abd0c47f8713069127ec6232208d00c4625b9"
++    },
++    {
++      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
++      "bytes": 7533,
++      "sha256": "9c6ed92364b1a74555760d00aa587d334cd61ebb83227aed91e7571559c05c5b"
+     }
+   ],
+   "readerRouteIntegrated": false,
+@@ -2018,5 +2063,148 @@
+     ],
+     "readerRouteIntegrated": false,
+     "fullFeatureParityEstablished": false
++  },
++  "contentBatchAndConcurrentRateIntegration": {
++    "scope": "Actual retained internal task-owned WebBook batch plus shared original AnalyzeUrl rate limiting. No public contentBatch operation or App body-save authorization is enabled.",
++    "integrationSources": [
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt",
++        "bytes": 170,
++        "sha256": "c3f5a1f8ccad7946937c2e9bbc0d70673a865c253e2e7bd551a2e226b2f4ee9b"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
++        "bytes": 5499,
++        "sha256": "ef4c59f013858881b4ad466f9b1abd0c47f8713069127ec6232208d00c4625b9"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
++        "bytes": 36976,
++        "sha256": "05c239973d1e5f448627835324e8d83f760b0a982cce9d4d9be52bddd7cf2a1f"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
++        "bytes": 20860,
++        "sha256": "e11e3449c4fc68fdd9a55cb7f547fd78e1035d46d5f3fc99dca08ef126e171f1"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
++        "bytes": 7533,
++        "sha256": "9c6ed92364b1a74555760d00aa587d334cd61ebb83227aed91e7571559c05c5b"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
++        "bytes": 13184,
++        "sha256": "388c4966229d0121c0c276b26ba6a07897bcf4a7145ed894fba9a18ec940b091"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
++        "bytes": 20154,
++        "sha256": "5b93376940bddabb8473583f3835722d6e24d2aa5b9a54ebecbc888aabe4403e"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
++        "bytes": 18046,
++        "sha256": "5202f0631f55551544fdb8eb6ef351f3290d01db1e4ae7acabb4e397ba45cf67"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
++        "bytes": 8275,
++        "sha256": "f826e67c5c254323afd878011ee28c1d65be3a871b5f089d641973089ed97860"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
++        "bytes": 8685,
++        "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
++        "bytes": 30867,
++        "sha256": "7d9acaf12e198360df7203d276b5db537177f4efaba5534ea63bcc0e9f11c958"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt",
++        "bytes": 18599,
++        "sha256": "045f1c4a30e1b505c440dc93892fa726c6c92539e87f1b450eddc724e9f1ff0e"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
++        "bytes": 19424,
++        "sha256": "154eda1aff73e36356d27c58c142b81aaee59b639681da946ebfa5d33985fa07"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
++        "bytes": 22670,
++        "sha256": "dc91b9622a01a04f88d2f028a805b943a16a8bc11835ff659bc1c6f21ab7f8e1"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt",
++        "bytes": 7073,
++        "sha256": "568d48e4e43160912249831e82dfed0222fc2b662aca4bc92305265cc149e9c8"
++      },
++      {
++        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt",
++        "bytes": 4836,
++        "sha256": "e6527efde1334d60746623c0b8b3e1cac2e4e6588c7b551cafc8b63adb85bab1"
++      }
++    ],
++    "lockedOriginalReferences": [
++      {
++        "archivePath": "legado-master/app/src/main/java/io/legado/app/model/BatchContentContext.kt",
++        "vendorPath": "sources/model/BatchContentContext.kt",
++        "bytes": 6635,
++        "sha256": "270b131144e96910fbdbcfd80499c61f8f86486dab6cfdaeb8533f7d014dcaf6"
++      },
++      {
++        "archivePath": "legado-master/app/src/main/java/io/legado/app/help/ConcurrentRateLimiter.kt",
++        "vendorPath": "sources/help/ConcurrentRateLimiter.kt",
++        "bytes": 4806,
++        "sha256": "786d0b5fbfc57eb600e8fca5951700a3ef158c7256853ee0929080aa714ca9bd"
++      },
++      {
++        "archivePath": "legado-master/app/src/main/java/io/legado/app/exception/ConcurrentException.kt",
++        "vendorPath": "sources/exception/ConcurrentException.kt",
++        "bytes": 170,
++        "sha256": "c3f5a1f8ccad7946937c2e9bbc0d70673a865c253e2e7bd551a2e226b2f4ee9b"
++      }
++    ],
++    "implemented": [
++      "Original contentBatch validation/Java chapters/result/first-chapter binding and JS block order, returning missing chapters.",
++      "BatchContentContext URL/index resolution, replacement, markSaved/close, original save=false metadata behavior and partial-success/ordinary-error semantics through the existing RuleWebBookState owner.",
++      "Existing content identity/version/TOC URL fence rejects stale saves; same task/coroutine/HTTP/Cookie and persistence owner.",
++      "Original rate parsing/fixed-window/counter/retry-delay behavior shared by ordinary/nested AnalyzeUrl requests and one batch admission. Redirects/retries remain inside one URL admission.",
++      "Stable existing Host/backing/source/revision scope with real current-grant/deadline validation; primitive records only, 256 active-window cap, expired-only prune plus admission in one critical section. No raw Map-returning accessor or new timer/job/network owner."
++    ],
++    "remainingUnsupportedOrUnfinished": [
++      "Public original-traditional contentBatch JSON/typed Swift/JNI/App route is not connected; public content still requires explicit needSave=false. App UUID/chapter URL/generation body-save grant and existing Pipeline mapping remain required.",
++      "Batch constructor uses the existing injected RuleWebBookState ContentSaveToken, not the Android folder/file-token ABI. No parallel App body cache is created.",
++      "CacheBook download/fallback caller, App download tickets/media/image callbacks and complete Android batch/UI ABI are not ported. Missing chapter list/markSaved is not an App durable-save receipt.",
++      "Key-only UI updateConcurrentRate and unscoped original global mutable map remain typed unsupported; declared nonzero source rates execute through the owned scope.",
++      "Original AnalyzeUrl isTest timing/error probe, browser/media/byte/download routes remain unsupported; full source parity and final native product chain remain unaccepted."
++    ],
++    "validation": {
++      "platform": "actual Windows JDK21",
++      "newUniqueMethods": 14,
++      "batchMethods": 7,
++      "rateMethods": 7,
++      "newRecord": ".build/original-content-batch-delta/focused-v8.json",
++      "relatedUniqueMethods": 83,
++      "relatedRecords": [
++        ".build/original-content-batch-delta/focused-related-v1.json",
++        ".build/original-content-batch-delta/focused-related-v2.json"
++      ],
++      "acceptedUniqueMethods": 97,
++      "failures": 0,
++      "errors": 0,
++      "skipped": 0,
++      "note": "82 unchanged related methods from related-v1 plus one obsolete unsupported-batch assertion corrected in related-v2. Failed/compile/fixture attempts remain raw and are not added to accepted counts. Ordinary JAR is separate evidence."
++    },
++    "historicalReferences": "Earlier integration sections remain bound to their original execution inputs; this section supersedes their batch/rate unsupported descriptions for the stated internal scope only.",
++    "readerRouteIntegrated": false,
++    "publicAppBatchSaveIntegrated": false,
++    "androidExecuted": false,
++    "iosExecuted": false,
++    "deviceExecuted": false,
++    "fullFeatureParityEstablished": false
+   }
+ }
+--- a/Packages/LegadoRuntime/vendor/original-rule/sources/exception/ConcurrentException.kt
++++ b/Packages/LegadoRuntime/vendor/original-rule/sources/exception/ConcurrentException.kt
+@@ -0,0 +1,8 @@
++@file:Suppress("unused")
++
++package io.legado.app.exception
++
++/**
++ * 并发限制
++ */
++class ConcurrentException(msg: String, val waitTime: Long) : NoStackTraceException(msg)--- a/Packages/LegadoRuntime/vendor/original-rule/sources/help/ConcurrentRateLimiter.kt
++++ b/Packages/LegadoRuntime/vendor/original-rule/sources/help/ConcurrentRateLimiter.kt
+@@ -0,0 +1,133 @@
++package io.legado.app.help
++
++import io.legado.app.data.entities.BaseSource
++import io.legado.app.exception.ConcurrentException
++import io.legado.app.model.analyzeRule.AnalyzeUrl.ConcurrentRecord
++import kotlinx.coroutines.delay
++import java.util.concurrent.ConcurrentHashMap
++
++class ConcurrentRateLimiter(source: BaseSource?) {
++
++    companion object {
++        val concurrentRecordMap = ConcurrentHashMap<String, ConcurrentRecord>()
++        /**
++         * 更新并发率
++         */
++        fun updateConcurrentRate(key: String, concurrentRate: String) {
++            concurrentRecordMap.compute(key) { _, record ->
++                try {
++                    val rateIndex = concurrentRate.indexOf("/")
++                    when {
++                        rateIndex > 0 -> {
++                            val accessLimit = concurrentRate.take(rateIndex).toInt()
++                            val interval = concurrentRate.substring(rateIndex + 1).toInt()
++                            if (accessLimit <= 0 || interval <= 0) throw NumberFormatException()
++                            ConcurrentRecord(
++                                record?.time ?: System.currentTimeMillis(),
++                                accessLimit,
++                                interval,
++                                record?.frequency ?: 0
++                            )
++                        }
++                        concurrentRate.toInt() > 0 -> {
++                            ConcurrentRecord(
++                                record?.time ?: System.currentTimeMillis(),
++                                1,
++                                concurrentRate.toInt(),
++                                record?.frequency ?: 0
++                            )
++                        }
++                        else -> record
++                    }
++                } catch (_: NumberFormatException) {
++                    record
++                }
++            }
++        }
++    }
++
++    private val concurrentRate = source?.concurrentRate
++    private val key = source?.getKey()
++    /**
++     * 开始访问,并发判断
++     */
++    @Throws(ConcurrentException::class)
++    private fun fetchStart(): ConcurrentRecord? {
++        if (concurrentRate.isNullOrEmpty() || concurrentRate == "0") {
++            return null
++        }
++        val key = key ?: return null
++        var isNewRecord = false
++        val fetchRecord = concurrentRecordMap.computeIfAbsent(key) {
++            isNewRecord = true
++            val rateIndex = concurrentRate.indexOf("/")
++            if (rateIndex > 0) {
++                val accessLimit = concurrentRate.take(rateIndex).toIntOrNull() ?: 1
++                val interval = concurrentRate.substring(rateIndex + 1).toIntOrNull() ?: 0
++                ConcurrentRecord(System.currentTimeMillis(), accessLimit, interval, 1)
++            }
++            else {
++                ConcurrentRecord(System.currentTimeMillis(),1,concurrentRate.toIntOrNull() ?: 0, 1)
++            }
++        }
++        if (isNewRecord) return fetchRecord
++        val waitTime: Long = synchronized(fetchRecord) {
++            //并发控制为 次数/毫秒 , 非并发实际为1/毫秒
++            val nextTime = fetchRecord.time + fetchRecord.interval.toLong()
++            val nowTime = System.currentTimeMillis()
++            if (nowTime >= nextTime) {
++                //已经过了限制时间,重置开始时间
++                fetchRecord.time = nowTime
++                fetchRecord.frequency = 1
++                return@synchronized 0
++            }
++            if (fetchRecord.frequency < fetchRecord.accessLimit) {
++                fetchRecord.frequency ++
++                return@synchronized 0
++            } else {
++                return@synchronized nextTime - nowTime
++            }
++        }
++        if (waitTime > 0) {
++            throw ConcurrentException(
++                "根据并发率还需等待${waitTime}毫秒才可以访问",
++                waitTime = waitTime
++            )
++        }
++        return fetchRecord
++    }
++
++    /**
++     * 获取并发记录，若处于并发限制状态下则会等待
++     */
++    suspend fun getConcurrentRecord(): ConcurrentRecord? {
++        while (true) {
++            try {
++                return fetchStart()
++            } catch (e: ConcurrentException) {
++                delay(e.waitTime)
++            }
++        }
++    }
++
++    fun getConcurrentRecordBlocking(): ConcurrentRecord? {
++        while (true) {
++            try {
++                return fetchStart()
++            } catch (e: ConcurrentException) {
++                Thread.sleep(e.waitTime)
++            }
++        }
++    }
++
++    suspend inline fun <T> withLimit(block: () -> T): T {
++        getConcurrentRecord()
++        return block()
++    }
++
++    inline fun <T> withLimitBlocking(block: () -> T): T {
++        getConcurrentRecordBlocking()
++        return block()
++    }
++
++}
+--- a/Packages/LegadoRuntime/vendor/original-rule/sources/model/BatchContentContext.kt
++++ b/Packages/LegadoRuntime/vendor/original-rule/sources/model/BatchContentContext.kt
+@@ -0,0 +1,155 @@
++package io.legado.app.model
++
++import io.legado.app.constant.AppPattern
++import io.legado.app.data.entities.Book
++import io.legado.app.data.entities.BookChapter
++import io.legado.app.data.entities.BookSource
++import io.legado.app.exception.NoStackTraceException
++import io.legado.app.help.book.BookHelp
++import io.legado.app.help.book.ContentSaveToken
++import io.legado.app.help.book.isOnLineTxt
++import kotlinx.coroutines.ensureActive
++import io.legado.app.model.analyzeRule.AnalyzeRule
++import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setChapter
++import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setCoroutineContext
++import io.legado.app.utils.NetworkUtils
++import kotlin.coroutines.CoroutineContext
++import kotlin.coroutines.EmptyCoroutineContext
++
++/**
++ * 批量正文下载上下文。
++ *
++ * 书源在 contentBatch 规则(或 JS 源的 getContentBatch 函数)里拿到本批章节数组后,
++ * 每处理完一章就调用 java.cacheContent(chapter, content) 主动回存。
++ *
++ * 章节身份一律用 [BookChapter.index] 判定,不用 url:目录允许多章共用同一 url
++ * (靠序号/标题/tag 区分),缓存文件名也是按 index + 标题生成的。按 url 认章会把
++ * 正文写到错误章节,并让同 url 的其余章节被误判为已完成。
++ *
++ * JS 侧可能在多个线程/协程里并发回调,所有可变状态都在 lock 下访问。
++ */
++class BatchContentContext(
++    val bookSource: BookSource,
++    val book: Book,
++    val chapters: List<BookChapter>,
++    private val coroutineContext: CoroutineContext = EmptyCoroutineContext,
++    private val saveTokens: Map<Int, ContentSaveToken> = emptyMap(),
++) {
++
++    private val lock = Any()
++    private var closed = false
++
++    /** 已经通过 cacheContent 回存的章节序号 */
++    private val savedIndexes = linkedSetOf<Int>()
++
++    private val baseUrl: String
++        get() = book.tocUrl.ifBlank { bookSource.bookSourceUrl }
++
++    /**
++     * url -> 候选章节。同一 url 可能对应多章,值一律是列表。
++     * 同时登记原始 url、绝对 url 和规范化 url,书源回传哪种形式都能匹配。
++     */
++    private val chaptersByUrl: Map<String, List<BookChapter>> =
++        buildMap<String, MutableList<BookChapter>> {
++            chapters.forEach { chapter ->
++                sequenceOf(
++                    chapter.url,
++                    runCatching { chapter.getAbsoluteURL() }.getOrNull(),
++                    normalize(chapter.url)
++                ).filterNot { it.isNullOrBlank() }
++                    .distinct()
++                    .forEach { key ->
++                        val candidates = getOrPut(key!!) { mutableListOf() }
++                        if (candidates.none { it.index == chapter.index }) {
++                            candidates.add(chapter)
++                        }
++                    }
++            }
++        }
++
++    /**
++     * 解析书源回传的章节标识。
++     *
++     * 支持两种形式:
++     * - 章节对象:直接取本批数组里的元素,重复 url 也不会认错;
++     * - url 字符串:仅接受唯一命中;多章共用该 url 时始终拒绝,必须传章节对象。
++     *
++     * 刻意不接受纯数字:书源循环里传数组下标和传 chapter.index 无法区分,认错即静默写错章节。
++     */
++    fun resolveChapter(identifier: Any?): BookChapter? {
++        return when (identifier) {
++            is BookChapter -> chapters.firstOrNull { it.index == identifier.index }
++            is CharSequence -> resolveByUrl(identifier.toString())
++            else -> null
++        }
++    }
++
++    private fun resolveByUrl(url: String): BookChapter? {
++        val trimmedUrl = url.trim()
++        if (trimmedUrl.isEmpty()) return null
++        val candidates = chaptersByUrl[trimmedUrl].orEmpty() +
++            normalize(trimmedUrl)?.let { chaptersByUrl[it] }.orEmpty()
++        //回调可能乱序,已保存状态不能消除 URL 的歧义。唯一 URL 仍允许重复回存。
++        return candidates.distinctBy { it.index }.singleOrNull()
++    }
++
++    private fun normalize(url: String?): String? {
++        if (url.isNullOrBlank()) return null
++        return runCatching { NetworkUtils.getAbsoluteURL(baseUrl, url) }
++            .getOrNull()?.takeIf { it.isNotBlank() }
++    }
++
++    /**
++     * 对批量回传的正文套用书源的正文替换规则,与单章流程保持一致。
++     * 未配置 replaceRegex 时原样返回。
++     */
++    fun applyContentReplace(chapter: BookChapter, content: String): String {
++        val replaceRegex = bookSource.getContentRule().replaceRegex
++        if (replaceRegex.isNullOrEmpty()) return content
++        val analyzeRule = AnalyzeRule(book, bookSource)
++        analyzeRule.setCoroutineContext(coroutineContext)
++        analyzeRule.setChapter(chapter)
++        analyzeRule.setBaseUrl(chapter.getAbsoluteURL())
++        var contentStr = content.split(AppPattern.LFRegex).joinToString("\n") { it.trim() }
++        contentStr = analyzeRule.getString(replaceRegex, contentStr)
++        if (book.isOnLineTxt) {
++            contentStr = contentStr.split(AppPattern.LFRegex).joinToString("\n") { "　　$it" }
++        }
++        return contentStr
++    }
++
++    /** Resolve, replace and save under one lock, including duplicate-URL callbacks. */
++    fun saveContent(identifier: Any?, content: String): Boolean = synchronized(lock) {
++        coroutineContext.ensureActive()
++        if (closed) return false
++        val chapter = resolveChapter(identifier)
++            ?: throw NoStackTraceException("java.cacheContent 未唯一匹配到本批次章节,重复 URL 请传章节对象: $identifier")
++        val replaced = applyContentReplace(chapter, content)
++        if (replaced.isBlank()) return false
++        val token = saveTokens[chapter.index]
++            ?: throw NoStackTraceException("批量正文缺少请求开始时的缓存版本")
++        coroutineContext.ensureActive()
++        val saved = BookHelp.saveContent(bookSource, book, chapter, replaced, token)
++        if (saved) savedIndexes.add(chapter.index)
++        saved
++    }
++
++    fun close() = synchronized(lock) { closed = true }
++
++    fun markSaved(chapter: BookChapter) {
++        synchronized(lock) {
++            savedIndexes.add(chapter.index)
++        }
++    }
++
++    fun isSaved(chapter: BookChapter): Boolean = synchronized(lock) {
++        savedIndexes.contains(chapter.index)
++    }
++
++    fun savedCount(): Int = synchronized(lock) { savedIndexes.size }
++
++    /** 本批次中书源没有回存的章节,交由调用方按普通单章流程重试 */
++    fun missingChapters(): List<BookChapter> = synchronized(lock) {
++        chapters.filterNot { savedIndexes.contains(it.index) }
++    }
++}

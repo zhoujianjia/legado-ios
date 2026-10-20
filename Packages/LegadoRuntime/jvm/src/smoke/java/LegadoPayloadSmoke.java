@@ -37,6 +37,7 @@ public class LegadoPayloadSmoke {
         originalTraditionalSmoke(true, true);
         originalBrowserProtocolSmoke();
         originalExploreInfoMapSmoke();
+        originalContentBatchRateSmoke();
     }
 
     // ASCII-only controlled smoke fixture. Production uses retained original
@@ -285,5 +286,79 @@ public class LegadoPayloadSmoke {
             if(values.keySet().stream().noneMatch(k->k.contains("infoMap_")))throw new AssertionError("Original CacheManager key not persisted");
             System.out.println("PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK pages=2 sameContextAcrossSessions=true explicitSave=true nativeExecuted=false");
         }finally{LegadoRuntime.setHostCallback(null);server.stop(0);}
+    }
+
+    /** Internal original embedding contract in the ordinary JAR only. This does
+     * not authorize the public App batch/body-save route or claim JNI/native IO.
+     * Real file restart/generation/cancellation checks live in the JVM suite. */
+    static void originalContentBatchRateSmoke() throws Exception {
+        var values=new HashMap<String,String>(); var revision=new long[]{0};
+        var requests=new AtomicInteger(); var writes=new AtomicInteger();
+        var server=HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}),0),0);
+        server.createContext("/", exchange -> {
+            var n=requests.incrementAndGet();
+            if(n==1)exchange.getResponseHeaders().add("Set-Cookie","batch=owned; Path=/");
+            else if(!String.valueOf(exchange.getRequestHeaders().getFirst("Cookie")).contains("batch=owned"))throw new AssertionError("Batch lost the same HTTP Cookie jar");
+            var bytes=("body-"+exchange.getRequestURI().getPath()).getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200,bytes.length);
+            try(var out=exchange.getResponseBody()){out.write(bytes);}finally{exchange.close();}
+        });server.start();
+        var origin="http://127.0.0.1:"+server.getAddress().getPort();
+        var owner="ordinary-batch-owner";var taskID="ordinary-batch-task";
+        LegadoRuntime.setHostCallback((task,operation,raw)->{
+            var input=JsonParser.parseString(raw).getAsJsonObject();
+            if(!task.equals(taskID) || !input.get("owner").getAsString().equals(owner) || !input.has("deadlineEpochMs"))throw new AssertionError("Batch changed owner/task/deadline");
+            var out=new JsonObject();
+            synchronized(values){
+                if(operation.equals("explore.owner.scope"))out.addProperty("scope","ordinary-batch-backing-source-revision");
+                else if(operation.equals("state.read")){
+                    out.addProperty("revision",revision[0]);var selected=new JsonObject();
+                    for(var key:input.getAsJsonArray("keys")){var value=values.get(key.getAsString());if(value!=null)selected.addProperty(key.getAsString(),value);}
+                    out.add("values",selected);
+                }else if(operation.equals("state.commit")){
+                    var matches=input.get("revision").getAsLong()==revision[0];
+                    if(matches){for(var e:input.getAsJsonObject("changes").entrySet()){if(e.getValue().isJsonNull())values.remove(e.getKey());else values.put(e.getKey(),e.getValue().getAsString());}revision[0]++;writes.incrementAndGet();}
+                    out.addProperty("committed",matches);
+                }else throw new AssertionError(operation);
+            }return out.toString();
+        });
+        var sourceJson=new JsonObject();sourceJson.addProperty("bookSourceUrl",origin);sourceJson.addProperty("enabledCookieJar",true);sourceJson.addProperty("concurrentRate","6/60000");
+        var contentRule=new JsonObject();contentRule.addProperty("contentBatch","for(var i=0;i<2;i++){if(!java.cacheContent(result.get(i),java.ajax(result.get(i).getAbsoluteURL())))throw new Error('save failed')}");sourceJson.add("ruleContent",contentRule);
+        var options=new io.yuedu.legado.RuntimeSessionOptions("jvm-okhttp",null,owner,"existing","session-jar");
+        var session=new io.yuedu.legado.RuntimeSession("ordinary-batch-session",sourceJson,options);
+        var job=kotlinx.coroutines.JobKt.Job((kotlinx.coroutines.Job)null);
+        var task=new io.yuedu.legado.RuntimeTask(taskID,session,job,System.currentTimeMillis()+15000,null);
+        var environment=LegadoRuntime.INSTANCE.originalRuleEnvironment$io_yuedu_legado_runtime(task);
+        try {
+            var source=LegadoRuntime.INSTANCE.originalBookSource$io_yuedu_legado_runtime(task,environment);
+            var bookJson=new JsonObject();bookJson.addProperty("origin",origin);bookJson.addProperty("bookUrl",origin+"/book");bookJson.addProperty("tocUrl",origin+"/toc");bookJson.addProperty("name","Batch");bookJson.addProperty("author","Owned");
+            var book=io.yuedu.legado.OriginalRuleDto.INSTANCE.book(bookJson,environment,origin);
+            var chapters=new java.util.ArrayList<io.legado.app.data.entities.BookChapter>();
+            for(int i=0;i<3;i++){
+                var chapter=new JsonObject();chapter.addProperty("bookUrl",book.getBookUrl());chapter.addProperty("url",origin+"/chapter-"+i);chapter.addProperty("title","C"+i);chapter.addProperty("baseUrl",book.getTocUrl());chapter.addProperty("index",i);
+                chapters.add(io.yuedu.legado.OriginalRuleDto.INSTANCE.chapter(chapter,environment,book));
+            }
+            environment.getWebBook().publish$io_yuedu_legado_runtime(book.getBookUrl(),chapters);
+            var missing=session.withCurrentTask$io_yuedu_legado_runtime(task,()->{
+                try {
+                    return kotlinx.coroutines.BuildersKt.<java.util.List<io.legado.app.data.entities.BookChapter>>runBlocking(job,
+                        (scope,continuation)->io.legado.app.model.webBook.WebBook.INSTANCE.getContentBatchAwait(source,book,chapters,continuation));
+                }catch(InterruptedException e){throw new RuntimeException(e);}
+            });
+            if(missing.size()!=1 || missing.get(0)!=chapters.get(2))throw new AssertionError("Batch did not return original missing chapter identity");
+            for(int i=0;i<2;i++){
+                var chapter=chapters.get(i);var state=environment.getWebBook();
+                var body=state.getContent$io_yuedu_legado_runtime(book,chapter,state.contentSaveToken$io_yuedu_legado_runtime(book,chapter));
+                if(!("body-/chapter-"+i).equals(body))throw new AssertionError("Batch did not save original body through the same owner");
+            }
+            var record=new io.legado.app.help.ConcurrentRateLimiter(source).getConcurrentRecordBlocking();
+            if(record.getFrequency()!=4 || requests.get()!=2 || writes.get()<3)throw new AssertionError("Batch and nested HTTP did not share the original rate window");
+            var publicSession=checked(LegadoRuntime.createSession(sourceJson.toString(),"{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\""+owner+"\"}")).get("sessionId").getAsString();
+            try {
+                var denied=JsonParser.parseString(LegadoRuntime.execute(publicSession,"ordinary-batch-ungranted","contentBatch","{}")).getAsJsonObject();
+                if(denied.get("ok").getAsBoolean() || !denied.getAsJsonObject("error").get("code").getAsString().equals("UNSUPPORTED_OPERATION"))throw new AssertionError("Public App batch must remain ungranted");
+            }finally{checked(LegadoRuntime.closeSession(publicSession));}
+            System.out.println("PACKAGED_ORIGINAL_BATCH_RATE_OK saved=2 missing=1 sameOwner=true rateAdmissions=4 publicAppSaveEnabled=false nativeExecuted=false");
+        }finally{environment.close();job.cancel(null);session.getClosed().set(true);session.getHttp().close();LegadoRuntime.setHostCallback(null);server.stop(0);}
     }
 }

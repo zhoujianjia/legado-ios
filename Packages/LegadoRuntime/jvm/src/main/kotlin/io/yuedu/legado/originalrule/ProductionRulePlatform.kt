@@ -14,6 +14,7 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Protocol
 import okhttp3.Request
@@ -66,6 +67,12 @@ internal class ProductionRulePlatform(
         if (scope == null || !scope.isJsonPrimitive || !scope.asJsonPrimitive.isString || scope.asString.isEmpty()
             || scope.asString.toByteArray(Charsets.UTF_8).size > 32_768) throw RulePersistenceException("Original explore owner omitted its bounded stable scope")
         return scope.asString
+    }
+
+    override fun originalRateDelayBudgetMillis(source: BaseSource): Long {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Rate source belongs to another environment" }
+        return (task.deadlineEpochMs - System.currentTimeMillis()).coerceAtLeast(1L)
     }
 
     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
@@ -212,9 +219,10 @@ internal class ProductionRulePlatform(
             // As in JsExtensions/AnalyzeRule, construction is outside recovery.
             // Only getStrResponse-equivalent execution errors become text.
             val response = try {
-                val request = analyzed.prepareRequest { target -> requestCookieHeader(target.toHttpUrl().toString()) }
-                checkRequestCookieCapability(request)
-                http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
+                // Same original AnalyzeUrl execution as WebBook, including its
+                // shared owner-scoped admission. Do not count redirects/retries
+                // separately or install another HTTP/rate/task authority.
+                runBlocking(scriptContext) { analyzed.getStrResponseAwait() }
             } catch (error: Exception) {
                 ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
                 rethrowRuleControlFailure(error)

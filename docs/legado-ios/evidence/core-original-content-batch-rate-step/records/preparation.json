@@ -1,0 +1,685 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T09:08:55.146327+00:00",
+  "task": "C3 original traditional batch content plus common original concurrent rate limiting",
+  "baseCanonicalCommitAtStart": "a860f35 (root supplied; later root-only unrelated Swift/CI/security changes are not counted as this JVM execution)",
+  "status": "implemented internal production boundary; public App batch/body-save and complete C3 remain incomplete",
+  "scope": "No new parser/JSContext/network owner/App UUID or persistent App body file. Same retained WebBook/AnalyzeRule/AnalyzeUrl, same task/coroutine/HTTP/Cookie, same explicitly injected RuleWebBookState persistence owner. Only ignored work/evidence changed.",
+  "originalArchive": {
+    "path": "F:/legado-master.zip",
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "androidExecuted": false,
+    "basis": "Pinned original Kotlin bodies/references and compiled JVM-only test oracles; not Android execution"
+  },
+  "implemented": [
+    "Retained original getContentBatchAwait(BookSource,Book,List<BookChapter>):List<BookChapter> into BookContent.analyzeContentBatch; original validation-before-empty, JS blocks/bare JS, Java chapter/result and first-chapter bindings, rate admission and finally-close.",
+    "Actual original BatchContentContext callback path via java.cacheContent returns Boolean; URL ambiguity/index resolution, replacement and online text formatting, markSaved/isSaved/missing/close semantics. Same-book/environment ownership is checked before execution.",
+    "Existing durable RuleWebBookState saves with captured identity/version/TOC URL fence; batch saves preserve original saveChapterMetadata=false. Ordinary error preserves accepted saved prefix, storage failure returns false, control/cancel/deadline/close/stale token deny late save; no second state owner.",
+    "Common original declared rate parsing/fixed window/frequency/reset/retry delay through all original AnalyzeUrl execution (including nested ajax/connect and public four-stage/explore), plus one admission per batch. Redirect/retry wire hops remain inside a single URL admission; explicit skipRateLimit is retained.",
+    "Bounded private process-local primitive registry scoped to actual Host/backing/source/revision. Current grant and absolute task deadline are checked outside the lock, lookup/prune/window admission are atomic under the same lock; no old task/environment retention, no public raw-map/string-scope access and no new timer/thread/Job."
+  ],
+  "sourceBinding": {
+    "acceptedExecutionInputs": {
+      "record": {
+        "path": ".build/original-content-batch-delta/focused-v8.json",
+        "bytes": 84065,
+        "sha256": "4357e271b0a26450ad32cdd1a08461d0c8d8074acfe9e5a877c7ad563e3edd57"
+      },
+      "key": "sourceBinding",
+      "count": 164,
+      "currentActualBytesEqual": true,
+      "ordinaryUsesExactlySameInputs": true,
+      "immutableChangedSnapshots": ".build/original-content-batch-delta/focused-v8-changed-sources/"
+    },
+    "changedCodeTestsAndProvenance": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt",
+        "bytes": 170,
+        "sha256": "c3f5a1f8ccad7946937c2e9bbc0d70673a865c253e2e7bd551a2e226b2f4ee9b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
+        "bytes": 5499,
+        "sha256": "ef4c59f013858881b4ad466f9b1abd0c47f8713069127ec6232208d00c4625b9"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+        "bytes": 36976,
+        "sha256": "05c239973d1e5f448627835324e8d83f760b0a982cce9d4d9be52bddd7cf2a1f"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "bytes": 20860,
+        "sha256": "e11e3449c4fc68fdd9a55cb7f547fd78e1035d46d5f3fc99dca08ef126e171f1"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
+        "bytes": 7533,
+        "sha256": "9c6ed92364b1a74555760d00aa587d334cd61ebb83227aed91e7571559c05c5b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+        "bytes": 13184,
+        "sha256": "388c4966229d0121c0c276b26ba6a07897bcf4a7145ed894fba9a18ec940b091"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+        "bytes": 20154,
+        "sha256": "5b93376940bddabb8473583f3835722d6e24d2aa5b9a54ebecbc888aabe4403e"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 18046,
+        "sha256": "5202f0631f55551544fdb8eb6ef351f3290d01db1e4ae7acabb4e397ba45cf67"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 8275,
+        "sha256": "f826e67c5c254323afd878011ee28c1d65be3a871b5f089d641973089ed97860"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+        "bytes": 8685,
+        "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+        "bytes": 30867,
+        "sha256": "7d9acaf12e198360df7203d276b5db537177f4efaba5534ea63bcc0e9f11c958"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt",
+        "bytes": 18599,
+        "sha256": "045f1c4a30e1b505c440dc93892fa726c6c92539e87f1b450eddc724e9f1ff0e"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+        "bytes": 19424,
+        "sha256": "154eda1aff73e36356d27c58c142b81aaee59b639681da946ebfa5d33985fa07"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+        "bytes": 22670,
+        "sha256": "dc91b9622a01a04f88d2f028a805b943a16a8bc11835ff659bc1c6f21ab7f8e1"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt",
+        "bytes": 7073,
+        "sha256": "568d48e4e43160912249831e82dfed0222fc2b662aca4bc92305265cc149e9c8"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt",
+        "intendedPath": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt",
+        "bytes": 4836,
+        "sha256": "e6527efde1334d60746623c0b8b3e1cac2e4e6588c7b551cafc8b63adb85bab1"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "intendedPath": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 116499,
+        "sha256": "a1e05658ac9be5b485628d3b361783fda649dfae83d05fbb1ffa840b306c8006"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/sources/exception/ConcurrentException.kt",
+        "intendedPath": "Packages/LegadoRuntime/vendor/original-rule/sources/exception/ConcurrentException.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/vendor/original-rule/sources/exception/ConcurrentException.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/sources/exception/ConcurrentException.kt",
+        "bytes": 170,
+        "sha256": "c3f5a1f8ccad7946937c2e9bbc0d70673a865c253e2e7bd551a2e226b2f4ee9b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/sources/help/ConcurrentRateLimiter.kt",
+        "intendedPath": "Packages/LegadoRuntime/vendor/original-rule/sources/help/ConcurrentRateLimiter.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/vendor/original-rule/sources/help/ConcurrentRateLimiter.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/sources/help/ConcurrentRateLimiter.kt",
+        "bytes": 4806,
+        "sha256": "786d0b5fbfc57eb600e8fca5951700a3ef158c7256853ee0929080aa714ca9bd"
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/sources/model/BatchContentContext.kt",
+        "intendedPath": "Packages/LegadoRuntime/vendor/original-rule/sources/model/BatchContentContext.kt",
+        "workPath": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/vendor/original-rule/sources/model/BatchContentContext.kt",
+        "snapshot": ".build/original-content-batch-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/sources/model/BatchContentContext.kt",
+        "bytes": 6635,
+        "sha256": "270b131144e96910fbdbcfd80499c61f8f86486dab6cfdaeb8533f7d014dcaf6"
+      }
+    ],
+    "changedFileCounts": {
+      "productionKotlin": 10,
+      "testKotlin": 5,
+      "smokeJava": 1,
+      "manifest": 1,
+      "newRawPinnedOriginals": 3,
+      "total": 20
+    },
+    "reviewCodeSnapshot": {
+      "path": ".build/original-content-batch-delta/review-inputs-v2.json",
+      "bytes": 12210,
+      "sha256": "46249022a971f63ad88362f4d7294abfca2f5b7d2160e13a76fc68e2e43ea1ca"
+    },
+    "canonicalVendorManifestBefore": {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 106561,
+      "sha256": "a1340a0037678dacef1f520637cefb6b46d007583562c3ffe897bb466ee67701"
+    },
+    "executionInputContinuity": {
+      "path": ".build/original-content-batch-delta/execution-input-continuity.json",
+      "bytes": 3288,
+      "sha256": "ff8ffe650f2a6da1fcddacabd15e40290d7d8e5eed2d078a78967be97398a71e"
+    },
+    "policy": "164 inputs are hash-bound in actual raw execution records; archive only changed sources/snapshots, not a duplicated whole JVM tree or old pinned originals. Existing canonical unchanged leaves are identified by executed SHA256."
+  },
+  "validation": {
+    "platform": "actual Windows JDK21; isolated ignored offline Gradle project",
+    "newFinal": {
+      "record": {
+        "path": ".build/original-content-batch-delta/focused-v8.json",
+        "bytes": 84065,
+        "sha256": "4357e271b0a26450ad32cdd1a08461d0c8d8074acfe9e5a877c7ad563e3edd57"
+      },
+      "uniqueMethods": 14,
+      "batch": 7,
+      "concurrentRate": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "relatedAccepted": {
+      "records": [
+        {
+          "path": ".build/original-content-batch-delta/focused-related-v1.json",
+          "bytes": 86553,
+          "sha256": "cd807e6f97d4673df472a9c424e4c6721b25d52a5483cd69e7e00d1300866783"
+        },
+        {
+          "path": ".build/original-content-batch-delta/focused-related-v2.json",
+          "bytes": 83789,
+          "sha256": "fa3b7d5e1a92de0eb7e4cc9f51d942d090adea3d4846d64fbee47026910bec4f"
+        }
+      ],
+      "uniqueMethods": 83,
+      "note": "82 passed leaves from related-v1 plus the corrected formerly obsolete unsupported-batch method from related-v2. No-rate old-vector inputs permit documented limiter-only source continuity; final seven rate methods directly verify changed registry. One old failed leaf is explicitly excluded, not rewritten."
+    },
+    "acceptedMethodSelection": {
+      "path": ".build/original-content-batch-delta/accepted-methods.json",
+      "bytes": 42792,
+      "sha256": "3a64b4e18d2f8a742ce6f0053abc813730b31c7c5660780c8592145f74f16a50"
+    },
+    "acceptedUniqueMethods": 97,
+    "suiteIdentities": 12,
+    "rawAcceptedXMLArtifacts": 13,
+    "newOracleExecutionIsAndroid": false,
+    "actualOracles": [
+      "OriginalBatchContextOracle (pinned body, test-only capture persistence seam)",
+      "OriginalConcurrentRateLimiterOracle (pinned original window parsing/counter body, test-only)"
+    ],
+    "ordinary": {
+      "path": ".build/original-content-batch-delta/ordinary-v1.json",
+      "bytes": 92826,
+      "sha256": "b25d07d547d222c93ea15f37e01f2bf02d9997e0ea07aaf7a5c3230bb3fe0ae5"
+    },
+    "ordinaryJar": {
+      "path": ".build/original-content-batch-delta/ordinary-v1-legado-runtime.jar",
+      "bytes": 10740613,
+      "sha256": "0fd34f27b74d8b27bb9f1ab80dc71bb21b78b403fc1cebf0e8ef9f1ef0535c41",
+      "requiredClasses": [
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule$SourceRule.class",
+        "io/legado/app/model/analyzeRule/RuleDataInterface.class",
+        "io/legado/app/model/analyzeRule/RuleData.class",
+        "io/legado/app/data/entities/BaseBook.class",
+        "io/legado/app/data/entities/BaseSource.class",
+        "io/legado/app/data/entities/Book.class",
+        "io/legado/app/data/entities/BookChapter.class",
+        "io/legado/app/data/entities/BookSource.class",
+        "io/yuedu/legado/originalrule/RuleEnvironment.class",
+        "io/yuedu/legado/originalrule/RuleScopes.class",
+        "io/yuedu/legado/originalrule/RuleBase64.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrl.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrl$UrlOption.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrlNetworkOptionsKt.class",
+        "io/yuedu/legado/RuntimeHttpRequestExecutor.class",
+        "io/yuedu/legado/originalrule/OriginalIpValidator.class",
+        "io/yuedu/legado/originalrule/OriginalQueryEncoder.class",
+        "io/legado/app/model/webBook/WebBook.class",
+        "io/legado/app/model/webBook/BookList.class",
+        "io/legado/app/model/webBook/BookInfo.class",
+        "io/legado/app/model/webBook/BookChapterList.class",
+        "io/legado/app/model/webBook/BookContent.class",
+        "io/legado/app/data/entities/SearchBook.class",
+        "io/yuedu/legado/originalrule/RulePersistenceAdapter.class",
+        "io/yuedu/legado/originalrule/RulePersistenceBinding.class",
+        "io/yuedu/legado/originalrule/RulePersistenceHost.class",
+        "io/yuedu/legado/OriginalTraditionalRuntime.class",
+        "io/yuedu/legado/OriginalRuleDto.class",
+        "io/yuedu/legado/originalrule/AppCookieOwnerClient.class",
+        "io/yuedu/legado/originalrule/OriginalCookieText.class",
+        "io/legado/app/utils/InfoMap.class",
+        "io/yuedu/legado/originalrule/OriginalExploreContexts.class",
+        "io/legado/app/model/BatchContentContext.class",
+        "io/legado/app/help/ConcurrentRateLimiter.class",
+        "io/legado/app/exception/ConcurrentException.class",
+        "io/legado/app/model/analyzeRule/AnalyzeUrl$ConcurrentRecord.class"
+      ],
+      "junitOrProjectTestClasses": [],
+      "projectCompiledTestClassesChecked": 190,
+      "engineTestsFlag": false,
+      "byteEqualProvenanceAndNotices": [
+        {
+          "source": "manifest.json",
+          "member": "META-INF/legado-provenance/manifest.json",
+          "bytes": 14656,
+          "sha256": "e814ec9b300aa6ef7bbaed05555ba7e5ec2142032c2a36456e12b83073c8d36e"
+        },
+        {
+          "source": "runtime-http/manifest.json",
+          "member": "META-INF/legado-provenance/runtime-http/manifest.json",
+          "bytes": 9483,
+          "sha256": "714e2ce4308736b479a28958b474409456d1c8cbb47e8488e4ea02941454c87b"
+        },
+        {
+          "source": "runtime-http/resolved-dependencies.json",
+          "member": "META-INF/legado-provenance/runtime-http/resolved-dependencies.json",
+          "bytes": 26934,
+          "sha256": "fff63c52ace194d5ee6f38c1f26fef1fee23a94968f57b7ceada5abd601777af"
+        },
+        {
+          "source": "scalar-rules/manifest.json",
+          "member": "META-INF/legado-provenance/scalar-rules/manifest.json",
+          "bytes": 18765,
+          "sha256": "767c0501cd7109727f28997a1a433d1d337b3d882677f48c8a678ef18bc33d64"
+        },
+        {
+          "source": "scalar-rules/resolved-dependencies.json",
+          "member": "META-INF/legado-provenance/scalar-rules/resolved-dependencies.json",
+          "bytes": 26934,
+          "sha256": "fff63c52ace194d5ee6f38c1f26fef1fee23a94968f57b7ceada5abd601777af"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-core-js.txt",
+          "bytes": 426,
+          "sha256": "3f991eff87a6212affed07c2d2cc0a8bb681a72ecefeff54f4915de7b5aa5a52"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE.txt",
+          "bytes": 16780,
+          "sha256": "ada0787f27b581e024972a18b51db92c8e8508d0f05017d104a1c70a61b59951"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE-tools.txt",
+          "bytes": 1825,
+          "sha256": "9246f7f820e791b7328d46ba341bb5a2bb08c3e2e1b9d36803ab0c3899e0462f"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/NOTICE.txt",
+          "bytes": 3020,
+          "sha256": "c8539fca8905465681c131e79dd58b98e4276702fc6f221b5f98aa91baf6bcf2"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/rhinoDiff.txt",
+          "bytes": 12369,
+          "sha256": "98793632f4e0ebb70c8e81abb7ca29186878caca0f505374b5ff07f64d7998cc"
+        },
+        {
+          "source": "licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "member": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/SOURCE.md",
+          "bytes": 1450,
+          "sha256": "7979d0f6470ffe8628473d6a6d36d2fae0d280adee341922353d984f4b113cb4"
+        },
+        {
+          "source": "original-rule/licenses/cryptojs-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/cryptojs-LICENSE.txt",
+          "bytes": 1167,
+          "sha256": "df15cb64ddb4b92d3da8567f51cee37fadefe214f1131ff3520b18e61baa04f5"
+        },
+        {
+          "source": "original-rule/licenses/hutool-5.8.22-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/hutool-5.8.22-LICENSE.txt",
+          "bytes": 9549,
+          "sha256": "d7136cebc1c0c2a50e02013928fc283b8d69cb805a994e21e6a8cc3983f45131"
+        },
+        {
+          "source": "original-rule/licenses/legado-LICENSE.txt",
+          "member": "META-INF/licenses/original-rule/legado-LICENSE.txt",
+          "bytes": 35139,
+          "sha256": "35d3f26265f7c262a524602f72efda71f69d390086d6d0b74c70c8b07251227c"
+        },
+        {
+          "source": "runtime-http/licenses/brotli-MIT-LICENSE.txt",
+          "member": "META-INF/licenses/jvm-http/brotli-MIT-LICENSE.txt",
+          "bytes": 1084,
+          "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+        },
+        {
+          "source": "runtime-http/licenses/ICU-release-58-2-LICENSE.txt",
+          "member": "META-INF/licenses/jvm-http/ICU-release-58-2-LICENSE.txt",
+          "bytes": 19442,
+          "sha256": "2023a2d68dfcdb1f7b7c5dccb96f88aabba112f63f250cb9e533cc64625eff07"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-lang3-3.17.0/LICENSE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-lang3-3.17.0/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-lang3-3.17.0/NOTICE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-lang3-3.17.0/NOTICE.txt",
+          "bytes": 174,
+          "sha256": "73c3dd73ad54910699e4e364345798d083a9126b9799663d4bdce8d7468b7f66"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-text-1.13.1/LICENSE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-text-1.13.1/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "source": "scalar-rules/licenses/commons-text-1.13.1/NOTICE.txt",
+          "member": "META-INF/licenses/scalar-rules/commons-text-1.13.1/NOTICE.txt",
+          "bytes": 174,
+          "sha256": "26ebc5e05468959b3ae5010f10e0c3fb0cbf8d7d2f1242005bf5656c1348c69f"
+        }
+      ],
+      "updatedOriginalRuleManifestMatchesReviewedFile": {
+        "member": "META-INF/legado-provenance/original-rule/manifest.json",
+        "bytes": 116499,
+        "sha256": "a1e05658ac9be5b485628d3b361783fda649dfae83d05fbb1ffa840b306c8006"
+      },
+      "binaryLocalOnly": true,
+      "markers": [
+        "PACKAGED_PAYLOAD_OK",
+        "PACKAGED_ORIGINAL_TRADITIONAL_OK",
+        "PACKAGED_APP_COOKIE_OWNER_READ_OK",
+        "PACKAGED_APP_COOKIE_OWNER_TEXT_OK",
+        "PACKAGED_APP_COOKIE_OWNER_BROWSER_PROTOCOL_OK",
+        "PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK",
+        "PACKAGED_ORIGINAL_BATCH_RATE_OK"
+      ]
+    },
+    "ordinaryLog": {
+      "path": ".build/original-content-batch-delta/ordinary-v1.log",
+      "bytes": 3901,
+      "sha256": "1af2a1b65551ffc8187856dcce49591f68a8cf0e96a8aee0206213e9e5eb1af2"
+    },
+    "ordinarySmokeClaim": "Seven actual markers. New batch exercises internal original embedding API with a controlled state host and two real loopback HTTP requests; 2 bodies saved/1 original missing identity/rateAdmissions4/same Cookie. It also verifies public App batch remains UNSUPPORTED_OPERATION. This is not public JSON batch, JNI/native/App persistent-save acceptance.",
+    "swiftSDKExecuted": 0,
+    "androidExecuted": false,
+    "iosExecuted": false,
+    "deviceExecuted": false,
+    "cloudTriggered": false,
+    "allAttemptRecords": [
+      {
+        "path": ".build/original-content-batch-delta/focused-related-v1.json",
+        "bytes": 86553,
+        "sha256": "cd807e6f97d4673df472a9c424e4c6721b25d52a5483cd69e7e00d1300866783",
+        "exitCode": 1,
+        "tests": 83,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-related-v2.json",
+        "bytes": 83789,
+        "sha256": "fa3b7d5e1a92de0eb7e4cc9f51d942d090adea3d4846d64fbee47026910bec4f",
+        "exitCode": 0,
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v1.json",
+        "bytes": 81084,
+        "sha256": "edd5b221b5a4489f0cfb9e579c47f54b28178ca0a201f4e83c7d0adbc6d75289",
+        "exitCode": 1,
+        "tests": 0,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v2.json",
+        "bytes": 81084,
+        "sha256": "7da3f4a3718029a478e3d3ec1c46919c7c8554d4b8b7cc88d2279645400f6e87",
+        "exitCode": 1,
+        "tests": 0,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v3.json",
+        "bytes": 81340,
+        "sha256": "a77a8806763831eae44c4c52cf86a9b1fb371b3314bc1f4114ec576e77f353a7",
+        "exitCode": 1,
+        "tests": 7,
+        "failures": 2,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v4.json",
+        "bytes": 81571,
+        "sha256": "3ca36e2fd58d7e9d60d57ae91f54b83c73851dddfaa93f757bb29ce004ae5883",
+        "exitCode": 0,
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v5.json",
+        "bytes": 83983,
+        "sha256": "afa82254e4da6526fa2645f70b3b1a509768fffa7258b246c04bfd9032d7547a",
+        "exitCode": 0,
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v6.json",
+        "bytes": 83785,
+        "sha256": "9127bb21306002a10ea7d14f553beae71cb1a46ec34a15a0c8bfcbc8bed71550",
+        "exitCode": 0,
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v7.json",
+        "bytes": 83514,
+        "sha256": "d69cf97da5cffec9a8cf773e9d0b9e73b3f0ebdddc7f552ec232a25e5c46c310",
+        "exitCode": 1,
+        "tests": 0,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": ".build/original-content-batch-delta/focused-v8.json",
+        "bytes": 84065,
+        "sha256": "4357e271b0a26450ad32cdd1a08461d0c8d8074acfe9e5a877c7ad563e3edd57",
+        "exitCode": 0,
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "attemptNotes": [
+    {
+      "attempt": "focused-v1",
+      "classification": "production compile defect",
+      "detail": "Missing kotlinx.coroutines.ensureActive import in the new callback path; no tests executed. Import fixed and actual later compilation/tests passed."
+    },
+    {
+      "attempt": "focused-v2",
+      "classification": "test compile defect",
+      "detail": "Ambiguous star-imported CancellationException type; no tests executed. Test uses qualified coroutine type."
+    },
+    {
+      "attempt": "focused-v3",
+      "classification": "two fixture expectation defects",
+      "detail": "Actual 7 ran: 5 pass/2 fail. java.put binds first chapter when chapter is present, not Book; assertions/script now separately check chapter and explicit Book.putVariable. Late callback after ordinary-error invocation sees cancelled coroutine before closed state, so original order throws cancellation rather than false. Production unchanged for these fixes."
+    },
+    {
+      "attempt": "focused-v4",
+      "classification": "necessary failed-method rerun",
+      "detail": "Only the two corrected fixture methods passed; not counted in addition to final 7 batch methods."
+    },
+    {
+      "attempt": "focused-v5",
+      "classification": "intermediate actual success",
+      "detail": "Initial new13 passed before review found expired-row prune/admission concurrency gap. This run is retained but not the accepted final rate implementation."
+    },
+    {
+      "attempt": "focused-related-v1",
+      "classification": "one obsolete preimplementation assertion",
+      "detail": "Actual83 ran,82 pass/1 fail because the old test expected all internal batch unsupported. Now internal batch correctly emits original missing-rule error. App needSave permission and nested capability checks remain strict."
+    },
+    {
+      "attempt": "focused-related-v2",
+      "classification": "necessary failed-method rerun",
+      "detail": "Only the corrected/renamed old method passed. Its old failed identity is excluded from accepted-methods, no duplicate counting."
+    },
+    {
+      "attempt": "focused-v6",
+      "classification": "intermediate actual map enumeration success",
+      "detail": "Real Rhino enumeration probe passed against old companion layout; it does not establish whether precise generated-name invocation was accessible. Final implementation eliminates all raw-Map-returning accessors regardless, with exact-name Rhino and reflection checks."
+    },
+    {
+      "attempt": "independent source review v1",
+      "classification": "confirmed production concurrency defect",
+      "detail": "Lookup released registry lock before row reset; a foreign-owner prune could remove a borrowed expired row and allow duplicate same-window admissions. Fixed by one lookup/prune/row-admission critical section and added real 16-way/6-window regression. No old-runtime failing stress claim is made."
+    },
+    {
+      "attempt": "focused-v7",
+      "classification": "test compile defect",
+      "detail": "Precise synthetic-name JavaScript string used unescaped Kotlin dollars; no tests executed. Escaped literal dollars in the fixture, production already compiled."
+    },
+    {
+      "attempt": "focused-v8 preflight",
+      "classification": "source guard before execution",
+      "detail": "Source guard correctly stopped because prepared work smoke had not yet been copied to isolated project; no Gradle/tests began. Copied exact smoke source, then actual focused-v8 source continuity remained true."
+    },
+    {
+      "attempt": "focused-v8",
+      "classification": "final actual success",
+      "detail": "14 new methods passed, 164 source inputs unchanged; no prior attempts accumulated."
+    },
+    {
+      "attempt": "ordinary-v1",
+      "classification": "first and only ordinary attempt passed",
+      "detail": "Actual runtimeJar and source Java launcher using only assembled JAR passed seven markers; all 164 inputs unchanged,190 compiled test classes/JUnit leakage0,21 old notice/provenance leaves byte equal."
+    }
+  ],
+  "provenance": {
+    "update": {
+      "path": ".build/original-content-batch-delta/provenance-update.json",
+      "bytes": 1484,
+      "sha256": "cc76939bc964297f825ef590d46e2c9a905ef25ee8ff2c3c215b54eaf0ef339e"
+    },
+    "finalManifest": {
+      "path": ".build/original-content-batch-delta/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 116499,
+      "sha256": "a1e05658ac9be5b485628d3b361783fda649dfae83d05fbb1ffa840b306c8006"
+    },
+    "prior54EntriesUnchanged": true,
+    "newPinnedOriginals": 3,
+    "finalPinnedOriginals": 57,
+    "newDependencies": [],
+    "old21NoticesByteEqual": true
+  },
+  "independentReview": {
+    "record": {
+      "path": ".build/original-content-batch-delta/independent-review-v2.json",
+      "bytes": 9854,
+      "sha256": "fc0cf2b717486bc23345b3cb1065f4c6aed52d0d6b48efe8187e684988eeeb01"
+    },
+    "scope": "Read-only production/new-test source/hash review; no test/JAR execution or independent JAR/provenance claim",
+    "confirmedBlockers": []
+  },
+  "remainingActualProductWork": [
+    "Public JSON original-traditional contentBatch/typed Swift Package/JNI/App body-save execution is still unconnected. The next production step must expose the original missing-chapter return with actual App book UUID/chapter URL/generation grants; preview/source-only grants cannot authorize body files.",
+    "Public single content still explicitly requires needSave=false; App saving must use the existing Pipeline/ChapterCacheRepository. This internal stage only uses the existing injected RuleWebBookState persistence owner and controlled test file adapter; no parallel App file cache.",
+    "Original CacheBook caller/download ticket/concurrency/fallback and media/image callbacks, mainJs JsSourceBook batch, Android launch/UI wrappers and complete save-folder ContentSaveToken ABI remain unported. No implicit batch fallback was added to WebBook.",
+    "Original key-only updateConcurrentRate UI hot update and raw process-global map remain typed unsupported because they lack current embedding owner/source revision. Real declared nonzero source rates execute; 256 simultaneous active scopes have a documented typed capacity rejection and only expired windows are pruned.",
+    "Original AnalyzeUrl isTest timing/error probe and still-unported browser/media/file/byte APIs remain unsupported. The existing explicit skipRateLimit parameter executes, not an automatic route bypass.",
+    "No Android/iOS/WK/JNI/device/cloud execution occurred in this stage. Full C3, complete source compatibility and final ordinary JAR?JNI?native product-chain acceptance remain incomplete; default App route is unchanged."
+  ],
+  "readerRouteIntegrated": false,
+  "publicAppBatchSaveIntegrated": false,
+  "completeC3": false,
+  "fullSourceCompatibilityEstablished": false,
+  "rawEvidenceRoot": ".build/original-content-batch-delta/",
+  "diff": {
+    "path": ".build/original-content-batch-delta/final-changes.diff",
+    "bytes": 118116,
+    "sha256": "c44440ac1770b4a3f9ccc9c732e500a80f6cce01fdf076526fef9a9b6b46272e"
+  }
+}

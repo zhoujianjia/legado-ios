@@ -52,7 +52,7 @@ class RuleWebBookState internal constructor(private val ensureOpen: () -> Unit,
         token.bookUrl == book.bookUrl && token.index == chapter.index && token.chapterUrl == chapter.url && token.name == book.name && token.author == book.author
 
     /** Retained ContentSaveFence writeIfCurrent: a normal download does not advance the edit generation. */
-    internal fun saveContent(book: Book, chapter: BookChapter, content: String, token: ContentSaveToken): Boolean {
+    internal fun saveContent(book: Book, chapter: BookChapter, content: String, token: ContentSaveToken, saveChapterMetadata: Boolean = true): Boolean {
         ensureOpen()
         if (!matches(book, chapter, token)) return false
         val store = store(); val contentKey = contentKey(book.bookUrl, chapter.index); val tocKey = store.key("toc", book.bookUrl)
@@ -68,12 +68,12 @@ class RuleWebBookState internal constructor(private val ensureOpen: () -> Unit,
                 it.name == book.name && it.author == book.author && it.title == chapter.title }
             val row = ContentRecord(token.version, book.bookUrl, chapter.index, chapter.url, book.name, book.author, chapter.title, chapter.imgUrl, content.ifEmpty { sameContent?.body.orEmpty() })
             val changes = mutableMapOf<String, ByteArray?>(contentKey to GSON.toJson(row).toByteArray(Charsets.UTF_8))
-            toc?.let { list ->
+            if (saveChapterMetadata) toc?.let { list ->
                 changes[tocKey] = GSON.toJson(list.map { if (it.index == chapter.index && it.url == chapter.url) it.copy(title = chapter.title, imgUrl = chapter.imgUrl) else it }).toByteArray(Charsets.UTF_8)
             }
             changes to true
         }
-        if (saved) chapters[book.bookUrl]?.firstOrNull { it.index == chapter.index && it.url == chapter.url }?.let { it.title = chapter.title; it.imgUrl = chapter.imgUrl }
+        if (saved && saveChapterMetadata) chapters[book.bookUrl]?.firstOrNull { it.index == chapter.index && it.url == chapter.url }?.let { it.title = chapter.title; it.imgUrl = chapter.imgUrl }
         return saved
     }
     /** Successful atomic owner replacement invalidates older network save tokens. */

@@ -6,6 +6,7 @@ import com.script.rhino.runScriptWithContext
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.annotations.SerializedName
+import io.legado.app.help.ConcurrentRateLimiter
 import io.legado.app.data.entities.BaseSource
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
@@ -25,7 +26,8 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * Retained URL/header/request preparation and JVM request-option subset.
  * Header initialization precedes URL scripts; URL options then override it.
- * WebView/media/server upload/rate limiting and Android persistence are unported.
+ * WebView/media/server upload and Android persistence are unported; original
+ * rate windows use the same explicitly authorized owner and task deadline.
  * Keeping the original FQN does not imply those capabilities are available.
  */
 class AnalyzeUrl(
@@ -44,8 +46,11 @@ class AnalyzeUrl(
     private val infoMap: io.legado.app.utils.InfoMap? = null,
 ) : RuleJsExtensions {
     private val context = coroutineContext.minusKey(ContinuationInterceptor)
-    suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null): io.yuedu.legado.StrResponse {
+    private val concurrentRateLimiter = ConcurrentRateLimiter(source)
+    suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null, useWebView: Boolean = true, isTest: Boolean = false, skipRateLimit: Boolean = false): io.yuedu.legado.StrResponse {
         if (!jsStr.isNullOrBlank() || !sourceRegex.isNullOrBlank()) unsupportedRule("original WebBook browser/webJs/sourceRegex")
+        if (isTest) unsupportedRule("original AnalyzeUrl isTest timing/error probes")
+        if (!skipRateLimit) concurrentRateLimiter.getConcurrentRecord()
         return environment.platform.executeUrl(this)
     }
     fun getErrStrResponse(error: Throwable): io.yuedu.legado.StrResponse {
@@ -533,5 +538,7 @@ class AnalyzeUrl(
             return webViewDelayTime
         }
     }
+
+    data class ConcurrentRecord(var time: Long, var accessLimit: Int, var interval: Int, var frequency: Int)
 
 }

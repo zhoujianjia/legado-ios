@@ -63,7 +63,7 @@ class AnalyzeRule(
 
     private var chapter: BookChapter? = null
     private var nextChapterUrl: String? = null
-    private var batchContext: RuleBatchContext? = null
+    private var batchContext: io.legado.app.model.BatchContentContext? = null
     private var content: Any? = null
     private var baseUrl: String? = null
     private var redirectUrl: URL? = null
@@ -933,7 +933,7 @@ class AnalyzeRule(
         return source
     }
 
-    override fun getBatchContext(): RuleBatchContext? {
+    override fun getBatchContext(): io.legado.app.model.BatchContentContext? {
         return batchContext
     }
 
@@ -1008,8 +1008,7 @@ class AnalyzeRule(
             return this
         }
 
-        fun AnalyzeRule.setBatchContext(batchContext: RuleBatchContext?): AnalyzeRule {
-            if (batchContext != null) unsupportedRule("original-rule batch context")
+        fun AnalyzeRule.setBatchContext(batchContext: io.legado.app.model.BatchContentContext?): AnalyzeRule {
             this.batchContext = batchContext
             return this
         }

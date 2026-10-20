@@ -9,6 +9,7 @@ import io.legado.app.model.analyzeRule.AnalyzeUrl
 import kotlin.coroutines.CoroutineContext
 import java.util.logging.Logger
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ensureActive
 import io.yuedu.legado.RuntimeFailure
 import org.htmlunit.corejs.javascript.WrappedException
 
@@ -40,6 +41,9 @@ open class RulePlatform {
         unsupportedRule("original WebBook execution owner")
     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
     open fun exploreOwnerScope(source: BaseSource): String = unsupportedRule("original explore owner scope")
+    /** Existing task deadline; no fresh rate-wait budget or scheduling owner. */
+    open fun originalRateDelayBudgetMillis(source: BaseSource): Long =
+        unsupportedRule("original concurrent rate needs the existing task deadline")
     open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
     open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()
@@ -79,7 +83,7 @@ open class RuleCookieHost {
 interface RuleJsExtensions {
     fun getSource(): BaseSource?
     fun getTag(): String?
-    fun getBatchContext(): RuleBatchContext? = null
+    fun getBatchContext(): io.legado.app.model.BatchContentContext? = null
     fun getRuleEnvironment(): RuleEnvironment
     fun getRuleCoroutineContext(): CoroutineContext
     fun ajax(url: Any): String?
@@ -91,7 +95,15 @@ interface RuleJsExtensions {
         return getRuleEnvironment().platform.request(url, header, callTimeout, getRuleCoroutineContext(), this)
     }
     fun webView(html: String?, url: String?, js: String?): Nothing = unsupportedRule("original-rule browser")
-    fun cacheContent(chapter: Any?, content: String): Nothing = unsupportedRule("original-rule batch content")
+    fun cacheContent(chapter: Any?, content: String): Boolean {
+        com.script.rhino.rhinoContextOrNull?.ensureActive()
+        getRuleEnvironment().ensureOpen()
+        getRuleCoroutineContext().ensureActive()
+        val batchContext = getBatchContext()
+            ?: throw io.legado.app.exception.NoStackTraceException("java.cacheContent 只能在批量正文规则中调用")
+        val identifier = if (chapter is org.htmlunit.corejs.javascript.Wrapper) chapter.unwrap() else chapter
+        return batchContext.saveContent(identifier, content)
+    }
     fun refreshBookInfo(): Nothing = unsupportedRule("original-rule refreshBookInfo")
     fun refreshBookToc(): Nothing = unsupportedRule("original-rule refreshBookToc")
     fun refreshContent(): Nothing = unsupportedRule("original-rule refreshContent")
@@ -112,5 +124,4 @@ interface RuleJsExtensions {
     fun bytesToStr(value: ByteArray, charset: String): String = String(value, charset(charset))
 }
 
-/** The accepted slice rejects non-null batch context instead of fabricating chapter state. */
-class RuleBatchContext(val chapters: List<RuleChapter>)
+

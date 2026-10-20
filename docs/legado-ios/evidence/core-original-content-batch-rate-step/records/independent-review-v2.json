@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T09:07:17.017900+00:00",
+  "scope": "Source-only incremental v2 review closing v1 limiter race; no test/JAR/SDK execution.",
+  "reviewInput": {
+    "path": ".build/original-content-batch-delta/review-inputs-v2.json",
+    "bytes": 12210,
+    "sha256": "46249022a971f63ad88362f4d7294abfca2f5b7d2160e13a76fc68e2e43ea1ca"
+  },
+  "reviewInputSHA256": "46249022a971f63ad88362f4d7294abfca2f5b7d2160e13a76fc68e2e43ea1ca",
+  "priorReview": {
+    "path": ".build/original-content-batch-delta/independent-review-v1.json",
+    "bytes": 12142,
+    "sha256": "ad7e3a6cd30c93e373ebf5f526d7b17adee918b9dd5cabc1303cfd883d85804a"
+  },
+  "verifiedSourceCount": 16,
+  "verifiedLockedReferenceCount": 8,
+  "verifiedWorkEqualsImmutableSnapshots": true,
+  "sourceIdentities": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/exception/ConcurrentException.kt",
+      "bytes": 170,
+      "sha256": "c3f5a1f8ccad7946937c2e9bbc0d70673a865c253e2e7bd551a2e226b2f4ee9b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
+      "bytes": 5499,
+      "sha256": "ef4c59f013858881b4ad466f9b1abd0c47f8713069127ec6232208d00c4625b9"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "bytes": 36976,
+      "sha256": "05c239973d1e5f448627835324e8d83f760b0a982cce9d4d9be52bddd7cf2a1f"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 20860,
+      "sha256": "e11e3449c4fc68fdd9a55cb7f547fd78e1035d46d5f3fc99dca08ef126e171f1"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt",
+      "bytes": 7533,
+      "sha256": "9c6ed92364b1a74555760d00aa587d334cd61ebb83227aed91e7571559c05c5b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt",
+      "bytes": 13184,
+      "sha256": "388c4966229d0121c0c276b26ba6a07897bcf4a7145ed894fba9a18ec940b091"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+      "bytes": 20154,
+      "sha256": "5b93376940bddabb8473583f3835722d6e24d2aa5b9a54ebecbc888aabe4403e"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "bytes": 18046,
+      "sha256": "5202f0631f55551544fdb8eb6ef351f3290d01db1e4ae7acabb4e397ba45cf67"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "bytes": 8275,
+      "sha256": "f826e67c5c254323afd878011ee28c1d65be3a871b5f089d641973089ed97860"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "bytes": 8685,
+      "sha256": "6c3639aca35a348642e506e024d360066d4a2505099c218bf6bebaec4b65754c"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+      "bytes": 30867,
+      "sha256": "7d9acaf12e198360df7203d276b5db537177f4efaba5534ea63bcc0e9f11c958"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt",
+      "bytes": 18599,
+      "sha256": "045f1c4a30e1b505c440dc93892fa726c6c92539e87f1b450eddc724e9f1ff0e"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchTest.kt",
+      "bytes": 19424,
+      "sha256": "154eda1aff73e36356d27c58c142b81aaee59b639681da946ebfa5d33985fa07"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "bytes": 22670,
+      "sha256": "dc91b9622a01a04f88d2f028a805b943a16a8bc11835ff659bc1c6f21ab7f8e1"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalBatchContextOracle.kt",
+      "bytes": 7073,
+      "sha256": "568d48e4e43160912249831e82dfed0222fc2b662aca4bc92305265cc149e9c8"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/reference/OriginalConcurrentRateLimiterOracle.kt",
+      "bytes": 4836,
+      "sha256": "e6527efde1334d60746623c0b8b3e1cac2e4e6588c7b551cafc8b63adb85bab1"
+    }
+  ],
+  "incrementalChanges": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
+      "sha256": "ef4c59f013858881b4ad466f9b1abd0c47f8713069127ec6232208d00c4625b9",
+      "change": "changed-since-v1",
+      "previousSHA256": "2c3e75a7fa6a430ac2a3a5d56494eda7e0962db0e5e71d3a319f7ac388832d99"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
+      "sha256": "7d9acaf12e198360df7203d276b5db537177f4efaba5534ea63bcc0e9f11c958",
+      "change": "newly-listed-smoke-or-old-regression",
+      "previousSHA256": null
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt",
+      "sha256": "045f1c4a30e1b505c440dc93892fa726c6c92539e87f1b450eddc724e9f1ff0e",
+      "change": "changed-since-v1",
+      "previousSHA256": "dd9ac168b019baa3eb2e7177cc41f638a3dc327f7109f08c00484ef51391d8d5"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "sha256": "dc91b9622a01a04f88d2f028a805b943a16a8bc11835ff659bc1c6f21ab7f8e1",
+      "change": "newly-listed-smoke-or-old-regression",
+      "previousSHA256": null
+    }
+  ],
+  "remainingV1FilesUnchanged": 12,
+  "confirmedBlockers": [],
+  "resolvedV1Findings": [
+    {
+      "file": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/ConcurrentRateLimiter.kt",
+      "lines": [
+        50,
+        53,
+        54,
+        57,
+        61,
+        64,
+        67,
+        84,
+        88,
+        100
+      ],
+      "issue": "Expired row could be pruned after lookup but before that borrowed row was reset/admitted.",
+      "resolution": "OwnedConcurrentWindows.admit validates the actual BaseSource environment, Host scope and existing task deadline before taking records lock. Lookup, expired pruning, new insertion and original existing-row counter update now all occur inside that same records critical section. No new owner can detach an already-borrowed row between lookup and admission.",
+      "originalSemantics": "Malformed/null/zero parsing, accessLimit/frequency, interval/reset and retry-delay logic remain the original window algorithm; cap256 still refuses adding an owner rather than evicting a live window.",
+      "reviewResult": "Confirmed v1 race closed statically; original failing version and review remain historical."
+    }
+  ],
+  "encapsulation": {
+    "finding": "The records field moved out of the companion into its own same-file private object. All accesses originate inside that object; no source method returns the Map and no synthetic accessor is needed for outer/companion cross-access. The remaining callable admit takes BaseSource and validates the real Host scope itself, not caller-provided raw scope.",
+    "preservedRejections": "concurrentRecordMap getter and key-only updateConcurrentRate still throw typed unsupported.",
+    "limits": "This closes the specific callable/synthetic Map exposure, not a new general hostile-JVM reflection sandbox claim."
+  },
+  "regressionReview": {
+    "newConcurrentMethod": "concurrentExpiryPruningAndSameOwnerAdmissionKeepOneOriginalWindow uses16 actual tasks,6 iterations,8 same expired owner admissions competing with8 foreign-owner pruning admissions. It requires exactlyone same-owner success and preserves deadline cancellation behavior for the others.",
+    "syntheticProbe": "Actual Rhino code tries exact access$getRecords$cp and enumerated access$ methods. JVM public-method reflection rejects synthetic Map-returning accessors and Map-returning registry methods. No privileged raw-map test cleanup was added.",
+    "unchangedBatchSuite": "OriginalContentBatchTest v2 SHA is byte-exact v1; same-file IO/reopen, partial prefix, stale token/current TOC, duplicate URL/index, ordinary failure, caller cancellation, deadline and environment-close assertions remain.",
+    "legacyAssertionRepair": "OriginalWebBookExecutionTest only renames the now-stale unsupported-batch method and expects the original missing-contentBatch-rule exception. Its no-save-grant single-chapter denial, nested unsupported capability and no extra publication/HTTP checks remain.",
+    "ordinarySmoke": "The newly listed smoke method exercises internal embedding batch+same Cookie/HTTP/state owner and shared rate count, while checking public App batch remains unsupported. It is prepared only; ordinary JAR execution was not available or assumed during this review."
+  },
+  "authorExecutionStatusAsReportedNotRerun": {
+    "newFocusedV8Unique": 14,
+    "newBatch": 7,
+    "newRate": 7,
+    "relatedUnique": 83,
+    "relatedUnchanged": 82,
+    "relatedOneStaleAssertionRepaired": 1,
+    "unionUnique": 97,
+    "earlierRepeatedAttemptsNotAdded": true,
+    "ordinaryJAR": "pending-at-review-input"
+  },
+  "reviewerExecution": {
+    "JVMTestsExecuted": 0,
+    "JARRuns": 0,
+    "SDKExecutions": 0,
+    "cloudQueriesOrTriggers": 0,
+    "canonicalOrGitMutations": 0
+  },
+  "remaining": [
+    "Source conclusions are limited to the frozen16 source leaves and locked original contract; full final provenance/JAR evidence remains a separate author freeze.",
+    "Actual App body-generation mapping/publicbatch/needSave=true authority is not granted; preview cannot authorize content saving.",
+    "Raw global-map/key-only hot update, mainJs batch, media/default App routes and full book-source compatibility remain unfinished."
+  ]
+}

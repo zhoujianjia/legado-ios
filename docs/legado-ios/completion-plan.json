@@ -329,7 +329,8 @@
             "原AnalyzeRule.ajax/connect已接入有限AnalyzeUrl的@js/<js>、@result、原{{…}}扫描及页组选项；实际82项JVM方法与普通JAR/smoke通过，新增URL9项中的一项含140组原ZIP方法差分。保留同一任务、Rhino、HTTP与Cookie；完整header/login、option.js/bodyJs、WebBook与App传统入口仍未完成。",
             "已按原顺序接通source动态header/初始登录域/显式头替换、相对URL、option.js/bodyJs、query/form编码、DNS/超时/重定向及原错误边界；同一HTTP执行器供mainJs与原请求复用。实际114项JVM方法（新18+旧96）及普通JAR/smoke通过，原组合140/域分类40均在方法内不额外累计。原AnalyzeRule.ajax传book例外与构造/执行异常分界已更正；完整WebBook、持久化及App/JNI仍未完成。",
             "已接通task-owned原WebBook四段await文本执行与目录/正文分页，复用原AnalyzeRule/AnalyzeUrl和同一HTTP/Cookie/实体；实际138唯一方法（新13+旧125）及普通JAR/smoke通过。此为C3底层准备，仅needSave=false；持久化、完整模型/宿主和App入口仍未完成。",
-            "原WebBook四段已接到公开JSON execute及普通JAR真实smoke，显式sourceMode=original-traditional需要同owner和jvm-okhttp；返回有限原Book/Chapter业务DTO及变量，原生UUID不推造。实际171唯一JVM方法（6新+165相关旧）及普通JAR通过；5项新Swift Package方法待SDK，JNI和App产品路由未验证/未切换。"
+            "原WebBook四段已接到公开JSON execute及普通JAR真实smoke，显式sourceMode=original-traditional需要同owner和jvm-okhttp；返回有限原Book/Chapter业务DTO及变量，原生UUID不推造。实际171唯一JVM方法（6新+165相关旧）及普通JAR通过；5项新Swift Package方法待SDK，JNI和App产品路由未验证/未切换。",
+            "原 ConcurrentRateLimiter 已接公共 AnalyzeUrl/嵌套请求/内部批量正文，保留原窗口和延迟算法，按真实 Host/source/revision 有界隔离；同锁修复记录回收与准入竞态，关闭脚本 raw-map 入口。连同内部 batch 共 97 项唯一 JVM 回归及普通 JAR 7 组 smoke 通过；公开 App 批量保存与完整传统源产品入口仍未完成。"
           ],
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-sequence-first-step.json",
@@ -337,7 +338,8 @@
             "docs/legado-ios/core-original-url-options-step.json",
             "docs/legado-ios/core-original-webbook-step.json",
             "docs/legado-ios/core-original-state-persistence-step.json",
-            "docs/legado-ios/core-original-public-runtime-step.json"
+            "docs/legado-ios/core-original-public-runtime-step.json",
+            "docs/legado-ios/core-original-content-batch-rate-step.json"
           ],
           "nextActionZh": "继续C2真实App source revision/book UUID/chapter URL-generation和完整Cookie所有权，再依原门槛完成公开普通JAR→JNI→原生产品链；剩余原接口、批量和完整保存栅栏继续未完成。"
         },
@@ -426,12 +428,15 @@
             "docs/legado-ios/core-original-app-preview-owner-step.json",
             "docs/legado-ios/core-original-explore-infomap-step.json"
           ],
-          "preparatoryScopeZh": "原WebBook四段公开execute与跨任务同owner/HTTP/Cookie已有171项JVM及普通JAR证据，有限实体变量业务结果可往返；批量、完整保存栅栏和App状态/发布仍未完成，整步未验收。；本段另接原版文本subContent、分页后一次追加及全文替换后缩进，24项当前JVM通过（20既有复用+4新），普通JAR/JNI/App验收仍待。；新增显式预览 owner 及 public business/Host 接线准备，15项新与44项相关仅定义、SDK/JNI0；默认App路由、完整流水线与整步验收仍未完成。；新增原exploreBookAwait与InfoMap进程LRU99、显式context生命周期及同Host/source/revision缓存接线。当前唯一54项为旧38复用＋本次16（新5＋既有Runtime11），普通JAR六组smoke通过；Native2与Package2仅定义、SDK/JNI0。UI导航、渲染、按钮、全源onPause与默认App路线仍未完成。",
+          "preparatoryScopeZh": "原WebBook四段公开execute与跨任务同owner/HTTP/Cookie已有171项JVM及普通JAR证据，有限实体变量业务结果可往返；批量、完整保存栅栏和App状态/发布仍未完成，整步未验收。；本段另接原版文本subContent、分页后一次追加及全文替换后缩进，24项当前JVM通过（20既有复用+4新），普通JAR/JNI/App验收仍待。；新增显式预览 owner 及 public business/Host 接线准备，15项新与44项相关仅定义、SDK/JNI0；默认App路由、完整流水线与整步验收仍未完成。；新增原exploreBookAwait与InfoMap进程LRU99、显式context生命周期及同Host/source/revision缓存接线。当前唯一54项为旧38复用＋本次16（新5＋既有Runtime11），普通JAR六组smoke通过；Native2与Package2仅定义、SDK/JNI0。UI导航、渲染、按钮、全源onPause与默认App路线仍未完成。 原内部 getContentBatchAwait/BatchContentContext 已接相同状态与 HTTP/Cookie owner，按原返回未保存章节，保留回存前缀与默认不改 TOC metadata；97 唯一 JVM/普通 JAR 7 组验证已通过，新增 3 份原源码绑定。公开 JSON/typed Swift/JNI/App 多章真实授权与正文保存尚未接入，C3 整体未验收。",
           "preparatoryStatus": "public-JVM-business-boundary-implemented-Swift-SDK-and-product-gates-unfinished",
           "implementationEvidence": [
             "docs/legado-ios/core-original-search-owner-correction.json"
           ],
-          "nextActionZh": "集中验证原explore/context typed Swift与既有owner，再接实际导航/pause/resume、渲染/按钮、全源onPause保存及批量/缓存/媒体缺口；不得以本段JVM/JAR替完整产品链验收。"
+          "nextActionZh": "集中验证原explore/context typed Swift与既有owner，再接实际导航/pause/resume、渲染/按钮、全源onPause保存及批量/缓存/媒体缺口；不得以本段JVM/JAR替完整产品链验收。",
+          "preparatoryEvidence": [
+            "docs/legado-ios/core-original-content-batch-rate-step.json"
+          ]
         },
         {
           "id": "C4",
@@ -813,7 +818,8 @@
       "currentCoreSDKRequest": "docs/legado-ios/core-current-sdk-f51af09-request.json",
       "certificateRequestImplementation": "docs/legado-ios/core-renewal-certificate-request-step.json",
       "ownedSelfSignedIdentityImplementation": "docs/legado-ios/core-owned-self-signed-identity-step.json",
-      "ownedSelfSignedIdentityMacResult": "docs/legado-ios/core-owned-sdk-producer-32fb9d8-result.json"
+      "ownedSelfSignedIdentityMacResult": "docs/legado-ios/core-owned-sdk-producer-32fb9d8-result.json",
+      "originalContentBatchAndCommonRateImplementation": "docs/legado-ios/core-original-content-batch-rate-step.json"
     }
   },
   "stages": [
@@ -4944,6 +4950,10 @@
     "finite-owned-sdk-producer-32fb9d8-result": {
       "path": "docs/legado-ios/core-owned-sdk-producer-32fb9d8-result.json",
       "scope": "Actual Mac guard38 and new self-signed identity/P12 import plus public C/formal-header Swift compile, fresh reopen/sign-use count1/private-key challenge passed. First framework codesign still1/item-not-found; matching1/valid0 but explicit own-root policy0. Actual19 Git inputs and21-member artifact verified. Native0; root cause unresolved."
+    },
+    "original-content-batch-common-rate-implementation": {
+      "path": "docs/legado-ios/core-original-content-batch-rate-step.json",
+      "scope": "Actual20-source/provenance delta,164 same execution inputs,97 unique JVM leaves across13 original XML including one excluded historical failed leaf, ordinary JAR7 markers/190 test classes excluded/21 notices and57 original entries exact. Public App batch saving/default route incomplete; SDK0."
     }
   },
   "retainedExistingWork": [

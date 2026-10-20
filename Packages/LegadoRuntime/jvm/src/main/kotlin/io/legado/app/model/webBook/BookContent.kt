@@ -1,4 +1,4 @@
-// Retained original single/multiple-page content algorithm; transient no-save text contract only.
+// Retained original page/content and batch algorithms; batch saves use the existing explicit owned state.
 package io.legado.app.model.webBook
 
 import io.yuedu.legado.originalrule.*
@@ -12,6 +12,9 @@ import io.legado.app.exception.ContentEmptyException
 import io.legado.app.data.entities.rule.ContentRule
 import io.legado.app.model.analyzeRule.AnalyzeRule
 import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setChapter
+import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setBatchContext
+import io.legado.app.model.BatchContentContext
+import io.legado.app.help.ConcurrentRateLimiter
 import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setCoroutineContext
 import io.legado.app.model.analyzeRule.AnalyzeRule.Companion.setNextChapterUrl
 import io.legado.app.model.analyzeRule.AnalyzeUrl
@@ -228,4 +231,55 @@ object BookContent {
         return Pair(content, nextUrlList)
     }
 
+    @Throws(Exception::class)
+    suspend fun analyzeContentBatch(
+        bookSource: BookSource,
+        book: Book,
+        chapters: List<BookChapter>
+    ): List<BookChapter> {
+        val contentRule = bookSource.getContentRule()
+        val contentBatch = contentRule.contentBatch
+        if (contentBatch.isNullOrBlank()) {
+            throw NoStackTraceException("书源未配置批量正文规则")
+        }
+        if (chapters.isEmpty()) {
+            return emptyList()
+        }
+        val batchContext =
+            BatchContentContext(bookSource, book, chapters, currentCoroutineContext(),
+                chapters.associate { it.index to book.environment.webBook.contentSaveToken(book, it) })
+        val analyzeRule = AnalyzeRule(book, bookSource)
+        analyzeRule.setCoroutineContext(currentCoroutineContext())
+        analyzeRule.setChapter(chapters.first())
+        analyzeRule.setBatchContext(batchContext)
+        analyzeRule.setBaseUrl(book.tocUrl.ifBlank { bookSource.bookSourceUrl })
+        Debug.log(bookSource.bookSourceUrl, "≡开始批量下载,本批${chapters.size}章")
+        currentCoroutineContext().ensureActive()
+        //每批算一次并发,批内书源自己发的请求由 AnalyzeUrl 各自限流
+        ConcurrentRateLimiter(bookSource).getConcurrentRecord()
+        try {
+            val script = contentBatch.trim()
+            if (script.startsWith("<js>", true) || script.startsWith("@js:", true)) {
+                // Reuse ordinary-rule wrappers, including consecutive <js> blocks.
+                for (rule in analyzeRule.splitSourceRule(script)) {
+                    if (rule.mode != AnalyzeRule.Mode.Js) {
+                        throw NoStackTraceException("批量正文规则只能包含 JavaScript")
+                    }
+                    analyzeRule.evalJS(rule.rule, chapters)
+                }
+            } else {
+                // Bare JS may itself contain a string such as "<js>"; do not parse its contents.
+                analyzeRule.evalJS(script, chapters)
+            }
+            currentCoroutineContext().ensureActive()
+        } finally {
+            batchContext.close()
+        }
+        val missing = batchContext.missingChapters()
+        Debug.log(
+            bookSource.bookSourceUrl,
+            "≡批量下载完成,成功${batchContext.savedCount()}章,未回存${missing.size}章"
+        )
+        return missing
+    }
 }

@@ -15,7 +15,8 @@ import kotlinx.coroutines.ensureActive
 
 /** Retained WebBook await orchestration through the single task-owned JVM HTTP.
  * Android launch/UI wrappers, durable saving, mainJs, media, file downloads,
- * explore UI navigation/rendering and contentBatch remain explicit unsupported.
+ * explore UI navigation/rendering remain explicit unsupported. Batch persistence
+ * requires the existing explicitly injected owner; this is not App save authorization.
  * This class name does not imply the full Android WebBook ABI or App routing.
  */
 object WebBook {
@@ -41,7 +42,10 @@ object WebBook {
     suspend fun preciseSearchAwait(bookSource: BookSource, name: String, author: String): Result<Book> =
         owned(bookSource) { preciseSearchAwaitOwned(bookSource, name, author) }
     suspend fun getContentBatchAwait(bookSource: BookSource, book: Book, chapters: List<BookChapter>): List<BookChapter> =
-        unsupportedRule("original WebBook contentBatch persistence")
+        owned(bookSource, book) {
+            require(chapters.all { it.environment === book.environment && it.bookUrl == book.bookUrl }) { "Batch chapter belongs to another book/owner" }
+            BookContent.analyzeContentBatch(bookSource, book, chapters)
+        }
     suspend fun exploreBookAwait(bookSource: BookSource, url: String, page: Int? = 1): ArrayList<SearchBook> =
         owned(bookSource) { exploreBookAwaitOwned(bookSource, url, page) }
     private suspend fun exploreBookAwaitOwned(bookSource: BookSource, url: String, page: Int?): ArrayList<SearchBook> {

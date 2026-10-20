@@ -141,11 +141,12 @@ class OriginalWebBookExecutionTest {
         } } }
     }
 
-    @Test(timeout = 15_000) fun unsupportedSavingBatchAndNestedCapabilitiesAreTypedWithoutPublication() {
+    @Test(timeout = 15_000) fun savingWithoutGrantMissingBatchRuleAndNestedCapabilitiesFailWithoutPublication() {
         Peer { respond(it, "<a href='/book'>Book</a>") }.use { peer -> Owned(peer.origin).use { owned -> runBlocking {
             val source = owned.source; val book = Book(owned.environment); val chapter = BookChapter(owned.environment)
             assertThrows(UnsupportedRuleCapability::class.java) { runBlocking { WebBook.getContentAwait(source, book, chapter) } }
-            assertThrows(UnsupportedRuleCapability::class.java) { runBlocking { WebBook.getContentBatchAwait(source, book, listOf(chapter)) } }
+            // Batch is now implemented internally: the original missing-rule error precedes any save/HTTP.
+            assertThrows(io.legado.app.exception.NoStackTraceException::class.java) { runBlocking { WebBook.getContentBatchAwait(source, book, listOf(chapter)) } }
             source.searchUrl = "/search"; source.ruleSearch = SearchRule(bookList = "a", name = "text", author = "@js:java.connect(source.getKey()+'/bad,{\"webView\":true}'); 'ignored'", bookUrl = "href")
             assertThrows(UnsupportedRuleCapability::class.java) { runBlocking { WebBook.searchBookAwait(source, "x") } }
             assertEquals(1, peer.requests.size)
