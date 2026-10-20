@@ -1,0 +1,75 @@
+--- 993e8fd/scripts/reader-experience/test-owned-sdk-producer-check.py
++++ device-toolchain/scripts/reader-experience/test-owned-sdk-producer-check.py
+@@ -1,7 +1,8 @@
+ """Portable source/report/staging guards; never actual macOS producer acceptance."""
+-from contextlib import ExitStack
++from contextlib import ExitStack, redirect_stdout
+ import copy
+ import importlib.util
++import io
+ import json
+ import os
+ from pathlib import Path
+@@ -134,6 +135,7 @@
+         self.assertEqual(commands['producer'],([sys.executable,str(self.root/(check.TOOL_ROOT+'generate-sdk-owned-package.py')),
+                                                 '--output',str(self.produced)],600))
+         self.assertEqual(commands['toolchain'][1],20)
++        self.assertEqual(commands['toolchain'][0],['bash',str(self.root/'scripts/sim.sh'),'device-xcode'])
+         self.assertNotIn('xctest',str(commands).lower())
+         self.assertNotIn('swift test',str(commands))
+         unavailable = self.root/'.build/must-not-run-off-macOS'
+@@ -160,6 +162,54 @@
+             self.assertNotEqual(result,0)
+             self.assertNotEqual(completion['firstFailure']['exitCode'],0)
+ 
++    def run_device_selector(self, inventory, active=None):
++        # Execute the exact embedded Python used by sim.sh, with a hermetic
++        # installed-SDK inventory. This is portable control-flow coverage;
++        # actual macOS discovery and SDK signing still require the finite job.
++        local = HERE/'sim.sh'
++        selector = local if local.exists() else ROOT/'scripts/sim.sh'
++        raw = selector.read_text(encoding='utf8')
++        program = raw.split("python3 - <<'PY'\n",1)[1].split('\nPY\n',1)[0]
++        apps = ['/Applications/' + name + '.app' for name in inventory]
++        def list_sdk(path):
++            for name, versions in inventory.items():
++                if path == '/Applications/' + name + '.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs':
++                    return ['iPhoneOS'+v+'.sdk' for v in versions]
++            raise FileNotFoundError(path)
++        calls = []
++        def command(argv, **kwargs):
++            calls.append(argv)
++            if argv == ('xcode-select','-p'):
++                return type('Selected',(),{'returncode':0,'stdout':'/Applications/Xcode.app/Contents/Developer\n'})()
++            raise AssertionError('Device-only mode must not query Simulator or other commands: ' + repr(argv))
++        env = {'MODE':'device-xcode','FILTER':''}
++        if active is not None: env['DEVELOPER_DIR'] = active
++        output = io.StringIO()
++        with patch.dict(os.environ,env,clear=True), patch('glob.glob',return_value=apps), \
++                patch('os.listdir',side_effect=list_sdk), patch('subprocess.run',side_effect=command), redirect_stdout(output):
++            with self.assertRaises(SystemExit) as stopped:
++                exec(compile(program,str(selector)+':embedded','exec'),{'__name__':'__main__'})
++        return stopped.exception.code, output.getvalue(), calls
++
++    def test_device_toolchain_uses_active_sdk_without_querying_simulators(self):
++        active = '/Applications/Xcode.app/Contents/Developer'
++        status, output, calls = self.run_device_selector({'Xcode':['26.0'],'Xcode-beta':['27.0']},active)
++        self.assertEqual(status,0)
++        self.assertEqual(output,active+'\n')
++        self.assertEqual(calls,[])
++
++    def test_device_toolchain_chooses_installed_sdk_when_active_has_none(self):
++        status, output, calls = self.run_device_selector({'Xcode':[],'Xcode-beta':['26.0','27.0'],'Xcode-old':['18.0']})
++        self.assertEqual(status,0)
++        self.assertEqual(output,'/Applications/Xcode-beta.app/Contents/Developer\n')
++        self.assertEqual(calls,[('xcode-select','-p')])
++
++    def test_device_toolchain_missing_sdk_fails_without_querying_simulators(self):
++        status, output, calls = self.run_device_selector({'Xcode':[]})
++        self.assertEqual(status,'No Xcode with an iPhoneOS SDK found under /Applications.')
++        self.assertEqual(output,'')
++        self.assertEqual(calls,[('xcode-select','-p')])
++
+     def test_workflow_is_isolated_and_never_uploads_raw_producer_directory(self):
+         local = HERE/'reader-owned-sdk-producer.yml'
+         path = local if local.exists() else ROOT/'.github/workflows/reader-owned-sdk-producer.yml'

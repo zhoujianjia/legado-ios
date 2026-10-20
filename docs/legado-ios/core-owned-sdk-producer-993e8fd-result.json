@@ -1,0 +1,437 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T08:08:05.432577+00:00",
+  "status": "finite-Mac-check-failed-at-toolchain-timeout-device-only-selection-repaired-not-yet-Mac-tested",
+  "sourceCommit": "993e8fd9cc39b5e2913513986ec2e3286481493f",
+  "sourceTag": "reader-owned-sdk-993e8fd",
+  "runID": 39389068550,
+  "jobID": 118515924225,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39389068550",
+  "conclusion": "failure",
+  "sourceInputsVerifiedAgainstExactGit": 17,
+  "actualCloudGuardMethods": 29,
+  "actualCloudGuardMethodIDs": [
+    "OwnedKeychainReopenReportTests.test_actual_child_failure_cannot_be_accepted_from_a_passed_report",
+    "OwnedKeychainReopenReportTests.test_actual_malformed_private_report_suppresses_all_unknown_data",
+    "OwnedKeychainReopenReportTests.test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim",
+    "OwnedKeychainReopenReportTests.test_actual_unlock_failure_retains_only_the_typed_osstatus",
+    "OwnedKeychainReopenReportTests.test_reopen_success_rejects_missing_extra_ambiguous_and_false_proof_fields",
+    "OwnedSDKProducerCheckTests.test_actual_public_child_nonzero_and_logs_remain_failure",
+    "OwnedSDKProducerCheckTests.test_all_necessary_producer_runner_guard_and_fixture_sources_are_bound",
+    "OwnedSDKProducerCheckTests.test_commands_are_fixed_real_generator_and_finite_budgets",
+    "OwnedSDKProducerCheckTests.test_requires_exact_isolated_tag_sha_checkout_and_source_only",
+    "OwnedSDKProducerCheckTests.test_stages_only_existing_allowlist_without_writing_an_xctest_resource",
+    "OwnedSDKProducerCheckTests.test_staging_rejects_extra_private_changed_public_and_wrong_source_inputs",
+    "OwnedSDKProducerCheckTests.test_successful_child_source_mutation_is_a_nonzero_whole_check_failure",
+    "OwnedSDKProducerCheckTests.test_timeout_and_changed_phase_inputs_are_never_accepted",
+    "OwnedSDKProducerCheckTests.test_workflow_is_isolated_and_never_uploads_raw_producer_directory",
+    "ProducerDiagnosticsTests.test_actual_private_child_failure_publishes_no_stream_or_command",
+    "ProducerDiagnosticsTests.test_actual_public_child_failure_reaches_existing_uploaded_stdout",
+    "ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed",
+    "ProducerDiagnosticsTests.test_private_public_log_request_is_rejected_before_child_executes",
+    "ProducerDiagnosticsTests.test_public_capture_is_bounded_and_redacts_secrets_before_truncation",
+    "ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified",
+    "ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret",
+    "ProducerToolTimeoutTests.test_actual_public_timeout_terminates_child_and_retains_failure_log",
+    "ProducerToolTimeoutTests.test_actual_remaining_producer_budget_caps_a_longer_tool_budget",
+    "ProducerToolTimeoutTests.test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes",
+    "ProducerToolTimeoutTests.test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child",
+    "ProducerToolTimeoutTests.test_cleanup_has_a_separate_real_child_budget_after_producer_expiry",
+    "ProducerToolTimeoutTests.test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn",
+    "ProducerToolTimeoutTests.test_exhausted_producer_deadline_does_not_start_another_tool",
+    "ProducerToolTimeoutTests.test_private_spawn_failure_has_no_argv_or_raw_exception_chain"
+  ],
+  "actualFailure": {
+    "phase": "toolchain",
+    "timeoutSeconds": 20,
+    "elapsedSeconds": 20.792211,
+    "command": {
+      "argv": [
+        "bash",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/sim.sh",
+        "xcode"
+      ],
+      "exitCode": -9,
+      "timedOut": true,
+      "oversized": false,
+      "output": "phase-toolchain.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "phase-toolchain.log.stderr.log",
+      "stderrBytes": 0,
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "firstFailure": {
+      "phase": "toolchain",
+      "exitCode": 124
+    },
+    "laterPhasesBlocked": 4,
+    "generatorExecuted": 0,
+    "SwiftImporterCompiled": 0,
+    "KeychainExecuted": 0,
+    "codesignExecuted": 0,
+    "ownedProducerAccepted": false,
+    "resultPresent": false,
+    "validatedPublicOutputPresent": false
+  },
+  "rootCauseLimit": "Silent bounded toolchain process timed out. The evidence does not identify which nested command was waiting. sim.sh xcode statically enumerates Simulator runtimes and devices before returning even though this job only needs an installed device SDK.",
+  "actualProductionRepair": {
+    "scope": "Existing scripts/sim.sh gains device-xcode; finite producer uses it before xcodebuild-version and iphoneos SDK path checks.",
+    "selection": "Discover installed iPhoneOS SDKs with the existing filesystem/version selector. Prefer active Xcode when it has a device SDK; select highest installed device-SDK candidate only when active has none. Fail if no device SDK exists.",
+    "simulatorDependency": "Device-only mode exits before both simctl runtime and device enumerations. Existing Simulator modes retain their runtime compatibility selection.",
+    "timeoutSeconds": 20,
+    "budgetIncreased": false,
+    "newToolchainOwner": false,
+    "hardcodedXcodeOrDevice": false,
+    "integrationBaseCommit": "a3a639798632e221ce3154c5f779400b72610313",
+    "sourceFiles": [
+      {
+        "intendedPath": "scripts/sim.sh",
+        "workPath": ".build/renewal-discovery/owned-producer-check-step/device-toolchain-fix/work/sim.sh",
+        "bytes": 11179,
+        "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48",
+        "baselineBytes": 10507,
+        "baselineSHA256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "workPath": ".build/renewal-discovery/owned-producer-check-step/device-toolchain-fix/work/owned-sdk-producer-check.py",
+        "bytes": 14143,
+        "sha256": "1656225dbfb382e473ec8c3d5cf87e333984b58ab17e8e76eebb79b87a0645c0",
+        "baselineBytes": 14136,
+        "baselineSHA256": "22b6060bee62a61df5d6dc067cc997c924f21547de7f77a17123bc880943bcaa"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "workPath": ".build/renewal-discovery/owned-producer-check-step/device-toolchain-fix/work/test-owned-sdk-producer-check.py",
+        "bytes": 13849,
+        "sha256": "eef07cca5ffc4fabba87a8b4c9f0a5f04dc94742964fcc5654319cbf15daecb1",
+        "baselineBytes": 10704,
+        "baselineSHA256": "0c9cdc64f4dbc163dc2e8cdba08ed2b95f10d2bb0e6837b7016cba4a1de5f7b8"
+      }
+    ],
+    "exactFinalSeventeenInputs": [
+      {
+        "path": ".github/workflows/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14143,
+        "sha256": "1656225dbfb382e473ec8c3d5cf87e333984b58ab17e8e76eebb79b87a0645c0"
+      },
+      {
+        "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "bytes": 13849,
+        "sha256": "eef07cca5ffc4fabba87a8b4c9f0a5f04dc94742964fcc5654319cbf15daecb1"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 118487,
+        "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1"
+      },
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+      },
+      {
+        "path": "scripts/reader-experience/stage-config.py",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 121250,
+        "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "bytes": 657444,
+        "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+      },
+      {
+        "path": "scripts/sim.sh",
+        "bytes": 11179,
+        "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 34037,
+        "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 13690,
+        "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "bytes": 11655,
+        "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 5655,
+        "sha256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41"
+      }
+    ]
+  },
+  "actualPortableRepairValidation": {
+    "changedFiles": [
+      {
+        "intendedPath": "scripts/sim.sh",
+        "workPath": ".build/renewal-discovery/owned-producer-check-step/device-toolchain-fix/work/sim.sh",
+        "bytes": 11179,
+        "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48",
+        "baselineBytes": 10507,
+        "baselineSHA256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "workPath": ".build/renewal-discovery/owned-producer-check-step/device-toolchain-fix/work/owned-sdk-producer-check.py",
+        "bytes": 14143,
+        "sha256": "1656225dbfb382e473ec8c3d5cf87e333984b58ab17e8e76eebb79b87a0645c0",
+        "baselineBytes": 14136,
+        "baselineSHA256": "22b6060bee62a61df5d6dc067cc997c924f21547de7f77a17123bc880943bcaa"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "workPath": ".build/renewal-discovery/owned-producer-check-step/device-toolchain-fix/work/test-owned-sdk-producer-check.py",
+        "bytes": 13849,
+        "sha256": "eef07cca5ffc4fabba87a8b4c9f0a5f04dc94742964fcc5654319cbf15daecb1",
+        "baselineBytes": 10704,
+        "baselineSHA256": "0c9cdc64f4dbc163dc2e8cdba08ed2b95f10d2bb0e6837b7016cba4a1de5f7b8"
+      }
+    ],
+    "exactFinalSeventeenInputs": [
+      {
+        "path": ".github/workflows/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14143,
+        "sha256": "1656225dbfb382e473ec8c3d5cf87e333984b58ab17e8e76eebb79b87a0645c0"
+      },
+      {
+        "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "bytes": 13849,
+        "sha256": "eef07cca5ffc4fabba87a8b4c9f0a5f04dc94742964fcc5654319cbf15daecb1"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 118487,
+        "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1"
+      },
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+      },
+      {
+        "path": "scripts/reader-experience/stage-config.py",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 121250,
+        "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "bytes": 657444,
+        "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+      },
+      {
+        "path": "scripts/sim.sh",
+        "bytes": 11179,
+        "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 34037,
+        "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 13690,
+        "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "bytes": 11655,
+        "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 5655,
+        "sha256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41"
+      }
+    ],
+    "sourceInputMembershipUnchanged": true,
+    "actualPortableUniqueMethods": 4,
+    "newSelectorMethods": 3,
+    "affectedCommandMethodReusedFromV1": 1,
+    "v1FailuresPreserved": true,
+    "v1FailureCause": "Windows fixture joined paths with Windows separators while the actual selector runs with POSIX paths on macOS; only the fixture join was corrected before re-running the three selector cases.",
+    "actualMacDiscoveryOrCodesignAfterFix": 0,
+    "oldSimulatorSelectionClaimsUnchanged": true
+  },
+  "oldFullNativeGate": "Historical 253/255 mode identities, workflow, wrapper and probe source remain unchanged; scripts/sim.sh is a changed current dependency, so a future coherent native source closure must bind its new bytes.",
+  "artifact": {
+    "downloadedAtUTC": "2026-10-20T07:54:06.341043+00:00",
+    "artifactID": 12248353890,
+    "runID": 39389068550,
+    "sourceCommit": "993e8fd9cc39b5e2913513986ec2e3286481493f",
+    "archivePublicURL": "https://api.github.com/repos/zhoujianjia/legado-ios/actions/artifacts/12248353890/zip",
+    "HTTPStatus": 200,
+    "bytes": 10494,
+    "sha256": "03ed1b44ae3599443dbddfe499081a6e9098f96da130872b81c99d3ca1a83223",
+    "verifiedAgainstGitHubArtifactDigest": true,
+    "members": [
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/completion.json",
+        "bytes": 17081,
+        "sha256": "044ff83a9fc927d52672bbffc489ef90bf8d944a99bc455ece2c5e589dbc304a"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/phase-producer.json",
+        "bytes": 142,
+        "sha256": "fdaf999495c74a67af4c0010290a13bd3afe426b4f66848bd1195628742bc1e0"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/phase-sdk-path.json",
+        "bytes": 142,
+        "sha256": "c862574ad650b1bbca3fea0fe1970fdfe015977d5d2655d3d9d7e06a069dfc9a"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/phase-stage.json",
+        "bytes": 139,
+        "sha256": "8c323e229cddb27e5878fc6903e1b7607fe8f7127919d03cca48e2ac7c75ac48"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/phase-toolchain.json",
+        "bytes": 7902,
+        "sha256": "ffad70d39f9190d407a113304c5f26d9d7ba3c74ae898626c0c425203e53614f"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/phase-toolchain.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/phase-toolchain.log.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/phase-xcode-version.json",
+        "bytes": 147,
+        "sha256": "b32f3076e1c716d6b54645d02136ad640f00a7fbe2dc86f15f4ca9e7b1b8df57"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-check/source-inputs.json",
+        "bytes": 3438,
+        "sha256": "759a3741306a3e63501c64524ab009d2bac6955e7e4176dd715acc42b3b2e9d7"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-ci-logs/check-guards.log",
+        "bytes": 1679,
+        "sha256": "922ef45892d44bcc950bd6c37571d1eb16490f2e1ad6083bc6e0fbdf2e50b50b"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-ci-logs/diagnostic-guards.log",
+        "bytes": 1142,
+        "sha256": "71e845467af0372f0bf30a87564571658823add9ac0a5c74a421dc476ca7b2e8"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-ci-logs/producer-check.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-ci-logs/reopen-guards.log",
+        "bytes": 1029,
+        "sha256": "f2ba778980caae182d6943716347e0bdb02e37402149f541f392914148de9f22"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-ci-logs/source.log",
+        "bytes": 3438,
+        "sha256": "759a3741306a3e63501c64524ab009d2bac6955e7e4176dd715acc42b3b2e9d7"
+      },
+      {
+        "path": ".build/sdk-evidence/993e8fd/finite/owned-sdk-producer-ci-logs/timeout-guards.log",
+        "bytes": 1689,
+        "sha256": "c3120437a49060abee1ae6d3505ca0b2d408c249ebadc6140021f26eb9f3de87"
+      }
+    ],
+    "privateDownloadReferenceExported": false
+  },
+  "privateDownloadReferenceExported": false,
+  "nativeMethodsExecuted": 0,
+  "SwiftCMSVerifierExecuted": 0,
+  "independentPackageMethodsExecuted": 0,
+  "afterRepairMacOSProducerExecuted": 0,
+  "codesignFailureFixed": false,
+  "remaining": [
+    "Actual device-only macOS discovery must pass before producer Swift compilation/reopen/Keychain/codesign can be evaluated.",
+    "The original specified-item-not-found signing error remains unresolved; this terminal run never reached it.",
+    "Complete current native/Package/JNI/App route, Apple authority, installation, data retention and unattended renewal remain unaccepted."
+  ],
+  "nextAction": "Push one new exact reader-owned-sdk-<current SHA7> tag after this source integration; preserve 993e8fd as terminal and never repoll it. Audit the new real selected toolchain and original producer outcome. Do not start a full native batch until its prerequisite is proven.",
+  "physicalDeviceValidationRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-owned-sdk-producer-993e8fd-result",
+    "manifest": "manifest.json",
+    "rawFiles": 35,
+    "privateMaterialIncluded": false
+  }
+}

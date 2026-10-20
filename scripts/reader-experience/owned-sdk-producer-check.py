@@ -108,7 +108,7 @@ def stage_public(probe, work, produced, inputs):
 
 def intended_commands(repo, produced):
     return {
-        'toolchain':(['bash',str(repo/'scripts/sim.sh'),'xcode'],20),
+        'toolchain':(['bash',str(repo/'scripts/sim.sh'),'device-xcode'],20),
         'xcode-version':(['xcodebuild','-version'],30),
         'sdk-path':(['xcrun','--sdk','iphoneos','--show-sdk-path'],30),
         'producer':([sys.executable,str(repo/(TOOL_ROOT+'generate-sdk-owned-package.py')),'--output',str(produced)],600),

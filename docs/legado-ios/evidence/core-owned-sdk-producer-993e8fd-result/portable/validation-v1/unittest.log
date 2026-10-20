@@ -1,0 +1,25 @@
+test_device_toolchain_uses_active_sdk_without_querying_simulators (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_uses_active_sdk_without_querying_simulators) ... FAIL
+test_device_toolchain_chooses_installed_sdk_when_active_has_none (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_chooses_installed_sdk_when_active_has_none) ... FAIL
+test_device_toolchain_missing_sdk_fails_without_querying_simulators (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_missing_sdk_fails_without_querying_simulators) ... ok
+test_commands_are_fixed_real_generator_and_finite_budgets (__main__.OwnedSDKProducerCheckTests.test_commands_are_fixed_real_generator_and_finite_budgets) ... ok
+
+======================================================================
+FAIL: test_device_toolchain_uses_active_sdk_without_querying_simulators (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_uses_active_sdk_without_querying_simulators)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-producer-check-step\device-toolchain-fix\work\test-owned-sdk-producer-check.py", line 197, in test_device_toolchain_uses_active_sdk_without_querying_simulators
+    self.assertEqual(status,0)
+AssertionError: 'No Xcode with an iPhoneOS SDK found under /Applications.' != 0
+
+======================================================================
+FAIL: test_device_toolchain_chooses_installed_sdk_when_active_has_none (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_chooses_installed_sdk_when_active_has_none)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-producer-check-step\device-toolchain-fix\work\test-owned-sdk-producer-check.py", line 203, in test_device_toolchain_chooses_installed_sdk_when_active_has_none
+    self.assertEqual(status,0)
+AssertionError: 'No Xcode with an iPhoneOS SDK found under /Applications.' != 0
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.629s
+
+FAILED (failures=2)

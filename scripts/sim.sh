@@ -20,6 +20,7 @@
 #   sim.sh name [filter]   "<name> — iOS <ver> — <udid>"
 #   sim.sh list            every buildable simulator, newest runtime first
 #   sim.sh xcode           DEVELOPER_DIR of the Xcode these devices need
+#   sim.sh device-xcode    installed iPhoneOS toolchain; no Simulator queries
 #   sim.sh doctor          full inventory: Xcodes, SDK, runtimes, orphans, duplicates
 #
 # `dest` and `xcode` are a pair — export the one before using the other:
@@ -52,17 +53,17 @@ def parse_version(text):
         return None
     return (v + (0, 0))[:2]
 
-def sim_sdk_of(developer_dir):
-    """Highest iPhoneSimulator SDK inside an Xcode, or None."""
+def platform_sdk_of(developer_dir, platform):
+    """Highest requested platform SDK inside an Xcode, or None."""
     sdk_dir = os.path.join(developer_dir,
-                           "Platforms/iPhoneSimulator.platform/Developer/SDKs")
+                           f"Platforms/{platform}.platform/Developer/SDKs")
     best = None
     try:
         entries = os.listdir(sdk_dir)
     except OSError:
         return None
     for name in entries:
-        m = re.fullmatch(r"iPhoneSimulator(\d+(?:\.\d+)*)\.sdk", name)
+        m = re.fullmatch(re.escape(platform) + r"(\d+(?:\.\d+)*)\.sdk", name)
         if m:
             v = parse_version(m.group(1))
             if v and (best is None or v > best):
@@ -71,18 +72,27 @@ def sim_sdk_of(developer_dir):
 
 # Every Xcode on the machine, plus whichever one is currently selected.
 active = os.environ.get("DEVELOPER_DIR") or sh("xcode-select", "-p").strip()
-xcodes = {}                                    # developer_dir -> sim SDK version
+platform = "iPhoneOS" if mode == "device-xcode" else "iPhoneSimulator"
+xcodes = {}                                    # developer_dir -> platform SDK version
 for app in sorted(glob.glob("/Applications/Xcode*.app")):
     dev = os.path.join(app, "Contents/Developer")
-    v = sim_sdk_of(dev)
+    v = platform_sdk_of(dev, platform)
     if v:
         xcodes[dev] = v
 if active not in xcodes:
-    v = sim_sdk_of(active)
+    v = platform_sdk_of(active, platform)
     if v:
         xcodes[active] = v
 if not xcodes:
-    sys.exit("No Xcode with an iPhoneSimulator SDK found under /Applications.")
+    sys.exit(f"No Xcode with an {platform} SDK found under /Applications.")
+
+# A device-only SDK producer has no Simulator destination or runtime dependency.
+# Keep discovery in this existing selector. Prefer the selected installed Xcode
+# when it has the requested SDK; when it has none, choose an installed candidate
+# with the highest device SDK. Simulator modes retain their runtime selection.
+if mode == "device-xcode":
+    print(active if active in xcodes else max(xcodes, key=lambda d: xcodes[d]))
+    sys.exit(0)
 
 # Newest installed iOS runtime — that is what the toolchain has to be able to reach.
 runtimes = json.loads(sh("xcrun", "simctl", "list", "runtimes", "--json"))["runtimes"]
@@ -193,7 +203,7 @@ PY
 }
 
 case "$CMD" in
-  udid|dest|name|list|sdk|xcode|xcodes|switched) py "$FILTER" "$CMD" ;;
+  udid|dest|name|list|sdk|xcode|xcodes|switched|device-xcode) py "$FILTER" "$CMD" ;;
   doctor)
     echo "== Xcode toolchains =="
     py "" xcodes | sed 's/^/  /'
@@ -254,5 +264,5 @@ case "$CMD" in
       echo "✅ Simulator setup is clean."
     fi
     ;;
-  *) echo "Usage: sim.sh {udid|dest|name|list|sdk|xcode|doctor} [filter]" >&2; exit 2 ;;
+  *) echo "Usage: sim.sh {udid|dest|name|list|sdk|xcode|device-xcode|doctor} [filter]" >&2; exit 2 ;;
 esac
