@@ -48,7 +48,7 @@ class OriginalRuleCookiePlatformTest {
             listOf(true, false).forEach { enabled ->
                 Session(peer.origin, enabled).use { owned ->
                     owned.environment().use { environment ->
-                        AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned cookie fixture")).use { rule ->
+                        AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned cookie fixture", enabledCookieJar = enabled)).use { rule ->
                             rule.connect(peer.origin + "/seed")
                             assertEquals(if (enabled) "server" else "", environment.cookie.getCookie(peer.origin, "seed"))
                             environment.cookie.replaceCookie(peer.origin, "script=first=second")

@@ -5,6 +5,9 @@ import io.yuedu.legado.originalrule.*
 import com.script.buildScriptBindings
 import com.script.ScriptBindings
 import com.script.rhino.RhinoScriptEngine
+import com.script.rhino.rhinoContextOrNull
+import com.script.rhino.ScriptExecutionGuard
+import kotlinx.coroutines.ensureActive
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -92,7 +95,7 @@ class BookSource(
     override fun getTag(): String = bookSourceName
     override fun getSource(): BookSource = this
     override fun getRuleEnvironment(): RuleEnvironment = environment
-    override fun getRuleCoroutineContext(): CoroutineContext = EmptyCoroutineContext
+    override fun getRuleCoroutineContext(): CoroutineContext = rhinoContextOrNull?.coroutineContext ?: EmptyCoroutineContext
     override fun put(key: String, value: String): String {
         environment.cache.put("v_${getKey()}_${key}", value)
         return value
@@ -105,6 +108,24 @@ class BookSource(
     }
     fun getVariable(): String = environment.cache.get("sourceVariable_${getKey()}") ?: ""
     fun getLoginHeader(): String? = environment.cache.get("loginHeader_${getKey()}")
+    fun getLoginHeaderMap(): Map<String, String>? = GSON.fromJsonObject<Map<String, String>>(getLoginHeader()).getOrNull()
+    override fun getHeaderMap(hasLoginHeader: Boolean): Map<String, String> = HashMap<String, String>().apply {
+        environment.ensureOpen()
+        header?.let { text ->
+            try {
+                val matcher = AppPattern.JS_PATTERN.matcher(text.trim())
+                val json = if (matcher.matches()) normalizeRuleJsResult(evalJS((matcher.group(1) ?: matcher.group(2)).trim())).orEmpty() else text
+                GSON.fromJsonObject<Map<String, String>>(json).getOrNull()?.let(::putAll)
+            } catch (error: Exception) {
+                rethrowRuleControlFailure(error)
+                rhinoContextOrNull?.coroutineContext?.get(ScriptExecutionGuard)?.checkActive?.invoke()
+                rhinoContextOrNull?.coroutineContext?.ensureActive()
+                environment.platform.log("执行请求头规则出错\n$error")
+            }
+        }
+        if (keys.none { it.equals("User-Agent", true) }) environment.platform.userAgent?.let { put("User-Agent", it) }
+        if (hasLoginHeader) getLoginHeaderMap()?.let(::putAll)
+    }
     fun putLoginHeader(value: String) {
         val map = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
         (map?.get("Cookie") ?: map?.get("cookie"))?.let { environment.cookie.replaceCookie(getKey(), it) }
@@ -122,9 +143,10 @@ class BookSource(
             it["baseUrl"] = getKey(); it["cookie"] = environment.cookie; it["cache"] = environment.cache
             it.apply(bindingsConfig)
         }
-        val shared = environment.scopes.getScope(jsLib, null)
-            ?: environment.scopes.getCryptoScope(this, null)
+        val context = rhinoContextOrNull?.coroutineContext
+        val shared = environment.scopes.getScope(jsLib, context)
+            ?: environment.scopes.getCryptoScope(this, context)
         bindings.chainTo(shared, environment.scopes.sharedHandle(this))
-        return RhinoScriptEngine.eval(js, bindings)
+        return RhinoScriptEngine.eval(js, bindings, context)
     }
 }

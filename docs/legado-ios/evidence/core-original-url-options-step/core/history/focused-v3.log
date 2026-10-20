@@ -1,0 +1,100 @@
+
+F:\yuedu-reader>if "Windows_NT" == "Windows_NT" setlocal
+
+F:\yuedu-reader>set DIRNAME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\ 
+
+F:\yuedu-reader>if "F:\yuedu-reader\.tools\gradle-8.14.3\bin\" == "" set DIRNAME=. 
+
+F:\yuedu-reader>set APP_BASE_NAME=gradle 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\.. 
+
+F:\yuedu-reader>for %i in ("F:\yuedu-reader\.tools\gradle-8.14.3\bin\..") do set APP_HOME=%~fi 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3 
+
+F:\yuedu-reader>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar" 
+
+F:\yuedu-reader>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+F:\yuedu-reader>set JAVA_HOME=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1 
+
+F:\yuedu-reader>set JAVA_EXE=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe 
+
+F:\yuedu-reader>if exist "F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" goto execute 
+
+F:\yuedu-reader>set CLASSPATH= 
+
+F:\yuedu-reader>"F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" "-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar"   "-Dorg.gradle.appname=gradle" -classpath "" -jar "F:\yuedu-reader\.tools\gradle-8.14.3\lib\gradle-gradle-cli-main-8.14.3.jar" -p F:\yuedu-reader\Packages\LegadoRuntime\jvm --offline --no-daemon --console=plain test --tests io.yuedu.legado.OriginalUrlRequestOptionsTest --tests io.yuedu.legado.OriginalUrlExecutionTest --tests io.yuedu.legado.OriginalRuleHttpPlatformTest --tests io.yuedu.legado.OriginalRuleCookiePlatformTest --tests io.yuedu.legado.OriginalAnalyzeRuleTest --tests io.yuedu.legado.ProductionHttpTransportTest --tests io.yuedu.legado.SourceHttpSemanticsTest --tests io.yuedu.legado.MainJsFacadeTest --tests io.yuedu.legado.InteropSemanticSuiteTest --tests io.legado.app.JsEngineCapabilitiesTest 
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+w: Deprecated Gradle Version
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+Solution: Please update the Gradle version to at least Gradle 8.14.4.
+
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+
+> Task :compileKotlin
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:185:24 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:195:25 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:205:22 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt:122:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:185:24 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:195:25 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:205:22 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt:30:33 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+
+> Task :compileJava UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :compileTestKotlin
+> Task :compileTestJava UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+
+OriginalUrlRequestOptionsTest > queryFormStructuredBodyAndEscapeOptionsPreserveBytes FAILED
+    org.junit.ComparisonFailure at OriginalUrlRequestOptionsTest.kt:165
+
+111 tests completed, 1 failed
+
+> Task :test FAILED
+
+[Incubating] Problems report is available at: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 29s
+8 actionable tasks: 4 executed, 4 up-to-date
+
+F:\yuedu-reader>if 1 EQU 0 goto mainEnd 
+
+F:\yuedu-reader>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of 
+
+F:\yuedu-reader>rem the _cmd.exe /c_ return code! 
+
+F:\yuedu-reader>set EXIT_CODE=1 
+
+F:\yuedu-reader>if 1 EQU 0 set EXIT_CODE=1 
+
+F:\yuedu-reader>if not "" == "" exit 1 
+
+F:\yuedu-reader>exit /b 1 

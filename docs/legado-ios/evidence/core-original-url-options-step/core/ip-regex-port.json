@@ -1,0 +1,18 @@
+{
+  "originalRegexPool": {
+    "path": ".build/original-url-request-options/hutool-primary/RegexPool.java",
+    "bytes": 10077,
+    "sha256": "18fbc8b2f4eaed9adb5f4876660c46220d46baa31b12cbd71c2cfde65ed408a8"
+  },
+  "production": {
+    "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalIpValidator.kt",
+    "bytes": 1302,
+    "sha256": "5fe39dbe9ada01bf537caf1ef1f97ef8182471d1b4f2d843d6d4d8fd67aea73f"
+  },
+  "testReference": {
+    "path": "Packages/LegadoRuntime/jvm/src/test/java/io/yuedu/legado/reference/HutoolIpPatterns.java",
+    "bytes": 950,
+    "sha256": "069725f1439f100f46b72b0481bdc6b841c44ad2e3b398ad6c73718cee732d55"
+  },
+  "methodSeam": "Validator delegates PatternPool.IPV4/IPV6 to ReUtil.isMatch(pattern,value), which is a null check then pattern.matcher(value).matches(). Source bytes retained separately; no full Hutool dependency added."
+}

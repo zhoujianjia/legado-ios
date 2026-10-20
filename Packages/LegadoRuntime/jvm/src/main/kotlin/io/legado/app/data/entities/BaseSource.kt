@@ -13,4 +13,5 @@ interface BaseSource : RuleJsExtensions {
     override fun getSource(): BaseSource = this
     fun put(key: String, value: String): String
     fun get(key: String): String
+    fun getHeaderMap(hasLoginHeader: Boolean = false): Map<String, String>
 }

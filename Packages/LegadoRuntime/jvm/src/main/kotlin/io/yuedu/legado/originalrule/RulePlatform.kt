@@ -1,21 +1,51 @@
 package io.yuedu.legado.originalrule
 
+import com.script.ScriptException
 import io.yuedu.legado.StrResponse
 import io.legado.app.data.entities.BaseBook
 import io.legado.app.data.entities.BaseSource
+import io.legado.app.model.analyzeRule.RuleDataInterface
 import kotlin.coroutines.CoroutineContext
 import java.util.logging.Logger
+import kotlinx.coroutines.CancellationException
+import io.yuedu.legado.RuntimeFailure
+import org.htmlunit.corejs.javascript.WrappedException
 
 class UnsupportedRuleCapability(val capability: String) : IllegalStateException("UNSUPPORTED_CAPABILITY: $capability")
 internal fun unsupportedRule(capability: String): Nothing = throw UnsupportedRuleCapability(capability)
 
+/** Keep escaping host control failures typed without changing JavaScript try/catch. */
+internal fun rethrowRuleControlFailure(error: Exception) {
+    var current: Throwable = error
+    repeat(32) {
+        current = when (val failure = current) {
+            is UnsupportedRuleCapability -> throw failure
+            is CancellationException -> throw failure
+            is RuntimeFailure -> {
+                if (failure.code == "UNSUPPORTED_CAPABILITY") throw UnsupportedRuleCapability(failure.message.orEmpty())
+                return
+            }
+            is ScriptException -> failure.cause ?: return
+            is WrappedException -> failure.wrappedException ?: return
+            else -> return
+        }
+    }
+}
+
 /** No network/browser/update-book capability is inferred from the existing mainJs hosts. */
 open class RulePlatform {
+    open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()
     open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
         unsupportedRule("AnalyzeUrl HTTP orchestration is not connected to original rules")
     open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext,
                      requester: RuleJsExtensions): StrResponse = request(url, headers, callTimeout, context)
+    open fun ajax(url: String, context: CoroutineContext, requester: RuleJsExtensions,
+                  ruleData: RuleDataInterface?): String? = try { request(url, null, null, context, requester).body() }
+    catch (error: Exception) { rethrowRuleControlFailure(error); throw error }
+    /** Explicit WebBook URL inputs; nested ajax/connect keep their original empty defaults. */
+    open fun requestUrl(url: String, source: BaseSource?, baseUrl: String, context: CoroutineContext,
+                        key: String? = null, page: Int? = null): StrResponse = unsupportedRule("original WebBook URL request")
     open fun webJs(baseUrl: String?, html: String, js: String, result: Any, context: CoroutineContext): String =
         unsupportedRule("original-rule WebJS/browser")
     open fun refreshBookInfo(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Nothing =
@@ -41,7 +71,7 @@ interface RuleJsExtensions {
     fun getRuleEnvironment(): RuleEnvironment
     fun getRuleCoroutineContext(): CoroutineContext
     fun ajax(url: Any): String?
-    fun ajax(url: Any, callTimeout: Long?): String? = connect(url.toString(), null, callTimeout).body()
+    fun ajax(url: Any, callTimeout: Long?): String? = connect(if (url is List<*>) url.firstOrNull().toString() else url.toString(), null, callTimeout).body()
     fun connect(url: String): StrResponse = connect(url, null, null)
     fun connect(url: String, header: String?): StrResponse = connect(url, header, null)
     fun connect(url: String, header: String?, callTimeout: Long?): StrResponse {

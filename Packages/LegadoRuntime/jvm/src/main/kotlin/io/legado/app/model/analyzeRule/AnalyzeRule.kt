@@ -951,17 +951,10 @@ class AnalyzeRule(
         } else {
             url.toString()
         }
-        return kotlin.runCatching {
-            runtime.platform.request(urlStr, null, null, coroutineContext, this).body()
-        }.onFailure {
-            // Missing capabilities and task cancellation are not network-response bodies.
-            if (it is UnsupportedRuleCapability || it is CancellationException) throw it
-            coroutineContext.ensureActive()
-            log("ajax(${urlStr}) error\n${it.stackTraceToString()}")
-            it.printOnDebug()
-        }.getOrElse {
-            it.stackTraceStr
-        }
+        // Upstream's override supplies book, unlike JsExtensions.ajax/connect.
+        // Construction errors escape; only the platform execution phase applies
+        // the original error-text response policy.
+        return runtime.platform.ajax(urlStr, coroutineContext, this, book)
     }
 
     /**

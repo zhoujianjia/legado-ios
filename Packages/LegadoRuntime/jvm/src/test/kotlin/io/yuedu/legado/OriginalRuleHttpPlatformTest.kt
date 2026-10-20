@@ -56,7 +56,9 @@ class OriginalRuleHttpPlatformTest {
             Session(peer.origin, headers = "{\"X-Source\":\"source\"}").use { owned ->
                 owned.session.variables["@loginHeader"] = "{\"Authorization\":\"Bearer owned\"}"
                 owned.environment().use { environment ->
-                    AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned fixture")).use { rule ->
+                    val source = RuleSource(environment, peer.origin, "Owned fixture", header = "{\"X-Source\":\"source\"}")
+                    source.putLoginHeader("{\"Authorization\":\"Bearer owned\"}")
+                    AnalyzeRule(source = source).use { rule ->
                         val form = peer.origin + "/form," + jsonObject("method" to "POST", "body" to "name=书&plus=a+b",
                             "headers" to jsonObject("X-Option" to "option"))
                         assertEquals("ok", rule.connect(form, "{\"Connection\":\"close\",\"X-Explicit\":\"explicit\"}", 3_000L).body())
@@ -88,7 +90,7 @@ class OriginalRuleHttpPlatformTest {
                 owned.environment().use { environment ->
                     AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned fixture")).use { rule ->
                         listOf(peer.origin + "/,{\"webView\":true}",
-                            peer.origin + "/,{\"js\":\"result\"}", peer.origin + "/,{\"bodyJs\":\"result\"}").forEach { url ->
+                            peer.origin + "/,{\"type\":\"binary\"}", peer.origin + "/,{\"serverID\":1}").forEach { url ->
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.connect(url) }
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.ajax(url) }
                         }
@@ -111,7 +113,8 @@ class OriginalRuleHttpPlatformTest {
                         val response = rule.connect(peer.origin + "/disconnect", null, 2_000L)
                         assertEquals(200, response.code())
                         assertTrue(response.body(), response.body().contains("java.io.IOException"))
-                        assertThrows(RuntimeFailure::class.java) { response.raw() }
+                        assertEquals(200, response.raw().code)
+                        assertEquals("OK", response.message())
                         assertEquals("recovered", rule.ajax(peer.origin + "/recover"))
                         assertTrue(owned.task.job.isActive)
                     }

@@ -23,12 +23,12 @@ internal data class LegadoHttpHeader(val name: String, val value: String)
  */
 internal object LegadoHttpRequestPreprocessor {
     fun prepare(url: String, method: String, authored: Map<String, String>, body: String?, charset: String?,
-                materializeBridgeHeaders: Boolean = true): JsonObject {
+                materializeBridgeHeaders: Boolean = true, encodedFormOverride: String? = null): JsonObject {
         val headers = authored.map {
             LegadoHttpHeader(it.key, it.value).also(::validateHeader).let { header -> header.copy(value = header.value.trim()) }
         }.toMutableList()
         val actualMethod = when (method.uppercase(Locale.ROOT)) { "POST" -> "POST"; "HEAD" -> "HEAD"; else -> "GET" }
-        val preparedBody = if (actualMethod == "POST") prepareBody(body, authored["Content-Type"], charset) else null
+        val preparedBody = if (actualMethod == "POST") prepareBody(body, authored["Content-Type"], charset, encodedFormOverride) else null
 
         // HttpHelper.kt:71-82 uses addHeader, not header/set: an authored
         // Connection: close must remain before the additional Keep-Alive value.
@@ -60,13 +60,13 @@ internal object LegadoHttpRequestPreprocessor {
 
     private data class Body(val text: String, val bytes: ByteArray, val contentType: String)
 
-    private fun prepareBody(body: String?, contentType: String?, charset: String?): Body {
+    private fun prepareBody(body: String?, contentType: String?, charset: String?, encodedFormOverride: String?): Body {
         // AnalyzeUrl.kt:302-306, 524-532; OkHttpUtils.kt:138-142/194-197.
         val trimmed = body?.trim().orEmpty()
         val structured = (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
             (trimmed.startsWith('[') && trimmed.endsWith(']')) ||
             (trimmed.startsWith('<') && trimmed.endsWith('>'))
-        val encodedForm = if (body != null && !structured && contentType.isNullOrEmpty()) encodeForm(body, charset) else null
+        val encodedForm = encodedFormOverride ?: if (body != null && !structured && contentType.isNullOrEmpty()) encodeForm(body, charset) else null
         val (text, mediaType) = when {
             !encodedForm.isNullOrEmpty() || body.isNullOrBlank() -> encodedForm.orEmpty() to "application/x-www-form-urlencoded"
             !contentType.isNullOrBlank() -> body to contentType

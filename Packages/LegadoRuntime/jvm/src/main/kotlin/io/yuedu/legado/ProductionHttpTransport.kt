@@ -2,6 +2,8 @@ package io.yuedu.legado
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import io.legado.app.model.analyzeRule.buildRequestClient
+import io.legado.app.model.analyzeRule.parseDnsIpAddresses
 import kotlinx.coroutines.InternalCoroutinesApi
 import okhttp3.Call
 import okhttp3.Headers
@@ -32,7 +34,8 @@ import java.util.zip.InflaterInputStream
 /** Production JVM transport: owns only its session's calls and connection pool. */
 @OptIn(InternalCoroutinesApi::class)
 internal class ProductionHttpTransport(private val session: RuntimeSession) : Closeable {
-    private data class InitialCookies(val host: String, val authored: String?)
+    private data class InitialCookies(val host: String, val authored: String?, val originalRule: Boolean,
+                                      val enabledCookieJar: Boolean?)
     private val stopped = AtomicBoolean(false)
     private val active = ConcurrentHashMap.newKeySet<Call>()
     private val client = OkHttpClient.Builder()
@@ -47,16 +50,17 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
         .addInterceptor(TransparentDecompression)
         .addNetworkInterceptor { chain ->
             var request = chain.request()
-            if (session.source["enabledCookieJar"]?.takeIf { it.isJsonPrimitive }?.asBoolean == true) {
+            val initial = request.tag(InitialCookies::class.java)
+            val cookieJarEnabled = initial?.enabledCookieJar ?: (session.source["enabledCookieJar"]?.takeIf { it.isJsonPrimitive }?.asBoolean == true)
+            if (cookieJarEnabled) {
                 val saved = session.cookies.getCookie(request.url.toString())
-                val initial = request.tag(InitialCookies::class.java)
                 val authored = initial?.takeIf { it.host == request.url.host }?.authored
-                val cookie = mergeCookies(authored, saved)
+                val cookie = if (initial?.originalRule == true) mergeCookies(saved, authored) else mergeCookies(authored, saved)
                 request = request.newBuilder().removeHeader("Cookie")
                     .apply { if (cookie.isNotEmpty()) header("Cookie", cookie) }.build()
             }
             val response = chain.proceed(request)
-            if (session.source["enabledCookieJar"]?.takeIf { it.isJsonPrimitive }?.asBoolean == true) {
+            if (cookieJarEnabled) {
                 response.headers.values("Set-Cookie").forEach { session.cookies.setCookie(response.request.url.toString(), it) }
             }
             response
@@ -75,10 +79,14 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
         val bytes = input["bodyBase64"]?.takeUnless { it.isJsonNull }?.asString?.let { Base64.getDecoder().decode(it) }
         val body = if (method == "POST") requireNotNull(bytes).toRequestBody(headers["Content-Type"]?.toMediaTypeOrNull()) else null
         val requestUrl = input["url"].asString.toHttpUrl()
+        val originalRule = input["originalAnalyzeUrl"]?.asBoolean == true
         val request = Request.Builder().url(requestUrl).headers(headers).method(method, body)
-            .tag(InitialCookies::class.java, InitialCookies(requestUrl.host, headers["Cookie"])).build()
+            .tag(InitialCookies::class.java, InitialCookies(requestUrl.host, headers["Cookie"], originalRule,
+                input["enabledCookieJar"]?.asBoolean)).build()
         val follow = input["followRedirects"]?.asBoolean ?: true
-        val configured = client.newBuilder().followRedirects(follow).followSslRedirects(follow).apply {
+        val configured = if (originalRule) buildRequestClient(client, input["readTimeoutMs"]?.asLong,
+            input["timeoutMs"]?.asLong, input["followRedirects"]?.asBoolean, requestUrl.host,
+            input["dnsIp"]?.asString?.let(::parseDnsIpAddresses)) else client.newBuilder().followRedirects(follow).followSslRedirects(follow).apply {
             input["readTimeoutMs"]?.asLong?.let { readTimeout(it, TimeUnit.MILLISECONDS) }
         }.build()
         var retries = input["retry"]?.asInt ?: 0
@@ -88,7 +96,8 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
             val call = configured.newCall(request)
             val budget = task.deadlineEpochMs - System.currentTimeMillis()
             if (budget <= 0) { task.ensureActiveForRuntime(); throw SocketTimeoutException("Task deadline exceeded before HTTP request") }
-            call.timeout().timeout(minOf(input["timeoutMs"]?.asLong ?: 60_000L, budget), TimeUnit.MILLISECONDS)
+            val callBudget = input["timeoutMs"]?.asLong ?: 60_000L
+            call.timeout().timeout(if (originalRule && callBudget == 0L) budget else minOf(callBudget, budget), TimeUnit.MILLISECONDS)
             active.add(call)
             val callId = System.identityHashCode(call)
             RuntimeTaskTrace.event(TaskTraceStage.HTTP_REGISTERED, task, callId, callCancelled = call.isCanceled())

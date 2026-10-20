@@ -87,9 +87,9 @@ class OriginalUrlExecutionTest {
                         assertEquals("owned response", response.body())
                         assertEquals("okhttp3.Response", response.raw().javaClass.name)
                         assertEquals("okhttp3.Headers", response.headers().javaClass.name)
-                        rule.connect("<js>'${peer.origin}/tag'</js>/@result")
+                        rule.connect("<js>'${peer.origin}/tag'</js>@result/tail")
                         rule.connect(peer.origin + "/{{2 + 3}}, {\"method\":\"POST\",\"body\":\"v={{1+2}}\",\"headers\":{\"X-Owned\":\"{{6+1}}\"}}")
-                        assertEquals(listOf("/from-library", "/http://127.0.0.1:${peer.port}/tag", "/5"), peer.requests.map { it.path })
+                        assertEquals(listOf("/from-library", "/tag/tail", "/5"), peer.requests.map { it.path })
                         assertEquals("POST", peer.requests[2].method)
                         assertEquals("v=3", peer.requests[2].body.toString(Charsets.UTF_8))
                         assertEquals("7", peer.requests[2].header("X-Owned"))
@@ -129,14 +129,13 @@ class OriginalUrlExecutionTest {
             Session(peer.origin).use { owned ->
                 owned.environment.use { environment ->
                     AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned")).use { rule ->
-                        listOf("js", "bodyJs", "webView", "dnsIp", "serverID").forEach { option ->
+                        listOf("webView", "type", "webJs", "unknown").forEach { option ->
                             val url = peer.origin + "/{{1}}, {\"$option\":\"unported\"}"
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.connect(url) }
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.ajax(url) }
                         }
                     }
-                    owned.session.source.addProperty("header", "@js: JSON.stringify({})")
-                    AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned")).use { rule ->
+                    AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned", header = "{\"proxy\":\"http://owned.invalid\"}")).use { rule ->
                         assertThrows(UnsupportedRuleCapability::class.java) { rule.connect("@js:'${peer.origin}'") }
                     }
                     val mainJs = SourceJavaHost(owned.task) { _, _, _ -> fail("Must not dispatch"); JsonObject() }
@@ -167,7 +166,7 @@ class OriginalUrlExecutionTest {
                             assertEquals("caught", rule.ajax("@js:try { java.$method('$url') } catch(error) {}; '${peer.origin}/caught-$method'"))
                         }
                         assertEquals(listOf("/caught-connect", "/caught-ajax"), peer.requests.map { it.path })
-                        assertTrue(rule.ajax("@js:throw new Error('owned-ordinary-script-error')").orEmpty().contains("owned-ordinary-script-error"))
+                        assertThrows(com.script.ScriptException::class.java) { rule.ajax("@js:throw new Error('owned-ordinary-script-error')") }
                     }
                 }
             }

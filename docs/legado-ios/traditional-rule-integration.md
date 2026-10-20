@@ -5,7 +5,7 @@
 唯一原版基准为 `F:/legado-master.zip`，SHA-256：
 `724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd`。
 下述原版行号按 ZIP 内原始 UTF-8 文本计算，路径均相对于 `app/src/main/java/io/legado/app/`。
-本次只读取该源码档案及仓库代码，未读取或输出私人书源内容。
+Android 原版基准只取该源码档案；必要的既有 Hutool 5.8.22 算法另按官方标签保存来源，未读取或输出私人书源内容。
 
 用户提供的书源统计为 1,331 项、0 项 `mainJs`。**没有 `mainJs` 不代表没有 JavaScript**：传统书源的 URL、header 和各字段规则仍可包含 JS。尚不能据此推断任何兼容率。
 
@@ -20,7 +20,7 @@
 
 上述仓库路径均以 `Packages/LegadoRuntime/` 为前缀。现有 `DeclarativeSourceTest` 仅证明固定 CSS 四步链路、几个底层解析调用及 unsupported 错误，不证明真实书源可用。
 
-当前执行顺序统一见 `completion-plan.json` 的 `execution.stepByStep`：C1 至 C5 依次推进原规则与请求、状态与登录、WebBook 编排、普通 JAR／JNI／App 唯一入口，以及核心对照和重启离线阅读。C1 已将原规则 Cookie 宿主接入同一 JVM 会话，并将原 `AnalyzeRule.ajax/connect` 接入有限 `AnalyzeUrl` URL 脚本阶段。本轮实际 82 项 Windows JVM 方法、普通 JAR／smoke 通过；新增 URL 9 项，其中一项包含 140 组锁定原 ZIP 方法差分，不能将组合数另加为测试数。原 Android 域共享、持久化、WebView、完整 header/login、请求选项、WebBook 与 App 传统入口仍未完成；历史 44／38 项不与本次 82 项累加。源码与边界见 `core-renewal-url-signature-step.json`，首段历史见 `core-renewal-sequence-first-step.json`。
+当前执行顺序统一见 `completion-plan.json` 的 `execution.stepByStep`：C1 至 C5 依次推进原规则与请求、状态与登录、WebBook 编排、普通 JAR／JNI／App 唯一入口，以及核心对照和重启离线阅读。C1 本轮已接通动态 header、初始登录域、相对 URL、请求选项及执行错误边界；实际 114 项 Windows JVM 方法（新增18＋既有96）和普通 JAR／smoke 通过。历史 82／44／38 项与方法内的 140／40 组向量均不累加为本轮方法数。完整 WebBook、持久化、browser/proxy/media/rate-limit 与 App／JNI 路由仍未完成；见 `core-original-url-options-step.json`。此前阶段证据保留在 `core-renewal-url-signature-step.json` 等历史记录。
 
 ## 原版文件与关键方法
 
@@ -116,6 +116,12 @@ Windows JDK 21 本轮强制执行完整 JVM 回归，实际为 18 份 XML、153 
 
 本段实际 Windows JDK 21 回归为新增 8、原协调器 18、现有 HTTP 12，共 38 方法／38 执行，失败、错误和跳过均为零；普通 `runtimeJar`／`runtimeSmoke` 也已通过。原先 37 项记录保留。此工厂仍供后续原流程显式接入，尚未新增运行时 operation 或切换 App 传统源入口；完整 `AnalyzeUrl`／`WebBook`、源状态及登录宿主仍未完成。它不构成 iOS／JNI／真实书源或完整兼容验收。
 
-2026-10-20 后续 URL 切片保留原 `@js/<js>` → `{{…}}` → 页组选项顺序和 `@result`，原 `RuleAnalyzer` 使用第一个结束分隔符的 String 重载；没有自行改为平衡括号。嵌套 `java.ajax/connect` 按原版保留空 key/page/book/baseUrl 默认值，绑定真实原 Java 对象和 inline jsLib，复用同一任务、Rhino、HTTP、Cookie、绝对截止和取消。测试实际覆盖 CPU 脚本截止、caller 取消、环境关闭拒绝晚结果，以及普通 mainJs 动态 URL 仍拒绝。独立审查发现并修复了脚本可见 URL 绕过入口和嵌套 unsupported 被转换为正文的问题。
+历史源码 `20f4cd6` 的 URL 首段保留原 `@js/<js>` → `{{…}}` → 页组选项顺序和 `@result`，原 `RuleAnalyzer` 使用第一个结束分隔符的 String 重载；没有自行改为平衡括号。嵌套 `java.ajax/connect` 按原版保留空 key/page/book/baseUrl 默认值，绑定真实原 Java 对象和 inline jsLib，复用同一任务、Rhino、HTTP、Cookie、绝对截止和取消。测试实际覆盖 CPU 脚本截止、caller 取消、环境关闭拒绝晚结果，以及普通 mainJs 动态 URL 仍拒绝。独立审查发现并修复了脚本可见 URL 绕过入口和嵌套 unsupported 被转换为正文的问题。
 
-原 ZIP 两个方法通过合成构造/eval 接缝做 140 组差分，未执行完整 Android 构造器。当前 SourceJavaHost 仍在 URL 展开后准备 source/login header，登录域检查及相对 URL 基址也未恢复原初始化顺序；动态 header、`option.js/bodyJs`、完整请求选项、WebBook、持久状态和 App 阅读接入均待完成。82 方法包含原 44、Rhino 25、互操作 4 和新 URL 9；普通 JAR 未包含项目测试类或 JUnit。这些结果证明当前有限桌面接线，不构成 iOS、完整书源或自动续签通过。
+原 ZIP 两个方法通过合成构造/eval 接缝做 140 组差分，未执行完整 Android 构造器。该历史切片借助 SourceJavaHost，在 URL 展开后准备 source/login header，登录域检查及相对 URL 基址也未恢复原初始化顺序；动态 header、`option.js/bodyJs`、完整请求选项、WebBook、持久状态和 App 阅读接入均待完成。82 方法包含原 44、Rhino 25、互操作 4 和新 URL 9；普通 JAR 未包含项目测试类或 JUnit。这些结果证明当前有限桌面接线，不构成 iOS、完整书源或自动续签通过。
+
+2026-10-20 请求选项接线已将 header 初始化放回 URL 脚本之前：source 自己的 java/source/sourceApi/baseUrl 绑定、初始 mUrl/baseUrl 的登录域判断、显式头（含空对象）整体替换、URL option header 覆盖均依原顺序执行。相对 URL、option.js/bodyJs、XML 前缀、原 query/form/escape 编码、DNS、超时和重定向已进入同一请求链；原 mainJs 和新原规则请求复用一个响应执行器，不另建 HTTP 或状态所有者。实际 114 方法、普通生产 JAR 与 smoke 均通过，JAR 中项目测试类/JUnit 泄漏为 0。
+
+本轮更正前一段合同说明的两处过宽结论：原 `AnalyzeRule` 单参数 `ajax` 会传 `book`，`JsExtensions.ajax/connect`（含 timeout 重载）默认不继承 book；原 catch 只包 `getStrResponse` 执行，构造 URL 的 JS 异常会逸出。现已按原边界接线并增加真实回归。供后续 WebBook 的显式 requestUrl 同样让执行异常逸出，保留其登录/错误处理机会。历史82项结果只证明当时的输入，原始证据不改写，也不据此扩大当前兼容结论。
+
+独审还修复了 header 共用库等待丢失取消、toJSON/getter 吞 typed unsupported、表单开头空字段、Unicode字符流编码、IP 分类及 null proxy 移除。新的18方法包含真实 loopback 请求、取消/关闭、异常和原对象绑定；原 ZIP 方法与 Hutool 标签向量的对照范围在新记录中逐项列明。完整 WebBook、持久状态、浏览器/代理/媒体/限流及普通 JNI/App 阅读入口仍未接齐，未进行 Android、iOS、真实站点或真机验收。

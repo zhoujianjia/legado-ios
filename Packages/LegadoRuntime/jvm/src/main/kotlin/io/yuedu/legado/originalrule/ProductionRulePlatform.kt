@@ -1,27 +1,29 @@
 package io.yuedu.legado.originalrule
 
 import com.google.gson.JsonObject
-import com.script.ScriptException
 import com.script.rhino.ScriptExecutionGuard
 import io.legado.app.data.entities.BaseSource
 import io.legado.app.model.analyzeRule.AnalyzeUrl
-import io.yuedu.legado.RuntimeFailure
+import io.legado.app.model.analyzeRule.RuleDataInterface
 import io.yuedu.legado.RuntimeTask
-import io.yuedu.legado.SourceJavaHost
+import io.yuedu.legado.RuntimeHttpRequestExecutor
 import io.yuedu.legado.StrResponse
 import io.yuedu.legado.ensureActiveForRuntime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
-import org.htmlunit.corejs.javascript.WrappedException
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.Protocol
+import okhttp3.Request
+import okhttp3.Response
 import kotlin.coroutines.CoroutineContext
 
 /**
  * First request boundary for the retained AnalyzeRule: one existing task, source
  * snapshot, cookie jar, deadline and ProductionHttpTransport. It deliberately
- * expands the retained finite AnalyzeUrl script stages, then reuses
- * SourceJavaHost's single request/options preparation. Unported options remain
+ * runs retained AnalyzeUrl header, URL and request stages, then reuses the
+ * single HTTP dispatch/response boundary shared with mainJs. Unported options remain
  * explicit capability failures; this is not the complete AnalyzeUrl port.
  * No browser, persistent source state or App reader routing is implied here.
  */
@@ -31,6 +33,7 @@ internal class ProductionRulePlatform(
     dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
     private val environment: () -> RuleEnvironment,
 ) : RulePlatform() {
+    override val userAgent: String? get() = task.session.options.userAgent
     override val cookie: RuleCookieHost = object : RuleCookieHost() {
         override fun getCookie(url: String): String = cookieOperation { task.session.cookies.getRuleCookie(url) }
         override fun getCookie(url: String, key: String?): String = cookieOperation { task.session.cookies.getRuleCookie(url, key) }
@@ -39,9 +42,7 @@ internal class ProductionRulePlatform(
         override fun removeCookie(url: String): Unit = cookieOperation { task.session.cookies.removeRuleCookie(url) }
     }
 
-    // Qualification is private constructor state, never a script-visible
-    // internal/public bypass method or setter on the ordinary mainJs host.
-    private val javaHost = SourceJavaHost(task, expandedOriginalUrl = true) { current, operation, input ->
+    private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
         check(current === task && operation == "http.request") { "Unexpected original-rule host operation" }
         ensureOwnerOpen()
         // Never fall back to a native/Swift transport after session shutdown.
@@ -59,8 +60,21 @@ internal class ProductionRulePlatform(
         return requestOwned(url, headers, callTimeout, context, requester.getSource())
     }
 
+    override fun ajax(url: String, context: CoroutineContext, requester: RuleJsExtensions,
+                       ruleData: RuleDataInterface?): String? {
+        check(requester.getRuleEnvironment() === environment()) { "Original-rule requester belongs to another environment" }
+        return requestOwned(url, null, null, context, requester.getSource(), ruleData = ruleData).body()
+    }
+
+    override fun requestUrl(url: String, source: BaseSource?, baseUrl: String, context: CoroutineContext,
+                            key: String?, page: Int?): StrResponse {
+        check(source == null || source.getRuleEnvironment() === environment()) { "Original source belongs to another environment" }
+        return requestOwned(url, null, null, context, source, baseUrl, key, page, recoverExecutionErrors = false)
+    }
+
     private fun requestOwned(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext,
-                             source: BaseSource?): StrResponse {
+                             source: BaseSource?, baseUrl: String = "", key: String? = null, page: Int? = null,
+                             ruleData: RuleDataInterface? = null, recoverExecutionErrors: Boolean = true): StrResponse {
         ensureOwnerOpen()
         context.ensureActive()
         task.ensureActiveForRuntime()
@@ -85,11 +99,28 @@ internal class ProductionRulePlatform(
                 task.ensureActiveForRuntime()
             }
             val scriptContext = context.minusKey(Job) + task.job + guard
-            // JsExtensions.ajax/connect pass no search key/page/book/baseUrl.
-            // Never inherit a parent search's inputs into a nested URL request.
-            val expanded = AnalyzeUrl(url, source = source, environment = environment(),
-                coroutineContext = scriptContext).ruleUrl
-            val response = javaHost.connect(expanded, headers, callTimeout)
+            // JsExtensions default calls have no key/page/book/baseUrl. Only
+            // AnalyzeRule's one-argument ajax override explicitly passes book.
+            val explicitHeaders = GSON.fromJsonObject<Map<String, String>>(headers).getOrNull()
+            val analyzed = AnalyzeUrl(url, key = key, page = page, baseUrl = baseUrl, source = source, ruleData = ruleData, environment = environment(),
+                coroutineContext = scriptContext, headerMapF = explicitHeaders, callTimeout = callTimeout)
+            // As in JsExtensions/AnalyzeRule, construction is outside recovery.
+            // Only getStrResponse-equivalent execution errors become text.
+            val response = try {
+                val request = analyzed.prepareRequest { target -> task.session.cookies.getCookie(target.toHttpUrl().toString()) }
+                http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
+            } catch (error: Exception) {
+                ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+                rethrowRuleControlFailure(error)
+                // WebBook owns login/error handling and must receive ordinary
+                // execution errors; only JsExtensions-style calls recover here.
+                if (!recoverExecutionErrors) throw error
+                log("原规则请求执行失败: $error")
+                val errorRequest = try { Request.Builder().url(analyzed.url).build() }
+                    catch (_: Exception) { Request.Builder().url("http://localhost/").build() }
+                val raw = Response.Builder().request(errorRequest).code(200).message("OK").protocol(Protocol.HTTP_1_1).build()
+                StrResponse(raw.request.url.toString(), 200, error.stackTraceToString(), emptyMap(), raw)
+            }
             // Environment close rejects late publication; it does not abort an
             // already-running host call or cancel a shared session. That call is
             // still bounded by this task's existing deadline/transport timeout.
@@ -104,31 +135,10 @@ internal class ProductionRulePlatform(
             ensureOwnerOpen()
             context.ensureActive()
             task.ensureActiveForRuntime()
-            rethrowControlFailure(error)
+            rethrowRuleControlFailure(error)
             throw error
         } finally {
             cancellation?.dispose()
-        }
-    }
-
-    private fun rethrowControlFailure(error: Exception) {
-        // Only unwrap the known Rhino evaluation/invocation wrappers of an
-        // escaping host failure. JS try/catch has already run, so caught errors
-        // stay caught; ordinary JS errors retain the existing ajax text policy.
-        var current: Throwable = error
-        repeat(32) {
-            current = when (val failure = current) {
-                is UnsupportedRuleCapability -> throw failure
-                is CancellationException -> throw failure
-                is RuntimeFailure -> {
-                    if (failure.code == "UNSUPPORTED_CAPABILITY")
-                        throw UnsupportedRuleCapability(failure.message.orEmpty())
-                    return
-                }
-                is ScriptException -> failure.cause ?: return
-                is WrappedException -> failure.wrappedException ?: return
-                else -> return
-            }
         }
     }
 

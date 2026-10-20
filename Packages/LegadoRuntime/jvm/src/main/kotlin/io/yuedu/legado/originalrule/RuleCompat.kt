@@ -14,6 +14,7 @@ import com.google.gson.Strictness
 import com.google.gson.ToNumberPolicy
 import com.google.gson.reflect.TypeToken
 import java.net.URL
+import java.util.BitSet
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -51,6 +52,8 @@ internal inline fun <K, V> MutableMap<K, V>.getOrPutLimit(key: K, maxSize: Int, 
 internal fun String?.isJson(): Boolean = this?.trim()?.let {
     (it.startsWith("{") && it.endsWith("}")) || (it.startsWith("[") && it.endsWith("]"))
 } ?: false
+internal fun String?.isJsonObject(): Boolean = this?.trim()?.let { it.startsWith('{') && it.endsWith('}') } ?: false
+internal fun String?.isJsonArray(): Boolean = this?.trim()?.let { it.startsWith('[') && it.endsWith(']') } ?: false
 internal fun String?.isDataUrl(): Boolean = this?.let { AppPattern.dataUriRegex.matches(it) } ?: false
 internal fun String.splitNotBlank(vararg delimiter: String, limit: Int = 0): Array<String> =
     split(*delimiter, limit = limit).map(String::trim).filterNot(String::isBlank).toTypedArray()
@@ -65,6 +68,128 @@ internal object AppPattern {
 
 /** NetworkUtils:161–189 uses java.net.URL, including its javascript/data/blank cases. */
 internal object NetworkUtils {
+    private val notNeedEncodingQuery: BitSet by lazy {
+        val bitSet = BitSet(256)
+        for (i in 'a'.code..'z'.code) {
+            bitSet.set(i)
+        }
+        for (i in 'A'.code..'Z'.code) {
+            bitSet.set(i)
+        }
+        for (i in '0'.code..'9'.code) {
+            bitSet.set(i)
+        }
+        for (char in "!$&()*+,-./:;=?@[\\]^_`{|}~") {
+            bitSet.set(char.code)
+        }
+        return@lazy bitSet
+    }
+
+    private val notNeedEncodingForm: BitSet by lazy {
+        val bitSet = BitSet(256)
+        for (i in 'a'.code..'z'.code) {
+            bitSet.set(i)
+        }
+        for (i in 'A'.code..'Z'.code) {
+            bitSet.set(i)
+        }
+        for (i in '0'.code..'9'.code) {
+            bitSet.set(i)
+        }
+        for (char in "*-._") {
+            bitSet.set(char.code)
+        }
+        return@lazy bitSet
+    }
+
+    /**
+     * 支持JAVA的URLEncoder.encode出来的string做判断。 即: 将' '转成'+'
+     * 0-9a-zA-Z保留 <br></br>
+     * ! * ' ( ) ; : @ & = + $ , / ? # [ ] 保留
+     * 其他字符转成%XX的格式，X是16进制的大写字符，范围是[0-9A-F]
+     */
+    fun encodedQuery(str: String): Boolean {
+        var needEncode = false
+        var i = 0
+        while (i < str.length) {
+            val c = str[i]
+            if (notNeedEncodingQuery.get(c.code)) {
+                i++
+                continue
+            }
+            if (c == '%' && i + 2 < str.length) {
+                // 判断是否符合urlEncode规范
+                val c1 = str[++i]
+                val c2 = str[++i]
+                if (isDigit16Char(c1) && isDigit16Char(c2)) {
+                    i++
+                    continue
+                }
+            }
+            // 其他字符，肯定需要urlEncode
+            needEncode = true
+            break
+        }
+
+        return !needEncode
+    }
+
+    fun encodedForm(str: String): Boolean {
+        var needEncode = false
+        var i = 0
+        while (i < str.length) {
+            val c = str[i]
+            if (notNeedEncodingForm.get(c.code)) {
+                i++
+                continue
+            }
+            if (c == '%' && i + 2 < str.length) {
+                // 判断是否符合urlEncode规范
+                val c1 = str[++i]
+                val c2 = str[++i]
+                if (isDigit16Char(c1) && isDigit16Char(c2)) {
+                    i++
+                    continue
+                }
+            }
+            // 其他字符，肯定需要urlEncode
+            needEncode = true
+            break
+        }
+
+        return !needEncode
+    }
+
+    /**
+     * 判断c是否是16进制的字符
+     */
+    private fun isDigit16Char(c: Char): Boolean {
+        return c in '0'..'9' || c in 'A'..'F' || c in 'a'..'f'
+    }
+
+    // NetworkUtils:192–236. Use the pinned OkHttp public-suffix database itself,
+    // never a last-two-label or hand-maintained suffix approximation.
+    fun getBaseUrl(url: String?): String? {
+        url ?: return null
+        val jsIndex = url.indexOf("@js:", ignoreCase = true)
+        val urlToParse = if (jsIndex >= 0) url.substring(0, jsIndex) else url
+        if (!urlToParse.startsWith("http://", true) && !urlToParse.startsWith("https://", true)) return null
+        val parsed = runCatching { URL(urlToParse) }.getOrNull() ?: return null
+        if (parsed.host.isEmpty()) return null
+        return "${urlToParse.substringBefore("://")}://${parsed.authority}"
+    }
+
+    fun getSubDomainOrNull(url: String): String? {
+        val baseUrl = getBaseUrl(url) ?: return null
+        return runCatching {
+            val host = URL(baseUrl).host
+            val ipv4 = host.isNotEmpty() && host[0] in '1'..'9' && host.count { it == '.' } == 3 && OriginalIpValidator.isIpv4(host)
+            val ipv6 = ':' in host && OriginalIpValidator.isIpv6(host)
+            if (ipv4 || ipv6) host
+            else okhttp3.internal.publicsuffix.PublicSuffixDatabase.get().getEffectiveTldPlusOne(host) ?: host
+        }.getOrDefault(null)
+    }
+
     fun getAbsoluteURL(baseURL: String?, relativePath: String): String {
         if (baseURL.isNullOrEmpty()) return relativePath.trim()
         val url = try { URL(baseURL.substringBefore(",")) } catch (error: Exception) {

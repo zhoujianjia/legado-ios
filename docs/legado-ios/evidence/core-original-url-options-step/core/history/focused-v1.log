@@ -1,0 +1,82 @@
+
+F:\yuedu-reader>if "Windows_NT" == "Windows_NT" setlocal
+
+F:\yuedu-reader>set DIRNAME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\ 
+
+F:\yuedu-reader>if "F:\yuedu-reader\.tools\gradle-8.14.3\bin\" == "" set DIRNAME=. 
+
+F:\yuedu-reader>set APP_BASE_NAME=gradle 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\.. 
+
+F:\yuedu-reader>for %i in ("F:\yuedu-reader\.tools\gradle-8.14.3\bin\..") do set APP_HOME=%~fi 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3 
+
+F:\yuedu-reader>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar" 
+
+F:\yuedu-reader>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+F:\yuedu-reader>set JAVA_HOME=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1 
+
+F:\yuedu-reader>set JAVA_EXE=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe 
+
+F:\yuedu-reader>if exist "F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" goto execute 
+
+F:\yuedu-reader>set CLASSPATH= 
+
+F:\yuedu-reader>"F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" "-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar"   "-Dorg.gradle.appname=gradle" -classpath "" -jar "F:\yuedu-reader\.tools\gradle-8.14.3\lib\gradle-gradle-cli-main-8.14.3.jar" -p F:\yuedu-reader\Packages\LegadoRuntime\jvm --offline --no-daemon --console=plain test --tests io.yuedu.legado.OriginalUrlRequestOptionsTest --tests io.yuedu.legado.OriginalUrlExecutionTest --tests io.yuedu.legado.OriginalRuleHttpPlatformTest --tests io.yuedu.legado.OriginalRuleCookiePlatformTest --tests io.yuedu.legado.OriginalAnalyzeRuleTest --tests io.yuedu.legado.ProductionHttpTransportTest --tests io.yuedu.legado.SourceHttpSemanticsTest --tests io.yuedu.legado.MainJsFacadeTest --tests io.yuedu.legado.InteropSemanticSuiteTest --tests io.legado.app.JsEngineCapabilitiesTest 
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+w: Deprecated Gradle Version
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+Solution: Please update the Gradle version to at least Gradle 8.14.4.
+
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+
+> Task :compileKotlin
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt:425:23 Unresolved reference 'isJsonObject' on receiver of type 'String'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt:426:23 Unresolved reference 'isJsonArray' on receiver of type 'String'.
+
+> Task :compileKotlin FAILED
+
+[Incubating] Problems report is available at: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 14s
+3 actionable tasks: 1 executed, 2 up-to-date
+
+F:\yuedu-reader>if 1 EQU 0 goto mainEnd 
+
+F:\yuedu-reader>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of 
+
+F:\yuedu-reader>rem the _cmd.exe /c_ return code! 
+
+F:\yuedu-reader>set EXIT_CODE=1 
+
+F:\yuedu-reader>if 1 EQU 0 set EXIT_CODE=1 
+
+F:\yuedu-reader>if not "" == "" exit 1 
+
+F:\yuedu-reader>exit /b 1 
