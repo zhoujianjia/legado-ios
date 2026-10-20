@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "No live cloud jobs. Header/V2browser/rootCompilerRepair10 plus strict5controls are reviewed and integrated:338core/140Native/23Package/356union, original26+MainJS1, App463/466. Submit one coherentSDK/Native pair; no per-item/duplicate/IPA tag. Never repoll historical failures.",
-      "alreadyRunningTasks": "All7576 SDK/Native jobs are terminal and archived. No live cloud jobs. Never repoll closed jobs or reuse previous passes for changed source.",
+      "nextPlannedCheckpoint": "Preserve actual terminal logs/artifacts only for these two new handles. Repair actual failures before a next pair. Continue C5 independent-process implementation without changing this immutable running source. Do not restart for elapsed time or repeat unchanged passing suites.",
+      "alreadyRunningTasks": "Exactly thefc3b01c SDK/Native pair below; no IPA/device tag. Both7576 and earlier jobs are terminal/archived and must never be polled again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -211,7 +211,26 @@
         "unexecutedSelectedDefinitions": 463,
         "independentPackageMethodsPassed": 24
       },
-      "onlyLiveSDKHandles": [],
+      "onlyLiveSDKHandles": [
+        {
+          "workflow": "Local Reader Renewal Probe Tests",
+          "runID": 39507170170,
+          "jobID": 118918888695,
+          "tag": "reader-renewal-fc3b01c",
+          "sourceCommit": "fc3b01ce980f6bdcdc8a3b7559dac5b1d57fc64a",
+          "statusAtObservation": "in_progress",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39507170170"
+        },
+        {
+          "workflow": "Legado Native Main-App Product Chain",
+          "runID": 39507170384,
+          "jobID": 118918886521,
+          "tag": "legado-native-reader-test-fc3b01c",
+          "sourceCommit": "fc3b01ce980f6bdcdc8a3b7559dac5b1d57fc64a",
+          "statusAtObservation": "in_progress",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39507170384"
+        }
+      ],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -239,31 +258,26 @@
         "failure": "stale portable expected22 versus declared23 beforeGradle"
       },
       "currentUnifiedCheckpoint": {
-        "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
-        "requestRecord": "docs/legado-ios/core-sdk-7576cbf-request.json",
-        "observedUTC": "2026-10-20 21:34:29 UTC",
+        "sourceCommit": "fc3b01ce980f6bdcdc8a3b7559dac5b1d57fc64a",
+        "requestRecord": "docs/legado-ios/core-sdk-fc3b01c-request.json",
+        "observedUTC": "2026-10-20 22:19:07 UTC",
         "counts": {
           "AppDefinitions": 463,
           "AppLeaves": 466,
           "BoolParameterPairs": 3,
-          "coreInputs": 334,
-          "NativeOriginalDefinitions": 23,
+          "coreInputs": 338,
+          "NativeOriginalDefinitions": 26,
+          "NativeLoginInfoDefinitions": 15,
           "NativeMainJSDefinitions": 1,
-          "nativeInputs": 136,
+          "nativeInputs": 140,
           "PackageMethods": 24,
           "PackageCompilationInputs": 16,
           "PackageControls": 7,
           "PackageAllInputs": 23,
-          "uniqueInputUnion": 352,
-          "noncandidateUnchangedCanonicalInputs": 331
+          "uniqueInputUnion": 356,
+          "unchangedCanonicalNoncandidateInputs": 341
         },
-        "actualResultAccepted": false,
-        "NativeStatus": "completed",
-        "NativeConclusion": "failure",
-        "NativeTerminalRecord": "docs/legado-ios/core-native-7576cbf-terminal-result.json",
-        "SDKStatus": "completed",
-        "SDKConclusion": "failure",
-        "SDKTerminalRecord": "docs/legado-ios/core-sdk-7576cbf-terminal-result.json"
+        "actualResultAccepted": false
       },
       "live8dPortableFailureRepair": {
         "record": "docs/legado-ios/core-sdk-8d-portable-expectations-repair.json",
@@ -1634,7 +1648,8 @@
         "uniqueInputUnion": 356,
         "unchangedCanonicalNoncandidateInputs": 341,
         "actualAcceptancePending": true,
-        "allPriorJobsTerminalAndArchived": true
+        "allPriorJobsTerminalAndArchived": true,
+        "submittedRequest": "docs/legado-ios/core-sdk-fc3b01c-request.json"
       }
     }
   },
