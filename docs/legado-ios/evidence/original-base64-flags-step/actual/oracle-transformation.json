@@ -1,0 +1,18 @@
+{
+  "primary": {
+    "path": ".build/original-base64-flags-step/primary/android/Base64.java",
+    "bytes": 28733,
+    "sha256": "5dc2984d75cc83d3ab1ea64f59e1ab75ff5c18f7f66e8518f0a3620c2faadad2"
+  },
+  "compiledOracle": {
+    "path": ".build/original-base64-flags-step/oracle-source/android/util/Base64.java",
+    "bytes": 28600,
+    "sha256": "69634dee744412c643d1715dda72672ed137c0fe0faa694ff45db37c3b9884e7"
+  },
+  "changes": "Only remove Android platform annotation import and two annotations; the complete original encoder/decoder code remains byte-identical after reinserting those three original lines. Oracle classes are fixture-only and never bundled.",
+  "removedLines": [
+    "import android.compat.annotation.UnsupportedAppUsage;",
+    "@android.ravenwood.annotation.RavenwoodKeepWholeClass",
+    "    @UnsupportedAppUsage"
+  ]
+}

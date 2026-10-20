@@ -1,0 +1,67 @@
+--- a/Packages/LegadoRuntime/vendor/original-rule/manifest.json
++++ b/Packages/LegadoRuntime/vendor/original-rule/manifest.json
+@@ -413,7 +413,7 @@
+     "Default RulePlatform still has no HTTP delegate. Explicit task-bound ProductionRulePlatform executes original source-header/URL/request-option phases through the sole existing JVM HTTP/session cookie/deadline path; complete AnalyzeUrl, browser, update-book, batch, RSS and remote/map jsLib remain unported",
+     "Unsupported capability and cancellation exceptions escape ajax error-text recovery",
+     "Coroutine context can be supplied explicitly; the optional production adapter is bound to the existing RuntimeTask. App traditional reader routing remains unintegrated",
+-    "Android Base64 flags/byte-array overloads explicitly unsupported; default String/charset overload follows Hutool 5.8.22 decoding, default encoding is Android NO_WRAP-equivalent UTF-8",
++    "Existing Base64 flags overloads follow Android DEFAULT/NO_PADDING/NO_WRAP/CRLF/URL_SAFE semantics, including ignored NO_CLOSE/unknown bits, optional but strict present padding, and nullable blank byte arrays; no-flags String/charset decoding retains Hutool 5.8.22 and default encoding retains Android NO_WRAP UTF-8.",
+     "Original pure Gson adapters are retained for String/Int/Map; Android rule-model and LocalDate adapters are not installed",
+     "Explicit close releases environment state and scope handles; original Android app-global persistence is not claimed"
+   ],
+@@ -808,8 +808,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt",
+-      "bytes": 2271,
+-      "sha256": "2ccf56c88d0157baefa7a90dbe83392d2a4ea978da04b895f7ea25f423e7651c"
++      "bytes": 6096,
++      "sha256": "f554f74e3ea3823e09cecdde738fa4a36f7300145092049135ed445cf18b9cb0"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
+@@ -823,8 +823,8 @@
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+-      "bytes": 10534,
+-      "sha256": "8df920540f68138245452ab365d90ea619b447948c72653787861baa041af78a"
++      "bytes": 10438,
++      "sha256": "2cd2431f0e805aca309b1899cdb9d3a267c4de8d688a50be76c8426b63d31a11"
+     },
+     {
+       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
+@@ -2594,5 +2594,33 @@
+       }
+     ],
+     "validation": "See stage preparation and actual JVM/JAR results; no Swift SDK pass asserted by this source record."
++  },
++  "androidBase64FlagsPort": {
++    "source": "https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/java/android/util/Base64.java",
++    "gitBlobSHA1": "99151c27e415da4039ba2636ea828edb7439a305",
++    "bytes": 28733,
++    "sha256": "5dc2984d75cc83d3ab1ea64f59e1ab75ff5c18f7f66e8518f0a3620c2faadad2",
++    "sourceIsFromOriginalArchive": false,
++    "copyright": "Copyright (C) 2010 The Android Open Source Project",
++    "license": "Apache-2.0",
++    "existingLicenseFile": "Packages/LegadoRuntime/vendor/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
++    "packagedLicenseEntry": "META-INF/licenses/htmlunit-core-js/5.3.0-legado.4/LICENSE-APACHE-2.0.txt",
++    "existingLicense": {
++      "bytes": 11358,
++      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
++    },
++    "scope": "One-shot Kotlin decoder port; JDK standard/URL-safe alphabet encoder with Android 76-column/final-line behavior. No Android class or new runtime dependency is exposed. Existing Hutool no-flags String decoder remains unchanged.",
++    "lockedSignatures": [
++      {
++        "archivePath": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
++        "bytes": 45719,
++        "sha256": "b587bd35e58898a0197abedb352a2acbe8c1a3c5c24573d77d2b7a98b6d7be6c"
++      },
++      {
++        "archivePath": "legado-master/app/src/main/java/io/legado/app/utils/EncoderUtils.kt",
++        "bytes": 1338,
++        "sha256": "7f0b671208ee55205f70a0b6c4b165237f473cc88d74f0c1c619d6f27260d61b"
++      }
++    ]
+   }
+ }

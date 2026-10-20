@@ -1,0 +1,67 @@
+[
+  {
+    "name": "compile",
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+      "-J-Xmx64m",
+      "-encoding",
+      "UTF-8",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-base64-flags-step\\legado-runtime-base64.jar",
+      "-d",
+      "F:\\yuedu-reader\\.build\\original-base64-flags-step\\ordinary-v2",
+      "F:\\yuedu-reader\\.build\\original-base64-flags-step\\oracle-source\\android\\util\\Base64.java",
+      "F:\\yuedu-reader\\.build\\original-base64-flags-step\\OrdinaryBase64Flags.java"
+    ],
+    "exitCode": 0,
+    "seconds": 0.765,
+    "log": {
+      "path": "ordinary-v2\\compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  {
+    "name": "baseline-public",
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+      "-Xmx160m",
+      "-XX:MaxMetaspaceSize=128m",
+      "-XX:ActiveProcessorCount=2",
+      "-XX:+UseSerialGC",
+      "-Dfile.encoding=UTF-8",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\snapshot-v2\\legado-runtime.jar;F:\\yuedu-reader\\.build\\original-base64-flags-step\\ordinary-v2",
+      "OrdinaryBase64Flags",
+      "baseline"
+    ],
+    "exitCode": 0,
+    "seconds": 1.016,
+    "log": {
+      "path": "ordinary-v2\\baseline-public.log",
+      "bytes": 694,
+      "sha256": "ceed3ebb23a77fc3661b5d38aa8a03eeb8e46e1e0251a44304f24a86a69706a4"
+    }
+  },
+  {
+    "name": "candidate-public",
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+      "-Xmx160m",
+      "-XX:MaxMetaspaceSize=128m",
+      "-XX:ActiveProcessorCount=2",
+      "-XX:+UseSerialGC",
+      "-Dfile.encoding=UTF-8",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-base64-flags-step\\legado-runtime-base64.jar;F:\\yuedu-reader\\.build\\original-base64-flags-step\\ordinary-v2",
+      "OrdinaryBase64Flags"
+    ],
+    "exitCode": 1,
+    "seconds": 1.078,
+    "log": {
+      "path": "ordinary-v2\\candidate-public.log",
+      "bytes": 321,
+      "sha256": "ba02b3907f2dbf9b1d83122223216bb091160d71b03554b987cd1a62e41bc14c"
+    }
+  }
+]

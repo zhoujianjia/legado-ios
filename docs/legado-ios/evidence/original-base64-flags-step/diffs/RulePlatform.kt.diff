@@ -1,0 +1,23 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
+@@ -140,14 +140,12 @@
+     fun log(value: Any?): Any? = getRuleEnvironment().platform.log(value)
+     fun base64Decode(value: String?): String = RuleBase64.decode(value, "UTF-8")
+     fun base64Decode(value: String?, charset: String): String = RuleBase64.decode(value, charset)
+-    fun base64Decode(value: String, flags: Int): Nothing = unsupportedRule("Android Base64 flags overload")
+-    fun base64DecodeToByteArray(value: String?): Nothing = unsupportedRule("Android Base64 byte-array overload")
+-    fun base64DecodeToByteArray(value: String?, flags: Int): Nothing = unsupportedRule("Android Base64 flags overload")
+-    fun base64Encode(value: String): String = java.util.Base64.getEncoder().encodeToString(value.toByteArray(Charsets.UTF_8))
+-    fun base64Encode(value: String, flags: Int): String {
+-        if (flags != 2) unsupportedRule("Android Base64 flags other than NO_WRAP")
+-        return base64Encode(value)
+-    }
++    fun base64Decode(value: String, flags: Int): String = String(RuleBase64.decodeAndroid(value, flags), Charsets.UTF_8)
++    fun base64DecodeToByteArray(value: String?): ByteArray? = base64DecodeToByteArray(value, 0)
++    fun base64DecodeToByteArray(value: String?, flags: Int): ByteArray? =
++        if (value.isNullOrBlank()) null else RuleBase64.decodeAndroid(value, flags)
++    fun base64Encode(value: String): String = RuleBase64.encodeAndroid(value, 2)
++    fun base64Encode(value: String, flags: Int): String = RuleBase64.encodeAndroid(value, flags)
+     fun strToBytes(value: String): ByteArray = value.toByteArray(Charsets.UTF_8)
+     fun strToBytes(value: String, charset: String): ByteArray = value.toByteArray(charset(charset))
+     fun bytesToStr(value: ByteArray): String = String(value, Charsets.UTF_8)

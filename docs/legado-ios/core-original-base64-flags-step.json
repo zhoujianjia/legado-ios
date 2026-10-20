@@ -1,0 +1,1020 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T23:42:08.889838+00:00",
+  "status": "integrated-reviewed-ordinary-JVM-Base64-signatures-SDK-pending",
+  "sourceFiles": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "path": "snapshot-v1/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 10534,
+        "sha256": "8df920540f68138245452ab365d90ea619b447948c72653787861baa041af78a"
+      },
+      "candidate": {
+        "path": "snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 10438,
+        "sha256": "2cd2431f0e805aca309b1899cdb9d3a267c4de8d688a50be76c8426b63d31a11"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 1943,
+        "sha256": "5eaa23056be30bf3e5f8c9eb9247bb17fa3cea9197ac8058f7e31c689226c8bd"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt",
+      "baseline": {
+        "path": "snapshot-v1/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt",
+        "bytes": 2271,
+        "sha256": "2ccf56c88d0157baefa7a90dbe83392d2a4ea978da04b895f7ea25f423e7651c"
+      },
+      "candidate": {
+        "path": "snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt",
+        "bytes": 6096,
+        "sha256": "f554f74e3ea3823e09cecdde738fa4a36f7300145092049135ed445cf18b9cb0"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt.diff",
+        "bytes": 4753,
+        "sha256": "d784b7d658561c10ba495a008318f80084ae897977ac7387b0422227d0b06865"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "path": "snapshot-v1/rawbaseline/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 134943,
+        "sha256": "132f345c5deb2ebba852b4ba867d7d3022bf092c821422333025e0ed50ebb5b3"
+      },
+      "candidate": {
+        "path": "snapshot-v1/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 136612,
+        "sha256": "01222d94f95f0360265bf18c536701eba1019a010b79dfacdb2a7fb6cffda334"
+      },
+      "diff": {
+        "path": "snapshot-v1/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 4179,
+        "sha256": "d36418c74f13cc63b636bf834cffabd8f98f5ae0d282a191cee4e294e1e846a6"
+      }
+    }
+  ],
+  "scope": "Complete existing RuleJsExtensions Base64 flags and nullable byte-array signatures, finite ordinary JVM/Rhino ABI. No new API/Java class exposure/data owner/parser route. No-flags Hutool String decoder body unchanged.",
+  "implementation": "Android one-shot decoder six-state rules and selected alphabet; skips all unknown nonalphabet bytes but enforces present padding. JDK alphabet encoder plus Android76-column/final-line rules. Known irrelevant and high flag bits ignored as primary. Blank String? to byte[] returns null before decode. Default String/charset retains original Hutool implementation.",
+  "actualOrdinaryJVM": {
+    "publicLoginActionCalls": 78,
+    "originalAnalyzeRuleCalls": 39,
+    "oracleChecks": 5108,
+    "encodeVectors": 836,
+    "decodeVectors": 1976,
+    "nullableByteArrayVectors": 2106,
+    "flags": 38,
+    "abiClasses": 6,
+    "hostCalls": 0,
+    "httpCalls": 0,
+    "sessions": 1,
+    "SDK_JNI": 0
+  },
+  "compilation": {
+    "invocations": 1,
+    "sourceInputs": 7,
+    "changed": 2,
+    "unchangedABIImplementationInputs": 5,
+    "heapMiB": 160,
+    "exitCode": 0,
+    "seconds": 8.875,
+    "sourceInputRoster": 128,
+    "mainInputs": 125,
+    "buildControls": 3,
+    "evidence": {
+      "path": "snapshot-v1/evidence/compile-v1/commands.json",
+      "bytes": 8747,
+      "sha256": "b72570124c3d064d35a94d20004fb6d6773de15e319e71068e33721167ace143"
+    },
+    "fullGradle": false
+  },
+  "runtimeClasses": {
+    "projectMain": 408,
+    "freshlyCompiled": 39,
+    "retainedExact": 369,
+    "retainedJavaICU": 52,
+    "newClassNames": 0,
+    "changedBytecode": 12,
+    "evidence": {
+      "path": "snapshot-v1/evidence/production-class-binding.json",
+      "bytes": 112120,
+      "sha256": "ba120c43e68f803524afe143b7081a8360d26d74a6f33d2055f449422a4369e6"
+    }
+  },
+  "primary": {
+    "path": "snapshot-v1/evidence/primary-binding.json",
+    "bytes": 2840,
+    "sha256": "714b7ce3781b8cfbea7299dc8272a48f24a1413de6a70ff4575145830551ed81"
+  },
+  "ordinaryJar": {
+    "path": "snapshot-v1/legado-runtime-base64-final.jar",
+    "bytes": 10892332,
+    "sha256": "d06736132992902cd06e1593a378836b93f7ecc962fffd0de5f67af34125ee28"
+  },
+  "executedOrdinaryJar": {
+    "path": "snapshot-v1/legado-runtime-base64.jar",
+    "bytes": 10891599,
+    "sha256": "704e5fe9018ef3dbaa516ed707659a4711a7a9d5cf0db798d05bc6ecc6f10ae4"
+  },
+  "postExecutionMetadataOnly": "Final JAR differs from executed JAR only by META-INF/legado-provenance/original-rule/manifest.json. Every class/runtime/resource/licence byte identical, so executed Base64 evidence is reused at exact executable-input scope; no second suite.",
+  "executionHistory": [
+    {
+      "stage": "ordinary-v1",
+      "compile": 0,
+      "baseline": 1,
+      "reason": "Fixture omitted mandatory embedding stateOwner; session rejected before Base64 execution; source snapshot reconstructed from the exact subsequent single-line edit."
+    },
+    {
+      "stage": "ordinary-v2",
+      "compile": 0,
+      "baseline": 0,
+      "candidate": 1,
+      "reason": "Three actual baseline unsupported counterexamples passed. First candidate action itself succeeded, then fixture read envelope.data rather than actual envelope.result; corrected fixture only."
+    },
+    {
+      "stage": "ordinary-v3",
+      "compile": 0,
+      "candidate": 0,
+      "reason": "Final exact fixture78 public calls/5108 oracle checks; no production/JAR recompilation between fixture attempts."
+    },
+    {
+      "stage": "auxiliaryPowerShellPython",
+      "syntaxErrors": 2,
+      "reason": "Two attempted Python -c quoting invocations failed before intended script/read execution; replaced by saved scripts/stdin. No production or JVM result produced."
+    },
+    {
+      "stage": "snapshot-attempt1",
+      "freezeExit": 1,
+      "reason": "Post-test evidence classification incorrectly assumed all52 Java classes were ICU-package classes; actual SourceFile metadata shows49 ICU plus3 otherJava. Corrected evidence only, no production/tests rerun."
+    }
+  ],
+  "binaryEvidenceOnlyHashed": [
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BaseSource$DefaultImpls.class",
+      "bytes": 6158,
+      "sha256": "6cc393f009de7d1a833acefafeb1d6ef7095b9c9fe9a7c472849076b8d185c27"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BaseSource.class",
+      "bytes": 7642,
+      "sha256": "6e4a6ed3c50a9c08dd823d25e53526d6ee20e2887e63984110c4fa1bf2de3c51"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/Book$variableMap_delegate$lambda$0$$inlined$fromJsonObject$1.class",
+      "bytes": 1857,
+      "sha256": "71fd853e1368b82d9083d489857c208f3ecd4f830c339a6184313f2da056531e"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/Book.class",
+      "bytes": 19101,
+      "sha256": "031c9b2f3b194140cd60c81837dd2125841583dd6a3b42f78a6c4371665de4ce"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookChapter$variableMap_delegate$lambda$0$$inlined$fromJsonObject$1.class",
+      "bytes": 1815,
+      "sha256": "dfcf8c3021a74fda9337c56349528472e256a2f40bef3376e49f2f882a6f4012"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookChapter.class",
+      "bytes": 20101,
+      "sha256": "6c7e71e64d0c2dd0ce150789ee13b711be3b78ed7007a35f3a5005ef59a4ecff"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookSource$getHeaderMap$lambda$0$0$$inlined$fromJsonObject$1.class",
+      "bytes": 1546,
+      "sha256": "048baefba19dab5b5651ca0499764985fed5da5bde5fe8b3ac769b602228795b"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookSource$getLoginHeaderMap$$inlined$fromJsonObject$1.class",
+      "bytes": 1538,
+      "sha256": "b7e693eb40d970e8a511ad001654a1be572d3d2adc029d4c9c20962ba16c2494"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookSource$getStoredLoginInfoMap$$inlined$fromJsonObject$1.class",
+      "bytes": 1573,
+      "sha256": "100d26fa44b622daa6a2ec3859bb01c39fc08c24fee69c9387103cc332510324"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookSource$isLoginUiV2$$inlined$fromJsonObject$1.class",
+      "bytes": 1480,
+      "sha256": "8d6c9680a555d0e46bd67d17756d9d00ac4a612b4f07dbd9bdd3e6193adb313d"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookSource$putLoginHeader$$inlined$fromJsonObject$1.class",
+      "bytes": 1533,
+      "sha256": "5f8ba82c1c88f16b996d65903848ba6d31ee797f9dcbd18fc81e31e85da4fad8"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/BookSource.class",
+      "bytes": 46092,
+      "sha256": "58730bbfdfc8ea3762a271b879aebf12cf01d40c6fb029186d19d8943af9df8a"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/data/entities/LoginInfoMapInitialization.class",
+      "bytes": 2966,
+      "sha256": "48d10e2c730ead07bf0120921eff131a16e8e1d4f35122019423d5f073e1501a"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule$Companion.class",
+      "bytes": 4336,
+      "sha256": "7d2955d9f42083a552fbe275186e7ac7c0d29c060c5450ccfa8ac72489b6623a"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule$getElement$$inlined$fromJsonObject$1.class",
+      "bytes": 1553,
+      "sha256": "df817c2f73f91e0ab37647adc2b8ebce2e85a275eed72aff9d787c881acf5895"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule$Mode.class",
+      "bytes": 2204,
+      "sha256": "90a8fb54c8750a471dfda813b6e8a79fbfdb1cbbf096e071b4d33f89c98445a5"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule$SourceRule.class",
+      "bytes": 10857,
+      "sha256": "a564fec8fc4f9da716d618d779a25cc2d39fa01b0d08ff1fc83ea8878706b97c"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule$splitPutRule$$inlined$fromJsonObject$1.class",
+      "bytes": 1578,
+      "sha256": "1ba60f3232df883a4c549a2a6f8b46caacbff727a1ffe0edced213f1f8ac84e5"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule$splitPutRule$$inlined$fromJsonObject$2.class",
+      "bytes": 1578,
+      "sha256": "4054a19e9673c3b8ae295aa6e430a5c028679da0de7a3912103e920c8ce524fe"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule$WhenMappings.class",
+      "bytes": 1032,
+      "sha256": "db80c2e3e0ae7b75a65f5dc5f52e93a0ce1ee703fb8b421d4d9993710dfb32e7"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeRule.class",
+      "bytes": 60277,
+      "sha256": "8d14e46d31f431c443bcd16d270e93a57c560e122a168a218fa2f8e3068cdb5f"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$analyzeUrl$$inlined$fromJsonObject$1.class",
+      "bytes": 1509,
+      "sha256": "add2fce385871460f8ac674e78b0ce4a461b0714a6e570a16b14361ee60fe10b"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$analyzeUrl$$inlined$fromJsonObject$2.class",
+      "bytes": 1509,
+      "sha256": "09dc67e3d4ad62df574e7910c8289308c467551eece7f948ee3ef3bf92f6eeef"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$Companion.class",
+      "bytes": 1891,
+      "sha256": "ab7d2a79ea2d42230beac5d7548abf8e922e2e87c339b640d7f9b905dffa7909"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$ConcurrentRecord.class",
+      "bytes": 3779,
+      "sha256": "d84451eb71d34048da0ad6c08dd8b00228added53fcd59d78877dbd12b2358cb"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$getStrResponseAwait$1.class",
+      "bytes": 1971,
+      "sha256": "0ca28a3111c2878c8bdacad2bcdae9424a90db3acd2b9384c2f9368152e390b7"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$UrlOption$getHeaderMap$$inlined$fromJsonObject$1.class",
+      "bytes": 1565,
+      "sha256": "3baa38392abae7f66a4222f63f4f129f0195a1afa2d785b669d2390e6aff0531"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$UrlOption$setBody$$inlined$fromJsonObject$1.class",
+      "bytes": 1554,
+      "sha256": "e80a3b00b8729d7a46caa9cfcb1eae1dc30250338a5bb581ed12d58290095f98"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$UrlOption$setHeaders$$inlined$fromJsonObject$1.class",
+      "bytes": 1563,
+      "sha256": "506c2146aff121450c0681a123f58418802d8556dc301185cf0959882f3f8437"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl$UrlOption.class",
+      "bytes": 20105,
+      "sha256": "f2402d16397dda5b15ae8ae4266324f9e69622244695ede0bdf2b462a4c4d234"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/legado/app/model/analyzeRule/AnalyzeUrl.class",
+      "bytes": 45997,
+      "sha256": "7cdb3b5b990f9706d12b0f7c2d59d321961591094a7751f88c4b38043b1702f6"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/OriginalSourceLoginHost.class",
+      "bytes": 17066,
+      "sha256": "9700668d60b0d55c80bc3aa8271b30ddee262dd4b2f15fe10e1bdadbd694bd28"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/RuleBase64.class",
+      "bytes": 7175,
+      "sha256": "3424a6e9079899415aa37b87a630cd6a5cad3fb204639d61846ef53c08161bbf"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/RuleCookieHost.class",
+      "bytes": 3311,
+      "sha256": "4961220dc4cd39a4de7fe09acbf8f151bc768edf7da2a050e978b83ec690a744"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/RuleJsExtensions$DefaultImpls.class",
+      "bytes": 6184,
+      "sha256": "21749e59633d2ebc4a0b1b35438a75fac3707bf46e80a111a8c35d7230f74f39"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/RuleJsExtensions.class",
+      "bytes": 12186,
+      "sha256": "7170a2e5a5b74d96c75634f1c41e6c7196e67fa7c5333b738dc9d25f85ad716c"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/RulePlatform.class",
+      "bytes": 12793,
+      "sha256": "aed231a4ed2bf4ce2033304c211a022ab211c621d21eff11f31c386429a61c07"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/RulePlatformKt.class",
+      "bytes": 2568,
+      "sha256": "3f898e34cdff58bb65d1bb99ddf04004a364f00d75ebcaf51c011b0fa779c110"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/io/yuedu/legado/originalrule/UnsupportedRuleCapability.class",
+      "bytes": 1523,
+      "sha256": "376a7ad09901766ff742c4b4463f25513fab9ee3bbf82fef8a0ab09e13086d4f"
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-v1/classes/META-INF/io.yuedu_legado-runtime.kotlin_module",
+      "bytes": 72,
+      "sha256": "cbf39d138b976e32370a97648c36110d2614cce7144a8dfa15d2531b27f693da"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v1/android/util/Base64$Coder.class",
+      "bytes": 387,
+      "sha256": "31e5a5189b3dd197e41e03c5513b1959edca064b2aba47b03a20126ee740fbd2"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v1/android/util/Base64$Decoder.class",
+      "bytes": 4892,
+      "sha256": "c1a970b828a25de547a86690c1c50f7872c81510e5b4ab441020b04d10945528"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v1/android/util/Base64$Encoder.class",
+      "bytes": 3505,
+      "sha256": "bfd7a7d011f3494637aebe65d403fdcb4fed5b90e47a33fc97f00a25744bb1bf"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v1/android/util/Base64.class",
+      "bytes": 2372,
+      "sha256": "01fa79045d6e1fe38ba759133eee6ca9bf9e37c1ada6bd3b9b97718dec0cbb18"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v1/OrdinaryBase64Flags.class",
+      "bytes": 13510,
+      "sha256": "16663e094ad053916a995fbfe7d63c1b8f033def8387e7d2c58e4412140418c5"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/android/util/Base64$Coder.class",
+      "bytes": 387,
+      "sha256": "31e5a5189b3dd197e41e03c5513b1959edca064b2aba47b03a20126ee740fbd2"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/android/util/Base64$Decoder.class",
+      "bytes": 4892,
+      "sha256": "c1a970b828a25de547a86690c1c50f7872c81510e5b4ab441020b04d10945528"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/android/util/Base64$Encoder.class",
+      "bytes": 3505,
+      "sha256": "bfd7a7d011f3494637aebe65d403fdcb4fed5b90e47a33fc97f00a25744bb1bf"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/android/util/Base64.class",
+      "bytes": 2372,
+      "sha256": "01fa79045d6e1fe38ba759133eee6ca9bf9e37c1ada6bd3b9b97718dec0cbb18"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/OrdinaryBase64Flags.class",
+      "bytes": 13548,
+      "sha256": "e24faee93cd1ccfa2e4f6aadde8e95970fa302b2f43e8a747af579c64167e38d"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/android/util/Base64$Coder.class",
+      "bytes": 387,
+      "sha256": "31e5a5189b3dd197e41e03c5513b1959edca064b2aba47b03a20126ee740fbd2"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/android/util/Base64$Decoder.class",
+      "bytes": 4892,
+      "sha256": "c1a970b828a25de547a86690c1c50f7872c81510e5b4ab441020b04d10945528"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/android/util/Base64$Encoder.class",
+      "bytes": 3505,
+      "sha256": "bfd7a7d011f3494637aebe65d403fdcb4fed5b90e47a33fc97f00a25744bb1bf"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/android/util/Base64.class",
+      "bytes": 2372,
+      "sha256": "01fa79045d6e1fe38ba759133eee6ca9bf9e37c1ada6bd3b9b97718dec0cbb18"
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/OrdinaryBase64Flags.class",
+      "bytes": 13550,
+      "sha256": "4b7e7b3dd0b50f49ddfbbcf2ab139355bc5f614d252ea2fd9603f4c08a62d9de"
+    }
+  ],
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/preparation.json",
+      "bytes": 28240,
+      "sha256": "27b823893c1989359f754d11e2fc80def917ed55cd8cd6eec23da21b6f4e7df4",
+      "original": {
+        "path": ".build/original-base64-flags-step/final-v1.json",
+        "bytes": 28240,
+        "sha256": "27b823893c1989359f754d11e2fc80def917ed55cd8cd6eec23da21b6f4e7df4"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/independent-review.json",
+      "bytes": 129696,
+      "sha256": "616373f4cf7e69cceb06d10486b4d964f3c585c467746994f331f9e7dc542fbc",
+      "original": {
+        "path": ".build/original-base64-flags-independent-review/review-v1.json",
+        "bytes": 129696,
+        "sha256": "616373f4cf7e69cceb06d10486b4d964f3c585c467746994f331f9e7dc542fbc"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/independent-initial-review-shape-failure.json",
+      "bytes": 402,
+      "sha256": "26ea6a94cbe0742b7aa333f8c234ffb7a4f13d573cc8df099d2781a60e984e27",
+      "original": {
+        "path": ".build/original-base64-flags-independent-review/initial-review-shape-failure.json",
+        "bytes": 408,
+        "sha256": "9f4ecd64f935dcbd49e1dae5de4c81894f4ef75f492f34bc7ffaccc559365d2a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/scripts/independent-review.py",
+      "bytes": 5633,
+      "sha256": "f362d489040fc94d61fa80bce7f78080f32a2810a42090f7c7a9f34d865203cd",
+      "original": {
+        "path": ".build/original-base64-flags-independent-review/review.py",
+        "bytes": 5633,
+        "sha256": "f362d489040fc94d61fa80bce7f78080f32a2810a42090f7c7a9f34d865203cd"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/scripts/resume-body-comparison.py",
+      "bytes": 946,
+      "sha256": "7a2e29be2076700dee263c94ed8020fee6ab4f19757286552df7af295c3fa74a",
+      "original": {
+        "path": ".build/original-base64-flags-independent-review/resume-body-comparison.py",
+        "bytes": 946,
+        "sha256": "7a2e29be2076700dee263c94ed8020fee6ab4f19757286552df7af295c3fa74a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/scripts/independent-review-resume.py",
+      "bytes": 5722,
+      "sha256": "42bac3540041385798fe5cd65fcb7f37941c40fa0b0700042c4701d13fba345a",
+      "original": {
+        "path": ".build/original-base64-flags-independent-review/review-resume.py",
+        "bytes": 5722,
+        "sha256": "42bac3540041385798fe5cd65fcb7f37941c40fa0b0700042c4701d13fba345a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/scripts/integrate-reviewed-base64-flags.py",
+      "bytes": 5975,
+      "sha256": "79e3fc3d4b90dfa3c7be2f272521e38cb79770736b83d486d1e7c48f14969d5b",
+      "original": {
+        "path": ".build/integrate-reviewed-base64-flags.py",
+        "bytes": 5975,
+        "sha256": "79e3fc3d4b90dfa3c7be2f272521e38cb79770736b83d486d1e7c48f14969d5b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/actual-jvm-compilation-inputs.json",
+      "bytes": 28394,
+      "sha256": "2e696b6fef0512b56ed691922ced29a54d2b2ac8c746ae98b28cad1a310afff6",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/actual-jvm-compilation-inputs.json",
+        "bytes": 28394,
+        "sha256": "2e696b6fef0512b56ed691922ced29a54d2b2ac8c746ae98b28cad1a310afff6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/actual-public-oracle.json",
+      "bytes": 281,
+      "sha256": "4c9e7aa3626e9c5ffe59f770c54f7f5dff2894880e23cad9e2521101b7095b37",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/actual-public-oracle.json",
+        "bytes": 281,
+        "sha256": "4c9e7aa3626e9c5ffe59f770c54f7f5dff2894880e23cad9e2521101b7095b37"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/assemble-v2.py",
+      "bytes": 542,
+      "sha256": "273c0e91e04a35c839e5c555c5f595bcdd8ee1858f8e1a509553d1a0e3bb7bf9",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/assemble-v2.py",
+        "bytes": 542,
+        "sha256": "273c0e91e04a35c839e5c555c5f595bcdd8ee1858f8e1a509553d1a0e3bb7bf9"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/assemble.py",
+      "bytes": 3174,
+      "sha256": "4dfebaf6e57a0ae62aa7f3304fd7629fc3ab9e10a82b9bd436a453763e41959d",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/assemble.py",
+        "bytes": 3174,
+        "sha256": "4dfebaf6e57a0ae62aa7f3304fd7629fc3ab9e10a82b9bd436a453763e41959d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/compile-v1/commands.json",
+      "bytes": 8747,
+      "sha256": "b72570124c3d064d35a94d20004fb6d6773de15e319e71068e33721167ace143",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/compile-v1/commands.json",
+        "bytes": 8747,
+        "sha256": "b72570124c3d064d35a94d20004fb6d6773de15e319e71068e33721167ace143"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/compile-v1/compile.log",
+      "bytes": 298,
+      "sha256": "6e9b22706203c4343ab2288dfefcf8e83812f5657c870a2aa17a8c85882722c6",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/compile-v1/compile.log",
+        "bytes": 301,
+        "sha256": "21abe4fc1a0f3a840faab8c0e69767efbb1c29f7e555ff97fbab35732d14bc67"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/compile.py",
+      "bytes": 3238,
+      "sha256": "e494300ed86ceca6bb660d2a2ff42c6e94fe0e7104c96cf33f788a65e8f28541",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/compile.py",
+        "bytes": 3238,
+        "sha256": "e494300ed86ceca6bb660d2a2ff42c6e94fe0e7104c96cf33f788a65e8f28541"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/implement.py",
+      "bytes": 6208,
+      "sha256": "ad2171e525fadf11a1ae21ffe9146c215f00cf0563acf801580eff59a122e121",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/implement.py",
+        "bytes": 6208,
+        "sha256": "ad2171e525fadf11a1ae21ffe9146c215f00cf0563acf801580eff59a122e121"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/jar-assembly-final.json",
+      "bytes": 1086390,
+      "sha256": "4caa6958d493b6752ed5ccca2ac465cea751d2937a846872984beee5579046a8",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/jar-assembly-final.json",
+        "bytes": 1086390,
+        "sha256": "4caa6958d493b6752ed5ccca2ac465cea751d2937a846872984beee5579046a8"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/jar-assembly.json",
+      "bytes": 1086575,
+      "sha256": "0ad9a44ccfc69b18472d07bafaa5a50bf567e6f34e940ddbbeec4fd24dce7a36",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/jar-assembly.json",
+        "bytes": 1086575,
+        "sha256": "0ad9a44ccfc69b18472d07bafaa5a50bf567e6f34e940ddbbeec4fd24dce7a36"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/metadata.py",
+      "bytes": 2321,
+      "sha256": "192efff5bb1274472f7ac77d119ce767f5fe2b978217e763ad489c9f951964c6",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/metadata.py",
+        "bytes": 2321,
+        "sha256": "192efff5bb1274472f7ac77d119ce767f5fe2b978217e763ad489c9f951964c6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/oracle-transformation.json",
+      "bytes": 842,
+      "sha256": "b2ffc2b75d01a63f270645ffebf4b478f24f8b6558849e082cf42cac20d5c125",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/oracle-transformation.json",
+        "bytes": 842,
+        "sha256": "b2ffc2b75d01a63f270645ffebf4b478f24f8b6558849e082cf42cac20d5c125"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v1/baseline-public.log",
+      "bytes": 398,
+      "sha256": "e3deebed166f23bfdbb5e759659064bf8e8152b5ceb0114997e366a2f3be0bfe",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v1/baseline-public.log",
+        "bytes": 402,
+        "sha256": "5bd15d38f7cf29e429e5bf9208e0954aa10063bfbf69eb6f4509d8ae5d90ef61"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v1/commands.json",
+      "bytes": 1517,
+      "sha256": "7f40b137457891f089c33bde499d872555c17214ed6f62354fbabcdcf639904a",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v1/commands.json",
+        "bytes": 1517,
+        "sha256": "7f40b137457891f089c33bde499d872555c17214ed6f62354fbabcdcf639904a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v1/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v1/compile.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v1/executed-OrdinaryBase64Flags.java",
+      "bytes": 8967,
+      "sha256": "9285fe7601c75c5e7e178d64c25edca11f2f8166fd5720c35b2b9fe8517043e7",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v1/executed-OrdinaryBase64Flags.java",
+        "bytes": 8967,
+        "sha256": "9285fe7601c75c5e7e178d64c25edca11f2f8166fd5720c35b2b9fe8517043e7"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v2/baseline-public.log",
+      "bytes": 690,
+      "sha256": "6758b2b6670d50d36c19a84968a83b689d70f4bf621ba1d899142ed28f01dcd9",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v2/baseline-public.log",
+        "bytes": 694,
+        "sha256": "ceed3ebb23a77fc3661b5d38aa8a03eeb8e46e1e0251a44304f24a86a69706a4"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v2/candidate-public.log",
+      "bytes": 318,
+      "sha256": "c6d60b7cafc6ca3243e1f65b4e2a90f786d40efccf0d7771a4fa4895fdb9d20b",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v2/candidate-public.log",
+        "bytes": 321,
+        "sha256": "ba02b3907f2dbf9b1d83122223216bb091160d71b03554b987cd1a62e41bc14c"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v2/commands.json",
+      "bytes": 2215,
+      "sha256": "6fc96aa1521198daea39b25fbda591b6ad5f5152f454ac0eb2538d16c8ff000f",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v2/commands.json",
+        "bytes": 2215,
+        "sha256": "6fc96aa1521198daea39b25fbda591b6ad5f5152f454ac0eb2538d16c8ff000f"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v2/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v2/compile.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v2/executed-OrdinaryBase64Flags.java",
+      "bytes": 9009,
+      "sha256": "ce9baa9d5d51d63764b0d0f105e6a15c1510fd9ef911b2377d200d8495a3884d",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v2/executed-OrdinaryBase64Flags.java",
+        "bytes": 9009,
+        "sha256": "ce9baa9d5d51d63764b0d0f105e6a15c1510fd9ef911b2377d200d8495a3884d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v3/candidate-public.log",
+      "bytes": 261,
+      "sha256": "bfb1188cb015f1fcb1ffba10a5f02e95943acd3d14bfb0c3b38a4135df0f6dce",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v3/candidate-public.log",
+        "bytes": 262,
+        "sha256": "7724490dad0e5a657858d299ed9e15152b0641c5d316050c1b8b1f92086ace63"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v3/commands.json",
+      "bytes": 1471,
+      "sha256": "c11a087bcb3e88ffcd526b1cde588ee6880aea476bcdd5395dba2f28d790bf11",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v3/commands.json",
+        "bytes": 1471,
+        "sha256": "c11a087bcb3e88ffcd526b1cde588ee6880aea476bcdd5395dba2f28d790bf11"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v3/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v3/compile.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/ordinary-v3/executed-OrdinaryBase64Flags.java",
+      "bytes": 9011,
+      "sha256": "ddb920dcdc56117f78e17533dc675fd41fea8ddf97c313e808d044db8398c5f0",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/ordinary-v3/executed-OrdinaryBase64Flags.java",
+        "bytes": 9011,
+        "sha256": "ddb920dcdc56117f78e17533dc675fd41fea8ddf97c313e808d044db8398c5f0"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/OrdinaryBase64Flags.java",
+      "bytes": 9011,
+      "sha256": "ddb920dcdc56117f78e17533dc675fd41fea8ddf97c313e808d044db8398c5f0",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/OrdinaryBase64Flags.java",
+        "bytes": 9011,
+        "sha256": "ddb920dcdc56117f78e17533dc675fd41fea8ddf97c313e808d044db8398c5f0"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/prepare.py",
+      "bytes": 3014,
+      "sha256": "100e5438cc31d4c9d80755378a053a9d5778cd93167362a41eb585508fdac5a1",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/prepare.py",
+        "bytes": 3014,
+        "sha256": "100e5438cc31d4c9d80755378a053a9d5778cd93167362a41eb585508fdac5a1"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/primary-binding.json",
+      "bytes": 2840,
+      "sha256": "714b7ce3781b8cfbea7299dc8272a48f24a1413de6a70ff4575145830551ed81",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/primary-binding.json",
+        "bytes": 2840,
+        "sha256": "714b7ce3781b8cfbea7299dc8272a48f24a1413de6a70ff4575145830551ed81"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/production-class-binding.json",
+      "bytes": 112120,
+      "sha256": "ba120c43e68f803524afe143b7081a8360d26d74a6f33d2055f449422a4369e6",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/production-class-binding.json",
+        "bytes": 112120,
+        "sha256": "ba120c43e68f803524afe143b7081a8360d26d74a6f33d2055f449422a4369e6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/run-ordinary-v2.py",
+      "bytes": 186,
+      "sha256": "350128e61d5fcddd150acdd9e7471ea9b636e54061423dc14d7d6171f6530ecc",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/run-ordinary-v2.py",
+        "bytes": 186,
+        "sha256": "350128e61d5fcddd150acdd9e7471ea9b636e54061423dc14d7d6171f6530ecc"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/run-ordinary-v3.py",
+      "bytes": 402,
+      "sha256": "0fbdaa1dcbda1c60f594a286d03c46ad92b63bc027ddc10ec1d276beea618b3f",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/run-ordinary-v3.py",
+        "bytes": 402,
+        "sha256": "0fbdaa1dcbda1c60f594a286d03c46ad92b63bc027ddc10ec1d276beea618b3f"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/run-ordinary.py",
+      "bytes": 1479,
+      "sha256": "15a61494152a26d1ace72924586875bc12349f39159427589997b5858210401c",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/run-ordinary.py",
+        "bytes": 1479,
+        "sha256": "15a61494152a26d1ace72924586875bc12349f39159427589997b5858210401c"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/run-validation.py",
+      "bytes": 638,
+      "sha256": "5d78f64b7f297b74035fe0c5510df240def3508f4dad59c692b799420b1b9b2a",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/run-validation.py",
+        "bytes": 638,
+        "sha256": "5d78f64b7f297b74035fe0c5510df240def3508f4dad59c692b799420b1b9b2a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/validate.py",
+      "bytes": 6190,
+      "sha256": "c0493a8eadcd08d5628a77ce6be63809fcb101f3606897837f0f28a42a741027",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/validate.py",
+        "bytes": 6190,
+        "sha256": "c0493a8eadcd08d5628a77ce6be63809fcb101f3606897837f0f28a42a741027"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/validation-command.json",
+      "bytes": 286,
+      "sha256": "26b42fa4aa0305e4e6c028326036279d908700ac44f4db918059ff795b9e442e",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/validation-command.json",
+        "bytes": 286,
+        "sha256": "26b42fa4aa0305e4e6c028326036279d908700ac44f4db918059ff795b9e442e"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/validation.json",
+      "bytes": 3531,
+      "sha256": "244b773ea7a9ecbe1c0bc2e8526185601131882d42ce11a26e44af04e94903b0",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/validation.json",
+        "bytes": 3531,
+        "sha256": "244b773ea7a9ecbe1c0bc2e8526185601131882d42ce11a26e44af04e94903b0"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/actual/validation.log",
+      "bytes": 3117,
+      "sha256": "1156bc1e1f8dfdca641eac4018531595120f7d87ec2f69b43161a8b27729b92e",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/evidence/validation.log",
+        "bytes": 3118,
+        "sha256": "e3e8c21a5c9c8a05f6abeed77e5af8a2a461b174ff476ae05ae3074c382bc681"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/diffs/RulePlatform.kt.diff",
+      "bytes": 1943,
+      "sha256": "5eaa23056be30bf3e5f8c9eb9247bb17fa3cea9197ac8058f7e31c689226c8bd",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 1943,
+        "sha256": "5eaa23056be30bf3e5f8c9eb9247bb17fa3cea9197ac8058f7e31c689226c8bd"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/diffs/RuleBase64.kt.diff",
+      "bytes": 4753,
+      "sha256": "d784b7d658561c10ba495a008318f80084ae897977ac7387b0422227d0b06865",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt.diff",
+        "bytes": 4753,
+        "sha256": "d784b7d658561c10ba495a008318f80084ae897977ac7387b0422227d0b06865"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/diffs/manifest.json.diff",
+      "bytes": 4179,
+      "sha256": "d36418c74f13cc63b636bf834cffabd8f98f5ae0d282a191cee4e294e1e846a6",
+      "original": {
+        "path": ".build/original-base64-flags-step/snapshot-v1/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 4179,
+        "sha256": "d36418c74f13cc63b636bf834cffabd8f98f5ae0d282a191cee4e294e1e846a6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/primary/JsExtensions.kt",
+      "bytes": 45719,
+      "sha256": "b587bd35e58898a0197abedb352a2acbe8c1a3c5c24573d77d2b7a98b6d7be6c",
+      "original": {
+        "path": ".build/original-base64-flags-step/primary/legado/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+        "bytes": 45719,
+        "sha256": "b587bd35e58898a0197abedb352a2acbe8c1a3c5c24573d77d2b7a98b6d7be6c"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/primary/EncoderUtils.kt",
+      "bytes": 1334,
+      "sha256": "cdc67dcd6f4b182c1c32c772bf6e52821e284df6fafd8517099b9f75a3d257c7",
+      "original": {
+        "path": ".build/original-base64-flags-step/primary/legado/app/src/main/java/io/legado/app/utils/EncoderUtils.kt",
+        "bytes": 1338,
+        "sha256": "7f0b671208ee55205f70a0b6c4b165237f473cc88d74f0c1c619d6f27260d61b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/primary/android/Base64.java",
+      "bytes": 28733,
+      "sha256": "5dc2984d75cc83d3ab1ea64f59e1ab75ff5c18f7f66e8518f0a3620c2faadad2",
+      "original": {
+        "path": ".build/original-base64-flags-step/primary/android/Base64.java",
+        "bytes": 28733,
+        "sha256": "5dc2984d75cc83d3ab1ea64f59e1ab75ff5c18f7f66e8518f0a3620c2faadad2"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/primary/android/LICENSE-2.0.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "original": {
+        "path": ".build/original-base64-flags-step/primary/android/LICENSE-2.0.txt",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-base64-flags-step/primary/android/Base64-oracle.java",
+      "bytes": 28600,
+      "sha256": "69634dee744412c643d1715dda72672ed137c0fe0faa694ff45db37c3b9884e7",
+      "original": {
+        "path": ".build/original-base64-flags-step/oracle-source/android/util/Base64.java",
+        "bytes": 28600,
+        "sha256": "69634dee744412c643d1715dda72672ed137c0fe0faa694ff45db37c3b9884e7"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw hash preserved"
+    }
+  ],
+  "limits": [
+    "No Swift SDK/Xcode compiler/JNI/WK/device/self-renewal execution",
+    "No full Gradle or unrelated historic suites",
+    "No full Legado compatibility claim; only existing Base64 signatures",
+    "No canonical/Git/cloud/tag changes",
+    "Future ordinary JVM/JNI compilation must combine later generalWebJS ABI changes with these Base64 return descriptors. No previous immutable SDK outcome accepts this later source."
+  ],
+  "newSwiftDefinitions": 0,
+  "newSourcePaths": 0,
+  "newCloudTags": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

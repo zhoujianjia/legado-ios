@@ -477,9 +477,13 @@
             "docs/legado-ios/core-original-webbook-step.json",
             "docs/legado-ios/core-original-state-persistence-step.json",
             "docs/legado-ios/core-original-public-runtime-step.json",
-            "docs/legado-ios/core-original-content-batch-rate-step.json"
+            "docs/legado-ios/core-original-content-batch-rate-step.json",
+            {
+              "record": "docs/legado-ios/core-original-base64-flags-step.json",
+              "scope": "Existing Base64 flags and nullable byte-array overloads implemented; actual ordinary117 public/AnalyzeRule calls and5108 pinned Android oracle checks passed. Full compatibility and SDK/JNI remain pending."
+            }
           ],
-          "nextActionZh": "原规则与AnalyzeUrl保持同一JVM/Rhino入口。已在原普通JAR公开入口取得java.webView、@webjs及URL WebView选项的3项明确不支持反例；这些通用宿主继续开发，不能以有限HTML登录页代替完整规则兼容。"
+          "nextActionZh": "Base64既有参数和字节数组接口已补齐，普通JVM原入口117次调用及5108份Android参考对照通过；继续合并一般网页脚本执行、完整必要宿主与书源差分，保持同一原规则和状态所有权。新增网页脚本/ABI须统一SDK复验，完整兼容未完成。"
         },
         {
           "id": "C2",
@@ -1774,6 +1778,15 @@
           "producer": "LegadoNativeOriginalReaderTests/testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
           "consumer": "LegadoNativeOriginalReaderTests/testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork"
         }
+      },
+      "base64FlagsSlice": {
+        "record": "docs/legado-ios/core-original-base64-flags-step.json",
+        "productionSources": 2,
+        "manifestFiles": 1,
+        "actualOrdinaryCalls": 117,
+        "independentAndroidOracleChecks": 5108,
+        "SDK_JNI": 0,
+        "pendingUnifiedSDK": true
       }
     }
   },
@@ -6128,6 +6141,7 @@
     "docs/legado-ios/core-original-local-html-webjs-step.json",
     "docs/legado-ios/core-spd-webjs-cold-process-checkpoint.json",
     "docs/legado-ios/core-native-fc3b01c-terminal-result.json",
-    "docs/legado-ios/core-sdk-fc3b01c-terminal-result.json"
+    "docs/legado-ios/core-sdk-fc3b01c-terminal-result.json",
+    "docs/legado-ios/core-original-base64-flags-step.json"
   ]
 }
