@@ -1,0 +1,95 @@
+{
+  "recordedAtUTC": "2026-10-20T02:37:56.088380+00:00",
+  "status": "prepared_not_sdk_executed",
+  "sourceInputs": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "bytes": 32363,
+      "sha256": "584752a5654222ff94e63f1522c3723d845fb5bb795989207c73960092b20f7d",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
+      "bytes": 18684,
+      "sha256": "4c6bdda7ce187ae1e207fda2a62e0cc8fb859e4b2a2a8c203046b8ac5faf96f3",
+      "grammarErrors": []
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+      "bytes": 12996,
+      "sha256": "ccd8bb7debf35107f9ef074491443c2126de18178b9a3b6ce4b9b84cee71d053",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCodeDirectoryHashVerifierTests.swift",
+      "bytes": 24586,
+      "sha256": "877d20bb9caa4c00e9e07f5cf52a49dea94ea5818c0f665371a17770ea221758",
+      "grammarErrors": []
+    }
+  ],
+  "grammarParsedFiles": 4,
+  "preparedNewSwiftMethods": [
+    "matchesIndependentDigestVectors",
+    "verifiesFourAlgorithmsAndAllKnownSpecialMaterials",
+    "rejectsChangedPagesDigestsAndSpecialMaterials",
+    "verifiesFatAlternateAndUnpagedContentWithBoundedChunks",
+    "rejectsMissingExtraAndUnsupportedSpecialSlots",
+    "rejectsBudgetsTruncatedReadsAndCancellation",
+    "readsOwnedApplicationAndUsesBoundedMaterialIO"
+  ],
+  "preparedNewSwiftTests": 7,
+  "existingStructureTestsUnchanged": 9,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0,
+  "fixtureAudit": {
+    "fixtures": 10,
+    "producer": "independent Python hashlib, no Swift verifier used"
+  },
+  "productionConnection": "SelfRenewalCodeDirectoryHashVerifier.read -> original inventory -> same reader worker/openat code FD -> parse + page/special digests -> fstat recheck",
+  "algorithms": [
+    "SHA1",
+    "SHA256",
+    "first 20 bytes of SHA256",
+    "SHA384"
+  ],
+  "bounds": {
+    "contentReadBytes": 268435456,
+    "hashOperations": 262144,
+    "chunkBytes": 65536,
+    "specialMaterialBytes": 2097152,
+    "knownSpecialSlots": 11
+  },
+  "originalStructureBudgetIncreased": false,
+  "originalInventoryBudgetIncreased": false,
+  "callerOwnedQuiescentUnpackedApplicationRequired": true,
+  "atomicSealingClaimed": false,
+  "realAccountsIPAsOrDeviceMaterialsUsed": false,
+  "remainingUnverified": [
+    "CMS authentication and certificate trust",
+    "Apple provisioning authority and entitlement/device eligibility",
+    "CodeResources rules and actual resource-tree seals",
+    "scatter/pre-encrypted/linkage formats",
+    "signer/installer/replacement/automatic renewal"
+  ],
+  "replacementTrustedAdapterConstructed": false,
+  "primaryReferences": [
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/codedirectory.cpp",
+      "path": ".build/renewal-discovery/code-directory-hashes-step/primary/codedirectory.cpp",
+      "bytes": 14776,
+      "sha256": "9a4b47e6cee40983d71e3214286415ed7b83b22b403d5a7e89fad50d776646af"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/codedirectory.h",
+      "path": ".build/renewal-discovery/code-directory-hashes-step/primary/codedirectory.h",
+      "bytes": 16793,
+      "sha256": "dfc86acb9a1aaacdaf0f37aae0902df854c6cb384831caf8ca230eaa89189804"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/StaticCode.cpp",
+      "path": ".build/renewal-discovery/code-directory-hashes-step/primary/StaticCode.cpp",
+      "bytes": 115505,
+      "sha256": "c770611cd6a9de47ddef4652dbf105a6bd165e62ef3a2ad614762a035a546581"
+    }
+  ]
+}

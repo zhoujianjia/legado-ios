@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 95
     env:
       LEGADO_RUNTIME_SOURCE_ONLY: '1'
-      YUEDU_RENEWAL_SELECTION: signature
+      YUEDU_RENEWAL_SELECTION: cryptography
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,7 +46,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
-      - name: Execute only nine owned-fixture Mach-O signature structure cases
+      - name: Execute 25 signature hash CMS and provisioning fixture cases
         run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
       - name: Preserve probe test evidence without application binaries
         if: always()
@@ -63,9 +63,9 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This source-only Debug Simulator workflow fixes YUEDU_RENEWAL_SELECTION=signature and executes exactly nine SelfRenewalMachOSignatureReaderTests in one independently checked xcresult bundle, requiring their exact method identities, zero failures and zero skips. It does not execute or accept the unchanged transport 8, discovery 16, replacement 5, material-inventory 6 or diagnostic UI 1 groups. Explicit all, replacement and implementation modes retain their previous group selections and invocation budgets. None automatically accepts the new signature cases. It does not repeat the reader smoke suite.
-          The signature group uses generated owned Mach-O bytes and real owned temporary directory fixtures through the existing inventory reader. It checks bounded thin/fat 32/64-bit layouts, load commands, embedded SuperBlob, CodeDirectory and CMS slot structure. These are untrusted observations: CMS ASN.1, certificate-chain trust, executable page hashes, resource seals and provisioning-profile authenticity are not verified. Parsing does not construct a trusted replacement adapter or implement a signer or installer.
-          The single signature invocation permits the established 2700-second cold shared App/test-target compilation limit. The original verdict and exact-leaf requirements remain; a timeout never counts as passing tests. Old replacement/material test runs retain independent evidence and are not accepted by this signature run.
-          The signature selection neither invokes the fixed-port QueryType probe nor browses RemotePairing or opens diagnostic TCP connections. Passing establishes only the selected structure checks; it does not establish iPhone local-network privacy behavior, service identity, authentication, signing, installation or self-renewal. No Apple account or real pairing file is used. Computer-powered-off and absence-of-companion-app conditions remain unmeasured.
+          This source-only Debug Simulator workflow fixes YUEDU_RENEWAL_SELECTION=cryptography and executes exactly 25 cases in one independently checked xcresult bundle: nine SelfRenewalMachOSignatureReaderTests, seven SelfRenewalCodeDirectoryHashVerifierTests, seven SelfRenewalCMSVerifierTests and two SelfRenewalProvisioningProfileVerifierTests. Exact qualified method identities, zero failures and zero skips are required. The nine structure cases are rechecked because their shared production reader changed. The independent signature artifact group is not accepted separately; its test identities are included in cryptography. Explicit all, replacement, implementation and signature modes retain their previous selections and budgets.
+          Generated owned Mach-O fixtures exercise thin/fat layouts, CodeDirectory page and special-slot digests with SHA1, SHA256, truncated SHA256 and SHA384. Bounded owned directory fixtures connect real executable, Info.plist and CodeResources reads. These hashes are compared with untrusted CodeDirectories and do not authenticate CMS, certificates or an Apple signer. Matching the raw CodeResources digest does not validate its resource tree.
+          Generic CMS cases perform actual RSA/ECDSA signature verification and chain evaluation against explicit owned fixture anchors at an explicit date, without trust-network access. Generic root trust does not establish Apple provisioning authority. Owned provisioning CMS envelopes provide checked content, but Apple-specific profile DER content, entitlement/device eligibility and install authorization remain unverified. No trusted replacement adapter, signer or installer is constructed.
+          The single cryptography invocation permits the established 2700-second cold shared App/test-target compilation limit; timeout never counts as passing tests. It does not execute the unchanged transport 8, discovery 16, replacement 5, material-inventory 6 or diagnostic UI 1 suites, invoke a QueryType listener, browse RemotePairing, open diagnostic TCP, repeat reader smoke tests, or use an Apple account or real pairing file. Earlier runs retain independent evidence and are not accepted by this result. iPhone transport, automatic renewal, computer-powered-off and absence-of-companion-app conditions remain unverified or unmeasured.
           Exact source hashes, audited local-mode Info/project overlays, synthetic cloud configuration, final build settings, logs, xcresult bundles and UI attachments are retained. The actual built Info.plist must preserve Calibre and declare exactly one RemotePairing Bonjour service; its privacy fallback must match both source build configurations, and all five built privacy localizations must match their corresponding source values. The existing independent app identifiers require zero project replacements when already present. LEGADO_RUNTIME_SOURCE_ONLY=1 excludes the experimental JVM. No device archive, IPA or main-app binary is generated for distribution or uploaded by this workflow.
           TEXT

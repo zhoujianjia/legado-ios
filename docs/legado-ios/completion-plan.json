@@ -163,7 +163,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "固定源码20f4cd6已提交signature9检查，首轮冷编译2700秒；只在结果可用时做一次源码绑定复核，失败先修复受影响范围。继续C1/S1非真机开发，不反复轮询，不重跑旧组、smoke或measurement，不制作IPA。",
+      "nextPlannedCheckpoint": "S1新源码冻结后仅cryptography25做单次Debug Simulator SDK检查，45源码绑定、2700秒冷编译；旧诊断/reader smoke/measurement不重跑，继续C1真实请求选项及S1材料开发，不反复轮询、不请求真机。",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
@@ -442,13 +442,15 @@
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementedSubtasksZh": [
             "已解包.app真实材料清单读取器已实现，6个测试定义与2文件grammar通过；IPA解包、密码学验签和实际SDK执行尚未完成。",
-            "Mach-O结构读取器已接到原材料清单读取，支持有界thin/fat 32/64、load commands、SuperBlob、CodeDirectory与CMS槽结构。新增9个测试定义、2文件grammar通过；SDK执行为0，页面哈希、CMS/profile/证书链、资源封印及可信替换适配仍未完成。"
+            "Mach-O结构读取器已接到原材料清单读取，支持有界thin/fat 32/64、load commands、SuperBlob、CodeDirectory与CMS槽结构。新增9个测试定义、2文件grammar通过；SDK执行为0，页面哈希、CMS/profile/证书链、资源封印及可信替换适配仍未完成。",
+            "已接入真实CodeDirectory页/特殊槽摘要计算与profile CMS签名、显式根证书链校验；hash7、CMS7、profile2共16新增方法已定义，连同变更reader的结构9共25待SDK执行。10组Python摘要fixture审计与OpenSSL6正/1篡改样本验证通过；不算Swift通过或Apple/profile安装授权。"
           ],
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-sequence-first-step.json",
-            "docs/legado-ios/core-renewal-url-signature-step.json"
+            "docs/legado-ios/core-renewal-url-signature-step.json",
+            "docs/legado-ios/core-renewal-request-crypto-step.json"
           ],
-          "nextActionZh": "在结构读取基础上实现真正页面/特殊槽哈希与CMS/profile/证书、资源封印验证；仅在固定源码的阶段检查收取新9项SDK结果，失败先修复，继续非真机开发。"
+          "nextActionZh": "继续打通CodeDirectory CMS及alternate hash-agility绑定、资源封印、权威DER profile与Apple签名者策略、可信材料适配和受控IPA；集中检查25方法真实SDK结果并先修实际失败，当前不请求真机。"
         },
         {
           "id": "S2",
@@ -1213,7 +1215,7 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "已实现未验签的已解包.app材料清单读取；本轮Mach-O结构读取器接入同一清单，检查thin/fat 32/64、load commands、SuperBlob、CodeDirectory及CMS槽，所有身份、密码学与替换授权标志仍false。新增9个Swift测试定义、2文件grammar通过，实际SDK为0；签名专组选取的23个便携守卫通过，38项源码绑定。旧0a0c740的5+6检查在02:13:37 UTC观察为in_progress，未计通过。页面与特殊槽哈希、CMS/profile/证书链、资源封印、账号、签名、认证安装及续签事务仍未完成。",
+        "currentState": "S1已接入同一inventory/受检FD的CodeDirectory实际页及特殊槽摘要校验，以及profile CMS实际验签和显式锚点证书链检查。新增16方法与变更reader原9方法共25待SDK执行，45源码绑定；25个便携守卫、10组独立Python摘要fixture、OpenSSL6个正例和1个篡改拒绝已实际通过。Swift SDK当前仍0，generic根信任不等于Apple授权；CodeDirectory CMS/hash-agility、资源树、权威DER profile、Apple policy、可信替换适配、账号、签名、安装及续签仍未完成。",
         "remainingWork": [
           "S1 读取并验证真实包与签名材料：先实现有界只读的已解包.app清单读取器，读取主App／Widget／Share、Info.plist、可执行文件及profile材料事实，明确输出未验证。；再接受控IPA解包、Mach-O签名／资源封印／CMS profile／证书链与有效期验证，将真实验证事实接入现有替换策略。",
           "S2 实现账号授权与证书、描述文件更新：实现账号授权、会话与凭据安全存取、过期／撤销／二次认证处理和受控服务适配；不把模拟账号当实际授权。；实现同一免费团队、主App／Widget／Share的证书与profile申请／刷新、材料缓存及失效处理，保留原bundle和数据访问身份。",
@@ -1222,7 +1224,7 @@
           "S5 串联持久化续签事务与数据交接：串联读取→更新材料→预检→重签→签后复检→安装提交→冷启复核，按实际回执推进状态。；实现防重复执行、持久化检查点、退避重试、中断恢复、到期／时钟异常及取消；复用现有书籍／书源／进度存储。",
           "S6 接通前台与系统允许的后台触发：通过现有依赖注入接入实际续签服务与前台到期检查，后台仅使用系统允许的任务入口。；取消／失效时保存真实事务状态，显示可理解的未授权／待重试／需恢复状态，不以提醒或外部跳转冒充续签。"
         ],
-        "nextAction": "在结构读取基础上实现真正页面/特殊槽哈希与CMS/profile/证书、资源封印验证；仅在固定源码的阶段检查收取新9项SDK结果，失败先修复，继续非真机开发。",
+        "nextAction": "继续打通CodeDirectory CMS及alternate hash-agility绑定、资源封印、权威DER profile与Apple签名者策略、可信材料适配和受控IPA；集中检查25方法真实SDK结果并先修实际失败，当前不请求真机。",
         "readiness": "ready",
         "readyPreparation": [
           "现在即可实现材料读取、受控签名及协议模块；每段交付实际代码和局部验证，不能只新增探针或计划。"
@@ -1253,7 +1255,8 @@
           "docs/legado-ios/core-self-signing-first-segment.json",
           "docs/legado-ios/self-signing-metadata-4ada44e-initial.json",
           "docs/legado-ios/core-renewal-sequence-first-step.json",
-          "docs/legado-ios/core-renewal-url-signature-step.json"
+          "docs/legado-ios/core-renewal-url-signature-step.json",
+          "docs/legado-ios/core-renewal-request-crypto-step.json"
         ],
         "deferredHardware": [
           "已按用户要求交付 build12 通道诊断包，待电脑关机、USB 断开的动态发现报告；认证 transport、签名、替换安装、冷启数据与无人值守分别待验。"
@@ -4476,6 +4479,10 @@
     "core-renewal-signature-SDK-submission": {
       "path": "docs/legado-ios/core-renewal-20f4cd6-initial.json",
       "scope": "One fixed-source signature9 initial workflow observation only; no actual native acceptance, crypto verification, signing/install/renewal, IPA or device result."
+    },
+    "material-cryptography-step": {
+      "path": "docs/legado-ios/core-renewal-request-crypto-step.json",
+      "scope": "S1 real content hashing and CMS/profile envelope production connections; independent owned fixture results and portable25 passed, Swift25 prepared only. No Apple authority, trusted replacement, signing/install/renewal or whole-step acceptance."
     }
   },
   "retainedExistingWork": [

@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T02:43:11.517820+00:00",
+  "status": "S1-content-hash-and-CMS-production-connected-native-SDK-pending",
+  "canonicalPlan": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "jsonPointer": "/execution/stepByStep"
+  },
+  "sourceBinding": {
+    "baseCommit": "f510795",
+    "kind": "reviewed-worktree-before-source-commit",
+    "files": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+        "bytes": 32363,
+        "sha256": "584752a5654222ff94e63f1522c3723d845fb5bb795989207c73960092b20f7d",
+        "grammarErrors": []
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
+        "bytes": 18684,
+        "sha256": "4c6bdda7ce187ae1e207fda2a62e0cc8fb859e4b2a2a8c203046b8ac5faf96f3",
+        "grammarErrors": []
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+        "bytes": 12996,
+        "sha256": "ccd8bb7debf35107f9ef074491443c2126de18178b9a3b6ce4b9b84cee71d053",
+        "grammarErrors": []
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalCodeDirectoryHashVerifierTests.swift",
+        "bytes": 24586,
+        "sha256": "877d20bb9caa4c00e9e07f5cf52a49dea94ea5818c0f665371a17770ea221758",
+        "grammarErrors": []
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 21760,
+        "sha256": "477dbdbee96b05eab8adb9e187138c0327e9488fda5fa7214f7d5ad02ec271b3",
+        "grammarErrors": []
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+        "bytes": 8299,
+        "sha256": "786503e7fc6c1920acfe67ab9e8241b666355b679247c34916b176f28c28c766",
+        "grammarErrors": []
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+        "bytes": 42388,
+        "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e",
+        "grammarErrors": []
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+        "bytes": 7360,
+        "sha256": "5e958f5836b77a0cc7e65770312d6efb49dca01b59b74dcac6b35d5ffecf3c80",
+        "grammarErrors": []
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+        "bytes": 4085,
+        "sha256": "2413d85949b311157601bb9da09331eb23243739bb6c36116c1e88a852ccc70c",
+        "grammarErrors": []
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 25027,
+        "sha256": "4101207926b26cd8aacfe2d691cf783aa214f6a6c45d9a6672eed352e387f890"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 45603,
+        "sha256": "c9d31b370e3fea5c640322503e8473ebbf505e2fc72f36d8d31464f041bb2132"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 7557,
+        "sha256": "b7e3def98a743a18eff256f4f7cba41e8d183b7df42a4dd013e7d8be9e73501e"
+      },
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 5607,
+        "sha256": "5e33b01ac035d9e38532dec03481f5b78dca3591c8f45bfef35ec12f688b03af"
+      }
+    ],
+    "KotlinWorkInProgressExcludedFromThisCheckpoint": true
+  },
+  "evidenceManifest": {
+    "path": "docs/legado-ios/evidence/core-renewal-request-crypto-step/manifest.json",
+    "bytes": 6997,
+    "sha256": "1cf7a01a8c1754934da5c8edcc2a15210537445c383da113d50d0d09db9bbcbd"
+  },
+  "C1": {
+    "status": "in_progress",
+    "newRequestOptionWorkAcceptedByThisRecord": false,
+    "latestAcceptedDesktopSliceRecord": "docs/legado-ios/core-renewal-url-signature-step.json",
+    "boundary": "Header, request-option and shared executor changes are concurrently being tested and are not included in this S1 source checkpoint."
+  },
+  "S1": {
+    "wholeStepComplete": false,
+    "contentHashes": {
+      "preparation": {
+        "path": "docs/legado-ios/evidence/core-renewal-request-crypto-step/code-directory-hashes/preparation.json",
+        "bytes": 3836,
+        "sha256": "d7c26de33526d094cfe4903ad2696f648e1c66545dc78b1ff536e74cccc20522"
+      },
+      "productionConnection": "SelfRenewalCodeDirectoryHashVerifier.read -> original inventory -> same reader worker/openat code FD -> parse + page/special digests -> fstat recheck",
+      "algorithms": [
+        "SHA1",
+        "SHA256",
+        "first 20 bytes of SHA256",
+        "SHA384"
+      ],
+      "bounds": {
+        "contentReadBytes": 268435456,
+        "hashOperations": 262144,
+        "chunkBytes": 65536,
+        "specialMaterialBytes": 2097152,
+        "knownSpecialSlots": 11
+      },
+      "preparedNewMethods": 7,
+      "grammarParsedFiles": 4,
+      "actualSwiftSDKBuilds": 0,
+      "actualSwiftMethodsAccepted": 0,
+      "independentPythonFixtureCases": 10,
+      "scope": "All code pages and supported special slots compared to untrusted CodeDirectories on the same checked FD. A matching CodeResources digest does not validate resource seals or authenticate a signer."
+    },
+    "CMSAndProfiles": {
+      "preparation": {
+        "path": "docs/legado-ios/evidence/core-renewal-request-crypto-step/cms-profile/preparation-v2.json",
+        "bytes": 4500,
+        "sha256": "2422fc23cd441396527d24b397195c9ad377239edcc517f6ae1f093900c8868a"
+      },
+      "productionConnection": "ProvisioningProfileVerifier.read -> existing inventory -> same no-follow readOwnedMaterial -> CMS actual SecKey signature and explicit-anchor SecTrust -> signed plist summary.",
+      "preparedCMSMethods": 7,
+      "preparedProfileMethods": 2,
+      "grammarParsedFiles": 5,
+      "actualSwiftSDKBuilds": 0,
+      "actualSwiftMethodsAccepted": 0,
+      "independentOpenSSLPositiveCMSFixtures": 6,
+      "independentOpenSSLTamperRejections": 1,
+      "trustScope": "Explicit supplied roots, anchor-only, no network fetch, fixed caller verification date. Generic X.509 validation is not Apple provisioning policy or revocation proof.",
+      "supportedCMS": [
+        "DER SignedData data content",
+        "issuer+serial or SKI signer",
+        "all signers verified",
+        "encapsulated/detached content",
+        "signedAttrs contentType/messageDigest and complete DER SET bytes",
+        "direct no-attributes signatures",
+        "RSA PKCS1v15 SHA1/256/384/512",
+        "ECDSA X962 SHA1/256/384/512"
+      ],
+      "scope": "Actual public SecKey signature verification and explicit-anchor SecTrust are implemented. Profile envelope bytes are verified before plist summary parsing; plist summary alone and generic roots are not Apple provisioning authorization."
+    },
+    "structureMethodsRecheckedBecauseReaderChanged": 9,
+    "preparedCheckpointMethods": 25,
+    "actualSwiftMethodsAccepted": 0,
+    "remaining": [
+      "real Swift SDK execution",
+      "controlled IPA extraction",
+      "CMS CodeDirectory and alternate hash-agility binding",
+      "Apple provisioning signer policy and configured production anchors",
+      "authoritative DER-Encoded-Profile",
+      "resource-tree seals",
+      "certificate/profile/entitlement/device/App/Team matching",
+      "revocation and authenticated timestamps",
+      "trusted replacement adapter"
+    ],
+    "accountIdentityEstablished": false,
+    "replacementAuthorized": false,
+    "signingOrInstallationPerformed": false
+  },
+  "verificationInfrastructure": {
+    "portableMethodsPassed": 25,
+    "sourceInputs": 45,
+    "mode": "cryptography",
+    "singleXcresult": true,
+    "preparedMethods": 25,
+    "suiteMethods": {
+      "structure": 9,
+      "contentHashes": 7,
+      "CMS": 7,
+      "profiles": 2
+    },
+    "actualSwiftMethodsAccepted": 0,
+    "shellSyntaxPassed": true,
+    "workflowActionlintPassed": true,
+    "shellcheckExecuted": false,
+    "oldFourSelectionsAndBudgetsPreserved": true,
+    "repeatedUnchangedDiagnosticOrReaderSmokeSuites": false,
+    "result": {
+      "path": "docs/legado-ios/evidence/core-renewal-request-crypto-step/guards/result.json",
+      "bytes": 2995,
+      "sha256": "85c28231b4a0e2e925d553adf042b0649d573b757c2a0c82d4a0f903315df1a4"
+    },
+    "sourceInputInventory": {
+      "path": "docs/legado-ios/evidence/core-renewal-request-crypto-step/guards/source-input-inventory.json",
+      "bytes": 8431,
+      "sha256": "c2b1abe5b46c40ad58f8d1b19bbd572440bf22bcb9ec287418e90799290ca511"
+    }
+  },
+  "previousSDKObservation": {
+    "observedAtUTC": "2026-10-20T02:30:57Z",
+    "runs": [
+      39357102164,
+      39359134891
+    ],
+    "status": "in_progress",
+    "actualNewNativeAccepted": 0,
+    "savedObservationOnly": true,
+    "newPollingOrArtifactDownloadDuringArchival": false
+  },
+  "cloudSubmission": {
+    "submitted": false,
+    "sourceCommit": null,
+    "selectionMode": "cryptography",
+    "preparedSelectedMethods": {
+      "cryptography": 25
+    },
+    "runs": [],
+    "actualNativeCasesAccepted": 0
+  },
+  "physicalDeviceValidationRequested": false,
+  "privateUserSourceRead": false,
+  "newIPAProduced": false,
+  "realAccountCredentialsOrProfilesRead": false,
+  "ownedFixturePrivateKeysKeptIgnoredOnly": true,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

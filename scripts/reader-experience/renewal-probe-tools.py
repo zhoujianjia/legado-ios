@@ -26,6 +26,9 @@ UI_SUITE = "SelfRenewalProbeUITests"
 REPLACEMENT_SUITE = "SelfRenewalReplacementPolicyTests"
 MATERIALS_SUITE = "SelfRenewalMaterialInventoryTests"
 SIGNATURE_SUITE = "SelfRenewalMachOSignatureReaderTests"
+HASH_SUITE = "SelfRenewalCodeDirectoryHashVerifierTests"
+CMS_SUITE = "SelfRenewalCMSVerifierTests"
+PROFILE_SUITE = "SelfRenewalProvisioningProfileVerifierTests"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -86,6 +89,32 @@ EXPECTED_CASES = {
     )},
     "ui": {UI_SUITE + "/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"},
 }
+EXPECTED_CASES["cryptography"] = EXPECTED_CASES["signature"] | {
+    HASH_SUITE + "/" + name for name in (
+        "matchesIndependentDigestVectors",
+        "verifiesFourAlgorithmsAndAllKnownSpecialMaterials",
+        "rejectsChangedPagesDigestsAndSpecialMaterials",
+        "verifiesFatAlternateAndUnpagedContentWithBoundedChunks",
+        "rejectsMissingExtraAndUnsupportedSpecialSlots",
+        "rejectsBudgetsTruncatedReadsAndCancellation",
+        "readsOwnedApplicationAndUsesBoundedMaterialIO",
+    )
+} | {
+    CMS_SUITE + "/" + name for name in (
+        "verifiesIndependentRSAAndDetachedVectors",
+        "verifiesECDSAAndEverySigner",
+        "rejectsChangedContentAndSignatures",
+        "rejectsUntrustedAndExpiredChains",
+        "rejectsMissingAndAmbiguousContent",
+        "rejectsMalformedDERAndOversizedInputs",
+        "rejectsCancelledVerification",
+    )
+} | {
+    PROFILE_SUITE + "/" + name for name in (
+        "readsSignedSummaryAndRejectsValidityFailures",
+        "verifiesOwnedProfileThroughInventory",
+    )
+}
 SELECTION_GROUPS = {
     # Preserve the historical all-mode contract; new implementation tests have
     # an explicit independent selection rather than silently widening it.
@@ -93,6 +122,7 @@ SELECTION_GROUPS = {
     "replacement": ("replacement",),
     "implementation": ("replacement", "materials"),
     "signature": ("signature",),
+    "cryptography": ("cryptography",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -110,6 +140,13 @@ SOURCE_INPUTS = (
     "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift",
     "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalCodeDirectoryHashVerifierTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -135,7 +172,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation or signature")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature or cryptography")
     return mode
 
 
@@ -321,6 +358,7 @@ def result(work):
             "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "selectionMode": mode,
             "targetedTests": groups, "unselectedTestGroups": [group for group in EXPECTED_CASES if group not in cases],
+            "unselectedTestGroupsMeaning": "Artifact groups not accepted independently; their test identities may overlap the selected group.",
             "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "sourceInputs": inputs["sourceInputs"], "evidenceSHA256": evidence,
             "builtDiscoveryMetadata": metadata,
@@ -332,7 +370,13 @@ def result(work):
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "No Apple login, pairing, signing, installation or renewal operation is performed."] + (
-                           ["This selection executes exactly nine owned-fixture Mach-O signature-structure cases; unit, discovery, replacement, materials and UI groups are not executed or accepted.",
+                           ["This selection executes exactly 25 cases in one cryptography xcresult: nine signature-structure, seven CodeDirectory content-hash, seven generic CMS and two owned provisioning-envelope cases.",
+                            "The independently named signature artifact group is not accepted separately; its nine test identities are executed inside this cryptography group because the shared reader changed.",
+                            "Content-digest matching is checked against untrusted CodeDirectories; generic CMS signatures and explicit owned anchors do not establish Apple provisioning authority.",
+                            "Apple-specific profile DER content, entitlement/device eligibility, resource-tree seals, signer and installer integration remain unverified.",
+                            "Unit, discovery, replacement, material-inventory and UI suites are not executed; no QueryType listener, RemotePairing browsing or diagnostic TCP probe is invoked."]
+                           if mode == "cryptography" else [
+                            "This selection executes exactly nine owned-fixture Mach-O signature-structure cases; unit, discovery, replacement, materials and UI groups are not executed or accepted.",
                             "Thin/fat Mach-O, load commands, SuperBlob, CodeDirectory and CMS slot observations remain untrusted; no CMS ASN.1, certificate-chain, page-hash, resource-seal or profile authenticity is established.",
                             "No QueryType fixture listener, RemotePairing browsing or diagnostic TCP probe is invoked."]
                            if mode == "signature" else [

@@ -3,7 +3,8 @@ import Foundation
 
 /// Structural observations, never a signature/trust verification or an account
 /// identity assertion. Layouts follow Apple's mach-o/{loader,fat}.h and
-/// osfmk/kern/cs_blobs.h. CMS, hashes, entitlements and certificates stay unverified.
+/// osfmk/kern/cs_blobs.h. The explicit content-hash entry verifies only digests;
+/// CMS, entitlement semantics and certificate authenticity stay unverified.
 enum SelfRenewalMachOSignatureReader {
     enum Failure: Error, Sendable, Equatable {
         case invalidRoot, invalidPath, unreadableFile, linkNotAllowed, fileChangedDuringRead
@@ -34,6 +35,9 @@ enum SelfRenewalMachOSignatureReader {
         let specialSlotCount: UInt32
         let codeLimit: UInt64
         let pageSizeLog2: UInt8
+        let hashOffset: Int
+        /// Relative to the beginning of the embedded SuperBlob.
+        let blobRange: ByteRange
     }
     struct Blob: Sendable, Equatable {
         let slot: UInt32
@@ -69,12 +73,14 @@ enum SelfRenewalMachOSignatureReader {
     struct CodeMaterial: Sendable, Equatable {
         let file: SelfRenewalMaterialInventory.FileFact
         let structure: ParsedFile
+        let contentHashVerification: SelfRenewalCodeDirectoryHashVerifier.Verification?
     }
     struct Materials: Sendable, Equatable {
         let inventory: SelfRenewalMaterialInventory.Inventory
         let code: [CodeMaterial]
         /// Additional reads only; does not alter the inventory's separate budget.
         let signatureStructureBytesRead: Int
+        let contentHashBytesRead: Int
         var cryptographicVerificationPerformed: Bool { false }
         var accountIdentityEstablished: Bool { false }
         var replacementAuthorized: Bool { false }
@@ -87,16 +93,25 @@ enum SelfRenewalMachOSignatureReader {
         static let blobs = 32
         static let stringBytes = 255
         static let totalReadBytes = 67_108_864
+        static let ownedMaterialBytes = 2_097_152
     }
 
     /// The supplied app must be a caller-owned, already unpacked, quiescent
     /// staging directory. No app data or executable is changed. Each descendant
     /// is opened relative to a directory FD with O_NOFOLLOW, then rechecked.
     nonisolated static func read(unpackedApplication root: URL) async throws -> Materials {
+        try await read(unpackedApplication: root, verifyContentHashes: false)
+    }
+
+    nonisolated static func readVerifyingContentHashes(unpackedApplication root: URL) async throws -> Materials {
+        try await read(unpackedApplication: root, verifyContentHashes: true)
+    }
+
+    private nonisolated static func read(unpackedApplication root: URL, verifyContentHashes: Bool) async throws -> Materials {
         let inventory = try await SelfRenewalMaterialInventory.read(unpackedApplication: root)
         try Task.checkCancellation()
         let worker = Task.detached(priority: .utility) {
-            try readSynchronously(root: root, inventory: inventory)
+            try readSynchronously(root: root, inventory: inventory, verifyContentHashes: verifyContentHashes)
         }
         return try await withTaskCancellationHandler {
             try await worker.value
@@ -269,7 +284,7 @@ enum SelfRenewalMachOSignatureReader {
             if slot == 0 || (0x1000..<0x1005).contains(slot) {
                 guard magic == 0xfade0c02 else { throw Failure.malformedCodeDirectory }
                 directories.append(try parseCodeDirectory(data.subdata(in: offset..<(offset + size)),
-                    slot: slot, codeBytesAvailable: range.offset - slice.offset))
+                    slot: slot, blobRange: blobRange, codeBytesAvailable: range.offset - slice.offset))
             } else if slot == 0x10000 {
                 guard magic == 0xfade0b01 else { throw Failure.malformedSignature }
                 cmsBytes = size - 8
@@ -285,7 +300,8 @@ enum SelfRenewalMachOSignatureReader {
             codeDirectories: directories, cmsPayloadByteCount: cmsBytes)
     }
 
-    private static func parseCodeDirectory(_ data: Data, slot: UInt32,
+    /// Reused when the content verifier re-reads the hash table from the same FD.
+    static func parseCodeDirectory(_ data: Data, slot: UInt32, blobRange: ByteRange,
         codeBytesAvailable: UInt64) throws -> CodeDirectory {
         let version = try number32(data, 8, .big)
         let sizes: [UInt32: Int] = [0x20001: 44, 0x20100: 48, 0x20200: 52,
@@ -349,7 +365,8 @@ enum SelfRenewalMachOSignatureReader {
         }
         return CodeDirectory(slot: slot, version: version, flags: flags, identifier: identifier.0,
             teamIdentifier: team, hashType: hashType, hashByteCount: hashSize,
-            codeSlotCount: codeSlots, specialSlotCount: specialSlots, codeLimit: limit, pageSizeLog2: pageSize)
+            codeSlotCount: codeSlots, specialSlotCount: specialSlots, codeLimit: limit, pageSizeLog2: pageSize,
+            hashOffset: hashOffset, blobRange: blobRange)
     }
 
     private static func string(_ data: Data, at offset: Int, minimum: Int) throws -> (String, ByteRange) {
@@ -384,21 +401,19 @@ enum SelfRenewalMachOSignatureReader {
     }
 
     private static func readSynchronously(root suppliedRoot: URL,
-        inventory: SelfRenewalMaterialInventory.Inventory) throws -> Materials {
+        inventory: SelfRenewalMaterialInventory.Inventory, verifyContentHashes: Bool) throws -> Materials {
         precondition(!Thread.isMainThread, "Renewal signature reads must stay off main")
         try Task.checkCancellation()
-        guard suppliedRoot.isFileURL, suppliedRoot.query == nil, suppliedRoot.fragment == nil,
-              suppliedRoot.pathExtension.lowercased() == "app" else { throw Failure.invalidRoot }
-        let root = suppliedRoot.standardizedFileURL.resolvingSymlinksInPath()
-        let rootFD = Darwin.open(root.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-        guard rootFD >= 0 else { throw Failure.invalidRoot }
+        let rootFD = try openRoot(suppliedRoot)
         defer { Darwin.close(rootFD) }
         let started = SourcePerfTrace.now
         var bytesRead = 0
+        var contentReadBytes = 0
+        var hashOperations = 0
         var code: [CodeMaterial] = []
         defer {
             SourcePerfTrace.record("renewal.material.macho",
-                "files=\(code.count) bytes=\(bytesRead) main=\(Thread.isMainThread)",
+                "files=\(code.count) bytes=\(bytesRead) hashBytes=\(contentReadBytes) hashOperations=\(hashOperations) main=\(Thread.isMainThread)",
                 since: started, thresholdMs: 0)
         }
         for item in inventory.codeFiles {
@@ -407,33 +422,122 @@ enum SelfRenewalMachOSignatureReader {
             defer { Darwin.close(descriptor) }
             let before = try status(descriptor, expectedBytes: item.file.byteCount)
             let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: false)
-            let parsed = try parse(fileByteCount: UInt64(item.file.byteCount)) { range in
-                try Task.checkCancellation()
-                guard bytesRead <= Limits.totalReadBytes - range.byteCount else { throw Failure.totalReadLimit }
-                var data = Data()
-                do {
-                    try handle.seek(toOffset: range.offset)
-                    while data.count < range.byteCount {
-                        try Task.checkCancellation()
-                        guard let chunk = try handle.read(upToCount: min(65_536, range.byteCount - data.count)),
-                              !chunk.isEmpty else { throw Failure.truncatedRead }
-                        data.append(chunk)
-                        bytesRead += chunk.count
-                    }
-                } catch is CancellationError { throw CancellationError() }
-                catch let error as Failure { throw error }
-                catch { throw Failure.unreadableFile }
-                return data
+            let parsed: ParsedFile
+            let verification: SelfRenewalCodeDirectoryHashVerifier.Verification?
+            if verifyContentHashes {
+                let component = inventory.components.first { $0.executable?.file.relativePath == item.file.relativePath }
+                let verified = try SelfRenewalCodeDirectoryHashVerifier.verify(fileByteCount: UInt64(item.file.byteCount),
+                    maximumContentBytes: SelfRenewalCodeDirectoryHashVerifier.Limits.totalContentReadBytes - contentReadBytes,
+                    maximumHashOperations: SelfRenewalCodeDirectoryHashVerifier.Limits.totalHashOperations - hashOperations,
+                    readStructureRange: { range in
+                        try readRange(handle, range: range, budget: &bytesRead, maximum: Limits.totalReadBytes)
+                    }, readContentRange: { range in
+                        try readRange(handle, range: range, budget: &contentReadBytes,
+                            maximum: SelfRenewalCodeDirectoryHashVerifier.Limits.totalContentReadBytes)
+                    }, externalSpecialSlot: { slot, remaining in
+                        guard let component else { return nil }
+                        let fact: SelfRenewalMaterialInventory.FileFact?
+                        if slot == 1 {
+                            let path = component.relativePath == "." ? "Info.plist" : component.relativePath + "/Info.plist"
+                            fact = try materialFact(relativePath: path, rootFD: rootFD,
+                                maximumBytes: SelfRenewalMaterialInventory.Limits.plistBytes)
+                        } else if slot == 3 { fact = component.codeResources }
+                        else { return nil }
+                        guard let fact else { return nil }
+                        guard fact.byteCount <= Int64(remaining) else { throw SelfRenewalCodeDirectoryHashVerifier.Failure.contentReadLimit }
+                        let bytes = try readOwnedMaterial(root: suppliedRoot, fact: fact,
+                            maximumBytes: max(1, min(remaining, Limits.ownedMaterialBytes)))
+                        contentReadBytes += bytes.count
+                        return bytes
+                    })
+                parsed = verified.structure
+                verification = verified.verification
+                hashOperations += verified.verification.hashOperations
+            } else {
+                parsed = try parse(fileByteCount: UInt64(item.file.byteCount)) { range in
+                    try readRange(handle, range: range, budget: &bytesRead, maximum: Limits.totalReadBytes)
+                }
+                verification = nil
             }
             let after = try status(descriptor, expectedBytes: item.file.byteCount)
-            guard before.st_ino == after.st_ino, before.st_dev == after.st_dev,
-                  before.st_mtimespec.tv_sec == after.st_mtimespec.tv_sec,
-                  before.st_mtimespec.tv_nsec == after.st_mtimespec.tv_nsec,
-                  before.st_ctimespec.tv_sec == after.st_ctimespec.tv_sec,
-                  before.st_ctimespec.tv_nsec == after.st_ctimespec.tv_nsec else { throw Failure.fileChangedDuringRead }
-            code.append(CodeMaterial(file: item.file, structure: parsed))
+            try unchanged(before, after)
+            code.append(CodeMaterial(file: item.file, structure: parsed, contentHashVerification: verification))
         }
-        return Materials(inventory: inventory, code: code, signatureStructureBytesRead: bytesRead)
+        return Materials(inventory: inventory, code: code, signatureStructureBytesRead: bytesRead,
+            contentHashBytesRead: contentReadBytes)
+    }
+    /// One bounded, read-only small-material path shared by hash/profile readers.
+    /// Call only on a worker with caller-owned quiescent staging; not an atomic
+    /// seal. maximumBytes may tighten but never increase the fixed 2 MiB cap.
+    static func readOwnedMaterial(root: URL, fact: SelfRenewalMaterialInventory.FileFact,
+        maximumBytes: Int) throws -> Data {
+        precondition(!Thread.isMainThread, "Renewal material reads must stay off main")
+        try Task.checkCancellation()
+        guard (1...Limits.ownedMaterialBytes).contains(maximumBytes), fact.byteCount >= 0,
+              fact.byteCount <= Int64(maximumBytes) else { throw Failure.fileSizeLimit }
+        let started = SourcePerfTrace.now
+        var bytesRead = 0
+        defer {
+            SourcePerfTrace.record("renewal.material.owned-read",
+                "bytes=\(bytesRead) main=\(Thread.isMainThread)", since: started, thresholdMs: 0)
+        }
+        let rootFD = try openRoot(root)
+        defer { Darwin.close(rootFD) }
+        let descriptor = try openCodeFile(fact, rootFD: rootFD)
+        defer { Darwin.close(descriptor) }
+        let before = try status(descriptor, expectedBytes: fact.byteCount)
+        let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: false)
+        let bytes = try readRange(handle, range: ByteRange(offset: 0, byteCount: Int(fact.byteCount)),
+            budget: &bytesRead, maximum: maximumBytes)
+        try unchanged(before, status(descriptor, expectedBytes: fact.byteCount))
+        return bytes
+    }
+    private static func openRoot(_ root: URL) throws -> Int32 {
+        guard root.isFileURL, root.query == nil, root.fragment == nil,
+              root.pathExtension.lowercased() == "app" else { throw Failure.invalidRoot }
+        var initial = stat()
+        guard Darwin.lstat(root.path, &initial) == 0,
+              initial.st_mode & mode_t(S_IFMT) == mode_t(S_IFDIR) else { throw Failure.invalidRoot }
+        let canonical = root.standardizedFileURL.resolvingSymlinksInPath()
+        let descriptor = Darwin.open(canonical.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        guard descriptor >= 0 else { throw Failure.invalidRoot }
+        return descriptor
+    }
+    private static func materialFact(relativePath: String, rootFD: Int32,
+        maximumBytes: Int) throws -> SelfRenewalMaterialInventory.FileFact {
+        let descriptor = try openCodeFile(.init(relativePath: relativePath, byteCount: 0), rootFD: rootFD)
+        defer { Darwin.close(descriptor) }
+        var value = stat()
+        guard Darwin.fstat(descriptor, &value) == 0 else { throw Failure.unreadableFile }
+        guard value.st_size >= 0, value.st_size <= Int64(maximumBytes) else { throw Failure.fileSizeLimit }
+        _ = try status(descriptor, expectedBytes: value.st_size)
+        return .init(relativePath: relativePath, byteCount: value.st_size)
+    }
+    private static func readRange(_ handle: FileHandle, range: ByteRange,
+        budget: inout Int, maximum: Int) throws -> Data {
+        try Task.checkCancellation()
+        guard range.byteCount >= 0, range.byteCount <= maximum - budget else { throw Failure.totalReadLimit }
+        var data = Data()
+        do {
+            try handle.seek(toOffset: range.offset)
+            while data.count < range.byteCount {
+                try Task.checkCancellation()
+                guard let chunk = try handle.read(upToCount: min(65_536, range.byteCount - data.count)),
+                      !chunk.isEmpty else { throw Failure.truncatedRead }
+                data.append(chunk)
+                budget += chunk.count
+            }
+        } catch is CancellationError { throw CancellationError() }
+        catch let error as Failure { throw error }
+        catch { throw Failure.unreadableFile }
+        return data
+    }
+    private static func unchanged(_ before: stat, _ after: stat) throws {
+        guard before.st_ino == after.st_ino, before.st_dev == after.st_dev,
+              before.st_mtimespec.tv_sec == after.st_mtimespec.tv_sec,
+              before.st_mtimespec.tv_nsec == after.st_mtimespec.tv_nsec,
+              before.st_ctimespec.tv_sec == after.st_ctimespec.tv_sec,
+              before.st_ctimespec.tv_nsec == after.st_ctimespec.tv_nsec else { throw Failure.fileChangedDuringRead }
     }
     private static func openCodeFile(_ file: SelfRenewalMaterialInventory.FileFact, rootFD: Int32) throws -> Int32 {
         let pieces = file.relativePath.split(separator: "/", omittingEmptySubsequences: false)
@@ -463,7 +567,7 @@ enum SelfRenewalMachOSignatureReader {
         guard value.st_mode & mode_t(S_IFMT) == mode_t(S_IFREG), value.st_nlink == 1 else {
             throw Failure.linkNotAllowed
         }
-        guard expectedBytes > 0, expectedBytes <= SelfRenewalMaterialInventory.Limits.fileBytes,
+        guard expectedBytes >= 0, expectedBytes <= SelfRenewalMaterialInventory.Limits.fileBytes,
               value.st_size == expectedBytes else { throw Failure.fileChangedDuringRead }
         return value
     }

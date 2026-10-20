@@ -1,0 +1,109 @@
+{
+  "recordedAtUTC": "2026-10-20T02:38:34.253313+00:00",
+  "status": "production-wired-prepared-not-Swift-SDK-executed",
+  "sourceInputs": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+      "bytes": 21760,
+      "sha256": "477dbdbee96b05eab8adb9e187138c0327e9488fda5fa7214f7d5ad02ec271b3",
+      "grammarErrors": []
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+      "bytes": 8299,
+      "sha256": "786503e7fc6c1920acfe67ab9e8241b666355b679247c34916b176f28c28c766",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+      "bytes": 42388,
+      "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+      "bytes": 7360,
+      "sha256": "5e958f5836b77a0cc7e65770312d6efb49dca01b59b74dcac6b35d5ffecf3c80",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+      "bytes": 4085,
+      "sha256": "2413d85949b311157601bb9da09331eb23243739bb6c36116c1e88a852ccc70c",
+      "grammarErrors": []
+    }
+  ],
+  "grammarParsedFiles": 5,
+  "preparedSwiftTests": {
+    "SelfRenewalCMSVerifierTests": [
+      "verifiesIndependentRSAAndDetachedVectors",
+      "verifiesECDSAAndEverySigner",
+      "rejectsChangedContentAndSignatures",
+      "rejectsUntrustedAndExpiredChains",
+      "rejectsMissingAndAmbiguousContent",
+      "rejectsMalformedDERAndOversizedInputs",
+      "rejectsCancelledVerification"
+    ],
+    "SelfRenewalProvisioningProfileVerifierTests": [
+      "readsSignedSummaryAndRejectsValidityFailures",
+      "verifiesOwnedProfileThroughInventory"
+    ]
+  },
+  "preparedSwiftMethods": 9,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0,
+  "ownedOpenSSLVerification": {
+    "positiveCMSCases": 6,
+    "tamperedCMSRejected": 1,
+    "record": "fixture-generation.json"
+  },
+  "productionConnection": "ProvisioningProfileVerifier.read -> existing inventory -> same no-follow readOwnedMaterial -> CMS actual SecKey signature and explicit-anchor SecTrust -> signed plist summary.",
+  "newDependencies": false,
+  "privateKeysTrackedOrCopiedToEvidence": false,
+  "trustScope": "Explicit supplied roots, anchor-only, no network fetch, fixed caller verification date. Generic X.509 validation is not Apple provisioning policy or revocation proof.",
+  "supportedCMS": [
+    "DER SignedData data content",
+    "issuer+serial or SKI signer",
+    "all signers verified",
+    "encapsulated/detached content",
+    "signedAttrs contentType/messageDigest and complete DER SET bytes",
+    "direct no-attributes signatures",
+    "RSA PKCS1v15 SHA1/256/384/512",
+    "ECDSA X962 SHA1/256/384/512"
+  ],
+  "remaining": [
+    "BER indefinite/constructed content",
+    "RSA-PSS and other algorithms",
+    "Apple provisioning signer policy and configured production anchors",
+    "DER-Encoded-Profile authority",
+    "entitlement/device/App/Team matching",
+    "revocation and authenticated timestamps",
+    "CMS CodeDirectory/hash-agility integration",
+    "resource seal and trusted replacement adapter",
+    "real SDK execution"
+  ],
+  "accountIdentityEstablished": false,
+  "replacementAuthorized": false,
+  "signingInstallationOrRenewalImplemented": false,
+  "physicalDeviceOperationRequested": false,
+  "primaryReferences": [
+    {
+      "URL": "https://www.rfc-editor.org/rfc/rfc5652.txt",
+      "bytes": 126813,
+      "sha256": "dbd209ae7844031f51722c4d9e2d1fa3fff3081319851d581f914f5f0147f918",
+      "path": ".build/renewal-discovery/cms-profile-step/primary/rfc5652.txt"
+    },
+    {
+      "URL": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/CMS/CMSDecoder.h",
+      "bytes": 16472,
+      "sha256": "88d2854bbdf006b41c45b7a316ba83887519cbeecab69670eb9698905d087eb9",
+      "path": ".build/renewal-discovery/cms-profile-step/primary/CMSDecoder.h"
+    },
+    {
+      "URL": "https://developer.apple.com/tutorials/data/documentation/technotes/tn3125-inside-code-signing-provisioning-profiles.json",
+      "bytes": 38977,
+      "sha256": "237100a8c163a51b461128ceaa78bb34615a3a32ce1725e6402b04c393b8149b",
+      "path": ".build/renewal-discovery/cms-profile-step/primary/tn3125.json"
+    }
+  ]
+}

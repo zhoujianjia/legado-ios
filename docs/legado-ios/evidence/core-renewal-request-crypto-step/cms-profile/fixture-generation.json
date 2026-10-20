@@ -1,0 +1,607 @@
+{
+  "status": "owned-fixtures-generated-and-independently-verified-not-Swift-executed",
+  "createdAtUTC": "2026-10-20T02:34:13+00:00",
+  "validationDateUnix": 1792463713,
+  "CMSPositiveCasesVerified": 6,
+  "CMSTamperRejected": 1,
+  "commands": [
+    {
+      "arguments": [
+        "req",
+        "-new",
+        "-newkey",
+        "rsa:2048",
+        "-nodes",
+        "-x509",
+        "-sha256",
+        "-days",
+        "3650",
+        "-config",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\certificate.cnf",
+        "-extensions",
+        "root",
+        "-keyout",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.key",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Generating a RSA private key\n..+++++\n........................................................+++++\nwriting new private key to 'F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.key'\n-----\n"
+    },
+    {
+      "arguments": [
+        "genpkey",
+        "-algorithm",
+        "RSA",
+        "-pkeyopt",
+        "rsa_keygen_bits:2048",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.key"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ".................................................+++++\n...............................................+++++\n"
+    },
+    {
+      "arguments": [
+        "req",
+        "-new",
+        "-key",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.key",
+        "-config",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\certificate.cnf",
+        "-subj",
+        "/CN=Yuedu Owned Fixture leaf",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.csr"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "x509",
+        "-req",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.csr",
+        "-CA",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-CAkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.key",
+        "-set_serial",
+        "2",
+        "-days",
+        "3650",
+        "-sha256",
+        "-extfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\certificate.cnf",
+        "-extensions",
+        "leaf",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.pem"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Signature ok\nsubject=CN = Yuedu Owned Fixture leaf\nGetting CA Private Key\n"
+    },
+    {
+      "arguments": [
+        "genpkey",
+        "-algorithm",
+        "RSA",
+        "-pkeyopt",
+        "rsa_keygen_bits:2048",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\second.key"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "..............................................................+++++\n..................................+++++\n"
+    },
+    {
+      "arguments": [
+        "req",
+        "-new",
+        "-key",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\second.key",
+        "-config",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\certificate.cnf",
+        "-subj",
+        "/CN=Yuedu Owned Fixture second",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\second.csr"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "x509",
+        "-req",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\second.csr",
+        "-CA",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-CAkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.key",
+        "-set_serial",
+        "3",
+        "-days",
+        "3650",
+        "-sha256",
+        "-extfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\certificate.cnf",
+        "-extensions",
+        "leaf",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\second.pem"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Signature ok\nsubject=CN = Yuedu Owned Fixture second\nGetting CA Private Key\n"
+    },
+    {
+      "arguments": [
+        "genpkey",
+        "-algorithm",
+        "EC",
+        "-pkeyopt",
+        "ec_paramgen_curve:P-384",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ec.key"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "req",
+        "-new",
+        "-key",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ec.key",
+        "-config",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\certificate.cnf",
+        "-subj",
+        "/CN=Yuedu Owned Fixture ec",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ec.csr"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "x509",
+        "-req",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ec.csr",
+        "-CA",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-CAkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.key",
+        "-set_serial",
+        "4",
+        "-days",
+        "3650",
+        "-sha256",
+        "-extfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\certificate.cnf",
+        "-extensions",
+        "leaf",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ec.pem"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Signature ok\nsubject=CN = Yuedu Owned Fixture ec\nGetting CA Private Key\n"
+    },
+    {
+      "arguments": [
+        "x509",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.der"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "x509",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.pem",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.der"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "cms",
+        "-sign",
+        "-binary",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\profile.plist",
+        "-signer",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.pem",
+        "-inkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.key",
+        "-certfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-md",
+        "sha256",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\embedded.cms",
+        "-nodetach"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\embedded.cms",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792463713",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\embedded.verified.plist"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Verification successful\n"
+    },
+    {
+      "arguments": [
+        "cms",
+        "-sign",
+        "-binary",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\profile.plist",
+        "-signer",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.pem",
+        "-inkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.key",
+        "-certfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-md",
+        "sha256",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\detached.cms"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\detached.cms",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792463713",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\detached.verified.plist",
+        "-content",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\profile.plist"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Verification successful\n"
+    },
+    {
+      "arguments": [
+        "cms",
+        "-sign",
+        "-binary",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\profile.plist",
+        "-signer",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.pem",
+        "-inkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.key",
+        "-certfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-md",
+        "sha256",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\noAttributes.cms",
+        "-nodetach",
+        "-noattr"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\noAttributes.cms",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792463713",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\noAttributes.verified.plist"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Verification successful\n"
+    },
+    {
+      "arguments": [
+        "cms",
+        "-sign",
+        "-binary",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\profile.plist",
+        "-signer",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.pem",
+        "-inkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.key",
+        "-certfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-md",
+        "sha256",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\subjectKeyIdentifier.cms",
+        "-nodetach",
+        "-keyid"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\subjectKeyIdentifier.cms",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792463713",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\subjectKeyIdentifier.verified.plist"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Verification successful\n"
+    },
+    {
+      "arguments": [
+        "cms",
+        "-sign",
+        "-binary",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\profile.plist",
+        "-certfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ecdsaSHA384.cms",
+        "-nodetach",
+        "-signer",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ec.pem",
+        "-inkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ec.key",
+        "-md",
+        "sha384"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ecdsaSHA384.cms",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792463713",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\ecdsaSHA384.verified.plist"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Verification successful\n"
+    },
+    {
+      "arguments": [
+        "cms",
+        "-sign",
+        "-binary",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\profile.plist",
+        "-signer",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.pem",
+        "-inkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\leaf.key",
+        "-certfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-md",
+        "sha256",
+        "-outform",
+        "DER",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\multipleSigners.cms",
+        "-nodetach",
+        "-signer",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\second.pem",
+        "-inkey",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\second.key"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\multipleSigners.cms",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792463713",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\multipleSigners.verified.plist"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Verification successful\n"
+    },
+    {
+      "arguments": [
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\tampered.cms",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\root.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792463713",
+        "-out",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\cms-profile-step\\owned\\tampered.rejected.plist"
+      ],
+      "exitCode": 4,
+      "stdout": "",
+      "stderr": "Verification failure\n34359836736:error:2E09A09E:CMS routines:CMS_SignerInfo_verify_content:verification failure:crypto/cms/cms_sd.c:847:\n34359836736:error:2E09D06D:CMS routines:CMS_verify:content verify error:crypto/cms/cms_smime.c:393:\n"
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "rootCertificate",
+      "file": "root.der",
+      "bytes": 797,
+      "sha256": "c4a5f2e0e5b04b25ce452304dd5ff358f3dcdcacedd06bf32a5e37114ea649f4"
+    },
+    {
+      "name": "leafCertificate",
+      "file": "leaf.der",
+      "bytes": 805,
+      "sha256": "dd64a84f9cb1cd7f16a842a4267915d750e60c75c975f146181094adb356ac6f"
+    },
+    {
+      "name": "profilePayload",
+      "file": "profile.plist",
+      "bytes": 2009,
+      "sha256": "05f3a3faad0a83c0eec72154491da52dcb087c1d8caf8c11ab84e1beaa082974"
+    },
+    {
+      "name": "embedded",
+      "file": "embedded.cms",
+      "bytes": 4251,
+      "sha256": "638780cc288d7e0b7602058ae1e5c2fc54042ca68709fbd45a2e7a79a13845d2"
+    },
+    {
+      "name": "detached",
+      "file": "detached.cms",
+      "bytes": 2232,
+      "sha256": "12c067bcca42053c18bb24ef709c3b0f6c88f23f49631af4ee508483c0e3edf1"
+    },
+    {
+      "name": "noAttributes",
+      "file": "noAttributes.cms",
+      "bytes": 4020,
+      "sha256": "e36c8d6ced9bb1d4250efe09a122c656159ca8b25b34c4994c3cd5790ebc4442"
+    },
+    {
+      "name": "subjectKeyIdentifier",
+      "file": "subjectKeyIdentifier.cms",
+      "bytes": 4231,
+      "sha256": "5826a085494253b949d85b6b4221b3cd3c6f9da90b2b1e920b8a820514137088"
+    },
+    {
+      "name": "ecdsaSHA384",
+      "file": "ecdsaSHA384.cms",
+      "bytes": 3933,
+      "sha256": "20cc074c6390b286c7a73527e176c4a7f4367a60a35db3df06a6785d3d0a76ca"
+    },
+    {
+      "name": "multipleSigners",
+      "file": "multipleSigners.cms",
+      "bytes": 5626,
+      "sha256": "a45e46f946356937ab4a4e46c74243e5f706b6d9d0286d9d9106305fab932668"
+    }
+  ],
+  "fixtureSource": {
+    "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+    "bytes": 42388,
+    "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e"
+  },
+  "privateKeysIgnoredOnly": true,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0
+}
