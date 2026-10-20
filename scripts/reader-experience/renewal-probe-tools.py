@@ -300,10 +300,19 @@ TRANSACTION_ADDITIONAL_CASES = {'LegadoBookMetadataOwnerTests': ['actualBookCall
 PARAMETER_CASES = {"TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt", "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt"}
 EXPECTED_CASES["transactionrenewal"] = EXPECTED_CASES["integratedrenewal"] | {suite + "/" + method for suite, methods in TRANSACTION_ADDITIONAL_CASES.items() for method in methods}
 assert len(EXPECTED_CASES["transactionrenewal"]) == 178
-SDK_MODES = ("integratedrenewal", "transactionrenewal")
+HANDOFF_NEW_CASES = {'SelfRenewalInstalledMaterialObserverTests': ['matchesActualCodeDirectoriesCertificatesProfilesAndOrderedGroups', 'rejectsOldSignedMaterialWithTheSameReportedIdentityAndVersion', 'unavailableCurrentProcessDoesNotAdvanceOrEraseThePendingTransaction', 'preservesOneActualProcessIdentityWithoutObservingAnUnsubmittedCandidate'], 'SelfRenewalUserDataHandoffTests': ['submitsOnlyAfterActualAppOwnerReceiptsAreDurable', 'actualSourceWriteFailurePreventsUpgradeAndKeepsPendingOwnership', 'rejectsUnboundAndForeignPositionOwnersBeforeSaving'], 'BookStoreMetadataHandoffTests': ['actualSaveAndNormalReopenBindBothRawFiles', 'unchangedSaveCannotUseOnlyCachedBytes', 'missingAndFailedNormalLoadsRemainDifferent', 'realWriteFailureRetainsOldFilesAndRetry', 'partialSaveReportsRealFilesAndRetainsProtectedCopy', 'cancellationAndRestorePauseCannotAcknowledgeAWrite', 'checkedWriterPreservesAcceptedRuntimeVariables', 'realChapterFlushFailurePreventsMetadataReceipt'], 'BookSourceStoreHandoffTests': ['streamedSaveMatchesNewOwnerNormalLoad', 'normalLoadPreservesRawBytesAndTypedFailures', 'actualWriteFailuresPreserveOriginalTargets', 'restoreAndPreAdmissionCancellationAreExplicit', 'bootstrapUsesTheSameConcreteWriterProof', 'admittedCancellationAndCoalescingKeepActualFileOrder'], 'ReadingPositionStorePersistenceTests': ['testCheckedAtomicReceiptMatchesRawFileAndReopenedOwner', 'testCheckedLoadHashesOriginalJSONAndDistinguishesMissingCorruptAndBounds', 'testCheckedWriteFailureAndUnsupportedBackendsNeverReturnSuccess', 'testNavigatorHandoffPersistsCapturedTranslationAndRejectsLegacyOwner'], 'ReadingPositionWriteOrderingTests': ['testCheckedAdmissionCompletesAfterCancellationBehindTheExistingWriter', 'testNavigatorHandoffAndOtherBooksKeepTheSameCrossInstanceAdmissionOrder']}
+HANDOFF_REGRESSION_CASES = {'ReadingPositionStorePersistenceTests': ['testSavingRecreatesAReadingPositionDirectoryRemovedAfterInitialization', 'testFailedWritePreservesPreviousFileAndDoesNotPublishASuccess', 'testCorruptProgressIsPreservedAndNeverPublishedAsASuccess', 'testCompletedSaveIsRestoredByANewStoreIncludingTranslationOffset', 'testMissingProgressDoesNotCreateOrPublishAReplacement'], 'ReadingPositionWriteOrderingTests': ['testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled', 'testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits', 'testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave', 'testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave', 'testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave'], 'BookSourceStoreTests': ['burstOfEditsPersistsTheNewestLibrary', 'streamedLibraryMatchesOneShotEncode', 'storeReloadsStreamedSave'], 'BuiltInBookSourcesTests': ['freshInstallPreservesSourceConfiguration', 'invalidPackagesPreserveExistingLibrary', 'unreadableExistingLibraryIsProtected', 'failedWritesStayPendingAndCanRetry']}
+HANDOFF_COOKIE_NEW_CASES = {'LegadoCookieOwnerTests': ['legacyFileMigratesWithoutInventedProofs', 'nativeAttributesSurviveActualFileRestart', 'failedOwnerIOPreservesOldCookieState', 'scriptWritesExposeTypedOwnerFailure', 'browserObservationKeepsNewerHTTPState', 'browserRemovalDoesNotReviveLegacyText', 'actualHTTPRedirectAndRestart', 'actualHTTPWriteFailureDoesNotAcknowledge', 'cancelledHTTPCommitKeepsOldCookieState', 'actualBrowserRequestRespectsCookieScope', 'staleWebViewCookieDecisionCannotEndReusedLease', 'nativeBrowserPreparationFailureRemainsTyped', 'formLoginRemovalPreservesCredentials']}
+HANDOFF_COOKIE_REGRESSION_CASES = {'WebFetcherPersistedCookieTests': ['nativeRequestRestoresPersistedCookie'], 'WebFetcherChallengeResponseTests': ['challengeStatusIsAnHTTPError', 'challengeBodyIsReturned'], 'StageLoginCheckTests': ['forbiddenResponseCanBeReplaced', 'untouchedForbiddenResponseThrows', 'successfulResponsePassesThrough', 'sourceWithoutCheckIsUnchanged'], 'SourceBrowserAuthenticationTests': ['authenticatedFirstLoad', 'currentCredentialsAndIsolation', 'nativeMarkerAuthentication'], 'BookSourceLoginTests': ['browserInitialLoadUsesStoredCookies', 'fanqieSessionCookieReadableByJSBridge', 'loginInfoChangeInvalidatesResolvedHeaderCache'], 'JSCoreEngineTests': ['sourceBrowserRequestCarriesHeaders'], 'WebViewNavigationWaitTests': ['cancellationResumesSuspendedWait', 'resultResumesWaiter']}
+HANDOFF_COOKIE_SOURCE_PATHS = {'WebFetcherPersistedCookieTests': 'Tests/iOS/yuedu appTests/WebFetcherPersistedCookieTests.swift', 'WebFetcherChallengeResponseTests': 'Tests/iOS/yuedu appTests/WebFetcherChallengeResponseTests.swift', 'StageLoginCheckTests': 'Tests/iOS/yuedu appTests/StageLoginCheckTests.swift', 'SourceBrowserAuthenticationTests': 'Tests/iOS/yuedu appTests/SourceBrowserAuthenticationTests.swift', 'BookSourceLoginTests': 'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift', 'JSCoreEngineTests': 'Tests/iOS/yuedu appTests/ModernParserTests.swift', 'WebViewNavigationWaitTests': 'Tests/iOS/yuedu appTests/WebViewNavigationWaitTests.swift'}
+HANDOFF_ADDITIONAL_CASES = {suite + "/" + method for table in (HANDOFF_NEW_CASES, HANDOFF_REGRESSION_CASES, HANDOFF_COOKIE_NEW_CASES, HANDOFF_COOKIE_REGRESSION_CASES) for suite, methods in table.items() for method in methods}
+EXPECTED_CASES["handoffrenewal"] = EXPECTED_CASES["transactionrenewal"] | HANDOFF_ADDITIONAL_CASES
+assert len(HANDOFF_ADDITIONAL_CASES) == 73 and len(EXPECTED_CASES["handoffrenewal"]) == 251
+PARAMETER_MODES = ("transactionrenewal", "handoffrenewal")
+SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal")
 
 def expected_leaf_count(group):
-    return len(EXPECTED_CASES[group]) + (len(PARAMETER_CASES) if group == "transactionrenewal" else 0)
+    return len(EXPECTED_CASES[group]) + (len(PARAMETER_CASES) if group in PARAMETER_MODES else 0)
 
 
 SELECTION_GROUPS = {
@@ -319,6 +328,7 @@ SELECTION_GROUPS = {
     "controlledsigning": ("controlledsigning",),
     "integratedrenewal": ("integratedrenewal",),
     "transactionrenewal": ("transactionrenewal",),
+    "handoffrenewal": ("handoffrenewal",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -429,6 +439,12 @@ SOURCE_INPUTS += ('Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.sw
 SOURCE_INPUTS += ("scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",)
 
 
+SOURCE_INPUTS += ('Modules/Core/BookSource/BookSourceStore.swift', 'Modules/Core/BookSource/BuiltInBookSourceBootstrap.swift', 'Modules/Core/ReaderCore/ReaderNavigator.swift', 'Modules/Features/Reader/ReaderView.swift', 'Modules/Services/SelfRenewal/SelfRenewalInstalledMaterialObserver.swift', 'Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift', 'Targets/Yuedu/SharedApp/yuedu_appApp.swift', 'Tests/iOS/yuedu appTests/SelfRenewalInstalledMaterialObserverTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift', 'Tests/iOS/yuedu appTests/BookStoreMetadataHandoffTests.swift', 'Tests/iOS/yuedu appTests/BookSourceStoreHandoffTests.swift', 'Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift', 'Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift', 'Tests/iOS/yuedu appTests/BookSourceStoreTests.swift', 'Tests/iOS/yuedu appTests/BuiltInBookSourcesTests.swift', 'scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py')
+
+SOURCE_INPUTS += tuple(path for path in ('Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift', 'Modules/Core/RuleEngine/ModernParser/CookieStore.swift', 'Modules/Core/RuleEngine/ModernParser/JS/JSCoreEngine.swift', 'Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift', 'Modules/Core/RuleEngine/ModernParser/JS/LegadoJSBridge.swift', 'Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift', 'Modules/Core/RuleEngine/ModernParser/ModernParserBridge.swift', 'Modules/Features/BookSource/BookSourceFormLoginView.swift', 'Modules/Features/BookSource/JsBridgeBrowserView.swift', 'Modules/Features/Reader/ReaderView+Toolbars.swift', 'Modules/Features/WebBrowser/BrowserView.swift', 'Modules/Services/Network/CookieStore+HTTP.swift', 'Modules/Services/Network/CookieStore+WebKit.swift', 'Modules/Services/Network/WebFetcher.swift', 'Modules/Services/Network/WebViewCookieMirror.swift', 'Modules/Services/Network/WebViewFetcher.swift', 'Modules/Services/Online/LegadoReviewActionRunner.swift', 'Modules/SharedUI/Components/SourceLoginWebView.swift', 'Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift', 'Tests/iOS/yuedu appTests/SourceBrowserAuthenticationTests.swift', 'Tests/iOS/yuedu appTests/WebFetcherPersistedCookieTests.swift', 'Tests/iOS/yuedu appTests/WebFetcherChallengeResponseTests.swift', 'Tests/iOS/yuedu appTests/StageLoginCheckTests.swift', 'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift', 'Tests/iOS/yuedu appTests/ModernParserTests.swift', 'Tests/iOS/yuedu appTests/WebViewNavigationWaitTests.swift') if path not in SOURCE_INPUTS)
+
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS))
+
 def validate_tag():
     selection_mode()
     return smoke.validate_tag(TAG_PREFIX)
@@ -437,7 +453,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning, integratedrenewal or transactionrenewal")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning, integratedrenewal, transactionrenewal or handoffrenewal")
     return mode
 
 
@@ -766,10 +782,10 @@ def prepare(work):
               "sourceInputs": records, "runtimeSourceOnly": True,
               "selectionMode": mode,
               "intendedTests": {key: sorted(value) for key, value in cases.items()}}
-    if mode == "transactionrenewal":
+    if mode in PARAMETER_MODES:
         record["intendedArgumentCases"] = {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}
-        record["intendedQualifiedMethodDefinitions"] = 178
-        record["intendedArgumentLeafCount"] = 180
+        record["intendedQualifiedMethodDefinitions"] = len(EXPECTED_CASES[mode])
+        record["intendedArgumentLeafCount"] = expected_leaf_count(mode)
     smoke.config.write_new_json(work / "source-inputs.json", record)
     return record
 
@@ -843,11 +859,11 @@ def _argument_values(node, expected_parameter):
     return values
 
 
-def verify_transaction_cases(tree):
+def verify_transaction_cases(tree, group="transactionrenewal"):
     methods = []; leaves = []; argument_rows = []
     for node in _test_nodes(tree):
         method = _qualified_method(node.get("nodeIdentifier"))
-        if method not in EXPECTED_CASES["transactionrenewal"] or node.get("result") != "Passed":
+        if method not in EXPECTED_CASES[group] or node.get("result") != "Passed":
             raise ValueError("Unexpected/skipped/failed transaction test method")
         methods.append(method)
         if method in PARAMETER_CASES:
@@ -868,10 +884,11 @@ def verify_transaction_cases(tree):
                 stack.extend(child.get("children", []))
             if runs > 1: raise ValueError("Duplicate actual ordinary executions")
             leaves.append(method)
-    expected = EXPECTED_CASES["transactionrenewal"]
-    if len(methods) != 178 or set(methods) != expected or len(leaves) != 180 or len(set(leaves)) != 180:
-        raise ValueError("Actual qualified methods or exact argument leaves differ from transactionrenewal")
-    return {"expectedTests": 180, "expectedQualifiedMethodDefinitions": 178,
+    expected = EXPECTED_CASES[group]
+    count = expected_leaf_count(group)
+    if len(methods) != len(expected) or set(methods) != expected or len(leaves) != count or len(set(leaves)) != count:
+        raise ValueError("Actual qualified methods or exact argument leaves differ from " + group)
+    return {"expectedTests": count, "expectedQualifiedMethodDefinitions": len(expected),
             "passedMethodIdentifiers": sorted(methods), "passedCaseIdentifiers": sorted(leaves),
             "passedArgumentCases": sorted(argument_rows, key=lambda row: row["method"])}
 
@@ -934,7 +951,7 @@ def collect_xcresult(work, group, native_exit):
         if not target.exists():
             commands.append(_capture_xcresult(["xcrun", "xcresulttool", "get", "test-results", name, "--path", str(bundle)], target))
     parameter_exports = []
-    if group == "transactionrenewal":
+    if group in PARAMETER_MODES:
         for command in ("tests", "test-details"):
             target = work / ("xcresulttool-" + command + "-help.log")
             if not target.exists(): commands.append(_capture_xcresult(["xcrun", "xcresulttool", "get", "test-results", command, "--help"], target, maximum=1_048_576))
@@ -957,18 +974,18 @@ def collect_xcresult(work, group, native_exit):
     return record
 
 
-def verify_transaction_details(work, tree):
-    cases = verify_transaction_cases(tree)
-    extraction = smoke.read_json(work / "transactionrenewal-extraction.json")
-    if extraction.get("group") != "transactionrenewal" or type(extraction.get("originalXCTestExitCode")) is not int or extraction["originalXCTestExitCode"] != 0:
+def verify_transaction_details(work, tree, group="transactionrenewal"):
+    cases = verify_transaction_cases(tree, group)
+    extraction = smoke.read_json(work / (group + "-extraction.json"))
+    if extraction.get("group") != group or type(extraction.get("originalXCTestExitCode")) is not int or extraction["originalXCTestExitCode"] != 0:
         raise ValueError("Actual XCTest invocation did not succeed")
     commands = extraction.get("commands")
     if not isinstance(commands, list) or len(commands) != 6 or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0 or row.get("timedOut") is not False or row.get("oversized") is not False for row in commands):
         raise ValueError("Missing/failed bounded original xcresult exports")
-    bundle = str(smoke.config.checked_path(work / "transactionrenewal.xcresult"))
+    bundle = str(smoke.config.checked_path(work / (group + ".xcresult")))
     wanted = {
-        "transactionrenewal-summary.json": ["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", bundle],
-        "transactionrenewal-tests.json": ["xcrun", "xcresulttool", "get", "test-results", "tests", "--path", bundle],
+        group + "-summary.json": ["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", bundle],
+        group + "-tests.json": ["xcrun", "xcresulttool", "get", "test-results", "tests", "--path", bundle],
         "xcresulttool-tests-help.log": ["xcrun", "xcresulttool", "get", "test-results", "tests", "--help"],
         "xcresulttool-test-details-help.log": ["xcrun", "xcresulttool", "get", "test-results", "test-details", "--help"],
     }
@@ -1008,7 +1025,7 @@ def verify_transaction_details(work, tree):
 
 
 def verify_cases(tree, group):
-    if group == "transactionrenewal": return verify_transaction_cases(tree)
+    if group in PARAMETER_MODES: return verify_transaction_cases(tree, group)
     if group not in EXPECTED_CASES:
         raise ValueError("Unknown renewal test group")
     if not isinstance(tree, dict) or not isinstance(tree.get("testNodes"), list):
@@ -1060,11 +1077,13 @@ def result(work):
             or inputs.get("selectionMode") != mode
             or inputs.get("intendedTests") != {key: sorted(value) for key, value in cases.items()}):
         raise ValueError("Renewal source-input audit changed or differs from this source")
-    if mode == "transactionrenewal":
+    if mode in PARAMETER_MODES:
         contract = {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}
-        if json.dumps(inputs.get("intendedArgumentCases"), sort_keys=True) != json.dumps(contract, sort_keys=True) or inputs.get("intendedQualifiedMethodDefinitions") != 178 or inputs.get("intendedArgumentLeafCount") != 180:
+        if json.dumps(inputs.get("intendedArgumentCases"), sort_keys=True) != json.dumps(contract, sort_keys=True) or inputs.get("intendedQualifiedMethodDefinitions") != len(EXPECTED_CASES[mode]) or inputs.get("intendedArgumentLeafCount") != expected_leaf_count(mode):
             raise ValueError("Transaction argument source-input audit changed")
-        verify_transaction_details(work, smoke.read_json(work / "transactionrenewal-tests.json"))
+        verify_transaction_details(work, smoke.read_json(work / (mode + "-tests.json")), mode)
+    if mode == "handoffrenewal":
+        verify_handoff_pipeline(work)
     settings = smoke.read_json(work / "build-settings.json")
     matches = [entry["buildSettings"] for entry in settings if entry.get("target") == smoke.config.MAIN_TARGET]
     if len(matches) != 1:
@@ -1104,12 +1123,14 @@ def result(work):
     evidence_names += [group + suffix for group in cases for suffix in ("-summary.json", "-tests.json")]
     if mode in SDK_MODES:
         evidence_names += ["sdk-fixture-binding.json", "sdk-fixture-before-build.json", "sdk-fixture-after-tests.json", "sdk-test-build-settings.json"]
-    if mode == "transactionrenewal":
-        extraction = smoke.read_json(work / "transactionrenewal-extraction.json")
-        evidence_names += ["transactionrenewal-extraction.json"] + [key for row in extraction["commands"] for key in (row["output"], row["stderr"])]
+    if mode in PARAMETER_MODES:
+        extraction = smoke.read_json(work / (mode + "-extraction.json"))
+        evidence_names += [mode + "-extraction.json"] + [key for row in extraction["commands"] for key in (row["output"], row["stderr"])]
+    if mode == "handoffrenewal":
+        evidence_names += ["handoff-pipeline.json", "historical-package-evidence.json"]
     for name in evidence_names:
         evidence[name] = smoke.config.digest(work / name)
-    return {"schemaVersion": 2, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
+    output = {"schemaVersion": 2, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
             "status": "passed", "configuration": "Debug", "executionPlatform": "ios-simulator",
             "simulatorDestination": os.environ.get("YUEDU_DEST"),
             "developerDirectory": os.environ.get("DEVELOPER_DIR"), "selectionMode": mode,
@@ -1126,7 +1147,7 @@ def result(work):
             "serviceIdentityVerified": False,
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
-            "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
+            "limitations": (["handoffrenewal requires 251 unique definitions and 253 exact leaves in one cold 2700-second native invocation; all 178 prior definitions and the required SDK-produced case remain mandatory.", "Every producer/staging/native/export/verification phase must actually succeed. The first nonzero exit is preserved while the full native selection still runs after producer failure. Missing owned SDK resources are real test failures, never skips or fallback fixtures.", "The a835f8b independent source-only package ten-case pass is historical evidence only. This stage does not rerun or accept package cases for its new tag; exact 19-input and separate Package12 comparisons are recorded.", "App data-owner receipts and installed-material entry points do not implement automatic App startup orchestration, real cold launch, Apple authorization, kernel replacement or complete user-data retention. Cookie ingress cases do not complete original storedSnapshot or cross-owner CAS handoff."] if mode == "handoffrenewal" else []) + ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "No Apple login, real pairing, installation or renewal operation is performed."] + (
                            ["This selection prepares 178 unique qualified method definitions and requires 180 actual leaves: each of the two reviewed Bool parameter methods must show false and true once, with zero retries/skips/failures.",
                             "One source-bound transactionrenewal xcresult combines the prior 140 with 16 durable transaction/recovery, eight Book owner, ten metadata and four TXT/restore definitions. Actual Arguments nodes bind each Bool to its qualified parent; original raw details and installed help remain independently bound.",
@@ -1190,11 +1211,275 @@ def result(work):
                             "The previous fixed-loopback experiment does not exclude alternate transports; discovery fixtures and Simulator UI do not establish iPhone reachability."]))}
 
 
+    if mode == "handoffrenewal":
+        output["limitations"] = output["limitations"][:6]
+        output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
+    return output
+
+
+HISTORICAL_PACKAGE_INPUTS = [{'path': 'Packages/LegadoRuntime/Package.swift', 'bytes': 4171, 'sha256': '183cd2b775956d8c5b6f16bd97bbec13e7fca59fc26d3e03ef1569907f7c3e57'}, {'path': 'Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h', 'bytes': 1442, 'sha256': 'cf59d8119a24139c83c0ee1e445eeed9325fa1c1e14323db33bf4485d734434d'}, {'path': 'Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m', 'bytes': 35615, 'sha256': '304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d'}, {'path': 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoHTTPHeaders.swift', 'bytes': 2709, 'sha256': '8b29823799a1d433ea778df43ea5abc30f3d58c65cb5a9a1e96cc9783ceb9e4f'}, {'path': 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift', 'bytes': 4792, 'sha256': 'e52ff760d2d8ffa094283f531ae140962bb38f91e990771f353cf357c7b99a60'}, {'path': 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift', 'bytes': 6621, 'sha256': '24cfdb60f63cfcbb458f4471cf2e59a37ec899df7e9dfc8d3656c91724cb7b4e'}, {'path': 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift', 'bytes': 18274, 'sha256': '113d34549166041b0c6c975068cca021fa4295ca58d97441149f4160c0b27be7'}, {'path': 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoSavedDiagnostics.swift', 'bytes': 3933, 'sha256': 'dc1f2a7cba3d5952b9097eb97105a8ff3f66e9db298f9e4f493b4537e3785839'}, {'path': 'Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift', 'bytes': 5698, 'sha256': '67a1e5f6607b6639fc5a20ac312e917e480c44ac5cb6b57cfdc53f3fa62287d2'}, {'path': 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHTTPHeadersTests.swift', 'bytes': 4197, 'sha256': '3d934f8beb733c79c6be06d9688bba6517d0f6eec5f6bdf4ddc16bcdacb97c49'}, {'path': 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift', 'bytes': 9114, 'sha256': 'f158a8c618268901849edc6238b6cfbc98edb3149e1eaba3ce9c7d7f7fb79dbc'}, {'path': 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift', 'bytes': 16964, 'sha256': '7fe1c059b72a2633d813afc8683232f3ebd6de89ca74a4262571598aaa75c726'}, {'path': 'scripts/reader-experience/original-api-package-tools.py', 'bytes': 17626, 'sha256': '9075019b7e91ee677cc76cf5d8586a9771b2b9f2902a9f6b102e83f33258b39d'}, {'path': 'scripts/reader-experience/original-api-package-tests.sh', 'bytes': 511, 'sha256': 'eb729ca6267b92a66610a35acaafa734a97bd128b69df1ab9e341f48f0c3704b'}, {'path': 'scripts/reader-experience/test-original-api-package-tools.py', 'bytes': 15186, 'sha256': '6e943465dd09f1775e4d02be1f194a8714c52935ffbcceaf3f13f5cd22fc298e'}, {'path': 'scripts/reader-experience/smoke-tools.py', 'bytes': 27526, 'sha256': '2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765'}, {'path': 'scripts/reader-experience/stage-config.py', 'bytes': 26097, 'sha256': 'bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607'}, {'path': 'scripts/sim.sh', 'bytes': 10507, 'sha256': 'd526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a'}, {'path': '.github/workflows/reader-renewal-probe.yml', 'bytes': 7321, 'sha256': '347bd7b0c921f7542bd5405917107e802322d7e2633f276ad892d5535808dac8'}]
+
+
+def historical_package_evidence():
+    if len(HISTORICAL_PACKAGE_INPUTS) != 19 or len({row["path"] for row in HISTORICAL_PACKAGE_INPUTS}) != 19:
+        raise ValueError("Historical package contract requires exactly 19 distinct inputs")
+    comparisons = []
+    for expected in HISTORICAL_PACKAGE_INPUTS:
+        path = expected["path"]
+        raw = smoke.git("show", "HEAD:" + path, binary=True)
+        if (smoke.REPO / path).read_bytes() != raw:
+            raise ValueError("Historical package comparison input changed from this Git source: " + path)
+        current = {"path": path, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+        comparisons.append({"historical": expected, "current": current, "unchanged": current == expected})
+    package = [row for row in comparisons if row["historical"]["path"].startswith("Packages/LegadoRuntime/")]
+    return {"schemaVersion": 1, "historicalSourceCommit": "a835f8b0bae9d77bc2bb43d11cd8fdcf32d00804",
+            "historicalSourceTag": "reader-renewal-a835f8b", "historicalQualifiedXCTestPasses": 10,
+            "historicalArtifactID": 12243290501,
+            "historicalArtifactZIPBytes": 22424,
+            "historicalArtifactZIPSHA256": "489bd81a89e038b22d3cd3540ee6a073be43bb64e687302f9451a8b559d30931",
+            "historicalRawResultSHA256": "fb32b8b7ad732d11a850ebe72eee095def35b3487381f580492439a42eaa3b28",
+            "independentOfflineAuditSHA256": "2a39392ce06e12a74efc58c827f483a698bb475eb4d1faa22f4089bd1f0adad3",
+            "comparisons": comparisons, "unchangedInputs": sum(row["unchanged"] for row in comparisons),
+            "inputCount": 19, "packageCompilationInputs": len(package),
+            "package12Unchanged": len(package) == 12 and all(row["unchanged"] for row in package),
+            "all19Unchanged": len(comparisons) == 19 and all(row["unchanged"] for row in comparisons),
+            "newTagPackageExecutionPerformed": False, "newTagPackageAcceptance": False,
+            "meaning": "Actual independent historical ten-case XML/verbose pass. No package execution or acceptance for this new tag; changed controls cannot be ignored for exact 19-input reuse."}
+
+# One reviewed source-only stage. Older modes keep their existing shell paths.
+HANDOFF_PHASES = ("producer", "stage", "before-build", "boot", "native", "export", "cases", "test-settings", "after-tests", "build-settings")
+HANDOFF_TIMEOUTS = (600, 90, 90, 180, 2820, 330, 90, 120, 120, 120)
+
+
+def _source_closure_sha(records):
+    return hashlib.sha256(json.dumps(records, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _handoff_source_state(work):
+    require_source_only()
+    prepared = smoke.read_json(work / "source-inputs.json")
+    current = source_inputs(smoke.read_json(work / "overlays.json"))
+    if (selection_mode() != "handoffrenewal" or prepared.get("selectionMode") != "handoffrenewal"
+            or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
+            or prepared.get("intendedTests") != {"handoffrenewal": sorted(EXPECTED_CASES["handoffrenewal"])}
+            or prepared.get("intendedQualifiedMethodDefinitions") != 251 or prepared.get("intendedArgumentLeafCount") != 253
+            or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}):
+        raise ValueError("Handoff phase cannot run with changed preparation/source")
+    return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
+            "sourceInputCount": len(current), "sourceInputsSHA256": _source_closure_sha(current),
+            "preparation": _handoff_fact(work, "source-inputs.json"),
+            "overlays": _handoff_fact(work, "overlays.json"),
+            "xcodeVersion": _handoff_fact(work, "xcode-version.log"),
+            "runtimeSourceOnly": True, "developerDirectory": os.environ.get("DEVELOPER_DIR"),
+            "simulatorDestination": os.environ.get("YUEDU_DEST")}
+
+
+def _handoff_build_args():
+    return ["-configuration", "Debug", "-onlyUsePackageVersionsFromResolvedFile",
+            "CODE_SIGNING_ALLOWED=YES", "CODE_SIGNING_REQUIRED=YES", "CODE_SIGN_IDENTITY=-",
+            "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM=", "CODE_SIGN_ENTITLEMENTS=",
+            "GATEWAY_BASE_URL=", "YUEDU_LOCAL_EXPERIENCE=YES", "INFOPLIST_KEY_YueduLocalExperience=YES",
+            "INFOPLIST_KEY_FirebaseDataCollectionDefaultEnabled=NO", "INFOPLIST_KEY_FIREBASE_ANALYTICS_COLLECTION_ENABLED=NO",
+            "INFOPLIST_KEY_FirebaseCrashlyticsCollectionEnabled=NO", "INFOPLIST_KEY_firebase_performance_collection_enabled=NO",
+            "INFOPLIST_KEY_firebase_performance_instrumentation_enabled=NO"]
+
+
+def _handoff_commands(work, native_exit=1):
+    repo = smoke.REPO; script = repo / "scripts/reader-experience/renewal-probe-tools.py"
+    tool = [sys.executable, str(script)]; args = _handoff_build_args()
+    settings = ["xcodebuild", "-project", str(repo / "Yuedu-Reader.xcodeproj"), "-scheme", "Yuedu-Reader",
+                "-destination", os.environ.get("YUEDU_DEST", ""), *args, "-showBuildSettings", "-json"]
+    only = ["-only-testing:yuedu appTests/" + case + ("(interrupt:)" if case in PARAMETER_CASES else "")
+            for case in sorted(EXPECTED_CASES["handoffrenewal"])]
+    return {
+        "producer": [sys.executable, str(repo / (SDK_TOOL_ROOT + "generate-sdk-owned-package.py")), "--output", str(repo / ".build/reader-renewal-sdk-produced-public")],
+        "stage": tool + ["stage-sdk-fixture", "--work", str(work), "--produced", str(repo / ".build/reader-renewal-sdk-produced-public")],
+        "before-build": tool + ["verify-sdk-fixture", "--work", str(work), "--phase", "before-build"],
+        "boot": ["xcrun", "simctl", "bootstatus", os.environ.get("YUEDU_DEST", "").removeprefix("id="), "-b"],
+        "native": ["bash", str(repo / "scripts/xctest.sh"), "-l", str(work / "handoffrenewal-tests.log"), "-t", "2700", "--", *args,
+                   "-resultBundlePath", str(work / "handoffrenewal.xcresult"), *only],
+        "export": tool + ["collect-xcresult", "--work", str(work), "--group", "handoffrenewal", "--native-exit", str(native_exit)],
+        "cases": tool + ["verify-tests", "--group", "handoffrenewal", "--summary", str(work / "handoffrenewal-summary.json"), "--tests", str(work / "handoffrenewal-tests.json")],
+        "test-settings": settings + ["test"],
+        "after-tests": tool + ["verify-sdk-fixture", "--work", str(work), "--phase", "after-tests"],
+        "build-settings": settings,
+        "result": tool + ["result", "--work", str(work)],
+    }
+
+
+def _handoff_output(work, name):
+    return work / {"test-settings": "sdk-test-build-settings.json", "build-settings": "build-settings.json"}.get(name, "handoff-" + name + ".log")
+
+
+def _phase_exit(row):
+    if row.get("state") == "blocked": return None
+    command = row.get("command")
+    if not isinstance(command, dict): return 1
+    if command.get("timedOut") is True: return 124
+    if command.get("oversized") is True: return 125
+    status = command.get("exitCode")
+    if type(status) is not int: return 1
+    if status < 0: return min(255, 128 - status)
+    if status != 0: return min(255, status)
+    return 0 if row.get("state") == "succeeded" else 1
+
+
+def _run_handoff_phase(work, name, argv, timeout, source, blocked_by=()):
+    row = {"schemaVersion": 1, "phase": name, "timeoutSeconds": timeout,
+           "sourceBefore": None, "sourceAfter": None, "state": "blocked" if blocked_by else "failed",
+           "blockedBy": list(blocked_by), "intendedArgv": argv, "command": None}
+    started = time.monotonic()
+    try:
+        row["sourceBefore"] = _handoff_source_state(work)
+        if row["sourceBefore"] != source: raise ValueError("Source/toolchain/destination changed before phase")
+        if not blocked_by:
+            row["state"] = "running"
+            row["command"] = _capture_xcresult(argv, _handoff_output(work, name), seconds=timeout, maximum=67_108_864)
+            if name == "native":
+                path = work / "handoffrenewal-tests.log"
+                if path.exists():
+                    _, fact = _bounded_fact(path, 268_435_456)
+                    row["nativeLog"] = {"path": path.name, **fact}
+                raw = _handoff_output(work, name).read_text(encoding="utf-8", errors="replace")
+                stderr = _handoff_output(work, name).with_suffix(".log.stderr.log").read_text(encoding="utf-8", errors="replace")
+                statuses = re.findall(r"(?m)^xcodebuild status: (-?\d+); wrapper verdict stop: (true|false)$", raw)
+                row["reportedXcodebuildStatuses"] = [{"exitCode": int(status), "wrapperVerdictStop": stopped == "true"} for status, stopped in statuses]
+                row["wrapperReportedBudgetTimeout"] = "!! no verdict after 2700s; killing" in stderr
+        row["sourceAfter"] = _handoff_source_state(work)
+        if row["sourceAfter"] != source: raise ValueError("Source/toolchain/destination changed during phase")
+        if not blocked_by:
+            command = row["command"]
+            row["state"] = "succeeded" if command["exitCode"] == 0 and not command["timedOut"] and not command["oversized"] else "failed"
+    except Exception as error:
+        row["state"] = "failed"
+        row["error"] = type(error).__name__ + ": " + str(error)[:2048]
+    row["elapsedSeconds"] = round(time.monotonic() - started, 6)
+    smoke.config.write_new_json(work / ("handoff-phase-" + name + ".json"), row)
+    return row
+
+
+def _handoff_first_failure(rows):
+    for row in rows:
+        code = _phase_exit(row)
+        if code not in (None, 0): return {"phase": row["phase"], "exitCode": code}
+    return None
+
+
+def _handoff_fact(work, name):
+    _, fact = _bounded_fact(work / name, 67_108_864)
+    return {"path": name, **fact}
+
+
+def _handoff_blockers(name, rows):
+    # A producer/stage failure intentionally does not block boot/native/export,
+    # case diagnostics or build settings. It only blocks invalid SDK staging.
+    dependencies = {"stage": ("producer",), "before-build": ("producer", "stage"),
+                    "native": ("boot",), "after-tests": ("producer", "stage", "before-build", "native", "export", "cases", "test-settings")}
+    by_name = {row["phase"]: row for row in rows}
+    result = [phase for phase in dependencies.get(name, ()) if _phase_exit(by_name[phase]) != 0]
+    if rows and (rows[-1].get("sourceBefore") != rows[0].get("sourceBefore")
+                 or rows[-1].get("sourceAfter") != rows[0].get("sourceBefore")):
+        result.append("sourceIntegrity")
+    return result
+
+
+def run_handoff(work):
+    source = _handoff_source_state(work)
+    # A resource surviving from another invocation is never a valid missing-
+    # fixture substitute. Preparation itself remains a fatal integrity gate.
+    if (smoke.REPO / SDK_RESOURCE).exists(): raise ValueError("Refusing pre-existing untracked SDK resource")
+    if (work / "handoff-pipeline.json").exists(): raise ValueError("Refusing to rerun the same handoff stage")
+    historical = historical_package_evidence()
+    smoke.config.write_new_json(work / "historical-package-evidence.json", historical)
+    rows = []
+    for name, timeout in zip(HANDOFF_PHASES, HANDOFF_TIMEOUTS):
+        by_name = {row["phase"]: row for row in rows}
+        native_exit = _phase_exit(by_name["native"]) if "native" in by_name else 1
+        command = _handoff_commands(work, native_exit if native_exit is not None else 1)[name]
+        rows.append(_run_handoff_phase(work, name, command, timeout, source, _handoff_blockers(name, rows)))
+    failure = _handoff_first_failure(rows)
+    ledger = {"schemaVersion": 1, "selectionMode": "handoffrenewal", "source": source,
+              "qualifiedMethodDefinitions": 251, "argumentLeaves": 253,
+              "phaseOrder": list(HANDOFF_PHASES), "phases": rows, "firstFailure": failure,
+              "phaseRecords": [_handoff_fact(work, "handoff-phase-" + name + ".json") for name in HANDOFF_PHASES],
+              "historicalPackageEvidence": _handoff_fact(work, "historical-package-evidence.json"),
+              "allPhasesSucceeded": all(row["state"] == "succeeded" and _phase_exit(row) == 0 for row in rows),
+              "nativeMeaning": "One complete same-source native invocation. Missing SDK resources remain actual failures; partial results are diagnostic only."}
+    smoke.config.write_new_json(work / "handoff-pipeline.json", ledger)
+    if ledger["allPhasesSucceeded"]:
+        final = _run_handoff_phase(work, "result", _handoff_commands(work)["result"], 180, source)
+    else:
+        final = _run_handoff_phase(work, "result", _handoff_commands(work)["result"], 180, source,
+                                   [row["phase"] for row in rows if row["state"] != "succeeded"])
+    failure = failure or _handoff_first_failure([final])
+    completion = {"schemaVersion": 1, "source": source, "ledgerSHA256": smoke.config.digest(work / "handoff-pipeline.json"),
+                  "resultPhase": final, "firstFailure": failure, "exitCode": failure["exitCode"] if failure else 0,
+                  "resultProduced": (work / "result.json").is_file()}
+    if completion["resultProduced"]: completion["resultSHA256"] = smoke.config.digest(work / "result.json")
+    smoke.config.write_new_json(work / "handoff-completion.json", completion)
+    return completion
+
+
+def verify_handoff_pipeline(work):
+    ledger = smoke.read_json(work / "handoff-pipeline.json")
+    source = _handoff_source_state(work)
+    if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "handoffrenewal"
+            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 251
+            or ledger.get("argumentLeaves") != 253 or ledger.get("phaseOrder") != list(HANDOFF_PHASES)
+            or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
+        raise ValueError("Missing/failed/changed same-source handoff pipeline")
+    rows = ledger.get("phases")
+    if not isinstance(rows, list) or [row.get("phase") for row in rows] != list(HANDOFF_PHASES):
+        raise ValueError("Missing/reordered/duplicate handoff phases")
+    if (ledger.get("phaseRecords") != [_handoff_fact(work, "handoff-phase-" + name + ".json") for name in HANDOFF_PHASES]
+            or ledger.get("historicalPackageEvidence") != _handoff_fact(work, "historical-package-evidence.json")):
+        raise ValueError("Original raw handoff phase/history receipt changed")
+    commands = _handoff_commands(work, 0)
+    for row, timeout in zip(rows, HANDOFF_TIMEOUTS):
+        name = row["phase"]
+        if row != smoke.read_json(work / ("handoff-phase-" + name + ".json")):
+            raise ValueError("Handoff phase differs from its original raw ledger")
+        if (row.get("state") != "succeeded" or row.get("blockedBy") != [] or _phase_exit(row) != 0
+                or row.get("sourceBefore") != source or row.get("sourceAfter") != source
+                or row.get("timeoutSeconds") != timeout or row.get("error") is not None):
+            raise ValueError("Handoff phase failed, timed out, blocked or changed source")
+        command = row["command"]
+        if (row.get("intendedArgv") != commands[name] or command.get("argv") != commands[name] or type(command.get("exitCode")) is not int
+                or command["exitCode"] != 0 or command.get("timedOut") is not False or command.get("oversized") is not False
+                or command.get("output") != _handoff_output(work, name).name):
+            raise ValueError("Unreviewed/failed handoff phase invocation")
+        if name == "native":
+            native = row.get("nativeLog")
+            if not isinstance(native, dict) or native.get("path") != "handoffrenewal-tests.log" or row.get("wrapperReportedBudgetTimeout") is not False:
+                raise ValueError("Missing native raw log or reported wrapper budget timeout")
+            _, fact = _bounded_fact(work / native["path"], 268_435_456)
+            if fact != {"bytes": native.get("bytes"), "sha256": native.get("sha256")}:
+                raise ValueError("Native raw log changed after execution")
+            raw = _handoff_output(work, name).read_text(encoding="utf-8", errors="replace")
+            statuses = re.findall(r"(?m)^xcodebuild status: (-?\d+); wrapper verdict stop: (true|false)$", raw)
+            expected_statuses = [{"exitCode": int(status), "wrapperVerdictStop": stopped == "true"} for status, stopped in statuses]
+            if len(expected_statuses) != 1 or row.get("reportedXcodebuildStatuses") != expected_statuses:
+                raise ValueError("Missing/ambiguous original xcodebuild exit observation")
+            actual_status = expected_statuses[0]
+            if actual_status["exitCode"] != 0 and not (actual_status["wrapperVerdictStop"] and actual_status["exitCode"] >= 128):
+                raise ValueError("Actual xcodebuild status failed outside the existing post-verdict stop contract")
+        for path_key, size_key, hash_key in (("output", "bytes", "sha256"), ("stderr", "stderrBytes", "stderrSHA256")):
+            name = command.get(path_key)
+            if not isinstance(name, str) or Path(name).name != name: raise ValueError("Unsafe handoff raw evidence path")
+            _, fact = _bounded_fact(work / name, 67_108_864)
+            if fact != {"bytes": command.get(size_key), "sha256": command.get(hash_key)}:
+                raise ValueError("Original handoff phase output changed")
+    original = smoke.read_json(work / "historical-package-evidence.json")
+    if original != historical_package_evidence(): raise ValueError("Historical package source comparison changed")
+    return ledger
+
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="phase", required=True)
     commands.add_parser("validate-tag")
-    for phase in ("prepare", "result"):
+    for phase in ("prepare", "result", "run-handoff"):
         item = commands.add_parser(phase)
         item.add_argument("--work", type=Path, required=True)
     stage = commands.add_parser("stage-sdk-fixture")
@@ -1217,17 +1502,30 @@ def main():
             record = {"sourceCommit": validate_tag()}
         elif args.phase == "prepare":
             record = prepare(smoke.config.checked_path(args.work))
+        elif args.phase == "run-handoff":
+            record = run_handoff(smoke.config.checked_path(args.work))
+            print(json.dumps(record, indent=2))
+            return record["exitCode"]
         elif args.phase == "stage-sdk-fixture":
             record = stage_sdk_fixture(smoke.config.checked_path(args.work), smoke.config.checked_path(args.produced))
         elif args.phase == "verify-sdk-fixture":
             record = verify_sdk_fixture(smoke.config.checked_path(args.work), args.sdk_phase)
         elif args.phase == "collect-xcresult":
             record = collect_xcresult(smoke.config.checked_path(args.work), args.group, args.native_exit)
+            if args.group == "handoffrenewal":
+                rows = record["commands"]
+                if (len(rows) != 6 or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0
+                        or row.get("timedOut") is not False or row.get("oversized") is not False for row in rows)
+                        or len(record["parameterExports"]) != 2 or any("error" in row for row in record["parameterExports"])):
+                    print(json.dumps(record, indent=2))
+                    return 1
         elif args.phase == "verify-tests":
             if args.group not in selected_cases():
                 raise ValueError("Test group is not part of YUEDU_RENEWAL_SELECTION")
             record = {**smoke.verify_summary(smoke.read_json(args.summary), expected_leaf_count(args.group)),
                       **verify_cases(smoke.read_json(args.tests), args.group)}
+            if args.group == "handoffrenewal":
+                verify_transaction_details(smoke.config.checked_path(args.tests.parent), smoke.read_json(args.tests), args.group)
         else:
             work = smoke.config.checked_path(args.work)
             record = result(work)

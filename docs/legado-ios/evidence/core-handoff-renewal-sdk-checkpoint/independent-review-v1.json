@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-read-only-review",
+  "observedAtUTC": "2026-10-20T05:55:27.976899+00:00",
+  "status": "no-confirmed-blocker-in-reviewed-draft",
+  "ownerMayStillChangeDraft": true,
+  "reviewer": "/root/implementation_checkpoint_result",
+  "scope": {
+    "mode": "handoffrenewal",
+    "qualifiedMethodDefinitions": 251,
+    "plannedArgumentLeaves": 253,
+    "sourceInputCount": 174,
+    "uniqueSourceInputs": 174,
+    "previousModes": 10
+  },
+  "sourceBinding": {
+    "files": [
+      {
+        "path": ".build/renewal-discovery/handoff-renewal-selection-gates/work/scripts/reader-experience/renewal-probe-tools.py",
+        "snapshot": ".build/renewal-discovery/handoff-renewal-selection-gates/independent-review-v1/sources/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 117867,
+        "sha256": "5ad445af5e255ecfb4f0a12cbe8e3b18bab044c96a495f67f8411b72c2553d65"
+      },
+      {
+        "path": ".build/renewal-discovery/handoff-renewal-selection-gates/work/scripts/reader-experience/renewal-probe-tests.sh",
+        "snapshot": ".build/renewal-discovery/handoff-renewal-selection-gates/independent-review-v1/sources/scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 41311,
+        "sha256": "e68f243ddf7792a89f8c922e8bfd9a0076c01bee3b3c167d89e83a7cb082ea66"
+      },
+      {
+        "path": ".build/renewal-discovery/handoff-renewal-selection-gates/work/scripts/reader-experience/test-renewal-probe-tools.py",
+        "snapshot": ".build/renewal-discovery/handoff-renewal-selection-gates/independent-review-v1/sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 120321,
+        "sha256": "a2274d11d4a324c5e1ff15613600fbcf3c0e6394f3ce52f749fcb6ac476e54a4"
+      },
+      {
+        "path": ".build/renewal-discovery/handoff-renewal-selection-gates/work/.github/workflows/reader-renewal-probe.yml",
+        "snapshot": ".build/renewal-discovery/handoff-renewal-selection-gates/independent-review-v1/sources/.github/workflows/reader-renewal-probe.yml",
+        "bytes": 7219,
+        "sha256": "72224310a14f36c221045547fa0f97c8fcdf7dde44b9131fd5ab3de899522947"
+      }
+    ],
+    "unchangedDuringArchiveRead": true
+  },
+  "confirmedBlockingFindings": [],
+  "checks": [
+    {
+      "subject": "Producer/stage failures still reach native",
+      "conclusion": "Producer or stage failure does not block boot/native/export/cases. Native depends on boot and source integrity. Fixed command selects every qualified case once with one result bundle and a 2700-second test budget; no fallback SDK resource or skip is substituted.",
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1287,
+          "endLine": 1307
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1373,
+          "endLine": 1383
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1386,
+          "endLine": 1420
+        }
+      ]
+    },
+    {
+      "subject": "Original phase exits/timeouts and first failure",
+      "conclusion": "Raw command exitCode/timedOut/oversized remain bound. Timeout maps to 124 and output limit to 125; earliest nonblocked failure survives later success or blocked result.",
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 896,
+          "endLine": 941
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1314,
+          "endLine": 1324
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1327,
+          "endLine": 1358
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1361,
+          "endLine": 1365
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1386,
+          "endLine": 1420
+        }
+      ]
+    },
+    {
+      "subject": "Result is not a self-proving loop",
+      "conclusion": "The pre-result ledger binds ten prerequisite phases without referencing result.json. Result verifies exact order/commands/status/source/budgets and original raw phase records. Completion separately records result phase and output hash.",
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1423,
+          "endLine": 1474
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1064,
+          "endLine": 1217
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1386,
+          "endLine": 1420
+        }
+      ]
+    },
+    {
+      "subject": "Original raw logs and exact xcresult leaves",
+      "conclusion": "Acceptance recomputes stdout/stderr/native log hashes and wrapper exit observations, then independently requires exact methods/Bool leaves, six successful bounded original exports, summary counts and required SDK method. A ledger boolean cannot establish passing methods.",
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1423,
+          "endLine": 1474
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 944,
+          "endLine": 974
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 977,
+          "endLine": 1024
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 862,
+          "endLine": 893
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1064,
+          "endLine": 1217
+        }
+      ]
+    },
+    {
+      "subject": "Actual source/build/runtime SDK resource binding",
+      "conclusion": "The same-job source resource, generated allowlisted outputs, built XCTest resource and runtime loader marker must agree. Producer failure prevents final passing result while native can return diagnostic failures.",
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 684,
+          "endLine": 721
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1064,
+          "endLine": 1217
+        }
+      ]
+    },
+    {
+      "subject": "Previous ten modes",
+      "conclusion": "All prior declarative case-building AST statements are retained. Old shell execution bodies and budgets match canonical after removing only the new early handoff branch and mode-list text. Parameter helper extension preserves transaction178/180. Provenance closure intentionally grows.",
+      "priorDeclarativeASTStatementsUnchanged": true,
+      "previousShellExecutionBodiesUnchanged": true,
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 295,
+          "endLine": 332
+        },
+        {
+          "path": "scripts/reader-experience/renewal-probe-tests.sh",
+          "line": 34,
+          "endLine": 47
+        }
+      ]
+    },
+    {
+      "subject": "Historical package10 does not become new-tag acceptance",
+      "conclusion": "All19 historical comparisons and Package12 are distinct; new-tag execution/acceptance remain false. Workflow package step excludes handoff mode. Historical cases do not enter native253.",
+      "locations": [
+        {
+          "path": "scripts/reader-experience/renewal-probe-tools.py",
+          "line": 1223,
+          "endLine": 1247
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Static independent review only; no portable tests, shell/actionlint, codesign, SDK methods or cloud query were executed.",
+    "Owner is still preparing the coherent Cookie-inclusive draft. Later changes require exact hash comparison and targeted review.",
+    "Hash receipts bind changes relative to captured raw facts in a controlled workspace. They are not external execution attestation against an actor able to rewrite all evidence.",
+    "Overall completion exit and phase/result status must accompany any individual output file; partial diagnostic outputs do not authorize install or renewal.",
+    "No private user files, actual accounts, private IPA or credentials were read."
+  ],
+  "execution": {
+    "portableTestsRunByReviewer": 0,
+    "sdkMethodsRunByReviewer": 0,
+    "cloudQueries": 0,
+    "canonicalEdits": 0,
+    "gitOperations": 0
+  }
+}

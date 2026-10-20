@@ -6,8 +6,8 @@ REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 WORK="$REPO_DIR/.build/reader-renewal-probe"
 export YUEDU_RENEWAL_SELECTION=${YUEDU_RENEWAL_SELECTION-all}
 case "$YUEDU_RENEWAL_SELECTION" in
-  all|replacement|implementation|signature|cryptography|sealedmaterials|boundmaterials|controlledsigning|integratedrenewal|transactionrenewal) ;;
-  *) echo 'YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning, integratedrenewal or transactionrenewal.' >&2; exit 2 ;;
+  all|replacement|implementation|signature|cryptography|sealedmaterials|boundmaterials|controlledsigning|integratedrenewal|transactionrenewal|handoffrenewal) ;;
+  *) echo 'YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning, integratedrenewal, transactionrenewal or handoffrenewal.' >&2; exit 2 ;;
 esac
 [[ $(uname -s) == Darwin ]] || { echo 'Renewal probe tests require macOS/Xcode.' >&2; exit 2; }
 mkdir -p "$WORK"
@@ -31,6 +31,12 @@ export YUEDU_DEST=${YUEDU_DEST:-$(bash "$REPO_DIR/scripts/sim.sh" dest)}
 export LEGADO_RUNTIME_SOURCE_ONLY=1
 python3 "$SCRIPT_DIR/renewal-probe-tools.py" prepare --work "$WORK" > "$WORK/prepare.log"
 xcodebuild -version > "$WORK/xcode-version.log"
+if [[ $YUEDU_RENEWAL_SELECTION == handoffrenewal ]]; then
+  # This sole future-mode pipeline preserves first failure and still attempts
+  # the complete same-source native selection after producer/staging failures.
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" run-handoff --work "$WORK"
+  exit $?
+fi
 if [[ $YUEDU_RENEWAL_SELECTION == integratedrenewal || $YUEDU_RENEWAL_SELECTION == transactionrenewal ]]; then
   # Raw producer output stays outside the always-uploaded evidence directory.
   # Only the verified allowlisted public outputs enter the artifact.

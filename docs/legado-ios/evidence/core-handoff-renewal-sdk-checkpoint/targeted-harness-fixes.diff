@@ -1,0 +1,21 @@
+--- initial/scripts/reader-experience/test-renewal-probe-tools.py
++++ final/scripts/reader-experience/test-renewal-probe-tools.py
+@@ -630,6 +630,10 @@
+                     self.write_json("cli-summary.json", {"totalTestCount": count, "passedTests": count,
+                                                          "failedTests": 0, "skippedTests": 0})
+                     self.write_json("cli-tests.json", self.tree(group))
++                    if mode == 'handoffrenewal' and group == 'handoffrenewal':
++                        self.write_json(group+'-summary.json', {"totalTestCount":count,"passedTests":count,"failedTests":0,"skippedTests":0})
++                        self.write_json(group+'-tests.json', self.tree(group))
++                        self.transaction_details_fixture(group=group)
+                     output, errors = io.StringIO(), io.StringIO()
+                     argv = ["renewal-probe-tools.py", "verify-tests", "--group", group,
+                             "--summary", str(self.work / "cli-summary.json"),
+@@ -1550,6 +1554,7 @@
+     def test_handoff_pipeline_preserves_real_first_failure_and_still_runs_full_native_once(self):
+         for failure_phase in ('producer','stage'):
+             with self.subTest(firstFailure=failure_phase):
++                self.root=Path(self.temp.name).resolve()/failure_phase
+                 for path,raw in self.originals.items(): self.write(self.root/path,raw)
+                 self.work=self.root/'.build'/('handoff-'+failure_phase)
+                 with self.context(), patch.dict(os.environ, {'YUEDU_RENEWAL_SELECTION': 'handoffrenewal'}):

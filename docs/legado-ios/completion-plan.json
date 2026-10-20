@@ -271,10 +271,12 @@
       "checkpointRuleZh": "复用未变代码的既有结果；同一阶段相关代码复核后集中做一次必要的SDK/模拟器验证，不为每个小修改触发全量CI，不反复轮询旧任务。发现实际失败后修复受影响范围。",
       "currentSteps": [
         "C1",
-        "S1",
         "C2",
+        "S1",
         "S2",
-        "S3"
+        "S3",
+        "S4",
+        "S5"
       ],
       "steps": [
         {
@@ -349,13 +351,15 @@
             "docs/legado-ios/core-original-state-persistence-step.json",
             "docs/legado-ios/core-original-search-owner-correction.json",
             "docs/legado-ios/core-original-app-chapter-owner-step.json",
-            "docs/legado-ios/core-original-app-book-owner-step.json"
+            "docs/legado-ios/core-original-app-book-owner-step.json",
+            "docs/legado-ios/core-original-app-cookie-owner-step.json"
           ],
           "implementedSubtasksZh": [
             "Swift宿主已复用现有源变量/键值、登录头与文本缓存owner，绑定显式来源revision与CAS，删除登录头保留独立凭据；9项原owner与actor测试待SDK。完整Cookie属性、书URL/UUID/章节generation及正文保存App接线仍未完成，相关未接能力显式拒绝，传统产品入口未切换。",
             "已接通显式stateOwner与原source/book/chapter变量、缓存/TTL、完整Cookie快照及原始登录头的同owner事务；原WebBook默认needSave=true可在受控backend保存目录/正文并跨两个独立Java进程恢复。实际165唯一JVM方法（12新+153相关旧）及普通JAR/smoke通过，47个原调用属于1项方法内参考。App完整Cookie、UUID/generation和正文发布映射及完整失败编辑/删除/资源栅栏仍未完成。",
             "显式App书UUID/来源/URL及真实章节generation已接入state.read/commit，经同一BookStore后台持久化队列写回原章节文件；并发编辑排在已提交写后，写失败/损坏文件明确报错。增加最多256个已授权实体的有界身份索引，首次定位在后台，进度保存不扫描全库。新增9项及相关21项Swift方法待SDK；书变量持久写、预览、完整Cookie及传统产品路由仍未完成。",
-            "Book变量回调已接原BookStore书架/阅读记录同persistQueue，实际文件读取/CAS/原子替换后才确认；small/large同变量map。旧整文件队列写入合并已接受投影，跨文件迁移先保Reader并集→Shelf耐久→最后修剪。TXT书签迁移原旁路已改真实async caller，offmain合并/拷贝后短main发布；4次晚期冲突可仅凭精确原journal接管，保新用户书签。8项新方法含实际失败/交错/重启，尚未SDK执行。"
+            "Book变量回调已接原BookStore书架/阅读记录同persistQueue，实际文件读取/CAS/原子替换后才确认；small/large同变量map。旧整文件队列写入合并已接受投影，跨文件迁移先保Reader并集→Shelf耐久→最后修剪。TXT书签迁移原旁路已改真实async caller，offmain合并/拷贝后短main发布；4次晚期冲突可仅凭精确原journal接管，保新用户书签。8项新方法含实际失败/交错/重启，尚未SDK执行。",
+            "已接通同一 Cookie owner 的 HTTP／WebKit／登录入口，修正过期旧值恢复、严格文件读取及复用导航的异步冲突；13项新增与16项受影响原生定义待本批SDK，原引擎完整Cookie读写和App入口仍未完成。"
           ],
           "nextActionZh": "集中重验新Book8与受影响旧方法，保两个Bool参数各false/true真实叶。继续原Cookie完整owner/登录/预览及默认原引擎产品入口，修原存储失败回执和旧同步等待；不将仅Book/Chapter回调通过升级完整兼容。"
         },
@@ -625,10 +629,12 @@
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
-            "docs/legado-ios/core-renewal-controlled-transaction-step.json"
+            "docs/legado-ios/core-renewal-controlled-transaction-step.json",
+            "docs/legado-ios/core-renewal-app-data-handoff-step.json"
           ],
           "implementedSubtasksZh": [
-            "实际整包重签→持久候选全复验→上传前路径意图→首Upgrade字节前提交意图→真实回执/Lookup，已串同一Keychain租约/IPA提取器/认证客户端。单journal actor+进程flock、原子写及父目录fsync；重启清所属临时文件，清理grant跨网络排他。未知Upgrade只Lookup且保留远端文件；安全上传失败可新认证清理。16项原生方法含真实整包到受控TLS恢复，尚未SDK执行。"
+            "实际整包重签→持久候选全复验→上传前路径意图→首Upgrade字节前提交意图→真实回执/Lookup，已串同一Keychain租约/IPA提取器/认证客户端。单journal actor+进程flock、原子写及父目录fsync；重启清所属临时文件，清理grant跨网络排他。未知Upgrade只Lookup且保留远端文件；安全上传失败可新认证清理。16项原生方法含真实整包到受控TLS恢复，尚未SDK执行。",
+            "已把真实书架、书源和活动阅读进度保存回执接到首个Upgrade字节前的持久意图，并加入当前Bundle材料和原正常加载入口；27项新增定义待SDK。App启动协调器、自动观察、触发、冷启与完整数据保留仍未完成。"
           ],
           "nextActionZh": "集中SDK执行16项及受影响既有链；继续真实当前Bundle签名材料冷启复核、原存储owner的可await实际失败回执/数据交接、安全事务退役/重试及App唯一入口，不能凭同版本Lookup或sentinel登记自动续签。"
         },
@@ -659,7 +665,7 @@
       ],
       "integrationCheckpoint": {
         "id": "I1",
-        "status": "unfinished_not_started",
+        "status": "in_progress",
         "actionZh": "两线达到相关代码检查点后集中做同源码SDK／模拟器集成，复用未变证据，整理剩余阻断；按已验证范围准备可审查结果，不为等待结果恢复17项外围工作。",
         "doneWhenZh": "普通运行时、App／扩展、实际签名客户端与续签事务均有对应源码的实际结果；准备、局部成功、协议对端和真实设备验收分开记录。",
         "actualAcceptedEvidence": [],
@@ -718,7 +724,8 @@
       "appDataHandoffImplementation": "docs/legado-ios/core-renewal-app-data-handoff-step.json",
       "transactionRenewalSDKFirstResults": "docs/legado-ios/core-transaction-renewal-sdk-first-results.json",
       "SDKProducerToolDeadlines": "docs/legado-ios/core-renewal-sdk-producer-deadlines.json",
-      "appCookieOwnerImplementation": "docs/legado-ios/core-original-app-cookie-owner-step.json"
+      "appCookieOwnerImplementation": "docs/legado-ios/core-original-app-cookie-owner-step.json",
+      "handoffRenewalSDKCheckpoint": "docs/legado-ios/core-handoff-renewal-sdk-checkpoint.json"
     }
   },
   "stages": [
@@ -4725,6 +4732,10 @@
     "app-Cookie-owner-ingress": {
       "path": "docs/legado-ios/core-original-app-cookie-owner-step.json",
       "scope": "21 actual App Cookie/HTTP/WebKit/login/reader/review sources integrated;13new+16affected29 native definitions/SDK0. Expiry resurrection, strict IO, stale pooled navigation and typed-error fallthrough corrected. Original JVM text writes/response transport/JNI/default route remain unfinished."
+    },
+    "handoff-renewal-sdk-checkpoint": {
+      "path": "docs/legado-ios/core-handoff-renewal-sdk-checkpoint.json",
+      "scope": "Four CI sources/174 inputs,251 definitions/253 planned leaves. Actual portable passing evidence51 retained+2 corrected targeted; first failure raw preserved, Bash/actionlint0. Native SDK0, original Cookie text draft excluded, historical package10 not new-tag acceptance."
     }
   },
   "retainedExistingWork": [
