@@ -98,6 +98,9 @@ actor ChapterFetchManager {
     // Each new fetchChapter call updates the token; results are validated before use
     // to prevent stale generation results from contaminating the UI.
     private var generationTokens: [String: UUID] = [:]
+    /// Borrowed by the explicit original-runtime adapter. One proof per actual in-flight
+    /// job; it owns no content and is revoked with that same job's generation.
+    private var originalGenerations: [String: OriginalRuntimeChapterGeneration] = [:]
 
     // MARK: - Failure Count + Quarantine
     // Accumulates per-book chapter fetch failures; books exceeding the threshold
@@ -123,6 +126,18 @@ actor ChapterFetchManager {
 
     fileprivate func isTokenValid(taskKey: String, token: UUID) -> Bool {
         generationTokens[taskKey] == token
+    }
+
+    func originalRuntimeGeneration(bookID: UUID, chapter: OnlineChapterRef) -> OriginalRuntimeChapterGeneration? {
+        let taskKey = key(bookId: bookID, chapterIndex: chapter.index)
+        guard let grant = originalGenerations[taskKey], generationTokens[taskKey] == grant.token,
+              grant.bookID == bookID, grant.chapterID == chapter.id, grant.url == chapter.url,
+              tasks[taskKey] != nil else { return nil }
+        return grant
+    }
+
+    private func revokeOriginalGeneration(_ taskKey: String) {
+        originalGenerations.removeValue(forKey: taskKey)?.revoke()
     }
 
     /// Determines whether cached chapter content is suspiciously abnormal
@@ -331,6 +346,7 @@ actor ChapterFetchManager {
                 tasks.removeValue(forKey: taskKey)
                 priorities.removeValue(forKey: taskKey)
                 generationTokens.removeValue(forKey: taskKey)
+                revokeOriginalGeneration(taskKey)
                 states[taskKey] = .missing
             } else {
                 do {
@@ -351,6 +367,7 @@ actor ChapterFetchManager {
                         tasks.removeValue(forKey: taskKey)
                         priorities.removeValue(forKey: taskKey)
                         generationTokens.removeValue(forKey: taskKey)
+                        revokeOriginalGeneration(taskKey)
                     }
                 }
             }
@@ -360,6 +377,8 @@ actor ChapterFetchManager {
         // generation for this fetch result.
         let myToken = UUID()
         generationTokens[taskKey] = myToken
+        revokeOriginalGeneration(taskKey)
+        originalGenerations[taskKey] = OriginalRuntimeChapterGeneration(bookID: book.id, chapter: ref, token: myToken)
 
         // A jump used to cancel every other in-flight fetch for this book "to free
         // WKWebView slots". It was a workaround for contention the pool already handles —
@@ -606,6 +625,7 @@ actor ChapterFetchManager {
             tasks.removeValue(forKey: taskKey)
             priorities.removeValue(forKey: taskKey)
             states[taskKey] = .missing
+            revokeOriginalGeneration(taskKey)
         }
         generationTokens = generationTokens.filter {
             !$0.key.hasPrefix(prefix) || survivingKeys.contains($0.key)
@@ -618,6 +638,7 @@ actor ChapterFetchManager {
         tasks.removeValue(forKey: taskKey)
         priorities.removeValue(forKey: taskKey)
         generationTokens.removeValue(forKey: taskKey)
+        revokeOriginalGeneration(taskKey)
         states[taskKey] = .missing
     }
 
@@ -638,6 +659,7 @@ actor ChapterFetchManager {
             tasks.removeValue(forKey: key)
             priorities.removeValue(forKey: key)
             states[key] = .missing
+            revokeOriginalGeneration(key)
         }
     }
 
@@ -701,6 +723,7 @@ actor ChapterFetchManager {
         tasks.removeValue(forKey: taskKey)
         priorities.removeValue(forKey: taskKey)
         generationTokens.removeValue(forKey: taskKey)
+        revokeOriginalGeneration(taskKey)
     }
 
     @MainActor

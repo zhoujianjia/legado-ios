@@ -76,7 +76,8 @@ struct AppLegadoOwnedStateBacking: @unchecked Sendable, LegadoOwnedStateBacking 
 
 /// JNI's existing HostCallback now has an explicitly bound state adapter.
 /// Bindings are granted by the embedding App; imported JSON never grants an
-/// owner or selects a filesystem path. Chapter/Cookie identity remains separate.
+/// owner or selects a filesystem path. Book/chapter identity requires bindBook; complete
+/// Cookie storage and transactions spanning independent App owners remain unsupported.
 actor LegadoPersistentStateHost: LegadoPlatformHost {
     private struct Binding {
         let sourceURL: String
@@ -94,11 +95,21 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         let keys: [Key]
         let snapshot: LegadoOwnedStateSnapshot
     }
+    private struct EntityLease {
+        let owner: String
+        let binding: Binding
+        let backing: AppLegadoBookStateOwner
+        let keys: [LegadoEntityStateKey]
+        let snapshot: LegadoEntityStateSnapshot
+    }
     private let backing: any LegadoOwnedStateBacking
     private let fallback: any LegadoPlatformHost
     private var bindings: [String: Binding] = [:]
     private var revisions: [String: String] = [:]
     private var leases: [Int64: Lease] = [:]
+    private var bookOwners: [String: AppLegadoBookStateOwner] = [:]
+    private var entityLeases: [Int64: EntityLease] = [:]
+    private var pendingEntityCommits: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
     private var leaseOrder: [Int64] = []
     private var nextLease: Int64 = 0
     private var cancelled = Set<String>()
@@ -117,8 +128,12 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             throw failure("INVALID_STATE_OWNER", "An explicit source identity and revision are required")
         }
         if revisions[sourceURL] != sourceRevision {
+            for (owner, binding) in bindings where binding.sourceURL == sourceURL {
+                bookOwners.removeValue(forKey: owner)?.revoke()
+            }
             bindings = bindings.filter { $0.value.sourceURL != sourceURL }
             leases = leases.filter { $0.value.binding.sourceURL != sourceURL }
+            entityLeases = entityLeases.filter { $0.value.binding.sourceURL != sourceURL }
         }
         guard bindings.count < 256 else { throw failure("STATE_LIMIT", "Too many active source state owners") }
         let owner = UUID().uuidString
@@ -127,9 +142,43 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         return owner
     }
 
+    /// The embedding reader supplies the actual store/UUID and (for chapters) a grant
+    /// borrowed from its active pipeline generation. Nothing is inferred from a URL.
+    func bindBook(sourceURL: String, sourceRevision: String, store: BookStore,
+                  bookID: UUID, sourceID: UUID, bookURL: String,
+                  chapter: OnlineChapterRef? = nil, generation: OriginalRuntimeChapterGeneration? = nil) async throws -> String {
+        let previousRevision = revisions[sourceURL]
+        guard await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
+            throw failure("UNSUPPORTED_CAPABILITY", "The App book/source identity has no current stable owner")
+        }
+        let backing = try AppLegadoBookStateOwner(store: store, bookID: bookID, sourceID: sourceID,
+            bookURL: bookURL, chapter: chapter, generation: generation)
+        if let chapter {
+            let proof: BookChapterStore.RuntimeVariablesSnapshot?
+            do { proof = try await store.originalRuntimeChapterSnapshot(bookID: bookID, index: chapter.index, url: chapter.url) }
+            catch let error as LegadoRuntimeError { throw error }
+            catch is CancellationError { throw CancellationError() }
+            catch {
+                AppLogger.error("JVM App chapter owner could not be read", error: error)
+                throw failure("STATE_IO", "The App chapter owner could not be read")
+            }
+            guard proof?.chapterID == chapter.id else { throw failure("UNSUPPORTED_CAPABILITY", "The App chapter identity is no longer current") }
+        }
+        try Task.checkCancellation()
+        guard revisions[sourceURL] == previousRevision else {
+            throw failure("INVALID_STATE_OWNER", "The source revision changed while granting its App book")
+        }
+        try backing.validate(deadline: Date().addingTimeInterval(180))
+        let owner = try bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
+        bookOwners[owner] = backing
+        return owner
+    }
+
     func revoke(owner: String) {
         let removed = bindings.removeValue(forKey: owner)
+        bookOwners.removeValue(forKey: owner)?.revoke()
         leases = leases.filter { $0.value.owner != owner }
+        entityLeases = entityLeases.filter { $0.value.owner != owner }
         if let removed, !bindings.values.contains(where: { $0.sourceURL == removed.sourceURL }) {
             revisions.removeValue(forKey: removed.sourceURL)
         }
@@ -137,7 +186,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
 
     /// Value-free diagnostics for verifying bounded ownership bookkeeping.
     func ownershipCounts() -> (bindings: Int, sourceRevisions: Int, leases: Int) {
-        (bindings.count, revisions.count, leases.count)
+        (bindings.count, revisions.count, leases.count + entityLeases.count)
     }
 
     func dispatch(_ request: LegadoHostRequest) async throws -> String {
@@ -146,6 +195,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         }
         try check(request)
         do {
+          if let result = try await dispatchEntityStateIfNeeded(request) { return result }
           return try SourcePerfTrace.span("legado.state.host", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
             guard request.requestJSON.utf8.count <= 2_097_152,
                   let bytes = request.requestJSON.data(using: .utf8),
@@ -177,7 +227,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
                 nextLease += 1
                 leases[nextLease] = Lease(owner: owner, binding: binding, keys: keys, snapshot: snapshot)
                 leaseOrder.append(nextLease)
-                if leaseOrder.count > 256 { leases.removeValue(forKey: leaseOrder.removeFirst()) }
+                trimLeases()
                 return try encoded(["revision": nextLease, "values": values])
             }
             struct Commit: Decodable { let revision: Int64 }
@@ -235,7 +285,103 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     func cancel(taskID: String) async {
         if cancelled.insert(taskID).inserted { cancellationOrder.append(taskID) }
         if cancellationOrder.count > 1_024 { cancelled.remove(cancellationOrder.removeFirst()) }
+        if let pending = pendingEntityCommits[taskID] { for ticket in pending.values { ticket.cancel() } }
         await fallback.cancel(taskID: taskID)
+    }
+
+    private func trimLeases() {
+        if leaseOrder.count > 256 {
+            let expired = leaseOrder.removeFirst()
+            leases.removeValue(forKey: expired)
+            entityLeases.removeValue(forKey: expired)
+        }
+    }
+
+    /// Entity records use raw variable bytes, unlike the CacheManager envelope used by
+    /// source/cache keys. The actual App owner performs every async snapshot and write.
+    private func dispatchEntityStateIfNeeded(_ request: LegadoHostRequest) async throws -> String? {
+        guard request.requestJSON.utf8.count <= 2_097_152,
+              let input = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) as? [String: Any] else { return nil }
+        let rawKeys = input["keys"] as? [String]
+        let isEntityRead = request.operation == "state.read" && (rawKeys?.contains { wire in
+            guard let parts = try? JSONSerialization.jsonObject(with: Data(wire.utf8)) as? [String], parts.count > 1 else { return false }
+            return parts[1] == "variables" || parts[1] == "big-variable"
+        } ?? false)
+        struct Revision: Decodable { let revision: Int64 }
+        let revision = request.operation == "state.commit" ? (try? JSONDecoder().decode(Revision.self, from: Data(request.requestJSON.utf8)))?.revision : nil
+        guard isEntityRead || revision.flatMap({ entityLeases[$0] }) != nil else { return nil }
+        guard let owner = input["owner"] as? String, let binding = bindings[owner],
+              revisions[binding.sourceURL] == binding.sourceRevision else {
+            throw failure("INVALID_STATE_OWNER", "Entity state requires its current App book owner")
+        }
+        guard let backing = bookOwners[owner] else {
+            throw failure("UNSUPPORTED_CAPABILITY", "Entity state has no explicitly connected App book owner")
+        }
+        let deadline = Date().addingTimeInterval(request.remainingTimeoutSeconds)
+        return try await SourcePerfTrace.spanAsync("legado.state.entity", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+            if isEntityRead {
+                guard let rawKeys, !rawKeys.isEmpty, rawKeys.count <= 64, Set(rawKeys).count == rawKeys.count else {
+                    throw failure("STATE_LIMIT", "Entity read requires 1...64 unique keys")
+                }
+                let keys = try backing.parse(rawKeys, sourceURL: binding.sourceURL)
+                let snapshot = try await backing.read(keys: keys, deadline: deadline)
+                try check(request)
+                try currentEntityBinding(owner: owner, binding: binding)
+                guard nextLease < Int64.max else { throw failure("STATE_LIMIT", "State revision space exhausted") }
+                let values = snapshot.state.values.mapValues { $0.base64EncodedString() }
+                guard snapshot.state.values.values.reduce(0, { $0 + $1.count }) <= 1_048_576 else {
+                    throw failure("STATE_LIMIT", "Entity read exceeds its byte limit")
+                }
+                nextLease += 1
+                entityLeases[nextLease] = .init(owner: owner, binding: binding, backing: backing, keys: keys, snapshot: snapshot)
+                leaseOrder.append(nextLease); trimLeases()
+                return try encoded(["revision": nextLease, "values": values])
+            }
+            guard let revision, let rawChanges = input["changes"] as? [String: Any],
+                  !rawChanges.isEmpty, rawChanges.count <= 64 else {
+                throw failure("INVALID_STATE_REQUEST", "Entity commit requires bounded changes")
+            }
+            guard let lease = entityLeases.removeValue(forKey: revision), lease.owner == owner,
+                  lease.binding.sourceURL == binding.sourceURL, lease.binding.sourceRevision == binding.sourceRevision else {
+                return try encoded(["committed": false])
+            }
+            let allowed = Set(lease.keys.map(\.wire))
+            guard rawChanges.keys.allSatisfy({ allowed.contains($0) }) else {
+                throw failure("INVALID_STATE_REQUEST", "Entity commit changed an unread key")
+            }
+            var changes: [String: Data?] = [:]
+            for (wire, raw) in rawChanges {
+                if raw is NSNull { changes.updateValue(nil, forKey: wire) }
+                else {
+                    guard let text = raw as? String, text.utf8.count <= 1_398_104,
+                          let data = Data(base64Encoded: text), data.count <= 1_048_576 else {
+                        throw failure("STATE_LIMIT", "Entity value is malformed or oversized")
+                    }
+                    changes.updateValue(data, forKey: wire)
+                }
+            }
+            try check(request)
+            try currentEntityBinding(owner: owner, binding: binding)
+            let ticket = OriginalRuntimeCommitCancellation(); let requestID = UUID()
+            pendingEntityCommits[request.taskID, default: [:]][requestID] = ticket
+            defer {
+                pendingEntityCommits[request.taskID]?.removeValue(forKey: requestID)
+                if pendingEntityCommits[request.taskID]?.isEmpty == true { pendingEntityCommits.removeValue(forKey: request.taskID) }
+            }
+            let committed = try await withTaskCancellationHandler {
+                try await backing.commit(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
+                    deadline: deadline, cancellation: ticket)
+            } onCancel: { ticket.cancel() }
+            // Successful atomic replacement is already the owner transaction boundary.
+            // A later cancel/revoke cannot be reported as an uncommitted disk mutation.
+            return try encoded(["committed": committed])
+        }
+    }
+
+    private func currentEntityBinding(owner: String, binding: Binding) throws {
+        guard bindings[owner] != nil, revisions[binding.sourceURL] == binding.sourceRevision else {
+            throw failure("INVALID_STATE_OWNER", "The App entity grant was revoked while awaiting its owner")
+        }
     }
 
     private func check(_ request: LegadoHostRequest) throws {

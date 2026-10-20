@@ -347,13 +347,15 @@
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-bound-material-step.json",
             "docs/legado-ios/core-original-state-persistence-step.json",
-            "docs/legado-ios/core-original-search-owner-correction.json"
+            "docs/legado-ios/core-original-search-owner-correction.json",
+            "docs/legado-ios/core-original-app-chapter-owner-step.json"
           ],
           "implementedSubtasksZh": [
             "Swift宿主已复用现有源变量/键值、登录头与文本缓存owner，绑定显式来源revision与CAS，删除登录头保留独立凭据；9项原owner与actor测试待SDK。完整Cookie属性、书URL/UUID/章节generation及正文保存App接线仍未完成，相关未接能力显式拒绝，传统产品入口未切换。",
-            "已接通显式stateOwner与原source/book/chapter变量、缓存/TTL、完整Cookie快照及原始登录头的同owner事务；原WebBook默认needSave=true可在受控backend保存目录/正文并跨两个独立Java进程恢复。实际165唯一JVM方法（12新+153相关旧）及普通JAR/smoke通过，47个原调用属于1项方法内参考。App完整Cookie、UUID/generation和正文发布映射及完整失败编辑/删除/资源栅栏仍未完成。"
+            "已接通显式stateOwner与原source/book/chapter变量、缓存/TTL、完整Cookie快照及原始登录头的同owner事务；原WebBook默认needSave=true可在受控backend保存目录/正文并跨两个独立Java进程恢复。实际165唯一JVM方法（12新+153相关旧）及普通JAR/smoke通过，47个原调用属于1项方法内参考。App完整Cookie、UUID/generation和正文发布映射及完整失败编辑/删除/资源栅栏仍未完成。",
+            "显式App书UUID/来源/URL及真实章节generation已接入state.read/commit，经同一BookStore后台持久化队列写回原章节文件；并发编辑排在已提交写后，写失败/损坏文件明确报错。增加最多256个已授权实体的有界身份索引，首次定位在后台，进度保存不扫描全库。新增9项及相关21项Swift方法待SDK；书变量持久写、预览、完整Cookie及传统产品路由仍未完成。"
           ],
-          "nextActionZh": "将已通过的原状态/正文接缝继续映射到App现有完整Cookie及书/章UUID-generation owner，保留显式源revision/CAS与取消；完善原剩余宿主/完整保存栅栏，按原依赖推进C3/C4产品唯一入口。"
+          "nextActionZh": "集中执行章节owner新9项及旧21项相关SDK并处理实际失败；继续书变量的原metadata写后确认、预览/完整Cookie，再将原运行时接入产品唯一入口和正文保存generation。"
         },
         {
           "id": "C3",
@@ -422,7 +424,8 @@
           "preparatoryStatus": "public-JVM-business-boundary-implemented-Swift-SDK-and-product-gates-unfinished",
           "preparatoryScopeZh": "普通JAR公开原文本业务合同与Swift Package typed API已接线；Swift5项新测试仅准备，未执行JNI或App原生产品链。显式门槛保留、传统产品路由未切换。",
           "implementationEvidence": [
-            "docs/legado-ios/core-original-search-owner-correction.json"
+            "docs/legado-ios/core-original-search-owner-correction.json",
+            "docs/legado-ios/core-original-app-chapter-owner-step.json"
           ]
         },
         {
@@ -680,7 +683,8 @@
       "originalSearchOwnerCorrection": "docs/legado-ios/core-original-search-owner-correction.json",
       "controlledSigningSDKCheckpoint": "docs/legado-ios/core-controlled-signing-sdk-checkpoint.json",
       "controlledSigningSDKSubmission": "docs/legado-ios/core-renewal-44528e0-initial.json",
-      "boundMaterialSDKResult": "docs/legado-ios/core-renewal-478b69d-result.json"
+      "boundMaterialSDKResult": "docs/legado-ios/core-renewal-478b69d-result.json",
+      "appChapterOwnerImplementation": "docs/legado-ios/core-original-app-chapter-owner-step.json"
     }
   },
   "stages": [
@@ -4627,6 +4631,10 @@
     "bound-material-SDK-compile-failure": {
       "path": "docs/legado-ios/core-renewal-478b69d-result.json",
       "scope": "Exact historical 478b69d source/68 inputs; three unique test-macro compile errors repeated in batch output, zero of 78 methods executed. Three throwing evaluations repaired; no fixed-source SDK acceptance inferred."
+    },
+    "app-chapter-state-owner": {
+      "path": "docs/legado-ios/core-original-app-chapter-owner-step.json",
+      "scope": "Explicit production state callback -> existing App chapter owner/file; nine new and 21 related Swift methods defined, zero SDK execution. Full Book writes, preview, Cookie, JNI/product route remain unfinished."
     }
   },
   "retainedExistingWork": [

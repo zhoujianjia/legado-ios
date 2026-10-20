@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T04:29:31.421214+00:00",
+  "status": "C2-explicit-App-chapter-state-owner-production-connected-SDK-pending",
+  "canonicalPlan": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "jsonPointer": "/execution/stepByStep"
+  },
+  "sourceBinding": {
+    "changedCodeAndTests": [
+      {
+        "path": "Modules/Services/LibraryStore/BookChapterStore.swift",
+        "bytes": 18475,
+        "sha256": "c00618a89d7a1b5035962a18cb0d5a0ff56f81e5a340050408412aa356461849"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BookStore.swift",
+        "bytes": 157887,
+        "sha256": "a4a7b33b943fb3867d07c56bfde105d3623c9c2158545bd0d6d5532a6aa0d1b0"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+        "bytes": 762,
+        "sha256": "b7e8deae03869cc8ffb7998baa70fae785b95cf7c39ecafcae27ccd9438bef18"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoBookStateOwner.swift",
+        "bytes": 8745,
+        "sha256": "9571780599794e398f58f8ee85995e8a69e31031189332648e0c894081d30d12"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 25188,
+        "sha256": "794d806da3e582f1919a89387edaeec9fc08380b3440c953dad83c3d30c1d831"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 23985,
+        "sha256": "b9fc2b76fdd663730170f12742f641efcac651f371a4e206787c6cab84c8a800"
+      },
+      {
+        "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+        "bytes": 52164,
+        "sha256": "c3439fc44757c2dc056786c5e40f91dc074e335b86d4ca1b7d05835b6fa5ca2c"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoChapterOwnerPersistenceTests.swift",
+        "bytes": 9271,
+        "sha256": "be7dcd4200cdb87fd9c7ca48b6489e064614606561f95dd34e79f3a0b2de1f0d"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoBookStateOwnerTests.swift",
+        "bytes": 12777,
+        "sha256": "0f324880eeb7d6a33d693d86a0a620bb829e39ce37dc45c5c0316585727d101d"
+      }
+    ],
+    "finalSnapshot": ".build/original-app-owner/app-owner/final-sources",
+    "allCurrentBytesEqualGrammarInputs": true,
+    "relatedExistingTestInputs": [
+      {
+        "path": "Tests/iOS/yuedu appTests/BookChapterStorageTests.swift",
+        "bytes": 19979,
+        "sha256": "220a93d04334922d16e003e90e673c47a1ffe1ea278ee400212305d32c2a1d05"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+        "bytes": 23810,
+        "sha256": "297570b76730f4be61603871216f1c3c3ca6f426182101dc3bdac04a1bce6f7c"
+      }
+    ]
+  },
+  "productionImplemented": [
+    "Actual state.read/commit callback recognizes original variables/book and variables/chapter + big-variable keys only under an explicit App BookStore/source UUID/book URL grant.",
+    "Book identity registration borrows an immutable record array in O(1) on MainActor, locates off main and validates its revision. At most 256 already-granted offsets are retained; ordinary progress mutations do no whole-library map/index rebuild. Structural moves conservatively revoke the old lookup.",
+    "Production BookChapterStore reuses BookStore.persistQueue, owns bounded authoritative LRU/dirty state there, and retains its existing bounded read view. Normal edits publish without waiting for I/O and coalesce at most one pending list per book.",
+    "Chapter CAS checks real UUID/index/URL/revision and commits the same original chapter file before acknowledging success. A concurrent App edit is a later queued owner operation and cannot be overwritten by old CAS publication. Failed I/O leaves owner memory and the old file unchanged.",
+    "New owner cache misses use a throwing original chapter reader. Only a genuine missing file is empty; corrupt/unreadable data reaches typed STATE_IO instead of an empty owner. Legacy UI read behavior remains its historical logged wrapper.",
+    "Original short-variable JSON and >=10000 UTF-16 large-variable companion values are projected into the single existing OnlineChapterRef.runtimeVariables map and committed together in one chapter transaction.",
+    "ChapterFetchManager issues/revokes a proof of its actual existing generation token; explicit chapter grants require that same App book/chapter identity. Host cancellation/revocation/deadline tickets are checked on the queued writer and just before atomic replacement.",
+    "New fixture definitions exercise the actual state callback -> existing App chapter file -> reopened BookStore restore, plus real permission/corruption failures, stale TOC, identities and concurrent mutation. None has executed on a Swift SDK yet."
+  ],
+  "preparedSDKSelection": {
+    "grammar": {
+      "path": ".build/original-app-owner/app-grammar-v4.json",
+      "bytes": 2197,
+      "sha256": "c6f82731529f0c734aec32ac18f5c29671e4483549fe066aa3669c7c62fed991"
+    },
+    "grammarOnly": true,
+    "SwiftCompilerExecuted": false,
+    "SDKTestsExecuted": 0,
+    "preparedNewMethods": [
+      {
+        "suite": "LegadoChapterOwnerPersistenceTests",
+        "method": "concurrentChapterMutationUsesOnePersistenceOwner"
+      },
+      {
+        "suite": "LegadoChapterOwnerPersistenceTests",
+        "method": "chapterVariableCasIsDurableAndKeepsFailedWritesInvisible"
+      },
+      {
+        "suite": "LegadoChapterOwnerPersistenceTests",
+        "method": "strictFlushFailurePreservesPreviousFileAndCanRetry"
+      },
+      {
+        "suite": "LegadoChapterOwnerPersistenceTests",
+        "method": "strictFlushTargetsOnlyTheBoundBook"
+      },
+      {
+        "suite": "LegadoBookStateOwnerTests",
+        "method": "hostCommitUsesOriginalChapterFileAndRestart"
+      },
+      {
+        "suite": "LegadoBookStateOwnerTests",
+        "method": "staleTocAndTaskCancellationRejectOldHostProofs"
+      },
+      {
+        "suite": "LegadoBookStateOwnerTests",
+        "method": "rejectsUnmappedIdentityAndUnsupportedTransactions"
+      },
+      {
+        "suite": "LegadoBookStateOwnerTests",
+        "method": "corruptAndUnreadableChapterOwnersRemainErrors"
+      },
+      {
+        "suite": "LegadoBookStateOwnerTests",
+        "method": "hostWriteFailureAndGenerationRevocationPreserveOldState"
+      }
+    ],
+    "preparedNewMethodDefinitions": 9,
+    "preparedRelatedMethods": [
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "shelfFileCarriesNoTableOfContents"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "positionSaveLeavesTablesOfContentsUntouched"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "cachedChapterMarkRewritesOnlyItsBook"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "inlineShelfOpensCompleteAndMovesListsOut"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "inlineListFromOlderBuildWinsOverStaleFile"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "deletingBookDeletesItsTableOfContents"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "recordsCarrySummaryAndOpenedBookCarriesList"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "readingRecordKeepsItsListOutsideItsFile"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "syncLeavesTableOfContentsLocal"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "restoredShelfRegainsSummaryFromStoredLists"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "unreadableShelfLeavesTablesOfContentsAlone"
+      },
+      {
+        "suite": "BookChapterStorageTests",
+        "method": "audiobookPlayerSeesTheTableOfContents"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "sourceBridgeRemovalPreservesCredentials"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "isolatesSourcesAndPreservesVerbatimValues"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "rejectsStaleSourceLoginAndBindingRevisions"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "commitsSameOwnerAtomicallyAndSkipsUnchangedWrites"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "preservesOldStateWhenOwnerWritesFail"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "reusesLegacyCacheAndPreservesTTL"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "rejectsUnsupportedTransactionsBeforeAnyWrite"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "enforcesCancellationDeadlineAndBoundedLeases"
+      },
+      {
+        "suite": "LegadoPersistentStateHostTests",
+        "method": "preservesExplicitOptionsAndRawLoginPayloads"
+      }
+    ],
+    "preparedRelatedMethodDefinitions": 21,
+    "plannedUniqueSDKMethods": 30,
+    "JvmProductionChanged": false,
+    "priorIndependentJvmCheckpoint": {
+      "path": ".build/original-app-owner/search-correction/preparation.json",
+      "bytes": 52182,
+      "sha256": "33a1605f206c687ec770e2a00c0d7d8f721f4efe14a672ba5b17a9e49e4d518a"
+    },
+    "priorJvmEvidenceIsNotSwiftOrJNIExecution": true
+  },
+  "actualSDKMethodsAccepted": 0,
+  "evidenceBoundaries": {
+    "actualSwiftTestsRun": 0,
+    "actualJNIChainRun": false,
+    "AppTraditionalRouteSelected": false,
+    "normalJarChangedByAppWork": false,
+    "fullC2Complete": false,
+    "fullC3Complete": false,
+    "fullC4Complete": false,
+    "fullLegadoCompatibilityEstablished": false
+  },
+  "remaining": [
+    "The 30 selected Swift SDK methods must actually compile and pass before this stage is accepted. Windows grammar is not Swift compilation or native execution.",
+    "Full App book-variable durable writes still require the existing shelf/reading metadata owner transaction; they are typed unsupported rather than acknowledging swallowed/debounced save errors.",
+    "Preview OnlineBook ownership has been traced but is not yet bridged. No UUID is inferred from a search result or book URL.",
+    "Full Cookie path/secure/expiry/hostOnly state shared with the existing App owner remains unsupported; no opaque second Cookie jar or header flattening was added.",
+    "Transactions across book/chapter, source/login/Cookie or other independent owners are rejected before mutation.",
+    "The traditional App route is not selected. Body needSave=false must still return through the existing OnlineReadingPipeline/ChapterCacheRepository generation fence; no JVM App body store was added.",
+    "SDK tests have not proved the actual ChapterFetchManager grant lifecycle or the full ordinary JAR -> JNI -> App product chain; these remain required.",
+    "General existing BookStore initialization/legacy UI sync I/O is outside this narrow new owner integration; no claim of whole-App performance completion is made."
+  ],
+  "reviewCorrections": [
+    "Root review identified the initial write-then-conditional-view-publication CAS race. It was replaced before wiring by queue-owned durable state plus later queued ordinary edits; no false successful CAS implementation is accepted.",
+    "Root review identified new full-library index work on every main progress setter and catch-to-nil owner reads. Both were replaced by the bounded grant index/off-main registration and throwing owner reader before this prepared freeze.",
+    "All four grammar screens preserved their raw records/snapshots. They checked syntax only and were not counted as executed Swift methods."
+  ],
+  "newDerivedIndex": "At most 256 explicitly granted book identities with known offsets, updated at the one existing record write point; initial search runs off main. This is not a second persistent store and normal progress does no whole-library index rebuild.",
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-original-app-chapter-owner-step",
+    "manifest": "manifest.json",
+    "rawFiles": 11
+  },
+  "historicalJvmRecordsUnchanged": true,
+  "newCloudBuildRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

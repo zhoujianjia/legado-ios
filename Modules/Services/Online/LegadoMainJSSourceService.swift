@@ -27,6 +27,17 @@ actor LegadoRuntimeProcess {
         await persistentHost().revoke(owner: owner)
     }
 
+    /// Explicit embedding seam for the retained traditional runtime. The App must pass
+    /// its existing BookStore instance and identities; this does not select a reader route.
+    func bindPersistentBook(sourceURL: String, sourceRevision: String, store: BookStore,
+                            bookID: UUID, sourceID: UUID, bookURL: String,
+                            chapter: OnlineChapterRef? = nil,
+                            generation: OriginalRuntimeChapterGeneration? = nil) async throws -> String {
+        try await persistentHost().bindBook(sourceURL: sourceURL, sourceRevision: sourceRevision,
+            store: store, bookID: bookID, sourceID: sourceID, bookURL: bookURL,
+            chapter: chapter, generation: generation)
+    }
+
     func executor() throws -> LegadoRuntime {
         if let runtime { return runtime }
         return try SourcePerfTrace.span("legado.process.configure", "main=\(Thread.isMainThread)") {

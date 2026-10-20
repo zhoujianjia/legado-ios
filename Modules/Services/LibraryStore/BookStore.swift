@@ -53,8 +53,24 @@ private final class BookRecordStorage {
 }
 
 class BookStore: ObservableObject, BookProvider {
+    struct RuntimeBookSnapshot: Sendable, Equatable {
+        let id: UUID
+        let sourceID: UUID?
+        let isOnline: Bool
+        let bookURL: String
+        let tocURL: String
+        let variables: [String: String]?
+    }
     let objectWillChange = ObservableObjectPublisher()
     private let recordStorage = BookRecordStorage()
+    private struct RuntimeRecordEntry { let offset: Int; var snapshot: RuntimeBookSnapshot }
+    private struct RuntimeRecordIndex {
+        var entries: [UUID: RuntimeRecordEntry] = [:]
+        var recency: [UUID] = []
+    }
+    /// Only explicitly granted records, bounded independently of library size. Structural
+    /// moves invalidate their old offsets; the next explicit bind locates them off main.
+    private let runtimeRecordIndex = OSAllocatedUnfairLock(initialState: RuntimeRecordIndex())
     private var records: [ReadingBook] {
         get { recordStorage.values }
         set { replaceRecords(newValue) }
@@ -63,6 +79,16 @@ class BookStore: ObservableObject, BookProvider {
     private func replaceRecords(_ value: [ReadingBook], notifyLibraryViews: Bool = true) {
         if notifyLibraryViews { objectWillChange.send() }
         recordStorage.values = movingChapterListsToStore(value)
+        let current = recordStorage.values
+        runtimeRecordIndex.withLock { index in
+            for id in Array(index.entries.keys) {
+                guard let entry = index.entries[id], current.indices.contains(entry.offset), current[entry.offset].id == id else {
+                    index.entries.removeValue(forKey: id); index.recency.removeAll { $0 == id }
+                    continue
+                }
+                index.entries[id]?.snapshot = Self.runtimeSnapshot(current[entry.offset])
+            }
+        }
         mutationRevision &+= 1
     }
 
@@ -167,6 +193,90 @@ class BookStore: ObservableObject, BookProvider {
     /// `chapterStore` has its own lock.
     func chapters(for bookId: UUID) -> [OnlineChapterRef]? {
         chapterStore.chapters(for: bookId)
+    }
+
+    /// A bounded, already granted identity lookup. Initial registration is async below;
+    /// this validation never scans the library, performs I/O or touches main-owned arrays.
+    func originalRuntimeBookSnapshot(id: UUID, sourceID: UUID, bookURL: String) -> RuntimeBookSnapshot? {
+        runtimeRecordIndex.withLock { values in
+            guard let record = values.entries[id]?.snapshot, record.isOnline, record.sourceID == sourceID, record.bookURL == bookURL else { return nil }
+            return record
+        }
+    }
+
+    /// Main borrows one immutable Array value in O(1); lookup and snapshot projection run
+    /// off main. Only the still-current revision can register its bounded owner lookup.
+    func prepareOriginalRuntimeBookSnapshot(id: UUID, sourceID: UUID, bookURL: String) async -> RuntimeBookSnapshot? {
+        for _ in 0..<4 {
+            guard let candidate = await locateOriginalRuntimeBook(id: id) else { return nil }
+            let accepted = await MainActor.run { () -> Bool in
+                guard self.mutationRevision == candidate.revision else { return false }
+                self.runtimeRecordIndex.withLock { index in
+                    index.entries[id] = .init(offset: candidate.offset, snapshot: candidate.snapshot)
+                    index.recency.removeAll { $0 == id }; index.recency.append(id)
+                    if index.recency.count > 256 { index.entries.removeValue(forKey: index.recency.removeFirst()) }
+                }
+                return true
+            }
+            if accepted { return originalRuntimeBookSnapshot(id: id, sourceID: sourceID, bookURL: bookURL) }
+        }
+        return nil
+    }
+
+    private func locateOriginalRuntimeBook(id: UUID) async -> (offset: Int, revision: UInt64, snapshot: RuntimeBookSnapshot)? {
+        let input = await MainActor.run { (self.recordStorage.values, self.mutationRevision) }
+        return SourcePerfTrace.span("legado.state.book.locate", "books=\(input.0.count) main=\(Thread.isMainThread)") {
+            guard let offset = input.0.firstIndex(where: { $0.id == id }) else { return nil }
+            return (offset, input.1, Self.runtimeSnapshot(input.0[offset]))
+        }
+    }
+
+    private static func runtimeSnapshot(_ record: ReadingBook) -> RuntimeBookSnapshot {
+        .init(id: record.id, sourceID: record.bookSourceId, isOnline: record.isOnline,
+            bookURL: record.bookInfoURL ?? record.source, tocURL: record.tocURL ?? record.bookInfoURL ?? record.source,
+            variables: record.runtimeVariables)
+    }
+
+    func originalRuntimeChapterSnapshot(bookID: UUID, index: Int, url: String) async throws -> BookChapterStore.RuntimeVariablesSnapshot? {
+        try await withCheckedThrowingContinuation { continuation in
+            Self.persistQueue.async { [chapterStore] in
+                do { continuation.resume(returning: try chapterStore.runtimeVariablesSnapshot(bookID: bookID, index: index, url: url)) }
+                catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+
+    func originalRuntimeChapters(bookID: UUID) async throws -> [OnlineChapterRef] {
+        try await withCheckedThrowingContinuation { continuation in
+            Self.persistQueue.async { [chapterStore] in
+                do { continuation.resume(returning: try chapterStore.ownerChapters(for: bookID) ?? []) }
+                catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+
+    /// Uses the same queue and actual chapter file as normal library flushes. The chapter
+    /// owner throws actual atomic-write errors and publishes only after successful I/O.
+    func compareOriginalRuntimeChapter(expected: BookChapterStore.RuntimeVariablesSnapshot,
+                                       variables: [String: String]?, deadline: Date,
+                                       cancellation: OriginalRuntimeCommitCancellation = OriginalRuntimeCommitCancellation(),
+                                       validateGrant: @escaping @Sendable () throws -> Void = {}) async throws -> Bool {
+        try Task.checkCancellation()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                Self.persistQueue.async { [chapterStore] in
+                    do {
+                        try cancellation.check(deadline: deadline)
+                        try validateGrant()
+                        let result = try chapterStore.compareRuntimeVariables(expected: expected, variables: variables) {
+                            try cancellation.check(deadline: deadline)
+                            try validateGrant()
+                        }
+                        continuation.resume(returning: result)
+                    } catch { continuation.resume(throwing: error) }
+                }
+            }
+        } onCancel: { cancellation.cancel() }
     }
 
     func saveReadingBook(_ book: ReadingBook) {
@@ -289,7 +399,8 @@ class BookStore: ObservableObject, BookProvider {
             fileURL: metadataFileURL.deletingPathExtension().appendingPathExtension("reader-settings.json")
         )
         chapterStore = BookChapterStore(
-            directoryURL: metadataFileURL.deletingPathExtension().appendingPathExtension("chapters")
+            directoryURL: metadataFileURL.deletingPathExtension().appendingPathExtension("chapters"),
+            persistenceQueue: Self.persistQueue
         )
         importedMetadata = ImportedMetadataStore(besideShelfFile: metadataFileURL)
         workDecisions = WorkDecisionsStore(besideShelfFile: metadataFileURL)
