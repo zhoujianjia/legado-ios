@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T03:52:20.023600+00:00",
+  "sourceCommit": "c8d899baee616b31c44b8677fb4a5f7a81ebb262",
+  "sourceTag": "reader-renewal-c8d899b",
+  "runID": 39362768821,
+  "runConclusion": "failure",
+  "selectionMode": "sealedmaterials",
+  "auditStatus": "verified_compile_failure",
+  "artifact": {
+    "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/evidence.zip",
+    "bytes": 1025132,
+    "sha256": "dcf7f7b24bd3f20e252b14fc25f879768546d9bd450dac0a74734df269199dc2"
+  },
+  "artifactID": 12238924768,
+  "memberCount": 30,
+  "allZipMembersSafeAndHashMatched": true,
+  "exactSourceInputCount": 51,
+  "sourceInputs": {
+    "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/artifact/reader-renewal-probe/source-inputs.json",
+    "bytes": 14108,
+    "sha256": "270dc5988865ccf8fed10df33487d28944c429590a6ec047fe9c74bcf56fc6de"
+  },
+  "historicalInventory": {
+    "path": "docs/legado-ios/evidence/core-renewal-signed-resource-step/gates/result.json",
+    "bytes": 19346,
+    "sha256": "0dc73cd0127e2ff59cea7e211981f58178843d19d7f0f7e3c06d866537e04f60"
+  },
+  "allSourceInputsComparedToImmutableCommitBytes": true,
+  "exactSourceTagWorkflowModeAndOverlayBindingVerified": true,
+  "overlays": {
+    "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/artifact/reader-renewal-probe/overlays.json",
+    "bytes": 2624,
+    "sha256": "d986f633875633cdddec19ebe486bb60f7642e1b9eb9dd63d416b571ffc1d3eb"
+  },
+  "plannedMethods": 48,
+  "sourceBoundPlannedMethodIdentities": [
+    "SelfRenewalCMSVerifierTests/rejectsCancelledVerification",
+    "SelfRenewalCMSVerifierTests/rejectsChangedContentAndSignatures",
+    "SelfRenewalCMSVerifierTests/rejectsMalformedDERAndOversizedInputs",
+    "SelfRenewalCMSVerifierTests/rejectsMissingAndAmbiguousContent",
+    "SelfRenewalCMSVerifierTests/rejectsUntrustedAndExpiredChains",
+    "SelfRenewalCMSVerifierTests/verifiesECDSAAndEverySigner",
+    "SelfRenewalCMSVerifierTests/verifiesIndependentRSAAndDetachedVectors",
+    "SelfRenewalCodeDirectoryHashVerifierTests/matchesIndependentDigestVectors",
+    "SelfRenewalCodeDirectoryHashVerifierTests/readsOwnedApplicationAndUsesBoundedMaterialIO",
+    "SelfRenewalCodeDirectoryHashVerifierTests/rejectsBudgetsTruncatedReadsAndCancellation",
+    "SelfRenewalCodeDirectoryHashVerifierTests/rejectsChangedPagesDigestsAndSpecialMaterials",
+    "SelfRenewalCodeDirectoryHashVerifierTests/rejectsMissingExtraAndUnsupportedSpecialSlots",
+    "SelfRenewalCodeDirectoryHashVerifierTests/verifiesFatAlternateAndUnpagedContentWithBoundedChunks",
+    "SelfRenewalCodeDirectoryHashVerifierTests/verifiesFourAlgorithmsAndAllKnownSpecialMaterials",
+    "SelfRenewalMachOSignatureReaderTests/handlesUnsignedTruncatedAndCancelledInputs",
+    "SelfRenewalMachOSignatureReaderTests/readsFat32And64InBothByteOrders",
+    "SelfRenewalMachOSignatureReaderTests/readsKnownDirectoryVersionsAndEmptyCMSWithoutAssumingTrust",
+    "SelfRenewalMachOSignatureReaderTests/readsOwnedUnpackedAppThroughInventoryAndRejectsLinkedCode",
+    "SelfRenewalMachOSignatureReaderTests/readsThinSignaturesWithoutReadingExecutableBodiesOrClaimingTrust",
+    "SelfRenewalMachOSignatureReaderTests/rejectsDamagedEmbeddedSignatureStructures",
+    "SelfRenewalMachOSignatureReaderTests/rejectsInvalidCodeDirectoryOffsetsAndUnsupportedLayouts",
+    "SelfRenewalMachOSignatureReaderTests/rejectsMalformedAndUnknownRequiredLoadCommands",
+    "SelfRenewalMachOSignatureReaderTests/rejectsMalformedFatTablesAndOverlappingSlices",
+    "SelfRenewalMaterialInventoryTests/enforcesDirectoryAndByteLimits",
+    "SelfRenewalMaterialInventoryTests/parsesBoundedMetadataAndRejectsDamagedOrUnsafeValues",
+    "SelfRenewalMaterialInventoryTests/readsThreeBundleFactsWithoutTrustAssertion",
+    "SelfRenewalMaterialInventoryTests/rejectsLinkedMaterials",
+    "SelfRenewalMaterialInventoryTests/reportsIncompleteAndConflictingRoleStructure",
+    "SelfRenewalMaterialInventoryTests/retainsAdditionalPotentialSignedComponents",
+    "SelfRenewalProvisioningProfileVerifierTests/readsSignedSummaryAndRejectsValidityFailures",
+    "SelfRenewalProvisioningProfileVerifierTests/verifiesOwnedProfileThroughInventory",
+    "SelfRenewalResourceSealVerifierTests/appliesPOSIXWeightedRules",
+    "SelfRenewalResourceSealVerifierTests/hashesIndependentVectorsWithBoundedChunks",
+    "SelfRenewalResourceSealVerifierTests/preservesOptionalSealSemantics",
+    "SelfRenewalResourceSealVerifierTests/rejectsChangedAddedMissingAndWrongTypes",
+    "SelfRenewalResourceSealVerifierTests/rejectsEnvelopeOrCodeDirectoryChangedAfterHashPass",
+    "SelfRenewalResourceSealVerifierTests/rejectsMalformedEnvelopeAndLimits",
+    "SelfRenewalResourceSealVerifierTests/rejectsShortReadsAndCancellation",
+    "SelfRenewalResourceSealVerifierTests/selectsEnvelopeVersionAndLegacyHashFallback",
+    "SelfRenewalResourceSealVerifierTests/traversesNestedAndOmittedDirectoriesWithoutTrustClaims",
+    "SelfRenewalResourceSealVerifierTests/verifiesOwnedApplicationAndRejectsResourceChanges",
+    "SelfRenewalSignedCodeVerifierTests/authenticatesDetachedPrimaryAndPreservesLegacyUnboundAlternate",
+    "SelfRenewalSignedCodeVerifierTests/bindsOriginalHashAgilityEncodingsAndRejectsWrongValues",
+    "SelfRenewalSignedCodeVerifierTests/enforcesSharedOwnedFileReadBoundaryIncludingEmptyFiles",
+    "SelfRenewalSignedCodeVerifierTests/preservesOriginalAlternateOrderAndAdHocSemantics",
+    "SelfRenewalSignedCodeVerifierTests/readsOwnedAppAndKeepsGenericAnchorsSeparateFromAppleAuthority",
+    "SelfRenewalSignedCodeVerifierTests/rejectsChangedReadBudgetsAndCancellationAcrossSlices",
+    "SelfRenewalSignedCodeVerifierTests/supportsOriginalTruncatedCDHashAndRejectsAgilityOIDCollisions"
+  ],
+  "testSourceSnapshots": [
+    {
+      "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/historical-tests/SelfRenewalMachOSignatureReaderTests.swift",
+      "bytes": 18684,
+      "sha256": "4c6bdda7ce187ae1e207fda2a62e0cc8fb859e4b2a2a8c203046b8ac5faf96f3"
+    },
+    {
+      "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/historical-tests/SelfRenewalCodeDirectoryHashVerifierTests.swift",
+      "bytes": 24586,
+      "sha256": "6ebda6025f333a84dc9e2704c356fa94c14e2a84cd275c7f64359f318f032354"
+    },
+    {
+      "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/historical-tests/SelfRenewalCMSVerifierTests.swift",
+      "bytes": 7360,
+      "sha256": "5e958f5836b77a0cc7e65770312d6efb49dca01b59b74dcac6b35d5ffecf3c80"
+    },
+    {
+      "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/historical-tests/SelfRenewalProvisioningProfileVerifierTests.swift",
+      "bytes": 4085,
+      "sha256": "2413d85949b311157601bb9da09331eb23243739bb6c36116c1e88a852ccc70c"
+    },
+    {
+      "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/historical-tests/SelfRenewalMaterialInventoryTests.swift",
+      "bytes": 12377,
+      "sha256": "b295f587833e081771e3575f13ec5ca7763ab9d2f096ccf5926a50570e5e920d"
+    },
+    {
+      "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/historical-tests/SelfRenewalSignedCodeVerifierTests.swift",
+      "bytes": 18365,
+      "sha256": "9a93c0756e5477a2244e80fa6145e8b220640a94c4c689b576c0b77ec7c7f119"
+    },
+    {
+      "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/historical-tests/SelfRenewalResourceSealVerifierTests.swift",
+      "bytes": 15686,
+      "sha256": "cf7da8989598c5e61df31c46059b554f55f4f0bdf91bd1144902b7b3d4b0f895"
+    }
+  ],
+  "executedNativeMethods": 0,
+  "acceptedNativeMethods": 0,
+  "failureKind": "Swift Testing macro expansion typecheck failure; test target did not compile",
+  "failureSource": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+  "failureSourceLine": 47,
+  "compilerErrorOccurrencesInBatchOutput": 24,
+  "failureExpression": "#expect(profile.envelope.signers.allSatisfy(\\.signatureVerified))",
+  "xcodebuildExitCode": 65,
+  "wrapperTimeoutVerdict": false,
+  "failureLog": {
+    "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/artifact/reader-renewal-probe/sealedmaterials-tests.log",
+    "bytes": 8394893,
+    "sha256": "2a49c35cd2840fbf33ec5743fae47bb4daa401397ec221ccf407559b2b43bdb3"
+  },
+  "verbatimBoundedFailureEvidence": [
+    {
+      "file": {
+        "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/compiler-diagnostic.raw.log",
+        "bytes": 1749,
+        "sha256": "a698a566243bfcfc7075e761d1ecc397b2e942fde769c59f365e0e70a5c4853b"
+      },
+      "originalLog": {
+        "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/artifact/reader-renewal-probe/sealedmaterials-tests.log",
+        "bytes": 8394893,
+        "sha256": "2a49c35cd2840fbf33ec5743fae47bb4daa401397ec221ccf407559b2b43bdb3"
+      },
+      "firstLine": 34754,
+      "lastLine": 34773,
+      "byteOffset": 8254298,
+      "verbatimContiguousSlice": true
+    },
+    {
+      "file": {
+        "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/test-cancelled.raw.log",
+        "bytes": 302,
+        "sha256": "088f0eb6e263243784bd9b92bfb34960823300dd508ad8a061ab4517d084c2e7"
+      },
+      "originalLog": {
+        "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/artifact/reader-renewal-probe/sealedmaterials-tests.log",
+        "bytes": 8394893,
+        "sha256": "2a49c35cd2840fbf33ec5743fae47bb4daa401397ec221ccf407559b2b43bdb3"
+      },
+      "firstLine": 35726,
+      "lastLine": 35734,
+      "byteOffset": 8386545,
+      "verbatimContiguousSlice": true
+    }
+  ],
+  "partialXcresultPreserved": true,
+  "xcresultExportedSummaryAndLeavesAvailable": false,
+  "sameFailureAlreadyFixedInCommit": "3797664",
+  "fixedExpressionIncludedInSubmittedSource": "478b69d",
+  "newLiveSourceNotAcceptedByThisFailure": true,
+  "networkRequestsDuringAudit": 0,
+  "testsReexecuted": false,
+  "signedDownloadURLArchived": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T03:53:16.743544+00:00",
+  "status": "test-target-compilation-failed-zero-methods-executed",
+  "sourceCommit": "c8d899baee616b31c44b8677fb4a5f7a81ebb262",
+  "sourceTag": "reader-renewal-c8d899b",
+  "runID": 39362768821,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39362768821",
+  "runConclusion": "failure",
+  "selectionMode": "sealedmaterials",
+  "sourceInputs": 51,
+  "plannedNativeMethods": 48,
+  "executedNativeMethods": 0,
+  "acceptedNativeMethods": 0,
+  "artifact": {
+    "path": ".build/renewal-discovery/bound-material-SDK-results/c8d899b/evidence.zip",
+    "bytes": 1025132,
+    "sha256": "dcf7f7b24bd3f20e252b14fc25f879768546d9bd450dac0a74734df269199dc2"
+  },
+  "audit": "docs/legado-ios/evidence/core-renewal-sdk-c8d899b-result/c8d899b/independent-audit.json",
+  "evidenceManifest": "docs/legado-ios/evidence/core-renewal-sdk-c8d899b-result/manifest.json",
+  "failureKind": "Swift Testing macro expansion typecheck failure; test target did not compile",
+  "failureSource": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+  "failureSourceLine": 47,
+  "failureExpression": "#expect(profile.envelope.signers.allSatisfy(\\.signatureVerified))",
+  "repeatedCompilerDiagnosticOccurrences": 24,
+  "xcodebuildExitCode": 65,
+  "timeout": false,
+  "repairStatus": "same-test-macro-fixed-in-3797664-and-included-in-submitted-478b69d-awaiting-SDK",
+  "newSDKRequestedWhileRecording": false,
+  "currentEditedSourcesAccepted": false,
+  "liveRunSingleObservation": {
+    "source": "478b69d",
+    "record": "478b69d-live-observation/observation.json",
+    "statusAtObservation": "in_progress",
+    "acceptedNativeMethods": 0
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
