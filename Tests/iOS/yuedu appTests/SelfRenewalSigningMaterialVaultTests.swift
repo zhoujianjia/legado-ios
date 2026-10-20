@@ -140,7 +140,8 @@ struct SelfRenewalSigningMaterialVaultTests {
             let before = try await f.vault.generation(in: namespace)
             f.storage.failSave(afterSuccessfulSaves: 1)
             try await Self.failure(.manifestWrite) { _ = try await f.vault.generateKey(in: namespace, expectedGeneration: before) }
-            let journal = try #require(f.storage.load(account: "owned-v1-" + namespace.id.uuidString.lowercased()))
+            let storedJournal = try f.storage.load(account: "owned-v1-" + namespace.id.uuidString.lowercased())
+            let journal = try #require(storedJournal)
             let object = try #require(try JSONSerialization.jsonObject(with: Data(journal.utf8)) as? [String: Any])
             let keys = try #require(object["keys"] as? [[String: Any]])
             let pending = try #require(keys.first(where: { $0["state"] as? String == "pending" }))

@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T07:19:38.887222+00:00",
+  "status": "actual-native-compile-and-owned-producer-failures-Package10-pass-exact-source-audited",
+  "sourceCommit": "9105b46820a69e44c7fef646ae48cf9975e03e19",
+  "sourceTag": "reader-renewal-9105b46",
+  "runID": 39379925905,
+  "jobID": 118486470582,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39379925905",
+  "terminalConclusion": "failure",
+  "sourceBindings": [
+    {
+      "kind": "native",
+      "sourceInputs": 175,
+      "allExactGitBlobBytesMatched": true
+    },
+    {
+      "kind": "package",
+      "sourceInputs": 19,
+      "allExactGitBlobBytesMatched": true
+    }
+  ],
+  "native": {
+    "intendedDefinitions": 253,
+    "intendedLeaves": 255,
+    "actualExecuted": 0,
+    "accepted": 0,
+    "portableWorkflowGuardOutcome": "success",
+    "phaseRecordsVerified": [
+      {
+        "phase": "producer",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 18.698787
+      },
+      {
+        "phase": "stage",
+        "state": "blocked",
+        "blockedBy": [
+          "producer"
+        ],
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 6.32685
+      },
+      {
+        "phase": "before-build",
+        "state": "blocked",
+        "blockedBy": [
+          "producer",
+          "stage"
+        ],
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 3.431009
+      },
+      {
+        "phase": "boot",
+        "state": "succeeded",
+        "blockedBy": [],
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 205.251638
+      },
+      {
+        "phase": "native",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 1880.722868
+      },
+      {
+        "phase": "export",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 24.614864
+      },
+      {
+        "phase": "cases",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 9.44586
+      },
+      {
+        "phase": "test-settings",
+        "state": "succeeded",
+        "blockedBy": [],
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 37.015514
+      },
+      {
+        "phase": "after-tests",
+        "state": "blocked",
+        "blockedBy": [
+          "producer",
+          "stage",
+          "before-build",
+          "native",
+          "export",
+          "cases"
+        ],
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 13.332086
+      },
+      {
+        "phase": "build-settings",
+        "state": "succeeded",
+        "blockedBy": [],
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 28.882948
+      }
+    ],
+    "producerExit": 1,
+    "producerTimedOut": false,
+    "producerFailure": "First framework codesign cannot find the imported identity; independent recorded key/signature/import checks do not prove codesign identity usability or uniquely identify its cause.",
+    "compilerDiagnostics": 24,
+    "uniqueCompilerDiagnostics": 1,
+    "compilerSite": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift:143",
+    "compilerFailure": "Throwing storage.load inside #require has no inner try; outer try handles macro require only. No test execution occurred.",
+    "resultJSONPresent": false
+  },
+  "independentPackage": {
+    "actualPassed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "exactCaseIdentifiers": [
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testBusinessCodingPreservesOriginalNamesWithoutEnvironmentOrAppUuid",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testConfiguredTypedFourStageChainKeepsBusinessIdentitiesAndExplicitNoSave",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testNullPageAndUtf8RequestBudgetAreExplicit",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testOriginalTypedErrorsAndIncompatibleDtosStayErrors",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBusinessApiDoesNotSelectTheExistingRoute",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testCancelReachesRuntimeWhileExecuteWorkerIsBlocked",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionCannotSilentlyUseLegacyTransport",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionKeepsTransportOptionsOutsideSourceData",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testRuntimeOperationsRunOnSignalableBackgroundThreads",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testSessionAndUnicodeRequestRoundTrip"
+    ],
+    "sourceOnly": true,
+    "packageCompilationInputs": 12,
+    "totalSourceInputs": 19,
+    "sourceHashesExact": true,
+    "XMLAndVerboseOutcomesMatched": true,
+    "currentPackageSourceDelta": [
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "executedBytes": 18826,
+        "executedSHA256": "74755c15ffc9298ab823463f42592e00967668f9e52c9f9d766701790394eaad",
+        "currentBytes": 19443,
+        "currentSHA256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
+      }
+    ],
+    "latestPackageAcceptance": false,
+    "reason": "Current Cookie text API changes Runtime.swift and adds source-only Package test input; forthcoming WK codec also remains outside immutable9105."
+  },
+  "actualCompilerRepair": {
+    "sourcePath": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+    "oldBytes": 21874,
+    "oldSHA256": "ba8d963eaa13902aa7c3c9676240e3ec064847a84619db2fb36490e24d7f23f2",
+    "newBytes": 21924,
+    "newSHA256": "673caa1b651748cca2ef3735b93d2f24c3b53556ad7830c46f2a4df0301e4959",
+    "newTestDefinitions": 0,
+    "actualSDKDiagnostic": "Throwing storage.load in macro argument is missing try despite try surrounding the require macro.",
+    "change": "Evaluate storage.load with explicit try first, then require the resulting optional; same pending journal and published key assertions remain.",
+    "SDKReexecution": 0,
+    "SwiftSDKCompilationConfirmedAfterFix": false,
+    "grammarOrUnrelatedTestsRepeated": false
+  },
+  "newCloudRunOrTagCreated": false,
+  "nextAction": "Never poll terminal run39379925905/job118486470582 again. Preserve its failed native/zero execution and exact-source independent Package10 acceptance separately. The actual compiler macro site is now fixed but SDK-unverified; close the controlled producer cross-process identity issue with one bounded real Mac producer check before another full native batch. Integrate preview/Cookie WK/expiry and select current retirement7/App6/Cookie/Unicode/preview/expiry/native affected cases and changed Package compilation closure for one coherent SDK batch; no adhoc, skip, reduced native selection or repeated unchanged JVM runs.",
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-cookie-read-sdk-corrected-terminal",
+    "manifest": "manifest.json",
+    "rawFiles": 79,
+    "nativeZIP_SHA256": "dd71d129292e60d35514c36559a2921180fe09f4ad0c95ac515b780a8527525f",
+    "packageZIP_SHA256": "cec2fc2eabc762a81c1d9cf65731b37ca9ec4108ea3c8bc25a74b3251aa4317c"
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

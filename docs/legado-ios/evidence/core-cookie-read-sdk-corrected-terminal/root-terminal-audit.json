@@ -1,0 +1,626 @@
+{
+  "schemaVersion": 1,
+  "auditedAtUTC": "2026-10-20T07:15:16.855742+00:00",
+  "sourceCommit": "9105b46820a69e44c7fef646ae48cf9975e03e19",
+  "sourceTag": "reader-renewal-9105b46",
+  "runID": 39379925905,
+  "jobID": 118486470582,
+  "sourceBindings": [
+    {
+      "kind": "native",
+      "sourceInputs": 175,
+      "allExactGitBlobBytesMatched": true
+    },
+    {
+      "kind": "package",
+      "sourceInputs": 19,
+      "allExactGitBlobBytesMatched": true
+    }
+  ],
+  "native": {
+    "intendedDefinitions": 253,
+    "intendedLeaves": 255,
+    "actualExecuted": 0,
+    "accepted": 0,
+    "portableWorkflowGuardOutcome": "success",
+    "phaseRecordsVerified": [
+      {
+        "phase": "producer",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 18.698787
+      },
+      {
+        "phase": "stage",
+        "state": "blocked",
+        "blockedBy": [
+          "producer"
+        ],
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 6.32685
+      },
+      {
+        "phase": "before-build",
+        "state": "blocked",
+        "blockedBy": [
+          "producer",
+          "stage"
+        ],
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 3.431009
+      },
+      {
+        "phase": "boot",
+        "state": "succeeded",
+        "blockedBy": [],
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 205.251638
+      },
+      {
+        "phase": "native",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 1880.722868
+      },
+      {
+        "phase": "export",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 24.614864
+      },
+      {
+        "phase": "cases",
+        "state": "failed",
+        "blockedBy": [],
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 9.44586
+      },
+      {
+        "phase": "test-settings",
+        "state": "succeeded",
+        "blockedBy": [],
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 37.015514
+      },
+      {
+        "phase": "after-tests",
+        "state": "blocked",
+        "blockedBy": [
+          "producer",
+          "stage",
+          "before-build",
+          "native",
+          "export",
+          "cases"
+        ],
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 13.332086
+      },
+      {
+        "phase": "build-settings",
+        "state": "succeeded",
+        "blockedBy": [],
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 28.882948
+      }
+    ],
+    "producerExit": 1,
+    "producerTimedOut": false,
+    "producerFailure": "First framework codesign cannot find the imported identity; independent recorded key/signature/import checks do not prove codesign identity usability or uniquely identify its cause.",
+    "compilerDiagnostics": 24,
+    "uniqueCompilerDiagnostics": 1,
+    "compilerSite": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift:143",
+    "compilerFailure": "Throwing storage.load inside #require has no inner try; outer try handles macro require only. No test execution occurred.",
+    "resultJSONPresent": false,
+    "nativeSummary": {
+      "devicesAndConfigurations": [],
+      "environmentDescription": "Yuedu-Reader · Built with macOS 15.7.9",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1792479466.651,
+      "passedTests": 0,
+      "result": "unknown",
+      "skippedTests": 0,
+      "startTime": 1792477830.359,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - Yuedu-Reader",
+      "topInsights": [],
+      "totalTestCount": 0
+    }
+  },
+  "package": {
+    "actualPassed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "exactCaseIdentifiers": [
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testBusinessCodingPreservesOriginalNamesWithoutEnvironmentOrAppUuid",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testConfiguredTypedFourStageChainKeepsBusinessIdentitiesAndExplicitNoSave",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testNullPageAndUtf8RequestBudgetAreExplicit",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testOriginalTypedErrorsAndIncompatibleDtosStayErrors",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBusinessApiDoesNotSelectTheExistingRoute",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testCancelReachesRuntimeWhileExecuteWorkerIsBlocked",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionCannotSilentlyUseLegacyTransport",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionKeepsTransportOptionsOutsideSourceData",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testRuntimeOperationsRunOnSignalableBackgroundThreads",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testSessionAndUnicodeRequestRoundTrip"
+    ],
+    "sourceOnly": true,
+    "packageCompilationInputs": 12,
+    "totalSourceInputs": 19,
+    "sourceHashesExact": true,
+    "XMLAndVerboseOutcomesMatched": true,
+    "currentPackageSourceDelta": [
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "executedBytes": 18826,
+        "executedSHA256": "74755c15ffc9298ab823463f42592e00967668f9e52c9f9d766701790394eaad",
+        "currentBytes": 19443,
+        "currentSHA256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
+      }
+    ],
+    "latestPackageAcceptance": false,
+    "reason": "Current Cookie text API changes Runtime.swift and adds source-only Package test input; forthcoming WK codec also remains outside immutable9105."
+  },
+  "downloads": [
+    {
+      "runID": 39379925905,
+      "sourceCommit": "9105b46820a69e44c7fef646ae48cf9975e03e19",
+      "artifactID": 12246727467,
+      "name": "reader-renewal-probe-evidence",
+      "bytes": 1156573,
+      "sha256": "dd71d129292e60d35514c36559a2921180fe09f4ad0c95ac515b780a8527525f",
+      "githubSizeAndDigestMatched": true,
+      "extractedRoot": ".build/sdk-evidence/9105b46/native",
+      "members": [
+        {
+          "member": "reader-renewal-probe/build-settings.json.stderr.log",
+          "bytes": 303,
+          "sha256": "dbd25b5815d59b46ae7c5561b674992226fdaf4de5cb900fe8947e893c5b35f1"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-boot.log",
+          "bytes": 15293,
+          "sha256": "5001706279476046bd4ad9e19b871c75be81551cd15c9225a3f1ff17cdf164e3"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-boot.log.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "reader-renewal-probe/build-settings.json",
+          "bytes": 43804,
+          "sha256": "6fd47b3287e515885af74058252c0f8ec84d24ea2881a42cff19b1a19183d6f8"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-cases.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-completion.json",
+          "bytes": 3881,
+          "sha256": "66f15a2c2989270182c6d48e755b865e3173d238bc362b1b8af8407b652d04bd"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-cases.log.stderr.log",
+          "bytes": 132,
+          "sha256": "477334415fa7a6a7b54117d60669bd13fc569f8871c12f91a089d5cb3a2f5aa7"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-export.log",
+          "bytes": 2717,
+          "sha256": "688d3e7cd2f09490955ce6d5a8b01835906d8111272759d8da78071599350063"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-export.log.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-native.log",
+          "bytes": 246,
+          "sha256": "134dd77a681b29b19faa238ad97148a6b135e2fe771a71169f24de0b84ff508a"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-native.log.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-after-tests.json",
+          "bytes": 2555,
+          "sha256": "db1e1ae493fa90617ada7340473010e053df23c329efd262d0764bd2b78db4f9"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-boot.json",
+          "bytes": 2727,
+          "sha256": "7ac4e3b8ad2fb15b9221461fbc7af1a7faa1ee709cdf1c9b79db012530de748d"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-before-build.json",
+          "bytes": 2494,
+          "sha256": "82c9fbbcdab8a12d841e5a9b13e364d33d89b6e4b0273f9c61eaee9b808fb0ce"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-build-settings.json",
+          "bytes": 4446,
+          "sha256": "baed28d154a848dcade73f4631519126d0c80aca97190a703fb79192410ad838"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-cases.json",
+          "bytes": 3455,
+          "sha256": "88d056ace4f6b4c553a829d207f771933204f780c0dd95cd99649d5aeb162edf"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-export.json",
+          "bytes": 3234,
+          "sha256": "9708490b02b02f52ff76b34c03b255e8433314cf4768d94d2154cebd4633fb20"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-native.json",
+          "bytes": 64217,
+          "sha256": "479867d1ae6536d5c7244e89727d87ef987f9de9dfafef9b3073bb79dee08de1"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-producer.json",
+          "bytes": 3140,
+          "sha256": "b5425db58ff7b7210736d21fef623ac6233b87f156c057544ff85c35a81d70bc"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-result.json",
+          "bytes": 2522,
+          "sha256": "e9057131132a55d874c05bb6542ca1df76207ec110766ff0ba14b36b73fcaccc"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-stage.json",
+          "bytes": 2545,
+          "sha256": "c991a96c42fbf1af86b59f6a2258aa7b9236a219ebc7b55e62a2966f8f5dedb3"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-phase-test-settings.json",
+          "bytes": 4490,
+          "sha256": "582acf8be886b0f7a90b1636de2a64e6e1456f34292470ec613606d6e6be2acd"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-pipeline.json",
+          "bytes": 102524,
+          "sha256": "4f245ef6c3a5346626284ff46e97f7f72f75648ced65e77ba1c76a4cd9842fd2"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-producer.log",
+          "bytes": 2319,
+          "sha256": "76f5d9423ec649bd5c8a43145988a4803571562d8cf72d3304e9e3a299077136"
+        },
+        {
+          "member": "reader-renewal-probe/handoff-producer.log.stderr.log",
+          "bytes": 927,
+          "sha256": "bab6b3d2e7ecd09f02e43694ad7155c7f784fe8eeeb42b1d53c94a3dd2733dd0"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal-extraction.json",
+          "bytes": 2717,
+          "sha256": "688d3e7cd2f09490955ce6d5a8b01835906d8111272759d8da78071599350063"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal-summary.json",
+          "bytes": 430,
+          "sha256": "4db19f09cfcd7200f9ea45985e4094ca43e2396397c90a92c79ed8c6ccf7cfff"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal-summary.json.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal-tests.json",
+          "bytes": 367,
+          "sha256": "2429e425b42400c05e5b7a87fac4883a36512e078d921878f64e992f26075789"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal-tests.json.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal-tests.log",
+          "bytes": 8136226,
+          "sha256": "7936d06a67273b73e38d609197de3c20f30ff5ba6a64ca999c523915f78c5c4e"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+          "bytes": 40,
+          "sha256": "96faa45c2b54e05553291e5b8ec90e59f6e7b23a908ca31153ec52d6b5f9f65b"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~869Tc_zTCK1mNBAkb0lz32BsZbMb96HNADI1tdZh59Pf7UHoQzNIxU7zx3asqAw7Kdm04_sgeh0ZWM6xhbcVqA==",
+          "bytes": 36,
+          "sha256": "35e2629a5ab936ddf63b0af03efcc8e8b26841dfeb04e36e23523e7672bdf4aa"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~9YpSNwkdhQ-nRavVcNO5VcHKc3yysw3PGvcmUoTP8Ac3QpmxkJ186j7qlv6pkh6nzgzUKCaorChd_SrdbeN72Q==",
+          "bytes": 638704,
+          "sha256": "54b730eb876d1e267bb44be6d7e4d99864e5c2434fac7fc80b9e97489b6c41e6"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~cj12185WjBVzPdg1jJirjYDxJ-uTLg6sm5AcF0k7eRb-9FVJXyWxz3L9QvXrkI3YLpGA9CwfcO6wc1tVjjQSyA==",
+          "bytes": 292,
+          "sha256": "5ee1136900657ed05866743b2248eff9d41aea5a33683a3a10e4e89f9549a935"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~dkPASGQl84c4p_Wh9qQhNptk_FWRHJwFqp9savBAnEDshkIQ78CiIaCjU74i-Mrzyy_KlKXARsUdstrbLo_apQ==",
+          "bytes": 9230,
+          "sha256": "3dfdf7560e4badaf1387c52557efbd62e3d04553eed02b99d226d8dc92dd853d"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~vZU61-FnR1NQ452cR4nrnbJIgws5icpK0WpowxMmj_mHw2tGQBiJ9DgU1z0Dyt4wZgcvGXehABld-b4tglpzTA==",
+          "bytes": 416,
+          "sha256": "645bc855cf66fb0b17155fb97e643d9a2b7cbb4020e6faf39b1c45cf0314f17a"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~spicoCR4dFxxZ2h5E49j63584N496hWOr2y_DaF8TgUAbX3NjoS8N2fgBJIjniUzu_8Ncvk0p8ZL1tMggO5jLQ==",
+          "bytes": 97,
+          "sha256": "bfa5fe3717713ecd90c72097b1f47a9b1e626c11b56804d5029509b0650ad4b4"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/data.0~i5B9V-IzwEA262UvVNLX91ZRjNDI92CAR1M42OCeUf3cQoJ3O25-jNfAOP-mmB9v-d1_OPOpSdzGuBz-H6OCqQ==",
+          "bytes": 118,
+          "sha256": "22042a7a5ce84d43adb81746dd1f510ac721f412bb04077fd2fd8cf020d42c17"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~3tdcR6bwWxdzU22qUxcKe3glLeiYH8_XaDCQvx9TbExlAgQti1qiRQMlvHkmkDeb8RlcrUaKL8To60JB7E1wdA==",
+          "bytes": 1,
+          "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~869Tc_zTCK1mNBAkb0lz32BsZbMb96HNADI1tdZh59Pf7UHoQzNIxU7zx3asqAw7Kdm04_sgeh0ZWM6xhbcVqA==",
+          "bytes": 67,
+          "sha256": "1462cb14fdb15523c798c644b39bb0f5c6f68cbb4224817d49cd2348979e09d5"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~9YpSNwkdhQ-nRavVcNO5VcHKc3yysw3PGvcmUoTP8Ac3QpmxkJ186j7qlv6pkh6nzgzUKCaorChd_SrdbeN72Q==",
+          "bytes": 1,
+          "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~cj12185WjBVzPdg1jJirjYDxJ-uTLg6sm5AcF0k7eRb-9FVJXyWxz3L9QvXrkI3YLpGA9CwfcO6wc1tVjjQSyA==",
+          "bytes": 1,
+          "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~dkPASGQl84c4p_Wh9qQhNptk_FWRHJwFqp9savBAnEDshkIQ78CiIaCjU74i-Mrzyy_KlKXARsUdstrbLo_apQ==",
+          "bytes": 331,
+          "sha256": "eb8f6888abcd19cf3d7ef4606ce4c4b017783e93d2db207dcf837e11ba6d6fce"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~i5B9V-IzwEA262UvVNLX91ZRjNDI92CAR1M42OCeUf3cQoJ3O25-jNfAOP-mmB9v-d1_OPOpSdzGuBz-H6OCqQ==",
+          "bytes": 67,
+          "sha256": "61191db2f6a724a07024a1efd38c53632bf098a58e14143ce90b95196e22913d"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~spicoCR4dFxxZ2h5E49j63584N496hWOr2y_DaF8TgUAbX3NjoS8N2fgBJIjniUzu_8Ncvk0p8ZL1tMggO5jLQ==",
+          "bytes": 1,
+          "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Data/refs.0~vZU61-FnR1NQ452cR4nrnbJIgws5icpK0WpowxMmj_mHw2tGQBiJ9DgU1z0Dyt4wZgcvGXehABld-b4tglpzTA==",
+          "bytes": 1,
+          "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/Info.plist",
+          "bytes": 715,
+          "sha256": "8ec6eacaa5b55a3abe8d691cf985081652de3d595c919ddc6e7dd450a0d15770"
+        },
+        {
+          "member": "reader-renewal-probe/handoffrenewal.xcresult/database.sqlite3",
+          "bytes": 323584,
+          "sha256": "a69d9a535d51b3219a037767d39aa518f76569ffebc4a4a69fd0ba37b089921a"
+        },
+        {
+          "member": "reader-renewal-probe/historical-package-evidence.json",
+          "bytes": 9897,
+          "sha256": "89b39370abf530151d7b206659d70d0f2cc8ee2d49c8de8253223fb1f6dd7028"
+        },
+        {
+          "member": "reader-renewal-probe/info-overlay.json",
+          "bytes": 691,
+          "sha256": "56a40a2ad33f532878f4383508ba1de4c9a29e2345b0718c8bbdbb2465442f82"
+        },
+        {
+          "member": "reader-renewal-probe/overlays.json",
+          "bytes": 2624,
+          "sha256": "732944cbed2ed7a64a4c9eab54730deed45d1f815076f9a3bebb3eb4c0ca12ca"
+        },
+        {
+          "member": "reader-renewal-probe/prepare.log",
+          "bytes": 57020,
+          "sha256": "8a0e0950d0b4c575a5407fce6d6cbd25d8a8feaab845fbbe3d1a0a630b09d2f8"
+        },
+        {
+          "member": "reader-renewal-probe/project-overlay.json",
+          "bytes": 1215,
+          "sha256": "ce2b597f6ac6c9cfeae2576ebb344f1f478cac96bfe850903ce0bfdad1f685e8"
+        },
+        {
+          "member": "reader-renewal-probe/sdk-test-build-settings.json",
+          "bytes": 131794,
+          "sha256": "fb3d0a1346c43435e6ee7a35659552c5259f7166c6cdf530b64f8a7032419d27"
+        },
+        {
+          "member": "reader-renewal-probe/sdk-test-build-settings.json.stderr.log",
+          "bytes": 303,
+          "sha256": "dbd25b5815d59b46ae7c5561b674992226fdaf4de5cb900fe8947e893c5b35f1"
+        },
+        {
+          "member": "reader-renewal-probe/source-inputs.json",
+          "bytes": 57020,
+          "sha256": "8a0e0950d0b4c575a5407fce6d6cbd25d8a8feaab845fbbe3d1a0a630b09d2f8"
+        },
+        {
+          "member": "reader-renewal-probe/xcode-version.log",
+          "bytes": 31,
+          "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+        },
+        {
+          "member": "reader-renewal-probe/xcresulttool-test-details-help.log",
+          "bytes": 817,
+          "sha256": "bf52800fb3305417acac993e658bed87e53a54de3595b8223044eb547990f8c8"
+        },
+        {
+          "member": "reader-renewal-probe/xcresulttool-test-details-help.log.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "reader-renewal-probe/xcresulttool-tests-help.log",
+          "bytes": 713,
+          "sha256": "e75c32d22105fc7cb77f540e3336be24e0fd2f460279d285575b31e1b9e1f874"
+        },
+        {
+          "member": "reader-renewal-probe/xcresulttool-tests-help.log.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "member": "ci-logs/reader-renewal-existing-guards.log",
+          "bytes": 4221,
+          "sha256": "e5b3baaf4338bb0e42532615999010c3c65113d56ae83f6acc2a74121ebb8cab"
+        },
+        {
+          "member": "ci-logs/reader-renewal-guards.log",
+          "bytes": 10546,
+          "sha256": "7e48b19c0e5e108e330259de33a2d1824ec152761b3a08309f7e97b99ee2a55f"
+        },
+        {
+          "member": "ci-logs/reader-renewal-original-api-guards.log",
+          "bytes": 2503,
+          "sha256": "d20d72c5c4716d8370207848519a795f83a6557856730f929313d48c6092233f"
+        },
+        {
+          "member": "ci-logs/reader-renewal-original-api.log",
+          "bytes": 104715,
+          "sha256": "bf733398847fafe4de284432c8099df72d5b0d9d91496a33a9fa4584b43b9e32"
+        },
+        {
+          "member": "ci-logs/reader-renewal-producer-timeout-guards.log",
+          "bytes": 1689,
+          "sha256": "a593664e18151939f8ae383d5f62c4715fde0cb13b23a4fc24e275ca51097ebb"
+        },
+        {
+          "member": "ci-logs/reader-renewal-xcode.log",
+          "bytes": 31,
+          "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+        },
+        {
+          "member": "ci-logs/reader-renewal-producer-guards.log",
+          "bytes": 1142,
+          "sha256": "de20012d50871e61fd0be2d881796ccb2dd9b2921b12df49dfeac986833e8670"
+        },
+        {
+          "member": "ci-logs/reader-renewal-report-inspector-guards.log",
+          "bytes": 5787,
+          "sha256": "8eceb30cedc9978b92d4584615c05703d87cf2252b1a6fe369f140cbdd230a33"
+        },
+        {
+          "member": "ci-logs/reader-renewal.log",
+          "bytes": 3881,
+          "sha256": "66f15a2c2989270182c6d48e755b865e3173d238bc362b1b8af8407b652d04bd"
+        }
+      ],
+      "artifactListSource": "decoded-GitHub-connector-result",
+      "downloads": 1,
+      "CITriggered": false,
+      "polling": false
+    },
+    {
+      "runID": 39379925905,
+      "sourceCommit": "9105b46820a69e44c7fef646ae48cf9975e03e19",
+      "artifactID": 12246905241,
+      "name": "reader-renewal-original-api-evidence",
+      "bytes": 22562,
+      "sha256": "cec2fc2eabc762a81c1d9cf65731b37ca9ec4108ea3c8bc25a74b3251aa4317c",
+      "githubSizeAndDigestMatched": true,
+      "extractedRoot": ".build/sdk-evidence/9105b46/package",
+      "members": [
+        {
+          "member": "reader-renewal-original-api/execution.json",
+          "bytes": 1602,
+          "sha256": "45287488c3328738efa573f78e839cad7e958e8fa5933ad11a0ac4a7d1f5cabe"
+        },
+        {
+          "member": "reader-renewal-original-api/result.json",
+          "bytes": 9870,
+          "sha256": "1f71052367fd4b0ba7c2d87a4a777b0911265a0cb6f72ca1da8d826d9d6cba92"
+        },
+        {
+          "member": "reader-renewal-original-api/source-inputs.json",
+          "bytes": 6136,
+          "sha256": "9e07e209ea1cf6b81b78e27a42cab0145c55dd7e854ac4abf1a1a489041b638e"
+        },
+        {
+          "member": "reader-renewal-original-api/swift-executable.log",
+          "bytes": 98,
+          "sha256": "6a39ef22bfa22a4203e2b7fe93c32cb270cd8693bdb23e5e7a84608ed0ebb57e"
+        },
+        {
+          "member": "reader-renewal-original-api/swift-test-help.log",
+          "bytes": 10337,
+          "sha256": "575de9d617c18eb4f76849d1885da0cb61286cc70dc1535237fc9fc56a5eb910"
+        },
+        {
+          "member": "reader-renewal-original-api/swift-version.log",
+          "bytes": 130,
+          "sha256": "62a7d9c76d4bd5f9cdf04b3ecab4308ae223232ab115b91e5a807e636621f0d7"
+        },
+        {
+          "member": "reader-renewal-original-api/tests.log",
+          "bytes": 94774,
+          "sha256": "49ceddca8e77ffd1d799c831021d96701f54215931070d411ccc0270e9fbe2ee"
+        },
+        {
+          "member": "reader-renewal-original-api/xunit.xml",
+          "bytes": 1726,
+          "sha256": "ce103b85dac4b34d8b8c509df11e04a4508c8fa95b3fd748b101f56ec406f972"
+        },
+        {
+          "member": "ci-logs/reader-renewal-original-api-guards.log",
+          "bytes": 2503,
+          "sha256": "d20d72c5c4716d8370207848519a795f83a6557856730f929313d48c6092233f"
+        },
+        {
+          "member": "ci-logs/reader-renewal-original-api.log",
+          "bytes": 104715,
+          "sha256": "bf733398847fafe4de284432c8099df72d5b0d9d91496a33a9fa4584b43b9e32"
+        }
+      ],
+      "artifactListSource": "decoded-GitHub-connector-result",
+      "downloads": 1,
+      "CITriggered": false,
+      "polling": false
+    }
+  ],
+  "remaining": [
+    "Fix real macro compile site; repair controlled SDK producer identity use with actual Mac proof, never adhoc/skip.",
+    "Collect current App owner/retirement/preview/Cookie/Unicode/expiry changes in one coherent SDK selection; rerun changed Package compilation closure separately.",
+    "No JVM/JNI execution, automatic renewal, Apple authorization or device installation/data-preservation acceptance from this run."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
