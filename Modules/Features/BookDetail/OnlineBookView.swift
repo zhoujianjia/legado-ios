@@ -705,6 +705,29 @@ struct OnlineBookView: View {
         do {
             var currentRuntimeVariables = requestBook.runtimeVariables
 
+            if !source.isJsSource, !shouldPersistShelfSourceSwitch,
+               let bookID = await bookStore.originalStoredOnlineBookID(sourceID: source.id, bookURL: requestBook.bookUrl) {
+                // Existing shelf and leftover trial books refresh through their
+                // actual owner. A new search preview must never replace their
+                // chapter identities, cached filenames or variable companions.
+                _ = try await bookStore.refreshOnlineBookMetadata(bookId: bookID, forceInfoRefresh: true,
+                    bookSourceFetcher: dependencies.bookSourceFetcher,
+                    onMetadataResolved: { updated, info in
+                        guard isCurrentRequest(requestBook) else { return }
+                        addedBookId = updated.id
+                        alreadyInShelf = updated.isInBookshelf
+                        chapters = updated.onlineChapters ?? []
+                        tocRuntimeVariables = updated.runtimeVariables
+                        if var display = info?.onlineBook {
+                            display.runtimeVariables = updated.runtimeVariables
+                            display.tocUrl = updated.tocURL ?? display.tocUrl
+                            detailInfo = OnlineBookDetailPresentationPolicy.sanitized(display)
+                        }
+                        loadingTOC = false
+                    })
+                return
+            }
+
             // ① Cache-first: a previously fetched TOC for this book renders
             //    instantly; the detail info and a fresh TOC still load below.
             let provisionalTocURL = requestBook.tocUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -732,13 +755,14 @@ struct OnlineBookView: View {
                         self.chapters = firstChapters
                         self.loadingTOC = false
                     }
-                    if !shouldPersistShelfSourceSwitch, let bookId = self.addedBookId {
+                    if source.isJsSource, !shouldPersistShelfSourceSwitch, let bookId = self.addedBookId {
                         self.bookStore.updateOnlineChapters(bookId: bookId, chapters: firstChapters)
                     }
                 }
             }
 
             let applyFinal: (TOCPackage) async -> Void = { tocPackage in
+                let adoption = await OriginalBookAdoption.prepare(tocPackage.runtimeVariables, chapters: tocPackage.chapters)
                 if shouldPersistShelfSourceSwitch, let sourceSwitchBookId = self.sourceSwitchBookId {
                     // A second source tap can finish before this request. Never let an older
                     // TOC commit under the newer selection's shelf record.
@@ -771,66 +795,23 @@ struct OnlineBookView: View {
                     guard isCurrentRequest(requestBook) else { return }
                     chapters = tocPackage.chapters
                     tocRuntimeVariables = tocPackage.runtimeVariables
+                    if !source.isJsSource {
+                        detailInfo?.tocUrl = tocPackage.tocURL
+                    }
                     loadingTOC = false
-                    if !shouldPersistShelfSourceSwitch, let bookId = addedBookId {
+                    if source.isJsSource, !shouldPersistShelfSourceSwitch, let bookId = addedBookId {
                         bookStore.updateOnlineChapters(
                             bookId: bookId,
-                            chapters: tocPackage.chapters,
-                            runtimeVariables: tocPackage.runtimeVariables
+                            chapters: adoption.chapters,
+                            runtimeVariables: adoption.variables
                         )
                     }
                 }
             }
 
-            // ② Concurrent fast path: the book already carries a TOC URL
-            //    distinct from the detail page, so detail info and TOC can
-            //    load in parallel instead of TOC waiting on detail.
-            let trimmedTocURL = requestBook.tocUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !showedCachedTOC,
-               !source.isJsSource,
-               !trimmedTocURL.isEmpty,
-               trimmedTocURL != requestBook.bookUrl,
-               !requestBook.bookUrl.isEmpty {
-                let parallelRuntimeVariables = currentRuntimeVariables
-                async let tocTask = dependencies.bookSourceFetcher.fetchTOCPackage(
-                    tocUrl: trimmedTocURL,
-                    source: source,
-                    runtimeVariables: parallelRuntimeVariables,
-                    onFirstPageReady: applyFirstPage,
-                    forceRefresh: forceRefresh
-                )
-                let infoPackage = try await SourcePerfTrace.spanAsync(
-                    "detail.total", source.bookSourceName
-                ) {
-                    try await dependencies.bookSourceFetcher.fetchBookInfoPackage(
-                        url: requestBook.bookUrl,
-                        source: source,
-                        runtimeVariables: parallelRuntimeVariables,
-                        knownBook: requestBook
-                    )
-                }
-                currentRuntimeVariables = infoPackage.runtimeVariables
-                await MainActor.run {
-                    guard isCurrentRequest(requestBook) else { return }
-                    detailInfo = OnlineBookDetailPresentationPolicy.sanitized(
-                        infoPackage.onlineBook
-                    )
-                }
-                var tocPackage = try await tocTask
-                // Detail resolved a different TOC URL (rare) — it wins.
-                if !infoPackage.tocUrl.isEmpty, infoPackage.tocUrl != trimmedTocURL {
-                    tocPackage = try await dependencies.bookSourceFetcher.fetchTOCPackage(
-                        tocUrl: infoPackage.tocUrl,
-                        source: source,
-                        runtimeVariables: currentRuntimeVariables,
-                        onFirstPageReady: nil,
-                        forceRefresh: forceRefresh
-                    )
-                }
-                await applyFinal(tocPackage)
-                return
-            }
-
+            // Original detail -> TOC share the same mutable book/context. Run
+            // them in authored order so a parallel result cannot replace variables
+            // or a resolved TOC URL accepted by its sibling.
             // ③ Serial fallback: fetch the detail page for full info and the
             //    real TOC URL, then the TOC (instant when ① already showed
             //    this URL's cache).
@@ -885,7 +866,7 @@ struct OnlineBookView: View {
             sourceId: currentBook.sourceId,
             sourceName: currentBook.sourceName,
             bookUrl: currentBook.bookUrl,
-            tocUrl: resolvedTOCURL ?? tocPackage.tocURL,
+            tocUrl: source?.isJsSource == false ? tocPackage.tocURL : (resolvedTOCURL ?? tocPackage.tocURL),
             coverUrl: displayCoverUrl,
             intro: displayIntro,
             lastChapter: displayLatestChapter,
@@ -918,24 +899,39 @@ struct OnlineBookView: View {
 
     /// Add to shelf without opening the reader.
     private func addToShelfOnly() {
-        guard !alreadyInShelf, !chapters.isEmpty, let source else { return }
+        guard !alreadyInShelf, !chapters.isEmpty, let source, !addingToShelf else { return }
         addingToShelf = true
-        let newBook = bookStore.addOnlineBook(
-            name: displayName,
-            author: displayAuthor == localized("未知作者") ? "" : displayAuthor,
-            sourceId: source.id,
-            bookInfoURL: currentBook.bookUrl,
-            tocURL: resolvedTOCURL,
-            coverUrl: displayCoverUrl,
-            runtimeVariables: tocRuntimeVariables
-                ?? detailInfo?.runtimeVariables
-                ?? currentBook.runtimeVariables,
-            chapters: chapters
-        )
-        addedBookId = newBook.id
-        addingToShelf = false
-        alreadyInShelf = true
-        SourceCallBackService.notify(.addBookShelf, book: newBook)
+        let requestBook = currentBook
+        let variables = tocRuntimeVariables ?? detailInfo?.runtimeVariables ?? currentBook.runtimeVariables
+        let refs = chapters, name = displayName, author = displayAuthor == localized("未知作者") ? "" : displayAuthor
+        let url = currentBook.bookUrl, tocURL = resolvedTOCURL, cover = displayCoverUrl
+        Task { @MainActor in
+            defer { addingToShelf = false }
+            let adoption = await OriginalBookAdoption.prepare(variables, chapters: refs)
+            guard isCurrentRequest(requestBook), !Task.isCancelled else { openingReader = false; return }
+            let newBook: ReadingBook
+            if let id = addedBookId, let existing = bookStore.readingBook(id: id) { newBook = existing }
+            else {
+                newBook = bookStore.addOnlineBook(name: name, author: author,
+                    sourceId: source.id, bookInfoURL: url, tocURL: tocURL,
+                    coverUrl: cover, runtimeVariables: adoption.variables,
+                    chapters: adoption.chapters, isInBookshelf: false)
+                addedBookId = newBook.id
+            }
+            do {
+                try await transferOriginalPreviewIfPresent(source: source, variables: variables, bookID: newBook.id)
+                guard isCurrentRequest(requestBook), !Task.isCancelled,
+                      let shelved = bookStore.addReadingBookToShelf(id: newBook.id) else { return }
+                alreadyInShelf = true
+                SourceCallBackService.notify(.addBookShelf, book: shelved)
+            } catch { if isCurrentRequest(requestBook) { tocError = error.localizedDescription } }
+        }
+    }
+
+    private func transferOriginalPreviewIfPresent(source: BookSource, variables: [String: String]?, bookID: UUID) async throws {
+        guard !source.isJsSource, variables?[LegadoMainJSSourceService.originalPreviewContextKey] != nil else { return }
+        _ = try await dependencies.bookSourceFetcher.transferOriginalPreview(source: source,
+            runtimeVariables: variables, to: bookStore, bookID: bookID)
     }
 
     /// Kept once it is on the shelf: its download put it there
@@ -978,82 +974,52 @@ struct OnlineBookView: View {
     /// Ensure the book is on the shelf before opening, so the reader has a valid bookId.
     private func openReader(chapterIndex: Int? = nil) {
         guard !chapters.isEmpty, let source, !openingReader else { return }
-        if let onContinueReading {
-            onContinueReading(chapterIndex)
-            return
-        }
+        if let onContinueReading { onContinueReading(chapterIndex); return }
         guard pushed?.readerID == nil, !showReader else { return }
         openingReader = true
-
-        var targetBookId: UUID
-
-        if alreadyInShelf, let existingId = addedBookId,
-            bookStore.books.contains(where: { $0.id == existingId })
-        {
-            bookStore.updateOnlineChapters(
-                bookId: existingId,
-                chapters: chapters,
-                runtimeVariables: tocRuntimeVariables
-            )
-            temporaryReaderBookId = nil
-            targetBookId = existingId
-        } else {
-            // A book read without being added is a record off the shelf: it neither shows
-            // on the shelf nor syncs. It used to be a shelf book until the reader closed,
-            // and synced while it was open; a device on 2.0.6, which never takes a
-            // deletion, kept it as a second copy of the book (reported 2026-10-04). One a
-            // reader left behind — the app ended before it closed — is read again rather
-            // than joined by another.
-            let runtimeVariables = tocRuntimeVariables
-                ?? detailInfo?.runtimeVariables
-                ?? currentBook.runtimeVariables
-            let tempBook: ReadingBook
-            if let leftover = bookStore.onlineBook(
-                sourceId: source.id, bookInfoURL: currentBook.bookUrl, onShelf: false
-            ) {
-                bookStore.updateOnlineChapters(
-                    bookId: leftover.id,
-                    chapters: chapters,
-                    runtimeVariables: runtimeVariables
-                )
-                tempBook = leftover
-            } else {
-                tempBook = bookStore.addOnlineBook(
-                    name: displayName,
-                    author: displayAuthor == localized("未知作者") ? "" : displayAuthor,
-                    sourceId: source.id,
-                    bookInfoURL: currentBook.bookUrl,
-                    tocURL: resolvedTOCURL,
-                    coverUrl: displayCoverUrl,
-                    runtimeVariables: runtimeVariables,
-                    chapters: chapters,
-                    isInBookshelf: false
-                )
-            }
-            addedBookId = tempBook.id
-            temporaryReaderBookId = tempBook.id
-            targetBookId = tempBook.id
-        }
-
+        let requestBook = currentBook
+        let variables = tocRuntimeVariables ?? detailInfo?.runtimeVariables ?? currentBook.runtimeVariables
+        let refs = chapters, name = displayName, author = displayAuthor == localized("未知作者") ? "" : displayAuthor
+        let url = currentBook.bookUrl, tocURL = resolvedTOCURL, cover = displayCoverUrl
         Task { @MainActor in
-            // Finish persisting a selected chapter before the new reader restores it.
+            let adoption = await OriginalBookAdoption.prepare(variables, chapters: refs)
+            guard isCurrentRequest(requestBook), !Task.isCancelled else { openingReader = false; return }
+            let targetBookID: UUID
+            if alreadyInShelf, let id = addedBookId, bookStore.readingBook(id: id) != nil {
+                // Existing original chapters were merged by the store use case;
+                // opening a reader must not replay a display preview over them.
+                if source.isJsSource {
+                    bookStore.updateOnlineChapters(bookId: id, chapters: adoption.chapters, runtimeVariables: adoption.variables)
+                }
+                temporaryReaderBookId = nil; targetBookID = id
+            } else if let leftover = bookStore.onlineBook(sourceId: source.id, bookInfoURL: url, onShelf: false) {
+                if source.isJsSource {
+                    bookStore.updateOnlineChapters(bookId: leftover.id, chapters: adoption.chapters, runtimeVariables: adoption.variables)
+                }
+                addedBookId = leftover.id; temporaryReaderBookId = leftover.id; targetBookID = leftover.id
+            } else {
+                let book = bookStore.addOnlineBook(name: name, author: author, sourceId: source.id,
+                    bookInfoURL: url, tocURL: tocURL, coverUrl: cover,
+                    runtimeVariables: adoption.variables, chapters: adoption.chapters, isInBookshelf: false)
+                addedBookId = book.id; temporaryReaderBookId = book.id; targetBookID = book.id
+            }
+            do { try await transferOriginalPreviewIfPresent(source: source, variables: variables, bookID: targetBookID) }
+            catch {
+                if isCurrentRequest(requestBook) { tocError = error.localizedDescription }
+                openingReader = false
+                return
+            }
+            guard isCurrentRequest(requestBook), !Task.isCancelled else { openingReader = false; return }
             if let chapterIndex {
                 let position = CoreTextReadingPosition(spineIndex: chapterIndex, charOffset: 0)
-                await dependencies.readingPositionStore.save(position, for: targetBookId.uuidString)
+                await dependencies.readingPositionStore.save(position, for: targetBookID.uuidString)
             }
-            guard let readingBook = bookStore.readingBook(id: targetBookId) else {
-                openingReader = false
-                return
-            }
-            if readingBook.resolvedPipelineKind == .audio {
-                openingReader = false
-                showReader = true
-                return
-            }
-            pushed = .reader(targetBookId)
-            openingReader = false
+            guard let readingBook = bookStore.readingBook(id: targetBookID) else { openingReader = false; return }
+            if readingBook.resolvedPipelineKind == .audio { openingReader = false; showReader = true; return }
+            pushed = .reader(targetBookID); openingReader = false
         }
     }
+
 }
 
 // MARK: - Preview

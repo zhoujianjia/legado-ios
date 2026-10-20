@@ -1,56 +1,75 @@
 import Foundation
-
-// MARK: - Discover / Explore
+import LegadoRuntime
 
 extension BookSourceFetcher {
-
-    func discoverItems(
-        page: Int = 1,
-        in source: BookSource
-    ) async -> [ModernParserBridge.DiscoverItem] {
+    func discoverItems(page: Int = 1, in source: BookSource) async -> [ModernParserBridge.DiscoverItem] {
         await discoverItems(page: page, in: source, variableOverlay: [:])
     }
 
-    /// - Parameter variableOverlay: discover filter values the explore rule reads in place of
-    ///   the source's stored ones, without storing them (an Explore home section's, 5d-5).
-    func discoverItems(
-        page: Int = 1,
-        in source: BookSource,
-        variableOverlay: [String: String]
-    ) async -> [ModernParserBridge.DiscoverItem] {
-        guard source.enabledExplore,
-              !source.exploreUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        else {
-            return []
-        }
-
-        return await BookSourceSession.session(for: source)
-            .bridgeForAsyncOperations.getExploreItems(page: page, variableOverlay: variableOverlay)
+    func discoverItems(page: Int = 1, in source: BookSource,
+                       variableOverlay: [String: String]) async -> [ModernParserBridge.DiscoverItem] {
+        do { return try await discoverItemsOriginal(page: page, in: source, variableOverlay: variableOverlay) }
+        catch { AppLogger.error("Original explore categories did not load", error: error); return [] }
     }
 
-    /// Prime any site cookie the source's discover endpoints need but don't set themselves
-    /// (e.g. 起点 rankings read `_csrfToken`, only issued by browsing the site). No-op for
-    /// sources that don't reference such a cookie, or once it's already present.
-    func primeDiscoverCookies(in source: BookSource) async {
-        await BookSourceSession.session(for: source)
-            .bridgeForAsyncOperations.primeDiscoverCookiesIfNeeded()
+    /// Pure DTO decoding follows execution in the sole retained runtime. Nothing
+    /// here runs old JSC to evaluate source expressions or issue network requests.
+    func discoverItemsOriginal(page: Int = 1, in source: BookSource,
+                               variableOverlay: [String: String] = [:]) async throws -> [ModernParserBridge.DiscoverItem] {
+        guard source.enabledExplore else { return [] }
+        let raw = source.exploreUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return [] }
+        guard variableOverlay.isEmpty else { throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY",
+            message: "Original explore source-variable overlays need an explicit scoped original contract") }
+        let result: String
+        if ModernParserBridge.isJSExploreRule(raw) {
+            let script = ModernParserBridge.jsCode(fromExploreRule: raw)
+            if source.isJsSource {
+                result = try await mainJSService.evaluateMainJSExplore(script: script, page: page, source: source)
+            } else {
+                _ = try await mainJSService.openOriginalExploreContext(source: source)
+                result = try await mainJSService.evaluateOriginalExploreContext(script: "var page = \(page);\n" + script, source: source).result ?? ""
+            }
+        } else {
+            if !source.isJsSource { _ = try await mainJSService.openOriginalExploreContext(source: source) }
+            result = raw
+        }
+        return try await SourcePerfTrace.spanAsync("legado.original.explore.categories",
+            "main=\(Thread.isMainThread) bytes=\(result.utf8.count)") {
+            try Self.decodeOriginalExploreKinds(result)
+        }
     }
 
-    func discoverBooks(
-        from item: ModernParserBridge.DiscoverItem,
-        page: Int = 1,
-        in source: BookSource
-    ) async throws -> [OnlineBook] {
-        guard let rawURL = item.url?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !rawURL.isEmpty
-        else {
-            return []
-        }
+    static func decodeOriginalExploreKinds(_ raw: String) throws -> [ModernParserBridge.DiscoverItem] {
+        let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.utf8.count <= 1_048_576 else { throw LegadoRuntimeError(code: "STATE_LIMIT", message: "Explore categories exceed their byte budget") }
+        if text.hasPrefix("[") { return try JSONDecoder().decode([ModernParserBridge.DiscoverItem].self, from: Data(text.utf8)) }
+        if text.hasPrefix("{") { return [try JSONDecoder().decode(ModernParserBridge.DiscoverItem.self, from: Data(text.utf8))] }
+        return text.replacingOccurrences(of: #"(&&|\r?\n)+"#, with: "\n", options: .regularExpression)
+            .split(separator: "\n").compactMap { line in
+                let entry = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !entry.isEmpty else { return nil }
+                if let split = entry.range(of: "::") {
+                    let title = String(entry[..<split.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                    let url = String(entry[split.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !title.isEmpty, !ModernParserBridge.containsHTMLTag(title) else { return nil }
+                    return .init(title: title, url: url.isEmpty ? nil : url)
+                }
+                return ModernParserBridge.containsHTMLTag(entry) ? nil : .init(title: entry)
+            }
+    }
 
-        let bridge = BookSourceSession.session(for: source).bridgeForAsyncOperations
-        let (html, finalURL) = try await bridge.fetch(ruleUrl: rawURL, page: page)
-        return await SourceScriptThread.run {
-            bridge.parseExploreResults(html: html, baseURL: finalURL, source: source)
+    /// Original AnalyzeUrl owns request cookies. A page load must not prime or
+    /// remove tokens by entering another parser/HTTP session.
+    func primeDiscoverCookies(in source: BookSource) async {}
+
+    func discoverBooks(from item: ModernParserBridge.DiscoverItem, page: Int = 1,
+                       in source: BookSource) async throws -> [OnlineBook] {
+        guard let url = item.url, !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return [] }
+        if source.isJsSource { return try await mainJSService.explore(url: url, page: page, source: source) }
+        guard let originalPage = Int32(exactly: page), originalPage > 0 else {
+            throw LegadoRuntimeError(code: "INVALID_REQUEST", message: "Explore page exceeds the original Int range")
         }
+        return try await mainJSService.originalExplore(url: url, page: originalPage, source: source)
     }
 }

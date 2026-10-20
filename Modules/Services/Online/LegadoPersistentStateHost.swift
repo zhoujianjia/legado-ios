@@ -209,14 +209,15 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     func bindContentBatch(sourceURL: String, sourceRevision: String, taskID: String, store: BookStore,
                           bookID: UUID, sourceID: UUID, book: LegadoOriginalBook,
                           chapters: [OriginalRuntimeBatchChapter], deadline: Date,
-                          cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> String {
+                          cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository,
+                          singleChapter: Bool = false) async throws -> String {
         let previous = revisions[sourceURL]
         guard book.origin.utf8.elementsEqual(sourceURL.utf8),
               await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
             throw failure("UNSUPPORTED_CAPABILITY", "Batch requires an existing App book/source UUID")
         }
         let backing = try AppLegadoContentBatchOwner(taskID: taskID, store: store, bookID: bookID, sourceID: sourceID,
-            book: book, chapters: chapters, deadline: deadline, cache: cache)
+            book: book, chapters: chapters, deadline: deadline, cache: cache, singleChapter: singleChapter)
         for value in chapters {
             guard let current = try await store.originalRuntimeChapterSnapshot(bookID: bookID,
                 index: value.chapter.index, url: value.chapter.url), current.chapterID == value.chapter.id else {
@@ -242,6 +243,17 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         return try await backing.finishResultBook(book, deadline: deadline)
         // A final CAS can already be durable. Do not convert a late revoke/cancel
         // into false/no-mutation after its actual accepted receipt.
+    }
+
+    func finishSingleContentResult(owner: String, taskID: String, result: LegadoOriginalContentResult,
+                                   deadline: Date) async throws -> [String] {
+        try Task.checkCancellation()
+        guard !cancelled.contains(taskID), let binding = bindings[owner],
+              revisions[binding.sourceURL] == binding.sourceRevision,
+              let backing = contentOwners[owner], backing.taskID == taskID else {
+            throw failure("INVALID_STATE_OWNER", "Single result lost its source/task/chapter owner")
+        }
+        return try await backing.finishSingleContent(result, deadline: deadline)
     }
 
     /// Only the existing context actor can issue this proof. Source JSON/reference text

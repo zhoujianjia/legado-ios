@@ -140,7 +140,11 @@ class BookStore: ObservableObject, BookProvider {
     }
     let objectWillChange = ObservableObjectPublisher()
     private let recordStorage = BookRecordStorage()
-    private struct RuntimeRecordEntry { let offset: Int; var snapshot: RuntimeBookSnapshot }
+    private struct RuntimeRecordEntry {
+        let offset: Int
+        var snapshot: RuntimeBookSnapshot
+        var metadataStamp: UUID = UUID()
+    }
     private struct BookmarkRecordEntry {
         let lease: UUID
         let identity: OriginalRuntimeBookMetadataOwner.BookmarkIdentity
@@ -201,10 +205,13 @@ class BookStore: ObservableObject, BookProvider {
                     continue
                 }
                 let next = Self.runtimeSnapshot(current[entry.offset])
-                if id != runtimePublication, next != entry.snapshot {
-                    Self.persistQueue.async { [runtimeBookMetadata] in
-                        do { try runtimeBookMetadata.noteAppChange(previous: entry.snapshot, current: next) }
-                        catch { AppLogger.error("App book runtime owner could not follow an edit", error: error) }
+                if next != entry.snapshot {
+                    index.entries[id]?.metadataStamp = UUID()
+                    if id != runtimePublication {
+                        Self.persistQueue.async { [runtimeBookMetadata] in
+                            do { try runtimeBookMetadata.noteAppChange(previous: entry.snapshot, current: next) }
+                            catch { AppLogger.error("App book runtime owner could not follow an edit", error: error) }
+                        }
                     }
                 }
                 index.entries[id]?.snapshot = next
@@ -336,6 +343,18 @@ class BookStore: ObservableObject, BookProvider {
         }
     }
 
+    /// Reuses the already bounded granted-book lookup. The stamp changes at its
+    /// sole normal write point; it owns no data or persistence queue of its own.
+    private func originalMetadataGuard(bookID: UUID) -> (snapshot: RuntimeBookSnapshot, stamp: UUID)? {
+        runtimeRecordIndex.withLock { index in
+            guard let entry = index.entries[bookID] else { return nil }
+            return (entry.snapshot, entry.metadataStamp)
+        }
+    }
+    private func originalMetadataGuardIsCurrent(bookID: UUID, stamp: UUID) -> Bool {
+        runtimeRecordIndex.withLock { $0.entries[bookID]?.metadataStamp == stamp }
+    }
+
     /// Main borrows one immutable Array value in O(1); lookup and snapshot projection run
     /// off main. Only the still-current revision can register its bounded owner lookup.
     func prepareOriginalRuntimeBookSnapshot(id: UUID, sourceID: UUID, bookURL: String) async -> RuntimeBookSnapshot? {
@@ -344,7 +363,8 @@ class BookStore: ObservableObject, BookProvider {
             let accepted = await MainActor.run { () -> Bool in
                 guard self.mutationRevision == candidate.revision else { return false }
                 self.runtimeRecordIndex.withLock { index in
-                    index.entries[id] = .init(offset: candidate.offset, snapshot: candidate.snapshot)
+                    let stamp = index.entries[id]?.metadataStamp ?? UUID()
+                    index.entries[id] = .init(offset: candidate.offset, snapshot: candidate.snapshot, metadataStamp: stamp)
                     index.recency.removeAll { $0 == id }; index.recency.append(id)
                     if index.recency.count > 256 { index.entries.removeValue(forKey: index.recency.removeFirst()) }
                 }
@@ -537,7 +557,8 @@ class BookStore: ObservableObject, BookProvider {
                       RuntimeBookSnapshot.sameVariables(current.variables, expectedView.variables) ||
                         RuntimeBookSnapshot.sameVariables(current.variables, expected.book.variables) else { return false }
                 self.runtimeRecordIndex.withLock { index in
-                    index.entries[expected.book.id] = .init(offset: candidate.offset, snapshot: current)
+                    let stamp = index.entries[expected.book.id]?.metadataStamp ?? UUID()
+                    index.entries[expected.book.id] = .init(offset: candidate.offset, snapshot: current, metadataStamp: stamp)
                     index.recency.removeAll { $0 == expected.book.id }; index.recency.append(expected.book.id)
                     if index.recency.count > 256 { index.entries.removeValue(forKey: index.recency.removeFirst()) }
                 }
@@ -591,6 +612,7 @@ class BookStore: ObservableObject, BookProvider {
                                        variables: [String: String]?, deadline: Date,
                                        cancellation: OriginalRuntimeCommitCancellation = OriginalRuntimeCommitCancellation(),
                                        claimCommit: @escaping @Sendable () -> Bool = { true },
+                                       accepted: @escaping @Sendable (BookChapterStore.RuntimeVariablesSnapshot) -> Void = { _ in },
                                        validateGrant: @escaping @Sendable () throws -> Void = {}) async throws -> Bool {
         try Task.checkCancellation()
         return try await withTaskCancellationHandler {
@@ -599,7 +621,8 @@ class BookStore: ObservableObject, BookProvider {
                     do {
                         try cancellation.check(deadline: deadline)
                         try validateGrant()
-                        let result = try chapterStore.compareRuntimeVariables(expected: expected, variables: variables, claimCommit: claimCommit) {
+                        let result = try chapterStore.compareRuntimeVariables(expected: expected, variables: variables,
+                            claimCommit: claimCommit, accepted: accepted) {
                             try cancellation.check(deadline: deadline)
                             try validateGrant()
                         }
@@ -2414,6 +2437,8 @@ class BookStore: ObservableObject, BookProvider {
                 domain: "BookStore", code: -5,
                 userInfo: [NSLocalizedDescriptionKey: localized("此來源配置取不到目錄")])
         }
+        let originalAdoption = await OriginalBookAdoption.prepare(tocPackage.runtimeVariables ?? origin.runtimeVariables,
+            chapters: tocPackage.chapters)
         let oldRefs = await MainActor.run {
             chapterStore.chapters(for: bookId) ?? []
         }
@@ -2433,13 +2458,18 @@ class BookStore: ObservableObject, BookProvider {
             guard let idx = records.firstIndex(where: { $0.id == bookId }) else { return }
             records[idx].bookSourceId = origin.sourceId
             records[idx].bookInfoURL = origin.bookUrl
-            records[idx].tocURL = origin.tocUrl
-            records[idx].runtimeVariables = origin.runtimeVariables
-            records[idx].onlineChapters = tocPackage.chapters
+            records[idx].tocURL = source.isJsSource ? origin.tocUrl : tocPackage.tocURL
+            records[idx].runtimeVariables = originalAdoption.variables
+            records[idx].onlineChapters = originalAdoption.chapters
             // A source switch is a user-confirmed metadata transaction. It must
             // survive leaving the reader or immediate app suspension; the normal
             // debounce is reserved for high-frequency progress/TOC updates.
             saveMetaImmediately()
+        }
+        if !source.isJsSource,
+           (tocPackage.runtimeVariables ?? origin.runtimeVariables)?[LegadoMainJSSourceService.originalPreviewContextKey] != nil {
+            _ = try await bookSourceFetcher.transferOriginalPreview(source: source,
+                runtimeVariables: tocPackage.runtimeVariables ?? origin.runtimeVariables, to: self, bookID: bookId)
         }
         let staleIndices = await Task.detached(priority: .userInitiated) {
             Self.changedChapterIdentities(oldRefs: oldRefs, newRefs: tocPackage.chapters)
@@ -2454,13 +2484,28 @@ class BookStore: ObservableObject, BookProvider {
         }
     }
 
+    /// O(1) main snapshot, then source-qualified lookup off main. The selected
+    /// UUID is an existing owned record, never a search-result identifier.
+    func originalStoredOnlineBookID(sourceID: UUID, bookURL: String) async -> UUID? {
+        let input = await MainActor.run { self.recordStorage.values }
+        return await Task.detached(priority: .userInitiated) {
+            SourcePerfTrace.span("legado.original.stored-book.lookup", "main=\(Thread.isMainThread) books=\(input.count)") {
+                let matching = input.filter { $0.isOnline && $0.bookSourceId == sourceID
+                    && ($0.bookInfoURL ?? $0.source).utf8.elementsEqual(bookURL.utf8) }
+                return matching.first(where: \.isInBookshelf)?.id ?? matching.first?.id
+            }
+        }.value
+    }
+
     @discardableResult
     func refreshOnlineBookMetadata(
         bookId: UUID,
         forceInfoRefresh: Bool = false,
         bookSourceFetcher: any BookSourceFetching = LiveBookSourceFetcher(bookSourceFetcher: BookSourceFetcher.shared),
         offlineChapterStore: any OfflineChapterStoring = OfflineChapterStore(),
-        onFirstChaptersReady: (@MainActor (ReadingBook) -> Void)? = nil
+        sourceResolver: @escaping @MainActor @Sendable (UUID) -> BookSource? = { BookSourceStore.shared.source(id: $0) },
+        onFirstChaptersReady: (@MainActor (ReadingBook) -> Void)? = nil,
+        onMetadataResolved: (@MainActor (ReadingBook, BookInfoPackage?) -> Void)? = nil
     ) async throws -> ReadingBook {
         guard let snapshot = await MainActor.run(body: {
             records.first(where: { $0.id == bookId }).flatMap { $0.isOnline ? $0 : nil }
@@ -2475,16 +2520,18 @@ class BookStore: ObservableObject, BookProvider {
         // 2000-chapter book is a 2MB file, and the launch refresh walks the whole shelf.
         // (Detached on purpose — with approachable concurrency an `async` function runs on
         // its caller's actor, and the launch refresh is called from the main actor.)
-        let (originalChapterCount, originalLatestTitle) = await Task.detached(priority: .utility) { [chapterStore] in
-            let originalChapters = chapterStore.chapters(for: bookId) ?? []
-            return (originalChapters.count, Self.normalizeChapterTitle(originalChapters.last?.title ?? ""))
-        }.value
+        let originalChapterView = try await Self.chapterCachePersistence { [chapterStore] in
+            try chapterStore.originalMetadataView(for: bookId)
+        }
+        let originalChapters = originalChapterView.chapters
+        let originalChapterCount = originalChapters.count
+        let originalLatestTitle = Self.normalizeChapterTitle(originalChapters.last?.title ?? "")
 
         guard let sourceId = snapshot.bookSourceId else {
             return snapshot
         }
         guard let source = await MainActor.run(body: {
-            BookSourceStore.shared.source(id: sourceId)
+            sourceResolver(sourceId)
         }) else {
             throw NSError(
                 domain: "BookStore", code: -3, userInfo: [NSLocalizedDescriptionKey: "找不到來源配置"])
@@ -2496,9 +2543,21 @@ class BookStore: ObservableObject, BookProvider {
                 domain: "BookStore", code: -4, userInfo: [NSLocalizedDescriptionKey: "缺少書籍詳情頁 URL"])
         }
 
+        guard await prepareOriginalRuntimeBookSnapshot(id: bookId, sourceID: sourceId, bookURL: bookURL) != nil,
+              let originalBookGuard = originalMetadataGuard(bookID: bookId),
+              originalBookGuard.snapshot == Self.runtimeSnapshot(snapshot) else {
+            throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Book metadata changed before its original TOC request")
+        }
         var runtimeVariables = snapshot.runtimeVariables
         var tocURL = normalizedOnlineValue(snapshot.tocURL)
         var infoPackage: BookInfoPackage?
+
+        let storedBook = OnlineBook(name: snapshot.title, author: snapshot.author, intro: "",
+            coverUrl: snapshot.coverUrl ?? "", bookUrl: bookURL, tocUrl: tocURL,
+            wordCount: "", lastChapter: originalChapters.last?.title ?? "", kind: "",
+            sourceId: sourceId, sourceName: source.bookSourceName, runtimeVariables: runtimeVariables)
+        runtimeVariables = try await bookSourceFetcher.prepareOriginalStoredBookPreview(source: source,
+            knownBook: storedBook, chapters: originalChapters)
 
         if forceInfoRefresh || tocURL.isEmpty {
             // The shelf already knows this book — hand that over so a detail page that omits a
@@ -2552,7 +2611,7 @@ class BookStore: ObservableObject, BookProvider {
             source: source,
             runtimeVariables: runtimeVariables,
             onFirstPageReady: { [weak self] firstChapters in
-                guard let self else { return }
+                guard source.isJsSource, let self else { return }
                 firstPageCommit.set(Task.detached(priority: .utility) {
                     guard OnlineTOCCommitPolicy.decide(
                         refreshedCount: firstChapters.count
@@ -2599,8 +2658,10 @@ class BookStore: ObservableObject, BookProvider {
             runtimeVariables = fetchedRuntime
         }
 
-        let finalTOCURL = tocURL
-        let finalRuntimeVariables = runtimeVariables
+        let finalTOCURL = source.isJsSource ? tocURL : tocPackage.tocURL
+        let originalAdoption = await OriginalBookAdoption.prepare(runtimeVariables, chapters: tocPackage.chapters)
+        let finalRuntimeVariables = source.isJsSource ? runtimeVariables : originalAdoption.variables
+        let originalHandoffVariables = runtimeVariables
         let finalInfoPackage = infoPackage
 
         // Returning early here leaves `onlineChapters` — and therefore the reconcile that
@@ -2612,7 +2673,16 @@ class BookStore: ObservableObject, BookProvider {
                 "bookId": bookId.uuidString,
                 "existing": chapterStore.chapters(for: bookId)?.count ?? 0,
             ])
-            return snapshot
+            if !source.isJsSource {
+                guard originalMetadataGuardIsCurrent(bookID: bookId, stamp: originalBookGuard.stamp),
+                      chapterStore.originalMetadataViewIsCurrent(for: bookId, revision: originalChapterView.revision) else {
+                    throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The retained original TOC changed while its refresh was loading")
+                }
+            }
+            var retained = snapshot
+            retained.onlineChapters = originalChapters
+            if let onMetadataResolved { await onMetadataResolved(retained, infoPackage) }
+            return retained
         }
 
         // The merge, the comparison and the stale-chapter scan each normalize every title
@@ -2622,7 +2692,7 @@ class BookStore: ObservableObject, BookProvider {
         // Detached, and through a static helper: with approachable concurrency this function
         // and any local function of it run on the caller's actor, which for the launch
         // refresh is the main one.
-        let refreshed = tocPackage.chapters
+        let refreshed = source.isJsSource ? tocPackage.chapters : originalAdoption.chapters
         await firstPageCommit.value?.value
         @Sendable func detachedPlan(existing: [OnlineChapterRef]?) async -> MergePlan {
             await Task.detached(priority: .utility) { [chapterStore] in
@@ -2634,6 +2704,7 @@ class BookStore: ObservableObject, BookProvider {
         }
         enum CommitOutcome {
             case gone
+            case changedOriginalInput
             case listMoved([OnlineChapterRef])
             case committed(ReadingBook, MergePlan)
         }
@@ -2646,7 +2717,15 @@ class BookStore: ObservableObject, BookProvider {
         var result: (updated: ReadingBook, committed: MergePlan)?
         while result == nil {
             let outcome = await MainActor.run { () -> CommitOutcome in
-                guard let idx = records.firstIndex(where: { $0.id == bookId }) else { return .gone }
+                guard let idx = records.firstIndex(where: { $0.id == bookId }),
+                      records[idx].bookSourceId == sourceId,
+                      (records[idx].bookInfoURL ?? records[idx].source).utf8.elementsEqual(bookURL.utf8) else { return .gone }
+                if !source.isJsSource {
+                    guard originalMetadataGuardIsCurrent(bookID: bookId, stamp: originalBookGuard.stamp),
+                          chapterStore.originalMetadataViewIsCurrent(for: bookId, revision: originalChapterView.revision) else {
+                        return .changedOriginalInput
+                    }
+                }
                 let current = chapterStore.chapters(for: bookId) ?? []
                 let plan: MergePlan
                 if current == prepared.existing {
@@ -2670,7 +2749,10 @@ class BookStore: ObservableObject, BookProvider {
             }
             switch outcome {
             case .gone:
+                if !source.isJsSource { throw CancellationError() }
                 return snapshot
+            case .changedOriginalInput:
+                throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Another App writer changed book/chapter metadata while original TOC was loading")
             case .listMoved(let current):
                 replans += 1
                 prepared = await detachedPlan(existing: current)
@@ -2715,6 +2797,11 @@ class BookStore: ObservableObject, BookProvider {
             staleIndices: staleIndices
         )
 
+        if !source.isJsSource, originalHandoffVariables?[LegadoMainJSSourceService.originalPreviewContextKey] != nil {
+            _ = try await bookSourceFetcher.transferOriginalPreview(source: source,
+                runtimeVariables: originalHandoffVariables, to: self, bookID: bookId)
+        }
+        if let onMetadataResolved { await onMetadataResolved(updated, finalInfoPackage) }
         return updated
     }
 

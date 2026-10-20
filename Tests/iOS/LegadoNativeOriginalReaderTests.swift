@@ -68,6 +68,104 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         }
     }
 
+    func testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen() async throws {
+        executionTimeAllowance = 180
+        try await withFixture(tocRedirect: true) { fixture in
+            try await self.withPublicOwnedBook(fixture) { fetcher, owned in
+                let manager = await self.manager(fixture)
+                let first = try await manager.fetchChapter(book: owned.book, chapterIndex: 0,
+                    priority: .immediate, store: owned.store)
+                XCTAssertTrue(first.content.contains("first&page"))
+                XCTAssertTrue(first.content.contains("last page"))
+                let second = try await manager.fetchChapter(book: owned.book, chapterIndex: 1,
+                    priority: .prefetch, store: owned.store)
+                XCTAssertTrue(second.content.contains("second chapter"))
+                let requests = fixture.peer.snapshot.requests
+                XCTAssertEqual(requests.map(\.target), [fixture.prefix + "/search?key=native-original&page=2",
+                    fixture.prefix + "/book", fixture.prefix + "/toc-rewritten", fixture.prefix + "/toc2",
+                    fixture.prefix + "/c1", fixture.prefix + "/c1p2", fixture.prefix + "/c2"])
+                let originalFileFacts = try await self.publicMetadataFileFacts(fixture, bookID: owned.book.id)
+                let refreshed = try await owned.store.refreshOnlineBookMetadata(bookId: owned.book.id,
+                    bookSourceFetcher: LiveBookSourceFetcher(bookSourceFetcher: fetcher),
+                    sourceResolver: { _ in fixture.source })
+                await BookStore.queuedWritesLanded()
+                XCTAssertEqual(refreshed.tocURL, fixture.baseURL + fixture.prefix + "/toc-rewritten")
+                XCTAssertEqual(refreshed.onlineChapters?.map(\.id), owned.chapters.map(\.id))
+                XCTAssertEqual(refreshed.onlineChapters?.first?.runtimeVariables?["nativeParsed"], "yes")
+                let unchangedFileFacts = try await self.publicMetadataFileFacts(fixture, bookID: owned.book.id)
+                XCTAssertEqual(unchangedFileFacts, originalFileFacts,
+                    "An unchanged original TOC refresh must preserve metadata bytes and inode, including chapter variables")
+                let sameSourceID = await owned.store.originalStoredOnlineBookID(sourceID: fixture.source.id, bookURL: owned.dto.bookURL)
+                XCTAssertEqual(sameSourceID, owned.book.id)
+                let detailReopen = try await owned.store.refreshOnlineBookMetadata(bookId: owned.book.id,
+                    forceInfoRefresh: true, bookSourceFetcher: LiveBookSourceFetcher(bookSourceFetcher: fetcher),
+                    sourceResolver: { _ in fixture.source })
+                XCTAssertEqual(detailReopen.onlineChapters?.map(\.id), owned.chapters.map(\.id))
+                XCTAssertEqual(detailReopen.onlineChapters?.map(\.cachedFilename), ["0.txt", "1.txt"])
+                XCTAssertEqual(detailReopen.onlineChapters?.first?.runtimeVariables?["nativeParsed"], "yes")
+                let afterRefreshRequests = fixture.peer.snapshot.requests
+                XCTAssertEqual(afterRefreshRequests.dropFirst(requests.count).map(\.target),
+                    [fixture.prefix + "/toc-rewritten", fixture.prefix + "/toc2",
+                     fixture.prefix + "/book", fixture.prefix + "/toc-rewritten", fixture.prefix + "/toc2"])
+                let restarted = await Task.detached {
+                    BookStore(metadataFileURL: fixture.metadata, legacyMetadataDefaults: nil)
+                }.value
+                let restoredValue = await MainActor.run { restarted.readingBook(id: owned.book.id) }
+                let restored = try XCTUnwrap(restoredValue)
+                XCTAssertEqual(restored.id, owned.book.id)
+                XCTAssertFalse(restored.isInBookshelf)
+                XCTAssertEqual(restored.onlineChapters?.map(\.id), owned.chapters.map(\.id))
+                XCTAssertEqual(restored.onlineChapters?.map(\.cachedFilename), ["0.txt", "1.txt"])
+                XCTAssertEqual(restored.onlineChapters?.first?.runtimeVariables?["nativeParsed"], "yes")
+                XCTAssertEqual(restored.runtimeVariables?["nativeBig"], String(repeating: "L", count: 10_000))
+                // Close the real TCP listener before asking the same public reader
+                // for the reopened book. Cache-only success cannot use a live peer.
+                let stopped = self.expectation(description: "Public original peer is unavailable for offline reopen")
+                fixture.peer.stop { stopped.fulfill() }
+                await self.fulfillment(of: [stopped], timeout: 10)
+                let offline = await self.manager(fixture)
+                let savedFirst = try await offline.fetchChapter(book: restored, chapterIndex: 0,
+                    priority: .immediate, store: restarted)
+                let savedSecond = try await offline.fetchChapter(book: restored, chapterIndex: 1,
+                    priority: .immediate, store: restarted)
+                XCTAssertEqual(savedFirst.content, first.content); XCTAssertEqual(savedSecond.content, second.content)
+                XCTAssertEqual(fixture.peer.snapshot.requests.count, afterRefreshRequests.count)
+                let finishedGrant = await manager.originalRuntimeGeneration(bookID: owned.book.id, chapter: owned.chapters[0])
+                XCTAssertNil(finishedGrant)
+                XCTAssertTrue(fetcher.isChapterCached(bookId: owned.book.id, chapterIndex: 0))
+            }
+        }
+    }
+
+    func testNativeOriginalPublicReaderCancellationDrainsWithoutCache() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            try await self.withPublicOwnedBook(fixture) { fetcher, owned in
+                let manager = await self.manager(fixture)
+                let entered = self.expectation(description: "Public original chapter HTTP entered its held response")
+                let closed = self.expectation(description: "Public original cancellation drains the actual TCP client")
+                fixture.peer.armHeldBody(target: fixture.prefix + "/c1", headersSent: { entered.fulfill() },
+                    peerClosed: { closed.fulfill() })
+                let pending = Task { try await manager.fetchChapter(book: owned.book, chapterIndex: 0,
+                    priority: .immediate, store: owned.store) }
+                await self.fulfillment(of: [entered], timeout: 30)
+                pending.cancel()
+                let terminal = await pending.result
+                await self.fulfillment(of: [closed], timeout: 20)
+                switch terminal {
+                case .success: XCTFail("A cancelled public Reader cannot publish a successful chapter")
+                case .failure(let error):
+                    if let typed = error as? LegadoRuntimeError { XCTAssertEqual(typed.code, "CANCELLED") }
+                    else { XCTAssertTrue(error is CancellationError, "Actual error: \(error)") }
+                }
+                XCTAssertFalse(fetcher.isChapterCached(bookId: owned.book.id, chapterIndex: 0))
+                let grant = await manager.originalRuntimeGeneration(bookID: owned.book.id, chapter: owned.chapters[0])
+                XCTAssertNil(grant)
+                XCTAssertTrue(fixture.peer.snapshot.heldPeerClosed)
+            }
+        }
+    }
+
     func testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner() async throws {
         executionTimeAllowance = 180
         try await withFixture { fixture in
@@ -249,7 +347,7 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         let dto: LegadoOriginalBook
         let chapters: [OnlineChapterRef]
     }
-    private func withFixture(_ body: (Fixture) async throws -> Void) async throws {
+    private func withFixture(tocRedirect: Bool = false, _ body: (Fixture) async throws -> Void) async throws {
         let diagnostics = await Task.detached { LegadoRuntime.diagnose() }.value
         let required: Bool
         #if LEGADO_REQUIRE_NATIVE_MAINJS
@@ -277,7 +375,7 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
             let cache = root.appendingPathComponent("body", isDirectory: true)
             let value = Fixture(runID: runID, prefix: "/" + runID, cookieName: "native_" + runID.replacingOccurrences(of: "-", with: ""),
                 baseURL: base, root: root, contextDirectory: context, metadata: root.appendingPathComponent("books_meta.json"),
-                cacheDirectory: cache, cache: .init(rootDirectory: cache), peer: peer, source: Self.source(base: base, runID: runID),
+                cacheDirectory: cache, cache: .init(rootDirectory: cache), peer: peer, source: Self.source(base: base, runID: runID, tocRedirect: tocRedirect),
                 service: .init(contextDirectory: context, operationTimeout: 45))
             fixture = value
             try await body(value)
@@ -319,6 +417,46 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         return .init(store: store, book: actual,
             dto: .init(bookURL: url, origin: f.source.bookSourceUrl, name: title, author: "Owned author", tocURL: tocURL), chapters: chapters)
     }
+    private func withPublicOwnedBook(_ fixture: Fixture,
+        body: (BookSourceFetcher, OwnedBook) async throws -> Void) async throws {
+        let fetcher = BookSourceFetcher(mainJSService: fixture.service)
+        let books = try await fetcher.search(query: "native-original", in: fixture.source, page: 2)
+        let found = try XCTUnwrap(books.first)
+        let detail = try await fetcher.fetchBookInfoPackage(url: found.bookUrl, source: fixture.source,
+            runtimeVariables: found.runtimeVariables, knownBook: found)
+        let toc = try await fetcher.fetchTOCPackage(tocUrl: detail.tocUrl, source: fixture.source,
+            runtimeVariables: detail.runtimeVariables, forceRefresh: true)
+        XCTAssertEqual(toc.chapters.count, 2)
+        let adoption = await OriginalBookAdoption.prepare(toc.runtimeVariables, chapters: toc.chapters)
+        let owned = try await ownedBook(fixture, title: detail.name, url: found.bookUrl,
+            tocURL: toc.tocURL, chapters: adoption.chapters, variables: adoption.variables)
+        var problem: Error?
+        do {
+            _ = try await fetcher.transferOriginalPreview(source: fixture.source, runtimeVariables: toc.runtimeVariables,
+                to: owned.store, bookID: owned.book.id)
+            try await body(fetcher, owned)
+        } catch { problem = error }
+        // These UUIDs were created by this fixture; no existing user cache is read
+        // or cleared, and cleanup awaits the same chapter persistence owner.
+        do { try await fetcher.clearAllChapterCacheAwait(bookId: owned.book.id) }
+        catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
+    private func publicMetadataFileFacts(_ fixture: Fixture, bookID: UUID) async throws -> [String] {
+        try await Task.detached {
+            let paths = [fixture.metadata.deletingPathExtension().appendingPathExtension("reading.json"),
+                fixture.metadata.deletingPathExtension().appendingPathExtension("chapters")
+                    .appendingPathComponent(bookID.uuidString + ".json")]
+            return try paths.map { path in
+                let bytes = try Data(contentsOf: path)
+                let attributes = try FileManager.default.attributesOfItem(atPath: path.path)
+                let inode = try XCTUnwrap(attributes[.systemFileNumber] as? NSNumber)
+                return inode.stringValue + ":" + SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+            }
+        }.value
+    }
+
     private func ownedBatchBook(_ f: Fixture, distinctURLs: Bool = false) async throws -> OwnedBook {
         let chapters = (0..<3).map { index in
             OnlineChapterRef(index: index, title: "Batch \(index)", url: f.baseURL + (index == 2 ? "/missing" : (distinctURLs && index == 1 ? "/held" : "/duplicate")))
@@ -330,7 +468,7 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         return ChapterFetchManager(bookSourceFetcher: .init(mainJSService: fixture.service),
             webViewFetcher: webViewFetcher, sourceResolver: { _ in fixture.source })
     }
-    private static func source(base: String, runID: String) -> BookSource {
+    private static func source(base: String, runID: String, tocRedirect: Bool = false) -> BookSource {
         var source = BookSource(bookSourceUrl: base, bookSourceName: "Native original controlled source")
         source.enabledCookieJar = true
         source.header = "{\"X-Legado-Native-Fixture\":\"" + runID + "\",\"Accept-Encoding\":\"identity\",\"Connection\":\"close\"}"
@@ -341,6 +479,9 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         source.ruleBookInfo.name = "@XPath://h1/text()"; source.ruleBookInfo.tocUrl = "#toc@href"
         source.ruleBookInfo.canReName = "yes"
         source.ruleToc.preUpdateJs = "java.put('nativeToc','ready')"
+        if tocRedirect {
+            source.ruleToc.preUpdateJs += "; book.tocUrl=String(book.tocUrl).replace(/\\/toc$/, '/toc-rewritten')"
+        }
         source.ruleToc.chapterList = "$.chapters"; source.ruleToc.chapterName = "$.name"
         source.ruleToc.chapterUrl = "$.url"; source.ruleToc.nextTocUrl = "$.next"
         source.ruleContent.content = "#text@html"; source.ruleContent.nextContentUrl = ".next@href"
@@ -534,7 +675,7 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
             body = "<div class='book'><a href='\(prefix)/book'>Original JNI</a><b>Owned author</b></div>"
         } else if target == prefix + "/book" {
             body = "<h1>Original JNI Updated</h1><a id='toc' href='\(prefix)/toc'>toc</a>"
-        } else if target == prefix + "/toc" {
+        } else if target == prefix + "/toc" || target == prefix + "/toc-rewritten" {
             body = try Self.json(["chapters": [["name": "One", "url": prefix + "/c1"]], "next": [prefix + "/toc2"]])
         } else if target == prefix + "/toc2" {
             body = try Self.json(["chapters": [["name": "Two", "url": prefix + "/c2"]], "next": []])

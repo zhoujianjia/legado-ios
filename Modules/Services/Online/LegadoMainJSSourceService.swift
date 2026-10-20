@@ -42,11 +42,18 @@ actor LegadoRuntimeProcess {
     func bindPersistentContentBatch(_ request: LegadoContentBatchExecutionRequest) async throws -> String {
         try await persistentHost().bindContentBatch(sourceURL: request.sourceURL, sourceRevision: request.sourceRevision,
             taskID: request.taskID, store: request.store, bookID: request.bookID, sourceID: request.sourceID,
-            book: request.book, chapters: request.chapters, deadline: request.deadline, cache: request.cache)
+            book: request.book, chapters: request.chapters, deadline: request.deadline, cache: request.cache,
+            singleChapter: request.singleChapter)
     }
 
     func finishContentBatchResult(owner: String, request: LegadoContentBatchExecutionRequest, book: LegadoOriginalBook) async throws -> Bool {
         try await persistentHost().finishContentBatchResult(owner: owner, taskID: request.taskID, book: book, deadline: request.deadline)
+    }
+
+    func finishSingleContentResult(owner: String, request: LegadoContentBatchExecutionRequest,
+                                   result: LegadoOriginalContentResult) async throws -> [String] {
+        try await persistentHost().finishSingleContentResult(owner: owner, taskID: request.taskID,
+            result: result, deadline: request.deadline)
     }
 
     func bindPersistentPreview(grant: OriginalRuntimePreviewGrant) async throws -> String {
@@ -241,6 +248,25 @@ actor LegadoMainJSSourceService {
             let reference = try saveBook(book, source: source, signature: signature)
             return try onlineBook(book, source: source, variables: variables(reference, merging: nil))
         }
+    }
+
+    func explore(url: String, page: Int, source: BookSource) async throws -> [OnlineBook] {
+        let signature = try validate(source)
+        let raw = try await perform(source: source, signature: signature, operation: "explore", input: ["url": url, "page": page])
+        guard let books = raw as? [[String: Any]] else { throw failure("INVALID_RESULT", "explore must return an array of books") }
+        return try books.map { book in
+            try requireTextBook(book)
+            let reference = try saveBook(book, source: source, signature: signature)
+            return try onlineBook(book, source: source, variables: variables(reference, merging: nil))
+        }
+    }
+
+    func evaluateMainJSExplore(script: String, page: Int, source: BookSource) async throws -> String {
+        let signature = try validate(source)
+        let result = try await perform(source: source, signature: signature, operation: "evaluate", input: ["script": script, "page": page])
+        if let result = result as? String { return result }
+        return String(decoding: try JSONSerialization.data(withJSONObject: result,
+            options: [.fragmentsAllowed, .sortedKeys, .withoutEscapingSlashes]), as: UTF8.self)
     }
 
     func details(url: String, source: BookSource, runtimeVariables: [String: String]?, knownBook: OnlineBook?) async throws -> BookInfoPackage {
@@ -531,6 +557,7 @@ extension LegadoMainJSSourceService {
         var book: LegadoOriginalBook
         var chapters: [LegadoOriginalChapter]
         var originalTOC: [LegadoOriginalChapter]?
+        var ephemeralStoredMetadata: Bool? = nil
         var chapterIDs: [UUID] = []
         var bookLargeVariables: [String: String] = [:]
         var chapterVariables: [String: [String: String]] = [:]
@@ -552,6 +579,70 @@ extension LegadoMainJSSourceService {
         var record: PreviewRecord
         let raw: Data
         let sha256: String
+    }
+
+    /// A new read-only metadata preview may start from a known public book value.
+    /// It owns only this actor's isolated file; it grants no shelf UUID/body writes.
+    /// Existing context identifiers must validate before any fork or reuse.
+    func prepareOriginalBookPreview(url: String, source: BookSource,
+                                    runtimeVariables: [String: String]?, knownBook: OnlineBook?,
+                                    storedChapters: [OnlineChapterRef]? = nil) async throws -> [String: String] {
+        let signature = try originalSignature(source); let deadline = try operationDeadline()
+        try await acquire(source.bookSourceUrl, deadline: deadline)
+        defer { release(source.bookSourceUrl) }
+        try acceptOriginalRevision(source, signature: signature)
+        let previous = runtimeVariables ?? knownBook?.runtimeVariables
+        if storedChapters == nil, previous?[Self.originalPreviewContextKey] != nil {
+            let reference = try previewContext(previous, source: source, signature: signature)
+            guard LegadoPreviewIdentity.same(reference.bookURL, url) else { throw failure("CONTEXT_MISMATCH", "Known book URL differs from its original preview") }
+            let read = try readPreview(reference, requireActive: false)
+            if read.record.status == .active {
+                return try previewVariables(read.record, reference: reference, previous: previous)
+            }
+            guard read.record.status == .transferred else { throw failure("STATE_CONFLICT", "Original preview handoff is pending or revoked") }
+        }
+        if let knownBook {
+            guard knownBook.sourceId == source.id, LegadoPreviewIdentity.same(knownBook.bookUrl, url) else {
+                throw failure("CONTEXT_MISMATCH", "Known metadata belongs to another book/source")
+            }
+        }
+        let values = (previous ?? [:]).filter { $0.key != Self.originalPreviewContextKey }
+        try LegadoPreviewVariableCodec.validateRepresentable([values])
+        var book = LegadoOriginalBook(bookURL: url, origin: source.bookSourceUrl,
+            name: knownBook?.name ?? "", author: knownBook?.author ?? "", tocURL: knownBook?.tocUrl ?? "")
+        book.coverURL = knownBook?.coverUrl; book.intro = knownBook?.intro
+        book.kind = knownBook?.kind; book.wordCount = knownBook?.wordCount
+        book.latestChapterTitle = knownBook?.lastChapter; book.originName = source.bookSourceName
+        book.variable = String(decoding: try encoded(values.filter { $0.value.utf16.count < 10_000 }), as: UTF8.self)
+        try validateOriginalBook(book, sourceURL: source.bookSourceUrl)
+        var record = PreviewRecord(version: 2, nonce: UUID(), sourceID: source.id, sourceURL: source.bookSourceUrl,
+            sourceSignature: signature, revision: 0, status: .active, book: book, chapters: [])
+        record.bookLargeVariables = values.filter { $0.value.utf16.count >= 10_000 }
+        if let storedChapters {
+            record.ephemeralStoredMetadata = true
+            guard storedChapters.count <= 20_000 else { throw failure("STATE_LIMIT", "Stored preview TOC exceeds its chapter budget") }
+            var urls = Set<Data>()
+            for (offset, ref) in storedChapters.enumerated() {
+                guard ref.index == offset, let index = Int32(exactly: offset),
+                      !ref.url.isEmpty, urls.insert(Data(ref.url.utf8)).inserted else {
+                    throw failure("UNSUPPORTED_CAPABILITY", "Stored TOC cannot map to the original unique URL/index identity")
+                }
+                let variables = (ref.runtimeVariables ?? [:]).filter { $0.key != Self.originalPreviewContextKey }
+                try LegadoPreviewVariableCodec.validateRepresentable([variables])
+                var chapter = LegadoOriginalChapter(bookURL: url, url: ref.url, index: index,
+                    title: ref.title, baseURL: book.tocURL)
+                chapter.isVolume = ref.isVolume; chapter.isVip = ref.isVip; chapter.isPay = ref.isPay
+                let small = variables.filter { $0.value.utf16.count < 10_000 }
+                chapter.variable = String(decoding: try encoded(small), as: UTF8.self)
+                record.chapters.append(chapter); record.chapterIDs.append(ref.id)
+                record.chapterVariables[LegadoPreviewIdentity.key(ref.url)] = small
+                record.chapterLargeVariables[LegadoPreviewIdentity.key(ref.url)] = variables.filter { $0.value.utf16.count >= 10_000 }
+            }
+            record.originalTOC = record.chapters
+        }
+        let id = try previewID(record)
+        try writePreview(try encoded(record), id: id, deadline: deadline)
+        return try previewVariables(record, reference: previewReference(record, id: id), previous: previous)
     }
 
     func originalSearch(query: String, page: Int32? = 1, source: BookSource) async throws -> [OnlineBook] {
@@ -857,6 +948,10 @@ extension LegadoMainJSSourceService {
             throw failure("STATE_CONFLICT", "App variables changed before preview transfer")
         }
         for (key, value) in preview { merged[key] = value }
+        // References stop at the preview boundary. Keeping a fresh context nonce
+        // in durable book variables would dirty an unchanged 2,000-chapter book
+        // on every refresh and expose an implementation key to original rules.
+        merged.removeValue(forKey: Self.originalPreviewContextKey)
         // A user action has already created the real App TOC. Require its actual chapter
         // identity and values, including the latest preview commits; never manufacture
         // UUIDs or bypass ChapterFetchManager's generation predicate to patch a mismatch.
@@ -903,11 +998,16 @@ extension LegadoMainJSSourceService {
         let committed: Bool
         do {
             committed = try await withTaskCancellationHandler {
-                try await store.compareOriginalRuntimeBook(expected: owned, expectedView: view, variables: merged,
-                    deadline: deadline, cancellation: cancellation, validateGrant: {
-                        try cancellation.check(deadline: deadline)
-                        guard appIdentityCurrent() else { throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "App identity or chapter state changed during preview transfer") }
-                    })
+                let validate: @Sendable () throws -> Void = {
+                    try cancellation.check(deadline: deadline)
+                    guard appIdentityCurrent() else { throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "App identity or chapter state changed during preview transfer") }
+                }
+                if BookStore.RuntimeBookSnapshot.sameVariables(owned.book.variables, merged) {
+                    return try await store.validateOriginalRuntimeBookProof(owned, deadline: deadline,
+                        cancellation: cancellation, validateGrant: validate)
+                }
+                return try await store.compareOriginalRuntimeBook(expected: owned, expectedView: view, variables: merged,
+                    deadline: deadline, cancellation: cancellation, validateGrant: validate)
             } onCancel: { cancellation.cancel() }
         } catch let error as LegadoRuntimeError { throw error }
         catch is CancellationError { throw CancellationError() }
@@ -926,6 +1026,19 @@ extension LegadoMainJSSourceService {
             read.record.status = .transferred
             try replacePreview(read.record, previous: read, id: reference.bookRecordID,
                 deadline: Date().addingTimeInterval(operationTimeout), honourCancellation: false)
+        }
+        if read.record.ephemeralStoredMetadata == true {
+            // This reference was never adopted into the real book/chapter maps.
+            // Remove only this successfully retired owned metadata context. A
+            // failure keeps its non-writable proof and reports the cleanup error.
+            do {
+                let retired = try readPreview(reference, requireActive: false, check: {})
+                guard retired.record.status == .transferred, retired.record.transferBookID == bookID else {
+                    throw failure("STATE_CONFLICT", "Retired metadata context changed before cleanup")
+                }
+                let path = try directory().appendingPathComponent(reference.bookRecordID + ".json")
+                if Darwin.unlink(path.path) != 0 { throw failure("STATE_IO", "Retired metadata context could not be removed") }
+            } catch { AppLogger.error("Retired original metadata context cleanup failed", error: error) }
         }
         return .init(recordID: reference.bookRecordID, bookID: bookID, sourceID: source.id, bookURL: reference.bookURL)
     }
@@ -1138,7 +1251,8 @@ extension LegadoMainJSSourceService {
     func originalContentBatch(source: BookSource, store: BookStore, bookID: UUID,
                               book: LegadoOriginalBook, chapters: [OriginalRuntimeBatchChapter],
                               taskID: String, deadline: Date,
-                              cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> LegadoOriginalContentBatchResult {
+                              cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository,
+                              singleChapter: Bool = false, nextChapterURL: String? = nil) async throws -> LegadoOriginalContentBatchResult {
         let signature = try originalSignature(source)
         try validateOriginalBook(book, sourceURL: source.bookSourceUrl)
         try await acquire(source.bookSourceUrl, deadline: deadline)
@@ -1149,7 +1263,8 @@ extension LegadoMainJSSourceService {
         let sourceJSON = String(decoding: try encoded(source), as: UTF8.self)
         return try await contentBatchExecutor.execute(.init(sourceJSON: sourceJSON, sourceURL: source.bookSourceUrl,
             sourceRevision: signature, sourceID: source.id, store: store, bookID: bookID, book: book,
-            chapters: chapters, taskID: taskID, deadline: deadline, cache: cache))
+            chapters: chapters, taskID: taskID, deadline: deadline, cache: cache,
+            singleChapter: singleChapter, nextChapterURL: nextChapterURL))
     }
 
     private func originalSignature(_ source: BookSource) throws -> String {

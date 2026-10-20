@@ -381,10 +381,10 @@ struct AppDependencies {
     var readingPositionStore: ReadingPositionStore
 
     static let live: AppDependencies = {
-        let webFetcher = WebFetcher()
+        let bsf = BookSourceFetcher.shared
+        let webFetcher = bsf.webFetcher
         let webViewFetcher = MainActor.assumeIsolated { WebViewFetcher.shared }
-        let bsf = BookSourceFetcher(webFetcher: webFetcher)
-        let cfm = ChapterFetchManager(bookSourceFetcher: bsf, webViewFetcher: webViewFetcher)
+        let cfm = ChapterFetchManager.shared
         let liveChapterFetcher = LiveChapterFetcher(chapterFetchManager: cfm)
         let offlineChapterStore = OfflineChapterStore()
         let offlineDownloadManager = OfflineDownloadManager(

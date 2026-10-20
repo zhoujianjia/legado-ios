@@ -133,19 +133,23 @@ final class BookChapterStore: @unchecked Sendable {
     /// its publication. Success acknowledges this ordered durable mutation, not a promise
     /// that a later overlapping App edit cannot replace it.
     func compareRuntimeVariables(expected: RuntimeVariablesSnapshot, variables: [String: String]?,
-                                 claimCommit: @Sendable () -> Bool = { true }, beforeWrite: () throws -> Void = {}) throws -> Bool {
+                                 claimCommit: @Sendable () -> Bool = { true },
+                                 accepted: @Sendable (RuntimeVariablesSnapshot) -> Void = { _ in },
+                                 beforeWrite: () throws -> Void = {}) throws -> Bool {
         dispatchPrecondition(condition: .onQueue(persistenceQueue))
         let entry = try ownerEntry(for: expected.bookID)
         guard entry.revision == expected.revision, var candidate = entry.chapters,
               candidate.indices.contains(expected.index), candidate[expected.index].id == expected.chapterID,
               candidate[expected.index].url.utf8.elementsEqual(expected.url.utf8),
-              candidate[expected.index].runtimeVariables == expected.variables else { return false }
-        if variables == expected.variables, !entry.isDirty { return true }
+              BookStore.RuntimeBookSnapshot.sameVariables(candidate[expected.index].runtimeVariables, expected.variables) else { return false }
+        if BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.variables), !entry.isDirty {
+            try beforeWrite(); accepted(expected); return true
+        }
         candidate[expected.index].runtimeVariables = variables
         committing = true
         defer { committing = false }
         try write(candidate, for: expected.bookID, beforeWrite: beforeWrite, claimCommit: claimCommit)
-        let revision = variables == expected.variables ? entry.revision : state.withLock { state in
+        let revision = BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.variables) ? entry.revision : state.withLock { state in
             state.nextRevision &+= 1
             return state.nextRevision
         }
@@ -161,6 +165,8 @@ final class BookChapterStore: @unchecked Sendable {
             Self.touch(expected.bookID, entry: published, in: &state)
             Self.evictLeastRecentlyUsed(in: &state)
         }
+        accepted(.init(bookID: expected.bookID, chapterID: expected.chapterID, index: expected.index,
+            url: expected.url, revision: revision, variables: variables))
         return true
     }
 
@@ -207,6 +213,18 @@ final class BookChapterStore: @unchecked Sendable {
     }
 
     /// The host reads the queue-owned list, never a partially published UI mutation.
+    func originalMetadataView(for bookID: UUID) throws -> (chapters: [OnlineChapterRef], revision: Int) {
+        dispatchPrecondition(condition: .onQueue(persistenceQueue))
+        let entry = try ownerEntry(for: bookID)
+        return (entry.chapters ?? [], entry.revision)
+    }
+    /// Constant-time validation at publication. Any intervening chapter writer,
+    /// including cache marks, makes a late metadata refresh retry rather than
+    /// overwrite values read by another real chapter generation.
+    func originalMetadataViewIsCurrent(for bookID: UUID, revision: Int) -> Bool {
+        state.withLock { $0.entries[bookID]?.revision == revision }
+    }
+
     func ownerChapters(for bookID: UUID) throws -> [OnlineChapterRef]? {
         dispatchPrecondition(condition: .onQueue(persistenceQueue))
         return try ownerEntry(for: bookID).chapters

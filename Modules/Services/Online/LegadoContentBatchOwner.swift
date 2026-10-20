@@ -28,6 +28,21 @@ private final class BatchBookCompletionProof: @unchecked Sendable {
     func snapshot() -> OriginalRuntimeBookMetadataOwner.Snapshot? { lock.withLock { value } }
 }
 
+/// The one single-chapter operation retains only its exact accepted metadata/cache
+/// identities. A later foreign edit cannot be adopted as that operation's own write.
+private final class SingleChapterCompletionProof: @unchecked Sendable {
+    private let lock = NSLock()
+    private var metadata: BookChapterStore.RuntimeVariablesSnapshot?
+    private var cache: OriginalChapterCacheSnapshot?
+    func initialize(_ value: BookChapterStore.RuntimeVariablesSnapshot, cache: OriginalChapterCacheSnapshot) {
+        lock.withLock { precondition(metadata == nil); metadata = value; self.cache = cache }
+    }
+    func accepted(_ value: BookChapterStore.RuntimeVariablesSnapshot) { lock.withLock { metadata = value } }
+    func snapshot() -> (BookChapterStore.RuntimeVariablesSnapshot, OriginalChapterCacheSnapshot)? {
+        lock.withLock { guard let metadata, let cache else { return nil }; return (metadata, cache) }
+    }
+}
+
 /// An adapter borrowing the existing BookStore, chapter owner, cache repository and
 /// in-flight fetch generations. It owns no file/queue/body cache. At most 32 transient
 /// accepted-file proofs prevent a later CAS retry from legitimizing a foreign edit.
@@ -44,17 +59,22 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
     private let granted: [Int: OriginalRuntimeBatchChapter]
     private let lifetime = OriginalRuntimeCommitCancellation()
     private let bookCompletion: BatchBookCompletionProof
+    private let singleCompletion: SingleChapterCompletionProof
+    private let singleChapter: Bool
     private let proofLock = NSLock()
     private var accepted: [Int: [String: String]] = [:]
     private var busy = Set<Int>()
 
     init(taskID: String, store: BookStore, bookID: UUID, sourceID: UUID, book: LegadoOriginalBook,
          chapters: [OriginalRuntimeBatchChapter], deadline: Date,
-         cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) throws {
+         cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository, singleChapter: Bool = false) throws {
         guard !taskID.isEmpty, chapters.count <= 32, Set(chapters.map { $0.chapter.index }).count == chapters.count,
               Set(chapters.map { $0.chapter.id }).count == chapters.count else { throw Self.failure("INVALID_STATE_OWNER", "Batch requires bounded actual chapter identities") }
         self.taskID = taskID; self.store = store; self.bookID = bookID; self.sourceID = sourceID
+        guard !singleChapter || chapters.count == 1 else { throw Self.failure("INVALID_STATE_OWNER", "Single content requires one actual chapter generation") }
         self.book = book; self.expiresAt = deadline; self.cache = cache
+        self.singleChapter = singleChapter
+        let singleProof = SingleChapterCompletionProof(); self.singleCompletion = singleProof
         let completion = BatchBookCompletionProof()
         self.bookCompletion = completion
         self.bookVariables = try AppLegadoBookStateOwner(store: store, bookID: bookID, sourceID: sourceID,
@@ -70,7 +90,8 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
                   generation.url.utf8.elementsEqual(ref.url.utf8) else { throw Self.failure("INVALID_STATE_OWNER", "Batch chapter lacks its actual App generation") }
             values[ref.index] = value
             variables[Data(ref.url.utf8), default: []].append(try AppLegadoBookStateOwner(store: store,
-                bookID: bookID, sourceID: sourceID, bookURL: book.bookURL, chapter: ref, generation: generation))
+                bookID: bookID, sourceID: sourceID, bookURL: book.bookURL, chapter: ref, generation: generation,
+                acceptedChapterCommit: { singleProof.accepted($0) }))
         }
         granted = values; chapterVariables = variables
     }
@@ -118,6 +139,16 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
             bookURL: book.bookURL, deadline: min(deadline, expiresAt), cancellation: lifetime,
             validateGrant: { [self] in try check(deadline: deadline) })
         bookCompletion.initialize(snapshot)
+        if singleChapter, let value = granted.values.first {
+            guard let metadata = try await store.originalRuntimeChapterSnapshot(bookID: bookID,
+                index: value.chapter.index, url: value.chapter.url, deadline: min(deadline, expiresAt),
+                cancellation: lifetime, validateGrant: { [self] in try checkChapter(value.chapter.index, deadline: deadline) }),
+                  metadata.chapterID == value.chapter.id else { throw Self.failure("STATE_CONFLICT", "Single content lost its chapter owner") }
+            let files = try await cache.originalBatchSnapshot(bookID: bookID, index: value.chapter.index,
+                sourceURL: value.chapter.url, tocTitle: value.chapter.title,
+                validateGrant: { [self] in try checkChapterOnWriter(value.chapter.index, deadline: deadline, cancellation: lifetime) })
+            singleCompletion.initialize(metadata, cache: files)
+        }
     }
 
     /// Direct Book.variable assignment is the original returned small-map field.
@@ -134,12 +165,18 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
         guard small?.values.allSatisfy({ $0.utf16.count < 10_000 }) != false else {
             throw Self.failure("INVALID_RESULT", "Original returned small variables contain a large companion")
         }
-        let large = expected.book.variables?.filter { $0.value.utf16.count >= 10_000 } ?? [:]
+        let large = expected.book.variables?.filter { $0.key != LegadoMainJSSourceService.originalPreviewContextKey && $0.value.utf16.count >= 10_000 } ?? [:]
         try LegadoPreviewVariableCodec.validateRepresentable([small ?? [:], large])
         guard Set((small ?? [:]).keys).isDisjoint(with: large.keys) else {
             throw Self.failure("UNSUPPORTED_CAPABILITY", "Small and large original variable companions cannot share one App map key")
         }
-        let variables: [String: String]? = small == nil && large.isEmpty ? nil : (small ?? [:]).merging(large) { first, _ in first }
+        guard small?[LegadoMainJSSourceService.originalPreviewContextKey] == nil else {
+            throw Self.failure("INVALID_RESULT", "Original returned variables cannot replace the App context reference")
+        }
+        var variables: [String: String]? = small == nil && large.isEmpty ? nil : (small ?? [:]).merging(large) { first, _ in first }
+        if let reference = expected.book.variables?[LegadoMainJSSourceService.originalPreviewContextKey] {
+            var values = variables ?? [:]; values[LegadoMainJSSourceService.originalPreviewContextKey] = reference; variables = values
+        }
         let validate: @Sendable () throws -> Void = { [self] in try check(deadline: deadline) }
         if BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.book.variables) {
             guard try await store.validateOriginalRuntimeBookProof(expected, deadline: deadline,
@@ -200,7 +237,8 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
                 values.append(.init(wire: wire, index: index))
             } else { throw Self.failure("UNSUPPORTED_CAPABILITY", "Body key has no actual chapter generation grant") }
         }
-        guard values.count <= 2, values.filter({ $0.index != nil }).count == 1 else {
+        guard values.count <= 2, values.filter({ $0.index != nil }).count == 1
+            || (values.count == 1 && values[0].index == nil && !granted.isEmpty) else {
             throw Self.failure("UNSUPPORTED_CAPABILITY", "One original save snapshot must belong to one granted chapter")
         }
         return values
@@ -223,7 +261,11 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
     }
     func readContent(keys: [LegadoContentStateKey], deadline: Date,
                      cancellation: OriginalRuntimeCommitCancellation) async throws -> LegadoContentStateSnapshot {
-        let index = keys.compactMap(\.index)[0]
+        // A TOC-only read is restricted by this same actual active chapter job;
+        // its value-only response does not create a body-save CAS lease.
+        guard let index = keys.compactMap(\.index).first ?? granted.keys.first else {
+            throw Self.failure("INVALID_STATE_OWNER", "Original TOC read lost its active chapter owner")
+        }
         try begin(index); defer { end(index) }
         try checkChapter(index, deadline: deadline)
         let value = granted[index]!
@@ -250,15 +292,25 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
                        deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
                        request: LegadoHostRequest) async throws -> Bool {
         let index = snapshot.index
-        try begin(index); defer { end(index) }
-        try checkChapter(index, deadline: deadline)
         guard let key = keys.first(where: { $0.index == index }), changes.count == 1,
               let optional = changes[key.wire], let bytes = optional, bytes.count <= 1_048_576 else {
-            throw Self.failure("UNSUPPORTED_CAPABILITY", "Original batch saves only one content value; TOC metadata/deletion is not granted")
+            throw Self.failure("UNSUPPORTED_CAPABILITY", "Original saves only one content value; TOC metadata/deletion is not granted")
         }
         let row: ContentRecord
         do { row = try JSONDecoder().decode(ContentRecord.self, from: bytes) }
         catch { throw Self.failure("INVALID_STATE_REQUEST", "Original content record is incompatible with the granted save") }
+        return try await persistContent(row, snapshot: snapshot.cache, deadline: deadline, cancellation: cancellation,
+            claimCommit: { request.recordPossibleEffect("chapterContentMayCommit") },
+            didCommit: { request.recordPossibleEffect("chapterContentCommitted") })
+    }
+
+    private func persistContent(_ row: ContentRecord, snapshot: OriginalChapterCacheSnapshot,
+                                deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                                claimCommit: @escaping @Sendable () -> Bool,
+                                didCommit: @escaping @Sendable () -> Void) async throws -> Bool {
+        let index = snapshot.index
+        try begin(index); defer { end(index) }
+        try checkChapter(index, deadline: deadline)
         let value = granted[index]!
         guard row.version == 0, row.index == index, row.bookUrl.utf8.elementsEqual(book.bookURL.utf8),
               row.chapterUrl.utf8.elementsEqual(value.chapter.url.utf8), row.name.utf8.elementsEqual(book.name.utf8),
@@ -290,7 +342,7 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
                 // resolver; ordinary static images/embedded media use the same
                 // established sanitizer/XHTML/reader data contract as normal fetch.
                 return await ChapterFetcher.shared.buildRenderableNormalizedHTML(
-                    title: value.chapter.title, plainTextContent: resolved,
+                    title: row.title, plainTextContent: resolved,
                     rawHTMLContent: row.body, reviewContext: nil,
                     contentBaseURL: resourceBase.absoluteString)
             }
@@ -300,17 +352,19 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
             }
         } else { normalized = nil }
         let package = ChapterPackage(bookId: bookID, chapterIndex: index, sourceURL: value.chapter.url,
-            tocTitle: value.chapter.title, canonicalTitle: nil, content: row.body, contentChecksum: "",
+            tocTitle: value.chapter.title,
+            canonicalTitle: row.title.utf8.elementsEqual(value.chapter.title.utf8) ? nil : row.title,
+            content: row.body, contentChecksum: "",
             rawHTMLFilename: hasMarkup ? "\(index).raw.html" : nil,
             normalizedHTMLFilename: hasMarkup ? "\(index).normalized.xhtml" : nil,
             savedAt: Date(), state: .cached, failureReason: nil)
         do {
-            guard let receipt = try await cache.compareOriginalBatchSnapshot(snapshot.cache, package: package,
+            guard let receipt = try await cache.compareOriginalBatchSnapshot(snapshot, package: package,
                 rawHTML: hasMarkup ? row.body : nil, normalizedHTML: normalized,
                 validateGrant: { [self] in try checkChapterOnWriter(index, deadline: deadline, cancellation: cancellation) },
-                claimCommit: { request.recordPossibleEffect("chapterContentMayCommit") }) else { return false }
+                claimCommit: claimCommit) else { return false }
             proofLock.withLock { accepted[index] = receipt.snapshot.fingerprints }
-            if receipt.write.changed { request.recordPossibleEffect("chapterContentCommitted") }
+            if receipt.write.changed { didCommit() }
             return true
         } catch let error as ChapterCacheWriteError {
             switch error {
@@ -321,6 +375,62 @@ final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBa
             }
         }
     }
+    /// Native single-content results use the same actual owners and body CAS as
+    /// original batch callbacks. No URL-derived grant or second cache writer exists.
+    func finishSingleContent(_ result: LegadoOriginalContentResult, deadline: Date) async throws -> [String] {
+        guard singleChapter, granted.count == 1, let value = granted.values.first,
+              result.chapter.index == value.dto.index,
+              result.chapter.url.utf8.elementsEqual(value.chapter.url.utf8),
+              result.chapter.bookURL.utf8.elementsEqual(book.bookURL.utf8),
+              let (expected, files) = singleCompletion.snapshot() else {
+            throw Self.failure("INVALID_RESULT", "Single result changed its actual chapter identity")
+        }
+        let effects = OSAllocatedUnfairLock(initialState: [String]())
+        do {
+            if try await finishResultBook(result.book, deadline: deadline) {
+                effects.withLock { $0.append("bookVariablesCommitted") }
+            }
+            let small = try result.chapter.variable.map(LegadoPreviewVariableCodec.decodeMap)
+            guard small?.values.allSatisfy({ $0.utf16.count < 10_000 }) != false,
+                  small?[LegadoMainJSSourceService.originalPreviewContextKey] == nil else {
+                throw Self.failure("INVALID_RESULT", "Single result returned invalid small chapter variables")
+            }
+            let large = expected.variables?.filter { $0.key != LegadoMainJSSourceService.originalPreviewContextKey && $0.value.utf16.count >= 10_000 } ?? [:]
+            try LegadoPreviewVariableCodec.validateRepresentable([small ?? [:], large])
+            guard Set((small ?? [:]).keys).isDisjoint(with: large.keys) else {
+                throw Self.failure("INVALID_RESULT", "Single result changed a large chapter companion")
+            }
+            var variables: [String: String]? = small == nil && large.isEmpty ? nil : (small ?? [:]).merging(large) { first, _ in first }
+            if let reference = expected.variables?[LegadoMainJSSourceService.originalPreviewContextKey] {
+                var map = variables ?? [:]; map[LegadoMainJSSourceService.originalPreviewContextKey] = reference; variables = map
+            }
+            let changed = !BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.variables)
+            guard try await store.compareOriginalRuntimeChapter(expected: expected, variables: variables,
+                deadline: deadline, cancellation: lifetime,
+                claimCommit: { effects.withLock { $0.append("chapterVariablesMayCommit") }; return true },
+                accepted: { [singleCompletion] in singleCompletion.accepted($0) },
+                validateGrant: { [self] in try checkChapter(value.chapter.index, deadline: deadline) }) else {
+                throw Self.failure("STATE_CONFLICT", "Single result chapter changed after its last accepted metadata write")
+            }
+            if changed { effects.withLock { $0.append("chapterVariablesCommitted") } }
+            let row = ContentRecord(version: 0, bookUrl: book.bookURL, index: value.chapter.index,
+                chapterUrl: value.chapter.url, name: book.name, author: book.author,
+                title: result.chapter.title, imgUrl: result.chapter.imgURL, body: result.content)
+            guard try await persistContent(row, snapshot: files, deadline: deadline, cancellation: lifetime,
+                claimCommit: { effects.withLock { $0.append("chapterContentMayCommit") }; return true },
+                didCommit: { effects.withLock { $0.append("chapterContentCommitted") } }) else {
+                throw Self.failure("STATE_CONFLICT", "Single result cache changed while original content was executing")
+            }
+            return Array(Set(effects.withLock { $0 })).sorted()
+        } catch {
+            let failure = error as? LegadoRuntimeError
+            let reported = Array(Set(effects.withLock { $0 } + (failure?.completedEffects ?? []))).sorted()
+            if !reported.isEmpty { throw LegadoRuntimeError(code: failure?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
+                message: error.localizedDescription, completedEffects: reported) }
+            throw error
+        }
+    }
+
     // version=0 is only the finite JVM record representation. Authorization/edit
     // protection is the real generation plus captured complete file proofs above.
     private struct ContentRecord: Codable {
@@ -352,6 +462,8 @@ struct LegadoContentBatchExecutionRequest: @unchecked Sendable {
     let taskID: String
     let deadline: Date
     let cache: ChapterCacheRepository
+    var singleChapter: Bool = false
+    var nextChapterURL: String? = nil
 }
 protocol LegadoOriginalContentBatchExecuting: Sendable {
     func execute(_ request: LegadoContentBatchExecutionRequest) async throws -> LegadoOriginalContentBatchResult
@@ -362,6 +474,10 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
         let owner = try await process.bindPersistentContentBatch(request)
         var finalBookCommitted = false
         let reportedEffects = OSAllocatedUnfairLock(initialState: [String]())
+        let observeEffects: @Sendable ([String]) -> Void = { effects in
+            reportedEffects.withLock { $0 = Array(Set($0 + effects)).sorted() }
+            for value in request.chapters { value.generation.recordReportedEffects(effects) }
+        }
         do {
             let runtime = try await process.executor()
             try check(request.deadline)
@@ -370,10 +486,23 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
             let result: LegadoOriginalContentBatchResult
             do {
                 try check(request.deadline)
-                result = try await runtime.contentBatchOriginal(session: session, book: request.book,
-                    chapters: request.chapters.map(\.dto),
-                    timeoutMilliseconds: Int64(min(300_000, max(1, request.deadline.timeIntervalSinceNow * 1000))), taskID: request.taskID,
-                    onReportedEffects: { effects in reportedEffects.withLock { $0 = effects } })
+                if request.singleChapter {
+                    guard request.chapters.count == 1, let chapter = request.chapters.first else {
+                        throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "Single original content needs its one actual chapter job")
+                    }
+                    let content = try await runtime.contentOriginal(session: session, book: request.book,
+                        chapter: chapter.dto, nextChapterURL: request.nextChapterURL,
+                        timeoutMilliseconds: Int64(min(300_000, max(1, request.deadline.timeIntervalSinceNow * 1000))),
+                        taskID: request.taskID, onReportedEffects: observeEffects)
+                    let savedEffects = try await process.finishSingleContentResult(owner: owner, request: request, result: content)
+                    observeEffects(savedEffects)
+                    result = .init(book: content.book, missingChapters: [])
+                } else {
+                    result = try await runtime.contentBatchOriginal(session: session, book: request.book,
+                        chapters: request.chapters.map(\.dto),
+                        timeoutMilliseconds: Int64(min(300_000, max(1, request.deadline.timeIntervalSinceNow * 1000))), taskID: request.taskID,
+                        onReportedEffects: observeEffects)
+                }
                 guard result.missingChapters.count <= request.chapters.count,
                       Set(result.missingChapters.map(\.index)).count == result.missingChapters.count,
                       result.missingChapters.allSatisfy({ missing in
@@ -383,7 +512,10 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
                       }) else {
                     throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original missing chapters changed their granted App index/URL identity")
                 }
-                finalBookCommitted = try await process.finishContentBatchResult(owner: owner, request: request, book: result.book)
+                if !request.singleChapter {
+                    finalBookCommitted = try await process.finishContentBatchResult(owner: owner, request: request, book: result.book)
+                    if finalBookCommitted { observeEffects(["bookVariablesCommitted"]) }
+                }
             } catch {
                 do { try await runtime.close(session: session) }
                 catch { AppLogger.error("Original batch session cleanup failed after execution error", error: error) }
@@ -399,6 +531,7 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
             let effects = Array(Set(reportedEffects.withLock { $0 } + (failure?.completedEffects ?? []) +
                 (finalBookCommitted ? ["bookVariablesCommitted"] : []))).sorted()
             if !effects.isEmpty {
+                observeEffects(effects)
                 throw LegadoRuntimeError(code: failure?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
                     message: error.localizedDescription, completedEffects: effects)
             }

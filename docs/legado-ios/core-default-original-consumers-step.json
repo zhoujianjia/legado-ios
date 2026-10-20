@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "status": "production-integrated-awaiting-consolidated-SDK-and-real-JNI",
+  "sources": [
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Search.swift",
+      "bytes": 12934,
+      "sha256": "841a52e983ddb668942c07232ceee39a1f50737a37f70fc454ed47398e77808f"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+BookInfo.swift",
+      "bytes": 1952,
+      "sha256": "687ad569d7df0a71cbdf119a0e622ce2b90e2ca9f024fc41653b2d76f82642b4"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+TOC.swift",
+      "bytes": 3248,
+      "sha256": "27fcf27a8cefa8d5dfbe907b871bcc40e5fd5362452e79ae238bd0785a818d4d"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+      "bytes": 7906,
+      "sha256": "cc91c73c4bd17d60879283521de7a336126d9f7b9d165e3282ea20b85d6a4378"
+    },
+    {
+      "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+      "bytes": 63609,
+      "sha256": "dfacf47bfbe3396fe2003e3b051cb14ca9ce72981e6626e75c2c5ac7cd7a09e0"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 99840,
+      "sha256": "9741ee858e1acf4280bb8afe4e605cdb86f633bda2b2229c215916b00c88002f"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookChapterStore.swift",
+      "bytes": 22644,
+      "sha256": "362c2bb59cf8c668899bd2fd09a7730e7e222ed9e83899e4a273a98cdae8a514"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 218343,
+      "sha256": "dab7fed540cc85d8c91806e46b5a16ed2f4eb4f2b94a6eb67591d64d4a777113"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoBookStateOwner.swift",
+      "bytes": 12447,
+      "sha256": "499a13e39635bb310072055cbe2ad8e5a9b50a945c9fb1c7463cdf8bc60d390e"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "bytes": 36295,
+      "sha256": "db0aa536df48729f76bbfced09409a808b7dfb0a81e99f2d4824d249a27d3483"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 65544,
+      "sha256": "e276c8d0c0fbbfeff284ff48c53588f801604a4453ff29d67354aef906c6b36b"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Discover.swift",
+      "bytes": 4759,
+      "sha256": "89f6064d8957ee38eb05b5ffdffaed71e3cd5945ac70577aba1c2bf1eeabc5a6"
+    },
+    {
+      "path": "Modules/Services/Online/DiscoverQuickActions.swift",
+      "bytes": 5988,
+      "sha256": "bac05ce0c065527ce1827655dc2d5eb13caadeae254edde3e050daf6b83adbab"
+    },
+    {
+      "path": "Modules/Features/BookDetail/OnlineBookView.swift",
+      "bytes": 49794,
+      "sha256": "f91bd31364fa61a887c84b477c095e590ea5a64791ed0bbd82570fd4edb7b8ad"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "bytes": 6893,
+      "sha256": "fdf99e43c00320bd7977835b34c168dcc87eae50286d69fc4f37d5cfdddfd4b6"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 48025,
+      "sha256": "488b8429d517d292e60b2bfa11fb69ca0a3293307971405b6122f3f6f13927ff"
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/AppDependencies.swift",
+      "bytes": 14991,
+      "sha256": "8d28fc41196a31bee10c1f18d3612797f4d6d507d24012f78a35ecfc1e7de960"
+    }
+  ],
+  "implementation": [
+    "Public traditional search/detail/TOC/discover execute the existing retained original business API; mainJs search/detail/TOC/content retain the existing sole JVM mode.",
+    "Normal ChapterFetchManager uses one actual store/book/source/chapter/generation and the existing App content owner in single-content mode. Configured contentBatch is not misused for one ordinary Reader chapter.",
+    "Single content preserves original pagination, final small/large variable companions, exact accepted metadata proofs, body file CAS, static HTML/media rendering, canonical chapter title and durable cache readback.",
+    "The same active generation retains actual reported effects through JVM close, cancellation, readback and later cache metadata publication; cancellation propagates to the inner task and awaits its terminal result.",
+    "Health-check/preview content with no App generation remains a read-only original request and does not write a cache file under its synthetic book UUID.",
+    "Public detail -> TOC executes serially. Shelf/trial-book creation and source switching await preview transfer to the existing actual App identity before reporting/opening.",
+    "Stored metadata refresh reads real BookStore/ChapterStore state, including small/large chapter variables, into an isolated metadata preview. References are excluded from adopted business maps, so context nonces cannot dirty unchanged metadata.",
+    "A constant-time per-granted-book metadata stamp extends the existing bounded index; current ChapterStore revision rejects intervening writers. No new store, queue, VM, HTTP client or persistent body cache is added.",
+    "No-change transfer validates its exact existing book proof without a metadata revision/publication. Successfully transferred ephemeral stored-metadata contexts are removed; cleanup failure is logged and leaves the retired proof.",
+    "Discover static decoding is pure; dynamic categories/actions use the existing original context or mainJs JVM evaluator. Missing original hosts fail rather than selecting old JSC."
+  ],
+  "remainingLimits": [
+    "No Swift compiler, SDK, JNI or App execution is claimed. The 2 new methods are definitions only. Existing native gate selects 4 original methods and must explicitly add these 2 at the final centralized stage.",
+    "Original RuleJsExtensions still lacks refreshExplore/toast/startBrowser UI hosts; webJs/browser/login-info and authored deferred image JS remain typed unsupported. Source-variable overlays deliberately reject; they are not emulated through old JSC.",
+    "Original rules currently require traditional text bookSourceType=0. Unsupported source/media/host contracts are not accepted as full compatibility.",
+    "The public nonthrowing discoverItems compatibility facade logs failures and returns no categories; throwing discoverItemsOriginal preserves the actual error. Existing quick-action value UI still needs explicit failed-write outcome handling.",
+    "Concurrent chapter changes, including cache marks, conservatively reject an original stored-TOC refresh instead of overwriting its stale input. No automatic fallback/retry engine is added.",
+    "Only the existing live DI instance selection changes in AppDependencies; no App scene, workflow, release tag, test selection or completion flag changes.",
+    "The current signing test package is separately frozen by root; this candidate does not alter it."
+  ],
+  "independentSourceReview": {
+    "bytes": 8434,
+    "sha256": "0bb9844c08ada35f0ab9dafa641379478f58ad11ad8ea7f0f56891b08dab7dcd",
+    "blockingFindingsRemaining": 0,
+    "resolved": [
+      "One default Discover/Reader/App pause owner",
+      "Actual TOC URL propagation",
+      "Existing book identity, cached files and variables preserved through real CAS",
+      "Old-request completion and empty-TOC terminal state"
+    ]
+  },
+  "regressions": {
+    "newNativeDefinitions": [
+      "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache"
+    ],
+    "actualSDKExecutions": 0,
+    "actualJNIExecutions": 0
+  },
+  "newDerivedState": "Only a transient metadata version stamp in the existing bounded book index; no new persistent body cache or store.",
+  "devicePackageBoundary": "Build 13 is frozen at 4836debf2cfc46d0bc44c46df4d5cbc28d434ff2 and does not contain this later source batch.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

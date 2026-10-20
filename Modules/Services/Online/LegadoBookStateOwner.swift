@@ -11,6 +11,16 @@ final class OriginalRuntimeChapterGeneration: @unchecked Sendable {
     let token: UUID
     private let cancellation = OriginalRuntimeCommitCancellation()
     private let validateCacheIdentity: @Sendable () throws -> Void
+    private let effectsLock = NSLock()
+    private var executionEffects: [String] = []
+    func recordReportedEffects(_ effects: [String]) {
+        effectsLock.lock(); defer { effectsLock.unlock() }
+        executionEffects = Array(Set(executionEffects + effects)).sorted()
+    }
+    var reportedEffects: [String] {
+        effectsLock.lock(); defer { effectsLock.unlock() }; return executionEffects
+    }
+
 
     init(bookID: UUID, chapter: OnlineChapterRef, token: UUID,
          validateCacheIdentity: @escaping @Sendable () throws -> Void = {}) {
@@ -53,10 +63,12 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
     private let generation: OriginalRuntimeChapterGeneration?
     private let lifetime = OriginalRuntimeCommitCancellation()
     private let acceptedBookCommit: @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void
+    private let acceptedChapterCommit: @Sendable (BookChapterStore.RuntimeVariablesSnapshot) -> Void
 
     init(store: BookStore, bookID: UUID, sourceID: UUID, bookURL: String,
          chapter: OnlineChapterRef?, generation: OriginalRuntimeChapterGeneration?,
-         acceptedBookCommit: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in }) throws {
+         acceptedBookCommit: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in },
+         acceptedChapterCommit: @escaping @Sendable (BookChapterStore.RuntimeVariablesSnapshot) -> Void = { _ in }) throws {
         guard store.originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
             throw Self.failure("An existing App book UUID, source and URL must be explicitly granted")
         }
@@ -68,7 +80,7 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
         } else if generation != nil { throw Self.failure("A generation without its chapter is not a valid grant") }
         self.store = store; self.bookID = bookID; self.sourceID = sourceID
         self.bookURL = bookURL; self.chapter = chapter; self.generation = generation
-        self.acceptedBookCommit = acceptedBookCommit
+        self.acceptedBookCommit = acceptedBookCommit; self.acceptedChapterCommit = acceptedChapterCommit
     }
 
     func revoke() { lifetime.cancel() }
@@ -122,9 +134,10 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
         var values: [String: Data] = [:]
         for key in keys {
             if let name = key.largeVariable {
+                guard name != LegadoMainJSSourceService.originalPreviewContextKey else { throw Self.failure("App context references are not source variables") }
                 if let value = variables?[name], value.utf16.count >= 10_000 { values[key.wire] = Data(value.utf8) }
             } else if let variables {
-                values[key.wire] = try JSONSerialization.data(withJSONObject: variables.filter { $0.value.utf16.count < 10_000 }, options: [.sortedKeys])
+                values[key.wire] = try JSONSerialization.data(withJSONObject: variables.filter { $0.key != LegadoMainJSSourceService.originalPreviewContextKey && $0.value.utf16.count < 10_000 }, options: [.sortedKeys])
             }
         }
         return .init(book: book, chapter: ownedChapter, bookVariables: ownedBook,
@@ -137,8 +150,9 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
         guard snapshot.chapter != nil || snapshot.bookVariables != nil else { throw Self.failure("Entity snapshot has no App owner proof") }
         guard try currentBook(deadline: deadline) == snapshot.book else { return false }
         let priorVariables = snapshot.chapter?.variables ?? snapshot.bookVariables?.book.variables
-        var small = priorVariables?.filter { $0.value.utf16.count < 10_000 } ?? [:]
-        var large = priorVariables?.filter { $0.value.utf16.count >= 10_000 } ?? [:]
+        let privateContext = priorVariables?[LegadoMainJSSourceService.originalPreviewContextKey]
+        var small = priorVariables?.filter { $0.key != LegadoMainJSSourceService.originalPreviewContextKey && $0.value.utf16.count < 10_000 } ?? [:]
+        var large = priorVariables?.filter { $0.key != LegadoMainJSSourceService.originalPreviewContextKey && $0.value.utf16.count >= 10_000 } ?? [:]
         var deletedSmall = false
         for key in keys {
             guard let change = changes[key.wire] else { continue }
@@ -158,10 +172,13 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
             } else { small = [:]; deletedSmall = true }
         }
         guard Set(small.keys).isDisjoint(with: large.keys) else { throw Self.failure("Entity variable companions disagree") }
-        let variables: [String: String]? = deletedSmall && large.isEmpty ? nil : small.merging(large) { first, _ in first }
+        guard small[LegadoMainJSSourceService.originalPreviewContextKey] == nil,
+              large[LegadoMainJSSourceService.originalPreviewContextKey] == nil else { throw Self.failure("Original rules cannot change an App context reference") }
+        var variables: [String: String]? = deletedSmall && large.isEmpty ? nil : small.merging(large) { first, _ in first }
+        if let privateContext { var values = variables ?? [:]; values[LegadoMainJSSourceService.originalPreviewContextKey] = privateContext; variables = values }
         if let expected = snapshot.chapter {
           return try await store.compareOriginalRuntimeChapter(expected: expected, variables: variables,
-            deadline: deadline, cancellation: cancellation, claimCommit: claimCommit) { [self] in
+            deadline: deadline, cancellation: cancellation, claimCommit: claimCommit, accepted: acceptedChapterCommit) { [self] in
                 guard try currentBook(deadline: deadline) == snapshot.book else {
                     throw Self.failure("The granted App book changed before its chapter write")
                 }

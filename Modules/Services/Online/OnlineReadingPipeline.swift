@@ -372,6 +372,7 @@ actor ChapterFetchManager {
     /// reports the same thing a `CancellationError` does.
     private static func isCancellation(_ error: Error) -> Bool {
         if error is CancellationError { return true }
+        if let failure = error as? LegadoRuntimeError, failure.code == "CANCELLED" { return true }
         if let urlError = error as? URLError, urlError.code == .cancelled { return true }
         return false
     }
@@ -555,6 +556,12 @@ actor ChapterFetchManager {
                         domain: "OnlineReadingPipeline", code: -2,
                         userInfo: [NSLocalizedDescriptionKey: "找不到來源配置"])
                 }
+                if !source.isJsSource {
+                    guard let store else { throw LegadoRuntimeError(code: "INVALID_STATE_OWNER",
+                        message: "The original Reader requires its existing library store") }
+                    return try await bookSourceFetcher.fetchOriginalOwnedChapterPackage(book: book,
+                        ref: actualChapter, source: source, store: store, generation: writeGeneration)
+                }
                 return try await bookSourceFetcher.fetchChapterPackage(
                     ref: ref,
                     bookId: book.id,
@@ -635,7 +642,9 @@ actor ChapterFetchManager {
         priorities[taskKey] = priority
 
         do {
-            let package = try await task.value
+            let package = try await withTaskCancellationHandler {
+                try await task.value
+            } onCancel: { task.cancel(); writeGeneration.revoke() }
 
             // Generation token validation: ensure this result is still from the latest request
             guard generationTokens[taskKey] == myToken else {
@@ -644,7 +653,12 @@ actor ChapterFetchManager {
 
             if package.state == .cached && !package.content.isEmpty {
                 let filename: String
-                if OnlineChapterCacheWritePolicy.shouldReusePersistedRenderArtifacts(
+                if writeGeneration.reportedEffects.contains("chapterContentVerified")
+                    && package.sourceURL?.utf8.elementsEqual(actualChapter.url.utf8) == true {
+                    // The original owner already persisted and verified the exact body.
+                    // Re-encoding it here would write twice and discard original artifacts.
+                    filename = OnlineChapterCacheWritePolicy.contentFilename(chapterIndex: chapterIndex)
+                } else if OnlineChapterCacheWritePolicy.shouldReusePersistedRenderArtifacts(
                     package: package,
                     hasBookSource: book.bookSourceId != nil
                 ) {
@@ -690,7 +704,9 @@ actor ChapterFetchManager {
             return package
         } catch is CancellationError {
             // Generation token invalidated or task cancelled: clean up without recording failure
+            let effects = writeGeneration.reportedEffects
             clearRequestTracking(for: taskKey, token: myToken)
+            if !effects.isEmpty { throw LegadoRuntimeError(code: "CANCELLED", message: "Original chapter was cancelled after reported effects", completedEffects: effects) }
             throw CancellationError()
         } catch let error where Self.isCancellation(error) {
             // -999 from a URLSession task or a WKWebView navigation torn down mid-flight
@@ -704,6 +720,9 @@ actor ChapterFetchManager {
                 "code": (error as? URLError)?.errorCode ?? 0,
             ])
             clearRequestTracking(for: taskKey, token: myToken)
+            let failure = error as? LegadoRuntimeError
+            let effects = Array(Set(writeGeneration.reportedEffects + (failure?.completedEffects ?? []))).sorted()
+            if !effects.isEmpty { throw LegadoRuntimeError(code: "CANCELLED", message: error.localizedDescription, completedEffects: effects) }
             throw CancellationError()
         } catch {
             guard generationTokens[taskKey] == myToken else {
@@ -714,6 +733,9 @@ actor ChapterFetchManager {
             await handleFetchFailure(
                 bookId: bookId, chapterIndex: chapterIndex, sourceURL: ref.url, tocTitle: ref.title, store: store, startedAt: startedAt,
                 reason: "error", pipelineKind: book.isOnline ? "online" : "txt")
+            let failure = error as? LegadoRuntimeError
+            let effects = Array(Set(writeGeneration.reportedEffects + (failure?.completedEffects ?? []))).sorted()
+            if !effects.isEmpty { throw LegadoRuntimeError(code: failure?.code ?? "STATE_IO", message: error.localizedDescription, completedEffects: effects) }
             throw error
         }
     }

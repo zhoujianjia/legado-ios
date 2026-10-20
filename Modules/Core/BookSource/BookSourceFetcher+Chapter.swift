@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import LegadoRuntime
 
 // MARK: - Fetch Chapter Content
 
@@ -30,277 +31,18 @@ extension BookSourceFetcher {
         if source.isJsSource {
             return try await fetchMainJSChapterPackage(ref: ref, bookId: bookId, source: source, cacheWriteGeneration: cacheWriteGeneration)
         }
-        logChapterFetchGate(ref: ref, source: source)
-        guard !ref.shouldRenderAsVolumeSeparator else {
-            throw FetchError.volumeSeparator(ref.title)
+        guard !ref.shouldRenderAsVolumeSeparator else { throw FetchError.volumeSeparator(ref.title) }
+        // Validation/preview calls have no real App book or generation. They read
+        // original text without creating a cache file under a synthetic UUID.
+        guard cacheWriteGeneration == nil else {
+            throw LegadoRuntimeError(code: "INVALID_STATE_OWNER",
+                message: "Traditional reader writes require its actual BookStore and chapter generation")
         }
-
-        if let cached = loadChapterPackageSync(
-            bookId: bookId,
-            chapterIndex: ref.index,
-            expectedSourceURL: ref.url,
-            expectedTOCTitle: ref.title
-        ), cached.state == .cached, !cached.content.isEmpty {
-            return cached
-        }
-
-        return try await withThrowingTaskGroup(of: ChapterPackage.self) { group in
-            group.addTask { [self] in
-                try await fetchChapterPackageInner(
-                    ref: ref,
-                    bookId: bookId,
-                    source: source,
-                    chapterReferer: chapterReferer,
-            cacheWriteGeneration: cacheWriteGeneration
-                )
-            }
-            group.addTask {
-                try await Task.sleep(nanoseconds: AppConfig.chapterFetchTimeoutSeconds * 1_000_000_000)
-                throw FetchTimeoutError.chapterTimeout
-            }
-            guard let result = try await group.next() else {
-                throw CancellationError()
-            }
-            group.cancelAll()
-            return result
-        }
-    }
-
-    private func fetchChapterPackageInner(
-        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil,
-        cacheWriteGeneration: OriginalRuntimeChapterGeneration? = nil
-    ) async throws
-        -> ChapterPackage
-    {
-        logChapterFetchGate(ref: ref, source: source)
-        guard !ref.shouldRenderAsVolumeSeparator else {
-            throw FetchError.volumeSeparator(ref.title)
-        }
-
-        if let cached = loadChapterPackageSync(
-            bookId: bookId,
-            chapterIndex: ref.index,
-            expectedSourceURL: ref.url,
-            expectedTOCTitle: ref.title
-        ), cached.state == .cached, !cached.content.isEmpty {
-            return cached
-        }
-        if source.shouldUseLegadoRuntimeFetch(for: ref.url) {
-            return try await fetchLegadoRuntimeChapterPackage(
-                ref: ref,
-                bookId: bookId,
-                source: source,
-                cacheWriteGeneration: cacheWriteGeneration
-            )
-        }
-        // Sanitize: old TOC cache may contain HTML fragments (e.g. <a href="...">), sanitize before parsing
-        var sanitizedRefUrl = RuleEngine.sanitizeExtractedURL(ref.url)
-        // If sanitized result is a relative path (e.g. /2280/1091923.html), resolve to absolute URL
-        if !sanitizedRefUrl.hasPrefix("http://") && !sanitizedRefUrl.hasPrefix("https://") {
-            sanitizedRefUrl = RuleEngine.resolveURL(
-                sanitizedRefUrl,
-                base: chapterReferer ?? source.bookSourceUrl
-            )
-        }
-        let requestSpec = ChapterFetcher.shared.parseChapterRequest(sanitizedRefUrl)
-        let cleanUrl = requestSpec.url
-        let urlWantsWebView = requestSpec.useWebView
-        guard let url = safeURL(string: cleanUrl) else { throw FetchError.invalidURL(sanitizedRefUrl) }
-        let runtimeBox = RuntimeVariableBox(ref.runtimeVariables)
-
-        // Align with Legado getContentAwait: determine if WebView is needed
-        let hasWebJs = !source.ruleContent.webJs.trimmingCharacters(in: .whitespacesAndNewlines)
-            .isEmpty
-        let requiresWebViewTransport = source.needsWebView || hasWebJs
-        let useWebView = requiresWebViewTransport || urlWantsWebView
-        let mergedHeaders = source.parsedHeaders.merging(requestSpec.headers) { _, new in new }
-        let effectiveReferer = requestSpec.referer ?? chapterReferer ?? source.bookSourceUrl
-        let shouldAttemptHTTPFirst = false
-
-        var requestHeaders = mergedHeaders
-        if requestHeaders["Referer"] == nil && !effectiveReferer.isEmpty {
-            requestHeaders["Referer"] = effectiveReferer
-        }
-        let requestHeadersSnapshot = requestHeaders
-
-        // #region agent log
-        let baseForReferer = effectiveReferer
-        _dbgLog(
-            "fetchChapter 進入",
-            data: [
-                "refUrl": String(ref.url.prefix(120)),
-                "cleanUrl": String(cleanUrl.prefix(120)),
-                "useWebView": useWebView,
-                "needsWebView": source.needsWebView,
-                "hasWebJs": hasWebJs,
-                "urlWantsWebView": urlWantsWebView,
-                "baseURL": String(baseForReferer.prefix(100)),
-                "chapterReferer": chapterReferer ?? "",
-                "bookSourceUrl": String(source.bookSourceUrl.prefix(80)),
-                "source": source.bookSourceName,
-                "index": ref.index,
-                "shouldAttemptHTTPFirst": shouldAttemptHTTPFirst,
-            ], hyp: "H1")
-        // #endregion
-
-        let effectiveWebViewDelay = requestSpec.webViewDelayMs > 0 ? TimeInterval(requestSpec.webViewDelayMs) / 1000.0 : nil
-        // `checksLogin`: the chapter's first page — Legado runs `loginCheckJs` on that
-        // response (`fetchStageHTML`), a WebView-rendered one included, and not on next pages.
-        let fetchChapterHTML: @Sendable (URL, String, String?, Bool) async throws -> String = {
-            [self] targetURL, method, body, checksLogin in
-            func fetchViaConfiguredTransport(preferWebView: Bool) async throws -> String {
-                if preferWebView {
-                    let rendered: String
-                    if hasWebJs {
-                        rendered = try await WebViewFetcher.shared.fetchHTMLWithCustomJS(
-                            url: targetURL,
-                            headers: requestHeadersSnapshot,
-                            jsAfterLoad: source.ruleContent.webJs,
-                            timeout: 25,
-                            jsWait: effectiveWebViewDelay ?? AppConfig.webViewExplicitJSWait
-                        )
-                    } else {
-                        rendered = try await Self.fetchViaWebView(url: targetURL, headers: requestHeadersSnapshot, jsWait: effectiveWebViewDelay)
-                    }
-                    guard checksLogin else { return rendered }
-                    return await SourceScriptThread.run {
-                        self.pipeline.applyLoginCheck(renderedHTML: rendered, url: targetURL, source: source)
-                    }
-                }
-                if checksLogin {
-                    return try await self.fetchStageHTML(
-                        url: targetURL,
-                        method: method,
-                        body: body,
-                        headers: requestHeadersSnapshot,
-                        baseURL: effectiveReferer,
-                        bodyCharset: requestSpec.charset,
-                        source: source
-                    )
-                }
-                return try await self.fetchHTML(
-                    url: targetURL,
-                    method: method,
-                    body: body,
-                    headers: requestHeadersSnapshot,
-                    baseURL: effectiveReferer,
-                    bodyCharset: requestSpec.charset,
-                    source: source
-                )
-            }
-
-            if shouldAttemptHTTPFirst {
-                do {
-                    return try await fetchViaConfiguredTransport(preferWebView: false)
-                } catch {
-                    return try await fetchViaConfiguredTransport(preferWebView: true)
-                }
-            }
-
-            do {
-                return try await fetchViaConfiguredTransport(preferWebView: useWebView)
-            } catch {
-                guard urlWantsWebView && !requiresWebViewTransport else { throw error }
-                return try await fetchViaConfiguredTransport(preferWebView: false)
-            }
-        }
-
-        let parsePage: @Sendable (String, String) async throws -> ChapterParsePayload = { [self] html, baseURL in
-            let ruleContent = source.ruleContent.content.trimmingCharacters(
-                in: .whitespacesAndNewlines)
-            if ruleContent.isEmpty {
-                let content = await ChapterFetcher.shared.extractWebContentSinglePage(
-                    html: html, pageURL: baseURL)
-                return ChapterParsePayload(
-                    content: content, title: "", sourceMatched: true, isPay: ref.isPay)
-            }
-            do {
-                let parsed = try await SourceScriptThread.run {
-                    try SourcePerfTrace.span("chapter.parse", source.bookSourceName) {
-                        try self.pipeline.parseChapterResult(
-                            html: html,
-                            baseURL: baseURL,
-                            source: source,
-                            runtimeVariables: runtimeBox.get(),
-                            chapterRef: ref,
-                            nextChapterURL: ref.runtimeVariables?[Self.nextChapterRuntimeVariableKey]
-                        )
-                    }
-                }
-                if let runtimeVariables = parsed.runtimeVariables, !runtimeVariables.isEmpty {
-                    runtimeBox.set(runtimeVariables)
-                }
-                return parsed
-            } catch {
-                let fallback = await ChapterFetcher.shared.extractWebContentSinglePage(
-                    html: html,
-                    pageURL: baseURL
-                )
-                if !fallback.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    return ChapterParsePayload(
-                        content: fallback,
-                        title: "",
-                        sourceMatched: false,
-                        isPay: ref.isPay,
-                        runtimeVariables: runtimeBox.get()
-                    )
-                }
-                throw error
-            }
-        }
-        let extractNextPages: @Sendable (String, String) async -> [String] = { [self] html, baseURL in
-            await SourceScriptThread.run {
-                self.pipeline.extractNextContentURLs(
-                    html: html,
-                    baseURL: baseURL,
-                    source: source,
-                    runtimeVariables: runtimeBox.get()
-                )
-            }
-        }
-
-        let stagedRawHTML = try await SourcePerfTrace.spanAsync(
-            "chapter.network", source.bookSourceName
-        ) {
-            try await fetchChapterHTML(url, requestSpec.method, requestSpec.body, true)
-        }
-
-        let buildResult = try await ChapterFetcher.shared.buildChapterPackage(
-            bookId: bookId,
-            chapterIndex: ref.index,
-            sourceURL: ref.url,
-            tocTitle: ref.title,
-            initialHTML: stagedRawHTML,
-            initialURL: url,
-            initialBaseURL: url.absoluteString,
-            reviewContext: source.legadoReviewContext.withChapter(ref),
-            parsePage: parsePage,
-            extractNextURLs: extractNextPages
-        ) { nextPageURL in
-            try await fetchChapterHTML(nextPageURL, "GET", nil, false)
-        }
-
-        try await saveChapterPackageToCache(
-            buildResult.package,
-            rawHTML: buildResult.rawHTML,
-            normalizedHTML: buildResult.normalizedHTML,
-            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) }
-        )
-        // #region agent log
-        _dbgLog(
-            "fetchChapter 成功",
-            data: [
-                "index": ref.index, "contentLen": buildResult.package.content.count, "source": source.bookSourceName,
-            ], hyp: "A")
-        // #endregion
-        let reloaded = loadChapterPackageSync(
-            bookId: bookId,
-            chapterIndex: ref.index,
-            expectedSourceURL: ref.url,
-            expectedTOCTitle: ref.title
-        )
-        guard let reloaded else { throw ChapterCacheWriteError.verificationFailed }
-        return reloaded
+        let content = try await mainJSService.originalContent(ref: ref, source: source)
+        return ChapterPackage(bookId: bookId, chapterIndex: ref.index, sourceURL: ref.url,
+            tocTitle: ref.title, canonicalTitle: nil, content: content,
+            contentChecksum: SHA256.hash(data: Data(content.utf8)).map { String(format: "%02x", $0) }.joined(),
+            rawHTMLFilename: nil, normalizedHTMLFilename: nil, savedAt: Date(), state: .cached, failureReason: nil)
     }
 
     private func fetchMainJSChapterPackage(ref: OnlineChapterRef, bookId: UUID, source: BookSource, cacheWriteGeneration: OriginalRuntimeChapterGeneration?) async throws -> ChapterPackage {
@@ -323,97 +65,64 @@ extension BookSourceFetcher {
         return reloaded
     }
 
-    private func fetchLegadoRuntimeChapterPackage(
-        ref: OnlineChapterRef,
-        bookId: UUID,
-        source: BookSource,
-        cacheWriteGeneration: OriginalRuntimeChapterGeneration?
-    ) async throws -> ChapterPackage {
-        logChapterFetchGate(ref: ref, source: source)
-        guard !ref.shouldRenderAsVolumeSeparator else {
-            throw FetchError.volumeSeparator(ref.title)
+    /// The real Reader borrows one already-active generation from its manager.
+    /// Original single-page/pagination and configured batch content share the same
+    /// existing App Host, final variable CAS, body writer and durable readback.
+    func fetchOriginalOwnedChapterPackage(book: ReadingBook, ref: OnlineChapterRef,
+                                         source: BookSource, store: BookStore,
+                                         generation: OriginalRuntimeChapterGeneration) async throws -> ChapterPackage {
+        let deadline = Date().addingTimeInterval(TimeInterval(AppConfig.chapterFetchTimeoutSeconds))
+        guard let bookURL = book.bookInfoURL, !bookURL.isEmpty,
+              generation.bookID == book.id, generation.chapterID == ref.id,
+              generation.index == ref.index, generation.url.utf8.elementsEqual(ref.url.utf8),
+              let index = Int32(exactly: ref.index), index >= 0 else {
+            throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "Reader chapter lost its actual App identity")
         }
-        // Shared per-source session: the JS runtime (and jsLib) stays warm
-        // across chapters instead of booting per fetch.
-        let session = BookSourceSession.session(for: source)
-        let (html, finalUrl) = try await SourcePerfTrace.spanAsync(
-            "chapter.network", source.bookSourceName
-        ) {
-            try await session.bridgeForAsyncOperations.fetch(ruleUrl: ref.url)
+        try generation.check(deadline: deadline)
+        guard let owned = await store.prepareOriginalRuntimeBookSnapshot(id: book.id,
+            sourceID: source.id, bookURL: bookURL) else {
+            throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Reader book/source changed before original execution")
         }
-        let parsed = try await session.parse { bridge in
-            try SourcePerfTrace.span("chapter.parse", source.bookSourceName) {
-                try bridge.parseChapterResult(
-                    html: html,
-                    baseURL: finalUrl,
-                    source: source,
-                    runtimeVariables: ref.runtimeVariables,
-                    chapterRef: ref,
-                    nextChapterURL: ref.runtimeVariables?[Self.nextChapterRuntimeVariableKey]
-                )
-            }
+        let currentRefs = try await store.originalRuntimeChapters(bookID: book.id)
+        guard currentRefs.indices.contains(ref.index), currentRefs[ref.index].id == ref.id,
+              currentRefs[ref.index].url.utf8.elementsEqual(ref.url.utf8) else {
+            throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Reader TOC changed before original execution")
         }
-        let content = await ChapterFetcher.shared.resolveContent(parsed: parsed)
-        guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw FetchError.emptyContent
+        let actual = currentRefs[ref.index]
+        var dto = LegadoOriginalBook(bookURL: bookURL, origin: source.bookSourceUrl,
+            name: book.title, author: book.author, tocURL: owned.tocURL)
+        dto.originName = source.bookSourceName
+        dto.totalChapterNum = Int32(exactly: currentRefs.count) ?? Int32.max
+        dto.variable = try originalSmallVariables(owned.variables)
+        var chapter = LegadoOriginalChapter(bookURL: bookURL, url: actual.url, index: index,
+            title: actual.title, baseURL: owned.tocURL)
+        chapter.isVolume = actual.isVolume; chapter.isVip = actual.isVip; chapter.isPay = actual.isPay
+        chapter.variable = try originalSmallVariables(actual.runtimeVariables)
+        let selected = OriginalRuntimeBatchChapter(chapter: actual, generation: generation, dto: chapter)
+        let result = try await withTaskCancellationHandler {
+            try await mainJSService.originalContentBatch(source: source, store: store, bookID: book.id,
+                book: dto, chapters: [selected], taskID: UUID().uuidString, deadline: deadline,
+                singleChapter: true,
+                nextChapterURL: currentRefs.indices.contains(ref.index + 1) ? currentRefs[ref.index + 1].url : nil)
+        } onCancel: { generation.revoke() }
+        try generation.check(deadline: deadline)
+        guard result.missingChapters.isEmpty else { throw FetchError.emptyContent }
+        let package = try await BookStore.chapterCachePersistence {
+            try generation.checkCacheWrite(deadline: deadline)
+            return Self.chapterCacheRepository.loadChapterPackageSync(bookId: book.id, chapterIndex: ref.index,
+                expectedSourceURL: actual.url, expectedTOCTitle: actual.title, scheduleLegacyMigration: false)
         }
-        try ChapterFetcher.shared.validateResolvedContent(content)
-        let canonicalTitle = parsed.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let effectiveTitle = canonicalTitle.isEmpty ? ref.title : canonicalTitle
-        let normalizedHTML = await ChapterFetcher.shared.buildRenderableNormalizedHTML(
-            title: effectiveTitle,
-            plainTextContent: content,
-            rawHTMLContent: parsed.content,
-            reviewContext: source.legadoReviewContext
-                .withRuntimeVariables(parsed.runtimeVariables ?? ref.runtimeVariables)
-                .withChapter(ref)
-        )
-        let checksum = SHA256.hash(data: Data(content.utf8)).map {
-            String(format: "%02x", $0)
-        }.joined()
-        let package = ChapterPackage(
-            bookId: bookId,
-            chapterIndex: ref.index,
-            sourceURL: ref.url,
-            tocTitle: ref.title,
-            canonicalTitle: canonicalTitle.isEmpty ? nil : canonicalTitle,
-            content: content,
-            contentChecksum: checksum,
-            rawHTMLFilename: "\(ref.index).raw.html",
-            normalizedHTMLFilename: "\(ref.index).normalized.xhtml",
-            savedAt: Date(),
-            state: .cached,
-            failureReason: nil
-        )
-        try await saveChapterPackageToCache(
-            package,
-            rawHTML: html,
-            normalizedHTML: normalizedHTML,
-            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) }
-        )
-        guard let reloaded = loadChapterPackageSync(
-            bookId: bookId,
-            chapterIndex: ref.index,
-            expectedSourceURL: ref.url,
-            expectedTOCTitle: ref.title
-        ) else {
+        guard let package, OnlineChapterCacheWritePolicy.isReusableCachedPackage(package, hasBookSource: true) else {
             throw ChapterCacheWriteError.verificationFailed
         }
-        return reloaded
+        generation.recordReportedEffects(["chapterContentVerified"])
+        return package
     }
 
-    private func logChapterFetchGate(ref: OnlineChapterRef, source: BookSource) {
-        guard ref.isVolume || ref.hasVolumeSeparatorTitle else { return }
-        AppLogger.parse("⟐ chapterFetch gate", context: [
-            "source": source.bookSourceName,
-            "index": ref.index,
-            "title": ref.title,
-            "isVolume": ref.isVolume,
-            "volumeTitle": ref.hasVolumeSeparatorTitle,
-            "shouldSkip": ref.shouldRenderAsVolumeSeparator,
-            "hasURL": ref.hasLoadableContentURL,
-            "urlLen": ref.sanitizedContentURL.count,
-            "urlHead": String(ref.sanitizedContentURL.prefix(120))
-        ])
+    private func originalSmallVariables(_ variables: [String: String]?) throws -> String? {
+        guard let variables else { return nil }
+        let exposed = variables.filter { $0.key != LegadoMainJSSourceService.originalPreviewContextKey && $0.value.utf16.count < 10_000 }
+        try LegadoPreviewVariableCodec.validateRepresentable([exposed])
+        return String(decoding: try JSONEncoder().encode(exposed), as: UTF8.self)
     }
 }

@@ -92,95 +92,39 @@ struct DiscoverQuickActionOutcome {
 }
 
 enum DiscoverQuickActionRunner {
-    /// Runs an explore control's script on the source's script thread, as legado-E's
-    /// `evalButtonClick` does: the context's `java`, `source`, `cache` and `infoMap`,
-    /// toasts shown, `java.startBrowser` opening the browser, `java.refreshExplore()`
-    /// reported back.
-    static func run(
-        _ script: String,
-        title: String,
-        source: BookSource,
-        presentToast: @escaping @MainActor (String) -> Void
-    ) async -> DiscoverQuickActionOutcome {
-        let outcome = await SourceScriptThread.run { () -> DiscoverQuickActionOutcome in
-            let bridge = BookSourceSession.session(for: source).bridgeForAsyncOperations
-            let sink = RefreshSink()
-            let previousBrowser = bridge.browserPresentHandler
-            let previousToast = bridge.toastHandler
-            let previousRefresh = bridge.refreshExploreHandler
-            bridge.browserPresentHandler = LegadoJSBridge.sharedBrowserPresenter
-            // The bridge delivers toasts on the main queue.
-            bridge.toastHandler = { message in
-                MainActor.assumeIsolated { presentToast(message) }
-            }
-            bridge.refreshExploreHandler = { sink.mark() }
-            defer {
-                bridge.browserPresentHandler = previousBrowser
-                bridge.toastHandler = previousToast
-                bridge.refreshExploreHandler = previousRefresh
-            }
-            _ = bridge.evaluateExploreKindScript(script)
-            return DiscoverQuickActionOutcome(
-                refreshesExplore: sink.isMarked,
-                errorMessage: bridge.lastSourceScriptError
-            )
+    static func run(_ script: String, title: String, source: BookSource,
+                    presentToast: @escaping @MainActor (String) -> Void) async -> DiscoverQuickActionOutcome {
+        do {
+            _ = try await evaluate(script, source: source)
+            return .init(refreshesExplore: false, errorMessage: nil)
+        } catch {
+            AppLogger.error("Original explore action failed", error: error)
+            return .init(refreshesExplore: false, errorMessage: error.localizedDescription)
         }
-        AppLogger.parse("⟐ exploreAction", context: [
-            "source": source.bookSourceName,
-            "title": title,
-            "refresh": outcome.refreshesExplore ? "yes" : "no",
-            "error": outcome.errorMessage ?? "none"
-        ])
-        return outcome
     }
 
-    /// Evaluates a `viewName` script for a control's display name. Legado shows `null`
-    /// for an empty result and `err` for a script that throws; so does this.
     static func displayName(_ script: String, source: BookSource) async -> String {
-        await SourceScriptThread.run { () -> String in
-            let bridge = BookSourceSession.session(for: source).bridgeForAsyncOperations
-            let value = bridge.evaluateExploreKindScript(script)
-            if let error = bridge.lastSourceScriptError {
-                AppLogger.parse("⟐ exploreViewName failed", context: [
-                    "source": source.bookSourceName, "error": error
-                ])
-                return "err"
-            }
-            guard let value, !value.isEmpty else { return "null" }
-            return value
-        }
+        do { let result = try await evaluate(script, source: source); return result.isEmpty ? "null" : result }
+        catch { AppLogger.error("Original explore display name failed", error: error); return "err" }
     }
 
-    /// The source's explore `infoMap` as its scripts hold it now.
     static func infoMapValues(source: BookSource) async -> [String: String] {
-        await SourceScriptThread.run {
-            BookSourceSession.session(for: source).bridgeForAsyncOperations.exploreInfoMapValues()
-        }
+        do { return try await BookSourceFetcher.shared.openOriginalExploreContext(source: source).infoMap ?? [:] }
+        catch { AppLogger.error("Original explore values could not be read", error: error); return [:] }
     }
 
-    /// Stores one `infoMap` entry, as an input or a toggle does.
     static func setInfoMapValue(_ value: String, forKey key: String, source: BookSource) async {
-        await SourceScriptThread.run {
-            BookSourceSession.session(for: source).bridgeForAsyncOperations
-                .setExploreInfoMapValue(value, forKey: key)
-        }
-    }
-}
-
-/// Records `java.refreshExplore()`. The bridge calls in from the JS engine's queue.
-private final class RefreshSink: @unchecked Sendable {
-    private let lock = NSLock()
-    private var marked = false
-
-    func mark() {
-        lock.lock()
-        marked = true
-        lock.unlock()
+        do {
+            let name = String(decoding: try JSONEncoder().encode(key), as: UTF8.self)
+            let text = String(decoding: try JSONEncoder().encode(value), as: UTF8.self)
+            _ = try await evaluate("infoMap.put(" + name + "," + text + "); infoMap.save();", source: source)
+        } catch { AppLogger.error("Original explore value did not change", error: error) }
     }
 
-    var isMarked: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return marked
+    private static func evaluate(_ script: String, source: BookSource) async throws -> String {
+        let fetcher = BookSourceFetcher.shared
+        if source.isJsSource { return try await fetcher.mainJSService.evaluateMainJSExplore(script: script, page: 1, source: source) }
+        _ = try await fetcher.openOriginalExploreContext(source: source)
+        return try await fetcher.evaluateOriginalExploreContext(script: script, source: source).result ?? ""
     }
 }
