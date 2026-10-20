@@ -163,8 +163,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Prioritize real JNI preview/cancellation and expired-material account closure. Investigate actual codesign key lookup/use and cleanup from the new terminal facts; batch necessary source review/evidence at stage end and do not repeat unchanged builds.",
-      "alreadyRunningTasks": "No live SDK handle remains. Owned producer3df5243 is terminal:60 portable passed, actual admin trust/readback and normal-user valid identity0-to1 passed, real codesign still item-not-found; cleanup child124/no absence ACK, owned Keychain cleanup0. Coherent733120e and all earlier runs are also terminal history.",
+      "nextPlannedCheckpoint": "Continue real JNI preview/cancellation and expired-material account work while this finite owned producer runs. Inspect this exact job at the next meaningful checkpoint, retain actual failures, and avoid terminal-history polling.",
+      "alreadyRunningTasks": "Only finite owned producer source4b6f5dc run39423517671/job118630160224 is live at its initial observation, portable guards in progress. Coherent733120e and all earlier runs are terminal. No new signing/native success inferred.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "3df524307a4118c6871d862d8722029f0267fe04",
         "sourceTag": "reader-owned-sdk-3df5243",
@@ -192,7 +192,17 @@
         "nativeMethodsAccepted": 0,
         "independentPackageMethodsPassed": 17
       },
-      "onlyLiveSDKHandles": []
+      "onlyLiveSDKHandles": [
+        {
+          "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
+          "sourceTag": "reader-owned-sdk-4b6f5dc",
+          "runID": 39423517671,
+          "jobID": 118630160224,
+          "initialStatus": "in_progress",
+          "requestRecord": "docs/legado-ios/core-owned-sdk-4b6f5dc-request.json",
+          "queryPolicy": "One meaningful checkpoint; terminal histories never polled again."
+        }
+      ]
     },
     "nextReadyBatch": [
       "automatic-renewal-feasibility",
@@ -864,7 +874,8 @@
       "ownedAdminTrustFiniteSDKRequest": "docs/legado-ios/core-owned-sdk-3df5243-request.json",
       "ownedAdminTrustFiniteSDKResult": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json",
       "expiredMaterialEnrollmentImplementation": "docs/legado-ios/core-renewal-enrollment-recovery-step.json",
-      "ownedSearchListLifecycleImplementation": "docs/legado-ios/core-owned-searchlist-lifecycle-step.json"
+      "ownedSearchListLifecycleImplementation": "docs/legado-ios/core-owned-searchlist-lifecycle-step.json",
+      "ownedSearchListFiniteSDKRequest": "docs/legado-ios/core-owned-sdk-4b6f5dc-request.json"
     }
   },
   "stages": [
@@ -5099,6 +5110,10 @@
     "owned-searchlist-lifecycle": {
       "path": "docs/legado-ios/core-owned-searchlist-lifecycle-step.json",
       "scope": "Two exact producer/test changes: temporary original user searchlist/owned-only append/readback/exact restore and private argv; no main trust/sudo changes. Five actual portable methods passed, old16 reused; original real codesign/CMS/MachO gates retained. Mac0; one changed-source finite check required."
+    },
+    "owned-searchlist-finite-sdk-request": {
+      "path": "docs/legado-ios/core-owned-sdk-4b6f5dc-request.json",
+      "scope": "One exact changed-source finite Mac tag submitted,20 current Git inputs bound, initial run/job live. Guards in progress; actual new producer/user searchlist/codesign/stage/native acceptance0."
     }
   },
   "retainedExistingWork": [
