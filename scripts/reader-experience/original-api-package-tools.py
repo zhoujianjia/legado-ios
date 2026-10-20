@@ -46,6 +46,19 @@ SUITES = {
 }
 EXPECTED = {"LegadoRuntimeTests." + suite + "/" + method for suite, methods in SUITES.items() for method in methods}
 FILTER = "^(" + "|".join(re.escape(case) for case in sorted(EXPECTED)) + ")$"
+CURRENTCORE_SUITES = {'LegadoCookieTextAPITests': ['testTextCookieAccessRequiresExplicitEmbeddingOptionsAndPreservesDefaultEncoding', 'testPartialSequentialEffectMetadataSurvivesPublicExecutionAndOldErrorsDecode'], 'LegadoHostEffectsTests': ['testRequestCopiesShareBoundedIssuedFactsAndHostErrorCodecKeepsThem', 'testMalformedHostResponseRetainsIssuedFactsAndEmptyEffectsPreserveOldResponses'], 'LegadoExploreAPITests': ['testExploreUsesOriginalPublicActionAndPreservesExplicitNullPage', 'testExplicitContextLifecycleUsesTypedBusinessDtoAndDoesNotExposeScopeAuthority']}
+CURRENTCORE_EXPECTED = EXPECTED | {"LegadoRuntimeTests."+suite+"/"+method for suite,methods in CURRENTCORE_SUITES.items() for method in methods}
+assert len(EXPECTED) == 10 and len(CURRENTCORE_EXPECTED) == 16
+
+def expected_cases():
+    return CURRENTCORE_EXPECTED if os.environ.get("YUEDU_RENEWAL_SELECTION") == "currentcore" else EXPECTED
+
+def selected_filter():
+    return "^(" + "|".join(re.escape(case) for case in sorted(expected_cases())) + ")$"
+
+def selected_mode():
+    return "original-api-package-currentcore" if os.environ.get("YUEDU_RENEWAL_SELECTION") == "currentcore" else MODE
+
 PACKAGE_INPUTS = (
     PACKAGE + "/Package.swift",
     PACKAGE + "/Sources/CLegadoJNI/include/LegadoJNI.h",
@@ -60,6 +73,7 @@ PACKAGE_INPUTS = (
     PACKAGE + "/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
     PACKAGE + "/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift",
 )
+PACKAGE_INPUTS += ('Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoCookieTextAPITests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHostEffectsTests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift')
 CONTROL_INPUTS = (
     "scripts/reader-experience/original-api-package-tools.py",
     "scripts/reader-experience/original-api-package-tests.sh",
@@ -101,7 +115,7 @@ def source_inputs():
             if path.is_file():
                 actual.add(path.relative_to(REPO).as_posix())
     if actual != set(PACKAGE_INPUTS):
-        raise ValueError("Package source closure differs from the reviewed twelve inputs")
+        raise ValueError("Package source closure differs from the reviewed fifteen inputs")
     records = []
     for path in SOURCE_INPUTS:
         target = REPO / path
@@ -118,10 +132,10 @@ def source_inputs():
 def snapshot():
     developer = require_environment()
     source = smoke.validate_tag("reader-renewal-")
-    return {"schemaVersion": 1, "selectionMode": MODE, "sourceCommit": source,
+    return {"schemaVersion": 1, "selectionMode": selected_mode(), "sourceCommit": source,
             "sourceTag": "reader-renewal-" + source[:7], "runtimeSourceOnly": True,
             "packagePath": PACKAGE, "developerDirectory": developer,
-            "qualifiedXCTestMethods": sorted(EXPECTED), "filter": FILTER,
+            "qualifiedXCTestMethods": sorted(expected_cases()), "filter": selected_filter(),
             "parallelWorkers": 1, "testTimeoutSeconds": TEST_TIMEOUT,
             "packageSourceInputCount": len(PACKAGE_INPUTS), "sourceInputs": source_inputs()}
 
@@ -169,7 +183,7 @@ def qualified(classname, method):
     if method.endswith("()"):
         method = method[:-2]
     value = classname + "/" + method
-    if value not in EXPECTED:
+    if value not in expected_cases():
         raise ValueError("Unexpected qualified XCTest method: " + value)
     return value
 
@@ -202,8 +216,8 @@ def verify_xml(raw):
         if case.get("status", "run") not in ("run", "passed"):
             raise ValueError("XCTest XML case was not executed")
         cases.append(qualified(case.get("classname", ""), case.get("name", "")))
-    if len(cases) != 10 or len(set(cases)) != 10 or set(cases) != EXPECTED:
-        raise ValueError("Expected exactly ten unique qualified XCTest XML leaves")
+    if len(cases) != len(expected_cases()) or len(set(cases)) != len(expected_cases()) or set(cases) != expected_cases():
+        raise ValueError("Expected the exact selected qualified XCTest XML leaves")
     return sorted(cases)
 
 
@@ -221,15 +235,15 @@ def verify_verbose_log(text):
         if outcome != "passed":
             raise ValueError("XCTest verbose output contains " + outcome)
         cases.append(value)
-    if len(cases) != 10 or len(set(cases)) != 10 or set(cases) != EXPECTED:
-        raise ValueError("Expected ten actual qualified XCTest passed leaves in verbose output")
+    if len(cases) != len(expected_cases()) or len(set(cases)) != len(expected_cases()) or set(cases) != expected_cases():
+        raise ValueError("Expected the exact selected actual qualified XCTest passed leaves in verbose output")
     return sorted(cases)
 
 
 def test_command(swift, work):
     return [swift, "test", "--package-path", str((REPO / PACKAGE).resolve()),
             "--parallel", "--num-workers", "1", "--xunit-output", str((work / "xunit.xml").resolve()),
-            "--filter", FILTER, "--verbose", "--disable-swift-testing"]
+            "--filter", selected_filter(), "--verbose", "--disable-swift-testing"]
 
 
 def result(work):
@@ -258,13 +272,13 @@ def result(work):
     xml_cases = verify_xml(raw["xunit.xml"])
     log_cases = verify_verbose_log(raw["tests.log"].decode("utf-8"))
     return {"schemaVersion": 1, "recordedAtUTC": datetime.now(timezone.utc).isoformat(),
-            **inputs, "status": "passed", "totalTestCount": 10, "failedTests": 0, "skippedTests": 0,
+            **inputs, "status": "passed", "totalTestCount": len(expected_cases()), "failedTests": 0, "skippedTests": 0,
             "passedCaseIdentifiers": xml_cases, "verbosePassedCaseIdentifiers": log_cases,
             "swiftVersion": version.strip(), "swiftExecutable": executable,
             "evidenceSHA256": {name: hashlib.sha256(value).hexdigest() for name, value in raw.items()},
             "appSimulatorCaseCount": 0, "jvmExecuted": False, "physicalDeviceValidationPassed": False,
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
-            "limitations": ["Exactly ten macOS source-only package XCTest cases; App Simulator results remain independent.",
+            "limitations": ["Exactly the selected10 historical-mode or16 currentcore macOS package XCTest cases; current source closure15+7 is independently bound and App Simulator results remain independent.",
                             "Injected transport and owned DTO cases do not execute the original Kotlin WebBook or JVM/JNI runtime.",
                             "No Apple account, private pairing material, device, App install, package signing or renewal is used.",
                             "XML and actual verbose XCTest case outcomes are required together; process/log summaries alone never establish passing tests."]}
@@ -350,7 +364,7 @@ def main():
     args = parser.parse_args()
     try:
         if args.phase == "filter":
-            print(FILTER)
+            print(selected_filter())
             return 0
         value = {"prepare": prepare, "result": result, "run": run}[args.phase](args.work)
         print(json.dumps(value, indent=2, ensure_ascii=False))

@@ -1,0 +1,76 @@
+--- canonical/scripts/reader-experience/test-original-api-package-tools.py
++++ future/scripts/reader-experience/test-original-api-package-tools.py
+@@ -60,15 +60,15 @@
+ 
+     def xml(self):
+         root = ET.Element("testsuites")
+-        suite = ET.SubElement(root, "testsuite", name="TestResults", tests="10", errors="0", failures="0")
+-        for case in sorted(api.EXPECTED):
++        suite = ET.SubElement(root, "testsuite", name="TestResults", tests=str(len(api.expected_cases())), errors="0", failures="0")
++        for case in sorted(api.expected_cases()):
+             classname, method = case.split("/")
+             ET.SubElement(suite, "testcase", classname=classname, name=method, time="0.01")
+         return ET.tostring(root)
+ 
+     def log(self, dot=False):
+         lines = []
+-        for case in sorted(api.EXPECTED):
++        for case in sorted(api.expected_cases()):
+             classname, method = case.split("/")
+             leaf = classname + "." + method if dot else "-[" + classname + " " + method + "]"
+             lines.append("Test Case '" + leaf + "' passed (0.01 seconds).")
+@@ -90,8 +90,8 @@
+         with self.context():
+             inputs = self.built()
+             result = api.result(self.work)
+-            self.assertEqual(len(inputs["sourceInputs"]), 19)
+-            self.assertEqual(inputs["packageSourceInputCount"], 12)
++            self.assertEqual(len(inputs["sourceInputs"]), 22)
++            self.assertEqual(inputs["packageSourceInputCount"], 15)
+             self.assertEqual(result["passedCaseIdentifiers"], sorted(api.EXPECTED))
+             self.assertEqual(result["verbosePassedCaseIdentifiers"], sorted(api.EXPECTED))
+             self.assertEqual(result["totalTestCount"], 10)
+@@ -263,5 +263,43 @@
+         self.assertNotIn('Packages/LegadoRuntime/.build', workflow)
+ 
+ 
++    def test_currentcore_requires_six_new_methods_and_all_fifteen_compilation_sources(self):
++        with self.context(),patch.dict(os.environ,{'YUEDU_RENEWAL_SELECTION':'currentcore'}):
++            inputs=self.built();result=api.result(self.work)
++            self.assertEqual(inputs['selectionMode'],'original-api-package-currentcore')
++            self.assertEqual(len(inputs['sourceInputs']),22)
++            self.assertEqual(inputs['packageSourceInputCount'],15)
++            self.assertEqual(len(api.expected_cases()),16)
++            self.assertEqual(result['totalTestCount'],16)
++            self.assertEqual(set(result['passedCaseIdentifiers']),api.CURRENTCORE_EXPECTED)
++            for case in api.CURRENTCORE_EXPECTED:self.assertIsNotNone(re.fullmatch(api.selected_filter(),case))
++            self.assertEqual(len(api.EXPECTED),10)
++            for suite,names in api.CURRENTCORE_SUITES.items():
++                source=(HERE.parents[1]/api.PACKAGE/'Tests/LegadoRuntimeTests'/(suite+'.swift')).read_text(encoding='utf8')
++                self.assertEqual(set(names),set(re.findall(r'\bfunc\s+(test\w+)\s*\(',source)))
++            original=(self.work/'xunit.xml').read_bytes()
++            root=ET.fromstring(original);suite=root.find('testsuite')
++            cases=list(suite);suite.remove(cases[-1]);suite.set('tests','15')
++            self.write(self.work/'xunit.xml',ET.tostring(root))
++            with self.assertRaises(ValueError):api.result(self.work)
++            self.write(self.work/'xunit.xml',original)
++            with patch.dict(os.environ,{'YUEDU_RENEWAL_SELECTION':'handoffrenewal'}),self.assertRaises(ValueError):api.result(self.work)
++
++    def test_currentcore_rejects_new_source_control_and_verbose_leaf_tampering(self):
++        with self.context(),patch.dict(os.environ,{'YUEDU_RENEWAL_SELECTION':'currentcore'}):
++            inputs=self.built()
++            for suite in api.CURRENTCORE_SUITES:
++                path=api.PACKAGE+'/Tests/LegadoRuntimeTests/'+suite+'.swift'
++                old=self.originals[path];self.write(self.root/path,old+b'changed')
++                with self.assertRaises(ValueError):api.result(self.work)
++                self.write(self.root/path,old)
++            changed=copy.deepcopy(inputs);changed['sourceInputs'].pop()
++            self.write_json('source-inputs.json',changed)
++            with self.assertRaises(ValueError):api.result(self.work)
++            self.write_json('source-inputs.json',inputs)
++            log=self.log();self.write(self.work/'tests.log',(log+log.splitlines()[0]+'\n').encode())
++            with self.assertRaises(ValueError):api.result(self.work)
++
++
+ if __name__ == "__main__":
+     unittest.main()

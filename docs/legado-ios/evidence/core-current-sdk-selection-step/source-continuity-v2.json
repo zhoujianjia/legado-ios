@@ -1,0 +1,609 @@
+{
+  "canonicalProductionBase": "5edbdeaf57ff901a2cd7c0f21db1c33939b391ea",
+  "observedIntegrationHead": "3b75c1d662ed2c914986940d2d52c5ca110df766",
+  "canonicalInputsExactAtProductionBase": 205,
+  "futureInputsExactCanonical": 199,
+  "futureChangedScripts": 6,
+  "legacyModes": {
+    "all": {
+      "groups": [
+        "unit",
+        "discovery",
+        "replacement",
+        "ui"
+      ],
+      "definitions": 30,
+      "leaves": 30
+    },
+    "replacement": {
+      "groups": [
+        "replacement"
+      ],
+      "definitions": 5,
+      "leaves": 5
+    },
+    "implementation": {
+      "groups": [
+        "replacement",
+        "materials"
+      ],
+      "definitions": 11,
+      "leaves": 11
+    },
+    "signature": {
+      "groups": [
+        "signature"
+      ],
+      "definitions": 9,
+      "leaves": 9
+    },
+    "cryptography": {
+      "groups": [
+        "cryptography"
+      ],
+      "definitions": 25,
+      "leaves": 25
+    },
+    "sealedmaterials": {
+      "groups": [
+        "sealedmaterials"
+      ],
+      "definitions": 48,
+      "leaves": 48
+    },
+    "boundmaterials": {
+      "groups": [
+        "boundmaterials"
+      ],
+      "definitions": 78,
+      "leaves": 78
+    },
+    "controlledsigning": {
+      "groups": [
+        "controlledsigning"
+      ],
+      "definitions": 23,
+      "leaves": 23
+    },
+    "integratedrenewal": {
+      "groups": [
+        "integratedrenewal"
+      ],
+      "definitions": 140,
+      "leaves": 140
+    },
+    "transactionrenewal": {
+      "groups": [
+        "transactionrenewal"
+      ],
+      "definitions": 178,
+      "leaves": 180
+    },
+    "handoffrenewal": {
+      "groups": [
+        "handoffrenewal"
+      ],
+      "definitions": 253,
+      "leaves": 255
+    }
+  },
+  "legacyModeMethodSetsAndBoolContractsUnchanged": true,
+  "handoffTimeoutsUnchanged": [
+    600,
+    90,
+    90,
+    180,
+    2820,
+    330,
+    90,
+    120,
+    120,
+    120
+  ],
+  "handoffFunctionsByteRetained": [
+    "_handoff_blockers",
+    "_handoff_build_args",
+    "_handoff_commands",
+    "_handoff_fact",
+    "_handoff_first_failure",
+    "_handoff_output",
+    "_handoff_source_state",
+    "_phase_exit",
+    "_source_closure_sha",
+    "run_handoff",
+    "verify_handoff_pipeline"
+  ],
+  "legacyWrapperFromHandoffBranchToEOFByteRetained": true,
+  "nativeProducerSourceCount": 7,
+  "independentFiniteSourceCountUnchanged": 19,
+  "productionProbeWrapperAndPackageToolAndTestsUnchangedSincePortableV1": true,
+  "workflowRuntimeStepsUnchangedSincePortableV1": true,
+  "postV1ChangedNativeTestFunctions": [
+    "built_fixture",
+    "currentcore_ledger_fixture",
+    "test_currentcore_pipeline_preserves_real_first_failure_and_still_runs_full_native_once",
+    "test_currentcore_result_rejects_failed_missing_changed_phase_and_required_sdk_fixture",
+    "test_implementation_selection_accepts_only_eleven_exact_policy_and_material_cases",
+    "test_replacement_selection_requires_only_its_five_exact_cases_and_never_accepts_unselected_groups",
+    "test_signature_selection_accepts_only_nine_exact_structural_cases",
+    "test_valid_result_keeps_real_device_and_renewal_unverified"
+  ],
+  "postV1TestDiffs": [
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-built_fixture.diff",
+      "bytes": 522,
+      "sha256": "70d37e8a67c817082f1de9ef45c01e7cb47d6485effc9962b2d2af213baed7e6"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-currentcore_ledger_fixture.diff",
+      "bytes": 1527,
+      "sha256": "786ef71b02e72c38001b1c62d72ff9902ae448af6824c688e1bac501cd7b2fb9"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-test_currentcore_pipeline_preserves_real_first_failure_and_still_runs_full_native_once.diff",
+      "bytes": 930,
+      "sha256": "5b8ddd4365746388da9570e11ba911bc3c059502506bed90fc2c368ef24a344b"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-test_currentcore_result_rejects_failed_missing_changed_phase_and_required_sdk_fixture.diff",
+      "bytes": 3169,
+      "sha256": "bee03ebc13a6f0d5d7d89702f61b7ede48f41256cf09f46f5c172eb73a6e5b08"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-test_implementation_selection_accepts_only_eleven_exact_policy_and_material_cases.diff",
+      "bytes": 1175,
+      "sha256": "fc12bee0e8a3594057634ee6cef75aec4d818495363189c9d4f6409b626eb383"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-test_replacement_selection_requires_only_its_five_exact_cases_and_never_accepts_unselected_groups.diff",
+      "bytes": 1346,
+      "sha256": "09db3fc51112c5911034ea8e714e611c655114d0be5fc2b39d47e5caba8c92ee"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-test_signature_selection_accepts_only_nine_exact_structural_cases.diff",
+      "bytes": 1198,
+      "sha256": "10ca818c36cb2d17ba155f7923d89d6c1d1edbe07ca08e1e43ff26de6b2bb7d2"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/review-diffs/post-portable-v1-test_valid_result_keeps_real_device_and_renewal_unverified.diff",
+      "bytes": 1159,
+      "sha256": "f2d89141910a1ad74acf5d1c2b609fefee32c96e46d6c7c95357b2ac75a90277"
+    }
+  ],
+  "postV1ChangeScope": "Only currentcore test-mode typo, controlled xcode-version fixture availability, expected unselected-group names. Existing handoff fixture behavior remains selected on the same condition.",
+  "acceptedNativePortableUniqueMethods": [
+    {
+      "method": "test_boundmaterials_accepts_only_exact_affected_leaves_and_rejects_cross_mode_or_incomplete_evidence",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "89f195f3a78ce5a39bad3a3b8ea21e86c2bc454d030b9f32375f56d049b9b100"
+    },
+    {
+      "method": "test_boundmaterials_wrapper_and_workflow_keep_one_cold_result_and_legacy_modes",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v2.log",
+        "bytes": 3518,
+        "sha256": "73469bf0210eeb2f8bac28f0920be9240dad7a45c24b67749b051828850e8fec"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v2-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133455,
+        "sha256": "e8e7fa68de53ea4f8d155d28ae98b7f87c1faee1af7925eff6eefd06ee9cc7e8"
+      },
+      "methodSHA256": "0f3ebd2cca85e82c6a01fb60053abec7404bb02897e2fd8a6dc7da1405ca99cb"
+    },
+    {
+      "method": "test_controlledsigning_requires_only_its_twenty_three_exact_native_leaves",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "bb3b61a0719b6862c9ae5f62fea6c349ac001a0990bb3145b352de62fd04195e"
+    },
+    {
+      "method": "test_controlledsigning_source_methods_wrapper_and_workflow_keep_sdk_groups_independent",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v2.log",
+        "bytes": 3518,
+        "sha256": "73469bf0210eeb2f8bac28f0920be9240dad7a45c24b67749b051828850e8fec"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v2-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133455,
+        "sha256": "e8e7fa68de53ea4f8d155d28ae98b7f87c1faee1af7925eff6eefd06ee9cc7e8"
+      },
+      "methodSHA256": "5e1b832e9851c9355722ffe2d7d2afbe4a2de2df3a52c39d9e9533c77c455809"
+    },
+    {
+      "method": "test_cryptography_selection_requires_exact_twenty_five_cases_and_keeps_artifacts_separate",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "ccda51939ed636d6505ae820c7bffea8de719749cb430633eb6d63eedb8c7ce1"
+    },
+    {
+      "method": "test_currentcore_exact_ast_union_source_boundaries_arguments_and_one_new_budget",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "342541c30809a0ea5184c2e121e9474e9e1f4e6821e46cd40673d0c3bee6c359"
+    },
+    {
+      "method": "test_currentcore_pipeline_preserves_real_first_failure_and_still_runs_full_native_once",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v2.log",
+        "bytes": 3518,
+        "sha256": "73469bf0210eeb2f8bac28f0920be9240dad7a45c24b67749b051828850e8fec"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v2-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133455,
+        "sha256": "e8e7fa68de53ea4f8d155d28ae98b7f87c1faee1af7925eff6eefd06ee9cc7e8"
+      },
+      "methodSHA256": "7683fa3ce6fe8e7f07e7cbf7d9bbfefa450c0932287e7820c8df30fe9f483f6a"
+    },
+    {
+      "method": "test_currentcore_result_rejects_failed_missing_changed_phase_and_required_sdk_fixture",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v3.log",
+        "bytes": 319,
+        "sha256": "287ec37e9ec29c504a0321305d86d07ca5558a949ce7deea1678fb200dbdd36c"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v3-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133472,
+        "sha256": "210bff8dbda21d68669641022c80455199bb11749b72943b2f007606d227fbb2"
+      },
+      "methodSHA256": "39e7b475b2f0a23682e118ed20b33f68caef8220f4ed3a2396b8ee5cdd862f9c"
+    },
+    {
+      "method": "test_handoff_commands_wrapper_workflow_bind_one_complete_native_and_separate_history",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "86506ca3e7b862a968df37fba43b5901df8c9144e15c1614ab4f0264158d29e5"
+    },
+    {
+      "method": "test_handoff_exact_union_preserves_all_prior_methods_and_both_bool_leaves",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "0cdfbbae9d7c4f0b4ff26e474d91542428d455bcb9e6a3a8b75bcdd6e3e1fdf5"
+    },
+    {
+      "method": "test_handoff_phase_records_real_timeout_and_integrity_failure_without_success",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "0afeea67544d7734bd34fc6b0058c4991adf50bcc81c331cc51095732fd2a569"
+    },
+    {
+      "method": "test_handoff_pipeline_preserves_real_first_failure_and_still_runs_full_native_once",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "fe1f2eaf98f51598932e5413700b528de2e6e4a99bab627d24e7311b6dcea6be"
+    },
+    {
+      "method": "test_handoff_preparation_binding_and_historical_comparisons_cannot_imply_new_tag_pass",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "0e0612fa4ae2bc4b0db6a1c8ec1333b0581b2376481a59066f12a74bf603ca82"
+    },
+    {
+      "method": "test_handoff_result_rejects_failed_missing_changed_phase_and_required_sdk_fixture",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "a5f8ea14537bf0d11d294a0afcd5d61ae0f3deec3395ce66a698053fd8eceadb"
+    },
+    {
+      "method": "test_implementation_selection_accepts_only_eleven_exact_policy_and_material_cases",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v2.log",
+        "bytes": 3518,
+        "sha256": "73469bf0210eeb2f8bac28f0920be9240dad7a45c24b67749b051828850e8fec"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v2-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133455,
+        "sha256": "e8e7fa68de53ea4f8d155d28ae98b7f87c1faee1af7925eff6eefd06ee9cc7e8"
+      },
+      "methodSHA256": "8ecc41abc59c7a3ab20d1e652746053c35c4394f9c8befefbe933db8a094b53a"
+    },
+    {
+      "method": "test_integrated_dependencies_remain_exactly_source_bound_after_staging",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "b2943f458046493a56de079792fa977b065980184dd614a592dc1f1ca001a7cb"
+    },
+    {
+      "method": "test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "7f85c09f175b134e8084e74e50c44ba99c4d112a13a8a51c2f6a8058ae7d655a"
+    },
+    {
+      "method": "test_prepare_stamps_source_and_preserves_zero_owned_id_overlay",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "e132adc0c35e5c5afa07e33bb551899c793fbf7514e8795004c01de7a83c313c"
+    },
+    {
+      "method": "test_replacement_selection_requires_only_its_five_exact_cases_and_never_accepts_unselected_groups",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v5.log",
+        "bytes": 343,
+        "sha256": "82b0fc3d4731d525cbe9c37cc94cc2ce245d434bd22a3a694b695d33c5c1c6e7"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/final-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133487,
+        "sha256": "bce6e42851ae34d358079741019624e360621f22ce6d316c29a34bda9d201997"
+      },
+      "methodSHA256": "a83c29e35390d51071d2f00b457e7710c24dfa633f12a8c1ebf82059379c705a"
+    },
+    {
+      "method": "test_sealedmaterials_accepts_only_the_exact_forty_eight_affected_methods",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v1-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133480,
+        "sha256": "630f62493173822251b5dc99d29baecbc232664053f3c4f75b3756213ed06266"
+      },
+      "methodSHA256": "927b3e28113f107b3299a3253807d9b795a91db01d6716dd723cc6a9447b19d1"
+    },
+    {
+      "method": "test_signature_selection_accepts_only_nine_exact_structural_cases",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v2.log",
+        "bytes": 3518,
+        "sha256": "73469bf0210eeb2f8bac28f0920be9240dad7a45c24b67749b051828850e8fec"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v2-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133455,
+        "sha256": "e8e7fa68de53ea4f8d155d28ae98b7f87c1faee1af7925eff6eefd06ee9cc7e8"
+      },
+      "methodSHA256": "bd1be1ec7e8a7b290a3fb4105daa28cd1efe6150a5ebb495973c08bd0c6d0b8c"
+    },
+    {
+      "method": "test_transaction_wrapper_is_one_cold_run_retains_failure_exit_and_rechecks_independent_spm",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v2.log",
+        "bytes": 3518,
+        "sha256": "73469bf0210eeb2f8bac28f0920be9240dad7a45c24b67749b051828850e8fec"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v2-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133455,
+        "sha256": "e8e7fa68de53ea4f8d155d28ae98b7f87c1faee1af7925eff6eefd06ee9cc7e8"
+      },
+      "methodSHA256": "2568386528100a8fe2ffb66f62363fc17423b02c5c00f5548a78ae28678ce49b"
+    },
+    {
+      "method": "test_valid_result_keeps_real_device_and_renewal_unverified",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v4.log",
+        "bytes": 265,
+        "sha256": "3c9364b69f89d27d2b9da7171152930bd10cf5425bf988de6df1889e0aa92d87"
+      },
+      "testSource": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/portable-v4-sources/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133487,
+        "sha256": "bce6e42851ae34d358079741019624e360621f22ce6d316c29a34bda9d201997"
+      },
+      "methodSHA256": "4a1aa34f7c74c6981354d0b7e06bf695474eabebd217ffebbbbf6e9f8a0472db"
+    }
+  ],
+  "acceptedNativePortableUniqueCount": 23,
+  "acceptedPackagePortableUniqueMethods": [
+    "test_actual_toolchain_version_help_and_evidence_files_cannot_be_missing_or_replaced",
+    "test_currentcore_rejects_new_source_control_and_verbose_leaf_tampering",
+    "test_currentcore_requires_six_new_methods_and_all_fifteen_compilation_sources",
+    "test_exact_filter_matches_reviewed_methods_and_rejects_every_broadened_identity",
+    "test_exact_qualified_xml_rejects_missing_extra_duplicates_and_false_outcomes",
+    "test_new_unbound_compiled_files_missing_files_and_links_cannot_enter_the_closure",
+    "test_package_and_guard_sources_are_head_matched_and_immutable_after_prepare",
+    "test_prepare_result_identity_filter_manifest_and_json_types_cannot_change",
+    "test_real_command_status_and_serial_xctest_configuration_are_required",
+    "test_runtime_mode_tag_developer_directory_and_skip_overrides_fail_before_preparing",
+    "test_summary_only_log_and_skipped_failed_duplicate_or_unqualified_cases_fail",
+    "test_valid_xml_and_each_verbose_xctest_leaf_are_both_required",
+    "test_workflow_keeps_package_evidence_separate_and_has_no_binary_upload",
+    "test_xml_log_byte_budgets_and_non_darwin_execution_remain_explicit"
+  ],
+  "acceptedPackagePortableUniqueCount": 14,
+  "nativeAttemptLogs": [
+    {
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-source-xml-ledger-portable-v1.log",
+        "bytes": 35029,
+        "sha256": "e374d70d79c0a3a058f5a5cff58ec891b3bf2b8a7a863c43a21137c0b89d7983"
+      },
+      "successMethods": [
+        "test_boundmaterials_accepts_only_exact_affected_leaves_and_rejects_cross_mode_or_incomplete_evidence",
+        "test_controlledsigning_requires_only_its_twenty_three_exact_native_leaves",
+        "test_cryptography_selection_requires_exact_twenty_five_cases_and_keeps_artifacts_separate",
+        "test_currentcore_exact_ast_union_source_boundaries_arguments_and_one_new_budget",
+        "test_handoff_commands_wrapper_workflow_bind_one_complete_native_and_separate_history",
+        "test_handoff_exact_union_preserves_all_prior_methods_and_both_bool_leaves",
+        "test_handoff_phase_records_real_timeout_and_integrity_failure_without_success",
+        "test_handoff_pipeline_preserves_real_first_failure_and_still_runs_full_native_once",
+        "test_handoff_preparation_binding_and_historical_comparisons_cannot_imply_new_tag_pass",
+        "test_handoff_result_rejects_failed_missing_changed_phase_and_required_sdk_fixture",
+        "test_integrated_dependencies_remain_exactly_source_bound_after_staging",
+        "test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark",
+        "test_prepare_stamps_source_and_preserves_zero_owned_id_overlay",
+        "test_sealedmaterials_accepts_only_the_exact_forty_eight_affected_methods"
+      ],
+      "successCount": 14,
+      "hasFailuresOrErrors": true
+    },
+    {
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v2.log",
+        "bytes": 3518,
+        "sha256": "73469bf0210eeb2f8bac28f0920be9240dad7a45c24b67749b051828850e8fec"
+      },
+      "successMethods": [
+        "test_boundmaterials_wrapper_and_workflow_keep_one_cold_result_and_legacy_modes",
+        "test_controlledsigning_source_methods_wrapper_and_workflow_keep_sdk_groups_independent",
+        "test_currentcore_pipeline_preserves_real_first_failure_and_still_runs_full_native_once",
+        "test_implementation_selection_accepts_only_eleven_exact_policy_and_material_cases",
+        "test_signature_selection_accepts_only_nine_exact_structural_cases",
+        "test_transaction_wrapper_is_one_cold_run_retains_failure_exit_and_rechecks_independent_spm"
+      ],
+      "successCount": 6,
+      "hasFailuresOrErrors": true
+    },
+    {
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v3.log",
+        "bytes": 319,
+        "sha256": "287ec37e9ec29c504a0321305d86d07ca5558a949ce7deea1678fb200dbdd36c"
+      },
+      "successMethods": [
+        "test_currentcore_result_rejects_failed_missing_changed_phase_and_required_sdk_fixture"
+      ],
+      "successCount": 1,
+      "hasFailuresOrErrors": false
+    },
+    {
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v4.log",
+        "bytes": 265,
+        "sha256": "3c9364b69f89d27d2b9da7171152930bd10cf5425bf988de6df1889e0aa92d87"
+      },
+      "successMethods": [
+        "test_valid_result_keeps_real_device_and_renewal_unverified"
+      ],
+      "successCount": 1,
+      "hasFailuresOrErrors": false
+    },
+    {
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/native-targeted-portable-v5.log",
+        "bytes": 343,
+        "sha256": "82b0fc3d4731d525cbe9c37cc94cc2ce245d434bd22a3a694b695d33c5c1c6e7"
+      },
+      "successMethods": [
+        "test_replacement_selection_requires_only_its_five_exact_cases_and_never_accepts_unselected_groups"
+      ],
+      "successCount": 1,
+      "hasFailuresOrErrors": false
+    }
+  ],
+  "packageAcceptedLog": {
+    "path": ".build/renewal-discovery/current-core-sdk-selection-step/independent-package-source-xml-portable-v1.log",
+    "bytes": 2920,
+    "sha256": "2da12a565bb1d4e0712e9a796d4a5a96f64b33a64b319368183b08b0331b65fd"
+  },
+  "notOneFullFinalRun": true,
+  "extraAttemptDisclosure": "One direct rerun of the still-unfixed currentcore result guard occurred after an attempted quoting edit did not apply. It failed with the same missing xcode-version fixture; no new success or retained local raw log is claimed. The later raw portable-v3 attempt is the accepted result.",
+  "supersedesReceiptOnly": {
+    "path": ".build/renewal-discovery/current-core-sdk-selection-step/source-continuity.json",
+    "bytes": 27273,
+    "sha256": "19ee624f350f232bec417269f985f68b4f8211f7962df0f814211a6d7826bc8c"
+  },
+  "allPostV1ChangedTestMethodsHaveActualFinalSourcePass": true
+}

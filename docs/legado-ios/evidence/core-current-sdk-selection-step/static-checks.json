@@ -1,0 +1,61 @@
+{
+  "checks": [
+    {
+      "name": "bash-syntax",
+      "command": [
+        "D:/app/Git/bin/bash.exe",
+        "-n",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\current-core-sdk-selection-step\\work\\scripts\\reader-experience\\renewal-probe-tests.sh"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-20T08:42:28.559302+00:00",
+      "finishedAtUTC": "2026-10-20T08:42:28.634317+00:00",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/bash-syntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "actionlint",
+      "command": [
+        "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+        "-shellcheck=",
+        "-pyflakes=",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\current-core-sdk-selection-step\\work\\.github\\workflows\\reader-renewal-probe.yml"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-20T08:42:28.634317+00:00",
+      "finishedAtUTC": "2026-10-20T08:42:28.736715+00:00",
+      "log": {
+        "path": ".build/renewal-discovery/current-core-sdk-selection-step/actionlint.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "pythonASTParsed": [
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/work/scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 142987,
+      "sha256": "967f0d77e96c86a1ae105e56f776b0c8fb8bd07ce7ffab2fcf141d0fba68d5de"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/work/scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 133487,
+      "sha256": "bce6e42851ae34d358079741019624e360621f22ce6d316c29a34bda9d201997"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/work/scripts/reader-experience/original-api-package-tools.py",
+      "bytes": 19322,
+      "sha256": "ccdaebd7d85058faeb7ee6fd42eef407917ba7668869929dfd86832ba82b1483"
+    },
+    {
+      "path": ".build/renewal-discovery/current-core-sdk-selection-step/work/scripts/reader-experience/test-original-api-package-tools.py",
+      "bytes": 17849,
+      "sha256": "b61dad16e3374ebcd5e766b069980064f7f03cbe78e77b86a6a0b8a0bc47400c"
+    }
+  ],
+  "actualSDKExecutions": 0,
+  "meaning": "Actual Bash syntax/actionlint and Python AST only; no Swift/C typecheck or SDK execution."
+}

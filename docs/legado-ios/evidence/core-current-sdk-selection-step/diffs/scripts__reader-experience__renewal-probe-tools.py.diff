@@ -1,0 +1,338 @@
+--- canonical/scripts/reader-experience/renewal-probe-tools.py
++++ future/scripts/reader-experience/renewal-probe-tools.py
+@@ -309,8 +309,17 @@
+ HANDOFF_ADDITIONAL_CASES = {suite + "/" + method for table in (HANDOFF_NEW_CASES, HANDOFF_REGRESSION_CASES, HANDOFF_COOKIE_NEW_CASES, HANDOFF_COOKIE_REGRESSION_CASES, HANDOFF_COOKIE_READ_CASES) for suite, methods in table.items() for method in methods}
+ EXPECTED_CASES["handoffrenewal"] = EXPECTED_CASES["transactionrenewal"] | HANDOFF_ADDITIONAL_CASES
+ assert len(HANDOFF_ADDITIONAL_CASES) == 75 and len(EXPECTED_CASES["handoffrenewal"]) == 253
+-PARAMETER_MODES = ("transactionrenewal", "handoffrenewal")
+-SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal")
++
++# Current canonical App/core delta: actual Swift declaration union with old253.
++# No whole-stage acceptance is inferred from these definitions.
++CURRENTCORE_ADDITIONAL_CASES = {'SelfRenewalTransactionRetirementTests': ['retiresNeverUploadedCandidateAndCreatesOneBoundedSuccessor', 'preservesLegacyReadyWithUnknownRemoteHistory', 'resumesActualPendingCandidateRemovalWindows', 'retainsCheckpointOnWriteFailureAndCancelledRetirement', 'nextActualPreparationRetiresOnlyProvenUnsubmittedCandidate', 'retiresAuthenticatedCleanupAfterRealUploadInterruptionAndReopen', 'preservesActualSubmittedReceiptAndLookupWithoutAutomaticResubmission'], 'SelfRenewalAppOwnerTests': ['persistsUnconfiguredStatusAndReopensTheSameLocalOwner', 'retainsExistingTransactionWhenSigningMaterialsAreMissing', 'rejectsCorruptLinkedAndOversizedConfigurationWithoutReset', 'validatesRealCertificateInputsAndRejectsMissingAuthenticationHandles', 'preservesCancelledAndFailedConfigurationWrites', 'appOwnerBootstrapsItsSharedHandoffWithoutCreatingSigningCredentials'], 'LegadoCookieTextHostTests': ['rawTextMethodsUseTheExistingFileAndOriginalStringSemantics', 'responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes', 'originalRawExpiryAndRandomPruningBoundaryRemainExplicit', 'failedCancelledAndRevokedMutationsKeepOldBytes', 'unsupportedAndMalformedRequestsPreflightTheWholeOperation'], 'LegadoBookMetadataOwnerTests': ['actualBookCallbacksRestoreShelfAndReadingVariables', 'olderQueuedMetadataCannotEraseAcceptedVariables', 'queuedTXTBookmarksKeepOtherBookVariables', 'failedTXTBookmarkWriteKeepsOldMetadata', 'exactTXTJournalRecoversPublicationConflicts', 'failedWritesAndCancellationKeepOldMetadata', 'failedShelfReplacementKeepsBothDurableBookCopies', 'unicodeVariableEditsSurviveMetadataOverlayAndOldCAS', 'unicodeBookURLChangeRevokesOldMetadataIdentity'], 'LegadoPreviewStateOwnerTests': ['explicitBusinessPreviewUsesExistingContextAndRestart', 'previewSourceRevisionAndURLAreExplicit', 'staleCASAndForeignEntityScopesAreRejected', 'failedBusinessKeepsAcceptedVariables', 'changedContextRejectsReturnedSetter', 'explicitRevocationSurvivesContextRestart', 'cancellationPreventsLateContextCommit', 'realContextWriteFailurePreservesPriorRecord', 'corruptOversizedAndLinkedContextsFailBeforeExecution', 'transferUsesExistingOffShelfIdentityAndOriginalFile', 'transferRejectsInventedIdentityAndChangedAppVariables', 'failedAppWriteRetainsTransferIntentAndReopens', 'rawVariableMapsRejectAliasingBeforeDictionaryDecode', 'unicodeHostNamesAndCompartmentProjectionFailClosed', 'transferRequiresExactVariableNamesAndValues'], 'LegadoCookieBrowserHostTests': ['clearKeepsCacheAcrossNewBindingsButFreshOwnerReadsOnlyRemainingRows', 'setWebCookieUsesActualExistingWKStoreAndLeavesRawDBUntouched', 'removeKeepsOtherPathsAndUnrelatedBrowserDomains', 'issuedBrowserEffectsCannotBeRolledBackOrPublishedThroughARevokedGrant', 'clearFailureAndRejectedGrantRetainTheOwnedState'], 'LegadoExploreOwnerTests': ['stableIdentityDoesNotUseTheEphemeralRuntimeGrant', 'scopeStillChecksTheActualGrantAndCannotAuthorizeCacheWrites'], 'SelfRenewalForegroundMaterialRevalidationTests': ['revalidatesActualLeaseBeforeNilAndUnsubmittedReturns', 'revokedUploadRetainsOnlyExistingAuthenticatedRecovery', 'appForegroundExpiresKnownProfileWithoutRereadingApplication', 'appForegroundRevocationKeepsUploadCleanupExplicit', 'preservesTypedKeychainFailureAndForegroundCancellation', 'refusesOwnedApplicationAsCurrentProcessEvidence'], 'LegadoMainJSSourceServiceTests': ['readingChainSurvivesContextReload', 'streamingUsesExplicitEngine', 'runtimeFailureDoesNotFallBack', 'missingContextIsExplicit', 'sourceSignatureRejectsStaleContext', 'recordIntegrityIsChecked', 'largeTOCDoesNotDuplicateBookDTO', 'sessionsAreReusedAndRevised', 'sourceClockHighWaterRejectsDelayedRevision', 'cancellationReleasesSourceGate', 'queuedDeadlineDoesNotDependOnHolderProgress', 'unsupportedFormatsDoNotInvokeJSC', 'oldChapterCacheDoesNotMaskFailure'], 'LegadoPersistentStateHostTests': ['sourceBridgeRemovalPreservesCredentials', 'isolatesSourcesAndPreservesVerbatimValues', 'rejectsStaleSourceLoginAndBindingRevisions', 'commitsSameOwnerAtomicallyAndSkipsUnchangedWrites', 'preservesOldStateWhenOwnerWritesFail', 'reusesLegacyCacheAndPreservesTTL', 'rejectsUnsupportedTransactionsBeforeAnyWrite', 'enforcesCancellationDeadlineAndBoundedLeases', 'preservesExplicitOptionsAndRawLoginPayloads', 'malformedStateInputsHaveTypedErrorsAndRetainProofs'], 'LegadoBookStateOwnerTests': ['hostCommitUsesOriginalChapterFileAndRestart', 'staleTocAndTaskCancellationRejectOldHostProofs', 'rejectsUnmappedIdentityAndUnsupportedTransactions', 'corruptAndUnreadableChapterOwnersRemainErrors', 'hostWriteFailureAndGenerationRevocationPreserveOldState'], 'LegadoCookieReadHostTests': ['actualUnknownWKValuesReachReadCallbackWithoutJarReconstruction', 'actualReadCallbackKeepsOwnerAndFailureBoundaries']}
++EXPECTED_CASES["currentcore"] = EXPECTED_CASES["handoffrenewal"] | {
++    suite+"/"+method for suite,methods in CURRENTCORE_ADDITIONAL_CASES.items() for method in methods
++}
++assert len(EXPECTED_CASES["currentcore"]) == 314
++
++PARAMETER_MODES = ("transactionrenewal", "handoffrenewal", "currentcore")
++SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal", "currentcore")
+ 
+ def expected_leaf_count(group):
+     return len(EXPECTED_CASES[group]) + (len(PARAMETER_CASES) if group in PARAMETER_MODES else 0)
+@@ -330,6 +339,7 @@
+     "integratedrenewal": ("integratedrenewal",),
+     "transactionrenewal": ("transactionrenewal",),
+     "handoffrenewal": ("handoffrenewal",),
++    "currentcore": ("currentcore",),
+ }
+ SOURCE_INPUTS = (
+     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
+@@ -453,12 +463,14 @@
+     return smoke.validate_tag(TAG_PREFIX)
+ 
+ SOURCE_INPUTS += ("Tests/iOS/yuedu appTests/LegadoCookieReadHostTests.swift",)
++SOURCE_INPUTS += ('Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift', 'Modules/Services/Online/LegadoPreviewStateOwner.swift', 'Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift', 'Modules/Services/SelfRenewal/SelfRenewalAppSession.swift', 'Packages/LegadoRuntime/Package.swift', 'Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m', 'Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h', 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoHTTPHeaders.swift', 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift', 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoSavedDiagnostics.swift', 'Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoCookieTextAPITests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoExploreAPITests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHTTPHeadersTests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHostEffectsTests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift', 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift', 'Tests/iOS/yuedu appTests/LegadoCookieBrowserHostTests.swift', 'Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift', 'Tests/iOS/yuedu appTests/LegadoExploreOwnerTests.swift', 'Tests/iOS/yuedu appTests/LegadoMainJSSourceServiceTests.swift', 'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift', 'scripts/reader-experience/original-api-package-tests.sh', 'scripts/reader-experience/original-api-package-tools.py', 'scripts/reader-experience/test-original-api-package-tools.py')
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 205
+ 
+ 
+ def selection_mode():
+     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
+     if mode not in SELECTION_GROUPS:
+-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning, integratedrenewal, transactionrenewal or handoffrenewal")
++        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning, integratedrenewal, transactionrenewal, handoffrenewal or currentcore")
+     return mode
+ 
+ 
+@@ -1087,6 +1099,10 @@
+         if json.dumps(inputs.get("intendedArgumentCases"), sort_keys=True) != json.dumps(contract, sort_keys=True) or inputs.get("intendedQualifiedMethodDefinitions") != len(EXPECTED_CASES[mode]) or inputs.get("intendedArgumentLeafCount") != expected_leaf_count(mode):
+             raise ValueError("Transaction argument source-input audit changed")
+         verify_transaction_details(work, smoke.read_json(work / (mode + "-tests.json")), mode)
++    if mode == "currentcore":
++        if os.environ.get("YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME") != "success":
++            raise ValueError("Actual workflow portable guards did not succeed")
++        verify_currentcore_pipeline(work)
+     if mode == "handoffrenewal":
+         if os.environ.get("YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME") != "success":
+             raise ValueError("Required workflow portable guards did not succeed; native diagnostics cannot accept the full gate")
+@@ -1135,6 +1151,8 @@
+         evidence_names += [mode + "-extraction.json"] + [key for row in extraction["commands"] for key in (row["output"], row["stderr"])]
+     if mode == "handoffrenewal":
+         evidence_names += ["handoff-pipeline.json", "historical-package-evidence.json"]
++    if mode == "currentcore":
++        evidence_names += ["currentcore-pipeline.json", "historical-package-evidence.json"]
+     for name in evidence_names:
+         evidence[name] = smoke.config.digest(work / name)
+     output = {"schemaVersion": 2, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
+@@ -1221,6 +1239,14 @@
+     if mode == "handoffrenewal":
+         output["limitations"] = output["limitations"][:6]
+         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
++    if mode == "currentcore":
++        output["limitations"] = [
++            "Currentcore requires exactly314 definitions and316 argument leaves in one cold3600-second invocation/xcresult, retaining both Bool false/true pairs and the required same-job SDK fixture case.",
++            "All producer/stage/native/export/verification phases and actual portable guards must succeed. Producer or guard failure remains failure while the complete native selection is still attempted for diagnostics.",
++            "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode and explore definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
++            "The independent currentcore SwiftPM selection is16 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native316.",
++            "Existing eleven mode method/parameter identities and budgets remain unchanged. Unmerged future C3 batch work, benchmarks, diagnostic UI and unrelated JVM replay are excluded."]
++        output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
+     return output
+ 
+ 
+@@ -1483,11 +1509,226 @@
+ 
+ 
+ 
++
++CURRENTCORE_PHASES = ("producer", "stage", "before-build", "boot", "native", "export", "cases", "test-settings", "after-tests", "build-settings")
++CURRENTCORE_TIMEOUTS = (600, 90, 90, 180, 3720, 330, 90, 120, 120, 120)
++
++
++
++def _currentcore_source_state(work):
++    require_source_only()
++    prepared = smoke.read_json(work / "source-inputs.json")
++    current = source_inputs(smoke.read_json(work / "overlays.json"))
++    if (selection_mode() != "currentcore" or prepared.get("selectionMode") != "currentcore"
++            or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
++            or prepared.get("intendedTests") != {"currentcore": sorted(EXPECTED_CASES["currentcore"])}
++            or prepared.get("intendedQualifiedMethodDefinitions") != 314 or prepared.get("intendedArgumentLeafCount") != 316
++            or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}):
++        raise ValueError("Current core phase cannot run with changed preparation/source")
++    return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
++            "sourceInputCount": len(current), "sourceInputsSHA256": _source_closure_sha(current),
++            "preparation": _currentcore_fact(work, "source-inputs.json"),
++            "overlays": _currentcore_fact(work, "overlays.json"),
++            "xcodeVersion": _currentcore_fact(work, "xcode-version.log"),
++            "runtimeSourceOnly": True, "developerDirectory": os.environ.get("DEVELOPER_DIR"),
++            "simulatorDestination": os.environ.get("YUEDU_DEST"),
++            "requiredPortableGuardsOutcome": os.environ.get("YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME")}
++
++
++def _currentcore_build_args():
++    return ["-configuration", "Debug", "-onlyUsePackageVersionsFromResolvedFile",
++            "CODE_SIGNING_ALLOWED=YES", "CODE_SIGNING_REQUIRED=YES", "CODE_SIGN_IDENTITY=-",
++            "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM=", "CODE_SIGN_ENTITLEMENTS=",
++            "GATEWAY_BASE_URL=", "YUEDU_LOCAL_EXPERIENCE=YES", "INFOPLIST_KEY_YueduLocalExperience=YES",
++            "INFOPLIST_KEY_FirebaseDataCollectionDefaultEnabled=NO", "INFOPLIST_KEY_FIREBASE_ANALYTICS_COLLECTION_ENABLED=NO",
++            "INFOPLIST_KEY_FirebaseCrashlyticsCollectionEnabled=NO", "INFOPLIST_KEY_firebase_performance_collection_enabled=NO",
++            "INFOPLIST_KEY_firebase_performance_instrumentation_enabled=NO"]
++
++
++def _currentcore_commands(work, native_exit=1):
++    repo = smoke.REPO; script = repo / "scripts/reader-experience/renewal-probe-tools.py"
++    tool = [sys.executable, str(script)]; args = _currentcore_build_args()
++    settings = ["xcodebuild", "-project", str(repo / "Yuedu-Reader.xcodeproj"), "-scheme", "Yuedu-Reader",
++                "-destination", os.environ.get("YUEDU_DEST", ""), *args, "-showBuildSettings", "-json"]
++    only = ["-only-testing:yuedu appTests/" + case + ("(interrupt:)" if case in PARAMETER_CASES else "")
++            for case in sorted(EXPECTED_CASES["currentcore"])]
++    return {
++        "producer": [sys.executable, str(repo / (SDK_TOOL_ROOT + "generate-sdk-owned-package.py")), "--output", str(repo / ".build/reader-renewal-sdk-produced-public")],
++        "stage": tool + ["stage-sdk-fixture", "--work", str(work), "--produced", str(repo / ".build/reader-renewal-sdk-produced-public")],
++        "before-build": tool + ["verify-sdk-fixture", "--work", str(work), "--phase", "before-build"],
++        "boot": ["xcrun", "simctl", "bootstatus", os.environ.get("YUEDU_DEST", "").removeprefix("id="), "-b"],
++        "native": ["bash", str(repo / "scripts/xctest.sh"), "-l", str(work / "currentcore-tests.log"), "-t", "3600", "--", *args,
++                   "-resultBundlePath", str(work / "currentcore.xcresult"), *only],
++        "export": tool + ["collect-xcresult", "--work", str(work), "--group", "currentcore", "--native-exit", str(native_exit)],
++        "cases": tool + ["verify-tests", "--group", "currentcore", "--summary", str(work / "currentcore-summary.json"), "--tests", str(work / "currentcore-tests.json")],
++        "test-settings": settings + ["test"],
++        "after-tests": tool + ["verify-sdk-fixture", "--work", str(work), "--phase", "after-tests"],
++        "build-settings": settings,
++        "result": tool + ["result", "--work", str(work)],
++    }
++
++
++def _currentcore_output(work, name):
++    return work / {"test-settings": "sdk-test-build-settings.json", "build-settings": "build-settings.json"}.get(name, "currentcore-" + name + ".log")
++
++
++
++def _run_currentcore_phase(work, name, argv, timeout, source, blocked_by=()):
++    row = {"schemaVersion": 1, "phase": name, "timeoutSeconds": timeout,
++           "sourceBefore": None, "sourceAfter": None, "state": "blocked" if blocked_by else "failed",
++           "blockedBy": list(blocked_by), "intendedArgv": argv, "command": None}
++    started = time.monotonic()
++    try:
++        row["sourceBefore"] = _currentcore_source_state(work)
++        if row["sourceBefore"] != source: raise ValueError("Source/toolchain/destination changed before phase")
++        if not blocked_by:
++            row["state"] = "running"
++            row["command"] = _capture_xcresult(argv, _currentcore_output(work, name), seconds=timeout, maximum=67_108_864)
++            if name == "native":
++                path = work / "currentcore-tests.log"
++                if path.exists():
++                    _, fact = _bounded_fact(path, 268_435_456)
++                    row["nativeLog"] = {"path": path.name, **fact}
++                raw = _currentcore_output(work, name).read_text(encoding="utf-8", errors="replace")
++                stderr = _currentcore_output(work, name).with_suffix(".log.stderr.log").read_text(encoding="utf-8", errors="replace")
++                statuses = re.findall(r"(?m)^xcodebuild status: (-?\d+); wrapper verdict stop: (true|false)$", raw)
++                row["reportedXcodebuildStatuses"] = [{"exitCode": int(status), "wrapperVerdictStop": stopped == "true"} for status, stopped in statuses]
++                row["wrapperReportedBudgetTimeout"] = "!! no verdict after 3600s; killing" in stderr
++        row["sourceAfter"] = _currentcore_source_state(work)
++        if row["sourceAfter"] != source: raise ValueError("Source/toolchain/destination changed during phase")
++        if not blocked_by:
++            command = row["command"]
++            row["state"] = "succeeded" if command["exitCode"] == 0 and not command["timedOut"] and not command["oversized"] else "failed"
++    except Exception as error:
++        row["state"] = "failed"
++        row["error"] = type(error).__name__ + ": " + str(error)[:2048]
++    row["elapsedSeconds"] = round(time.monotonic() - started, 6)
++    smoke.config.write_new_json(work / ("currentcore-phase-" + name + ".json"), row)
++    return row
++
++
++def _currentcore_first_failure(rows):
++    for row in rows:
++        code = _phase_exit(row)
++        if code not in (None, 0): return {"phase": row["phase"], "exitCode": code}
++    return None
++
++
++def _currentcore_fact(work, name):
++    _, fact = _bounded_fact(work / name, 67_108_864)
++    return {"path": name, **fact}
++
++
++def _currentcore_blockers(name, rows):
++    # A producer/stage failure intentionally does not block boot/native/export,
++    # case diagnostics or build settings. It only blocks invalid SDK staging.
++    dependencies = {"stage": ("producer",), "before-build": ("producer", "stage"),
++                    "native": ("boot",), "after-tests": ("producer", "stage", "before-build", "native", "export", "cases", "test-settings")}
++    by_name = {row["phase"]: row for row in rows}
++    result = [phase for phase in dependencies.get(name, ()) if _phase_exit(by_name[phase]) != 0]
++    if rows and (rows[-1].get("sourceBefore") != rows[0].get("sourceBefore")
++                 or rows[-1].get("sourceAfter") != rows[0].get("sourceBefore")):
++        result.append("sourceIntegrity")
++    return result
++
++
++def run_currentcore(work):
++    source = _currentcore_source_state(work)
++    # A resource surviving from another invocation is never a valid missing-
++    # fixture substitute. Preparation itself remains a fatal integrity gate.
++    if (smoke.REPO / SDK_RESOURCE).exists(): raise ValueError("Refusing pre-existing untracked SDK resource")
++    if (work / "currentcore-pipeline.json").exists(): raise ValueError("Refusing to rerun the same currentcore stage")
++    historical = historical_package_evidence()
++    smoke.config.write_new_json(work / "historical-package-evidence.json", historical)
++    rows = []
++    for name, timeout in zip(CURRENTCORE_PHASES, CURRENTCORE_TIMEOUTS):
++        by_name = {row["phase"]: row for row in rows}
++        native_exit = _phase_exit(by_name["native"]) if "native" in by_name else 1
++        command = _currentcore_commands(work, native_exit if native_exit is not None else 1)[name]
++        rows.append(_run_currentcore_phase(work, name, command, timeout, source, _currentcore_blockers(name, rows)))
++    failure = _currentcore_first_failure(rows)
++    ledger = {"schemaVersion": 1, "selectionMode": "currentcore", "source": source,
++              "qualifiedMethodDefinitions": 314, "argumentLeaves": 316,
++              "phaseOrder": list(CURRENTCORE_PHASES), "phases": rows, "firstFailure": failure,
++              "phaseRecords": [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES],
++              "historicalPackageEvidence": _currentcore_fact(work, "historical-package-evidence.json"),
++              "allPhasesSucceeded": all(row["state"] == "succeeded" and _phase_exit(row) == 0 for row in rows),
++              "nativeMeaning": "One complete same-source native invocation. Missing SDK resources remain actual failures; partial results are diagnostic only."}
++    smoke.config.write_new_json(work / "currentcore-pipeline.json", ledger)
++    if ledger["allPhasesSucceeded"]:
++        final = _run_currentcore_phase(work, "result", _currentcore_commands(work)["result"], 180, source)
++    else:
++        final = _run_currentcore_phase(work, "result", _currentcore_commands(work)["result"], 180, source,
++                                   [row["phase"] for row in rows if row["state"] != "succeeded"])
++    failure = failure or _currentcore_first_failure([final])
++    completion = {"schemaVersion": 1, "source": source, "ledgerSHA256": smoke.config.digest(work / "currentcore-pipeline.json"),
++                  "resultPhase": final, "firstFailure": failure, "exitCode": failure["exitCode"] if failure else 0,
++                  "resultProduced": (work / "result.json").is_file()}
++    if completion["resultProduced"]: completion["resultSHA256"] = smoke.config.digest(work / "result.json")
++    smoke.config.write_new_json(work / "currentcore-completion.json", completion)
++    return completion
++
++
++def verify_currentcore_pipeline(work):
++    ledger = smoke.read_json(work / "currentcore-pipeline.json")
++    source = _currentcore_source_state(work)
++    if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "currentcore"
++            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 314
++            or ledger.get("argumentLeaves") != 316 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
++            or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
++        raise ValueError("Missing/failed/changed same-source currentcore pipeline")
++    rows = ledger.get("phases")
++    if not isinstance(rows, list) or [row.get("phase") for row in rows] != list(CURRENTCORE_PHASES):
++        raise ValueError("Missing/reordered/duplicate handoff phases")
++    if (ledger.get("phaseRecords") != [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES]
++            or ledger.get("historicalPackageEvidence") != _currentcore_fact(work, "historical-package-evidence.json")):
++        raise ValueError("Original raw handoff phase/history receipt changed")
++    commands = _currentcore_commands(work, 0)
++    for row, timeout in zip(rows, CURRENTCORE_TIMEOUTS):
++        name = row["phase"]
++        if row != smoke.read_json(work / ("currentcore-phase-" + name + ".json")):
++            raise ValueError("Current core phase differs from its original raw ledger")
++        if (row.get("state") != "succeeded" or row.get("blockedBy") != [] or _phase_exit(row) != 0
++                or row.get("sourceBefore") != source or row.get("sourceAfter") != source
++                or row.get("timeoutSeconds") != timeout or row.get("error") is not None):
++            raise ValueError("Current core phase failed, timed out, blocked or changed source")
++        command = row["command"]
++        if (row.get("intendedArgv") != commands[name] or command.get("argv") != commands[name] or type(command.get("exitCode")) is not int
++                or command["exitCode"] != 0 or command.get("timedOut") is not False or command.get("oversized") is not False
++                or command.get("output") != _currentcore_output(work, name).name):
++            raise ValueError("Unreviewed/failed handoff phase invocation")
++        if name == "native":
++            native = row.get("nativeLog")
++            if not isinstance(native, dict) or native.get("path") != "currentcore-tests.log" or row.get("wrapperReportedBudgetTimeout") is not False:
++                raise ValueError("Missing native raw log or reported wrapper budget timeout")
++            _, fact = _bounded_fact(work / native["path"], 268_435_456)
++            if fact != {"bytes": native.get("bytes"), "sha256": native.get("sha256")}:
++                raise ValueError("Native raw log changed after execution")
++            raw = _currentcore_output(work, name).read_text(encoding="utf-8", errors="replace")
++            statuses = re.findall(r"(?m)^xcodebuild status: (-?\d+); wrapper verdict stop: (true|false)$", raw)
++            expected_statuses = [{"exitCode": int(status), "wrapperVerdictStop": stopped == "true"} for status, stopped in statuses]
++            if len(expected_statuses) != 1 or row.get("reportedXcodebuildStatuses") != expected_statuses:
++                raise ValueError("Missing/ambiguous original xcodebuild exit observation")
++            actual_status = expected_statuses[0]
++            if actual_status["exitCode"] != 0 and not (actual_status["wrapperVerdictStop"] and actual_status["exitCode"] >= 128):
++                raise ValueError("Actual xcodebuild status failed outside the existing post-verdict stop contract")
++        for path_key, size_key, hash_key in (("output", "bytes", "sha256"), ("stderr", "stderrBytes", "stderrSHA256")):
++            name = command.get(path_key)
++            if not isinstance(name, str) or Path(name).name != name: raise ValueError("Unsafe handoff raw evidence path")
++            _, fact = _bounded_fact(work / name, 67_108_864)
++            if fact != {"bytes": command.get(size_key), "sha256": command.get(hash_key)}:
++                raise ValueError("Original handoff phase output changed")
++    original = smoke.read_json(work / "historical-package-evidence.json")
++    if original != historical_package_evidence(): raise ValueError("Historical package source comparison changed")
++    return ledger
++
++
++
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+     commands = parser.add_subparsers(dest="phase", required=True)
+     commands.add_parser("validate-tag")
+-    for phase in ("prepare", "result", "run-handoff"):
++    for phase in ("prepare", "result", "run-handoff", "run-currentcore"):
+         item = commands.add_parser(phase)
+         item.add_argument("--work", type=Path, required=True)
+     stage = commands.add_parser("stage-sdk-fixture")
+@@ -1510,6 +1751,10 @@
+             record = {"sourceCommit": validate_tag()}
+         elif args.phase == "prepare":
+             record = prepare(smoke.config.checked_path(args.work))
++        elif args.phase == "run-currentcore":
++            record = run_currentcore(smoke.config.checked_path(args.work))
++            print(json.dumps(record, indent=2))
++            return record["exitCode"]
+         elif args.phase == "run-handoff":
+             record = run_handoff(smoke.config.checked_path(args.work))
+             print(json.dumps(record, indent=2))
+@@ -1520,7 +1765,7 @@
+             record = verify_sdk_fixture(smoke.config.checked_path(args.work), args.sdk_phase)
+         elif args.phase == "collect-xcresult":
+             record = collect_xcresult(smoke.config.checked_path(args.work), args.group, args.native_exit)
+-            if args.group == "handoffrenewal":
++            if args.group in ("handoffrenewal", "currentcore"):
+                 rows = record["commands"]
+                 if (len(rows) != 6 or any(type(row.get("exitCode")) is not int or row["exitCode"] != 0
+                         or row.get("timedOut") is not False or row.get("oversized") is not False for row in rows)
+@@ -1532,7 +1777,7 @@
+                 raise ValueError("Test group is not part of YUEDU_RENEWAL_SELECTION")
+             record = {**smoke.verify_summary(smoke.read_json(args.summary), expected_leaf_count(args.group)),
+                       **verify_cases(smoke.read_json(args.tests), args.group)}
+-            if args.group == "handoffrenewal":
++            if args.group in ("handoffrenewal", "currentcore"):
+                 verify_transaction_details(smoke.config.checked_path(args.tests.parent), smoke.read_json(args.tests), args.group)
+         else:
+             work = smoke.config.checked_path(args.work)

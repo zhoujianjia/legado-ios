@@ -1,0 +1,55 @@
+--- canonical/.github/workflows/reader-renewal-probe.yml
++++ future/.github/workflows/reader-renewal-probe.yml
+@@ -19,10 +19,10 @@
+ jobs:
+   probe:
+     runs-on: macos-15
+-    timeout-minutes: 95
++    timeout-minutes: 125
+     env:
+       LEGADO_RUNTIME_SOURCE_ONLY: '1'
+-      YUEDU_RENEWAL_SELECTION: handoffrenewal
++      YUEDU_RENEWAL_SELECTION: currentcore
+     steps:
+       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+         with:
+@@ -56,16 +56,16 @@
+           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
+-      - name: Execute 253 handoff definitions with 255 exact native argument leaves
++      - name: Execute314 current-core definitions with316 exact native argument leaves
+         if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.toolchain.outcome == 'success' }}
+         env:
+           YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME: ${{ steps.guards.outcome }}
+         run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
+-      - name: Execute ten independent source-only macOS package XCTest cases
+-        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal') }}
++      - name: Execute16 independent current-source macOS package XCTest cases
++        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal' || env.YUEDU_RENEWAL_SELECTION == 'currentcore') }}
+         run: bash scripts/reader-experience/original-api-package-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal-original-api.log
+       - name: Preserve independent package XCTest evidence without build products
+-        if: ${{ always() && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal') }}
++        if: ${{ always() && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal' || env.YUEDU_RENEWAL_SELECTION == 'currentcore') }}
+         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+         with:
+           name: reader-renewal-original-api-evidence
+@@ -90,12 +90,13 @@
+         if: always()
+         run: |
+           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+-          This source-only Debug Simulator workflow fixes handoffrenewal: 253 unique qualified native method definitions and 255 actual execution leaves in one cold 2700-second invocation and one xcresult. It retains all transaction178 definitions, both Bool false/true pairs and the required SDK-produced method; adds 27 actual App handoff/installed observer/Book/Source/Position definitions, ten existing position regressions and seven precise source writer/bootstrap regressions, plus thirteen Cookie owner/ingress definitions, sixteen affected Cookie/HTTP/WebView/login regressions and two actual original Cookie owner-read callbacks. No unselected benchmark, unchanged network/UI diagnostic or JVM payload is included. All ten historical mode identities and budgets remain unchanged.
++          This fixed currentcore source boundary requires314 unique qualified native definitions and316 exact execution leaves, including both original Bool false/true pairs and the mandatory SDK-produced method. It is one cold3600-second invocation and one xcresult. It adds only canonical retirement/AppOwner/foreground, Cookie text/WK, Unicode/preview and explore ownership plus actual affected old regressions. All eleven old mode sets, parameter identities and budgets remain unchanged; no benchmark, diagnostic UI/network, unmerged future C3 batch, or JVM replay is selected.
+ 
+-          Producer/staging failure preserves its real exit and bounded public diagnostics, while the same source still executes the entire native selection. Missing SDK JSON throws from the actual loader; no test is skipped and no ad-hoc/fake resource is substituted. The phase ledger binds actual commands/exits/timeouts/blocked dependencies and before/after source hashes. Only every real phase succeeding, zero failures/skips and the exact leaf set can produce result.json. Failed native invocations retain bounded original xcresult exports; partial compile/test observations are diagnostic, never passing acceptance.
++          Producer/staging/portable failures remain real workflow/full-gate failures while valid-source toolchain/native diagnostics still attempt the complete native selection. Every actual phase must succeed for result.json. Logs, exits/timeouts, raw xcresult Arguments and exact leaf identities, source/resource/built-loader hashes and the required same-job SDK fixture are fail-closed. Missing fixtures fail rather than skip or substitute. The producer uses an owned short-lived Keychain and a formally compiled C bridge; only validated public outputs are uploaded, never private keys/P12/passwords or the raw generation directory.
+ 
+-          Same-job clang/codesign production, short-lived owned Keychain identity, allowlisted public outputs, original CMS verification, source/resource/built-loader hash binding remain mandatory. Raw producer output and private keys/P12/passwords are never artifact members. An independent ten-case source-only SwiftPM pass at a835f8b has actual XML/verbose evidence. Cookie read changes a Package12 compilation input, so this stage requires a separate new-tag ten-case SwiftPM rerun with its own exact19 closure. Historical comparison remains separate; package cases never enter native255. Portable guard failure remains a workflow/full-gate failure while valid-source toolchain/native diagnostics still run; a native result is rejected unless the actual workflow guards succeeded.
++          Current Package source-only selection is16 exact XCTest methods with15 compilation inputs plus7 controls and a separate result. It includes old10 plus CookieText2, HostEffects2 and Explore2. Its current tag must actually execute; 9105/a835 or other old ten-case evidence is historical, cannot be reused for these changed inputs, and never enters native316.
+ 
+-          App receipts prove only the selected concrete owner I/O, not fsync, atomic preservation of every file or future writes. Installed material and normal-load APIs do not automatically open the real App coordinator/journal/vault, call startup observations or establish a cold launch. Generic anchors and controlled TLS/Lookup do not establish Apple/device/account authorization, a renewed installed profile, iPhone installation, user data retention or unattended renewal. iphoneTransportVerified, physicalDeviceValidationPassed, selfRenewalVerified and unattendedRenewalVerified remain false; powered-off/absent-companion conditions remain unmeasured.
+-          Exact source hashes, reviewed local-mode overlays, synthetic configuration, toolchain, raw logs and the sole xcresult are retained. Definitions/portable fixtures are not executed SDK methods. Cookie owner ingress does not complete original storedSnapshot/cross-owner CAS handoff; the separate Kotlin/Package text draft is excluded. Kotlin/JNI full source compatibility and automatic App renewal remain unfinished.
++          The historical independent ten-case source-only SwiftPM pass at a835f8b remains source-scoped history, not current16 acceptance. Controlled fixtures do not establish Apple/device/account authorization; private keys/P12/passwords are never artifact members.
++
++          Definitions and portable guard results are not SDK methods. App fixtures do not prove Apple/account/device authorization, a renewed installed profile, iPhone installation, cold launch, global data retention, full book-source compatibility or unattended renewal. iphoneTransportVerified, physicalDeviceValidationPassed, selfRenewalVerified and unattendedRenewalVerified remain false. Complete default App routing, UI rendering/navigation/buttons, all-source onPause, batch/cache/media and real automatic renewal remain unfinished.
+           TEXT
