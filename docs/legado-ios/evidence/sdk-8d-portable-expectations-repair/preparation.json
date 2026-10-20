@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "status": "two-exact-stale-assertions-repaired-current547-source-only-awaiting-independent-review",
+  "files": [
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 188579,
+        "sha256": "ec5989bb47940864956f39d9e6d2558f373690c1a0a95b9a4ed1a73ef23b5293"
+      },
+      "candidate": {
+        "bytes": 188649,
+        "sha256": "3324fe1b433ca3e70ca3aadbb9c2e0bd199bc6f9316dc438f7da8b0d811c566b"
+      },
+      "diff": {
+        "path": ".build/sdk-8d-portable-guard-expectations-repair-step/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 1497,
+        "sha256": "f09085b7a2d72ecdb127878394457585f9bce7089f0e11f2344fba5eac8ed554"
+      }
+    }
+  ],
+  "actualCloudBoundary": {
+    "source": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+    "run": 39495414773,
+    "job": 118879092571,
+    "known": "Portable phase failed; job stillrunning and subsequent463SDK invocationcontinues. Exact cloud test diagnostics not yet available; one live-log request returned404, not repeated.",
+    "noCloudOperationByReviewer": true
+  },
+  "exact8dReproduction": {
+    "sourceBinding": {
+      "path": ".build/sdk-8d-portable-failure-reproduction/source-binding-complete.json",
+      "bytes": 93168,
+      "sha256": "c9beaf399b5fb1f44b104b31ed1533e6e5754ee6fca12b90a5d248ab7f5cfbd8"
+    },
+    "execution": {
+      "path": ".build/sdk-8d-portable-failure-reproduction/resume-execution.json",
+      "bytes": 1203,
+      "sha256": "185750579777677ff96f5650989c364ccfb65136f91a523b23ae1617392d50a1"
+    },
+    "smoke": "24 distinct methods pass:22 initiallypass;2 local missingfrozenfixture setuperrors then onlythose2rerunpass; localassemblyissue notcloudclaim.",
+    "core": "76 actualmethods:74pass/2fail, exact stale signature and Package wording assertions; no platform-specificerror observed.",
+    "rawFailedLog": {
+      "path": ".build/sdk-8d-portable-failure-reproduction/test-renewal-probe-tools.py.resume.log",
+      "bytes": 27670,
+      "sha256": "14acba1b36902f529c6c0bd9003a30d46b7ad6174eb52bf642698e4da6d5289a"
+    }
+  },
+  "changes": [
+    "Require exact no-argument async throws blankLoginFieldIsRequired signature, keeping identity/count strict.",
+    "Require currentPackage24 with exact16compile+7controls wording; all oldPackagemode methodsets and productioncounts unchanged."
+  ],
+  "validation": [
+    {
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "LoginUIExploreCheckpointSelectionTests.test_reviewed_app_methods_and_ui_fixture_keep_exact_scope_and_parameter_identities",
+        "RenewalProbeEvidenceTests.test_currentcore_exact_ast_union_source_boundaries_arguments_and_one_new_budget",
+        "-v"
+      ],
+      "exitCode": 0,
+      "seconds": 0.891,
+      "log": {
+        "path": ".build/sdk-8d-portable-guard-expectations-repair-step/corrected-two.log",
+        "bytes": 532,
+        "sha256": "320c789901ca83833b82ca92f87a559063b6490ff9b2345fc4ba307f70fc9f59"
+      }
+    },
+    {
+      "argv": [
+        "C:/Python312/python.exe",
+        "-B",
+        "scripts/reader-experience/test-original-api-package-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "seconds": 2.031,
+      "log": {
+        "path": ".build/sdk-8d-portable-guard-expectations-repair-step/affected-package-full.log",
+        "bytes": 4728,
+        "sha256": "b22c9476bfe0e7693bfc68f3b7270cbd6eac28f4803e8dfc0fbe9b5a5aad47cb"
+      }
+    }
+  ],
+  "sourceBinding": {
+    "path": ".build/sdk-8d-portable-guard-expectations-repair-step/source-binding.json",
+    "bytes": 94156,
+    "sha256": "bfb7d550d40dcfc79ed63901b57d245c90409dc2b1746dc5690424be0e65ecbe"
+  },
+  "notRepeated": [
+    "Old74successfulcoremethods",
+    "Old24successfulsmokemethods",
+    "reportInspector",
+    "unchangedproducerdiagnostics/timeouts/trust",
+    "SDK/JNI",
+    "cloud"
+  ],
+  "flags": {
+    "sourceRepairReady": true,
+    "cloudExactMethodsConfirmed": false,
+    "current8dUpgradeToPass": false
+  },
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloud": false,
+    "tags": false
+  }
+}

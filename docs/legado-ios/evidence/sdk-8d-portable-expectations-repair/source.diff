@@ -1,0 +1,20 @@
+--- a/scripts/reader-experience/test-renewal-probe-tools.py
++++ b/scripts/reader-experience/test-renewal-probe-tools.py
+@@ -1789,7 +1789,7 @@
+         workflow=(HERE.parents[1]/'.github/workflows/reader-renewal-probe.yml').read_text(encoding='utf8')
+         self.assertIn('YUEDU_RENEWAL_SELECTION: currentcore',workflow)
+         self.assertIn('timeout-minutes: 125',workflow)
+-        self.assertIn('Package source-only selection is23',workflow)
++        self.assertIn('Package source-only selection is24 exact XCTest methods with16 compilation inputs plus7 controls',workflow)
+         self.assertIn("steps.guards.outcome",workflow)
+
+     def test_currentcore_pipeline_preserves_real_first_failure_and_still_runs_full_native_once(self):
+@@ -2324,7 +2324,7 @@
+             for name in names:
+                 self.assertEqual([args for method, args in declarations if method == name], [''])
+         caller = (HERE.parents[1] / 'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift').read_text(encoding='utf8')
+-        self.assertEqual(re.findall(r'func blankLoginFieldIsRequired\s*\(([^)]*)\)\s*throws', caller), [''])
++        self.assertEqual(re.findall(r'func blankLoginFieldIsRequired\s*\(([^)]*)\)\s+async\s+throws', caller), [''])
+         self.assertIn('BookSourceLoginTests/blankLoginFieldIsRequired', probe.EXPECTED_CASES['currentcore'])
+         self.assertEqual(len(probe.EXPECTED_CASES['currentcore']), 463)
+         self.assertEqual(probe.expected_leaf_count('currentcore'), 466)
