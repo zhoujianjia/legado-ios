@@ -3,7 +3,8 @@ import Security
 
 /// A byte transformer for caller-owned, quiescent staging material. This first
 /// implementation deliberately handles an existing, terminal signature on a
-/// thin little-endian arm64 MH_EXECUTE. It neither writes a file nor authorizes
+/// thin little-endian arm64 MH_EXECUTE or MH_DYLIB.
+/// Dynamic symbol table ranges are checked and retained at their original offsets. It neither writes a file nor authorizes
 /// installation. Package resource/profile ordering belongs to its caller.
 enum SelfRenewalControlledMachOSigner {
     typealias Reader = SelfRenewalMachOSignatureReader
@@ -250,11 +251,12 @@ enum SelfRenewalControlledMachOSigner {
         let vmAddress: UInt64; let vmSize: UInt64
     }
     private static func inspectLayout(_ data: Data, signature: Reader.EmbeddedSignature) throws -> Layout {
-        guard try u32(data, 12, true) == 2 else { throw Failure.unsupportedFileType }
+        guard [UInt32(2), 6].contains(try u32(data, 12, true)) else { throw Failure.unsupportedFileType }
         let signatureOffset = Int(signature.range.offset)
         guard signature.range.end == UInt64(data.count), signatureOffset % 16 == 0 else { throw Failure.missingTerminalSignature }
         let commandEnd = 32 + Int(try u32(data, 20, true))
         var cursor = 32; var segments: [Segment] = []; var signatureCommand: Int?
+        var symbolCount: UInt64?; var dynamicSymbols: [(UInt64, UInt64)]?
         let linkeditName = Data("__LINKEDIT".utf8); let textName = Data("__TEXT".utf8)
         func bounded(_ offset: UInt64, _ length: UInt64) throws {
             guard offset <= UInt64(signatureOffset), length <= UInt64(signatureOffset) - offset else { throw Failure.malformedLayout }
@@ -302,9 +304,21 @@ enum SelfRenewalControlledMachOSigner {
                 try bounded(UInt64(try u32(data, cursor + 8, true)), UInt64(try u32(data, cursor + 12, true)))
             case 0x21: throw Failure.encryptedCode
             case 0x2:
-                guard size == 24 else { throw Failure.malformedLayout }
+                guard size == 24, symbolCount == nil else { throw Failure.malformedLayout }
+                symbolCount = UInt64(try u32(data, cursor + 12, true))
                 try bounded(UInt64(try u32(data, cursor + 8, true)), UInt64(try u32(data, cursor + 12, true)) * 16)
                 try bounded(UInt64(try u32(data, cursor + 16, true)), UInt64(try u32(data, cursor + 20, true)))
+            case 0xb:
+                // xnu loader.h dysymtab_command (80 bytes). nlist_64 is
+                // 16 bytes, dylib_module_64 56, TOC/relocations 8 and
+                // reference/indirect entries 4. We never relocate these tables.
+                guard size == 80, dynamicSymbols == nil else { throw Failure.malformedLayout }
+                dynamicSymbols = try [8, 16, 24].map { field in
+                    (UInt64(try u32(data, cursor + field, true)), UInt64(try u32(data, cursor + field + 4, true)))
+                }
+                for (field, width) in [(32, UInt64(8)), (40, 56), (48, 4), (56, 4), (64, 8), (72, 8)] {
+                    try bounded(UInt64(try u32(data, cursor + field, true)), UInt64(try u32(data, cursor + field + 4, true)) * width)
+                }
             case 0x22, 0x80000022:
                 guard size == 48 else { throw Failure.malformedLayout }
                 for field in stride(from: 8, to: 48, by: 8) {
@@ -331,6 +345,12 @@ enum SelfRenewalControlledMachOSigner {
             default: throw Failure.unsupportedCommand(command)
             }
             cursor += size
+        }
+        if let ranges = dynamicSymbols {
+            guard let count = symbolCount else { throw Failure.malformedLayout }
+            for (index, length) in ranges {
+                guard index <= count, length <= count - index else { throw Failure.malformedLayout }
+            }
         }
         guard cursor == commandEnd, let signatureCommand,
               segments.filter({ $0.name == linkeditName }).count == 1,

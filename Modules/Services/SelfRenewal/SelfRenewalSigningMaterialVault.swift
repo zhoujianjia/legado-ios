@@ -69,16 +69,18 @@ actor SelfRenewalSigningMaterialVault {
         let keyID: UUID
         let keyMaterial: KeyMaterial
         let profiles: [SelfRenewalProvisioningProfileVerifier.ModernProfile]
+        /// Exact raw CMS bytes that produced these verified profiles.
+        let profileInputs: [ProfileInput]
         let verifiedAt: Date
         var appleSigningAuthorityEstablished: Bool { false }
         var remoteRevocationEstablished: Bool { false }
         var accountIdentityEstablished: Bool { false }
         var replacementAuthorized: Bool { false }
         fileprivate init(namespace: Namespace, generation: UInt64, keyID: UUID, key: SecKey,
-            chain: [Data], profiles: [SelfRenewalProvisioningProfileVerifier.ModernProfile], date: Date) {
+            chain: [Data], profiles: [SelfRenewalProvisioningProfileVerifier.ModernProfile], inputs: [ProfileInput], date: Date) {
             self.namespace = namespace; self.generation = generation; self.keyID = keyID
             keyMaterial = KeyMaterial(privateKey: key, certificateChainDER: chain)
-            self.profiles = profiles; verifiedAt = date
+            self.profiles = profiles; profileInputs = inputs; verifiedAt = date
         }
     }
     enum Failure: Error, Sendable, Equatable {
@@ -250,7 +252,7 @@ actor SelfRenewalSigningMaterialVault {
         // post-commit CancellationError falsely reports that it was rolled back.
         try publishManifest(&session, namespace: namespace)
         return Lease(namespace: namespace, generation: session.manifest.generation, keyID: keyID, key: key,
-            chain: certificateChainDER, profiles: verifiedProfiles, date: date)
+            chain: certificateChainDER, profiles: verifiedProfiles, inputs: candidate.profiles, date: date)
     }
 
     func lease(in namespace: Namespace) throws -> Lease {
@@ -263,7 +265,7 @@ actor SelfRenewalSigningMaterialVault {
         let (key, profiles) = try verify(published, manifest: session.manifest, at: date)
         try Task.checkCancellation()
         return Lease(namespace: namespace, generation: session.manifest.generation, keyID: published.keyID,
-            key: key, chain: published.chain, profiles: profiles, date: date)
+            key: key, chain: published.chain, profiles: profiles, inputs: published.profiles, date: date)
     }
 
     /// Call immediately before signing and again before publishing signed bytes.
@@ -274,6 +276,15 @@ actor SelfRenewalSigningMaterialVault {
         guard session.manifest.generation == lease.generation,
               session.manifest.published?.keyID == lease.keyID else { throw Failure.staleGeneration }
         _ = try self.lease(in: lease.namespace)
+    }
+
+    /// A live lease is scoped to the namespace's original sealed App identity,
+    /// including ACTUAL signed group/order claims, not only profile allowances.
+    func validate(_ lease: Lease, for material: SelfRenewalApplicationMaterialVerifier.Materials) throws {
+        try Task.checkCancellation()
+        try validate(lease)
+        let session = try current(lease.namespace)
+        guard try Self.identity(material) == session.manifest.identity else { throw Failure.identityChanged }
     }
 
     func revoke(_ keyID: UUID, in namespace: Namespace, expectedGeneration: UInt64) throws {
@@ -359,7 +370,8 @@ actor SelfRenewalSigningMaterialVault {
             let fact = SelfRenewalMaterialInventory.FileFact(relativePath: relative, byteCount: Int64(input.bytes.count))
             let profile = try SelfRenewalProvisioningProfileVerifier.verifyModern(input.bytes, file: fact, anchors: profileAnchors, at: date)
             let summary = profile.summary
-            guard summary.teamIdentifiers == identity.profileTeams,
+            guard profile.file == fact, profile.rawFileDigests[2] == Data(SHA256.hash(data: input.bytes)),
+                  summary.teamIdentifiers == identity.profileTeams,
                   summary.applicationIdentifierPrefixes == identity.profilePrefixes,
                   summary.applicationIdentifier == identity.profileApplicationPattern,
                   summary.entitlementTeamIdentifier == identity.profileTeam,

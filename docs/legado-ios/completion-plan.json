@@ -555,12 +555,14 @@
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
-            "docs/legado-ios/core-renewal-controlled-signing-step.json"
+            "docs/legado-ios/core-renewal-controlled-signing-step.json",
+            "docs/legado-ios/core-renewal-controlled-package-step.json"
           ],
           "implementedSubtasksZh": [
-            "已接入受控thin64 arm64重签器，调用真实SecKeyCreateSignature，重建CodeDirectory/CMS/agility及页/特殊槽摘要，并调用既有验签器复检。旧资源与替换slot3输入分开，Info/身份/权限字节保持；7项原生方法待SDK。整包嵌套/profile/资源编排与framework等布局仍未完成。"
+            "已接入受控thin64 arm64重签器，调用真实SecKeyCreateSignature，重建CodeDirectory/CMS/agility及页/特殊槽摘要，并调用既有验签器复检。旧资源与替换slot3输入分开，Info/身份/权限字节保持；7项原生方法待SDK。整包嵌套/profile/资源编排与framework等布局仍未完成。",
+            "受控整包已接同一IPA提取器、实际namespace身份/材料租约、由内到外profile/资源/nested hint及Mach-O重签、原始XML规则字节保留和新IPA重新提取全链复验；只导出只读FD。补常见DYSYMTAB/MH_DYLIB布局及同job真实clang/codesign生成器；11项原生方法待SDK，Windows独立38个CMS及自有ZIP/摘要校验不等于Swift通过。"
           ],
-          "nextActionZh": "集中执行受控重签SDK方法；在同一IPA提取器与材料库上完成嵌套包由内到外重签、实际新包封装及重新读取验签，明确拒绝尚不支持布局。"
+          "nextActionZh": "将整包11项及受影响基础、App章节owner和认证安装方法集中SDK；同job实际生成并独立检查平台Mach-O，再执行其重签用例，先修实际失败。继续S5真实持久事务与恢复，不将受控结果升级Apple/设备授权。"
         },
         {
           "id": "S4",
@@ -684,7 +686,8 @@
       "controlledSigningSDKCheckpoint": "docs/legado-ios/core-controlled-signing-sdk-checkpoint.json",
       "controlledSigningSDKSubmission": "docs/legado-ios/core-renewal-44528e0-initial.json",
       "boundMaterialSDKResult": "docs/legado-ios/core-renewal-478b69d-result.json",
-      "appChapterOwnerImplementation": "docs/legado-ios/core-original-app-chapter-owner-step.json"
+      "appChapterOwnerImplementation": "docs/legado-ios/core-original-app-chapter-owner-step.json",
+      "controlledPackageSigningImplementation": "docs/legado-ios/core-renewal-controlled-package-step.json"
     }
   },
   "stages": [
@@ -4635,6 +4638,10 @@
     "app-chapter-state-owner": {
       "path": "docs/legado-ios/core-original-app-chapter-owner-step.json",
       "scope": "Explicit production state callback -> existing App chapter owner/file; nine new and 21 related Swift methods defined, zero SDK execution. Full Book writes, preview, Cookie, JNI/product route remain unfinished."
+    },
+    "controlled-whole-package-signing": {
+      "path": "docs/legado-ios/core-renewal-controlled-package-step.json",
+      "scope": "Actual package orchestration and sole scoped archive/vault path, 11 SDK-unexecuted definitions and same-job platform fixture producer. Original owned-vector OpenSSL checks do not execute the Swift package signer."
     }
   },
   "retainedExistingWork": [

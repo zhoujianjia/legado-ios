@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T04:37:10.566561+00:00",
+  "status": "S3-controlled-whole-package-source-connected-SDK-and-generated-platform-fixture-pending",
+  "canonicalPlan": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "jsonPointer": "/execution/stepByStep"
+  },
+  "sourceBinding": {
+    "files": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+        "bytes": 42942,
+        "sha256": "98a16d46b88fbcaf135d1ebcde199f3f307357206254d356cbb8fad97862e1e7"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 30790,
+        "sha256": "c1a509098a9fc82193045549981ff32aafa5e545c4517442f68b4375ef834cd5"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+        "bytes": 38218,
+        "sha256": "eea8f0caae7d57ebfd39d0acedb6acab5e4a8840cfee53ab82d8509f35af6ca6"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+        "bytes": 18839,
+        "sha256": "62a4c1d185253d5498f74a9875d18ac0b1f56ce0e8c5b1a08866f3097d4b715c"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift",
+        "bytes": 11996,
+        "sha256": "e6996f827b983ee99ee783e05a49231df7986f0f12743fbb74d368316c119bbe"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+        "bytes": 27662,
+        "sha256": "bc348508b03c4b8ae52d22be5b310a36ba44cbf814ace1cf11bea2813cbdc84e"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "bytes": 657444,
+        "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSDKOwnedPackageFixture.swift",
+        "bytes": 1896,
+        "sha256": "1acedb11ce90b52effda26a81dc52dd7fc9a7d05b66e8ab682c61758b64953d0"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-independent-package-fixtures.py",
+        "bytes": 15349,
+        "sha256": "a6162cc1153bc36438171a78e97e106a93e184860dffcbd24723f176d21a4fc3"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 15006,
+        "sha256": "ff9724dde6771f45af3f97921d96c173540a1c32972728875b54594cc5c68e5e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 2093,
+        "sha256": "397634a276736a1fb88ad1ee13eb9c651282565a7647f0b0188175dfcc11c86e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      }
+    ],
+    "count": 14,
+    "appAndTestSwiftFiles": 8,
+    "macOSGeneratorSwiftFiles": 1
+  },
+  "implementedBoundaries": [
+    "same original IPA snapshot digest/bytes exposed as sealed Result facts without a second input read",
+    "one scoped actor serializes sync IO and holds exclusive detached verifier/archive workers across awaits",
+    "scope close prohibits new IO then cancels/drains active worker before any cleanup; actual gate test definitions cover callback return and throw",
+    "same existing snapshot/validator/Readium/OwnedTree extraction path; existing file-only SHA CAS replacement and random same-directory rename",
+    "unique Vault live lease before mutation, before each signing and before publication, plus actual sealed identity equals namespace baseline",
+    "raw profile CMS bytes are copied only from the verified Published inputs with path/count/SHA binding",
+    "deepest-first component resource hashes/nested selected authenticated CD hints and real Mach-O resigning",
+    "old external slots authenticate old executable; only new slot3 resources supplied for rebuilt executable",
+    "exact raw XML rules/rules2 values and requirement text preserved; key enumeration/tie order checked after reparse",
+    "MH_EXECUTE/MH_DYLIB and LC_DYSYMTAB table ranges/indexes checked; table/content offsets remain unchanged",
+    "new code permissions normalized755 and ordinary file644; source extraction never inherits untrusted ZIP mode",
+    "actual ZIP output is re-extracted and whole AppMaterial-verified through same path; only pinned read-only unlinked FD bytes escape",
+    "all original non-mutated file SHA256s retained including omitted files and bound again under exclusive archive worker"
+  ],
+  "remaining": [
+    "No Swift or SDK method executed locally. macOS keychain importer, actual clang/codesign output and whole package positive need concentrated SDK verdict.",
+    "Controlled pilot and bounded normal-layout support are not full S3. Fat/arm64e/encryption/unsupported load commands/unsupported CD and dylib forms fail typed.",
+    "Main plus exact Widget/Share roles and at most16 framework components; arbitrary other code/dylibs/components unsupported.",
+    "XML CodeResources only; binary/UTF16/comment/CDATA/internal-DTD envelopes typed unsupported, never reordered heuristically.",
+    "Classic stored output only, bounded payload/header budget <=256MiB and per entry<=64MiB; no ZIP64 or compressed output.",
+    "No real Apple account, signing-purpose/device/profile authority, remote revocation, unattended renewal or installation authorization.",
+    "Vault generation CAS remains within one injected actor; multi-process transaction/recovery authority belongs to S5. Borrowed SecKey handles cannot be forcibly revoked."
+  ],
+  "nativeTests": {
+    "suite": "SelfRenewalControlledPackageSignerTests",
+    "definedMethods": [
+      "signsOwnedThreeBundlePackageAndReverifiesActualArchiveBytes",
+      "bindsExactRawCMSProfileBytesToReopenedLease",
+      "rejectsRevokedAndStaleLeasesWithoutChangingInput",
+      "rejectsCancelledPackageWithoutChangingInput",
+      "rejectsFalseAndUnresolvedOriginalNestedRequirements",
+      "rejectsDifferentActualGroupsWithinSameVerifiedProfileAllowance",
+      "preservesOwnedFilesOnWrongPreimageAndInvalidatesEscapedScope",
+      "updatesVerifiedResourceSealsWithoutWideningRulesOrRequirements",
+      "signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+      "resignsDynamicSymbolTablesAndDylibAtStableOffsets",
+      "rejectsDynamicSymbolTableBoundsAndMissingSymbolTable"
+    ],
+    "definedCount": 11,
+    "executed": 0,
+    "passed": 0,
+    "sameJobSDKMethod": "signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+    "requirements": "Run the fixed SDK producer before xcodebuild and include public owned-sdk-package.json as an XCTest bundle resource. Missing producer output fails the selected method."
+  },
+  "actualSwiftSDKMethodsAccepted": 0,
+  "independentOwnedInputChecks": {
+    "record": {
+      "path": ".build/renewal-discovery/controlled-package-signing-step/fixture-generation.json",
+      "bytes": 12270,
+      "sha256": "9a78037125d855436543df24edc814a1424a0688f735ab412696eb74e4a65338"
+    },
+    "actualOpenSSLCMSVerifications": 38,
+    "actualRawPageAndSpecialSlotAudits": 12,
+    "actualResourceHashAudits": 12,
+    "actualZipCRCReadAll": 4,
+    "actualDynamicSymbolTableLayoutAudits": 2,
+    "privateKeysExported": 0,
+    "privateKeyFiles": 0,
+    "SwiftExecutions": 0,
+    "SDKExecutions": 0
+  },
+  "sameJobSDKProducer": {
+    "sourceClosed": true,
+    "localExecutionCount": 0,
+    "localReason": "Windows host has no macOS/Xcode SDK. Producer definitions and AST/Swift syntax checks are not an SDK verdict.",
+    "invocation": "python3 scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py --output <empty-controlled-public-output>",
+    "outputResource": "owned-sdk-package.json",
+    "outputManifest": "sdk-produced-fixture-manifest.json",
+    "actualRequiredActions": [
+      "xcrun clang produces device arm64 main/two extensions/framework",
+      "synthetic certificate chain and real temporary Keychain identity",
+      "codesign actual original CMS, never count adHoc as authenticated",
+      "OpenSSL independently verifies each actual detached primary CD CMS against explicit owned root",
+      "publish public raw MachOs/IPA/logs/source-command-hash manifest only",
+      "delete the one generated temporary Keychain; private keys/P12 only memory or Keychain"
+    ],
+    "toolScope": "Existing OpenSSL 3 only; no package install, Apple account, real profile or credential import."
+  },
+  "reviewFixes": [
+    "Live lease sealed namespace identity checked against the actual original, signed and re-read output materials.",
+    "Actor-scoped mutation and asynchronous exclusive workers; callback exit closes new work, cancels/drains old work before all cleanup.",
+    "No close retry; verified executable files use normalized 0755 and ordinary resources 0644.",
+    "Exact rules/rules2 XML elements and nested requirement text preserved, with iteration-order check; unsupported encodings rejected.",
+    "Result original archive digest/length comes from the same immutable input snapshot."
+  ],
+  "mutableInstallationPathExported": false,
+  "signedArchiveReadOnlyFD": true,
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-controlled-package-step",
+    "manifest": "manifest.json",
+    "rawFiles": 18
+  },
+  "newCloudBuildRequested": false,
+  "current445SourceExcludesThisStage": true,
+  "appleSigningAuthorityEstablished": false,
+  "replacementAuthorized": false,
+  "fullS3Complete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
