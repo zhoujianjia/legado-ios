@@ -1,0 +1,367 @@
+﻿2026-10-20T06:16:14.8238810Z Current runner version: '2.337.0'
+2026-10-20T06:16:14.8255250Z ##[group]Runner Image Provisioner
+2026-10-20T06:16:14.8255810Z Hosted Compute Agent
+2026-10-20T06:16:14.8256210Z Version: 20260828.587
+2026-10-20T06:16:14.8256620Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-10-20T06:16:14.8257210Z Build Date: 2026-08-28T16:44:25Z
+2026-10-20T06:16:14.8257650Z Worker ID: {df0a4525-2654-4b9e-ba4c-e032a6e94993}
+2026-10-20T06:16:14.8258170Z Azure Region: westus
+2026-10-20T06:16:14.8258550Z ##[endgroup]
+2026-10-20T06:16:14.8262630Z ##[group]Operating System
+2026-10-20T06:16:14.8263800Z macOS
+2026-10-20T06:16:14.8264830Z 15.7.9
+2026-10-20T06:16:14.8265220Z 24G830
+2026-10-20T06:16:14.8265580Z ##[endgroup]
+2026-10-20T06:16:14.8265950Z ##[group]Runner Image
+2026-10-20T06:16:14.8266370Z Image: macos-15-arm64
+2026-10-20T06:16:14.8266770Z Version: 20260907.0337.1
+2026-10-20T06:16:14.8267680Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260907.0337/images/macos/macos-15-arm64-Readme.md
+2026-10-20T06:16:14.8268730Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260907.0337
+2026-10-20T06:16:14.8269410Z ##[endgroup]
+2026-10-20T06:16:14.8270190Z ##[group]GITHUB_TOKEN Permissions
+2026-10-20T06:16:14.8271660Z Contents: read
+2026-10-20T06:16:14.8272040Z Metadata: read
+2026-10-20T06:16:14.8272400Z ##[endgroup]
+2026-10-20T06:16:14.8273930Z Secret source: Actions
+2026-10-20T06:16:14.8274510Z Cache mode: write
+2026-10-20T06:16:14.8274940Z Prepare workflow directory
+2026-10-20T06:16:14.8558020Z Prepare all required actions
+2026-10-20T06:16:14.8592850Z Getting action download info
+2026-10-20T06:16:15.1537440Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-20T06:16:15.4729560Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+2026-10-20T06:16:15.5983840Z Download action repository 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-20T06:16:16.1885440Z Complete job name: probe
+2026-10-20T06:16:16.2365470Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-20T06:16:16.2366260Z with:
+2026-10-20T06:16:16.2366580Z   persist-credentials: false
+2026-10-20T06:16:16.2366960Z   repository: zhoujianjia/legado-ios
+2026-10-20T06:16:16.2369650Z   token: ***
+2026-10-20T06:16:16.2369960Z   ssh-strict: true
+2026-10-20T06:16:16.2370280Z   ssh-user: git
+2026-10-20T06:16:16.2370580Z   clean: true
+2026-10-20T06:16:16.2370900Z   sparse-checkout-cone-mode: true
+2026-10-20T06:16:16.2371270Z   fetch-depth: 1
+2026-10-20T06:16:16.2371590Z   fetch-tags: false
+2026-10-20T06:16:16.2371910Z   show-progress: true
+2026-10-20T06:16:16.2372240Z   lfs: false
+2026-10-20T06:16:16.2372540Z   submodules: false
+2026-10-20T06:16:16.2372870Z   set-safe-directory: true
+2026-10-20T06:16:16.2373250Z   allow-unsafe-pr-checkout: false
+2026-10-20T06:16:16.2373790Z env:
+2026-10-20T06:16:16.2374110Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T06:16:16.2374490Z   YUEDU_RENEWAL_SELECTION: handoffrenewal
+2026-10-20T06:16:16.2374910Z ##[endgroup]
+2026-10-20T06:16:16.6258770Z Syncing repository: zhoujianjia/legado-ios
+2026-10-20T06:16:16.6260590Z ##[group]Getting Git version info
+2026-10-20T06:16:16.6261170Z Working directory is '/Users/runner/work/legado-ios/legado-ios'
+2026-10-20T06:16:16.6262220Z [command]/opt/homebrew/bin/git version
+2026-10-20T06:16:16.6835370Z git version 2.55.0
+2026-10-20T06:16:16.6854970Z ##[endgroup]
+2026-10-20T06:16:16.6866900Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/bdf5f7ee-a98c-4fbf-9138-af98298b3ab4/.gitconfig'
+2026-10-20T06:16:16.6870440Z Temporarily overriding HOME='/Users/runner/work/_temp/bdf5f7ee-a98c-4fbf-9138-af98298b3ab4' before making global git config changes
+2026-10-20T06:16:16.6873390Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-20T06:16:16.6878210Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/legado-ios/legado-ios
+2026-10-20T06:16:16.6983720Z Deleting the contents of '/Users/runner/work/legado-ios/legado-ios'
+2026-10-20T06:16:16.6990800Z ##[group]Determining repository object format
+2026-10-20T06:16:16.6997050Z ##[endgroup]
+2026-10-20T06:16:16.6998170Z ##[group]Initializing the repository
+2026-10-20T06:16:16.7000620Z [command]/opt/homebrew/bin/git init /Users/runner/work/legado-ios/legado-ios
+2026-10-20T06:16:16.7233060Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-20T06:16:16.7235520Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-20T06:16:16.7236350Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-20T06:16:16.7236960Z hint: call:
+2026-10-20T06:16:16.7237320Z hint:
+2026-10-20T06:16:16.7237800Z hint: 	git config --global init.defaultBranch <name>
+2026-10-20T06:16:16.7238350Z hint:
+2026-10-20T06:16:16.7238840Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-20T06:16:16.7240470Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-20T06:16:16.7241120Z hint:
+2026-10-20T06:16:16.7241500Z hint: 	git branch -m <name>
+2026-10-20T06:16:16.7242010Z hint:
+2026-10-20T06:16:16.7242550Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-20T06:16:16.7243380Z Initialized empty Git repository in /Users/runner/work/legado-ios/legado-ios/.git/
+2026-10-20T06:16:16.7245050Z [command]/opt/homebrew/bin/git remote add origin https://github.com/zhoujianjia/legado-ios
+2026-10-20T06:16:16.7316980Z ##[endgroup]
+2026-10-20T06:16:16.7317720Z ##[group]Disabling automatic garbage collection
+2026-10-20T06:16:16.7318980Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-20T06:16:16.7387000Z ##[endgroup]
+2026-10-20T06:16:16.7388810Z ##[group]Setting up auth
+2026-10-20T06:16:16.7390160Z Removing SSH command configuration
+2026-10-20T06:16:16.7392090Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T06:16:16.7461480Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-20T06:16:16.8353430Z Removing HTTP extra header
+2026-10-20T06:16:16.8355830Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T06:16:16.8415290Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-20T06:16:16.9186010Z Removing includeIf entries pointing to credentials config files
+2026-10-20T06:16:16.9188460Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T06:16:16.9258860Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-20T06:16:17.0230150Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-20T06:16:17.0356040Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path /Users/runner/work/_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:17.0436320Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:17.0511670Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:17.0589170Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:17.0663530Z ##[endgroup]
+2026-10-20T06:16:17.0665530Z ##[group]Fetching the repository
+2026-10-20T06:16:17.0668840Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/tags/reader-renewal-9105b4:refs/tags/reader-renewal-9105b4
+2026-10-20T06:16:20.1554000Z From https://github.com/zhoujianjia/legado-ios
+2026-10-20T06:16:20.1555920Z  * [new tag]         reader-renewal-9105b4 -> reader-renewal-9105b4
+2026-10-20T06:16:20.1567050Z [command]/opt/homebrew/bin/git tag --list reader-renewal-9105b4
+2026-10-20T06:16:20.1650370Z reader-renewal-9105b4
+2026-10-20T06:16:20.1657140Z [command]/opt/homebrew/bin/git rev-parse refs/tags/reader-renewal-9105b4^{commit}
+2026-10-20T06:16:20.1751020Z 9105b46820a69e44c7fef646ae48cf9975e03e19
+2026-10-20T06:16:20.1758330Z ##[endgroup]
+2026-10-20T06:16:20.1760660Z ##[group]Determining the checkout info
+2026-10-20T06:16:20.1763230Z ##[endgroup]
+2026-10-20T06:16:20.1772460Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-10-20T06:16:20.2118720Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-20T06:16:20.2341430Z ##[group]Checking out the ref
+2026-10-20T06:16:20.2345030Z [command]/opt/homebrew/bin/git checkout --progress --force refs/tags/reader-renewal-9105b4
+2026-10-20T06:16:21.4506410Z Updating files:   7% (415/5839)
+2026-10-20T06:16:21.4582330Z Updating files:   8% (468/5839)
+2026-10-20T06:16:21.4651050Z Updating files:   9% (526/5839)
+2026-10-20T06:16:21.4811600Z Updating files:  10% (584/5839)
+2026-10-20T06:16:21.7698840Z Updating files:  11% (643/5839)
+2026-10-20T06:16:22.0798340Z Updating files:  12% (701/5839)
+2026-10-20T06:16:22.0937170Z Updating files:  13% (760/5839)
+2026-10-20T06:16:22.1004780Z Updating files:  14% (818/5839)
+2026-10-20T06:16:22.2812230Z Updating files:  15% (876/5839)
+2026-10-20T06:16:22.4286490Z Updating files:  15% (899/5839)
+2026-10-20T06:16:22.4430810Z Updating files:  16% (935/5839)
+2026-10-20T06:16:22.4517340Z Updating files:  17% (993/5839)
+2026-10-20T06:16:22.5250620Z Updating files:  18% (1052/5839)
+2026-10-20T06:16:23.0868800Z Updating files:  19% (1110/5839)
+2026-10-20T06:16:23.2858960Z Updating files:  20% (1168/5839)
+2026-10-20T06:16:23.3100370Z Updating files:  20% (1215/5839)
+2026-10-20T06:16:23.4562810Z Updating files:  21% (1227/5839)
+2026-10-20T06:16:23.4965150Z Updating files:  22% (1285/5839)
+2026-10-20T06:16:23.5247670Z Updating files:  23% (1343/5839)
+2026-10-20T06:16:23.5373540Z Updating files:  24% (1402/5839)
+2026-10-20T06:16:23.5597740Z Updating files:  25% (1460/5839)
+2026-10-20T06:16:23.8732270Z Updating files:  26% (1519/5839)
+2026-10-20T06:16:23.8808280Z Updating files:  27% (1577/5839)
+2026-10-20T06:16:23.8889940Z Updating files:  28% (1635/5839)
+2026-10-20T06:16:23.9011720Z Updating files:  29% (1694/5839)
+2026-10-20T06:16:23.9159130Z Updating files:  30% (1752/5839)
+2026-10-20T06:16:24.2698950Z Updating files:  31% (1811/5839)
+2026-10-20T06:16:24.2821660Z Updating files:  32% (1869/5839)
+2026-10-20T06:16:24.4142490Z Updating files:  32% (1870/5839)
+2026-10-20T06:16:24.4280570Z Updating files:  33% (1927/5839)
+2026-10-20T06:16:24.4654090Z Updating files:  34% (1986/5839)
+2026-10-20T06:16:24.4737240Z Updating files:  35% (2044/5839)
+2026-10-20T06:16:24.4874160Z Updating files:  36% (2103/5839)
+2026-10-20T06:16:24.5137070Z Updating files:  37% (2161/5839)
+2026-10-20T06:16:24.5514710Z Updating files:  38% (2219/5839)
+2026-10-20T06:16:24.5773640Z Updating files:  39% (2278/5839)
+2026-10-20T06:16:24.5972780Z Updating files:  40% (2336/5839)
+2026-10-20T06:16:24.6094140Z Updating files:  41% (2394/5839)
+2026-10-20T06:16:24.6319230Z Updating files:  42% (2453/5839)
+2026-10-20T06:16:24.6968900Z Updating files:  43% (2511/5839)
+2026-10-20T06:16:24.7059290Z Updating files:  44% (2570/5839)
+2026-10-20T06:16:24.7196110Z Updating files:  45% (2628/5839)
+2026-10-20T06:16:24.7598640Z Updating files:  46% (2686/5839)
+2026-10-20T06:16:24.7762010Z Updating files:  47% (2745/5839)
+2026-10-20T06:16:24.7910530Z Updating files:  48% (2803/5839)
+2026-10-20T06:16:24.8076030Z Updating files:  49% (2862/5839)
+2026-10-20T06:16:24.8236350Z Updating files:  50% (2920/5839)
+2026-10-20T06:16:24.8358690Z Updating files:  51% (2978/5839)
+2026-10-20T06:16:24.8458350Z Updating files:  52% (3037/5839)
+2026-10-20T06:16:24.8588090Z Updating files:  53% (3095/5839)
+2026-10-20T06:16:24.9502020Z Updating files:  54% (3154/5839)
+2026-10-20T06:16:24.9579540Z Updating files:  55% (3212/5839)
+2026-10-20T06:16:24.9653450Z Updating files:  56% (3270/5839)
+2026-10-20T06:16:24.9761690Z Updating files:  57% (3329/5839)
+2026-10-20T06:16:24.9967460Z Updating files:  58% (3387/5839)
+2026-10-20T06:16:25.0029060Z Updating files:  59% (3446/5839)
+2026-10-20T06:16:25.0119930Z Updating files:  60% (3504/5839)
+2026-10-20T06:16:25.0279820Z Updating files:  61% (3562/5839)
+2026-10-20T06:16:25.0403160Z Updating files:  62% (3621/5839)
+2026-10-20T06:16:25.0938240Z Updating files:  63% (3679/5839)
+2026-10-20T06:16:25.1345350Z Updating files:  64% (3737/5839)
+2026-10-20T06:16:25.1528400Z Updating files:  65% (3796/5839)
+2026-10-20T06:16:25.1727930Z Updating files:  66% (3854/5839)
+2026-10-20T06:16:25.1862970Z Updating files:  67% (3913/5839)
+2026-10-20T06:16:25.2221090Z Updating files:  68% (3971/5839)
+2026-10-20T06:16:25.2334610Z Updating files:  69% (4029/5839)
+2026-10-20T06:16:25.2815940Z Updating files:  70% (4088/5839)
+2026-10-20T06:16:25.3452250Z Updating files:  70% (4137/5839)
+2026-10-20T06:16:25.3553310Z Updating files:  71% (4146/5839)
+2026-10-20T06:16:25.3676800Z Updating files:  72% (4205/5839)
+2026-10-20T06:16:25.3778350Z Updating files:  73% (4263/5839)
+2026-10-20T06:16:25.4019900Z Updating files:  74% (4321/5839)
+2026-10-20T06:16:25.6560930Z Updating files:  75% (4380/5839)
+2026-10-20T06:16:25.6954610Z Updating files:  76% (4438/5839)
+2026-10-20T06:16:25.7014510Z Updating files:  77% (4497/5839)
+2026-10-20T06:16:25.7487990Z Updating files:  78% (4555/5839)
+2026-10-20T06:16:25.7741850Z Updating files:  79% (4613/5839)
+2026-10-20T06:16:25.8266790Z Updating files:  80% (4672/5839)
+2026-10-20T06:16:25.8368620Z Updating files:  81% (4730/5839)
+2026-10-20T06:16:25.8527820Z Updating files:  82% (4788/5839)
+2026-10-20T06:16:25.8604330Z Updating files:  83% (4847/5839)
+2026-10-20T06:16:25.8690210Z Updating files:  84% (4905/5839)
+2026-10-20T06:16:25.8784260Z Updating files:  85% (4964/5839)
+2026-10-20T06:16:25.9411190Z Updating files:  86% (5022/5839)
+2026-10-20T06:16:25.9624100Z Updating files:  87% (5080/5839)
+2026-10-20T06:16:25.9998330Z Updating files:  88% (5139/5839)
+2026-10-20T06:16:26.0089660Z Updating files:  89% (5197/5839)
+2026-10-20T06:16:26.0217100Z Updating files:  90% (5256/5839)
+2026-10-20T06:16:26.0307320Z Updating files:  91% (5314/5839)
+2026-10-20T06:16:26.0424610Z Updating files:  92% (5372/5839)
+2026-10-20T06:16:26.0640600Z Updating files:  93% (5431/5839)
+2026-10-20T06:16:26.0782150Z Updating files:  94% (5489/5839)
+2026-10-20T06:16:26.0982890Z Updating files:  95% (5548/5839)
+2026-10-20T06:16:26.1166760Z Updating files:  96% (5606/5839)
+2026-10-20T06:16:26.1304210Z Updating files:  97% (5664/5839)
+2026-10-20T06:16:26.1497490Z Updating files:  98% (5723/5839)
+2026-10-20T06:16:26.1582510Z Updating files:  99% (5781/5839)
+2026-10-20T06:16:26.1583230Z Updating files: 100% (5839/5839)
+2026-10-20T06:16:26.1583680Z Updating files: 100% (5839/5839), done.
+2026-10-20T06:16:26.1690580Z HEAD is now at 9105b46 Keep source-valid native diagnostics running and verify new Cookie read callbacks
+2026-10-20T06:16:26.1757120Z ##[endgroup]
+2026-10-20T06:16:26.2096020Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-20T06:16:26.2243000Z 9105b46820a69e44c7fef646ae48cf9975e03e19
+2026-10-20T06:16:26.2340320Z ##[group]Removing auth
+2026-10-20T06:16:26.2348090Z Removing SSH command configuration
+2026-10-20T06:16:26.2388170Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T06:16:26.2437440Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-20T06:16:26.3787860Z Removing HTTP extra header
+2026-10-20T06:16:26.3789550Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T06:16:26.3856310Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-20T06:16:26.5239580Z Removing includeIf entries pointing to credentials config files
+2026-10-20T06:16:26.5240440Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T06:16:26.5309260Z includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path
+2026-10-20T06:16:26.5314550Z includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path
+2026-10-20T06:16:26.5325490Z includeif.gitdir:/github/workspace/.git.path
+2026-10-20T06:16:26.5326010Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-20T06:16:26.5332830Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path
+2026-10-20T06:16:26.5396650Z /Users/runner/work/_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:26.5499800Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-651b3fe0\-d507\-42fd\-a393\-ba2e43a47fab\.config
+2026-10-20T06:16:26.5594310Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path
+2026-10-20T06:16:26.5632610Z /Users/runner/work/_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:26.5706140Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-651b3fe0\-d507\-42fd\-a393\-ba2e43a47fab\.config
+2026-10-20T06:16:26.5777290Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-20T06:16:26.5781750Z /github/runner_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:26.5789130Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-651b3fe0\-d507\-42fd\-a393\-ba2e43a47fab\.config
+2026-10-20T06:16:26.5856610Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-20T06:16:26.5940170Z /github/runner_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config
+2026-10-20T06:16:26.5946390Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-651b3fe0\-d507\-42fd\-a393\-ba2e43a47fab\.config
+2026-10-20T06:16:26.6027650Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-20T06:16:26.7619650Z Removing credentials config '/Users/runner/work/_temp/git-credentials-651b3fe0-d507-42fd-a393-ba2e43a47fab.config'
+2026-10-20T06:16:26.7623350Z ##[endgroup]
+2026-10-20T06:16:26.8240030Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+2026-10-20T06:16:26.8240470Z with:
+2026-10-20T06:16:26.8240620Z   python-version: 3.12
+2026-10-20T06:16:26.8240820Z   check-latest: false
+2026-10-20T06:16:26.8242920Z   token: ***
+2026-10-20T06:16:26.8243110Z   update-environment: true
+2026-10-20T06:16:26.8243290Z   allow-prereleases: false
+2026-10-20T06:16:26.8243860Z   freethreaded: false
+2026-10-20T06:16:26.8244010Z env:
+2026-10-20T06:16:26.8244160Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T06:16:26.8244360Z   YUEDU_RENEWAL_SELECTION: handoffrenewal
+2026-10-20T06:16:26.8244570Z ##[endgroup]
+2026-10-20T06:16:27.0641020Z ##[group]Installed versions
+2026-10-20T06:16:27.0784040Z Successfully set up CPython (3.12.10)
+2026-10-20T06:16:27.0785820Z ##[endgroup]
+2026-10-20T06:16:27.0923060Z ##[group]Run mkdir -p .build/ci-logs
+2026-10-20T06:16:27.0923950Z [36;1mmkdir -p .build/ci-logs[0m
+2026-10-20T06:16:27.0924840Z [36;1mpython -B scripts/reader-experience/renewal-probe-tools.py validate-tag[0m
+2026-10-20T06:16:27.1030380Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-20T06:16:27.1031140Z env:
+2026-10-20T06:16:27.1031620Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T06:16:27.1033330Z   YUEDU_RENEWAL_SELECTION: handoffrenewal
+2026-10-20T06:16:27.1034180Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.1035470Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T06:16:27.1036530Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.1037510Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.1038470Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.1039350Z ##[endgroup]
+2026-10-20T06:16:27.9641730Z ValueError: Expected reader-renewal-<current SHA7> and matching checkout
+2026-10-20T06:16:27.9711990Z ##[error]Process completed with exit code 1.
+2026-10-20T06:16:27.9859980Z ##[group]Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+2026-10-20T06:16:27.9860350Z with:
+2026-10-20T06:16:27.9860520Z   name: reader-renewal-original-api-evidence
+2026-10-20T06:16:27.9860920Z   path: .build/reader-renewal-original-api/
+.build/ci-logs/reader-renewal-original-api*.log
+
+2026-10-20T06:16:27.9861300Z   if-no-files-found: warn
+2026-10-20T06:16:27.9861550Z   include-hidden-files: true
+2026-10-20T06:16:27.9861740Z   retention-days: 7
+2026-10-20T06:16:27.9861880Z   compression-level: 6
+2026-10-20T06:16:27.9862050Z   overwrite: false
+2026-10-20T06:16:27.9862210Z   archive: true
+2026-10-20T06:16:27.9862350Z env:
+2026-10-20T06:16:27.9862480Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T06:16:27.9862670Z   YUEDU_RENEWAL_SELECTION: handoffrenewal
+2026-10-20T06:16:27.9862990Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.9863410Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T06:16:27.9863870Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.9864230Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.9864600Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:27.9864880Z ##[endgroup]
+2026-10-20T06:16:28.1201700Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-20T06:16:28.1204320Z The least common ancestor is /Users/runner/work/legado-ios/legado-ios/.build. This will be the root directory of the artifact
+2026-10-20T06:16:28.1218090Z ##[warning]No files were found with the provided path: .build/reader-renewal-original-api/
+.build/ci-logs/reader-renewal-original-api*.log. No artifacts will be uploaded.
+2026-10-20T06:16:28.1303420Z ##[group]Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+2026-10-20T06:16:28.1303800Z with:
+2026-10-20T06:16:28.1303970Z   name: reader-renewal-probe-evidence
+2026-10-20T06:16:28.1304320Z   path: .build/reader-renewal-probe/
+.build/ci-logs/reader-renewal*.log
+
+2026-10-20T06:16:28.1304640Z   if-no-files-found: warn
+2026-10-20T06:16:28.1304840Z   include-hidden-files: true
+2026-10-20T06:16:28.1305040Z   retention-days: 7
+2026-10-20T06:16:28.1305220Z   compression-level: 6
+2026-10-20T06:16:28.1305380Z   overwrite: false
+2026-10-20T06:16:28.1305540Z   archive: true
+2026-10-20T06:16:28.1306010Z env:
+2026-10-20T06:16:28.1306160Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T06:16:28.1306380Z   YUEDU_RENEWAL_SELECTION: handoffrenewal
+2026-10-20T06:16:28.1306700Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.1307120Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T06:16:28.1307580Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.1307970Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.1308330Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.1308630Z ##[endgroup]
+2026-10-20T06:16:28.2822740Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-20T06:16:28.2823630Z The least common ancestor is /Users/runner/work/legado-ios/legado-ios/.build. This will be the root directory of the artifact
+2026-10-20T06:16:28.2825400Z ##[warning]No files were found with the provided path: .build/reader-renewal-probe/
+.build/ci-logs/reader-renewal*.log. No artifacts will be uploaded.
+2026-10-20T06:16:28.2915100Z ##[group]Run cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+2026-10-20T06:16:28.2915660Z [36;1mcat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'[0m
+2026-10-20T06:16:28.2917940Z [36;1mThis source-only Debug Simulator workflow fixes handoffrenewal: 253 unique qualified native method definitions and 255 actual execution leaves in one cold 2700-second invocation and one xcresult. It retains all transaction178 definitions, both Bool false/true pairs and the required SDK-produced method; adds 27 actual App handoff/installed observer/Book/Source/Position definitions, ten existing position regressions and seven precise source writer/bootstrap regressions, plus thirteen Cookie owner/ingress definitions, sixteen affected Cookie/HTTP/WebView/login regressions and two actual original Cookie owner-read callbacks. No unselected benchmark, unchanged network/UI diagnostic or JVM payload is included. All ten historical mode identities and budgets remain unchanged.[0m
+2026-10-20T06:16:28.2920350Z [36;1m[0m
+2026-10-20T06:16:28.2922210Z [36;1mProducer/staging failure preserves its real exit and bounded public diagnostics, while the same source still executes the entire native selection. Missing SDK JSON throws from the actual loader; no test is skipped and no ad-hoc/fake resource is substituted. The phase ledger binds actual commands/exits/timeouts/blocked dependencies and before/after source hashes. Only every real phase succeeding, zero failures/skips and the exact leaf set can produce result.json. Failed native invocations retain bounded original xcresult exports; partial compile/test observations are diagnostic, never passing acceptance.[0m
+2026-10-20T06:16:28.2923980Z [36;1m[0m
+2026-10-20T06:16:28.2926150Z [36;1mSame-job clang/codesign production, short-lived owned Keychain identity, allowlisted public outputs, original CMS verification, source/resource/built-loader hash binding remain mandatory. Raw producer output and private keys/P12/passwords are never artifact members. An independent ten-case source-only SwiftPM pass at a835f8b has actual XML/verbose evidence. Cookie read changes a Package12 compilation input, so this stage requires a separate new-tag ten-case SwiftPM rerun with its own exact19 closure. Historical comparison remains separate; package cases never enter native255. Portable guard failure remains a workflow/full-gate failure while valid-source toolchain/native diagnostics still run; a native result is rejected unless the actual workflow guards succeeded.[0m
+2026-10-20T06:16:28.2928370Z [36;1m[0m
+2026-10-20T06:16:28.2930190Z [36;1mApp receipts prove only the selected concrete owner I/O, not fsync, atomic preservation of every file or future writes. Installed material and normal-load APIs do not automatically open the real App coordinator/journal/vault, call startup observations or establish a cold launch. Generic anchors and controlled TLS/Lookup do not establish Apple/device/account authorization, a renewed installed profile, iPhone installation, user data retention or unattended renewal. iphoneTransportVerified, physicalDeviceValidationPassed, selfRenewalVerified and unattendedRenewalVerified remain false; powered-off/absent-companion conditions remain unmeasured.[0m
+2026-10-20T06:16:28.2933570Z [36;1mExact source hashes, reviewed local-mode overlays, synthetic configuration, toolchain, raw logs and the sole xcresult are retained. Definitions/portable fixtures are not executed SDK methods. Cookie owner ingress does not complete original storedSnapshot/cross-owner CAS handoff; the separate Kotlin/Package text draft is excluded. Kotlin/JNI full source compatibility and automatic App renewal remain unfinished.[0m
+2026-10-20T06:16:28.2934790Z [36;1mTEXT[0m
+2026-10-20T06:16:28.2972670Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-20T06:16:28.2972960Z env:
+2026-10-20T06:16:28.2973140Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T06:16:28.2973360Z   YUEDU_RENEWAL_SELECTION: handoffrenewal
+2026-10-20T06:16:28.2974010Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.2974430Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T06:16:28.2974860Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.2975240Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.2975630Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T06:16:28.2975940Z ##[endgroup]
+2026-10-20T06:16:28.3462980Z Post job cleanup.
+2026-10-20T06:16:28.4435510Z [command]/opt/homebrew/bin/git version
+2026-10-20T06:16:28.4499950Z git version 2.55.0
+2026-10-20T06:16:28.4580570Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/5990261a-2736-4720-8a82-07f66413288e/.gitconfig'
+2026-10-20T06:16:28.4582740Z Temporarily overriding HOME='/Users/runner/work/_temp/5990261a-2736-4720-8a82-07f66413288e' before making global git config changes
+2026-10-20T06:16:28.4584500Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-20T06:16:28.4585870Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/legado-ios/legado-ios
+2026-10-20T06:16:28.4640030Z Removing SSH command configuration
+2026-10-20T06:16:28.4650700Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T06:16:28.4720720Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-20T06:16:28.5590410Z Removing HTTP extra header
+2026-10-20T06:16:28.5593990Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T06:16:28.5660350Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-20T06:16:28.6485270Z Removing includeIf entries pointing to credentials config files
+2026-10-20T06:16:28.6486530Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T06:16:28.6555680Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-20T06:16:28.7752000Z Cleaning up orphan processes

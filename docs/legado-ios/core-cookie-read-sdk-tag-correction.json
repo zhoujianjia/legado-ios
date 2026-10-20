@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T06:24:51.124025+00:00",
+  "status": "incorrect-tag-terminal-failure-preserved-corrected-identical-source-tag-pushed",
+  "historicalRequest": "docs/legado-ios/core-cookie-read-sdk-request.json",
+  "sourceCheckpoint": "docs/legado-ios/core-cookie-read-sdk-checkpoint.json",
+  "sourceCommit": "9105b46820a69e44c7fef646ae48cf9975e03e19",
+  "sourceTag": "reader-renewal-9105b46",
+  "incorrectTag": "reader-renewal-9105b4",
+  "terminalFailedRun": {
+    "id": 39379401635,
+    "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39379401635",
+    "jobID": 118484786501,
+    "conclusion": "failure",
+    "failureStep": "Verify the exact source tag",
+    "cause": "The root request used six commit-prefix characters. The unchanged validator requires the exact current seven-character prefix.",
+    "error": "ValueError: Expected reader-renewal-<current SHA7> and matching checkout",
+    "nativeExecuted": 0,
+    "packageExecuted": 0,
+    "portableExecuted": 0,
+    "artifactLog": "Both artifact upload steps found no matching files; no native or package evidence was produced."
+  },
+  "correction": {
+    "tagDerivedFromFullCommitPrefix": true,
+    "tagPushExitCode": 0,
+    "bothTagsStillPointToIdenticalCommit": true,
+    "originalFailedTagPreserved": true,
+    "sourceFilesChanged": 0,
+    "localTestsRepeated": 0,
+    "all175CheckpointInputsRecheckedAgainstGit": true,
+    "portable53AndActionlintPassingEvidenceReused": true,
+    "sourceValidatorWeakened": false
+  },
+  "newRunID": null,
+  "newRunStatusObserved": false,
+  "nativeMethodDefinitionsExpected": 253,
+  "nativeArgumentLeavesExpected": 255,
+  "independentPackageMethodsExpected": 10,
+  "nativeCasesAccepted": 0,
+  "independentPackageCasesAccepted": 0,
+  "laterRetirementAndCookieWriteDraftsIncluded": false,
+  "nextAction": "Next goal turn observe only corrected immutable tag reader-renewal-9105b46 once. For a terminal run audit actual source175, phase exits/portable outcome, native253 definitions/255 Bool leaves and independent Package10/19 inputs. Keep the terminal six-character tag failure historical. If live, retain its handle and continue actual Cookie text-write, preview and App renewal-owner development without polling. No SDK or Package execution is inferred from the corrected tag push.",
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-cookie-read-sdk-tag-correction",
+    "manifest": "manifest.json"
+  },
+  "physicalDeviceValidationRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
