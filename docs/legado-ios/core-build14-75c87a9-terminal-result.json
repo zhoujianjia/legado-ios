@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20 16:28:23 UTC",
+  "sourceCommit": "75c87a9e5c970696015715e22ce3288c951a8ffe",
+  "status": "completed-failure",
+  "runs": [
+    {
+      "runID": 39452752957,
+      "jobID": 118731611765,
+      "status": "completed",
+      "conclusion": "failure",
+      "current": [],
+      "failed": [
+        "Execute the actual main-app JVM reading chain and cancellation"
+      ],
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39452752957",
+      "queryAgain": false,
+      "compilerErrorCount": 2,
+      "reviewedTerminalLogExcerpts": [
+        "2026-10-20T15:58:18.7393990Z BUILD SUCCESSFUL in 2m 45s",
+        "2026-10-20T16:17:24.6006880Z /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/SourceCallBackService.swift:68:29: error: type 'BookStore' has no member 'shared'",
+        "2026-10-20T16:17:24.6008260Z /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/SourceCallBackService.swift:119:115: error: type 'BookStore' has no member 'shared'",
+        "2026-10-20T16:17:28.0896650Z ** TEST BUILD FAILED **"
+      ],
+      "ordinaryJVMBuildSucceeded": true,
+      "actualAppTestsExecuted": 0,
+      "actualDevicePackageProduced": false
+    },
+    {
+      "runID": 39452753436,
+      "jobID": 118731613742,
+      "status": "completed",
+      "conclusion": "failure",
+      "current": [],
+      "failed": [
+        "Compile and package the actual main application with the local JVM"
+      ],
+      "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39452753436",
+      "queryAgain": false,
+      "compilerErrorCount": 4,
+      "reviewedTerminalLogExcerpts": [
+        "2026-10-20T15:58:05.0683820Z BUILD SUCCESSFUL in 2m 36s",
+        "2026-10-20T16:13:02.3937160Z /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/SourceCallBackService.swift:68:29: error: type 'BookStore' has no member 'shared'",
+        "2026-10-20T16:13:02.4257200Z /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/DiscoverQuickActions.swift:112:99: error: property 'infoMap' is not available due to missing import of defining module 'LegadoRuntime'",
+        "2026-10-20T16:13:02.4274800Z /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/DiscoverQuickActions.swift:128:97: error: property 'result' is not available due to missing import of defining module 'LegadoRuntime'",
+        "2026-10-20T16:13:02.4286380Z /Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/SourceCallBackService.swift:119:115: error: type 'BookStore' has no member 'shared'",
+        "2026-10-20T16:13:04.0037150Z ** BUILD FAILED **"
+      ],
+      "ordinaryJVMBuildSucceeded": true,
+      "actualAppTestsExecuted": 0,
+      "actualDevicePackageProduced": false
+    }
+  ],
+  "evidenceBoundary": "These exact excerpts are from the two actual terminal job logs. Gradle BUILD SUCCESSFUL proves those build steps, not an inferred testcase count. App type checking failed; no App/Native tests or IPA accepted.",
+  "repair": "Caller-owned BookStore fix25b7e45 plus explicit LegadoRuntime import in DiscoverQuickActions. The e88f6fc retry was submitted before the complete Release log was reviewed and still omits the import.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

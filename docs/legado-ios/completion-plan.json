@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-callback-store-sdk-fix.json",
+  "activeBatchRecord": "docs/legado-ios/core-discover-sdk-import-fix.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Apply the proven four-file caller-owned BookStore compilation fix to the frozen build14 base and retry package/Native promptly. Repair SDK producer independently and consolidate later source/SDK changes. Observe old75 jobs only until actual terminal; never infer failure or cancellation from the a24 result.",
-      "alreadyRunningTasks": "Only Native75c87a9 run39452752957/job118731611765 and package75c87a9 run39452753436/job118731613742 remain live. Currentcorea24a41e is terminal failure and archived; source-only Package18 passed, App tests0 because BookStore.shared defaults do not compile; SDK producer also failed. Do not repoll terminal runs.",
+      "nextPlannedCheckpoint": "All currently observed compiler failures are now repaired: caller-owned BookStore and explicit LegadoRuntime import. Source-only import audit of26 related Swift files found no other determined omissions. Retry the minimal frozen build14 package/Native source once, while producer/C2 development continues independently.",
+      "alreadyRunningTasks": "Only e88f6fc package run39456819172/job118745760946 and Native run39456819622/job118745761312 were observed running. They contain the BookStore fix but not the later observed missing import. Both75c87a9 runs and currentcorea24a41e are actual terminal failures and must not be polled again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
         "sourceTag": "reader-owned-sdk-4b6f5dc",
@@ -200,36 +200,38 @@
       },
       "onlyLiveSDKHandles": [
         {
-          "sourceCommit": "75c87a9e5c970696015715e22ce3288c951a8ffe",
-          "sourceTag": "legado-native-reader-test-75c87a9",
-          "runID": 39452752957,
-          "jobID": 118731611765,
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39452752957",
+          "sourceCommit": "e88f6fc9d7c877a932ad958f45b544e5d19d309a",
+          "sourceTag": "reader-legado-e88f6fc",
+          "runID": 39456819172,
+          "jobID": 118745760946,
+          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39456819172",
           "status": "in_progress",
           "conclusion": null,
           "queryAgain": true,
-          "record": "docs/legado-ios/core-build14-75c87a9-request.json"
+          "record": "docs/legado-ios/core-build14-e88f6fc-request.json",
+          "knownSourceDefect": "DiscoverQuickActions missing LegadoRuntime import; source fixed separately. This job has not been observed terminal and cannot be called cancelled/failed."
         },
         {
-          "sourceCommit": "75c87a9e5c970696015715e22ce3288c951a8ffe",
-          "sourceTag": "reader-legado-75c87a9",
-          "runID": 39452753436,
-          "jobID": 118731613742,
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39452753436",
+          "sourceCommit": "e88f6fc9d7c877a932ad958f45b544e5d19d309a",
+          "sourceTag": "legado-native-reader-test-e88f6fc",
+          "runID": 39456819622,
+          "jobID": 118745761312,
+          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39456819622",
           "status": "in_progress",
           "conclusion": null,
           "queryAgain": true,
-          "record": "docs/legado-ios/core-build14-75c87a9-request.json"
+          "record": "docs/legado-ios/core-build14-e88f6fc-request.json",
+          "knownSourceDefect": "DiscoverQuickActions missing LegadoRuntime import; source fixed separately. This job has not been observed terminal and cannot be called cancelled/failed."
         }
       ],
       "latestDevicePackageTerminal": {
-        "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
-        "runID": 39451829639,
-        "jobID": 118728355614,
+        "sourceCommit": "75c87a9e5c970696015715e22ce3288c951a8ffe",
+        "runID": 39452753436,
+        "jobID": 118731613742,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
-        "record": "docs/legado-ios/core-build14-a24a41e-preflight-repair.json",
+        "record": "docs/legado-ios/core-build14-75c87a9-terminal-result.json",
         "actualDevicePackageProduced": false
       }
     },
@@ -1059,6 +1061,11 @@
       "callbackStoreSDKCompileFix": {
         "record": "docs/legado-ios/core-callback-store-sdk-fix.json",
         "sourceFiles": 4,
+        "actualSDKAccepted": false
+      },
+      "discoverModuleSDKCompileFix": {
+        "record": "docs/legado-ios/core-discover-sdk-import-fix.json",
+        "sourceFiles": 1,
         "actualSDKAccepted": false
       }
     }

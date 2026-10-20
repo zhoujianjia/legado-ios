@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "actual-Release-SDK-compile-fix-awaiting-retry",
+  "actualFailure": "docs/legado-ios/core-build14-75c87a9-terminal-result.json",
+  "source": {
+    "path": "Modules/Services/Online/DiscoverQuickActions.swift",
+    "baselineBytes": 5988,
+    "baselineSHA256": "bac05ce0c065527ce1827655dc2d5eb13caadeae254edde3e050daf6b83adbab",
+    "bytes": 6009,
+    "sha256": "ad876bf8a3708c84860462d296503f163e8d8c354739655d082238bda638b824"
+  },
+  "change": "Import defining module LegadoRuntime where DiscoverQuickActions consumes LegadoOriginalExploreContextResult.infoMap and .result. No execution or store behavior changes.",
+  "independentImportScreen": {
+    "files": 26,
+    "alreadyImported": 15,
+    "notImported": 11,
+    "otherDeterminedMissingImports": 0,
+    "scope": "Default consumer, reader callback and source callback Swift source unions; followed actual return types/member owners. Source-only audit, no type-check claim."
+  },
+  "localAppleSDKExecutions": 0,
+  "glyphCorrectionIncludedInFrozenBuild14": true,
+  "devicePriority": "Apply only this module import after e88 BookStore repairs and retry frozen build14 without waiting for unrelated C2 or SDK-fixture development.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
