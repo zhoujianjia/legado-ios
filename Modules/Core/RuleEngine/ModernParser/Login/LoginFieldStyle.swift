@@ -19,7 +19,7 @@ import Foundation
 /// A login form row's raw `style` object, parsed leniently — malformed properties are
 /// ignored individually (scalar values are accepted as strings or numbers, as in
 /// `ModernParserBridge.DiscoverItem.style`).
-struct LoginFieldStyle: Equatable {
+struct LoginFieldStyle: Equatable, Sendable {
     /// Items per row, 1...4. Clamped when it exceeds the supported range.
     var cols: Int?
     /// Vertical span in grid rows.

@@ -27,6 +27,10 @@ struct BookSourceFormLoginView: View {
     @State private var showLog = false
     @State private var canRetryLoginUi = false
     @State private var formSubmissionTask: Task<Void, Never>?
+    @State private var loginUIRenderTask: Task<Void, Never>?
+    @State private var loginUIRenderGeneration = UUID()
+    @State private var originalFormLoaded = false
+    @State private var usesOriginalLoginUI = false
     /// What a menu button's run reported when the source itself said nothing.
     /// Alert only, never the inline error Section: that Section sits below the whole
     /// form, which on a long source menu is far off-screen — the button still read
@@ -102,6 +106,7 @@ struct BookSourceFormLoginView: View {
                                 Image(systemName: "checkmark")
                             }
                             .accessibilityLabel(localized("完成"))
+                    .disabled(usesOriginalLoginUI && !originalFormLoaded)
                         }
                     }
                 } else {
@@ -113,6 +118,7 @@ struct BookSourceFormLoginView: View {
                             Image(systemName: "checkmark")
                         }
                         .accessibilityLabel(localized("完成"))
+                    .disabled(usesOriginalLoginUI && !originalFormLoaded)
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -141,7 +147,11 @@ struct BookSourceFormLoginView: View {
             }
         }
         .onAppear { loadUI() }
-        .onDisappear { formSubmissionTask?.cancel(); formSubmissionTask = nil }
+        .onDisappear {
+            formSubmissionTask?.cancel(); formSubmissionTask = nil
+            loginUIRenderGeneration = UUID()
+            loginUIRenderTask?.cancel(); loginUIRenderTask = nil
+        }
         .sheet(isPresented: $showLog) {
             BookSourceDebugView()
         }
@@ -219,6 +229,58 @@ struct BookSourceFormLoginView: View {
     // MARK: - Setup
 
     private func loadUI() {
+        loginUIRenderTask?.cancel()
+        let generation = UUID()
+        loginUIRenderGeneration = generation
+        isLoading = true
+        canRetryLoginUi = false
+        let snapshot = source
+        let fieldSnapshot = fields
+        let valueSnapshot = values
+        let useExistingValues = originalFormLoaded
+        loginUIRenderTask = Task {
+            defer { if loginUIRenderGeneration == generation { loginUIRenderTask = nil } }
+            let original = await Task.detached {
+                snapshot.bookSourceType == 0 && !snapshot.isJsSource
+            }.value
+            guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
+            guard original else {
+                usesOriginalLoginUI = false
+                loadLegacyUI()
+                return
+            }
+            usesOriginalLoginUI = true
+            do {
+                let submitted: [String: String]? = await Task.detached {
+                    useExistingValues
+                        ? Self.originalFormSubmissionValues(fields: fieldSnapshot, values: valueSnapshot)
+                        : nil
+                }.value
+                let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+                let rendered = try await service.originalLoginUI(source: snapshot, values: submitted)
+                guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
+                // Locked resolveLoginUiRender applies only successful new rows.
+                // On failure the previous fields, labels and edits remain intact.
+                fields = rendered.fields
+                fieldLabels = rendered.labels
+                values = rendered.values
+                originalFormLoaded = true
+                isLoading = false
+            } catch {
+                guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
+                isLoading = false
+                canRetryLoginUi = true
+                let typed = error as? LegadoRuntimeError
+                let code = typed?.code ?? "STATE_IO"
+                AppLogger.error("Original login UI failed", context: ["code": code,
+                    "reportedEffects": typed?.completedEffects?.count ?? 0])
+                menuAlert = MenuActionAlert(title: localized("操作失敗"),
+                    detail: localized("操作失敗") + " (\(code))")
+            }
+        }
+    }
+
+    private func loadLegacyUI() {
         isLoading = true
         canRetryLoginUi = false
         let rawUi = source.loginUi.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -489,7 +551,7 @@ struct BookSourceFormLoginView: View {
     // MARK: - Login Action
 
     private func doLogin() {
-        guard !isLoading else { return }
+        guard !isLoading, !usesOriginalLoginUI || originalFormLoaded else { return }
         menuAlert = nil
         canRetryLoginUi = false
 
@@ -513,6 +575,7 @@ struct BookSourceFormLoginView: View {
         let snapshot = source
         let valueSnapshot = values
         let fieldSnapshot = fields
+        let hadValidOriginalForm = originalFormLoaded
         formSubmissionTask = Task {
             defer { formSubmissionTask = nil }
             // Source classification and complete form synthesis run off MainActor.
@@ -524,6 +587,9 @@ struct BookSourceFormLoginView: View {
                 return (original, submitted)
             }.value
             guard !Task.isCancelled else { isLoading = false; return }
+            // Original toolbar requires a successfully parsed rowUis, including
+            // valid []. A failed initial render must never become removeLoginInfo.
+            guard !original || hadValidOriginalForm else { isLoading = false; return }
             guard original else {
                 isLoading = false
                 // Existing mainJs/media validation and login remain on their route.

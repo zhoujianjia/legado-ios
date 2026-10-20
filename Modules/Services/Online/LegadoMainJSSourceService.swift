@@ -1724,3 +1724,34 @@ extension LegadoMainJSSourceService {
         }
     }
 }
+
+extension LegadoMainJSSourceService {
+    /// Same source actor/process/owner as the reader and confirmation operation.
+    func originalLoginUI(source: BookSource, values: [String: String]?) async throws -> LegadoOriginalLoginUIForm {
+        var effects: [String] = []
+        do {
+            let signature = try originalSignature(source)
+            let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
+            try await acquire(source.bookSourceUrl, deadline: deadline)
+            defer { release(source.bookSourceUrl) }
+            try acceptOriginalRevision(source, signature: signature)
+            let result = try await SourcePerfTrace.spanAsync("legado.original.login.ui",
+                "main=\(Thread.isMainThread) values=\(values?.count ?? 0)") {
+                try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                    sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+                    operation: .loginUI(values), deadline: deadline)
+            }
+            guard case .loginUI(let reply, let reported) = result else {
+                throw failure("INVALID_RESULT", "Original login UI omitted its result")
+            }
+            effects = reported
+            try previewCheck(deadline)
+            return try LegadoOriginalLoginUIForm(reply)
+        } catch {
+            let typed = error as? LegadoRuntimeError
+            let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+            throw LegadoRuntimeError(code: code, message: "Original login UI did not complete (\(code))",
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted())
+        }
+    }
+}

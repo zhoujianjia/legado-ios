@@ -42,7 +42,7 @@ enum LoginState: Equatable {
 /// A single field in a login form, parsed from the source's `loginUi` JSON.
 /// Mirrors Legado's `RowUi` data class. The one model behind both the book-source
 /// and TTS login sheets.
-struct LoginField: Identifiable, Equatable {
+struct LoginField: Identifiable, Equatable, Sendable {
     let name: String
     let type: LoginFieldType
     let action: String?
@@ -53,9 +53,18 @@ struct LoginField: Identifiable, Equatable {
     /// Legado's `viewName`: a quoted literal label, or a JS expression to evaluate.
     let viewName: String?
 
-    var id: String { name }
+    var originalRowID: String? = nil
+    var id: String { originalRowID ?? name }
 
-    enum LoginFieldType: String {
+    /// Locked Spinner.setSelectionSafely clamps an unmatched value to the first
+    /// declared choice without mutating the dialog's working credential map.
+    func originalSelectionDisplayValue(_ value: String) -> String? {
+        guard originalRowID != nil, type == .select else { return nil }
+        guard !options.isEmpty else { return "" }
+        return options.first(where: { $0 == value }) ?? options[0]
+    }
+
+    enum LoginFieldType: String, Sendable {
         case text     = "text"
         case password = "password"
         case select   = "select"

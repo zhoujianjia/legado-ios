@@ -276,7 +276,7 @@ class BookSource(
         val obj = GSON.fromJsonObject<JsonObject>(text).getOrNull() ?: return false
         return runCatching { obj.get("version")?.asInt == 2 }.getOrDefault(false)
     }
-    private fun getStoredLoginInfoMap(): MutableMap<String, String>? {
+    internal fun getStoredLoginInfoMap(): MutableMap<String, String>? {
         val json = getLoginInfo() ?: return null
         return GSON.fromJsonObject<MutableMap<String, String>>(json).getOrNull() ?: mutableMapOf()
     }

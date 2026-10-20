@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import LegadoRuntime
 @testable import yuedu_app
 
 // MARK: - BookSourceLoginTests
@@ -116,7 +117,24 @@ struct BookSourceLoginTests {
     }
 
     @Test("空白登入欄位不會被當成登入成功")
-    func blankLoginFieldIsRequired() {
+    func blankLoginFieldIsRequired() throws {
+        let originalJSON = #"{"rows":[{"name":"same","type":"text","default":"fallback"},{"name":"hiddenLabel","type":"label"},{"name":"same","type":"password"},{"name":"unknown","type":"future"},{"name":"nilSelect","type":"select"},{"name":"nilToggle","type":"toggle"},{"name":"emptySelect","type":"select","chars":[],"default":"kept"},{"name":"emptyChoice","type":"select","chars":["","signed"]}],"labels":["first","not-an-input","second","not-an-input","nilSelect","nilToggle","emptySelect","emptyChoice"],"values":{"hidden":"synthetic-hidden","same":""},"dynamic":true}"#
+        let originalReply = try JSONDecoder().decode(LegadoOriginalLoginUIResult.self, from: Data(originalJSON.utf8))
+        let originalForm = try LegadoOriginalLoginUIForm(originalReply)
+        #expect(originalForm.fields.count == 6)
+        #expect(originalForm.fields[0].id != originalForm.fields[1].id)
+        #expect(originalForm.labels[originalForm.fields[0].id] == "first")
+        #expect(originalForm.labels[originalForm.fields[1].id] == "second")
+        #expect(originalForm.values == ["hidden": "synthetic-hidden", "same": ""])
+        #expect(originalForm.fields[2].options == ["chars", "is null"])
+        #expect(originalForm.fields[3].options == ["chars is null"])
+        #expect(originalForm.fields[4].options.isEmpty)
+        #expect(originalForm.fields[4].originalRowID != nil)
+        #expect(originalForm.fields[2].originalSelectionDisplayValue("unknown") == "chars")
+        #expect(originalForm.fields[4].originalSelectionDisplayValue("kept") == "")
+        #expect(originalForm.fields[5].options == ["", "signed"])
+        #expect(originalForm.fields[5].originalSelectionDisplayValue("") == "")
+        #expect(originalForm.fields[5].originalSelectionDisplayValue("signed") == "signed")
         let submissionFields = LoginManager.shared.parseLoginUi("""
         [{"name":"username","type":"text","default":"synthetic-default"},{"name":"password","type":"password","default":"synthetic-default-password"},{"name":"captcha","type":"text"},{"name":"button","type":"button","default":"must-not-add"}]
         """)

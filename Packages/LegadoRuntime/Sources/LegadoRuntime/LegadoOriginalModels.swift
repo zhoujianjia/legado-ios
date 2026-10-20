@@ -175,3 +175,36 @@ internal struct OriginalFormLoginRequest: Encodable, Sendable {
     let credentials: [String: String]
     let timeoutMs: Int64
 }
+
+/// Original RowUi/GSON projection, preserving source order and nullable fields.
+public struct LegadoOriginalLoginUIRow: Codable, Sendable, Equatable {
+    public let name: String
+    public let type: String
+    public let action: String?
+    public let chars: [String?]?
+    public let defaultValue: String?
+    public let viewName: String?
+    public let style: LegadoOriginalLoginUIStyle?
+    enum CodingKeys: String, CodingKey {
+        case name, type, action, chars, viewName, style
+        case defaultValue = "default"
+    }
+}
+public struct LegadoOriginalLoginUIStyle: Codable, Sendable, Equatable {
+    public let cols: Int?
+    public let rows: Int?
+    public let layout_flexBasisPercent: Double?
+    public let layout_flexGrow: Double?
+    public let layout_wrapBefore: Bool?
+    public let layout_justifySelf: String?
+}
+public struct LegadoOriginalLoginUIResult: Codable, Sendable, Equatable {
+    public let rows: [LegadoOriginalLoginUIRow]
+    public let labels: [String]
+    public let values: [String: String]
+    public let dynamic: Bool
+}
+internal struct OriginalLoginUIRequest: Encodable, Sendable {
+    let values: [String: String]?
+    let timeoutMs: Int64
+}

@@ -6,6 +6,40 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            await Task.detached {
+                LoginManager.shared.storeLoginInfo(sourceUrl: fixture.a,
+                    info: ["hidden": "synthetic-hidden", "password": ""])
+            }.value
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a
+            source.enabledCookieJar = false
+            source.loginUrl = "var prefixValue='native-prefix';function login(){throw new Error('must-not-submit');}"
+            source.loginUi = "@js:if(java!==source||book!==null||chapter!==null||String(result.get('hidden'))!=='synthetic-hidden')throw new Error('wrong UI Map');[{name:'password',type:'password',default:'must-not-replace-empty',viewName:\"prefixValue+':'+String(result.get('hidden'))\"},{name:'caption',type:'label',viewName:\"throw new Error('must-not-eval-label')\"}];"
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let rendered = try await service.originalLoginUI(source: source, values: nil)
+            XCTAssertEqual(rendered.fields.count, 1)
+            XCTAssertEqual(rendered.fields[0].type, .password)
+            XCTAssertEqual(rendered.labels[rendered.fields[0].id], "native-prefix:synthetic-hidden")
+            XCTAssertEqual(rendered.values, ["hidden": "synthetic-hidden", "password": ""])
+            let stored = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(stored, rendered.values)
+            source.loginUi = "[{name:'password',type:'password',viewName:\"String(result.get('password'))\"}]"
+            let edited = try await service.originalLoginUI(source: source,
+                values: ["hidden": "synthetic-hidden", "password": "synthetic-edit"])
+            XCTAssertEqual(edited.labels[edited.fields[0].id], "synthetic-edit")
+            let unchanged = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(unchanged, stored)
+        } catch { problem = error }
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()

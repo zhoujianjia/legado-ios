@@ -37,7 +37,7 @@ struct LoginFormGrid: View {
             ForEach(fields) { field in
                 LoginFieldCell(
                     field: field,
-                    label: labels[field.name] ?? field.name,
+                    label: labels[field.id] ?? labels[field.name] ?? field.name,
                     value: valueBinding(for: field),
                     onAction: onAction
                 )
@@ -87,7 +87,7 @@ private struct LoginFieldCell: View {
             }
 
         case .toggle:
-            if LoginToggleChars(options: field.options) != nil {
+            if field.originalRowID != nil || LoginToggleChars(options: field.options) != nil {
                 LoginTogglePill(
                     field: field, label: label, value: $value,
                     alignment: alignment
@@ -107,8 +107,9 @@ private struct LoginFieldCell: View {
 
     @ViewBuilder
     private var selectCell: some View {
-        if field.options.isEmpty {
-            // A select without options is a plain input, as in the original sheet.
+        if field.options.isEmpty && field.originalRowID == nil {
+            // Preserve the existing nontraditional empty-options input. The
+            // original legacy builder always keeps a selection control.
             LoginTextFieldCell(field: field, label: label, value: $value, alignment: alignment)
         } else {
             LoginSelectPill(
@@ -206,13 +207,14 @@ private struct LoginTogglePill: View {
     let action: () -> Void
 
     private var chars: [String] {
-        field.options.filter { !$0.isEmpty }
+        field.originalRowID != nil ? field.options : field.options.filter { !$0.isEmpty }
     }
 
     /// What Legado's `rowUiBuilder` shows: the stored char, else the declared default,
     /// else the first char. The declared default is display-only — flipping writes the
     /// next char, exactly like the previous switch row.
     private var currentChar: String {
+        if field.originalRowID != nil { return value }
         if !value.isEmpty { return value }
         if let declared = field.defaultValue, !declared.isEmpty { return declared }
         return chars.first ?? ""
@@ -252,22 +254,41 @@ private struct LoginSelectPill: View {
     /// Options plus a stored value the source no longer declares, so a saved selection
     /// is not silently dropped from the menu (mirrors the old row's `options(for:)`).
     private var options: [String] {
+        if field.originalRowID != nil { return field.options }
         let declared = field.options.filter { !$0.isEmpty }
         guard !selected.isEmpty, !declared.contains(selected) else { return declared }
         return [selected] + declared
     }
 
     private var selected: String {
+        if let original = field.originalSelectionDisplayValue(value) { return original }
         if !value.isEmpty { return value }
         if let declared = field.defaultValue, !declared.isEmpty { return declared }
         return field.options.first(where: { !$0.isEmpty }) ?? ""
     }
 
+    private struct OriginalOption: Identifiable {
+        let id: String
+        let value: String
+    }
+
+    private var originalOptions: [OriginalOption] {
+        field.options.enumerated().map {
+            OriginalOption(id: "\(field.id).choice.\($0.offset)", value: $0.element)
+        }
+    }
+
     var body: some View {
         Menu {
             Picker(label, selection: selection) {
-                ForEach(options, id: \.self) { option in
-                    Text(option).tag(option)
+                if field.originalRowID != nil {
+                    ForEach(originalOptions) { option in
+                        Text(option.value).tag(option.value)
+                    }
+                } else {
+                    ForEach(options, id: \.self) { option in
+                        Text(option).tag(option)
+                    }
                 }
             }
         } label: {
