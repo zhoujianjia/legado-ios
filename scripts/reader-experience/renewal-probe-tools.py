@@ -546,7 +546,14 @@ CURRENTCORE_LOGIN_ACTION_REGRESSION_QUALIFIED_CASES = {suite + "/" + method
     for suite, methods in CURRENTCORE_LOGIN_ACTION_REGRESSION_CASES.items() for method in methods}
 assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_LOGIN_ACTION_REGRESSION_QUALIFIED_CASES)
 EXPECTED_CASES["currentcore"] |= CURRENTCORE_LOGIN_ACTION_REGRESSION_QUALIFIED_CASES
-assert len(EXPECTED_CASES["currentcore"]) == 452
+assert len(EXPECTED_CASES["currentcore"]) == 452  # Preserve the preceding source checkpoint.
+CURRENTCORE_EXPLORE_LIFECYCLE_CASES = {'DiscoverViewModelReloadTests': ('failedContextOpenDoesNotPublishCachedCategories', 'cachedCategoriesBuildThePage', 'reloadStartsSectionsAnew', 'exploreOffGivesAnEmptyPage'), 'LegadoOriginalExploreLifecycleTests': ('pagePauseDrainsCategoryLoadBeforeReentry', 'failedPagePauseRetainsPendingUntilNextPageLifetime', 'pagePauseRejectsEditedSourceBeforeSaving')}
+CURRENTCORE_EXPLORE_LIFECYCLE_QUALIFIED_CASES = {suite + "/" + method
+    for suite, methods in CURRENTCORE_EXPLORE_LIFECYCLE_CASES.items() for method in methods}
+assert len(CURRENTCORE_EXPLORE_LIFECYCLE_QUALIFIED_CASES) == 7
+assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_EXPLORE_LIFECYCLE_QUALIFIED_CASES)
+EXPECTED_CASES["currentcore"] |= CURRENTCORE_EXPLORE_LIFECYCLE_QUALIFIED_CASES
+assert len(EXPECTED_CASES["currentcore"]) == 459
 
 PARAMETER_MODES = ("transactionrenewal", "handoffrenewal", "currentcore")
 SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal", "currentcore")
@@ -855,6 +862,56 @@ CURRENTCORE_LOGIN_ACTION_MATERIAL_INPUTS = (
 )
 SOURCE_INPUTS += tuple(path for path in CURRENTCORE_LOGIN_ACTION_MATERIAL_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 308
+# Reviewed login-UI and exploration-page production/fixture/owner closure.
+CURRENTCORE_LOGIN_UI_EXPLORE_INPUTS = (
+    'Modules/Core/RuleEngine/ModernParser/Login/LoginFieldStyle.swift',
+    'Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift',
+    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
+    'Modules/Services/Online/LegadoMainJSSourceService.swift',
+    'Modules/Services/Online/LegadoOriginalLoginUIForm.swift',
+    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+    'Modules/SharedUI/Components/LoginFormGrid.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+    'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift',
+    'Modules/Services/Online/DiscoverViewModel.swift',
+    'Modules/Services/Online/DiscoverQuickActions.swift',
+    'Modules/Features/Explore/ExploreSourcePage.swift',
+    'Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift',
+    'Tests/iOS/LegadoNativeOriginalReaderTests.swift',
+    'Modules/Services/Online/DiscoverKindsCache.swift',
+    'Modules/Services/Online/ExploreSettings.swift',
+    'Modules/Services/LibraryStore/BackgroundTaskHold.swift',
+)
+SOURCE_INPUTS += tuple(path for path in CURRENTCORE_LOGIN_UI_EXPLORE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 318
+# Row actions reuse the same reviewed source task and add no App definitions.
+CURRENTCORE_ROW_ACTION_INPUTS = (
+    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
+    'Modules/Services/Online/LegadoMainJSSourceService.swift',
+    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+    'Modules/SharedUI/Components/LoginFormGrid.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginActionRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginActionTest.kt',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in CURRENTCORE_ROW_ACTION_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 320
 
 
 def selection_mode():
@@ -1637,10 +1694,10 @@ def result(work):
         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
     if mode == "currentcore":
         output["limitations"] = [
-            "Currentcore requires exactly452 definitions and455 argument leaves in one cold3600-second invocation/xcresult, retaining both original Bool false/true pairs and the glyph nestedBackdrop pair and the required same-job SDK fixture case.",
+            "Currentcore requires exactly459 definitions and462 argument leaves in one cold3600-second invocation/xcresult, retaining both original Bool false/true pairs and the glyph nestedBackdrop pair and the required same-job SDK fixture case.",
             "All producer/stage/native/export/verification phases and actual portable guards must succeed. Producer or guard failure remains failure while the complete native selection is still attempted for diagnostics.",
             "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode, all-source pause, public content batch, first enrollment/durable binding, explicit and automatic execution, measured JVM bundle bounds, anisette v3, pairing import, pagination recovery, raw source login-info and CSR/account/GSA definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
-            "The independent explicitly selected currentcore SwiftPM effects selection is18 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native455.",
+            "The independent explicitly selected currentcore SwiftPM effects selection is18 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native462.",
             "Existing eleven mode method/parameter identities and budgets remain unchanged. Benchmarks, diagnostic UI, unmerged later source work and unrelated JVM replay are excluded."]
         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
     return output
@@ -1918,7 +1975,7 @@ def _currentcore_source_state(work):
     if (selection_mode() != "currentcore" or prepared.get("selectionMode") != "currentcore"
             or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
             or prepared.get("intendedTests") != {"currentcore": sorted(EXPECTED_CASES["currentcore"])}
-            or prepared.get("intendedQualifiedMethodDefinitions") != 452 or prepared.get("intendedArgumentLeafCount") != 455
+            or prepared.get("intendedQualifiedMethodDefinitions") != 459 or prepared.get("intendedArgumentLeafCount") != 462
             or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in parameter_cases("currentcore").items()}):
         raise ValueError("Current core phase cannot run with changed preparation/source")
     return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
@@ -2044,7 +2101,7 @@ def run_currentcore(work):
         rows.append(_run_currentcore_phase(work, name, command, timeout, source, _currentcore_blockers(name, rows)))
     failure = _currentcore_first_failure(rows)
     ledger = {"schemaVersion": 1, "selectionMode": "currentcore", "source": source,
-              "qualifiedMethodDefinitions": 452, "argumentLeaves": 455,
+              "qualifiedMethodDefinitions": 459, "argumentLeaves": 462,
               "phaseOrder": list(CURRENTCORE_PHASES), "phases": rows, "firstFailure": failure,
               "phaseRecords": [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES],
               "historicalPackageEvidence": _currentcore_fact(work, "historical-package-evidence.json"),
@@ -2069,8 +2126,8 @@ def verify_currentcore_pipeline(work):
     ledger = smoke.read_json(work / "currentcore-pipeline.json")
     source = _currentcore_source_state(work)
     if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "currentcore"
-            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 452
-            or ledger.get("argumentLeaves") != 455 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
+            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 459
+            or ledger.get("argumentLeaves") != 462 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
             or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
         raise ValueError("Missing/failed/changed same-source currentcore pipeline")
     rows = ledger.get("phases")

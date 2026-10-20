@@ -42,7 +42,10 @@ NATIVE_GROUPS = {
             "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
             "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
             "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
-            "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners")},
+            "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap',
+            'LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave',
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite')},
 }
 SOURCE_INPUTS = (
     ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
@@ -169,6 +172,58 @@ ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS = (
 )
 SOURCE_INPUTS += tuple(path for path in ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 91
+ORIGINAL_LOGIN_UI_EXPLORE_INPUTS = (
+    'Modules/Core/RuleEngine/ModernParser/Login/LoginFieldStyle.swift',
+    'Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift',
+    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
+    'Modules/Services/Online/LegadoMainJSSourceService.swift',
+    'Modules/Services/Online/LegadoOriginalLoginUIForm.swift',
+    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+    'Modules/SharedUI/Components/LoginFormGrid.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+    'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift',
+    'Modules/Services/Online/DiscoverViewModel.swift',
+    'Modules/Services/Online/DiscoverQuickActions.swift',
+    'Modules/Features/Explore/ExploreSourcePage.swift',
+    'Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift',
+    'Tests/iOS/LegadoNativeOriginalReaderTests.swift',
+    'Modules/Services/Online/DiscoverKindsCache.swift',
+    'Modules/Services/Online/ExploreSettings.swift',
+    'Modules/Services/LibraryStore/BackgroundTaskHold.swift',
+)
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_LOGIN_UI_EXPLORE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 103
+# These test files actually failed the prior Native target compilation.
+NATIVE_F2_TEST_COMPILE_INPUTS = ('Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift')
+SOURCE_INPUTS += tuple(path for path in NATIVE_F2_TEST_COMPILE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 105
+ORIGINAL_ROW_ACTION_INPUTS = (
+    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
+    'Modules/Services/Online/LegadoMainJSSourceService.swift',
+    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+    'Modules/SharedUI/Components/LoginFormGrid.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginActionRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginActionTest.kt',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_ROW_ACTION_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 107
 
 
 def _fact(path):
