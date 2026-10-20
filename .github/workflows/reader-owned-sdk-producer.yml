@@ -42,6 +42,7 @@ jobs:
           python -B scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/diagnostic-guards.log
           python -B scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/timeout-guards.log
           python -B scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/reopen-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/user-trust-guards.log
       - name: Execute only the same-source owned macOS producer and public staging checks
         if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         env:

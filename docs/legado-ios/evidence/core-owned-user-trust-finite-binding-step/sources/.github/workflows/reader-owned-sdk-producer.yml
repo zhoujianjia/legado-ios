@@ -1,0 +1,69 @@
+name: Owned SDK Producer Check
+
+on:
+  push:
+    tags:
+      - 'reader-owned-sdk-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: owned-sdk-producer-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  producer:
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      LEGADO_RUNTIME_SOURCE_ONLY: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify the exact owned-producer source tag
+        id: source
+        run: |
+          mkdir -p .build/owned-sdk-producer-ci-logs
+          python -B scripts/reader-experience/owned-sdk-producer-check.py validate-source 2>&1 | tee .build/owned-sdk-producer-ci-logs/source.log
+      - name: Verify related portable evidence guards
+        id: guards
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
+        run: |
+          python -B scripts/reader-experience/test-owned-sdk-producer-check.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/check-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/diagnostic-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/timeout-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/reopen-guards.log
+          python -B scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/user-trust-guards.log
+      - name: Execute only the same-source owned macOS producer and public staging checks
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
+        env:
+          YUEDU_OWNED_PRODUCER_GUARDS_OUTCOME: ${{ steps.guards.outcome }}
+        run: python -B scripts/reader-experience/owned-sdk-producer-check.py run 2>&1 | tee .build/owned-sdk-producer-ci-logs/producer-check.log
+      - name: Preserve bounded diagnostics and validated public outputs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-owned-sdk-producer-evidence
+          path: |
+            .build/owned-sdk-producer-check/
+            .build/owned-sdk-producer-ci-logs/
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the finite acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This independent source-only job runs the existing owned SDK producer and the existing public source/structure/hash/allowlist checks. It uses the selected installed Xcode toolchain, real clang/codesign and synthetic short-lived Keychain material. The producer's successful complete path includes four actual detached-CMS OpenSSL verifications; staging does not execute the Swift CMS verifier. Codesign, cleanup, timeout, source or staging failure remains failure with the original bounded public evidence. Private keys/P12/passwords and the raw producer output directory are never artifact members; only validated allowlisted public outputs are copied.
+
+          No App build, native XCTest, Swift CMS verifier, SwiftPM case, simulator boot, JNI, real device, account, installation or renewal runs here. Native methods executed remain zero; no native253/255 or other full-selection gate is weakened or accepted by this job. Its separate reader-owned-sdk tag namespace does not trigger the existing reader-renewal workflow. Import/reopen diagnostics alone do not establish codesign success, Apple authority or automatic renewal.
+          TEXT

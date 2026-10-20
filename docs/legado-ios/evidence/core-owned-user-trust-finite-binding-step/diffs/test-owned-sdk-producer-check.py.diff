@@ -1,0 +1,27 @@
+--- canonical/scripts/reader-experience/test-owned-sdk-producer-check.py
++++ proposed/scripts/reader-experience/test-owned-sdk-producer-check.py
+@@ -53,7 +53,7 @@
+     def test_requires_exact_isolated_tag_sha_checkout_and_source_only(self):
+         with self.context():
+             source = self.inputs()
+-            self.assertEqual(len(source['sourceInputs']),19)
++            self.assertEqual(len(source['sourceInputs']),20)
+             self.assertEqual(source['sourceTag'],'reader-owned-sdk-aaaaaaa')
+             for changes in [{'GITHUB_SHA':'b'*40},{'GITHUB_REF_NAME':'reader-renewal-aaaaaaa'},
+                             {'GITHUB_REF':'refs/heads/main'},{'LEGADO_RUNTIME_SOURCE_ONLY':'0'}]:
+@@ -226,6 +226,15 @@
+         self.assertNotIn('.build/owned-sdk-producer-raw/',workflow)
+         self.assertNotIn('renewal-probe-tests.sh',workflow)
+         self.assertNotIn('original-api-package-tests.sh',workflow)
++        # Preserve all four original guard groups, and actually execute the
++        # source-bound new trust8 group through the same failing guard step.
++        for script in ('test-owned-sdk-producer-check.py', 'owned-package-fixture/test-producer-diagnostics.py',
++                       'owned-package-fixture/test-producer-timeouts.py', 'owned-package-fixture/test-producer-keychain-reopen.py',
++                       'owned-package-fixture/test-producer-user-trust.py'):
++            self.assertEqual(workflow.count('python -B scripts/reader-experience/' + script + ' -v'), 1)
++        self.assertIn(check.TOOL_ROOT + 'test-producer-user-trust.py', check.SOURCE_INPUTS)
++        self.assertEqual(len(self.probe.SDK_TOOL_NAMES), 7)
++        self.assertEqual(len(self.probe._sdk_output_names()), 43)
+ 
+ 
+ if __name__=='__main__': unittest.main(verbosity=2)

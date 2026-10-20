@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "scope": "Independent follow-up: actual trusted CLI parent/child authority boundary, not new functionality or independent helper capability",
+  "preparation": {
+    "path": ".build/renewal-discovery/owned-user-trust-step/preparation.json",
+    "bytes": 11550,
+    "sha256": "061264584430e90f2fe8f63079fc7b9bfe6f6cd5ad6f7bd1bd82413d196e5d28"
+  },
+  "earlierReview": {
+    "path": ".build/renewal-discovery/owned-user-trust-step/independent-source-review-v1.json",
+    "bytes": 28321,
+    "sha256": "1b5df7c8c1cca3578bd2e7d2fd808a2e5003f050eef6957eca6034762e6b1dba"
+  },
+  "sourceFiles": [
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 52410,
+      "sha256": "8bafcafd1b1b6d85ec214cde1bf90fd375c866dc9634dcb3daeae836c75944a9"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 23609,
+      "sha256": "548be3fd7b8e425a9389984bcd8f7c3427e609099462dc654474b808afdfc899"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "bytes": 35826,
+      "sha256": "a949473d76db6035974e1ddb7f79b5736b1a7db984e6dd8226c355047e3b930a"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "bytes": 3643,
+      "sha256": "db8f83fa1a5d650760bc5a68abcacb5fe61d744a606ec504bf07973b2efb3e1f"
+    }
+  ],
+  "confirmedBlockers": [],
+  "confirmedFacts": [
+    {
+      "source": "ImportOwnedIdentity.swift",
+      "lines": [
+        52,
+        68,
+        150,
+        175
+      ],
+      "fact": "run dispatches trust before reopening the requested Keychain. The trust operation validates input sizes/DER, same leaf/root bytes, hosted-runner facts and actual public user-trust settings/authorization. It does not independently prove that the cert belongs to this producer Keychain."
+    },
+    {
+      "source": "generate-sdk-owned-package.py",
+      "lines": [
+        120,
+        138,
+        566,
+        620
+      ],
+      "fact": "Actual parent constructs/compiles the helper in one newly created chmod0700 private temporary directory, generates the self-signed private key and public cert itself, builds one request from those bytes and random Keychain password, imports it into the temporary Keychain, verifies actual private-key challenge, partitions/inspection and fresh reopen fingerprint, then explicit codeSign policy, then invokes the same private helper/request through bounded stdin."
+    },
+    {
+      "source": "generate-sdk-owned-package.py",
+      "lines": [
+        364,
+        399
+      ],
+      "fact": "OwnedUserTrustScope copies that request while dropping P12 fields, requires exact same base64 leaf/root, and requires the typed child certificateSHA256 to match the captured parent leaf bytes. There is no user/network/IPC input parser or additional trust entry source in this production call path."
+    },
+    {
+      "source": "OwnedIdentitySearch.c",
+      "lines": [
+        23,
+        41
+      ],
+      "fact": "The helper runs as the same hosted-runner OS user and only requests the public user trust-setting authorization right through Authorization Services. It has no setuid/elevated service, sudo/admin/system authority or inherited authorization credential beyond what the OS would grant the caller via the same public APIs."
+    }
+  ],
+  "decision": "No confirmed present production bug from accepting a different same-user direct helper invocation. A caller able to execute that private same-user CLI with fabricated hosted-runner facts can already request its own user trust via the same public OS authorization. Current exact-owned scope follows the source-bound controlled parent dataflow, not an unforgeable self-contained child authorization proof. Root confirmed this is the intended trusted CLI boundary and does not require a new independent helper authorization layer.",
+  "clarificationToPriorReview": "References to exact owned fixture mean the actual producer-owned cert/key/request lifecycle. They must not be read as a claim that the helper alone authenticates arbitrary stdin as producer-owned identity. Independent helper reopen/challenge for arbitrary future callers was not implemented or established.",
+  "mutationRequired": false,
+  "additionalCOrSwiftCodeRequested": false,
+  "actualReviewExecutions": {
+    "tests": 0,
+    "grammar": 0,
+    "CCompiler": 0,
+    "SwiftSDK": 0,
+    "macOS": 0,
+    "trustMutations": 0,
+    "GitCICloud": 0,
+    "canonicalMutation": 0
+  }
+}
