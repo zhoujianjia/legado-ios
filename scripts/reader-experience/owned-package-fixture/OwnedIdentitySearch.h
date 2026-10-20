@@ -17,6 +17,11 @@ extern "C" {
  * this successful preflight does NOT guarantee that those APIs cannot request UI. */
 OSStatus YueduOwnedUserTrustAuthorizationPreflight(void);
 
+/* Root-only private fixture self-expiry, before stdin and again before mutation.
+ * deadlineNS is the same-machine CPython >=3.10 Mach monotonic absolute ns.
+ * Public Set/Remove themselves decide OS authorization; no separate admin right. */
+OSStatus YueduOwnedAdminTrustArmDeadline(uint32_t maximumSeconds, uint64_t deadlineNS);
+
 /* macOS owned-fixture producer only. No identity/key is returned or retained.
  * The caller supplies its one owned Keychain and a bounded public leaf DER.
  * Output count is zero on every failure; success means exactly one exact leaf. */

@@ -1,0 +1,148 @@
+{
+  "kind": "Independent source/evidence review, not author self-review and not execution",
+  "recordedAtUTC": "2026-10-20T11:44:34.170697+00:00",
+  "sourcePreparation": {
+    "path": ".build/renewal-discovery/owned-admin-trust-step/preparation.json",
+    "bytes": 7873,
+    "sha256": "b07d8f5fe321451ea24b3da7abc12eaeca9c432c6f2a02bf8a2d8d3df47dca23"
+  },
+  "sourceBinding": [
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources/generate-sdk-owned-package.py",
+      "bytes": 61359,
+      "sha256": "8593e3cff5404cf64192f8558cb03359f8575abed07afd72a121fe8640947dd9",
+      "baseline": {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 52410,
+        "sha256": "8bafcafd1b1b6d85ec214cde1bf90fd375c866dc9634dcb3daeae836c75944a9"
+      }
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources/ImportOwnedIdentity.swift",
+      "bytes": 29750,
+      "sha256": "0cba19e136c4e45413467388875dfaa699ca62dfdc8b9238b41d7dcc6f794e47",
+      "baseline": {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 23609,
+        "sha256": "548be3fd7b8e425a9389984bcd8f7c3427e609099462dc654474b808afdfc899"
+      }
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources/OwnedIdentitySearch.c",
+      "bytes": 37910,
+      "sha256": "30109cd879ae11e7f7389b5784f710eed6ef435c96c99e2643f0675d730a3536",
+      "baseline": {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "bytes": 35826,
+        "sha256": "a949473d76db6035974e1ddb7f79b5736b1a7db984e6dd8226c355047e3b930a"
+      }
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources/OwnedIdentitySearch.h",
+      "bytes": 3925,
+      "sha256": "600b8383548e51ca45cd03bf64f29254a6158a6b858b73bc4903eaa39676f569",
+      "baseline": {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "bytes": 3643,
+        "sha256": "db8f83fa1a5d650760bc5a68abcacb5fe61d744a606ec504bf07973b2efb3e1f"
+      }
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources/test-producer-user-trust.py",
+      "bytes": 22921,
+      "sha256": "6f558cfa8d0eeb5229f0ed188ca22caf619bdd1725a81470d935da98f4ea580b",
+      "baseline": {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+        "bytes": 11753,
+        "sha256": "57b80616bcf2847a799af175b3bfe744d0cf9b4526aaf69b73c6ee46cd27600b"
+      }
+    }
+  ],
+  "confirmedAdditionalBlockers": [],
+  "pendingRootRequestedV2": "Remove the extra fixed admin AuthorizationCopyRights gate; actual public Set/Remove must decide permission under sudo-n. Final v2 requires a narrow diff recheck before integration.",
+  "reviewedPaths": [
+    {
+      "concern": "Root input and scope",
+      "evidence": "OwnedAdminTrustScope copies only operation/leafCertificate/rootCertificate into stdin; fixed absolute sudo -n -- env + explicit importer/flag. No Keychain/P12/password transmitted. The helper accepts exactly these three JSON keys, actual uid/euid0, bounded cert, root==leaf and hosted-runner facts.",
+      "limit": "Environment/header strings and public cert equality are not an unforgeable capability. Safety relies on this trusted producer and disposable owned runner; no claim of arbitrary caller authorization."
+    },
+    {
+      "concern": "Deadline",
+      "evidence": "C installs/unblocks SIGALRM then _exit124 before Swift run/stdin/Security. Python caps ordinary/cleanup arguments18/8, derives a smaller allowance from its actual parent budget and refuses <3s before spawning.",
+      "limit": "Alarm is relative to helper execution, whereas parent budget begins before spawn. Sudo/loader startup delay is not measured; a static2s margin does not prove child expiry before the absolute parent deadline. APIs/trustd may also outlive caller termination. A timeout is still failure, not successful cleanup evidence."
+    },
+    {
+      "concern": "Exact temporary admin policy",
+      "evidence": "Public SecTrustSettingsCopyTrustSettings exact certificate in .admin must be absent before install, then one actual SecPolicy codeSigning + trustRoot entry is written/read back. Removal first validates known exact policy shape then removes only this cert/admin and requires absence.",
+      "limit": "This intentionally changes ADMIN-global trust temporarily. No user-only/no-global-mutation claim; not a failed-user fallback. It does not modify SIP/authdb/sudoers/admin rights, system domain or Keychain search list. Actual permission/headlessness remain unverified."
+    },
+    {
+      "concern": "Identity, real signatures and cleanup",
+      "evidence": "Actual non-elevated identity import/reopen/challenges precede admin scope; real find-identity -v must be exactly0\u21921\u21920 for the same leaf. Cleanup intent precedes Set; failure/nonzero/lost completion enters finally removal, preserves primary plus independent cleanup failure, and no successful manifest precedes trust absence and Keychain deletion.",
+      "limit": "Public API is not an atomic compare-and-set against hostile concurrent trust changes. Unknown/late trust writes or abrupt parent death can leave residual state; only disposable runners are admitted, and actual Mac cleanup must be measured."
+    },
+    {
+      "concern": "Public schema and publication",
+      "evidence": "Schema5 rejects duplicate/unknown/missing fields, wrong UID/domain/deadline/booleans/counts and false successful completion. Private stdout/stderr stays private; only bounded typed facts/public fingerprints are emitted. The existing43 output names are unchanged.",
+      "limit": "Schema5 is source-defined, not actual sudo/trust/target-signature execution. The v1 admin authorization fact will change in v2; original schema1/2/3/4 meanings remain independent."
+    }
+  ],
+  "continuity": {
+    "priorPythonFunctionsAndScopeASTEqual": {
+      "identity_status": true,
+      "reopened_identity_status": true,
+      "key_access_status": true,
+      "key_acl_summary": true,
+      "prepare_owned_codesign_access": true,
+      "create_owned_signing_identity": true,
+      "export_owned_signing_identity": true,
+      "bounded_child": true,
+      "tool_timeout": true,
+      "owned_user_trust_status": true,
+      "exact_valid_owned_identity": true,
+      "finish_owned_user_trust": true,
+      "OwnedUserTrustScope": true
+    },
+    "targetCompileCodesignCMSMachOProfileZIPTailByteEqual": true,
+    "priorEightUserTestClassASTEqual": true,
+    "CBody": "Diff adds deadline/temporary admin preflight near original user preflight; remaining original key/owner/ACL/CSSM body untouched.",
+    "SwiftBody": "Diff preserves original user trust verifier and identity/key/ACL challenge routines; adds admin-only branch and root deadline argument dispatch."
+  },
+  "evidenceReadOnly": {
+    "portableRecord": {
+      "path": ".build/renewal-discovery/owned-admin-trust-step/portable-v1.json",
+      "bytes": 1907,
+      "sha256": "f8476ed10efb5fb0584a0f51cd90b65ef89d1dd955f8c278465ff3d325a0be03"
+    },
+    "portableRawLog": {
+      "path": ".build/renewal-discovery/owned-admin-trust-step/portable-v1.log",
+      "bytes": 3212,
+      "sha256": "76c87457f3d5e942545cd83a4104450d73743b4a109dee50b7a474df884bad09"
+    },
+    "observedRawUniquePasses": 16,
+    "scope": "8 prior user +8 new admin actual Python marker/parser/runner tests. Child/sudo/trust functionality is substituted; no C/Swift/macOS acceptance implied.",
+    "grammar": {
+      "path": ".build/renewal-discovery/owned-admin-trust-step/grammar-v1.json",
+      "bytes": 408,
+      "sha256": "0f3b00444316aa77d6f8bf431c2f4b1c7f5c5fdcf68e7105bc80c38ded18a0c8"
+    },
+    "reviewerExecutions": {
+      "tests": 0,
+      "grammar": 0,
+      "CCompiler": 0,
+      "SwiftCompiler": 0,
+      "sudo": 0,
+      "SecurityAPI": 0,
+      "SDK": 0,
+      "cloud": 0,
+      "Git": 0,
+      "canonicalWrites": 0
+    }
+  },
+  "next": "Review only final v2 changed fields/functions then preserve actual finite Mac failure/success as measured; do not infer repair from portable evidence."
+}

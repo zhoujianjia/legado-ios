@@ -1,0 +1,69 @@
+--- v1/OwnedIdentitySearch.c
++++ v2/OwnedIdentitySearch.c
+@@ -16,6 +16,8 @@
+ #include <stdlib.h>
+ #include <stdbool.h>
+ #include <signal.h>
++#include <mach/mach_time.h>
++#include <stdint.h>
+ #include <unistd.h>
+ #include <string.h>
+ 
+@@ -47,9 +49,10 @@
+     _exit(124);
+ }
+ 
+-OSStatus YueduOwnedAdminTrustArmDeadline(uint32_t seconds)
++OSStatus YueduOwnedAdminTrustArmDeadline(uint32_t maximumSeconds, uint64_t deadlineNS)
+ {
+-    if (getuid() != 0 || geteuid() != 0 || seconds < 1 || seconds > 18) return errSecAuthFailed;
++    if (getuid() != 0 || geteuid() != 0 || maximumSeconds < 1 || maximumSeconds > 18 ||
++        deadlineNS == 0 || deadlineNS > INT64_MAX) return errSecAuthFailed;
+     struct sigaction action;
+     memset(&action, 0, sizeof(action));
+     action.sa_handler = ownedAdminTrustExpired;
+@@ -57,28 +60,24 @@
+     sigset_t unblocked;
+     if (sigemptyset(&unblocked) != 0 || sigaddset(&unblocked, SIGALRM) != 0 ||
+         sigprocmask(SIG_UNBLOCK, &unblocked, NULL) != 0) return errSecInternalComponent;
++    /* CPython >=3.10 on this same Mac uses the unshifted Mach absolute clock.
++     * Convert with a wide product before narrowing, matching integer ns floors.
++     * Startup/stdin delay consumes the passed deadline; it never resets it. */
++    mach_timebase_info_data_t base;
++    if (mach_timebase_info(&base) != KERN_SUCCESS || base.numer == 0 || base.denom == 0) return errSecInternalComponent;
++    __uint128_t nowWide = (__uint128_t)mach_absolute_time() * base.numer / base.denom;
++    if (nowWide > INT64_MAX) return errSecParam;
++    uint64_t nowNS = (uint64_t)nowWide;
++    if (deadlineNS <= nowNS) _exit(124);
++    uint64_t remainingNS = deadlineNS - nowNS;
++    if (remainingNS > (uint64_t)maximumSeconds * 1000000000ULL) return errSecParam;
++    /* Floor to whole seconds, and reject a subsecond window instead of alarm(0).
++     * Signal delivery/OS scheduling and a request already accepted by trustd are
++     * not cancellation guarantees. No root or trustd execution is claimed here. */
++    unsigned int seconds = (unsigned int)(remainingNS / 1000000000ULL);
++    if (seconds == 0) _exit(124);
+     alarm(seconds);
+     return errSecSuccess;
+-}
+-
+-OSStatus YueduOwnedAdminTrustAuthorizationPreflight(void)
+-{
+-    if (getuid() != 0 || geteuid() != 0) return errSecAuthFailed;
+-    AuthorizationRef authorization = NULL;
+-    OSStatus status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
+-                                         kAuthorizationFlagDefaults, &authorization);
+-    if (status != errAuthorizationSuccess) return status;
+-    if (authorization == NULL) return errSecInternalComponent;
+-    AuthorizationItem item = { "com.apple.trust-settings.admin", 0, NULL, 0 };
+-    AuthorizationRights rights = { 1, &item };
+-    /* Preflight grants no no-UI guarantee for public Set/Remove's new AuthRef.
+-     * No rule, SIP, sudoers or entitlement is modified to obtain this right. */
+-    status = AuthorizationCopyRights(authorization, &rights,
+-                                    kAuthorizationEmptyEnvironment,
+-                                    kAuthorizationFlagExtendRights | kAuthorizationFlagPreAuthorize,
+-                                    NULL);
+-    OSStatus released = AuthorizationFree(authorization, kAuthorizationFlagDefaults);
+-    return status == errAuthorizationSuccess ? released : status;
+ }
+ 
+ /* Public deprecated C APIs, not SPI or an indirect Swift symbol call. Their

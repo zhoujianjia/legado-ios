@@ -1,0 +1,17 @@
+--- v1/OwnedIdentitySearch.h
++++ v2/OwnedIdentitySearch.h
+@@ -17,10 +17,10 @@
+  * this successful preflight does NOT guarantee that those APIs cannot request UI. */
+ OSStatus YueduOwnedUserTrustAuthorizationPreflight(void);
+ 
+-/* Root-only private CLI: hard self-expiry18s/cleanup8s, before stdin. Public
+- * admin trust Authorization preflight does not promise Set/Remove headlessness. */
+-OSStatus YueduOwnedAdminTrustArmDeadline(uint32_t seconds);
+-OSStatus YueduOwnedAdminTrustAuthorizationPreflight(void);
++/* Root-only private fixture self-expiry, before stdin and again before mutation.
++ * deadlineNS is the same-machine CPython >=3.10 Mach monotonic absolute ns.
++ * Public Set/Remove themselves decide OS authorization; no separate admin right. */
++OSStatus YueduOwnedAdminTrustArmDeadline(uint32_t maximumSeconds, uint64_t deadlineNS);
+ 
+ /* macOS owned-fixture producer only. No identity/key is returned or retained.
+  * The caller supplies its one owned Keychain and a bounded public leaf DER.

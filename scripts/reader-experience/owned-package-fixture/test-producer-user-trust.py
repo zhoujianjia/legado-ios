@@ -158,4 +158,169 @@ class OwnedTemporaryUserTrustTests(unittest.TestCase):
         self.assertEqual(order,['preflightOwnedUserTrust']);self.assertFalse(scope.cleanup_intent)
         self.assertIsNone(producer.finish_owned_user_trust(scope,None))
 
+class OwnedTemporaryAdminTrustTests(unittest.TestCase):
+    """Portable child markers only; never sudo/root/SecTrustSettings execution."""
+    setUp = OwnedTemporaryUserTrustTests.setUp
+    child = OwnedTemporaryUserTrustTests.child
+
+    def passed(self,operation,*,absent=False):
+        remove=operation=='removeOwnedAdminTrust';install=operation=='installOwnedAdminTrust'
+        return {'schemaVersion':5,'operation':operation,'stage':'complete','status':'passed','osStatus':0,
+            'certificateSHA256':producer.fingerprint(self.leaf),'domain':'admin','policy':'codeSign',
+            'disposableGitHubHostedRunner':True,'effectiveUID':0,'rootSelfDeadlineSeconds':8 if remove else 18,
+            'rootMonotonicDeadlineNS':3_000_000_000,
+            'authorizationPreflightPassed':False,'priorSettingsAbsent':not remove or absent,
+            'settingsEntryCount':1 if install else 0,'temporaryAdminDomainTrustChanged':install or (remove and not absent),
+            'cleanupVerified':remove,'userSystemTrustOrSearchListChanged':False,'codesignExecutionVerified':False}
+
+    def scope(self):
+        with patch.object(producer,'require_owned_hosted_runner'):
+            return producer.OwnedAdminTrustScope('owned-importer',self.request,Path('owned-test.keychain'))
+
+    def route(self,state,order,*,install_code=0,cleanup_code=0,preflight_code=0,bad_preflight=False):
+        actual=producer.run;sha=producer.hashlib.sha1(self.leaf).hexdigest().upper()
+        def run(args,**kwargs):
+            if str(args[0])=='security':
+                order.append('valid:'+str(int(state.exists())))
+                value=('  1) '+sha+' "Owned admin protocol fixture"\n  1 valid identities found\n') if state.exists() else '  0 valid identities found\n'
+                return actual([sys.executable,'-c','import sys;sys.stdout.write('+repr(value)+')'],**kwargs)
+            self.assertEqual(args[:4],['/usr/bin/sudo','-n','--','/usr/bin/env'])
+            self.assertEqual(args[4:8],['GITHUB_ACTIONS=true','RUNNER_ENVIRONMENT=github-hosted','RUNNER_OS=macOS','owned-importer'])
+            request=json.loads(kwargs['input']);op=request['operation'];order.append(op)
+            self.assertEqual(set(request),{'operation','leafCertificate','rootCertificate'})
+            self.assertNotIn('secret-input-canary',kwargs['input'].decode())
+            self.assertEqual(args[8:],['--owned-admin-trust',str(producer.ADMIN_ROOT_DEADLINES[op])])
+            self.assertTrue(kwargs['private'])
+            self.assertEqual(kwargs['timeout_seconds'],10 if op=='removeOwnedAdminTrust' else 20)
+            with patch.object(producer,'require_owned_hosted_runner'):
+                if op=='preflightOwnedAdminTrust':
+                    code=preflight_code;action='';status=self.passed(op)
+                    if bad_preflight:status['effectiveUID']=1
+                    if code:status={'schemaVersion':5,'operation':op,'stage':'hostedRunner','status':'failed','osStatus':-60007}
+                elif op=='installOwnedAdminTrust':
+                    code=install_code;status=self.passed(op)
+                    action='pathlib.Path('+repr(str(state))+').write_text("owned admin marker");'
+                else:
+                    code=cleanup_code;status=self.passed(op,absent=not state.exists())
+                    action='' if code else 'pathlib.Path('+repr(str(state))+').unlink(missing_ok=True);'
+                return actual(self.child(status,code,action),**kwargs)
+        return run
+
+    def test_schema5_requires_admin_root_and_exact_short_self_deadline(self):
+        for op in producer.OWNED_ADMIN_TRUST_OPERATIONS:
+            value=self.passed(op)
+            self.assertEqual(producer.owned_admin_trust_status(json.dumps(value).encode(),op),value)
+            for changed in [dict(value,domain='user'),dict(value,effectiveUID=1),dict(value,effectiveUID=False),
+                            dict(value,rootSelfDeadlineSeconds=20),dict(value,rootSelfDeadlineSeconds=True),
+                            dict(value,rootMonotonicDeadlineNS=0),dict(value,rootMonotonicDeadlineNS=True),
+                            dict(value,rootMonotonicDeadlineNS=2**63),dict(value,authorizationPreflightPassed=True),
+                            dict(value,userSystemTrustOrSearchListChanged=True),dict(value,privateKey='never public'),
+                            dict(value,temporaryAdminDomainTrustChanged=not value['temporaryAdminDomainTrustChanged'])]:
+                with self.subTest(op=op),self.assertRaises(ValueError):producer.owned_admin_trust_status(json.dumps(changed).encode(),op)
+        duplicate=json.dumps(self.passed('installOwnedAdminTrust')).replace('"domain": "admin"','"domain":"user","domain":"admin"')
+        with self.assertRaises(ValueError):producer.owned_admin_trust_status(duplicate.encode(),'installOwnedAdminTrust')
+
+    def test_fixed_sudo_n_private_public_cert_only_preflight_preserves_parent_budgets(self):
+        scope=self.scope();order=[]
+        with tempfile.TemporaryDirectory() as directory,redirect_stdout(io.StringIO()):
+            state=Path(directory)/'effect'
+            with patch.object(producer,'require_owned_hosted_runner'),patch.object(producer,'run',self.route(state,order)):
+                scope.invoke('preflightOwnedAdminTrust')
+            self.assertFalse(state.exists())
+        self.assertEqual(order,['preflightOwnedAdminTrust'])
+        self.assertEqual(producer.TOOL_TIMEOUT_SECONDS['import-owned-identity'],20)
+        self.assertEqual(producer.CLEANUP_TIMEOUT_SECONDS,10)
+        self.assertFalse(scope.cleanup_intent)
+        # Execute the real private runner with a smaller captured parent budget.
+        # Only the child is substituted by a portable JSON process, never sudo.
+        status=self.passed('preflightOwnedAdminTrust');status['rootSelfDeadlineSeconds']=2
+        actual_child=producer.bounded_child;seen=[]
+        def bounded(args,input,env,seconds):
+            seen.append((args,seconds))
+            self.assertEqual(args[-3:],['--owned-admin-trust','2','3000000000'])
+            return actual_child(self.child(status),input,env,seconds)
+        command=['/usr/bin/sudo','-n','--','/usr/bin/env','GITHUB_ACTIONS=true',
+                 'RUNNER_ENVIRONMENT=github-hosted','RUNNER_OS=macOS','owned-importer','--owned-admin-trust','18']
+        clock=type('Clock',(),{'implementation':'mach_absolute_time()','monotonic':True,'adjustable':False})()
+        with patch.object(producer.time,'get_clock_info',return_value=clock),patch.object(producer.time,'monotonic_ns',return_value=1_000_000_000):
+            with patch.object(producer,'tool_timeout',return_value=4),patch.object(producer,'bounded_child',side_effect=bounded),redirect_stdout(io.StringIO()):
+                raw=producer.run(command,input=b'public fixture only',private=True,public_status='preflightOwnedAdminTrust')
+            self.assertEqual(producer.owned_admin_trust_status(raw,'preflightOwnedAdminTrust',2,3_000_000_000),status)
+            self.assertEqual(seen[0][1],4)
+            self.assertEqual(producer.RECORDS[-1]['argv'][-2:],['2','3000000000'])
+            # A real portable child's completion must echo this invocation's
+            # absolute cutoff exactly. A different clock origin cannot pass.
+            status['rootMonotonicDeadlineNS']+=1
+            with patch.object(producer,'tool_timeout',return_value=4),patch.object(producer,'bounded_child',side_effect=bounded),redirect_stdout(io.StringIO()):
+                with self.assertRaises(producer.ToolFailure):
+                    producer.run(command,input=b'public fixture only',private=True,public_status='preflightOwnedAdminTrust')
+            with patch.object(producer,'tool_timeout',return_value=2),patch.object(producer,'bounded_child') as no_child:
+                with self.assertRaises(producer.ToolTimeout):producer.run(command,input=b'',private=True,public_status='preflightOwnedAdminTrust')
+                no_child.assert_not_called()
+        bad_clock=type('Clock',(),{'implementation':'clock_gettime(CLOCK_MONOTONIC)','monotonic':True,'adjustable':False})()
+        with patch.object(producer.time,'get_clock_info',return_value=bad_clock),patch.object(producer,'bounded_child') as no_child:
+            with self.assertRaises(ValueError):producer.run(command,input=b'',private=True,public_status='preflightOwnedAdminTrust')
+            no_child.assert_not_called()
+
+    def test_actual_child_admin_marker_install_read_remove_is_zero_one_zero(self):
+        scope=self.scope();order=[]
+        with tempfile.TemporaryDirectory() as directory,redirect_stdout(io.StringIO()):
+            state=Path(directory)/'effect'
+            with patch.object(producer,'require_owned_hosted_runner'),patch.object(producer,'run',self.route(state,order)):
+                scope.install();self.assertTrue(state.exists());scope.cleanup();self.assertFalse(state.exists())
+        self.assertEqual(order,['valid:0','preflightOwnedAdminTrust','installOwnedAdminTrust','valid:1','removeOwnedAdminTrust','valid:0'])
+        self.assertTrue(scope.installed and scope.cleaned);self.assertFalse(scope.cleanup_intent)
+
+    def test_lost_root_install_ack_still_removes_real_child_marker(self):
+        scope=self.scope();order=[]
+        with tempfile.TemporaryDirectory() as directory,redirect_stdout(io.StringIO()):
+            state=Path(directory)/'effect'
+            with patch.object(producer,'require_owned_hosted_runner'),patch.object(producer,'run',self.route(state,order,install_code=7)):
+                with self.assertRaises(producer.ToolFailure) as primary:scope.install()
+                self.assertEqual(primary.exception.code,7);self.assertTrue(scope.cleanup_intent and state.exists())
+                self.assertIsNone(producer.finish_owned_admin_trust(scope,primary.exception))
+                self.assertFalse(state.exists())
+        self.assertTrue(scope.cleaned)
+
+    def test_cleanup_failure_keeps_admin_remaining_scope_and_original_error_separate(self):
+        scope=self.scope();order=[];output=io.StringIO()
+        with tempfile.TemporaryDirectory() as directory,redirect_stdout(output):
+            state=Path(directory)/'effect'
+            with patch.object(producer,'require_owned_hosted_runner'),patch.object(producer,'run',self.route(state,order,cleanup_code=9)):
+                scope.install();primary=producer.ToolFailure('original target',1)
+                cleanup=producer.finish_owned_admin_trust(scope,primary)
+                self.assertEqual(cleanup.code,9);self.assertEqual(primary.code,1)
+                self.assertTrue(state.exists() and scope.cleanup_intent);self.assertFalse(scope.cleaned)
+        facts=json.loads(output.getvalue().split('OWNED_ADMIN_TRUST_CLEANUP_FAILURE ',1)[1])
+        self.assertTrue(facts['temporaryAdminTrustMayRemain'] and facts['originalToolFailureRetained'])
+        self.assertFalse(facts['userSystemTrustOrSearchListChanged'])
+
+    def test_sudo_or_host_refusal_cannot_start_install(self):
+        scope=self.scope();order=[]
+        with tempfile.TemporaryDirectory() as directory,redirect_stdout(io.StringIO()):
+            state=Path(directory)/'effect'
+            with patch.object(producer,'require_owned_hosted_runner'),patch.object(producer,'run',self.route(state,order,preflight_code=1)):
+                with self.assertRaises(producer.ToolFailure):scope.install()
+                self.assertIsNone(producer.finish_owned_admin_trust(scope,None))
+            self.assertFalse(state.exists())
+        self.assertEqual(order,['valid:0','preflightOwnedAdminTrust']);self.assertFalse(scope.cleanup_intent)
+
+    def test_false_root_completion_and_wrong_deadline_never_grant_install_intent(self):
+        scope=self.scope();order=[]
+        with tempfile.TemporaryDirectory() as directory,redirect_stdout(io.StringIO()):
+            state=Path(directory)/'effect'
+            with patch.object(producer,'require_owned_hosted_runner'),patch.object(producer,'run',self.route(state,order,bad_preflight=True)):
+                with self.assertRaises(producer.ToolFailure):scope.install()
+            self.assertFalse(state.exists())
+        self.assertFalse(scope.cleanup_intent)
+        with self.assertRaises(ValueError):scope.invoke('installOwnedAdminTrust',cleanup=True)
+
+    def test_foreign_cert_and_unknown_operation_cannot_reach_root_command(self):
+        with patch.object(producer,'require_owned_hosted_runner'):
+            with self.assertRaises(ValueError):producer.OwnedAdminTrustScope('owned-importer',dict(self.request,rootCertificate='foreign'),Path('owned'))
+        scope=self.scope()
+        with self.assertRaises(ValueError):scope.invoke('removeOwnedUserTrust')
+        self.assertFalse(scope.cleanup_intent)
+
+
 if __name__=='__main__':unittest.main()

@@ -1,0 +1,127 @@
+{
+  "scope": "Pinned public primary implementation and actual terminal output; candidate not runtime-proven",
+  "observed": {
+    "actualFiniteResult": "failure",
+    "source": "ef228f5",
+    "runID": "39414478109",
+    "jobID": "118600022803",
+    "queryAgain": false,
+    "boundEvidence": [
+      {
+        "path": ".build/sdk-evidence/ef228f5/finite/owned-sdk-producer-check/phase-producer.log",
+        "bytes": 8409,
+        "sha256": "98576f767e0114d9f3f78362a5dbdc07fcc7df7e3c2e3f5489c56bd1bd47f636"
+      },
+      {
+        "path": ".build/sdk-evidence/ef228f5/finite/owned-sdk-producer-check/phase-producer.log.stderr.log",
+        "bytes": 1279,
+        "sha256": "bc4d105fb38252f47524ea358249b30689ee7c914e4ed3e4b4f14e5c847d12c7"
+      },
+      {
+        "path": ".build/sdk-evidence/ef228f5/finite/owned-sdk-producer-check/phase-producer.json",
+        "bytes": 9456,
+        "sha256": "85c2c45ef4c1e1091545894a4d0045303b173747a85bb265a7af362154e2ae51"
+      },
+      {
+        "path": ".build/sdk-evidence/ef228f5/finite/owned-sdk-producer-check/completion.json",
+        "bytes": 50070,
+        "sha256": "3527a0385ad8e94b3125d077aaf29e8694b24ec57caea4750e3dc612817443bd"
+      },
+      {
+        "path": ".build/sdk-evidence/ef228f5/finite/owned-sdk-producer-check/source-inputs.json",
+        "bytes": 4059,
+        "sha256": "edf0d6e0faf9b560efdda13c7ad41aaf57dde9fa3905796b2c3c69b1cbb5272d"
+      }
+    ],
+    "facts": [
+      "Actual52 portable passed in root archived evidence; real C/Swift importer, exact identity/private challenge, partition ADD/readback, fresh reopen and explicit anchor codeSign verification reached success.",
+      "Ordinary valid identities0 and user authorization preflight schema4 passed. installOwnedUserTrust private child exceeded20s at20.017346s and was hard-killed/reaped with returncode-9; no install completion ACK.",
+      "Cleanup user CopyTrustSettings reported exact cert absent, normal fresh valid identities0, owned Keychain delete exited0. Finite producer command exited1; overall firstFailure producer1/native0.",
+      "No target clang/codesign command occurred. Current failure is not another observed target codesign item-not-found."
+    ],
+    "notMeasured": [
+      "No private child stack or per-API progress was captured, so the exact blocked function and visible OS UI are not measured.",
+      "Preflight success in a prior child does not bind the separate AuthorizationRef constructed inside public Set/Remove."
+    ]
+  },
+  "primary": [
+    {
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/TrustSettings.cpp",
+      "bytes": 57320,
+      "sha256": "5eba3124dc03f49a7e00dc3ddd530ef369e71b327344a79e5182440dabb58eab",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/TrustSettings.cpp"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecTrustSettings.cpp",
+      "bytes": 45418,
+      "sha256": "4ceb559547a6455ddda5aace3a00fc51cafb9c5e67d96370314a529ef2f8c79e",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/SecTrustSettings.cpp"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecTrustSettings.h",
+      "bytes": 13996,
+      "sha256": "c0db29964d3e219e1b48b50a34e66c02965f100141e1d5468d70e8d8595b102e",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/keychain/headers/SecTrustSettings.h"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-admin-trust-step/primary/authorization.plist",
+      "bytes": 70348,
+      "sha256": "d1da0f5cc077b9188a97f2ea0e89e1c3bcc65770a67c3d3ab2eb9a887ca6c9e9",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/authd/authorization.plist"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-admin-trust-step/primary/rule.c",
+      "bytes": 49235,
+      "sha256": "1d365240e76bbb7b394b3f9bdbad1765e1b5eb3999b08ee8256625261966e875",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/authd/rule.c"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-admin-trust-step/primary/macOS-trusted_cert_utils.c",
+      "bytes": 13498,
+      "sha256": "22eacd622646dca9e5788c75e2980ade7b4868acd30ef61a8686e18aaf6ae038",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/trusted_cert_utils.c"
+    }
+  ],
+  "primaryConclusions": [
+    {
+      "source": "TrustSettings.cpp",
+      "lines": [
+        642,
+        717
+      ],
+      "fact": "Public flush creates another AuthorizationRef and requests rights with InteractionAllowed then externalizes that ref for trustd; our earlier separate preflight cannot force its behavior."
+    },
+    {
+      "source": "SecTrustSettings.cpp",
+      "lines": [
+        847,
+        905
+      ],
+      "fact": "Public Set/Remove call that write path. System domain is immutable; admin is supported; Set replaces exact cert settings, Remove targets exact cert/domain. Prior absence and strict readback remain required."
+    },
+    {
+      "source": "TrustSettings.cpp",
+      "lines": [
+        430,
+        443
+      ],
+      "fact": "A special root add path requires admin domain, non-null serialized settings and pre-existing SIP-disabled state. This candidate never modifies SIP or assumes that condition."
+    },
+    {
+      "source": "authorization.plist / rule.c",
+      "lines": [
+        358,
+        360,
+        1252,
+        1254
+      ],
+      "fact": "Pinned modern admin authorization is entitled-or-authenticate-admin; allow-root is not set in that user rule and parser default is false. sudo alone therefore cannot be claimed to prove no UI or successful Set/Remove on the actual image."
+    },
+    {
+      "source": "GitHub official hosted-runner reference",
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#administrative-privileges",
+      "fact": "Official documentation states hosted macOS has passwordless sudo. Actual sudo -n/OS authorization is still a required future measured result."
+    }
+  ],
+  "decision": "Implement one explicitly admin-domain candidate, not a fallback after failed user trust. Keep all prior strict signatures/material/profile/archive gates. Root helper uses public APIs and self-expiry; noninteractive sudo/authorization refusal or any missing fact remains failure. No fabricated no-UI flag or authdb/SIP/sudoers modification."
+}

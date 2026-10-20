@@ -1,0 +1,37 @@
+{
+  "recordedAtUTC": "2026-10-20T11:49:47.091281+00:00",
+  "priorResearchPreserved": {
+    "path": ".build/renewal-discovery/owned-admin-trust-step/research-v1.json",
+    "bytes": 6757,
+    "sha256": "095b435d844e0a1bd065234dfceb8151fbd799bd49e72e39e6d3f05785e0d95b"
+  },
+  "sameClockPrimary": {
+    "path": ".build/renewal-discovery/owned-admin-trust-step/primary/cpython-v3.12.0-pytime-lock.json",
+    "bytes": 280,
+    "sha256": "ec67015f511395b3ed6e7523aa89a59cab897e7166e59614ef45760032b2ca0e"
+  },
+  "primaryReferences": [
+    {
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.0/Python/pytime.c",
+      "lines": [
+        1056,
+        1117
+      ],
+      "fact": "Mac monotonic path uses unshifted Mach ticks and integer timebase conversion; no old process-specific t0. Backend text mach_absolute_time(). Independent candidate formula, no CPython implementation copied."
+    },
+    {
+      "url": "https://docs.python.org/3.12/library/time.html#time.monotonic",
+      "fact": "macOS common process clock since3.10; monotonic_ns avoids float precision loss."
+    },
+    {
+      "url": "https://developer.apple.com/documentation/kernel/1462446-mach_absolute_time",
+      "fact": "Public Mach absolute clock and timebase units; sleep excluded. Not wallclock."
+    },
+    {
+      "url": "https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/alarm.2.html",
+      "fact": "Public perprocess SIGALRM timer; signal delivery not real-time execution or trustd transaction cancellation guarantee."
+    }
+  ],
+  "authorizationCorrection": "Separate admin CopyRights preflight cannot bind public Set/Remove new AuthRef, and fixed adminright may reject OS-special root config route. Removed this extra unproven gate; public Set/Remove remain the actual authorization boundary. Old user preflight historical code unchanged.",
+  "actualNetworkUse": "Public official CPython/Apple documentation/source HTTP reads only; no Apple account/private endpoint/credentials/device/CI/Git requests."
+}

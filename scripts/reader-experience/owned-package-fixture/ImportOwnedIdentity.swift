@@ -2,6 +2,7 @@ import CoreFoundation
 import CryptoKit
 import Foundation
 import Security
+import Darwin
 
 // macOS generator tool only, never linked into the iOS app. Private PKCS12 and
 // random passwords arrive only through stdin and never become a file or output.
@@ -14,9 +15,22 @@ struct Input: Decodable {
     let leafCertificate: Data
     let rootCertificate: Data
 }
+struct OperationHeader: Decodable { let operation: Operation? }
+struct AdminTrustInput: Decodable {
+    let operation: Operation
+    let leafCertificate: Data
+    let rootCertificate: Data
+}
+// Maximum parent-admitted span, not a fresh relative duration after launch.
+var adminSelfDeadlineSeconds: UInt32 = 0
+var adminMonotonicDeadlineNS: UInt64 = 0
 enum Operation: String, Decodable {
     case importIdentity, reopenIdentity, prepareCodesignAccess, inspectCodesignAccess
     case preflightOwnedUserTrust, installOwnedUserTrust, removeOwnedUserTrust
+    case preflightOwnedAdminTrust, installOwnedAdminTrust, removeOwnedAdminTrust
+    var isAdminTrust: Bool {
+        self == .preflightOwnedAdminTrust || self == .installOwnedAdminTrust || self == .removeOwnedAdminTrust
+    }
     var isUserTrust: Bool {
         self == .preflightOwnedUserTrust || self == .installOwnedUserTrust || self == .removeOwnedUserTrust
     }
@@ -28,6 +42,7 @@ enum Stage: String {
     case openKeychain, unlockKeychain, keychainStatus, legacyIdentitySearch
     case inspectKeyACL, prepareKeyACL
     case hostedRunner, readUserTrust, authorizeUserTrust, installUserTrust, verifyUserTrust, removeUserTrust
+    case readAdminTrust, installAdminTrust, verifyAdminTrust, removeAdminTrust
 }
 struct Failure: Error { let stage: Stage; let status: OSStatus }
 func keyFailure(_ stage: Stage, _ error: Unmanaged<CFError>?, fallback: OSStatus) -> Failure {
@@ -54,6 +69,15 @@ func run() throws -> [String: Any] {
     let inputHandle = FileHandle.standardInput
     guard let bytes = try inputHandle.read(upToCount: 1_048_577), bytes.count <= 1_048_576,
           (try inputHandle.read(upToCount: 1) ?? Data()).isEmpty else { throw Failure(stage: .readInput, status: errSecParam) }
+    activeOperation = try JSONDecoder().decode(OperationHeader.self, from: bytes).operation ?? .importIdentity
+    guard adminSelfDeadlineSeconds == 0 || activeOperation.isAdminTrust else { throw Failure(stage: .readInput, status: errSecParam) }
+    if activeOperation.isAdminTrust {
+        guard let object = try JSONSerialization.jsonObject(with: bytes) as? [String: Any],
+              Set(object.keys) == Set(["operation", "leafCertificate", "rootCertificate"]) else {
+            throw Failure(stage: .readInput, status: errSecParam)
+        }
+        return try ownedAdminTrust(JSONDecoder().decode(AdminTrustInput.self, from: bytes))
+    }
     let input = try JSONDecoder().decode(Input.self, from: bytes)
     activeOperation = input.operation ?? .importIdentity
     guard (activeOperation != .importIdentity ? input.p12.isEmpty && input.p12Password.isEmpty : !input.p12.isEmpty && (1...256).contains(input.p12Password.utf8.count)),
@@ -240,6 +264,76 @@ func verifyOwnedUserTrust(_ raw: CFArray?) throws {
     }
 }
 
+// This candidate changes temporary ADMIN-global codeSign trust, not user-only
+// trust. Root never receives the Keychain/P12/password request. Public Set/Remove
+// may still reject or authenticate; no headless success is assumed. The private
+// root process checks the same-machine absolute monotonic deadline before stdin
+// and mutation, deriving its alarm from remaining time (maximum18/8s). This does
+// not cancel a request already accepted by trustd or prove headless execution.
+func ownedAdminTrust(_ input: AdminTrustInput) throws -> [String: Any] {
+    let environment = ProcessInfo.processInfo.environment
+    let removal = activeOperation == .removeOwnedAdminTrust
+    guard getuid() == 0, geteuid() == 0,
+          adminSelfDeadlineSeconds > 0, adminSelfDeadlineSeconds <= (removal ? 8 : 18), adminMonotonicDeadlineNS > 0,
+          environment["GITHUB_ACTIONS"] == "true", environment["RUNNER_ENVIRONMENT"] == "github-hosted",
+          environment["RUNNER_OS"] == "macOS", input.leafCertificate == input.rootCertificate,
+          (1...65_536).contains(input.leafCertificate.count),
+          let certificate = SecCertificateCreateWithData(nil, input.leafCertificate as CFData) else {
+        throw Failure(stage: .hostedRunner, status: errSecParam)
+    }
+    var settings: CFArray?
+    let initial = SecTrustSettingsCopyTrustSettings(certificate, .admin, &settings)
+    guard initial == errSecSuccess || initial == errSecItemNotFound else {
+        throw Failure(stage: .readAdminTrust, status: initial)
+    }
+    if initial == errSecItemNotFound && settings != nil { throw Failure(stage: .readAdminTrust, status: errSecDecode) }
+    var changed = false
+    func verify(_ value: CFArray?) throws {
+        do { try verifyOwnedUserTrust(value) }
+        catch let error as Failure { throw Failure(stage: .verifyAdminTrust, status: error.status) }
+    }
+    switch activeOperation {
+    case .preflightOwnedAdminTrust, .installOwnedAdminTrust:
+        guard initial == errSecItemNotFound else { throw Failure(stage: .readAdminTrust, status: errSecDuplicateItem) }
+        if activeOperation == .installOwnedAdminTrust {
+            guard let policy = SecPolicyCreateWithProperties(kSecPolicyAppleCodeSigning, nil) else {
+                throw Failure(stage: .installAdminTrust, status: errSecParam)
+            }
+            let constraint: [String: Any] = [kSecTrustSettingsPolicy as String: policy,
+                kSecTrustSettingsResult as String: NSNumber(value: SecTrustSettingsResult.trustRoot.rawValue)]
+            // Recheck the original absolute cutoff after stdin/read-only work.
+            try require(YueduOwnedAdminTrustArmDeadline(adminSelfDeadlineSeconds, adminMonotonicDeadlineNS), at: .installAdminTrust)
+            try require(SecTrustSettingsSetTrustSettings(certificate, .admin, [constraint] as CFArray), at: .installAdminTrust)
+            var actual: CFArray?
+            try require(SecTrustSettingsCopyTrustSettings(certificate, .admin, &actual), at: .verifyAdminTrust)
+            try verify(actual)
+            changed = true
+        }
+    case .removeOwnedAdminTrust:
+        if initial == errSecSuccess {
+            try verify(settings)
+            try require(YueduOwnedAdminTrustArmDeadline(adminSelfDeadlineSeconds, adminMonotonicDeadlineNS), at: .removeAdminTrust)
+            try require(SecTrustSettingsRemoveTrustSettings(certificate, .admin), at: .removeAdminTrust)
+            changed = true
+        }
+        var remaining: CFArray?
+        let status = SecTrustSettingsCopyTrustSettings(certificate, .admin, &remaining)
+        guard status == errSecItemNotFound, remaining == nil else {
+            throw Failure(stage: .verifyAdminTrust, status: status == errSecSuccess ? errSecDecode : status)
+        }
+    default: throw Failure(stage: .readInput, status: errSecParam)
+    }
+    return ["schemaVersion": 5, "operation": activeOperation.rawValue, "stage": Stage.complete.rawValue,
+        "status": "passed", "osStatus": 0, "certificateSHA256": fingerprint(input.leafCertificate),
+        "domain": "admin", "policy": "codeSign", "disposableGitHubHostedRunner": true,
+        "effectiveUID": Int(geteuid()), "rootSelfDeadlineSeconds": Int(adminSelfDeadlineSeconds),
+        "rootMonotonicDeadlineNS": adminMonotonicDeadlineNS,
+        "authorizationPreflightPassed": false, "priorSettingsAbsent": initial == errSecItemNotFound,
+        "settingsEntryCount": activeOperation == .installOwnedAdminTrust ? 1 : 0,
+        "temporaryAdminDomainTrustChanged": changed, "cleanupVerified": removal,
+        "userSystemTrustOrSearchListChanged": false, "codesignExecutionVerified": false]
+}
+
 func legacySigningIdentityCount(_ keychain: SecKeychain, expected: Data) throws -> Int {
     // codesign's historical identity search uses the legacy sign-use search,
     // while the existing proof uses SecItemCopyMatching. Both must really find
@@ -353,9 +447,19 @@ func aclReport(_ report: YueduOwnedKeyACLReport) -> [String: Any] {
      "ownerTrustedApplicationCount": Int(report.ownerTrustedApplicationCount),
      "creatorOwnerPathEntryCount": Int(report.creatorOwnerPathEntryCount)]
 }
+// Arm the root-side hard bound before any stdin read or Security call. The
+// unprivileged parent cannot reliably signal a root descendant after timeout.
+if CommandLine.arguments.count != 1 {
+    guard CommandLine.arguments.count == 4, CommandLine.arguments[1] == "--owned-admin-trust",
+          let seconds = UInt32(CommandLine.arguments[2]), (1...18).contains(seconds),
+          let deadlineNS = UInt64(CommandLine.arguments[3]), deadlineNS > 0,
+          YueduOwnedAdminTrustArmDeadline(seconds, deadlineNS) == errSecSuccess else { exit(1) }
+    adminSelfDeadlineSeconds = seconds
+    adminMonotonicDeadlineNS = deadlineNS
+}
 do { report(try run()) } catch {
     let failure = error as? Failure
-    var value: [String: Any] = ["schemaVersion": activeOperation.isUserTrust ? 4 : (activeOperation == .importIdentity ? 1 : (activeOperation == .reopenIdentity ? 2 : 3)),
+    var value: [String: Any] = ["schemaVersion": activeOperation.isAdminTrust ? 5 : (activeOperation.isUserTrust ? 4 : (activeOperation == .importIdentity ? 1 : (activeOperation == .reopenIdentity ? 2 : 3))),
         "stage": (failure?.stage ?? .readInput).rawValue, "status": "failed", "osStatus": Int(failure?.status ?? errSecDecode)]
     if activeOperation != .importIdentity { value["operation"] = activeOperation.rawValue }
     report(value)

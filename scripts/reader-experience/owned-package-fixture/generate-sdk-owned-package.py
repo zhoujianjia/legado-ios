@@ -409,6 +409,114 @@ def finish_owned_user_trust(trust_scope, primary_error):
         return error
     return None
 
+OWNED_ADMIN_TRUST_OPERATIONS = ('preflightOwnedAdminTrust','installOwnedAdminTrust','removeOwnedAdminTrust')
+ADMIN_ROOT_DEADLINES = {'preflightOwnedAdminTrust':18,'installOwnedAdminTrust':18,'removeOwnedAdminTrust':8}
+
+def owned_admin_trust_status(raw, operation, expected_deadline=None, expected_absolute_ns=None):
+    if operation not in OWNED_ADMIN_TRUST_OPERATIONS or len(raw)>4096:raise ValueError('Owned admin trust status budget/operation')
+    def unique_object(pairs):
+        value={}
+        for key,item in pairs:
+            if key in value:raise ValueError('Duplicate owned admin trust field')
+            value[key]=item
+        return value
+    value=json.loads(raw,object_pairs_hook=unique_object)
+    core={'schemaVersion','operation','stage','status','osStatus'}
+    stages={'readInput','hostedRunner','readAdminTrust','installAdminTrust','verifyAdminTrust','removeAdminTrust','complete'}
+    if (not isinstance(value,dict) or type(value.get('schemaVersion')) is not int or value['schemaVersion']!=5
+            or value.get('operation')!=operation or value.get('stage') not in stages
+            or value.get('status') not in ('passed','failed') or type(value.get('osStatus')) is not int
+            or not -(2**31)<=value['osStatus']<2**31):raise ValueError('Invalid owned admin trust status')
+    if value['status']=='failed':
+        if set(value)!=core or value['osStatus']==0:raise ValueError('Invalid owned admin trust failure')
+        return value
+    facts={'certificateSHA256','domain','policy','disposableGitHubHostedRunner','effectiveUID','rootSelfDeadlineSeconds','rootMonotonicDeadlineNS',
+           'authorizationPreflightPassed','priorSettingsAbsent','settingsEntryCount','temporaryAdminDomainTrustChanged',
+           'cleanupVerified','userSystemTrustOrSearchListChanged','codesignExecutionVerified'}
+    if (set(value)!=core|facts or value['stage']!='complete' or value['osStatus']!=0
+            or not isinstance(value['certificateSHA256'],str) or re.fullmatch('[0-9a-f]{64}',value['certificateSHA256']) is None
+            or value['domain']!='admin' or value['policy']!='codeSign'
+            or type(value['settingsEntryCount']) is not int
+            or type(value['effectiveUID']) is not int or value['effectiveUID']!=0
+            or type(value['rootSelfDeadlineSeconds']) is not int
+            or not 1<=value['rootSelfDeadlineSeconds']<=ADMIN_ROOT_DEADLINES[operation]
+            or (expected_deadline is not None and value['rootSelfDeadlineSeconds']!=expected_deadline)
+            or type(value['rootMonotonicDeadlineNS']) is not int or not 0<value['rootMonotonicDeadlineNS']<=2**63-1
+            or (expected_absolute_ns is not None and value['rootMonotonicDeadlineNS']!=expected_absolute_ns)):
+        raise ValueError('Invalid owned admin trust completion')
+    for name in facts-{'certificateSHA256','domain','policy','settingsEntryCount','effectiveUID','rootSelfDeadlineSeconds','rootMonotonicDeadlineNS'}:
+        if type(value[name]) is not bool:raise ValueError('Invalid owned admin trust boolean')
+    if (value['disposableGitHubHostedRunner'] is not True or value['userSystemTrustOrSearchListChanged'] is not False
+            or value['codesignExecutionVerified'] is not False):raise ValueError('Owned admin trust scope escalation')
+    if operation=='preflightOwnedAdminTrust':expected=(False,True,0,False,False)
+    elif operation=='installOwnedAdminTrust':expected=(False,True,1,True,False)
+    else:expected=(False,value['priorSettingsAbsent'],0,not value['priorSettingsAbsent'],True)
+    if tuple(value[k] for k in ('authorizationPreflightPassed','priorSettingsAbsent','settingsEntryCount',
+                                'temporaryAdminDomainTrustChanged','cleanupVerified'))!=expected:
+        raise ValueError('Inconsistent owned admin trust facts')
+    return value
+
+class OwnedAdminTrustScope:
+    def __init__(self, importer, request, keychain):
+        require_owned_hosted_runner()
+        # Root receives only this public cert and operation. Existing private
+        # Keychain passwords/P12 input never cross the elevated boundary.
+        self.importer=importer
+        self.request={name:request[name] for name in ('leafCertificate','rootCertificate')}
+        self.keychain=keychain;self.cleanup_intent=False;self.installed=False;self.cleaned=False
+        self.leaf=base64.b64decode(request['leafCertificate'],validate=True)
+        if not self.leaf or len(self.leaf)>65536 or request['leafCertificate']!=request['rootCertificate']:
+            raise ValueError('Temporary admin trust requires the exact owned self-signed identity')
+    def invoke(self, operation, *, cleanup=False):
+        if operation not in OWNED_ADMIN_TRUST_OPERATIONS or cleanup!=(operation=='removeOwnedAdminTrust'):
+            raise ValueError('Owned admin trust operation/deadline mismatch')
+        require_owned_hosted_runner()
+        request=dict(self.request,operation=operation)
+        # sudo -n may refuse authorization; that remains failure. The root
+        # helper consumes the absolute deadline supplied inside run(), before
+        # stdin and before mutation. The ordinary parent cannot claim killpg can
+        # stop an elevated helper or a request already accepted by trustd.
+        command=['/usr/bin/sudo','-n','--','/usr/bin/env','GITHUB_ACTIONS=true',
+                 'RUNNER_ENVIRONMENT=github-hosted','RUNNER_OS=macOS',str(self.importer),
+                 '--owned-admin-trust',str(ADMIN_ROOT_DEADLINES[operation])]
+        raw=run(command,input=json.dumps(request).encode(),private=True,public_status=operation,cleanup=cleanup,
+                timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else TOOL_TIMEOUT_SECONDS['import-owned-identity'])
+        status=owned_admin_trust_status(raw,operation)
+        if status['certificateSHA256']!=fingerprint(self.leaf):raise ToolFailure('owned admin trust certificate mismatch',-1)
+        return status
+    def valid_identities(self, label, *, cleanup=False):
+        raw=run(['security','find-identity','-v','-p','codesigning',self.keychain],public_output_label=label,
+                cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
+        return exact_valid_owned_identity(raw,hashlib.sha1(self.leaf).hexdigest().upper())
+    def install(self):
+        if self.cleanup_intent:raise ToolFailure('owned admin trust scope already admitted',-1)
+        if self.valid_identities('OWNED_VALID_IDENTITY_BEFORE_ADMIN_TRUST')!=0:
+            raise ToolFailure('unexpected previously valid owned identity',-1)
+        self.invoke('preflightOwnedAdminTrust')
+        self.cleanup_intent=True
+        self.invoke('installOwnedAdminTrust')
+        self.installed=True
+        if self.valid_identities('OWNED_VALID_IDENTITY_AFTER_ADMIN_TRUST')!=1:
+            raise ToolFailure('temporary admin trust did not yield exact valid owned identity',-1)
+    def cleanup(self):
+        if not self.cleanup_intent:return
+        self.invoke('removeOwnedAdminTrust',cleanup=True)
+        self.cleaned=True;self.cleanup_intent=False
+        if self.valid_identities('OWNED_VALID_IDENTITY_AFTER_ADMIN_TRUST_REMOVAL',cleanup=True)!=0:
+            raise ToolFailure('owned identity remains valid after exact admin trust removal',-1)
+
+def finish_owned_admin_trust(trust_scope, primary_error):
+    if trust_scope is None or not trust_scope.cleanup_intent:return None
+    try:trust_scope.cleanup()
+    except BaseException as error:
+        public_record('OWNED_ADMIN_TRUST_CLEANUP_FAILURE',{'schemaVersion':1,'status':'failed',
+            'exitCode':error.code if isinstance(error,ToolFailure) else None,
+            'originalToolFailureRetained':primary_error is not None,'temporaryAdminTrustMayRemain':True,
+            'userSystemTrustOrSearchListChanged':False,'publicExceptionDetailsRetained':False})
+        return error
+    return None
+
+
 def run(args,*,input=None,env=None,private=False,public_log=None,public_status=False,public_output_label=None,timeout_seconds=None,cleanup=False):
     if private and (public_log is not None or public_output_label is not None):
         raise ValueError('Private tool streams cannot become public logs')
@@ -419,6 +527,27 @@ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=F
     if redacted[0]=='security' and 'set-key-partition-list' in redacted:
         redacted[redacted.index('-k')+1]='<random-owned-password>'
     seconds=tool_timeout(args,timeout_seconds,cleanup)
+    admin_root_deadline=None;admin_absolute_ns=None
+    if public_status in OWNED_ADMIN_TRUST_OPERATIONS and str(args[0])=='/usr/bin/sudo':
+        if len(args)<3 or list(args[-2:])!=['--owned-admin-trust',str(ADMIN_ROOT_DEADLINES[public_status])]:
+            raise ValueError('Unexpected root trust deadline command')
+        # The private helper shares CPython >=3.10's unshifted Mach clock. A
+        # different clock/backend is not silently interpreted as a Mac cutoff.
+        info=time.get_clock_info('monotonic')
+        if (sys.implementation.name!='cpython' or sys.version_info<(3,10)
+                or info.implementation!='mach_absolute_time()' or not info.monotonic or info.adjustable):
+            raise ValueError('Owned root trust requires the same-machine Mach monotonic clock')
+        # Startup delay consumes this absolute ns cutoff rather than granting a
+        # fresh relative alarm on helper entry. The requested span is a maximum;
+        # C arms floor(remaining seconds), and rejects already-expired input.
+        admin_root_deadline=min(ADMIN_ROOT_DEADLINES[public_status],math.floor(seconds)-2)
+        if admin_root_deadline<1:raise ToolTimeout('private tool',seconds,None,False)
+        now_ns=time.monotonic_ns()
+        admin_absolute_ns=now_ns+admin_root_deadline*1_000_000_000
+        if type(now_ns) is not int or now_ns<0 or admin_absolute_ns>2**63-1:
+            raise ValueError('Invalid root trust monotonic deadline')
+        args=[*args[:-1],str(admin_root_deadline),str(admin_absolute_ns)]
+        redacted=[*redacted[:-1],str(admin_root_deadline),str(admin_absolute_ns)]
     started=time.monotonic()
     try:result,timed_out=bounded_child(args,input,env,seconds)
     except ToolTimeout:
@@ -449,7 +578,14 @@ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=F
             raise ToolProcessFailure('private tool' if private else redacted[0],timed_out,result.returncode,result.processStarted,result.processCleanup['issues']) from None
         raise ToolTimeout('private tool' if private else redacted[0],seconds,result.returncode,result.processStarted) from None
     if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
-    if public_status in OWNED_USER_TRUST_OPERATIONS:
+    if public_status in OWNED_ADMIN_TRUST_OPERATIONS:
+        try:status=owned_admin_trust_status(result.stdout,public_status,admin_root_deadline,admin_absolute_ns)
+        except (ValueError,UnicodeError,TypeError,RecursionError):
+            status={'schemaVersion':5,'operation':public_status,'stage':'readInput','status':'failed','osStatus':-1}
+        public_record('OWNED_ADMIN_TRUST_STATUS',status)
+        if result.returncode==0 and (status.get('stage')!='complete' or status.get('status')!='passed'):
+            raise ToolFailure('owned admin trust public proof',-1)
+    elif public_status in OWNED_USER_TRUST_OPERATIONS:
         try:status=owned_user_trust_status(result.stdout,public_status)
         except (ValueError,UnicodeError,TypeError,RecursionError):
             status={'schemaVersion':4,'operation':public_status,'stage':'readInput','status':'failed','osStatus':-1}
@@ -584,10 +720,10 @@ def main():
             leaf_pem=out/'leaf.cert.pem';leaf_pem.write_bytes(run(['openssl','x509','-inform','DER','-outform','PEM'],input=leaf))
             at=datetime.now(timezone.utc).replace(microsecond=0)
             run(['openssl','verify','-purpose','any','-attime',str(int(at.timestamp())),'-CAfile',root_pem,leaf_pem],public_log=out/'owned-certificate-chain.log')
-            public_record('OWNED_SIGNING_IDENTITY_SHAPE',{'schemaVersion':2,
+            public_record('OWNED_SIGNING_IDENTITY_SHAPE',{'schemaVersion':3,
                 'shape':'self-signed-code-signing-identity','leafSHA256':fingerprint(leaf),
                 'explicitCodeAndProfileAnchorSHA256':fingerprint(root),
-                'temporaryUserCodeSignTrustPlanned':True,'adminSystemTrustOrSearchListChanged':False,'codesignExecutionVerified':False})
+                'temporaryAdminCodeSignTrustPlanned':True,'userSystemTrustOrSearchListChanged':False,'sudoNoninteractivePlanned':True,'codesignExecutionVerified':False})
             # No duplicate -certfile copy: the self-signed leaf is already the
             # complete one-certificate identity. PKCS12 and keys stay in memory.
             p12=export_owned_signing_identity(signing_key,leaf_pem,p12_password)
@@ -615,7 +751,7 @@ def main():
             # cross-process identity lookup or system/global trust.
             run(['security','verify-cert','-c',out/'leaf.cert.der','-c',root_der,'-r',root_der,
                  '-p','codeSign','-L','-N','-q'],public_output_label='OWNED_EXPLICIT_ANCHOR_CODE_SIGN_POLICY')
-            trust_scope=OwnedUserTrustScope(importer,request,keychain)
+            trust_scope=OwnedAdminTrustScope(importer,request,keychain)
             trust_scope.install()
             del request,p12
             root_key_memory=signing_key
@@ -693,14 +829,14 @@ def main():
             trust_scope.cleanup()
             run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
             keychain=None
-            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'temporaryUserCodeSignTrustInstalled':trust_scope.installed,'temporaryUserCodeSignTrustRemovedAndAbsent':trust_scope.cleaned,'adminSystemTrustOrSearchListChanged':False,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
+            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'temporaryAdminCodeSignTrustInstalled':trust_scope.installed,'temporaryAdminCodeSignTrustRemovedAndAbsent':trust_scope.cleaned,'userSystemTrustOrSearchListChanged':False,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
             record['publicOutputs']=[{'path':p.name,'bytes':p.stat().st_size,'sha256':fingerprint(p.read_bytes())} for p in sorted(out.iterdir()) if p.is_file()]
             (out/'sdk-produced-fixture-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
         except BaseException as error:
             primary_error=error
             raise
         finally:
-            trust_cleanup_error=finish_owned_user_trust(trust_scope,primary_error)
+            trust_cleanup_error=finish_owned_admin_trust(trust_scope,primary_error)
             if keychain is not None and keychain.exists():
                 try:
                     run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)

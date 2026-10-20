@@ -1,0 +1,170 @@
+{
+  "recordedAtUTC": "2026-10-20T12:08:51.091401+00:00",
+  "preparation": {
+    "path": ".build/renewal-discovery/owned-admin-trust-step/preparation-v2.json",
+    "bytes": 10028,
+    "sha256": "3cd546d8df0295e49e60e2faff2ee14cf9b456ad0247ca2aa7f3b423474fed33"
+  },
+  "independentReview": {
+    "path": ".build/renewal-discovery/owned-admin-trust-step/independent-admin-trust-review-v2.json",
+    "bytes": 11753,
+    "sha256": "75a25ce2b2f0df8061fad875a882993309ebf6d531dfec1ce8b7ec30e1ea01f0"
+  },
+  "checkedCanonicalSources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 52410,
+      "sha256": "8bafcafd1b1b6d85ec214cde1bf90fd375c866dc9634dcb3daeae836c75944a9"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 23609,
+      "sha256": "548be3fd7b8e425a9389984bcd8f7c3427e609099462dc654474b808afdfc899"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "bytes": 35826,
+      "sha256": "a949473d76db6035974e1ddb7f79b5736b1a7db984e6dd8226c355047e3b930a"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "bytes": 3643,
+      "sha256": "db8f83fa1a5d650760bc5a68abcacb5fe61d744a606ec504bf07973b2efb3e1f"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 11753,
+      "sha256": "57b80616bcf2847a799af175b3bfe744d0cf9b4526aaf69b73c6ee46cd27600b"
+    }
+  ],
+  "finalSources": [
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources-v2/generate-sdk-owned-package.py",
+      "bytes": 62530,
+      "sha256": "eb10fa5f6adb2e31c4da7999be95dec0562bbb67d594a85dfbd05cfcb0c0d897"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources-v2/ImportOwnedIdentity.swift",
+      "bytes": 30240,
+      "sha256": "b271f8761b92b2cc74b16ea5c8cb0a4b74084385749bbb2e15be3dc78719e849"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources-v2/OwnedIdentitySearch.c",
+      "bytes": 37981,
+      "sha256": "d7451a4ecdae1a7a10b960046a588dfafd398369517e1dea74183b9791e9ac20"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources-v2/OwnedIdentitySearch.h",
+      "bytes": 3976,
+      "sha256": "038ca6bbef96cd2b1511967dce4daa8c55ba6403a758272132d809be55cab7a8"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "snapshotPath": ".build/renewal-discovery/owned-admin-trust-step/final-sources-v2/test-producer-user-trust.py",
+      "bytes": 24476,
+      "sha256": "0463b79ded6be91bc2ec7273e473fe8ac90612cce81ad70beb0e0311fa319082"
+    }
+  ],
+  "changedExistingPythonFunctionASTs": [
+    "main",
+    "run"
+  ],
+  "existingOtherPythonNodesExact": true,
+  "targetCodesignCMSMachOProfileZIPTailExact": true,
+  "originalUser8TestClassExact": true,
+  "actualV2AdminPassLeaves": [
+    [
+      "test_actual_child_admin_marker_install_read_remove_is_zero_one_zero",
+      "OwnedTemporaryAdminTrustTests"
+    ],
+    [
+      "test_cleanup_failure_keeps_admin_remaining_scope_and_original_error_separate",
+      "OwnedTemporaryAdminTrustTests"
+    ],
+    [
+      "test_false_root_completion_and_wrong_deadline_never_grant_install_intent",
+      "OwnedTemporaryAdminTrustTests"
+    ],
+    [
+      "test_fixed_sudo_n_private_public_cert_only_preflight_preserves_parent_budgets",
+      "OwnedTemporaryAdminTrustTests"
+    ],
+    [
+      "test_foreign_cert_and_unknown_operation_cannot_reach_root_command",
+      "OwnedTemporaryAdminTrustTests"
+    ],
+    [
+      "test_lost_root_install_ack_still_removes_real_child_marker",
+      "OwnedTemporaryAdminTrustTests"
+    ],
+    [
+      "test_schema5_requires_admin_root_and_exact_short_self_deadline",
+      "OwnedTemporaryAdminTrustTests"
+    ],
+    [
+      "test_sudo_or_host_refusal_cannot_start_install",
+      "OwnedTemporaryAdminTrustTests"
+    ]
+  ],
+  "priorV1User8PassLeavesRetained": [
+    [
+      "test_actual_child_pipeline_installs_reads_then_cleans_exact_scope_in_order",
+      "OwnedTemporaryUserTrustTests"
+    ],
+    [
+      "test_actual_private_child_declassifies_only_exact_status_and_preserves_nonzero",
+      "OwnedTemporaryUserTrustTests"
+    ],
+    [
+      "test_cleanup_failure_retains_original_error_and_reports_unremoved_trust_separately",
+      "OwnedTemporaryUserTrustTests"
+    ],
+    [
+      "test_exact_valid_identity_parser_rejects_foreign_duplicates_unknown_and_missing_summary",
+      "OwnedTemporaryUserTrustTests"
+    ],
+    [
+      "test_lost_install_ack_retains_cleanup_intent_and_removes_actual_child_effect",
+      "OwnedTemporaryUserTrustTests"
+    ],
+    [
+      "test_preflight_failure_blocks_install_and_does_not_claim_cleanup_authority",
+      "OwnedTemporaryUserTrustTests"
+    ],
+    [
+      "test_requires_all_hosted_runner_facts_before_any_mutation_capability",
+      "OwnedTemporaryUserTrustTests"
+    ],
+    [
+      "test_schema4_rejects_unknown_missing_scope_and_inconsistent_cleanup_facts",
+      "OwnedTemporaryUserTrustTests"
+    ]
+  ],
+  "portableScope": "Eight final admin methods actually ran on portable controlled child/parser boundaries. Eight original user methods retain their v1 result. No new rerun or root/trust/signing execution is inferred.",
+  "grammar": {
+    "scope": "Tree-sitter grammar only; no Swift SDK/typecheck/runtime",
+    "files": [
+      {
+        "path": ".build/renewal-discovery/owned-admin-trust-step/work-v2/ImportOwnedIdentity.swift",
+        "bytes": 30240,
+        "sha256": "b271f8761b92b2cc74b16ea5c8cb0a4b74084385749bbb2e15be3dc78719e849",
+        "diagnostics": []
+      }
+    ],
+    "actualFilesParsed": 1,
+    "diagnostics": 0,
+    "SwiftCompilerExecutions": 0
+  },
+  "newRootOrSDKOrCodesignExecutions": 0,
+  "sourceReview": [
+    "Final private root CLI receives only operation and identical bounded public DER, fixed noninteractive sudo/env and absolute same-Mac Mach cutoff. No private Keychain/P12/password crosses this branch.",
+    "Admin exact certificate prior absence -> single codeSign/trustRoot -> exact readback -> normal-user valid-identity0-to1 -> genuine original codesign/CMS pipeline -> exact removal/readback absence -> normal-user0 before owned Keychain cleanup.",
+    "Separate unbound admin Authorization preflight removed; actual public Set/Remove determine authorization. Old user preflight/schema4 unchanged. Absolute cutoff checked before stdin and immediately before mutation; delayed scheduling and accepted trustd requests cannot be cancelled by this evidence.",
+    "Temporary admin-global fixture trust is intentional and confined to disposable hosted Mac jobs. This changes an earlier fixture implementation choice, not a user prohibition. No App/signing authority is granted by this candidate."
+  ],
+  "confirmedOpenSourceBlockers": []
+}

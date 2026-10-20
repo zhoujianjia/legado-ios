@@ -15,6 +15,10 @@
 #include <Security/SecTrustedApplication.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <signal.h>
+#include <mach/mach_time.h>
+#include <stdint.h>
+#include <unistd.h>
 #include <string.h>
 
 OSStatus YueduOwnedUserTrustAuthorizationPreflight(void)
@@ -35,6 +39,45 @@ OSStatus YueduOwnedUserTrustAuthorizationPreflight(void)
                                     NULL);
     OSStatus released = AuthorizationFree(authorization, kAuthorizationFlagDefaults);
     return status == errAuthorizationSuccess ? released : status;
+}
+
+/* Only the private disposable-runner root child arms this deadline. The
+ * SIGALRM handler uses the async-signal-safe _exit and cannot wait for UI. */
+static void ownedAdminTrustExpired(int ignored)
+{
+    (void)ignored;
+    _exit(124);
+}
+
+OSStatus YueduOwnedAdminTrustArmDeadline(uint32_t maximumSeconds, uint64_t deadlineNS)
+{
+    if (getuid() != 0 || geteuid() != 0 || maximumSeconds < 1 || maximumSeconds > 18 ||
+        deadlineNS == 0 || deadlineNS > INT64_MAX) return errSecAuthFailed;
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = ownedAdminTrustExpired;
+    if (sigemptyset(&action.sa_mask) != 0 || sigaction(SIGALRM, &action, NULL) != 0) return errSecInternalComponent;
+    sigset_t unblocked;
+    if (sigemptyset(&unblocked) != 0 || sigaddset(&unblocked, SIGALRM) != 0 ||
+        sigprocmask(SIG_UNBLOCK, &unblocked, NULL) != 0) return errSecInternalComponent;
+    /* CPython >=3.10 on this same Mac uses the unshifted Mach absolute clock.
+     * Convert with a wide product before narrowing, matching integer ns floors.
+     * Startup/stdin delay consumes the passed deadline; it never resets it. */
+    mach_timebase_info_data_t base;
+    if (mach_timebase_info(&base) != KERN_SUCCESS || base.numer == 0 || base.denom == 0) return errSecInternalComponent;
+    __uint128_t nowWide = (__uint128_t)mach_absolute_time() * base.numer / base.denom;
+    if (nowWide > INT64_MAX) return errSecParam;
+    uint64_t nowNS = (uint64_t)nowWide;
+    if (deadlineNS <= nowNS) _exit(124);
+    uint64_t remainingNS = deadlineNS - nowNS;
+    if (remainingNS > (uint64_t)maximumSeconds * 1000000000ULL) return errSecParam;
+    /* Floor to whole seconds, and reject a subsecond window instead of alarm(0).
+     * Signal delivery/OS scheduling and a request already accepted by trustd are
+     * not cancellation guarantees. No root or trustd execution is claimed here. */
+    unsigned int seconds = (unsigned int)(remainingNS / 1000000000ULL);
+    if (seconds == 0) _exit(124);
+    alarm(seconds);
+    return errSecSuccess;
 }
 
 /* Public deprecated C APIs, not SPI or an indirect Swift symbol call. Their

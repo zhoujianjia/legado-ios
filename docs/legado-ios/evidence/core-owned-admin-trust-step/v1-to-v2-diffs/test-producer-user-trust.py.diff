@@ -1,0 +1,77 @@
+--- v1/test-producer-user-trust.py
++++ v2/test-producer-user-trust.py
+@@ -168,7 +168,8 @@
+         return {'schemaVersion':5,'operation':operation,'stage':'complete','status':'passed','osStatus':0,
+             'certificateSHA256':producer.fingerprint(self.leaf),'domain':'admin','policy':'codeSign',
+             'disposableGitHubHostedRunner':True,'effectiveUID':0,'rootSelfDeadlineSeconds':8 if remove else 18,
+-            'authorizationPreflightPassed':not (remove and absent),'priorSettingsAbsent':not remove or absent,
++            'rootMonotonicDeadlineNS':3_000_000_000,
++            'authorizationPreflightPassed':False,'priorSettingsAbsent':not remove or absent,
+             'settingsEntryCount':1 if install else 0,'temporaryAdminDomainTrustChanged':install or (remove and not absent),
+             'cleanupVerified':remove,'userSystemTrustOrSearchListChanged':False,'codesignExecutionVerified':False}
+ 
+@@ -195,7 +196,7 @@
+                 if op=='preflightOwnedAdminTrust':
+                     code=preflight_code;action='';status=self.passed(op)
+                     if bad_preflight:status['effectiveUID']=1
+-                    if code:status={'schemaVersion':5,'operation':op,'stage':'authorizeAdminTrust','status':'failed','osStatus':-60007}
++                    if code:status={'schemaVersion':5,'operation':op,'stage':'hostedRunner','status':'failed','osStatus':-60007}
+                 elif op=='installOwnedAdminTrust':
+                     code=install_code;status=self.passed(op)
+                     action='pathlib.Path('+repr(str(state))+').write_text("owned admin marker");'
+@@ -211,6 +212,8 @@
+             self.assertEqual(producer.owned_admin_trust_status(json.dumps(value).encode(),op),value)
+             for changed in [dict(value,domain='user'),dict(value,effectiveUID=1),dict(value,effectiveUID=False),
+                             dict(value,rootSelfDeadlineSeconds=20),dict(value,rootSelfDeadlineSeconds=True),
++                            dict(value,rootMonotonicDeadlineNS=0),dict(value,rootMonotonicDeadlineNS=True),
++                            dict(value,rootMonotonicDeadlineNS=2**63),dict(value,authorizationPreflightPassed=True),
+                             dict(value,userSystemTrustOrSearchListChanged=True),dict(value,privateKey='never public'),
+                             dict(value,temporaryAdminDomainTrustChanged=not value['temporaryAdminDomainTrustChanged'])]:
+                 with self.subTest(op=op),self.assertRaises(ValueError):producer.owned_admin_trust_status(json.dumps(changed).encode(),op)
+@@ -234,17 +237,29 @@
+         actual_child=producer.bounded_child;seen=[]
+         def bounded(args,input,env,seconds):
+             seen.append((args,seconds))
+-            self.assertEqual(args[-2:],['--owned-admin-trust','2'])
++            self.assertEqual(args[-3:],['--owned-admin-trust','2','3000000000'])
+             return actual_child(self.child(status),input,env,seconds)
+         command=['/usr/bin/sudo','-n','--','/usr/bin/env','GITHUB_ACTIONS=true',
+                  'RUNNER_ENVIRONMENT=github-hosted','RUNNER_OS=macOS','owned-importer','--owned-admin-trust','18']
+-        with patch.object(producer,'tool_timeout',return_value=4),patch.object(producer,'bounded_child',side_effect=bounded),redirect_stdout(io.StringIO()):
+-            raw=producer.run(command,input=b'public fixture only',private=True,public_status='preflightOwnedAdminTrust')
+-        self.assertEqual(producer.owned_admin_trust_status(raw,'preflightOwnedAdminTrust',2),status)
+-        self.assertEqual(seen[0][1],4)
+-        self.assertEqual(producer.RECORDS[-1]['argv'][-1],'2')
+-        with patch.object(producer,'tool_timeout',return_value=2),patch.object(producer,'bounded_child') as no_child:
+-            with self.assertRaises(producer.ToolTimeout):producer.run(command,input=b'',private=True,public_status='preflightOwnedAdminTrust')
++        clock=type('Clock',(),{'implementation':'mach_absolute_time()','monotonic':True,'adjustable':False})()
++        with patch.object(producer.time,'get_clock_info',return_value=clock),patch.object(producer.time,'monotonic_ns',return_value=1_000_000_000):
++            with patch.object(producer,'tool_timeout',return_value=4),patch.object(producer,'bounded_child',side_effect=bounded),redirect_stdout(io.StringIO()):
++                raw=producer.run(command,input=b'public fixture only',private=True,public_status='preflightOwnedAdminTrust')
++            self.assertEqual(producer.owned_admin_trust_status(raw,'preflightOwnedAdminTrust',2,3_000_000_000),status)
++            self.assertEqual(seen[0][1],4)
++            self.assertEqual(producer.RECORDS[-1]['argv'][-2:],['2','3000000000'])
++            # A real portable child's completion must echo this invocation's
++            # absolute cutoff exactly. A different clock origin cannot pass.
++            status['rootMonotonicDeadlineNS']+=1
++            with patch.object(producer,'tool_timeout',return_value=4),patch.object(producer,'bounded_child',side_effect=bounded),redirect_stdout(io.StringIO()):
++                with self.assertRaises(producer.ToolFailure):
++                    producer.run(command,input=b'public fixture only',private=True,public_status='preflightOwnedAdminTrust')
++            with patch.object(producer,'tool_timeout',return_value=2),patch.object(producer,'bounded_child') as no_child:
++                with self.assertRaises(producer.ToolTimeout):producer.run(command,input=b'',private=True,public_status='preflightOwnedAdminTrust')
++                no_child.assert_not_called()
++        bad_clock=type('Clock',(),{'implementation':'clock_gettime(CLOCK_MONOTONIC)','monotonic':True,'adjustable':False})()
++        with patch.object(producer.time,'get_clock_info',return_value=bad_clock),patch.object(producer,'bounded_child') as no_child:
++            with self.assertRaises(ValueError):producer.run(command,input=b'',private=True,public_status='preflightOwnedAdminTrust')
+             no_child.assert_not_called()
+ 
+     def test_actual_child_admin_marker_install_read_remove_is_zero_one_zero(self):
+@@ -280,7 +295,7 @@
+         self.assertTrue(facts['temporaryAdminTrustMayRemain'] and facts['originalToolFailureRetained'])
+         self.assertFalse(facts['userSystemTrustOrSearchListChanged'])
+ 
+-    def test_sudo_or_admin_authorization_refusal_cannot_start_install(self):
++    def test_sudo_or_host_refusal_cannot_start_install(self):
+         scope=self.scope();order=[]
+         with tempfile.TemporaryDirectory() as directory,redirect_stdout(io.StringIO()):
+             state=Path(directory)/'effect'

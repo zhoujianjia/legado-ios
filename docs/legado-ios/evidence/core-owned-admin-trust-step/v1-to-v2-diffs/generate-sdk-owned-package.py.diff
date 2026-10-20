@@ -1,0 +1,107 @@
+--- v1/generate-sdk-owned-package.py
++++ v2/generate-sdk-owned-package.py
+@@ -412,7 +412,7 @@
+ OWNED_ADMIN_TRUST_OPERATIONS = ('preflightOwnedAdminTrust','installOwnedAdminTrust','removeOwnedAdminTrust')
+ ADMIN_ROOT_DEADLINES = {'preflightOwnedAdminTrust':18,'installOwnedAdminTrust':18,'removeOwnedAdminTrust':8}
+ 
+-def owned_admin_trust_status(raw, operation, expected_deadline=None):
++def owned_admin_trust_status(raw, operation, expected_deadline=None, expected_absolute_ns=None):
+     if operation not in OWNED_ADMIN_TRUST_OPERATIONS or len(raw)>4096:raise ValueError('Owned admin trust status budget/operation')
+     def unique_object(pairs):
+         value={}
+@@ -422,7 +422,7 @@
+         return value
+     value=json.loads(raw,object_pairs_hook=unique_object)
+     core={'schemaVersion','operation','stage','status','osStatus'}
+-    stages={'readInput','hostedRunner','readAdminTrust','authorizeAdminTrust','installAdminTrust','verifyAdminTrust','removeAdminTrust','complete'}
++    stages={'readInput','hostedRunner','readAdminTrust','installAdminTrust','verifyAdminTrust','removeAdminTrust','complete'}
+     if (not isinstance(value,dict) or type(value.get('schemaVersion')) is not int or value['schemaVersion']!=5
+             or value.get('operation')!=operation or value.get('stage') not in stages
+             or value.get('status') not in ('passed','failed') or type(value.get('osStatus')) is not int
+@@ -430,7 +430,7 @@
+     if value['status']=='failed':
+         if set(value)!=core or value['osStatus']==0:raise ValueError('Invalid owned admin trust failure')
+         return value
+-    facts={'certificateSHA256','domain','policy','disposableGitHubHostedRunner','effectiveUID','rootSelfDeadlineSeconds',
++    facts={'certificateSHA256','domain','policy','disposableGitHubHostedRunner','effectiveUID','rootSelfDeadlineSeconds','rootMonotonicDeadlineNS',
+            'authorizationPreflightPassed','priorSettingsAbsent','settingsEntryCount','temporaryAdminDomainTrustChanged',
+            'cleanupVerified','userSystemTrustOrSearchListChanged','codesignExecutionVerified'}
+     if (set(value)!=core|facts or value['stage']!='complete' or value['osStatus']!=0
+@@ -440,15 +440,17 @@
+             or type(value['effectiveUID']) is not int or value['effectiveUID']!=0
+             or type(value['rootSelfDeadlineSeconds']) is not int
+             or not 1<=value['rootSelfDeadlineSeconds']<=ADMIN_ROOT_DEADLINES[operation]
+-            or (expected_deadline is not None and value['rootSelfDeadlineSeconds']!=expected_deadline)):
++            or (expected_deadline is not None and value['rootSelfDeadlineSeconds']!=expected_deadline)
++            or type(value['rootMonotonicDeadlineNS']) is not int or not 0<value['rootMonotonicDeadlineNS']<=2**63-1
++            or (expected_absolute_ns is not None and value['rootMonotonicDeadlineNS']!=expected_absolute_ns)):
+         raise ValueError('Invalid owned admin trust completion')
+-    for name in facts-{'certificateSHA256','domain','policy','settingsEntryCount','effectiveUID','rootSelfDeadlineSeconds'}:
++    for name in facts-{'certificateSHA256','domain','policy','settingsEntryCount','effectiveUID','rootSelfDeadlineSeconds','rootMonotonicDeadlineNS'}:
+         if type(value[name]) is not bool:raise ValueError('Invalid owned admin trust boolean')
+     if (value['disposableGitHubHostedRunner'] is not True or value['userSystemTrustOrSearchListChanged'] is not False
+             or value['codesignExecutionVerified'] is not False):raise ValueError('Owned admin trust scope escalation')
+-    if operation=='preflightOwnedAdminTrust':expected=(True,True,0,False,False)
+-    elif operation=='installOwnedAdminTrust':expected=(True,True,1,True,False)
+-    else:expected=(not value['priorSettingsAbsent'],value['priorSettingsAbsent'],0,not value['priorSettingsAbsent'],True)
++    if operation=='preflightOwnedAdminTrust':expected=(False,True,0,False,False)
++    elif operation=='installOwnedAdminTrust':expected=(False,True,1,True,False)
++    else:expected=(False,value['priorSettingsAbsent'],0,not value['priorSettingsAbsent'],True)
+     if tuple(value[k] for k in ('authorizationPreflightPassed','priorSettingsAbsent','settingsEntryCount',
+                                 'temporaryAdminDomainTrustChanged','cleanupVerified'))!=expected:
+         raise ValueError('Inconsistent owned admin trust facts')
+@@ -471,8 +473,9 @@
+         require_owned_hosted_runner()
+         request=dict(self.request,operation=operation)
+         # sudo -n may refuse authorization; that remains failure. The root
+-        # helper arms its own18/8s SIGALRM before reading stdin; the ordinary
+-        # parent cannot claim it can kill an elevated helper with killpg alone.
++        # helper consumes the absolute deadline supplied inside run(), before
++        # stdin and before mutation. The ordinary parent cannot claim killpg can
++        # stop an elevated helper or a request already accepted by trustd.
+         command=['/usr/bin/sudo','-n','--','/usr/bin/env','GITHUB_ACTIONS=true',
+                  'RUNNER_ENVIRONMENT=github-hosted','RUNNER_OS=macOS',str(self.importer),
+                  '--owned-admin-trust',str(ADMIN_ROOT_DEADLINES[operation])]
+@@ -524,17 +527,27 @@
+     if redacted[0]=='security' and 'set-key-partition-list' in redacted:
+         redacted[redacted.index('-k')+1]='<random-owned-password>'
+     seconds=tool_timeout(args,timeout_seconds,cleanup)
+-    admin_root_deadline=None
++    admin_root_deadline=None;admin_absolute_ns=None
+     if public_status in OWNED_ADMIN_TRUST_OPERATIONS and str(args[0])=='/usr/bin/sudo':
+         if len(args)<3 or list(args[-2:])!=['--owned-admin-trust',str(ADMIN_ROOT_DEADLINES[public_status])]:
+             raise ValueError('Unexpected root trust deadline command')
+-        # The producer's remaining budget may be below the normal20s cap.
+-        # Derive self-expiry from the exact captured duration used below, so
+-        # root expires at least2s before even that smaller parent allowance.
++        # The private helper shares CPython >=3.10's unshifted Mach clock. A
++        # different clock/backend is not silently interpreted as a Mac cutoff.
++        info=time.get_clock_info('monotonic')
++        if (sys.implementation.name!='cpython' or sys.version_info<(3,10)
++                or info.implementation!='mach_absolute_time()' or not info.monotonic or info.adjustable):
++            raise ValueError('Owned root trust requires the same-machine Mach monotonic clock')
++        # Startup delay consumes this absolute ns cutoff rather than granting a
++        # fresh relative alarm on helper entry. The requested span is a maximum;
++        # C arms floor(remaining seconds), and rejects already-expired input.
+         admin_root_deadline=min(ADMIN_ROOT_DEADLINES[public_status],math.floor(seconds)-2)
+         if admin_root_deadline<1:raise ToolTimeout('private tool',seconds,None,False)
+-        args=[*args[:-1],str(admin_root_deadline)]
+-        redacted[-1]=str(admin_root_deadline)
++        now_ns=time.monotonic_ns()
++        admin_absolute_ns=now_ns+admin_root_deadline*1_000_000_000
++        if type(now_ns) is not int or now_ns<0 or admin_absolute_ns>2**63-1:
++            raise ValueError('Invalid root trust monotonic deadline')
++        args=[*args[:-1],str(admin_root_deadline),str(admin_absolute_ns)]
++        redacted=[*redacted[:-1],str(admin_root_deadline),str(admin_absolute_ns)]
+     started=time.monotonic()
+     try:result,timed_out=bounded_child(args,input,env,seconds)
+     except ToolTimeout:
+@@ -566,7 +579,7 @@
+         raise ToolTimeout('private tool' if private else redacted[0],seconds,result.returncode,result.processStarted) from None
+     if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
+     if public_status in OWNED_ADMIN_TRUST_OPERATIONS:
+-        try:status=owned_admin_trust_status(result.stdout,public_status,admin_root_deadline)
++        try:status=owned_admin_trust_status(result.stdout,public_status,admin_root_deadline,admin_absolute_ns)
+         except (ValueError,UnicodeError,TypeError,RecursionError):
+             status={'schemaVersion':5,'operation':public_status,'stage':'readInput','status':'failed','osStatus':-1}
+         public_record('OWNED_ADMIN_TRUST_STATUS',status)
