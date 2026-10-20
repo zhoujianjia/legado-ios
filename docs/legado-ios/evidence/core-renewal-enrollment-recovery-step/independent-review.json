@@ -1,0 +1,70 @@
+{
+  "reviewer": "Independent /root/core_harness_independent",
+  "recordedAtUTC": "2026-10-20T12:24:59.780582+00:00",
+  "preparation": {
+    "path": ".build/renewal-discovery/account-enrollment-recovery-step/preparation.json",
+    "bytes": 9893,
+    "sha256": "c645cf6b28eca1b3df3a7fc234dcc007571043968a75882094c8a67abbc10d67"
+  },
+  "sixFrozenBindings": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "path": ".build/renewal-discovery/account-enrollment-recovery-step/work/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 64097,
+      "sha256": "c36819de28724a68af11fb1bec07fe5aa5852007fb3e5d9b9f690ef2ffecb362"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "path": ".build/renewal-discovery/account-enrollment-recovery-step/work/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 28247,
+      "sha256": "e3a98cad4ec7bc71d8376c276a0519f6e7a2db91666459609cfdcb9a3cecc5ab"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "path": ".build/renewal-discovery/account-enrollment-recovery-step/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 55842,
+      "sha256": "ed805ea0082f7b91d2e33e3d0774d909988709aab923688f0ee796f31a488faf"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "path": ".build/renewal-discovery/account-enrollment-recovery-step/work/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 44960,
+      "sha256": "001e54897272d5d945c35c390fea104132e2988fb17b33e13f4fce50cf19702b"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "path": ".build/renewal-discovery/account-enrollment-recovery-step/work/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "bytes": 33572,
+      "sha256": "eea258aa033fc2b515f695785ed3528fbb238e4224fa486daf976dca31cc068f"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "path": ".build/renewal-discovery/account-enrollment-recovery-step/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 56569,
+      "sha256": "c9661cdf6b12d38ddc205a8367d1396e2ec4432a2599aac7f8386414d73f33d6"
+    }
+  ],
+  "confirmedBlockingFindings": [],
+  "reviewedNewPaths": [
+    "EnrollmentIdentity and nested Bundle have fileprivate construction; only resumeForEnrollment creates this account-only capability from an existing decoded namespace-matching protected manifest. Missing storage, changed route/bundle identifiers, observed primary Team conflict, missing signature/CMS structure and malformed public chain are refused. This intentionally does not authenticate expired installed code.",
+    "No manifest schema, new pin, credential owner or migration was added. resumeForEnrollment only reloads that existing manifest session; it does not clean pending keys, advance generation, publish material, return Lease, or set App signing access. Enrollment factory checks the same Vault namespace and derives team/bundle/ordered-group pin from this capability. Existing remote account/Personal Team validation and complete current-date Vault publication remain the authority for new material.",
+    "Every App account-owner call, including a cached strong account/authentication owner, first reopens the locked local owner and observes the actual Bundle and existing configured namespace. A cached client remains bound to the same Vault actor; all configuration/activation/material-unavailability/reset paths that discard that Vault/account also discard the new enrollment identity. This new factory does not authorize prepare, submit, installation or current installed material.",
+    "App refresh and reconcile retain busy serialization and local logout denial. Login, cancellation, operation epoch and task-draining code are untouched. Logout sets its deny before erase; the new lost-ACK fixture includes failed erase plus no-network denial before explicit reconnect.",
+    "The shared retirement helper loads the actual locked journal and requires exact materialNamespace before the existing phase switch. Unknown upload, upgrade, receipt, lookup and attention records remain activeTransaction; ready requires neverStarted or the existing authenticated pre-submission cleanup. Candidate deletion/retirement remains in the real Journal owner. Old prepare and retireBeforeMaterialRefresh already require nonnil Vault/namespace; recoveryOnly is not a legal caller of either.",
+    "Four new fixture definitions use actual signed original installed profiles near expiry, the existing real PKI peer with a still-valid issuer issuing at the later date, original CSR/profile publication and a fresh current lease; signing bootstrap still refuses the expired Bundle. Other branches test actual Bundle route and missing namespace before HTTP, lost ACK/logout, and an actual authenticated before-FileOpen upload-intent barrier with unchanged journal/candidate bytes. These are unexecuted definitions, not native passes."
+  ],
+  "scopeLimits": [
+    "Four new native definitions, zero SDK executions in this delta. Source review does not prove they compile or pass.",
+    "Future coherent App selection must bind these six files and add four methods; the prior240-input369/371 boundary cannot cover this delta.",
+    "The original S3 expired-input resign path, automatic trigger, real Apple authorization, same-device installation, cold launch/full data preservation and unattended expiry recovery remain unproven."
+  ],
+  "reviewExecution": {
+    "tests": 0,
+    "SwiftGrammar": 0,
+    "SwiftSDK": 0,
+    "native": 0,
+    "Git": 0,
+    "cloud": 0,
+    "canonicalMutations": 0
+  }
+}

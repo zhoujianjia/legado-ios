@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T12:28:45.548438+00:00",
+  "status": "actual-App-expired-material-account-entry-integrated-native-SDK0",
+  "problem": "The App account entry required a current verified installed Bundle and old signing lease, so expiry prevented account login, certificate refresh and lost-ACK reconciliation.",
+  "sources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 64097,
+      "sha256": "c36819de28724a68af11fb1bec07fe5aa5852007fb3e5d9b9f690ef2ffecb362"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 28247,
+      "sha256": "e3a98cad4ec7bc71d8376c276a0519f6e7a2db91666459609cfdcb9a3cecc5ab"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 55842,
+      "sha256": "ed805ea0082f7b91d2e33e3d0774d909988709aab923688f0ee796f31a488faf"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 44960,
+      "sha256": "001e54897272d5d945c35c390fea104132e2988fb17b33e13f4fce50cf19702b"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "bytes": 33572,
+      "sha256": "eea258aa033fc2b515f695785ed3528fbb238e4224fa486daf976dca31cc068f"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 56569,
+      "sha256": "c9661cdf6b12d38ddc205a8367d1396e2ec4432a2599aac7f8386414d73f33d6"
+    }
+  ],
+  "implementation": {
+    "accountAuthority": "Original identity in the existing Keychain manifest plus live remote account and Personal Team validation; no new persisted field or credential owner.",
+    "observedCurrentBundle": "Existing bounded inventory and Mach-O structural read only. Component/bundle routes and observed primary CD Team conflicts are refused. It is not a current CMS/profile/certificate proof.",
+    "oldManifestMigration": "Existing schema-1 manifest already stores the original verified immutable identity. Reuses it without schema migration or a newly required pre-expiry pin; missing/locked/corrupt manifest fails closed.",
+    "materialRefresh": "Same actual stored published key metadata -> original CSR method -> original complete new certificate/profile Vault.publish at real current clock. Expired old lease is not consumed.",
+    "transactionBarrier": "Existing durable retirement switch reused by AppSession with same locked journal and exact namespace. Unknown upload/upgrade/attention and unproved legacy ready cannot publish another generation.",
+    "signing": "Current Materials and lease verification functions untouched; metadata enrollment does not restore signing access or validate the still-expired installed application.",
+    "storage": "No manifest schema/field added, no second identity cache, credential store, Vault or network owner."
+  },
+  "sourceReview": [
+    "Existing protected Vault manifest provides only the original enrollment identity; no new persistent pin, historical-now substitution, second account owner or current signing proof.",
+    "Cached account returns still require same-namespace manifest and bounded actual Bundle structure observations. Original local logout denial, operation busy/epoch/cancellation and configuration invalidation remain.",
+    "New account entry and refresh use the same Account/Vault/transport. Only the actual journal namespace may retire its unsubmitted candidate; all uncertain upload/upgrade phases still refuse generation change.",
+    "Real current publish/lease/validate and installed-App bootstrap remain strict. New publication does not reauthorize an expired installed application."
+  ],
+  "qualifiedNativeDefinitions": [
+    "SelfRenewalDeveloperAccountClientTests/appSessionEnrollsAfterRealInstalledAndPublishedProfileExpiry",
+    "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial",
+    "SelfRenewalDeveloperAccountClientTests/appSessionEnrollmentRejectsChangedBundleAndMissingManifest",
+    "SelfRenewalDeveloperAccountClientTests/appSessionExpiredEnrollmentRetainsRealUploadIntentBarrier"
+  ],
+  "verification": {
+    "nativeSDKExecuted": 0,
+    "grammarFiles": 6,
+    "grammarErrors": 0,
+    "grammarRerunByIntegrator": false,
+    "independentSourceReview": {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/independent-review.json",
+      "bytes": 5959,
+      "sha256": "5240ddec2ab471cc57c085b6f2c08c32e1a1ed62ed48b112230fa62e5d623c05"
+    },
+    "keyOldBodiesPreserved": {
+      "Account.open": true,
+      "Account.connect": true,
+      "Account.observeSession": true,
+      "Account.refreshMaterials": true,
+      "Account.reconcilePendingMaterials": true,
+      "Account.completeEnrollment": true,
+      "Account.validateRemote": true,
+      "Account.signOut": true,
+      "Vault.create": true,
+      "Vault.resume": true,
+      "Vault.publish": true,
+      "Vault.lease": true,
+      "Vault.validate": true,
+      "Vault.certificateSigningRequest": true,
+      "Vault.publicationBaseline": true,
+      "Vault.verify": true,
+      "Vault.validateChain": true
+    }
+  },
+  "remaining": [
+    "Four new App methods and affected existing account/retirement cases need the next coherent SDK selection373/375.",
+    "Initial enrollment without a previously published key, real Apple/anisette authorization, actual same-device install, cold data retention and unattended expiry recovery remain outside this local acceptance."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "realAppleAuthorizationEstablished": false,
+  "physicalDeviceValidationPerformed": false,
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/grammar.json",
+      "bytes": 2609,
+      "sha256": "fae95a1966b6850e7b244244dc51ae6bfac27889c9578f719b763cfffbf93e67"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/independent-review.json",
+      "bytes": 5959,
+      "sha256": "5240ddec2ab471cc57c085b6f2c08c32e1a1ed62ed48b112230fa62e5d623c05"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/preparation.json",
+      "bytes": 9893,
+      "sha256": "c645cf6b28eca1b3df3a7fc234dcc007571043968a75882094c8a67abbc10d67"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/SelfRenewalAccountSessionTests.swift.diff",
+      "bytes": 17769,
+      "sha256": "3cf0221098f541ce59c8b49c879fd3ae2e9e0c6a2ad3fa5fff5865795a273dd9"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/SelfRenewalAppSession.swift.diff",
+      "bytes": 8637,
+      "sha256": "5838e6e35255465406041629b313a972f0584d0412055799e0ac9a0737244004"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/SelfRenewalControlledRenewalCoordinator.swift.diff",
+      "bytes": 2789,
+      "sha256": "500a4ac2e9d24bde9c860277f3ebff70945f2b600310e030e4782126a9dd386e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/SelfRenewalDeveloperAccountClient.swift.diff",
+      "bytes": 4355,
+      "sha256": "9428abee55c87dd7cb9176bbf836cbb67eddd5538e95d99ada882f13fb05d84a"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/SelfRenewalDeveloperAccountClientTests.swift.diff",
+      "bytes": 6605,
+      "sha256": "daf290af3058009c849bf532f0284921e7d773a2a70cfe655c1e5ba1fdd8b2c4"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-renewal-enrollment-recovery-step/SelfRenewalSigningMaterialVault.swift.diff",
+      "bytes": 6150,
+      "sha256": "a713b682e32f9c1cde5c4fd9f0b18a6427811a9a85ead2abfc770c6cb30f9b3f"
+    }
+  ]
+}

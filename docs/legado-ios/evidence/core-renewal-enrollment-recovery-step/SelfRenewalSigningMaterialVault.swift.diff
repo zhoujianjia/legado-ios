@@ -1,0 +1,95 @@
+--- Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
++++ Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
+@@ -114,6 +114,37 @@
+             self.keyID = keyID; leafCertificateSHA256 = leafHash
+         }
+     }
++    /// Account enrollment is scoped by the original identity already saved in
++    /// this Keychain manifest. The installed-file observations below only
++    /// refuse a changed route; they do not authenticate expired code or create
++    /// a current signing lease. No second identity or credential record exists.
++    struct EnrollmentIdentity: Sendable {
++        struct Bundle: Sendable {
++            let componentRelativePath: String
++            let bundleIdentifier: String
++            let applicationIdentifier: String
++            let teamIdentifier: String
++            let appGroups: [String]
++            let keychainAccessGroups: [String]
++            let observedSliceCount: Int
++            fileprivate init(_ identity: Identity, sliceCount: Int) {
++                componentRelativePath = identity.component; bundleIdentifier = identity.bundleIdentifier
++                applicationIdentifier = identity.applicationIdentifier; teamIdentifier = identity.team
++                appGroups = identity.appGroups; keychainAccessGroups = identity.keychainGroups
++                observedSliceCount = sliceCount
++            }
++        }
++        let namespace: Namespace
++        let bundles: [Bundle]
++        /// Previously stored public issuer candidates only. A new publication
++        /// must validate its complete actual chain and profiles at the real now.
++        let issuerChainDER: [Data]
++        var currentSigningMaterialsVerified: Bool { false }
++        var appleAuthorizationEstablished: Bool { false }
++        fileprivate init(namespace: Namespace, bundles: [Bundle], issuerChainDER: [Data]) {
++            self.namespace = namespace; self.bundles = bundles; self.issuerChainDER = issuerChainDER
++        }
++    }
+     enum Failure: Error, Sendable, Equatable {
+         case limit, namespaceUnavailable, malformedManifest, manifestWrite, staleGeneration
+         case keyGeneration, keychain(OSStatus), missingKey, keyMismatch, revoked
+@@ -130,7 +161,7 @@
+         static let manifestBytes = 524_288
+     }
+ 
+-    private struct Identity: Codable, Equatable {
++    fileprivate struct Identity: Codable, Equatable {
+         let component: String
+         let bundleIdentifier: String
+         let team: String
+@@ -216,6 +247,45 @@
+             sessions[namespaceID] = Session(manifest: manifest, encoded: recovered)
+         } else { sessions[namespaceID] = Session(manifest: manifest, encoded: encoded) }
+         return Namespace(namespaceID)
++    }
++
++    /// Restore only the existing account scope after expiry. Old schema-1
++    /// manifests already contain this original verified identity, so no new
++    /// pin, migration, historical verification date or current lease is needed.
++    /// Missing/locked storage and changed routing fail closed. Pending keys are
++    /// deliberately left untouched; this read must not change a transaction's
++    /// generation or clean up an enrollment intent before its retire barrier.
++    func resumeForEnrollment(namespaceID: UUID, observed: SelfRenewalMachOSignatureReader.Materials) throws -> EnrollmentIdentity {
++        precondition(!Thread.isMainThread, "Enrollment manifest reads must stay off main")
++        let started = SourcePerfTrace.now
++        defer { trace("resume-enrollment", bytes: observed.signatureStructureBytesRead, since: started) }
++        try Task.checkCancellation()
++        guard sessions[namespaceID] != nil || sessions.count < Limits.namespaces else { throw Failure.limit }
++        guard let encoded = try storage.load(account: Self.account(namespaceID)) else { throw Failure.namespaceUnavailable }
++        let manifest = try Self.decode(encoded, namespace: namespaceID)
++        let components = observed.inventory.components.filter { $0.kind == .application || $0.kind == .appExtension }
++        guard observed.inventory.issues.isEmpty, components.count == manifest.identity.count,
++              Set(manifest.identity.map(\.component)).count == manifest.identity.count,
++              Set(manifest.identity.map(\.bundleIdentifier)).count == manifest.identity.count else { throw Failure.identityChanged }
++        let bundles = try manifest.identity.map { identity -> EnrollmentIdentity.Bundle in
++            guard let component = components.first(where: { $0.relativePath == identity.component }),
++                  component.metadata?.bundleIdentifier == identity.bundleIdentifier,
++                  let executable = component.executable,
++                  let code = observed.code.first(where: { $0.file == executable.file }),
++                  !code.structure.slices.isEmpty, code.structure.slices.count <= SelfRenewalMachOSignatureReader.Limits.architectures,
++                  code.structure.slices.allSatisfy({ slice in
++                      guard let signature = slice.signature, let cmsBytes = signature.cmsPayloadByteCount,
++                            cmsBytes > 0, let primary = signature.codeDirectories.first(where: { $0.slot == 0 }) else { return false }
++                      return primary.teamIdentifier == nil || primary.teamIdentifier == identity.team
++                  }) else { throw Failure.identityChanged }
++            return EnrollmentIdentity.Bundle(identity, sliceCount: code.structure.slices.count)
++        }
++        let chain = manifest.published?.chain ?? []
++        guard chain.count <= Limits.certificates, Set(chain).count == chain.count,
++              chain.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }) else { throw Failure.malformedManifest }
++        try Task.checkCancellation()
++        sessions[namespaceID] = Session(manifest: manifest, encoded: encoded)
++        return EnrollmentIdentity(namespace: Namespace(namespaceID), bundles: bundles, issuerChainDER: Array(chain.dropFirst()))
+     }
+ 
+     func generation(in namespace: Namespace) throws -> UInt64 { try current(namespace).manifest.generation }

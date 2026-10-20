@@ -151,6 +151,7 @@ actor SelfRenewalAppSession {
     private var vault: Vault?
     private var namespace: Vault.Namespace?
     private var developerAccount: SelfRenewalDeveloperAccountClient?
+    private var developerEnrollmentIdentity: Vault.EnrollmentIdentity?
     private var developerAuthentication: SelfRenewalDeveloperAuthentication?
     private struct DeveloperAuthenticationOperation {
         let id: UUID
@@ -275,7 +276,7 @@ actor SelfRenewalAppSession {
             configuration = priorConfiguration
             // A rename followed by a failed directory sync may have changed
             // disk. Never keep using an older in-memory authorization binding.
-            coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
+            coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
             access = nil; profileValidity = nil; configurationNeedsReload = true
             throw error
@@ -448,12 +449,15 @@ actor SelfRenewalAppSession {
         guard try await account.pendingEnrollment() == nil else {
             throw SelfRenewalDeveloperAccountClient.Failure.reconciliationRequired
         }
-        guard let coordinator, let vault, let namespace else { throw Failure.notConfigured }
-        try await coordinator.retireBeforeMaterialRefresh()
-        let lease = try await vault.lease(in: namespace)
+        guard let journal, let vault, let namespace, let developerEnrollmentIdentity else { throw Failure.notConfigured }
+        try await Coordinator.retireBeforeEnrollmentRefresh(journal: journal, identity: developerEnrollmentIdentity, at: clock())
+        let generation = try await vault.generation(in: namespace)
+        guard let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: generation) else {
+            throw Vault.Failure.namespaceUnavailable
+        }
         do {
-            let published = try await account.refreshMaterials(keyID: lease.keyID,
-                expectedGeneration: lease.generation, machineName: machineName)
+            let published = try await account.refreshMaterials(keyID: publication.keyID,
+                expectedGeneration: publication.generation, machineName: machineName)
             let observation = DeveloperMaterialObservation(published)
             developerMaterial = observation
             return observation
@@ -477,8 +481,8 @@ actor SelfRenewalAppSession {
         guard try await account.pendingEnrollment() != nil else {
             throw SelfRenewalDeveloperAccountClient.Failure.reconciliationRequired
         }
-        guard let coordinator else { throw Failure.notConfigured }
-        try await coordinator.retireBeforeMaterialRefresh()
+        guard let journal, let developerEnrollmentIdentity else { throw Failure.notConfigured }
+        try await Coordinator.retireBeforeEnrollmentRefresh(journal: journal, identity: developerEnrollmentIdentity, at: clock())
         do {
             let observed = DeveloperMaterialObservation(try await account.reconcilePendingMaterials())
             developerMaterial = observed; return observed
@@ -523,17 +527,20 @@ actor SelfRenewalAppSession {
 
     private func developerAccountOwner() async throws -> SelfRenewalDeveloperAccountClient {
         guard let developerServices else { throw DeveloperServicesFailure.unavailable }
-        guard access == .signing, let vault, let namespace, let configuration, let profileValidity else { throw Failure.notConfigured }
+        try await openLocalOwner()
+        guard let configuration else { throw Failure.notConfigured }
         try Task.checkCancellation()
-        try profileValidity.validate(at: clock())
-        let material = try await SelfRenewalApplicationMaterialVerifier.read(
-            unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
-            codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: clock())
-        let lease = try await vault.lease(in: namespace)
-        try await vault.validate(lease, for: material)
+        // This is a real bounded structural observation, not a current CMS or
+        // profile verification result. Account scope comes exclusively from
+        // the original Keychain manifest; expiry does not invent a new scope.
+        let observed = try await SelfRenewalMachOSignatureReader.read(
+            unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL)
+        let vault = self.vault ?? Vault(codeAnchors: configuration.codeAnchors,
+            profileAnchors: configuration.profileAnchors, clock: clock)
+        let identity = try await vault.resumeForEnrollment(namespaceID: configuration.namespaceID, observed: observed)
+        self.vault = vault; namespace = identity.namespace; developerEnrollmentIdentity = identity
         if let developerAccount { return developerAccount }
-        let account = try await SelfRenewalDeveloperAccountClient.open(vault: vault, namespace: namespace,
-            identity: material, issuerChainDER: Array(lease.keyMaterial.certificateChainDER.dropFirst()),
+        let account = try await SelfRenewalDeveloperAccountClient.openForEnrollment(vault: vault, identity: identity,
             transport: developerServices.transport, storage: developerServices.storage,
             freshAnisette: developerServices.freshAnisette, clock: clock)
         try Task.checkCancellation()
@@ -563,7 +570,7 @@ actor SelfRenewalAppSession {
         busy = true; defer { busy = false }
         try await developerAuthentication?.clearPendingAuthentication()
         if let journal { try await journal.close() }
-        journal = nil; vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
+        journal = nil; vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
         developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
         coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
         configuration = nil; persistedConfiguration = nil; lastStatus = nil; configurationNeedsReload = false
@@ -629,7 +636,7 @@ actor SelfRenewalAppSession {
 
     private func activate(_ connection: Connection) {
         vault = connection.vault; namespace = connection.namespace; coordinator = connection.coordinator
-        developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
+        developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
         developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
         access = connection.access; materialFailure = connection.materialFailure
         profileValidity = connection.profileValidity
@@ -826,7 +833,7 @@ actor SelfRenewalAppSession {
             // Stop retaining failed signing access before another awaited
             // observation can be cancelled. Its separate failure must not
             // restore access already disproved by the live-material read.
-            vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
+            vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
             self.coordinator = nil; access = nil; profileValidity = nil
             materialFailure = SigningMaterialUnavailable(underlying: error, recoveryContextError: nil)
@@ -914,7 +921,7 @@ actor SelfRenewalAppSession {
                 // Every publication uses this boundary, including bootstrap
                 // status, observations and error status. A lost durable ACK
                 // can never leave a prior coordinator binding usable.
-                coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
+                coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
                 access = nil; profileValidity = nil; configurationNeedsReload = true
             }

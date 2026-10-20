@@ -210,6 +210,215 @@ extension SelfRenewalDeveloperAccountClientTests {
         }
     }
 
+    @Test("expired installed and published profiles permit only same-manifest account enrollment, never signing access")
+    func appSessionEnrollsAfterRealInstalledAndPublishedProfileExpiry() async throws {
+        try await Self.withAccountAppSession(seedUnsubmitted: true, nearOriginalProfileExpiry: true) { c in
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            let configurationURL = c.root.appendingPathComponent("configuration.json")
+            let beforeConfiguration = try JSONDecoder().decode(AccountStoredConfiguration.self,
+                from: Data(contentsOf: configurationURL)).configuration
+            let markerURL = c.root.appendingPathComponent("owned-enrollment-user-data.json")
+            let marker = Data("{\"bookID\":\"owned\",\"spineIndex\":9,\"charOffset\":73}".utf8)
+            try marker.write(to: markerURL)
+            try await c.session.close()
+            let now = c.fixture.date.addingTimeInterval(7201)
+            let anchors = [SelfRenewalCMSFixture.rootCertificate] + c.fixture.issuer.certificateChainDER
+            let expiredVault = Vault(codeAnchors: anchors, profileAnchors: anchors, clock: { now })
+            let namespace = try await expiredVault.resume(namespaceID: c.fixture.namespace.id, identity: c.fixture.material)
+            do { _ = try await expiredVault.lease(in: namespace); Issue.record("Expired published profile produced a current signing lease") }
+            catch let failure as SelfRenewalProvisioningProfileVerifier.Failure { #expect(failure == .profileExpired) }
+            let application = c.fixture.directory.appendingPathComponent("Owned.app")
+            do {
+                _ = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: application,
+                    codeAnchors: anchors, profileAnchors: anchors, at: now)
+                Issue.record("Expired actual installed profile became current Materials")
+            } catch let failure as SelfRenewalProvisioningProfileVerifier.Failure { #expect(failure == .profileExpired) }
+            await c.peer.issueNewMaterial(at: now)
+            let reopened = c.newSession(at: now)
+            do {
+                let fresh = Client.Credentials(dsid: c.fixture.credentials.dsid, xcodeToken: c.fixture.credentials.xcodeToken,
+                    expiresAt: now.addingTimeInterval(3600))
+                // No successful bootstrap/current lease is a prerequisite for
+                // this explicit account path. The real peer checks the same pin.
+                let account = try await reopened.connectDeveloperAccount(fresh)
+                #expect(account.personalTeamMatched)
+                let published = try await reopened.refreshDeveloperMaterials(machineName: "Owned expiry enrollment")
+                #expect(published.namespaceID == c.fixture.namespace.id && published.keyID == c.originalLease.keyID)
+                #expect(published.generation == c.originalLease.generation + 1)
+                #expect(published.profileExpiresAt.map { $0 > now } == true)
+                #expect(!published.appleAuthorizationEstablished && !published.installedApplicationRenewed)
+                let currentNamespace = try await expiredVault.resume(namespaceID: namespace.id, identity: c.fixture.material)
+                let currentLease = try await expiredVault.lease(in: currentNamespace)
+                try await expiredVault.validate(currentLease, for: c.fixture.material)
+                #expect(currentLease.verifiedAt == now && currentLease.keyID == c.originalLease.keyID)
+                do { _ = try await reopened.bootstrap(handoff: c.handoff); Issue.record("New publication reauthorized the still-expired installed Bundle") }
+                catch let failure as SelfRenewalAppSession.Unavailable { #expect(failure.problem == .signingMaterials) }
+                let status = await reopened.status()
+                #expect(status?.access != .signing)
+                let afterConfiguration = try JSONDecoder().decode(AccountStoredConfiguration.self,
+                    from: Data(contentsOf: configurationURL)).configuration
+                #expect(beforeConfiguration == afterConfiguration)
+                let afterMarker = try Data(contentsOf: markerURL)
+                #expect(afterMarker == marker)
+                let facts = await c.peer.facts()
+                #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+                try await reopened.close()
+                let again = c.newSession(at: now)
+                do {
+                    let observation = try await again.observeDeveloperAccount()
+                    #expect(observation.personalTeamMatched)
+                    let after = await c.peer.facts()
+                    #expect(after.validCSRs == 1)
+                    try await again.close()
+                } catch { do { try await again.close() } catch { Issue.record(error) }; throw error }
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("expired App reopens its exact unknown CSR intent without a second issue and failed logout remains denied")
+    func appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial() async throws {
+        try await Self.withAccountAppSession(nearOriginalProfileExpiry: true) { c in
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            try await c.session.close()
+            let now = c.fixture.date.addingTimeInterval(7201)
+            await c.peer.issueNewMaterial(at: now)
+            await c.peer.set(.lostCSRACK)
+            let fresh = Client.Credentials(dsid: c.fixture.credentials.dsid, xcodeToken: c.fixture.credentials.xcodeToken,
+                expiresAt: now.addingTimeInterval(3600))
+            let interrupted = c.newSession(at: now)
+            do {
+                _ = try await interrupted.connectDeveloperAccount(fresh)
+                do { _ = try await interrupted.refreshDeveloperMaterials(machineName: "Owned expired lost ACK"); Issue.record("Lost ACK became a publication") }
+                catch let failure as Client.EnrollmentFailure { #expect(failure.remoteCertificateMayHaveBeenIssued) }
+                try await interrupted.close()
+            } catch { do { try await interrupted.close() } catch { Issue.record(error) }; throw error }
+            await c.peer.set(.normal)
+            let reopened = c.newSession(at: now)
+            do {
+                c.fixture.storage.failSave(afterSuccessfulSaves: 0)
+                do { try await reopened.signOutDeveloperAccount(); Issue.record("Failed logout write was acknowledged") }
+                catch let failure as Client.Failure { #expect(failure == .storage) }
+                let deniedBefore = await c.peer.facts()
+                do { _ = try await reopened.reconcileDeveloperMaterials(); Issue.record("Expiry enrollment bypassed local logout denial") }
+                catch let failure as Client.Failure { #expect(failure == .signedOut) }
+                let deniedAfter = await c.peer.facts()
+                #expect(deniedBefore.paths == deniedAfter.paths)
+                _ = try await reopened.connectDeveloperAccount(fresh)
+                let published = try await reopened.reconcileDeveloperMaterials()
+                #expect(published.keyID == c.originalLease.keyID && published.namespaceID == c.fixture.namespace.id)
+                #expect(published.generation == c.originalLease.generation + 1)
+                let facts = await c.peer.facts()
+                #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+                let retained = try #require(try c.fixture.storage.load(namespace: c.fixture.namespace.id))
+                #expect(!retained.contains("certificateRequestIntent") && !retained.contains("certificateObserved"))
+                let status = await reopened.status()
+                #expect(status?.access != .signing)
+                try await reopened.close()
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("expired account entry refuses actual changed Bundle routing and an unknown configured namespace without HTTP")
+    func appSessionEnrollmentRejectsChangedBundleAndMissingManifest() async throws {
+        try await Self.withAccountAppSession(nearOriginalProfileExpiry: true) { c in
+            try await c.session.close()
+            let now = c.fixture.date.addingTimeInterval(7201)
+            let infoURL = c.fixture.directory.appendingPathComponent("Owned.app/Info.plist")
+            let originalInfo = try Data(contentsOf: infoURL)
+            var info = try #require(PropertyListSerialization.propertyList(from: originalInfo, format: nil) as? [String: Any])
+            info["CFBundleIdentifier"] = "invalid.changed.enrollment"
+            let changed = try PropertyListSerialization.data(fromPropertyList: info, format: .binary, options: 0)
+            try changed.write(to: infoURL)
+            let before = await c.peer.facts()
+            let refused = c.newSession(at: now)
+            do {
+                do { _ = try await refused.connectDeveloperAccount(c.fixture.credentials); Issue.record("Changed Bundle obtained an account owner") }
+                catch let failure as Vault.Failure { #expect(failure == .identityChanged) }
+                try await refused.close()
+            } catch { do { try await refused.close() } catch { Issue.record(error) }; throw error }
+            try originalInfo.write(to: infoURL)
+            let configurationURL = c.root.appendingPathComponent("configuration.json")
+            let raw = try Data(contentsOf: configurationURL)
+            var document = try #require(JSONSerialization.jsonObject(with: raw) as? [String: Any])
+            var configuration = try #require(document["configuration"] as? [String: Any])
+            configuration["namespaceID"] = UUID().uuidString
+            document["configuration"] = configuration
+            let unknown = try JSONSerialization.data(withJSONObject: document, options: [.sortedKeys])
+            try unknown.write(to: configurationURL)
+            let missing = c.newSession(at: now)
+            do {
+                do { _ = try await missing.connectDeveloperAccount(c.fixture.credentials); Issue.record("Caller UUID invented an enrollment namespace") }
+                catch let failure as Vault.Failure { #expect(failure == .namespaceUnavailable) }
+                try await missing.close()
+            } catch { do { try await missing.close() } catch { Issue.record(error) }; throw error }
+            let after = await c.peer.facts()
+            #expect(before.paths == after.paths && after.validCSRs == 0)
+        }
+    }
+
+    private enum EnrollmentFixtureStop: Error { case beforeRemoteCreation }
+
+    @Test("expired enrollment cannot change generation after an actual authenticated upload intent")
+    func appSessionExpiredEnrollmentRetainsRealUploadIntentBarrier() async throws {
+        try await Self.withAccountAppSession(nearOriginalProfileExpiry: true) { c in
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            try await c.session.close()
+            let now = c.fixture.date.addingTimeInterval(7201)
+            let journalRoot = c.root.appendingPathComponent("SelfRenewalTransactions")
+            let journal = try await SelfRenewalTransactionJournal.open(at: journalRoot)
+            // Only opaque transport bytes are needed to reach the authenticated
+            // before-FileOpen hook. This fixture never asserts a signed IPA.
+            let candidate = Data("owned enrollment transport-boundary bytes".utf8)
+            let bundle = try #require(c.fixture.material.bundles.first { $0.componentRelativePath == "." })
+            do {
+                let created = try await journal.create(namespace: c.fixture.namespace.id, generation: c.originalLease.generation,
+                    originalSHA256: Data(SHA256.hash(data: candidate)), identitySHA256: Data(SHA256.hash(data: Data(bundle.bundleIdentifier.utf8))),
+                    bundleIdentifier: bundle.bundleIdentifier, bundleVersion: "1", at: c.fixture.date)
+                let signing = try await journal.beginSigning(created, at: c.fixture.date)
+                let archive = SelfRenewalTransactionJournal.ArchiveInput(byteCount: candidate.count,
+                    sha256: Data(SHA256.hash(data: candidate)), read: { offset, count in candidate.subdata(in: offset..<offset + count) })
+                let ready = try await journal.storeCandidate(signing, archive: archive, at: c.fixture.date)
+                try await SelfRenewalAuthenticatedInstallationFixture.withPeer(.unusedInput, bytes: candidate,
+                    bundle: bundle.bundleIdentifier, version: "1", at: now) { peer in
+                    do {
+                        _ = try await peer.upgrade(beforeCreation: { intent in
+                            _ = try await journal.noteUploadIntent(ready, intent: intent, at: now)
+                            throw EnrollmentFixtureStop.beforeRemoteCreation
+                        })
+                        Issue.record("Owned boundary stop returned an install receipt")
+                    } catch let failure as SelfRenewalAuthenticatedInstallationClient.OperationFailure {
+                        #expect(failure.underlying is EnrollmentFixtureStop)
+                        #expect(!failure.upgradeMayHaveExecuted)
+                    }
+                    let observed = peer.observed.snapshot
+                    #expect(observed.openedFileHandles == 0 && observed.upgradeRequests == 0)
+                }
+                let checkpoint = try await journal.load()
+                let loaded = try #require(checkpoint)
+                #expect(loaded.record.phase == .uploadIntent && loaded.record.remoteHistory == .started)
+                try await journal.close()
+            } catch { do { try await journal.close() } catch { Issue.record(error) }; throw error }
+            let transactionURL = journalRoot.appendingPathComponent("transaction.json")
+            let beforeTransaction = try Data(contentsOf: transactionURL)
+            let beforeCandidate = try Data(contentsOf: journalRoot.appendingPathComponent("candidate.ipa"))
+            let reopened = c.newSession(at: now)
+            do {
+                let fresh = Client.Credentials(dsid: c.fixture.credentials.dsid, xcodeToken: c.fixture.credentials.xcodeToken,
+                    expiresAt: now.addingTimeInterval(3600))
+                _ = try await reopened.connectDeveloperAccount(fresh)
+                let before = await c.peer.facts()
+                do { _ = try await reopened.refreshDeveloperMaterials(machineName: "Owned blocked expiry enrollment"); Issue.record("Upload intent allowed material generation change") }
+                catch let failure as SelfRenewalTransactionJournal.Failure { #expect(failure == .activeTransaction) }
+                let after = await c.peer.facts()
+                #expect(before.paths == after.paths && after.validCSRs == 0 && after.profileRequests == 0)
+                let afterTransaction = try Data(contentsOf: transactionURL)
+                let afterCandidate = try Data(contentsOf: journalRoot.appendingPathComponent("candidate.ipa"))
+                #expect(beforeTransaction == afterTransaction && beforeCandidate == afterCandidate)
+                try await reopened.close()
+            } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
     private struct AccountStoredConfiguration: Decodable {
         let configuration: SelfRenewalAppSession.Configuration
     }
@@ -224,14 +433,18 @@ extension SelfRenewalDeveloperAccountClientTests {
         let handoff: SelfRenewalUserDataHandoff
         func newSession(at date: Date? = nil) -> SelfRenewalAppSession {
             let now = date ?? fixture.date
+            let reopenedServices = SelfRenewalAppSession.DeveloperServices(transport: services.transport, storage: services.storage,
+                freshAnisette: { Client.Anisette(machineID: "owned-machine", oneTimePassword: "owned-fresh-otp",
+                    localUserID: "owned-local-user", routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled peer",
+                    issuedAt: now, locale: "en_US", timeZone: "UTC") })
             return SelfRenewalAppSession(root: root,
                 currentApplicationRoot: fixture.directory.appendingPathComponent("Owned.app"),
-                developerServices: services, clock: { now })
+                developerServices: reopenedServices, clock: { now })
         }
     }
-    nonisolated private static func withAccountAppSession(seedUnsubmitted: Bool = false,
+    nonisolated private static func withAccountAppSession(seedUnsubmitted: Bool = false, nearOriginalProfileExpiry: Bool = false,
         _ action: @escaping @Sendable (AccountAppContext) async throws -> Void) async throws {
-        try await Self.fixture { f in
+        try await Self.fixture(nearOriginalProfileExpiry: nearOriginalProfileExpiry) { f in
             let root = f.directory.appendingPathComponent("AccountSession")
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false,
                 attributes: [.posixPermissions: 0o700])

@@ -152,19 +152,34 @@ actor SelfRenewalControlledRenewalCoordinator {
         try await retirePreviousPreparationBeforeCreate()
     }
 
+    /// AppSession owns the same serialized operation and locked journal even
+    /// when current signing materials are unavailable. Enrollment may retire
+    /// only that namespace's unsubmitted preparation; it never obtains a
+    /// Coordinator with prepare/submit power or an installation capability.
+    nonisolated static func retireBeforeEnrollmentRefresh(journal: Journal, identity: Vault.EnrollmentIdentity,
+        at date: Date) async throws {
+        try Task.checkCancellation()
+        try await retirePreviousPreparation(journal: journal, namespaceID: identity.namespace.id, at: date)
+    }
+
     private func retirePreviousPreparationBeforeCreate() async throws {
+        try await Self.retirePreviousPreparation(journal: journal, namespaceID: namespace?.id, at: clock())
+    }
+
+    private nonisolated static func retirePreviousPreparation(journal: Journal, namespaceID: UUID?, at date: Date) async throws {
         guard let previous = try await journal.load() else { return }
+        guard let namespaceID, previous.record.materialNamespace == namespaceID else { throw Failure.leaseChanged }
         switch previous.record.phase {
         case .created, .signing:
-            _ = try await journal.retireUnsubmitted(previous, reason: .preparationInterrupted, at: clock())
+            _ = try await journal.retireUnsubmitted(previous, reason: .preparationInterrupted, at: date)
         case .candidateReady:
             if previous.record.remoteHistory == .neverStarted {
-                _ = try await journal.retireUnsubmitted(previous, reason: .supersededUnsubmittedCandidate, at: clock())
+                _ = try await journal.retireUnsubmitted(previous, reason: .supersededUnsubmittedCandidate, at: date)
             } else if previous.record.remoteHistory == .started, previous.record.safePreSubmissionCleanup != nil {
-                _ = try await journal.retireUnsubmitted(previous, reason: .authenticatedUploadCleanup, at: clock())
+                _ = try await journal.retireUnsubmitted(previous, reason: .authenticatedUploadCleanup, at: date)
             } else { throw Journal.Failure.activeTransaction }
         case .retirementPending, .retired:
-            _ = try await journal.resumeRetirement(previous, at: clock())
+            _ = try await journal.resumeRetirement(previous, at: date)
         case .uploadIntent, .upgradeIntent, .receiptObserved, .installationUnknown, .lookupObserved, .attentionRequired:
             throw Journal.Failure.activeTransaction
         }

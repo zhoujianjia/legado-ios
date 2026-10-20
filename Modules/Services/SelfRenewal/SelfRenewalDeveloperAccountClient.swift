@@ -164,6 +164,44 @@ actor SelfRenewalDeveloperAccountClient {
             freshAnisette: freshAnisette, clock: clock)
     }
 
+    /// The same account owner may reopen its original Keychain-scoped identity
+    /// after installed profiles or the prior published lease expire. This does
+    /// not authenticate the current Bundle and grants no signing capability.
+    /// Every remote account/team check and complete new Vault publication still
+    /// uses the unchanged live protocol and actual current verification date.
+    static func openForEnrollment(vault: Vault, identity: Vault.EnrollmentIdentity,
+        transport: any SelfRenewalDeveloperAccountTransport,
+        storage: any SelfRenewalDeveloperSessionStorage,
+        freshAnisette: @escaping @Sendable () async throws -> Anisette,
+        clock: @escaping @Sendable () -> Date = { Date() }) async throws -> SelfRenewalDeveloperAccountClient {
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("renewal.account.open-enrollment",
+            "bundles=\(identity.bundles.count) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        _ = try await vault.generation(in: identity.namespace)
+        try Task.checkCancellation()
+        return try SelfRenewalDeveloperAccountClient(vault: vault, identity: identity,
+            transport: transport, storage: storage, freshAnisette: freshAnisette, clock: clock)
+    }
+
+    private init(vault: Vault, identity: Vault.EnrollmentIdentity,
+        transport: any SelfRenewalDeveloperAccountTransport, storage: any SelfRenewalDeveloperSessionStorage,
+        freshAnisette: @escaping @Sendable () async throws -> Anisette, clock: @escaping @Sendable () -> Date) throws {
+        guard let team = identity.bundles.first?.teamIdentifier, !team.isEmpty,
+              identity.bundles.allSatisfy({ Self.same($0.teamIdentifier, team) }),
+              !identity.bundles.isEmpty, identity.bundles.count <= Vault.Limits.bundles,
+              identity.bundles.allSatisfy({ !$0.bundleIdentifier.isEmpty && $0.bundleIdentifier.utf8.count <= 255 &&
+                  $0.bundleIdentifier.utf8.allSatisfy { (48...57).contains($0) || (65...90).contains($0) || (97...122).contains($0) || $0 == 45 || $0 == 46 } }),
+              identity.issuerChainDER.count < Vault.Limits.certificates,
+              Set(identity.issuerChainDER).count == identity.issuerChainDER.count,
+              identity.issuerChainDER.allSatisfy({ !$0.isEmpty && $0.count <= Vault.Limits.certificateBytes }) else { throw Failure.invalidInput }
+        self.vault = vault; namespace = identity.namespace; teamID = team
+        bundles = identity.bundles.map { BundleTarget(component: $0.componentRelativePath, identifier: $0.bundleIdentifier) }
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        identitySHA256 = Data(SHA256.hash(data: try encoder.encode(IdentityPin(identity))))
+        issuerChainDER = identity.issuerChainDER; self.transport = transport; self.storage = storage
+        self.freshAnisette = freshAnisette; self.clock = clock
+    }
+
     private init(vault: Vault, namespace: Vault.Namespace, identity: SelfRenewalApplicationMaterialVerifier.Materials,
         issuerChainDER: [Data], transport: any SelfRenewalDeveloperAccountTransport,
         storage: any SelfRenewalDeveloperSessionStorage,
@@ -805,6 +843,13 @@ actor SelfRenewalDeveloperAccountClient {
             bundles = identity.bundles.map { bundle in Bundle(component: bundle.componentRelativePath,
                 identifier: bundle.bundleIdentifier, slices: bundle.slices.map { Slice(applicationIdentifier: $0.applicationIdentifier,
                     team: $0.teamIdentifier, appGroups: $0.appGroups, keychainGroups: $0.keychainAccessGroups) }) }
+        }
+        init(_ identity: Vault.EnrollmentIdentity) {
+            bundles = identity.bundles.map { bundle in Bundle(component: bundle.componentRelativePath,
+                identifier: bundle.bundleIdentifier, slices: (0..<bundle.observedSliceCount).map { _ in
+                    Slice(applicationIdentifier: bundle.applicationIdentifier, team: bundle.teamIdentifier,
+                        appGroups: bundle.appGroups, keychainGroups: bundle.keychainAccessGroups)
+                }) }
         }
     }
 }

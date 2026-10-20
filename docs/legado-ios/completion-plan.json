@@ -593,7 +593,8 @@
             "docs/legado-ios/core-renewal-account-client-step.json",
             "docs/legado-ios/core-renewal-account-session-step.json",
             "docs/legado-ios/core-renewal-gsa-protocol-step.json",
-            "docs/legado-ios/core-renewal-gsa-AppSession-step.json"
+            "docs/legado-ios/core-renewal-gsa-AppSession-step.json",
+            "docs/legado-ios/core-renewal-enrollment-recovery-step.json"
           ],
           "implementedSubtasksZh": [
             "已接入单一actor签名材料库，使用既有KeychainHelper保存公开材料与代际日志；真实软件SecKey的生成、重开、profile双CMS及身份一致性验证、撤销和故障恢复已实现。7项原生方法待SDK；尚无Apple账号授权、二次认证、证书/profile远程申请或跨进程事务。",
@@ -603,7 +604,7 @@
             "GSA 协议核心已实现并独审：固定 SRP2048/SHA256、两种密码 KDF、服务端 M2 与协商 MAC、SPD 解密、app token 校验解密及可信设备二次认证单次挑战，结果仍经同一账号客户端实查团队。现有 transport 仅增加 3 个固定 GSA 路径，当前凭据擦除客户端只合并 serial 可选字段。独立 Python 公开参考向量通过；8 个原生定义及实际合并源码的 SDK/Apple 执行仍为 0。AppSession 登录操作、真实 anisette 和用户界面尚未接通。",
             "GSA 登录、可信设备二次认证、真实任务取消和退出已接入同一 AppSession/AppOwner；Task 覆盖材料 owner 打开到认证完成，退出先取消并等实际任务结束，再清内存挑战和原凭据。Session epoch 与 UI 操作 UUID 防止旧结果/旧 defer 影响新状态，确认保存的账号事实不伪装撤回。修正首次登录取消后凭据应为空的测试断言；3 项新回归仍仅定义，SDK 执行 0；默认真实 anisette 和登录界面尚不可用。"
           ],
-          "nextActionZh": "集中执行包含账号、公开批量正文和实际 App owner 的 coherent SDK；继续真实可取消 anisette 提供端、未知证书结果核对、过期重新登记及官方 issuer/profile 策略，接通真实提供端后再完善用户登录流程。"
+          "nextActionZh": "集中SDK执行材料过期后的4项App账号回归及受影响旧用例；继续首次密钥/材料申领与真实授权提供者接线。当前签名校验、未知上传屏障和真机门槛保留。"
         },
         {
           "id": "S3",
@@ -861,7 +862,8 @@
       "certificateReconciliationImplementation": "docs/legado-ios/core-renewal-certificate-reconciliation-step.json",
       "ownedAdminTrustEnvironmentImplementation": "docs/legado-ios/core-owned-admin-trust-step.json",
       "ownedAdminTrustFiniteSDKRequest": "docs/legado-ios/core-owned-sdk-3df5243-request.json",
-      "ownedAdminTrustFiniteSDKResult": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json"
+      "ownedAdminTrustFiniteSDKResult": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json",
+      "expiredMaterialEnrollmentImplementation": "docs/legado-ios/core-renewal-enrollment-recovery-step.json"
     }
   },
   "stages": [
@@ -5088,6 +5090,10 @@
     "owned-admin-trust-finite-sdk-terminal": {
       "path": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json",
       "scope": "Actual60 portable and20 Git inputs verified. Actual Mac C/Swift/key/partition and root admin trust readback/normal-user valid identity0-to1 passed. First codesign still item-not-found; removal child124/no absence ACK; owned Keychain delete0. Overall failed, target CMS/MachO and native0."
+    },
+    "expired-material-account-enrollment": {
+      "path": "docs/legado-ios/core-renewal-enrollment-recovery-step.json",
+      "scope": "Six production/test sources integrate original Keychain-manifest account scope after expiry with same journal retirement barrier and actual new publication. Four native definitions and grammar6/0; SDK0. No current signing access or Apple/install acceptance is granted."
     }
   },
   "retainedExistingWork": [

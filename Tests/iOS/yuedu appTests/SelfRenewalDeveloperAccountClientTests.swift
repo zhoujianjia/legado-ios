@@ -484,6 +484,7 @@ struct SelfRenewalDeveloperAccountClientTests {
         let issuer: Vault.KeyMaterial
         let key: Vault.KeyMaterial
         let date: Date
+        private var issuedMaterialDate: Date
         var mode: Mode = .normal
         var paths: [String] = []
         var validCSRs = 0, profileRequests = 0
@@ -502,9 +503,11 @@ struct SelfRenewalDeveloperAccountClientTests {
         init(material: SelfRenewalApplicationMaterialVerifier.Materials, issuer: Vault.KeyMaterial, key: Vault.KeyMaterial,
             date: Date, priorCertificates: [Data]? = nil) {
             self.material = material; self.issuer = issuer; self.key = key; self.date = date
+            issuedMaterialDate = date
             self.priorCertificates = priorCertificates ?? key.certificateChainDER.first.map { [$0] } ?? []
         }
         func set(_ mode: Mode) { self.mode = mode }
+        func issueNewMaterial(at date: Date) { issuedMaterialDate = date }
         func setCertificateList(_ value: CertificateListMode) { certificateListMode = value }
         func usePEMCertificateList() { pemCertificateList = true }
         func waitForListOrCompletion() async -> ListEvent {
@@ -571,7 +574,7 @@ struct SelfRenewalDeveloperAccountClientTests {
                 let signerKey = mode == .wrongCertificate ? issuer.privateKey : key.privateKey
                 // A same-key issue must actually be a different signed
                 // certificate, rather than deterministic DER of its old leaf.
-                let leaf = try PKI.certificate(for: signerKey, signedBy: issuer, at: date.addingTimeInterval(60))
+                let leaf = try PKI.certificate(for: signerKey, signedBy: issuer, at: issuedMaterialDate.addingTimeInterval(60))
                 certificate = leaf
                 let rawMachineID = try #require(body["machineId"] as? String)
                 certificateMachineID = try #require(UUID(uuidString: rawMachineID))
@@ -585,7 +588,7 @@ struct SelfRenewalDeveloperAccountClientTests {
                 let bundle = material.bundles[index]
                 let original = try #require(material.profiles.profiles.first { $0.file.relativePath == bundle.profileRelativePath })
                 let leaf = try #require(certificate)
-                var bytes = try PKI.profile(from: original, developerCertificate: leaf, issuer: issuer, at: date)
+                var bytes = try PKI.profile(from: original, developerCertificate: leaf, issuer: issuer, at: issuedMaterialDate)
                 if mode == .tamperedProfile { bytes[10] ^= 1 }
                 return try Self.plist(["resultCode": 0, "provisioningProfile": ["encodedProfile": bytes]])
             default: throw CocoaError(.coderInvalidValue)
@@ -616,7 +619,7 @@ struct SelfRenewalDeveloperAccountClientTests {
             if certificateListMode == .publishedOnly { certs = key.certificateChainDER.first.map { [$0] } ?? [] }
             else if certificateListMode != .priorOnly, let certificate { certs.append(certificate) }
             if certificateListMode == .ambiguous {
-                certs.append(try PKI.certificate(for: key.privateKey, signedBy: issuer, at: date.addingTimeInterval(120)))
+                certs.append(try PKI.certificate(for: key.privateKey, signedBy: issuer, at: issuedMaterialDate.addingTimeInterval(120)))
             }
             var rows: [[String: Any]] = []
             for (index, bytes) in certs.enumerated() {
@@ -762,7 +765,7 @@ struct SelfRenewalDeveloperAccountClientTests {
                 try FileManager.default.removeItem(at: self.directory)
             }.value
         }
-        static func make(includePublishedMaterial: Bool = true) async throws -> Fixture {
+        static func make(includePublishedMaterial: Bool = true, nearOriginalProfileExpiry: Bool = false) async throws -> Fixture {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent("owned-developer-account-" + UUID().uuidString)
             let root = directory.appendingPathComponent("Owned.app")
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -778,9 +781,16 @@ struct SelfRenewalDeveloperAccountClientTests {
                     }
                     try Data("abc".utf8).write(to: target.appendingPathComponent("chapter.txt"))
                 }
-                let date = Date(timeIntervalSince1970: 1_792_540_800)
-                let material = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: root,
-                    codeAnchors: [SelfRenewalCMSFixture.rootCertificate], profileAnchors: [SelfRenewalCMSFixture.rootCertificate], at: date)
+                let originalDate = Date(timeIntervalSince1970: 1_792_540_800)
+                let originalMaterial = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: root,
+                    codeAnchors: [SelfRenewalCMSFixture.rootCertificate], profileAnchors: [SelfRenewalCMSFixture.rootCertificate], at: originalDate)
+                let date: Date
+                let material: SelfRenewalApplicationMaterialVerifier.Materials
+                if nearOriginalProfileExpiry {
+                    date = try #require(originalMaterial.profiles.profiles.map(\.summary.expiresAt).min()).addingTimeInterval(-1800)
+                    material = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: root,
+                        codeAnchors: [SelfRenewalCMSFixture.rootCertificate], profileAnchors: [SelfRenewalCMSFixture.rootCertificate], at: date)
+                } else { date = originalDate; material = originalMaterial }
                 let issuer = try PKI.issuer(at: date)
                 let vault = Vault(codeAnchors: issuer.certificateChainDER, profileAnchors: issuer.certificateChainDER, clock: { date }); cleanupVault = vault
                 let namespace = try await vault.create(identity: material); cleanupNamespace = namespace
@@ -815,10 +825,10 @@ struct SelfRenewalDeveloperAccountClientTests {
             }
         }
     }
-    nonisolated static func fixture(includePublishedMaterial: Bool = true,
+    nonisolated static func fixture(includePublishedMaterial: Bool = true, nearOriginalProfileExpiry: Bool = false,
         _ action: @escaping @Sendable (Fixture) async throws -> Void) async throws {
         let worker = Task.detached {
-            let value = try await Fixture.make(includePublishedMaterial: includePublishedMaterial)
+            let value = try await Fixture.make(includePublishedMaterial: includePublishedMaterial, nearOriginalProfileExpiry: nearOriginalProfileExpiry)
             do { try await action(value); try await value.cleanup() }
             catch { do { try await value.cleanup() } catch { Issue.record(error) }; throw error }
         }
