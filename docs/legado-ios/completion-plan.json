@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
-  "updatedOn": "2026-10-19",
+  "updatedOn": "2026-10-20",
   "activeBatchRecord": "docs/legado-ios/all-work-execution-batch.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
-    "当前状态": "已逐项审查 8 阶段、33 工作包和 64 功能域，现为每包列明中文现状、剩余工作、下一步、可独立准备项、验收及真实证据路径。当前优先修复 WebDAV 无效／部分恢复可能覆盖旧数据的问题，并新增严格计划检查器。阅读排版、启动与峰值内存、离线及本地格式、批注字典、RSS／朗读／媒体、LAN 服务与任务、材料闭合均仍有待办；UMD／MOBI、原 JVM 完整产品路由、通用 Cron 执行及自续签不能写成已有完整实现。既有 2747900 集中云测按实际原件核对；新恢复修复尚待 Swift 编译与执行。全部无需真机工作、完整兼容、自续签和许可闭合继续为未完成。",
+    "当前状态": "书源兼容仍有实际开发缺口：传统规则产品入口继续走现有 Swift／JSC，原 AnalyzeRule 协调器尚未接入完整阅读路由；原 AnalyzeUrl／WebBook 请求与分页编排、批量正文、源状态持久化、Cookie／浏览器宿主仍未闭环。有限 mainJs 纯文本链路已有历史运行证据，不能外推全部书源。最近几批主要完成字体与进度可靠性、UMD 准备、观测和续签诊断，没有完成上述主链路；下一就绪批改为 runtime-core、traditional-rules、url-http，先集中补齐一条无登录纯文本传统源的固定完整链路所需生产缺口，仍沿用原产品切换验收门槛。5f543a1 三组 source-only 检查点已提交，但排除了 JVM，不能证明原核心接入成功。阅读布局与性能、书架离线、备份、本地格式、批注字典、RSS／朗读／媒体、LAN 与通用任务、平台入口及最终源码许可材料仍各有未完成项，代码已写与实际执行验收分开记录。全部无需真机工作、完整兼容、自续签和许可闭合继续为未完成。",
     "实施顺序": [
       {
         "阶段": 1,
@@ -76,10 +76,10 @@
       "没有新改动、真实失败或未解决疑点时，不重复启动构建。"
     ],
     "本批执行": [
-      "P0：WebDAV 恢复先验证、协调现有 writer、普通提交错误回滚；失败不覆盖无法确认的原数据、不发布成功。",
-      "计划工具：33 包 execution 与 64 域归属严格检查，保留历史证据与全部未完成边界。",
-      "下一就绪批：原 schema 差异、进度并发、字体事务、启动／内存采集、本地格式与源码闭合材料按依赖继续。",
-      "真机／外部：自续签安装通道、硬件体验和许可组合未决项独立列出，不要求现在安装测试。"
+      "主线改回书源兼容：先集中推进原运行时公开语义、AnalyzeRule 与 AnalyzeUrl／HTTP 生产缺口；固定无登录纯文本传统源的搜索→详情→目录→两章及次页正文作为首个完整链路目标。",
+      "验收以原公开入口的请求字节、Java 类型、异常及状态副作用为准；普通 JAR→JNI→现有原生服务→阅读／缓存实际执行前，不切换传统产品唯一入口，不宣称完整兼容。",
+      "已有字体、进度、WebDAV、UMD 与性能观测保留各自实现和待验收状态；复用未变化证据，不让外围准备继续取代书源生产主线。",
+      "续签仍是独立诊断支线。5f543a1 已提交的源码检查与完整 JVM 产品链验收分开；不为本次优先级调整重新触发构建或要求用户重复测旧包。"
     ]
   },
   "baseline": {
@@ -114,8 +114,9 @@
   },
   "execution": {
     "immediateBatch": [
-      "plan-and-evidence-refresh",
-      "backup-webdav"
+      "runtime-core",
+      "traditional-rules",
+      "url-http"
     ],
     "parallelLanes": [
       {
@@ -157,8 +158,9 @@
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
-      "local-formats",
-      "license-and-source-closure"
+      "runtime-core",
+      "traditional-rules",
+      "url-http"
     ],
     "readinessMeaningZh": "readiness 指本包下一步实际动作是否具备条件；准备、可靠性修复和独立协议夹具可先行。ready 不表示原 dependsOn 或阶段出口已验收，不允许因此切换产品路由或声明完整兼容。有依赖的包仍明确列出 readyPreparation；真机及外部决定不阻塞其他独立工作。",
     "readyQueue": [
