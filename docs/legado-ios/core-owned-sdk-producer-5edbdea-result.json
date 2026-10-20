@@ -1,0 +1,316 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T08:37:10.435722+00:00",
+  "status": "finite-Mac-C-Swift-import-reopen-passed-codesign-identity-resolution-failed",
+  "sourceCommit": "5edbdeaf57ff901a2cd7c0f21db1c33939b391ea",
+  "sourceTag": "reader-owned-sdk-5edbdea",
+  "runID": 39393827282,
+  "jobID": 118531534121,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39393827282",
+  "conclusion": "failure",
+  "sourceInputs": [
+    {
+      "path": ".github/workflows/reader-owned-sdk-producer.yml",
+      "bytes": 3846,
+      "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+    },
+    {
+      "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+      "bytes": 14191,
+      "sha256": "62434d613e07ce98f1f1fd646f4630a08a42d240263835b183c3b9cfe31d2cdb"
+    },
+    {
+      "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+      "bytes": 13845,
+      "sha256": "755ec45f371a0d3bc4c3e18ae1f2d1c56c6eda2ae8cfd2adba36352d8b72f20a"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 118691,
+      "sha256": "1f40c69af33ee493d1ff09f59b68352038d0eddd87413de79c1767046d796aa8"
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "bytes": 27526,
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+    },
+    {
+      "path": "scripts/reader-experience/stage-config.py",
+      "bytes": 26097,
+      "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 121378,
+      "sha256": "50df9879ff90b5821eee66a137ce36d48889157ac2bceb80b2524b8870cfd91c"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+      "bytes": 657444,
+      "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+    },
+    {
+      "path": "scripts/sim.sh",
+      "bytes": 11179,
+      "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 35201,
+      "sha256": "74a69d37bc2a505369fdc0e7bc6335def72a350637ad18c907bf3e0cef18b3ac"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 12871,
+      "sha256": "6a8d652c533ad12c36d6fbab69437cfa46ac3f8a67b365ad719050dd545c840e"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "bytes": 710,
+      "sha256": "f025bb68da98e714f9d169e509920cd8439326141d47571325c504d9dd9dc982"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "bytes": 2733,
+      "sha256": "790ae6d122fdce1e3c278b7ea159b27994d62cfb6d822700c97bf83c65aef534"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/main.c",
+      "bytes": 180,
+      "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+      "bytes": 186,
+      "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+      "bytes": 156,
+      "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+      "bytes": 6262,
+      "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+      "bytes": 11655,
+      "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+      "bytes": 9829,
+      "sha256": "4eac052157f4e979d38374693e918bcb1f61a0402aa71b57c097ebe6b5eb9df0"
+    }
+  ],
+  "exactGitSourceInputsVerified": 19,
+  "sourceBeforeAfterEqual": true,
+  "actualCloudPortableUniqueMethods": 35,
+  "actualCloudPortableMethodIDs": [
+    "OwnedKeychainReopenReportTests.test_actual_c_compile_failure_remains_nonzero_and_never_starts_swift",
+    "OwnedKeychainReopenReportTests.test_actual_child_failure_cannot_be_accepted_from_a_passed_report",
+    "OwnedKeychainReopenReportTests.test_actual_compile_children_require_public_c_then_formal_header_and_object_link",
+    "OwnedKeychainReopenReportTests.test_actual_malformed_private_report_suppresses_all_unknown_data",
+    "OwnedKeychainReopenReportTests.test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim",
+    "OwnedKeychainReopenReportTests.test_actual_swift_compile_failure_preserves_its_exit_and_public_diagnostic",
+    "OwnedKeychainReopenReportTests.test_actual_unlock_failure_retains_only_the_typed_osstatus",
+    "OwnedKeychainReopenReportTests.test_reopen_success_rejects_missing_extra_ambiguous_and_false_proof_fields",
+    "OwnedSDKProducerCheckTests.test_actual_public_child_nonzero_and_logs_remain_failure",
+    "OwnedSDKProducerCheckTests.test_all_necessary_producer_runner_guard_and_fixture_sources_are_bound",
+    "OwnedSDKProducerCheckTests.test_commands_are_fixed_real_generator_and_finite_budgets",
+    "OwnedSDKProducerCheckTests.test_device_toolchain_chooses_installed_sdk_when_active_has_none",
+    "OwnedSDKProducerCheckTests.test_device_toolchain_missing_sdk_fails_without_querying_simulators",
+    "OwnedSDKProducerCheckTests.test_device_toolchain_uses_active_sdk_without_querying_simulators",
+    "OwnedSDKProducerCheckTests.test_requires_exact_isolated_tag_sha_checkout_and_source_only",
+    "OwnedSDKProducerCheckTests.test_stages_only_existing_allowlist_without_writing_an_xctest_resource",
+    "OwnedSDKProducerCheckTests.test_staging_rejects_extra_private_changed_public_and_wrong_source_inputs",
+    "OwnedSDKProducerCheckTests.test_successful_child_source_mutation_is_a_nonzero_whole_check_failure",
+    "OwnedSDKProducerCheckTests.test_timeout_and_changed_phase_inputs_are_never_accepted",
+    "OwnedSDKProducerCheckTests.test_workflow_is_isolated_and_never_uploads_raw_producer_directory",
+    "ProducerDiagnosticsTests.test_actual_private_child_failure_publishes_no_stream_or_command",
+    "ProducerDiagnosticsTests.test_actual_public_child_failure_reaches_existing_uploaded_stdout",
+    "ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed",
+    "ProducerDiagnosticsTests.test_private_public_log_request_is_rejected_before_child_executes",
+    "ProducerDiagnosticsTests.test_public_capture_is_bounded_and_redacts_secrets_before_truncation",
+    "ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified",
+    "ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret",
+    "ProducerToolTimeoutTests.test_actual_public_timeout_terminates_child_and_retains_failure_log",
+    "ProducerToolTimeoutTests.test_actual_remaining_producer_budget_caps_a_longer_tool_budget",
+    "ProducerToolTimeoutTests.test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes",
+    "ProducerToolTimeoutTests.test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child",
+    "ProducerToolTimeoutTests.test_cleanup_has_a_separate_real_child_budget_after_producer_expiry",
+    "ProducerToolTimeoutTests.test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn",
+    "ProducerToolTimeoutTests.test_exhausted_producer_deadline_does_not_start_another_tool",
+    "ProducerToolTimeoutTests.test_private_spawn_failure_has_no_argv_or_raw_exception_chain"
+  ],
+  "actualCompilerAndKeychainProgress": {
+    "CCompilerSucceeded": true,
+    "formalHeaderSwiftCompilerAndObjectLinkSucceeded": true,
+    "basis": "The actual generated importer process completed import and a fresh reopen, so both preceding fail-closed compiler commands succeeded. Compiler logs remain inside failed raw producer output and are not separately exported.",
+    "deviceToolchainSeconds": 0.687157,
+    "producerSeconds": 11.318267,
+    "developerDirectory": "/Applications/Xcode_16.4.app/Contents/Developer",
+    "xcodeVersion": "Xcode 16.4\nBuild version 16F6",
+    "iphoneosSDKPath": "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk",
+    "importedItemCount": 1,
+    "freshReopenSigningIdentityCount": 1,
+    "reopenedKeychainUnlockedReadableWritable": true,
+    "persistedPrivateKeySignatureVerified": true,
+    "codesignACLExecutionVerified": false
+  },
+  "actualProducerFailure": {
+    "phase": "producer",
+    "exitCode": 1,
+    "timeout": false,
+    "firstCodesignTarget": "test.owned.reader.framework",
+    "codesignExitCode": 1,
+    "error": "error: The specified item could not be found in the keychain.",
+    "matchingIdentities": 1,
+    "validIdentities": 0,
+    "policyDiagnostic": "CSSMERR_TP_NOT_TRUSTED",
+    "explicitOwnedAnchorCodeSignPolicyExitCode": 0,
+    "stageBlocked": true,
+    "resultPresent": false,
+    "validatedPublicOutputsPresent": false
+  },
+  "signingErrorRootCause": "Unresolved. Public identity search and a persisted-key challenge now succeed. Matching1/valid0 and explicit own-root codeSign policy success0 do not establish which codesign identity resolution, chain or ACL condition causes item-not-found.",
+  "nextAction": "Repair the actual codesign identity resolution boundary using public tools/API and the same owned Keychain, preserving real signing/CMS requirements and nonzero failures. No global trust/searchlist or ad-hoc substitute. Continue coherent current App/Package selection and original contentBatch/common rate-limit development; never query this terminal run again.",
+  "nativeMethodsExecuted": 0,
+  "SwiftCMSVerifierExecuted": 0,
+  "independentPackageMethodsExecuted": 0,
+  "ownedProducerAccepted": false,
+  "codesignFailureFixed": false,
+  "physicalDeviceValidationRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "artifact": {
+    "downloadedAtUTC": "2026-10-20T08:34:48.431344+00:00",
+    "artifactID": 12250214564,
+    "runID": 39393827282,
+    "sourceCommit": "5edbdeaf57ff901a2cd7c0f21db1c33939b391ea",
+    "archivePublicURL": "https://api.github.com/repos/zhoujianjia/legado-ios/actions/artifacts/12250214564/zip",
+    "HTTPStatus": 200,
+    "bytes": 19557,
+    "sha256": "028e0df5c909b5d12bfd06855ebf6cb2ad7ffe5536dc87f4e7b83093da560ca9",
+    "verifiedAgainstGitHubArtifactDigest": true,
+    "members": [
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/completion.json",
+        "bytes": 47669,
+        "sha256": "53feb8c5d589b27757e7c9714a39609644576cf1e44365eb5fbdd226aad1c373"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-producer.log.stderr.log",
+        "bytes": 927,
+        "sha256": "a5cfeaaf309fd1ca947e51efb52c379153c0320c76d080dae5a7e58981a42772"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-producer.log",
+        "bytes": 2836,
+        "sha256": "241bb838cff590145019f512a5f6a0c5fffdd95e89b70f3ecb7438481d0a4e9c"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-producer.json",
+        "bytes": 9007,
+        "sha256": "97e7f9d08d1d99cdabe3c9aa68138f527ed6fc917b8bcb424cf3a089f8a2d2fc"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-sdk-path.log",
+        "bytes": 108,
+        "sha256": "8f1be6bd61e53ca6963ef2402f774f906914fd56cac8630c20260102a7cf3907"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-sdk-path.log.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-sdk-path.json",
+        "bytes": 8781,
+        "sha256": "5d53edd59b2109b639a8577abcb2707c5ee6324cc46e00500d79fc72515d357d"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-stage.json",
+        "bytes": 138,
+        "sha256": "75cfafbd598985a504a613a04dcc89d6c2dc91ea221a940aeede99157eb59a44"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-toolchain.json",
+        "bytes": 8766,
+        "sha256": "060611720e992c96f26a1ca8e3bc3563bf305f420edfeb9fe91ab9486ce463a8"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-toolchain.log",
+        "bytes": 48,
+        "sha256": "9014c394d2d86817f0259dec8d76bc78677354c8767ca9b36c01fbec01ea21dd"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-toolchain.log.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-xcode-version.json",
+        "bytes": 8760,
+        "sha256": "17d519c6a9bc72df478fd650afd8f30899d1c8f0cce5c5a2358328397abf9734"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-xcode-version.log.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-xcode-version.log",
+        "bytes": 30,
+        "sha256": "a8be4f9af0a29137fe7e59b9928056d4a0df297bb46ba40f80eaa6b0ae982f12"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/source-inputs.json",
+        "bytes": 3845,
+        "sha256": "dcd5d939455e15a7adfcdffcf0b90b49bcb15e60dbc72a12874a8a9dc9b2cdb3"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-ci-logs/check-guards.log",
+        "bytes": 2213,
+        "sha256": "711072753cbaffa1ba78cf5fc0bca86a0e22819289b74f520bb0a78630138df7"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-ci-logs/diagnostic-guards.log",
+        "bytes": 1142,
+        "sha256": "33b6d314a21ff9de1cd5491bb2f1b9f4fcfedfcabcff0b4a4b487b529283760c"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-ci-logs/producer-check.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-ci-logs/reopen-guards.log",
+        "bytes": 1626,
+        "sha256": "cd2f487d4f9fb14c0b5800e00cead2cb0993a27ac8fdeb20068805613d398e86"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-ci-logs/source.log",
+        "bytes": 3845,
+        "sha256": "dcd5d939455e15a7adfcdffcf0b90b49bcb15e60dbc72a12874a8a9dc9b2cdb3"
+      },
+      {
+        "path": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-ci-logs/timeout-guards.log",
+        "bytes": 1689,
+        "sha256": "882a1896b0ed0b3d48500f2afe600f82aba17ac5896c7e570414ac3192a1fb9b"
+      }
+    ],
+    "privateDownloadReferenceExported": false
+  },
+  "privateDownloadReferenceExported": false,
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-owned-sdk-producer-5edbdea-result",
+    "manifest": "manifest.json",
+    "rawFiles": 31,
+    "privateMaterialIncluded": false
+  }
+}

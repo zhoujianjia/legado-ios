@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 460, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 389, in main
+    codesign(framework,'test.owned.reader.framework')
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 388, in codesign
+    run(cmd,public_log=out/(identifier+'.codesign.log'))
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 273, in run
+    raise ToolFailure('private tool' if private else redacted[0],result.returncode)
+ToolFailure: codesign failed: 1
