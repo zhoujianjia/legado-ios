@@ -163,7 +163,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "S1固定源码533f0b4已提交cryptography25检查，首轮冷编译2700秒；适时一次收取源码绑定结果并先修实际失败。继续C1请求选项与S1剩余非真机开发，不反复轮询，不重跑旧诊断/reader smoke/measurement，不制作IPA。",
+      "nextPlannedCheckpoint": "固定源码c8d899b已提交48项签名/资源材料SDK检查；收取对应源码结果并先修实际失败。开发继续，不反复轮询，不重复旧诊断，不制作IPA或请求真机。",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
@@ -611,7 +611,8 @@
       "signatureSDKSubmission": "docs/legado-ios/core-renewal-20f4cd6-initial.json",
       "cryptographySDKSubmission": "docs/legado-ios/core-renewal-533f0b4-initial.json",
       "implementationSDKResult": "docs/legado-ios/core-renewal-0a0c740-result.json",
-      "signedResourceImplementation": "docs/legado-ios/core-renewal-signed-resource-step.json"
+      "signedResourceImplementation": "docs/legado-ios/core-renewal-signed-resource-step.json",
+      "sealedMaterialSDKSubmission": "docs/legado-ios/core-renewal-c8d899b-initial.json"
     }
   },
   "stages": [
@@ -4506,6 +4507,10 @@
     "signed-code-resource-production-step": {
       "path": "docs/legado-ios/core-renewal-signed-resource-step.json",
       "scope": "真实受控暂存.app文件上的页/特殊槽摘要、raw主CodeDirectory detached CMS、V1/V2 signed agility及按原POSIX规则的资源摘要已接通。只接受调用方保持静止的有界目录；通用指定根信任与资源一致性不等于Apple授权、严格资源策略或安装许可。"
+    },
+    "signed-resource-SDK-submission": {
+      "path": "docs/legado-ios/core-renewal-c8d899b-initial.json",
+      "scope": "Fixed-source sealedmaterials48 initial observation only. Exact native SDK verdict and Apple authorization remain unverified."
     }
   },
   "retainedExistingWork": [

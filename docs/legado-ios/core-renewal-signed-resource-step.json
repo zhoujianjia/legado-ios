@@ -115,7 +115,8 @@
         "bytes": 52995,
         "sha256": "e1db4826553d13a9d583d1049e530a3977700d5ae4fad4d6b5e5187cd857e12b"
       }
-    ]
+    ],
+    "committedSourceCommit": "c8d899baee616b31c44b8677fb4a5f7a81ebb262"
   },
   "productionConnections": {
     "signatures": "SignedCodeVerifier.read -> Inventory -> cancellable detached reader worker -> same checked executable FD -> structure+all page/special digests -> raw CD SHA256 recheck -> exact raw primary detached CMS+signedAttrs -> final fstat -> publish",
@@ -145,11 +146,28 @@
   },
   "portableGateRecord": "gates/result.json",
   "cloudSubmission": {
-    "submitted": false,
+    "submitted": true,
+    "sourceCommit": "c8d899baee616b31c44b8677fb4a5f7a81ebb262",
+    "record": {
+      "path": "docs/legado-ios/core-renewal-c8d899b-initial.json",
+      "bytes": 1763,
+      "sha256": "7876dcb84f7e2cef368ae839c2621163fba1766194e0f4cec384ba5c181db180"
+    },
     "selectionMode": "sealedmaterials",
     "preparedSelectedMethods": 48,
     "sourceInputCount": 51,
-    "actualNativeCasesAccepted": 0
+    "runs": [
+      {
+        "id": 39362768821,
+        "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39362768821",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-10-20T03:09:06Z",
+        "updated_at": "2026-10-20T03:09:14Z"
+      }
+    ],
+    "actualNativeCasesAccepted": 0,
+    "physicalDeviceValidationRequested": false
   },
   "evidence": {
     "path": "docs/legado-ios/evidence/core-renewal-signed-resource-step",
