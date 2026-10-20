@@ -1,0 +1,195 @@
+{
+  "repositoryCommit": "3e55c8486b2057e40c1f74aaaa1155c82341cf76",
+  "contracts": [
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/lib.rs",
+      "path": "primary/idevice/src/lib.rs",
+      "bytes": 40495,
+      "sha256": "1eae6fe1bcdeedcfcbad46c308e0d969fc15fdc4856c7fa907a3f8484c2ed0c6",
+      "firstLine": 341,
+      "lastLine": 360,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/lib.rs#L341-L360",
+      "contract": "XML plist bytes are prefixed with a four-byte big-endian byte count on the same stream."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/lib.rs",
+      "path": "primary/idevice/src/lib.rs",
+      "bytes": 40495,
+      "sha256": "1eae6fe1bcdeedcfcbad46c308e0d969fc15fdc4856c7fa907a3f8484c2ed0c6",
+      "firstLine": 552,
+      "lastLine": 604,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/lib.rs#L552-L604",
+      "contract": "Responses may contain XML or binary plist. Read the length and exact bytes, then detect Error before returning response facts."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/lockdown.rs",
+      "path": "primary/idevice/src/services/lockdown.rs",
+      "bytes": 21425,
+      "sha256": "6a61d33e42379319a74e3ebd9e11bb7dd508176c9f51be14ba5b193f3856a741",
+      "firstLine": 243,
+      "lastLine": 294,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/lockdown.rs#L243-L294",
+      "contract": "StartSession includes HostID and SystemBUID; require EnableSessionSSL and upgrade that existing stream in place. This adapter requires the returned bounded SessionID as well."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/lockdown.rs",
+      "path": "primary/idevice/src/services/lockdown.rs",
+      "bytes": 21425,
+      "sha256": "6a61d33e42379319a74e3ebd9e11bb7dd508176c9f51be14ba5b193f3856a741",
+      "firstLine": 305,
+      "lastLine": 325,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/lockdown.rs#L305-L325",
+      "contract": "StopSession uses the returned SessionID, awaits the response, and drops the connection; no in-place TLS downgrade is performed."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/lockdown.rs",
+      "path": "primary/idevice/src/services/lockdown.rs",
+      "bytes": 21425,
+      "sha256": "6a61d33e42379319a74e3ebd9e11bb7dd508176c9f51be14ba5b193f3856a741",
+      "firstLine": 362,
+      "lastLine": 400,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/lockdown.rs#L362-L400",
+      "contract": "StartService returns a dynamic Port and optional EnableServiceSSL. Upstream treats missing SSL as false; this direct TCP adapter explicitly rejects that un-authenticated service branch."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/afc/packet.rs",
+      "path": "primary/idevice/src/services/afc/packet.rs",
+      "bytes": 2824,
+      "sha256": "eb9069934430091f021938918accea2f913eb7e296c9c151cdc3e1634e86ebf5",
+      "firstLine": 27,
+      "lastLine": 88,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/afc/packet.rs#L27-L88",
+      "contract": "AFC uses a 40-byte header of five little-endian UInt64 fields, then header and data payloads; bounds are checked before subtracting or allocating."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/afc/opcode.rs",
+      "path": "primary/idevice/src/services/afc/opcode.rs",
+      "bytes": 4012,
+      "sha256": "bc24dff4d71a08f14b17328a7ac985289925ae023eea9bcfe0c07ea2078d9e62",
+      "firstLine": 1,
+      "lastLine": 62,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/afc/opcode.rs#L1-L62",
+      "contract": "FileOpen 0x0d / FileOpenResult 0x0e, Write 0x10, Close 0x14, RemovePath 8, stat 0x0a; write-only create/truncate mode is 3."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/afc/inner_file.rs",
+      "path": "primary/idevice/src/services/afc/inner_file.rs",
+      "bytes": 16469,
+      "sha256": "e9a23600f15e5d3087c1ff4dfe7b0534875b4ea86e2ca94c922ed51e6f33c96e",
+      "firstLine": 192,
+      "lastLine": 201,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/afc/inner_file.rs#L192-L201",
+      "contract": "Writes carry the remote handle in the header payload, bytes in data payload, and await each actual response. This adapter uses 64KiB chunks below the upstream 1MiB transfer maximum."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/utils/installation/helpers.rs",
+      "path": "primary/idevice/src/utils/installation/helpers.rs",
+      "bytes": 12805,
+      "sha256": "5e65fc6947de83efb14c519707cc809f823050729eb61c190d2778b773284a05",
+      "firstLine": 158,
+      "lastLine": 177,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/utils/installation/helpers.rs#L158-L177",
+      "contract": "Close the actual AFC remote handle after uploading; packages use an AFC-jail PublicStaging path, not an arbitrary device filesystem path."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/installation_proxy.rs",
+      "path": "primary/idevice/src/services/installation_proxy.rs",
+      "bytes": 14823,
+      "sha256": "27b1158aef809f8948524febda08c0813d42db0c5728d558da4f539b0efb114a",
+      "firstLine": 223,
+      "lastLine": 246,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/installation_proxy.rs#L223-L246",
+      "contract": "Upgrade uses Command, ClientOptions and AFC-jail PackagePath on the installation_proxy stream."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/installation_proxy.rs",
+      "path": "primary/idevice/src/services/installation_proxy.rs",
+      "bytes": 14823,
+      "sha256": "27b1158aef809f8948524febda08c0813d42db0c5728d558da4f539b0efb114a",
+      "firstLine": 414,
+      "lastLine": 450,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/installation_proxy.rs#L414-L450",
+      "contract": "Progress does not establish completion; continue until actual Status Complete and reject actual device/ErrorDescription failures."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/installation_proxy.rs",
+      "path": "primary/idevice/src/services/installation_proxy.rs",
+      "bytes": 14823,
+      "sha256": "27b1158aef809f8948524febda08c0813d42db0c5728d558da4f539b0efb114a",
+      "firstLine": 87,
+      "lastLine": 114,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/services/installation_proxy.rs#L87-L114",
+      "contract": "Lookup requests ApplicationType Any and explicit BundleIDs; only actual LookupResult fields are observations, not proof of the installed profile or archive digest."
+    },
+    {
+      "url": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/sni.rs",
+      "path": "primary/idevice/src/sni.rs",
+      "bytes": 2590,
+      "sha256": "87c21b18d2ef2e7ad0b5ea5598714db29a1b144289530a3440d88ddd3baa992f",
+      "firstLine": 31,
+      "lastLine": 61,
+      "lineURL": "https://github.com/SideStore/idevice/blob/3e55c8486b2057e40c1f74aaaa1155c82341cf76/idevice/src/sni.rs#L31-L61",
+      "contract": "The pinned Rust dangerous verifier accepts certificate and TLS signatures unconditionally. This behavior is not reused; Swift performs actual pinned SecTrust validation during the real handshake."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "path": "primary/SecureTransport.h",
+      "bytes": 74273,
+      "sha256": "66dddef1036cf3c6eaa691c54c77587ec39f8d495575d4ed7df40c607ecb1835",
+      "firstLine": 30,
+      "lastLine": 56,
+      "lineURL": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "contract": "Public SecureTransport supports TLS through 1.2 and application-provided I/O on an existing connection; TLS1.3 is not supported here."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "path": "primary/SecureTransport.h",
+      "bytes": 74273,
+      "sha256": "66dddef1036cf3c6eaa691c54c77587ec39f8d495575d4ed7df40c607ecb1835",
+      "firstLine": 91,
+      "lastLine": 115,
+      "lineURL": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "contract": "breakOnServerAuth / breakOnClientAuth suspend handshake so actual peer trust can be checked before proceeding; no unverified peer is accepted."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "path": "primary/SecureTransport.h",
+      "bytes": 74273,
+      "sha256": "66dddef1036cf3c6eaa691c54c77587ec39f8d495575d4ed7df40c607ecb1835",
+      "firstLine": 307,
+      "lastLine": 429,
+      "lineURL": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "contract": "SSLCreateContext, session options and I/O callbacks are available from iOS5, deprecated on iOS13; the header explicitly says no longer supported. Header availability is not SDK/runtime acceptance."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "path": "primary/SecureTransport.h",
+      "bytes": 74273,
+      "sha256": "66dddef1036cf3c6eaa691c54c77587ec39f8d495575d4ed7df40c607ecb1835",
+      "firstLine": 1239,
+      "lastLine": 1289,
+      "lineURL": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "contract": "Resumed sessions may skip prior trust evaluation. Use disabled tickets, per-context random peerID, require fresh auth break, and repeat actual peer trust/pin/date evaluation after handshake."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "path": "primary/SecureTransport.h",
+      "bytes": 74273,
+      "sha256": "66dddef1036cf3c6eaa691c54c77587ec39f8d495575d4ed7df40c607ecb1835",
+      "firstLine": 1391,
+      "lastLine": 1413,
+      "lineURL": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_ssl/lib/SecureTransport.h",
+      "contract": "The controlled server requires actual client-certificate authentication with SSLSetClientSideAuthenticate; the client also checks the completed certificate-exchange state."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/keychain/headers/SecIdentity.h",
+      "path": "primary/SecIdentity.h",
+      "bytes": 14098,
+      "sha256": "25bccb27adb79f50aec405e063971abdfbfa15b67c2510e9346294ef451550af",
+      "firstLine": 93,
+      "lastLine": 106,
+      "lineURL": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/keychain/headers/SecIdentity.h",
+      "contract": "SecIdentityCreateWithCertificate is macOS-only. Owned iOS-capable test fixtures use Keychain identity matching after generating an owned software key and certificate."
+    }
+  ]
+}

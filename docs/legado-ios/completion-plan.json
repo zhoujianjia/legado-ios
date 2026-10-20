@@ -573,7 +573,7 @@
           "workpackages": [
             "automatic-renewal-feasibility"
           ],
-          "status": "unfinished_not_started",
+          "status": "in_progress",
           "actionsZh": [
             "在已有有界发现／TCP之后实现配对材料校验、认证会话、协商、上传和安装请求／回执解析。",
             "贯通超时、取消、断线、错误码和资源释放；受控协议对端验证，不扫描网络、不把TCP连接当安装授权。"
@@ -587,7 +587,14 @@
           ],
           "actualAcceptedEvidence": [],
           "requiresPhysicalDevice": false,
-          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。"
+          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
+          "implementationEvidence": [
+            "docs/legado-ios/core-renewal-authenticated-installation-step.json"
+          ],
+          "implementedSubtasksZh": [
+            "真实数字地址TCP、原FD原地TLS1.2、SecIdentity双向认证及设备证书精确pin、StartSession/StartService、AFC分块上传、Upgrade回执、独立Lookup、所属路径删除及StopSession已接线。增加上传前/提交前持久化钩子；取消唤醒实际poll。13项Python/OpenSSL对照已执行，7项Swift方法尚未SDK执行。"
+          ],
+          "nextActionZh": "集中SDK检查实际TLS客户端及受控对端；继续补取消/断流后的新认证所属路径清理，并连接S5真实持久事务。未知Upgrade仅Lookup，不能因断线重复提交或凭同版本Lookup登记续签成功。"
         },
         {
           "id": "S5",
@@ -687,7 +694,8 @@
       "controlledSigningSDKSubmission": "docs/legado-ios/core-renewal-44528e0-initial.json",
       "boundMaterialSDKResult": "docs/legado-ios/core-renewal-478b69d-result.json",
       "appChapterOwnerImplementation": "docs/legado-ios/core-original-app-chapter-owner-step.json",
-      "controlledPackageSigningImplementation": "docs/legado-ios/core-renewal-controlled-package-step.json"
+      "controlledPackageSigningImplementation": "docs/legado-ios/core-renewal-controlled-package-step.json",
+      "authenticatedInstallationImplementation": "docs/legado-ios/core-renewal-authenticated-installation-step.json"
     }
   },
   "stages": [
@@ -4642,6 +4650,10 @@
     "controlled-whole-package-signing": {
       "path": "docs/legado-ios/core-renewal-controlled-package-step.json",
       "scope": "Actual package orchestration and sole scoped archive/vault path, 11 SDK-unexecuted definitions and same-job platform fixture producer. Original owned-vector OpenSSL checks do not execute the Swift package signer."
+    },
+    "authenticated-installation-substrate": {
+      "path": "docs/legado-ios/core-renewal-authenticated-installation-step.json",
+      "scope": "Real source transport and install protocol client with 7 SDK-unexecuted methods. 13 independent Python/OpenSSL socket cases do not execute Swift or establish Apple/device installation authority."
     }
   },
   "retainedExistingWork": [

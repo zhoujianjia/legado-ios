@@ -1,0 +1,320 @@
+{
+  "recordedAtUTC": "2026-10-20T04:30:28.737560+00:00",
+  "status": "passed",
+  "actualReferenceExperiments": 13,
+  "runtime": "OpenSSL 3.0.15 3 Sep 2024",
+  "referenceOnlyNotSwift": true,
+  "swiftExecutions": 0,
+  "archiveBytes": 150001,
+  "archiveSHA256": "eb3e8b3159e925699ac89bed8c0143434581f4ea65a65a11c90574ffa0e26eb3",
+  "publicCertificateSHA256": {
+    "root": "0bae2cad5c40ce9bed8d648c84f6adc3ecd745daebba745bcbc4511711bdcc7c",
+    "host": "94568a9633e8ccc4b8e07d833efcae4af0b551c311e90d610ed8914e7d1d67ed",
+    "device": "b53bdd204728313ab4707e492bcb707578b28cb1bc5e13b30b8644d7d9448ae7",
+    "wrong": "7028c75ace5f22a80217c08da2895d006b83e3410d80a94821692afe8d766377"
+  },
+  "privateKeysPublished": false,
+  "physicalDeviceUsed": false,
+  "appleAccountUsed": false,
+  "cases": [
+    {
+      "case": "normal",
+      "status": "passed",
+      "rejected": false,
+      "stage": "lookup",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 1,
+        "lookups": 1,
+        "uploadedBytes": 150001,
+        "removed": 1,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "wrong-device-pin",
+      "status": "passed",
+      "rejected": true,
+      "stage": "session",
+      "observed": {
+        "authenticatedChannels": 1,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 0,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup"
+      ]
+    },
+    {
+      "case": "wrong-host-pin",
+      "status": "passed",
+      "rejected": true,
+      "stage": "session",
+      "observed": {
+        "authenticatedChannels": 0,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 0,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup"
+      ]
+    },
+    {
+      "case": "no-client-identity",
+      "status": "passed",
+      "rejected": true,
+      "stage": "session",
+      "observed": {
+        "authenticatedChannels": 0,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 0,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": []
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup"
+      ]
+    },
+    {
+      "case": "wrong-afc-sequence",
+      "status": "passed",
+      "rejected": true,
+      "stage": "upload",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 0,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup"
+      ]
+    },
+    {
+      "case": "truncated-afc",
+      "status": "passed",
+      "rejected": true,
+      "stage": "upload",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 0,
+        "lookups": 0,
+        "uploadedBytes": 0,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "passed",
+        "expected-rejection-or-cleanup"
+      ]
+    },
+    {
+      "case": "installation-error",
+      "status": "passed",
+      "rejected": true,
+      "stage": "upgrade",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 1,
+        "lookups": 0,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "passed"
+      ]
+    },
+    {
+      "case": "no-complete",
+      "status": "passed",
+      "rejected": true,
+      "stage": "upgrade",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 1,
+        "lookups": 0,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup"
+      ]
+    },
+    {
+      "case": "wrong-lookup",
+      "status": "passed",
+      "rejected": true,
+      "stage": "lookup",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 1,
+        "lookups": 1,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "passed"
+      ]
+    },
+    {
+      "case": "oversized-plist",
+      "status": "passed",
+      "rejected": true,
+      "stage": "upgrade",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 1,
+        "lookups": 0,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "passed"
+      ]
+    },
+    {
+      "case": "progress-budget",
+      "status": "passed",
+      "rejected": true,
+      "stage": "upgrade",
+      "observed": {
+        "authenticatedChannels": 3,
+        "upgrades": 1,
+        "lookups": 0,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 0,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup"
+      ]
+    },
+    {
+      "case": "disconnect-recovery",
+      "status": "passed",
+      "rejected": true,
+      "stage": "upgrade",
+      "observed": {
+        "authenticatedChannels": 5,
+        "upgrades": 1,
+        "lookups": 1,
+        "uploadedBytes": 150001,
+        "removed": 0,
+        "stops": 1,
+        "sameFDStartTLS": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "peerOutcomes": [
+        "passed",
+        "passed",
+        "passed"
+      ]
+    },
+    {
+      "case": "cancel-stalled-in-place-handshake",
+      "status": "passed",
+      "actualTLSClientHello": true,
+      "cancelled": true,
+      "sameFD": true,
+      "upgradeRequests": 0,
+      "peerOutcomes": [
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup",
+        "expected-rejection-or-cleanup"
+      ]
+    }
+  ],
+  "limitations": [
+    "Only independently implemented Python/OpenSSL reference sockets ran. The new Swift SecureTransport code and seven native methods have not run.",
+    "Synthetic loopback peers do not establish actual iOS pairing, installation permission, same-device reachability, no-VPN routing or automatic renewal."
+  ]
+}

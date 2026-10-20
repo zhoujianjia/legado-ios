@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T04:41:57.014995+00:00",
+  "status": "S4-authenticated-transport-installation-source-connected-SDK-and-recovery-cleanup-pending",
+  "canonicalPlan": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "jsonPointer": "/execution/stepByStep"
+  },
+  "sourceBinding": {
+    "files": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+        "bytes": 22419,
+        "sha256": "d5763684d33f58212fc1e08761da08f4267acde4ea057942dce6087fe3b66687"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 27667,
+        "sha256": "2ba9a990e69da7eb88c2e203d01b46afb2ae43813988c32cd77ae732b82afd08"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 12428,
+        "sha256": "4523c5ba86b945d67cc812ea8c5504920278ae8f664c7f0e06ef044cceb54083"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 25226,
+        "sha256": "2acb824ebc7d805700bbc26c968b3c38f3548a36aa2ca8e6aa53ea9a8e48218a"
+      }
+    ],
+    "count": 4,
+    "integrationDependencyRebinding": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "preparedBytes": 29965,
+        "preparedSHA256": "93018a3bcdde08bb2c3477da6e0edd7922c649097d573df9c1e6b27de2d3783b",
+        "integrationBytes": 30790,
+        "integrationSHA256": "c1a509098a9fc82193045549981ff32aafa5e545c4517442f68b4375ef834cd5",
+        "reason": "Whole-package stage adds exact profile input/identity binding; the KeyMaterial handle interface consumed by this client and owned peer is unchanged. SDK compilation is pending."
+      }
+    ]
+  },
+  "implementedBoundaries": [
+    "One caller-owned detached client operation uses numeric IPv4/IPv6 BSD sockets, fixed byte/deadline budgets, nonblocking poll and a cancellation wake pipe.",
+    "Existing StartSession FD is upgraded in place. TLS1.2 only, actual SecIdentity, explicit device DER pin and root-only BasicX509 date evaluation without network fetch.",
+    "Session tickets and renegotiation/false-start are disabled; random cache peer ID and fresh auth-break plus post-handshake actual trust recheck prevent resumed trust bypass.",
+    "All three service channels require real mutual TLS. Missing/false EnableServiceSSL is typed unsupported for this direct TCP provider.",
+    "Actual AFC stat/open/write/close ACKs and sequence/layout checks stream opaque artifact chunks, compare their actual SHA256 before Upgrade, and never perform a second whole-IPA file read or inventory.",
+    "A real beforeUpgradeSubmission hook carries only actual upload/identity/path facts; after its durable caller action cancellation/deadline are checked again before any Upgrade frame write.",
+    "A separate beforeUploadCreation planned-path event runs before FileOpen; durable journal failure or cancellation is rechecked before any remote file creation attempt.",
+    "Pre-submission errors and errors after actual Complete attempt Close/Remove on only the same live authenticated AFC, within the original cancellation/deadline. Cleanup precedes stream disposal and retains original error plus separate cleanup errors and actual removal facts.",
+    "Errors after beginning Upgrade write conservatively retain upgradeMayHaveExecuted; independent recovery API opens fresh authenticated connections and sends only Lookup.",
+    "Success requires real Complete, exact Lookup bundle/version, owned staging Remove ACK and same SessionID Stop ACK. Lookup never authenticates the installed profile or archive bytes.",
+    "Controlled loopback peer uses actual SecIdentity keys/certificates and TLS on both sides. GCD peer workers avoid starving the Swift cooperative executor with waiting listeners."
+  ],
+  "nativeTests": {
+    "suite": "SelfRenewalAuthenticatedInstallationClientTests",
+    "definedMethods": [
+      "uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop",
+      "rejectsActualWrongDeviceHostAndExpiredTLSCertificates",
+      "rejectsInvalidSessionServicePortsAndPlaintextDowngrades",
+      "rejectsActualAFCSequenceTruncationErrorsAndChangedArchiveDigest",
+      "requiresTerminalCompleteAndExactPostUpgradeLookupIdentity",
+      "cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+      "enforcesActualFrameProgressDeadlineAndArchiveBudgets"
+    ],
+    "definedCount": 7,
+    "executed": 0
+  },
+  "actualSwiftSDKMethodsAccepted": 0,
+  "independentReferenceCases": {
+    "count": 13,
+    "referenceOnlyNotSwift": true,
+    "sourceBound": true
+  },
+  "remaining": [
+    "Grammar4/0 is not Apple SDK compilation/typechecking. Native7 definitions have not executed; the 13 Python/OpenSSL socket cases are explicitly independent reference evidence.",
+    "Deprecated public SecureTransport iOS17 SDK acceptance and actual TLS interoperability still require the next centralized SDK gate.",
+    "The direct TCP TLS1.2 route is limited: no RemotePairing/CDTunnel/usbmux provider, no legacy SSL/TLS fallback, no plaintext AFC/installation_proxy services.",
+    "Production caller must own and serialize its transaction, validate actual signed package/profile/device authority separately, and bridge only its immutable controlled artifact.",
+    "Cancellation, deadline, broken AFC or interrupted submitted Upgrade may leave its uniquely named owned remote staging file. Ending AFC reclaims open handles, not files. The planned-path event permits caller journaling; failure facts expose path/creationAttempted/cleanupAttempted/cleanupErrors/removalVerified. A future authenticated journal-owned cleanup-only recovery route is still unfinished.",
+    "Lookup matching identifier/version cannot establish that a particular renewed profile or archive is installed, or that relaunch/data preservation succeeded.",
+    "Generic pairing CA/device pin trust is not Apple installation authority or proof of the same physical device. No-VPN same-device route, real pairing, actual install and unattended renewal remain unverified."
+  ],
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-authenticated-installation-step",
+    "manifest": "manifest.json",
+    "rawFiles": 12
+  },
+  "current445SourceExcludesThisStage": true,
+  "newCloudBuildRequested": false,
+  "physicalDeviceValidationPassed": false,
+  "sameDeviceRouteVerified": false,
+  "noVPNRouteVerified": false,
+  "appleInstallationAuthorityVerified": false,
+  "selfRenewalVerified": false,
+  "unattendedRenewalVerified": false,
+  "fullS4Complete": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -1,0 +1,14 @@
+normal reference rejection: SSLCertVerificationError [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)
+peer rejection: SSLError [SSL: TLSV1_ALERT_UNKNOWN_CA] tlsv1 alert unknown ca (_ssl.c:1000)
+peer rejection: Reject owned peer stopped
+peer rejection: Reject owned peer stopped
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\authenticated-installation-step\work\independent-tls-contract.py", line 418, in <module>
+    main()
+  File "F:\yuedu-reader\.build\renewal-discovery\authenticated-installation-step\work\independent-tls-contract.py", line 396, in main
+    outcomes = peer.close(require_success=mode in ('normal', 'disconnect-recovery'))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\authenticated-installation-step\work\independent-tls-contract.py", line 240, in close
+    assert outcomes == ['passed'] * 3, outcomes
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ['failed', 'failed', 'failed']
