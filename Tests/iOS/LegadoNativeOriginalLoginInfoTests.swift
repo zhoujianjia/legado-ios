@@ -122,7 +122,7 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
             login.storeLoginHeader(sourceUrl: a, raw: "kept-header")
         }
         func source(_ url: String) throws -> String {
-            String(decoding: try JSONSerialization.data(withJSONObject: ["bookSourceUrl": url, "enabledCookieJar": false]), as: UTF8.self)
+            String(decoding: try JSONSerialization.data(withJSONObject: ["bookSourceUrl": url, "enabledCookieJar": false, "ruleContent": [String: String]()]), as: UTF8.self)
         }
         func cleanup() throws {
             for source in [a,b] {

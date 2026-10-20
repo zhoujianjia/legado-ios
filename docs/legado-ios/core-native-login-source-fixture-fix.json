@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "statically-proven-Native-fixture-admission-defect-repaired-awaiting-coherent-JNI-checkpoint",
+  "source": {
+    "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+    "bytes": 9553,
+    "sha256": "a443ae7056b4a197dcd068734f23457f0beb66c4975437f2ff1b1e91d600c540"
+  },
+  "actualAdmissionContract": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt:55 requires mainJs or ruleSearch/ruleContent, or ruleExplore for original mode, before constructing a session. The synthetic raw-login source had only URL/enabledCookieJar and would be rejected before JNI-host assertions.",
+  "repair": "Add one explicitly typed empty ruleContent object to the same source fixture. Retain the actual runtime admission and source validation unchanged; no production relaxation, engine fallback, new test method or SDK acceptance is claimed.",
+  "pendingCloudBoundary": "fa48eb3 was frozen/submitted before this fixture defect was found by the subsequent bounded getLoginInfoMap source work. Its two new raw-login Native methods may fail at session admission; preserve actual outcome. Its447 App definitions do not select these two Native methods. Do not start another per-item cloud job; consolidate this fixture repair into the next coherent changed-source checkpoint.",
+  "newSwiftGrammarRoots": 1,
+  "actualSDKExecutions": 0,
+  "actualJNIExecutions": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
