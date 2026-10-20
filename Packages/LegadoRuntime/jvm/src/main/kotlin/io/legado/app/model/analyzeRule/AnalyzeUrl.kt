@@ -17,6 +17,7 @@ import io.yuedu.legado.jsonObject
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.util.regex.Pattern
+import okhttp3.ResponseBody.Companion.toResponseBody
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -42,6 +43,16 @@ class AnalyzeUrl(
     private val callTimeout: Long? = null,
 ) : RuleJsExtensions {
     private val context = coroutineContext.minusKey(ContinuationInterceptor)
+    suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null): io.yuedu.legado.StrResponse {
+        if (!jsStr.isNullOrBlank() || !sourceRegex.isNullOrBlank()) unsupportedRule("original WebBook browser/webJs/sourceRegex")
+        return environment.platform.executeUrl(this)
+    }
+    fun getErrStrResponse(error: Throwable): io.yuedu.legado.StrResponse {
+        val request = okhttp3.Request.Builder().url(url).build()
+        val raw = okhttp3.Response.Builder().request(request).code(500).message(error.message ?: "Error Response")
+            .protocol(okhttp3.Protocol.HTTP_1_1).body(error.stackTraceToString().toResponseBody(null)).build()
+        return io.yuedu.legado.StrResponse(raw.request.url.toString(), 500, error.stackTraceToString(), emptyMap(), raw)
+    }
     var ruleUrl: String = ""
         private set
     var url: String = ""
@@ -310,8 +321,8 @@ class AnalyzeUrl(
     override fun getRuleCoroutineContext(): CoroutineContext = context
     override fun ajax(url: Any): String? = connect(if (url is List<*>) url.firstOrNull().toString() else url.toString()).body()
 
-    private companion object {
-        val queryEncoder = OriginalQueryEncoder
+    companion object {
+        private val queryEncoder = OriginalQueryEncoder
         val supportedOptionNames = setOf("method", "charset", "headers", "body", "origin", "retry", "type", "webView", "webJs", "timeout", "followRedirects", "dnsIp", "resolveIp", "js", "bodyJs", "serverID", "webViewDelayTime")
         val jsPattern: Pattern = Pattern.compile("<js>([\\w\\W]*?)</js>|@js:([\\w\\W]*)", Pattern.CASE_INSENSITIVE)
         val pagePattern: Pattern = Pattern.compile("<(.*?)>")

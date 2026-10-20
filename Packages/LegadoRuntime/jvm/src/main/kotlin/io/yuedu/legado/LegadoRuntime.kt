@@ -16,6 +16,8 @@ import org.htmlunit.corejs.javascript.Function
 import org.htmlunit.corejs.javascript.ScriptableObject
 import io.yuedu.legado.originalrule.ProductionRulePlatform
 import io.yuedu.legado.originalrule.RuleEnvironment
+import io.yuedu.legado.originalrule.decodeOriginalBookSource
+import io.legado.app.data.entities.BookSource
 
 /** Synchronous JNI facade. Call execute on a worker thread; cancel is safe on another thread. */
 object LegadoRuntime {
@@ -248,6 +250,13 @@ object LegadoRuntime {
         lateinit var environment: RuleEnvironment
         environment = RuleEnvironment(ProductionRulePlatform(task, ::dispatchHost) { environment })
         return environment
+    }
+
+    /** Original source snapshot plus the existing owner, for the retained WebBook await APIs. */
+    internal fun originalBookSource(task: RuntimeTask, environment: RuleEnvironment): BookSource {
+        task.ensureActiveForRuntime()
+        check(!task.session.closed.get()) { "Session is closed" }
+        return decodeOriginalBookSource(environment, task.session.source)
     }
 
     private fun dispatchHost(task: RuntimeTask, operation: String, request: JsonObject): JsonObject {

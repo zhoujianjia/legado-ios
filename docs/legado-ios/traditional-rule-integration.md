@@ -125,3 +125,7 @@ Windows JDK 21 本轮强制执行完整 JVM 回归，实际为 18 份 XML、153 
 本轮更正前一段合同说明的两处过宽结论：原 `AnalyzeRule` 单参数 `ajax` 会传 `book`，`JsExtensions.ajax/connect`（含 timeout 重载）默认不继承 book；原 catch 只包 `getStrResponse` 执行，构造 URL 的 JS 异常会逸出。现已按原边界接线并增加真实回归。供后续 WebBook 的显式 requestUrl 同样让执行异常逸出，保留其登录/错误处理机会。历史82项结果只证明当时的输入，原始证据不改写，也不据此扩大当前兼容结论。
 
 独审还修复了 header 共用库等待丢失取消、toJSON/getter 吞 typed unsupported、表单开头空字段、Unicode字符流编码、IP 分类及 null proxy 移除。新的18方法包含真实 loopback 请求、取消/关闭、异常和原对象绑定；原 ZIP 方法与 Hutool 标签向量的对照范围在新记录中逐项列明。完整 WebBook、持久状态、浏览器/代理/媒体/限流及普通 JNI/App 阅读入口仍未接齐，未进行 Android、iOS、真实站点或真机验收。
+
+2026-10-20，原WebBook底层文本await执行已接入同一任务/HTTP/Cookie/原实体：搜索→详情→多页目录→多页正文及第二章均有实际loopback回归，覆盖CSS/XPath/JSON/regex入口、目录去重/反序/有序fanout、重定向基址、loginCheck异常分层和取消/绝对截止。最终138唯一方法（13新+125相关旧）、普通生产JAR和smoke通过；28/36原golden向量属于方法内部，未额外累计，也未新增Android观察。
+
+此段仅供原内部调用方显式使用，正文要求needSave=false；瞬态章节查找不等于Room或持久化。正文保存/批量、必要宿主/标题替换及普通JNI/App唯一入口仍未完成。LegadoRuntime.execute仍保留原现有路由，尚未选择该新入口；完整兼容标志继续为false。原始结果、失败尝试与保留源码见[本段记录](core-original-webbook-step.json)。

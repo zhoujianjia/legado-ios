@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.OriginalWebBookExecutionTest" tests="9" skipped="0" failures="3" errors="0" timestamp="2026-10-20T03:05:15.973Z" hostname="DESKTOP-2E0OC06" time="2.704">
+  <properties/>
+  <testcase name="sourceSnapshotDecodesOriginalStringRulesAndKeepsEnvironmentOwnership" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.455"/>
+  <testcase name="multiPageFanoutPreservesDeclaredOrderAndDoesNotRecurse" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.149">
+    <failure message="org.junit.ComparisonFailure: expected:&lt;[zero&#10;one&#10;two]&gt; but was:&lt;[　　　　zero&#10;　　&#10;　　　　one&#10;　　&#10;　　　　two&#10;　　]&gt;" type="org.junit.ComparisonFailure">org.junit.ComparisonFailure: expected:&lt;[zero
+one
+two]&gt; but was:&lt;[　　　　zero
+　　
+　　　　one
+　　
+　　　　two
+　　]&gt;
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at io.yuedu.legado.OriginalWebBookExecutionTest$multiPageFanoutPreservesDeclaredOrderAndDoesNotRecurse$2$1$1.invokeSuspend(OriginalWebBookExecutionTest.kt:106)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.UndispatchedCoroutine.afterResume(CoroutineContext.kt:278)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:47)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:47)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)
+	at kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)
+	at kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)
+	at kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source)
+	at io.yuedu.legado.OriginalWebBookExecutionTest.multiPageFanoutPreservesDeclaredOrderAndDoesNotRecurse(OriginalWebBookExecutionTest.kt:102)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="originalRegexSearchGroupsFilterBreakAndReverseAreNotReparsedByNewCode" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.019"/>
+  <testcase name="loginCheckReceivesOriginalRawResponseAndCanRecoverOnlyExecutionErrors" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.462">
+    <failure message="com.script.ScriptException: org.htmlunit.corejs.javascript.EcmaError: TypeError: 无法调用 null 的方法 “getName” (&lt;script-3&gt;#1)&#10;Source context:&#10;&gt; 1: source.put('code',String(result.code())); source.put('class',result.getClass().getName()); result in &lt;script-3&gt; at line number 1" type="com.script.ScriptException">com.script.ScriptException: org.htmlunit.corejs.javascript.EcmaError: TypeError: 无法调用 null 的方法 “getName” (&lt;script-3&gt;#1)
+Source context:
+&gt; 1: source.put('code',String(result.code())); source.put('class',result.getClass().getName()); result in &lt;script-3&gt; at line number 1
+	at app//com.script.rhino.RhinoScriptEngine.createScriptException$io_yuedu_legado_runtime(RhinoScriptEngine.kt:227)
+	at app//com.script.rhino.RhinoScriptEngine.createScriptException$io_yuedu_legado_runtime$default(RhinoScriptEngine.kt:205)
+	at app//com.script.rhino.RhinoScriptEngine.eval(RhinoScriptEngine.kt:86)
+	at app//com.script.rhino.RhinoScriptEngine.eval(RhinoScriptEngine.kt:60)
+	at app//io.legado.app.model.analyzeRule.AnalyzeUrl.evalJS(AnalyzeUrl.kt:299)
+	at app//io.legado.app.model.webBook.WebBook.searchBookAwaitOwned(WebBook.kt:72)
+	at app//io.legado.app.model.webBook.WebBook.access$searchBookAwaitOwned(WebBook.kt:20)
+	at app//io.legado.app.model.webBook.WebBook$searchBookAwait$2.invokeSuspend(WebBook.kt:31)
+	at app//io.legado.app.model.webBook.WebBook$searchBookAwait$2.invoke(WebBook.kt)
+	at app//io.legado.app.model.webBook.WebBook$searchBookAwait$2.invoke(WebBook.kt)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform$runWebBook$result$1.invokeSuspend(ProductionRulePlatform.kt:62)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform$runWebBook$result$1.invoke(ProductionRulePlatform.kt)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform$runWebBook$result$1.invoke(ProductionRulePlatform.kt)
+	at app//kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatched(Undispatched.kt:66)
+	at app//kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:43)
+	at app//kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:497)
+	at app//kotlinx.coroutines.BuildersKt.withContext(Unknown Source)
+	at app//io.yuedu.legado.originalrule.ProductionRulePlatform.runWebBook(ProductionRulePlatform.kt:62)
+	at app//io.legado.app.model.webBook.WebBook.owned(WebBook.kt:27)
+	at app//io.legado.app.model.webBook.WebBook.owned$default(WebBook.kt:21)
+	at app//io.legado.app.model.webBook.WebBook.searchBookAwait(WebBook.kt:31)
+	at app//io.legado.app.model.webBook.WebBook.searchBookAwait$default(WebBook.kt:29)
+	at app//io.yuedu.legado.OriginalWebBookExecutionTest$loginCheckReceivesOriginalRawResponseAndCanRecoverOnlyExecutionErrors$2$1$1.invokeSuspend(OriginalWebBookExecutionTest.kt:130)
+	at app//kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at app//kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at app//kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)
+	at app//kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)
+	at app//kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)
+	at app//kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source)
+	at app//kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)
+	at app//kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source)
+	at app//kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)
+	at app//kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source)
+	at app//io.yuedu.legado.OriginalWebBookExecutionTest.loginCheckReceivesOriginalRawResponseAndCanRecoverOnlyExecutionErrors(OriginalWebBookExecutionTest.kt:126)
+	at java.base@21.0.12.1/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at app//org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at app//org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at app//org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at app//org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at app//org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at app//org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base@21.0.12.1/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.htmlunit.corejs.javascript.EcmaError: TypeError: 无法调用 null 的方法 “getName” (&lt;script-3&gt;#1)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.constructError(ScriptRuntime.java:5774)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.constructError(ScriptRuntime.java:5755)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.typeError(ScriptRuntime.java:5787)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.typeErrorById(ScriptRuntime.java:5792)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.undefCallError(ScriptRuntime.java:5872)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.getPropAndThisHelper(ScriptRuntime.java:3314)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.getPropAndThisInner(ScriptRuntime.java:3301)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.getPropAndThis(ScriptRuntime.java:3286)
+	at app//org.htmlunit.corejs.javascript.Interpreter$DoPropAndThis.execute(Interpreter.java:2480)
+	at app//org.htmlunit.corejs.javascript.Interpreter.interpretFunction(Interpreter.java:1087)
+	at app//org.htmlunit.corejs.javascript.Interpreter.interpretLoop(Interpreter.java:863)
+	at app//org.htmlunit.corejs.javascript.Interpreter.interpret(Interpreter.java:448)
+	at app//org.htmlunit.corejs.javascript.InterpreterData.execute(InterpreterData.java:102)
+	at app//org.htmlunit.corejs.javascript.JSScript.exec(JSScript.java:42)
+	at app//org.htmlunit.corejs.javascript.ContextFactory.doTopCall(ContextFactory.java:354)
+	at app//com.script.rhino.RhinoScriptEngine$1.doTopCall(RhinoScriptEngine.kt:342)
+	at app//org.htmlunit.corejs.javascript.ScriptRuntime.doTopCall(ScriptRuntime.java:4961)
+	at app//org.htmlunit.corejs.javascript.JSScript.exec(JSScript.java:36)
+	at app//com.script.rhino.RhinoScriptEngine.eval(RhinoScriptEngine.kt:84)
+	... 41 more
+</failure>
+  </testcase>
+  <testcase name="entireParserStageObservesActualCallerCancellationAndAbsoluteDeadline" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="1.287"/>
+  <testcase name="infoHtmlFallbackAndEmptyContentRuleVolumeShortcutsIssueNoHttp" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.007"/>
+  <testcase name="unsupportedSavingBatchAndNestedCapabilitiesAreTypedWithoutPublication" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.066"/>
+  <testcase name="cssSearchXpathDetailsJsonTocAndPagedContentUseSameEntitiesAndTransport" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.247">
+    <failure message="java.lang.AssertionError: 首页&amp;正文&#10;&#10;末页&#10;&lt;img src=&quot;http://127.0.0.1:59661/image.png&quot;&gt;&#10;" type="java.lang.AssertionError">java.lang.AssertionError: 首页&amp;正文
+
+末页
+&lt;img src=&quot;http://127.0.0.1:59661/image.png&quot;&gt;
+
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at io.yuedu.legado.OriginalWebBookExecutionTest$cssSearchXpathDetailsJsonTocAndPagedContentUseSameEntitiesAndTransport$2$1$1.invokeSuspend(OriginalWebBookExecutionTest.kt:59)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)
+	at kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)
+	at kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)
+	at kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source)
+	at io.yuedu.legado.OriginalWebBookExecutionTest.cssSearchXpathDetailsJsonTocAndPagedContentUseSameEntitiesAndTransport(OriginalWebBookExecutionTest.kt:40)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="tocDuplicateSelectionReverseAndPersistentFormatBindingsMatchOriginalOrder" classname="io.yuedu.legado.OriginalWebBookExecutionTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+]]></system-err>
+</testsuite>

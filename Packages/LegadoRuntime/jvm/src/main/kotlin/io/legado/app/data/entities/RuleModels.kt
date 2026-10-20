@@ -24,7 +24,28 @@ class Book(
     override var variable: String? = null,
     override var infoHtml: String? = null,
     override var tocHtml: String? = null,
+    var originName: String = "",
+    var originOrder: Int = 0,
+    var type: Int = 8,
+    var coverUrl: String? = null,
+    var intro: String? = null,
+    var latestChapterTitle: String? = null,
+    var latestChapterTime: Long = System.currentTimeMillis(),
+    var lastCheckTime: Long = System.currentTimeMillis(),
+    var lastCheckCount: Int = 0,
+    var totalChapterNum: Int = 0,
+    var durChapterTitle: String? = null,
+    var durChapterIndex: Int = 0,
 ) : BaseBook {
+    private var reverseToc = false
+    fun setReverseToc(value: Boolean) { reverseToc = value }
+    fun getReverseToc(): Boolean = reverseToc
+    fun removeAllBookType() { type = type and (4 or 8 or 32 or 64 or 128).inv() }
+    fun addType(value: Int) { type = type or value }
+    fun toSearchBook(): SearchBook = SearchBook(environment, bookUrl, origin, originName, type, name, author,
+        kind, coverUrl, intro, wordCount, latestChapterTitle, tocUrl, variable = variable, originOrder = originOrder).also {
+        it.infoHtml = infoHtml; it.tocHtml = tocHtml
+    }
     @delegate:Transient override val variableMap: HashMap<String, String> by lazy {
         GSON.fromJsonObject<HashMap<String, String>>(variable).getOrNull() ?: hashMapOf()
     }
@@ -78,6 +99,14 @@ data class BookChapter(
     override fun hashCode(): Int = url.hashCode()
     override fun equals(other: Any?): Boolean = other is BookChapter && other.url == url
     fun primaryStr(): String = bookUrl + url
+    var titleMD5: String? = null
+    fun getAbsoluteURL(): String {
+        if (url.startsWith(title) && isVolume) return baseUrl
+        val matcher = io.legado.app.model.analyzeRule.AnalyzeUrl.paramPattern.matcher(url)
+        val before = if (matcher.find()) url.substring(0, matcher.start()) else url
+        val absolute = NetworkUtils.getAbsoluteURL(baseUrl, before)
+        return if (before.length == url.length) absolute else "$absolute," + url.substring(matcher.end())
+    }
     fun update(): Nothing = unsupportedRule("BookChapter persistence")
 }
 
@@ -90,7 +119,25 @@ class BookSource(
     override var header: String? = null,
     override var enabledCookieJar: Boolean? = true,
     override var concurrentRate: String? = null,
+    var bookSourceType: Int = 0,
+    var bookUrlPattern: String? = null,
+    var customOrder: Int = 0,
+    var searchUrl: String? = null,
+    var exploreUrl: String? = null,
+    var loginCheckJs: String? = null,
+    var mainJs: String? = null,
+    var ruleSearch: io.legado.app.data.entities.rule.SearchRule? = null,
+    var ruleExplore: io.legado.app.data.entities.rule.ExploreRule? = null,
+    var ruleBookInfo: io.legado.app.data.entities.rule.BookInfoRule? = null,
+    var ruleToc: io.legado.app.data.entities.rule.TocRule? = null,
+    var ruleContent: io.legado.app.data.entities.rule.ContentRule? = null,
 ) : BaseSource {
+    fun getSearchRule() = ruleSearch ?: io.legado.app.data.entities.rule.SearchRule().also { ruleSearch = it }
+    fun getExploreRule() = ruleExplore ?: io.legado.app.data.entities.rule.ExploreRule().also { ruleExplore = it }
+    fun getBookInfoRule() = ruleBookInfo ?: io.legado.app.data.entities.rule.BookInfoRule().also { ruleBookInfo = it }
+    fun getTocRule() = ruleToc ?: io.legado.app.data.entities.rule.TocRule().also { ruleToc = it }
+    fun getContentRule() = ruleContent ?: io.legado.app.data.entities.rule.ContentRule().also { ruleContent = it }
+    fun isJsSource(): Boolean = !mainJs.isNullOrBlank()
     override fun getKey(): String = bookSourceUrl
     override fun getTag(): String = bookSourceName
     override fun getSource(): BookSource = this

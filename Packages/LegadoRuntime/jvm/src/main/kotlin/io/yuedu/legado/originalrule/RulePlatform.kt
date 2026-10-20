@@ -5,6 +5,7 @@ import io.yuedu.legado.StrResponse
 import io.legado.app.data.entities.BaseBook
 import io.legado.app.data.entities.BaseSource
 import io.legado.app.model.analyzeRule.RuleDataInterface
+import io.legado.app.model.analyzeRule.AnalyzeUrl
 import kotlin.coroutines.CoroutineContext
 import java.util.logging.Logger
 import kotlinx.coroutines.CancellationException
@@ -34,6 +35,9 @@ internal fun rethrowRuleControlFailure(error: Exception) {
 
 /** No network/browser/update-book capability is inferred from the existing mainJs hosts. */
 open class RulePlatform {
+    open suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T =
+        unsupportedRule("original WebBook execution owner")
+    open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
     open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()
     open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =

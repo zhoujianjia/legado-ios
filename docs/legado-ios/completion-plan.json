@@ -302,14 +302,16 @@
           "implementedSubtasksZh": [
             "Cookie宿主接通同一JVM会话，44项桌面回归与普通JAR/smoke通过；完整规则／AnalyzeUrl及App入口尚未完成。",
             "原AnalyzeRule.ajax/connect已接入有限AnalyzeUrl的@js/<js>、@result、原{{…}}扫描及页组选项；实际82项JVM方法与普通JAR/smoke通过，新增URL9项中的一项含140组原ZIP方法差分。保留同一任务、Rhino、HTTP与Cookie；完整header/login、option.js/bodyJs、WebBook与App传统入口仍未完成。",
-            "已按原顺序接通source动态header/初始登录域/显式头替换、相对URL、option.js/bodyJs、query/form编码、DNS/超时/重定向及原错误边界；同一HTTP执行器供mainJs与原请求复用。实际114项JVM方法（新18+旧96）及普通JAR/smoke通过，原组合140/域分类40均在方法内不额外累计。原AnalyzeRule.ajax传book例外与构造/执行异常分界已更正；完整WebBook、持久化及App/JNI仍未完成。"
+            "已按原顺序接通source动态header/初始登录域/显式头替换、相对URL、option.js/bodyJs、query/form编码、DNS/超时/重定向及原错误边界；同一HTTP执行器供mainJs与原请求复用。实际114项JVM方法（新18+旧96）及普通JAR/smoke通过，原组合140/域分类40均在方法内不额外累计。原AnalyzeRule.ajax传book例外与构造/执行异常分界已更正；完整WebBook、持久化及App/JNI仍未完成。",
+            "已接通task-owned原WebBook四段await文本执行与目录/正文分页，复用原AnalyzeRule/AnalyzeUrl和同一HTTP/Cookie/实体；实际138唯一方法（新13+旧125）及普通JAR/smoke通过。此为C3底层准备，仅needSave=false；持久化、完整模型/宿主和App入口仍未完成。"
           ],
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-sequence-first-step.json",
             "docs/legado-ios/core-renewal-url-signature-step.json",
-            "docs/legado-ios/core-original-url-options-step.json"
+            "docs/legado-ios/core-original-url-options-step.json",
+            "docs/legado-ios/core-original-webbook-step.json"
           ],
-          "nextActionZh": "继续原WebBook所需接口与完整规则/请求缺口，统一source/book/chapter状态及必要宿主，再推进固定源搜索到正文；browser/proxy/media/rate-limit等仍未实现，不先切App路由。"
+          "nextActionZh": "继续剩余原接口/模型/必要宿主和C2持久化接缝，接上正文保存与批量上下文；保留已通过的WebBook四段底层结果，随后依原依赖推进C3及普通JNI/App唯一入口。"
         },
         {
           "id": "C2",
@@ -359,7 +361,11 @@
           ],
           "actualAcceptedEvidence": [],
           "requiresPhysicalDevice": false,
-          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。"
+          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
+          "preparatoryImplementationEvidence": [
+            "docs/legado-ios/core-original-webbook-step.json"
+          ],
+          "preparatoryScopeZh": "原WebBook搜索/详情/目录/显式不保存正文的底层文本await执行已有固定源码桌面138方法证据；C2持久状态、正文保存/批量及产品接线门槛尚未通过，整步仍未启动验收。"
         },
         {
           "id": "C4",
@@ -612,7 +618,8 @@
       "cryptographySDKSubmission": "docs/legado-ios/core-renewal-533f0b4-initial.json",
       "implementationSDKResult": "docs/legado-ios/core-renewal-0a0c740-result.json",
       "signedResourceImplementation": "docs/legado-ios/core-renewal-signed-resource-step.json",
-      "sealedMaterialSDKSubmission": "docs/legado-ios/core-renewal-c8d899b-initial.json"
+      "sealedMaterialSDKSubmission": "docs/legado-ios/core-renewal-c8d899b-initial.json",
+      "retainedWebBookPreparation": "docs/legado-ios/core-original-webbook-step.json"
     }
   },
   "stages": [
@@ -4511,6 +4518,10 @@
     "signed-resource-SDK-submission": {
       "path": "docs/legado-ios/core-renewal-c8d899b-initial.json",
       "scope": "Fixed-source sealedmaterials48 initial observation only. Exact native SDK verdict and Apple authorization remain unverified."
+    },
+    "retained-webbook-await-execution": {
+      "path": "docs/legado-ios/core-original-webbook-step.json",
+      "scope": "138 exact desktop JVM methods plus ordinary JAR/smoke; original text-only transient await chain, not App/JNI/persistence/full compatibility."
     }
   },
   "retainedExistingWork": [

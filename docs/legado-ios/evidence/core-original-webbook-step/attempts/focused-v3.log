@@ -1,0 +1,271 @@
+
+F:\yuedu-reader>if "Windows_NT" == "Windows_NT" setlocal
+
+F:\yuedu-reader>set DIRNAME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\ 
+
+F:\yuedu-reader>if "F:\yuedu-reader\.tools\gradle-8.14.3\bin\" == "" set DIRNAME=. 
+
+F:\yuedu-reader>set APP_BASE_NAME=gradle 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\.. 
+
+F:\yuedu-reader>for %i in ("F:\yuedu-reader\.tools\gradle-8.14.3\bin\..") do set APP_HOME=%~fi 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3 
+
+F:\yuedu-reader>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar" 
+
+F:\yuedu-reader>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+F:\yuedu-reader>set JAVA_HOME=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1 
+
+F:\yuedu-reader>set JAVA_EXE=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe 
+
+F:\yuedu-reader>if exist "F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" goto execute 
+
+F:\yuedu-reader>set CLASSPATH= 
+
+F:\yuedu-reader>"F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" "-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar"   "-Dorg.gradle.appname=gradle" -classpath "" -jar "F:\yuedu-reader\.tools\gradle-8.14.3\lib\gradle-gradle-cli-main-8.14.3.jar" -p F:\yuedu-reader\Packages\LegadoRuntime\jvm --offline --no-daemon --console=plain test --tests io.yuedu.legado.OriginalWebBookExecutionTest 
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+w: Deprecated Gradle Version
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+Solution: Please update the Gradle version to at least Gradle 8.14.4.
+
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+
+> Task :compileKotlin
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:73:31 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:106:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:82:27 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:111:56 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:73:31 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:106:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:82:27 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:111:56 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:185:24 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:195:25 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:205:22 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+
+> Task :compileJava UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+
+> Task :compileTestKotlin
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:31:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:31:16 Cannot infer type for value parameter 'e'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:31:29 Unresolved reference 'requestURI'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:32:30 Unresolved reference 'responseHeaders'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:32:84 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:33:24 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:34:23 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:35:24 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:36:22 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:37:24 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:38:22 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:39:48 Unresolved reference 'requestURI'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:40:12 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:40:26 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:40:37 Unresolved reference 'origin' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:40:45 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:40:45 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:40:51 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:41:27 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:53:31 Unresolved reference 'origin' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:57:89 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:59:113 Unresolved reference 'origin' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:61:34 Unresolved reference 'requests' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:61:51 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:63:29 Unresolved reference 'requests' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:63:46 Unresolved reference 'uri'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:63:84 Unresolved reference 'requests' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:63:101 Unresolved reference 'uri'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:64:29 Unresolved reference 'requests' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:64:52 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:65:29 Unresolved reference 'requests' on receiver of type 'Nothing'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:65:52 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:66:35 Unresolved reference 'session'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:16 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:24 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:88 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:88 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:94 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:102 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:113 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:121 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:121 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:71:127 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:72:32 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:76:26 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:76:38 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:76:60 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:53 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:53 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:59 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:67 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:78 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:86 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:86 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:83:92 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:84:35 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:84:63 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:84:95 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:86:19 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:87:62 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:89:88 Unresolved reference 'requests'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:91:62 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:97:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:97:16 Cannot infer type for value parameter 'e'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:97:29 Unresolved reference 'requestURI'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:98:27 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:99:44 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:100:24 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:13 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:13 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:19 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:27 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:38 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:46 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:46 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:102:52 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:103:35 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:103:63 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:103:95 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:104:45 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:104:91 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:105:19 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:106:74 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:107:34 Unresolved reference 'requests'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:58 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:58 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:64 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:72 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:83 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:91 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:91 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:112:97 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:113:35 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:113:63 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:114:19 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:115:61 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:117:45 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:118:60 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:120:68 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:121:29 Unresolved reference 'requests'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:16 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:24 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:58 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:58 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:64 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:72 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:83 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:91 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:91 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:126:97 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:127:32 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:135:24 Argument type mismatch: actual type is 'MatchGroup?', but 'String!' was expected.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:135:65 Unresolved reference 'startsWith' on receiver of type 'MatchGroup?'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:16 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:24 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:58 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:58 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:64 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:72 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:83 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:91 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:91 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:144:97 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:145:32 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:145:62 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:145:108 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:150:34 Unresolved reference 'requests'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:151:33 Unresolved reference 'author'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:153:34 Unresolved reference 'requests'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:54 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:61 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:69 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:103 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:103 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:109 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:117 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:128 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:180 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:180 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:158:186 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:159:52 Unresolved reference 'environment'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:160:19 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:160:55 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:161:19 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:164:105 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:168:58 Unresolved reference 'task'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:169:48 Unresolved reference 'task'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:174:9 Unresolved reference 'Peer'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:174:16 Unresolved reference 'respond'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:174:24 Unresolved reference 'it'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:174:58 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:174:58 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:174:64 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:175:63 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:176:13 Unresolved reference 'Owned'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:176:24 Unresolved reference 'origin'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:176:51 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:176:51 Cannot infer type for type parameter 'R'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:176:57 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:177:47 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:178:68 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:179:147 Unresolved reference 'source'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:184:5 Modifier 'private' is not applicable to 'local class'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:191:5 Modifier 'private' is not applicable to 'local class'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:194:5 Modifier 'private' is not applicable to 'local class'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:205:5 Unresolved reference 'companion'.
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:205:14 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt:208:2 Syntax error: Missing '}.
+
+> Task :compileTestKotlin FAILED
+
+[Incubating] Problems report is available at: file:///F:/yuedu-reader/Packages/LegadoRuntime/jvm/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileTestKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 26s
+6 actionable tasks: 3 executed, 3 up-to-date
+
+F:\yuedu-reader>if 1 EQU 0 goto mainEnd 
+
+F:\yuedu-reader>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of 
+
+F:\yuedu-reader>rem the _cmd.exe /c_ return code! 
+
+F:\yuedu-reader>set EXIT_CODE=1 
+
+F:\yuedu-reader>if 1 EQU 0 set EXIT_CODE=1 
+
+F:\yuedu-reader>if not "" == "" exit 1 
+
+F:\yuedu-reader>exit /b 1 

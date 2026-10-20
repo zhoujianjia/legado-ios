@@ -13,6 +13,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Protocol
 import okhttp3.Request
@@ -49,6 +50,39 @@ internal class ProductionRulePlatform(
         check(!task.session.closed.get()) { "Session is closed" }
         check(task.session.http != null) { "Original-rule requests require the JVM HTTP transport" }
         dispatch(current, operation, input)
+    }
+
+    override suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T {
+        ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+        val cancellation = context[Job]?.takeUnless { it === task.job }?.invokeOnCompletion(
+            onCancelling = true, invokeImmediately = true,
+        ) { cause -> if (cause != null) task.job.cancel(CancellationException("Original WebBook caller cancelled").apply { initCause(cause) }) }
+        try {
+            val guard = ScriptExecutionGuard { ensureOwnerOpen(); task.ensureActiveForRuntime() }
+            val result = withContext(context.minusKey(Job) + task.job + guard) { action() }
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            return result
+        } catch (error: Exception) {
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            rethrowRuleControlFailure(error)
+            throw error
+        } finally { cancellation?.dispose() }
+    }
+
+    override fun executeUrl(analyzed: AnalyzeUrl): StrResponse {
+        check(analyzed.getRuleEnvironment() === environment()) { "AnalyzeUrl belongs to another environment" }
+        val context = analyzed.getRuleCoroutineContext()
+        ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+        return try {
+            val request = analyzed.prepareRequest { target -> task.session.cookies.getCookie(target.toHttpUrl().toString()) }
+            val result = http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            result
+        } catch (error: Exception) {
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            rethrowRuleControlFailure(error)
+            throw error
+        }
     }
 
     override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
@@ -145,6 +179,7 @@ internal class ProductionRulePlatform(
     private fun ensureOwnerOpen() {
         try {
             environment().ensureOpen()
+            check(!task.session.closed.get()) { "Original-rule session is closed" }
         } catch (closed: IllegalStateException) {
             // ajax catches ordinary exceptions as response text; a closed owner
             // must never publish that text as a late successful result.

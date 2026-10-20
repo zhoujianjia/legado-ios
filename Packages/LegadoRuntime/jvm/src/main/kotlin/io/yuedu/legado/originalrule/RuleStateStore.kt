@@ -77,11 +77,12 @@ class RuleEnvironment(
 ) : AutoCloseable {
     private val closed = AtomicBoolean(false)
     val state = RuleStateStore(::ensureOpen)
+    val webBook = RuleWebBookState(::ensureOpen)
     val cache = RuleCache(::ensureOpen, clock)
     val cookie: RuleCookieHost get() { ensureOpen(); return platform.cookie }
     internal val scopes = RuleScopes(::ensureOpen)
     fun ensureOpen() { check(!closed.get()) { "Original-rule environment is closed" } }
     override fun close() {
-        if (closed.compareAndSet(false, true)) { scopes.close(); cache.clear(); state.clear() }
+        if (closed.compareAndSet(false, true)) { scopes.close(); cache.clear(); state.clear(); webBook.clear() }
     }
 }
