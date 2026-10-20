@@ -6,6 +6,35 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            let staticForm = "[{name:'user',default:'synthetic-user'},{name:'password',type:'password',default:'synthetic-default'},{name:'button',type:'button',default:'never'}]"
+            try await exercise(fixture, loginUi: staticForm,
+                script: "var m=source.getLoginInfoMap();if(Number(m.size())!==2||String(m.get('password'))!=='synthetic-default'||m.containsKey('button'))throw new Error('wrong defaults');m.put('scratch','must-not-store');if(source.getLoginInfoMap().containsKey('scratch'))throw new Error('live secret Map');'static';", expected: "static")
+            let stored = await Task.detached { LoginManager(defaults: fixture.loginDefaults).getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(stored, ["user": "synthetic-user", "password": "synthetic-default"])
+            try await exercise(fixture, loginUi: "@js:throw new Error('stored raw must win')",
+                script: "if(String(source.getLoginInfoMap().get('user'))!=='synthetic-user')throw new Error('not reopened');source.removeLoginInfo();'reopened';", expected: "reopened")
+            try await exercise(fixture, loginUi: "{version:2}",
+                script: "if(Number(source.getLoginInfoMap().size())!==0||source.getLoginInfo()!==null)throw new Error('v2 defaults fabricated');'v2';", expected: "v2")
+            let dynamic = "@js:if(book!==null||chapter!==null||Number(source.getLoginInfoMap().size())!==0)throw new Error('wrong bindings/reentry');result.put('probe','synthetic-map');[{name:'password',type:'password',default:prefixValue},{name:'result',default:String(result.get('probe'))}];"
+            try await exercise(fixture, loginUi: dynamic, loginUrl: "<js>var prefixValue='synthetic-prefix';function login(){throw new Error('login must not run');}</js>",
+                script: "if(String(source.getLoginInfoMap().get('password'))!=='synthetic-prefix')throw new Error('wrong dynamic default');'dynamic';", expected: "dynamic")
+            let dynamicStored = await Task.detached { LoginManager(defaults: fixture.loginDefaults).getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(dynamicStored, ["password": "synthetic-prefix", "result": "synthetic-map"])
+            try await exercise(fixture, source: fixture.b, loginUi: staticForm,
+                script: "if(String(source.getLoginInfoMap().get('password'))!=='synthetic-default')throw new Error('source isolation');'isolated';", expected: "isolated")
+            let stillA = await Task.detached { fixture.login.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(stillA, dynamicStored)
+        } catch { problem = error }
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalLoginInfoUsesExistingKeychainAndReopens() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()
@@ -69,12 +98,13 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
         if let problem { throw problem }
     }
 
-    private func exercise(_ fixture: Fixture, source: String? = nil, script: String, expected: String) async throws {
+    private func exercise(_ fixture: Fixture, source: String? = nil, loginUi: String? = nil, loginUrl: String? = nil,
+        script: String, expected: String) async throws {
         let source = source ?? fixture.a
         let configuration = try XCTUnwrap(LegadoRuntime.Configuration.bundled())
         let runtime = LegadoRuntime(configuration: configuration, host: fixture.host)
         let owner = try await fixture.host.bind(sourceURL: source, sourceRevision: "native-login-v1")
-        let session = try await runtime.createSession(sourceJSON: fixture.source(source),
+        let session = try await runtime.createSession(sourceJSON: fixture.source(source, loginUi: loginUi, loginUrl: loginUrl),
             options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
         var problem: Error?
         do {
@@ -121,8 +151,11 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
             host = LegadoPersistentStateHost(backing: AppLegadoOwnedStateBacking(sources: sources, login: login))
             login.storeLoginHeader(sourceUrl: a, raw: "kept-header")
         }
-        func source(_ url: String) throws -> String {
-            String(decoding: try JSONSerialization.data(withJSONObject: ["bookSourceUrl": url, "enabledCookieJar": false, "ruleContent": [String: String]()]), as: UTF8.self)
+        func source(_ url: String, loginUi: String? = nil, loginUrl: String? = nil) throws -> String {
+            var source = BookSource()
+            source.bookSourceUrl = url; source.enabledCookieJar = false
+            source.loginUi = loginUi ?? ""; source.loginUrl = loginUrl ?? ""
+            return String(decoding: try JSONEncoder().encode(source), as: UTF8.self)
         }
         func cleanup() throws {
             for source in [a,b] {

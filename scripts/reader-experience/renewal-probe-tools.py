@@ -797,6 +797,22 @@ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 288
 CURRENTCORE_SOURCE_STATE_INPUTS = ('Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift', 'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt', 'Modules/Services/Online/LegadoPreviewStateOwner.swift', 'Modules/Services/Online/LegadoMainJSSourceService.swift', 'Modules/Services/Online/LegadoPersistentStateHost.swift', 'Modules/Services/Online/SourceCallBackService.swift', 'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift', 'Tests/iOS/LegadoNativeOriginalReaderTests.swift', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceCallbackTest.kt', 'Packages/LegadoRuntime/vendor/original-rule/manifest.json', 'Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift', 'Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginInfoTest.kt', 'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift', 'Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift', 'Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift')
 SOURCE_INPUTS += tuple(path for path in CURRENTCORE_SOURCE_STATE_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 294
+# Future raw-login Map/defaults changes do not add App test definitions.
+CURRENTCORE_LOGIN_MAP_INPUTS = (
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/FlexChildStyle.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/RowUi.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalWebBookSession.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/LockedLoginMapReference.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginMapTest.kt',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/FlexChildStyle.kt',
+    'Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/RowUi.kt',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in CURRENTCORE_LOGIN_MAP_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 302
 
 
 def selection_mode():

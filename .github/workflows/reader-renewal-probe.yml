@@ -57,7 +57,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
-      - name: Execute444 current-core definitions with447 exact native argument leaves
+      - name: Execute447 current-core definitions with450 exact native argument leaves
         if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.toolchain.outcome == 'success' }}
         env:
           YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME: ${{ steps.guards.outcome }}

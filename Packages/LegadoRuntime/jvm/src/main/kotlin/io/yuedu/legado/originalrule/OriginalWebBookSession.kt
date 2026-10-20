@@ -16,6 +16,7 @@ internal fun decodeOriginalBookSource(environment: RuleEnvironment, snapshot: Js
         concurrentRate = text("concurrentRate"), bookSourceType = snapshot["bookSourceType"]?.asInt ?: 0,
         bookUrlPattern = text("bookUrlPattern"), customOrder = snapshot["customOrder"]?.asInt ?: 0,
         searchUrl = text("searchUrl"), exploreUrl = text("exploreUrl"), loginCheckJs = text("loginCheckJs"), mainJs = text("mainJs"),
+        loginUrl = text("loginUrl"), loginUi = text("loginUi"),
         ruleSearch = rule("ruleSearch", SearchRule::class.java), ruleExplore = rule("ruleExplore", ExploreRule::class.java),
         ruleBookInfo = rule("ruleBookInfo", BookInfoRule::class.java), ruleToc = rule("ruleToc", TocRule::class.java),
         ruleContent = rule("ruleContent", ContentRule::class.java))

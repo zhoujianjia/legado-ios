@@ -10,6 +10,23 @@ import com.script.rhino.ScriptExecutionGuard
 import kotlinx.coroutines.ensureActive
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import io.legado.app.data.entities.rule.RowUi
+import com.google.gson.JsonObject
+
+/** Locked BaseSource same-thread recursion guard, not another persistence cache. */
+internal object LoginInfoMapInitialization {
+    private val initializingSourceKeys = ThreadLocal<MutableSet<String>>()
+
+    fun <T> run(sourceKey: String, onReentry: () -> T, block: () -> T): T {
+        val activeKeys = initializingSourceKeys.get()
+            ?: mutableSetOf<String>().also(initializingSourceKeys::set)
+        if (!activeKeys.add(sourceKey)) return onReentry()
+        return try { block() } finally {
+            activeKeys.remove(sourceKey)
+            if (activeKeys.isEmpty()) initializingSourceKeys.remove()
+        }
+    }
+}
 
 /** Java-bean rule model, not the Android Book/Room entity or its application methods. */
 class Book(
@@ -159,6 +176,8 @@ class BookSource(
     var ruleBookInfo: io.legado.app.data.entities.rule.BookInfoRule? = null,
     var ruleToc: io.legado.app.data.entities.rule.TocRule? = null,
     var ruleContent: io.legado.app.data.entities.rule.ContentRule? = null,
+    override var loginUrl: String? = null,
+    override var loginUi: String? = null,
 ) : BaseSource {
     fun getSearchRule() = ruleSearch ?: io.legado.app.data.entities.rule.SearchRule().also { ruleSearch = it }
     fun getExploreRule() = ruleExplore ?: io.legado.app.data.entities.rule.ExploreRule().also { ruleExplore = it }
@@ -219,6 +238,57 @@ class BookSource(
     fun removeLoginInfo() {
         environment.ensureOpen()
         if (!environment.platform.storeLoginInfo(this, null)) throw RulePersistenceException("The login-info owner rejected removal")
+    }
+    private fun extractInlineJs(rule: String?): String? {
+        val text = rule?.trim().orEmpty()
+        if (text.isBlank()) return null
+        val matcher = AppPattern.JS_PATTERN.matcher(text)
+        if (!matcher.matches()) return null
+        return (matcher.group(1) ?: matcher.group(2))?.trim()
+    }
+    fun getLoginUiJs(): String? = extractInlineJs(loginUi)
+    /** Only the prefix required by dynamic defaults; this does not invoke login(). */
+    fun getLoginJs(): String? {
+        val loginRule = loginUrl?.trim()
+        if (loginRule.isNullOrBlank()) return null
+        return extractInlineJs(loginRule) ?: loginRule
+    }
+    fun isLoginUiV2(): Boolean {
+        val text = loginUi?.trim() ?: return false
+        if (!text.startsWith("{")) return false
+        val obj = GSON.fromJsonObject<JsonObject>(text).getOrNull() ?: return false
+        return runCatching { obj.get("version")?.asInt == 2 }.getOrDefault(false)
+    }
+    private fun getStoredLoginInfoMap(): MutableMap<String, String>? {
+        val json = getLoginInfo() ?: return null
+        return GSON.fromJsonObject<MutableMap<String, String>>(json).getOrNull() ?: mutableMapOf()
+    }
+    private fun configureScriptBindings(): ScriptBindings.() -> Unit = {
+        put("result", mutableMapOf<String, String>())
+        put("book", null)
+        put("chapter", null)
+    }
+    /** Locked BaseSource defaults pipeline, with the existing normalization seam. */
+    fun getLoginInfoMap(): MutableMap<String, String> {
+        getStoredLoginInfoMap()?.let { return it }
+        if (isLoginUiV2()) return mutableMapOf()
+        val loginUiRule = loginUi?.trim().takeUnless { it.isNullOrBlank() } ?: return mutableMapOf()
+        return LoginInfoMapInitialization.run(
+            sourceKey = getKey(),
+            onReentry = { mutableMapOf<String, String>() },
+        ) {
+            val loginUiJs = extractInlineJs(loginUiRule)
+            val loginUiJson = if (loginUiJs != null) {
+                normalizeRuleJsResult(
+                    evalJS("${getLoginJs() ?: ""}\n$loginUiJs", configureScriptBindings())
+                ).orEmpty()
+            } else loginUiRule
+            val loginInfo = GSON.fromJsonArray<RowUi>(loginUiJson).getOrNull()
+                ?.filter { it.type != "button" }
+                ?.associate { it.name to (it.default ?: "") }
+                ?.takeIf { it.isNotEmpty() }?.also { putLoginInfo(GSON.toJson(it)) }
+            loginInfo?.toMutableMap() ?: mutableMapOf()
+        }
     }
     fun refreshJSLib() { environment.scopes.remove(jsLib) }
     override fun ajax(url: Any): String? = connect(url.toString()).body()
