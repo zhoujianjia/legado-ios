@@ -327,6 +327,181 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         }
     }
 
+    func testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            try await self.withPublicOwnedBook(fixture) { fetcher, owned in
+                var authored = fixture.source
+                authored.eventListener = true
+                authored.ruleContent.callBackJs = """
+                if(String(java.getKey())!==String(source.getKey()) || String(sourceApi.getKey())!==String(baseUrl))throw new Error('wrong notification java');
+                if(event==='saveRead' && String(result)!=='1234567890123')throw new Error('lost save time');
+                if(event==='saveRead' && String(book.durChapterTime)!==String(result))throw new Error('different save time');
+                if(event!=='saveRead' && Number(book.durChapterTime)!==946684800000)throw new Error('notification replaced actual read history');
+                if(Number(book.durChapterPos)!==31)throw new Error('lost actual character position');
+                if(Number(book.order)!==0 || Number(book.type)!==8)throw new Error('wrong actual book fields');
+                if(event!=='saveRead' && result!==null)throw new Error('result must stay null');
+                var events=String(book.getVariable('nativeCallbackEvents'));
+                book.putVariable('nativeCallbackEvents',events+(events?'|':'')+event);
+                book.putVariable('nativeCallbackBig','N'.repeat(10000));
+                if(chapter!==null) {
+                    if(Number(book.durChapterIndex)!==Number(chapter.index))throw new Error('wrong actual index');
+                    chapter.putVariable('nativeCallbackEvent',event);
+                    chapter.putVariable('nativeCallbackBig','C'.repeat(10000));
+                }
+                java.ajax('\(fixture.baseURL)\(fixture.prefix)/duplicate');
+                // Notification returns are ignored, including objects Java cannot serialize.
+                source;
+                """
+                let source = authored
+                let chapter = try XCTUnwrap(owned.chapters.first)
+                let existing = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
+                var historical = try XCTUnwrap(existing)
+                historical.lastOpenedDate = Date(timeIntervalSince1970: 946684800)
+                let callbackBook = historical
+                await MainActor.run { owned.store.saveReadingBook(callbackBook) }
+                await BookStore.queuedWritesLanded()
+                let positionOwner = JSONFileReadingPositionStore(
+                    baseURL: fixture.root.appendingPathComponent("positions", isDirectory: true), onSave: { _, _ in })
+                let actualPosition = CoreTextReadingPosition(spineIndex: chapter.index, charOffset: 31)
+                let positionBefore = try await positionOwner.saveChecked(actualPosition, for: owned.book.id.uuidString)
+                let identity = owned.chapters.map(\.id)
+                let requestsBefore = fixture.peer.snapshot.requests.count
+                for event in [SourceCallBackEvent.startRead, .saveRead, .endRead, .addBookShelf] {
+                    let task = await MainActor.run {
+                        SourceCallBackService.notify(event, book: callbackBook,
+                            chapter: event == .addBookShelf ? nil : SourceCallBackService.chapterSnapshot(chapter),
+                            chapterID: event == .addBookShelf ? nil : chapter.id,
+                            result: event == .saveRead ? "1234567890123" : nil,
+                            positionStore: positionOwner,
+                            eventTimeMilliseconds: event == .saveRead ? 1234567890123 : nil,
+                            store: owned.store, fetcher: fetcher, source: source)
+                    }
+                    let pending = try XCTUnwrap(task)
+                    let outcome = await pending.value
+                    XCTAssertFalse(outcome.failed, "\(event.rawValue): \(outcome.errorCode ?? "")")
+                    XCTAssertFalse(outcome.handled)
+                    XCTAssertNil(outcome.value)
+                    XCTAssertTrue(outcome.completedEffects.contains("bookVariablesCommitted"))
+                }
+                let current = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
+                XCTAssertEqual(current?.id, owned.book.id)
+                XCTAssertEqual(current?.runtimeVariables?["nativeCallbackEvents"], "startRead|saveRead|endRead|addBookShelf")
+                XCTAssertEqual(current?.runtimeVariables?["nativeCallbackBig"], String(repeating: "N", count: 10000))
+                let chapters = try await owned.store.originalRuntimeChapters(bookID: owned.book.id)
+                XCTAssertEqual(chapters.map(\.id), identity)
+                XCTAssertEqual(chapters.map(\.cachedFilename), owned.chapters.map(\.cachedFilename))
+                XCTAssertEqual(chapters.first?.runtimeVariables?["nativeCallbackEvent"], "endRead")
+                XCTAssertEqual(chapters.first?.runtimeVariables?["nativeCallbackBig"], String(repeating: "C", count: 10000))
+                XCTAssertEqual(fixture.peer.snapshot.requests.dropFirst(requestsBefore).map(\.target),
+                    Array(repeating: fixture.prefix + "/duplicate", count: 4))
+                let cached = try await BookStore.chapterCachePersistence {
+                    fetcher.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: chapter.index)
+                }
+                XCTAssertNil(cached, "A notification has no body save authority")
+                let positionAfter = try await positionOwner.loadChecked(for: owned.book.id.uuidString)
+                XCTAssertEqual(positionAfter?.position, actualPosition)
+                XCTAssertEqual(positionAfter?.rawSHA256, positionBefore.rawSHA256)
+
+                let stale = await MainActor.run { SourceCallBackService.notify(.startRead, book: owned.book,
+                    chapter: SourceCallBackService.chapterSnapshot(chapter), chapterID: UUID(),
+                    positionStore: positionOwner,
+                    store: owned.store, fetcher: fetcher, source: source) }
+                let staleTask = try XCTUnwrap(stale)
+                let staleOutcome = await staleTask.value
+                XCTAssertTrue(staleOutcome.failed); XCTAssertEqual(staleOutcome.errorCode, "STATE_CONFLICT")
+                XCTAssertEqual(fixture.peer.snapshot.requests.count, requestsBefore + 4)
+
+                var unsupportedBody = owned.book
+                unsupportedBody.contentPipelineKind = .audio
+                let nativeBody = unsupportedBody
+                let bodyTask = await MainActor.run { SourceCallBackService.notify(.startRead, book: nativeBody,
+                    store: owned.store, fetcher: fetcher, source: source) }
+                let bodyPending = try XCTUnwrap(bodyTask)
+                let bodyOutcome = await bodyPending.value
+                XCTAssertTrue(bodyOutcome.failed); XCTAssertEqual(bodyOutcome.errorCode, "UNSUPPORTED_CAPABILITY")
+                var mainJS = source
+                mainJS.mainJs = "function search(){return []}"
+                let unsupportedSource = mainJS
+                let sourceTask = await MainActor.run { SourceCallBackService.notify(.startRead, book: owned.book,
+                    store: owned.store, fetcher: fetcher, source: unsupportedSource) }
+                let sourcePending = try XCTUnwrap(sourceTask)
+                let sourceOutcome = await sourcePending.value
+                XCTAssertTrue(sourceOutcome.failed); XCTAssertEqual(sourceOutcome.errorCode, "UNSUPPORTED_CAPABILITY")
+                XCTAssertEqual(fixture.peer.snapshot.requests.count, requestsBefore + 4)
+
+                var failing = source
+                failing.ruleContent.callBackJs = "book.putVariable('nativeCallbackBeforeError','kept');throw new Error('authored notification failure');book.putVariable('nativeCallbackLate','bad')"
+                let failingSource = failing
+                let task = await MainActor.run { SourceCallBackService.notify(.endRead, book: callbackBook,
+                    positionStore: positionOwner,
+                    store: owned.store, fetcher: fetcher, source: failingSource) }
+                let pending = try XCTUnwrap(task)
+                let outcome = await pending.value
+                XCTAssertTrue(outcome.failed); XCTAssertEqual(outcome.errorCode, "SCRIPT_ERROR")
+                XCTAssertTrue(outcome.completedEffects.contains("bookVariablesCommitted"))
+                let fallsBack = await MainActor.run { SourceCallBackService.shouldFallBack(outcome) }
+                XCTAssertFalse(fallsBack)
+                let after = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
+                XCTAssertEqual(after?.runtimeVariables?["nativeCallbackBeforeError"], "kept")
+                XCTAssertNil(after?.runtimeVariables?["nativeCallbackLate"])
+
+                var unread = try XCTUnwrap(after)
+                unread.lastOpenedDate = nil
+                unread.addedDate = Date(timeIntervalSince1970: 915148800)
+                let unreadBook = unread
+                await MainActor.run { owned.store.saveReadingBook(unreadBook) }
+                await BookStore.queuedWritesLanded()
+                var verifiesAddedDate = source
+                verifiesAddedDate.ruleContent.callBackJs = "if(Number(book.durChapterTime)!==915148800000)throw new Error('lost actual construction date');book.putVariable('nativeCallbackAddedTime',String(book.durChapterTime))"
+                let unreadSource = verifiesAddedDate
+                let unreadTask = await MainActor.run { SourceCallBackService.notify(.addBookShelf, book: unreadBook,
+                    positionStore: positionOwner, store: owned.store, fetcher: fetcher, source: unreadSource) }
+                let unreadPending = try XCTUnwrap(unreadTask)
+                let unreadOutcome = await unreadPending.value
+                XCTAssertFalse(unreadOutcome.failed, unreadOutcome.errorCode ?? "")
+                let unreadAfter = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
+                XCTAssertEqual(unreadAfter?.runtimeVariables?["nativeCallbackAddedTime"], "915148800000")
+            }
+        }
+    }
+
+    func testNativeOriginalBookNotificationCancellationDrains() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            try await self.withPublicOwnedBook(fixture) { fetcher, owned in
+                var authored = fixture.source
+                authored.eventListener = true
+                authored.ruleContent.callBackJs = "book.putVariable('nativeCallbackBeforeCancel','kept');java.ajax('\(fixture.baseURL)\(fixture.prefix)/held');book.putVariable('nativeCallbackAfterCancel','bad')"
+                let source = authored
+                let positionOwner = JSONFileReadingPositionStore(
+                    baseURL: fixture.root.appendingPathComponent("positions", isDirectory: true), onSave: { _, _ in })
+                _ = try await positionOwner.saveChecked(.init(spineIndex: 0, charOffset: 31), for: owned.book.id.uuidString)
+                let headers = self.expectation(description: "Actual callback HTTP is held")
+                let closed = self.expectation(description: "Cancelled callback closes actual TCP socket")
+                fixture.peer.armHeldBody(target: fixture.prefix + "/held", headersSent: { headers.fulfill() },
+                    peerClosed: { closed.fulfill() })
+                let task = await MainActor.run { SourceCallBackService.notify(.saveRead, book: owned.book,
+                    chapter: owned.chapters.first.map(SourceCallBackService.chapterSnapshot),
+                    chapterID: owned.chapters.first?.id, result: "1234567890123",
+                    positionStore: positionOwner, eventTimeMilliseconds: 1234567890123,
+                    store: owned.store, fetcher: fetcher, source: source) }
+                let pending = try XCTUnwrap(task)
+                await self.fulfillment(of: [headers], timeout: 30)
+                pending.cancel()
+                let terminal = await pending.value
+                await self.fulfillment(of: [closed], timeout: 20)
+                XCTAssertTrue(terminal.failed); XCTAssertEqual(terminal.errorCode, "CANCELLED")
+                XCTAssertTrue(terminal.completedEffects.contains("bookVariablesCommitted"))
+                let current = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
+                XCTAssertEqual(current?.runtimeVariables?["nativeCallbackBeforeCancel"], "kept")
+                XCTAssertNil(current?.runtimeVariables?["nativeCallbackAfterCancel"])
+                XCTAssertTrue(fixture.peer.snapshot.heldPeerClosed)
+                XCTAssertEqual(fixture.peer.snapshot.requests.filter { $0.target == fixture.prefix + "/held" }.count, 1)
+            }
+        }
+    }
+
     private struct Fixture: @unchecked Sendable {
         let runID: String
         let prefix: String

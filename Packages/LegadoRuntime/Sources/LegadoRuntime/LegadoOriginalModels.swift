@@ -26,6 +26,10 @@ public struct LegadoOriginalBook: Codable, Sendable, Equatable {
     public var totalChapterNum: Int32 = 0
     public var durChapterTitle: String?
     public var durChapterIndex: Int32 = 0
+    public var durChapterPos: Int32?
+    public var durChapterTime: Int64?
+    public var order: Int32?
+    public var imageStyle: String?
     public var reverseToc = false
 
     public init(bookURL: String, origin: String, name: String = "", author: String = "", tocURL: String = "") {
@@ -34,7 +38,7 @@ public struct LegadoOriginalBook: Codable, Sendable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case bookURL = "bookUrl", tocURL = "tocUrl", coverURL = "coverUrl", infoHTML = "infoHtml", tocHTML = "tocHtml"
         case origin, name, author, kind, wordCount, variable, originName, originOrder, type, intro
-        case latestChapterTitle, latestChapterTime, lastCheckTime, lastCheckCount, totalChapterNum, durChapterTitle, durChapterIndex, reverseToc
+        case latestChapterTitle, latestChapterTime, lastCheckTime, lastCheckCount, totalChapterNum, durChapterTitle, durChapterIndex, durChapterPos, durChapterTime, order, imageStyle, reverseToc
     }
 }
 
@@ -137,5 +141,18 @@ public struct LegadoOriginalContentBatchResult: Codable, Sendable, Equatable {
 internal struct OriginalContentBatchRequest: Encodable, Sendable {
     let book: LegadoOriginalBook
     let chapters: [LegadoOriginalChapter]
+    let timeoutMs: Int64
+}
+
+/// A notification result, never an adoption or body-save grant. Effects report only
+/// the actual Host acknowledgements retained by this invocation.
+public struct LegadoOriginalBookCallbackResult: Codable, Sendable, Equatable {
+    public let executed: Bool
+}
+internal struct OriginalBookCallbackRequest: Encodable, Sendable {
+    let event: String
+    let book: LegadoOriginalBook
+    let chapter: LegadoOriginalChapter?
+    let result: String?
     let timeoutMs: Int64
 }

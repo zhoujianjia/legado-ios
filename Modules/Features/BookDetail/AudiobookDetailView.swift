@@ -694,7 +694,7 @@ struct AudiobookDetailView: View {
         activePlayerBookId = newBook.id
         alreadyInShelf = true
         addingToShelf = false
-        SourceCallBackService.notify(.addBookShelf, book: newBook)
+        SourceCallBackService.notify(.addBookShelf, book: newBook, store: bookStore)
     }
 
     private func preparePlayerCoverFallback(bookId: UUID, source: BookSource) {

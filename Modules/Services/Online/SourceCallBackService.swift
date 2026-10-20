@@ -1,8 +1,11 @@
 import Foundation
+import LegadoRuntime
+import os
 
 /// legado-E / MD3 `SourceCallBack`: hands a book source's `ruleContent.callBackJs` the book and
 /// UI events it asked for (`eventListener`). Every screen goes through here; the script itself
-/// runs in `LegadoReviewActionRunner.runCallBack`, on the source's shared session.
+/// Book notifications use the same original JVM actor and actual App owners. Tap,
+/// delete and shelf-refresh contracts still run through LegadoReviewActionRunner.
 ///
 /// Events are fired from the places the reader acts — the detail page's buttons, the reader
 /// opening and closing, its own progress saves, a shelf refresh — never from the library store:
@@ -50,18 +53,52 @@ enum SourceCallBackService {
 
     // MARK: - Notifications (legado `callBackBook` / `callBackSource`)
 
-    /// addBookShelf, delBookShelf, startRead, endRead, saveRead: the app does not wait.
+    /// Book notifications keep their original fire-and-forget UI contract. Returning
+    /// the actual task also lets an owning caller cancel and await its JNI drain.
+    @discardableResult
     static func notify(
         _ event: SourceCallBackEvent,
         book: ReadingBook,
         chapter: ReaderHTMLUtilities.LegadoSourceActionContext.ChapterSnapshot? = nil,
-        result: String? = nil
-    ) {
-        guard book.isOnline, let source = listeningSource(id: book.bookSourceId) else { return }
+        chapterID: UUID? = nil,
+        result: String? = nil,
+        position: CoreTextReadingPosition? = nil,
+        positionStore: (any ReadingPositionStore)? = nil,
+        eventTimeMilliseconds: Int64? = nil,
+        store: BookStore = .shared,
+        fetcher: BookSourceFetcher = .shared,
+        source suppliedSource: BookSource? = nil
+    ) -> Task<SourceCallBackOutcome, Never>? {
+        guard book.isOnline, let source = suppliedSource ?? listeningSource(id: book.bookSourceId),
+              source.id == book.bookSourceId, isListening(source) else { return nil }
+        if [.startRead, .endRead, .saveRead, .addBookShelf].contains(event) {
+            let timestamp: Int64? = event == .saveRead
+                ? (eventTimeMilliseconds ?? Int64(Date().timeIntervalSince1970 * 1000)) : nil
+            return Task {
+                do {
+                    let receipt = try await fetcher.mainJSService.originalBookCallback(event: event, source: source,
+                        book: book, chapter: chapter, chapterID: chapterID, result: result, store: store,
+                        position: position, positionStore: positionStore, eventTimeMilliseconds: timestamp)
+                    return SourceCallBackOutcome(handled: false, failed: false, page: nil,
+                        completedEffects: receipt.completedEffects)
+                } catch {
+                    let typed = error as? LegadoRuntimeError
+                    let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+                    AppLogger.error("Original book notification failed", context: [
+                        "event": event.rawValue, "code": code,
+                        "completedEffects": (typed?.completedEffects ?? []).joined(separator: ",")
+                    ])
+                    return SourceCallBackOutcome(handled: false, failed: true, page: nil,
+                        errorCode: code, completedEffects: typed?.completedEffects ?? [])
+                }
+            }
+        }
+        // Interactive, shelf-refresh and delete contracts are a separate migration.
+        // This branch is not a recovery path for the four migrated notifications.
         let snapshot = snapshot(of: book, chapter: chapter)
         let variables = book.runtimeVariables ?? [:]
-        Task {
-            _ = await LegadoReviewActionRunner.shared.runCallBack(
+        return Task {
+            await LegadoReviewActionRunner.shared.runCallBack(
                 event, source: source, book: snapshot, chapter: chapter, result: result,
                 runtimeVariables: variables, presentToast: presentToast
             )
@@ -79,14 +116,17 @@ enum SourceCallBackService {
     /// saveRead, as legado's `ReadBook.saveRead` sends it: when the chapter changed, or on a
     /// save that is not a page turn (leaving the reader, going to the background) — not on
     /// every page. `result` is the save time in milliseconds, legado's `durChapterTime`.
-    static func noteSaveRead(book: ReadingBook, chapter: OnlineChapterRef?, isPageTurn: Bool) {
+    static func noteSaveRead(book: ReadingBook, chapter: OnlineChapterRef?, isPageTurn: Bool, store: BookStore = .shared,
+        position: CoreTextReadingPosition? = nil, positionStore: (any ReadingPositionStore)? = nil) {
         guard let chapter else { return }
         let changed = lastSavedChapter[book.id] != chapter.index
         guard changed || !isPageTurn else { return }
         lastSavedChapter[book.id] = chapter.index
+        let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
         notify(
-            .saveRead, book: book, chapter: chapterSnapshot(chapter),
-            result: String(Int64(Date().timeIntervalSince1970 * 1000))
+            .saveRead, book: book, chapter: chapterSnapshot(chapter), chapterID: chapter.id,
+            result: String(timestamp), position: position, positionStore: positionStore,
+            eventTimeMilliseconds: timestamp, store: store
         )
     }
 
@@ -149,5 +189,67 @@ enum SourceCallBackService {
 
     private static func presentToast(_ message: String) {
         BookSourceFormLoginView.presentToastAlert(message: message)
+    }
+}
+
+
+struct LegadoBookCallbackReceipt: Sendable {
+    let executed: Bool
+    let completedEffects: [String]
+}
+
+/// Reuses the sole process, JVM transport and actual persistent App state Host.
+/// The callback grant has no content owner, cache authority or fetch generation.
+enum NativeLegadoBookCallbackExecutor {
+    static func execute(source: BookSource, signature: String, store: BookStore, bookID: UUID,
+        book: LegadoOriginalBook, chapter: LegadoOriginalChapter?, actualChapter: OnlineChapterRef?,
+        event: String, result: String?, deadline: Date) async throws -> LegadoBookCallbackReceipt {
+        let process = LegadoRuntimeProcess.shared
+        let taskID = UUID().uuidString
+        let owner = try await process.bindPersistentBook(sourceURL: source.bookSourceUrl, sourceRevision: signature,
+            store: store, bookID: bookID, sourceID: source.id, bookURL: book.bookURL,
+            chapter: actualChapter, callbackTaskID: taskID)
+        let effects = OSAllocatedUnfairLock(initialState: [String]())
+        do {
+            let runtime = try await process.executor()
+            try Task.checkCancellation()
+            guard deadline.timeIntervalSinceNow > 0 else {
+                throw LegadoRuntimeError(code: "TIMEOUT", message: "Book notification deadline expired before JNI")
+            }
+            let sourceJSON = String(decoding: try JSONEncoder().encode(source), as: UTF8.self)
+            let session = try await runtime.createSession(sourceJSON: sourceJSON,
+                options: NativeLegadoOriginalPreviewExecutor.embeddingOptions(owner: owner))
+            let reply: LegadoOriginalBookCallbackResult
+            do {
+                try Task.checkCancellation()
+                guard deadline.timeIntervalSinceNow > 0 else {
+                    throw LegadoRuntimeError(code: "TIMEOUT", message: "Book notification deadline expired while creating its session")
+                }
+                let remaining = Int64(min(60_000, max(1, deadline.timeIntervalSinceNow * 1000)))
+                reply = try await runtime.bookCallbackOriginal(session: session, event: event, book: book,
+                    chapter: chapter, result: result, timeoutMilliseconds: remaining, taskID: taskID,
+                    onReportedEffects: { reported in effects.withLock { $0 = reported } })
+            } catch {
+                do { try await runtime.close(session: session) }
+                catch { AppLogger.error("Original callback session cleanup failed", error: error) }
+                throw error
+            }
+            try await runtime.close(session: session)
+            try Task.checkCancellation()
+            guard deadline.timeIntervalSinceNow > 0 else {
+                throw LegadoRuntimeError(code: "TIMEOUT", message: "Book notification deadline expired before its terminal reply")
+            }
+            await process.revokePersistentSource(owner: owner)
+            return .init(executed: reply.executed, completedEffects: effects.withLock { $0 })
+        } catch {
+            await process.revokePersistentSource(owner: owner)
+            let typed = error as? LegadoRuntimeError
+            let completed = Array(Set(effects.withLock { $0 } + (typed?.completedEffects ?? []))).sorted()
+            if !completed.isEmpty {
+                throw LegadoRuntimeError(code: typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
+                    message: error.localizedDescription, completedEffects: completed)
+            }
+            throw error
+        }
     }
 }

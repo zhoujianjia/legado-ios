@@ -60,7 +60,9 @@ struct AudiobookReaderView: View {
         .onAppear {
             if let book = store.readingBook(id: bookId) {
                 player.start(book: book, store: store)
-                SourceCallBackService.notify(.startRead, book: book, chapter: currentCallBackChapter)
+                SourceCallBackService.notify(.startRead, book: book, chapter: currentCallBackChapter,
+                    chapterID: player.chapters.indices.contains(player.chapterIndex) ? player.chapters[player.chapterIndex].id : nil,
+                    store: store)
             } else if !player.isActive(bookId: bookId) {
                 dismiss()
             }
@@ -69,7 +71,9 @@ struct AudiobookReaderView: View {
         // legado `AudioPlayActivity` sends endRead when its player screen goes away.
         .onDisappear {
             if let book = store.readingBook(id: bookId) {
-                SourceCallBackService.notify(.endRead, book: book, chapter: currentCallBackChapter)
+                SourceCallBackService.notify(.endRead, book: book, chapter: currentCallBackChapter,
+                    chapterID: player.chapters.indices.contains(player.chapterIndex) ? player.chapters[player.chapterIndex].id : nil,
+                    store: store)
             }
         }
         .onChanged(of: player.bookId) { _ in updateBaseColor() }

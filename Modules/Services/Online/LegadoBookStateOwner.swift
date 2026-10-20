@@ -52,6 +52,7 @@ struct LegadoEntityStateSnapshot: Sendable {
 
 /// Uses an explicitly supplied App store and its existing UUIDs. This adapter reads the
 /// owned book record and durably commits chapter variables to that store's chapter file.
+/// A task-bound App notification grant permits variables without granting body saves.
 /// Book variables use the existing shelf/reading metadata writer; transactions spanning
 /// independent App owners remain typed unsupported.
 final class AppLegadoBookStateOwner: @unchecked Sendable {
@@ -61,23 +62,31 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
     let chapter: OnlineChapterRef?
     private let store: BookStore
     private let generation: OriginalRuntimeChapterGeneration?
+    /// Only the App notification use case may grant chapter variables without a
+    /// body-fetch generation. The Host first validates its actual persisted UUID.
+    let callbackTaskID: String?
     private let lifetime = OriginalRuntimeCommitCancellation()
     private let acceptedBookCommit: @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void
     private let acceptedChapterCommit: @Sendable (BookChapterStore.RuntimeVariablesSnapshot) -> Void
 
     init(store: BookStore, bookID: UUID, sourceID: UUID, bookURL: String,
-         chapter: OnlineChapterRef?, generation: OriginalRuntimeChapterGeneration?,
+         chapter: OnlineChapterRef?, generation: OriginalRuntimeChapterGeneration?, callbackTaskID: String? = nil,
          acceptedBookCommit: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in },
          acceptedChapterCommit: @escaping @Sendable (BookChapterStore.RuntimeVariablesSnapshot) -> Void = { _ in }) throws {
         guard store.originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
             throw Self.failure("An existing App book UUID, source and URL must be explicitly granted")
         }
         if let chapter {
-            guard let generation, generation.bookID == bookID, generation.chapterID == chapter.id,
-                  generation.index == chapter.index, generation.url == chapter.url else {
-                throw Self.failure("Chapter state requires its existing fetch generation and identity")
+            if let generation {
+                guard callbackTaskID == nil, generation.bookID == bookID, generation.chapterID == chapter.id,
+                      generation.index == chapter.index, generation.url == chapter.url else {
+                    throw Self.failure("Chapter state requires its existing fetch generation and identity")
+                }
+            } else if callbackTaskID?.isEmpty != false {
+                throw Self.failure("Chapter metadata requires an actual App callback task or fetch generation")
             }
         } else if generation != nil { throw Self.failure("A generation without its chapter is not a valid grant") }
+        self.callbackTaskID = callbackTaskID
         self.store = store; self.bookID = bookID; self.sourceID = sourceID
         self.bookURL = bookURL; self.chapter = chapter; self.generation = generation
         self.acceptedBookCommit = acceptedBookCommit; self.acceptedChapterCommit = acceptedChapterCommit

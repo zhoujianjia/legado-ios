@@ -1381,11 +1381,11 @@ final class AudiobookPlayer: NSObject, ObservableObject {
             forceSave: force
         )
         // legado `AudioPlay` sends the source `saveRead` from its own progress save.
-        if let book = store?.readingBook(id: id) {
+        if let store, let book = store.readingBook(id: id) {
             SourceCallBackService.noteSaveRead(
                 book: book,
                 chapter: chapters.indices.contains(chapterIndex) ? chapters[chapterIndex] : nil,
-                isPageTurn: !force
+                isPageTurn: !force, store: store
             )
         }
     }

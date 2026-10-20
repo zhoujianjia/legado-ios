@@ -297,6 +297,7 @@ struct ReaderView: View {
     @State var readerOverlayLegacyContentIndex = ReaderLegacyContentIndex.empty
 
     @State var isRestoringPosition = true
+    @State var sourceReadStarted = false
     @State var savedCoreTextRestoreTarget: (chapterIndex: Int, charOffset: Int)?
     /// 換源 sheet 內的變量編輯入口 (Legado 設置書籍變量/設置源變量)。
     @State var showBookVariableEditor = false
@@ -1574,6 +1575,9 @@ struct ReaderView: View {
                 pendingScrollJumpTarget = restored.coreTextPosition
             }
             isRestoringPosition = false
+        }
+        .onChanged(of: isRestoringPosition) { restoring in
+            if !restoring { notifySourceStartRead() }
         }
         .task(id: modernCoverSourceID) {
             // Toolbar chrome, not first-page content — and the toolbar is hidden

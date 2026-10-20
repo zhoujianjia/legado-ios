@@ -33,10 +33,11 @@ actor LegadoRuntimeProcess {
     func bindPersistentBook(sourceURL: String, sourceRevision: String, store: BookStore,
                             bookID: UUID, sourceID: UUID, bookURL: String,
                             chapter: OnlineChapterRef? = nil,
-                            generation: OriginalRuntimeChapterGeneration? = nil) async throws -> String {
+                            generation: OriginalRuntimeChapterGeneration? = nil,
+                            callbackTaskID: String? = nil) async throws -> String {
         try await persistentHost().bindBook(sourceURL: sourceURL, sourceRevision: sourceRevision,
             store: store, bookID: bookID, sourceID: sourceID, bookURL: bookURL,
-            chapter: chapter, generation: generation)
+            chapter: chapter, generation: generation, callbackTaskID: callbackTaskID)
     }
 
     func bindPersistentContentBatch(_ request: LegadoContentBatchExecutionRequest) async throws -> String {
@@ -1506,5 +1507,137 @@ extension LegadoMainJSSourceService {
             throw failure("INVALID_STATE_OWNER", "Preview chapter no longer belongs to its granted TOC")
         }
         return url
+    }
+}
+
+
+extension LegadoMainJSSourceService {
+    /// Actual App notification entry: UUID comes from its existing record, chapter
+    /// identity from that record's existing ChapterStore. No URL creates authority.
+    func originalBookCallback(event: SourceCallBackEvent, source: BookSource, book: ReadingBook,
+        chapter requested: ReaderHTMLUtilities.LegadoSourceActionContext.ChapterSnapshot?,
+        chapterID: UUID?, result: String?, store: BookStore,
+        position: CoreTextReadingPosition?, positionStore: (any ReadingPositionStore)?,
+        eventTimeMilliseconds: Int64?) async throws -> LegadoBookCallbackReceipt {
+        let signature = try originalSignature(source)
+        guard book.resolvedPipelineKind == .html else {
+            throw failure("UNSUPPORTED_CAPABILITY", "Original notifications require the actual online text-book entity")
+        }
+        let deadline = min(try operationDeadline(), Date().addingTimeInterval(60))
+        try await acquire(source.bookSourceUrl, deadline: deadline)
+        defer { release(source.bookSourceUrl) }
+        try Task.checkCancellation()
+        guard deadline.timeIntervalSinceNow > 0 else { throw failure("TIMEOUT", "Book notification deadline expired") }
+        try acceptOriginalRevision(source, signature: signature)
+        guard [.startRead, .endRead, .saveRead, .addBookShelf].contains(event),
+              book.isOnline, book.bookSourceId == source.id,
+              let bookURL = book.bookInfoURL, !bookURL.isEmpty,
+              let owned = await store.prepareOriginalRuntimeBookSnapshot(id: book.id, sourceID: source.id, bookURL: bookURL) else {
+            throw failure("INVALID_STATE_OWNER", "Book notification requires its actual App book/source identity")
+        }
+        let actualPosition: CoreTextReadingPosition
+        if let position {
+            actualPosition = position
+        } else if let positionStore {
+            do {
+                if let saved = try await positionStore.loadChecked(for: book.id.uuidString) {
+                    actualPosition = saved.position
+                } else {
+                    // The actual owner returned ENOENT. Only a never-read record
+                    // is known to start at zero; an existing unknown position fails.
+                    guard event == .addBookShelf, book.lastOpenedDate == nil, book.currentPosition == 0 else {
+                        throw failure("UNSUPPORTED_CAPABILITY", "The actual book has no exact stored reading position")
+                    }
+                    actualPosition = .chapterStart(0)
+                }
+            } catch let error as LegadoRuntimeError { throw error }
+              catch is CancellationError { throw CancellationError() }
+              catch {
+                throw failure("STATE_IO", "The actual reading-position owner could not provide its snapshot")
+            }
+        } else {
+            throw failure("INVALID_STATE_OWNER", "A notification requires its actual position snapshot or the same position owner")
+        }
+        guard actualPosition.spineIndex >= 0, actualPosition.charOffset >= 0,
+              let progressIndex = Int32(exactly: actualPosition.spineIndex),
+              let progressOffset = Int32(exactly: actualPosition.charOffset) else {
+            throw failure("UNSUPPORTED_CAPABILITY", "Notification position exceeds the original nonnegative integer contract")
+        }
+        let lastReadMilliseconds: Int64
+        if event == .saveRead {
+            guard let eventTimeMilliseconds, eventTimeMilliseconds >= 0,
+                  result == String(eventTimeMilliseconds) else {
+                throw failure("INVALID_ARGUMENT", "saveRead result and book.durChapterTime must describe the same actual event")
+            }
+            lastReadMilliseconds = eventTimeMilliseconds
+        } else {
+            // The App's existing opened date is its available reading-history fact.
+            // An unread entity retains its real construction date. Never substitute
+            // the time an unrelated start/end/shelf notification happens to run.
+            let history = book.lastOpenedDate ?? book.addedDate
+            let milliseconds = history.timeIntervalSince1970 * 1000
+            guard milliseconds.isFinite, milliseconds >= 0,
+                  let exact = Int64(exactly: milliseconds.rounded(.towardZero)) else {
+                throw failure("UNSUPPORTED_CAPABILITY", "Book notification has no representable actual reading-history date")
+            }
+            lastReadMilliseconds = exact
+        }
+        let chapters = try await store.originalRuntimeChapters(bookID: book.id)
+        let exactInitialUnread = book.lastOpenedDate == nil && book.currentPosition == 0
+            && actualPosition == .chapterStart(0) && requested == nil
+        guard (chapters.indices.contains(actualPosition.spineIndex)
+               && chapters[actualPosition.spineIndex].index == actualPosition.spineIndex)
+              || (exactInitialUnread && chapters.isEmpty) else {
+            throw failure("STATE_CONFLICT", "The actual reading position has no current chapter")
+        }
+        var selected: OnlineChapterRef?
+        if let requested {
+            guard requested.index == actualPosition.spineIndex, let chapterID, chapters.indices.contains(requested.index),
+                  chapters[requested.index].id == chapterID,
+                  chapters[requested.index].index == requested.index,
+                  chapters[requested.index].url.utf8.elementsEqual(requested.url.utf8) else {
+                throw failure("STATE_CONFLICT", "Notification chapter no longer belongs to the actual App TOC")
+            }
+            selected = chapters[requested.index]
+        } else if chapterID != nil {
+            throw failure("INVALID_STATE_OWNER", "A notification chapter UUID needs its actual chapter snapshot")
+        }
+        var dto = LegadoOriginalBook(bookURL: bookURL, origin: source.bookSourceUrl,
+            name: book.title, author: book.author, tocURL: owned.tocURL)
+        dto.originName = source.bookSourceName; dto.coverURL = book.coverUrl
+        dto.durChapterIndex = progressIndex; dto.durChapterPos = progressOffset
+        dto.durChapterTitle = chapters.indices.contains(actualPosition.spineIndex) ? chapters[actualPosition.spineIndex].title : nil
+        dto.durChapterTime = lastReadMilliseconds
+        guard let recordOrder = store.originalRuntimeBookOrder(id: book.id, sourceID: source.id, bookURL: bookURL),
+              let order = Int32(exactly: recordOrder), let originOrder = Int32(exactly: source.customOrder) else {
+            throw failure("STATE_CONFLICT", "Notification lost the existing App book ordering")
+        }
+        dto.order = order; dto.originOrder = originOrder
+        dto.totalChapterNum = Int32(exactly: chapters.count) ?? Int32.max
+        dto.latestChapterTitle = book.latestChapterTitle
+        dto.intro = owned.variables?["book.abstract"]
+        dto.imageStyle = owned.variables?["book.imageStyle"]
+        dto.variable = try callbackSmallVariables(owned.variables)
+        var chapter: LegadoOriginalChapter?
+        if let selected, let index = Int32(exactly: selected.index) {
+            var value = LegadoOriginalChapter(bookURL: bookURL, url: selected.url, index: index,
+                title: selected.title, baseURL: owned.tocURL)
+            value.isVolume = selected.isVolume; value.isVip = selected.isVip; value.isPay = selected.isPay
+            value.variable = try callbackSmallVariables(selected.runtimeVariables)
+            chapter = value
+        }
+        return try await SourcePerfTrace.spanAsync("legado.original.book.callback",
+            "main=\(Thread.isMainThread) event=\(event.rawValue) chapter=\(selected?.index ?? -1)") {
+            try await NativeLegadoBookCallbackExecutor.execute(source: source, signature: signature,
+                store: store, bookID: book.id, book: dto, chapter: chapter, actualChapter: selected,
+                event: event.rawValue, result: result, deadline: deadline)
+        }
+    }
+
+    private func callbackSmallVariables(_ values: [String: String]?) throws -> String? {
+        guard let values else { return nil }
+        let exposed = values.filter { $0.key != Self.originalPreviewContextKey && $0.value.utf16.count < 10_000 }
+        try LegadoPreviewVariableCodec.validateRepresentable([exposed])
+        return String(decoding: try JSONEncoder().encode(exposed), as: UTF8.self)
     }
 }

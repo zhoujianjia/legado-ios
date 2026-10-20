@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-20",
-  "activeBatchRecord": "docs/legado-ios/reader-build13-layout-retry-fix.json",
+  "activeBatchRecord": "docs/legado-ios/core-original-reader-callbacks-step.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -510,7 +510,12 @@
           "implementationEvidence": [
             "docs/legado-ios/core-original-search-owner-correction.json",
             "docs/legado-ios/core-original-app-chapter-owner-step.json",
-            "docs/legado-ios/core-original-content-batch-public-step.json"
+            "docs/legado-ios/core-original-content-batch-public-step.json",
+            {
+              "record": "docs/legado-ios/core-original-reader-callbacks-step.json",
+              "scope": "Actual startRead/endRead/saveRead/addBookShelf traditional-text notifications through original JVM and actual App owners.",
+              "actualSDKAccepted": false
+            }
           ]
         },
         {
@@ -547,6 +552,11 @@
               "record": "docs/legado-ios/reader-build13-layout-retry-fix.json",
               "actualSDKAccepted": false,
               "scope": "Actual build13 reading diagnostic: owner-scoped pagination retry accounting and recovery, not whole-source compatibility."
+            },
+            {
+              "record": "docs/legado-ios/core-original-reader-callbacks-step.json",
+              "scope": "Actual startRead/endRead/saveRead/addBookShelf traditional-text notifications through original JVM and actual App owners.",
+              "actualSDKAccepted": false
             }
           ],
           "implementedSubtasksZh": [
@@ -962,6 +972,12 @@
         "evidence": "docs/legado-ios/core-real-jvm-bundle-renewal-step.json",
         "sourceCount": 11,
         "accepted": false
+      },
+      "originalBookNotificationImplementation": {
+        "record": "docs/legado-ios/core-original-reader-callbacks-step.json",
+        "sourceCount": 20,
+        "actualJVMTestsPassed": 3,
+        "actualSDKAccepted": false
       }
     }
   },

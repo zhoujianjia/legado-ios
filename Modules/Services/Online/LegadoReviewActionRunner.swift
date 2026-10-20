@@ -432,6 +432,9 @@ struct SourceCallBackOutcome: Sendable {
     var page: ReaderHTMLUtilities.ReviewTarget?
     /// What the script returned, for the log and tests; nil for `undefined`/`null`.
     var value: String? = nil
+    /// Notification terminal status; UI defaults never run after a typed failure.
+    var errorCode: String? = nil
+    var completedEffects: [String] = []
 }
 
 /// Collects what one 簡介 script asked of the detail page. The bridge calls in from the

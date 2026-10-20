@@ -36,11 +36,19 @@ class Book(
     var totalChapterNum: Int = 0,
     var durChapterTitle: String? = null,
     var durChapterIndex: Int = 0,
+    var durChapterPos: Int = 0,
+    var durChapterTime: Long = System.currentTimeMillis(),
+    var order: Int = 0,
+    @Transient private var retainedImageStyle: String? = null,
 ) : BaseBook {
     init {
         if (environment.persistence != null && bookUrl.isNotEmpty())
             variable = environment.state.restoreVariables("book", bookUrl, "", variable)
     }
+    // Original Book.config.imageStyle Java-bean contract. This detached entity's
+    // setter is transient, just as a notification has no final Book.update().
+    fun getImageStyle(): String? = retainedImageStyle
+    fun setImageStyle(value: String?) { retainedImageStyle = value }
     private var reverseToc = false
     fun setReverseToc(value: Boolean) { reverseToc = value }
     fun getReverseToc(): Boolean = reverseToc

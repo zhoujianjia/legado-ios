@@ -221,7 +221,11 @@ protocol LegadoEntityStateBacking: Sendable {
 }
 
 extension AppLegadoBookStateOwner: LegadoEntityStateBacking {
-    func validateRequest(_ request: LegadoHostRequest) throws { /* Existing App grant lifecycle remains unchanged. */ }
+    func validateRequest(_ request: LegadoHostRequest) throws {
+        if let callbackTaskID, request.taskID != callbackTaskID {
+            throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "App callback state belongs to one actual notification task")
+        }
+    }
     func validateState(deadline: Date) async throws { try validate(deadline: deadline) }
     func readState(keys: [LegadoEntityStateKey], deadline: Date,
                    cancellation: OriginalRuntimeCommitCancellation) async throws -> LegadoEntityBackingSnapshot {

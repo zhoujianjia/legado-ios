@@ -178,13 +178,14 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     /// borrowed from its active pipeline generation. Nothing is inferred from a URL.
     func bindBook(sourceURL: String, sourceRevision: String, store: BookStore,
                   bookID: UUID, sourceID: UUID, bookURL: String,
-                  chapter: OnlineChapterRef? = nil, generation: OriginalRuntimeChapterGeneration? = nil) async throws -> String {
+                  chapter: OnlineChapterRef? = nil, generation: OriginalRuntimeChapterGeneration? = nil,
+                  callbackTaskID: String? = nil) async throws -> String {
         let previousRevision = revisions[sourceURL]
         guard await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
             throw failure("UNSUPPORTED_CAPABILITY", "The App book/source identity has no current stable owner")
         }
         let backing = try AppLegadoBookStateOwner(store: store, bookID: bookID, sourceID: sourceID,
-            bookURL: bookURL, chapter: chapter, generation: generation)
+            bookURL: bookURL, chapter: chapter, generation: generation, callbackTaskID: callbackTaskID)
         if let chapter {
             let proof: BookChapterStore.RuntimeVariablesSnapshot?
             do { proof = try await store.originalRuntimeChapterSnapshot(bookID: bookID, index: chapter.index, url: chapter.url) }
@@ -670,6 +671,9 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         // The final returned Book.variable CAS is an App completion, beyond the
         // synchronous state callback. It borrows this same task-owned lifetime.
         for backing in contentOwners.values where backing.taskID == taskID { backing.revoke() }
+        for case let backing as AppLegadoBookStateOwner in bookOwners.values where backing.callbackTaskID == taskID {
+            backing.revoke()
+        }
         if let pending = pendingWebCookieOperations[taskID] { for operation in pending.values { operation.task.cancel() } }
         await fallback.cancel(taskID: taskID)
     }

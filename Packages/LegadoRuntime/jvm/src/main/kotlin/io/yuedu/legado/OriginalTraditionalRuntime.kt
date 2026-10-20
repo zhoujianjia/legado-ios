@@ -35,6 +35,7 @@ internal object OriginalTraditionalRuntime {
     }
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         val fields = when (operation) {
+            "bookCallback" -> setOf("event", "book", "chapter", "result", "timeoutMs")
             "search" -> setOf("key", "page", "timeoutMs")
             "explore" -> setOf("url", "page", "timeoutMs")
             "exploreContext" -> setOf("action", "script", "timeoutMs")
@@ -54,6 +55,35 @@ internal object OriginalTraditionalRuntime {
                 val source = LegadoRuntime.originalBookSource(task, environment)
                 val result = runBlocking(task.job) {
                     when (operation) {
+                        "bookCallback" -> {
+                            val event = input.requiredText("event")
+                            if (event !in setOf("startRead", "endRead", "saveRead", "addBookShelf"))
+                                throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "This original notification event is not connected")
+                            val authored = source.getContentRule().callBackJs
+                            if (!task.session.source.boolean("eventListener", false) || authored.isNullOrEmpty())
+                                jsonObject("executed" to false)
+                            else {
+                                val book = OriginalRuleDto.book(input.requiredObject("book"), environment, source.bookSourceUrl)
+                                val rawChapter = input["chapter"]?.takeUnless(JsonElement::isJsonNull)
+                                val chapter = rawChapter?.let {
+                                    require(it.isJsonObject) { "chapter must be an object or null" }
+                                    OriginalRuleDto.chapter(it.asJsonObject, environment, book)
+                                }
+                                val result = input.text("result")
+                                environment.platform.runWebBook(currentCoroutineContext()) {
+                                    val context = currentCoroutineContext()
+                                    runScriptWithContext(context) {
+                                        source.evalJS(authored) {
+                                            put("event", event); put("result", result)
+                                            put("book", book); put("chapter", chapter)
+                                        }
+                                    }
+                                    // callBackBook ignores the authored return. Never stringify
+                                    // an arbitrary Java/JS result or treat it as a UI decision.
+                                    jsonObject("executed" to true)
+                                }
+                            }
+                        }
                         "explore" -> {
                             val page = if (input.has("page") && input["page"].isJsonNull) null else input.int("page", 1)
                             val scope = environment.platform.exploreOwnerScope(source)

@@ -15,15 +15,22 @@ extension ReaderView {
     func notifySourceStartRead() {
         // However the reader is left later, its source hears endRead once.
         readerNavigator?.readerClosingHandler = { notifySourceEndRead() }
-        guard let book = callBackBook else { return }
+        guard !sourceReadStarted, !isRestoringPosition, let book = callBackBook else { return }
+        sourceReadStarted = true
+        let position = sourceCallBackPosition
+        let chapter = sourceCallBackChapter(in: book, position: position)
         SourceCallBackService.notify(
-            .startRead, book: book, chapter: currentOnlineChapter.map(SourceCallBackService.chapterSnapshot)
+            .startRead, book: book, chapter: chapter.map(SourceCallBackService.chapterSnapshot),
+            chapterID: chapter?.id, position: position,
+            positionStore: dependencies.readingPositionStore, store: store
         )
     }
 
     func notifySourceSaveRead(isPageTurn: Bool) {
         guard let book = callBackBook else { return }
-        SourceCallBackService.noteSaveRead(book: book, chapter: currentOnlineChapter, isPageTurn: isPageTurn)
+        let position = sourceCallBackPosition
+        SourceCallBackService.noteSaveRead(book: book, chapter: sourceCallBackChapter(in: book, position: position),
+            isPageTurn: isPageTurn, store: store, position: position, positionStore: dependencies.readingPositionStore)
     }
 
     /// From the real exit — the coordinator's close, or `dismissReaderPresentation` for a
@@ -31,9 +38,30 @@ extension ReaderView {
     /// only covered by a sheet or a pushed page.
     func notifySourceEndRead() {
         guard let book = callBackBook else { return }
+        let position = sourceCallBackPosition
+        let chapter = sourceCallBackChapter(in: book, position: position)
         SourceCallBackService.notify(
-            .endRead, book: book, chapter: currentOnlineChapter.map(SourceCallBackService.chapterSnapshot)
+            .endRead, book: book, chapter: chapter.map(SourceCallBackService.chapterSnapshot),
+            chapterID: chapter?.id, position: position,
+            positionStore: dependencies.readingPositionStore, store: store
         )
+    }
+
+    /// Copy the actual Navigator/visible-engine position; this does not save or
+    /// flush it. Before restore completes the service reads the same file owner.
+    private var sourceCallBackPosition: CoreTextReadingPosition? {
+        guard !isRestoringPosition else { return nil }
+        if let engine = epubRenderer.engine, usesCoreTextEPUB {
+            let shown = displayedCoreTextPosition(in: engine)
+            return .init(spineIndex: shown.spineIndex, charOffset: shown.charOffset)
+        }
+        return readerSessionCoordinator?.navigator.currentLocation
+    }
+
+    private func sourceCallBackChapter(in book: ReadingBook, position: CoreTextReadingPosition?) -> OnlineChapterRef? {
+        guard let position else { return currentOnlineChapter }
+        guard let chapters = book.onlineChapters, chapters.indices.contains(position.spineIndex) else { return nil }
+        return chapters[position.spineIndex]
     }
 
     /// The online book's source, for its `customButton`.

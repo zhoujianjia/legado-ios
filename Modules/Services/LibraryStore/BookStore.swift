@@ -343,6 +343,16 @@ class BookStore: ObservableObject, BookProvider {
         }
     }
 
+    /// Physical order in the existing App book owner, not an imported source
+    /// variable or another derived index. Only an already-granted identity is read.
+    func originalRuntimeBookOrder(id: UUID, sourceID: UUID, bookURL: String) -> Int? {
+        runtimeRecordIndex.withLock { index in
+            guard let entry = index.entries[id], entry.snapshot.sourceID == sourceID,
+                  entry.snapshot.bookURL.utf8.elementsEqual(bookURL.utf8) else { return nil }
+            return entry.offset
+        }
+    }
+
     /// Reuses the already bounded granted-book lookup. The stamp changes at its
     /// sole normal write point; it owns no data or persistence queue of its own.
     private func originalMetadataGuard(bookID: UUID) -> (snapshot: RuntimeBookSnapshot, stamp: UUID)? {

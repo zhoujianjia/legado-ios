@@ -923,7 +923,8 @@ struct OnlineBookView: View {
                 guard isCurrentRequest(requestBook), !Task.isCancelled,
                       let shelved = bookStore.addReadingBookToShelf(id: newBook.id) else { return }
                 alreadyInShelf = true
-                SourceCallBackService.notify(.addBookShelf, book: shelved)
+                SourceCallBackService.notify(.addBookShelf, book: shelved,
+                    positionStore: dependencies.readingPositionStore, store: bookStore)
             } catch { if isCurrentRequest(requestBook) { tocError = error.localizedDescription } }
         }
     }
@@ -961,7 +962,8 @@ struct OnlineBookView: View {
         temporaryReaderBookId = nil
         addedBookId = shelved.id
         alreadyInShelf = true
-        SourceCallBackService.notify(.addBookShelf, book: shelved)
+        SourceCallBackService.notify(.addBookShelf, book: shelved,
+                    positionStore: dependencies.readingPositionStore, store: bookStore)
     }
 
     private func discardTemporaryReaderBook(_ tempId: UUID) {

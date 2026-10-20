@@ -288,6 +288,17 @@ public final class LegadoRuntime: @unchecked Sendable {
         return try await executeOriginal(session, "contentBatch", OriginalContentBatchRequest(book: book, chapters: chapters,
             timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
     }
+    /// Original SourceCallBack.callBackBookInternal: source.evalJS, with nullable
+    /// result/chapter and no login-page/button Java replacement.
+    public func bookCallbackOriginal(session: LegadoSourceSession, event: String,
+        book: LegadoOriginalBook, chapter: LegadoOriginalChapter?, result: String?,
+        timeoutMilliseconds: Int64 = 60_000, taskID: String = UUID().uuidString,
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalBookCallbackResult {
+        try await executeOriginal(session, "bookCallback", OriginalBookCallbackRequest(event: event,
+            book: book, chapter: chapter, result: result, timeoutMs: timeoutMilliseconds),
+            timeoutMilliseconds, taskID, onReportedEffects)
+    }
+
     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
         _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String,
         _ onReportedEffects: (@Sendable ([String]) -> Void)? = nil

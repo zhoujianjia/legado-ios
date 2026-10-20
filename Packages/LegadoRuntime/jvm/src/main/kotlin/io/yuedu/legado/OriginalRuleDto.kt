@@ -13,7 +13,7 @@ import io.yuedu.legado.originalrule.RuleEnvironment
 internal object OriginalRuleDto {
     private val bookFields = setOf("bookUrl", "origin", "name", "author", "tocUrl", "kind", "wordCount", "variable", "infoHtml", "tocHtml",
         "originName", "originOrder", "type", "coverUrl", "intro", "latestChapterTitle", "latestChapterTime", "lastCheckTime", "lastCheckCount",
-        "totalChapterNum", "durChapterTitle", "durChapterIndex", "reverseToc")
+        "totalChapterNum", "durChapterTitle", "durChapterIndex", "durChapterPos", "durChapterTime", "order", "imageStyle", "reverseToc")
     private val chapterFields = setOf("url", "title", "isVolume", "baseUrl", "bookUrl", "index", "isVip", "isPay", "resourceUrl", "tag",
         "wordCount", "start", "end", "startFragmentId", "endFragmentId", "variable", "imgUrl", "titleMD5")
 
@@ -29,6 +29,10 @@ internal object OriginalRuleDto {
             latestChapterTitle = value.text("latestChapterTitle"), latestChapterTime = value.long("latestChapterTime") ?: System.currentTimeMillis(),
             lastCheckTime = value.long("lastCheckTime") ?: System.currentTimeMillis(), lastCheckCount = value.int("lastCheckCount", 0),
             totalChapterNum = value.int("totalChapterNum", 0), durChapterTitle = value.text("durChapterTitle"), durChapterIndex = value.int("durChapterIndex", 0))
+        book.durChapterPos = value.int("durChapterPos", 0)
+        book.durChapterTime = value.long("durChapterTime") ?: book.durChapterTime
+        book.order = value.int("order", 0)
+        book.setImageStyle(value.text("imageStyle"))
         book.setReverseToc(value.boolean("reverseToc", false))
         return book
     }
@@ -51,7 +55,9 @@ internal object OriginalRuleDto {
         "originName" to book.originName, "originOrder" to book.originOrder, "type" to book.type, "coverUrl" to book.coverUrl, "intro" to book.intro,
         "latestChapterTitle" to book.latestChapterTitle, "latestChapterTime" to book.latestChapterTime, "lastCheckTime" to book.lastCheckTime,
         "lastCheckCount" to book.lastCheckCount, "totalChapterNum" to book.totalChapterNum, "durChapterTitle" to book.durChapterTitle,
-        "durChapterIndex" to book.durChapterIndex, "reverseToc" to book.getReverseToc())
+        "durChapterIndex" to book.durChapterIndex, "durChapterPos" to book.durChapterPos,
+        "durChapterTime" to book.durChapterTime, "order" to book.order,
+        "imageStyle" to book.getImageStyle(), "reverseToc" to book.getReverseToc())
 
     /** Search rows precede App shelf UUID allocation. Project the actual SearchBook fields
      * without constructing a persistent Book and accidentally asking for an ungranted owner. */
