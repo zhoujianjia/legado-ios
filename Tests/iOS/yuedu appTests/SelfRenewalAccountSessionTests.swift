@@ -7,6 +7,118 @@ import Testing
 // These methods belong to the existing serialized peer suite. A separate suite
 // would race its one owned URLProtocol peer; there is no second peer registry.
 extension SelfRenewalDeveloperAccountClientTests {
+    @Test("first material publication reconnects the same live App owner without another foreground")
+    func appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            _ = try await c.session.initializeSigningNamespace(from: c.input)
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            try await c.session.close()
+            let date = c.fixture.date
+            let owner = await MainActor.run {
+                SelfRenewalAppOwner(root: c.root, currentApplicationRoot: c.fixture.directory.appendingPathComponent("Owned.app"),
+                    developerServices: c.services, clock: { date })
+            }
+            do {
+                await owner.observeDeveloperAccount()
+                await owner.refreshDeveloperMaterials(machineName: "Owned same foreground")
+                let status = await owner.status, material = await owner.developerMaterial
+                let problem = await owner.problem, materialProblem = await owner.signingMaterialProblem
+                #expect(status?.access == .signing && status?.state == .ready)
+                #expect(material?.namespaceID == (try c.configuration()).namespaceID)
+                #expect(problem == nil && materialProblem == nil)
+                let facts = await c.peer.facts()
+                #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+                #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)
+                try await owner.close()
+            } catch { do { try await owner.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
+    @Test("a real published lease cannot authorize a changed current Bundle")
+    func appSessionMaterialReconnectRejectsChangedCurrentBundleAndKeepsPublication() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            _ = try await c.session.initializeSigningNamespace(from: c.input)
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            let infoURL = c.fixture.directory.appendingPathComponent("Owned.app/Info.plist")
+            let original = try Data(contentsOf: infoURL)
+            defer { do { try original.write(to: infoURL) } catch { Issue.record(error) } }
+            var info = try #require(try PropertyListSerialization.propertyList(from: original, format: nil) as? [String: Any])
+            info["OwnedChangedAfterEnrollment"] = true
+            try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0).write(to: infoURL)
+            var publication: SelfRenewalAppSession.DeveloperMaterialObservation?
+            do { publication = try await c.session.refreshDeveloperMaterials(machineName: "Owned changed current Bundle") }
+            catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
+                publication = failure.published
+            }
+            let published = try #require(publication)
+            let retained = await c.session.developerMaterialObservation(), status = await c.session.status()
+            let materialFailure = await c.session.signingMaterialFailure()
+            #expect(retained == published && !published.installedApplicationRenewed)
+            #expect(status?.access == nil && status?.problem == .signingMaterials)
+            #expect(materialFailure != nil)
+            let facts = await c.peer.facts()
+            #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+        }
+    }
+
+    @Test("an acknowledged Vault publication survives cancellation before the App reconnect")
+    func appSessionCancelledPostPublicationReconnectRetainsItsActualReceipt() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            _ = try await c.session.initializeSigningNamespace(from: c.input)
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            c.fixture.storage.afterSuccessfulSaves(2) {
+                withUnsafeCurrentTask { $0?.cancel() }
+            }
+            let operation = Task { try await c.session.refreshDeveloperMaterials(machineName: "Owned committed then cancelled") }
+            var publication: SelfRenewalAppSession.DeveloperMaterialObservation?
+            do { _ = try await operation.value; Issue.record("Cancelled reconnect acknowledged signing access") }
+            catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
+                publication = failure.published
+                #expect(failure.underlying is CancellationError && failure.connectionError != nil)
+            }
+            let published = try #require(publication)
+            let retained = await c.session.developerMaterialObservation(), status = await c.session.status()
+            #expect(retained == published && status?.access != .signing)
+            let namespace = try await c.vault.resume(namespaceID: published.namespaceID, identity: c.fixture.material)
+            let lease = try await c.vault.lease(in: namespace)
+            #expect(lease.keyID == published.keyID && lease.generation == published.generation)
+            let facts = await c.peer.facts()
+            #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+        }
+    }
+
+    @Test("explicit account finalization reconnects the same owner and retains the earlier real commit")
+    func appOwnerMaterialFinalizationConnectsWithoutRepeatedEnrollment() async throws {
+        try await Self.withInitialAccountAppSession { c in
+            _ = try await c.session.initializeSigningNamespace(from: c.input)
+            _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+            c.fixture.storage.failSave(afterSuccessfulSaves: 2)
+            var publication: SelfRenewalAppSession.DeveloperMaterialObservation?
+            do { _ = try await c.session.refreshDeveloperMaterials(machineName: "Owned actual commit lost account ACK"); Issue.record("Lost account save ACK was hidden") }
+            catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
+                publication = failure.published
+                #expect(failure.underlying as? Client.Failure == .storage)
+            }
+            let published = try #require(publication)
+            try await c.session.close()
+            let before = await c.peer.facts(), date = c.fixture.date
+            let owner = await MainActor.run {
+                SelfRenewalAppOwner(root: c.root, currentApplicationRoot: c.fixture.directory.appendingPathComponent("Owned.app"),
+                    developerServices: c.services, clock: { date })
+            }
+            do {
+                await owner.finalizeDeveloperMaterialPublication()
+                let status = await owner.status, retained = await owner.developerMaterial
+                let problem = await owner.problem, materialProblem = await owner.signingMaterialProblem
+                #expect(status?.access == .signing && retained == published)
+                #expect(problem == nil && materialProblem == nil)
+                let after = await c.peer.facts()
+                #expect(after.paths == before.paths && after.validCSRs == 1 && after.profileRequests == 3)
+                try await owner.close()
+            } catch { do { try await owner.close() } catch { Issue.record(error) }; throw error }
+        }
+    }
+
     @Test("App session renews its actual published key and reopens the same credential and material namespace")
     func appSessionRefreshesTheActualPublishedKeyAndReopensIt() async throws {
         try await Self.withAccountAppSession { c in
@@ -247,6 +359,8 @@ extension SelfRenewalDeveloperAccountClientTests {
                 #expect(published.generation == c.originalLease.generation + 1)
                 #expect(published.profileExpiresAt.map { $0 > now } == true)
                 #expect(!published.appleAuthorizationEstablished && !published.installedApplicationRenewed)
+                let immediatelyAfterPublication = await reopened.status()
+                #expect(immediatelyAfterPublication?.access != .signing)
                 let currentNamespace = try await expiredVault.resume(namespaceID: namespace.id, identity: c.fixture.material)
                 let currentLease = try await expiredVault.lease(in: currentNamespace)
                 try await expiredVault.validate(currentLease, for: c.fixture.material)
@@ -455,6 +569,8 @@ extension SelfRenewalDeveloperAccountClientTests {
             #expect(published.namespaceID == namespace.id && published.keyID != c.fixture.oldKeyID && published.keyID != c.fixture.pending.id)
             #expect(published.generation == originalGeneration + 3)
             #expect(!published.appleAuthorizationEstablished && !published.installedApplicationRenewed)
+            let sameSession = await c.session.status()
+            #expect(sameSession?.access == .signing && sameSession?.state == .ready)
             let currentNamespace = try await c.vault.resume(namespaceID: namespace.id, identity: c.fixture.material)
             let lease = try await c.vault.lease(in: currentNamespace)
             try await c.vault.validate(lease, for: c.fixture.material)
@@ -499,6 +615,8 @@ extension SelfRenewalDeveloperAccountClientTests {
                 #expect(refused.paths == before.paths)
                 let published = try await reopened.reconcileDeveloperMaterials()
                 #expect(published.namespaceID == configuration.namespaceID && published.keyID == expectedKey)
+                let sameSession = await reopened.status()
+                #expect(sameSession?.access == .signing && sameSession?.state == .ready)
                 let after = await c.peer.facts()
                 #expect(after.validCSRs == 1 && after.profileRequests == 3)
                 #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)

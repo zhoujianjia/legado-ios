@@ -56,6 +56,12 @@ actor SelfRenewalAppSession {
     struct DeveloperMaterialFinalizationFailure: Error, @unchecked Sendable {
         let published: DeveloperMaterialObservation
         let underlying: Error
+        /// A separate local reconnect/status failure cannot replace an already
+        /// observed account-finalization error or hide the actual publication.
+        let connectionError: Error?
+        init(published: DeveloperMaterialObservation, underlying: Error, connectionError: Error? = nil) {
+            self.published = published; self.underlying = underlying; self.connectionError = connectionError
+        }
     }
     enum State: String, Sendable, Codable {
         case unconfigured, ready, candidateReady, recoveryRequired, attentionRequired
@@ -1155,13 +1161,10 @@ actor SelfRenewalAppSession {
         do {
             let published = try await account.refreshMaterials(keyID: keyID,
                 expectedGeneration: materialGeneration, machineName: machineName)
-            let observation = DeveloperMaterialObservation(published)
-            developerMaterial = observation
-            return observation
+            return try await reconnectPublishedDeveloperMaterials(published)
         } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
-            let observation = DeveloperMaterialObservation(failure.publishedLease)
-            developerMaterial = observation
-            throw DeveloperMaterialFinalizationFailure(published: observation, underlying: failure.underlying)
+            return try await reconnectPublishedDeveloperMaterials(failure.publishedLease,
+                accountFinalizationError: failure.underlying)
         }
     }
 
@@ -1185,12 +1188,10 @@ actor SelfRenewalAppSession {
         guard let journal, let developerEnrollmentIdentity else { throw Failure.notConfigured }
         try await Coordinator.retireBeforeEnrollmentRefresh(journal: journal, identity: developerEnrollmentIdentity, at: clock())
         do {
-            let observed = DeveloperMaterialObservation(try await account.reconcilePendingMaterials())
-            developerMaterial = observed; return observed
+            return try await reconnectPublishedDeveloperMaterials(try await account.reconcilePendingMaterials())
         } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
-            let observed = DeveloperMaterialObservation(failure.publishedLease)
-            developerMaterial = observed
-            throw DeveloperMaterialFinalizationFailure(published: observed, underlying: failure.underlying)
+            return try await reconnectPublishedDeveloperMaterials(failure.publishedLease,
+                accountFinalizationError: failure.underlying)
         }
     }
 
@@ -1198,13 +1199,79 @@ actor SelfRenewalAppSession {
         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
         let account = try await developerAccountOwner()
         do {
-            let observed = DeveloperMaterialObservation(try await account.finalizeObservedPublication())
-            developerMaterial = observed; return observed
+            return try await reconnectPublishedDeveloperMaterials(try await account.finalizeObservedPublication())
         } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
-            let observed = DeveloperMaterialObservation(failure.publishedLease)
-            developerMaterial = observed
-            throw DeveloperMaterialFinalizationFailure(published: observed, underlying: failure.underlying)
+            return try await reconnectPublishedDeveloperMaterials(failure.publishedLease,
+                accountFinalizationError: failure.underlying)
         }
+    }
+
+    /// The material commit is already real. A receipt alone never grants App
+    /// signing access: discard the old connection and re-read the same current
+    /// Bundle/Vault through the normal resolver while the operation stays busy.
+    private func reconnectPublishedDeveloperMaterials(_ published: Vault.Lease,
+        accountFinalizationError: Error? = nil) async throws -> DeveloperMaterialObservation {
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("renewal.app.material-reconnect",
+            "profiles=\(published.profiles.count) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        let observation = DeveloperMaterialObservation(published)
+        // activate() and an unknown status-write ACK clear their old observations.
+        // Neither can erase this independent, acknowledged Vault publication.
+        defer { developerMaterial = observation }
+        discardDeveloperMaterialConnection()
+        do {
+            try Task.checkCancellation()
+            guard let configuration else { throw Failure.notConfigured }
+            let connection = try await resolve(configuration)
+            try Task.checkCancellation()
+            activate(connection)
+            let phase = try await journal?.load()?.record.phase
+            try Task.checkCancellation()
+            let state: State
+            switch phase {
+            case nil: state = .ready
+            case .candidateReady: state = .candidateReady
+            case .retired: state = .retiredUnsubmitted
+            case .attentionRequired, .created, .signing, .retirementPending: state = .attentionRequired
+            case .uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved: state = .recoveryRequired
+            }
+            _ = try publish(state: connection.access == .signing ? state : .recoveryRequired,
+                phase: phase, problem: connection.access == .signing ? nil : .signingMaterials)
+        } catch {
+            let original = error
+            discardDeveloperMaterialConnection()
+            materialFailure = original as? SigningMaterialUnavailable
+                ?? SigningMaterialUnavailable(underlying: original, recoveryContextError: nil)
+            let materialError = materialFailure?.underlying ?? original
+            let expectedRecoveryContext: Bool
+            if let context = materialFailure?.recoveryContextError {
+                expectedRecoveryContext = (context as? Coordinator.Failure) == .invalidRecoveryContext
+            } else { expectedRecoveryContext = true }
+            let sessionFailure = original as? Failure
+            let storageFailure = sessionFailure == .storage || sessionFailure == .commitDurabilityUnknown
+                || Self.isLocalStorageFailure(original) || Self.isLocalStorageFailure(materialError)
+            let problem: Problem = Self.renewalWasCancelled(original) ? .cancelled : (storageFailure ? .storage : .signingMaterials)
+            let unavailable = await unavailable(original, problem: problem)
+            // Expired/unusable installed material does not undo valid enrollment.
+            // Keep its normal refusal status and the publication observation.
+            // Cancellation, storage, bounds and unknown failures still surface.
+            if !Self.isSigningMaterialUnavailable(materialError) || !expectedRecoveryContext || storageFailure || unavailable.statusPersistenceError != nil {
+                throw DeveloperMaterialFinalizationFailure(published: observation,
+                    underlying: accountFinalizationError ?? original, connectionError: unavailable)
+            }
+        }
+        if let accountFinalizationError {
+            throw DeveloperMaterialFinalizationFailure(published: observation, underlying: accountFinalizationError)
+        }
+        return observation
+    }
+
+    private func discardDeveloperMaterialConnection() {
+        coordinator = nil; vault = nil; namespace = nil; access = nil; profileValidity = nil
+        liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil
+        developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+        developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+        materialFailure = nil
     }
 
     func signOutDeveloperAccount() async throws {

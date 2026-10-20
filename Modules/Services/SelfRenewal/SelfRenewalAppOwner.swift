@@ -468,8 +468,7 @@ final class SelfRenewalAppOwner {
             problem = Self.classify(error)
             AppLogger.parse("Renewal account material refresh unavailable type=\(String(reflecting: type(of: error)))")
         }
-        status = await session.status()
-        recoveryAvailable = await session.recoveryIsAvailable()
+        await synchronizeDeveloperMaterialState()
     }
 
     /// A separate explicit action preserves pending intent instead of calling
@@ -486,8 +485,7 @@ final class SelfRenewalAppOwner {
             problem = Self.classify(error)
             AppLogger.parse("Renewal account material reconciliation unavailable type=\(String(reflecting: type(of: error)))")
         }
-        status = await session.status()
-        recoveryAvailable = await session.recoveryIsAvailable()
+        await synchronizeDeveloperMaterialState()
     }
 
     func finalizeDeveloperMaterialPublication() async {
@@ -502,6 +500,13 @@ final class SelfRenewalAppOwner {
             problem = Self.classify(error)
             AppLogger.parse("Renewal account publication observation unavailable type=\(String(reflecting: type(of: error)))")
         }
+        await synchronizeDeveloperMaterialState()
+    }
+
+    private func synchronizeDeveloperMaterialState() async {
+        status = await session.status()
+        recoveryAvailable = await session.recoveryIsAvailable()
+        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
     }
 
     func signOutDeveloperAccount() async {

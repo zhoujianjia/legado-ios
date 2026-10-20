@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "status": "bounded-read-only-source-review-one-confirmed-first-use-transition-gap",
+  "sourceCommit": "413ac2fbb48a3ba3fcf5a4ee66475031559647cd",
+  "scope": "S1-S6 first-use and existing production call graph at current main; no broad historical report or cloud re-review.",
+  "findings": [
+    {
+      "id": "first-publication-does-not-reconnect-live-session",
+      "priority": "P2",
+      "certainty": "deterministic source call graph; no Apple/SDK/device runtime reproduction",
+      "problem": "A successful first signing-material publication does not promote the same live App session from unavailable/access=nil to signing. The current Settings flow then keeps pairing import and manual IPA preparation disabled until a later App lifecycle bootstrap.",
+      "trace": [
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+          "line": 388,
+          "fact": "initializeSigningNamespace persists configuration/namespace but intentionally publishes unavailable with signingMaterials and leaves coordinator/access nil."
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+          "line": 1156,
+          "fact": "refreshDeveloperMaterialsOwned receives the published lease, stores DeveloperMaterialObservation and returns; it does not resolve/activate the newly usable namespace or publish a fresh signing Status."
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+          "line": 459,
+          "fact": "refreshDeveloperMaterials copies session.status after material publication. That status is still the prior unavailable/access=nil value."
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+          "line": 1177,
+          "fact": "The first-enrollment reconciliation and publication-finalization paths also return observations without reconnecting the App signing connection."
+        },
+        {
+          "path": "Modules/Features/Settings/SelfRenewalSettingsView.swift",
+          "line": 292,
+          "fact": "Pairing import requires owner.status.access == signing."
+        },
+        {
+          "path": "Modules/Features/Settings/SelfRenewalSettingsView.swift",
+          "line": 439,
+          "fact": "Manual IPA preparation requires owner.status.access == signing."
+        },
+        {
+          "path": "Modules/Features/Settings/SelfRenewalSettingsView.swift",
+          "line": 101,
+          "fact": "Settings entry only observes anisette registration; completion of refresh/reconcile/finalize invokes no bootstrap."
+        }
+      ],
+      "reachableScenario": [
+        "Fresh valid installed app; initialize using real public enrollment input without caller namespace/device.",
+        "Configure the explicitly chosen anisette provider and successfully sign in.",
+        "Refresh signing materials successfully through the real account/Vault publication path.",
+        "Remain in the same foreground Settings session: status access is still nil, so pairing import/manual IPA preparation stay disabled."
+      ],
+      "boundedImpact": "A foreground/start bootstrap later resolves and activates the same valid published namespace; this is a missing immediate transition, not proof of a permanently disabled system or a failure of Apple material publication.",
+      "existingRecoveryEntry": {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+        "line": 105,
+        "fact": "becameActive calls bootstrap; bootstrap resolves/activates the real existing connection."
+      },
+      "repairBoundary": "After an acknowledged publication/reconciliation/finalization, reconnect through the existing full current-Bundle/Vault resolver and synchronize the Owner status. Never set signing access from the receipt alone or discard publication facts if later connection/status publication fails. A successful reconnect and failed/lost-ACK branch can be checked with owned fixtures before device validation.",
+      "codeChangedByReview": false
+    }
+  ],
+  "productionChain": [
+    {
+      "stage": "S1/public first-use inputs",
+      "facts": [
+        "Tracked apple-public-enrollment.json now supplies schema1 and three public roots in each trust list, with namespaceID/device omitted.",
+        "initializeSigningNamespace reads those explicit inputs, verifies the actual Bundle, durably records one namespace intent and enters the sole Vault creation/resume path.",
+        "Owned test roots and injected trust/storage paths are DEBUG-only; production uses Bundle.main and default Keychain-backed owners."
+      ],
+      "entry": "SelfRenewalAppSession.swift:293"
+    },
+    {
+      "stage": "S2/services/GSA/materials",
+      "facts": [
+        "developerServicesOwner creates the actual URLSession transport, Keychain session storage and AnisetteV3Provider from the explicitly configured endpoint. No service is selected by a fixture default.",
+        "Authentication executes the SRP/GSA handshake and explicit supported trusted-device secondary-auth path, then account.connect revalidates the remote account/team.",
+        "Material refresh reuses the persisted owned key, persists certificate-request intent before dispatch, verifies CSR-key/certificate/profile identity and commits through Vault.publish. Unknown issuance uses explicit reconciliation, not automatic duplicate CSR.",
+        "The confirmed first-publication transition gap above remains."
+      ],
+      "entry": "SelfRenewalAppSession.swift:988; SelfRenewalDeveloperAuthentication.swift:42; SelfRenewalDeveloperAccountClient.swift:278"
+    },
+    {
+      "stage": "S4/pairing import",
+      "facts": [
+        "Existing PKCS12 import and possession/readback checks target a real App-accessible SecIdentity persistent reference; a JSON reference alone is not authority.",
+        "Pairing can be omitted during namespace initialization and material enrollment. Its later signing/no-active-transaction gate is an intentional prerequisite, not a namespace-to-pairing dependency loop.",
+        "The helper converts an existing user-supplied pairing record to local P12/public configuration; it neither manufactures a paired endpoint nor replaces initial signing roots."
+      ],
+      "entry": "SelfRenewalAppSession.swift:415"
+    },
+    {
+      "stage": "S3/manual signed IPA and automatic currentApp archive",
+      "facts": [
+        "The manual branch accepts an imported signed IPA and reaches the same full original verifier, fresh lease/identity validation, ControlledPackageSigner.resign, persisted candidate and mandatory verification. It does not accept an unsigned cloud IPA as trusted original input.",
+        "Automatic renewal uses withCurrentApplicationArchive on the real currently verified Bundle. It streams all inventory files, checks hashes before/after capture, validates the captured IPA, then enters ordinary prepareRenewalOwned.",
+        "No test-owned SDK fixture is substituted into either production branch."
+      ],
+      "entry": "SelfRenewalAppSession.swift:699; SelfRenewalAppSession.swift:617; SelfRenewalIPAUnpacker.swift:53"
+    },
+    {
+      "stage": "S4/S5/authenticated installation and recovery",
+      "facts": [
+        "Submission requires the persisted verified candidate and real configured pairing identity/endpoint, invokes authenticated Installer.upgrade and persists upload/upgrade intent before those writes.",
+        "beforeSubmission calls the existing App data handoff and commits its receipt before the first Upgrade frame.",
+        "Unknown submission recovers through the same authenticated Lookup/owned cleanup paths, without re-upload/resubmission.",
+        "Current-process installed-material observation and normal-load data observation remain separate from a transport receipt."
+      ],
+      "entry": "SelfRenewalControlledRenewalCoordinator.swift:200; SelfRenewalControlledRenewalCoordinator.swift:375; SelfRenewalControlledRenewalCoordinator.swift:295"
+    },
+    {
+      "stage": "S6/automatic trigger",
+      "facts": [
+        "The existing App owner starts/binds the real BookStore/source/position owners, attempts the opt-in durably throttled use case on startup/foreground and schedules the registered processing identifier.",
+        "Info.plist contains com.yuedu.selfRenewal.processing in BGTaskSchedulerPermittedIdentifiers and processing in UIBackgroundModes.",
+        "The same background runtime forwards cancellation and drains the actual worker before completion. Background-only launch without scene/owner binding can expire without starting renewal; the source explicitly preserves this limitation.",
+        "Automatic work still requires a valid current installed Bundle, stored account/service state, real pairing, due profile and no blocking unresolved transaction; lack of those prerequisites is not a stub."
+      ],
+      "entry": "SelfRenewalAppSession.swift:537; SelfRenewalBackgroundTaskBridge.swift:31; yuedu_appApp.swift:203"
+    }
+  ],
+  "noAdditionalDefiniteStubFound": true,
+  "remainingAcceptanceBoundaries": [
+    "The first-publication reconnect gap can be fixed and behavior-tested with owned fixtures before device testing.",
+    "All actual SDK/crypto/signing/selected App tests must be judged from their final real outputs; this review does not infer any pending run result.",
+    "Real anisette provisioning, live GSA/2FA acceptance, same Personal Team/certificate/profile eligibility and service access still require actual authorization.",
+    "Existing pairing credentials, numeric endpoint reachability, same-device mTLS installation and system permission must be measured on the device.",
+    "Overwriting/restarting the actual signed app must prove the new profile expiry, current-process installed identity and normal-load user-data preservation.",
+    "iOS background scheduling is system granted; source wiring does not establish timing or unattended renewal."
+  ],
+  "reviewDoesNotReplace": [
+    "Apple/account authorization",
+    "physical-device install/renewal permission",
+    "real crypto/Security/Xcode SDK execution",
+    "all-source compatibility or complete S1-S6 acceptance"
+  ],
+  "actions": {
+    "canonicalModified": false,
+    "gitModified": false,
+    "cloudQueriedOrTriggered": false,
+    "privatePairingOrCredentialsRead": false,
+    "bookSourceJSONRead": false,
+    "downloadsRead": false,
+    "testsExecuted": false
+  },
+  "reviewedSources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 110227,
+      "sha256": "a5777e45fe23946754508bc5932607f12d604bc6a1dcc67b525e10299229a5f7"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 31492,
+      "sha256": "130067a34c9b6189d28c0330ba237187d6d2b39bc28ac5e909ec86c483afbe0d"
+    },
+    {
+      "path": "Modules/Features/Settings/SelfRenewalSettingsView.swift",
+      "bytes": 30200,
+      "sha256": "c2bda2c46be2ad0cea151d93478d113ddbeb5eaba352fc2dc83a051613c8ccdd"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift",
+      "bytes": 24423,
+      "sha256": "b40ebec7cc8698b4f7cca90ab942f91c68f152715c785bbcaeb44a83a6694048"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalPairingIdentityImport.swift",
+      "bytes": 12981,
+      "sha256": "faf05cf6edf40ee9748af4f7202210bc99ac05942e3b27db710565b94224a8af"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+      "bytes": 16039,
+      "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 57793,
+      "sha256": "2b46314c0920eaf82d8ea87941636230fb24d6fb7d9c84e56c461339fd01bcb0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 13923,
+      "sha256": "4e285ce3bf4187ce5a52f1f0ec2c84ee5ab3709d64f9ad21f19b0765a8eac346"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 54233,
+      "sha256": "d27ca57eda321ee8f57edc3b85e25738faeb3241c38a0ca45d50b8fe9ba1ac02"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+      "bytes": 61558,
+      "sha256": "fe195fe934a3767c62e586667242c9737d144a7c3ab9e89cf40ef2061c2bfff0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+      "bytes": 18839,
+      "sha256": "62a4c1d185253d5498f74a9875d18ac0b1f56ce0e8c5b1a08866f3097d4b715c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 28247,
+      "sha256": "e3a98cad4ec7bc71d8376c276a0519f6e7a2db91666459609cfdcb9a3cecc5ab"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "bytes": 27643,
+      "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift",
+      "bytes": 12137,
+      "sha256": "038e79c42b6305bf6c06a173bd08c78a968d068c36ccf5f0d25f627a4c71389c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalInstalledMaterialObserver.swift",
+      "bytes": 9704,
+      "sha256": "51ce7f14efffe7524a0f1de6e3d815182853086f47b1ecc348491e975bd6055b"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift",
+      "bytes": 8838,
+      "sha256": "3e21a869f1279fb5127842ed0aa2538ff277039a3e0372783a01961974435a03"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+      "bytes": 4772,
+      "sha256": "8817f110dea8a022fe8ecedc1153b65b1427c0ca6f065a79080e3c210bbb2166"
+    },
+    {
+      "path": "Modules/Services/RSS/RSSNotificationManager.swift",
+      "bytes": 9186,
+      "sha256": "d9d32209218dd0c30e4aa1aea124774a530c499a9a39e40ba960a905671e0a86"
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "bytes": 26328,
+      "sha256": "e5f00ae67de4bd625f88e43ccce81ff1dc6f7f1f97f31816b157a2cf1007bd49"
+    },
+    {
+      "path": "scripts/reader-experience/export-renewal-pairing.py",
+      "bytes": 13282,
+      "sha256": "12e272cda864976e1ee89eda2172c3fb78a144ec49e6bd46afbebf71f9eac509"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-initial-configuration/apple-public-enrollment.json",
+      "bytes": 8731,
+      "sha256": "b27f4c8d309996cc7db5e80b18a21799ed1d0c036bf853a598c45d3b3a8fd2f1"
+    },
+    {
+      "path": "Info.plist",
+      "bytes": 8595,
+      "sha256": "259fc6d3e8e25ab3f797636bcf231227b2c90442a964e240e3c3068660276b71"
+    },
+    {
+      "path": "docs/legado-ios/completion-plan.json",
+      "bytes": 394440,
+      "sha256": "c60908cc38a0711fe996ede293b0fd1ef1f6f71856ea3e56f39176ad24f436b1"
+    }
+  ]
+}

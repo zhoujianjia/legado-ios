@@ -729,12 +729,25 @@ struct SelfRenewalDeveloperAccountClientTests {
     final class FaultStorage: @unchecked Sendable, SelfRenewalDeveloperSessionStorage {
         let base = SelfRenewalDeveloperKeychainSessionStorage()
         private let lock = NSLock(); private var remaining: Int?
+        private var saveObserver: (remaining: Int, action: @Sendable () -> Void)?
         func failSave(afterSuccessfulSaves count: Int) { lock.lock(); defer { lock.unlock() }; remaining = count }
+        func afterSuccessfulSaves(_ count: Int, perform action: @escaping @Sendable () -> Void) {
+            lock.lock(); defer { lock.unlock() }; saveObserver = (count, action)
+        }
         func load(namespace: UUID) throws -> String? { try base.load(namespace: namespace) }
         func save(namespace: UUID, value: String) throws {
             lock.lock(); let fail = remaining == 0
             if let count = remaining { remaining = count == 0 ? nil : count - 1 }; lock.unlock()
             if fail { throw Client.Failure.storage }; try base.save(namespace: namespace, value: value)
+            // Signal only after the actual checked Keychain save returns.
+            let action: (@Sendable () -> Void)?
+            lock.lock()
+            if let observer = saveObserver {
+                if observer.remaining == 0 { action = observer.action; saveObserver = nil }
+                else { action = nil; saveObserver = (observer.remaining - 1, observer.action) }
+            } else { action = nil }
+            lock.unlock()
+            action?()
         }
         func cleanup(namespace: UUID) throws {
             guard KeychainHelper.delete(account: namespace.uuidString, service: "com.yuedu.selfRenewal.developerSession.v1", synchronizable: false) else { throw Client.Failure.storage }

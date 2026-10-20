@@ -1,0 +1,169 @@
+{
+  "kind": "independent-targeted-source-review",
+  "reviewer": "/root/login_info_v2_review",
+  "reviewedAtUTC": "2026-10-20T17:25:48.381823+00:00",
+  "manifest": {
+    "path": ".build/renewal-material-session-refresh-step/preparation/final-v2.json",
+    "bytes": 11196,
+    "sha256": "0c8a23b955ac9496b6632a0697dbde011f3370eeb3835912b65c79c6c9a25c80"
+  },
+  "status": "reviewed-v2-no-remaining-determined-findings",
+  "sourceFiles": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "baseline": {
+        "bytes": 110227,
+        "sha256": "a5777e45fe23946754508bc5932607f12d604bc6a1dcc67b525e10299229a5f7"
+      },
+      "candidate": {
+        "bytes": 114569,
+        "sha256": "139d89cd6c9c161fdc22334cc7f1fbda82b44761e28075b7ac7dc8affe489520"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalAppSession.swift.diff",
+        "bytes": 8283,
+        "sha256": "2ebf41645788493e5bd78b27c9fb44b3dfe2889246fc6f235de7630160e26544"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "baseline": {
+        "bytes": 31492,
+        "sha256": "130067a34c9b6189d28c0330ba237187d6d2b39bc28ac5e909ec86c483afbe0d"
+      },
+      "candidate": {
+        "bytes": 31711,
+        "sha256": "a198d0968b3a39ed1f7bba07bc5fda860cf6ffdaffd6d5019f54309458ec6fde"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalAppOwner.swift.diff",
+        "bytes": 1581,
+        "sha256": "287eeb6caa6dabc4514f61d11b46da64f151d7c379168eb8f0aa0495d6fc903b"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "baseline": {
+        "bytes": 60174,
+        "sha256": "4da8fee3590fd84cf42f75ff65c3cc8ddfa3d1a347b49fc19759ed5018d69c66"
+      },
+      "candidate": {
+        "bytes": 68061,
+        "sha256": "c61ed5265a4b4ccd79e8985b768fb63f2e7e5857a03b3112d9aeb20834c48428"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalAccountSessionTests.swift.diff",
+        "bytes": 10282,
+        "sha256": "26abc57271039ecab5919be38b17968f532a8c45e63c2a36b2cd54c1c27dc694"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "baseline": {
+        "bytes": 57069,
+        "sha256": "2617c0bd824956f42df9d9b94a70a19085d2ec88bea068a46494626b3a9306be"
+      },
+      "candidate": {
+        "bytes": 57804,
+        "sha256": "6f4fd67d76ca0e94accb7fa50d3e53ed850c5fea09b6a45028673e72cd71abec"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalDeveloperAccountClientTests.swift.diff",
+        "bytes": 1913,
+        "sha256": "d009edff6b4a08a00723c77843ce0aff66895fe1b8262ca00ff912bbe86f417c"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    }
+  ],
+  "allFourCandidateBaselineAndDiffHashesVerified": true,
+  "allFourBaselinesMatchFrozenGitAndCurrentTrackedHEAD": true,
+  "findings": [],
+  "verifiedControlFlow": [
+    "All three existing Session entries refreshDeveloperMaterials, reconcileDeveloperMaterials and finalizeDeveloperMaterialPublication hold the original busy guard until the same shared reconnect helper returns or throws. Each actual lease or PublicationFinalizationFailure publication reaches that helper.",
+    "A publication receipt constructs only DeveloperMaterialObservation. The helper clears coordinator/vault/namespace/access/profile validity and obsolete account/authentication objects before any await. It grants signing only after the unchanged strong resolve(configuration), actual current Bundle verification, same Vault resume/lease validation, current journal observation and status publication.",
+    "activate clears its previous developerMaterial observation, and publish may clear it on unknown commit acknowledgement. The helper defer restores the independently acknowledged publication on every success/error/cancellation path. No new owner or persistent store is introduced.",
+    "Any resolver, post-activate journal-load or publish error reaches catch and discards the newly activated connection again. Existing status() compares retained access against lastStatus so a failed write cannot expose stale signing authority.",
+    "Known expired/unusable installed materials with only the expected absent recovery context can return the real publication while remaining unavailable. Unknown/budget/cancellation/storage failures and unexpected recoveryContextError are surfaced with the same observation rather than treated as a successful connection.",
+    "Direct CancellationError is caught as an error after revocation and cannot be swallowed by isSigningMaterialUnavailable. The unchanged resolver/recoveryConnection explicitly rethrow cancellations rather than wrapping them into the known-material downgrade. Any unexpected wrapped recovery context is also refused by the new helper-local predicate.",
+    "An original account finalization error remains underlying even if reconnect succeeds. A concurrent reconnect or failure-status error is retained independently as connectionError/Unavailable.statusPersistenceError. The acknowledged Vault lease is never reported as rolled back.",
+    "Clearing account state does not erase the saved account or namespace. A later developerAccountOwner rebuilds through the original same-namespace resumeForEnrollment and checked account record; explicit finalization remains reachable without a second CSR/profile issue.",
+    "Owner refresh/reconcile/finalize preserve the actual published observation on the typed failure and synchronize the real Session status, recoveryIsAvailable and signingMaterialFailure before isWorking clears. They do not infer access from the publication observation.",
+    "The only production additions are Session helper/error fields and Owner observation synchronization. No transport, trust-anchor, certificate-policy, pairing, installer, automatic-policy or generic credential cache changes are present."
+  ],
+  "concernsResolvedDuringReview": [
+    {
+      "id": "helper-local-session-storage-classification",
+      "severity": "P2",
+      "sourceEvidence": "writeDocument throws AppSession.Failure.storage for open/write/fsync/rename; the existing global isLocalStorageFailure does not classify that enum. The initial new helper would mislabel a successful failure-status observation as signingMaterials even though the thrown underlying storage error remained intact.",
+      "v2Correction": "Only the new helper now recognizes Failure.storage and commitDurabilityUnknown when choosing its failure-status problem. The global classifier and fault framework are unchanged.",
+      "closedAtSourceBoundary": true
+    },
+    {
+      "id": "unexpected-recovery-context-must-remain-visible",
+      "sourceConcern": "The first draft inspected only the known material underlying of SigningMaterialUnavailable when deciding whether an unusable current App is an expected refusal.",
+      "v2Correction": "Only nil or explicit Coordinator.invalidRecoveryContext is an expected absent recovery context; every other context remains a surfaced failure carrying publication and both errors.",
+      "reproductionLimit": "A prior suggestion that persistent malformed journal JSON would be swallowed was withdrawn: unavailable() rereads the journal and preserves that persistent error as statusPersistenceError. No such runtime reproduction or P1 is claimed.",
+      "closedAtSourceBoundary": true
+    }
+  ],
+  "testDefinitionReview": {
+    "newDefinitions": [
+      "SelfRenewalDeveloperAccountClientTests/appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart",
+      "SelfRenewalDeveloperAccountClientTests/appSessionMaterialReconnectRejectsChangedCurrentBundleAndKeepsPublication",
+      "SelfRenewalDeveloperAccountClientTests/appSessionCancelledPostPublicationReconnectRetainsItsActualReceipt",
+      "SelfRenewalDeveloperAccountClientTests/appOwnerMaterialFinalizationConnectsWithoutRepeatedEnrollment"
+    ],
+    "definitionCount": 4,
+    "retainedDefinitionsRemoved": 0,
+    "newDefinitionsParameterized": false,
+    "actualCalls": [
+      "First enrollment fixture closes the previous Session, creates the same live Owner, observes the real stored account, calls Owner.refreshDeveloperMaterials and checks same-foreground signing-ready state plus one CSR/three profile requests.",
+      "Changed-current-Bundle fixture modifies the actual owned Info.plist, calls Session.refreshDeveloperMaterials, and checks publication retention with no signing and a material failure.",
+      "Cancellation fixture observes the third actual successful checked Keychain account save, cancels that real worker after acknowledged Vault publication, and checks typed cancellation, retained publication, no signing and the same persisted Vault generation.",
+      "Lost-final-account-ACK fixture retains the committed lease, reopens the same Owner, calls Owner.finalizeDeveloperMaterialPublication and verifies signing restoration without additional peer paths/CSR/profile requests."
+    ],
+    "fixtureBoundary": "The observer executes after base.save returns and outside the original lock. It is one-shot within the existing serialized suite and URLProtocol peer. It is a test seam, not a production hook or timing wait.",
+    "existingRegressionsExtended": [
+      "appSessionInitialEnrollmentCreatesNamespaceAndPublishesRealMaterials",
+      "appSessionInitialEnrollmentReconcilesItsActualUnknownCSR",
+      "appSessionEnrollsAfterRealInstalledAndPublishedProfileExpiry"
+    ],
+    "expiryAndCancellationCoverageDefined": true,
+    "actualNewTestExecutions": 0,
+    "actualSwiftSDKExecutions": 0,
+    "actualKeychainExecutionsForChangedInputs": 0
+  },
+  "staticEvidence": {
+    "grammar": {
+      "path": ".build/renewal-material-session-refresh-step/preparation/grammar-v2.json",
+      "bytes": 676,
+      "sha256": "97823f26eeefba4bf099d1962fde06f87e1ff37cb1aa6d02d7e5d183417474fa"
+    },
+    "baselineGrammarRoots": 4,
+    "candidateGrammarRoots": 4,
+    "reportedGrammarErrors": 0,
+    "swiftTypecheck": false,
+    "reviewExecutedNewTests": false
+  },
+  "futureHarnessBoundary": {
+    "frozenExistingCheckpointsChanged": false,
+    "recordedFutureCoreDefinitions": 451,
+    "recordedFutureCoreLeaves": 454,
+    "recordedFutureNativeInputs": 84,
+    "scope": "These are author preparation recommendations only. This review did not edit selectors or bind new jobs; root must verify the next actual input roster."
+  },
+  "limits": [
+    "No Swift compiler, SDK, real Keychain, account server, device installer or physical-device execution was available to this review. The four methods remain unexecuted definitions.",
+    "The source patch connects same-session material publication to the established strong resolver; it does not establish Apple signing authority, actual same-device replacement, renewed installed expiry or unattended renewal.",
+    "No canonical source, Git state, cloud job/tag, existing frozen IPA/SDK checkpoint or user credential/source file was changed by this review."
+  ],
+  "canonicalOrGitOrCloudMutations": false,
+  "rawUserDataRead": false
+}

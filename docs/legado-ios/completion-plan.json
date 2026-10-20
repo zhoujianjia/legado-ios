@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json",
+  "activeBatchRecord": "docs/legado-ios/core-renewal-material-session-refresh-step.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,7 +169,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Complete and independently review the bounded same-session material-publication refresh and original login-action slice, update only affected fixed selections/source closures, then submit one coherent SDK/Native checkpoint. Retain prior source-scoped evidence and freshly execute changed affected inputs; do not respin the delivered44 IPA solely for C2 changes.",
+      "nextPlannedCheckpoint": "Same-session material-publication refresh is now integrated after independent review. Finish the bounded original login-action independent review, integrate both affected selections/source closures, and submit one combined SDK/Native checkpoint. Build14 source44 IPA is already delivered; do not respin it solely for C2 changes.",
       "alreadyRunningTasks": "No cloud run remains live. Build14 source44f125b actual IPA succeeded, was audited and delivered to Downloads. Both fa48 SDK and Native are archived terminal compilation failures: currentcore ReaderWritingMode missing import and original Native horizontal missing import; six related imports already repaired in main413ac2f. The actual SDK producer passed codesign/four OpenSSL CMS checks/file-identity search-list cleanup, and independent SwiftPM18 passed. App/JNI selected tests executed0. Do not repoll any terminal run.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
@@ -177,13 +177,15 @@
         "runID": 39459762202,
         "jobID": 118755854457,
         "status": "completed",
-        "conclusion": "success-for-producer-phase-only",
+        "conclusion": "failure",
         "record": "docs/legado-ios/core-sdk-fa48eb3-terminal-result.json",
         "queryAgain": false,
         "actualCodesignExecuted": true,
         "actualCodesignPassed": true,
         "userSearchListCleanupVerified": true,
-        "nativeMethodsAccepted": 0
+        "nativeMethodsAccepted": 0,
+        "producerPhaseConclusion": "success",
+        "scope": "Integrated producer phase succeeded; containing SDK workflow ended with test-target compilation failure."
       },
       "currentCoreLatestTerminal": {
         "sourceCommit": "fa48eb3b796e068842c6f11a4fa8dcf56c3b03c4",
@@ -665,6 +667,10 @@
               "record": "docs/legado-ios/core-live-account-pairing-settings-step.json",
               "actualSDKAccepted": false,
               "scope": "live account, explicit pairing identity and real Settings owner integration"
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-material-session-refresh-step.json",
+              "scope": "First acknowledged material publication reconnects and synchronizes the same live App Owner through the normal strong Bundle/Vault resolver; actual SDK and new regression executions pending."
             }
           ],
           "implementedSubtasksZh": [
@@ -676,7 +682,7 @@
             "GSA 登录、可信设备二次认证、真实任务取消和退出已接入同一 AppSession/AppOwner；Task 覆盖材料 owner 打开到认证完成，退出先取消并等实际任务结束，再清内存挑战和原凭据。Session epoch 与 UI 操作 UUID 防止旧结果/旧 defer 影响新状态，确认保存的账号事实不伪装撤回。修正首次登录取消后凭据应为空的测试断言；3 项新回归仍仅定义，SDK 执行 0；默认真实 anisette 和登录界面尚不可用。",
             "已接真实Anisette v3及同owner账号网络/Keychain；设置可选服务、观察注册及确认恢复未知注册。认证/配对/界面共15源已合入，11项有行为回归仍待SDK执行，真实Apple授权未验证。"
           ],
-          "nextActionZh": "合并核心剩余改动后统一执行相关Apple SDK/原生回归，先修实际失败；真实授权、同机安装及自动续签验收保持未完成。"
+          "nextActionZh": "与书源登录提交、已修正的测试模块导入合并为一次集中 SDK/JNI 验证；首次材料发布后仍需真实签名、认证安装与到期时间延长验证。"
         },
         {
           "id": "S3",
@@ -1111,6 +1117,14 @@
         "build": 14,
         "devicePackageDelivered": true,
         "physicalDeviceRenewalOrGlyphOutcomeAccepted": false
+      },
+      "materialPublicationLiveSessionRefresh": {
+        "record": "docs/legado-ios/core-renewal-material-session-refresh-step.json",
+        "productionFiles": 2,
+        "newRegressionDefinitions": 4,
+        "SwiftSDKExecuted": false,
+        "physicalDeviceAccepted": false,
+        "sameOwnerResolverRequired": true
       }
     }
   },

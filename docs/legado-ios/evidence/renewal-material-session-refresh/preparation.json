@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-ignored-candidate-for-independent-review",
+  "sourceBaselineCommit": "413ac2fbb48a3ba3fcf5a4ee66475031559647cd",
+  "headAtFreeze": "c088e6f27ec0a671d41476f0e3622a06880b3306",
+  "baselineFilesEqualCurrentTrackedHEAD": true,
+  "candidateRoot": ".build/renewal-material-session-refresh-step/work",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "baseline": {
+        "bytes": 110227,
+        "sha256": "a5777e45fe23946754508bc5932607f12d604bc6a1dcc67b525e10299229a5f7"
+      },
+      "candidate": {
+        "bytes": 114569,
+        "sha256": "139d89cd6c9c161fdc22334cc7f1fbda82b44761e28075b7ac7dc8affe489520"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalAppSession.swift.diff",
+        "bytes": 8283,
+        "sha256": "2ebf41645788493e5bd78b27c9fb44b3dfe2889246fc6f235de7630160e26544"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "baseline": {
+        "bytes": 31492,
+        "sha256": "130067a34c9b6189d28c0330ba237187d6d2b39bc28ac5e909ec86c483afbe0d"
+      },
+      "candidate": {
+        "bytes": 31711,
+        "sha256": "a198d0968b3a39ed1f7bba07bc5fda860cf6ffdaffd6d5019f54309458ec6fde"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalAppOwner.swift.diff",
+        "bytes": 1581,
+        "sha256": "287eeb6caa6dabc4514f61d11b46da64f151d7c379168eb8f0aa0495d6fc903b"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "baseline": {
+        "bytes": 60174,
+        "sha256": "4da8fee3590fd84cf42f75ff65c3cc8ddfa3d1a347b49fc19759ed5018d69c66"
+      },
+      "candidate": {
+        "bytes": 68061,
+        "sha256": "c61ed5265a4b4ccd79e8985b768fb63f2e7e5857a03b3112d9aeb20834c48428"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalAccountSessionTests.swift.diff",
+        "bytes": 10282,
+        "sha256": "26abc57271039ecab5919be38b17968f532a8c45e63c2a36b2cd54c1c27dc694"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "baseline": {
+        "bytes": 57069,
+        "sha256": "2617c0bd824956f42df9d9b94a70a19085d2ec88bea068a46494626b3a9306be"
+      },
+      "candidate": {
+        "bytes": 57804,
+        "sha256": "6f4fd67d76ca0e94accb7fa50d3e53ed850c5fea09b6a45028673e72cd71abec"
+      },
+      "diff": {
+        "path": "diffs-v2/SelfRenewalDeveloperAccountClientTests.swift.diff",
+        "bytes": 1913,
+        "sha256": "d009edff6b4a08a00723c77843ce0aff66895fe1b8262ca00ff912bbe86f417c"
+      },
+      "alreadyCoreBound": true,
+      "alreadyNativeBound": false
+    }
+  ],
+  "scope": "First acknowledged material publication reconnects the existing live App signing session and synchronizes the same Owner; does not change frozen44/fa48 inputs, networking, trust anchors, pairing, installer, automatic policy or owner identity.",
+  "behavior": {
+    "before": "initializeSigningNamespace left access=nil; refresh/reconcile/finalize exposed a real publication but did not reconnect the same session, leaving Settings pairing/prepare disabled until lifecycle bootstrap.",
+    "after": "Every actual published lease passes one shared reconnect helper while the existing busy ownership is held. It discards old signing state, invokes the normal resolve(configuration) full current-Bundle/Vault path and publishes the actual existing journal phase before Owner synchronization.",
+    "receiptIsNotAuthorization": true,
+    "accountFinalizationFailure": "Even if the account final save fails after a real Vault publication, reconnect is attempted using that fact; the original account error is still thrown. DeveloperMaterialFinalizationFailure keeps the published observation and an independent optional connectionError.",
+    "expiredOrUnusableInstalledApplication": "A known cryptographic/material refusal with no unexpected recovery context retains the actual publication but cannot grant signing. This preserves the existing explicit expired-enrollment behavior.",
+    "unknownRecoveryContext": "Only nil or Coordinator.invalidRecoveryContext is an expected absent recovery context in this local helper. Any other context remains an error with the publication; no global classification changes.",
+    "cancelStorageUnknownFailure": "The old connection is discarded first. Cancellation, storage, unknown errors or a failed status ACK still throw with the acknowledged publication retained; lost status ACK cannot retain signing access.",
+    "concurrency": "The original public refresh/reconcile/finalize busy guard stays held across account publication, resolver and status publication. Owner methods keep isWorking until the existing status/recovery/material-error observations are synchronized.",
+    "successfulUnchangedRefreshWrites": "Existing publish deduplication remains; no new store or background work is introduced."
+  },
+  "newTests": {
+    "suite": "SelfRenewalDeveloperAccountClientTests",
+    "suiteSerialization": "Existing @Suite(..., .serialized) and original URLProtocol peer; no new suite or peer registry.",
+    "source": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+    "definitions": 4,
+    "argumentsPerDefinition": 1,
+    "qualifiedMethods": [
+      "SelfRenewalDeveloperAccountClientTests/appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart",
+      "SelfRenewalDeveloperAccountClientTests/appSessionMaterialReconnectRejectsChangedCurrentBundleAndKeepsPublication",
+      "SelfRenewalDeveloperAccountClientTests/appSessionCancelledPostPublicationReconnectRetainsItsActualReceipt",
+      "SelfRenewalDeveloperAccountClientTests/appOwnerMaterialFinalizationConnectsWithoutRepeatedEnrollment"
+    ],
+    "scenarios": [
+      "Same live Owner becomes signing-ready after first publication without a new foreground/bootstrap.",
+      "A changed actual owned current Bundle never gains signing from a real published lease and the publication remains visible.",
+      "A one-shot callback fires only after the actual third successful Keychain save, cancels the real worker and checks the persisted publication survives without signing access.",
+      "Explicit account finalization reaches the same Owner, restores signing state and never repeats CSR/profile requests."
+    ],
+    "existingMethodsExtended": [
+      "appSessionInitialEnrollmentCreatesNamespaceAndPublishesRealMaterials",
+      "appSessionInitialEnrollmentReconcilesItsActualUnknownCSR",
+      "appSessionEnrollsAfterRealInstalledAndPublishedProfileExpiry"
+    ],
+    "testFixtureChanges": "FaultStorage gains one locked one-shot after-successful-save observer; callback runs after checked Keychain storage returns, outside its lock. No production hook or timing wait.",
+    "newSwiftFiles": 0
+  },
+  "staticValidation": {
+    "grammar": {
+      "path": "preparation/grammar-v2.json",
+      "bytes": 676,
+      "sha256": "97823f26eeefba4bf099d1962fde06f87e1ff37cb1aa6d02d7e5d183417474fa"
+    },
+    "grammarResult": "Four baseline and four candidate tree-sitter roots have zero grammar errors.",
+    "toolVersions": [
+      "tree-sitter0.26.0",
+      "tree-sitter-swift0.7.4"
+    ],
+    "retainedTestDefinitionsRemoved": 0,
+    "newDefinitionsNoParameters": true,
+    "diffsPreserveOriginalFileLineEndingStyle": true,
+    "SwiftTypecheckPerformed": false,
+    "SwiftSDKExecuted": false,
+    "newTestsExecuted": 0
+  },
+  "futureHarnessRecommendations": {
+    "coreCurrent": {
+      "definitions": 447,
+      "argumentLeaves": 450,
+      "sourceInputs": 302
+    },
+    "coreAfterSelectingFourRealDefinitions": {
+      "definitions": 451,
+      "argumentLeaves": 454,
+      "sourceInputs": 302
+    },
+    "coreInputRosterChangeNeeded": false,
+    "newCurrentcoreSelectors": [
+      "-only-testing:yuedu appTests/SelfRenewalDeveloperAccountClientTests/appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart",
+      "-only-testing:yuedu appTests/SelfRenewalDeveloperAccountClientTests/appSessionMaterialReconnectRejectsChangedCurrentBundleAndKeepsPublication",
+      "-only-testing:yuedu appTests/SelfRenewalDeveloperAccountClientTests/appSessionCancelledPostPublicationReconnectRetainsItsActualReceipt",
+      "-only-testing:yuedu appTests/SelfRenewalDeveloperAccountClientTests/appOwnerMaterialFinalizationConnectsWithoutRepeatedEnrollment"
+    ],
+    "boolPairsUnchanged": {
+      "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt",
+      "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt",
+      "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll": "nestedBackdrop"
+    },
+    "nativeCurrentInputs": 80,
+    "nativeRequiredNewCompileInputs": [
+      "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift"
+    ],
+    "nativeOriginalSelectorsUnchanged": 13,
+    "nativeMainjsSeparateSelectorsUnchanged": 1,
+    "currentcoreBudgetSecondsUnchanged": 3600,
+    "mandatorySameJobSignedSDKFixtureUnchanged": true,
+    "independentPackage18CompilationAndSelectionUnchanged": true,
+    "harnessFilesModifiedByThisStage": false,
+    "nativeAfterBindingTheseFourInputs": 84
+  },
+  "reviewNotes": [
+    "The helper-local recovery-context predicate is stricter than the initial draft. Persistent malformed journal errors already surface through unavailable.statusPersistenceError; no claim that such a stable error was swallowed or reproduced.",
+    "The API publication observation flags remain false for Apple authority and installed renewal. A later genuine SDK pass, crypto checks and device authorization/installation/relaunch remain required.",
+    "The new helper also recognizes existing AppSession.Failure.storage and commitDurabilityUnknown locally, preserving the storage reason in a successful failure-status observation; global error classification and fault frameworks are unchanged."
+  ],
+  "reusedEvidence": [
+    {
+      "path": ".build/renewal-live-path-source-review-step/review.json",
+      "bytes": 15041,
+      "sha256": "c45f15202d33d9a9dba29bc575dce793eb533ca50239fad412fa2bb933c32429",
+      "scope": "Source-only original call-graph finding, not SDK/Apple/device acceptance."
+    }
+  ],
+  "boundaries": [
+    "No canonical/Git/cloud/tag mutations.",
+    "No actual credentials, pairing records, Downloads or user book sources read.",
+    "No Swift SDK, crypto/keychain execution, new test execution or device validation claimed."
+  ],
+  "supersedes": {
+    "path": "preparation/final-v1.json",
+    "bytes": 10625,
+    "sha256": "dc3f07bf5794cc16fecd76a879f60aed45a03b5779a243ea62b9ad7a6dafe3d9",
+    "reason": "Local session storage-error classification tightened; accurate Native closure recommendation is four missing paths,80 to84."
+  }
+}
