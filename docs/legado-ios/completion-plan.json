@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-20",
-  "activeBatchRecord": "docs/legado-ios/all-work-execution-batch.json",
+  "activeBatchRecord": "docs/legado-ios/native-reader-experience-build13.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -105,7 +105,7 @@
     "builtInBookSources": false,
     "privateSourcesMayBeReadOrUploaded": false,
     "preserveExistingUserSourcesBooksAndProgress": true,
-    "deviceValidationCurrentlyDeferred": true,
+    "deviceValidationCurrentlyDeferred": false,
     "askUserToInstallOrTestDuringDeferredPeriod": false,
     "compatibleUIAndServicesMayBeReused": true,
     "sourceCompatibilityTarget": "Locked original Legado archive; native reading experience may improve beyond original UI.",
@@ -113,10 +113,18 @@
     "unsupportedBehavior": "Return explicit capability/error information; do not fabricate successful empty results or silently switch rule engines.",
     "backgroundBoundary": "Foreground services and system-permitted scheduling only; do not promise persistent servers or precise background Cron.",
     "legalBoundary": "Preserve original license partitions, attribution and source obligations; this plan is implementation/material work, not legal advice or a clearance determination.",
-    "userRequestedDeviceVerificationScopes": [],
+    "userRequestedDeviceVerificationScopes": [
+      "self-renewal-device-package-and-functional-validation"
+    ],
     "historicalUserRequestedDeviceVerificationScopes": [
       "self-renewal-read-only-transport"
-    ]
+    ],
+    "latestDeviceAuthorization": {
+      "requestedOn": "2026-10-20",
+      "userRequestZh": "现在可以用真机验证了，可以打包测试续签功能",
+      "supersedesEarlierDeviceDeferral": true,
+      "actualDeviceAcceptance": false
+    }
   },
   "execution": {
     "immediateBatch": [
@@ -154,7 +162,7 @@
         "scopeZh": "既定原 JVM 传统书源兼容、完整请求／阅读链路、必要状态持久化与阅读进度可靠性；不擅切引擎。"
       }
     ],
-    "schedulingRule": "Only self-signing and the existing traditional-source core route are active. Follow stepByStep within each lane and the unchanged original workpackage dependencies; independent bounded offline implementation can proceed in parallel. Device evidence gates live authenticated installation and final renewal acceptance, not owned-fixture material/signing/protocol development. The 17 deferred packages remain unfinished and inactive; no device request.",
+    "schedulingRule": "Only self-signing and the existing traditional-source core route are active. Follow stepByStep within each lane and the unchanged original workpackage dependencies; independent bounded offline implementation can proceed in parallel. Device evidence gates live authenticated installation and final renewal acceptance, not owned-fixture material/signing/protocol development. The 17 deferred packages remain unfinished and inactive; the latest user request now authorizes renewal device packaging and validation.",
     "validationRule": "User-directed consolidated validation: first finish the implementable non-device production wiring and minimum meaningful regression definitions across all C1-C5/S1-S6 core steps. During development use only necessary lightweight checks and reuse unchanged evidence. Then run one consolidated Mac/App/Package/native-JNI/end-to-end validation batch; repair actual failures together and revalidate affected scope. Keep the two already-started4c24e1f jobs and reuse their source-scoped results. Do not trigger or wait for cloud compilation for each small change or subsystem. The17 deferred packages remain inactive.",
     "progressRule": "Report implementation progress, local checks, pending integration and the next stage checkpoint separately. Do not spend an active development turn repeatedly waiting for a cloud build; a passing local check does not imply iOS acceptance.",
     "terminalNonDeviceState": "All implementable desktop/Simulator tasks verified, external/device-dependent feasibility decisions explicit, one audited source-free candidate and concise deferred checklist. Do not mark the full feature domains complete while required evidence is missing.",
@@ -164,7 +172,7 @@
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
       "nextPlannedCheckpoint": "Finish implementable production changes across all eleven active core steps before requesting the next consolidated SDK batch. Reuse the two current4c24e1f jobs and act on concrete failures without repeatedly polling or starting per-item jobs.",
-      "alreadyRunningTasks": "Two same-source4c24e1f jobs initially in progress: currentcore39426297522/job118639606113 and native-reader39426296852/job118639603611. New method acceptance remains0; owned4b6f5dc and previous runs are terminal history.",
+      "alreadyRunningTasks": "Both4c24e1f SDK runs are terminal and archived; corrected build13 run39434362755 completed successfully and is downloaded. No new cloud run is required for unchanged evidence.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
         "sourceTag": "reader-owned-sdk-4b6f5dc",
@@ -192,188 +200,16 @@
         "nativeMethodsAccepted": 0,
         "independentPackageMethodsPassed": 17
       },
-      "onlyLiveSDKHandles": [
-        {
-          "sourceCommit": "4c24e1ff87df7c33a2070bc91ea173dc401cad32",
-          "sourceTag": "reader-renewal-4c24e1f",
-          "runID": 39426297522,
-          "jobID": 118639606113,
-          "initialStatus": "in_progress",
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39426297522",
-          "initialObservedSteps": [
-            {
-              "name": "Set up job",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 1
-            },
-            {
-              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 2
-            },
-            {
-              "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 3
-            },
-            {
-              "name": "Verify the exact source tag",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 4
-            },
-            {
-              "name": "Verify portable evidence guards",
-              "status": "in_progress",
-              "conclusion": null,
-              "number": 5
-            },
-            {
-              "name": "Select the installed toolchain and Simulator",
-              "status": "pending",
-              "conclusion": null,
-              "number": 6
-            },
-            {
-              "name": "Execute373 current-core definitions with375 exact native argument leaves",
-              "status": "pending",
-              "conclusion": null,
-              "number": 7
-            },
-            {
-              "name": "Execute18 independent current-source macOS package XCTest cases",
-              "status": "pending",
-              "conclusion": null,
-              "number": 8
-            },
-            {
-              "name": "Preserve independent package XCTest evidence without build products",
-              "status": "pending",
-              "conclusion": null,
-              "number": 9
-            },
-            {
-              "name": "Preserve native evidence and allowlisted public SDK fixture outputs",
-              "status": "pending",
-              "conclusion": null,
-              "number": 10
-            },
-            {
-              "name": "State the limited acceptance boundary",
-              "status": "pending",
-              "conclusion": null,
-              "number": 11
-            },
-            {
-              "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
-              "status": "pending",
-              "conclusion": null,
-              "number": 21
-            },
-            {
-              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-              "status": "pending",
-              "conclusion": null,
-              "number": 22
-            }
-          ],
-          "requestRecord": "docs/legado-ios/core-sdk-4c24e1f-request.json",
-          "queryPolicy": "One follow-up at a meaningful implementation checkpoint; no terminal-history polling."
-        },
-        {
-          "sourceCommit": "4c24e1ff87df7c33a2070bc91ea173dc401cad32",
-          "sourceTag": "legado-native-reader-test-4c24e1f",
-          "runID": 39426296852,
-          "jobID": 118639603611,
-          "initialStatus": "in_progress",
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39426296852",
-          "initialObservedSteps": [
-            {
-              "name": "Set up job",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 1
-            },
-            {
-              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 2
-            },
-            {
-              "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 3
-            },
-            {
-              "name": "Run actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad",
-              "status": "completed",
-              "conclusion": "success",
-              "number": 4
-            },
-            {
-              "name": "Build and audit this checkout's ordinary production runtime",
-              "status": "in_progress",
-              "conclusion": null,
-              "number": 5
-            },
-            {
-              "name": "Restore only the audited native interpreter",
-              "status": "pending",
-              "conclusion": null,
-              "number": 6
-            },
-            {
-              "name": "Prepare the Simulator payload and synthetic local application",
-              "status": "pending",
-              "conclusion": null,
-              "number": 7
-            },
-            {
-              "name": "Execute the actual main-app JVM reading chain and cancellation",
-              "status": "pending",
-              "conclusion": null,
-              "number": 8
-            },
-            {
-              "name": "Preserve this Simulator run's JVM diagnostics and crash reports",
-              "status": "pending",
-              "conclusion": null,
-              "number": 9
-            },
-            {
-              "name": "Retain actual test results, payload provenance and failures",
-              "status": "pending",
-              "conclusion": null,
-              "number": 10
-            },
-            {
-              "name": "Post Run actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad",
-              "status": "pending",
-              "conclusion": null,
-              "number": 18
-            },
-            {
-              "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
-              "status": "pending",
-              "conclusion": null,
-              "number": 19
-            },
-            {
-              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-              "status": "pending",
-              "conclusion": null,
-              "number": 20
-            }
-          ],
-          "requestRecord": "docs/legado-ios/core-sdk-4c24e1f-request.json",
-          "queryPolicy": "One follow-up at a meaningful implementation checkpoint; no terminal-history polling."
-        }
-      ]
+      "onlyLiveSDKHandles": [],
+      "latestDevicePackageTerminal": {
+        "sourceCommit": "4836debf2cfc46d0bc44c46df4d5cbc28d434ff2",
+        "runID": 39434362755,
+        "jobID": 118667353141,
+        "record": "docs/legado-ios/native-reader-experience-build13.json",
+        "status": "completed",
+        "conclusion": "success",
+        "queryAgain": false
+      }
     },
     "nextReadyBatch": [
       "automatic-renewal-feasibility",
@@ -416,12 +252,13 @@
       "platform-integration"
     ],
     "currentDeviceCandidate": {
-      "userRequestedOn": "2026-10-19",
-      "scopeZh": "已交付 build12 并收到报告：本次停在旧四端点守卫，TCP 尝试为零；候选选择修复已准备，尚未交付新包，完整自动续签仍未实现。 用户最新要求暂不真机验证：当前不要求安装／复测，也未制作或交付新 IPA；旧报告与未完成事实保留。",
-      "record": "docs/legado-ios/native-reader-experience-build12.json",
-      "build": "12",
-      "fullAutomaticRenewalImplemented": false,
-      "currentDeviceValidationStatus": "deferred_by_user_not_accepted"
+      "userRequestedOn": "2026-10-20",
+      "record": "docs/legado-ios/native-reader-experience-build13.json",
+      "build": "13",
+      "sourceCommit": "4836debf2cfc46d0bc44c46df4d5cbc28d434ff2",
+      "currentDeviceValidationStatus": "delivered-awaiting-user-observations-full-renewal-not-ready",
+      "scopeZh": "build13已实际Release编译、下载并核对IPA；可验证入口和诊断。该冻结源码未含后续认证/配对接线及真实JVM包重签修正，完整自动续签尚未可验收。",
+      "fullAutomaticRenewalImplemented": false
     },
     "userPriorityScope": {
       "requestedOn": "2026-10-20",
@@ -466,8 +303,8 @@
         "automatic-tasks",
         "platform-integration"
       ],
-      "physicalDeviceValidationNow": false,
-      "askUserForDeviceTestsNow": false,
+      "physicalDeviceValidationNow": true,
+      "askUserForDeviceTestsNow": true,
       "existingCodeEvidenceAndPassedReliabilityPreserved": true
     },
     "stepByStep": {
