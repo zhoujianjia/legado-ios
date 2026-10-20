@@ -639,7 +639,7 @@ struct HomeView: View {
             ) {
                 Button(localized("刪除"), role: .destructive) {
                     if let b = bookToDelete {
-                        SourceCallBackService.notify(.delBookShelf, book: b)
+                        SourceCallBackService.notify(.delBookShelf, book: b, store: store)
                         store.delete(bookId: b.id)
                     }
                 }
@@ -655,7 +655,7 @@ struct HomeView: View {
                     withAnimation(reduceMotion ? nil : DSAnimation.standard) {
                         ids.forEach { id in
                             if let book = store.readingBook(id: id) {
-                                SourceCallBackService.notify(.delBookShelf, book: book)
+                                SourceCallBackService.notify(.delBookShelf, book: book, store: store)
                             }
                             store.delete(bookId: id)
                         }

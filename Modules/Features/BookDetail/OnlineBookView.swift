@@ -890,7 +890,7 @@ struct OnlineBookView: View {
             presentationMode.wrappedValue.dismiss()
         }
         if let shelved = bookStore.readingBook(id: bookId) {
-            SourceCallBackService.notify(.delBookShelf, book: shelved)
+            SourceCallBackService.notify(.delBookShelf, book: shelved, store: bookStore)
         }
         bookStore.delete(bookId: bookId)
         addedBookId = nil

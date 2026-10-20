@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "frozenDevicePackageBase": "75c87a9e5c970696015715e22ce3288c951a8ffe",
+  "mainDevelopmentFix": "25b7e45cffa93b178c8fc3ad4a6e0532ac758245",
+  "reason": "Actual a24 SDK compilation rejected two BookStore.shared defaults. Require the existing caller-owned BookStore and pass the actual owner at four deletion calls.",
+  "productionPatchSHA256": "7707957d21f58dda71b715807b0e6dc249fa351d3ccf75827a135fde18841672",
+  "sources": [
+    {
+      "path": "Modules/Services/Online/SourceCallBackService.swift",
+      "bytes": 13509,
+      "sha256": "6a5c0afcad326dc4011b7d997a30b93d5c8c055b56c2fe4820882141ef278a52"
+    },
+    {
+      "path": "Modules/Features/Bookshelf/HomeView.swift",
+      "bytes": 113997,
+      "sha256": "06d801fff994fa2351a8032ee631bca18502776bc68a32fb967c3829e53f72c5"
+    },
+    {
+      "path": "Modules/Features/BookDetail/OnlineBookView.swift",
+      "bytes": 49988,
+      "sha256": "30f3a0fd8687d7a33f1b293e9a58e4cc0a18aae8d252c6746d61c77c44360af1"
+    },
+    {
+      "path": "Modules/Features/BookDetail/AudiobookDetailView.swift",
+      "bytes": 35706,
+      "sha256": "40f1ad89af48891b835f52364dde14304212f4b76b8fae6d14381e5764a543bd"
+    }
+  ],
+  "scope": "Only four production files and this source receipt differ from build14 base75c87a9. Newer independently staged C2 development and SDK fixture tooling remain on the main development branch and do not delay this device package repair.",
+  "localAppleSDKExecutions": 0,
+  "currentDeviceBuild": 14,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
