@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "kind": "redacted-user-diagnostic-log-analysis",
+  "input": {
+    "name": "yuedu-diagnostics-20261020-230424.txt",
+    "bytes": 850977,
+    "sha256": "75fb80acffd4a0bbd1365e15dff9d63d67e38b2938617bc6ceb114288ec4d36c",
+    "rawLogPublished": false
+  },
+  "declaredBuild": "13",
+  "sourceCommitDeclaredByLog": null,
+  "associatedDeviceReport": "docs/legado-ios/self-renewal-report-build13-analysis.json",
+  "timeZone": "Asia/Shanghai",
+  "sessionStartedAt": "2026-10-20 23:00:13.652",
+  "exportedAt": "2026-10-20 23:05:23.125",
+  "scope": "Export includes persisted historical events from2026-10-18 and nested flight-recorder traces. Historical source/network failures are not all build13 regressions.",
+  "currentFindings": [
+    {
+      "kind": "chapter-retry-anomaly",
+      "at": "2026-10-20 23:04:23",
+      "reportedReasons": [
+        "layoutSuperseded",
+        "layoutSuperseded",
+        "layoutSuperseded"
+      ],
+      "evidence": "The first opening had two superseded attempts and then full pagination succeeded at23:00:16.434. A later opening at23:04:23 was counted as attempt3 despite intervening success.",
+      "rootCause": "CoreTextPageEngine reported every awaiting caller against a shared nil-book bucket and never cleared that bucket after full layout. ReaderViewModel clears a different real-book bucket.",
+      "status": "source-correction-integrated-runtime-verification-pending"
+    },
+    {
+      "kind": "automatic-TOC-refresh-timeout",
+      "at": "2026-10-20 23:00:29",
+      "status": "observed-no-request-or-server-root-cause-proven",
+      "impact": "A directory refresh failed. The observed cached chapter was still laid out; successful online source refresh is not established."
+    },
+    {
+      "kind": "main-thread-response-delay",
+      "at": "2026-10-20 23:03:03",
+      "durationMilliseconds": 401,
+      "scenePhase": "background",
+      "activity": "no instrumented span",
+      "status": "observed-no-stack-or-specific-operation-root-cause-proven"
+    }
+  ],
+  "baselineSourceEvidence": [
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageEngine.swift",
+      "sourceCommit": "4836debf2cfc46d0bc44c46df4d5cbc28d434ff2",
+      "bytes": 87313,
+      "sha256": "7b5153458272688c03ac30bd6ba2f3e626d684537917d6a81bfc13f56979cfc9"
+    },
+    {
+      "path": "Modules/Services/Diagnostics/ChapterRetryLog.swift",
+      "sourceCommit": "4836debf2cfc46d0bc44c46df4d5cbc28d434ff2",
+      "bytes": 6785,
+      "sha256": "63f52590c432764ec54c7a324f8b50845b48ac027489096359318d0372b4d114"
+    },
+    {
+      "path": "Modules/Features/Reader/ReaderViewModel.swift",
+      "sourceCommit": "4836debf2cfc46d0bc44c46df4d5cbc28d434ff2",
+      "bytes": 39439,
+      "sha256": "bf128cca6f41ac7373eaa800e957e76c5f119ef56f50d79e6586fdc9e022ba93"
+    }
+  ],
+  "correctionRequirements": [
+    "Scope layout retry history to the real engine instance and book without changing ordinary content-fetch retry ownership.",
+    "Count an actual discarded pending task once, rather than counting each awaiting caller.",
+    "Clear only that scope after an accepted complete nonempty layout, before the ready callback. A late old task must not clear or refill a newer run.",
+    "Keep genuine repeated-layout anomalies and the existing bounded history; do not hide errors or add timing waits."
+  ],
+  "unverified": [
+    "Apple SDK execution of the correction",
+    "Actual device regression of the correction",
+    "Cause of the TOC timeout",
+    "Cause of the background response delay"
+  ],
+  "automaticRenewalEvidenceAdded": false,
+  "fullSourceCompatibilityEvidenceAdded": false,
+  "sensitiveRawContentRetainedOnlyInUserFile": true,
+  "status": "production-correction-integrated-awaiting-consolidated-Apple-SDK-and-runtime-regression",
+  "userObservedReading": {
+    "reported": "normal-reading-only-noticed-the-error-in-the-log",
+    "source": "Explicit user reply for this diagnostic file",
+    "retestRequested": false
+  },
+  "implementation": {
+    "preparationSHA256": "333a8f16b3f782c3d3511c79fd01822696e830155e0f39402e5b7b82654ef050",
+    "sources": [
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageEngine.swift",
+        "bytes": 88574,
+        "sha256": "18c6cb30496472189fc8664326dd8fead0e12a3154e951fa340a3be24d240137"
+      },
+      {
+        "path": "Modules/Services/Diagnostics/ChapterRetryLog.swift",
+        "bytes": 7134,
+        "sha256": "36da744cbfe8e9acb3103038241352f37cd164e69b76c54895c58f556ec6eaf7"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ChapterRetryLogTests.swift",
+        "bytes": 6603,
+        "sha256": "6e0f81f588c7c12d975641e8b52b63cf3c7234265ed92c07b6ac186a5526324f"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReaderChapterSupplyTests.swift",
+        "bytes": 25453,
+        "sha256": "39eaeb618a41860cabf6f8770683c59aed97c177cb97fe24130318bd25976a20"
+      }
+    ],
+    "behavior": [
+      "Existing bounded retry history accepts an optional owner scope; ordinary fetch/download callers keep their prior keys and behavior.",
+      "A CoreText pagination engine uses its actual current book identity and one engine UUID. Different engines and content fetch retries do not share this run.",
+      "The existing generation-discard owner records each pending task once before clearing the existing task dictionaries; awaiting callers no longer increment the same retry again.",
+      "An accepted complete readable document clears only this layout scope before layout/snapshot/ready callbacks. Old awaiting tasks do not write or clear newer diagnostic history.",
+      "The existing anomaly threshold is unchanged. Repeated unresolved work can still produce an anomaly."
+    ],
+    "review": "Root inspected both production diffs, two existing test diffs and actual publication/generation call sites. SDK harness author independently checked fixture joiner signaling and selected API visibility.",
+    "newRegressionDefinitions": [
+      {
+        "suite": "ChapterRetryLogTests",
+        "method": "paginationRecoveryIsOwnerScoped()",
+        "async": false,
+        "throws": false,
+        "mainActor": false,
+        "purpose": "Recovering one layout owner leaves fetch retries and another engine history untouched."
+      },
+      {
+        "suite": "ChapterRetryLogTests",
+        "method": "paginationLoopStillEscalates()",
+        "async": false,
+        "throws": false,
+        "mainActor": false,
+        "purpose": "Three unrecovered layout discards still report, and recovery rearms the threshold."
+      },
+      {
+        "suite": "ReaderChapterSupplyTests",
+        "method": "sharedPaginationRecoveryClearsOnlyLayoutRetries()",
+        "async": true,
+        "throws": true,
+        "mainActor": true,
+        "purpose": "Actual gated engine work with three signalled joiners is counted once; successful pagination clears its own run while fetch retries survive."
+      },
+      {
+        "suite": "ReaderChapterSupplyTests",
+        "method": "reopenedEngineStartsItsOwnRetryRun()",
+        "async": true,
+        "throws": true,
+        "mainActor": true,
+        "purpose": "Two actual engines for the same book have independent pending-work runs and recover independently."
+      },
+      {
+        "suite": "ReaderChapterSupplyTests",
+        "method": "readyCallbackDoesNotLoseNewerRetryHistory()",
+        "async": true,
+        "throws": true,
+        "mainActor": true,
+        "purpose": "A synchronous ready callback sees recovery, does not count the full completing task as discarded, and its newly recorded retry is not cleared by the old awaiter return."
+      }
+    ],
+    "plannedCombinedSelection": "All25 actual methods in ChapterRetryLogTests and ReaderChapterSupplyTests, inside the same currentcore SDK invocation.",
+    "actualVerification": {
+      "SwiftGrammarFiles": 4,
+      "SwiftGrammar": "no diagnostics, source screen only",
+      "AppleSDKCompilation": false,
+      "SwiftTestsExecuted": 0,
+      "newCloudRunsTriggered": 0
+    }
+  },
+  "completionFlags": {
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  },
+  "rawUserDiagnosticUploaded": false
+}

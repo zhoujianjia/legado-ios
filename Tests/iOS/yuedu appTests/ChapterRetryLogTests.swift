@@ -110,4 +110,39 @@ struct ChapterRetryLogTests {
         #expect(ChapterRetryLog.retryCount(chapter: 5, bookId: "A") == 1)
         fresh()
     }
+
+    @Test("pagination recovery leaves fetch retries and another engine untouched")
+    func paginationRecoveryIsOwnerScoped() {
+        fresh()
+        let firstEngine = UUID()
+        let reopenedEngine = UUID()
+        ChapterRetryLog.record(.fetchCancelled, chapter: 5, bookId: "A")
+        ChapterRetryLog.record(.layoutSuperseded, chapter: 5, bookId: "A", scopeID: firstEngine)
+        ChapterRetryLog.record(.layoutSuperseded, chapter: 5, bookId: "A", scopeID: reopenedEngine)
+
+        ChapterRetryLog.noteSuccess(chapter: 5, bookId: "A", scopeID: firstEngine)
+
+        #expect(ChapterRetryLog.retryCount(chapter: 5, bookId: "A", scopeID: firstEngine) == 0)
+        #expect(ChapterRetryLog.retryCount(chapter: 5, bookId: "A", scopeID: reopenedEngine) == 1)
+        #expect(ChapterRetryLog.retryCount(chapter: 5, bookId: "A") == 1)
+        fresh()
+    }
+
+    @Test("three unrecovered pagination discards still report and recovery rearms them")
+    func paginationLoopStillEscalates() {
+        fresh()
+        let scope = UUID()
+        let log = DiagnosticLog.shared
+        let before = log.reportableCountThisSession
+        for _ in 0..<3 {
+            ChapterRetryLog.record(.layoutSuperseded, chapter: 5, bookId: "A", scopeID: scope)
+        }
+        #expect(log.reportableCountThisSession == before + 1)
+        ChapterRetryLog.noteSuccess(chapter: 5, bookId: "A", scopeID: scope)
+        for _ in 0..<3 {
+            ChapterRetryLog.record(.layoutSuperseded, chapter: 5, bookId: "A", scopeID: scope)
+        }
+        #expect(log.reportableCountThisSession == before + 2)
+        fresh()
+    }
 }

@@ -61,6 +61,131 @@ struct ReaderChapterSupplyTests {
         #expect(engine.layouts[1] != nil)
     }
 
+    @Test("shared pagination discard counts once and a real layout clears only its owner")
+    func sharedPaginationRecoveryClearsOnlyLayoutRetries() async throws {
+        let builder = ControllableChapterBuilder(chapterCount: 2)
+        let engine = makeEngine(builder: builder)
+        let bookID = UUID().uuidString
+        await engine.start(renderSize: Self.renderSize, bookId: bookID)
+        ChapterRetryLog.record(.fetchCancelled, chapter: 1, bookId: bookID)
+        defer { ChapterRetryLog.noteSuccess(chapter: 1, bookId: bookID) }
+        await builder.gateNextBuild(chapter: 1)
+        let owner = Task { await engine.preloadChapter(at: 1) }
+        await builder.waitUntilBuilding(chapter: 1)
+        let entered = AnnouncementLog()
+        let joiners = (0..<3).map { _ in
+            Task {
+                entered.record(1)
+                return await engine.preloadChapter(at: 1)
+            }
+        }
+        await entered.waitForSpineCount(3)
+        #expect(entered.spines.count == 3)
+
+        engine.cancelPendingWork(cause: .refreshTransaction)
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: engine.layoutRetryScopeID
+        ) == 1)
+        // The pending task was already discarded; another generation has no work to count.
+        engine.cancelPendingWork(cause: .refreshTransaction)
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: engine.layoutRetryScopeID
+        ) == 1)
+
+        await builder.releaseGate(chapter: 1)
+        #expect(await owner.value == .laidOut)
+        for joiner in joiners { #expect(await joiner.value == .laidOut) }
+        #expect(engine.layouts[1]?.isPartial == false)
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: engine.layoutRetryScopeID
+        ) == 0)
+        #expect(ChapterRetryLog.retryCount(chapter: 1, bookId: bookID) == 1)
+        #expect(await engine.preloadChapter(at: 1) == .alreadyLaidOut)
+        #expect(ChapterRetryLog.retryCount(chapter: 1, bookId: bookID) == 1)
+    }
+
+    @Test("reopening the same book does not inherit the previous engine's pagination run")
+    func reopenedEngineStartsItsOwnRetryRun() async throws {
+        let bookID = UUID().uuidString
+        let oldBuilder = ControllableChapterBuilder(chapterCount: 2)
+        let oldEngine = makeEngine(builder: oldBuilder)
+        await oldEngine.start(renderSize: Self.renderSize, bookId: bookID)
+        await oldBuilder.gateNextBuild(chapter: 1)
+        let oldOwner = Task { await oldEngine.preloadChapter(at: 1) }
+        await oldBuilder.waitUntilBuilding(chapter: 1)
+        oldEngine.cancelPendingWork()
+
+        let newBuilder = ControllableChapterBuilder(chapterCount: 2)
+        let newEngine = makeEngine(builder: newBuilder)
+        await newEngine.start(renderSize: Self.renderSize, bookId: bookID)
+        await newBuilder.gateNextBuild(chapter: 1)
+        let newOwner = Task { await newEngine.preloadChapter(at: 1) }
+        await newBuilder.waitUntilBuilding(chapter: 1)
+        newEngine.cancelPendingWork()
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: oldEngine.layoutRetryScopeID
+        ) == 1)
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: newEngine.layoutRetryScopeID
+        ) == 1)
+
+        await newBuilder.releaseGate(chapter: 1)
+        #expect(await newOwner.value == .laidOut)
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: oldEngine.layoutRetryScopeID
+        ) == 1)
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: newEngine.layoutRetryScopeID
+        ) == 0)
+        await oldBuilder.releaseGate(chapter: 1)
+        #expect(await oldOwner.value == .laidOut)
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: newEngine.layoutRetryScopeID
+        ) == 0)
+    }
+
+    @Test("a ready callback observes recovery and its newer retry survives old awaiters")
+    func readyCallbackDoesNotLoseNewerRetryHistory() async throws {
+        let builder = ControllableChapterBuilder(chapterCount: 2)
+        let engine = makeEngine(builder: builder)
+        let bookID = UUID().uuidString
+        await engine.start(renderSize: Self.renderSize, bookId: bookID)
+        await builder.gateNextBuild(chapter: 1)
+        let owner = Task { await engine.preloadChapter(at: 1) }
+        await builder.waitUntilBuilding(chapter: 1)
+        engine.cancelPendingWork()
+        let readyCalls = AnnouncementLog()
+        engine.onChapterReady = { spine in
+            guard spine == 1 else { return }
+            readyCalls.record(spine)
+            #expect(ChapterRetryLog.retryCount(
+                chapter: 1, bookId: bookID, scopeID: engine.layoutRetryScopeID
+            ) == 0)
+            // The completing task is still registered during this callback. It has
+            // published a full layout and must not be counted as discarded work.
+            engine.cancelPendingWork()
+            #expect(ChapterRetryLog.retryCount(
+                chapter: 1, bookId: bookID, scopeID: engine.layoutRetryScopeID
+            ) == 0)
+            // A subsequent run can begin synchronously in this callback. The old
+            // preload's return is not allowed to erase that new diagnostic history.
+            ChapterRetryLog.record(
+                .layoutSuperseded, chapter: 1, bookId: bookID,
+                scopeID: engine.layoutRetryScopeID
+            )
+        }
+        await builder.releaseGate(chapter: 1)
+        #expect(await owner.value == .laidOut)
+        #expect(readyCalls.spines == [1])
+        #expect(ChapterRetryLog.retryCount(
+            chapter: 1, bookId: bookID, scopeID: engine.layoutRetryScopeID
+        ) == 1)
+        engine.onChapterReady = nil
+        ChapterRetryLog.noteSuccess(
+            chapter: 1, bookId: bookID, scopeID: engine.layoutRetryScopeID
+        )
+    }
+
     @Test("a chapter whose content is not available yet fails fast instead of looping")
     func unavailableChapterDoesNotLoop() async throws {
         let builder = ControllableChapterBuilder(chapterCount: 2)
@@ -314,10 +439,24 @@ struct ReaderChapterSupplyTests {
 private final class AnnouncementLog {
     private(set) var spines: [Int] = []
     private(set) var globalAnnouncements = 0
+    private var countWaiters: [(count: Int, continuation: CheckedContinuation<Void, Never>)] = []
+
+    func waitForSpineCount(_ count: Int) async {
+        guard spines.count < count else { return }
+        await withCheckedContinuation { continuation in
+            countWaiters.append((count, continuation))
+        }
+    }
 
     func record(_ spineIndex: Int?) {
         if let spineIndex {
             spines.append(spineIndex)
+            let count = spines.count
+            countWaiters.removeAll { waiter in
+                guard count >= waiter.count else { return false }
+                waiter.continuation.resume()
+                return true
+            }
         } else {
             globalAnnouncements += 1
         }

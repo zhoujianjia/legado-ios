@@ -62,6 +62,7 @@ enum ChapterRetryLog {
     private struct Key: Hashable {
         let bookId: String
         let chapter: Int
+        let scopeID: UUID?
     }
 
     private static let lock = NSLock()
@@ -80,10 +81,11 @@ enum ChapterRetryLog {
         _ reason: Reason,
         chapter: Int,
         bookId: String?,
+        scopeID: UUID? = nil,
         attempt: Int? = nil,
         detail: String? = nil
     ) {
-        let key = Key(bookId: bookId ?? "-", chapter: chapter)
+        let key = Key(bookId: bookId ?? "-", chapter: chapter, scopeID: scopeID)
 
         let (count, reasons, shouldEscalate): (Int, [Reason], Bool) = lock.withLock {
             var entries = history[key] ?? []
@@ -126,8 +128,10 @@ enum ChapterRetryLog {
     /// The chapter finally arrived. Clears its history so a later, unrelated retry does
     /// not inherit this run's count — otherwise a book read for long enough would
     /// eventually report every chapter as looping.
-    static func noteSuccess(chapter: Int, bookId: String?) {
-        let key = Key(bookId: bookId ?? "-", chapter: chapter)
+    /// A supplied scope belongs to one work owner (for example one pagination engine).
+    /// Its recovery must not clear fetch retries or inherit another owner's history.
+    static func noteSuccess(chapter: Int, bookId: String?, scopeID: UUID? = nil) {
+        let key = Key(bookId: bookId ?? "-", chapter: chapter, scopeID: scopeID)
         lock.withLock {
             guard history.removeValue(forKey: key) != nil else { return }
             order.removeAll { $0 == key }
@@ -137,8 +141,10 @@ enum ChapterRetryLog {
 
     /// Retries recorded for a chapter in this session, for tests and for callers that
     /// want to show it.
-    static func retryCount(chapter: Int, bookId: String?) -> Int {
-        lock.withLock { history[Key(bookId: bookId ?? "-", chapter: chapter)]?.count ?? 0 }
+    static func retryCount(chapter: Int, bookId: String?, scopeID: UUID? = nil) -> Int {
+        lock.withLock {
+            history[Key(bookId: bookId ?? "-", chapter: chapter, scopeID: scopeID)]?.count ?? 0
+        }
     }
 
     static func resetForTesting() {

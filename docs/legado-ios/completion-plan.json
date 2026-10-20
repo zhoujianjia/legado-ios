@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-20",
-  "activeBatchRecord": "docs/legado-ios/core-live-account-pairing-settings-step.json",
+  "activeBatchRecord": "docs/legado-ios/reader-build13-layout-retry-fix.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -527,7 +527,7 @@
             "reading-position-write-integrity",
             "source-debug-logs"
           ],
-          "status": "unfinished_not_started",
+          "status": "in_progress",
           "actionsZh": [
             "沿原64域中本轮核心所有权补足规则、Java互操作/E4X、schema默认值、错误和状态差异；未迁移宿主逐项明示。",
             "验证导入／保存／导出、断网缓存、新进程恢复与既有阅读进度；原始私源不入仓库、日志或上传。"
@@ -541,7 +541,17 @@
           ],
           "actualAcceptedEvidence": [],
           "requiresPhysicalDevice": false,
-          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。"
+          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
+          "implementationEvidence": [
+            {
+              "record": "docs/legado-ios/reader-build13-layout-retry-fix.json",
+              "actualSDKAccepted": false,
+              "scope": "Actual build13 reading diagnostic: owner-scoped pagination retry accounting and recovery, not whole-source compatibility."
+            }
+          ],
+          "implementedSubtasksZh": [
+            "用户确认阅读正常。已修复分页成功后历史未清、不同阅读器共享nil书籍计数及共享任务按等待者重复计数的问题；5项新回归仅定义，25项相关方法待下一批统一SDK验证。目录超时与后台401ms响应迟延的原因仍未确定。"
+          ]
         },
         {
           "id": "S1",

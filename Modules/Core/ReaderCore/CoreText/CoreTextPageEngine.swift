@@ -306,6 +306,8 @@ final class CoreTextPageEngine: PageRenderingProvider, LinkNavigationProviding, 
     private(set) var renderSize: CGSize = .zero
     private var preloadTasks: [Int: Task<ChapterLayoutOutcome, Never>] = [:]
     private var preloadTaskIDs: [Int: UUID] = [:]
+    /// Pagination recovery belongs to this engine, separately from chapter fetches.
+    let layoutRetryScopeID = UUID()
     private var layoutGeneration: Int = 0
     private var nextLayoutInvalidationOperationID: UInt64 = 0
     private var activeLayoutInvalidationOperationID: UInt64?
@@ -790,7 +792,21 @@ final class CoreTextPageEngine: PageRenderingProvider, LinkNavigationProviding, 
 
     private func cancelPendingWorkInternal() {
         AppLogger.render("[FlipTrace] cancelPendingWork generation=\(layoutGeneration) pending=\(preloadTasks.keys.sorted()) layouts=\(_layouts.keys.sorted())")
+        let supersededGeneration = layoutGeneration
         layoutGeneration += 1
+        // Count discarded work once at its owner, rather than once per awaiting caller.
+        // The dictionaries are cleared below, so another cancellation cannot recount it;
+        // a late task completion cannot add a retry after a newer layout has recovered.
+        for spineIndex in preloadTasks.keys
+        where preloadTaskIDs[spineIndex] != nil && _layouts[spineIndex]?.isPartial != false {
+            ChapterRetryLog.record(
+                .layoutSuperseded,
+                chapter: spineIndex,
+                bookId: currentBookId,
+                scopeID: layoutRetryScopeID,
+                detail: "oldGeneration=\(supersededGeneration) generation=\(layoutGeneration)"
+            )
+        }
         cancelPreloadTasks()
         if activeLayoutInvalidationOperationID != nil {
             activeLayoutInvalidationOperationID = nil
@@ -1004,12 +1020,6 @@ final class CoreTextPageEngine: PageRenderingProvider, LinkNavigationProviding, 
                 "⟐ preload retry superseded spine=\(spineIndex) oldGeneration=\(generation) generation=\(layoutGeneration)",
                 level: .warning
             )
-            ChapterRetryLog.record(
-                .layoutSuperseded,
-                chapter: spineIndex,
-                bookId: nil,
-                detail: "oldGeneration=\(generation) generation=\(layoutGeneration)"
-            )
         }
         // Two rounds and the generation was still moving underneath us.
         return .supersededByGeneration
@@ -1088,11 +1098,21 @@ final class CoreTextPageEngine: PageRenderingProvider, LinkNavigationProviding, 
     /// forgetting the announcement impossible rather than merely unlikely.
     private func installLayout(
         _ layout: CoreTextPaginator.ChapterLayout,
-        for spineIndex: Int
+        for spineIndex: Int,
+        hasReadableContent: Bool
     ) {
         _layouts[spineIndex] = layout
         snapshotLayoutRevisions = snapshotLayoutRevisions.filter { _layouts[$0.key] != nil }
         snapshotLayoutRevisions[spineIndex] = UUID()
+        // Recovery is the retained full publication, before snapshot/page callbacks can
+        // start another generation. An old awaiting caller never clears that newer run.
+        if !layout.isPartial && hasReadableContent && _layouts[spineIndex] != nil {
+            ChapterRetryLog.noteSuccess(
+                chapter: spineIndex,
+                bookId: currentBookId,
+                scopeID: layoutRetryScopeID
+            )
+        }
         generateSnapshot(for: spineIndex)
         rebuildPageOffsets()
         onChapterReady?(spineIndex)
@@ -1218,7 +1238,9 @@ final class CoreTextPageEngine: PageRenderingProvider, LinkNavigationProviding, 
                     readerStyleAppearance: renderSettings.readerStyleAppearance,
                     readerStyleAssetRevision: renderSettings.readerStyleAssetRevision
                 )
-                installLayout(firstPageLayout, for: spineIndex)
+                installLayout(
+                    firstPageLayout, for: spineIndex, hasReadableContent: !documentIsEmpty
+                )
                 if firstPageLayout.isPartial {
                     SourcePerfTrace.record(
                         "coreText.firstPage", "spine=\(spineIndex)", since: firstPageStart
@@ -1276,7 +1298,8 @@ final class CoreTextPageEngine: PageRenderingProvider, LinkNavigationProviding, 
                 readerStyleAppearance: renderSettings.readerStyleAppearance,
                 readerStyleAssetRevision: renderSettings.readerStyleAssetRevision
             ),
-            for: spineIndex
+            for: spineIndex,
+            hasReadableContent: !documentIsEmpty
         )
         AppLogger.render("[FlipTrace] preload done spine=\(spineIndex) pages=\(layout.pageRanges.count) generation=\(generation) layouts=\(_layouts.keys.sorted())")
         return documentIsEmpty ? .contentUnavailable : .laidOut
