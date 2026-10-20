@@ -1,0 +1,11 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
+@@ -85,7 +85,7 @@
+     private fun prepareLoginBrowser(source: BaseSource, url: String, title: String): PreparedLoginBrowser {
+         ensureOwnerOpen(); task.ensureActiveForRuntime()
+         check(source.getRuleEnvironment() === environment()) { "Browser source belongs to another environment" }
+-        if (!task.sensitiveSourceOperation) unsupportedRule("original browser requires an explicit login task")
++        if (!task.sourceBrowserAllowed) unsupportedRule("original browser requires an explicit login task")
+         require(url.length < 65_536 && title.toByteArray(Charsets.UTF_8).size <= 8_192) { "Browser request text exceeds its budget" }
+         val owner = task.session.options.stateOwner ?: unsupportedRule("original browser requires the checked source owner")
+         // Locked WebViewModel74-78 captures URL/headers before the same

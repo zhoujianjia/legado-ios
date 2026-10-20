@@ -1,0 +1,54 @@
+{
+  "distinctDefinitions": 6,
+  "finalPassingDefinitions": [
+    {
+      "classname": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest",
+      "name": "falseReturnsAtomicDomForBothHttpMethods",
+      "evidence": "execution-v1/actual-tests.xml"
+    },
+    {
+      "classname": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest",
+      "name": "acceptedBrowserEffectsSurviveScriptFailureAndHtmlRemainsUnsupported",
+      "evidence": "execution-v1/actual-tests.xml"
+    },
+    {
+      "classname": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest",
+      "name": "cancellationDrainsCurrentTaskAndRetainsActualPostFacts",
+      "evidence": "execution-v1/actual-tests.xml"
+    },
+    {
+      "classname": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest",
+      "name": "sensitiveSearchNeverInheritsPreviousOrFutureLoginAdmission",
+      "evidence": "execution-v1/actual-tests.xml"
+    },
+    {
+      "classname": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest",
+      "name": "concurrentTaskCannotBorrowActiveLoginBrowserAdmission",
+      "evidence": "execution-v1/actual-tests.xml"
+    },
+    {
+      "classname": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest",
+      "name": "v2UsesSameSourceApiForDefaultGetPostAndNonawaitUi",
+      "evidence": "execution-repair-v2/actual-tests.xml"
+    }
+  ],
+  "initialRun": {
+    "tests": 6,
+    "passed": 5,
+    "failed": 1
+  },
+  "firstUiRepair": {
+    "tests": 1,
+    "failed": 1
+  },
+  "secondUiRepair": {
+    "tests": 1,
+    "passed": 1
+  },
+  "totalJUnitExecutions": 8,
+  "history": "Initial UI fixture returned invalid empty rows; first repair exposed missing existing source.login-info get fixture; second repair permits get-only and a valid label row, no production modification. Only failed definition rerun. Five prior passing paths do not call the corrected loginUi/get branch; final header conditional restored byte-for-byte to original fixture branch. Final test root separately recompiled, no successful JUnit repeated.",
+  "swiftSDK": 0,
+  "JNI": 0,
+  "UIKit": 0,
+  "physicalDevice": 0
+}

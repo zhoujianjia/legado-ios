@@ -1,0 +1,28 @@
+{
+  "dependencies": [
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "bytes": 13619,
+      "sha256": "251c7fa44624f367f726ac9464d95a4cfef2c6872b373dac56a0d3da248755f9"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 125643,
+      "sha256": "1663078c52fad289fd86d9bb60298db645e374ba5131023acd94e096845e2e50"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "bytes": 26435,
+      "sha256": "ce1cb1e734c6054c79003a565852a52b77fe42d7ee00d9f35b72e1d9363e7e28"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 37954,
+      "sha256": "2f3c4cbfa02786f794ca024e059e57c2d0af10d0fc7305229688c91511400fbf"
+    }
+  ],
+  "actionResult": "executed + optional loginUIEvents; success DTO intentionally has no completedEffects",
+  "renderFormLayout": "App LegadoOriginalLoginUIForm.layout is nonoptional; generic inference errors downstream of the malformed event unwrap are not a model change",
+  "credentialWriteProof": "Existing LoginManager.loginInfoRevision and actual getLoginInfo, read offmain before/after callback/skip. Accepted credential changes increment that same revision. No new production API or fake effect property.",
+  "eventPolicy": "Positive callbacks require XCTUnwrap: nil fails. Skipped absent/empty optional events both mean no events as defined by existing wire contract."
+}

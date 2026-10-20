@@ -1,0 +1,134 @@
+--- baseline/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
++++ candidate/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
+@@ -633,6 +633,131 @@
+         if let problem { throw problem }
+     }
+
++    func testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts() async throws {
++        executionTimeAllowance = 180
++        try await requireNativeRuntime()
++        let fixture = try await Task.detached { try Fixture() }.value
++        let domain = try XCTUnwrap(URL(string: fixture.a)?.host)
++        let process = LegadoRuntimeProcess.shared
++        let runtime = try await process.executor()
++        let owner = try await process.bindPersistentSource(sourceURL: fixture.a, sourceRevision: "native-header-v1")
++        var session: LegadoSourceSession?
++        var problem: Error?
++        do {
++            // Explicit negative Host provenance packets exercise actual App
++            // admission, not a mocked JVM callback or a second JVM instance.
++            let host = LegadoPersistentStateHost(backing: AppLegadoOwnedStateBacking(sources: .shared, login: fixture.login))
++            let rejectedOwner = try await host.bind(sourceURL: fixture.a, sourceRevision: "native-header-reject-v1")
++            for (mode, declaredTask, claimedSource, expected) in [
++                ("app-owner-read", "native-header-reject", fixture.a, "UNSUPPORTED_CAPABILITY"),
++                ("app-owner-text", "wrong-task", fixture.a, "INVALID_STATE_OWNER"),
++                ("app-owner-text", "native-header-reject", fixture.b, "INVALID_STATE_OWNER")
++            ] {
++                let fields: [String: String] = ["owner": rejectedOwner, "sourceURL": claimedSource,
++                    "taskId": declaredTask, "cookieAccess": mode, "action": "put", "value": "must-not-write"]
++                let json = try await Task.detached {
++                    String(decoding: try JSONEncoder().encode(fields), as: UTF8.self)
++                }.value
++                do {
++                    _ = try await host.dispatch(.init(taskID: "native-header-reject", operation: "source.login-header", requestJSON: json))
++                    XCTFail("Header mutation must reject wrong mode/task/source provenance")
++                } catch let failure as LegadoRuntimeError { XCTAssertEqual(failure.code, expected) }
++            }
++            await host.revoke(owner: rejectedOwner)
++            let initial = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(initial, "kept-header")
++            let current = try await runtime.createSession(sourceJSON: fixture.source(fixture.a, loginUi: "[]", loginUrl: "var headerPrelude=true;"),
++                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner,
++                    sourceMode: .originalTraditional, cookieAccess: .appOwnerText))
++            session = current
++            _ = try await runtime.loginActionOriginal(session: current,
++                action: #"source.putLoginHeader('\u00e9');"#, credentials: [:])
++            let composedRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
++            _ = try await runtime.loginActionOriginal(session: current,
++                action: #"source.putLoginHeader('e\u0301');if(String(source.getLoginHeader())!=='e\u0301')throw new Error('raw UTF16 changed');"#,
++                credentials: [:])
++            let decomposed = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(decomposed.map { Data($0.utf8) }, Data("e\u{301}".utf8))
++            let revision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
++            XCTAssertGreaterThan(revision, composedRevision, "Canonically equivalent but byte-distinct raw headers must advance the existing revision")
++            let sameEffects = OriginalBrowserEffects()
++            let same = try await runtime.loginActionOriginal(session: current,
++                action: #"source.putLoginHeader('e\u0301');"#, credentials: [:],
++                onReportedEffects: { sameEffects.record($0) })
++            let nextRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(revision, nextRevision)
++            XCTAssertTrue(same.executed)
++            XCTAssertFalse(sameEffects.snapshot().contains("sourceLoginHeaderCommitted"))
++            XCTAssertFalse(sameEffects.snapshot().contains("sourceLoginHeaderMayCommit"))
++            let rawHeader = "{\"Cookie\":\"native=synthetic\",\"Authorization\":\"synthetic-header\"}"
++            let literal = try await Task.detached {
++                String(decoding: try JSONEncoder().encode(rawHeader), as: UTF8.self)
++            }.value
++            let storedEffects = OriginalBrowserEffects()
++            let stored = try await runtime.loginActionOriginal(session: current,
++                action: "source.putLoginHeader(\(literal));", credentials: [:],
++                onReportedEffects: { storedEffects.record($0) })
++            XCTAssertTrue(stored.executed)
++            XCTAssertTrue(storedEffects.snapshot().contains("cookieText"))
++            XCTAssertTrue(storedEffects.snapshot().contains("sourceLoginHeaderCommitted"))
++            let actualHeader = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(actualHeader.map { Data($0.utf8) }, Data(rawHeader.utf8))
++            let actualCookie = try await CookieStore.shared.originalText(domain: domain)
++            XCTAssertTrue(actualCookie.contains("native=synthetic"))
++            _ = try await runtime.loginActionOriginal(session: current,
++                action: "source.removeLoginHeader();", credentials: [:])
++            let afterRemove = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
++            XCTAssertNil(afterRemove)
++            let cookieAfterRemove = try await CookieStore.shared.originalText(domain: domain)
++            XCTAssertEqual(cookieAfterRemove, "")
++            let removedRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
++            let absentEffects = OriginalBrowserEffects()
++            _ = try await runtime.loginActionOriginal(session: current,
++                action: "source.removeLoginHeader();", credentials: [:], onReportedEffects: { absentEffects.record($0) })
++            let absentRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(removedRevision, absentRevision)
++            XCTAssertFalse(absentEffects.snapshot().contains("sourceLoginHeaderMayCommit"))
++            XCTAssertFalse(absentEffects.snapshot().contains("sourceLoginHeaderCommitted"))
++            let cancellation = AcceptedWriteCancellation()
++            let accepted = expectation(description: "Actual Cookie then header owner accepted before cancellation")
++            let observer = NotificationCenter.default.addObserver(forName: .bookSourceLoginInfoDidChange,
++                object: nil, queue: nil) { event in
++                guard event.userInfo?["sourceURL"] as? String == fixture.a,
++                      cancellation.accept() else { return }
++                accepted.fulfill()
++            }
++            defer { cancellation.finish(); NotificationCenter.default.removeObserver(observer) }
++            let pending = Task {
++                try await runtime.loginActionOriginal(session: current,
++                    action: "source.putLoginHeader(\(literal));source.putLoginInfo('must-not-write');", credentials: [:])
++            }
++            cancellation.install { pending.cancel() }
++            await fulfillment(of: [accepted], timeout: 15)
++            do { _ = try await pending.value; XCTFail("Cancellation after actual header commit must remain cancellation") }
++            catch let failure as LegadoRuntimeError {
++                XCTAssertEqual(failure.code, "CANCELLED")
++                XCTAssertTrue(failure.completedEffects?.contains("sourceLoginHeaderCommitted") == true)
++                XCTAssertTrue(failure.completedEffects?.contains("cookieText") == true)
++            }
++            let acceptedHeader = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
++            XCTAssertEqual(acceptedHeader.map { Data($0.utf8) }, Data(rawHeader.utf8))
++            let cookieAfterCancel = try await CookieStore.shared.originalText(domain: domain)
++            XCTAssertTrue(cookieAfterCancel.contains("native=synthetic"), "Already accepted Cookie and header changes must not be reported as rolled back")
++            let credentials = try await Task.detached {
++                try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
++            }.value
++            XCTAssertNil(credentials)
++        } catch { problem = error }
++        if let session {
++            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
++        }
++        await process.revokePersistentSource(owner: owner)
++        do { try await CookieStore.shared.mutateOriginalText(domain: domain, action: "remove", raw: nil) }
++        catch { if problem == nil { problem = error } }
++        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
++        if let problem { throw problem }
++    }
++
+     func testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody() async throws {
+         executionTimeAllowance = 180
+         try await requireNativeRuntime()

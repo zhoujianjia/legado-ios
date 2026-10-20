@@ -1062,6 +1062,20 @@ CURRENTCORE_ORIGINAL_LOGIN_BROWSER_POST_INPUTS = (
 )
 SOURCE_INPUTS += tuple(path for path in CURRENTCORE_ORIGINAL_LOGIN_BROWSER_POST_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 335
+CURRENTCORE_ORIGINAL_LOGIN_HEADER_V2_BROWSER_INPUTS = (
+    'Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift',
+    'Modules/Services/Online/LegadoPersistentStateHost.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerTextTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginHeaderTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2BrowserTest.kt',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in CURRENTCORE_ORIGINAL_LOGIN_HEADER_V2_BROWSER_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 338
 
 
 def selection_mode():

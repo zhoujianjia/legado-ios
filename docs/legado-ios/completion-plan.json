@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-original-source-browser-post-step.json",
+  "activeBatchRecord": "docs/legado-ios/core-original-source-header-v2-browser-step.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,7 +169,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Both7576 jobs are terminal. SDK test-target optional-event/API-shape errors have a reviewed two-method source repair; Native stale count repair is integrated. Finish one reviewed Header+V2browser+compiler-repair source/control union, then submit one SDK/Native pair. No per-item, duplicate or IPA tag.",
+      "nextPlannedCheckpoint": "No live cloud jobs. Header/V2browser/rootCompilerRepair10 plus strict5controls are reviewed and integrated:338core/140Native/23Package/356union, original26+MainJS1, App463/466. Submit one coherentSDK/Native pair; no per-item/duplicate/IPA tag. Never repoll historical failures.",
       "alreadyRunningTasks": "All7576 SDK/Native jobs are terminal and archived. No live cloud jobs. Never repoll closed jobs or reuse previous passes for changed source.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
@@ -194,14 +194,18 @@
         "scope": "Synthetic owned producer pass; App signer executed0 due actual compiler error."
       },
       "currentCoreLatestTerminal": {
-        "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
-        "sourceTag": "reader-renewal-8d934dd",
-        "runID": 39495414773,
-        "jobID": 118879092571,
+        "sourceCommit": "7576cbf91fa7448eff4160f1bf040159d3cd6a23",
+        "runID": 39501414740,
+        "jobID": 118899566864,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
-        "record": "docs/legado-ios/core-sdk-8d934dd-terminal-result.json",
+        "record": "docs/legado-ios/core-sdk-7576cbf-terminal-result.json",
+        "AppDefinitionsExecuted": 0,
+        "actualPackageMethodsPassed": 24,
+        "SDKProducerCommandsPassed": 48,
+        "uniqueTestTargetCompilerErrors": 25,
+        "sourceTag": "reader-renewal-7576cbf",
         "AppDefinitionsPassed": 0,
         "AppExecutionLeavesPassed": 0,
         "unexecutedSelectedDefinitions": 463,
@@ -541,6 +545,10 @@
             {
               "record": "docs/legado-ios/core-original-source-browser-post-step.json",
               "scope": "OriginalPOST prefetch uses sole AnalyzeUrl/HTTP owner; true reuses initial body incl present-empty, false captures realDOM. JVM12/outsideJava5/HTTP6 passed; actualJNI/UIKit0, originalHeader owner ordering is next."
+            },
+            {
+              "record": "docs/legado-ios/core-original-source-header-v2-browser-step.json",
+              "scope": "Same existing rawHeader/Cookie owners and original V2 source browser APIs combined; actual commonJVM23 and ordinaryJava same-session3calls/2HTTP passed. Native/JNI/UI0; full compatibility pending."
             }
           ],
           "implementedSubtasksZh": [
@@ -557,7 +565,7 @@
             "已补同Host既有backing/source/revision稳定explore scope，独立于每次opaque grant，原InfoMap仅留受检String map、LRU99及显式当前源savePending；不留task/environment，不以scope字符串授予持久权限。Native2/Package2未执行，完整C2仍未验收。",
             "公开批量正文的现有 App 状态与正文 owner 已接入：同一 BookStore 持久化队列处理文件证明、真实章节身份/任务代际、变量最终 CAS 与提交事实；晚到失败和读取错误不能删除新正文。当前仅源码审查与语法检查，原生 SDK/JNI 尚未验收，C2 仍进行中。"
           ],
-          "nextActionZh": "有限GET/POST start/await生产接线和JVM12/外Java5已完成，实际UIKit/JNI尚待下一统一批次。继续原putLoginHeader/removeLoginHeader同现Cookie/header owner顺序接线；flight/通用WebJS/v2浏览器与完整兼容继续未完成。"
+          "nextActionZh": "原登录头顺序与有限V2浏览器已合并，复用同一JVM、HTTP、Cookie和持久化owner。共同23项JVM及普通JAR连续调用通过；下一统一批次运行真实原生26项及MainJS1。通用WebJS、非空HTML和flight等未完成，不标完整书源兼容。"
         },
         {
           "id": "C3",
@@ -605,7 +613,7 @@
               "scope": "Actual Native210 failures repaired at the production cold TOC metadata boundary and real Native fixtures; exact grants/current variables preserved. Final App/Native/Package source closure reviewed, fresh combined SDK/JNI pending."
             }
           ],
-          "nextActionZh": "8d 实际编译在旧登录表单表达式中断，本批已拆分该表达式；目录/正文/离页保存与重启恢复仍须下一批实际原生结果验收。",
+          "nextActionZh": "公开原WebBook四段与同owner正文链保持既有接线；先取得本批实际SDK/JNI结果。完整WebBook能力和默认产品入口验收继续未完成，不能用局部登录浏览器结果代替。",
           "preparatoryEvidence": [
             "docs/legado-ios/core-original-content-batch-rate-step.json"
           ]
@@ -662,7 +670,7 @@
               "scope": "Real source-only shelf notifications, original null entities, source/Cookie state and cancellation ownership; interactive/delete/login/browser still unfinished."
             }
           ],
-          "nextActionZh": "两项7576云任务均已结束：原生任务在Gradle前被旧数量断言阻止；SDK任务在测试目标的可选事件数组和不存在字段处编译失败，App执行0。修复已独立审查，合并登录头与V2浏览器后统一重跑；不能把旧JVM或Package结果当作新App/JNI验收。"
+          "nextActionZh": "两个7576任务已终态归档；本批合并原登录头、有限V2浏览器、实际测试API修复和严格26项数量控制，提交一次SDK/App463定义466叶及原生26+MainJS1统一验证。只有实际结果可升级验收。"
         },
         {
           "id": "C5",
@@ -713,7 +721,7 @@
           "implementedSubtasksZh": [
             "用户确认阅读正常。已修复分页成功后历史未清、不同阅读器共享nil书籍计数及共享任务按等待者重复计数的问题；5项新回归仅定义，25项相关方法待下一批统一SDK验证。目录超时与后台401ms响应迟延的原因仍未确定。"
           ],
-          "nextActionZh": "两章、分页、保存、离线重开和进度恢复保留原生用例；先以修复后的统一批次取得实际执行结果，再针对真实失败补齐差分覆盖。"
+          "nextActionZh": "现有App离线重开测试只是在同进程创建新BookStore，不能当作进程重启证据。继续实现独立producer/consumer测试宿主、同自有文件位置及source/PID/进度收据，并实际执行跨进程离线恢复；当前批次不冒充该验收。"
         },
         {
           "id": "S1",
@@ -844,7 +852,7 @@
             "受控整包已接同一IPA提取器、实际namespace身份/材料租约、由内到外profile/资源/nested hint及Mach-O重签、原始XML规则字节保留和新IPA重新提取全链复验；只导出只读FD。补常见DYSYMTAB/MH_DYLIB布局及同job真实clang/codesign生成器；11项原生方法待SDK，Windows独立38个CMS及自有ZIP/摘要校验不等于Swift通过。",
             "已补充受控临时 Keychain 的新进程重开、显式解锁及精确身份诊断，并实现独立有限 Mac producer 检查入口；20+9 项便携守卫通过，含实际复现并修复工具退出零但源码校验失败时误报成功的问题。实际 codesign 修复尚未验证，完整原生验收未改变。"
           ],
-          "nextActionZh": "7576同作业SDK材料生产48条命令及独立Package24项通过，但App签名用例因测试目标编译失败执行0。合入两处测试API修复后，在下一统一SDK批次实际运行同作业签名与独立验签用例；真实账号授权和设备续签仍待验证。"
+          "nextActionZh": "7576材料生产48命令及独立Package24通过，App签名用例执行0；两处测试API错误已合入本批，在同作业SDK材料约束下实际执行App签名和独立验签。真实账号与设备续签仍未验证。"
         },
         {
           "id": "S4",
@@ -1599,6 +1607,34 @@
         "SDKProducerCommandsPassed": 48,
         "productionModuleAndLinkOutputProgressOnly": true,
         "all7576JobsTerminal": true
+      },
+      "originalHeaderV2BrowserSlice": {
+        "record": "docs/legado-ios/core-original-source-header-v2-browser-step.json",
+        "actualCommonJVMMethodsPassed": 23,
+        "ordinaryJARConsumerSessions": 1,
+        "ordinaryJARConsumerCalls": 3,
+        "realHTTPRequests": 2,
+        "NativeDefinitions": 26,
+        "SwiftSDKorJNIorUIKitExecuted": 0
+      },
+      "queuedHeaderV2BrowserNextCheckpoint": {
+        "record": "docs/legado-ios/core-original-source-header-v2-browser-step.json",
+        "AppDefinitions": 463,
+        "AppLeaves": 466,
+        "BoolParameterPairs": 3,
+        "coreInputs": 338,
+        "NativeOriginalDefinitions": 26,
+        "NativeLoginInfoDefinitions": 15,
+        "NativeMainJSDefinitions": 1,
+        "nativeInputs": 140,
+        "PackageMethods": 24,
+        "PackageCompilationInputs": 16,
+        "PackageControls": 7,
+        "PackageAllInputs": 23,
+        "uniqueInputUnion": 356,
+        "unchangedCanonicalNoncandidateInputs": 341,
+        "actualAcceptancePending": true,
+        "allPriorJobsTerminalAndArchived": true
       }
     }
   },

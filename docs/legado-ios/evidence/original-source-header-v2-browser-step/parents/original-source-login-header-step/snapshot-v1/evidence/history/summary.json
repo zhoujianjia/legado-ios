@@ -1,0 +1,33 @@
+{
+  "preparationFailures": [
+    {
+      "toolChunk": "acd16f",
+      "error": "PowerShell quoted read command terminator syntax error; no source mutation, no Java/test invocation"
+    },
+    {
+      "toolChunk": "d4d30b",
+      "error": "Generated verification script had one extra close parenthesis; SyntaxError before any validation ran, corrected script then grammar/packaging passed"
+    }
+  ],
+  "ordinaryJavaHistory": [
+    {
+      "path": "history/java-counterfactual-attempt1",
+      "state": "Java compile0; expected baseline STATE_IO but actual old Host correctly propagated UNSUPPORTED_CAPABILITY; assertion failed before new production5 ran"
+    },
+    {
+      "path": "history/java-counterfactual-diagnostic",
+      "state": "Diagnostic compile0; actual old code UNSUPPORTED_CAPABILITY, Cookie domains1/rawHeaderAbsent/orderCookieThenHeader. Updated exact counterfactual expectation only, did not weaken production code or accept multiple codes."
+    }
+  ],
+  "reviewFixes": [
+    {
+      "priority": "P2",
+      "finding": "Swift String equality aliases composed/decomposed raw headers",
+      "fix": "Only new checked owner uses optional Data(UTF8) exact equality; Native same method asserts raw bytes and revision",
+      "executedSDK": 0
+    }
+  ],
+  "actualProductionCompileFailures": 0,
+  "actualJUnitFailures": 0,
+  "javaFinalCompileAndExecution": 0
+}

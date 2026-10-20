@@ -1,0 +1,70 @@
+--- baseline/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
++++ candidate/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
+@@ -206,14 +206,22 @@
+             let header = await Task.detached { LoginManager.shared.getLoginHeader(sourceUrl: fixture.a) }.value
+             XCTAssertEqual(stored, original)
+             XCTAssertEqual(header, "synthetic-action-header")
++            let revisionBeforeCallback = await Task.detached {
++                LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a)
++            }.value
+             let callback = try await service.originalLoginAction(source: source,
+                 action: "java.reLoginView(true)", credentials: values, isLongClick: false)
+             XCTAssertTrue(callback.executed)
+-            XCTAssertEqual(callback.loginUIEvents.map(\.kind), [.render])
+-            XCTAssertEqual(callback.loginUIEvents.map(\.sequence), [1])
+-            XCTAssertEqual(callback.loginUIEvents.first?.deltaUp, true)
+-            XCTAssertFalse(callback.completedEffects.contains("sourceLoginInfoMayCommit"))
+-            XCTAssertFalse(callback.completedEffects.contains("sourceLoginInfoCommitted"))
++            let callbackEvents = try XCTUnwrap(callback.loginUIEvents)
++            XCTAssertEqual(callbackEvents.map(\.kind), [.render])
++            XCTAssertEqual(callbackEvents.map(\.sequence), [1])
++            XCTAssertEqual(callbackEvents.first?.deltaUp, true)
++            let afterCallback = await Task.detached {
++                (LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a),
++                 LoginManager.shared.getLoginInfo(sourceUrl: fixture.a))
++            }.value
++            XCTAssertEqual(afterCallback.0, revisionBeforeCallback)
++            XCTAssertEqual(afterCallback.1, original)
+         } catch { problem = error }
+         await Task.detached { LoginManager.shared.removeLoginHeader(sourceUrl: fixture.a) }.value
+         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+@@ -253,9 +261,10 @@
+                 action: "result.put('phase','next');java.upLoginData(result);java.reLoginView(true)",
+                 credentials: credentials, isLongClick: false)
+             XCTAssertTrue(receipt.executed)
+-            XCTAssertEqual(receipt.loginUIEvents.map(\.kind), [.updateData, .render])
+-            XCTAssertEqual(receipt.loginUIEvents.last?.deltaUp, true)
+-            let update = try XCTUnwrap(receipt.loginUIEvents.first)
++            let receiptEvents = try XCTUnwrap(receipt.loginUIEvents)
++            XCTAssertEqual(receiptEvents.map(\.kind), [.updateData, .render])
++            XCTAssertEqual(receiptEvents.last?.deltaUp, true)
++            let update = try XCTUnwrap(receiptEvents.first)
+             let updated = try LegadoOriginalLoginUIForm.applying(entries: update.entries,
+                 rows: first.rows, fields: first.fields, labels: first.labels,
+                 values: first.values, controls: controls, layout: first.layout)
+@@ -290,13 +299,20 @@
+             // The locked action first checks its original login script. An
+             // absent script skips before attempting to bind current controls.
+             source.loginUrl = ""
++            let revisionBeforeSkipped = await Task.detached {
++                LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a)
++            }.value
+             let skipped = try await service.originalLoginAction(source: source, action: button.action,
+                 credentials: [:], isLongClick: false, inputBindingFailed: true)
+-            XCTAssertFalse(skipped.executed); XCTAssertTrue(skipped.loginUIEvents.isEmpty)
+-            XCTAssertFalse(skipped.completedEffects.contains("sourceLoginInfoMayCommit"))
+-            XCTAssertFalse(skipped.completedEffects.contains("sourceLoginInfoCommitted"))
+-            let unchanged = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+-            XCTAssertEqual(unchanged, stored)
++            XCTAssertFalse(skipped.executed)
++            // The wire deliberately omits an empty optional event collection.
++            XCTAssertTrue(skipped.loginUIEvents?.isEmpty ?? true)
++            let unchanged = await Task.detached {
++                (LoginManager.shared.getLoginInfo(sourceUrl: fixture.a),
++                 LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a))
++            }.value
++            XCTAssertEqual(unchanged.0, stored)
++            XCTAssertEqual(unchanged.1, revisionBeforeSkipped)
+         } catch { problem = error }
+         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+         if let problem { throw problem }

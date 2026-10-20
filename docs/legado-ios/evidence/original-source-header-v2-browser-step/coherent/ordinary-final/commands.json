@@ -1,0 +1,29 @@
+[
+  {
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+      "-J-Xmx64m",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\consolidated-header-v2-browser-source-step\\execution-v1\\legado-runtime-header-v2-browser.jar",
+      "-d",
+      "F:\\yuedu-reader\\.build\\consolidated-header-v2-browser-source-step\\ordinary-final",
+      "F:\\yuedu-reader\\.build\\consolidated-header-v2-browser-source-step\\OrdinaryCoherentHeaderV2Browser.java"
+    ],
+    "exitCode": 0,
+    "log": "compile.log"
+  },
+  {
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+      "-Xmx160m",
+      "-XX:MaxMetaspaceSize=128m",
+      "-XX:ActiveProcessorCount=2",
+      "-XX:+UseSerialGC",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\consolidated-header-v2-browser-source-step\\execution-v1\\legado-runtime-header-v2-browser.jar;F:\\yuedu-reader\\.build\\consolidated-header-v2-browser-source-step\\ordinary-final",
+      "OrdinaryCoherentHeaderV2Browser"
+    ],
+    "exitCode": 0,
+    "log": "execute.log"
+  }
+]

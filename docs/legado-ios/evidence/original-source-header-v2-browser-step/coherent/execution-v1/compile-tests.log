@@ -1,0 +1,78 @@
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:70:26: error: unresolved reference 'OriginalCookieTextOracle'.
+            assertEquals(OriginalCookieTextOracle.mergeCookies(raw, ""), decode(request.a))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:71:26: error: unresolved reference 'OriginalCookieTextOracle'.
+            assertEquals(OriginalCookieTextOracle.mergeCookieValues(raw, incoming), decode(request.b))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:74:26: error: unresolved reference 'OriginalCookieTextOracle'.
+            assertEquals(OriginalCookieTextOracle.mergeCookies(raw, ""), decode(request.snapshot))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:141:50: error: unresolved reference 'OriginalCookieTextOracle'.
+        assertEquals("a=\u0085; c=null; eq=a=b", OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap("a=\u0085; b=\u00a0; c=null; eq=a=b; empty=")))
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:141:87: error: unresolved reference 'OriginalCookieTextOracle'.
+        assertEquals("a=\u0085; c=null; eq=a=b", OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap("a=\u0085; b=\u00a0; c=null; eq=a=b; empty=")))
+                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:142:43: error: unresolved reference 'OriginalCookieTextOracle'.
+        assertEquals(" incoming = raw;;", OriginalCookieTextOracle.mergeCookieValues("", " incoming = raw;;"))
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:200:64: error: unresolved reference 'OriginalCookieTextOracle'.
+            if (action == "get") return jsonObject("cookie" to OriginalCookieTextOracle.mergeCookies(db[domain].orEmpty(), sessions[domain]).orEmpty())
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:212:111: error: unresolved reference 'OriginalCookieTextOracle'.
+                "replace" -> if (domain.isNotEmpty() && input["cookie"].asString.isNotEmpty()) next[domain] = OriginalCookieTextOracle.mergeCookieValues(next[domain].orEmpty(), input["cookie"].asString)
+                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:35: error: cannot infer type for type parameter 'R'. Specify it explicitly.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                  ^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:53: error: unresolved reference 'OriginalCookieTextOracle'.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:90: error: unresolved reference 'OriginalCookieTextOracle'.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:137: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                                                                                                                        ^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:143: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                                                                                                                              ^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:161: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                                                                                                                                                ^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:161: error: cannot infer type for type parameter 'R'. Specify it explicitly.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                                                                                                                                                ^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:216:165: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    next[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { next[domain] = it } }
+                                                                                                                                                                    ^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:43: error: cannot infer type for type parameter 'R'. Specify it explicitly.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                          ^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:61: error: unresolved reference 'OriginalCookieTextOracle'.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:98: error: unresolved reference 'OriginalCookieTextOracle'.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:145: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                                                                                                                                ^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:151: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                                                                                                                                      ^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:169: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                                                                                                                                                        ^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:169: error: cannot infer type for type parameter 'R'. Specify it explicitly.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                                                                                                                                                        ^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:217:173: error: cannot infer type for type parameter 'T'. Specify it explicitly.
+                    nextSessions[domain]?.let { original -> OriginalCookieTextOracle.mapToCookie(OriginalCookieTextOracle.cookieToMap(original).apply { remove(key) })?.let { nextSessions[domain] = it } }
+                                                                                                                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:221:65: error: unresolved reference 'OriginalCookieTextOracle'.
+                    if (persistent.isNotEmpty()) next[domain] = OriginalCookieTextOracle.mergeCookieValues(next[domain].orEmpty(), persistent)
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^
+.build\consolidated-header-v2-browser-source-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\AppCookieOwnerTextTest.kt:222:99: error: unresolved reference 'OriginalCookieTextOracle'.
+                    nextSessions[domain] = if (nextSessions[domain].isNullOrEmpty()) session else OriginalCookieTextOracle.mergeCookies(nextSessions[domain], session).orEmpty()
+                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -85,7 +85,7 @@ internal class ProductionRulePlatform(
     private fun prepareLoginBrowser(source: BaseSource, url: String, title: String): PreparedLoginBrowser {
         ensureOwnerOpen(); task.ensureActiveForRuntime()
         check(source.getRuleEnvironment() === environment()) { "Browser source belongs to another environment" }
-        if (!task.sensitiveSourceOperation) unsupportedRule("original browser requires an explicit login task")
+        if (!task.sourceBrowserAllowed) unsupportedRule("original browser requires an explicit login task")
         require(url.length < 65_536 && title.toByteArray(Charsets.UTF_8).size <= 8_192) { "Browser request text exceeds its budget" }
         val owner = task.session.options.stateOwner ?: unsupportedRule("original browser requires the checked source owner")
         // Locked WebViewModel74-78 captures URL/headers before the same
@@ -270,6 +270,13 @@ internal class ProductionRulePlatform(
         val store = environment().persistence ?: return false
         check(source.getRuleEnvironment() === environment()) { "Source belongs to another environment" }
         ensureOwnerOpen(); task.ensureActiveForRuntime()
+        if (appCookieOwner != null && !task.session.options.writesAppCookieOwner)
+            unsupportedRule("Login header mutation requires explicit app-owner-text mode")
+        if (task.session.options.writesAppCookieOwner) {
+            task.sensitiveSourceOperation = true
+            if ((value?.toByteArray(Charsets.UTF_8)?.size ?: 0) > 65_536)
+                throw RulePersistenceException("Login header exceeds its native bridge byte budget")
+        }
         val cacheKey = "loginHeader_${source.getKey()}"
         val changes = environment().cache.textChange(cacheKey, value)
         val headers = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
@@ -279,13 +286,18 @@ internal class ProductionRulePlatform(
             // with different order for put and remove. This is deliberately not
             // the outward state.commit atomic batch API.
             if (value == null) {
-                environment().cache.delete(cacheKey)
-                try { appCookieOwner.mutate("remove", source.getKey()) }
-                catch (error: CancellationException) { throw RulePersistenceException.afterCancelledEffect("loginHeaderRemoval", "The login header was removed before Cookie removal was cancelled", error) }
-                catch (error: Exception) { throw RulePersistenceException.afterCommittedEffect("loginHeaderRemoval", "The login header was removed before Cookie removal failed; the original operation is sequential", error) }
+                commitAppLoginHeader(source, null)
+                environment().cache.publishText(cacheKey, null)
+                // Host facts describe an actual changed header. An already
+                // absent header must not manufacture a removal-write effect
+                // merely because the later Cookie owner fails.
+                appCookieOwner.mutate("remove", source.getKey())
             } else {
                 cookie?.let { appCookieOwner.mutate("replace", source.getKey(), it) }
-                try { environment().cache.put(cacheKey, value) }
+                try {
+                    commitAppLoginHeader(source, value)
+                    environment().cache.publishText(cacheKey, value)
+                }
                 catch (error: CancellationException) {
                     if (!cookie.isNullOrEmpty()) throw RulePersistenceException.afterCancelledEffect("cookieText", "Cookie text was committed before the login header write was cancelled", error)
                     throw error
@@ -297,8 +309,6 @@ internal class ProductionRulePlatform(
             }
             return true
         }
-        if (appCookieOwner != null && (value == null || !cookie.isNullOrEmpty()))
-            unsupportedRule("source.putLoginHeader/removeLoginHeader cross Cookie/login owner transaction is not connected")
         if (value != null && cookie.isNullOrEmpty()) {
             environment().cache.put(cacheKey, value)
             return true
@@ -309,6 +319,25 @@ internal class ProductionRulePlatform(
         }
         environment().cache.publishText(cacheKey, value)
         return true
+    }
+
+    /** Only the existing first-party producer constructs this wire packet.
+     * RhinoClassShutter denies NativeHost/RuntimeTask; source JSON does not
+     * authorize a mode, task or App binding. Cookie/header effects stay ordered,
+     * not an atomic transaction or a new credential/cache owner. */
+    private fun commitAppLoginHeader(source: BaseSource, value: String?) {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        if (!task.session.options.writesAppCookieOwner)
+            unsupportedRule("Login header mutation requires explicit app-owner-text mode")
+        val owner = task.session.options.stateOwner ?: unsupportedRule("Login header needs its explicit App owner")
+        val result = hostDispatch(task, "source.login-header", io.yuedu.legado.jsonObject(
+            "owner" to owner, "sourceURL" to source.getKey(), "taskId" to task.id,
+            "cookieAccess" to task.session.options.cookieAccess, "action" to if (value == null) "remove" else "put"
+        ).apply { if (value != null) addProperty("value", value) })
+        val accepted = result["committed"]
+        if (accepted == null || !accepted.isJsonPrimitive || !accepted.asJsonPrimitive.isBoolean || !accepted.asBoolean)
+            throw RulePersistenceException("The App login-header owner did not acknowledge its mutation")
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
     }
 
     override fun loginInfo(source: BaseSource): String? {

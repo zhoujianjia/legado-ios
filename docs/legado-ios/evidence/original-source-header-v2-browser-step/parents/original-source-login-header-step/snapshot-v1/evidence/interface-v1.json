@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "status": "Frozen interface before production changes; original ordering sequential, never cross-owner atomic",
+  "baseline": {
+    "manifest": {
+      "path": "F:\\yuedu-reader\\.build\\original-source-login-browser-post-step\\final-v2.json",
+      "bytes": 18097,
+      "sha256": "cf642f24b6f8a9fceec2feb2c34427d6c6e4c65909dcd45c80cb625c9b7749fc"
+    },
+    "ordinaryJar": {
+      "path": "F:\\yuedu-reader\\.build\\original-source-login-browser-post-step\\snapshot-v1\\legado-runtime.jar",
+      "bytes": 10860829,
+      "sha256": "91d337f590f6c433206747caa41c731f045dc2f3aa3d1ebbae552ff99b715a81"
+    }
+  },
+  "locked": {
+    "path": "locked-header-contract.json",
+    "bytes": 41744,
+    "sha256": "b319e090fa9817e67ed138ef0ae57ed2e410302e5f2db9678384f7e4612acf51"
+  },
+  "original": [
+    "BaseSource235-241 parses Map<String,String> lenient original GSON, Cookie key precedence exact Cookie then cookie; replaceCookie first, raw cache header second. Empty Cookie calls original no-op replace but raw header is still stored. Malformed/nonMap raw token remains verbatim header with no Cookie effect.",
+    "BaseSource244-246 deletes raw header first then CookieStore.removeCookie; leaves userInfo/Keychain untouched. CookieStore55-59 empty-cookie replace is no-op; nonempty replace merges existing persistent cookie text. Remove110-115 clears persistent/session text then original WebKit/native cookies through existing adapter. No original cross-owner atomic rollback."
+  ],
+  "actualGap": [
+    "JVM app-owner-text branch already sequences Cookie then header, but header uses generic state.commit. Host.storedValue rejects Cookie-bearing login header, so real Cookie commits then header rejects. Read-only app-owner-read must keep its mutation restriction.",
+    "Existing LoginManager owns raw login header in same headerCache + UserDefaults, with off-main runtime snapshot/CAS and revision notifications. Password/loginInfo separately owned Keychain must stay untouched. Existing defaults.set API has no durable disk I/O ACK; accepted header receipt proves owner memory/defaults acceptance, not guaranteed fsync."
+  ],
+  "wire": {
+    "operation": "source.login-header",
+    "fields": {
+      "owner": "existing task source owner String",
+      "sourceURL": "exact bound source String",
+      "action": "put or remove",
+      "value": "put only raw UTF8 String <=65536; absent for remove",
+      "deadlineEpochMs": "existing injected deadline",
+      "remainingTimeoutMs": "existing injected timeout"
+    },
+    "reply": {
+      "committed": "exact Bool owner ACK, never interpreted as atomic Cookie+header transaction"
+    },
+    "budget": "same bounded524288 request envelope; strict allowed keys/action/null/String before mutation"
+  },
+  "ordering": [
+    "Only app-owner-text uses new checked raw-header mutation after/before existing cookie.owner.text operation, preserving exact original order. Other session-jar and read-only behavior remain as before.",
+    "Host dispatch validates same source UUID/revision binding/deadline/cancel using existing checkCookieRead + binding token, then existing backing -> LoginManager new checked runtime method on same queue/barrier.",
+    "Within existing LoginManager barrier validate immediately before changes, compare current raw value; identical value writes nothing. No header JSON parsing or Cookie mutation in header owner. Changed value persists via same defaults and updates existing cache/revision; notify only after recording accepted fact.",
+    "JVM updates existing RuleCache published view only after header ACK; subsequent getLoginHeader/state.read returns same LoginManager owner; new method never stores password in generic cache.",
+    "Cancellation/failure between owners does not roll back the accepted first owner. Record task effects before caller cancellation check and retain existing typed partial-failure chain. No new transaction/store/cache/VM/HTTP/Cookie owner."
+  ],
+  "effects": [
+    "sourceLoginHeaderMayCommit before changed header/defaults mutation",
+    "sourceLoginHeaderCommitted immediately after accepted owner change, before revision notification can cancel caller",
+    "Existing cookieTextMutationMayCommit/cookieText/cookieRemoval and sequential wrapper facts preserved; no fake credential write or disk durability claim"
+  ],
+  "verification": [
+    "Actual public Rhino/Host wire JVM put/malformed/empty/Cookie-case precedence/same-source isolation and write failure/cancel at either ordering point",
+    "Ordinary productionJAR-only Java consumer; lowheap one-source ProductionRulePlatform overlay on bound349class POST JAR, other123main bytes exact",
+    "Native real Host/AppLoginManager+existing CookieStore production owner definition, synthetic credentials only; no SDK/JNI execution claim",
+    "Generic state.commit Cookie-header rejection remains, so arbitrary raw cache batch cannot bypass the explicit sequential operation"
+  ]
+}

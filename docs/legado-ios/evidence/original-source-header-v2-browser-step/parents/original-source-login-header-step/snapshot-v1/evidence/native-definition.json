@@ -1,0 +1,27 @@
+{
+  "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+  "bytes": 77243,
+  "sha256": "c2d3e886401eb235bf4e4205a143826df84b4d0e05785ed343946a14c5141a67",
+  "oldDefinitions": [
+    "testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+    "testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+    "testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+    "testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+    "testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+    "testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+    "testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+    "testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+    "testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+    "testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+    "testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+    "testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite",
+    "testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody"
+  ],
+  "newDefinitions": [
+    "testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts"
+  ],
+  "actualExecution": 0,
+  "flow": "One shared LegadoRuntimeProcess executor, same existing App LoginManager/defaults and CookieStore. Actual Host rejects read-only/wrong task/source metadata. Actual Rhino emits Cookie/header writes; raw composed/decomposed UTF8 checks and revision increments/noop are asserted. Successful remove reaches real existing WebKit expiration; cancellation after accepted Cookie then header keeps both facts and prevents late Keychain write. No second VM/store/HTTP owner. SDK not executed.",
+  "allOld13MethodASTBytesExact": true,
+  "rawUnicode": "Real checked owner must persist distinct NFC/NFD UTF8 bytes and advance revision, then same bytes and absent remove have no header May/Committed/revision; Native source only, not executed."
+}

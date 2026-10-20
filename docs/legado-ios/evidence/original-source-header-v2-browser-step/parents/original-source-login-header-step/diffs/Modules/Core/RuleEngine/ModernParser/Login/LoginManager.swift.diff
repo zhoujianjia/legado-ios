@@ -1,0 +1,48 @@
+--- baseline/Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift
++++ candidate/Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift
+@@ -714,6 +714,45 @@
+                 userInfo: ["sourceURL": sourceUrl])
+         }
+         return committed
++    }
++
++    /// Checked immediate raw-header mutation for the original runtime. This is
++    /// the same cache/defaults owner as existing form/legacy writers. Its ACK
++    /// proves owner acceptance; UserDefaults does not expose a durable I/O ACK.
++    /// Cookie ordering belongs to the calling original source operation.
++    func storeRuntimeLoginHeader(sourceUrl: String, value: String?, validate: () throws -> Void,
++        recordEffect: (String) -> Bool) throws -> Bool {
++        dispatchPrecondition(condition: .notOnQueue(.main))
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("legado.login-header.write",
++            "bytes=\(value?.utf8.count ?? 0) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        guard (value?.utf8.count ?? 0) <= 65_536 else { throw LoginCredentialOwnerFailure.valueLimit }
++        var changed = false
++        let accepted = try queue.sync(flags: .barrier) {
++            try validate()
++            // Java raw Strings distinguish canonically equivalent spellings.
++            // Compare their actual UTF-8 bytes, preserving nil versus empty.
++            guard headerCache[sourceUrl].map({ Data($0.utf8) }) != value.map({ Data($0.utf8) }) else {
++                try validate(); return true
++            }
++            guard recordEffect("sourceLoginHeaderMayCommit") else { throw CancellationError() }
++            try validate()
++            if let value {
++                persistHeader(sourceUrl: sourceUrl, raw: value)
++                headerCache[sourceUrl] = value
++            } else {
++                defaults.removeObject(forKey: LoginManager.loginHeaderPrefix + sourceUrl)
++                headerCache.removeValue(forKey: sourceUrl)
++            }
++            loginInfoRevisions[sourceUrl, default: 0] &+= 1
++            changed = true
++            // Publish the irreversible accepted owner fact before notification
++            // observers can cancel this task. No Keychain item is touched.
++            recordEffect("sourceLoginHeaderCommitted")
++            return true
++        }
++        if changed { notifyLoginInfoChanged(sourceUrl: sourceUrl) }
++        return accepted
+     }
+
+     /// Apply stored login headers to a URLRequest.

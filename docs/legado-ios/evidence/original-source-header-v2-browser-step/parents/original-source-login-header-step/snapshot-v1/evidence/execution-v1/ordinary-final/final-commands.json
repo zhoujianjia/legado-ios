@@ -1,0 +1,48 @@
+[
+  {
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+      "-J-Xmx64m",
+      "-J-XX:+UseSerialGC",
+      "-J-XX:CompressedClassSpaceSize=32m",
+      "-J-XX:ReservedCodeCacheSize=32m",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-source-login-header-step\\execution-v1\\legado-runtime-header-incremental.jar",
+      "-d",
+      "F:\\yuedu-reader\\.build\\original-source-login-header-step\\execution-v1\\ordinary-final\\classes",
+      "F:\\yuedu-reader\\.build\\original-source-login-header-step\\OrdinaryLoginHeaderSmoke.java"
+    ],
+    "log": "final-compile.log"
+  },
+  {
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+      "-Xms16m",
+      "-Xmx160m",
+      "-XX:+UseSerialGC",
+      "-XX:ActiveProcessorCount=2",
+      "-XX:CompressedClassSpaceSize=32m",
+      "-XX:ReservedCodeCacheSize=32m",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-source-login-browser-post-step\\snapshot-v1\\legado-runtime.jar;F:\\yuedu-reader\\.build\\original-source-login-header-step\\execution-v1\\ordinary-final\\classes",
+      "OrdinaryLoginHeaderSmoke",
+      "--old-counterfactual"
+    ],
+    "log": "final-old-post-counterfactual.log"
+  },
+  {
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+      "-Xms16m",
+      "-Xmx160m",
+      "-XX:+UseSerialGC",
+      "-XX:ActiveProcessorCount=2",
+      "-XX:CompressedClassSpaceSize=32m",
+      "-XX:ReservedCodeCacheSize=32m",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-source-login-header-step\\execution-v1\\legado-runtime-header-incremental.jar;F:\\yuedu-reader\\.build\\original-source-login-header-step\\execution-v1\\ordinary-final\\classes",
+      "OrdinaryLoginHeaderSmoke"
+    ],
+    "log": "execute.log"
+  }
+]

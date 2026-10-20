@@ -8,6 +8,95 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        let peer = try OriginalAwaitHTTPPeer()
+        let ready = expectation(description: "Synthetic V2 browser peer ready")
+        peer.start { ready.fulfill() }
+        await fulfillment(of: [ready], timeout: 10)
+        var problem: Error?
+        var taskIDs: [String] = []
+        do {
+            let url = try peer.readyURL()
+            let postURL = url + ",{\"method\":\"POST\",\"body\":\"field=synthetic\"}"
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a; source.enabledCookieJar = true
+            source.loginUi = #"{"version":2}"#
+            source.loginUrl = """
+            function loginUi(s){return {rows:[{name:'Ready',type:'label'}]};}
+            function loginAction(a,s,f){if(java!==source)throw Error('wrong V2 binding');var u=a==='post'?'\(postURL)':'\(url)';var r=java.startBrowserAwait(u,'Synthetic V2',a==='post');return {state:{body:String(r.body()),url:String(r.url()),code:r.code()}};}
+            """
+            let admitted = source
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let didPresent = await SourceBrowserPresenter.originalPageDidPresent
+            let didLoad = await SourceBrowserPresenter.originalPageDidLoad
+            for action in ["get", "post"] {
+                let signals = OriginalV2PageSignals()
+                let presented = expectation(description: "Actual V2 page UIKit presentation")
+                let loaded = expectation(description: "Actual V2 page WK didFinish")
+                loaded.assertForOverFulfill = false
+                // The product service owns its generated RuntimeTask ID. These
+                // two real signals must identify the same page before closing.
+                let presentationObserver = NotificationCenter.default.addObserver(forName: didPresent,
+                    object: nil, queue: nil) { event in
+                    if let id = event.userInfo?["taskID"] as? String, signals.presented(id) { presented.fulfill() }
+                }
+                let loadObserver = NotificationCenter.default.addObserver(forName: didLoad,
+                    object: nil, queue: nil) { event in
+                    if let id = event.userInfo?["taskID"] as? String, signals.loaded(id) { loaded.fulfill() }
+                }
+                let pending = Task {
+                    try await service.originalLoginV2Action(source: admitted, action: action,
+                        stateJSON: "{}", form: [:])
+                }
+                do {
+                    await fulfillment(of: [presented, loaded], timeout: 20)
+                    let taskID = try XCTUnwrap(signals.matchingTaskID())
+                    taskIDs.append(taskID)
+                    await SourceBrowserPresenter.requestOriginalPageClose(taskID: taskID)
+                    let result = try await pending.value
+                    let stateJSON = try XCTUnwrap(result.command.stateJSON)
+                    let state = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(stateJSON.utf8)) as? [String: Any])
+                    let body = try XCTUnwrap(state["body"] as? String)
+                    XCTAssertTrue(body.contains("synthetic-await-body"))
+                    if action == "post" { XCTAssertEqual(body, "<html>synthetic-await-body</html>") }
+                    XCTAssertEqual(state["url"] as? String, url)
+                    XCTAssertEqual(state["code"] as? Int, 200)
+                    XCTAssertFalse(result.command.loginStored); XCTAssertFalse(result.command.close)
+                    XCTAssertTrue(result.completedEffects.contains("sourceBrowserPresented"))
+                    XCTAssertTrue(result.completedEffects.contains("sourceBrowserCookieCaptureCompleted"))
+                    if action == "post" {
+                        XCTAssertTrue(result.completedEffects.contains("sourceBrowserPostMaySend"))
+                        XCTAssertTrue(result.completedEffects.contains("sourceBrowserPostResponseReceived"))
+                    }
+                    let active = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
+                    XCTAssertFalse(active)
+                } catch {
+                    pending.cancel(); _ = await pending.result
+                    NotificationCenter.default.removeObserver(presentationObserver)
+                    NotificationCenter.default.removeObserver(loadObserver)
+                    throw error
+                }
+                NotificationCenter.default.removeObserver(presentationObserver)
+                NotificationCenter.default.removeObserver(loadObserver)
+            }
+            XCTAssertEqual(peer.requestMethods, ["GET", "POST"])
+            XCTAssertEqual(peer.requestBodies, ["", "field=synthetic"])
+            let credentials = try await Task.detached {
+                try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
+            }.value
+            XCTAssertNil(credentials)
+        } catch { problem = error }
+        for taskID in taskIDs { await SourceBrowserPresenter.cancelOriginal(taskID: taskID) }
+        let stopped = expectation(description: "V2 browser peer drained")
+        peer.stop { stopped.fulfill() }
+        await fulfillment(of: [stopped], timeout: 10)
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()
@@ -206,14 +295,22 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
             let header = await Task.detached { LoginManager.shared.getLoginHeader(sourceUrl: fixture.a) }.value
             XCTAssertEqual(stored, original)
             XCTAssertEqual(header, "synthetic-action-header")
+            let revisionBeforeCallback = await Task.detached {
+                LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a)
+            }.value
             let callback = try await service.originalLoginAction(source: source,
                 action: "java.reLoginView(true)", credentials: values, isLongClick: false)
             XCTAssertTrue(callback.executed)
-            XCTAssertEqual(callback.loginUIEvents.map(\.kind), [.render])
-            XCTAssertEqual(callback.loginUIEvents.map(\.sequence), [1])
-            XCTAssertEqual(callback.loginUIEvents.first?.deltaUp, true)
-            XCTAssertFalse(callback.completedEffects.contains("sourceLoginInfoMayCommit"))
-            XCTAssertFalse(callback.completedEffects.contains("sourceLoginInfoCommitted"))
+            let callbackEvents = try XCTUnwrap(callback.loginUIEvents)
+            XCTAssertEqual(callbackEvents.map(\.kind), [.render])
+            XCTAssertEqual(callbackEvents.map(\.sequence), [1])
+            XCTAssertEqual(callbackEvents.first?.deltaUp, true)
+            let afterCallback = await Task.detached {
+                (LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a),
+                 LoginManager.shared.getLoginInfo(sourceUrl: fixture.a))
+            }.value
+            XCTAssertEqual(afterCallback.0, revisionBeforeCallback)
+            XCTAssertEqual(afterCallback.1, original)
         } catch { problem = error }
         await Task.detached { LoginManager.shared.removeLoginHeader(sourceUrl: fixture.a) }.value
         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
@@ -253,9 +350,10 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
                 action: "result.put('phase','next');java.upLoginData(result);java.reLoginView(true)",
                 credentials: credentials, isLongClick: false)
             XCTAssertTrue(receipt.executed)
-            XCTAssertEqual(receipt.loginUIEvents.map(\.kind), [.updateData, .render])
-            XCTAssertEqual(receipt.loginUIEvents.last?.deltaUp, true)
-            let update = try XCTUnwrap(receipt.loginUIEvents.first)
+            let receiptEvents = try XCTUnwrap(receipt.loginUIEvents)
+            XCTAssertEqual(receiptEvents.map(\.kind), [.updateData, .render])
+            XCTAssertEqual(receiptEvents.last?.deltaUp, true)
+            let update = try XCTUnwrap(receiptEvents.first)
             let updated = try LegadoOriginalLoginUIForm.applying(entries: update.entries,
                 rows: first.rows, fields: first.fields, labels: first.labels,
                 values: first.values, controls: controls, layout: first.layout)
@@ -290,13 +388,20 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
             // The locked action first checks its original login script. An
             // absent script skips before attempting to bind current controls.
             source.loginUrl = ""
+            let revisionBeforeSkipped = await Task.detached {
+                LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a)
+            }.value
             let skipped = try await service.originalLoginAction(source: source, action: button.action,
                 credentials: [:], isLongClick: false, inputBindingFailed: true)
-            XCTAssertFalse(skipped.executed); XCTAssertTrue(skipped.loginUIEvents.isEmpty)
-            XCTAssertFalse(skipped.completedEffects.contains("sourceLoginInfoMayCommit"))
-            XCTAssertFalse(skipped.completedEffects.contains("sourceLoginInfoCommitted"))
-            let unchanged = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
-            XCTAssertEqual(unchanged, stored)
+            XCTAssertFalse(skipped.executed)
+            // The wire deliberately omits an empty optional event collection.
+            XCTAssertTrue(skipped.loginUIEvents?.isEmpty ?? true)
+            let unchanged = await Task.detached {
+                (LoginManager.shared.getLoginInfo(sourceUrl: fixture.a),
+                 LoginManager.shared.loginInfoRevision(sourceUrl: fixture.a))
+            }.value
+            XCTAssertEqual(unchanged.0, stored)
+            XCTAssertEqual(unchanged.1, revisionBeforeSkipped)
         } catch { problem = error }
         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
         if let problem { throw problem }
@@ -629,6 +734,131 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
         let stopped = expectation(description: "Synthetic HTTP peer stopped and all connections drained")
         peer.stop { stopped.fulfill() }
         await fulfillment(of: [stopped], timeout: 10)
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
+    func testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        let domain = try XCTUnwrap(URL(string: fixture.a)?.host)
+        let process = LegadoRuntimeProcess.shared
+        let runtime = try await process.executor()
+        let owner = try await process.bindPersistentSource(sourceURL: fixture.a, sourceRevision: "native-header-v1")
+        var session: LegadoSourceSession?
+        var problem: Error?
+        do {
+            // Explicit negative Host provenance packets exercise actual App
+            // admission, not a mocked JVM callback or a second JVM instance.
+            let host = LegadoPersistentStateHost(backing: AppLegadoOwnedStateBacking(sources: .shared, login: fixture.login))
+            let rejectedOwner = try await host.bind(sourceURL: fixture.a, sourceRevision: "native-header-reject-v1")
+            for (mode, declaredTask, claimedSource, expected) in [
+                ("app-owner-read", "native-header-reject", fixture.a, "UNSUPPORTED_CAPABILITY"),
+                ("app-owner-text", "wrong-task", fixture.a, "INVALID_STATE_OWNER"),
+                ("app-owner-text", "native-header-reject", fixture.b, "INVALID_STATE_OWNER")
+            ] {
+                let fields: [String: String] = ["owner": rejectedOwner, "sourceURL": claimedSource,
+                    "taskId": declaredTask, "cookieAccess": mode, "action": "put", "value": "must-not-write"]
+                let json = try await Task.detached {
+                    String(decoding: try JSONEncoder().encode(fields), as: UTF8.self)
+                }.value
+                do {
+                    _ = try await host.dispatch(.init(taskID: "native-header-reject", operation: "source.login-header", requestJSON: json))
+                    XCTFail("Header mutation must reject wrong mode/task/source provenance")
+                } catch let failure as LegadoRuntimeError { XCTAssertEqual(failure.code, expected) }
+            }
+            await host.revoke(owner: rejectedOwner)
+            let initial = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(initial, "kept-header")
+            let current = try await runtime.createSession(sourceJSON: fixture.source(fixture.a, loginUi: "[]", loginUrl: "var headerPrelude=true;"),
+                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner,
+                    sourceMode: .originalTraditional, cookieAccess: .appOwnerText))
+            session = current
+            _ = try await runtime.loginActionOriginal(session: current,
+                action: #"source.putLoginHeader('\u00e9');"#, credentials: [:])
+            let composedRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
+            _ = try await runtime.loginActionOriginal(session: current,
+                action: #"source.putLoginHeader('e\u0301');if(String(source.getLoginHeader())!=='e\u0301')throw new Error('raw UTF16 changed');"#,
+                credentials: [:])
+            let decomposed = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(decomposed.map { Data($0.utf8) }, Data("e\u{301}".utf8))
+            let revision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
+            XCTAssertGreaterThan(revision, composedRevision, "Canonically equivalent but byte-distinct raw headers must advance the existing revision")
+            let sameEffects = OriginalBrowserEffects()
+            let same = try await runtime.loginActionOriginal(session: current,
+                action: #"source.putLoginHeader('e\u0301');"#, credentials: [:],
+                onReportedEffects: { sameEffects.record($0) })
+            let nextRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(revision, nextRevision)
+            XCTAssertTrue(same.executed)
+            XCTAssertFalse(sameEffects.snapshot().contains("sourceLoginHeaderCommitted"))
+            XCTAssertFalse(sameEffects.snapshot().contains("sourceLoginHeaderMayCommit"))
+            let rawHeader = "{\"Cookie\":\"native=synthetic\",\"Authorization\":\"synthetic-header\"}"
+            let literal = try await Task.detached {
+                String(decoding: try JSONEncoder().encode(rawHeader), as: UTF8.self)
+            }.value
+            let storedEffects = OriginalBrowserEffects()
+            let stored = try await runtime.loginActionOriginal(session: current,
+                action: "source.putLoginHeader(\(literal));", credentials: [:],
+                onReportedEffects: { storedEffects.record($0) })
+            XCTAssertTrue(stored.executed)
+            XCTAssertTrue(storedEffects.snapshot().contains("cookieText"))
+            XCTAssertTrue(storedEffects.snapshot().contains("sourceLoginHeaderCommitted"))
+            let actualHeader = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(actualHeader.map { Data($0.utf8) }, Data(rawHeader.utf8))
+            let actualCookie = try await CookieStore.shared.originalText(domain: domain)
+            XCTAssertTrue(actualCookie.contains("native=synthetic"))
+            _ = try await runtime.loginActionOriginal(session: current,
+                action: "source.removeLoginHeader();", credentials: [:])
+            let afterRemove = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertNil(afterRemove)
+            let cookieAfterRemove = try await CookieStore.shared.originalText(domain: domain)
+            XCTAssertEqual(cookieAfterRemove, "")
+            let removedRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
+            let absentEffects = OriginalBrowserEffects()
+            _ = try await runtime.loginActionOriginal(session: current,
+                action: "source.removeLoginHeader();", credentials: [:], onReportedEffects: { absentEffects.record($0) })
+            let absentRevision = await Task.detached { fixture.login.loginInfoRevision(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(removedRevision, absentRevision)
+            XCTAssertFalse(absentEffects.snapshot().contains("sourceLoginHeaderMayCommit"))
+            XCTAssertFalse(absentEffects.snapshot().contains("sourceLoginHeaderCommitted"))
+            let cancellation = AcceptedWriteCancellation()
+            let accepted = expectation(description: "Actual Cookie then header owner accepted before cancellation")
+            let observer = NotificationCenter.default.addObserver(forName: .bookSourceLoginInfoDidChange,
+                object: nil, queue: nil) { event in
+                guard event.userInfo?["sourceURL"] as? String == fixture.a,
+                      cancellation.accept() else { return }
+                accepted.fulfill()
+            }
+            defer { cancellation.finish(); NotificationCenter.default.removeObserver(observer) }
+            let pending = Task {
+                try await runtime.loginActionOriginal(session: current,
+                    action: "source.putLoginHeader(\(literal));source.putLoginInfo('must-not-write');", credentials: [:])
+            }
+            cancellation.install { pending.cancel() }
+            await fulfillment(of: [accepted], timeout: 15)
+            do { _ = try await pending.value; XCTFail("Cancellation after actual header commit must remain cancellation") }
+            catch let failure as LegadoRuntimeError {
+                XCTAssertEqual(failure.code, "CANCELLED")
+                XCTAssertTrue(failure.completedEffects?.contains("sourceLoginHeaderCommitted") == true)
+                XCTAssertTrue(failure.completedEffects?.contains("cookieText") == true)
+            }
+            let acceptedHeader = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(acceptedHeader.map { Data($0.utf8) }, Data(rawHeader.utf8))
+            let cookieAfterCancel = try await CookieStore.shared.originalText(domain: domain)
+            XCTAssertTrue(cookieAfterCancel.contains("native=synthetic"), "Already accepted Cookie and header changes must not be reported as rolled back")
+            let credentials = try await Task.detached {
+                try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
+            }.value
+            XCTAssertNil(credentials)
+        } catch { problem = error }
+        if let session {
+            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
+        }
+        await process.revokePersistentSource(owner: owner)
+        do { try await CookieStore.shared.mutateOriginalText(domain: domain, action: "remove", raw: nil) }
+        catch { if problem == nil { problem = error } }
         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
         if let problem { throw problem }
     }
@@ -1028,6 +1258,21 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
     /// Observes only this synthetic account's real accepted-write notification.
     /// Notification delivery may precede Task handle registration; either order
     /// cancels exactly once without blocking the Host actor or the main thread.
+    private final class OriginalV2PageSignals: @unchecked Sendable {
+        private let lock = NSLock()
+        private var presentation: String?
+        private var load: String?
+        func presented(_ id: String) -> Bool {
+            lock.withLock { guard presentation == nil else { return false }; presentation = id; return true }
+        }
+        func loaded(_ id: String) -> Bool {
+            lock.withLock { guard load == nil else { return false }; load = id; return true }
+        }
+        func matchingTaskID() -> String? {
+            lock.withLock { guard let presentation, presentation == load else { return nil }; return presentation }
+        }
+    }
+
     private final class AcceptedWriteCancellation: @unchecked Sendable {
         private let lock = NSLock()
         private var accepted = false

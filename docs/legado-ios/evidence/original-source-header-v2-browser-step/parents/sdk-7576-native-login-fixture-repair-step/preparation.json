@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-20T22:04:03.548386+00:00",
+  "scope": "ActualSDK7576 two Native fixture methods API-shape compiler repair",
+  "file": {
+    "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+    "baseline": {
+      "bytes": 67994,
+      "sha256": "35629ce013b89bf190cc231f725cb628c5a37a08ae999538598a2fe4a2666c14"
+    },
+    "candidate": {
+      "bytes": 68660,
+      "sha256": "93f0dfd62112afdc2d6366c2cb4a05f287f78155455a142f1ff3c2bfc6ef9c9f"
+    },
+    "snapshot": {
+      "bytes": 68660,
+      "sha256": "93f0dfd62112afdc2d6366c2cb4a05f287f78155455a142f1ff3c2bfc6ef9c9f"
+    }
+  },
+  "changes": [
+    "Strictly unwrap expected positive optional event arrays before map/first/last. No event assertions dropped.",
+    "Use actual existing LoginManager revision and raw credential before/after success/skip instead of nonexistent success DTO completedEffects. No production result type/API change.",
+    "Keep actual typed form layout/fields and downstream delta reuse checks unchanged; their diagnostics arose from the invalid optional event inference.",
+    "Skipped wire nil/empty event collection is asserted as zero events; executed=false and credential value/revision assertions remain."
+  ],
+  "changedNativeMethods": [
+    "testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+    "testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite"
+  ],
+  "NativeMethodCountUnchanged": 13,
+  "allOtherElevenMethodsByteExact": true,
+  "actualSDKHere": 0,
+  "repeatedJVMOrJava": 0,
+  "evidence": [
+    {
+      "path": "fixture.diff",
+      "bytes": 4745,
+      "sha256": "fd18a63bf8ba72b7cfdb08adb6c58a7905f55a46abd99d44ae8b41d488c5cf43"
+    },
+    {
+      "path": "grammar.json",
+      "bytes": 415,
+      "sha256": "8c6436da5bacfbfb4eab05e52213af6bbfb5099a33f09aebdfaa721a2379b190"
+    },
+    {
+      "path": "source-api-binding.json",
+      "bytes": 1491,
+      "sha256": "98c4e91ac2dced71e313aa68a9cf6375cd224f1a403e9f00c15c9ede6a1d5b43"
+    },
+    {
+      "path": "ast-scope.json",
+      "bytes": 423,
+      "sha256": "b2f4457e73a9dd3673f90184679a6ac5185b1f0db16e35c412eaabcdae1d3fb6"
+    },
+    {
+      "path": "actual-failure-binding.json",
+      "bytes": 682,
+      "sha256": "3d9ed69c18d75a4c6c6d7681aef51f2fda966487d992a7d5b97c86a3990db9d0"
+    }
+  ],
+  "limits": [
+    "Real AppleSDK acceptance is still pending; grammar and API-shape inspection cannot substitute for compiling the test target.",
+    "This fixture source does not include later independent Header/V2 browser new methods; root must compose their reviewed additions with these two repaired inherited methods.",
+    "Actual historical7576 remains failure/App0; no signing/installation/renewal acceptance follows."
+  ],
+  "operations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false
+  }
+}

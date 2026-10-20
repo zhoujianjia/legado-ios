@@ -1,0 +1,120 @@
+--- a/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
+@@ -8,6 +8,95 @@
+ /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
+ /// are unique synthetic .invalid sources; no existing account is enumerated.
+ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
++    func testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner() async throws {
++        executionTimeAllowance = 180
++        try await requireNativeRuntime()
++        let fixture = try await Task.detached { try Fixture() }.value
++        let peer = try OriginalAwaitHTTPPeer()
++        let ready = expectation(description: "Synthetic V2 browser peer ready")
++        peer.start { ready.fulfill() }
++        await fulfillment(of: [ready], timeout: 10)
++        var problem: Error?
++        var taskIDs: [String] = []
++        do {
++            let url = try peer.readyURL()
++            let postURL = url + ",{\"method\":\"POST\",\"body\":\"field=synthetic\"}"
++            var source = BookSource()
++            source.bookSourceUrl = fixture.a; source.enabledCookieJar = true
++            source.loginUi = #"{"version":2}"#
++            source.loginUrl = """
++            function loginUi(s){return {rows:[{name:'Ready',type:'label'}]};}
++            function loginAction(a,s,f){if(java!==source)throw Error('wrong V2 binding');var u=a==='post'?'\(postURL)':'\(url)';var r=java.startBrowserAwait(u,'Synthetic V2',a==='post');return {state:{body:String(r.body()),url:String(r.url()),code:r.code()}};}
++            """
++            let admitted = source
++            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
++            let didPresent = await SourceBrowserPresenter.originalPageDidPresent
++            let didLoad = await SourceBrowserPresenter.originalPageDidLoad
++            for action in ["get", "post"] {
++                let signals = OriginalV2PageSignals()
++                let presented = expectation(description: "Actual V2 page UIKit presentation")
++                let loaded = expectation(description: "Actual V2 page WK didFinish")
++                loaded.assertForOverFulfill = false
++                // The product service owns its generated RuntimeTask ID. These
++                // two real signals must identify the same page before closing.
++                let presentationObserver = NotificationCenter.default.addObserver(forName: didPresent,
++                    object: nil, queue: nil) { event in
++                    if let id = event.userInfo?["taskID"] as? String, signals.presented(id) { presented.fulfill() }
++                }
++                let loadObserver = NotificationCenter.default.addObserver(forName: didLoad,
++                    object: nil, queue: nil) { event in
++                    if let id = event.userInfo?["taskID"] as? String, signals.loaded(id) { loaded.fulfill() }
++                }
++                let pending = Task {
++                    try await service.originalLoginV2Action(source: admitted, action: action,
++                        stateJSON: "{}", form: [:])
++                }
++                do {
++                    await fulfillment(of: [presented, loaded], timeout: 20)
++                    let taskID = try XCTUnwrap(signals.matchingTaskID())
++                    taskIDs.append(taskID)
++                    await SourceBrowserPresenter.requestOriginalPageClose(taskID: taskID)
++                    let result = try await pending.value
++                    let stateJSON = try XCTUnwrap(result.command.stateJSON)
++                    let state = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(stateJSON.utf8)) as? [String: Any])
++                    let body = try XCTUnwrap(state["body"] as? String)
++                    XCTAssertTrue(body.contains("synthetic-await-body"))
++                    if action == "post" { XCTAssertEqual(body, "<html>synthetic-await-body</html>") }
++                    XCTAssertEqual(state["url"] as? String, url)
++                    XCTAssertEqual(state["code"] as? Int, 200)
++                    XCTAssertFalse(result.command.loginStored); XCTAssertFalse(result.command.close)
++                    XCTAssertTrue(result.completedEffects.contains("sourceBrowserPresented"))
++                    XCTAssertTrue(result.completedEffects.contains("sourceBrowserCookieCaptureCompleted"))
++                    if action == "post" {
++                        XCTAssertTrue(result.completedEffects.contains("sourceBrowserPostMaySend"))
++                        XCTAssertTrue(result.completedEffects.contains("sourceBrowserPostResponseReceived"))
++                    }
++                    let active = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
++                    XCTAssertFalse(active)
++                } catch {
++                    pending.cancel(); _ = await pending.result
++                    NotificationCenter.default.removeObserver(presentationObserver)
++                    NotificationCenter.default.removeObserver(loadObserver)
++                    throw error
++                }
++                NotificationCenter.default.removeObserver(presentationObserver)
++                NotificationCenter.default.removeObserver(loadObserver)
++            }
++            XCTAssertEqual(peer.requestMethods, ["GET", "POST"])
++            XCTAssertEqual(peer.requestBodies, ["", "field=synthetic"])
++            let credentials = try await Task.detached {
++                try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
++            }.value
++            XCTAssertNil(credentials)
++        } catch { problem = error }
++        for taskID in taskIDs { await SourceBrowserPresenter.cancelOriginal(taskID: taskID) }
++        let stopped = expectation(description: "V2 browser peer drained")
++        peer.stop { stopped.fulfill() }
++        await fulfillment(of: [stopped], timeout: 10)
++        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
++        if let problem { throw problem }
++    }
++
+     func testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose() async throws {
+         executionTimeAllowance = 180
+         try await requireNativeRuntime()
+@@ -1028,6 +1117,21 @@
+     /// Observes only this synthetic account's real accepted-write notification.
+     /// Notification delivery may precede Task handle registration; either order
+     /// cancels exactly once without blocking the Host actor or the main thread.
++    private final class OriginalV2PageSignals: @unchecked Sendable {
++        private let lock = NSLock()
++        private var presentation: String?
++        private var load: String?
++        func presented(_ id: String) -> Bool {
++            lock.withLock { guard presentation == nil else { return false }; presentation = id; return true }
++        }
++        func loaded(_ id: String) -> Bool {
++            lock.withLock { guard load == nil else { return false }; load = id; return true }
++        }
++        func matchingTaskID() -> String? {
++            lock.withLock { guard let presentation, presentation == load else { return nil }; return presentation }
++        }
++    }
++
+     private final class AcceptedWriteCancellation: @unchecked Sendable {
+         private let lock = NSLock()
+         private var accepted = false

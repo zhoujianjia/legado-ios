@@ -78,6 +78,7 @@ object LegadoRuntime {
             require(timeoutMs in 1..300_000) { "timeoutMs must be between 1 and 300000" }
             task = RuntimeTask(taskId, session, Job(), System.currentTimeMillis() + timeoutMs)
             task.sensitiveSourceOperation = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction", "persistLoginInfo", "loginV2UI", "loginV2Action")
+            task.sourceBrowserAllowed = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction", "loginV2UI", "loginV2Action")
             task.loginUIEventsEnabled = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginAction")
             synchronized(session) {
                 if (session.closed.get()) throw RuntimeFailure("UNKNOWN_SESSION", "Session is closed")
@@ -410,6 +411,9 @@ internal class RuntimeTask(val id: String, val session: RuntimeSession, val job:
     // Metadata only. Login JS errors/debug calls can otherwise echo passwords
     // from result/source.getLoginInfo into a persisted diagnostic message.
     internal var sensitiveSourceOperation = false
+    // Admission is task-local and assigned only by the trusted dispatcher.
+    // Privacy promotion from header/login diagnostics never grants UI access.
+    internal var sourceBrowserAllowed = false
     internal var loginUIEventsEnabled = false
     // Task-local terminal facts, separate from deduplicated persistence effects.
     // Only standalone login operations can emit them. No live VM object or store.

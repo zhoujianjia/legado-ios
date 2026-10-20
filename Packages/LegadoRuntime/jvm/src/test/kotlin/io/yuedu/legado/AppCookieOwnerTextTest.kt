@@ -92,7 +92,7 @@ class AppCookieOwnerTextTest {
             val put = source(peer.origin, false).apply { addProperty("header", """@js:source.putLoginHeader('{"Cookie":"login=committed"}'); ({})""") }
             val failedPut = owned.execute(owned.session(put), "search", jsonObject("key" to "x"))
             assertEquals("STATE_IO", failedPut["error"].asJsonObject["code"].asString)
-            assertTrue(failedPut.toString().contains("Cookie text was committed"))
+            assertTrue(failedPut["error"].asJsonObject["completedEffects"].asJsonArray.any { it.asString == "cookieText" })
             assertEquals(listOf("cookieText"), failedPut["error"].asJsonObject["completedEffects"].asJsonArray.map { it.asString })
             assertEquals("login=committed", owned.db["127.0.0.1"])
             assertTrue(owned.events.indexOf("cookie:replace") < owned.events.indexOf("header:put"))
@@ -103,8 +103,8 @@ class AppCookieOwnerTextTest {
             val remove = source(peer.origin, false).apply { addProperty("header", "@js:source.removeLoginHeader(); ({})") }
             val failedRemove = owned.execute(owned.session(remove), "search", jsonObject("key" to "x"))
             assertEquals("STATE_IO", failedRemove["error"].asJsonObject["code"].asString)
-            assertTrue(failedRemove.toString().contains("login header was removed"))
-            assertEquals(listOf("loginHeaderRemoval"), failedRemove["error"].asJsonObject["completedEffects"].asJsonArray.map { it.asString })
+            assertFalse(failedRemove.toString().contains("Owned Cookie remove failure"))
+            assertEquals(listOf("sourceLoginHeaderMayCommit", "sourceLoginHeaderCommitted"), failedRemove["error"].asJsonObject["completedEffects"].asJsonArray.map { it.asString })
             assertTrue(owned.events.indexOf("header:remove") < owned.events.indexOf("cookie:remove"))
             assertEquals("login=committed", owned.db["127.0.0.1"])
             assertEquals(1, peer.requests.size) // Failed header initialization never reaches HTTP.
@@ -162,6 +162,25 @@ class AppCookieOwnerTextTest {
                 else {
                     val input = parseObject(raw); calls += operation to input
                     if (operation == "cookie.owner.text") cookie(task, input).toString()
+                    else if (operation == "source.login-header") {
+                        check(input["cookieAccess"].asString == "app-owner-text" && input["taskId"].asString == task)
+                        val action = input["action"].asString
+                        events += "header:$action"
+                        if (failHeaderCommit) return@setHostCallback failure("STATE_IO", "Owned header failure").toString()
+                        val source = input["sourceURL"].asString
+                        val textKey = gson.toJson(listOf(source, "cache-text", "loginHeader_$source"))
+                        val binaryKey = gson.toJson(listOf(source, "cache-binary", "loginHeader_$source"))
+                        val snapshot = state.dispatch("state.read", jsonObject("owner" to "fixture-owner", "keys" to listOf(textKey, binaryKey)))
+                        val rawValue = if (action == "put") input["value"].asString else null
+                        val entry = rawValue?.let { jsonObject("deadline" to 0, "data" to java.util.Base64.getEncoder().encodeToString(it.toByteArray())).toString().toByteArray() }
+                        val changes = JsonObject().apply {
+                            addProperty(textKey, entry?.let { java.util.Base64.getEncoder().encodeToString(it) })
+                            if (action == "remove") add(binaryKey, com.google.gson.JsonNull.INSTANCE)
+                        }
+                        val committed = state.dispatch("state.commit", jsonObject("owner" to "fixture-owner", "revision" to snapshot["revision"], "changes" to changes))
+                        committed.add("hostEffects", gson.toJsonTree(listOf("sourceLoginHeaderMayCommit", "sourceLoginHeaderCommitted")))
+                        committed.toString()
+                    }
                     else {
                         if (operation == "state.commit") {
                             val header = input["changes"].asJsonObject.entrySet().firstOrNull { it.key.contains("loginHeader_") }

@@ -1,0 +1,1489 @@
+{
+  "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "members": [
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/data/entities/BaseSource.kt",
+      "bytes": 12803,
+      "sha256": "080160e06a23fdfc7f4dbe5975a370473eee5d13ad0638b46aa2075276516243",
+      "excerpts": [
+        {
+          "first": 1,
+          "last": 50,
+          "lines": [
+            {
+              "line": 1,
+              "text": "package io.legado.app.data.entities"
+            },
+            {
+              "line": 2,
+              "text": ""
+            },
+            {
+              "line": 3,
+              "text": "import android.webkit.JavascriptInterface"
+            },
+            {
+              "line": 4,
+              "text": "import cn.hutool.crypto.symmetric.AES"
+            },
+            {
+              "line": 5,
+              "text": "import com.script.ScriptBindings"
+            },
+            {
+              "line": 6,
+              "text": "import com.script.buildScriptBindings"
+            },
+            {
+              "line": 7,
+              "text": "import com.script.rhino.RhinoScriptEngine"
+            },
+            {
+              "line": 8,
+              "text": "import io.legado.app.constant.AppConst"
+            },
+            {
+              "line": 9,
+              "text": "import io.legado.app.constant.AppLog"
+            },
+            {
+              "line": 10,
+              "text": "import io.legado.app.constant.AppPattern.JS_PATTERN"
+            },
+            {
+              "line": 11,
+              "text": "import io.legado.app.data.entities.rule.RowUi"
+            },
+            {
+              "line": 12,
+              "text": "import io.legado.app.exception.NoStackTraceException"
+            },
+            {
+              "line": 13,
+              "text": "import io.legado.app.help.CacheManager"
+            },
+            {
+              "line": 14,
+              "text": "import io.legado.app.help.ConcurrentRateLimiter.Companion.updateConcurrentRate"
+            },
+            {
+              "line": 15,
+              "text": "import io.legado.app.help.JsExtensions"
+            },
+            {
+              "line": 16,
+              "text": "import io.legado.app.help.config.AppConfig"
+            },
+            {
+              "line": 17,
+              "text": "import io.legado.app.help.crypto.SymmetricCryptoAndroid"
+            },
+            {
+              "line": 18,
+              "text": "import io.legado.app.help.http.CookieStore"
+            },
+            {
+              "line": 19,
+              "text": "import io.legado.app.help.source.clearExploreKindsCache"
+            },
+            {
+              "line": 20,
+              "text": "import io.legado.app.help.source.getShareScope"
+            },
+            {
+              "line": 21,
+              "text": "import io.legado.app.help.source.getSharedGlobalStateKey"
+            },
+            {
+              "line": 22,
+              "text": "import io.legado.app.model.SharedJsScope"
+            },
+            {
+              "line": 23,
+              "text": "import io.legado.app.model.SharedJsScope.remove"
+            },
+            {
+              "line": 24,
+              "text": "import io.legado.app.model.jsSource.JsSourceEngine"
+            },
+            {
+              "line": 25,
+              "text": "import io.legado.app.model.login.LoginUiV2"
+            },
+            {
+              "line": 26,
+              "text": "import io.legado.app.utils.GSON"
+            },
+            {
+              "line": 27,
+              "text": "import io.legado.app.utils.fromJsonArray"
+            },
+            {
+              "line": 28,
+              "text": "import io.legado.app.utils.fromJsonObject"
+            },
+            {
+              "line": 29,
+              "text": "import io.legado.app.utils.has"
+            },
+            {
+              "line": 30,
+              "text": "import io.legado.app.utils.isMainThread"
+            },
+            {
+              "line": 31,
+              "text": "import kotlinx.coroutines.runBlocking"
+            },
+            {
+              "line": 32,
+              "text": "import org.intellij.lang.annotations.Language"
+            },
+            {
+              "line": 33,
+              "text": ""
+            },
+            {
+              "line": 34,
+              "text": "internal object LoginInfoMapInitialization {"
+            },
+            {
+              "line": 35,
+              "text": "    private val initializingSourceKeys = ThreadLocal<MutableSet<String>>()"
+            },
+            {
+              "line": 36,
+              "text": ""
+            },
+            {
+              "line": 37,
+              "text": "    fun <T> run(sourceKey: String, onReentry: () -> T, block: () -> T): T {"
+            },
+            {
+              "line": 38,
+              "text": "        val activeKeys = initializingSourceKeys.get()"
+            },
+            {
+              "line": 39,
+              "text": "            ?: mutableSetOf<String>().also(initializingSourceKeys::set)"
+            },
+            {
+              "line": 40,
+              "text": "        if (!activeKeys.add(sourceKey)) {"
+            },
+            {
+              "line": 41,
+              "text": "            return onReentry()"
+            },
+            {
+              "line": 42,
+              "text": "        }"
+            },
+            {
+              "line": 43,
+              "text": "        return try {"
+            },
+            {
+              "line": 44,
+              "text": "            block()"
+            },
+            {
+              "line": 45,
+              "text": "        } finally {"
+            },
+            {
+              "line": 46,
+              "text": "            activeKeys.remove(sourceKey)"
+            },
+            {
+              "line": 47,
+              "text": "            if (activeKeys.isEmpty()) {"
+            },
+            {
+              "line": 48,
+              "text": "                initializingSourceKeys.remove()"
+            },
+            {
+              "line": 49,
+              "text": "            }"
+            },
+            {
+              "line": 50,
+              "text": "        }"
+            }
+          ]
+        },
+        {
+          "first": 196,
+          "last": 247,
+          "lines": [
+            {
+              "line": 196,
+              "text": "    fun getHeaderMap(hasLoginHeader: Boolean = false) = HashMap<String, String>().apply {"
+            },
+            {
+              "line": 197,
+              "text": "        header?.let {"
+            },
+            {
+              "line": 198,
+              "text": "            try {"
+            },
+            {
+              "line": 199,
+              "text": "                val json = extractInlineJs(it)?.let { js ->"
+            },
+            {
+              "line": 200,
+              "text": "                    JsSourceEngine.normalizeJsResult(evalJS(js)).orEmpty()"
+            },
+            {
+              "line": 201,
+              "text": "                } ?: it"
+            },
+            {
+              "line": 202,
+              "text": "                GSON.fromJsonObject<Map<String, String>>(json).getOrNull()?.let { map ->"
+            },
+            {
+              "line": 203,
+              "text": "                    putAll(map)"
+            },
+            {
+              "line": 204,
+              "text": "                }"
+            },
+            {
+              "line": 205,
+              "text": "            } catch (e: Exception) {"
+            },
+            {
+              "line": 206,
+              "text": "                AppLog.put(\"执行请求头规则出错\\n$e\", e)"
+            },
+            {
+              "line": 207,
+              "text": "            }"
+            },
+            {
+              "line": 208,
+              "text": "        }"
+            },
+            {
+              "line": 209,
+              "text": "        if (!has(AppConst.UA_NAME, true)) {"
+            },
+            {
+              "line": 210,
+              "text": "            put(AppConst.UA_NAME, AppConfig.userAgent)"
+            },
+            {
+              "line": 211,
+              "text": "        }"
+            },
+            {
+              "line": 212,
+              "text": "        if (hasLoginHeader) {"
+            },
+            {
+              "line": 213,
+              "text": "            getLoginHeaderMap()?.let {"
+            },
+            {
+              "line": 214,
+              "text": "                putAll(it)"
+            },
+            {
+              "line": 215,
+              "text": "            }"
+            },
+            {
+              "line": 216,
+              "text": "        }"
+            },
+            {
+              "line": 217,
+              "text": "    }"
+            },
+            {
+              "line": 218,
+              "text": ""
+            },
+            {
+              "line": 219,
+              "text": "    /**"
+            },
+            {
+              "line": 220,
+              "text": "     * 获取用于登录的头部信息"
+            },
+            {
+              "line": 221,
+              "text": "     */"
+            },
+            {
+              "line": 222,
+              "text": "    @JavascriptInterface"
+            },
+            {
+              "line": 223,
+              "text": "    fun getLoginHeader(): String? {"
+            },
+            {
+              "line": 224,
+              "text": "        return CacheManager.get(\"loginHeader_${getKey()}\")"
+            },
+            {
+              "line": 225,
+              "text": "    }"
+            },
+            {
+              "line": 226,
+              "text": ""
+            },
+            {
+              "line": 227,
+              "text": "    fun getLoginHeaderMap(): Map<String, String>? {"
+            },
+            {
+              "line": 228,
+              "text": "        val cache = getLoginHeader() ?: return null"
+            },
+            {
+              "line": 229,
+              "text": "        return GSON.fromJsonObject<Map<String, String>>(cache).getOrNull()"
+            },
+            {
+              "line": 230,
+              "text": "    }"
+            },
+            {
+              "line": 231,
+              "text": ""
+            },
+            {
+              "line": 232,
+              "text": "    /**"
+            },
+            {
+              "line": 233,
+              "text": "     * 保存登录头部信息,map格式,访问时自动添加"
+            },
+            {
+              "line": 234,
+              "text": "     */"
+            },
+            {
+              "line": 235,
+              "text": "    fun putLoginHeader(header: String) {"
+            },
+            {
+              "line": 236,
+              "text": "        val headerMap = GSON.fromJsonObject<Map<String, String>>(header).getOrNull()"
+            },
+            {
+              "line": 237,
+              "text": "        val cookie = headerMap?.get(\"Cookie\") ?: headerMap?.get(\"cookie\")"
+            },
+            {
+              "line": 238,
+              "text": "        cookie?.let {"
+            },
+            {
+              "line": 239,
+              "text": "            CookieStore.replaceCookie(getKey(), it)"
+            },
+            {
+              "line": 240,
+              "text": "        }"
+            },
+            {
+              "line": 241,
+              "text": "        CacheManager.put(\"loginHeader_${getKey()}\", header)"
+            },
+            {
+              "line": 242,
+              "text": "    }"
+            },
+            {
+              "line": 243,
+              "text": ""
+            },
+            {
+              "line": 244,
+              "text": "    fun removeLoginHeader() {"
+            },
+            {
+              "line": 245,
+              "text": "        CacheManager.delete(\"loginHeader_${getKey()}\")"
+            },
+            {
+              "line": 246,
+              "text": "        CookieStore.removeCookie(getKey())"
+            },
+            {
+              "line": 247,
+              "text": "    }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requested": "/SourceJsExtensions.kt",
+      "found": false,
+      "reason": "Archive has no such filename; exact BaseSource interface is verified below, do not invent absent API."
+    },
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/ui/login/SourceLoginJsExtensions.kt",
+      "bytes": 2583,
+      "sha256": "cde38b9275e02e28af3cd34438ef6ef97ebea013acdb37cee5ac75d52c78378e",
+      "excerpts": [
+        {
+          "first": 1,
+          "last": 50,
+          "lines": [
+            {
+              "line": 1,
+              "text": "package io.legado.app.ui.login"
+            },
+            {
+              "line": 2,
+              "text": ""
+            },
+            {
+              "line": 3,
+              "text": "import androidx.appcompat.app.AppCompatActivity"
+            },
+            {
+              "line": 4,
+              "text": "import androidx.lifecycle.lifecycleScope"
+            },
+            {
+              "line": 5,
+              "text": "import io.legado.app.R"
+            },
+            {
+              "line": 6,
+              "text": "import io.legado.app.data.entities.BaseSource"
+            },
+            {
+              "line": 7,
+              "text": "import io.legado.app.data.entities.HttpTTS"
+            },
+            {
+              "line": 8,
+              "text": "import io.legado.app.model.ReadAloud"
+            },
+            {
+              "line": 9,
+              "text": "import io.legado.app.ui.rss.read.RssJsExtensions"
+            },
+            {
+              "line": 10,
+              "text": "import io.legado.app.ui.widget.dialog.BottomWebViewDialog"
+            },
+            {
+              "line": 11,
+              "text": "import io.legado.app.utils.FileUtils"
+            },
+            {
+              "line": 12,
+              "text": "import io.legado.app.utils.sendToClip"
+            },
+            {
+              "line": 13,
+              "text": "import io.legado.app.utils.showDialogFragment"
+            },
+            {
+              "line": 14,
+              "text": "import io.legado.app.utils.toastOnUi"
+            },
+            {
+              "line": 15,
+              "text": "import kotlinx.coroutines.Dispatchers.IO"
+            },
+            {
+              "line": 16,
+              "text": "import kotlinx.coroutines.launch"
+            },
+            {
+              "line": 17,
+              "text": "import java.io.File"
+            },
+            {
+              "line": 18,
+              "text": "import java.lang.ref.WeakReference"
+            },
+            {
+              "line": 19,
+              "text": ""
+            },
+            {
+              "line": 20,
+              "text": "@Suppress(\"unused\")"
+            },
+            {
+              "line": 21,
+              "text": "class SourceLoginJsExtensions("
+            },
+            {
+              "line": 22,
+              "text": "    activity: AppCompatActivity?,"
+            },
+            {
+              "line": 23,
+              "text": "    source: BaseSource?,"
+            },
+            {
+              "line": 24,
+              "text": "    bookType: Int = 0,"
+            },
+            {
+              "line": 25,
+              "text": "    callback: Callback? = null"
+            },
+            {
+              "line": 26,
+              "text": ") : RssJsExtensions(activity, source, bookType) {"
+            },
+            {
+              "line": 27,
+              "text": "    internal var customButtonKey: String? = null"
+            },
+            {
+              "line": 28,
+              "text": "    private val callbackRef: WeakReference<Callback> = WeakReference(callback)"
+            },
+            {
+              "line": 29,
+              "text": "    interface Callback {"
+            },
+            {
+              "line": 30,
+              "text": "        fun upUiData(data: Map<String, Any?>?)"
+            },
+            {
+              "line": 31,
+              "text": "        fun reUiView(deltaUp: Boolean = false)"
+            },
+            {
+              "line": 32,
+              "text": "    }"
+            },
+            {
+              "line": 33,
+              "text": ""
+            },
+            {
+              "line": 34,
+              "text": "    fun upLoginData(data: Map<String, Any?>?) {"
+            },
+            {
+              "line": 35,
+              "text": "        callbackRef.get()?.upUiData(data)"
+            },
+            {
+              "line": 36,
+              "text": "    }"
+            },
+            {
+              "line": 37,
+              "text": ""
+            },
+            {
+              "line": 38,
+              "text": "    @JvmOverloads"
+            },
+            {
+              "line": 39,
+              "text": "    fun reLoginView(deltaUp: Boolean = false) {"
+            },
+            {
+              "line": 40,
+              "text": "        callbackRef.get()?.reUiView(deltaUp)"
+            },
+            {
+              "line": 41,
+              "text": "    }"
+            },
+            {
+              "line": 42,
+              "text": ""
+            },
+            {
+              "line": 43,
+              "text": "    fun refreshExplore() {"
+            },
+            {
+              "line": 44,
+              "text": "        callbackRef.get()?.reUiView()"
+            },
+            {
+              "line": 45,
+              "text": "    }"
+            },
+            {
+              "line": 46,
+              "text": ""
+            },
+            {
+              "line": 47,
+              "text": "    fun copyText(text: String) {"
+            },
+            {
+              "line": 48,
+              "text": "        activityRef.get()?.sendToClip(text)"
+            },
+            {
+              "line": 49,
+              "text": "    }"
+            },
+            {
+              "line": 50,
+              "text": ""
+            }
+          ]
+        },
+        {
+          "first": 1,
+          "last": 84,
+          "lines": [
+            {
+              "line": 1,
+              "text": "package io.legado.app.ui.login"
+            },
+            {
+              "line": 2,
+              "text": ""
+            },
+            {
+              "line": 3,
+              "text": "import androidx.appcompat.app.AppCompatActivity"
+            },
+            {
+              "line": 4,
+              "text": "import androidx.lifecycle.lifecycleScope"
+            },
+            {
+              "line": 5,
+              "text": "import io.legado.app.R"
+            },
+            {
+              "line": 6,
+              "text": "import io.legado.app.data.entities.BaseSource"
+            },
+            {
+              "line": 7,
+              "text": "import io.legado.app.data.entities.HttpTTS"
+            },
+            {
+              "line": 8,
+              "text": "import io.legado.app.model.ReadAloud"
+            },
+            {
+              "line": 9,
+              "text": "import io.legado.app.ui.rss.read.RssJsExtensions"
+            },
+            {
+              "line": 10,
+              "text": "import io.legado.app.ui.widget.dialog.BottomWebViewDialog"
+            },
+            {
+              "line": 11,
+              "text": "import io.legado.app.utils.FileUtils"
+            },
+            {
+              "line": 12,
+              "text": "import io.legado.app.utils.sendToClip"
+            },
+            {
+              "line": 13,
+              "text": "import io.legado.app.utils.showDialogFragment"
+            },
+            {
+              "line": 14,
+              "text": "import io.legado.app.utils.toastOnUi"
+            },
+            {
+              "line": 15,
+              "text": "import kotlinx.coroutines.Dispatchers.IO"
+            },
+            {
+              "line": 16,
+              "text": "import kotlinx.coroutines.launch"
+            },
+            {
+              "line": 17,
+              "text": "import java.io.File"
+            },
+            {
+              "line": 18,
+              "text": "import java.lang.ref.WeakReference"
+            },
+            {
+              "line": 19,
+              "text": ""
+            },
+            {
+              "line": 20,
+              "text": "@Suppress(\"unused\")"
+            },
+            {
+              "line": 21,
+              "text": "class SourceLoginJsExtensions("
+            },
+            {
+              "line": 22,
+              "text": "    activity: AppCompatActivity?,"
+            },
+            {
+              "line": 23,
+              "text": "    source: BaseSource?,"
+            },
+            {
+              "line": 24,
+              "text": "    bookType: Int = 0,"
+            },
+            {
+              "line": 25,
+              "text": "    callback: Callback? = null"
+            },
+            {
+              "line": 26,
+              "text": ") : RssJsExtensions(activity, source, bookType) {"
+            },
+            {
+              "line": 27,
+              "text": "    internal var customButtonKey: String? = null"
+            },
+            {
+              "line": 28,
+              "text": "    private val callbackRef: WeakReference<Callback> = WeakReference(callback)"
+            },
+            {
+              "line": 29,
+              "text": "    interface Callback {"
+            },
+            {
+              "line": 30,
+              "text": "        fun upUiData(data: Map<String, Any?>?)"
+            },
+            {
+              "line": 31,
+              "text": "        fun reUiView(deltaUp: Boolean = false)"
+            },
+            {
+              "line": 32,
+              "text": "    }"
+            },
+            {
+              "line": 33,
+              "text": ""
+            },
+            {
+              "line": 34,
+              "text": "    fun upLoginData(data: Map<String, Any?>?) {"
+            },
+            {
+              "line": 35,
+              "text": "        callbackRef.get()?.upUiData(data)"
+            },
+            {
+              "line": 36,
+              "text": "    }"
+            },
+            {
+              "line": 37,
+              "text": ""
+            },
+            {
+              "line": 38,
+              "text": "    @JvmOverloads"
+            },
+            {
+              "line": 39,
+              "text": "    fun reLoginView(deltaUp: Boolean = false) {"
+            },
+            {
+              "line": 40,
+              "text": "        callbackRef.get()?.reUiView(deltaUp)"
+            },
+            {
+              "line": 41,
+              "text": "    }"
+            },
+            {
+              "line": 42,
+              "text": ""
+            },
+            {
+              "line": 43,
+              "text": "    fun refreshExplore() {"
+            },
+            {
+              "line": 44,
+              "text": "        callbackRef.get()?.reUiView()"
+            },
+            {
+              "line": 45,
+              "text": "    }"
+            },
+            {
+              "line": 46,
+              "text": ""
+            },
+            {
+              "line": 47,
+              "text": "    fun copyText(text: String) {"
+            },
+            {
+              "line": 48,
+              "text": "        activityRef.get()?.sendToClip(text)"
+            },
+            {
+              "line": 49,
+              "text": "    }"
+            },
+            {
+              "line": 50,
+              "text": ""
+            },
+            {
+              "line": 51,
+              "text": "    fun clearTtsCache() {"
+            },
+            {
+              "line": 52,
+              "text": "        if (getSource() !is HttpTTS) return"
+            },
+            {
+              "line": 53,
+              "text": "        val activity = activityRef.get() ?: return"
+            },
+            {
+              "line": 54,
+              "text": "        activity.lifecycleScope.launch(IO) {"
+            },
+            {
+              "line": 55,
+              "text": "            ReadAloud.upReadAloudClass()"
+            },
+            {
+              "line": 56,
+              "text": "            val ttsFolderPath = \"${activity.cacheDir.absolutePath}${File.separator}httpTTS${File.separator}\""
+            },
+            {
+              "line": 57,
+              "text": "            FileUtils.listDirsAndFiles(ttsFolderPath)?.forEach {"
+            },
+            {
+              "line": 58,
+              "text": "                FileUtils.delete(it.absolutePath)"
+            },
+            {
+              "line": 59,
+              "text": "            }"
+            },
+            {
+              "line": 60,
+              "text": "            activity.toastOnUi(R.string.clear_cache_success)"
+            },
+            {
+              "line": 61,
+              "text": "        }"
+            },
+            {
+              "line": 62,
+              "text": "    }"
+            },
+            {
+              "line": 63,
+              "text": ""
+            },
+            {
+              "line": 64,
+              "text": "    override fun showBrowser("
+            },
+            {
+              "line": 65,
+              "text": "        url: String,"
+            },
+            {
+              "line": 66,
+              "text": "        html: String?,"
+            },
+            {
+              "line": 67,
+              "text": "        preloadJs: String?,"
+            },
+            {
+              "line": 68,
+              "text": "        config: String?"
+            },
+            {
+              "line": 69,
+              "text": "    ) {"
+            },
+            {
+              "line": 70,
+              "text": "        val activity = activityRef.get() ?: return"
+            },
+            {
+              "line": 71,
+              "text": "        val source = getSource() ?: return"
+            },
+            {
+              "line": 72,
+              "text": "        activity.showDialogFragment("
+            },
+            {
+              "line": 73,
+              "text": "            BottomWebViewDialog("
+            },
+            {
+              "line": 74,
+              "text": "                source.getKey(),"
+            },
+            {
+              "line": 75,
+              "text": "                bookType,"
+            },
+            {
+              "line": 76,
+              "text": "                url,"
+            },
+            {
+              "line": 77,
+              "text": "                html,"
+            },
+            {
+              "line": 78,
+              "text": "                preloadJs,"
+            },
+            {
+              "line": 79,
+              "text": "                config"
+            },
+            {
+              "line": 80,
+              "text": "            ).apply { customButtonKey = this@SourceLoginJsExtensions.customButtonKey }"
+            },
+            {
+              "line": 81,
+              "text": "        )"
+            },
+            {
+              "line": 82,
+              "text": "    }"
+            },
+            {
+              "line": 83,
+              "text": ""
+            },
+            {
+              "line": 84,
+              "text": "}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/help/http/CookieStore.kt",
+      "bytes": 5186,
+      "sha256": "9890bbf76428c05601981af7b3148fe87944d788f0a082a50cd4a3b591956a8e",
+      "excerpts": [
+        {
+          "first": 1,
+          "last": 50,
+          "lines": [
+            {
+              "line": 1,
+              "text": "@file:Suppress(\"unused\")"
+            },
+            {
+              "line": 2,
+              "text": ""
+            },
+            {
+              "line": 3,
+              "text": "package io.legado.app.help.http"
+            },
+            {
+              "line": 4,
+              "text": ""
+            },
+            {
+              "line": 5,
+              "text": "import android.text.TextUtils"
+            },
+            {
+              "line": 6,
+              "text": "import androidx.annotation.Keep"
+            },
+            {
+              "line": 7,
+              "text": "import io.legado.app.constant.AppLog"
+            },
+            {
+              "line": 8,
+              "text": "import io.legado.app.constant.AppPattern.equalsRegex"
+            },
+            {
+              "line": 9,
+              "text": "import io.legado.app.constant.AppPattern.semicolonRegex"
+            },
+            {
+              "line": 10,
+              "text": "import io.legado.app.data.appDb"
+            },
+            {
+              "line": 11,
+              "text": "import io.legado.app.data.entities.Cookie"
+            },
+            {
+              "line": 12,
+              "text": "import io.legado.app.help.CacheManager"
+            },
+            {
+              "line": 13,
+              "text": "import io.legado.app.help.http.CookieManager.getCookieNoSession"
+            },
+            {
+              "line": 14,
+              "text": "import io.legado.app.help.http.CookieManager.mergeCookiesToMap"
+            },
+            {
+              "line": 15,
+              "text": "import io.legado.app.help.http.api.CookieManagerInterface"
+            },
+            {
+              "line": 16,
+              "text": "import io.legado.app.utils.NetworkUtils"
+            },
+            {
+              "line": 17,
+              "text": "import io.legado.app.utils.removeCookie"
+            },
+            {
+              "line": 18,
+              "text": "import io.legado.app.utils.splitNotBlank"
+            },
+            {
+              "line": 19,
+              "text": ""
+            },
+            {
+              "line": 20,
+              "text": "@Keep"
+            },
+            {
+              "line": 21,
+              "text": "object CookieStore : CookieManagerInterface {"
+            },
+            {
+              "line": 22,
+              "text": ""
+            },
+            {
+              "line": 23,
+              "text": "    /**"
+            },
+            {
+              "line": 24,
+              "text": "     *保存cookie到数据库，会自动识别url的二级域名"
+            },
+            {
+              "line": 25,
+              "text": "     */"
+            },
+            {
+              "line": 26,
+              "text": "    override fun setCookie(url: String, cookie: String?) {"
+            },
+            {
+              "line": 27,
+              "text": "        try {"
+            },
+            {
+              "line": 28,
+              "text": "            saveCookie(url, cookie)"
+            },
+            {
+              "line": 29,
+              "text": "        } catch (e: Exception) {"
+            },
+            {
+              "line": 30,
+              "text": "            AppLog.put(\"保存Cookie失败\\n$e\", e)"
+            },
+            {
+              "line": 31,
+              "text": "        }"
+            },
+            {
+              "line": 32,
+              "text": "    }"
+            },
+            {
+              "line": 33,
+              "text": ""
+            },
+            {
+              "line": 34,
+              "text": "    private fun saveCookie(url: String, cookie: String?) {"
+            },
+            {
+              "line": 35,
+              "text": "        val domain = NetworkUtils.getSubDomain(url)"
+            },
+            {
+              "line": 36,
+              "text": "        val cookieValue = cookie ?: \"\""
+            },
+            {
+              "line": 37,
+              "text": "        appDb.cookieDao.insert(Cookie(domain, cookieValue))"
+            },
+            {
+              "line": 38,
+              "text": "        CacheManager.putMemory(\"${domain}_cookie\", cookieValue)"
+            },
+            {
+              "line": 39,
+              "text": "    }"
+            },
+            {
+              "line": 40,
+              "text": ""
+            },
+            {
+              "line": 41,
+              "text": "    fun setWebCookie(url: String, cookie: String) {"
+            },
+            {
+              "line": 42,
+              "text": "        try {"
+            },
+            {
+              "line": 43,
+              "text": "            val baseUrl = NetworkUtils.getBaseUrl(url) ?: return"
+            },
+            {
+              "line": 44,
+              "text": "            val cookies = cookie.splitNotBlank(\";\")"
+            },
+            {
+              "line": 45,
+              "text": "            val cookieManager = android.webkit.CookieManager.getInstance()"
+            },
+            {
+              "line": 46,
+              "text": "            cookieManager.removeSessionCookies(null)"
+            },
+            {
+              "line": 47,
+              "text": "            cookies.forEach {"
+            },
+            {
+              "line": 48,
+              "text": "                cookieManager.setCookie(baseUrl, it)"
+            },
+            {
+              "line": 49,
+              "text": "            }"
+            },
+            {
+              "line": 50,
+              "text": "        } catch (e: Exception) {"
+            }
+          ]
+        },
+        {
+          "first": 24,
+          "last": 77,
+          "lines": [
+            {
+              "line": 24,
+              "text": "     *保存cookie到数据库，会自动识别url的二级域名"
+            },
+            {
+              "line": 25,
+              "text": "     */"
+            },
+            {
+              "line": 26,
+              "text": "    override fun setCookie(url: String, cookie: String?) {"
+            },
+            {
+              "line": 27,
+              "text": "        try {"
+            },
+            {
+              "line": 28,
+              "text": "            saveCookie(url, cookie)"
+            },
+            {
+              "line": 29,
+              "text": "        } catch (e: Exception) {"
+            },
+            {
+              "line": 30,
+              "text": "            AppLog.put(\"保存Cookie失败\\n$e\", e)"
+            },
+            {
+              "line": 31,
+              "text": "        }"
+            },
+            {
+              "line": 32,
+              "text": "    }"
+            },
+            {
+              "line": 33,
+              "text": ""
+            },
+            {
+              "line": 34,
+              "text": "    private fun saveCookie(url: String, cookie: String?) {"
+            },
+            {
+              "line": 35,
+              "text": "        val domain = NetworkUtils.getSubDomain(url)"
+            },
+            {
+              "line": 36,
+              "text": "        val cookieValue = cookie ?: \"\""
+            },
+            {
+              "line": 37,
+              "text": "        appDb.cookieDao.insert(Cookie(domain, cookieValue))"
+            },
+            {
+              "line": 38,
+              "text": "        CacheManager.putMemory(\"${domain}_cookie\", cookieValue)"
+            },
+            {
+              "line": 39,
+              "text": "    }"
+            },
+            {
+              "line": 40,
+              "text": ""
+            },
+            {
+              "line": 41,
+              "text": "    fun setWebCookie(url: String, cookie: String) {"
+            },
+            {
+              "line": 42,
+              "text": "        try {"
+            },
+            {
+              "line": 43,
+              "text": "            val baseUrl = NetworkUtils.getBaseUrl(url) ?: return"
+            },
+            {
+              "line": 44,
+              "text": "            val cookies = cookie.splitNotBlank(\";\")"
+            },
+            {
+              "line": 45,
+              "text": "            val cookieManager = android.webkit.CookieManager.getInstance()"
+            },
+            {
+              "line": 46,
+              "text": "            cookieManager.removeSessionCookies(null)"
+            },
+            {
+              "line": 47,
+              "text": "            cookies.forEach {"
+            },
+            {
+              "line": 48,
+              "text": "                cookieManager.setCookie(baseUrl, it)"
+            },
+            {
+              "line": 49,
+              "text": "            }"
+            },
+            {
+              "line": 50,
+              "text": "        } catch (e: Exception) {"
+            },
+            {
+              "line": 51,
+              "text": "            AppLog.put(\"设置WebCookie失败\\n$e\", e)"
+            },
+            {
+              "line": 52,
+              "text": "        }"
+            },
+            {
+              "line": 53,
+              "text": "    }"
+            },
+            {
+              "line": 54,
+              "text": ""
+            },
+            {
+              "line": 55,
+              "text": "    override fun replaceCookie(url: String, cookie: String) {"
+            },
+            {
+              "line": 56,
+              "text": "        if (TextUtils.isEmpty(url) || TextUtils.isEmpty(cookie)) {"
+            },
+            {
+              "line": 57,
+              "text": "            return"
+            },
+            {
+              "line": 58,
+              "text": "        }"
+            },
+            {
+              "line": 59,
+              "text": "        setCookie(url, mergeCookie(url, cookie))"
+            },
+            {
+              "line": 60,
+              "text": "    }"
+            },
+            {
+              "line": 61,
+              "text": ""
+            },
+            {
+              "line": 62,
+              "text": "    internal fun restoreCookie(url: String, cookie: String) {"
+            },
+            {
+              "line": 63,
+              "text": "        if (TextUtils.isEmpty(url) || TextUtils.isEmpty(cookie)) {"
+            },
+            {
+              "line": 64,
+              "text": "            return"
+            },
+            {
+              "line": 65,
+              "text": "        }"
+            },
+            {
+              "line": 66,
+              "text": "        saveCookie(url, mergeCookie(url, cookie))"
+            },
+            {
+              "line": 67,
+              "text": "    }"
+            },
+            {
+              "line": 68,
+              "text": ""
+            },
+            {
+              "line": 69,
+              "text": "    private fun mergeCookie(url: String, cookie: String): String {"
+            },
+            {
+              "line": 70,
+              "text": "        return mergeCookieValues(getCookieNoSession(url), cookie)"
+            },
+            {
+              "line": 71,
+              "text": "    }"
+            },
+            {
+              "line": 72,
+              "text": ""
+            },
+            {
+              "line": 73,
+              "text": "    internal fun mergeCookieValues(oldCookie: String, cookie: String): String {"
+            },
+            {
+              "line": 74,
+              "text": "        if (oldCookie.isEmpty()) {"
+            },
+            {
+              "line": 75,
+              "text": "            return cookie"
+            },
+            {
+              "line": 76,
+              "text": "        }"
+            },
+            {
+              "line": 77,
+              "text": "        val cookieMap = cookieToMap(oldCookie)"
+            }
+          ]
+        },
+        {
+          "first": 103,
+          "last": 116,
+          "lines": [
+            {
+              "line": 103,
+              "text": "    fun getKey(url: String, key: String): String {"
+            },
+            {
+              "line": 104,
+              "text": "        val cookie = getCookie(url)"
+            },
+            {
+              "line": 105,
+              "text": "        val sessionCookie = CookieManager.getSessionCookie(url)"
+            },
+            {
+              "line": 106,
+              "text": "        val cookieMap = mergeCookiesToMap(cookie, sessionCookie)"
+            },
+            {
+              "line": 107,
+              "text": "        return cookieMap[key] ?: \"\""
+            },
+            {
+              "line": 108,
+              "text": "    }"
+            },
+            {
+              "line": 109,
+              "text": ""
+            },
+            {
+              "line": 110,
+              "text": "    override fun removeCookie(url: String) {"
+            },
+            {
+              "line": 111,
+              "text": "        val domain = NetworkUtils.getSubDomain(url)"
+            },
+            {
+              "line": 112,
+              "text": "        appDb.cookieDao.delete(domain)"
+            },
+            {
+              "line": 113,
+              "text": "        CacheManager.deleteMemory(\"${domain}_cookie\")"
+            },
+            {
+              "line": 114,
+              "text": "        CacheManager.deleteMemory(\"${domain}_session_cookie\")"
+            },
+            {
+              "line": 115,
+              "text": "        android.webkit.CookieManager.getInstance().removeCookie(url)"
+            },
+            {
+              "line": 116,
+              "text": "    }"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

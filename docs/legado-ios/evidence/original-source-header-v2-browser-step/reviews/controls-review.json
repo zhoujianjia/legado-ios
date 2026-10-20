@@ -1,0 +1,436 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T22:17:15.176446+00:00",
+  "scope": "Independent five-control future checkpoint review; source10 union is separately reviewed and exact-bound. Only inspect author four portable results, no tests/SDK/compiler/cloud rerun.",
+  "decision": "No confirmed P1/P2. Actual inventories are core338/native140/unique356, correctly including the previously unbound modified AppCookieOwnerTextTest plus the two new JVM tests. Original selections and fail-closed execution functions remain intact.",
+  "final": {
+    "path": ".build\\consolidated-sdk-header-v2-browser-checkpoint\\preparation\\final-v1.json",
+    "bytes": 17729,
+    "sha256": "a4ab79c1428426797bed6a1a8f316179d9852f34cf690d27865b3cb9a000c649"
+  },
+  "files": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "bytes": 10489,
+        "sha256": "7b035023e8abe66696e15a268f6ed802af7827d1e4c76ded601883eec170410b"
+      },
+      "candidate": {
+        "bytes": 10489,
+        "sha256": "c8b74f072b829d1081f479fc704ebbc2b98f01c6e796793002ac496a91517e68"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 778,
+        "sha256": "25722f2dfceb5257cba46debb21dd07d74de1f788ddc76552a976d79ccca8fd4"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "bytes": 49752,
+        "sha256": "759249c6164264b8f4b9131b0c66520184506a41074c98f66b4d6a0a1fca8b2c"
+      },
+      "candidate": {
+        "bytes": 51047,
+        "sha256": "2d1c70b5a6dd5d6d6f7fe5aa6c6b4dbf6661fbe96156f135238f3c428c588e5b"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 2512,
+        "sha256": "fdcf5bc1594e62ce3b0acc68b21b934b9d4dc54f26e28bd779d678f4143f161f"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 192700,
+        "sha256": "632a8860658c16b869380453d230fee8659ed573259af373e65644153c8ccf92"
+      },
+      "candidate": {
+        "bytes": 193768,
+        "sha256": "a7a4cb5d1ec23463cb79cedf5bd383f39bf76445dcab831515e2371e8d75a051"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 1424,
+        "sha256": "47170ebbfd3690cb66e99789f1f3ae50dfa7a4f96d8fc17a0790842185d6a87c"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "bytes": 24965,
+        "sha256": "8eb1b5e0fb2246b4ac9da572c80d0fe5eea0aee0189ca0271b41923879c2fe96"
+      },
+      "candidate": {
+        "bytes": 25514,
+        "sha256": "054bdb3c4e43975ff4758dee23886aba5b365c37ed12d383e589cc0d0593058a"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 4403,
+        "sha256": "aacc30c0b526968da8fddeb2f032ace4d531c6328209c9213c70e04f197fea5a"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 189159,
+        "sha256": "b6a43b22f916bcf2dcdfd04779e909ec2ed8cc38828871379276bd5d3235b1d7"
+      },
+      "candidate": {
+        "bytes": 189428,
+        "sha256": "ea68e7e590320a441529d3a08a0f08e7f3cfc83669d39025101c96d11cfac180"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 14015,
+        "sha256": "a29f76ed0bc8b96292a1088f4eb5ffa674ef71534994e35ce58a80c05debc9d1"
+      }
+    }
+  ],
+  "sourceComposition": {
+    "path": ".build/consolidated-header-v2-browser-source-step/final-v1.json",
+    "bytes": 30709,
+    "sha256": "deb31b5e7a4784869f2e0580402c611ab363dcdc31ae7844715baa6ebec65d4c"
+  },
+  "sourceIndependentReview": {
+    "path": ".build/consolidated-header-v2-browser-independent-review/review-v1.json",
+    "bytes": 22548,
+    "sha256": "cae00e84fd0e07ebaf898a8969fa9d9c3e2cf030d3ee6b4a3d776a9513927dec"
+  },
+  "actualCounts": {
+    "core": 338,
+    "native": 140,
+    "package": 23,
+    "uniqueUnion": 356,
+    "oldCore": 335,
+    "oldNative": 137,
+    "oldUnion": 353,
+    "newBoundPaths": [
+      "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerTextTest.kt",
+      "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginHeaderTest.kt",
+      "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2BrowserTest.kt"
+    ],
+    "unchangedCanonicalNoncandidateInputs": 341,
+    "AppDefinitions": 463,
+    "AppLeaves": 466,
+    "BoolParameterPairs": 3,
+    "NativeOriginal": 26,
+    "NativeMainJS": 1,
+    "NativeLoginInfo": 15,
+    "PackageSelected": 24,
+    "PackageCompile": 16,
+    "PackageControls": 7
+  },
+  "rosters": {
+    "core": {
+      "count": 338,
+      "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/core-source-inputs.json",
+      "bytes": 63288,
+      "sha256": "3b37998927ba3b6d84d818fdee9715f4ad739e883b8b188c2c89440c7e4efbfa"
+    },
+    "Native": {
+      "count": 140,
+      "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/Native-source-inputs.json",
+      "bytes": 26572,
+      "sha256": "430eed0db7e5aa7800a8ea74a5518d997ccd93654c720962daf62da0444a1b44"
+    },
+    "Package": {
+      "count": 23,
+      "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/Package-source-inputs.json",
+      "bytes": 4293,
+      "sha256": "cb7633de60b337d08519f35502f44ba357b8c420a34e08c3160681fced1f16b5"
+    }
+  },
+  "productionSourceFacts": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "candidate": {
+        "bytes": 40109,
+        "sha256": "90c94878c585c3a8be094014ff8d873c9e364d435a7af52a7c96c60f09e3239c"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+        "bytes": 40109,
+        "sha256": "90c94878c585c3a8be094014ff8d873c9e364d435a7af52a7c96c60f09e3239c"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "candidate": {
+        "bytes": 83943,
+        "sha256": "4308fea3d52fc1beaf743f7c917d81baa180d4c8c714735c6862f6efe4881b09"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 83943,
+        "sha256": "4308fea3d52fc1beaf743f7c917d81baa180d4c8c714735c6862f6efe4881b09"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "candidate": {
+        "bytes": 18729,
+        "sha256": "56d1ac088c821a504c6fd898c1cdc5ba4dec856841d66e7b6d4627c157939a34"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "bytes": 18729,
+        "sha256": "56d1ac088c821a504c6fd898c1cdc5ba4dec856841d66e7b6d4627c157939a34"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "candidate": {
+        "bytes": 31213,
+        "sha256": "4300e895fe54091bbc38176597e57949ae840a99ea32f9f76694b348b83f3a96"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 31213,
+        "sha256": "4300e895fe54091bbc38176597e57949ae840a99ea32f9f76694b348b83f3a96"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "candidate": {
+        "bytes": 31873,
+        "sha256": "eb415c0570ec1435cba9875d3ab487dbe3e375e2c04219c2fc20aedef886551e"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 31873,
+        "sha256": "eb415c0570ec1435cba9875d3ab487dbe3e375e2c04219c2fc20aedef886551e"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerTextTest.kt",
+      "candidate": {
+        "bytes": 23557,
+        "sha256": "86d6564637f1fdb4b9a0eaec4f85302f63069267104d6f6f4f73ffec78f96060"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerTextTest.kt",
+        "bytes": 23557,
+        "sha256": "86d6564637f1fdb4b9a0eaec4f85302f63069267104d6f6f4f73ffec78f96060"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginHeaderTest.kt",
+      "candidate": {
+        "bytes": 12953,
+        "sha256": "55045cd738f27d8dd85b304ecd7203e3ee764579374640a9b5ad75a08530cf84"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginHeaderTest.kt",
+        "bytes": 12953,
+        "sha256": "55045cd738f27d8dd85b304ecd7203e3ee764579374640a9b5ad75a08530cf84"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2BrowserTest.kt",
+      "candidate": {
+        "bytes": 11902,
+        "sha256": "97787ae2757dea4006657fb52ef6e5f5c2dc8f81f16a93d6a0eb44aec386ba80"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2BrowserTest.kt",
+        "bytes": 11902,
+        "sha256": "97787ae2757dea4006657fb52ef6e5f5c2dc8f81f16a93d6a0eb44aec386ba80"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "candidate": {
+        "bytes": 134721,
+        "sha256": "33d71b87c47cfa1ae24edec9398d31c022e8367f7f475010d0644eb7ec4d0107"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 134721,
+        "sha256": "33d71b87c47cfa1ae24edec9398d31c022e8367f7f475010d0644eb7ec4d0107"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "candidate": {
+        "bytes": 84289,
+        "sha256": "4c2ad971ea510fb74fb0b94d8e14f5e4f264044dd39d316d6d9a08767d48dcdb"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/source-snapshot/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "bytes": 84289,
+        "sha256": "4c2ad971ea510fb74fb0b94d8e14f5e4f264044dd39d316d6d9a08767d48dcdb"
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "topic": "Production Python functions",
+      "result": "Every top-level core/native production function AST including nested bodies is byte-semantically identical to baseline. Changes are declarative source-roster append and two Native selectors only; no runner, verifier, parser, artifact/export, source/phase/exit gate changed.",
+      "functionCounts": {
+        "scripts/reader-experience/renewal-probe-tools.py": 53,
+        "scripts/reader-experience/native-smoke-tools.py": 17
+      }
+    },
+    {
+      "topic": "Native workflow and methods",
+      "result": "Full workflow bytes differ only in the human step count24→26. Old24 selector order exact; only Header and V2 browser selectors appended. Separate MainJS host/method unchanged. Original1800s and MainJS2700s unchanged; current source-stamp guard expects26, actual LoginInfo15 definitions all call required-runtime guard."
+    },
+    {
+      "topic": "App selection and SDK fixture",
+      "result": "All old mode sets and qualified identities unchanged, currentcore463 definitions/466 leaves and three existing Boolean pairs remain. Same required signed SDK case stays selected; source stamps/before-after ledgers/raw argv/phase/error/export acceptance paths retain exact functionAST. Existing single cold App3600s invocation remains unchanged."
+    },
+    {
+      "topic": "Package",
+      "result": "Existing loginv2 selection24 methods and16 compile+7control=23 input identities/order/bytes are exact canonical. No new Package execution is claimed; earlier Package results do not prove future App/Native acceptance."
+    },
+    {
+      "topic": "Source inputs",
+      "result": "Actual set algebra gives338/140/union356, not the earlier estimate337/139/355. The third newly bound path is the modified existing AppCookieOwnerTextTest.kt. All10 frozen coherent source candidates are included in both core and Native lists; allshared hashes match. These lists are evidence hashes, not an Xcode compile whitelist."
+    },
+    {
+      "topic": "Guard scope",
+      "result": "Existing two core guard methods plus two selected Native provenance/workflow methods actually passed once. Source mutation guard includes all10 current sources. No successful old suite rerun and no counts inferred from future selectors."
+    }
+  ],
+  "BoolPairs": {
+    "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt",
+    "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt",
+    "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll": "nestedBackdrop"
+  },
+  "old24NativeSelectors": [
+    "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+    "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody"
+  ],
+  "newNativeSelectors": [
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts",
+    "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner"
+  ],
+  "actualPortable": {
+    "distinct": 4,
+    "executions": 4,
+    "passed": 4,
+    "failed": 0,
+    "methodIDs": [
+      "__main__.DeltaReuseCheckpointSelectionTests.test_delta_inputs_keep_app_inventory_all_three_pairs_required_fixture_and_new_package_mode",
+      "__main__.DeltaReuseCheckpointSelectionTests.test_delta_source_mutations_fail_closed_with_same_single_cold_invocation_and_sdk_case",
+      "__main__.NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+      "__main__.NativeSmokeProvenanceTests.test_result_requires_exact_built_app_source_stamp"
+    ],
+    "commands": [
+      {
+        "argv": [
+          "C:/Python312/python.exe",
+          "-B",
+          "scripts/reader-experience/test-renewal-probe-tools.py",
+          "DeltaReuseCheckpointSelectionTests",
+          "-v"
+        ],
+        "methods": 2,
+        "exitCode": 0,
+        "seconds": 1.735,
+        "log": {
+          "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/affected-core.log",
+          "bytes": 565,
+          "sha256": "333711ec7319fea1c5635779d5ec2cb5ddf18ce0e1bb4e2f1020fd195267b959"
+        }
+      },
+      {
+        "argv": [
+          "C:/Python312/python.exe",
+          "-B",
+          "scripts/reader-experience/test-native-smoke-tools.py",
+          "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+          "NativeSmokeProvenanceTests.test_result_requires_exact_built_app_source_stamp",
+          "-v"
+        ],
+        "methods": 2,
+        "exitCode": 0,
+        "seconds": 0.219,
+        "log": {
+          "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/affected-native.log",
+          "bytes": 455,
+          "sha256": "e46ac267a8edda9c654a0f9ea5c5f8d52c3d9a145731f5ac21d7733e3d0e2fa6"
+        }
+      }
+    ],
+    "reviewerRerun": false
+  },
+  "preparationHistory": {
+    "preGuardFailures": [
+      {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/history/preparation-attempt1.txt",
+        "bytes": 334,
+        "sha256": "3c499f30afcaa43eeb3190715a52d350334ba0848ee2eb0bc0507ae5a17ae3dd"
+      },
+      {
+        "path": ".build/consolidated-sdk-header-v2-browser-checkpoint/history/preparation-attempt2.txt",
+        "bytes": 551,
+        "sha256": "53dd215fbe0a80c7b0c5fa43c1ef81a29cefd7e79533484a43f7a7f9f6a4a06f"
+      }
+    ],
+    "testExecutions": 0,
+    "corrections": [
+      "Explicit null-baseline new paths must be absent in canonical; no canonical source was created.",
+      "Complete ten-source roster includes the previously unbound modified AppCookieOwnerTextTest.kt; actual counts338/140/356 replace estimated337/139/355."
+    ]
+  },
+  "remainingConfirmedFindings": [],
+  "limits": [
+    "Controls preparation and four portable guard passes do not execute App463/466 or Native26+MainJS1 and cannot prove SDK/Swift/JNI/UIKit/device or renewal acceptance.",
+    "Source10 and common JAR23 evidence remain separately bound to deb31/cae00; no fresh full Gradle or new Package run is implied by these controls.",
+    "Actual earlier SDK7576 remains a terminal test-target compiler failure/App0; earlier Native7576 remains pre-Gradle stale-count failure. Historical evidence and pre-guard preparation failures are preserved.",
+    "Two pre-guard preparation failures involved absent new baselines and a strict count assertion exposing the additional existing test binding; no portable test executed in those attempts.",
+    "All cloud tasks are terminal and no query, dispatch, tag, canonical write or Git mutation was performed."
+  ],
+  "checkLedger": {
+    "path": ".build\\consolidated-sdk-header-v2-browser-independent-review\\check-ledger-v1.json",
+    "bytes": 392087,
+    "sha256": "a4ebfc5b7aaf8ff3c4bb898d50de61d87deea0702a9770b45013909f27c7d580"
+  },
+  "checkCount": 1137,
+  "failedChecks": 0,
+  "operations": {
+    "authorStageMutated": false,
+    "canonicalMutated": false,
+    "GitMutated": false,
+    "cloudQueried": false,
+    "testsRerun": false,
+    "compilerRerun": false,
+    "privateSourcesRead": false
+  },
+  "claims": {
+    "SDKValidated": false,
+    "NativeValidated": false,
+    "PackageExecutedHere": false,
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  }
+}

@@ -1,0 +1,164 @@
+package io.yuedu.legado
+
+import com.google.gson.JsonObject
+import com.sun.net.httpserver.HttpServer
+import io.yuedu.legado.originalrule.GSON
+import io.yuedu.legado.originalrule.OriginalCookieText
+import io.yuedu.legado.originalrule.RulePersistenceHost
+import org.junit.Assert.*
+import org.junit.Test
+import java.io.Closeable
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.nio.file.Files
+import java.util.Base64
+import java.util.UUID
+
+/** File-backed header and explicit native-wire Cookie fixture, not an App
+ * storage substitute. Public Rhino/HTTP is real; actual App owners have Native coverage. */
+class OriginalSourceLoginHeaderTest {
+    @Test(timeout=20_000) fun rawPayloadCookieCasePrecedenceEmptyAndRemoveKeepOriginalDifferentOrders() {
+        Owned().use { o ->
+            o.call("source.putLoginHeader('bare-synthetic-token');if(String(source.getLoginHeader())!=='bare-synthetic-token')throw new Error('raw token lost');")
+            assertEquals(listOf("header:put"),o.events);assertEquals("bare-synthetic-token",o.header(o.a))
+            o.events.clear()
+            o.call("source.putLoginHeader('{\"Cookie\":\"\",\"cookie\":\"ignored=lower\"}');")
+            assertEquals(listOf("header:put"),o.events);assertEquals("",o.cookies[o.a].orEmpty())
+            o.events.clear()
+            o.call("source.putLoginHeader('{\"Cookie\":\"upper=chosen\",\"cookie\":\"lower=ignored\"}');")
+            assertEquals(listOf("cookie:replace","header:put"),o.events);assertEquals("upper=chosen",o.cookies[o.a])
+            o.events.clear();o.call("source.removeLoginHeader();if(source.getLoginHeader()!==null)throw new Error('header not removed');")
+            assertEquals(listOf("header:remove","cookie:remove","cookie:webRemove"),o.events);assertNull(o.header(o.a));assertFalse(o.cookies.containsKey(o.a))
+            o.events.clear();val absent=o.call("source.removeLoginHeader();")
+            assertFalse(effects(absent).contains("sourceLoginHeaderCommitted"));assertEquals(0,o.credentials)
+        }
+    }
+    @Test(timeout=20_000) fun authorizedSearchHeaderScriptsPersistAcrossSessionsAndReachSameJvmHttpOwner() {
+        Peer().use { peer -> Owned(peer.origin).use { o ->
+            val raw="{\"Authorization\":\"synthetic-authorization\",\"Cookie\":\"login=synthetic\"}"
+            o.call("source.putLoginHeader(${GSON.toJson(raw)});",sensitive=false)
+            assertEquals(raw,o.header(o.a));assertNull(o.header(o.b))
+            o.call("if(source.getLoginHeader()!==null)throw new Error('source isolation failed');",origin=o.b)
+            o.call("if(String(source.getLoginHeader())!==${GSON.toJson(raw)})throw new Error('restart owner lost');var text=java.ajax('${peer.origin}/header');if(String(text)!=='header-body')throw new Error('HTTP failed');")
+            assertEquals(listOf("synthetic-authorization"),peer.authorizations);assertEquals(listOf("login=synthetic"),peer.cookies)
+            assertEquals(0,o.nativeHTTP);assertEquals(0,o.credentials)
+        } }
+    }
+    @Test(timeout=20_000) fun rejectedOrCancelledSecondOwnerKeepsAcceptedFirstOwnerFactsWithoutRollback() {
+        Owned().use { o ->
+            o.rejectHeader=true
+            val failed=o.call("source.putLoginHeader('{\"Cookie\":\"first=accepted\"}');",success=false)
+            assertEquals("STATE_IO",failed["error"].asJsonObject["code"].asString)
+            assertEquals("first=accepted",o.cookies[o.a]);assertNull(o.header(o.a));assertTrue(effects(failed).contains("cookieText"))
+            assertEquals(listOf("cookie:replace","header:put"),o.events)
+            o.rejectHeader=false;o.call("source.putLoginHeader('kept');")
+            o.events.clear();o.rejectCookie=true
+            val removed=o.call("source.removeLoginHeader();",success=false)
+            assertEquals("STATE_IO",removed["error"].asJsonObject["code"].asString)
+            assertNull(o.header(o.a));assertEquals("first=accepted",o.cookies[o.a]);assertTrue(effects(removed).contains("sourceLoginHeaderCommitted"))
+            o.events.clear();val missing=o.call("source.removeLoginHeader();",success=false)
+            assertFalse(effects(missing).contains("sourceLoginHeaderCommitted"));assertFalse(effects(missing).contains("loginHeaderRemoval"))
+        }
+        Owned().use { o ->
+            val task="header-cancel-${UUID.randomUUID()}";o.cancelAfterHeader=task
+            val cancelled=o.call("source.putLoginHeader('{\"Cookie\":\"first=accepted\"}');source.putLoginInfo('late');",task=task,success=false)
+            assertEquals("CANCELLED",cancelled["error"].asJsonObject["code"].asString)
+            assertTrue(effects(cancelled).containsAll(listOf("cookieText","sourceLoginHeaderCommitted")))
+            assertNotNull(o.header(o.a));assertEquals("first=accepted",o.cookies[o.a]);assertEquals(0,o.credentials)
+        }
+    }
+    @Test(timeout=20_000) fun readOnlyAndRealRhinoNativeHostForgeryCannotAcquireHeaderWriteAuthority() {
+        Owned().use { o ->
+            for(script in listOf("source.putLoginHeader('denied');","source.putLoginHeader('{\"Cookie\":\"denied=1\"}');","source.removeLoginHeader();")){
+                val failed=o.call(script,mode="app-owner-read",success=false)
+                assertEquals("UNSUPPORTED_CAPABILITY",failed["error"].asJsonObject["code"].asString)
+            }
+            assertTrue(o.events.isEmpty());assertNull(o.header(o.a))
+            o.call("if(String(Packages.io.yuedu.legado.NativeHost).indexOf('[JavaPackage ')!==0||String(Packages.java.lang.Class).indexOf('[JavaPackage ')!==0)throw new Error('protected Host class exposed');",mode="app-owner-read")
+            for(script in listOf(
+                "Packages.io.yuedu.legado.NativeHost.dispatch('forged','source.login-header','{}');",
+                "Packages.java.lang.Class.forName('io.yuedu.legado.NativeHost').getDeclaredMethods();")){
+                val failed=o.call(script,mode="app-owner-read",success=false)
+                assertFalse(failed["ok"].asBoolean)
+            }
+            assertTrue(o.events.isEmpty());assertEquals(0,o.headerRequests);assertEquals(0,o.credentials)
+        }
+    }
+    private class Owned(origin:String="https://synthetic-header-${UUID.randomUUID()}.invalid"):Closeable {
+        val a=origin;val b="https://synthetic-header-b-${UUID.randomUUID()}.invalid"
+        val events=mutableListOf<String>();val cookies=mutableMapOf<String,String>();var credentials=0;var nativeHTTP=0;var headerRequests=0
+        var rejectHeader=false;var rejectCookie=false;var cancelAfterHeader:String?=null
+        private val dir=Files.createTempDirectory("original-header-");private val state=RulePersistenceHost(FileRulePersistenceAdapter(dir))
+        init {LegadoRuntime.setHostCallback{task,operation,raw ->
+            if(operation=="task.cancel")"{}"else {
+                val input=parseObject(raw);check(input["owner"].asString=="header-owner")
+                when(operation){
+                    "source.login-header"->{
+                        headerRequests++;check(input["cookieAccess"].asString=="app-owner-text");check(input["taskId"].asString==task)
+                        val source=input["sourceURL"].asString;check(source==a||source==b)
+                        val action=input["action"].asString;events+="header:$action"
+                        if(rejectHeader)failure("STATE_IO")else {
+                            val rawValue=if(action=="put")input["value"].asString else null;val changed=header(source)!=rawValue
+                            if(changed)store(source,rawValue)
+                            if(cancelAfterHeader==task)LegadoRuntime.cancel(task)
+                            jsonObject("committed" to true,"hostEffects" to if(changed)listOf("sourceLoginHeaderMayCommit","sourceLoginHeaderCommitted")else emptyList()).toString()
+                        }
+                    }
+                    "cookie.owner.text"->{
+                        val action=input["action"].asString;val url=input["url"].asString;events+="cookie:$action"
+                        if(action=="get")jsonObject("cookie" to cookies[url].orEmpty()).toString()
+                        else if(action=="session")jsonObject("cookie" to "").toString()
+                        else if(rejectCookie)failure("STATE_IO")else {
+                            if(action=="replace")cookies[url]=OriginalCookieText.mergeCookieValues(cookies[url].orEmpty(),input["cookie"].asString)
+                            if(action=="remove")cookies.remove(url)
+                            jsonObject("committed" to true,"hostEffects" to if(action=="webRemove")emptyList()else listOf(if(action=="remove")"cookieRemoval"else"cookieText")).toString()
+                        }
+                    }
+                    "source.login-info"->{credentials++;error("Header must not mutate Keychain")}
+                    "explore.owner.scope"->jsonObject("scope" to "header-fixture-scope-${input["sourceURL"].asString}").toString()
+                    "http.request"->{nativeHTTP++;error("Header must retain existing JVM HTTP")}
+                    else->state.dispatch(operation,input).toString()
+                }
+            }
+        }}
+        private fun key(origin:String)=GSON.toJson(listOf(origin,"cache-text","loginHeader_$origin"))
+        fun header(origin:String):String?{
+            val reply=state.dispatch("state.read",jsonObject("owner" to "header-owner","keys" to listOf(key(origin))))
+            val raw=reply["values"].asJsonObject[key(origin)]?:return null
+            val entry=parseObject(Base64.getDecoder().decode(raw.asString).toString(Charsets.UTF_8))
+            return Base64.getDecoder().decode(entry["data"].asString).toString(Charsets.UTF_8)
+        }
+        private fun store(origin:String,value:String?){
+            val k=key(origin);val snapshot=state.dispatch("state.read",jsonObject("owner" to "header-owner","keys" to listOf(k)))
+            val entry=value?.let{jsonObject("deadline" to 0,"data" to Base64.getEncoder().encodeToString(it.toByteArray())).toString().toByteArray()}
+            val changes=JsonObject().apply{addProperty(k,entry?.let{Base64.getEncoder().encodeToString(it)})}
+            check(state.dispatch("state.commit",jsonObject("owner" to "header-owner","revision" to snapshot["revision"],"changes" to changes))["committed"].asBoolean)
+        }
+        fun call(script:String,origin:String=a,mode:String="app-owner-text",sensitive:Boolean=true,task:String="header-${UUID.randomUUID()}",success:Boolean=true):JsonObject{
+            val source=jsonObject("bookSourceUrl" to origin,"enabledCookieJar" to true,"ruleContent" to jsonObject(),"loginUi" to "[]","loginUrl" to "var headerPrelude=true;")
+            val session=parseObject(LegadoRuntime.createSession(source.toString(),jsonObject("sourceMode" to "original-traditional","httpTransport" to "jvm-okhttp","stateOwner" to "header-owner","cookieAccess" to mode).toString()));assertTrue(session.toString(),session["ok"].asBoolean);val id=session["sessionId"].asString
+            try {
+                if(!sensitive){val opened=parseObject(LegadoRuntime.execute(id,UUID.randomUUID().toString(),"exploreContext",jsonObject("action" to "open").toString()));assertTrue(opened.toString(),opened["ok"].asBoolean)}
+                val operation=if(sensitive)"loginAction"else"exploreContext"
+                val input=if(sensitive)jsonObject("action" to script,"credentials" to jsonObject(),"timeoutMs" to 20_000)else jsonObject("action" to "evaluate","script" to script,"timeoutMs" to 20_000)
+                val reply=parseObject(LegadoRuntime.execute(id,task,operation,input.toString()));assertEquals(reply.toString(),success,reply["ok"].asBoolean);return reply
+            } finally {LegadoRuntime.closeSession(id)}
+        }
+        override fun close(){LegadoRuntime.setHostCallback(null);check(dir.toFile().deleteRecursively())}
+    }
+    private class Peer:Closeable {
+        val authorizations=mutableListOf<String>();val cookies=mutableListOf<String>()
+        private val server=HttpServer.create(InetSocketAddress(InetAddress.getByAddress(byteArrayOf(127,0,0,1)),0),0).apply{
+            createContext("/"){e->try{
+                authorizations+=e.requestHeaders.getFirst("Authorization").orEmpty();cookies+=e.requestHeaders.getFirst("Cookie").orEmpty()
+                val b="header-body".toByteArray();e.sendResponseHeaders(200,b.size.toLong());e.responseBody.write(b)
+            }finally{e.close()}};start()
+        }
+        val origin="http://127.0.0.1:${server.address.port}"
+        override fun close(){server.stop(0)}
+    }
+    companion object {
+        private fun effects(v:JsonObject)=(if(v["ok"].asBoolean)v["completedEffects"]else v["error"].asJsonObject["completedEffects"])?.asJsonArray?.map{it.asString}.orEmpty()
+        private fun failure(code:String)=jsonObject("ok" to false,"error" to jsonObject("code" to code,"message" to "SYNTHETIC-HEADER-PRIVATE")).toString()
+    }
+}
