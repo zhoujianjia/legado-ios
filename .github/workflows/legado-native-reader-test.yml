@@ -76,8 +76,8 @@ jobs:
           APP=$(python3 -c 'import json; from pathlib import Path; s=[i["buildSettings"] for i in json.load(open(".build/native-reader-test/build-settings.json")) if i.get("target")=="yuedu app"]; assert len(s)==1; print(Path(s[0]["TARGET_BUILD_DIR"])/s[0]["FULL_PRODUCT_NAME"])')
           python -B scripts/legado-ios/verify-native-exports.py --executable "$APP/YueduReader" --report .build/native-reader-test/native-exports.json
           # Reuse the same prepared app for independent local-product checks.
-          # Run the native chain last so its current diagnostics are retained;
-          # it keeps its own one-case summary and original cancellation gates.
+          # The two native groups below require separate host launches. MainJS
+          # sets tracing before its JVM starts; no suite-order assumption is safe.
           set +e
           bash scripts/xctest.sh -l .build/native-reader-test/configuration.log -t 900 -- \
             "${ARGS[@]}" -resultBundlePath .build/native-reader-test/configuration.xcresult \
@@ -98,10 +98,10 @@ jobs:
             -only-testing:'yuedu appTests/ChapterCacheMigrationTests' \
             -only-testing:'yuedu appTests/ChapterCacheRepositoryWriteTests'
           CACHE_STATUS=$?
-          bash scripts/xctest.sh -l .build/native-reader-test/native-product-chain.log -t 2700 -- \
-            "${ARGS[@]}" -resultBundlePath .build/native-reader-test/native-product-chain.xcresult \
-            -only-testing:'yuedu appTests/LegadoNativeMainJSReaderTests'
+          python -B scripts/reader-experience/native-smoke-tools.py run-group --group mainjs
           NATIVE_STATUS=$?
+          python -B scripts/reader-experience/native-smoke-tools.py run-group --group original
+          ORIGINAL_STATUS=$?
           # Export every available group's evidence before evaluating verdicts.
           # Missing bundles and failed exports remain failures, not empty passes.
           export_test_results() {
@@ -125,9 +125,8 @@ jobs:
           export_test_results .build/native-reader-test/cache-regressions.xcresult \
             .build/native-reader-test/cache-summary.json .build/native-reader-test/cache-tests.json
           CACHE_EXPORT_STATUS=$?
-          export_test_results .build/native-reader-test/native-product-chain.xcresult \
-            .build/native-reader-test/summary.json .build/native-reader-test/native-tests.json
-          NATIVE_EXPORT_STATUS=$?
+          # Both native runners already retain independent original exports,
+          # exact case gates and command/source ledgers, including on failure.
           python -B scripts/reader-experience/smoke-tools.py verify-summary \
             --summary .build/native-reader-test/configuration-summary.json --expected 9
           CONFIGURATION_COUNT_STATUS=$?
@@ -135,13 +134,13 @@ jobs:
             --summary .build/native-reader-test/local-product-summary.json --expected 41
           LOCAL_PRODUCT_COUNT_STATUS=$?
           NATIVE_RESULT_STATUS=1
-          if [[ $NATIVE_STATUS == 0 ]]; then
+          if [[ $NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0 ]]; then
             python -B scripts/reader-experience/native-smoke-tools.py result
             NATIVE_RESULT_STATUS=$?
           fi
           set -e
-          [[ $CONFIGURATION_STATUS == 0 && $LOCAL_PRODUCT_STATUS == 0 && $CACHE_STATUS == 0 && $NATIVE_STATUS == 0 \
-            && $CONFIGURATION_EXPORT_STATUS == 0 && $LOCAL_PRODUCT_EXPORT_STATUS == 0 && $CACHE_EXPORT_STATUS == 0 && $NATIVE_EXPORT_STATUS == 0 \
+          [[ $CONFIGURATION_STATUS == 0 && $LOCAL_PRODUCT_STATUS == 0 && $CACHE_STATUS == 0 && $NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0 \
+            && $CONFIGURATION_EXPORT_STATUS == 0 && $LOCAL_PRODUCT_EXPORT_STATUS == 0 && $CACHE_EXPORT_STATUS == 0 \
             && $CONFIGURATION_COUNT_STATUS == 0 && $LOCAL_PRODUCT_COUNT_STATUS == 0 && $NATIVE_RESULT_STATUS == 0 ]]
       - name: Preserve this Simulator run's JVM diagnostics and crash reports
         if: ${{ always() && hashFiles('.build/native-reader-test/overlays.json') != '' }}

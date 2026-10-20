@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Portable provenance guards using synthetic files, never native execution."""
 import importlib.util
+import copy
+import json
+import os
+import re
 from pathlib import Path
 import plistlib
 import tempfile
@@ -32,7 +36,8 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
             return native.smoke.overlay_info(info, overlay_record)
 
         with patch.object(native, "validate_tag", return_value=SOURCE), \
-                patch.object(native.smoke, "prepare", side_effect=prepare):
+                patch.object(native.smoke, "prepare", side_effect=prepare), \
+                patch.object(native, "source_inputs", return_value=[]):
             record = native.prepare(self.root)
             self.assertEqual(record["sourceCommitStamped"], SOURCE)
             native.smoke.require_source_stamp(plistlib.loads(info.read_bytes()), SOURCE)
@@ -70,10 +75,12 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
         with patch.object(native, "validate_tag", return_value=SOURCE), \
                 patch.object(native.smoke, "read_json", side_effect=lambda path: records[path.name]), \
                 patch.object(native.smoke, "review_overlays"), \
-                patch.object(native.smoke.config, "verify_jvm_payload", return_value={"synthetic": True}):
+                patch.object(native.smoke.config, "verify_jvm_payload", return_value={"synthetic": True}), \
+                patch.object(native, "verify_group", side_effect=lambda work, group: {"summary": {"expectedTests": len(native.NATIVE_GROUPS[group]["methods"])}}):
             result = native.result(self.root)
             self.assertEqual(result["sourceCommitStamped"], SOURCE)
             self.assertEqual(result["sourceOverlays"]["infoOverlay"]["sourceCommitStamped"], SOURCE)
+            self.assertEqual(result["originalReaderTests"]["expectedTests"], 3)
             self.assertFalse(result["deviceValidationPassed"])
             for key, value in (("YueduExperienceSourceCommit", "b" * 40), ("GitCommitSHA", "b" * 7),
                                ("YueduExperienceSourceCommit", None)):
@@ -96,6 +103,138 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
                     records["overlays.json"]["infoOverlay"] = {} if value is None else {"sourceCommitStamped": value}
                     with self.assertRaisesRegex(ValueError, "did not stamp"):
                         native.result(self.root)
+
+    def cases(self, group):
+        return {"testNodes": [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + method + "()",
+            "result": "Passed"} for method in native.NATIVE_GROUPS[group]["methods"]]}
+
+    def test_native_groups_require_exact_qualified_methods_without_skips_or_duplicates(self):
+        for group, spec in native.NATIVE_GROUPS.items():
+            tree = self.cases(group)
+            self.assertEqual(native.verify_cases(tree, group), sorted(spec["methods"]))
+            for fault in ("missing", "duplicate", "skip", "failed", "foreign", "wrongTarget", "retry", "duplicateRun"):
+                with self.subTest(group=group, fault=fault), self.assertRaises(ValueError):
+                    changed = copy.deepcopy(tree); rows = changed["testNodes"]
+                    if fault == "missing": rows.pop()
+                    elif fault == "duplicate": rows.append(copy.deepcopy(rows[0]))
+                    elif fault == "skip": rows[0]["result"] = "Skipped"
+                    elif fault == "failed": rows[0]["result"] = "Failed"
+                    elif fault == "foreign": rows[0]["nodeIdentifier"] = "OtherSuite/testOther()"
+                    elif fault == "wrongTarget": rows[0]["nodeIdentifier"] = rows[0]["nodeIdentifier"].replace("yuedu appTests/", "otherTests/")
+                    elif fault == "retry": rows[0]["children"] = [{"nodeType": "Repetition", "result": "Passed"}]
+                    else: rows[0]["children"] = [{"nodeType": "Test Case Run", "result": "Passed"}] * 2
+                    native.verify_cases(changed, group)
+
+    def write_json(self, name, value):
+        (self.root / name).write_text(json.dumps(value), encoding="utf-8")
+
+    def group_fixture(self, group):
+        source = {"sourceCommit": SOURCE, "sourceInputs": []}
+        spec = native.NATIVE_GROUPS[group]
+        commands = []
+        summary = {"totalTestCount": len(spec["methods"]), "passedTests": len(spec["methods"]), "failedTests": 0, "skippedTests": 0}
+        for index, (argv, output, seconds) in enumerate(zip(native.group_commands(self.root, group), native._group_outputs(self.root, group), (spec["seconds"] + 60, 60, 60))):
+            value = summary if index == 1 else self.cases(group) if index == 2 else {"synthetic": True}
+            output.write_text(json.dumps(value), encoding="utf-8")
+            stderr = output.with_name(output.name + ".stderr.log"); stderr.write_bytes(b"")
+            commands.append({"argv": argv, "exitCode": 0, "timedOut": False, "timeoutSeconds": seconds,
+                "output": output.name, "stdout": native._fact(output), "stderr": stderr.name, "stderrFact": native._fact(stderr)})
+        ledger = {"schemaVersion": 1, "group": group, "sourceBefore": source, "sourceAfter": source,
+            "expectedMethods": list(spec["methods"]), "commands": commands, "error": None}
+        previous = self.root / (native.NATIVE_GROUPS["mainjs"]["stem"] + "-execution.json")
+        ledger["precedingMainJSExecution"] = {"path": previous.name, **native._fact(previous)} if group == "original" else None
+        self.write_json(spec["stem"] + "-execution.json", ledger)
+        return source, ledger
+
+    def test_group_gate_binds_original_exits_exports_sources_and_raw_bytes(self):
+        for group in native.NATIVE_GROUPS:
+            source, ledger = self.group_fixture(group)
+            name = native.NATIVE_GROUPS[group]["stem"] + "-execution.json"
+            with patch.object(native, "_source_state", return_value=source):
+                self.assertEqual(len(native.verify_group(self.root, group)["passedQualifiedMethods"]), len(native.NATIVE_GROUPS[group]["methods"]))
+                for fault in ("exit", "timeout", "exports", "command", "source", "methods", "raw", "predecessor"):
+                    with self.subTest(group=group, fault=fault):
+                        changed = copy.deepcopy(ledger)
+                        if fault == "exit": changed["commands"][0]["exitCode"] = 65
+                        elif fault == "timeout": changed["commands"][0]["timedOut"] = True
+                        elif fault == "exports": changed["commands"].pop()
+                        elif fault == "command": changed["commands"][0]["argv"].append("-only-testing:otherTests/Other/test")
+                        elif fault == "source": changed["sourceAfter"]["sourceCommit"] = "b" * 40
+                        elif fault == "methods": changed["expectedMethods"].append("Other/test")
+                        elif fault == "raw": changed["commands"][2]["stdout"]["sha256"] = "0" * 64
+                        else: changed["precedingMainJSExecution"] = {"path": "other.json", "sha256": "0" * 64, "bytes": 0}
+                        self.write_json(name, changed)
+                        with self.assertRaises(ValueError): native.verify_group(self.root, group)
+                self.write_json(name, ledger)
+
+    def test_failed_first_native_host_retains_exports_and_allows_independent_second_diagnostics(self):
+        source = {"sourceCommit": SOURCE, "sourceInputs": []}
+        captures = []
+        def capture(argv, output, seconds):
+            captures.append(argv)
+            group = "original" if output.name.startswith("original") else "mainjs"
+            spec = native.NATIVE_GROUPS[group]
+            value = {"totalTestCount": len(spec["methods"]), "passedTests": len(spec["methods"]), "failedTests": 0, "skippedTests": 0} if output.name == spec["summary"] else self.cases(group) if output.name == spec["tests"] else {"synthetic": True}
+            output.write_text(json.dumps(value), encoding="utf-8")
+            stderr = output.with_name(output.name + ".stderr.log"); stderr.write_bytes(b"")
+            return {"argv": argv, "exitCode": 65 if len(captures) == 1 else 0, "timedOut": False,
+                "timeoutSeconds": seconds, "output": output.name, "stdout": native._fact(output), "stderr": stderr.name, "stderrFact": native._fact(stderr)}
+        with patch.object(native, "_source_state", return_value=source), patch.object(native, "_capture", side_effect=capture):
+            first = native.run_group(self.root, "mainjs")
+            self.assertFalse(first["passed"])
+            second = native.run_group(self.root, "original")
+            self.assertTrue(second["passed"])
+            self.assertEqual(len(captures), 6)
+            self.assertTrue((self.root / "summary.json").is_file())
+            self.assertTrue((self.root / "original-summary.json").is_file())
+            with self.assertRaises(ValueError): native.verify_group(self.root, "mainjs")
+            with self.assertRaisesRegex(ValueError, "overwrite"): native.run_group(self.root, "mainjs")
+
+    def test_source_closure_rejects_changed_bytes_wrong_source_and_source_only_mode(self):
+        (self.root / "owned.swift").write_bytes(b"owned source")
+        with patch.object(native.smoke, "REPO", self.root), patch.object(native, "SOURCE_INPUTS", ("owned.swift",)), \
+                patch.object(native, "validate_tag", return_value=SOURCE), patch.object(native.smoke, "review_overlays"), \
+                patch.object(native.smoke, "git", return_value=b"owned source"), \
+                patch.dict(os.environ, {}, clear=True):
+            self.write_json("overlays.json", {})
+            prepared = {"sourceCommit": SOURCE, "sourceInputs": native.source_inputs()}
+            self.write_json("native-source-inputs.json", prepared)
+            self.assertEqual(native._source_state(self.root), prepared)
+            (self.root / "owned.swift").write_bytes(b"changed")
+            with self.assertRaisesRegex(ValueError, "tracked HEAD"): native._source_state(self.root)
+            (self.root / "owned.swift").write_bytes(b"owned source")
+            self.write_json("native-source-inputs.json", {**prepared, "sourceCommit": "b" * 40})
+            with self.assertRaisesRegex(ValueError, "source closure"): native._source_state(self.root)
+            with patch.dict(os.environ, {"LEGADO_RUNTIME_SOURCE_ONLY": "1"}), self.assertRaisesRegex(ValueError, "unset"):
+                native._source_state(self.root)
+
+    def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
+        repo = Path(__file__).resolve().parents[2]
+        workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
+        self.assertEqual(len(native.SOURCE_INPUTS), len(set(native.SOURCE_INPUTS)))
+        self.assertEqual(native.NATIVE_GROUPS["mainjs"]["seconds"], 2700)
+        self.assertEqual(len(native.NATIVE_GROUPS["mainjs"]["methods"]), 1)
+        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 3)
+        self.assertIn("unset LEGADO_RUNTIME_SOURCE_ONLY", workflow)
+        self.assertIn("LEGADO_REQUIRE_NATIVE_MAINJS", workflow)
+        self.assertIn("verify-native-exports.py", workflow)
+        self.assertLess(workflow.index("stage-runtime.py"), workflow.index("run-group --group mainjs"))
+        self.assertLess(workflow.index("run-group --group mainjs"), workflow.index("run-group --group original"))
+        self.assertIn("$NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0", workflow)
+        commands = {group: native.group_commands(self.root, group)[0] for group in native.NATIVE_GROUPS}
+        self.assertNotEqual(commands["mainjs"], commands["original"])
+        for group, argv in commands.items():
+            self.assertEqual(argv.count("-resultBundlePath"), 1)
+            self.assertIn("ENABLE_DEBUG_DYLIB=NO", argv)
+            self.assertIn("SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS", argv)
+            selectors = [value for value in argv if value.startswith("-only-testing:")]
+            self.assertEqual(selectors, ["-only-testing:yuedu appTests/" + value for value in native.NATIVE_GROUPS[group]["methods"]])
+            suite = native.NATIVE_GROUPS[group]["methods"][0].split("/")[0]
+            source = (repo / ("Tests/iOS/" + suite + ".swift")).read_text(encoding="utf-8")
+            self.assertIn("final class " + suite + ": XCTestCase", source)
+            self.assertEqual(set(re.findall(r"(?m)^\s+func (test\w+)\s*\(", source)),
+                {method.split("/")[1] for method in native.NATIVE_GROUPS[group]["methods"]})
+            self.assertRegex(source, r"#if LEGADO_REQUIRE_NATIVE_MAINJS\s+required = true")
 
 
 if __name__ == "__main__":

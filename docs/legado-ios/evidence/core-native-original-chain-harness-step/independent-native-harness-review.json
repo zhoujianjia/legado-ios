@@ -1,0 +1,47 @@
+{
+  "scope": "Independent read-only source review of the three frozen native-reader harness files; no tests, grammar, SDK, JNI, Git or cloud execution by reviewer. This reviews harness glue only; reviewer authored the separately frozen new original reader fixture/production delta and does not claim independent review of that fixture itself.",
+  "reviewedAtUTC": "2026-10-20T12:36:44.196328+00:00",
+  "sourceBinding": [
+    {
+      "intendedPath": "scripts/reader-experience/native-smoke-tools.py",
+      "path": ".build/native-reader-original-chain-harness-step/work/scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 18777,
+      "sha256": "6bf813494b5d9dd01f48e212b2cea96c99a070b99f4f3af37a59a114779d8d84"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/test-native-smoke-tools.py",
+      "path": ".build/native-reader-original-chain-harness-step/work/scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 16266,
+      "sha256": "f2d919de36c9d762f9ba3b93d919a42d9d83b9935a4f70aec8a6a4f33b0c375b"
+    },
+    {
+      "intendedPath": ".github/workflows/legado-native-reader-test.yml",
+      "path": ".build/native-reader-original-chain-harness-step/work/.github/workflows/legado-native-reader-test.yml",
+      "bytes": 10146,
+      "sha256": "e5eedfbfe67cdf3f30909af1d0a9550555b2e0d24ae7ba35b412e7581be3bc9a"
+    }
+  ],
+  "referencedFixture": {
+    "path": ".build/original-runtime-ios-native-chain-delta/final-sources/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "bytes": 33100,
+    "sha256": "a7a849365fa1768923762104ce07c06fa2a7b97fbfb856507594770886d9a0e6"
+  },
+  "existingPortableEvidence": {
+    "path": ".build/native-reader-original-chain-harness-step/portable-final.json",
+    "bytes": 1668,
+    "sha256": "2940919cc4b1a504dc3b0384721d1eb06e45c84abe33a5a97205f31549f18dab"
+  },
+  "confirmedBlockers": [],
+  "findings": [
+    "The original MainJS1 remains its own2700-second xctest.sh invocation; original3 is a distinct1800-second invocation afterward, rather than relying on suite ordering in a JVM host. The old group ledger is required and hash-bound even when its test command exits nonzero, allowing original diagnostics while overall result remains failed.",
+    "Both invocations use the real App scheme, explicit required-runtime compilation flag and SOURCE_ONLY-unset check. Actual native static exports, current fresh ordinary JAR/runtime manifest/notices and App payload/source stamp remain required in final result. Missing payload cannot become a skip pass.",
+    "Each group captures its exact test command plus both original xcresult exports. Final admission requires exactly3 recorded commands, unchanged before/after source and predecessor hash, original exit0/no timeout, output/stderr byte hashes and exact method identities with no missing/duplicate/foreign/skipped case or repeated execution. Separate original3 count never inflates old MainJS1 summary.",
+    "Workflow retains existing configuration/local/cache gates and their original budgets. Both native group statuses are collected under set+e and required jointly for final result; old group normal test failure does not silently become successful overall diagnosis.",
+    "The three exact expected original methods match the immutable new fixture and require real default Runtime/service/Host/cache. No injected synthetic runtime executor is introduced by this harness. Source binding includes both fixture paths and affected runtime/Host/cache owners."
+  ],
+  "limits": [
+    "Portable-final reports8 synthetic guards passed; reviewer did not rerun them or convert them to native passes.",
+    "No actual new native reader/Xcode/Apple/JNI test result exists in this stage. Root must integrate the separately reviewed C4 production11 and root-binding sources before a real native tag.",
+    "The workflow retains its existing90-minute job limit and existing group budgets; this source review makes no runtime-duration guarantee."
+  ]
+}

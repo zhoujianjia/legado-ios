@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Bind one actual native main-app product-chain test to its source and payload."""
+"""Bind independent actual native main-app reading groups to source and payload."""
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
 from pathlib import Path
+import signal
+import subprocess
+import sys
+import time
 
 
 HERE = Path(__file__).resolve().parent
@@ -19,6 +24,226 @@ def load(name, path):
 
 smoke = load("native_reader_smoke", HERE / "smoke-tools.py")
 packaging = load("native_reader_packaging", HERE / "runtime-packaging.py")
+
+NATIVE_GROUPS = {
+    "mainjs": {"stem": "native-product-chain", "summary": "summary.json", "tests": "native-tests.json", "seconds": 2700,
+        "methods": ("LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain",)},
+    "original": {"stem": "original-product-chain", "summary": "original-summary.json", "tests": "original-tests.json", "seconds": 1800,
+        "methods": ("LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+            "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+            "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix")},
+}
+SOURCE_INPUTS = (
+    ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
+    "scripts/reader-experience/test-native-smoke-tools.py", "scripts/reader-experience/smoke-tools.py",
+    "scripts/reader-experience/stage-config.py", "scripts/reader-experience/runtime-packaging.py",
+    "scripts/reader-experience/runtime-notices.py", "scripts/xctest.sh", "scripts/sim.sh",
+    "scripts/legado-ios/runtime-lock.json", "scripts/legado-ios/stage-runtime.py",
+    "scripts/legado-ios/verify-native-exports.py", "scripts/legado-ios/verify-runtime.py",
+    "Tests/iOS/LegadoNativeMainJSReaderTests.swift", "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "Packages/LegadoRuntime/Package.swift", "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+    "Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+    "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+    "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+    "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+    "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+    "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+    "Modules/Services/Online/LegadoMainJSSourceService.swift",
+    "Modules/Services/Online/LegadoContentBatchOwner.swift", "Modules/Services/Online/LegadoPersistentStateHost.swift",
+    "Modules/Services/Online/LegadoPreviewStateOwner.swift", "Modules/Services/Online/LegadoBookStateOwner.swift",
+    "Modules/Services/Online/OnlineReadingPipeline.swift", "Modules/Services/Online/ChapterCacheRepository.swift",
+    "Modules/Services/LibraryStore/BookStore.swift", "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+)
+
+
+def _fact(path):
+    path = smoke.config.checked_path(path)
+    if not path.is_file() or path.is_symlink():
+        raise ValueError("Native evidence must be a regular owned file")
+    return {"bytes": path.stat().st_size, "sha256": smoke.config.digest(path)}
+
+
+def source_inputs():
+    records = []
+    for relative in SOURCE_INPUTS:
+        path = smoke.config.checked_path(smoke.REPO / relative)
+        if path.read_bytes() != smoke.git("show", "HEAD:" + relative, binary=True):
+            raise ValueError("Native input differs from tracked HEAD: " + relative)
+        records.append({"path": relative, **_fact(path)})
+    return records
+
+
+def _source_state(work):
+    if "LEGADO_RUNTIME_SOURCE_ONLY" in os.environ:
+        raise ValueError("Actual native groups require LEGADO_RUNTIME_SOURCE_ONLY to be unset")
+    source = validate_tag()
+    smoke.review_overlays(smoke.read_json(work / "overlays.json"))
+    prepared = smoke.read_json(work / "native-source-inputs.json")
+    if prepared != {"sourceCommit": source, "sourceInputs": source_inputs()}:
+        raise ValueError("Native reading source closure changed after preparation")
+    return prepared
+
+
+def verify_cases(tree, group):
+    if group not in NATIVE_GROUPS or not isinstance(tree, dict) or not isinstance(tree.get("testNodes"), list):
+        raise ValueError("Expected the selected native group's original xcresult tests tree")
+    found = []
+    visited = 0
+    def visit(node, depth=0):
+        nonlocal visited
+        visited += 1
+        if not isinstance(node, dict) or depth > 64 or visited > 10000:
+            raise ValueError("Malformed or oversized native tests tree")
+        kind = node.get("nodeType")
+        if kind in ("Arguments", "Repetition"):
+            raise ValueError("Arguments or retries cannot replace one native method execution")
+        if kind in ("Test Case", "Test Case Run") and node.get("result") != "Passed":
+            raise ValueError("Skipped, failed or incomplete native method")
+        if kind == "Test Case":
+            identifier = node.get("nodeIdentifier")
+            if not isinstance(identifier, str) or len(identifier) > 4096:
+                raise ValueError("Native methods require actual qualified identities")
+            parts = identifier.removesuffix("()").split("/")
+            if len(parts) not in (2, 3) or (len(parts) == 3 and parts[0] != "yuedu appTests"):
+                raise ValueError("Unexpected native method target")
+            found.append("/".join(parts[-2:]))
+            runs = []; pending = list(node.get("children", []))
+            while pending:
+                child = pending.pop()
+                if not isinstance(child, dict):
+                    raise ValueError("Malformed native execution node")
+                if child.get("nodeType") == "Test Case Run": runs.append(child)
+                pending.extend(child.get("children", []))
+            if len(runs) > 1:
+                raise ValueError("Duplicate actual native method executions")
+        children = node.get("children", [])
+        if not isinstance(children, list):
+            raise ValueError("Malformed native method children")
+        for child in children:
+            visit(child, depth + 1)
+    for node in tree["testNodes"]:
+        visit(node)
+    expected = NATIVE_GROUPS[group]["methods"]
+    if len(found) != len(expected) or set(found) != set(expected):
+        raise ValueError("Missing, duplicate or foreign actual native methods")
+    return sorted(found)
+
+
+def _build_args():
+    return ["-configuration", "Debug", "-onlyUsePackageVersionsFromResolvedFile",
+        "CODE_SIGNING_ALLOWED=YES", "CODE_SIGNING_REQUIRED=YES", "CODE_SIGN_IDENTITY=-",
+        "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM=", "CODE_SIGN_ENTITLEMENTS=",
+        "GATEWAY_BASE_URL=", "YUEDU_LOCAL_EXPERIENCE=YES", "IPHONEOS_DEPLOYMENT_TARGET=18.0",
+        "ENABLE_DEBUG_DYLIB=NO", "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS"]
+
+
+def group_commands(work, group):
+    spec = NATIVE_GROUPS[group]
+    bundle = work / (spec["stem"] + ".xcresult")
+    return [
+        ["bash", str(smoke.REPO / "scripts/xctest.sh"), "-l", str(work / (spec["stem"] + ".log")),
+            "-t", str(spec["seconds"]), "--", *_build_args(), "-resultBundlePath", str(bundle),
+            *("-only-testing:yuedu appTests/" + method for method in spec["methods"])],
+        ["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(bundle)],
+        ["xcrun", "xcresulttool", "get", "test-results", "tests", "--path", str(bundle)],
+    ]
+
+
+def _capture(argv, output, seconds):
+    stderr = output.with_name(output.name + ".stderr.log")
+    started = time.monotonic()
+    timed_out = False
+    # Files avoid unbounded pipe buffering and retain partial failure output.
+    with output.open("xb") as out, stderr.open("xb") as err:
+        process = subprocess.Popen(argv, stdout=out, stderr=err, start_new_session=True)
+        try:
+            code = process.wait(timeout=seconds)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            if os.name == "posix":
+                try: os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError: pass
+            else:
+                process.kill()
+            code = process.wait(timeout=10)
+    return {"argv": argv, "exitCode": code, "timedOut": timed_out, "timeoutSeconds": seconds,
+        "elapsedSeconds": round(time.monotonic() - started, 6),
+        "output": output.name, "stdout": _fact(output), "stderr": stderr.name, "stderrFact": _fact(stderr)}
+
+
+def _group_outputs(work, group):
+    spec = NATIVE_GROUPS[group]
+    return [work / (spec["stem"] + "-driver.log"), work / spec["summary"], work / spec["tests"]]
+
+
+def run_group(work, group):
+    source = _source_state(work)
+    spec = NATIVE_GROUPS[group]
+    path = work / (spec["stem"] + "-execution.json")
+    if path.exists() or (work / (spec["stem"] + ".xcresult")).exists():
+        raise ValueError("Refusing to overwrite a previous native group execution")
+    # Each group is a separate xctest.sh/xcodebuild host invocation. MainJS sets
+    # process tracing before its VM starts; suite ordering in one host is unsafe.
+    predecessor = None
+    if group == "original":
+        previous_path = work / (NATIVE_GROUPS["mainjs"]["stem"] + "-execution.json")
+        previous = smoke.read_json(previous_path)
+        if previous.get("group") != "mainjs" or previous.get("sourceAfter") != source:
+            raise ValueError("The original group requires the completed same-source MainJS host first")
+        predecessor = {"path": previous_path.name, **_fact(previous_path)}
+    commands = []
+    try:
+        for argv, output, seconds in zip(group_commands(work, group), _group_outputs(work, group), (spec["seconds"] + 60, 60, 60)):
+            commands.append(_capture(argv, output, seconds))
+        after = _source_state(work)
+        failure = None
+    except Exception as error:
+        after = None
+        failure = type(error).__name__ + ": " + str(error)[:2048]
+    record = {"schemaVersion": 1, "group": group, "sourceBefore": source, "sourceAfter": after,
+        "expectedMethods": list(spec["methods"]), "commands": commands, "error": failure,
+        "precedingMainJSExecution": predecessor}
+    smoke.config.write_new_json(path, record)
+    try:
+        verified = verify_group(work, group)
+        return {"group": group, "passed": True, **verified}
+    except Exception as error:
+        return {"group": group, "passed": False, "error": type(error).__name__ + ": " + str(error)[:2048]}
+
+
+def verify_group(work, group):
+    source = _source_state(work)
+    spec = NATIVE_GROUPS[group]
+    ledger = smoke.read_json(work / (spec["stem"] + "-execution.json"))
+    if (ledger.get("schemaVersion") != 1 or ledger.get("group") != group or ledger.get("error") is not None
+            or ledger.get("sourceBefore") != source or ledger.get("sourceAfter") != source
+            or ledger.get("expectedMethods") != list(spec["methods"])):
+        raise ValueError("Missing, failed or changed-source native group execution")
+    previous_path = work / (NATIVE_GROUPS["mainjs"]["stem"] + "-execution.json")
+    expected_predecessor = {"path": previous_path.name, **_fact(previous_path)} if group == "original" else None
+    if ledger.get("precedingMainJSExecution") != expected_predecessor:
+        raise ValueError("Native groups lost their independent host execution order")
+    commands = ledger.get("commands")
+    if not isinstance(commands, list) or len(commands) != 3:
+        raise ValueError("Missing native invocation or original summary/tests exports")
+    for actual, argv, output, seconds in zip(commands, group_commands(work, group), _group_outputs(work, group), (spec["seconds"] + 60, 60, 60)):
+        if (actual.get("argv") != argv or type(actual.get("exitCode")) is not int or actual["exitCode"] != 0
+                or actual.get("timedOut") is not False or actual.get("timeoutSeconds") != seconds
+                or actual.get("output") != output.name or actual.get("stdout") != _fact(output)
+                or actual.get("stderr") != output.name + ".stderr.log"
+                or actual.get("stderrFact") != _fact(output.with_name(output.name + ".stderr.log"))):
+            raise ValueError("Native command failed, timed out or its original evidence changed")
+    for name in (spec["summary"], spec["tests"]):
+        if (work / name).stat().st_size > 16_777_216:
+            raise ValueError("Native xcresult export exceeds the fixed evidence budget")
+    summary = smoke.read_json(work / spec["summary"])
+    if summary.get("expectedFailures", 0) != 0:
+        raise ValueError("Expected failures cannot replace native passes")
+    counts = smoke.verify_summary(summary, len(spec["methods"]))
+    methods = verify_cases(smoke.read_json(work / spec["tests"]), group)
+    return {"summary": counts, "passedQualifiedMethods": methods,
+        "executionLedger": {"path": spec["stem"] + "-execution.json", **_fact(work / (spec["stem"] + "-execution.json"))}}
 
 
 def validate_tag():
@@ -42,7 +267,9 @@ def prepare(work):
     try:
         smoke.validate_tag = validate_tag
         smoke.overlay_info = stamped_info
-        return smoke.prepare(work)
+        audit = smoke.prepare(work)
+        smoke.config.write_new_json(work / "native-source-inputs.json", {"sourceCommit": source, "sourceInputs": source_inputs()})
+        return audit
     finally:
         smoke.overlay_info = original_overlay
         smoke.validate_tag = original_validate
@@ -76,14 +303,16 @@ def result(work):
         raise ValueError("The final test host must preserve the required native exports")
     if smoke.read_json(work / "native-restore.json").get("sourceCommit") != source:
         raise ValueError("Native restoration source differs from the tested checkout")
+    groups = {group: verify_group(work, group) for group in NATIVE_GROUPS}
     return {"schemaVersion": 1, "sourceCommit": source, "status": "passed",
             "sourceCommitStamped": source,
             "executionPlatform": "ios-simulator", "configuration": "Debug",
-            "targetedTests": smoke.verify_summary(smoke.read_json(work / "summary.json"), 1),
+            "targetedTests": groups["mainjs"]["summary"],
+            "originalReaderTests": groups["original"]["summary"], "nativeExecutionGroups": groups,
             "testedApp": str(app), "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "runtime": smoke.config.verify_jvm_payload(app), "sourceOverlays": audit,
             "nativeProductChainExecuted": True,
-            "scope": "One fixed mainJs text-source product chain with retained Rhino, real loopback HTTP, E4X/Java interop and cancellation/recovery.",
+            "scope": "Independent hosts: retained MainJS chain, then three original WebBook/preview/real App grant-cache-reopen/cancel-drain chains through the ordinary JAR and JNI. Controlled loopback sources only.",
             "readerUIRendered": False, "realBookSourcesValidated": False,
             "deliveredIPAExecuted": False, "deviceValidationPassed": False,
             "g4ValidationPassed": False, "fullFeatureParityEstablished": False}
@@ -91,8 +320,9 @@ def result(work):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare", "result"))
+    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare", "run-group", "result"))
     parser.add_argument("--work", type=Path, default=smoke.config.REPO / ".build/native-reader-test")
+    parser.add_argument("--group", choices=tuple(NATIVE_GROUPS))
     args = parser.parse_args()
     work = smoke.config.checked_path(args.work)
     if args.phase == "validate-tag":
@@ -105,11 +335,18 @@ def main():
         smoke.config.write_new_json(work / "native-restore.json", record)
     elif args.phase == "prepare":
         record = prepare(work)
+    elif args.phase == "run-group":
+        if args.group is None:
+            parser.error("run-group requires --group")
+        record = run_group(work, args.group)
+        print(json.dumps(record, indent=2))
+        return 0 if record["passed"] else 1
     else:
         record = result(work)
         smoke.config.write_new_json(work / "result.json", record)
     print(json.dumps(record, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
