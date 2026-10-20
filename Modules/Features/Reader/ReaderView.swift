@@ -1934,7 +1934,12 @@ struct ReaderView: View {
                     .preference(key: ReaderSafeAreaBottomKey.self, value: g.safeAreaInsets.bottom)
             }
         )
-        .background(ReaderViewportSizeObserver(onSizeChange: handleReaderViewportSizeChange))
+        // The page/scroll surfaces ignore safe areas. Measure that same surface,
+        // rather than paginating the shorter safe-area parent and stretching it.
+        .background(
+            ReaderViewportSizeObserver(onSizeChange: handleReaderViewportSizeChange)
+                .ignoresSafeArea()
+        )
         .onPreferenceChange(ReaderSafeAreaTopKey.self) {
             readerSafeAreaTop = max($0, windowSafeTop)
         }

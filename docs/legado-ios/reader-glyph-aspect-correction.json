@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "status": "production-correction-integrated-awaiting-combined-Apple-SDK-and-visual-validation",
+  "userSymptom": "Actual glyphs appear narrower and taller, like vertical stretching; confirmed explicitly by the user.",
+  "sourceAnalysis": {
+    "kind": "redacted-glyph-aspect-source-analysis",
+    "evidenceType": "Source-root-cause established; actual device view bounds and before/after visual output remain unmeasured",
+    "diagnosticEvents": [
+      {
+        "time": "23:00:16.376",
+        "event": "engine initial render size",
+        "width": 402,
+        "height": 874
+      },
+      {
+        "time": "23:00:16.387",
+        "event": "layout invalidated to observer size",
+        "width": 402,
+        "height": 778,
+        "oldWidth": 402,
+        "oldHeight": 874
+      },
+      {
+        "time": "23:00:38.140",
+        "event": "subsequent layout retained shorter size",
+        "width": 402,
+        "height": 778
+      }
+    ],
+    "conditionalOldRendererMath": {
+      "condition": "A 402x778 layout drawn in 402x874 view bounds",
+      "scaleX": 1,
+      "scaleY": 1.1233933161953729,
+      "verticalToHorizontalRatio": 1.1233933161953729,
+      "actualDeviceViewBoundsMeasured": false
+    },
+    "sourceCauses": [
+      "ReaderView full-bleed page/scroll children ignore safe areas, while the sole size observer measures the safe-area outer readerLayers. CoreTextPageViewController fills its real parent view bounds.",
+      "CoreTextPageView.renderPage stretches the entire page using independent width and height ratios. Hit testing, selection, annotations, attachment and live-media rects repeat that mapping.",
+      "CoreTextPageView uses the default resize content mode without a redraw-on-bounds policy, allowing a retained layer bitmap to stretch during resizing. Curl back images explicitly use scaleToFill."
+    ],
+    "correction": [
+      "The existing size observer ignores the same safe areas as the actual reading surfaces; no second observer, viewport owner, or persistence path is added.",
+      "One centered uniform page transform drives drawing, inverse hit testing, selection/annotation/playback overlays, image taps, footnotes and inline live-media positions. Unoccupied destination bounds retain page background color.",
+      "CoreTextPageView redraws on bounds changes and preserves a pending bitmap aspect; curl back images preserve the same aspect. Existing engine snapshot/prefetch paths still use shared renderPage and their existing keys."
+    ],
+    "fontReview": "UserReaderFontResolver creates selected/system fonts at requested point size and applies weight/italic traits; reviewed regular font paths introduce no width/height scale. Global settings has no reader font aspect-scale migration. No user font data is inspected or changed.",
+    "preserved": [
+      "CoreText pagination, fonts, font matrices and line metrics",
+      "spineIndex/charOffset progress authority",
+      "Existing caches and snapshot keys",
+      "Page bar and attachment positions within their sheet",
+      "Horizontal and vertical glyph orientation",
+      "Original callback and preload task ownership"
+    ],
+    "testScope": "Synthetic CJK/Latin fixtures only; new Swift definitions are authored, not executed on this Windows host.",
+    "privacy": "No raw user log, title, book UUID, URL, chapter text, book file, source definition, device identifier or credential is copied.",
+    "noAppleSDKOrVisualExecution": true
+  },
+  "preparationSHA256": "c564fd9157d1e1176633a67d1bdeba37afa25030281bc61f8c8feb724919b4d5",
+  "independentSourceReview": {
+    "schemaVersion": 1,
+    "kind": "reader-glyph-aspect-independent-source-review",
+    "status": "source-accepted-v2-awaiting-combined-Apple-SDK",
+    "baselineCommit": "50a3f2e",
+    "reviewedPreparation": {
+      "path": "preparation-v2.json",
+      "expectedSha256": "c564fd9157d1e1176633a67d1bdeba37afa25030281bc61f8c8feb724919b4d5"
+    },
+    "reviewedProductionCandidate": {
+      "path": "work/Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+      "bytes": 131298,
+      "sha256": "23dc1635dea4d89668512ca24b9f03024c9aeb392e77c75614b54f556386975c"
+    },
+    "reviewScope": [
+      "All five candidate diffs and necessary adjacent implementation boundaries",
+      "Uniform draw transform, inverse text and attachment hit testing",
+      "Selection, annotations, note markers and TTS overlay coordinates",
+      "Actual live video/iframe host frames and resize reconciliation",
+      "Bitmap bounds redraw and proportional curl-back material",
+      "Reader viewport observer safe-area policy versus reader children",
+      "New synthetic CJK/Latin pixel, hit, live-bitmap and XCTest definitions"
+    ],
+    "findings": [
+      {
+        "id": "GEO-1",
+        "severity": "P1",
+        "status": "fixed-in-v2-source",
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+        "boundary": "pointInRenderCoordinates, used by handleTap and attachment.linkTarget",
+        "originalProblem": "Attachment hit rectangles used the uniform page transform while the attachment-internal link lookup still inverted the old independent width and height scales. A visible table link or image footnote could therefore fail to activate at its painted location.",
+        "arithmeticExample": "For render 402x778 and view 402x874, the new sheet has scale 1 and y translation 48. A render point at y=74 paints at y=122. The previous inverse returned 122*778/874, approximately 108.60, rather than 74.",
+        "verifiedCorrection": "pointInRenderCoordinates now returns PageGeometry(renderSize:layout.renderSize,bounds:bounds).renderPoint(point).",
+        "existingRegressionBoundary": "EPUBRenderingTests.tableFootnotePopoverAnchorsToMarkerNotWholeTable currently covers native-size real table-link taps; a changed-aspect variant would exercise this corrected branch."
+      },
+      {
+        "id": "GEO-2",
+        "severity": "P1",
+        "status": "fixed-in-v2-source",
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+        "boundary": "CoreTextPageViewController.currentLiveAttachments, startInline and viewDidLayoutSubviews",
+        "originalProblem": "Live video and iframe views were still sent raw render-space attachment rectangles while their painted placeholders used the uniform page transform. The real inline view consequently appeared offset or incorrectly sized when page bounds and render size differed.",
+        "verifiedCorrection": "currentLiveAttachments now maps attachment.rect through pageView.viewRect(forRenderRect:) and converts that page-view rectangle into the controller view coordinates consumed by InlineLiveViewHost. Both initial embedding and layout reconciliation use that same function.",
+        "existingRegressionBoundary": "InlineLiveViewHostTests.webEmbedLifecycle covers host reconciliation but does not itself cover the page controller's attachment mapping. The new resizedLivePageRedrawsWithoutStretching definition covers the page bitmap, not a real live media child."
+      }
+    ],
+    "remainingSourceBlockers": [],
+    "acceptedSourceFacts": [
+      "The uniform PageGeometry is reused by compositor drawing, text inverse hits, attachment internal inverse hits, image hit rectangles, selection, annotation layers, note marker anchors and TTS selection rectangles.",
+      "Bounds changes already recalculate annotation, playback and selection overlays; contentMode redraw now requests a new page bitmap, while contentsGravity preserves the preceding bitmap aspect until it is replaced.",
+      "Live-media child coordinates now include the same presentation transform and page-view to owner-view conversion.",
+      "The proportional curl-back image contract is explicitly asserted in its existing fixture.",
+      "ReaderView adds ignoresSafeArea only to the measurement observer, matching the existing full-bleed reader children. Its single modifier hunk must be composed with the callback ReaderView work.",
+      "No definite newly introduced Swift API, signature or fixture compilation blocker was identified from the inspected source."
+    ],
+    "verificationLimits": {
+      "SwiftCompilerInvocations": 0,
+      "AppleSDKInvocations": 0,
+      "iOSTestExecutions": 0,
+      "grammarIsRuntimeEvidence": false,
+      "syntheticPixelTestsAreExecuted": false,
+      "safeAreaXCTestIsExecuted": false,
+      "canonicalEdited": false,
+      "GitMutationPerformed": false,
+      "cloudActionPerformed": false,
+      "privateBookSourceCredentialOrRawDiagnosticRead": false,
+      "notes": [
+        "Source acceptance is conditional on the exact v2 hashes and does not claim an Apple SDK build or passing tests.",
+        "The two source findings were communicated before the author corrected them; the reviewer did not edit candidate source.",
+        "Root must bind the final callback-plus-glyph ReaderView composition and run the focused synthetic pixel, viewport, curl-back and writing-mode regressions on the Apple SDK."
+      ]
+    }
+  },
+  "sources": [
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextPageView.swift",
+      "bytes": 131298,
+      "sha256": "23dc1635dea4d89668512ca24b9f03024c9aeb392e77c75614b54f556386975c"
+    },
+    {
+      "path": "Modules/Features/Reader/ReaderView.swift",
+      "bytes": 151665,
+      "sha256": "5f04362f10e1c20ef75c1c318e60d511d397980824a63fecd93eafa311574a7b"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+      "bytes": 9720,
+      "sha256": "0197febb57f5d2270ef458116e6584f29624b6bcb3e7d2ed3f518d84a5b7533e"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderPresentationContractTests.swift",
+      "bytes": 22426,
+      "sha256": "0e582c5e5b571e071b9630067039a7dc25bef1b8d8af8474c102d0510b767958"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReaderViewportSizeObserverTests.swift",
+      "bytes": 10098,
+      "sha256": "79f1cdc28a1aba9ca7f86463ef925438ad2837b515b105b22a53b9338f58ea6c"
+    }
+  ],
+  "sharedReaderViewComposition": {
+    "callbackInputSHA256": "80867fb8c89cfe8d9fc996b03d2d78dfd39ee1c68f6d1db753badb5845c5c5ef",
+    "method": "Compose exactly one observer modifier hunk over callback implementation, preserving all callback changes.",
+    "outputSHA256": "5f04362f10e1c20ef75c1c318e60d511d397980824a63fecd93eafa311574a7b"
+  },
+  "regressions": {
+    "newDefinitions": [
+      {
+        "framework": "Swift Testing",
+        "suite": "CoreTextPagedScrollAppearanceTests",
+        "method": "tallerPagePreservesGlyphPixelsAndSelection()",
+        "async": true,
+        "throws": true,
+        "mainActor": true,
+        "purpose": "Actual synthetic CJK/Latin horizontal and vertical CoreText crop pixels, selection dimensions, point hit and attachment mapping preserve aspect for 402x778 to 402x874."
+      },
+      {
+        "framework": "Swift Testing",
+        "suite": "CoreTextPagedScrollAppearanceTests",
+        "method": "pageGeometryPreservesAspectAndRoundTrips()",
+        "async": false,
+        "throws": false,
+        "mainActor": false,
+        "purpose": "Portrait/landscape/half-size/nonzero-origin sheet mappings preserve square aspect and round-trip the inverse."
+      },
+      {
+        "framework": "Swift Testing",
+        "suite": "CoreTextPagedScrollAppearanceTests",
+        "method": "resizedLivePageRedrawsWithoutStretching()",
+        "async": true,
+        "throws": true,
+        "mainActor": true,
+        "purpose": "Real CoreTextPageView.layer display replaces the bitmap after actual bounds change, with unchanged glyph crop pixels."
+      },
+      {
+        "framework": "XCTest",
+        "suite": "ReaderViewportSizeObserverHostingTests",
+        "method": "testFullBleedProbeMatchesReaderSurfaceWithSafeAreaInsets()",
+        "async": true,
+        "throws": false,
+        "mainActor": true,
+        "purpose": "Two actual UIKit-backed SwiftUI observer callbacks report equal full-bleed child/probe sizes despite added safe-area insets."
+      }
+    ],
+    "requiredExistingRegressions": [
+      "CoreTextPagedScrollAppearanceTests.authoredCompositionMatchesScroll(nestedBackdrop:) [both existing bool arguments]",
+      "ReaderPageTurnSmoothnessTests.prefetchedPageIsShownWithoutDrawing()",
+      "ReaderPageSnapshotPerformanceTests.resizedLayoutInvalidatesSnapshots()",
+      "ReaderPresentationContractTests.curlBackMirrorsRenderedPageMaterial()",
+      "ReaderViewportSizeObserverHostingTests.testBackgroundMeasuresReaderSurfaceInsteadOfWindowAndReportsResize()",
+      "CoreTextWritingModeTests.verticalPaginationStoresWritingModeAndVerticalGlyphAttribute()",
+      "CoreTextWritingModeTests.verticalLatinRangesLieOnTheirSideCentred()"
+    ],
+    "actualAppleSDKExecutions": 0,
+    "actualIOSTestExecutions": 0,
+    "actualDeviceVisualValidation": false
+  },
+  "rawUserDiagnosticUploaded": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

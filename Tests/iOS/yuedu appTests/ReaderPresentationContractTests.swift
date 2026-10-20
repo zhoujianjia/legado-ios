@@ -257,6 +257,7 @@ struct ReaderPresentationContractTests {
 
         let imageView = try #require(backPage.view.subviews.compactMap { $0 as? UIImageView }.first)
         #expect(imageView.image === renderedPageImage)
+        #expect(imageView.contentMode == .scaleAspectFit)
         #expect(imageView.transform == CGAffineTransform(scaleX: -1, y: 1))
         #expect(backPage.view.backgroundColor == .black)
         #expect(backPage.logicalPageIndex == 3)

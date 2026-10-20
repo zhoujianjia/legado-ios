@@ -54,14 +54,33 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         )
     }
 
+    /// A laid-out page is one physical sheet. A destination of another aspect ratio
+    /// must preserve that sheet's glyphs, attachments and interaction coordinates.
+    struct PageGeometry {
+        let layoutSize: CGSize
+        let renderToView: CGAffineTransform
+
+        init(renderSize: CGSize, bounds: CGRect) {
+            layoutSize = CGSize(width: max(1, renderSize.width), height: max(1, renderSize.height))
+            let scale = min(bounds.width / layoutSize.width, bounds.height / layoutSize.height)
+            renderToView = CGAffineTransform(
+                a: scale, b: 0, c: 0, d: scale,
+                tx: bounds.minX + (bounds.width - layoutSize.width * scale) / 2,
+                ty: bounds.minY + (bounds.height - layoutSize.height * scale) / 2
+            )
+        }
+
+        func viewRect(_ rect: CGRect) -> CGRect { rect.applying(renderToView) }
+        func renderPoint(_ point: CGPoint) -> CGPoint { point.applying(renderToView.inverted()) }
+    }
+
     private struct InteractionContext {
         let frame: CTFrame
         let lines: [CTLine]
         let origins: [CGPoint]
         let contentPathRect: CGRect
         let layoutSize: CGSize
-        let scaleX: CGFloat
-        let scaleY: CGFloat
+        let geometry: PageGeometry
         let writingMode: ReaderWritingMode
     }
 
@@ -138,6 +157,9 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        contentMode = .redraw
+        // Keep the previous bitmap proportional until a bounds-change display lands.
+        layer.contentsGravity = .resizeAspect
         isOpaque = true
         backgroundColor = .systemBackground
         addInteraction(editMenuInteraction)
@@ -714,7 +736,7 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         bounds: CGRect,
         bars: ReaderPageBars? = nil
     ) {
-        guard pageIndex < layout.pageRanges.count else { return }
+        guard pageIndex < layout.pageRanges.count, bounds.width > 0, bounds.height > 0 else { return }
 
         let renderTrace = ReaderPerfTrace.begin(
             .renderPage,
@@ -728,26 +750,21 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         )
         defer { ReaderPerfTrace.end(renderTrace) }
 
-        let layoutSize = CGSize(
-            width: max(1, layout.renderSize.width),
-            height: max(1, layout.renderSize.height)
-        )
+        let geometry = PageGeometry(renderSize: layout.renderSize, bounds: bounds)
+        let layoutSize = geometry.layoutSize
         let canonicalBounds = CGRect(origin: .zero, size: layoutSize)
-        let scaleX = bounds.width / layoutSize.width
-        let scaleY = bounds.height / layoutSize.height
 
         ctx.saveGState()
-        ctx.translateBy(x: bounds.minX, y: bounds.minY)
-        ctx.scaleBy(x: scaleX, y: scaleY)
+        ctx.setFillColor(layout.backgroundColor.cgColor)
+        ctx.fill(bounds)
+        ctx.clip(to: bounds)
+        ctx.concatenate(geometry.renderToView)
         // Both text and image-only EPUB pages carry the configured bars. Keeping
         // this at the shared exit also covers curl/cover snapshot rendering.
         defer {
             bars?.draw(in: canonicalBounds, context: ctx)
             ctx.restoreGState()
         }
-
-        ctx.setFillColor(layout.backgroundColor.cgColor)
-        ctx.fill(canonicalBounds)
 
         if let backgroundImage = layout.readerBackgroundImage ?? layout.pageBackgroundImage {
             drawPageBackground(backgroundImage, in: canonicalBounds)
@@ -1522,10 +1539,7 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         layout: CoreTextPaginator.ChapterLayout
     ) -> CGPoint {
         guard bounds.width > 0, bounds.height > 0 else { return point }
-        return CGPoint(
-            x: (point.x - bounds.minX) * layout.renderSize.width / bounds.width,
-            y: (point.y - bounds.minY) * layout.renderSize.height / bounds.height
-        )
+        return PageGeometry(renderSize: layout.renderSize, bounds: bounds).renderPoint(point)
     }
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
@@ -1730,14 +1744,7 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
     /// coordinate space, so a popover can be anchored to an on-screen marker.
     func viewRect(forRenderRect rect: CGRect) -> CGRect {
         guard let layout, layout.renderSize.width > 0, layout.renderSize.height > 0 else { return rect }
-        let scaleX = bounds.width / layout.renderSize.width
-        let scaleY = bounds.height / layout.renderSize.height
-        return CGRect(
-            x: bounds.minX + rect.minX * scaleX,
-            y: bounds.minY + rect.minY * scaleY,
-            width: rect.width * scaleX,
-            height: rect.height * scaleY
-        )
+        return PageGeometry(renderSize: layout.renderSize, bounds: bounds).viewRect(rect)
     }
 
     private func imageAttachment(at point: CGPoint) -> CoreTextPaginator.RenderedAttachment? {
@@ -1749,19 +1756,13 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
             return nil
         }
 
-        let scaleX = bounds.width / layout.renderSize.width
-        let scaleY = bounds.height / layout.renderSize.height
+        let geometry = PageGeometry(renderSize: layout.renderSize, bounds: bounds)
         let attachments = (layout.inlineAttachments[localPageIndex] ?? [])
             + (layout.blockAttachments[localPageIndex] ?? [])
             + (layout.blockRenderables[localPageIndex] ?? []).compactMap(\.imageAttachment)
 
         return attachments.first { attachment in
-            let rect = CGRect(
-                x: bounds.minX + attachment.rect.minX * scaleX,
-                y: bounds.minY + attachment.rect.minY * scaleY,
-                width: attachment.rect.width * scaleX,
-                height: attachment.rect.height * scaleY
-            )
+            let rect = geometry.viewRect(attachment.rect)
             return rect.insetBy(dx: -8, dy: -8).contains(point)
         }
     }
@@ -1849,17 +1850,14 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
             origins: origins,
             contentPathRect: contentPathRect,
             layoutSize: layoutSize,
-            scaleX: bounds.width / layoutSize.width,
-            scaleY: bounds.height / layoutSize.height,
+            geometry: PageGeometry(renderSize: layoutSize, bounds: bounds),
             writingMode: layout.writingMode
         )
     }
 
     private func stringIndex(at point: CGPoint, in context: InteractionContext) -> Int? {
-        let canonical = CGPoint(
-            x: (point.x - bounds.minX) / context.scaleX,
-            y: (point.y - bounds.minY) / context.scaleY
-        )
+        let canonical = context.geometry.renderPoint(point)
+        guard CGRect(origin: .zero, size: context.layoutSize).contains(canonical) else { return nil }
         if context.writingMode.isVertical {
             return verticalStringIndex(atCanonicalPoint: canonical, in: context)
         }
@@ -2061,12 +2059,7 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
         // Scale rects to view coordinates
         let scaledLayers = layers.map { layer -> CoreTextAnnotationRenderer.Layer in
             let scaledRects = layer.rects.map { rect in
-                CGRect(
-                    x: rect.minX * context.scaleX + bounds.minX,
-                    y: rect.minY * context.scaleY + bounds.minY,
-                    width: rect.width * context.scaleX,
-                    height: rect.height * context.scaleY
-                )
+                context.geometry.viewRect(rect)
             }
             return CoreTextAnnotationRenderer.Layer(rects: scaledRects, style: layer.style, color: layer.color)
         }
@@ -2404,12 +2397,7 @@ final class CoreTextPageView: UIView, UIGestureRecognizerDelegate, UIEditMenuInt
             writingMode: context.writingMode
         )
         return rects.map { rect in
-            CGRect(
-                x: rect.minX * context.scaleX + bounds.minX,
-                y: rect.minY * context.scaleY + bounds.minY,
-                width: rect.width * context.scaleX,
-                height: rect.height * context.scaleY
-            )
+            context.geometry.viewRect(rect)
         }
     }
 
@@ -2612,7 +2600,10 @@ final class CoreTextPageViewController: UIViewController, ReaderBookmarkRibbonHo
         let attachments = (layout.inlineAttachments[currentLocalPage] ?? [])
             + (layout.blockAttachments[currentLocalPage] ?? [])
         return attachments.compactMap { attachment in
-            InlineLiveContent(attachment).map { ($0, attachment.rect) }
+            InlineLiveContent(attachment).map { content in
+                let pageRect = pageView.viewRect(forRenderRect: attachment.rect)
+                return (content, view.convert(pageRect, from: pageView))
+            }
         }
     }
 
@@ -2870,7 +2861,7 @@ final class PageBackViewController: UIViewController {
 
         if let renderedPageImage {
             imageView.image = renderedPageImage
-            imageView.contentMode = .scaleToFill
+            imageView.contentMode = .scaleAspectFit
             imageView.clipsToBounds = true
             imageView.frame = view.bounds
             imageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]

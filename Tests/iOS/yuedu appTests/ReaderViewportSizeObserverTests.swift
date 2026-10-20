@@ -137,6 +137,50 @@ struct ReaderViewportSizeObserverTests {
 
 @MainActor
 final class ReaderViewportSizeObserverHostingTests: XCTestCase {
+    func testFullBleedProbeMatchesReaderSurfaceWithSafeAreaInsets() async {
+        let size = CGSize(width: 402, height: 874)
+        let reported = expectation(description: "full reader surface")
+        let surfaceReported = expectation(description: "full-bleed child bounds")
+        var measuredSize: CGSize?
+        var surfaceSize: CGSize?
+        var fulfilled = false
+        var surfaceFulfilled = false
+        let host = UIHostingController(rootView:
+            ZStack {
+                Color.clear
+                    .background(ReaderViewportSizeObserver { observed in
+                        surfaceSize = observed
+                        if observed == size, !surfaceFulfilled {
+                            surfaceFulfilled = true
+                            surfaceReported.fulfill()
+                        }
+                    })
+                    .ignoresSafeArea()
+            }
+            .background(
+                ReaderViewportSizeObserver { observed in
+                    measuredSize = observed
+                    if observed == size, !fulfilled {
+                        fulfilled = true
+                        reported.fulfill()
+                    }
+                }
+                .ignoresSafeArea()
+            )
+        )
+        let window = UIWindow(frame: CGRect(origin: .zero, size: size))
+        window.rootViewController = host
+        window.isHidden = false
+        host.additionalSafeAreaInsets = UIEdgeInsets(top: 62, left: 0, bottom: 34, right: 0)
+        defer { withExtendedLifetime((window, host)) { window.isHidden = true } }
+        host.view.setNeedsLayout()
+        host.view.layoutIfNeeded()
+        await fulfillment(of: [reported, surfaceReported], timeout: 5)
+        XCTAssertEqual(measuredSize, size)
+        XCTAssertEqual(surfaceSize, size)
+        XCTAssertEqual(measuredSize, surfaceSize)
+    }
+
     func testBackgroundMeasuresReaderSurfaceInsteadOfWindowAndReportsResize() async {
         let initialSize = CGSize(width: 330, height: 520)
         let resizedSize = CGSize(width: 398, height: 350)

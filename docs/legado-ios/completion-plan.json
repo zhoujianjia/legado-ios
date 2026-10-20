@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-20",
-  "activeBatchRecord": "docs/legado-ios/core-original-reader-callbacks-step.json",
+  "activeBatchRecord": "docs/legado-ios/reader-glyph-aspect-correction.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
-    "当前状态": "按用户最新要求，当前只主动推进自签与书源核心功能。核心指既定原 JVM 传统规则兼容、请求语义、搜索→详情→目录→正文完整链路、必要状态持久化及阅读进度可靠性；不重新选引擎，不把字段保存或观察器准备当完整兼容。自签是独立优先主线，仍只有有限探针证据，实际签名／覆盖安装尚未实现或证明。字体外观、UMD／MOBI、RSS／TTS／媒体／段评、LAN／MCP／Cron、批注字典、扩展平台入口及最终材料等均未完成／按用户要求暂缓；已有代码、真实证据与可靠性改进保留。真机验证全部暂不执行，也不向用户索取测试，不据此认定通过。现有三组 source-only 提交及失败原件保持各自源码边界，不能证明 JVM 产品核心或自签成功。",
+    "当前状态": "当前优先自签和书源核心。已接入实际账号认证、配对导入、完整JVM包重签修正及默认原核读取和四类通知；尚待集中SDK/JNI和实际续签验证。用户已允许真机验证，先交付当前批次build14，不再等待全部书源宿主兼容；其他17项保持未完成、暂缓。",
     "实施顺序": [
       {
         "阶段": 1,
@@ -70,7 +70,7 @@
       "字体、主题、外观、辅助功能扩展、适配和主动性能优化均未完成／按用户要求暂缓；已有能力与证据保留。"
     ],
     "继续保留": "简体界面、账号与会员入口清理、独立品牌、缓存 TXT 导出、已有字体及全部用户书籍/书源/进度。书源自身的登录验证继续保留。",
-    "自续签边界": "已实现受控IPA读取、真实签名材料校验、单一软件Keychain材料库和thin64 arm64重签底层，新增部分尚待SDK执行。整包资源/profile与嵌套签名编排、账号服务、认证安装和持久续签事务仍未完成；电脑关闭、无伴侣的同机安装权限仍未证明。当前不执行真机验证。",
+    "自续签边界": "认证、配对导入、自动触发与受控整包重签已有生产实现，尚未在当前源码上取得完整编译、认证安装和到期延长的真实证据。电脑关闭、无伴侣App的同机安装权限仍未证实，不能承诺完成日期。",
     "完成口径": "逐工作包保存真实证据；电脑或模拟器通过只完成对应范围，不换算为全功能、全部书源或真机完成率。",
     "开发与验证节奏": [
       "先按依赖顺序完成同一阶段的相关优化，再集中进行一次云端编译和集成验证。",
@@ -80,11 +80,9 @@
       "没有新改动、真实失败或未解决疑点时，不重复启动构建。"
     ],
     "本批执行": [
-      "自签独立优先：推进无需真机的通道与签名／安装接口接入准备，复用已有证据；未满足传输身份及授权门槛前不进行产品签名安装集成，完整自签仍未实现。",
-      "核心主线：沿锁定 Rhino／Zero／原协调器／AnalyzeUrl 和既有服务实现一条传统纯文本源的搜索→详情→目录→两章及次页正文闭环，补齐必要持久化、缓存和进度可靠性。",
-      "原公开入口 typed 结果、请求字节、异常及副作用与普通 JAR→JNI→原生阅读实际证据具备前，不切换传统唯一产品入口，不宣称全面兼容。",
-      "其余工作包未完成／按用户要求暂缓，不再用字体、外观、本地格式、性能观测或材料归档代替核心产品进展；既有实现与真实证据完整保留。",
-      "当前不执行任何真机验证，不向用户索取安装、报告或测试；历史真机门槛保留为未完成，不转成通过。"
+      "先集中验证已完成的续签生产接线、原核默认入口和通知、字形拉伸修正，生成对应源码的build14。",
+      "真机续签按实际认证、重签、同身份覆盖安装和到期延长逐步记录；TCP连通和导入成功不算续签成功。",
+      "剩余书源核心兼容继续推进，其他17项仍未完成、暂缓。"
     ]
   },
   "baseline": {
@@ -163,7 +161,7 @@
       }
     ],
     "schedulingRule": "Only self-signing and the existing traditional-source core route are active. Follow stepByStep within each lane and the unchanged original workpackage dependencies; independent bounded offline implementation can proceed in parallel. Device evidence gates live authenticated installation and final renewal acceptance, not owned-fixture material/signing/protocol development. The 17 deferred packages remain unfinished and inactive; the latest user request now authorizes renewal device packaging and validation.",
-    "validationRule": "User-directed consolidated validation: first finish the implementable non-device production wiring and minimum meaningful regression definitions across all C1-C5/S1-S6 core steps. During development use only necessary lightweight checks and reuse unchanged evidence. Then run one consolidated Mac/App/Package/native-JNI/end-to-end validation batch; repair actual failures together and revalidate affected scope. Keep the two already-started4c24e1f jobs and reuse their source-scoped results. Do not trigger or wait for cloud compilation for each small change or subsystem. The17 deferred packages remain inactive.",
+    "validationRule": "Submit the currently integrated renewal, original-consumer/callback and actual glyph-correction batch to one consolidated Mac/App/Package/native-JNI checkpoint and build14 device package now. Latest physical-device request takes priority over waiting for every remaining source-host feature. Keep necessary lightweight checks and unchanged evidence; repair concrete failures together. The17 deferred packages stay inactive.",
     "progressRule": "Report implementation progress, local checks, pending integration and the next stage checkpoint separately. Do not spend an active development turn repeatedly waiting for a cloud build; a passing local check does not imply iOS acceptance.",
     "terminalNonDeviceState": "All implementable desktop/Simulator tasks verified, external/device-dependent feasibility decisions explicit, one audited source-free candidate and concise deferred checklist. Do not mark the full feature domains complete while required evidence is missing.",
     "cloudTriggerPolicy": {
@@ -171,7 +169,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Finish implementable production changes across all eleven active core steps before requesting the next consolidated SDK batch. Reuse the two current4c24e1f jobs and act on concrete failures without repeatedly polling or starting per-item jobs.",
+      "nextPlannedCheckpoint": "Current reviewed renewal + actual default original consumers/notifications + glyph geometry + exact harness selection, followed by one source-bound currentcore/Native/build14 checkpoint. Remaining source compatibility continues independently.",
       "alreadyRunningTasks": "Both4c24e1f SDK runs are terminal and archived; corrected build13 run39434362755 completed successfully and is downloaded. No new cloud run is required for unchanged evidence.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
@@ -557,6 +555,11 @@
               "record": "docs/legado-ios/core-original-reader-callbacks-step.json",
               "scope": "Actual startRead/endRead/saveRead/addBookShelf traditional-text notifications through original JVM and actual App owners.",
               "actualSDKAccepted": false
+            },
+            {
+              "record": "docs/legado-ios/reader-glyph-aspect-correction.json",
+              "actualSDKAccepted": false,
+              "scope": "User-reported glyph stretching: matching full reader viewport, uniform rendering and interaction/live-content geometry."
             }
           ],
           "implementedSubtasksZh": [
@@ -822,8 +825,8 @@
       },
       "deviceCheckpoint": {
         "id": "D1",
-        "status": "unfinished_deferred_by_user",
-        "actionZh": "未来按用户重新启动真机验证的指示，分别验真实站点阅读，以及免费团队、未越狱、无JIT、电脑关闭且USB断开、无伴侣App条件下的同机认证安装、同身份覆盖和冷启数据保留，再验长期无人值守／到期恢复；不以外部VPN伴侣改变既定单App条件。",
+        "status": "authorized_awaiting_current_device_package_and_actual_evidence",
+        "actionZh": "用户已授权续签真机验证。先交付包含当前认证、配对导入和重签修正的build14，验证认证、重签、同身份覆盖安装及到期延长；再分别核对电脑关闭、USB断开、VPN关闭、无伴侣App条件。尚未取得真实设备通过证据。",
         "requiresPhysicalDevice": true,
         "askUserNow": false,
         "actualAcceptedEvidence": [],
@@ -838,8 +841,8 @@
         "lastObservedStatus": "active",
         "ordinaryTurnCompletionEndsGoal": false,
         "scopeUnchanged": true,
-        "physicalDeviceValidationRequested": false,
-        "ruleZh": "按已启用的持续目标继续实际开发；保留C1至C5、S1至S6及原依赖关系，不因单轮结束将目标标为完成。设备验证与其他17包仍暂缓。"
+        "physicalDeviceValidationRequested": true,
+        "ruleZh": "持续目标继续推进C1至C5、S1至S6。按用户最新要求，当前批次先集中编译并交付续签真机测试包；其余书源核心工作并行，其他17项仍未完成并暂缓。普通轮次结束不代表目标完成。"
       },
       "signatureSDKSubmission": "docs/legado-ios/core-renewal-20f4cd6-initial.json",
       "cryptographySDKSubmission": "docs/legado-ios/core-renewal-533f0b4-initial.json",
@@ -941,12 +944,17 @@
         "recordedAtUTC": "2026-10-20T13:02:20.982139+00:00",
         "requestedByUser": true,
         "scope": "C1-C5 and S1-S6 non-device work;17 other packages remain deferred",
-        "finishCoreImplementationBeforeNextSDKBatch": true,
+        "finishCoreImplementationBeforeNextSDKBatch": false,
         "alreadyStartedRunsRetained": [
           39426297522,
           39426296852
         ],
-        "completionEvidenceRequirementUnchanged": true
+        "completionEvidenceRequirementUnchanged": true,
+        "latestDevicePriority": {
+          "requestedOn": "2026-10-20",
+          "reason": "User now requests actual renewal testing and asks when it can complete; do not gate this on all unfinished book-source host compatibility.",
+          "remainingCoreCompatibilityStillActive": true
+        }
       },
       "originalExploreLifecycleAndOwnedReadbackImplementation": "docs/legado-ios/core-lifecycle-and-readback-batch.json",
       "appEnrollmentExecutionAndSettingsImplementation": {
