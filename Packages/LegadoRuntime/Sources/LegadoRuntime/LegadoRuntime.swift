@@ -299,6 +299,18 @@ public final class LegadoRuntime: @unchecked Sendable {
             timeoutMilliseconds, taskID, onReportedEffects)
     }
 
+    /// Locked SourceCallBack.callBackSource: nullable book/chapter/result are bound
+    /// by the original runtime. An imported request cannot grant an App entity.
+    public func sourceCallbackOriginal(session: LegadoSourceSession, event: String,
+        timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalSourceCallbackResult {
+        guard (1...30_000).contains(timeoutMilliseconds) else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original source callback timeout must be between 1 and 30000 milliseconds")
+        }
+        return try await executeOriginal(session, "sourceCallback", OriginalSourceCallbackRequest(event: event,
+            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+    }
+
     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
         _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String,
         _ onReportedEffects: (@Sendable ([String]) -> Void)? = nil

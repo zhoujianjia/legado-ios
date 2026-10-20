@@ -313,6 +313,7 @@ enum LegadoOriginalPreviewOperation: Sendable {
     case openExploreContext
     case evaluateExploreContext(String)
     case savePendingExploreContext
+    case sourceCallback(String)
     case details(LegadoOriginalBook)
     case toc(LegadoOriginalBook, runPreUpdateJS: Bool)
     case content(LegadoOriginalBook, LegadoOriginalChapter, nextChapterURL: String?)
@@ -322,6 +323,7 @@ enum LegadoOriginalPreviewResult: Sendable {
     case search([LegadoOriginalBook])
     case explore([LegadoOriginalBook])
     case exploreContext(LegadoOriginalExploreContextResult)
+    case sourceCallback(LegadoOriginalSourceCallbackResult, completedEffects: [String])
     case details(LegadoOriginalBook)
     case toc(LegadoOriginalBook, [LegadoOriginalChapter])
     case content(LegadoOriginalBook, LegadoOriginalChapter, String)
@@ -356,6 +358,10 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 let taskID = grant?.taskID ?? UUID().uuidString
                 let remaining = Int64(min(300_000, max(1, deadline.timeIntervalSinceNow * 1000)))
                 switch operation {
+                case .sourceCallback(let event):
+                    let value = try await runtime.sourceCallbackOriginal(session: session, event: event,
+                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
+                    result = .sourceCallback(value, completedEffects: reportedEffects.withLock { $0 })
                 case .search(let key, let page):
                     result = .search(try await runtime.searchOriginal(session: session, key: key, page: page, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects).books)
                 case .explore(let url, let page):

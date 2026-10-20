@@ -502,6 +502,100 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         }
     }
 
+    func testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            // Search receives the fixture Cookie through the real JVM transport
+            // and App Cookie owner. No actual BookStore UUID is allocated here.
+            _ = try await fixture.service.originalSearch(query: "native-original", page: 2, source: fixture.source)
+            var authored = fixture.source
+            authored.eventListener = true
+            authored.ruleContent.callBackJs = """
+            if(book!==null || chapter!==null || result!==null)throw new Error('source event has fake entities');
+            if(String(java.getKey())!==String(source.getKey()) || String(sourceApi.getKey())!==String(baseUrl))throw new Error('wrong source java');
+            if(typeof infoMap!=='undefined')throw new Error('source event invented an exploration context');
+            if(String(cookie.getCookie('\(fixture.baseURL)')).indexOf('\(fixture.cookieName)=wire')<0)throw new Error('lost actual Cookie owner');
+            var prior=String(source.get('nativeShelfEvents'));
+            if(event==='endShelfRefresh' && prior!=='startShelfRefresh')throw new Error('source state lost across real sessions');
+            source.put('nativeShelfEvents',prior+(prior?'|':'')+String(event));
+            source.put('nativeShelfLarge','S'.repeat(10000));
+            if(String(source.get('nativeShelfLarge')).length!==10000)throw new Error('lost source cache owner');
+            java.ajax('\(fixture.baseURL)\(fixture.prefix)/duplicate');
+            ({toString:function(){throw new Error('notification result must be ignored');}});
+            """
+            let source = authored
+            let fetcher = BookSourceFetcher(mainJSService: fixture.service)
+            var referenced = ReadingBook(title: "Refresh source reference", source: fixture.baseURL + fixture.prefix + "/book", contentFilename: "")
+            referenced.isOnline = true; referenced.bookSourceId = source.id
+            let actualRefreshSnapshot = [referenced, referenced]
+            let before = fixture.peer.snapshot.requests.count
+            for event in [SourceCallBackEvent.startShelfRefresh, .endShelfRefresh] {
+                let pending = await MainActor.run { SourceCallBackService.notifyShelfRefresh(event,
+                    books: actualRefreshSnapshot, fetcher: fetcher, sourceResolver: { id in id == source.id ? source : nil }) }
+                let deliveries = await pending.value
+                XCTAssertEqual(deliveries.count, 1, "Repeated books must emit once per listening source")
+                let delivery = try XCTUnwrap(deliveries.first)
+                XCTAssertEqual(delivery.sourceID, source.id); XCTAssertTrue(delivery.executed)
+                XCTAssertFalse(delivery.outcome.failed, delivery.outcome.errorCode ?? "")
+                XCTAssertFalse(delivery.outcome.handled); XCTAssertNil(delivery.outcome.value)
+                XCTAssertTrue(delivery.outcome.completedEffects.contains("sourceStateCommitted"))
+            }
+            let requests = Array(fixture.peer.snapshot.requests.dropFirst(before))
+            XCTAssertEqual(requests.map(\.target), Array(repeating: fixture.prefix + "/duplicate", count: 2))
+            XCTAssertTrue(requests.allSatisfy { $0.cookie.contains(fixture.cookieName + "=wire") })
+            let missingBookOwner = await Task.detached { !FileManager.default.fileExists(atPath: fixture.metadata.path) }.value
+            XCTAssertTrue(missingBookOwner, "Source notifications cannot manufacture a BookStore record")
+            var notListening = source
+            notListening.eventListener = false
+            let silentSource = notListening
+            let silent = await MainActor.run { SourceCallBackService.notifyShelfRefresh(.endShelfRefresh,
+                books: actualRefreshSnapshot, fetcher: fetcher,
+                sourceResolver: { id in id == silentSource.id ? silentSource : nil }) }
+            let suppressed = await silent.value
+            XCTAssertTrue(suppressed.isEmpty)
+            XCTAssertEqual(fixture.peer.snapshot.requests.count, before + 2)
+        }
+    }
+
+    func testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            var authored = fixture.source
+            authored.eventListener = true
+            authored.ruleContent.callBackJs = "if(book!==null||chapter!==null||result!==null)throw new Error('fake source entities');source.put('nativeShelfBeforeCancel','kept');java.ajax('\(fixture.baseURL)\(fixture.prefix)/held');source.put('nativeShelfAfterCancel','bad')"
+            let source = authored
+            let fetcher = BookSourceFetcher(mainJSService: fixture.service)
+            var referenced = ReadingBook(title: "Source cancellation reference", source: fixture.baseURL + fixture.prefix + "/book", contentFilename: "")
+            referenced.isOnline = true; referenced.bookSourceId = source.id
+            let refreshSnapshot = [referenced]
+            let headers = self.expectation(description: "Actual source notification HTTP is held")
+            let closed = self.expectation(description: "Cancelled source notification closes the actual TCP socket")
+            fixture.peer.armHeldBody(target: fixture.prefix + "/held", headersSent: { headers.fulfill() },
+                peerClosed: { closed.fulfill() })
+            let pending = await MainActor.run { SourceCallBackService.notifyShelfRefresh(.startShelfRefresh,
+                books: refreshSnapshot, fetcher: fetcher, sourceResolver: { id in id == source.id ? source : nil }) }
+            await self.fulfillment(of: [headers], timeout: 30)
+            pending.cancel()
+            let deliveries = await pending.value
+            await self.fulfillment(of: [closed], timeout: 20)
+            XCTAssertEqual(deliveries.count, 1)
+            let terminal = try XCTUnwrap(deliveries.first)
+            XCTAssertTrue(terminal.outcome.failed); XCTAssertEqual(terminal.outcome.errorCode, "CANCELLED")
+            XCTAssertTrue(terminal.outcome.completedEffects.contains("sourceStateCommitted"))
+            XCTAssertTrue(fixture.peer.snapshot.heldPeerClosed)
+            var verifies = source
+            verifies.ruleContent.callBackJs = "if(String(source.get('nativeShelfBeforeCancel'))!=='kept'||String(source.get('nativeShelfAfterCancel'))!=='')throw new Error('cancelled source state was not drained');source.put('nativeShelfCancelVerified','yes')"
+            let verifySource = verifies
+            let check = await MainActor.run { SourceCallBackService.notifyShelfRefresh(.endShelfRefresh,
+                books: refreshSnapshot, fetcher: fetcher, sourceResolver: { id in id == verifySource.id ? verifySource : nil }) }
+            let verified = await check.value
+            XCTAssertEqual(verified.count, 1); XCTAssertFalse(verified.first?.outcome.failed ?? true)
+            let noBookOwner = await Task.detached { !FileManager.default.fileExists(atPath: fixture.metadata.path) }.value
+            XCTAssertTrue(noBookOwner)
+            XCTAssertEqual(fixture.peer.snapshot.requests.filter { $0.target == fixture.prefix + "/held" }.count, 1)
+        }
+    }
+
     private struct Fixture: @unchecked Sendable {
         let runID: String
         let prefix: String

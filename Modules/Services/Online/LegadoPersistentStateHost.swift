@@ -365,8 +365,10 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
                 committed = try backing.read(sourceURL: binding.sourceURL, domain: lease.keys[0].domain,
                     fields: Set(lease.keys.filter { !$0.binaryCompanion }.map(\.field))) == lease.snapshot
             } else {
+                guard request.recordPossibleEffect("sourceStateMayCommit") else { throw CancellationError() }
                 committed = try backing.commit(sourceURL: binding.sourceURL,
                     domain: lease.keys[0].domain, expected: lease.snapshot, changes: changes)
+                if committed { request.recordPossibleEffect("sourceStateCommitted") }
             }
             // The synchronous owner commit is the transaction boundary. Once
             // it succeeds, report that fact rather than pretend a late cancel

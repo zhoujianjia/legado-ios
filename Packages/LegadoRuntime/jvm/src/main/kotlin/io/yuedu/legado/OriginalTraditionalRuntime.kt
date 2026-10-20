@@ -35,6 +35,7 @@ internal object OriginalTraditionalRuntime {
     }
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         val fields = when (operation) {
+            "sourceCallback" -> setOf("event", "timeoutMs")
             "bookCallback" -> setOf("event", "book", "chapter", "result", "timeoutMs")
             "search" -> setOf("key", "page", "timeoutMs")
             "explore" -> setOf("url", "page", "timeoutMs")
@@ -55,6 +56,28 @@ internal object OriginalTraditionalRuntime {
                 val source = LegadoRuntime.originalBookSource(task, environment)
                 val result = runBlocking(task.job) {
                     when (operation) {
+                        "sourceCallback" -> {
+                            require(input.int("timeoutMs", 30_000) in 1..30_000) { "Original source callback timeout must be between 1 and 30000 milliseconds" }
+                            val event = input.requiredText("event")
+                            if (event !in setOf("startShelfRefresh", "endShelfRefresh"))
+                                throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "This original source notification event is not connected")
+                            val authored = source.getContentRule().callBackJs
+                            // callBackSource itself has no eventListener gate. The actual
+                            // App refresh caller gates once per listening source.
+                            if (authored.isNullOrEmpty()) jsonObject("executed" to false)
+                            else environment.platform.runWebBook(currentCoroutineContext()) {
+                                val context = currentCoroutineContext()
+                                runScriptWithContext(context) {
+                                    source.evalJS(authored) {
+                                        put("event", event); put("result", null)
+                                        put("book", null); put("chapter", null)
+                                    }
+                                }
+                                // Notifications neither consume the return nor request a
+                                // UI fallback; no fake empty Book is constructed or saved.
+                                jsonObject("executed" to true)
+                            }
+                        }
                         "bookCallback" -> {
                             val event = input.requiredText("event")
                             if (event !in setOf("startRead", "endRead", "saveRead", "addBookShelf"))

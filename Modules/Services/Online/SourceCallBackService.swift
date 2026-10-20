@@ -5,7 +5,7 @@ import os
 /// legado-E / MD3 `SourceCallBack`: hands a book source's `ruleContent.callBackJs` the book and
 /// UI events it asked for (`eventListener`). Every screen goes through here; the script itself
 /// Book notifications use the same original JVM actor and actual App owners. Tap,
-/// delete and shelf-refresh contracts still run through LegadoReviewActionRunner.
+/// delete contracts still run through LegadoReviewActionRunner.
 ///
 /// Events are fired from the places the reader acts — the detail page's buttons, the reader
 /// opening and closing, its own progress saves, a shelf refresh — never from the library store:
@@ -93,7 +93,7 @@ enum SourceCallBackService {
                 }
             }
         }
-        // Interactive, shelf-refresh and delete contracts are a separate migration.
+        // Interactive and delete contracts are a separate migration.
         // This branch is not a recovery path for the four migrated notifications.
         let snapshot = snapshot(of: book, chapter: chapter)
         let variables = book.runtimeVariables ?? [:]
@@ -130,21 +130,73 @@ enum SourceCallBackService {
         )
     }
 
-    /// startShelfRefresh / endShelfRefresh, once per listening source among the shelf's
-    /// online books — legado runs these with no book or chapter.
-    static func notifyShelfRefresh(_ event: SourceCallBackEvent, books: [ReadingBook]) {
-        let sources = Set(books.filter(\.isOnline).compactMap(\.bookSourceId)).compactMap { listeningSource(id: $0) }
-        for source in sources {
-            let empty = ReaderHTMLUtilities.LegadoSourceActionContext.BookSnapshot(
-                durChapterIndex: 0, durChapterTitle: "", order: 0, type: 0, imageStyle: "",
-                name: "", author: "", coverURL: "", bookURL: "", tocURL: "", abstract: ""
-            )
-            Task {
-                _ = await LegadoReviewActionRunner.shared.runCallBack(
-                    event, source: source, book: empty, chapter: nil, result: nil,
-                    runtimeVariables: [:], presentToast: presentToast
-                )
+    /// Source notifications are emitted once for each listening source referenced
+    /// by the actual refresh snapshot. The UI keeps its fire-and-forget contract;
+    /// the returned task allows an owner to cancel and await the actual JNI drain.
+    @discardableResult
+    static func notifyShelfRefresh(_ event: SourceCallBackEvent, books: [ReadingBook],
+        fetcher: BookSourceFetcher = .shared,
+        sourceResolver: (@MainActor (UUID) -> BookSource?)? = nil
+    ) -> Task<[SourceCallBackDelivery], Never> {
+        Task {
+            let sourceIDs = await shelfRefreshSourceIDs(books)
+            if sourceResolver == nil { await BookSourceStore.shared.waitUntilLoaded() }
+            return await deliverShelfRefresh(event, sourceIDs: sourceIDs,
+                fetcher: fetcher, sourceResolver: sourceResolver)
+        }
+    }
+
+    private nonisolated static func deliverShelfRefresh(_ event: SourceCallBackEvent, sourceIDs: [UUID],
+        fetcher: BookSourceFetcher, sourceResolver: (@MainActor (UUID) -> BookSource?)?
+    ) async -> [SourceCallBackDelivery] {
+        await withTaskGroup(of: SourceCallBackDelivery?.self) { group in
+            for id in sourceIDs {
+                group.addTask {
+                    // Each source-owner read is one indexed MainActor operation;
+                    // no library-sized loop or DTO work runs on that actor.
+                    guard let source = await shelfRefreshSource(id: id, resolver: sourceResolver) else { return nil }
+                    do {
+                        let reply = try await fetcher.mainJSService.originalSourceCallback(event: event, source: source)
+                        return SourceCallBackDelivery(sourceID: id, executed: reply.executed,
+                            outcome: SourceCallBackOutcome(handled: false, failed: false, page: nil,
+                                completedEffects: reply.completedEffects))
+                    } catch {
+                        let typed = error as? LegadoRuntimeError
+                        let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+                        AppLogger.error("Original source notification failed", context: [
+                            "event": event.rawValue, "code": code,
+                            "completedEffects": (typed?.completedEffects ?? []).joined(separator: ",")
+                        ])
+                        return SourceCallBackDelivery(sourceID: id, executed: false,
+                            outcome: SourceCallBackOutcome(handled: false, failed: true, page: nil,
+                                errorCode: code, completedEffects: typed?.completedEffects ?? []))
+                    }
+                }
             }
+            var deliveries: [SourceCallBackDelivery] = []
+            for await delivery in group { if let delivery { deliveries.append(delivery) } }
+            return deliveries
+        }
+    }
+
+    private static func shelfRefreshSource(id: UUID, resolver: (@MainActor (UUID) -> BookSource?)?) -> BookSource? {
+        let source: BookSource?
+        if let resolver { source = resolver(id) }
+        else { source = listeningSource(id: id) }
+        guard let source, source.id == id, isListening(source) else { return nil }
+        return source
+    }
+
+    /// This is a value snapshot, not a library/source lookup or another index.
+    /// Cost grows with the refreshed book list, so compute it off main.
+    private nonisolated static func shelfRefreshSourceIDs(_ books: [ReadingBook]) async -> [UUID] {
+        SourcePerfTrace.span("legado.source.callback.sources", "main=\(Thread.isMainThread) books=\(books.count)") {
+            var seen = Set<UUID>()
+            var result: [UUID] = []
+            for book in books where book.isOnline {
+                if let id = book.bookSourceId, seen.insert(id).inserted { result.append(id) }
+            }
+            return result
         }
     }
 
@@ -252,4 +304,11 @@ enum NativeLegadoBookCallbackExecutor {
             throw error
         }
     }
+}
+
+
+struct SourceCallBackDelivery: Sendable {
+    let sourceID: UUID
+    let executed: Bool
+    let outcome: SourceCallBackOutcome
 }

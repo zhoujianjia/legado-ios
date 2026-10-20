@@ -1641,3 +1641,39 @@ extension LegadoMainJSSourceService {
         return String(decoding: try JSONEncoder().encode(exposed), as: UTF8.self)
     }
 }
+
+
+extension LegadoMainJSSourceService {
+    /// Locked source-only notifications use the same actor/source lock and the
+    /// ordinary source binding. There is no App BookStore/chapter/cache authority.
+    func originalSourceCallback(event: SourceCallBackEvent, source: BookSource) async throws -> LegadoBookCallbackReceipt {
+        guard event == .startShelfRefresh || event == .endShelfRefresh else {
+            throw failure("UNSUPPORTED_CAPABILITY", "Only original shelf-refresh source notifications are connected")
+        }
+        let signature = try originalSignature(source)
+        // callBackSource uses 30s; the existing book notifications use 60s. The
+        // original absolute source budget includes time waiting for this lock.
+        let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
+        try await acquire(source.bookSourceUrl, deadline: deadline)
+        defer { release(source.bookSourceUrl) }
+        try acceptOriginalRevision(source, signature: signature)
+        let result = try await SourcePerfTrace.spanAsync("legado.original.source.callback",
+            "main=\(Thread.isMainThread) event=\(event.rawValue) sourceBytes=\(source.bookSourceUrl.utf8.count)") {
+            try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+                operation: .sourceCallback(event.rawValue), deadline: deadline)
+        }
+        guard case .sourceCallback(let reply, let effects) = result else {
+            throw failure("INVALID_RESULT", "Original source notification omitted its result")
+        }
+        do { try previewCheck(deadline) }
+        catch {
+            if effects.isEmpty { throw error }
+            let typed = error as? LegadoRuntimeError
+            throw LegadoRuntimeError(code: typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
+                message: error.localizedDescription,
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted())
+        }
+        return .init(executed: reply.executed, completedEffects: effects)
+    }
+}

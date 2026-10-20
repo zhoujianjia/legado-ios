@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "local-conversion-tool-integrated-synthetic-portable-validation-passed",
+  "sources": [
+    {
+      "path": "scripts/reader-experience/export-renewal-pairing.py",
+      "bytes": 13282,
+      "sha256": "12e272cda864976e1ee89eda2172c3fb78a144ec49e6bd46afbebf71f9eac509"
+    },
+    {
+      "path": "scripts/reader-experience/test-export-renewal-pairing.py",
+      "bytes": 11594,
+      "sha256": "eba75ff421535cb65e6bc1b5e3b4aa3d6890029754a502440244dfcd72bf90bc"
+    },
+    {
+      "path": "scripts/reader-experience/配对材料转换说明.txt",
+      "bytes": 2273,
+      "sha256": "5fda8736fb28f6c4a32de4c086e6be41ae088726c454220ef0d9949c7fce373a"
+    }
+  ],
+  "behavior": "Explicit local pairing plist becomes one password-protected host P12 and the existing App importer nine-key public configuration. No discovery, network, plaintext private-key output, password argv/environment, or raw pairing logging. Validates certificate dates/signatures and Host key matching. New output directory only; identity-aware rollback preserves replacement files/directories and explicitly reports incomplete cleanup.",
+  "actualValidation": {
+    "rootSyntheticMethodsPassed": 7,
+    "rootFinalSeconds": 0.898,
+    "reviewerInitialMethodsPassed": 6,
+    "reviewerTargetedFixMethodsPassed": 1,
+    "Python": "3.12",
+    "cryptography": "47.0.0",
+    "realPairingFilesRead": false,
+    "iOSPKCS12ImportExecuted": false
+  },
+  "independentInitialReviewSHA256": "55e18bf9839975fa7e7a55e612f980c245a3a5625eae265bc12308779384cb43",
+  "independentFinalReviewSHA256": "3f289bcfd03826a1d136a38e9589b5be4a0ccc7af3c6c5dfbef4c9c3a938554a",
+  "finalIndependentReview": {
+    "schemaVersion": 2,
+    "reviewedOn": "2026-10-21",
+    "status": "targeted-finding-resolved-no-remaining-blocker-in-reviewed-scope",
+    "previousReview": ".build/pairing-material-export-step/independent-review.json",
+    "scope": "Only the directory-owner publication/rollback hunk, its new synthetic regression and the added existing-App UI prerequisite text",
+    "productionCodeChangedByReviewer": false,
+    "workflowOrGitChangedByReviewer": false,
+    "privatePairingOrCredentialFilesRead": false,
+    "cloudAccessPerformed": false,
+    "originalSixMethodsRepeated": false,
+    "targetedSyntheticTest": {
+      "name": "PairingExportTests.test_rollback_preserves_replacement_directory_and_reports_moved_owned_output",
+      "passed": 1,
+      "failed": 0,
+      "elapsedSeconds": 0.163,
+      "input": "Fake marker bytes in a reviewer-owned temporary directory, never real pairing credentials or a real P12"
+    },
+    "resolvedFinding": {
+      "id": "rollback-directory-identity",
+      "directoryIdentityRecordedAfterCreation": true,
+      "directoryTypeAndDeviceInodeChecked": true,
+      "directoryOwnerCheckedBeforeAndAfterEachOutputWrite": true,
+      "ownerChangeRefusesRollbackThroughCurrentPath": true,
+      "ownerChangeUsesFixedIncompleteCleanupDiagnostic": true,
+      "renamedOutputDirectoryIsNotSearchedForOrRemoved": true,
+      "ownerRecheckedBeforeEachOwnedFileCleanupAndDirectoryRemoval": true,
+      "syntheticForeignReplacementDirectoryPreserved": true,
+      "syntheticMovedOutputRetainedAndExplicitlyReportedIncomplete": true,
+      "result": "The previously reported deterministic replacement-before-rollback defect is resolved."
+    },
+    "instructions": {
+      "file": ".build/pairing-material-export-step/work/scripts/reader-experience/配对材料转换说明.txt",
+      "addedPrerequisitesMatchExistingUIButtonGate": true,
+      "existingUIButtonGate": "Modules/Features/Settings/SelfRenewalSettingsView.swift:292",
+      "observedGate": "Signing access, no owner work or pending view action, and transaction phase absent or retired",
+      "noImportInstallationOrRenewalAuthorityClaimAdded": true
+    },
+    "limitations": [
+      "The change is ordinary rollback ownership protection, not an atomic filesystem defense against a replacement between every syscall.",
+      "The earlier six-method synthetic crypto/schema review remains separately recorded and was not repeated.",
+      "No iOS import, real pairing, endpoint reachability, installation or automatic renewal was established by this review."
+    ],
+    "reviewedFiles": [
+      {
+        "path": ".build/pairing-material-export-step/work/scripts/reader-experience/export-renewal-pairing.py",
+        "sha256": "12e272cda864976e1ee89eda2172c3fb78a144ec49e6bd46afbebf71f9eac509",
+        "bytes": 13282
+      },
+      {
+        "path": ".build/pairing-material-export-step/work/scripts/reader-experience/test-export-renewal-pairing.py",
+        "sha256": "eba75ff421535cb65e6bc1b5e3b4aa3d6890029754a502440244dfcd72bf90bc",
+        "bytes": 11594
+      },
+      {
+        "path": ".build/pairing-material-export-step/work/scripts/reader-experience/配对材料转换说明.txt",
+        "sha256": "5fda8736fb28f6c4a32de4c086e6be41ae088726c454220ef0d9949c7fce373a",
+        "bytes": 2273
+      }
+    ]
+  },
+  "apiReference": "https://cryptography.io/en/latest/hazmat/primitives/asymmetric/serialization/#pkcs12",
+  "deliveryBoundary": "Desktop preparation tool, separate from the frozen build14 IPA. It does not establish trust in Apple authority, reachability, authentication, installation, expiry extension or unattended renewal. Existing App signing configuration/material initialization must precede pairing import.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

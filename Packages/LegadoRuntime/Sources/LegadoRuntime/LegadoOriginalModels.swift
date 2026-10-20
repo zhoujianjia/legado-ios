@@ -156,3 +156,12 @@ internal struct OriginalBookCallbackRequest: Encodable, Sendable {
     let result: String?
     let timeoutMs: Int64
 }
+
+/// Original callBackSource has no book/chapter/result entity and no adoption.
+public struct LegadoOriginalSourceCallbackResult: Codable, Sendable, Equatable {
+    public let executed: Bool
+}
+internal struct OriginalSourceCallbackRequest: Encodable, Sendable {
+    let event: String
+    let timeoutMs: Int64
+}

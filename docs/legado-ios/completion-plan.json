@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
-  "updatedOn": "2026-10-20",
-  "activeBatchRecord": "docs/legado-ios/core-build14-75c87a9-request.json",
+  "updatedOn": "2026-10-21",
+  "activeBatchRecord": "docs/legado-ios/core-original-source-callbacks-step.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -442,7 +442,12 @@
             "docs/legado-ios/core-original-app-cookie-webkit-step.json",
             "docs/legado-ios/core-original-explore-infomap-step.json",
             "docs/legado-ios/core-original-content-batch-public-step.json",
-            "docs/legado-ios/core-original-native-chain-step.json"
+            "docs/legado-ios/core-original-native-chain-step.json",
+            {
+              "record": "docs/legado-ios/core-original-source-callbacks-step.json",
+              "actualSDKAccepted": false,
+              "scope": "Real source-only shelf notifications, original null entities, source/Cookie state and cancellation ownership; interactive/delete/login/browser still unfinished."
+            }
           ],
           "implementedSubtasksZh": [
             "Swift宿主已复用现有源变量/键值、登录头与文本缓存owner，绑定显式来源revision与CAS，删除登录头保留独立凭据；9项原owner与actor测试待SDK。完整Cookie属性、书URL/UUID/章节generation及正文保存App接线仍未完成，相关未接能力显式拒绝，传统产品入口未切换。",
@@ -548,6 +553,11 @@
               "record": "docs/legado-ios/core-original-reader-callbacks-step.json",
               "scope": "Actual startRead/endRead/saveRead/addBookShelf traditional-text notifications through original JVM and actual App owners.",
               "actualSDKAccepted": false
+            },
+            {
+              "record": "docs/legado-ios/core-original-source-callbacks-step.json",
+              "actualSDKAccepted": false,
+              "scope": "Real source-only shelf notifications, original null entities, source/Cookie state and cancellation ownership; interactive/delete/login/browser still unfinished."
             }
           ]
         },
@@ -759,6 +769,11 @@
               "record": "docs/legado-ios/core-live-account-pairing-settings-step.json",
               "actualSDKAccepted": false,
               "scope": "live account, explicit pairing identity and real Settings owner integration"
+            },
+            {
+              "record": "docs/legado-ios/core-pairing-material-export-step.json",
+              "actualDeviceAcceptance": false,
+              "scope": "Necessary local conversion from an explicitly selected existing pairing plist to the actual protected P12/public configuration input; synthetic tests only."
             }
           ],
           "implementedSubtasksZh": [
@@ -1035,6 +1050,21 @@
         "preflightRepair": "docs/legado-ios/core-build14-a24a41e-preflight-repair.json",
         "correctedRequest": "docs/legado-ios/core-build14-75c87a9-request.json",
         "correctedPackageSource": "75c87a9e5c970696015715e22ce3288c951a8ffe"
+      },
+      "originalSourceNotificationImplementation": {
+        "record": "docs/legado-ios/core-original-source-callbacks-step.json",
+        "sourceCount": 11,
+        "actualDistinctJVMMethodsPassed": 3,
+        "actualSDKAccepted": false,
+        "newNativeDefinitions": [
+          "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+          "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority"
+        ]
+      },
+      "pairingMaterialPreparationTool": {
+        "record": "docs/legado-ios/core-pairing-material-export-step.json",
+        "syntheticPortableMethodsPassed": 7,
+        "actualDeviceAcceptance": false
       }
     }
   },

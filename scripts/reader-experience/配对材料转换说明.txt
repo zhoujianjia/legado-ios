@@ -1,0 +1,29 @@
+阅读：首次续签验证的配对材料转换
+
+本工具在电脑本地把你明确选择的已有 Apple 配对文件转换成阅读可导入的两份文件。
+它不自动寻找配对文件，不建立 USB/网络通道，也不能授予手机同机安装权限。
+
+需要 Python 3.10+ 和 cryptography 42+；开发验证环境为 Python 3.12、cryptography 47.0.0。
+若尚未安装依赖，可在你使用的 Python 环境中运行：
+  python -m pip install "cryptography>=42"
+
+在交互式 PowerShell/终端运行，填写你实际使用的文件和已配对服务端点：
+  python export-renewal-pairing.py --pairing "C:\你的目录\pairing.plist" --output "C:\你的目录\阅读配对导入" --address "实际数字IP地址" --port 实际端口 --interface-index 实际接口索引
+
+IPv4 等不需要指定接口的端点，接口索引填写 0。IPv6 地址本身不包含 %接口名。
+输出目录必须尚不存在，其父目录必须已经存在；工具不会覆盖旧文件。
+按提示输入并重复一个新的 P12 密码；不要把密码写进命令或通过管道传入。
+
+成功后会生成：
+  yuedu-pairing-host.p12：只含 Host 私钥、Host 证书及 Root 证书的密码保护导入包。
+  yuedu-pairing-public.json：原有 HostID/SystemBUID、三份公钥证书和你填写的端点；不含私钥、EscrowBag 或密码。
+
+阅读必须先完成自签配置和签名材料初始化，具有签名权限且没有活动续签事务时，配对身份导入按钮才可使用。
+把这两份文件通过你自己的本地传输方式放到手机“文件”，在阅读的自续签设置中选择配对凭证和公开配置，并输入刚才的 P12 密码。
+P12 使用与现有 App 合成导入样本相同的兼容格式；密码不替代文件保密。不要上传原配对文件或 P12 到公开仓库/日志，导入后妥善处理传输副本。
+
+本地转换会检查证书签名、有效期和 Host 私钥对应关系；App 还会执行自己的 SecTrust、Keychain 和持钥校验。
+转换完成不代表配对端点可达、认证安装成功或签名到期时间延长；这些仍须分别验证。
+
+PKCS12 API/兼容格式的原始说明：
+https://cryptography.io/en/latest/hazmat/primitives/asymmetric/serialization/#pkcs12
