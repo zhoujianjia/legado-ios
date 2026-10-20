@@ -373,5 +373,63 @@ class PublicBatchPackageSelectionTests(unittest.TestCase):
                 with self.assertRaises(ValueError): api.result(self.work)
 
 
+
+class EffectsPackageSelectionTests(unittest.TestCase):
+    """Explicit new18 selection; old10/default16/publicbatch17 retain their sets."""
+    setUp = OriginalAPIPackageEvidenceTests.setUp
+    write = OriginalAPIPackageEvidenceTests.write
+    write_json = OriginalAPIPackageEvidenceTests.write_json
+    git = OriginalAPIPackageEvidenceTests.git
+    context = OriginalAPIPackageEvidenceTests.context
+    xml = OriginalAPIPackageEvidenceTests.xml
+    log = OriginalAPIPackageEvidenceTests.log
+    built = OriginalAPIPackageEvidenceTests.built
+
+    def test_effect_receipts_select_one_exact_extra_case_and_refuse_missing_duplicate_skip_or_alias(self):
+        extra = "LegadoRuntimeTests.LegadoRuntimeTests/testCancelledExecutePreservesReportedEffectsFromSuccessAndErrorEnvelopes"
+        self.assertEqual(api.EFFECTS_EXPECTED, api.PUBLICBATCH_EXPECTED | {extra})
+        self.assertEqual(len(api.EXPECTED), 10); self.assertEqual(len(api.CURRENTCORE_EXPECTED), 16)
+        self.assertEqual(len(api.PUBLICBATCH_EXPECTED), 17); self.assertEqual(len(api.EFFECTS_EXPECTED), 18)
+        source = (HERE.parents[1] / "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift").read_text(encoding="utf8")
+        self.assertEqual(len(re.findall(r"\bfunc\s+" + extra.split("/")[1] + r"\s*\(", source)), 1)
+        for mode, flag, expected in (("all", "", api.EXPECTED), ("currentcore", "", api.CURRENTCORE_EXPECTED),
+                                     ("currentcore", "publicbatch", api.PUBLICBATCH_EXPECTED)):
+            with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode, "YUEDU_RENEWAL_PACKAGE_SELECTION": flag}):
+                self.assertEqual(api.expected_cases(), expected)
+                self.assertNotIn(extra, api.expected_cases())
+        for flag, mode in (("unknown", "currentcore"), ("effects", "handoffrenewal"), ("effects", "all")):
+            with self.subTest(flag=flag, mode=mode), patch.dict(os.environ,
+                    {"YUEDU_RENEWAL_PACKAGE_SELECTION": flag, "YUEDU_RENEWAL_SELECTION": mode}):
+                with self.assertRaises(ValueError): api.expected_cases()
+                with self.assertRaises(ValueError): api.selected_mode()
+        with self.context(), patch.dict(os.environ,
+                {"YUEDU_RENEWAL_SELECTION": "currentcore", "YUEDU_RENEWAL_PACKAGE_SELECTION": "effects"}):
+            inputs = self.built(); result = api.result(self.work)
+            self.assertEqual(inputs["selectionMode"], "original-api-package-currentcore-effects")
+            self.assertEqual(inputs["packageSourceInputCount"], 15); self.assertEqual(len(inputs["sourceInputs"]), 22)
+            self.assertEqual(result["totalTestCount"], 18)
+            self.assertEqual(result["passedCaseIdentifiers"], sorted(api.EFFECTS_EXPECTED))
+            self.assertEqual(result["verbosePassedCaseIdentifiers"], sorted(api.EFFECTS_EXPECTED))
+            self.assertIsNotNone(re.fullmatch(api.selected_filter(), extra))
+            self.assertIsNone(re.fullmatch(api.selected_filter(), extra + "Alias"))
+            original = (self.work / "xunit.xml").read_bytes()
+            for change in ("missing", "duplicate", "skip", "wrongSuite"):
+                root = ET.fromstring(original)
+                node = next(item for item in root.iter("testcase") if item.get("name") == extra.split("/")[1])
+                suite = next(item for item in root.iter("testsuite") if node in list(item))
+                if change == "missing": suite.remove(node)
+                elif change == "duplicate": suite.append(copy.deepcopy(node))
+                elif change == "skip": ET.SubElement(node, "skipped")
+                else: node.set("classname", "Other.LegadoRuntimeTests")
+                self.write(self.work / "xunit.xml", ET.tostring(root))
+                with self.subTest(change=change), self.assertRaises(ValueError): api.result(self.work)
+            self.write(self.work / "xunit.xml", original)
+            original_log = (self.work / "tests.log").read_bytes()
+            self.write(self.work / "tests.log", "".join(line for line in original_log.decode().splitlines(True) if extra.split("/")[1] not in line).encode())
+            with self.assertRaises(ValueError): api.result(self.work)
+            self.write(self.work / "tests.log", original_log)
+            with patch.dict(os.environ, {"YUEDU_RENEWAL_PACKAGE_SELECTION": "publicbatch"}):
+                with self.assertRaises(ValueError): api.result(self.work)
+
 if __name__ == "__main__":
     unittest.main()

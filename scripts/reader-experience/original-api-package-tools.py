@@ -52,16 +52,25 @@ assert len(EXPECTED) == 10 and len(CURRENTCORE_EXPECTED) == 16
 PUBLICBATCH_EXTRA = {"LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBatchReturnsMissingChapterIdentitiesAndDoesNotGrantSaves"}
 PUBLICBATCH_EXPECTED = CURRENTCORE_EXPECTED | PUBLICBATCH_EXTRA
 assert len(PUBLICBATCH_EXPECTED) == 17 and not (PUBLICBATCH_EXTRA & CURRENTCORE_EXPECTED)
+EFFECTS_EXTRA = {"LegadoRuntimeTests.LegadoRuntimeTests/testCancelledExecutePreservesReportedEffectsFromSuccessAndErrorEnvelopes"}
+EFFECTS_EXPECTED = PUBLICBATCH_EXPECTED | EFFECTS_EXTRA
+assert len(EFFECTS_EXPECTED) == 18 and not (EFFECTS_EXTRA & PUBLICBATCH_EXPECTED)
 
 def publicbatch_selected():
     value = os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "")
-    if value not in ("", "publicbatch"):
+    if value not in ("", "publicbatch", "effects"):
         raise ValueError("Unknown independent Package selection")
-    if value == "publicbatch" and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
-        raise ValueError("Package publicbatch requires the currentcore native boundary")
+    if value in ("publicbatch", "effects") and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
+        raise ValueError("Explicit Package selection requires the currentcore native boundary")
     return value == "publicbatch"
 
+def effects_selected():
+    publicbatch_selected()  # Reuse strict explicit flag/mode validation.
+    return os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "") == "effects"
+
+
 def expected_cases():
+    if effects_selected(): return EFFECTS_EXPECTED
     if publicbatch_selected(): return PUBLICBATCH_EXPECTED
     return CURRENTCORE_EXPECTED if os.environ.get("YUEDU_RENEWAL_SELECTION") == "currentcore" else EXPECTED
 
@@ -69,6 +78,7 @@ def selected_filter():
     return "^(" + "|".join(re.escape(case) for case in sorted(expected_cases())) + ")$"
 
 def selected_mode():
+    if effects_selected(): return "original-api-package-currentcore-effects"
     if publicbatch_selected(): return "original-api-package-currentcore-publicbatch"
     return "original-api-package-currentcore" if os.environ.get("YUEDU_RENEWAL_SELECTION") == "currentcore" else MODE
 

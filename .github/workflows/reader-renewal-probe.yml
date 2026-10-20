@@ -57,15 +57,15 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
-      - name: Execute353 current-core definitions with355 exact native argument leaves
+      - name: Execute373 current-core definitions with375 exact native argument leaves
         if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.toolchain.outcome == 'success' }}
         env:
           YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME: ${{ steps.guards.outcome }}
         run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
-      - name: Execute17 independent current-source macOS package XCTest cases
+      - name: Execute18 independent current-source macOS package XCTest cases
         if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal' || env.YUEDU_RENEWAL_SELECTION == 'currentcore') }}
         env:
-          YUEDU_RENEWAL_PACKAGE_SELECTION: ${{ env.YUEDU_RENEWAL_SELECTION == 'currentcore' && 'publicbatch' || '' }}
+          YUEDU_RENEWAL_PACKAGE_SELECTION: ${{ env.YUEDU_RENEWAL_SELECTION == 'currentcore' && 'effects' || '' }}
         run: bash scripts/reader-experience/original-api-package-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal-original-api.log
       - name: Preserve independent package XCTest evidence without build products
         if: ${{ always() && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal' || env.YUEDU_RENEWAL_SELECTION == 'currentcore') }}
@@ -93,11 +93,11 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This fixed currentcore source boundary requires353 unique qualified native definitions and355 exact execution leaves, including both original Bool false/true pairs and the mandatory SDK-produced method. It is one cold3600-second invocation and one xcresult. It retains canonical retirement/AppOwner/foreground, Cookie text/WK, Unicode/preview/explore ownership and their affected regressions, and adds actual Vault CSR, account material, App-session lifecycle/GSA protocol and public content-batch cases. All eleven old mode sets, parameter identities and budgets remain unchanged; no benchmark, diagnostic UI/network, unmerged later work, or JVM replay is selected.
+          This fixed currentcore source boundary requires373 unique qualified native definitions and375 exact execution leaves, including both original Bool false/true pairs and the mandatory SDK-produced method. It is one cold3600-second invocation and one xcresult. It retains canonical retirement/AppOwner/foreground, Cookie text/WK, Unicode/preview/explore ownership and their affected regressions, and adds actual Vault CSR, account material, App-session lifecycle/GSA protocol and public content-batch cases, lost-ACK certificate reconciliation, original batch render-artifact cases and five existing default-option/media regressions and four actual-account expired-enrollment methods. All eleven old mode sets, parameter identities and budgets remain unchanged; no benchmark, diagnostic UI/network, unmerged later work, or JVM replay is selected.
 
           Producer/staging/portable failures remain real workflow/full-gate failures while valid-source toolchain/native diagnostics still attempt the complete native selection. Every actual phase must succeed for result.json. Logs, exits/timeouts, raw xcresult Arguments and exact leaf identities, source/resource/built-loader hashes and the required same-job SDK fixture are fail-closed. Missing fixtures fail rather than skip or substitute. The producer uses an owned short-lived Keychain and a formally compiled C bridge; only validated public outputs are uploaded, never private keys/P12/passwords or the raw generation directory.
 
-          Current Package source-only selection is17 exact XCTest methods with15 compilation inputs plus7 controls and a separate result. It explicitly selects publicbatch: retained16 plus the typed public-batch method. Original ten-case and unflagged currentcore sixteen-case selections remain unchanged. Its current tag must actually execute; 9105/a835 or other old ten/sixteen-case evidence is historical, cannot be reused for these changed inputs, and never enters native355.
+          Current Package source-only selection is18 exact XCTest methods with15 compilation inputs plus7 controls and a separate result. It explicitly selects effects: retained17 publicbatch methods plus the cancellation-with-effects method. Original ten-case, unflagged currentcore sixteen-case and explicit publicbatch seventeen-case selections remain unchanged. Its current tag must actually execute; 9105/a835 or other old ten/sixteen-case evidence is historical, cannot be reused for these changed inputs, and never enters native375.
 
           The historical independent ten-case source-only SwiftPM pass at a835f8b remains source-scoped history, not current17 acceptance. Controlled fixtures do not establish Apple/device/account authorization; private keys/P12/passwords are never artifact members.
 

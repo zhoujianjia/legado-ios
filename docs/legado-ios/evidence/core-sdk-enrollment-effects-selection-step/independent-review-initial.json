@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "reviewStage": "Initial independent coherent-six harness source review",
+  "reviewer": "coherent_sdk_delta_review",
+  "verdict": "blocked pending eight stale source-count fixture assertions",
+  "reviewedPreparation": {
+    "path": ".build/renewal-discovery/core-sdk-enrollment-effects-selection-step/preparation.json",
+    "bytes": 15978,
+    "sha256": "ffbc5a4bdcbc7eff4879dccf22bf25cbdbee3b966ae922ccaeb225ef5032866e"
+  },
+  "initialSixSourceHashes": {
+    "scripts/reader-experience/renewal-probe-tools.py": "c56534602337cffdc0d60342494469f1212877051b2fc2358d0371afff507d7c",
+    "scripts/reader-experience/test-renewal-probe-tools.py": "5a9b066e2c4fd987aa31656459a6dd6a8f39b639e2eb26938c3d327d601cd76e",
+    ".github/workflows/reader-renewal-probe.yml": "8b16b59bba3fcc2ff82484527ae4ea120a6134fbe20719edf23373d8591b0f29",
+    "scripts/reader-experience/renewal-probe-tests.sh": "7079c1920dbef39f5ec7cc1a03fd151a3628e29f4b621ebc30f466baf09a3396",
+    "scripts/reader-experience/original-api-package-tools.py": "74ca3b0d771382708a8593bda21df4686e83a500c045f0fb89bbb3131cb5e679",
+    "scripts/reader-experience/test-original-api-package-tools.py": "bff87d2e6dda34e918f419511dcd375777c6443063e354ed96940bfa23f54b0b"
+  },
+  "blockingFindings": [
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "linesInInitialCandidate": [244, 561, 659, 735, 827, 929, 1074, 1755],
+      "problem": "Eight existing fixture assertions still expect SOURCE_INPUTS/sourceInputs count240 while the shared tool inventory now always contains241. The workflow runs this entire unittest file at line42, so these assertions deterministically prevent a successful portable-guards outcome.",
+      "requestedRepair": "Update only these eight exact source-count fixture expectations to241, preserving all selected cases, provenance checks, SDK requirements and budgets. Run the affected existing guards once; no broad rerun requested.",
+      "productOrSDKFailureClaimed": false
+    }
+  ],
+  "nonblockingTextFindings": [
+    "Workflow step name still says Execute17 although the explicit currentcore effects selection now requires18.",
+    "Workflow historical note says not current17 acceptance; current explicit selection is18.",
+    "Package result limitations[0] lists the old10/16/17 modes but omits the new explicit effects18 mode. Its executable selection and strict acceptance use the correct18-method set."
+  ],
+  "actualInspectedScope": [
+    "Read complete preparation, six delta files from reviewed B4, both portable run result JSONs and their declared source bindings.",
+    "Verified all six frozen source rows match declared byte lengths and SHA256 values.",
+    "Compared Python ASTs: renewal tool retains46 existing top-level definitions exactly; only result/source-state/pipeline count or limitations strings change in four existing functions. Package tool retains16 existing functions exactly and adds only the explicit effects selection branch.",
+    "Imported B4 and proposed tool definitions for constant-set inspection only. Did not invoke CLI, test suites, production commands or source-hashing subprocesses.",
+    "Read canonical Swift declarations around all four new @Test methods and their extension owner, plus the Package XCTest class/method declarations.",
+    "Read complete workflow entry/portable guard commands and native/Package selection, command builders, strict XML plus verbose acceptance, source-state checks and phase budgets.",
+    "Searched the complete final native test harness for stale240/369/371 values, SDK required-case and source-only controls."
+  ],
+  "verifiedSelectionFacts": {
+    "nativeDefinitions": 373,
+    "nativeArgumentLeaves": 375,
+    "newMethods": [
+      "SelfRenewalDeveloperAccountClientTests/appSessionEnrollmentRejectsChangedBundleAndMissingManifest",
+      "SelfRenewalDeveloperAccountClientTests/appSessionEnrollsAfterRealInstalledAndPublishedProfileExpiry",
+      "SelfRenewalDeveloperAccountClientTests/appSessionExpiredEnrollmentRetainsRealUploadIntentBarrier",
+      "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial"
+    ],
+    "actualSwiftOwner": "SelfRenewalDeveloperAccountClientTests extension in SelfRenewalAccountSessionTests.swift; no AccountSessionTests suite alias",
+    "old369DefinitionsRetained": true,
+    "old13OtherCaseGroupsExact": true,
+    "allSelectionGroupsExact": true,
+    "twoInterruptParameterCasesExact": true,
+    "requiredSDKCaseExact": true,
+    "tenPhaseOrderAndBudgetsExact": true,
+    "nativeInvocationSeconds": 3600,
+    "nativePhaseSeconds": 3720,
+    "jobMinutes": 125,
+    "sourcePrefix240Exact": true,
+    "source241OnlyAddedPath": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "nativeReaderMethodsSelectedBy373": 0,
+    "PackageEffectsMethods": 18,
+    "PackageOld10Default16Explicit17SetsExact": true,
+    "Package15CompilationAnd7ControlPathsExact": true,
+    "PackageBudgetSeconds": 1200,
+    "shellWrapperExactB4": true
+  },
+  "proofLimits": {
+    "testsExecutedByReviewer": 0,
+    "SDKExecutedByReviewer": 0,
+    "JNIExecutedByReviewer": 0,
+    "JVMExecutedByReviewer": 0,
+    "grammarExecutedByReviewer": 0,
+    "cloudQueriesByReviewer": 0,
+    "canonicalMutationsByReviewer": 0,
+    "sourceClosureBinding": "Root must verify all241 final canonical Git bytes once after six-source integration. This review of definitions is not current SDK execution or whole closure acceptance.",
+    "historicalPortableProof": "Prior B4 seven guards retain their original235 matching reads plus five older Admin reads. Later metadata rebinds do not turn them into executions on new sources."
+  }
+}

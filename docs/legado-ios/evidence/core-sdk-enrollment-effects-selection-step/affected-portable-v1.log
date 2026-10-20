@@ -1,0 +1,20 @@
+test_expired_enrollment_has_four_exact_client_methods_and_preserves_native_gates (enrollment_selection_guard.EnrollmentRecoverySelectionTests.test_expired_enrollment_has_four_exact_client_methods_and_preserves_native_gates) ... FAIL
+test_effect_receipts_select_one_exact_extra_case_and_refuse_missing_duplicate_skip_or_alias (effects_selection_guard.EffectsPackageSelectionTests.test_effect_receipts_select_one_exact_extra_case_and_refuse_missing_duplicate_skip_or_alias) ... ok
+
+======================================================================
+FAIL: test_expired_enrollment_has_four_exact_client_methods_and_preserves_native_gates (enrollment_selection_guard.EnrollmentRecoverySelectionTests.test_expired_enrollment_has_four_exact_client_methods_and_preserves_native_gates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\core-sdk-enrollment-effects-selection-step\work\scripts\reader-experience\test-renewal-probe-tools.py", line 2012, in test_expired_enrollment_has_four_exact_client_methods_and_preserves_native_gates
+    self.assertEqual(selected, probe.EXPECTED_CASES["currentcore"])
+AssertionError: Items in the first set but not the second:
+'TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)'
+'AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)'
+Items in the second set but not the first:
+'AozoraTXTTests/storedV6LocationsMigrateOnce'
+'TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.393s
+
+FAILED (failures=1)

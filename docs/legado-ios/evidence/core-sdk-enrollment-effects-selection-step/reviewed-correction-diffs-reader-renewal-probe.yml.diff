@@ -1,0 +1,11 @@
+--- frozen-before-correction/.github/workflows/reader-renewal-probe.yml
++++ corrected/.github/workflows/reader-renewal-probe.yml
+@@ -62,7 +62,7 @@
+         env:
+           YUEDU_RENEWAL_PORTABLE_GUARDS_OUTCOME: ${{ steps.guards.outcome }}
+         run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
+-      - name: Execute17 independent current-source macOS package XCTest cases
++      - name: Execute18 independent current-source macOS package XCTest cases
+         if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && (env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' || env.YUEDU_RENEWAL_SELECTION == 'transactionrenewal' || env.YUEDU_RENEWAL_SELECTION == 'handoffrenewal' || env.YUEDU_RENEWAL_SELECTION == 'currentcore') }}
+         env:
+           YUEDU_RENEWAL_PACKAGE_SELECTION: ${{ env.YUEDU_RENEWAL_SELECTION == 'currentcore' && 'effects' || '' }}

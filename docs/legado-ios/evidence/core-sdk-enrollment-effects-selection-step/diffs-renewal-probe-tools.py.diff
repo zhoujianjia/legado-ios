@@ -1,0 +1,88 @@
+--- reviewed-B4/scripts/reader-experience/renewal-probe-tools.py
++++ proposed/scripts/reader-experience/renewal-probe-tools.py
+@@ -345,7 +345,11 @@
+                                             'rejectsLegacyCSRBindingAndChangedGenerationWithoutReissue',
+                                             'resumesObservedCertificateAndFinalizesItsActualPublicationLocally',
+                                             'cancellationDuringCertificateListRetainsUnknownIntent',
+-                                            'appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue'],
++                                            'appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue',
++                                            'appSessionEnrollsAfterRealInstalledAndPublishedProfileExpiry',
++                                            'appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial',
++                                            'appSessionEnrollmentRejectsChangedBundleAndMissingManifest',
++                                            'appSessionExpiredEnrollmentRetainsRealUploadIntentBarrier'],
+  'SelfRenewalDeveloperAuthenticationTests': ['matchesIndependentPasswordAndAuthenticatedResponseVectors',
+                                              'refusesInvalidServerKeysAndWorkBudgets',
+                                              'rejectsTamperedProofNegotiationAndTokenEnvelope',
+@@ -364,7 +368,7 @@
+ }
+ CURRENTCORE_ACCOUNT_QUALIFIED_CASES = {suite+"/"+method for suite,methods in CURRENTCORE_ACCOUNT_CASES.items() for method in methods}
+ assert len(EXPECTED_CASES["currentcore"]) == 314  # Preserved prior core definitions, not prior acceptance.
+-assert len(CURRENTCORE_ACCOUNT_QUALIFIED_CASES) == 35 and not (EXPECTED_CASES["currentcore"] & CURRENTCORE_ACCOUNT_QUALIFIED_CASES)
++assert len(CURRENTCORE_ACCOUNT_QUALIFIED_CASES) == 39 and not (EXPECTED_CASES["currentcore"] & CURRENTCORE_ACCOUNT_QUALIFIED_CASES)
+ CURRENTCORE_PUBLIC_CASES = {'ChapterCacheTransactionTests': ['cancellationBetweenRenamesRestoresCompleteOldPackage',
+                                   'restorationFailureNeverAcknowledgesOrDeletesBackup',
+                                   'foreignWriteAndLateCleanupPreserveNewestFiles',
+@@ -404,7 +408,7 @@
+ CURRENTCORE_NEW_SOURCE_PATHS = (CURRENTCORE_ACCOUNT_SOURCE_PATHS | CURRENTCORE_PUBLIC_SOURCE_PATHS |
+     CURRENTCORE_RENDERER_SOURCE_PATHS)
+ EXPECTED_CASES["currentcore"] |= CURRENTCORE_NEW_QUALIFIED_CASES
+-assert len(EXPECTED_CASES["currentcore"]) == 369
++assert len(EXPECTED_CASES["currentcore"]) == 373
+ 
+ PARAMETER_MODES = ("transactionrenewal", "handoffrenewal", "currentcore")
+ SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal", "currentcore")
+@@ -602,7 +606,11 @@
+ SOURCE_INPUTS += tuple(path for path in CURRENTCORE_RENDERER_SOURCE_INPUTS if path not in SOURCE_INPUTS)
+ CURRENTCORE_HEALTH_CONFORMANCE_SOURCE = "Modules/Core/BookSource/BookSourceHealthChecker.swift"
+ SOURCE_INPUTS += (CURRENTCORE_HEALTH_CONFORMANCE_SOURCE,)
+-assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 240
++# The filesystem-synchronized App test target compiles this real JNI fixture
++# even though currentcore does not select its three cases (native-reader does).
++CURRENTCORE_NATIVE_READER_COMPILE_SOURCE = "Tests/iOS/LegadoNativeOriginalReaderTests.swift"
++SOURCE_INPUTS += (CURRENTCORE_NATIVE_READER_COMPILE_SOURCE,)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 241
+ 
+ 
+ def selection_mode():
+@@ -1379,10 +1387,10 @@
+         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
+     if mode == "currentcore":
+         output["limitations"] = [
+-            "Currentcore requires exactly369 definitions and371 argument leaves in one cold3600-second invocation/xcresult, retaining both Bool false/true pairs and the required same-job SDK fixture case.",
++            "Currentcore requires exactly373 definitions and375 argument leaves in one cold3600-second invocation/xcresult, retaining both Bool false/true pairs and the required same-job SDK fixture case.",
+             "All producer/stage/native/export/verification phases and actual portable guards must succeed. Producer or guard failure remains failure while the complete native selection is still attempted for diagnostics.",
+             "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode, explore, public content batch and CSR/account/GSA definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
+-            "The independent explicitly selected currentcore SwiftPM publicbatch selection is17 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native371.",
++            "The independent explicitly selected currentcore SwiftPM effects selection is18 methods with15 actual compilation inputs plus7 controls. It must execute at this new tag; the old ten-case result is historical only and is not included in native375.",
+             "Existing eleven mode method/parameter identities and budgets remain unchanged. Benchmarks, diagnostic UI, unmerged later source work and unrelated JVM replay are excluded."]
+         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
+     return output
+@@ -1660,7 +1668,7 @@
+     if (selection_mode() != "currentcore" or prepared.get("selectionMode") != "currentcore"
+             or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
+             or prepared.get("intendedTests") != {"currentcore": sorted(EXPECTED_CASES["currentcore"])}
+-            or prepared.get("intendedQualifiedMethodDefinitions") != 369 or prepared.get("intendedArgumentLeafCount") != 371
++            or prepared.get("intendedQualifiedMethodDefinitions") != 373 or prepared.get("intendedArgumentLeafCount") != 375
+             or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in PARAMETER_CASES.items()}):
+         raise ValueError("Current core phase cannot run with changed preparation/source")
+     return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
+@@ -1786,7 +1794,7 @@
+         rows.append(_run_currentcore_phase(work, name, command, timeout, source, _currentcore_blockers(name, rows)))
+     failure = _currentcore_first_failure(rows)
+     ledger = {"schemaVersion": 1, "selectionMode": "currentcore", "source": source,
+-              "qualifiedMethodDefinitions": 369, "argumentLeaves": 371,
++              "qualifiedMethodDefinitions": 373, "argumentLeaves": 375,
+               "phaseOrder": list(CURRENTCORE_PHASES), "phases": rows, "firstFailure": failure,
+               "phaseRecords": [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES],
+               "historicalPackageEvidence": _currentcore_fact(work, "historical-package-evidence.json"),
+@@ -1811,8 +1819,8 @@
+     ledger = smoke.read_json(work / "currentcore-pipeline.json")
+     source = _currentcore_source_state(work)
+     if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "currentcore"
+-            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 369
+-            or ledger.get("argumentLeaves") != 371 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
++            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 373
++            or ledger.get("argumentLeaves") != 375 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
+             or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
+         raise ValueError("Missing/failed/changed same-source currentcore pipeline")
+     rows = ledger.get("phases")

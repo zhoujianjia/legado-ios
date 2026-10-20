@@ -177,11 +177,18 @@ if [[ $YUEDU_RENEWAL_SELECTION == boundmaterials ]]; then
     --summary "$WORK/boundmaterials-summary.json" --tests "$WORK/boundmaterials-tests.json"
 fi
 if [[ $YUEDU_RENEWAL_SELECTION == controlledsigning ]]; then
-  # New owned cases only, independently of historical native and package groups.
+  # Preserve the historical23 cases. Vault now has later current-core tests,
+  # so its seven original methods must be qualified rather than suite-wide.
   bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/controlledsigning-tests.log" -t 2700 -- \
     "${ARGS[@]}" -resultBundlePath "$WORK/controlledsigning.xcresult" \
     -only-testing:'yuedu appTests/SelfRenewalIPAUnpackerTests' \
-    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/boundsLifetimeAndPreservesUnrelatedKeychainItems' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/preservesPublicationWhenManifestSaveFails' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/publishesReloadsSignsAndRevokesOwnedKeychainMaterial' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/recoversPendingKeyJournalWithoutDeletingPublishedKey' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/rejectsExpiredProfilesAndLocallyRevokedLeases' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/rejectsSignedIdentityAndKeyChangesWithoutReplacingOldMaterial' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/rejectsStaleCASAndCancellationBeforePublication' \
     -only-testing:'yuedu appTests/SelfRenewalControlledMachOSignerTests'
   xcrun xcresulttool get test-results summary --path "$WORK/controlledsigning.xcresult" > "$WORK/controlledsigning-summary.json"
   xcrun xcresulttool get test-results tests --path "$WORK/controlledsigning.xcresult" > "$WORK/controlledsigning-tests.json"
@@ -228,7 +235,13 @@ if [[ $YUEDU_RENEWAL_SELECTION == integratedrenewal ]]; then
     -only-testing:'yuedu appTests/SelfRenewalProvisioningProfileVerifierTests'
     -only-testing:'yuedu appTests/SelfRenewalResourceSealVerifierTests'
     -only-testing:'yuedu appTests/SelfRenewalSignedCodeVerifierTests'
-    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/boundsLifetimeAndPreservesUnrelatedKeychainItems'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/preservesPublicationWhenManifestSaveFails'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/publishesReloadsSignsAndRevokesOwnedKeychainMaterial'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/recoversPendingKeyJournalWithoutDeletingPublishedKey'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/rejectsExpiredProfilesAndLocallyRevokedLeases'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/rejectsSignedIdentityAndKeyChangesWithoutReplacingOldMaterial'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests/rejectsStaleCASAndCancellationBeforePublication'
   )
   bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/integratedrenewal-tests.log" -t 2700 -- "${ARGS[@]}" -resultBundlePath "$WORK/integratedrenewal.xcresult" "${INTEGRATED_TESTS[@]}"
   xcrun xcresulttool get test-results summary --path "$WORK/integratedrenewal.xcresult" > "$WORK/integratedrenewal-summary.json"
