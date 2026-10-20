@@ -21,8 +21,10 @@ enum SelfRenewalControlledMachOSigner {
         case signatureCapacity, postVerificationFailed
     }
     enum Limits {
-        static let fileBytes = 67_108_864
-        static let externalSlotBytes = 2_097_152
+        // The actual statically linked JVM app exceeds 128 MiB. This is an
+        // input/output byte ceiling; supported layout and signing checks remain.
+        static let fileBytes = 268_435_456
+        static let externalSlotBytes = SelfRenewalResourceSealVerifier.Limits.envelopeBytes
         static let signatureBytes = Reader.Limits.signatureBytes
         static let segmentAlignment = 16_384
     }

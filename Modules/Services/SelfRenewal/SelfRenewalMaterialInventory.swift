@@ -79,7 +79,10 @@ enum SelfRenewalMaterialInventory {
     // These are hard limits, not caller-increasable tuning values. The inventory
     // never reads profile/CMS contents or whole executables/resource files.
     enum Limits {
-        static let entries = 16_384
+        // The shipped 13-module Java home alone has 17,856 names. This
+        // permits its measured tree plus ordinary app resources, while staying
+        // below classic ZIP's 65,535-entry sentinel.
+        static let entries = 32_768
         static let depth = 24
         static let pathBytes = 1_024
         static let components = 64
@@ -217,7 +220,10 @@ enum SelfRenewalMaterialInventory {
         }
         guard let main = metadata["."] else { throw Failure.missingApplicationInfo }
         var codes: [String: CodeFile] = [:]
-        // Four bytes per regular file identify otherwise unnamed embedded code.
+        // Eight bytes distinguish the shipped Java class version from the
+        // shared CAFEBABE universal-Mach-O magic. This is classification only;
+        // resource seals still bind every class byte and native code still goes
+        // through the existing structural/hash/CMS verifiers.
         // CMS/profile and CodeResources files are presence-only observations.
         for path in entries.keys.sorted() {
             try Task.checkCancellation()
@@ -225,7 +231,7 @@ enum SelfRenewalMaterialInventory {
             guard !path.hasSuffix("/Info.plist"), path != "Info.plist",
                   !path.hasSuffix(".mobileprovision"), !path.hasSuffix("/_CodeSignature/CodeResources"),
                   path != "_CodeSignature/CodeResources" else { continue }
-            let header = try readFile(entry, maximum: 4, full: false, budget: &readBytes)
+            let header = try readFile(entry, maximum: 8, full: false, budget: &readBytes)
             let observed = machOHeader(header)
             if observed != nil || entry.url.pathExtension.lowercased() == "dylib" {
                 codes[path] = CodeFile(file: FileFact(relativePath: path, byteCount: entry.bytes), header: observed)
@@ -345,7 +351,13 @@ enum SelfRenewalMaterialInventory {
         }
     }
     private static func machOHeader(_ bytes: Data) -> MachOHeader? {
-        switch Array(bytes) {
+        // The pinned native runtime has 16,614 CAFEBABE/0/72 class files.
+        // A supported universal Mach-O has at most 16 architectures; 72 can
+        // never describe an accepted native container. Do not use a filename
+        // extension to exclude native code. Unknown versions/malformed headers
+        // retain the native-code candidate and fail in the strong verifier.
+        if bytes.count == 8, Array(bytes) == [0xCA, 0xFE, 0xBA, 0xBE, 0, 0, 0, 72] { return nil }
+        switch Array(bytes.prefix(4)) {
         case [0xFE, 0xED, 0xFA, 0xCE], [0xCE, 0xFA, 0xED, 0xFE]: return .thin32
         case [0xFE, 0xED, 0xFA, 0xCF], [0xCF, 0xFA, 0xED, 0xFE]: return .thin64
         case [0xCA, 0xFE, 0xBA, 0xBE], [0xBE, 0xBA, 0xFE, 0xCA]: return .fat32

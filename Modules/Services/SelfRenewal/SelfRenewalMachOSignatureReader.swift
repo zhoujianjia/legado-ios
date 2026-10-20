@@ -95,7 +95,7 @@ enum SelfRenewalMachOSignatureReader {
         static let blobs = 32
         static let stringBytes = 255
         static let totalReadBytes = 67_108_864
-        static let ownedMaterialBytes = 2_097_152
+        static let ownedMaterialBytes = SelfRenewalResourceSealVerifier.Limits.envelopeBytes
         static let ownedFileReadBytes = 1_073_741_824
         static let ownedFileChunkBytes = 65_536
     }

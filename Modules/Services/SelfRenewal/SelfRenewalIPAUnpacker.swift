@@ -63,26 +63,22 @@ enum SelfRenewalIPAUnpacker {
             let inventory = original.resources.executableMaterials.inventory
             let entries = inventory.files.count + inventory.directories.count + 2
             guard entries <= Validator.Limits.entries,
-                  inventory.directories.count + 3 <= Validator.Limits.directoryDescriptors,
-                  inventory.declaredFileBytes <= Int64(Validator.Limits.archiveBytes - entries * 4096 - 22),
+                  inventory.directories.count + 2 <= Validator.Limits.directories,
                   inventory.files.allSatisfy({ $0.byteCount <= Int64(Validator.Limits.compressedEntryBytes) }),
                   date.timeIntervalSince1970 >= 315_532_800, date.timeIntervalSince1970 < 4_354_819_200 else { throw Failure.readBudget }
             total = Int(inventory.declaredFileBytes)
             let tree = try OwnedTree()
             do {
                 let name = "current-" + UUID().uuidString.lowercased() + ".ipa"
-                let descriptor = try tree.file(name)
-                do { try OwnedTree.write(Data([0x50, 0x4b, 0x05, 0x06] + Array(repeating: 0, count: 18)), to: descriptor) }
-                catch { Darwin.close(descriptor); throw error }
-                guard Darwin.close(descriptor) == 0 else { throw Failure.stagingIO }
                 let url = tree.url.appendingPathComponent(name)
-                let archive = try await Archive(url: url, accessMode: .update, pathEncoding: .utf8)
                 let prefix = "Payload/Current.app"
-                for path in ["Payload", prefix] + inventory.directories.map({ prefix + "/" + $0 }) {
+                let directoryPaths = ["Payload/", prefix + "/"] + inventory.directories.map { prefix + "/" + $0 + "/" }
+                let outputPaths = directoryPaths + inventory.files.map { prefix + "/" + $0.relativePath }
+                let writer = try StoredArchiveWriter(tree: tree, name: name, paths: outputPaths,
+                    expandedBytes: total, date: date)
+                for path in directoryPaths {
                     try Task.checkCancellation()
-                    try await archive.addEntry(with: path + "/", type: .directory, uncompressedSize: 0,
-                        modificationDate: date, permissions: 0o755, compressionMethod: .none,
-                        bufferSize: Validator.Limits.chunkBytes, provider: { _, _ in Data() })
+                    try writer.append(path: path, directory: true, byteCount: 0, provider: { _, _ in Data() })
                 }
                 let executables = Set(inventory.codeFiles.map(\.file.relativePath))
                 var hashes: [String: Data] = [:]
@@ -91,16 +87,14 @@ enum SelfRenewalIPAUnpacker {
                     // Bind every file, including original resource-rule omissions.
                     // withOwnedFile rejects links and identity/size/mtime changes.
                     hashes[fact.relativePath] = try currentHash(root: root, fact: fact)
-                    try await archive.addEntry(with: prefix + "/" + fact.relativePath, type: .file,
-                        uncompressedSize: fact.byteCount, modificationDate: date,
-                        permissions: executables.contains(fact.relativePath) ? 0o755 : 0o644,
-                        compressionMethod: .none, bufferSize: Validator.Limits.chunkBytes, provider: { offset, count in
-                            guard offset >= 0, offset <= Int64(Int.max) else { throw Failure.inputRead }
-                            return try currentPart(root: root, fact: fact, offset: Int(offset), count: count)
+                    try writer.append(path: prefix + "/" + fact.relativePath, directory: false,
+                        byteCount: Int(fact.byteCount), executable: executables.contains(fact.relativePath),
+                        provider: { offset, count in
+                            try currentPart(root: root, fact: fact, offset: offset, count: count)
                         })
-                    try tree.boundFile(name, maximumBytes: Validator.Limits.archiveBytes)
                     guard hashes[fact.relativePath] == (try currentHash(root: root, fact: fact)) else { throw Failure.inputChanged }
                 }
+                try writer.finish()
                 // Compare the exact captured bytes too: a transient source edit
                 // during an archive callback cannot hide behind unchanged seals.
                 let expectedHashes = hashes
@@ -274,7 +268,7 @@ enum SelfRenewalIPAUnpacker {
         private var root: URL { tree.url.appendingPathComponent(plan.applicationPath, isDirectory: true) }
         func read(_ path: String, maximumBytes: Int) throws -> Data {
             try check()
-            guard let fact = facts[path], fact.byteCount <= Int64(maximumBytes), maximumBytes <= 67_108_864 else { throw Failure.readBudget }
+            guard let fact = facts[path], fact.byteCount <= Int64(maximumBytes), maximumBytes <= SelfRenewalControlledMachOSigner.Limits.fileBytes else { throw Failure.readBudget }
             return try SelfRenewalMachOSignatureReader.withOwnedFile(root: root, fact: fact, maximumReadBytes: maximumBytes) { read in
                 var result = Data(); result.reserveCapacity(Int(fact.byteCount))
                 while result.count < Int(fact.byteCount) {
@@ -368,40 +362,41 @@ enum SelfRenewalIPAUnpacker {
                         guard expected[fact.relativePath] == digest else { throw Failure.inputChanged }
                     }
                 }
-                // Stored output has an exact payload bound, with conservative
-                // header/extra/central allowance and a per-entry payload bound.
-                guard expandedBytes <= Validator.Limits.archiveBytes - plan.entries.count * 4096 - 22,
-                      facts.values.allSatisfy({ $0.byteCount <= Int64(Validator.Limits.compressedEntryBytes) }),
+                // The single stored writer checks exact local/central/name
+                // overhead before opening output, then bounds every write.
+                guard facts.values.allSatisfy({ $0.byteCount <= Int64(Validator.Limits.compressedEntryBytes) }),
                       date.timeIntervalSince1970 >= 315_532_800, date.timeIntervalSince1970 < 4_354_819_200 else { throw Failure.readBudget }
                 let outputName = "signed-" + UUID().uuidString.lowercased() + ".ipa"
-                // Never retry close, including EINTR. Write failure closes once;
-                // the normal close is outside that catch and reports failure.
-                let descriptor = try tree.file(outputName)
-                do { try OwnedTree.write(Data([0x50, 0x4b, 0x05, 0x06] + Array(repeating: 0, count: 18)), to: descriptor) }
-                catch { Darwin.close(descriptor); throw error }
-                guard Darwin.close(descriptor) == 0 else { throw Failure.stagingIO }
                 let url = tree.url.appendingPathComponent(outputName)
-                let archive = try await Archive(url: url, accessMode: .update, pathEncoding: .utf8)
+                let writer = try StoredArchiveWriter(tree: tree, name: outputName, paths: plan.entries.map(\.path),
+                    expandedBytes: expandedBytes, date: date)
                 for entry in plan.entries {
-                    try Task.checkCancellation(); try tree.validateNames()
+                    // Each source name and its ancestors are identity checked;
+                    // a complete scan per entry would be quadratic at JVM size.
+                    try Task.checkCancellation(); try tree.validatePath(entry.path)
                     if entry.directory {
-                        try await archive.addEntry(with: entry.path, type: .directory, uncompressedSize: 0,
-                            modificationDate: date, permissions: 0o755, compressionMethod: .none,
-                            bufferSize: Validator.Limits.chunkBytes, provider: { _, _ in Data() })
+                        try writer.append(path: entry.path, directory: true, byteCount: 0, provider: { _, _ in Data() })
                     } else {
                         guard entry.path.hasPrefix(plan.applicationPath + "/") else { throw Failure.stagingChanged }
                         let relative = String(entry.path.dropFirst(plan.applicationPath.count + 1))
                         guard let fact = facts[relative] else { throw Failure.stagingChanged }
-                        try await archive.addEntry(with: entry.path, type: .file, uncompressedSize: fact.byteCount,
-                            modificationDate: date, permissions: executablePaths.contains(relative) ? 0o755 : 0o644,
-                            compressionMethod: .none, bufferSize: Validator.Limits.chunkBytes, provider: { offset, count in
-                                guard offset >= 0, offset <= Int64(Int.max) else { throw Failure.inputRead }
-                                return try Self.part(root: root, fact: fact, at: Int(offset), count: count)
+                        var emittedHash = SHA256()
+                        try writer.append(path: entry.path, directory: false, byteCount: Int(fact.byteCount),
+                            executable: executablePaths.contains(relative), provider: { offset, count in
+                                let bytes = try Self.part(root: root, fact: fact, at: offset, count: count)
+                                emittedHash.update(data: bytes)
+                                return bytes
                             })
+                        if let expected = expectedFileHashes {
+                            // Bind the bytes actually emitted too, including
+                            // resources intentionally omitted by signed rules.
+                            guard expected[relative] == Data(emittedHash.finalize()) else { throw Failure.inputChanged }
+                        }
                     }
-                    try tree.validateNames()
+                    try tree.validatePath(entry.path)
                     try tree.boundFile(outputName, maximumBytes: Validator.Limits.archiveBytes)
                 }
+                try writer.finish()
                 let proof = try await SelfRenewalIPAUnpacker.verify(ipa: url, codeAnchors: codeAnchors,
                     profileAnchors: profileAnchors, at: date)
                 try Task.checkCancellation(); try tree.validateNames()
@@ -615,11 +610,146 @@ enum SelfRenewalIPAUnpacker {
         deinit { if descriptor >= 0 { Darwin.close(descriptor) } }
     }
 
-    fileprivate final class OwnedTree: @unchecked Sendable {
+    /// One bounded stored-ZIP output path. Payloads stream once, local CRCs are
+    /// patched in their owned FD, and the bounded central directory is emitted
+    /// once at the end. Input metadata parsing remains solely in Validator.
+    final class StoredArchiveWriter {
+        private let tree: OwnedTree
+        private let name: String
+        private let paths: [String]
+        private let expectedBytes: Int
+        private let expectedExpandedBytes: Int
+        private let dosTime: UInt16
+        private let dosDate: UInt16
+        private var descriptor: Int32 = -1
+        private var position = 0
+        private var expandedBytes = 0
+        private var index = 0
+        private var central = Data()
+
+        init(tree: OwnedTree, name: String, paths: [String], expandedBytes: Int, date: Date) throws {
+            guard !paths.isEmpty, paths.count <= Validator.Limits.entries,
+                  expandedBytes >= 0, expandedBytes <= Validator.Limits.expandedBytes else { throw Failure.readBudget }
+            var metadata = 22; var centralBytes = 0
+            for path in paths {
+                try Task.checkCancellation()
+                let count = path.utf8.count
+                guard count > 0, count <= Validator.Limits.pathBytes,
+                      path.split(separator: "/").count <= Validator.Limits.depth else { throw Failure.readBudget }
+                metadata += 76 + 2 * count
+                centralBytes += 46 + count
+            }
+            guard metadata <= Validator.Limits.archiveBytes,
+                  expandedBytes <= Validator.Limits.archiveBytes - metadata,
+                  centralBytes <= Validator.Limits.centralBytes,
+                  date.timeIntervalSince1970 >= 315_532_800,
+                  date.timeIntervalSince1970 < 4_354_819_200 else { throw Failure.readBudget }
+            var calendar = Calendar(identifier: .gregorian)
+            guard let utc = TimeZone(secondsFromGMT: 0) else { throw Failure.readBudget }
+            calendar.timeZone = utc
+            let values = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+            guard let year = values.year, let month = values.month, let day = values.day,
+                  let hour = values.hour, let minute = values.minute, let second = values.second,
+                  (1980...2107).contains(year) else { throw Failure.readBudget }
+            dosTime = UInt16(hour << 11 | minute << 5 | second / 2)
+            dosDate = UInt16((year - 1980) << 9 | month << 5 | day)
+            self.tree = tree; self.name = name; self.paths = paths
+            expectedBytes = expandedBytes + metadata
+            expectedExpandedBytes = expandedBytes
+            central.reserveCapacity(centralBytes)
+            descriptor = try tree.file(name)
+        }
+        func append(path: String, directory: Bool, byteCount: Int, executable: Bool = false,
+            provider: (Int, Int) throws -> Data) throws {
+            try Task.checkCancellation()
+            guard descriptor >= 0, index < paths.count, paths[index] == path,
+                  directory == path.hasSuffix("/"), byteCount >= 0,
+                  byteCount <= Validator.Limits.compressedEntryBytes,
+                  byteCount <= expectedExpandedBytes - expandedBytes,
+                  !directory || byteCount == 0 else { throw Failure.readBudget }
+            let offset = position; let nameBytes = Data(path.utf8)
+            var local = Data()
+            Self.u32(0x04034b50, to: &local); Self.u16(20, to: &local)
+            Self.u16(0x0800, to: &local); Self.u16(0, to: &local)
+            Self.u16(dosTime, to: &local); Self.u16(dosDate, to: &local)
+            Self.u32(0, to: &local)
+            Self.u32(UInt32(byteCount), to: &local); Self.u32(UInt32(byteCount), to: &local)
+            Self.u16(UInt16(nameBytes.count), to: &local); Self.u16(0, to: &local)
+            local.append(nameBytes)
+            try write(local)
+            var consumed = 0; var crc: UInt32 = 0
+            while consumed < byteCount {
+                try Task.checkCancellation()
+                let count = min(Validator.Limits.chunkBytes, byteCount - consumed)
+                let bytes = try provider(consumed, count)
+                guard bytes.count == count else { throw Failure.actualSizeMismatch(path) }
+                crc = bytes.crc32(checksum: crc)
+                try write(bytes); consumed += count
+            }
+            // No second payload traversal and no data descriptor ambiguity.
+            // Only the CRC field in this freshly created local header changes.
+            var checksum = Data(); Self.u32(crc, to: &checksum)
+            var patched = 0
+            while patched < checksum.count {
+                try Task.checkCancellation()
+                let count = checksum.withUnsafeBytes { Darwin.pwrite(descriptor,
+                    $0.baseAddress!.advanced(by: patched), checksum.count - patched, off_t(offset + 14 + patched)) }
+                if count < 0, errno == EINTR { continue }
+                guard count > 0 else { throw Failure.stagingIO }
+                patched += count
+            }
+            Self.u32(0x02014b50, to: &central); Self.u16(0x0314, to: &central); Self.u16(20, to: &central)
+            Self.u16(0x0800, to: &central); Self.u16(0, to: &central)
+            Self.u16(dosTime, to: &central); Self.u16(dosDate, to: &central)
+            Self.u32(crc, to: &central)
+            Self.u32(UInt32(byteCount), to: &central); Self.u32(UInt32(byteCount), to: &central)
+            Self.u16(UInt16(nameBytes.count), to: &central)
+            for _ in 0..<4 { Self.u16(0, to: &central) }
+            let mode: UInt32 = directory ? 0o040755 : (executable ? 0o100755 : 0o100644)
+            Self.u32(mode << 16 | (directory ? 0x10 : 0), to: &central)
+            Self.u32(UInt32(offset), to: &central); central.append(nameBytes)
+            guard central.count <= Validator.Limits.centralBytes else { throw Failure.readBudget }
+            expandedBytes += byteCount; index += 1
+            try tree.boundFile(name, maximumBytes: expectedBytes)
+        }
+        func finish() throws {
+            try Task.checkCancellation()
+            guard descriptor >= 0, index == paths.count, expandedBytes == expectedExpandedBytes else { throw Failure.readBudget }
+            let centralStart = position
+            try write(central)
+            var end = Data()
+            Self.u32(0x06054b50, to: &end); Self.u16(0, to: &end); Self.u16(0, to: &end)
+            Self.u16(UInt16(index), to: &end); Self.u16(UInt16(index), to: &end)
+            Self.u32(UInt32(central.count), to: &end); Self.u32(UInt32(centralStart), to: &end); Self.u16(0, to: &end)
+            try write(end)
+            guard position == expectedBytes else { throw Failure.actualSizeMismatch(name) }
+            let closed = Darwin.close(descriptor); descriptor = -1
+            guard closed == 0 else { throw Failure.stagingIO }
+            try tree.boundFile(name, maximumBytes: expectedBytes)
+        }
+        private func write(_ bytes: Data) throws {
+            guard descriptor >= 0, bytes.count <= expectedBytes - position else { throw Failure.readBudget }
+            try OwnedTree.write(bytes, to: descriptor)
+            position += bytes.count
+        }
+        private static func u16(_ value: UInt16, to bytes: inout Data) {
+            bytes.append(UInt8(truncatingIfNeeded: value)); bytes.append(UInt8(truncatingIfNeeded: value >> 8))
+        }
+        private static func u32(_ value: UInt32, to bytes: inout Data) {
+            u16(UInt16(truncatingIfNeeded: value), to: &bytes); u16(UInt16(truncatingIfNeeded: value >> 16), to: &bytes)
+        }
+        deinit { if descriptor >= 0 { Darwin.close(descriptor) } }
+    }
+
+    /// Names and inode/device facts remain bounded in memory. Only the private
+    /// parent/root stay open; a walk holds at most two additional directory FDs.
+    /// Each component is reopened relative to the pinned root, without links,
+    /// and checked against the identity captured when this owner created it.
+    final class OwnedTree: @unchecked Sendable {
         let url: URL
         private let name: String
         private let parent: Int32
-        private var directories: [String: Int32] = [:]
+        private let root: Int32
         private var identities: [String: Identity] = [:]
         private var files: [String: Identity] = [:]
         private var cleaned = false
@@ -631,52 +761,62 @@ enum SelfRenewalIPAUnpacker {
             name = "renewal-owned-ipa-" + UUID().uuidString.lowercased()
             url = parentURL.appendingPathComponent(name, isDirectory: true)
             guard mkdirat(parent, name, 0o700) == 0 else { Darwin.close(parent); throw Failure.stagingIO }
-            let root = openat(parent, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+            root = openat(parent, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
             guard root >= 0 else {
                 _ = unlinkat(parent, name, AT_REMOVEDIR); Darwin.close(parent); throw Failure.stagingIO
             }
             var value = stat()
-            guard fstat(root, &value) == 0 else {
+            guard fstat(root, &value) == 0, value.st_mode & S_IFMT == S_IFDIR else {
                 Darwin.close(root); _ = unlinkat(parent, name, AT_REMOVEDIR); Darwin.close(parent); throw Failure.stagingIO
             }
-            directories[""] = root
             identities[""] = Identity(value)
         }
         func directory(_ path: String) throws {
-            let parts = path.split(separator: "/").map(String.init)
+            let parts = try Self.components(path)
             var key = ""
             for part in parts {
+                try Task.checkCancellation()
                 let parentKey = key
                 key += (key.isEmpty ? "" : "/") + part
-                if directories[key] != nil { continue }
-                guard directories.count < Validator.Limits.directoryDescriptors else { throw Validator.Failure.directoryLimit }
-                guard let parent = directories[parentKey], mkdirat(parent, part, 0o700) == 0 else { throw Failure.stagingIO }
-                // Record the owned name before acquiring its FD, so an EMFILE
-                // failure still permits cleanup of the directory just created.
-                var value = stat()
-                guard fstatat(parent, part, &value, AT_SYMLINK_NOFOLLOW) == 0,
-                      value.st_mode & S_IFMT == S_IFDIR else { throw Failure.stagingIO }
-                identities[key] = Identity(value)
-                let descriptor = openat(parent, part, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-                guard descriptor >= 0 else { throw Failure.stagingIO }
-                guard fstat(descriptor, &value) == 0, identities[key]?.matches(value) == true else { Darwin.close(descriptor); throw Failure.stagingIO }
-                directories[key] = descriptor
+                if identities[key] != nil { continue }
+                guard identities.count < Validator.Limits.directories + 1 else { throw Validator.Failure.directoryLimit }
+                try withDirectory(parentKey) { descriptor in
+                    guard mkdirat(descriptor, part, 0o700) == 0 else { throw Failure.stagingIO }
+                    // Record the created name before opening it, including the
+                    // EMFILE path; cleanup never adopts an unrecorded name.
+                    var value = stat()
+                    guard fstatat(descriptor, part, &value, AT_SYMLINK_NOFOLLOW) == 0,
+                          value.st_mode & S_IFMT == S_IFDIR else { throw Failure.stagingIO }
+                    identities[key] = Identity(value)
+                    let child = openat(descriptor, part, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+                    guard child >= 0 else { throw Failure.stagingIO }
+                    defer { Darwin.close(child) }
+                    guard fstat(child, &value) == 0, identities[key]?.matches(value) == true else { throw Failure.stagingChanged }
+                }
             }
         }
         func file(_ path: String) throws -> Int32 {
-            let pieces = path.split(separator: "/").map(String.init)
-            guard let last = pieces.last else { throw Failure.stagingIO }
+            let pieces = try Self.components(path)
+            guard let leaf = pieces.last else { throw Failure.stagingIO }
             let parentPath = pieces.dropLast().joined(separator: "/")
             try directory(parentPath)
-            guard let parent = directories[parentPath] else { throw Failure.stagingIO }
-            let descriptor = openat(parent, last, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0o600)
-            guard descriptor >= 0 else { throw Failure.stagingIO }
-            var value = stat()
-            guard fstat(descriptor, &value) == 0, value.st_mode & S_IFMT == S_IFREG, value.st_nlink == 1 else {
-                Darwin.close(descriptor); throw Failure.stagingIO
+            var created: Int32 = -1
+            do {
+                return try withDirectory(parentPath) { descriptor in
+                    created = openat(descriptor, leaf, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0o600)
+                    guard created >= 0 else { throw Failure.stagingIO }
+                    var value = stat()
+                    guard fstat(created, &value) == 0, value.st_mode & S_IFMT == S_IFREG, value.st_nlink == 1 else { throw Failure.stagingIO }
+                    files[path] = Identity(value)
+                    var named = stat()
+                    guard fstatat(descriptor, leaf, &named, AT_SYMLINK_NOFOLLOW) == 0,
+                          Self.sameFile(value, named) else { throw Failure.stagingChanged }
+                    return created
+                }
+            } catch {
+                if created >= 0 { Darwin.close(created) }
+                throw error
             }
-            files[path] = Identity(value)
-            return descriptor
         }
         static func write(_ bytes: Data, to descriptor: Int32) throws {
             var done = 0
@@ -689,30 +829,44 @@ enum SelfRenewalIPAUnpacker {
             }
         }
         func boundFile(_ path: String, maximumBytes: Int) throws {
-            let (parentFD, leaf) = try parentAndLeaf(path)
-            var value = stat()
-            guard fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) == 0,
-                  files[path]?.matches(value) == true, value.st_mode & S_IFMT == S_IFREG, value.st_nlink == 1,
-                  value.st_size >= 0, value.st_size <= Int64(maximumBytes) else { throw Failure.stagingChanged }
+            try withParent(path) { parentFD, leaf in
+                var value = stat()
+                guard fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) == 0,
+                      files[path]?.matches(value) == true, value.st_mode & S_IFMT == S_IFREG, value.st_nlink == 1,
+                      value.st_size >= 0, value.st_size <= Int64(maximumBytes) else { throw Failure.stagingChanged }
+            }
+        }
+        func validatePath(_ path: String) throws {
+            let key = path.hasSuffix("/") ? String(path.dropLast()) : path
+            if identities[key] != nil { try withDirectory(key) { _ in } }
+            else { try boundFile(key, maximumBytes: Int.max) }
         }
         func replace(_ path: String, bytes: Data) throws {
-            try validateNames()
-            let (parentFD, leaf) = try parentAndLeaf(path)
-            let prefix = path.split(separator: "/").dropLast().joined(separator: "/")
-            let temporary = (prefix.isEmpty ? "" : prefix + "/") + ".renewal-new-" + UUID().uuidString.lowercased()
+            try boundFile(path, maximumBytes: Int.max)
+            let parts = try Self.components(path)
+            let prefix = parts.dropLast().joined(separator: "/")
+            let temporaryLeaf = ".renewal-new-" + UUID().uuidString.lowercased()
+            let temporary = (prefix.isEmpty ? "" : prefix + "/") + temporaryLeaf
             let descriptor = try file(temporary)
             do { try Self.write(bytes, to: descriptor) }
             catch { Darwin.close(descriptor); throw error }
             guard Darwin.close(descriptor) == 0 else { throw Failure.stagingIO }
             try Task.checkCancellation()
-            try validateNames()
-            let (_, temporaryLeaf) = try parentAndLeaf(temporary)
-            guard let identity = files[temporary], files[path] != nil,
-                  renameat(parentFD, temporaryLeaf, parentFD, leaf) == 0 else { throw Failure.stagingIO }
-            files[path] = identity; files.removeValue(forKey: temporary)
-            try validateNames()
+            try boundFile(path, maximumBytes: Int.max)
+            try boundFile(temporary, maximumBytes: bytes.count)
+            try withParent(path) { parentFD, leaf in
+                var old = stat(); var replacement = stat()
+                guard fstatat(parentFD, leaf, &old, AT_SYMLINK_NOFOLLOW) == 0,
+                      files[path]?.matches(old) == true, old.st_mode & S_IFMT == S_IFREG, old.st_nlink == 1,
+                      fstatat(parentFD, temporaryLeaf, &replacement, AT_SYMLINK_NOFOLLOW) == 0,
+                      let identity = files[temporary], identity.matches(replacement),
+                      replacement.st_mode & S_IFMT == S_IFREG, replacement.st_nlink == 1 else { throw Failure.stagingChanged }
+                guard renameat(parentFD, temporaryLeaf, parentFD, leaf) == 0 else { throw Failure.stagingIO }
+                files[path] = identity; files.removeValue(forKey: temporary)
+            }
+            try boundFile(path, maximumBytes: bytes.count)
         }
-        func copySnapshot(from input: URL) throws -> Snapshot {
+        fileprivate func copySnapshot(from input: URL) throws -> Snapshot {
             guard input.isFileURL, input.query == nil, input.fragment == nil else { throw Failure.invalidInput }
             let inputFD = Darwin.open(input.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
             guard inputFD >= 0 else { throw Failure.invalidInput }
@@ -744,75 +898,118 @@ enum SelfRenewalIPAUnpacker {
                 }
                 copied += got
             }
-            var after = stat()
-            var pathNow = stat()
+            var after = stat(); var pathNow = stat()
             guard fstat(inputFD, &after) == 0, lstat(input.path, &pathNow) == 0,
                   Self.sameFile(initial, after), Self.sameFile(initial, pathNow) else { throw Failure.inputChanged }
-            guard let root = directories[""] else { throw Failure.stagingIO }
+            try validatePath("")
             let reader = openat(root, "archive.snapshot", O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
             guard reader >= 0 else { throw Failure.stagingIO }
-            var snapshot = stat()
-            guard fstat(reader, &snapshot) == 0, files["archive.snapshot"]?.matches(snapshot) == true,
-                  snapshot.st_size == off_t(copied), unlinkat(root, "archive.snapshot", 0) == 0 else {
-                Darwin.close(reader); throw Failure.stagingChanged
-            }
-            files.removeValue(forKey: "archive.snapshot")
-            return Snapshot(descriptor: reader, bytes: copied, digest: Data(hash.finalize()))
+            do {
+                var snapshot = stat()
+                guard fstat(reader, &snapshot) == 0, files["archive.snapshot"]?.matches(snapshot) == true,
+                      snapshot.st_mode & S_IFMT == S_IFREG, snapshot.st_nlink == 1,
+                      snapshot.st_size == off_t(copied), unlinkat(root, "archive.snapshot", 0) == 0 else { throw Failure.stagingChanged }
+                files.removeValue(forKey: "archive.snapshot")
+                try validatePath("")
+                return Snapshot(descriptor: reader, bytes: copied, digest: Data(hash.finalize()))
+            } catch { Darwin.close(reader); throw error }
         }
         func validateNames() throws {
-            for (path, identity) in identities {
-                var value = stat()
-                let (parentFD, leaf) = try parentAndLeaf(path)
-                guard fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) == 0,
-                      identity.matches(value), value.st_mode & S_IFMT == S_IFDIR else { throw Failure.stagingChanged }
-            }
-            for (path, identity) in files {
-                var value = stat()
-                let (parentFD, leaf) = try parentAndLeaf(path)
-                guard fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) == 0,
-                      identity.matches(value), value.st_mode & S_IFMT == S_IFREG,
-                      value.st_nlink == 1 else { throw Failure.stagingChanged }
-            }
+            for path in identities.keys { try Task.checkCancellation(); try validatePath(path) }
+            for path in files.keys { try Task.checkCancellation(); try boundFile(path, maximumBytes: Int.max) }
         }
         func cleanup() throws {
             if cleaned { return }
             var failed = false
             for (path, identity) in files {
                 do {
-                    let (parentFD, leaf) = try parentAndLeaf(path)
-                    var value = stat()
-                    if fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) != 0 {
-                        if errno != ENOENT { failed = true }; continue
+                    try withParent(path) { parentFD, leaf in
+                        var value = stat()
+                        if fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) != 0 {
+                            if errno != ENOENT { throw Failure.cleanupFailed }; return
+                        }
+                        guard identity.matches(value), value.st_mode & S_IFMT == S_IFREG,
+                              value.st_nlink == 1, unlinkat(parentFD, leaf, 0) == 0 else { throw Failure.cleanupFailed }
                     }
-                    if !identity.matches(value) || unlinkat(parentFD, leaf, 0) != 0 { failed = true }
                 } catch { failed = true }
             }
             let paths = identities.keys.sorted { $0.split(separator: "/").count > $1.split(separator: "/").count }
             for path in paths where !path.isEmpty {
                 do {
-                    let (parentFD, leaf) = try parentAndLeaf(path)
-                    var value = stat()
-                    if fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) != 0 {
-                        if errno != ENOENT { failed = true }; continue
+                    try withParent(path) { parentFD, leaf in
+                        var value = stat()
+                        if fstatat(parentFD, leaf, &value, AT_SYMLINK_NOFOLLOW) != 0 {
+                            if errno != ENOENT { throw Failure.cleanupFailed }; return
+                        }
+                        guard identities[path]?.matches(value) == true, value.st_mode & S_IFMT == S_IFDIR,
+                              unlinkat(parentFD, leaf, AT_REMOVEDIR) == 0 else { throw Failure.cleanupFailed }
                     }
-                    if identities[path]?.matches(value) != true || unlinkat(parentFD, leaf, AT_REMOVEDIR) != 0 { failed = true }
                 } catch { failed = true }
             }
-            var root = stat()
-            if fstatat(parent, name, &root, AT_SYMLINK_NOFOLLOW) == 0 {
-                if identities[""]?.matches(root) != true || unlinkat(parent, name, AT_REMOVEDIR) != 0 { failed = true }
+            var value = stat()
+            if fstatat(parent, name, &value, AT_SYMLINK_NOFOLLOW) == 0 {
+                if identities[""]?.matches(value) != true || value.st_mode & S_IFMT != S_IFDIR || unlinkat(parent, name, AT_REMOVEDIR) != 0 { failed = true }
             } else if errno != ENOENT { failed = true }
-            for descriptor in directories.values { Darwin.close(descriptor) }
-            directories.removeAll()
-            Darwin.close(parent)
+            Darwin.close(root); Darwin.close(parent)
             cleaned = true
             guard !failed else { throw Failure.cleanupFailed }
         }
-        private func parentAndLeaf(_ path: String) throws -> (Int32, String) {
-            if path.isEmpty { return (parent, name) }
-            let parts = path.split(separator: "/").map(String.init)
-            guard let last = parts.last, let descriptor = directories[parts.dropLast().joined(separator: "/")] else { throw Failure.stagingIO }
-            return (descriptor, last)
+        private func withParent<T>(_ path: String, operation: (Int32, String) throws -> T) throws -> T {
+            let parts = try Self.components(path)
+            guard let leaf = parts.last else { throw Failure.stagingIO }
+            return try withDirectory(parts.dropLast().joined(separator: "/")) { try operation($0, leaf) }
+        }
+        private func withDirectory<T>(_ path: String, operation: (Int32) throws -> T) throws -> T {
+            var descriptor = try openDirectory(path)
+            defer { if descriptor >= 0 { Darwin.close(descriptor) } }
+            let result = try operation(descriptor)
+            // Detect an ancestor/name replacement across the operation too.
+            // The reopened walk never follows a symlink or an unknown inode.
+            var before = stat()
+            guard fstat(descriptor, &before) == 0 else { throw Failure.stagingChanged }
+            Darwin.close(descriptor); descriptor = -1
+            let checked = try openDirectory(path)
+            defer { Darwin.close(checked) }
+            var after = stat()
+            guard fstat(checked, &after) == 0,
+                  before.st_dev == after.st_dev, before.st_ino == after.st_ino else { throw Failure.stagingChanged }
+            return result
+        }
+        private func openDirectory(_ path: String) throws -> Int32 {
+            guard !cleaned else { throw Failure.stagingChanged }
+            let parts = try Self.components(path)
+            var named = stat(); var pinned = stat()
+            guard fstatat(parent, name, &named, AT_SYMLINK_NOFOLLOW) == 0,
+                  fstat(root, &pinned) == 0, identities[""]?.matches(named) == true,
+                  identities[""]?.matches(pinned) == true, named.st_mode & S_IFMT == S_IFDIR,
+                  pinned.st_mode & S_IFMT == S_IFDIR else { throw Failure.stagingChanged }
+            var descriptor = fcntl(root, F_DUPFD_CLOEXEC, 0)
+            guard descriptor >= 0 else { throw Failure.stagingIO }
+            do {
+                var key = ""
+                for part in parts {
+                    key += (key.isEmpty ? "" : "/") + part
+                    guard let identity = identities[key] else { throw Failure.stagingChanged }
+                    let next = openat(descriptor, part, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+                    guard next >= 0 else { throw Failure.stagingChanged }
+                    var value = stat()
+                    guard fstat(next, &value) == 0, identity.matches(value), value.st_mode & S_IFMT == S_IFDIR else {
+                        Darwin.close(next); throw Failure.stagingChanged
+                    }
+                    Darwin.close(descriptor); descriptor = next
+                }
+                return descriptor
+            } catch { Darwin.close(descriptor); throw error }
+        }
+        private static func components(_ path: String) throws -> [String] {
+            if path.isEmpty { return [] }
+            let trimmed = path.hasSuffix("/") ? String(path.dropLast()) : path
+            let parts = trimmed.components(separatedBy: "/")
+            guard trimmed.utf8.count <= Validator.Limits.pathBytes, parts.count <= Validator.Limits.depth,
+                  parts.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." && !$0.contains("\\") && !$0.contains(":" )
+                    && $0.utf8.count <= 255 && !$0.hasSuffix(".") && !$0.hasSuffix(" ")
+                    && $0.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }) }) else { throw Failure.stagingIO }
+            return parts
         }
         private static func sameFile(_ lhs: stat, _ rhs: stat) -> Bool {
             lhs.st_dev == rhs.st_dev && lhs.st_ino == rhs.st_ino && lhs.st_size == rhs.st_size && lhs.st_mode == rhs.st_mode
@@ -821,9 +1018,9 @@ enum SelfRenewalIPAUnpacker {
                 && lhs.st_ctimespec.tv_nsec == rhs.st_ctimespec.tv_nsec
         }
         deinit {
-            // Heavy cleanup is explicit on the worker. This fallback only closes
-            // descriptors if initialization/use was interrupted unexpectedly.
-            if !cleaned { for descriptor in directories.values { Darwin.close(descriptor) }; Darwin.close(parent) }
+            // Heavy cleanup is explicit on the worker. The interrupted-use
+            // fallback closes only the two permanently held directory FDs.
+            if !cleaned { Darwin.close(root); Darwin.close(parent) }
         }
     }
 }

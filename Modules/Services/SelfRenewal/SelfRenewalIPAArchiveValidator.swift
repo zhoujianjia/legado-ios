@@ -17,13 +17,16 @@ enum SelfRenewalIPAArchiveValidator {
         case inconsistentLocalHeader, invalidDescriptor, overlappingEntries
     }
     enum Limits {
-        static let archiveBytes = 268_435_456
-        static let entries = 8_192
-        /// Includes the private staging root; every held directory owns one FD.
-        static let directoryDescriptors = 128
+        static let archiveBytes = 536_870_912
+        static let entries = SelfRenewalMaterialInventory.Limits.entries + 2
+        // Bounded identity facts, independent of the number of open FDs.
+        // The shipped Java home has 615 directories before app/container names.
+        static let directories = 2_048
+        /// Parent/root plus at most two temporary directory-walk descriptors.
+        static let directoryDescriptors = 4
         static let centralBytes = 8_388_608
-        static let compressedEntryBytes = 67_108_864
-        static let expandedEntryBytes = 134_217_728
+        static let compressedEntryBytes = SelfRenewalControlledMachOSigner.Limits.fileBytes
+        static let expandedEntryBytes = SelfRenewalControlledMachOSigner.Limits.fileBytes
         static let expandedBytes = 536_870_912
         static let pathBytes = 1_024
         static let depth = 24
@@ -243,7 +246,7 @@ enum SelfRenewalIPAArchiveValidator {
             let isDirectory = index < parts.count - 1 || directory
             if let old = tree[key], !old.spelling.utf8.elementsEqual(raw.utf8) || old.directory != isDirectory { throw Failure.duplicatePath }
             if tree[key] == nil, isDirectory {
-                guard directoryCount < Limits.directoryDescriptors - 1 else { throw Failure.directoryLimit }
+                guard directoryCount < Limits.directories else { throw Failure.directoryLimit }
                 directoryCount += 1
             }
             tree[key] = (raw, isDirectory)

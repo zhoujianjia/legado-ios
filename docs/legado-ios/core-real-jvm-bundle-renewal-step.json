@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "status": "production-integrated-awaiting-consolidated-SDK-and-actual-package-measurement",
+  "sources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+      "bytes": 13572,
+      "sha256": "49bb4f1008ec93cecfe99b69cb542aa03dbefe917f4474e4a2e2687e0f274a7c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+      "bytes": 38420,
+      "sha256": "589d216940be5c7a07cf0f3705c84d2a4e71b89d3f207baa1d87df24f7c6b72f"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalIPAArchiveValidator.swift",
+      "bytes": 15201,
+      "sha256": "cfb319c0a3d32e5bc8a98ba900aa40f566dca0aac37611fbdb48cfcaf3af2287"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+      "bytes": 61558,
+      "sha256": "fe195fe934a3767c62e586667242c9737d144a7c3ab9e89cf40ef2061c2bfff0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "bytes": 35801,
+      "sha256": "503ccc6ccf2916be26100095e01760416f80db52fee1744a422596a6480eace9"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "bytes": 21268,
+      "sha256": "8aac99356d13991803f5e2db10882622fc1c9c176b0b8201b521358f4f95dbd0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
+      "bytes": 31344,
+      "sha256": "eb6b9a8315386e00869f8abaa49db58da207a3db661bd5f47ec885d4a8dd53b6"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "bytes": 57857,
+      "sha256": "e32b6c019fce3ee0c53d629ccd74f35491c88c409224310b205ed8339bf4f3cc"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalIPAUnpackerTests.swift",
+      "bytes": 14932,
+      "sha256": "b60a0c06e4d8365df0caae879a741b82b30a29a87b97cc154167416aa02449bb"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalRealBundleBoundsTests.swift",
+      "bytes": 10108,
+      "sha256": "caa001432309544156e2ecffa48036458c04ba384320569ff60bfe9396358fed"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalRealResourceEnvelopeTests.swift",
+      "bytes": 2340,
+      "sha256": "a2a301d06974794ac0b27a5341b92d1ae3bc33cef4ffd8b4a7132bab2fbd4b72"
+    }
+  ],
+  "changes": [
+    "Classify exactly the shipped CAFEBABE/minor 0/major 72 resource header separately from supported native fat containers; unknown CAFEBABE remains a code candidate and dylib/bundle executables retain verification",
+    "Bound inventory names to 32768; ZIP entries to inventory+Payload/app names; directory identity facts to 2048, independent of held descriptors",
+    "Keep root/parent directory FDs only; reopen each component with O_NOFOLLOW and stored inode/device checks, compare names across operation, and never delete rebound or linked file identities",
+    "Replace both Readium addEntry output consumers with one stored ZIP writer: one payload stream and CRC, owned local CRC patch, one bounded central directory, exact metadata/payload length and original validator/whole-app revalidation",
+    "Replace per-entry complete tree scans with target/ancestor identity checks; retain full scans at verification/scope boundaries",
+    "Hash actually emitted signed-package bytes against the existing expected file digests, including resources omitted by original signed rules",
+    "Apply measured resource envelope budget to envelope and three external-material consumers only; allow the actual static main executable and consistent stored entry/archive/journal byte limits"
+  ],
+  "budgets": {
+    "inventoryNames": 32768,
+    "zipEntries": 32770,
+    "directoryFacts": 2048,
+    "heldDirectoryDescriptorsMaximumPerTree": 4,
+    "envelopeBytes": 16777216,
+    "controlledMachOBytes": 268435456,
+    "storedEntryBytes": 268435456,
+    "archiveAndJournalBytes": 536870912,
+    "cumulativeCodeDirectoryContentReadBytes": 536870912,
+    "unchanged": "CMS message/DER/profile/read chunk/path/depth/native code count/architecture limits and cryptographic/identity/link checks"
+  },
+  "observations": {
+    "runtime": {
+      "files": 17241,
+      "directories": 615,
+      "bytes": 73995276,
+      "largestBytes": 566369,
+      "depth": 12,
+      "pathBytes": 134,
+      "classHeaders": {
+        "cafebabe00000048": 16614
+      }
+    },
+    "sizingEnvelope": {
+      "claim": "untrusted sizing fixture only; no codesign, signature, entitlement, or installation authority",
+      "sourceRoot": ".build\\legado-ios\\device-static\\java-home",
+      "sourceFiles": 17241,
+      "format": "Python plistlib XML with legacy SHA1 and v2 SHA1/SHA256 maps",
+      "bytes": 7619394,
+      "sha256": "e201050bbe063614cac40e3064292b9eaf852ede006a1bb42a05a0d27cce77e3",
+      "elapsedSeconds": 4.10999999998603,
+      "limitation": "Foundation/codesign rule and XML formatting may differ; this is a sizing observation, not an actual signed CodeResources result"
+    },
+    "existingBuild12MainMachOBytes": 142615224,
+    "build13ActualPackageStats": "pending from root; byte ceilings remain a candidate until exact current bundle review"
+  },
+  "regressionDefinitions": [
+    "distinguishesShippedJavaClassHeaderWithoutFilenameBypass",
+    "inventoriesSeventeenThousandClassResourcesWithinHardBounds",
+    "reopensOwnedDirectoriesWithoutHoldingOneDescriptorPerDirectory",
+    "rejectsReboundDirectoryAndPreservesUnrelatedReplacementBytes",
+    "streamsStoredArchiveOnceAndUsesExactMetadataBudget",
+    "rejectsTruncatedStoredProviderAndCleansStaging",
+    "verifiesJavaSizedXMLAndRejectsChangedClassDigest"
+  ],
+  "actualValidation": {
+    "swiftGrammarFiles": 11,
+    "swiftGrammarErrors": 0,
+    "swiftCompilerExecuted": false,
+    "SDKExecuted": false,
+    "newRegressionDefinitionsExecuted": 0,
+    "deviceValidationExecuted": false,
+    "actualExecutedObservations": [
+      "local pinned Java-home filesystem/header inventory",
+      "real runtime path+byte hash XML sizing via Python plistlib, not a signed CodeResources or Swift updater result"
+    ]
+  },
+  "independentSourceReview": {
+    "bytes": 8760,
+    "sha256": "21dd984d0d84666787283a40514e4a407f4e0181c7e24405d5eb16a587dbe2ce",
+    "blockingFindingsRemaining": 0
+  },
+  "limitations": [
+    "No live anisette/Apple account or pairing/installation transport success established",
+    "Large-Mach-O in-memory signer peak memory remains unmeasured; bounds prevent arbitrary growth but do not prove iOS memory headroom",
+    "Header classification is limited to the measured pinned major 72; changing the native runtime requires revisiting this value",
+    "Sizing XML uses actual paths/hash bytes but Python formatting/rules differ from actual signed CodeResources and Foundation update output"
+  ],
+  "devicePackageBoundary": "The already-running build 13 at 4836debf2cfc46d0bc44c46df4d5cbc28d434ff2 does not contain this later source fix.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

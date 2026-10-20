@@ -109,8 +109,8 @@ struct SelfRenewalIPAUnpackerTests {
             }
             try Self.reject(Validator.Failure.archiveLimit) { _ = try Validator.inspect(Oversized()) }
             var bytes = try Fixture.archive([.init(path: "Payload/Owned.app/a", bytes: Data())])
-            Fixture.set16(8_193, at: bytes.count - 22 + 8, in: &bytes)
-            Fixture.set16(8_193, at: bytes.count - 22 + 10, in: &bytes)
+            Fixture.set16(UInt16(Validator.Limits.entries + 1), at: bytes.count - 22 + 8, in: &bytes)
+            Fixture.set16(UInt16(Validator.Limits.entries + 1), at: bytes.count - 22 + 10, in: &bytes)
             try Self.reject(Validator.Failure.entryLimit) { _ = try Self.inspect(bytes) }
             let oversized = Fixture.Member(path: "Payload/Owned.app/a", bytes: Data(), method: 8,
                 compressed: Data([3, 0]), expandedSize: UInt32(Validator.Limits.expandedEntryBytes + 1))
@@ -128,7 +128,7 @@ struct SelfRenewalIPAUnpackerTests {
             let total = (0..<5).map { index in Fixture.Member(path: "Payload/Owned.app/\(index)", bytes: Data(),
                 method: 8, compressed: placeholder, expandedSize: UInt32(Validator.Limits.expandedEntryBytes)) }
             try Self.reject(Validator.Failure.expandedLimit) { _ = try Self.inspect(Fixture.archive(total)) }
-            let directories = (0..<128).map { index in Fixture.Member(path: "Payload/Owned.app/d\(index)/a", bytes: Data()) }
+            let directories = (0..<Validator.Limits.directories).map { index in Fixture.Member(path: "Payload/Owned.app/d\(index)/a", bytes: Data()) }
             try Self.reject(Validator.Failure.directoryLimit) { _ = try Self.inspect(Fixture.archive(directories)) }
         }
     }

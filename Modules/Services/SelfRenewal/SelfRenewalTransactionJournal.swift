@@ -236,7 +236,7 @@ actor SelfRenewalTransactionJournal {
     }
     enum Limits {
         static let recordBytes = 65_536
-        static let candidateBytes = 268_435_456
+        static let candidateBytes = SelfRenewalIPAArchiveValidator.Limits.archiveBytes
         static let chunkBytes = 65_536
     }
     private let rootURL: URL

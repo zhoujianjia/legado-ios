@@ -22,7 +22,10 @@ enum SelfRenewalResourceSealVerifier {
         case nestedRequirementFailed(String), missingNestedCode(String)
     }
     enum Limits {
-        static let envelopeBytes = 2_097_152
+        // A measured legacy/v2 XML envelope for the shipped Java home is
+        // 7,619,394 bytes before other app resources. Preserve strict byte/count
+        // bounds with headroom for the actual signed app's unchanged rules.
+        static let envelopeBytes = 16_777_216
         static let rules = 256
         static let ruleBytes = 1_024
         static let requirementBytes = 16_384

@@ -14,8 +14,10 @@ enum SelfRenewalCodeDirectoryHashVerifier {
     }
     enum Limits {
         static let chunkBytes = 65_536
-        static let specialMaterialBytes = 2_097_152
-        static let totalContentReadBytes = 268_435_456
+        static let specialMaterialBytes = SelfRenewalResourceSealVerifier.Limits.envelopeBytes
+        // The shipped 142.6 MB main executable is read for each authenticated
+        // CodeDirectory, plus its resource envelope and extension code.
+        static let totalContentReadBytes = 536_870_912
         static let totalHashOperations = 262_144
         static let specialSlots: UInt32 = 11
     }
