@@ -1,0 +1,1631 @@
+{
+  "schema": 1,
+  "sourceInputs": [
+    {
+      "path": "generate-sdk-owned-package.py",
+      "bytes": 72188,
+      "sha256": "562fa76eb6b4564b05a916354eb06c1cb554444b8c7b7b46f7ee7c7061b97d73"
+    },
+    {
+      "path": "ImportOwnedIdentity.swift",
+      "bytes": 30240,
+      "sha256": "b271f8761b92b2cc74b16ea5c8cb0a4b74084385749bbb2e15be3dc78719e849"
+    },
+    {
+      "path": "OwnedIdentitySearch.h",
+      "bytes": 3976,
+      "sha256": "038ca6bbef96cd2b1511967dce4daa8c55ba6403a758272132d809be55cab7a8"
+    },
+    {
+      "path": "OwnedIdentitySearch.c",
+      "bytes": 37981,
+      "sha256": "d7451a4ecdae1a7a10b960046a588dfafd398369517e1dea74183b9791e9ac20"
+    },
+    {
+      "path": "main.c",
+      "bytes": 180,
+      "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+    },
+    {
+      "path": "extension.c",
+      "bytes": 186,
+      "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+    },
+    {
+      "path": "framework.c",
+      "bytes": 156,
+      "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "version"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.00640445900000941,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcodebuild",
+        "-version"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.13254295799998772,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "iphoneos",
+        "--show-sdk-path"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 1.3504826249999837,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "iphoneos",
+        "clang",
+        "--version"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 1.0746688750000146,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "genpkey",
+        "-algorithm",
+        "RSA",
+        "-pkeyopt",
+        "rsa_keygen_bits:2048"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.07292691699998954,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "req",
+        "-new",
+        "-x509",
+        "-sha256",
+        "-config",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/public-self-signed-code-signing.cnf",
+        "-extensions",
+        "owned_code_signing",
+        "-key",
+        "/dev/stdin",
+        "-days",
+        "30",
+        "-subj",
+        "/CN=Owned SDK Fixture Code/OU=FIXTURE123",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.018367124999997486,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "x509",
+        "-inform",
+        "DER",
+        "-outform",
+        "PEM"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.023032041000021763,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "x509",
+        "-inform",
+        "DER",
+        "-outform",
+        "PEM"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.01427454200000966,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "verify",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792521972",
+        "-CAfile",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/leaf.cert.pem"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.009695084000014731,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "pkcs12",
+        "-export",
+        "-inkey",
+        "/dev/stdin",
+        "-in",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/leaf.cert.pem",
+        "-passout",
+        "env:OWNED_SYNTHETIC_P12_PASSWORD",
+        "-keypbe",
+        "PBE-SHA1-3DES",
+        "-certpbe",
+        "PBE-SHA1-3DES",
+        "-macalg",
+        "SHA1",
+        "-iter",
+        "2048"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.015103917000004685,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "macosx",
+        "clang",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror=implicit-function-declaration",
+        "-c",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "-o",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/OwnedIdentitySearch.o"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 2.434532415999996,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "macosx",
+        "swiftc",
+        "-import-objc-header",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/OwnedIdentitySearch.o",
+        "-o",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/import-owned-identity"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 9.340495959000009,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/import-owned-identity"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.2071189170000025,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/import-owned-identity"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.06732520799999975,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/import-owned-identity"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.04210183300000381,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/import-owned-identity"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.03290254199998799,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "find-identity",
+        "-p",
+        "codesigning",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/synthetic.keychain-db"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.0811090000000263,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "verify-cert",
+        "-c",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/leaf.cert.der",
+        "-c",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.der",
+        "-r",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.der",
+        "-p",
+        "codeSign",
+        "-L",
+        "-N",
+        "-q"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.019391333999976723,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "list-keychains",
+        "-d",
+        "user"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.02635804199999825,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "list-keychains",
+        "-d",
+        "user"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.029620499999992944,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "list-keychains",
+        "-d",
+        "user",
+        "-s",
+        "<preserved-user-search-list-and-owned-keychain>"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.02515616699997736,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "list-keychains",
+        "-d",
+        "user"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.01618795800001749,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "iphoneos",
+        "clang",
+        "-target",
+        "arm64-apple-ios17.0",
+        "-isysroot",
+        "/Applications/Xcode_26.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk",
+        "-O0",
+        "-g0",
+        "-dynamiclib",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/framework.c",
+        "-Wl,-install_name,@rpath/OwnedFramework.framework/OwnedFramework",
+        "-o",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Frameworks/OwnedFramework.framework/OwnedFramework"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.2648157499999968,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "codesign",
+        "--verbose=4",
+        "--force",
+        "--sign",
+        "E06B965839C5B6184A8673783B7CD8EB4A85D11D",
+        "--keychain",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/synthetic.keychain-db",
+        "--timestamp=none",
+        "--identifier",
+        "test.owned.reader.framework",
+        "--requirements",
+        "=designated => identifier \"test.owned.reader.framework\"",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Frameworks/OwnedFramework.framework"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.123694874999984,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "iphoneos",
+        "clang",
+        "-target",
+        "arm64-apple-ios17.0",
+        "-isysroot",
+        "/Applications/Xcode_26.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk",
+        "-O0",
+        "-g0",
+        "-fapplication-extension",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/extension.c",
+        "-F",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Frameworks",
+        "-framework",
+        "OwnedFramework",
+        "-Wl,-rpath,@executable_path/../../Frameworks",
+        "-o",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/PlugIns/OwnedWidget.appex/Owned"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.10227945799999816,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-sign",
+        "-binary",
+        "-nodetach",
+        "-noattr",
+        "-md",
+        "sha256",
+        "-signer",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-inkey",
+        "/dev/stdin",
+        "-in",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/2-inner.public.content",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.025432333999987122,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-sign",
+        "-binary",
+        "-nodetach",
+        "-noattr",
+        "-md",
+        "sha256",
+        "-signer",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-inkey",
+        "/dev/stdin",
+        "-in",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/2-outer.public.content",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.014238166000012598,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "codesign",
+        "--verbose=4",
+        "--force",
+        "--sign",
+        "E06B965839C5B6184A8673783B7CD8EB4A85D11D",
+        "--keychain",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/synthetic.keychain-db",
+        "--timestamp=none",
+        "--identifier",
+        "test.owned.reader.widget",
+        "--requirements",
+        "=designated => identifier \"test.owned.reader.widget\"",
+        "--generate-entitlement-der",
+        "--entitlements",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/2.public-entitlements.plist",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/PlugIns/OwnedWidget.appex"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.08428033300000948,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "iphoneos",
+        "clang",
+        "-target",
+        "arm64-apple-ios17.0",
+        "-isysroot",
+        "/Applications/Xcode_26.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk",
+        "-O0",
+        "-g0",
+        "-fapplication-extension",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/extension.c",
+        "-F",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Frameworks",
+        "-framework",
+        "OwnedFramework",
+        "-Wl,-rpath,@executable_path/../../Frameworks",
+        "-o",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/PlugIns/OwnedShare.appex/Owned"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.11833466699999917,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-sign",
+        "-binary",
+        "-nodetach",
+        "-noattr",
+        "-md",
+        "sha256",
+        "-signer",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-inkey",
+        "/dev/stdin",
+        "-in",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/1-inner.public.content",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.010588915999989013,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-sign",
+        "-binary",
+        "-nodetach",
+        "-noattr",
+        "-md",
+        "sha256",
+        "-signer",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-inkey",
+        "/dev/stdin",
+        "-in",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/1-outer.public.content",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.009071374999990667,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "codesign",
+        "--verbose=4",
+        "--force",
+        "--sign",
+        "E06B965839C5B6184A8673783B7CD8EB4A85D11D",
+        "--keychain",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/synthetic.keychain-db",
+        "--timestamp=none",
+        "--identifier",
+        "test.owned.reader.share",
+        "--requirements",
+        "=designated => identifier \"test.owned.reader.share\"",
+        "--generate-entitlement-der",
+        "--entitlements",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/1.public-entitlements.plist",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/PlugIns/OwnedShare.appex"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.05848366699999019,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "--sdk",
+        "iphoneos",
+        "clang",
+        "-target",
+        "arm64-apple-ios17.0",
+        "-isysroot",
+        "/Applications/Xcode_26.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk",
+        "-O0",
+        "-g0",
+        "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/main.c",
+        "-F",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Frameworks",
+        "-framework",
+        "OwnedFramework",
+        "-Wl,-rpath,@executable_path/Frameworks",
+        "-o",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Owned"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.08105095799999162,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-sign",
+        "-binary",
+        "-nodetach",
+        "-noattr",
+        "-md",
+        "sha256",
+        "-signer",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-inkey",
+        "/dev/stdin",
+        "-in",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/0-inner.public.content",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.01524499999999307,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-sign",
+        "-binary",
+        "-nodetach",
+        "-noattr",
+        "-md",
+        "sha256",
+        "-signer",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-inkey",
+        "/dev/stdin",
+        "-in",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/0-outer.public.content",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.020152707999983477,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "codesign",
+        "--verbose=4",
+        "--force",
+        "--sign",
+        "E06B965839C5B6184A8673783B7CD8EB4A85D11D",
+        "--keychain",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/synthetic.keychain-db",
+        "--timestamp=none",
+        "--identifier",
+        "test.owned.reader",
+        "--requirements",
+        "=designated => identifier \"test.owned.reader\"",
+        "--generate-entitlement-der",
+        "--entitlements",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/0.public-entitlements.plist",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.08133629199997472,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/main.detached.cms",
+        "-content",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/main.primary.cd",
+        "-CAfile",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792521972",
+        "-out",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/main.verified.cd"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.011856292000004487,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "otool",
+        "-l",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Owned"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 2.0706660409999813,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/share.detached.cms",
+        "-content",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/share.primary.cd",
+        "-CAfile",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792521972",
+        "-out",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/share.verified.cd"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.014004415999977482,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "otool",
+        "-l",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/PlugIns/OwnedShare.appex/Owned"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.03563562499999762,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/widget.detached.cms",
+        "-content",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/widget.primary.cd",
+        "-CAfile",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792521972",
+        "-out",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/widget.verified.cd"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.014484708999987106,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "otool",
+        "-l",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/PlugIns/OwnedWidget.appex/Owned"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.02295104200001674,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "cms",
+        "-verify",
+        "-binary",
+        "-inform",
+        "DER",
+        "-in",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/framework.detached.cms",
+        "-content",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/framework.primary.cd",
+        "-CAfile",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/root.cert.pem",
+        "-purpose",
+        "any",
+        "-attime",
+        "1792521972",
+        "-out",
+        "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-sdk-produced-public/framework.verified.cd"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.013320832999994536,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "xcrun",
+        "otool",
+        "-l",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/Payload/Owned.app/Frameworks/OwnedFramework.framework/OwnedFramework"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.028199957999987646,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "list-keychains",
+        "-d",
+        "user"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.026784333999984256,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "list-keychains",
+        "-d",
+        "user",
+        "-s",
+        "<preserved-user-search-list-and-owned-keychain>"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.03036629199999652,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "list-keychains",
+        "-d",
+        "user"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.06419079100001568,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "security",
+        "delete-keychain",
+        "/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/owned-sdk-package-kblvxkk7/synthetic.keychain-db"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.025908708999992314,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    }
+  ],
+  "actualSDKProducedMachOs": [
+    {
+      "role": "main",
+      "bytes": 69280,
+      "sha256": "5123ca06b08943c257f46aa20d8a9f3266003d51acd7aa1277dbfff8e965f403",
+      "fileType": 2,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        25,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        14,
+        27,
+        50,
+        42,
+        2147483688,
+        44,
+        12,
+        12,
+        2147483676,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    },
+    {
+      "role": "share",
+      "bytes": 69312,
+      "sha256": "7d204ce330044ba4044158f5a2300db5228227cdde0bef2d18e4341ee5a0c789",
+      "fileType": 2,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        25,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        14,
+        27,
+        50,
+        42,
+        2147483688,
+        44,
+        12,
+        12,
+        2147483676,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    },
+    {
+      "role": "widget",
+      "bytes": 69312,
+      "sha256": "c166540e3780cb06f2566c220098b4d3b7890650cc99017c8354bddb97de1642",
+      "fileType": 2,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        25,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        14,
+        27,
+        50,
+        42,
+        2147483688,
+        44,
+        12,
+        12,
+        2147483676,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    },
+    {
+      "role": "framework",
+      "bytes": 68112,
+      "sha256": "8991f013d3f4df6c5b832e35cbd6870a62937ab16d720eb50275bed8fbfcdc87",
+      "fileType": 6,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        13,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        27,
+        50,
+        42,
+        44,
+        12,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    }
+  ],
+  "generatedAt": "2026-10-20T18:46:12+00:00",
+  "archiveSHA256": "bcece88390dff1a0f26ac610dcc3615675cc21cf42d42a215ee2989173958c49",
+  "archiveBytes": 306892,
+  "privateKeyFilesOutsideKeychain": 0,
+  "temporaryOwnedKeychainDeleted": true,
+  "temporaryUserSearchListRegistered": true,
+  "temporaryUserSearchListRestoredAndOwnedAbsent": true,
+  "userAdminSystemTrustChanged": false,
+  "privateMaterialArtifacts": 0,
+  "realAppleAccountUsed": false,
+  "SwiftPackageCoordinatorExecuted": false,
+  "producerToolBudgetSeconds": 300,
+  "ownedToolBudgetsSeconds": {
+    "openssl": 30,
+    "xcodebuild": 20,
+    "xcrun": 120,
+    "security": 15,
+    "codesign": 45,
+    "import-owned-identity": 20
+  },
+  "cleanupToolBudgetSeconds": 10,
+  "publicOutputs": [
+    {
+      "path": "clang-version.log",
+      "bytes": 205,
+      "sha256": "ad80af3802c0b5ab5826459477dc844b14ca968734496feb4477b51423d556fc"
+    },
+    {
+      "path": "framework-clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "framework.detached.cms",
+      "bytes": 1798,
+      "sha256": "b71e26aebad0599f0a24c0ce139df6713828115f11b29c93d537b4ed566d7452"
+    },
+    {
+      "path": "framework.macho",
+      "bytes": 68112,
+      "sha256": "8991f013d3f4df6c5b832e35cbd6870a62937ab16d720eb50275bed8fbfcdc87"
+    },
+    {
+      "path": "framework.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "framework.otool.log",
+      "bytes": 3816,
+      "sha256": "7bc079f618549847200a9b1d7a4d0ecf37d796d3f7ede97b074bb5d7c6e7c206"
+    },
+    {
+      "path": "framework.primary.cd",
+      "bytes": 628,
+      "sha256": "0c7529b5b63acb45e4b0c77c1742eb0c0b3bab90ed65953c4664f3ac6771b00f"
+    },
+    {
+      "path": "framework.verified.cd",
+      "bytes": 628,
+      "sha256": "0c7529b5b63acb45e4b0c77c1742eb0c0b3bab90ed65953c4664f3ac6771b00f"
+    },
+    {
+      "path": "import-tool-compile.log",
+      "bytes": 37378,
+      "sha256": "d2e3624f37b8c8a1c01cf383da38e7f4975661ab2a6d998d1c840720183576bf"
+    },
+    {
+      "path": "leaf.cert.der",
+      "bytes": 883,
+      "sha256": "5acc59ed3ae06984a7316c419b14227d2c4aa7058565c6f92de74f25a8c73618"
+    },
+    {
+      "path": "leaf.cert.pem",
+      "bytes": 1253,
+      "sha256": "95a1202289a43b487d13e0e0e00f6200179881114171a25dce6163569f10b789"
+    },
+    {
+      "path": "main.detached.cms",
+      "bytes": 1798,
+      "sha256": "3bcdbf619ba76a6d98e9a0a217875711dba698db528799f88f40f26c9b83e33a"
+    },
+    {
+      "path": "main.macho",
+      "bytes": 69280,
+      "sha256": "5123ca06b08943c257f46aa20d8a9f3266003d51acd7aa1277dbfff8e965f403"
+    },
+    {
+      "path": "main.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "main.otool.log",
+      "bytes": 4291,
+      "sha256": "ccfd6e4584e48e5084bff7a9c98798785e5dfd5df2bfb723442f5f72db78769a"
+    },
+    {
+      "path": "main.primary.cd",
+      "bytes": 746,
+      "sha256": "8e7947fa69d8bd4ebf9c7d3767b424dc0ea28add3f7c82c6b182842362d7bc72"
+    },
+    {
+      "path": "main.verified.cd",
+      "bytes": 746,
+      "sha256": "8e7947fa69d8bd4ebf9c7d3767b424dc0ea28add3f7c82c6b182842362d7bc72"
+    },
+    {
+      "path": "openssl-version.log",
+      "bytes": 63,
+      "sha256": "3a5f6bea0ec8eaab2f5b7d17b2613ff078121589bc7f2aac6453066d76019700"
+    },
+    {
+      "path": "owned-certificate-chain.log",
+      "bytes": 101,
+      "sha256": "76aaed2f50a376f2f662f4b19e6dc34b3ec9277536d4e3a99ff38a230dd71492"
+    },
+    {
+      "path": "owned-sdk-package.ipa",
+      "bytes": 306892,
+      "sha256": "bcece88390dff1a0f26ac610dcc3615675cc21cf42d42a215ee2989173958c49"
+    },
+    {
+      "path": "owned-sdk-package.json",
+      "bytes": 411619,
+      "sha256": "d66be416993f562b87ff9bf3bdf728dc93eec4d378448e20ee5ba8a7ff6d785e"
+    },
+    {
+      "path": "root.cert.der",
+      "bytes": 883,
+      "sha256": "5acc59ed3ae06984a7316c419b14227d2c4aa7058565c6f92de74f25a8c73618"
+    },
+    {
+      "path": "root.cert.pem",
+      "bytes": 1253,
+      "sha256": "95a1202289a43b487d13e0e0e00f6200179881114171a25dce6163569f10b789"
+    },
+    {
+      "path": "share.detached.cms",
+      "bytes": 1798,
+      "sha256": "bb62ba804ed4f00c25b5d5dcde6bba75d502009f99f5ab7fc7a5ab4a38de0ab6"
+    },
+    {
+      "path": "share.macho",
+      "bytes": 69312,
+      "sha256": "7d204ce330044ba4044158f5a2300db5228227cdde0bef2d18e4341ee5a0c789"
+    },
+    {
+      "path": "share.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "share.otool.log",
+      "bytes": 4322,
+      "sha256": "a550632dc1c718cc4b201f45584807b144d6358efb74ffc2b5f570e56c98e03d"
+    },
+    {
+      "path": "share.primary.cd",
+      "bytes": 752,
+      "sha256": "1808a9c3bba5503b25e149367fac1e817e1671483ac50bfa5bcd7cc343177789"
+    },
+    {
+      "path": "share.verified.cd",
+      "bytes": 752,
+      "sha256": "1808a9c3bba5503b25e149367fac1e817e1671483ac50bfa5bcd7cc343177789"
+    },
+    {
+      "path": "test.owned.reader.clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test.owned.reader.codesign.log",
+      "bytes": 158,
+      "sha256": "51aaa13808701131336f3ea26dd4144366962a2776bbd88531b16a35857d430d"
+    },
+    {
+      "path": "test.owned.reader.framework.codesign.log",
+      "bytes": 200,
+      "sha256": "61668e54ec28a3c28e5d326fffe8f7ca142eaa1e18ff574d469c81c8e47af562"
+    },
+    {
+      "path": "test.owned.reader.share.clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test.owned.reader.share.codesign.log",
+      "bytes": 185,
+      "sha256": "1300457fc21fdfde338c594c32689810b8c9f7873dba75b01c715840690a6744"
+    },
+    {
+      "path": "test.owned.reader.widget.clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test.owned.reader.widget.codesign.log",
+      "bytes": 187,
+      "sha256": "36495731a89fecfa236e13c6059e208336585e3ec4543b7d253dc90aff085af4"
+    },
+    {
+      "path": "widget.detached.cms",
+      "bytes": 1798,
+      "sha256": "21209c5c664dd43169b5a76f9ad81a329039862c86ec96f8bbd586648a46dc5a"
+    },
+    {
+      "path": "widget.macho",
+      "bytes": 69312,
+      "sha256": "c166540e3780cb06f2566c220098b4d3b7890650cc99017c8354bddb97de1642"
+    },
+    {
+      "path": "widget.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "widget.otool.log",
+      "bytes": 4323,
+      "sha256": "18d1888fa404f4c27eb01538c353a1c884009457b4bbce23411362aa4c0adba4"
+    },
+    {
+      "path": "widget.primary.cd",
+      "bytes": 753,
+      "sha256": "51d6ee48024ea786f3e2a64e4bb5479d906ebf6e273524407533daa21119c882"
+    },
+    {
+      "path": "widget.verified.cd",
+      "bytes": 753,
+      "sha256": "51d6ee48024ea786f3e2a64e4bb5479d906ebf6e273524407533daa21119c882"
+    },
+    {
+      "path": "xcode-version.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+    }
+  ]
+}

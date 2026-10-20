@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 2,
+  "status": "actual-terminal-failure-independently-confirmed-selector-and-summary-semantics-defects",
+  "run": {
+    "runID": 39476533970,
+    "jobID": 118813818474,
+    "status": "completed",
+    "conclusion": "failure",
+    "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
+    "sourceTag": "reader-renewal-210fb05"
+  },
+  "artifactProof": [
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk-artifact.zip",
+      "bytes": 1513875,
+      "sha256": "9144979631ff828723bf0573313ea9511759bd66edec97397b4acf375f6a8eb6",
+      "artifactID": 12293625150,
+      "members": 188,
+      "GitHubDigestAndCRC": true
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/package-artifact.zip",
+      "bytes": 27430,
+      "sha256": "299a343358a78007e3d01660cce3b3bae4f00184fd564c13ae1f76dad9b711ca",
+      "artifactID": 12292711908,
+      "members": 10,
+      "GitHubDigestAndCRC": true
+    }
+  ],
+  "sourceProof": {
+    "inputPaths": 320,
+    "GitBlobBytesSHA256Matched": 320,
+    "prepared": {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/source-inputs.json",
+      "bytes": 104787,
+      "sha256": "e1976cdbeeec47f855a5cfd8ada9503fd8155ead5a9440824296892ad9ed0c6c"
+    },
+    "allPhaseSourcesUnchanged": true
+  },
+  "phases": [
+    {
+      "name": "producer",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 26.610123,
+      "timeoutSeconds": 600,
+      "blockedBy": []
+    },
+    {
+      "name": "stage",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 9.801182,
+      "timeoutSeconds": 90,
+      "blockedBy": []
+    },
+    {
+      "name": "before-build",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 9.026516,
+      "timeoutSeconds": 90,
+      "blockedBy": []
+    },
+    {
+      "name": "boot",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 220.460705,
+      "timeoutSeconds": 180,
+      "blockedBy": []
+    },
+    {
+      "name": "native",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 2119.255336,
+      "timeoutSeconds": 3720,
+      "blockedBy": []
+    },
+    {
+      "name": "export",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 25.495776,
+      "timeoutSeconds": 330,
+      "blockedBy": []
+    },
+    {
+      "name": "cases",
+      "state": "failed",
+      "exitCode": 1,
+      "elapsedSeconds": 18.786214,
+      "timeoutSeconds": 90,
+      "blockedBy": []
+    },
+    {
+      "name": "test-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 51.438108,
+      "timeoutSeconds": 120,
+      "blockedBy": []
+    },
+    {
+      "name": "after-tests",
+      "state": "blocked",
+      "exitCode": null,
+      "elapsedSeconds": 17.775829,
+      "timeoutSeconds": 120,
+      "blockedBy": [
+        "cases"
+      ]
+    },
+    {
+      "name": "build-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "elapsedSeconds": 28.475299,
+      "timeoutSeconds": 120,
+      "blockedBy": []
+    }
+  ],
+  "firstFailure": {
+    "phase": "cases",
+    "exitCode": 1
+  },
+  "fullNativeLog": {
+    "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 8575482,
+    "sha256": "d1273b2818c7f31db4f93a8592d2e47deaa19890ac4c65f23d1c27ee7041d723",
+    "compilerErrorLines": 0,
+    "xcodebuildExitCode": 0,
+    "xcodebuildTestSucceeded": true,
+    "SwiftTestingTerminal": "Test run with 3 tests in 70 suites passed after 1.467 seconds.",
+    "nativeElapsedSeconds": 2119.255336
+  },
+  "actualResults": {
+    "expectedDefinitions": 459,
+    "expectedLeaves": 462,
+    "testCaseParents": 21,
+    "XCTestMethods": 18,
+    "SwiftTestingParameterizedMethods": 3,
+    "ArgumentNodes": 6,
+    "actualExecutableLeaves": 24,
+    "failed": 0,
+    "skipped": 0,
+    "missingDefinitions": 438,
+    "missingLeaves": 438,
+    "actualParents": [
+      {
+        "identity": "ReaderViewportSizeObserverHostingTests/testBackgroundMeasuresReaderSurfaceInsteadOfWindowAndReportsResize",
+        "actualIdentifier": "ReaderViewportSizeObserverHostingTests/testBackgroundMeasuresReaderSurfaceInsteadOfWindowAndReportsResize()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReaderViewportSizeObserverHostingTests/testFullBleedProbeMatchesReaderSurfaceWithSafeAreaInsets",
+        "actualIdentifier": "ReaderViewportSizeObserverHostingTests/testFullBleedProbeMatchesReaderSurfaceWithSafeAreaInsets()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testCheckedAdmissionCompletesAfterCancellationBehindTheExistingWriter",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testCheckedAdmissionCompletesAfterCancellationBehindTheExistingWriter()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testCheckedAtomicReceiptMatchesRawFileAndReopenedOwner",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testCheckedAtomicReceiptMatchesRawFileAndReopenedOwner()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testCheckedLoadHashesOriginalJSONAndDistinguishesMissingCorruptAndBounds",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testCheckedLoadHashesOriginalJSONAndDistinguishesMissingCorruptAndBounds()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testCheckedWriteFailureAndUnsupportedBackendsNeverReturnSuccess",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testCheckedWriteFailureAndUnsupportedBackendsNeverReturnSuccess()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testCompletedSaveIsRestoredByANewStoreIncludingTranslationOffset",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testCompletedSaveIsRestoredByANewStoreIncludingTranslationOffset()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testCorruptProgressIsPreservedAndNeverPublishedAsASuccess",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testCorruptProgressIsPreservedAndNeverPublishedAsASuccess()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testDifferentInstancesShareAdmissionOrderAndAsyncLoadWaits()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testDirectoryRemovedDuringAHeldWriteIsRecreatedByTheNextSave()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testFailedWritePreservesPreviousFileAndDoesNotPublishASuccess",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testFailedWritePreservesPreviousFileAndDoesNotPublishASuccess()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testHeldWriteFailureDoesNotPublishSuccessOrStopTheLaterSave()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testMissingProgressDoesNotCreateOrPublishAReplacement",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testMissingProgressDoesNotCreateOrPublishAReplacement()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testNavigatorHandoffAndOtherBooksKeepTheSameCrossInstanceAdmissionOrder",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testNavigatorHandoffAndOtherBooksKeepTheSameCrossInstanceAdmissionOrder()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testNavigatorHandoffPersistsCapturedTranslationAndRejectsLegacyOwner",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testNavigatorHandoffPersistsCapturedTranslationAndRejectsLegacyOwner()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testSavingRecreatesAReadingPositionDirectoryRemovedAfterInitialization",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testSavingRecreatesAReadingPositionDirectoryRemovedAfterInitialization()",
+        "result": "Passed"
+      },
+      {
+        "identity": "ReadingPositionStorePersistenceTests/testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave",
+        "actualIdentifier": "ReadingPositionStorePersistenceTests/testSyncReplacementUsesTheSameOrderedWorkerWithoutEchoingASave()",
+        "result": "Passed"
+      },
+      {
+        "identity": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+        "actualIdentifier": "AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+        "result": "Passed"
+      },
+      {
+        "identity": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+        "actualIdentifier": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+        "result": "Passed"
+      },
+      {
+        "identity": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+        "actualIdentifier": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)",
+        "result": "Passed"
+      }
+    ],
+    "argumentLeaves": [
+      {
+        "parent": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+        "value": "false",
+        "result": "Passed"
+      },
+      {
+        "parent": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+        "value": "true",
+        "result": "Passed"
+      },
+      {
+        "parent": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+        "value": "false",
+        "result": "Passed"
+      },
+      {
+        "parent": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+        "value": "true",
+        "result": "Passed"
+      },
+      {
+        "parent": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+        "value": "false",
+        "result": "Passed"
+      },
+      {
+        "parent": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+        "value": "true",
+        "result": "Passed"
+      }
+    ],
+    "missingMap": {
+      "path": ".build/consolidated-sdk-210fb05-independent-review/missing-case-map.json",
+      "bytes": 254727,
+      "sha256": "01844f0adae064b382dc071eee61b28b36e498b864c74a90f01b06e3fe04dbf0"
+    },
+    "summaryParentCount": 21,
+    "summaryDeviceConfigurationLeafCount": 24,
+    "casesFailure": "ValueError: Smoke test count/failure/skip gate failed: {\"totalTestCount\": 21, \"passedTests\": 21, \"failedTests\": 0, \"skippedTests\": 0}"
+  },
+  "confirmedCause": {
+    "classification": "P1 harness selector generation defect; App compile succeeded, intended behavioral acceptance failed",
+    "source": "scripts/reader-experience/renewal-probe-tools.py:_currentcore_commands",
+    "rawBehavior": "All438 nonparameter SwiftTesting selectors omit the required empty parentheses. Three parameter methods include actual named signatures and ran;18 XCTest bare selectors ran.",
+    "exactNecessaryBoundary": "Derive framework/signature from actual selected source declarations. Append() to no-arg SwiftTesting identities only; preserve three named Bool signatures and current XCTest names. Preserve selection sets, leaf/definition counters, all old modes, same-job required SDK fixture, fail-closed result/count/phase/source/exits and one cold3600-second invocation.",
+    "scope": "459 raw selectors were present but438 did not match real SwiftTesting method signatures. Their containing70 suites being discovered/passed is not method execution.",
+    "validationNeeded": "Add meaningful argv guard against the real no-arg SwiftTesting identities, plus parameter and XCTest boundaries. The next actual SDK run must prove exact complete method/leaf equality and required signed fixture execution; local argv generation is not SDK proof."
+  },
+  "producer": {
+    "commands": 48,
+    "commandsSucceededAndCleanupDrained": true,
+    "publicOutputFacts": 43,
+    "actualSDKMachOs": 4,
+    "codesignOperations": 4,
+    "originalCMSVerifications": 4,
+    "ownedKeychainDeleted": true,
+    "ownedSearchListRestoredAndEntryAbsent": true,
+    "privateKeyFilesOutsideKeychain": 0,
+    "privateMaterialArtifacts": 0,
+    "trustChanged": false,
+    "realAppleAccountUsed": false,
+    "binding": {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/sdk-fixture-binding.json",
+      "bytes": 9839,
+      "sha256": "d7e1ab4fa85234366697f0c23702da42ec5a8f9bca048bf388e439a670445da0"
+    },
+    "beforeBuild": {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/sdk-fixture-before-build.json",
+      "bytes": 316,
+      "sha256": "185ecc0f2f03da85bb8b7fee57e7c8f58d55e7ebf7362d9ca44638497a11637f"
+    },
+    "requiredAppMethod": "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+    "requiredAppMethodExecuted": false,
+    "afterTestsVerificationExecuted": false,
+    "AppSigningAcceptance": false,
+    "meaning": "Actual producer signatures/verification/public archive creation succeeded; the required App re-signing method was among438 omitted methods. Producer success cannot substitute for its execution."
+  },
+  "separatePackage": {
+    "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
+    "mode": "original-api-package-currentcore-effects",
+    "tests": 18,
+    "failures": 0,
+    "skipped": 0,
+    "compiledPackageInputs": 15,
+    "controlInputs": 7,
+    "all22GitBlobBindingsVerified": true,
+    "execution": {
+      "path": ".build/consolidated-sdk-210fb05/package/reader-renewal-original-api/execution.json",
+      "bytes": 2537,
+      "sha256": "0a0513df65b1bb9b7a67e9107bddb1b78c9a8f52765f58509a961cd2bdd5cf14"
+    },
+    "result": {
+      "path": ".build/consolidated-sdk-210fb05/package/reader-renewal-original-api/result.json",
+      "bytes": 14505,
+      "sha256": "957273c020f4c389b67de4743e8d8e5804ccc92f9bd1cb5666af13480ad603b7"
+    },
+    "xunit": {
+      "path": ".build/consolidated-sdk-210fb05/package/reader-renewal-original-api/xunit.xml",
+      "bytes": 3126,
+      "sha256": "46c056debabf184005557d7a799041468276e7c1321943c95c8dd03623ec579d"
+    },
+    "caseIdentifiers": [
+      "LegadoRuntimeTests.LegadoCookieTextAPITests/testPartialSequentialEffectMetadataSurvivesPublicExecutionAndOldErrorsDecode",
+      "LegadoRuntimeTests.LegadoCookieTextAPITests/testTextCookieAccessRequiresExplicitEmbeddingOptionsAndPreservesDefaultEncoding",
+      "LegadoRuntimeTests.LegadoExploreAPITests/testExplicitContextLifecycleUsesTypedBusinessDtoAndDoesNotExposeScopeAuthority",
+      "LegadoRuntimeTests.LegadoExploreAPITests/testExploreUsesOriginalPublicActionAndPreservesExplicitNullPage",
+      "LegadoRuntimeTests.LegadoHostEffectsTests/testMalformedHostResponseRetainsIssuedFactsAndEmptyEffectsPreserveOldResponses",
+      "LegadoRuntimeTests.LegadoHostEffectsTests/testRequestCopiesShareBoundedIssuedFactsAndHostErrorCodecKeepsThem",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testBusinessCodingPreservesOriginalNamesWithoutEnvironmentOrAppUuid",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testConfiguredTypedFourStageChainKeepsBusinessIdentitiesAndExplicitNoSave",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testNullPageAndUtf8RequestBudgetAreExplicit",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testOriginalTypedErrorsAndIncompatibleDtosStayErrors",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBatchReturnsMissingChapterIdentitiesAndDoesNotGrantSaves",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBusinessApiDoesNotSelectTheExistingRoute",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testCancelledExecutePreservesReportedEffectsFromSuccessAndErrorEnvelopes",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testCancelReachesRuntimeWhileExecuteWorkerIsBlocked",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionCannotSilentlyUseLegacyTransport",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionKeepsTransportOptionsOutsideSourceData",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testRuntimeOperationsRunOnSignalableBackgroundThreads",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testSessionAndUnicodeRequestRoundTrip"
+    ],
+    "JVMExecuted": false,
+    "AppSimulatorCases": 0,
+    "currentHEADComparison": "13a13cce0bc62dd6df82247ea5a345e7dfcfa607",
+    "inputPathsChangedSince210": [
+      "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "scripts/reader-experience/original-api-package-tools.py",
+      "scripts/reader-experience/test-original-api-package-tools.py",
+      ".github/workflows/reader-renewal-probe.yml"
+    ],
+    "reuseBoundary": "This18-case result binds only210 and its22 inputs. Current callback/dismiss/true-delta changes Package production/API inputs; it cannot satisfy future fresh22/23 scope or JNI/Simulator acceptance."
+  },
+  "failingGatesPreserved": [
+    "cases exact-count gate rejected21 rather than459",
+    "after-tests fixture verify blocked by cases",
+    "result aggregation blocked by cases and after-tests",
+    "terminal nonzero exit preserved despite xcodebuild0"
+  ],
+  "evidence": [
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk-terminal-job.json",
+      "bytes": 2777,
+      "sha256": "6ee1c80b4f35c3e700ffc6367a4d32fbbf4cb860c627fd1159a2022495ce575f"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk-artifacts.json",
+      "bytes": 1691,
+      "sha256": "9e8b416a39564b6b9e7bfa65bcf478d24b4756d386fb99bb2bd03c8c0e0c308e"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk-downloaded-members.json",
+      "bytes": 46160,
+      "sha256": "11c35eee02036da4752aacc12d48860edd768cb7bd97556344f676d071cf334b"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/initial-actual-failure-inspection.json",
+      "bytes": 11853,
+      "sha256": "571514e8131fc952257df099639d0b77215c2c485fc100c4ad0c08d34bfbd010"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-pipeline.json",
+      "bytes": 154693,
+      "sha256": "ce0d7e9f4362cf3b7030e7d8519551326318f1a23d7680410f664659fde21db7"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-completion.json",
+      "bytes": 3794,
+      "sha256": "77d1a05a56f63614b7b92c0381905bc02623d792fa27b80a03a4119942bced3b"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-extraction.json",
+      "bytes": 5963,
+      "sha256": "c7e98972fc130e1120d9357946a5eee7b933afb31651296fd0deae8c72698364"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-tests.json",
+      "bytes": 17622,
+      "sha256": "0b257bef293fe232755ddd2b0acee2d42bcbc7ced1dcf8d0a9e24d9a3dcee03d"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-summary.json",
+      "bytes": 1277,
+      "sha256": "85db9f71dd5d0cf6d70d49b29257b8b2f9aea2adedfda0e285904cdc5f97bec7"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-phase-cases.json",
+      "bytes": 3449,
+      "sha256": "3107ef6f663aca0d517339ecb68cf749775fd087fb7697010e8d21fb95c6b866"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-phase-after-tests.json",
+      "bytes": 2480,
+      "sha256": "cc88344101bbb4a5eac32c7554a808f0aec543cf184c789d5c42bf3fa40147c9"
+    },
+    {
+      "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-phase-result.json",
+      "bytes": 2447,
+      "sha256": "c139e8caf1ed60d38675da4f8739383f86cd54a382e94e8fb19a09bcdea748f1"
+    }
+  ],
+  "limits": [
+    "No query or re-poll of this completed run.",
+    "No source/harness mutation, cloud/tag action, private download URL file or credential access.",
+    "Native39476534384/job118813819896 remains root-owned and was not queried; this report makes no claim about its terminal status.",
+    "A simulator compile/run is not iPhone delivery, Apple authorization, installation or automatic renewal completion."
+  ],
+  "acceptanceFlags": {
+    "completeCurrentcorePassed": false,
+    "requiredAppSignedSDKCasePassed": false,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false
+  },
+  "reviewerActions": {
+    "GitWrites": 0,
+    "canonicalWrites": 0,
+    "cloudQueries": 0,
+    "SDKOrTestsRerun": 0
+  },
+  "supersedesReview": {
+    "path": ".build/consolidated-sdk-210fb05-independent-review/review.json",
+    "bytes": 21583,
+    "sha256": "dcd5979347e4c89f5b1efe79d9df8f9249522c3c44dfd6980ceaa5b59ea49a2b"
+  },
+  "v1PreservedImmutable": true,
+  "secondConfirmedCause": {
+    "classification": "P1 active-currentcore summary-grain defect, latent behind actual selector omission",
+    "rawObservedSemantics": {
+      "topTotalAndPassed": 21,
+      "singleDeviceExecutionsPassed": 24,
+      "parameterDefinitions": 3,
+      "parameterRuns": 6,
+      "source": {
+        "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-summary.json",
+        "bytes": 1277,
+        "sha256": "85db9f71dd5d0cf6d70d49b29257b8b2f9aea2adedfda0e285904cdc5f97bec7"
+      },
+      "meaning": "Top level counts21 unique test-method definitions; device/configuration counts24 actual executable leaves."
+    },
+    "wrongCurrentCalls": [
+      {
+        "function": "verify_sdk_fixture",
+        "line": 1213,
+        "rawCall": "smoke.verify_summary(smoke.read_json(work / (selection_mode() + '-summary.json')), expected_leaf_count(selection_mode()))",
+        "activeCurrentcore": true
+      },
+      {
+        "function": "result",
+        "line": 1635,
+        "rawCall": "smoke.verify_summary(smoke.read_json(work / (group + '-summary.json')), expected_leaf_count(group))",
+        "activeCurrentcore": true
+      },
+      {
+        "function": "main",
+        "line": 2279,
+        "rawCall": "smoke.verify_summary(smoke.read_json(args.summary), expected_leaf_count(args.group))",
+        "activeCurrentcore": true
+      }
+    ],
+    "oldBehavior": "All3 active currentcore paths pass expected_leaf_count as top expected and omit expected_executions. Correct459-method/462-leaf output would therefore be rejected for top count not462; current463/466 would likewise reject top463 against466.",
+    "existingCorrectHelper": {
+      "source": {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+      },
+      "functionLine": 334,
+      "signature": "verify_summary(summary, expected, expected_executions=None)",
+      "strictWhenThirdArgumentProvided": [
+        "top unique total/passed exact integer definitions,failed0,skipped0",
+        "exactly one device/configuration",
+        "single-device integer passed exact executions,failed0,skipped0,expectedFailures0",
+        "top explicit integer expectedFailures0"
+      ]
+    },
+    "exactNecessaryFixBoundary": "For active currentcore use one shared count adapter/helper that calls smoke.verify_summary(raw,len(EXPECTED_CASES[group]),expected_leaf_count(group)); apply consistently to CLI verify-tests,result group aggregation,and verify_sdk_fixture after-tests. Current463/466 must be passed separately. Frozen210 remains459/462. Preserve historical mode behavior unless independently scoped.",
+    "posteriorFixtureSafety": "before-build deliberately validates producer/source/resource binding without result counts. after-tests first needs corrected dual-grain summary,then exact verify_cases/Bool details,mandatory SDK_REQUIRED_CASE pass,builtXCTest resource equality,and actual runtime-loader markers. Those checks and phase ordering must remain mandatory.",
+    "resultFieldMeaning": "summary.totalTestCount/nativeCount is a definition count; expectedExecutions/deviceExecutionCounts records leaves. Do not fabricate or overwrite raw totalTestCount to equal leaves. Existing verify_cases exact method/leaf/parameter identity gates remain separate.",
+    "reproduction": {
+      "path": ".build/consolidated-sdk-210fb05-independent-review/summary-semantics-reproduction.json",
+      "bytes": 7137,
+      "sha256": "bc9c992a5f6a96614f2744f93947d6158904dde945ef89dba4ace2497befdeaf"
+    },
+    "actualFailureUnchanged": "The210 actual run still failed because21 !=459/462; after-tests/result remained blocked. No complete459 or current463 execution was observed. This second bug is independently demonstrated by unmodified helper source plus count-shape projections, not a second actual cloud failure."
+  },
+  "filterRepairAloneInsufficient": true,
+  "suggestedMeaningfulRegressionBoundary": [
+    "Feed the actual parent/device summary shape into all3 currentcore admission callers. Synthetic full inventory must use top463,device466 and0 explicit expectedFailures.",
+    "Reject swapped counts,missing/extra device,wrong leaf count,nonzero/missing expectedFailures,non-integer/bool counters,failed/skipped executions.",
+    "Keep raw TestCase definitions and Bool argument children exact; do not make a synthetic summary fabricate method evidence or required signed fixture pass."
+  ],
+  "secondAuditSourceBindings": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 184016,
+      "sha256": "1793fd075aa72d7e445956ee8911bcd7063199df596ae57bb55a3214727c423e"
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "bytes": 27526,
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+    }
+  ],
+  "reviewerReproductionScope": {
+    "actualSummaryCountChecks": 3,
+    "syntheticShapeBranchChecks": 13,
+    "SDKTestsExecuted": 0,
+    "cloudQueries": 0,
+    "productionMutations": 0
+  }
+}

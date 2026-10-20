@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "scope": "In-memory execution of the unmodified actual smoke.verify_summary function against actual210 raw summary and explicitly synthetic count projections; no XCTest/SDK/cloud execution",
+  "rawSummary": {
+    "path": ".build/consolidated-sdk-210fb05/sdk/reader-renewal-probe/currentcore-summary.json",
+    "bytes": 1277,
+    "sha256": "85db9f71dd5d0cf6d70d49b29257b8b2f9aea2adedfda0e285904cdc5f97bec7"
+  },
+  "helper": {
+    "path": "scripts/reader-experience/smoke-tools.py",
+    "bytes": 27526,
+    "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765",
+    "function": "verify_summary",
+    "line": 334
+  },
+  "checks": [
+    {
+      "name": "actual21-parent24-executions-strict-two-grains",
+      "result": "accepted-count-semantics-only",
+      "counts": {
+        "expectedTests": 21,
+        "totalTestCount": 21,
+        "passedTests": 21,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedExecutions": 24,
+        "deviceExecutionCounts": {
+          "passedTests": 24,
+          "failedTests": 0,
+          "skippedTests": 0,
+          "expectedFailures": 0
+        }
+      },
+      "meaning": "Actual observed raw count shape only; this is not acceptance of the459 intended selection."
+    },
+    {
+      "name": "actual24-leaf-expectation-used-as-top-level-count",
+      "result": "rejected-as-required",
+      "message": "Smoke test count/failure/skip gate failed: {\"totalTestCount\": 21, \"passedTests\": 21, \"failedTests\": 0, \"skippedTests\": 0}",
+      "meaning": "Same actual raw JSON proves why leaf count cannot be the top unique-method count."
+    },
+    {
+      "name": "actual-incomplete-selection-remains-rejected-for459-462",
+      "result": "rejected-as-required",
+      "message": "Smoke test count/failure/skip gate failed: {\"totalTestCount\": 21, \"passedTests\": 21, \"failedTests\": 0, \"skippedTests\": 0}",
+      "meaning": ""
+    },
+    {
+      "name": "synthetic-complete-459-462-legacy-two-arg",
+      "result": "rejected-as-required",
+      "message": "Smoke test count/failure/skip gate failed: {\"totalTestCount\": 459, \"passedTests\": 459, \"failedTests\": 0, \"skippedTests\": 0}",
+      "meaning": "Controlled counterfactual count projection, not additional actual tests: selector-only repair would still be rejected."
+    },
+    {
+      "name": "synthetic-complete-459-462-strict-three-arg",
+      "result": "accepted-count-semantics-only",
+      "counts": {
+        "expectedTests": 459,
+        "totalTestCount": 459,
+        "passedTests": 459,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedExecutions": 462,
+        "deviceExecutionCounts": {
+          "passedTests": 462,
+          "failedTests": 0,
+          "skippedTests": 0,
+          "expectedFailures": 0
+        }
+      },
+      "meaning": "Controlled counterfactual count projection only; existing helper can distinguish correct methods from execution leaves."
+    },
+    {
+      "name": "synthetic-complete-463-466-legacy-two-arg",
+      "result": "rejected-as-required",
+      "message": "Smoke test count/failure/skip gate failed: {\"totalTestCount\": 463, \"passedTests\": 463, \"failedTests\": 0, \"skippedTests\": 0}",
+      "meaning": "Controlled counterfactual count projection, not additional actual tests: selector-only repair would still be rejected."
+    },
+    {
+      "name": "synthetic-complete-463-466-strict-three-arg",
+      "result": "accepted-count-semantics-only",
+      "counts": {
+        "expectedTests": 463,
+        "totalTestCount": 463,
+        "passedTests": 463,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedExecutions": 466,
+        "deviceExecutionCounts": {
+          "passedTests": 466,
+          "failedTests": 0,
+          "skippedTests": 0,
+          "expectedFailures": 0
+        }
+      },
+      "meaning": "Controlled counterfactual count projection only; existing helper can distinguish correct methods from execution leaves."
+    },
+    {
+      "name": "strict-rejects-missing-device",
+      "result": "rejected-as-required",
+      "message": "Execution gate requires exactly one device/configuration",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-extra-device",
+      "result": "rejected-as-required",
+      "message": "Execution gate requires exactly one device/configuration",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-missing-parameter-leaf",
+      "result": "rejected-as-required",
+      "message": "Parameterized execution/failure/skip gate failed: {\"passedTests\": 465, \"failedTests\": 0, \"skippedTests\": 0, \"expectedFailures\": 0}",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-nonzero-device-expected-failure",
+      "result": "rejected-as-required",
+      "message": "Parameterized execution/failure/skip gate failed: {\"passedTests\": 466, \"failedTests\": 0, \"skippedTests\": 0, \"expectedFailures\": 1}",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-nonzero-top-expected-failure",
+      "result": "rejected-as-required",
+      "message": "Parameterized execution/failure/skip gate failed: {\"passedTests\": 466, \"failedTests\": 0, \"skippedTests\": 0, \"expectedFailures\": 0}",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-missing-top-expected-failure",
+      "result": "rejected-as-required",
+      "message": "Parameterized execution/failure/skip gate failed: {\"passedTests\": 466, \"failedTests\": 0, \"skippedTests\": 0, \"expectedFailures\": 0}",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-bool-device-counter",
+      "result": "rejected-as-required",
+      "message": "Parameterized execution/failure/skip gate failed: {\"passedTests\": 466, \"failedTests\": 0, \"skippedTests\": 0, \"expectedFailures\": false}",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-failed-execution",
+      "result": "rejected-as-required",
+      "message": "Parameterized execution/failure/skip gate failed: {\"passedTests\": 466, \"failedTests\": 1, \"skippedTests\": 0, \"expectedFailures\": 0}",
+      "meaning": ""
+    },
+    {
+      "name": "strict-rejects-skipped-execution",
+      "result": "rejected-as-required",
+      "message": "Parameterized execution/failure/skip gate failed: {\"passedTests\": 466, \"failedTests\": 0, \"skippedTests\": 1, \"expectedFailures\": 0}",
+      "meaning": ""
+    }
+  ],
+  "sourceCalls": [
+    {
+      "function": "verify_sdk_fixture",
+      "line": 1213,
+      "rawCall": "smoke.verify_summary(smoke.read_json(work / (selection_mode() + '-summary.json')), expected_leaf_count(selection_mode()))",
+      "activeCurrentcore": true
+    },
+    {
+      "function": "result",
+      "line": 1635,
+      "rawCall": "smoke.verify_summary(smoke.read_json(work / (group + '-summary.json')), expected_leaf_count(group))",
+      "activeCurrentcore": true
+    },
+    {
+      "function": "main",
+      "line": 2279,
+      "rawCall": "smoke.verify_summary(smoke.read_json(args.summary), expected_leaf_count(args.group))",
+      "activeCurrentcore": true
+    }
+  ],
+  "reviewerProductionWrites": 0
+}
