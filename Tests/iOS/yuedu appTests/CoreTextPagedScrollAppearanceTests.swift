@@ -1,6 +1,7 @@
 import CoreText
 import Testing
 import UIKit
+import YueduCoreText
 @testable import yuedu_app
 
 @Suite("Paged and scroll appearance", .serialized)

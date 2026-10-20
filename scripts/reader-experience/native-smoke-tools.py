@@ -130,6 +130,17 @@ ORIGINAL_LOGIN_MAP_INPUTS = (
 )
 SOURCE_INPUTS += tuple(path for path in ORIGINAL_LOGIN_MAP_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 74
+# These retained App test files also compile in the required Native host.
+NATIVE_CORETEXT_COMPILE_INPUTS = (
+    'Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift',
+    'Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift',
+    'Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift',
+)
+SOURCE_INPUTS += NATIVE_CORETEXT_COMPILE_INPUTS
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 80
 
 
 def _fact(path):

@@ -3,6 +3,7 @@ import Darwin
 import Foundation
 import Security
 import Testing
+import YueduCoreText
 @testable import yuedu_app
 
 @Suite("Actual App renewal bootstrap and explicit public configuration", .serialized)

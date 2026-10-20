@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "six-test-target-defining-module-imports-repaired-awaiting-coherent-SDK",
+  "actualFailure": "docs/legado-ios/core-build14-44f125b-native-terminal-result.json",
+  "actualCompilerErrorFiles": 2,
+  "additionalDeterminedSourceFiles": 4,
+  "importRepairs": [
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+      "baselineBytes": 16610,
+      "baselineSHA256": "db94b429841a70992b2b0bca762b45eb9ff5c3b7cfcfe8dd977bfa0998e05d62",
+      "bytes": 16631,
+      "sha256": "29d920ed495cb64588885104e8a5b03e9f1f45d2380c26e996e57784974120db",
+      "findingKind": "observed_native44_test_target_compiler_error",
+      "coreAlreadyBound": true,
+      "nativeNowBound": true,
+      "soleChange": "Add one import YueduCoreText line"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "baselineBytes": 25425,
+      "baselineSHA256": "046758252dfd596f023f716751e08e034460182268c5a9a42051344fb84e9181",
+      "bytes": 25446,
+      "sha256": "4f736640c1d1fd86500a87408f5e175a2bba9a06e6f594cad130ede51c3303de",
+      "findingKind": "observed_native44_test_target_compiler_error",
+      "coreAlreadyBound": true,
+      "nativeNowBound": true,
+      "soleChange": "Add one import YueduCoreText line"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+      "baselineBytes": 9720,
+      "baselineSHA256": "0197febb57f5d2270ef458116e6584f29624b6bcb3e7d2ed3f518d84a5b7533e",
+      "bytes": 9741,
+      "sha256": "ad6c759660326724c94824a2e39b454945403332d5f51a3983707386148bc96d",
+      "finding": "Additional same-type source audit; not another observed compiler error.",
+      "findingKind": "additional_same_type_static_source_finding",
+      "coreAlreadyBound": true,
+      "nativeNowBound": true,
+      "soleChange": "Add one import YueduCoreText line"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "baselineBytes": 20909,
+      "baselineSHA256": "de2668a33399e63d751ae272c4a36a442e378b6d8ddc894b78752195532ca64a",
+      "bytes": 20930,
+      "sha256": "8c870cc32db554d6bb1aa6dadfd40ca3659c09efca44e03fbc7b6eebf0e4ccd0",
+      "finding": "Additional same-type source audit; not another observed compiler error.",
+      "findingKind": "additional_same_type_static_source_finding",
+      "coreAlreadyBound": true,
+      "nativeNowBound": true,
+      "soleChange": "Add one import YueduCoreText line"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "baselineBytes": 16929,
+      "baselineSHA256": "9bf730a5763a66edf11ec5c57b781af460fa3b5885c73059fca0799d6a46b7fc",
+      "bytes": 16950,
+      "sha256": "3d5d8ade02eb5ef26ffaec9030e9759ab82e61b23d1996a4e68c457f48448fd0",
+      "finding": "Additional same-type source audit; not another observed compiler error.",
+      "findingKind": "additional_same_type_static_source_finding",
+      "coreAlreadyBound": true,
+      "nativeNowBound": true,
+      "soleChange": "Add one import YueduCoreText line"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "baselineBytes": 13470,
+      "baselineSHA256": "79fb69cd8ba2e24d53154da685e6110614167c4023b6ff856a85988f24484c1d",
+      "bytes": 13491,
+      "sha256": "ca0f65caad0fbe922b3dd7e3762a6dcaacf7339dfdfa3a06ff4ffc0d5768fb19",
+      "finding": "Additional same-type source audit; not another observed compiler error.",
+      "findingKind": "additional_same_type_static_source_finding",
+      "coreAlreadyBound": true,
+      "nativeNowBound": true,
+      "soleChange": "Add one import YueduCoreText line"
+    }
+  ],
+  "harnessPreparation": {
+    "schemaVersion": 1,
+    "status": "frozen-ignored-six-import-candidate-for-root-integration",
+    "sourceBaseline": "55a2928f7bf62821602fa9be2d6c2d9bd9b23d54",
+    "candidateRoot": ".build/native-position-import-closure-step/work-v2",
+    "files": [
+      {
+        "path": "scripts/reader-experience/native-smoke-tools.py",
+        "baseline": {
+          "bytes": 25712,
+          "sha256": "5d164a41c95abe5cb765cf0cb9341588687fd03eeaea3fe11d7f2a496a4f7d23"
+        },
+        "candidate": {
+          "bytes": 26350,
+          "sha256": "75668cbee9524b62e79bc8d596061da78afe809be699c6a27b4148f2ea5c12f6"
+        },
+        "diff": {
+          "path": "diffs-v2/native-smoke-tools.py.diff",
+          "bytes": 960,
+          "sha256": "85f866aba69079f3509caec46298b0896401ca3c2fc4e35a0c193473c362bfa9"
+        }
+      },
+      {
+        "path": "scripts/reader-experience/test-native-smoke-tools.py",
+        "baseline": {
+          "bytes": 17947,
+          "sha256": "533cedb70fe506d5b2296ca5b8bedbe73d9f1614d21a7fa0e965508cbeecc234"
+        },
+        "candidate": {
+          "bytes": 18289,
+          "sha256": "65f77985f59a3f1a255068cfb4e94f522e6a2455529d78cc18b4e72e70e8796b"
+        },
+        "diff": {
+          "path": "diffs-v2/test-native-smoke-tools.py.diff",
+          "bytes": 1107,
+          "sha256": "6c1007e78af0eb719ac5d08c91d6e1d3094f6a71c819857b3964ddb89b708c84"
+        }
+      }
+    ],
+    "supersedes": {
+      "path": "preparation/final-v1.json",
+      "bytes": 4067,
+      "sha256": "292fec1c2118a1a2bfca68c58f381a2ad9868e70cf68f6f19709fdbb23b01334",
+      "preservedUnchanged": true
+    },
+    "rootOwnedImportManifest": {
+      "path": ".build/app-tests-sdk-coretext-imports.json",
+      "bytes": 2197,
+      "sha256": "17a7e95e6649e8759c6ab2a84ce9874e250647ec365e52cdab1ec08626c29660"
+    },
+    "rootOwnedImportRepairs": [
+      {
+        "path": "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+        "baselineBytes": 16610,
+        "baselineSHA256": "db94b429841a70992b2b0bca762b45eb9ff5c3b7cfcfe8dd977bfa0998e05d62",
+        "bytes": 16631,
+        "sha256": "29d920ed495cb64588885104e8a5b03e9f1f45d2380c26e996e57784974120db",
+        "findingKind": "observed_native44_test_target_compiler_error",
+        "coreAlreadyBound": true,
+        "nativeNowBound": true,
+        "soleChange": "Add one import YueduCoreText line"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+        "baselineBytes": 25425,
+        "baselineSHA256": "046758252dfd596f023f716751e08e034460182268c5a9a42051344fb84e9181",
+        "bytes": 25446,
+        "sha256": "4f736640c1d1fd86500a87408f5e175a2bba9a06e6f594cad130ede51c3303de",
+        "findingKind": "observed_native44_test_target_compiler_error",
+        "coreAlreadyBound": true,
+        "nativeNowBound": true,
+        "soleChange": "Add one import YueduCoreText line"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+        "baselineBytes": 9720,
+        "baselineSHA256": "0197febb57f5d2270ef458116e6584f29624b6bcb3e7d2ed3f518d84a5b7533e",
+        "bytes": 9741,
+        "sha256": "ad6c759660326724c94824a2e39b454945403332d5f51a3983707386148bc96d",
+        "finding": "Additional same-type source audit; not another observed compiler error.",
+        "findingKind": "additional_same_type_static_source_finding",
+        "coreAlreadyBound": true,
+        "nativeNowBound": true,
+        "soleChange": "Add one import YueduCoreText line"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+        "baselineBytes": 20909,
+        "baselineSHA256": "de2668a33399e63d751ae272c4a36a442e378b6d8ddc894b78752195532ca64a",
+        "bytes": 20930,
+        "sha256": "8c870cc32db554d6bb1aa6dadfd40ca3659c09efca44e03fbc7b6eebf0e4ccd0",
+        "finding": "Additional same-type source audit; not another observed compiler error.",
+        "findingKind": "additional_same_type_static_source_finding",
+        "coreAlreadyBound": true,
+        "nativeNowBound": true,
+        "soleChange": "Add one import YueduCoreText line"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+        "baselineBytes": 16929,
+        "baselineSHA256": "9bf730a5763a66edf11ec5c57b781af460fa3b5885c73059fca0799d6a46b7fc",
+        "bytes": 16950,
+        "sha256": "3d5d8ade02eb5ef26ffaec9030e9759ab82e61b23d1996a4e68c457f48448fd0",
+        "finding": "Additional same-type source audit; not another observed compiler error.",
+        "findingKind": "additional_same_type_static_source_finding",
+        "coreAlreadyBound": true,
+        "nativeNowBound": true,
+        "soleChange": "Add one import YueduCoreText line"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+        "baselineBytes": 13470,
+        "baselineSHA256": "79fb69cd8ba2e24d53154da685e6110614167c4023b6ff856a85988f24484c1d",
+        "bytes": 13491,
+        "sha256": "ca0f65caad0fbe922b3dd7e3762a6dcaacf7339dfdfa3a06ff4ffc0d5768fb19",
+        "finding": "Additional same-type source audit; not another observed compiler error.",
+        "findingKind": "additional_same_type_static_source_finding",
+        "coreAlreadyBound": true,
+        "nativeNowBound": true,
+        "soleChange": "Add one import YueduCoreText line"
+      }
+    ],
+    "errorEvidenceBoundary": {
+      "actualNative44TestTargetCompilerErrors": 2,
+      "additionalStaticSourceFindings": 4,
+      "otherObservedCompilerErrorsClaimed": false,
+      "productionChanges": 0,
+      "testDefinitionChanges": 0
+    },
+    "core": {
+      "sourceInputs": 302,
+      "definitions": 447,
+      "argumentLeaves": 450,
+      "harnessChanges": false
+    },
+    "native": {
+      "previousSourceInputs": 74,
+      "sourceInputs": 80,
+      "newCompileInputPaths": 6,
+      "originalDefinitions": 13,
+      "originalArgumentLeaves": 13,
+      "mainjsDefinitions": 1,
+      "mainjsSeparateHost": true,
+      "selectorsChanged": false,
+      "originalBudgetSeconds": 1800,
+      "mainjsBudgetSeconds": 2700
+    },
+    "unchanged": [
+      "All previous source paths, selected definitions and modes",
+      "currentcore3Boolpairs, required signed SDK fixture and one3600-second invocation",
+      "independent Package18 and separate result",
+      "strict tracked-HEAD source hashes/exits/timeouts/actual result acceptance"
+    ],
+    "portableValidation": [
+      {
+        "command": "python scripts/reader-experience/test-native-smoke-tools.py -v",
+        "cwd": ".build/native-position-import-closure-step/work-v2",
+        "tests": 8,
+        "secondsReportedByUnittest": 0.13,
+        "exitCode": 0,
+        "scope": "Existing guards only, with exact80 inputs, six explicit module imports, unchanged13+1 selectors and strict source mutation/execution result rejection"
+      },
+      {
+        "scope": "Six repaired source bytes compare to tracked HEAD plus exactly one import each; both harness raw baselines equal canonical tracked HEAD; immutable v1 hash retained",
+        "passed": true
+      }
+    ],
+    "notExecuted": [
+      "Core66 portable guards",
+      "new test definitions",
+      "Swift/SDK/JNI/App test execution",
+      "SwiftPM Package18",
+      "new JVM tests",
+      "cloud/physical-device actions"
+    ],
+    "canonicalGitCloudMutationsByThisStage": false
+  },
+  "independentSourceScreen": {
+    "reviewer": "/root/build_preflight_review",
+    "matchedWritingModeOrDirectionalCaseFiles": 90,
+    "notImportedAfterFirstTwoRepairs": 11,
+    "additionalActualReaderWritingModeConsumers": 4,
+    "excludedOtherTypes": 7,
+    "excludedTypes": [
+      "AozoraInline.horizontal",
+      "ChapterTitleWritingDirection.horizontal",
+      "FixedPageReaderConfiguration.NavigationAxis.horizontal",
+      "ReaderOverlayGuide.horizontal",
+      "UIKit UIPageViewController.NavigationOrientation.horizontal in3files"
+    ],
+    "boundary": "Only exact enum/type ownership and member use were reviewed; no new SDK compilation is claimed."
+  },
+  "rootReview": "Each of six Swift files differs from the current HEAD by exactly one import YueduCoreText line. No test bodies/declarations or production source changed. Native provenance now includes all six actual App test-compilation inputs; existing Native8 guards passed without adding tests or rerunning unrelated Core66. Currentcore already bound all six files.",
+  "newMethodDefinitions": 0,
+  "actualNewSDKExecutions": 0,
+  "actualNewJNIExecutions": 0,
+  "checkpointRule": "The submittedfa48eb3 attempts remain frozen and may encounter these same import defects. Collect their actual outcomes and consolidate affected source/fixture repairs once; do not create another per-item tag. Existing44f125b Release package continues independently.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

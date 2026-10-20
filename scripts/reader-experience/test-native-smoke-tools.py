@@ -211,7 +211,11 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
     def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
         repo = Path(__file__).resolve().parents[2]
         workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
-        self.assertEqual(len(native.SOURCE_INPUTS), 74)
+        self.assertEqual(len(native.SOURCE_INPUTS), 80)
+        self.assertEqual(len(native.NATIVE_CORETEXT_COMPILE_INPUTS), 6)
+        self.assertTrue(set(native.NATIVE_CORETEXT_COMPILE_INPUTS) <= set(native.SOURCE_INPUTS))
+        for relative in native.NATIVE_CORETEXT_COMPILE_INPUTS:
+            self.assertIn("import YueduCoreText", (repo / relative).read_text(encoding="utf-8").splitlines())
         self.assertEqual(len(native.SOURCE_INPUTS), len(set(native.SOURCE_INPUTS)))
         self.assertEqual(len(native.ORIGINAL_SOURCE_STATE_INPUTS), 20)
         self.assertTrue(set(native.ORIGINAL_SOURCE_STATE_INPUTS) <= set(native.SOURCE_INPUTS))

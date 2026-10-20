@@ -1,6 +1,7 @@
 import CryptoKit
 import Foundation
 import Testing
+import YueduCoreText
 @testable import yuedu_app
 
 @Suite("Actual App metadata position and source owners before the first Upgrade byte", .serialized)

@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import YueduCoreText
 @testable import yuedu_app
 
 @MainActor

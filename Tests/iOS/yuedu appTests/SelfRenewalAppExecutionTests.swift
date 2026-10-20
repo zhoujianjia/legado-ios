@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 import Security
 import Testing
+import YueduCoreText
 @testable import yuedu_app
 
 #if DEBUG
