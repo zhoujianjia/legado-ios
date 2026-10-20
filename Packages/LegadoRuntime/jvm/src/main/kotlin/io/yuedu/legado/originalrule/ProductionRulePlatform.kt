@@ -43,6 +43,16 @@ internal class ProductionRulePlatform(
         override fun setCookie(url: String, value: String?): Unit = cookieWrite("set", url, value.orEmpty()) { task.session.cookies.setRuleCookie(url, value.orEmpty()) }
         override fun replaceCookie(url: String, value: String): Unit = cookieWrite("replace", url, value) { task.session.cookies.replaceRuleCookie(url, value) }
         override fun removeCookie(url: String): Unit = cookieWrite("remove", url) { task.session.cookies.removeRuleCookie(url) }
+        override fun setWebCookie(url: String, value: String) {
+            ensureOwnerOpen(); task.ensureActiveForRuntime()
+            val owner = appCookieOwner ?: unsupportedRule("original CookieStore.setWebCookie requires the explicit App owner")
+            owner.setWebCookie(url, value)
+        }
+        override fun clear() {
+            ensureOwnerOpen(); task.ensureActiveForRuntime()
+            val owner = appCookieOwner ?: unsupportedRule("original CookieStore.clear requires the explicit App owner")
+            owner.clear()
+        }
     }
 
     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
@@ -103,12 +113,15 @@ internal class ProductionRulePlatform(
             if (value == null) {
                 environment().cache.delete(cacheKey)
                 try { appCookieOwner.mutate("remove", source.getKey()) }
-                catch (error: CancellationException) { throw error }
+                catch (error: CancellationException) { throw RulePersistenceException.afterCancelledEffect("loginHeaderRemoval", "The login header was removed before Cookie removal was cancelled", error) }
                 catch (error: Exception) { throw RulePersistenceException.afterCommittedEffect("loginHeaderRemoval", "The login header was removed before Cookie removal failed; the original operation is sequential", error) }
             } else {
                 cookie?.let { appCookieOwner.mutate("replace", source.getKey(), it) }
                 try { environment().cache.put(cacheKey, value) }
-                catch (error: CancellationException) { throw error }
+                catch (error: CancellationException) {
+                    if (!cookie.isNullOrEmpty()) throw RulePersistenceException.afterCancelledEffect("cookieText", "Cookie text was committed before the login header write was cancelled", error)
+                    throw error
+                }
                 catch (error: Exception) {
                     if (!cookie.isNullOrEmpty()) throw RulePersistenceException.afterCommittedEffect("cookieText", "Cookie text was committed before the login header write failed; the original operation is sequential", error)
                     throw error

@@ -1,0 +1,16 @@
+--- freeze-v1/Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift
++++ freeze-v2/Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift
+@@ -66,9 +66,12 @@
+         }
+         // JVM injects the task deadline; also bound adapters whose presenter disappears.
+         if semaphore.wait(timeout: .now() + input.remainingTimeoutSeconds) == .timedOut {
++            // Seal registration before returning: an older Host child cannot
++            // issue its first unreported mutation after this timeout snapshot.
++            let effects = input.closePossibleEffects()
+             pending.cancel()
+             Task { await box.host.cancel(taskID: input.taskID) }
+-            response = hostFailure("host_timeout", "Platform adapter exceeded the task deadline; issued native effects cannot be retracted", completedEffects: input.possibleEffects)
++            response = hostFailure("host_timeout", "Platform adapter exceeded the task deadline; issued native effects cannot be retracted", completedEffects: effects)
+         } else { response = output.get() ?? hostFailure("host_failure", "Missing platform response") }
+     } else { response = hostFailure("unsupported_host", "No host adapter was configured") }
+     return Array(response.utf8).withUnsafeBufferPointer { LGRMakeResult($0.baseAddress, $0.count, 0) }

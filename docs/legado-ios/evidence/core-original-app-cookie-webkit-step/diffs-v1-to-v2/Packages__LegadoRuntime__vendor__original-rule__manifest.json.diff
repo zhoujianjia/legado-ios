@@ -1,0 +1,80 @@
+--- freeze-v1/Packages/LegadoRuntime/vendor/original-rule/manifest.json
++++ freeze-v2/Packages/LegadoRuntime/vendor/original-rule/manifest.json
+@@ -1560,8 +1560,8 @@
+     "integrationSources": [
+       {
+         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+-        "bytes": 45319,
+-        "sha256": "88f89c3e346d0f1d0b9a0e25c83f2cee92c3e833205601fd6232b8d947fac707"
++        "bytes": 45671,
++        "sha256": "47c268d66a6efa8854de170b326213e55552d10b2ff16a1ed38088c6403e801b"
+       },
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+@@ -1656,8 +1656,8 @@
+       },
+       {
+         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+-        "bytes": 45319,
+-        "sha256": "88f89c3e346d0f1d0b9a0e25c83f2cee92c3e833205601fd6232b8d947fac707"
++        "bytes": 45671,
++        "sha256": "47c268d66a6efa8854de170b326213e55552d10b2ff16a1ed38088c6403e801b"
+       },
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+@@ -1765,13 +1765,13 @@
+       },
+       {
+         "path": "Modules/Services/Network/CookieStore+WebKit.swift",
+-        "bytes": 13816,
+-        "sha256": "eb97f75b8abc2813e7471b77c56f8d39bd56c3886467f3e1d431b96f2d8eef89"
++        "bytes": 14333,
++        "sha256": "ddcfab7e764d556a9fef86299b6f35e8af0bf0e0867c13687cad00124af0a2b4"
+       },
+       {
+         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+-        "bytes": 45319,
+-        "sha256": "88f89c3e346d0f1d0b9a0e25c83f2cee92c3e833205601fd6232b8d947fac707"
++        "bytes": 45671,
++        "sha256": "47c268d66a6efa8854de170b326213e55552d10b2ff16a1ed38088c6403e801b"
+       },
+       {
+         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+@@ -1800,13 +1800,13 @@
+       },
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+-        "bytes": 7497,
+-        "sha256": "0ee9eec83f9c1c8038b70180bfca25fc4cf97f550fa51e6a60a5fa89558ac343"
++        "bytes": 8119,
++        "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+       },
+       {
+         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+-        "bytes": 7375,
+-        "sha256": "acd41578eddc76cd40130b31115d54a335e2c2715196ccbd251fe9d8595a9b79"
++        "bytes": 7574,
++        "sha256": "c194738ef2154f00806a70027438a52017a21591ad52bf3c848ba9067fcfaff9"
+       },
+       {
+         "path": "Packages/LegadoRuntime/vendor/original-rule/sources/data/dao/CookieDao.kt",
+@@ -1827,7 +1827,8 @@
+         "clear"
+       ],
+       "sourceTaskDeadlineRevoke": "Current explicit owner/source revision, same task/deadline, cancellable per-operation WK IPC wait. Old callbacks cannot publish through a later grant. This is not a global CAS over external WebKit writers.",
+-      "partialEffects": "Per-request bounded issued facts recorded before native IPC, visible to timeout even before completion; success/error host protocol forwards facts to JVM task ledger before its cancellation guard and preserves them in outer typed error JSON."
++      "partialEffects": "Per-request bounded issued facts recorded before native IPC, visible to timeout even before completion; success/error host protocol forwards facts to JVM task ledger before its cancellation guard and preserves them in outer typed error JSON.",
++      "timeoutAdmission": "Native request recorder seals under its existing lock before timeout returns. WK mutation and Cookie file-operation admission must first claim conservative issued/MayCommit facts under that same lock; a denied old child cannot start an unreported mutation after response sealing. Definitive after-ACK facts remain distinct from MayCommit."
+     },
+     "originalSQL": "CookieDao.deleteOkHttp deletes only url LIKE '%|%' (literal ASCII pipe); does not delete CacheManager/session/WK/native jar.",
+     "originalMemory": "Same existing CookiePersistenceOwner process lifetime memory now retains exact original _cookie/_session_cookie keys across new RuntimeSessions/Host bindings. DB reads do not populate it. clear deletes DB rows only; a fresh native owner/process projection sees deleted rows absent. Explicit finite 256-entry/1MiB limit is not original shared 50MiB CacheManager LRU parity.",
+@@ -1845,7 +1846,8 @@
+       "newNativeAppDefinitions": 5,
+       "newSwiftPackageDefinitions": 2,
+       "SwiftSDKExecuted": false,
+-      "JNIExecuted": false
++      "JNIExecuted": false,
++      "swiftGateNotExecutedByOldJVMOrJar": true
+     },
+     "remaining": [
+       "Actual WK/App and new Package SDK definitions have not run on Windows; ordinary JAR to JNI to native product-chain acceptance remains required.",

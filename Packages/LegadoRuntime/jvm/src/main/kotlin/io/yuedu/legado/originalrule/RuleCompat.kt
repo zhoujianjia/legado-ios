@@ -182,6 +182,12 @@ internal object NetworkUtils {
     // Original ZIP NetworkUtils.getSubDomain:213-224, retaining its different
     // fallback from getSubDomainOrNull. The same pinned PSL and IP validator run
     // in JVM; the App host never invents a last-two-label domain algorithm.
+    /** Locked NetworkUtils.kt:239-244; no alternative domain classifier. */
+    fun getDomain(url: String): String {
+        val baseUrl = getBaseUrl(url) ?: return url
+        return kotlin.runCatching { URL(baseUrl).host }.getOrDefault(baseUrl)
+    }
+
     fun getSubDomain(url: String): String {
         val baseUrl = getBaseUrl(url) ?: return url
         return runCatching {

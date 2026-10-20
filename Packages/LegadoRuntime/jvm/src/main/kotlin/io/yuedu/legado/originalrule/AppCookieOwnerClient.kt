@@ -53,6 +53,39 @@ internal class AppCookieOwnerClient(private val task: RuntimeTask,
         val result = text(action, url, value)
         if (result["committed"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }?.asBoolean != true)
             throw RulePersistenceException("The App Cookie owner did not acknowledge its mutation")
+        if (action == "remove") {
+            try { webRemove(url) }
+            catch (error: CancellationException) { throw RulePersistenceException.afterCancelledEffect("cookieRemoval", "Original Cookie DB/cache removal completed before browser cancellation", error) }
+            catch (error: Exception) { throw RulePersistenceException.afterCommittedEffect("cookieRemoval", "Original Cookie DB/cache removal completed before its browser expiration failed", error) }
+        }
+    }
+
+    fun setWebCookie(url: String, value: String) {
+        if (!task.session.options.writesAppCookieOwner) unsupportedRule("Browser Cookie mutation requires explicit app-owner-text mode")
+        val baseUrl = NetworkUtils.getBaseUrl(url) ?: return
+        val pieces = value.splitNotBlank(";")
+        require(pieces.size <= 4096 && value.toByteArray(Charsets.UTF_8).size <= 65536) { "Original browser Cookie text exceeds its budget" }
+        acknowledgeWeb(call("cookie.owner.text", input(url).apply {
+            addProperty("action", "webSet"); addProperty("baseUrl", baseUrl); add("pieces", GSON.toJsonTree(pieces))
+        }))
+    }
+
+    private fun webRemove(url: String) {
+        acknowledgeWeb(call("cookie.owner.text", input(url).apply {
+            addProperty("action", "webRemove")
+            add("domains", GSON.toJsonTree(listOf(NetworkUtils.getDomain(url), NetworkUtils.getSubDomain(url))))
+        }))
+    }
+    private fun acknowledgeWeb(result: JsonObject) {
+        if (result["committed"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }?.asBoolean != true)
+            throw RulePersistenceException("The App browser Cookie owner did not acknowledge its operation")
+    }
+
+    fun clear() {
+        if (!task.session.options.writesAppCookieOwner) unsupportedRule("Cookie clear requires explicit app-owner-text mode")
+        val result = text("clear", "")
+        if (result["committed"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }?.asBoolean != true)
+            throw RulePersistenceException("The App Cookie owner did not acknowledge the original DB subset clear")
     }
 
     fun saveResponse(response: Response) {
@@ -109,7 +142,8 @@ internal class AppCookieOwnerClient(private val task: RuntimeTask,
         val result = try { dispatch(task, operation, input) }
         catch (error: CancellationException) { throw error }
         catch (error: RuntimeFailure) {
-            if (error.code in setOf("UNSUPPORTED_CAPABILITY", "unsupported_host")) throw UnsupportedRuleCapability(error.message.orEmpty())
+            if (error.code in setOf("UNSUPPORTED_CAPABILITY", "unsupported_host")) throw UnsupportedRuleCapability(error.message.orEmpty()).apply { initCause(error) }
+            if (error.code == "CANCELLED") throw CancellationException(error.message.orEmpty()).apply { initCause(error) }
             throw RulePersistenceException("App Cookie owner operation failed", error)
         }
         catch (error: Exception) { throw RulePersistenceException("App Cookie owner operation failed", error) }

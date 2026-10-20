@@ -1,0 +1,109 @@
+--- freeze-v1/Modules/Services/Network/CookieStore+WebKit.swift
++++ freeze-v2/Modules/Services/Network/CookieStore+WebKit.swift
+@@ -44,7 +44,7 @@
+     /// The optional store is the actual existing owned WK store in SDK fixtures.
+     func performOriginalWebCookieMutation(_ operation: OriginalCookieWebKitMutation,
+                                           storeProvider: @MainActor @Sendable () -> WKHTTPCookieStore = { WKWebsiteDataStore.default().httpCookieStore },
+-                                          recordPossibleEffect: @escaping @Sendable (String) -> Void = { _ in },
++                                          recordPossibleEffect: @escaping @Sendable (String) -> Bool = { _ in true },
+                                           validate: @escaping @Sendable () throws -> Void) async throws {
+         let started = SourcePerfTrace.now
+         var observedCount = 0
+@@ -75,7 +75,7 @@
+                 // then submits each already split/trimmed piece in source order.
+                 for cookie in cookies where cookie.isSessionOnly || cookie.expiresDate == nil {
+                     try await check()
+-                    try await Self.deleteWebCookie(cookie, store: store) { effects.mark("webKitCookieMutationIssued") }
++                    try await Self.deleteWebCookie(cookie, store: store) { try effects.begin("webKitCookieMutationIssued") }
+                     authoritative.append(cookie); deleted.insert(Self.webCookieIdentity(cookie))
+                     mark("webSessionCookiesRemoved"); try await check()
+                 }
+@@ -88,7 +88,7 @@
+                     // converted into guessed rich metadata or another parser.
+                     for cookie in parsed {
+                         try await check()
+-                        try await Self.setWebCookie(cookie, store: store) { effects.mark("webKitCookieMutationIssued") }
++                        try await Self.setWebCookie(cookie, store: store) { try effects.begin("webKitCookieMutationIssued") }
+                         authoritative.append(cookie); expected[Self.webCookieIdentity(cookie)] = cookie
+                         mark("webCookiesApplied"); try await check()
+                     }
+@@ -110,7 +110,7 @@
+                             .domain: host, .path: "/", .expires: Date(timeIntervalSince1970: 978_307_199)]) else {
+                             throw CookieOwnerError(code: "UNSUPPORTED_CAPABILITY", message: "Original browser expiration cannot be represented")
+                         }
+-                        try await Self.setWebCookie(expired, store: store) { effects.mark("webKitCookieMutationIssued") }
++                        try await Self.setWebCookie(expired, store: store) { try effects.begin("webKitCookieMutationIssued") }
+                         authoritative.append(expired); expected[Self.webCookieIdentity(expired)] = expired
+                         mark("webCookiesRemoved"); try await check()
+                     }
+@@ -163,7 +163,7 @@
+     }
+     @MainActor
+     private static func deleteWebCookie(_ cookie: HTTPCookie, store: WKHTTPCookieStore,
+-                                        issued: @Sendable () -> Void) async throws {
++                                        issued: @Sendable () throws -> Void) async throws {
+         try await originalWebCookieIPC(beforeIssue: issued) { (wait: OriginalWebCookieIPCWait<Void>) in
+             // Record immediately before issuing the real IPC, including the
+             // cancellation window in which its completion never comes back.
+@@ -172,19 +172,21 @@
+     }
+     @MainActor
+     private static func setWebCookie(_ cookie: HTTPCookie, store: WKHTTPCookieStore,
+-                                     issued: @Sendable () -> Void) async throws {
++                                     issued: @Sendable () throws -> Void) async throws {
+         try await originalWebCookieIPC(beforeIssue: issued) { (wait: OriginalWebCookieIPCWait<Void>) in
+             store.setCookie(cookie) { wait.finish(.success(Void())) }
+         }
+     }
+     @MainActor
+-    private static func originalWebCookieIPC<Value>(beforeIssue: @Sendable () -> Void = {},
++    private static func originalWebCookieIPC<Value>(beforeIssue: @Sendable () throws -> Void = {},
+                                                    _ issue: (OriginalWebCookieIPCWait<Value>) -> Void) async throws -> Value {
+         let wait = OriginalWebCookieIPCWait<Value>()
+         return try await withTaskCancellationHandler {
+             try Task.checkCancellation()
+             return try await withCheckedThrowingContinuation { continuation in
+-                if wait.install(continuation), wait.beginIssue(beforeIssue) { issue(wait) }
++                guard wait.install(continuation) else { return }
++                do { if try wait.beginIssue(beforeIssue) { issue(wait) } }
++                catch { wait.finish(.failure(error)) }
+             }
+         } onCancel: { wait.finish(.failure(CancellationError())) }
+     }
+@@ -220,12 +222,12 @@
+         }
+         pending?.resume(with: result)
+     }
+-    func beginIssue(_ record: () -> Void) -> Bool {
+-        lock.withLock {
++    func beginIssue(_ record: () throws -> Void) throws -> Bool {
++        try lock.withLock {
+             guard result == nil else { return false }
+             // Cancellation cannot resume before conservative issued facts are
+             // visible, then let an unreported IPC escape immediately after it.
+-            record()
++            try record()
+             return true
+         }
+     }
+@@ -236,11 +238,17 @@
+ private final class OriginalWebCookieIssuedEffects: @unchecked Sendable {
+     private let lock = NSLock()
+     private var values: [String] = []
+-    private let record: @Sendable (String) -> Void
+-    init(record: @escaping @Sendable (String) -> Void) { self.record = record }
++    private let record: @Sendable (String) -> Bool
++    init(record: @escaping @Sendable (String) -> Bool) { self.record = record }
++    func begin(_ value: String) throws {
++        // This registration and the native timeout's close share one lock. A
++        // denied old child cannot issue IPC after the response already escaped.
++        guard record(value) else { throw CancellationError() }
++        lock.withLock { if !values.contains(value) { values.append(value) } }
++    }
+     func mark(_ value: String) {
+         lock.withLock { if !values.contains(value) { values.append(value) } }
+-        record(value)
++        _ = record(value)
+     }
+     func snapshot() -> [String] { lock.withLock { values } }
+ }

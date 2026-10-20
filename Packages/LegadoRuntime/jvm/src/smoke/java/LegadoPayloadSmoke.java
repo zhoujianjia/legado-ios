@@ -35,6 +35,7 @@ public class LegadoPayloadSmoke {
         originalTraditionalSmoke(false, false);
         originalTraditionalSmoke(true, false);
         originalTraditionalSmoke(true, true);
+        originalBrowserProtocolSmoke();
     }
 
     // ASCII-only controlled smoke fixture. Production uses retained original
@@ -183,5 +184,49 @@ public class LegadoPayloadSmoke {
             if (session != null) checked(LegadoRuntime.closeSession(session));
             LegadoRuntime.setHostCallback(null); server.stop(0);
         }
+    }
+
+    /** Public original protocol in the assembled ordinary payload. This callback
+     * fixture does not execute WebKit, Foundation or native persistence. */
+    static void originalBrowserProtocolSmoke() throws Exception {
+        var operations = new java.util.ArrayList<String>();
+        var fail = new boolean[]{false};
+        var requests = new AtomicInteger();
+        var server = HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}),0),0);
+        server.createContext("/", exchange -> {
+            requests.incrementAndGet();
+            var bytes = "<a class='book' href='/book'>Browser</a>".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200,bytes.length);
+            try (var body=exchange.getResponseBody()) { body.write(bytes); } finally { exchange.close(); }
+        }); server.start();
+        LegadoRuntime.setHostCallback((task, operation, raw) -> {
+            if (operation.equals("task.cancel")) return "{}";
+            var input = JsonParser.parseString(raw).getAsJsonObject();
+            if (!input.get("owner").getAsString().equals("browser-smoke-owner") || !input.has("deadlineEpochMs")) throw new AssertionError("Wrong Cookie task owner/deadline");
+            if (operation.equals("state.read")) return "{\"revision\":0,\"values\":{}}";
+            if (operation.equals("state.commit")) return "{\"committed\":true}";
+            if (!operation.equals("cookie.owner.text")) throw new AssertionError(operation);
+            var action = input.get("action").getAsString();
+            if (action.equals("get") || action.equals("session")) return "{\"cookie\":\"\"}";
+            operations.add(action);
+            if (fail[0]) return "{\"ok\":false,\"error\":{\"code\":\"STATE_IO\",\"message\":\"Issued native effect; no rollback claim\",\"completedEffects\":[\"webKitCookieMutationIssued\"]}}";
+            if (action.equals("webSet") && input.getAsJsonArray("pieces").size()!=2) throw new AssertionError("Original splitting lost");
+            if (action.equals("webRemove") && !input.getAsJsonArray("domains").get(1).getAsString().equals("example.co.uk")) throw new AssertionError("Original removal target lost");
+            return "{\"committed\":true}";
+        });
+        String session=null;
+        try {
+            var origin="http://127.0.0.1:"+server.getAddress().getPort();
+            var source=JsonParser.parseString("{\"ruleSearch\":{\"bookList\":\".book\",\"name\":\"text\",\"bookUrl\":\"href\"},\"enabledCookieJar\":false}").getAsJsonObject();
+            source.addProperty("bookSourceUrl",origin); source.addProperty("searchUrl",origin+"/search");
+            source.addProperty("header","@js:cookie.setWebCookie('https://reader.example.co.uk/path','a=1; ; b=2'); cookie.removeCookie('https://reader.example.co.uk/path'); cookie.clear(); ({})");
+            session=checked(LegadoRuntime.createSession(source.toString(),"{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\"browser-smoke-owner\",\"cookieAccess\":\"app-owner-text\"}")).get("sessionId").getAsString();
+            checked(LegadoRuntime.execute(session,"ordinary-browser-success","search","{\"key\":\"owned\"}"));
+            if (!operations.equals(java.util.List.of("webSet","remove","webRemove","clear")) || requests.get()!=1) throw new AssertionError(operations);
+            fail[0]=true;
+            var error=JsonParser.parseString(LegadoRuntime.execute(session,"ordinary-browser-partial","search","{\"key\":\"owned\"}")).getAsJsonObject();
+            if (error.get("ok").getAsBoolean() || !error.getAsJsonObject("error").get("code").getAsString().equals("STATE_IO") || !error.getAsJsonObject("error").getAsJsonArray("completedEffects").get(0).getAsString().equals("webKitCookieMutationIssued") || requests.get()!=1) throw new AssertionError(error);
+            System.out.println("PACKAGED_APP_COOKIE_OWNER_BROWSER_PROTOCOL_OK orderedActions=4 partialEffectsPreserved=true actualWebKitExecuted=false");
+        } finally { if(session!=null)checked(LegadoRuntime.closeSession(session)); LegadoRuntime.setHostCallback(null); server.stop(0); }
     }
 }

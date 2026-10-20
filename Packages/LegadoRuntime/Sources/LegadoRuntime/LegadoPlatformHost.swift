@@ -3,10 +3,38 @@ import Foundation
 import FoundationNetworking
 #endif
 
+/// Request-local control facts, never source state or a persistence owner. The
+/// native callback can read conservative issued-side-effect facts even when an
+/// asynchronous platform completion has not returned at the absolute deadline.
+internal final class LegadoHostEffectRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var effects: [String] = []
+    private var closed = false
+    func record(_ value: String) -> Bool {
+        guard !value.isEmpty, value.utf8.count <= 256 else { return false }
+        return lock.withLock {
+            guard !closed else { return false }
+            if effects.contains(value) { return true }
+            guard effects.count < 32 else { return false }
+            effects.append(value)
+            return true
+        }
+    }
+    func snapshot() -> [String] { lock.withLock { effects } }
+    func close() -> [String] { lock.withLock { closed = true; return effects } }
+}
+
 public struct LegadoHostRequest: Sendable {
     public let taskID: String
     public let operation: String
     public let requestJSON: String
+    private let effectRecorder = LegadoHostEffectRecorder()
+    /// False means the native callback has already sealed its response. A
+    /// platform mutation must claim its possible effect before issuing IPC or
+    /// entering a noninterruptible commit, and must not start when denied.
+    @discardableResult public func recordPossibleEffect(_ name: String) -> Bool { effectRecorder.record(name) }
+    internal var possibleEffects: [String] { effectRecorder.snapshot() }
+    internal func closePossibleEffects() -> [String] { effectRecorder.close() }
     public init(taskID: String, operation: String, requestJSON: String) {
         self.taskID = taskID; self.operation = operation; self.requestJSON = requestJSON
     }

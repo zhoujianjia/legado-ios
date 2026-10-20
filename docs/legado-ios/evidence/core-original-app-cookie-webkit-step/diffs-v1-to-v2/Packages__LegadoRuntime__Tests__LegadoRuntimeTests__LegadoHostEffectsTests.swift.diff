@@ -1,0 +1,19 @@
+--- freeze-v1/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHostEffectsTests.swift
++++ freeze-v2/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHostEffectsTests.swift
+@@ -19,7 +19,16 @@
+         XCTAssertEqual(error.completedEffects, ["webKitCookieMutationIssued"])
+         for index in 0..<100 { pending.recordPossibleEffect("effect-\(index)") }
+         XCTAssertEqual(request.possibleEffects.count, 32)
++        let sealed = request.closePossibleEffects()
++        XCTAssertEqual(sealed.count, 32)
++        XCTAssertFalse(pending.recordPossibleEffect("late-old-operation"))
++        XCTAssertEqual(request.possibleEffects, sealed)
+         let other = LegadoHostRequest(taskID: "next-task", operation: "cookie.owner.text", requestJSON: "{}")
++        XCTAssertTrue(other.possibleEffects.isEmpty)
++        // Timeout first: no later Host child can claim its first mutation. The
++        // next request has a separate gate, never reopened by the old callback.
++        XCTAssertEqual(other.closePossibleEffects(), [])
++        XCTAssertFalse(other.recordPossibleEffect("webKitCookieMutationIssued"))
+         XCTAssertTrue(other.possibleEffects.isEmpty)
+     }
+     func testMalformedHostResponseRetainsIssuedFactsAndEmptyEffectsPreserveOldResponses() throws {

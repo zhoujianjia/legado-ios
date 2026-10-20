@@ -1,0 +1,24 @@
+--- freeze-v1/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ freeze-v2/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -420,11 +420,13 @@
+                     try await pending.value
+                 } onCancel: { ticket.cancel(); pending.cancel() }
+             } else if action == "clear" {
++                guard request.recordPossibleEffect("cookieOkHttpSubsetClearMayCommit") else { throw CancellationError() }
+                 try await withTaskCancellationHandler {
+                     try await cookieOwner.clearOriginalOkHttp(validate: validate)
+                 } onCancel: { ticket.cancel() }
+             } else if action == "response" {
+                 let response = try originalResponseCookies(input, rawURL: url)
++                guard request.recordPossibleEffect("cookieResponseMayCommit") else { throw CancellationError() }
+                 try await withTaskCancellationHandler {
+                     try await cookieOwner.ingestOriginalResponse(response.records, domain: domain,
+                         persistentText: response.persistent, sessionText: response.session, validate: validate)
+@@ -434,6 +436,7 @@
+                 guard action == "remove" || raw != nil, (raw?.utf8.count ?? 0) <= 65_536 else {
+                     throw failure("INVALID_STATE_REQUEST", "Cookie mutation requires bounded text")
+                 }
++                guard request.recordPossibleEffect("cookieTextMutationMayCommit") else { throw CancellationError() }
+                 try await withTaskCancellationHandler {
+                     try await cookieOwner.mutateOriginalText(domain: domain, action: action, raw: raw, validate: validate)
+                 } onCancel: { ticket.cancel() }

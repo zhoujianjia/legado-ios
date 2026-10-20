@@ -13,9 +13,26 @@ private final class HostResponse: @unchecked Sendable {
     func set(_ value: String) { lock.withLock { self.value = value } }
     func get() -> String? { lock.withLock { value } }
 }
-private func hostFailure(_ code: String, _ message: String) -> String {
-    let object: [String: Any] = ["ok": false, "error": ["code": code, "message": message]]
-    return String(data: (try? JSONSerialization.data(withJSONObject: object)) ?? Data(), encoding: .utf8) ?? "{}"
+internal enum LegadoHostErrorCodec {
+    static func encode(code: String, message: String, completedEffects: [String]? = nil) -> String {
+        var error: [String: Any] = ["code": code, "message": message]
+        if let completedEffects, !completedEffects.isEmpty { error["completedEffects"] = completedEffects }
+        do { return String(decoding: try JSONSerialization.data(withJSONObject: ["ok": false, "error": error]), as: UTF8.self) }
+        catch { return "{\"ok\":false,\"error\":{\"code\":\"host_failure\",\"message\":\"The host error could not be encoded\"}}" }
+    }
+    static func attachingEffects(_ json: String, effects: [String]) -> String {
+        guard !effects.isEmpty else { return json }
+        do {
+            guard var value = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any] else {
+                return encode(code: "host_failure", message: "Host response was not an object", completedEffects: effects)
+            }
+            value["hostEffects"] = effects
+            return String(decoding: try JSONSerialization.data(withJSONObject: value), as: UTF8.self)
+        } catch { return encode(code: "host_failure", message: "Host response metadata could not be encoded", completedEffects: effects) }
+    }
+}
+private func hostFailure(_ code: String, _ message: String, completedEffects: [String]? = nil) -> String {
+    LegadoHostErrorCodec.encode(code: code, message: message, completedEffects: completedEffects)
 }
 private func read(_ string: LGRString) -> String {
     guard string.count > 0, let bytes = string.bytes else { return "" }
@@ -35,17 +52,26 @@ private func dispatchHost(_ context: UnsafeMutableRawPointer?, _ task: LGRString
                 if input.operation == "task.cancel" {
                     await box.host.cancel(taskID: input.taskID)
                     output.set("{\"ok\":true}")
-                } else { output.set(try await box.host.dispatch(input)) }
+                } else {
+                    let result = try await box.host.dispatch(input)
+                    output.set(LegadoHostErrorCodec.attachingEffects(result, effects: input.possibleEffects))
+                }
             }
-            catch let error as LegadoRuntimeError { output.set(hostFailure(error.code, error.message)) }
-            catch { output.set(hostFailure("host_failure", error.localizedDescription)) }
+            catch let error as LegadoRuntimeError {
+                let effects = (input.possibleEffects + (error.completedEffects ?? [])).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+                output.set(hostFailure(error.code, error.message, completedEffects: effects))
+            }
+            catch { output.set(hostFailure("host_failure", error.localizedDescription, completedEffects: input.possibleEffects)) }
             semaphore.signal()
         }
         // JVM injects the task deadline; also bound adapters whose presenter disappears.
         if semaphore.wait(timeout: .now() + input.remainingTimeoutSeconds) == .timedOut {
+            // Seal registration before returning: an older Host child cannot
+            // issue its first unreported mutation after this timeout snapshot.
+            let effects = input.closePossibleEffects()
             pending.cancel()
             Task { await box.host.cancel(taskID: input.taskID) }
-            response = hostFailure("host_timeout", "Platform adapter exceeded the task deadline")
+            response = hostFailure("host_timeout", "Platform adapter exceeded the task deadline; issued native effects cannot be retracted", completedEffects: effects)
         } else { response = output.get() ?? hostFailure("host_failure", "Missing platform response") }
     } else { response = hostFailure("unsupported_host", "No host adapter was configured") }
     return Array(response.utf8).withUnsafeBufferPointer { LGRMakeResult($0.baseAddress, $0.count, 0) }

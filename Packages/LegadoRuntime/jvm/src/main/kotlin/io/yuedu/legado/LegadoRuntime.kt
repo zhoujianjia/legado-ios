@@ -115,10 +115,12 @@ object LegadoRuntime {
                 error is IllegalArgumentException || error is JsonParseException -> "INVALID_ARGUMENT"
                 else -> "SCRIPT_ERROR"
             }
-            val completedEffect = stateFailure?.completedEffect
-            val response = if (completedEffect == null) failure(code, hostFailure?.message ?: error.message ?: error.javaClass.simpleName, taskId)
+            val completedEffects = (generateSequence(error as Throwable?) { it.cause }.take(32)
+                .filterIsInstance<RulePersistenceException>().mapNotNull { it.completedEffect }.toList() + hostFailure?.completedEffects.orEmpty() + task?.hostEffectsSnapshot().orEmpty()).distinct()
+            val message = if (stateFailure?.completedEffect != null) stateFailure.message else hostFailure?.message ?: error.message ?: error.javaClass.simpleName
+            val response = if (completedEffects.isEmpty()) failure(code, message.orEmpty(), taskId)
                 else jsonObject("ok" to false, "taskId" to taskId, "error" to jsonObject("code" to code,
-                    "message" to stateFailure.message, "completedEffects" to listOf(completedEffect))).toString()
+                    "message" to message, "completedEffects" to completedEffects)).toString()
             if (originalTraditional && response.toByteArray(Charsets.UTF_8).size > OriginalTraditionalRuntime.MAX_RESULT_BYTES)
                 return failure("PAYLOAD_TOO_LARGE", "Original traditional error envelope exceeds 8 MiB UTF-8")
             return response
@@ -315,13 +317,28 @@ object LegadoRuntime {
         } catch (_: UnsatisfiedLinkError) {
             throw RuntimeFailure("HOST_UNAVAILABLE", "No native host registered for $operation")
         }
-        task.ensureActiveForRuntime()
         val parsed = parseObject(response)
+        parsed["hostEffects"]?.let { raw ->
+            require(raw.isJsonArray && raw.asJsonArray.size() <= 32) { "Invalid hostEffects" }
+            raw.asJsonArray.forEach { value ->
+                require(value.isJsonPrimitive && value.asJsonPrimitive.isString && value.asString.toByteArray(Charsets.UTF_8).size <= 256) { "Invalid host effect" }
+                task.recordHostEffect(value.asString)
+            }
+        }
         if (parsed["ok"]?.isJsonPrimitive == true && !parsed["ok"].asBoolean) {
             val detail = parsed["error"]?.asJsonObject
+            val effects = detail?.get("completedEffects")?.let { raw ->
+                require(raw.isJsonArray && raw.asJsonArray.size() <= 32) { "Invalid host completedEffects" }
+                raw.asJsonArray.map { value ->
+                    require(value.isJsonPrimitive && value.asJsonPrimitive.isString && value.asString.toByteArray(Charsets.UTF_8).size <= 256) { "Invalid host effect" }
+                    value.asString
+                }
+            }.orEmpty()
+            effects.forEach(task::recordHostEffect)
             throw RuntimeFailure(detail?.get("code")?.asString ?: "HOST_ERROR",
-                detail?.get("message")?.asString ?: "Host operation failed")
+                detail?.get("message")?.asString ?: "Host operation failed", effects)
         }
+        task.ensureActiveForRuntime()
         return parsed
     }
 
@@ -374,6 +391,13 @@ internal class RuntimeSession(val id: String, val source: JsonObject,
 internal class RuntimeTask(val id: String, val session: RuntimeSession, val job: kotlinx.coroutines.CompletableJob,
     val deadlineEpochMs: Long, val diagnosticHttp: TaskHttpDispatcher? = null) {
     val timedOut = AtomicBoolean(false)
+    // Request-local control facts, never a second state/cache owner. A native
+    // Cookie IPC can already have effects before cancellation returns its ACK.
+    private val hostEffects = linkedSetOf<String>()
+    @Synchronized internal fun recordHostEffect(value: String) {
+        if (value.isNotEmpty() && value.toByteArray(Charsets.UTF_8).size <= 256 && hostEffects.size < 32) hostEffects += value
+    }
+    @Synchronized internal fun hostEffectsSnapshot(): List<String> = hostEffects.toList()
     // Installed by the original production platform, retained only by this task.
     // The existing transport uses this exact callback for redirect/final Cookies.
     internal var appCookieOwner: io.yuedu.legado.originalrule.AppCookieOwnerClient? = null
@@ -386,7 +410,7 @@ internal class RuntimeTask(val id: String, val session: RuntimeSession, val job:
     val rawHttpResponses = ConcurrentHashMap<String, okhttp3.Response>()
 }
 
-internal class RuntimeFailure(val code: String, message: String) : RuntimeException(message)
+internal class RuntimeFailure(val code: String, message: String, val completedEffects: List<String> = emptyList()) : RuntimeException(message)
 internal val gson = GsonBuilder().disableHtmlEscaping().create()
 internal fun jsonObject(vararg entries: Pair<String, Any?>): JsonObject = JsonObject().apply {
     entries.forEach { (key, value) -> add(key, if (value is JsonElement) value else gson.toJsonTree(value)) }

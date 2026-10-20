@@ -180,6 +180,7 @@ class AppCookieOwnerTextTest {
             events += "cookie:$action"
             if (action == "get") return jsonObject("cookie" to OriginalCookieTextOracle.mergeCookies(db[domain].orEmpty(), sessions[domain]).orEmpty())
             if (action == "session") return jsonObject("cookie" to sessions[input["url"].asString].orEmpty())
+            if (action == "webRemove") return jsonObject("committed" to true) // Protocol fixture only; SDK owns actual WK checks.
             if (action == "response") {
                 if (responseMode == "io") return failure("STATE_IO", "Owned response write failure")
                 if (responseMode != "ok") { entered.countDown(); check(release.await(5, TimeUnit.SECONDS)) }

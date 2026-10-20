@@ -24,6 +24,9 @@ final class CookieStore: @unchecked Sendable {
     func nativeCookies(url: URL) async throws -> [HTTPCookie] { try await owner.nativeCookies(url: url) }
     func snapshot() async throws -> CookiePersistenceOwner.Document { try await owner.snapshot() }
     func originalRawText(domain: String) async throws -> String { try await owner.originalRawText(domain: domain) }
+    func clearOriginalOkHttp(validate: @escaping @Sendable () throws -> Void = {}) async throws {
+        try await owner.clearOriginalOkHttp(validate: validate)
+    }
     func originalText(domain: String) async throws -> String { try await owner.originalText(domain: domain) }
     func originalSession(domain: String) async throws -> String { try await owner.originalSession(domain: domain) }
     func mutateOriginalText(domain: String, action: String, raw: String?,
@@ -46,11 +49,17 @@ final class CookieStore: @unchecked Sendable {
     func beginWebKitObservation() async throws -> CookiePersistenceOwner.WebKitObservation {
         try await owner.beginWebKitObservation()
     }
+    func validateWebKitObservation(_ observation: CookiePersistenceOwner.WebKitObservation,
+                                  validate: @escaping @Sendable () throws -> Void = {}) async throws {
+        try await owner.validateWebKitObservation(observation, validate: validate)
+    }
     func ingestWebKitSnapshot(_ cookies: [HTTPCookie], observation: CookiePersistenceOwner.WebKitObservation,
                              confirming scope: URL? = nil, requireCurrent: Bool = true,
+                             preservingOriginalRaw: Bool = false, authoritativeCookies: [HTTPCookie] = [],
                              validate: @escaping @Sendable () throws -> Void = {}) async throws {
         try await owner.ingestWebKitSnapshot(cookies, observation: observation, confirming: scope,
-            requireCurrent: requireCurrent, validate: validate)
+            requireCurrent: requireCurrent, preservingOriginalRaw: preservingOriginalRaw,
+            authoritativeCookies: authoritativeCookies, validate: validate)
     }
     func removeOwned(url: String, key: String? = nil, includingRelatedDomains: Bool = false) async throws {
         try await owner.remove(url: url, key: key, includingRelatedDomains: includingRelatedDomains)

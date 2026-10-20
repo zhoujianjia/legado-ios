@@ -170,7 +170,7 @@ actor CookiePersistenceOwner {
     private let storage: HTTPCookieStorage
     private let beforeWrite: (@Sendable () throws -> Void)?
     private var document: Document?
-    private var originalSessionText: [Data: OriginalRawDomain] = [:]
+    private var originalMemoryText: [Data: OriginalRawDomain] = [:]
 
     init(fileURL: URL, storage: HTTPCookieStorage, beforeWrite: (@Sendable () throws -> Void)? = nil) {
         self.fileURL = fileURL
@@ -226,12 +226,21 @@ actor CookiePersistenceOwner {
         return Self.legacyHeader(Self.originalRawText(current, domain: domain), roots: roots)
     }
 
-    /// Original DB text stays in the existing raw field. Session text is the
-    /// original CacheManager projection in this same actor, not another RFC jar.
-    /// In particular it is not reconstructed from rich records after restart.
+    /// The original App-process CacheManager projection uses its exact keys in
+    /// this existing actor. It is never reconstructed from native rich records
+    /// or cleared merely because one JVM RuntimeSession closes.
+    private static func originalMemoryKey(_ domain: String, session: Bool) -> Data {
+        Data((domain + (session ? "_session_cookie" : "_cookie")).utf8)
+    }
+    private static func originalNoSession(_ document: Document, domain: String,
+                                          memory: [Data: OriginalRawDomain]) -> String {
+        memory[originalMemoryKey(domain, session: false)]?.raw ?? originalRawText(document, domain: domain)
+    }
+
     func originalText(domain: String) throws -> String {
         let current = try loaded()
-        let raw = Self.originalRawText(current, domain: domain), session = originalSessionText[Data(domain.utf8)]?.raw ?? ""
+        let raw = Self.originalNoSession(current, domain: domain, memory: originalMemoryText)
+        let session = originalMemoryText[Self.originalMemoryKey(domain, session: true)]?.raw ?? ""
         guard raw.utf8.count + session.utf8.count <= 65_536 else {
             throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its read budget")
         }
@@ -240,9 +249,11 @@ actor CookiePersistenceOwner {
 
     func originalSession(domain: String) throws -> String {
         _ = try loaded()
-        return originalSessionText[Data(domain.utf8)]?.raw ?? ""
+        return originalMemoryText[Self.originalMemoryKey(domain, session: true)]?.raw ?? ""
     }
 
+    /// The raw file projection is intentionally separate from CacheManager's
+    /// in-memory view, for the existing finite read-only host and diagnostics.
     func originalRawText(domain: String) throws -> String { Self.originalRawText(try loaded(), domain: domain) }
 
     func mutateOriginalText(domain: String, action: String, raw: String?,
@@ -256,48 +267,61 @@ actor CookiePersistenceOwner {
             throw CookieOwnerError(code: "INVALID_STATE_REQUEST", message: "Unknown original Cookie text mutation")
         }
         if action == "replace", (domain.isEmpty || raw!.isEmpty) { return }
-        var sessions = originalSessionText
+        var memory = originalMemoryText
+        let cookieKey = Self.originalMemoryKey(domain, session: false)
+        let sessionKey = Self.originalMemoryKey(domain, session: true)
         if action == "remove" {
             Self.setOriginalRaw(nil, domain: domain, in: &next)
-            sessions.removeValue(forKey: Data(domain.utf8))
+            memory.removeValue(forKey: cookieKey); memory.removeValue(forKey: sessionKey)
         } else if action == "removeKey" {
             // Locked CookieManager.removeCookie(url,key): an empty map does not
-            // replace the old cache/DB value. Preserve that original boundary.
-            if let session = sessions[Data(domain.utf8)]?.raw {
+            // replace old cache/DB. This differs from removeCookie(url).
+            if let session = memory[sessionKey]?.raw {
                 let remaining = Self.originalMap(session).filter { !$0.0.utf8.elementsEqual(raw!.utf8) }
-                if !remaining.isEmpty { sessions[Data(domain.utf8)] = OriginalRawDomain(domain: domain, raw: Self.originalString(remaining)) }
+                if !remaining.isEmpty { memory[sessionKey] = OriginalRawDomain(domain: domain, raw: Self.originalString(remaining)) }
             }
-            let cookie = Self.originalRawText(next, domain: domain)
+            let cookie = Self.originalNoSession(next, domain: domain, memory: memory)
             guard cookie.utf8.count <= 65_536 else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its removal budget") }
             if !cookie.isEmpty {
                 let remaining = Self.originalMap(cookie).filter { !$0.0.utf8.elementsEqual(raw!.utf8) }
-                if !remaining.isEmpty { Self.setOriginalRaw(Self.originalString(remaining), domain: domain, in: &next) }
+                if !remaining.isEmpty {
+                    let value = Self.originalString(remaining)
+                    Self.setOriginalRaw(value, domain: domain, in: &next)
+                    memory[cookieKey] = OriginalRawDomain(domain: domain, raw: value)
+                }
             }
-        } else if action == "replace" {
-            let old = Self.originalRawText(next, domain: domain)
-            guard old.utf8.count <= 65_536 else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its merge budget") }
-            Self.setOriginalRaw(old.isEmpty ? raw! : Self.mergeOriginalText(old, raw!), domain: domain, in: &next)
         } else {
-            Self.setOriginalRaw(raw!, domain: domain, in: &next)
+            let old = Self.originalNoSession(next, domain: domain, memory: memory)
+            guard old.utf8.count <= 65_536 else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its merge budget") }
+            let value = action == "replace" && !old.isEmpty ? Self.mergeOriginalText(old, raw!) : raw!
+            Self.setOriginalRaw(value, domain: domain, in: &next)
+            memory[cookieKey] = OriginalRawDomain(domain: domain, raw: value)
         }
-        try Self.checkOriginalSessionBudget(sessions)
+        try Self.checkOriginalMemoryBudget(memory)
         let removed = action == "remove" ? (storage.cookies ?? []).filter { Self.related($0.domain, domain) } : []
-        if action == "remove" {
-            next.cookies = try next.cookies.filter { !Self.related(try $0.native().domain, domain) }
-        }
-        // Raw set/replace, like original DB set/replace, does not manufacture or
-        // overwrite WK/HTTP attributes. Native requests use their RFC projection;
-        // original text requests use originalText above, with original precedence.
+        if action == "remove" { next.cookies = try next.cookies.filter { !Self.related(try $0.native().domain, domain) } }
         try accept(next, validate: validate) {
-            self.originalSessionText = sessions
+            self.originalMemoryText = memory
             removed.forEach(self.storage.deleteCookie)
         }
     }
 
-    /// Parsed by original OkHttp from this exact response URL/Set-Cookie headers.
-    /// Rich metadata and persistent text share this file's atomic replacement;
-    /// session text is published only after that succeeds, and expires at owner
-    /// lifetime just like original CacheManager's memory entries.
+    /// Locked CookieStore.clear -> CookieDao.deleteOkHttp SQL contains one
+    /// literal ASCII pipe. Neither original CacheManager, native jar nor WK is
+    /// cleared. Cached values remain visible across new RuntimeSessions until
+    /// this existing App Cookie owner/process lifetime ends or removes them.
+    func clearOriginalOkHttp(validate: @Sendable () throws -> Void = {}) throws {
+        try Task.checkCancellation(); try validate()
+        var next = try loaded()
+        for key in Array(next.legacyHeaders.keys) where key.utf8.contains(124) { next.legacyHeaders.removeValue(forKey: key) }
+        let rows = next.originalRawDomains?.filter { !$0.domain.utf8.contains(124) }
+        next.originalRawDomains = rows?.isEmpty == true ? nil : rows
+        try accept(next, validate: validate) {}
+    }
+
+    /// Original OkHttp parsed these records from this exact response. The
+    /// existing actor commits rich/raw file data before publishing both original
+    /// CacheManager key spaces and native values; no second RFC jar is created.
     func ingestOriginalResponse(_ records: [Record], domain: String, persistentText: String, sessionText: String,
                                 validate: @Sendable () throws -> Void = {}) throws {
         guard !records.isEmpty else { return }
@@ -310,26 +334,27 @@ actor CookiePersistenceOwner {
             throw CookieOwnerError(code: "INVALID_STATE_REQUEST", message: "Original HTTP Cookie provenance is incomplete")
         }
         try merge(records, into: &next)
-        let old = Self.originalRawText(next, domain: domain)
+        var memory = originalMemoryText
+        let cookieKey = Self.originalMemoryKey(domain, session: false), sessionKey = Self.originalMemoryKey(domain, session: true)
+        let old = Self.originalNoSession(next, domain: domain, memory: memory)
         guard old.utf8.count <= 65_536 else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its merge budget") }
         if !domain.isEmpty, !persistentText.isEmpty {
-            Self.setOriginalRaw(old.isEmpty ? persistentText : Self.mergeOriginalText(old, persistentText), domain: domain, in: &next)
+            let value = old.isEmpty ? persistentText : Self.mergeOriginalText(old, persistentText)
+            Self.setOriginalRaw(value, domain: domain, in: &next)
+            memory[cookieKey] = OriginalRawDomain(domain: domain, raw: value)
         }
-        var sessions = originalSessionText
-        let previous = sessions[Data(domain.utf8)]?.raw ?? ""
-        sessions[Data(domain.utf8)] = OriginalRawDomain(domain: domain, raw: previous.isEmpty ? sessionText : Self.mergeOriginalText(previous, sessionText))
-        try Self.checkOriginalSessionBudget(sessions)
-        // Original DB raw strings do not carry natural expiry. Keep that text
-        // contract explicit; native requestHeader still uses v5 RFC expiry rules.
+        let previous = memory[sessionKey]?.raw ?? ""
+        memory[sessionKey] = OriginalRawDomain(domain: domain, raw: previous.isEmpty ? sessionText : Self.mergeOriginalText(previous, sessionText))
+        try Self.checkOriginalMemoryBudget(memory)
         try accept(next, validate: validate) {
-            self.originalSessionText = sessions
+            self.originalMemoryText = memory
             native.forEach(self.storage.setCookie)
         }
     }
 
-    private static func checkOriginalSessionBudget(_ sessions: [Data: OriginalRawDomain]) throws {
-        guard sessions.count <= 256, sessions.values.reduce(0, { $0 + $1.domain.utf8.count + $1.raw.utf8.count }) <= 1_048_576 else {
-            throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie session text exceeds its owner budget")
+    private static func checkOriginalMemoryBudget(_ memory: [Data: OriginalRawDomain]) throws {
+        guard memory.count <= 256, memory.reduce(0, { $0 + $1.key.count + $1.value.raw.utf8.count }) <= 1_048_576 else {
+            throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie memory exceeds its owner budget")
         }
     }
 
@@ -464,11 +489,20 @@ actor CookiePersistenceOwner {
         return WebKitObservation(ownerID: ownerID, revision: revision)
     }
 
+    func validateWebKitObservation(_ observation: WebKitObservation,
+                                  validate: @Sendable () throws -> Void = {}) throws {
+        try Task.checkCancellation(); try validate()
+        guard observation.ownerID == ownerID, observation.revision == revision else {
+            throw CookieOwnerError(code: "STATE_CONFLICT", message: "The Cookie-store operation observation became stale")
+        }
+    }
+
     /// Called only with a freshly fetched full WK snapshot. A late IPC result
     /// cannot replace an accepted mutation. The prior observed WK values let an
     /// unchanged browser jar coexist with newer HTTP cookies without replaying it.
     func ingestWebKitSnapshot(_ cookies: [HTTPCookie], observation: WebKitObservation,
                              confirming scope: URL? = nil, requireCurrent: Bool,
+                             preservingOriginalRaw: Bool = false, authoritativeCookies: [HTTPCookie] = [],
                              validate: @Sendable () throws -> Void = {}) throws {
         try Task.checkCancellation()
         try validate()
@@ -481,26 +515,34 @@ actor CookiePersistenceOwner {
         let before = try Self.index(next.webKitObserved ?? [])
         let current = try Self.index(next.cookies)
         let incoming = try Self.index(observed)
+        let authoritative = Set(authoritativeCookies.map(Self.identity))
         var changed: [Record] = []
         for record in observed {
             let native = try record.native()
             let key = Self.identity(native)
-            if let previous = before[key], try Self.sameCookie(previous, record) { continue }
+            if !authoritative.contains(key), let previous = before[key], try Self.sameCookie(previous, record) { continue }
             // An initial WK observation has no ordering proof relative to an
             // existing durable value. Preserve that value and establish only a
             // baseline. A user confirmation below reports any relevant conflict.
-            if next.webKitObserved == nil, current[key] != nil { continue }
+            if next.webKitObserved == nil, current[key] != nil, !authoritative.contains(key) { continue }
             changed.append(record)
         }
-        let removed = try (next.webKitObserved ?? []).filter { previous in
+        var removed = try (next.webKitObserved ?? []).filter { previous in
             let key = Self.identity(try previous.native())
             guard incoming[key] == nil, let live = current[key] else { return false }
             return try Self.sameCookie(live, previous)
         }
+        // A controlled operation can delete a Cookie before the first WK
+        // baseline exists. Its exact observed identities still authorize that
+        // removal; never infer deletion of unrelated native/WK identities.
+        let alreadyRemoved = Set(try removed.map { Self.identity(try $0.native()) })
+        for (key, record) in current where authoritative.contains(key) && incoming[key] == nil && !alreadyRemoved.contains(key) {
+            removed.append(record)
+        }
         // A removed root cookie may also have come from the old raw file.
         // Remove only that same legacy domain/name; retaining an older text value
         // would reseed the deleted native cookie on the next request or restart.
-        for record in removed {
+        for record in removed where !preservingOriginalRaw {
             let native = try record.native()
             guard native.path == "/" else { continue }
             for domain in Array(next.legacyHeaders.keys) where Self.stripped(domain) == Self.stripped(native.domain) {
@@ -554,20 +596,20 @@ actor CookiePersistenceOwner {
         }
         let identities = Set(removed.map(Self.identity))
         next.cookies = try next.cookies.filter { !identities.contains(Self.identity(try $0.native())) }
-        var sessions = originalSessionText
+        var sessions = originalMemoryText
         for (identity, row) in sessions where Self.related(row.domain, host) {
             if let key {
                 let remaining = Self.originalMap(row.raw).filter { !$0.0.utf8.elementsEqual(key.utf8) }
                 sessions[identity] = OriginalRawDomain(domain: row.domain, raw: Self.originalString(remaining))
             } else { sessions.removeValue(forKey: identity) }
         }
-        try accept(next) { self.originalSessionText = sessions; removed.forEach(self.storage.deleteCookie) }
+        try accept(next) { self.originalMemoryText = sessions; removed.forEach(self.storage.deleteCookie) }
     }
 
     func clearAll() throws {
         let current = try loaded()
         try accept(Document(webKitObserved: current.webKitObserved)) {
-            self.originalSessionText.removeAll()
+            self.originalMemoryText.removeAll()
             self.storage.removeCookies(since: .distantPast)
         }
     }

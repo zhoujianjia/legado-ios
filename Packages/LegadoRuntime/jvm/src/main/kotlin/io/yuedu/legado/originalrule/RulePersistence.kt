@@ -19,6 +19,8 @@ class RulePersistenceException private constructor(message: String, cause: Throw
     internal companion object {
         fun afterCommittedEffect(effect: String, message: String, cause: Throwable): RulePersistenceException =
             RulePersistenceException(message, cause, effect)
+        fun afterCancelledEffect(effect: String, message: String, cause: kotlinx.coroutines.CancellationException): kotlinx.coroutines.CancellationException =
+            kotlinx.coroutines.CancellationException(message).apply { initCause(afterCommittedEffect(effect, message, cause)) }
     }
 }
 

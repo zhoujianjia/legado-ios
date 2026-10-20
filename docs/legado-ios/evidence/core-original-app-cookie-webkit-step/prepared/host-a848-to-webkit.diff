@@ -1,0 +1,153 @@
+--- a848b0b/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ WK-future-v2/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -1,4 +1,5 @@
+ import Foundation
++import WebKit
+ import CoreFoundation
+ import LegadoRuntime
+ 
+@@ -105,6 +106,7 @@
+         let snapshot: LegadoEntityStateSnapshot
+     }
+     private let cookieOwner: CookieStore
++    private let originalWebCookieStore: @MainActor @Sendable () -> WKHTTPCookieStore
+     private let backing: any LegadoOwnedStateBacking
+     private let fallback: any LegadoPlatformHost
+     private var bindings: [String: Binding] = [:]
+@@ -113,13 +115,20 @@
+     private var bookOwners: [String: AppLegadoBookStateOwner] = [:]
+     private var entityLeases: [Int64: EntityLease] = [:]
+     private var pendingEntityOperations: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
++    private struct OriginalWebCookieOperation {
++        let owner: String
++        let task: Task<Void, Error>
++    }
++    private var pendingWebCookieOperations: [String: [UUID: OriginalWebCookieOperation]] = [:]
+     private var leaseOrder: [Int64] = []
+     private var nextLease: Int64 = 0
+     private var cancelled = Set<String>()
+     private var cancellationOrder: [String] = []
+ 
+-    init(backing: any LegadoOwnedStateBacking, fallback: any LegadoPlatformHost = UnsupportedLegadoHost(), cookieOwner: CookieStore = .shared) {
++    init(backing: any LegadoOwnedStateBacking, fallback: any LegadoPlatformHost = UnsupportedLegadoHost(), cookieOwner: CookieStore = .shared,
++         originalWebCookieStore: @escaping @MainActor @Sendable () -> WKHTTPCookieStore = { WKWebsiteDataStore.default().httpCookieStore }) {
+         self.cookieOwner = cookieOwner
++        self.originalWebCookieStore = originalWebCookieStore
+         self.backing = backing
+         self.fallback = fallback
+     }
+@@ -134,6 +143,7 @@
+         if revisions[sourceURL] != sourceRevision {
+             for (owner, binding) in bindings where binding.sourceURL == sourceURL {
+                 binding.cookieCancellation.cancel()
++                cancelWebCookieOperations(owner: owner)
+                 bookOwners.removeValue(forKey: owner)?.revoke()
+             }
+             bindings = bindings.filter { $0.value.sourceURL != sourceURL }
+@@ -182,6 +192,7 @@
+     func revoke(owner: String) {
+         let removed = bindings.removeValue(forKey: owner)
+         removed?.cookieCancellation.cancel()
++        cancelWebCookieOperations(owner: owner)
+         bookOwners.removeValue(forKey: owner)?.revoke()
+         leases = leases.filter { $0.value.owner != owner }
+         entityLeases = entityLeases.filter { $0.value.owner != owner }
+@@ -351,7 +362,7 @@
+               let domain = input["domain"] as? String, domain.utf8.count <= 8_192 else {
+             throw failure("INVALID_STATE_REQUEST", "Cookie text requires bounded action URL and domain")
+         }
+-        guard ["get", "session", "set", "replace", "remove", "removeKey", "response"].contains(action) else {
++        guard ["get", "session", "set", "replace", "remove", "removeKey", "response", "clear", "webSet", "webRemove"].contains(action) else {
+             throw failure("UNSUPPORTED_CAPABILITY", "Unknown original Cookie text action")
+         }
+         let deadline = try cookieReadDeadline(input)
+@@ -376,8 +387,46 @@
+                 try ticket.check(deadline: deadline)
+                 try binding.cookieCancellation.check(deadline: deadline)
+             }
+-            if action == "response" {
++            if action == "webSet" || action == "webRemove" {
++                guard pendingWebCookieOperations.values.reduce(0, { $0 + $1.count }) < 256 else {
++                    throw failure("STATE_LIMIT", "Too many active original browser Cookie operations")
++                }
++                let operation: OriginalCookieWebKitMutation
++                if action == "webSet" {
++                    guard let baseURL = input["baseUrl"] as? String, baseURL.utf8.count <= 8_192,
++                          let pieces = input["pieces"] as? [String], pieces.count <= 4096,
++                          pieces.reduce(0, { $0 + $1.utf8.count }) <= 65_536 else {
++                        throw failure("INVALID_STATE_REQUEST", "Original Web Cookie pieces exceed their budget")
++                    }
++                    operation = .set(baseURL: baseURL, pieces: pieces)
++                } else {
++                    guard let domains = input["domains"] as? [String], domains.count == 2,
++                          domains.allSatisfy({ $0.utf8.count <= 8_192 }) else {
++                        throw failure("INVALID_STATE_REQUEST", "Original browser expiration requires its two exact targets")
++                    }
++                    operation = .remove(domains: domains)
++                }
++                let cookieOwner = self.cookieOwner, storeProvider = originalWebCookieStore
++                let pending = Task {
++                    try await cookieOwner.performOriginalWebCookieMutation(operation, storeProvider: storeProvider,
++                        recordPossibleEffect: { request.recordPossibleEffect($0) }, validate: validate)
++                }
++                pendingWebCookieOperations[request.taskID, default: [:]][operationID] = OriginalWebCookieOperation(owner: owner, task: pending)
++                defer {
++                    pendingWebCookieOperations[request.taskID]?.removeValue(forKey: operationID)
++                    if pendingWebCookieOperations[request.taskID]?.isEmpty == true { pendingWebCookieOperations.removeValue(forKey: request.taskID) }
++                }
++                try await withTaskCancellationHandler {
++                    try await pending.value
++                } onCancel: { ticket.cancel(); pending.cancel() }
++            } else if action == "clear" {
++                guard request.recordPossibleEffect("cookieOkHttpSubsetClearMayCommit") else { throw CancellationError() }
++                try await withTaskCancellationHandler {
++                    try await cookieOwner.clearOriginalOkHttp(validate: validate)
++                } onCancel: { ticket.cancel() }
++            } else if action == "response" {
+                 let response = try originalResponseCookies(input, rawURL: url)
++                guard request.recordPossibleEffect("cookieResponseMayCommit") else { throw CancellationError() }
+                 try await withTaskCancellationHandler {
+                     try await cookieOwner.ingestOriginalResponse(response.records, domain: domain,
+                         persistentText: response.persistent, sessionText: response.session, validate: validate)
+@@ -387,13 +436,22 @@
+                 guard action == "remove" || raw != nil, (raw?.utf8.count ?? 0) <= 65_536 else {
+                     throw failure("INVALID_STATE_REQUEST", "Cookie mutation requires bounded text")
+                 }
++                guard request.recordPossibleEffect("cookieTextMutationMayCommit") else { throw CancellationError() }
+                 try await withTaskCancellationHandler {
+                     try await cookieOwner.mutateOriginalText(domain: domain, action: action, raw: raw, validate: validate)
+                 } onCancel: { ticket.cancel() }
+             }
+             // The actor has already replaced its file (or proved no change).
+-            // A later cancel/revoke cannot be represented as an uncommitted write.
++            // Preserve that ACK even if the JVM observes cancellation on return.
++            if action != "webSet" && action != "webRemove" {
++                let effect = action == "clear" ? "cookieOkHttpSubsetCleared" : (action == "remove" ? "cookieRemoval" : "cookieText")
++                request.recordPossibleEffect(effect)
++            }
+             return try encoded(["committed": true])
++        } catch let error as OriginalCookieWebKitFailure {
++            let code = (error.underlying as? CookieOwnerError)?.code ?? (error.underlying as? LegadoRuntimeError)?.code
++                ?? (error.underlying is CancellationError ? "CANCELLED" : "STATE_IO")
++            throw LegadoRuntimeError(code: code, message: error.errorDescription ?? "Earlier WebKit Cookie effects may exist", completedEffects: error.completedEffects)
+         } catch let error as CookieOwnerError { throw failure(error.code, error.message) }
+         catch let error as LegadoRuntimeError { throw error }
+         catch is CancellationError { throw CancellationError() }
+@@ -489,10 +547,17 @@
+         guard deadline.timeIntervalSinceNow > 0 else { throw failure("STATE_TIMEOUT", "Cookie owner read deadline expired") }
+     }
+ 
++    private func cancelWebCookieOperations(owner: String) {
++        for operations in pendingWebCookieOperations.values {
++            for operation in operations.values where operation.owner == owner { operation.task.cancel() }
++        }
++    }
++
+     func cancel(taskID: String) async {
+         if cancelled.insert(taskID).inserted { cancellationOrder.append(taskID) }
+         if cancellationOrder.count > 1_024 { cancelled.remove(cancellationOrder.removeFirst()) }
+         if let pending = pendingEntityOperations[taskID] { for ticket in pending.values { ticket.cancel() } }
++        if let pending = pendingWebCookieOperations[taskID] { for operation in pending.values { operation.task.cancel() } }
+         await fallback.cancel(taskID: taskID)
+     }
+ 
