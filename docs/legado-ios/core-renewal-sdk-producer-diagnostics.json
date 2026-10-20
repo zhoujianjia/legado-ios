@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:10:51.408442+00:00",
+  "status": "actual-producer-failure-observation-and-identity-preflight-connected-codesign-cause-pending-next-SDK",
+  "sourceBinding": {
+    "files": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 21071,
+        "sha256": "a48f2e1f9d137585ef47de0d94d4b7fa5994d476e2d23154cadcea9ea7d71f08"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 9258,
+        "sha256": "17ecc9cd83eadc5ae1ebbc37762636bbc90664f71106f89f1e011d50c516d6ba"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+      }
+    ],
+    "count": 3
+  },
+  "observedFailure": {
+    "runID": 39371934271,
+    "sourceCommit": "4af3bfcb54a3852a7f299598073abd30f292ec92",
+    "tool": "codesign",
+    "component": "framework",
+    "exitCode": 1,
+    "originalPublicToolStderrAvailable": false,
+    "nativeTestsExecuted": 0,
+    "xcodebuildReached": false,
+    "sourceArtifactVerification": {
+      "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/4af3bfc/artifact-reader-renewal-probe-evidence/artifact-verification.json",
+      "bytes": 2805,
+      "sha256": "d010893b27e0ff04f16fc1fe669aa01e86850a0128a6b5aa84b591b58856ae71"
+    },
+    "ciLog": {
+      "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/4af3bfc/artifact-reader-renewal-probe-evidence/ci-logs/reader-renewal.log",
+      "bytes": 1093,
+      "sha256": "7dac16c46f695895314be4a46ff93963402fc94d33bdf06b0962d5aaf8f9232c"
+    },
+    "emptyProducerLog": {
+      "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/4af3bfc/artifact-reader-renewal-probe-evidence/reader-renewal-probe/sdk-producer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cause": "Not established; available exit code and stack frame cannot distinguish trust, identity selection, ACL or signing-format failure."
+  },
+  "implementation": [
+    "Any failed public tool prints bounded stdout/stderr, public argv and real exit status to stdout; existing wrapper already captures that stdout in always-uploaded sdk-producer.log even before stage-sdk-fixture.",
+    "Per-stream raw capture publication is capped at 65536 bytes, known owned passwords are replaced before truncation, PEM private-key tails are suppressed; private-input process streams/argv are never directly emitted.",
+    "Importer public status accepts only fixed stage and OSStatus schema or exact complete public fingerprint/count/proof fields. Missing, extra, wrongly typed, oversized or private stdout is suppressed.",
+    "Actual import item identity and an independent SecItemCopyMatching restricted to the one owned Keychain must each match expected leaf DER; expected root/leaf must actually be present in that Keychain.",
+    "Private SecKey handle public representation must match the leaf certificate key; the actual key signs a fresh owned challenge and the certificate public key verifies it. No private SecKey representation is exported.",
+    "Only current importer and /usr/bin/codesign are granted trusted-app ACL access; importer runs noninteractive. Its self-test never asserts that another codesign process has exercised its ACL.",
+    "The actual security find-identity query is restricted to this owned Keychain and emits bounded public observations without converting it into codesign success.",
+    "Cleanup failure has its own public status and does not replace the original generation exception; no success manifest is fabricated after a failed tool."
+  ],
+  "verification": {
+    "portableActualChildCases": 6,
+    "portablePassed": 6,
+    "portableLog": {
+      "path": ".build/renewal-discovery/sdk-producer-failure-step/portable-v2.log",
+      "bytes": 1153,
+      "sha256": "b0b6e540a551cdb97afdd8d61a0d8335b743ba60ce66ac745a0a96e82ecdbd12"
+    },
+    "earlierPortableLog": {
+      "path": ".build/renewal-discovery/sdk-producer-failure-step/portable.log",
+      "bytes": 1153,
+      "sha256": "490e0ab90744ebad6f8d421f4ad6399317c4c5617a1e137d7c39fa90d4c43bb8"
+    },
+    "pythonSourcesASTParsed": 2,
+    "swiftGrammar": {
+      "tool": "tree-sitter-swift",
+      "files": [
+        {
+          "path": ".build/renewal-discovery/sdk-producer-failure-step/work/ImportOwnedIdentity.swift",
+          "bytes": 9258,
+          "sha256": "17ecc9cd83eadc5ae1ebbc37762636bbc90664f71106f89f1e011d50c516d6ba"
+        }
+      ],
+      "errors": [],
+      "sdkExecuted": 0,
+      "typechecked": false
+    },
+    "swiftSDKExecutions": 0,
+    "macOSKeychainExecutions": 0,
+    "codesignExecutions": 0,
+    "newNativeMethods": 0
+  },
+  "independentReview": {
+    "agent": "implementation_checkpoint_result",
+    "scope": "Read-only new two-source public output/Swift public API/CF types/actual identity and key preflight",
+    "confirmedBlockers": 0,
+    "executedTestsByReviewer": 0,
+    "causeStillUnknown": true
+  },
+  "preservedSemantics": [
+    "Same certificate construction/owned root/leaf extensions and generic trust scope",
+    "Same codesign argv/DR/identifiers/timestamp policy",
+    "Same partition-list contents",
+    "No explicit trust-setting or search-list override",
+    "Same five-file producer source closure and public output allowlist; diagnostics go only to existing stdout log"
+  ],
+  "primarySources": [
+    {
+      "url": "https://developer.apple.com/documentation/security/secpkcs12import(_:_:_:)",
+      "usedFor": "Imported item dictionaries can return identities, certificate chains and trust objects; success alone is not proof of later codesign execution."
+    },
+    {
+      "url": "https://developer.apple.com/documentation/security/keychain-import-and-export-options",
+      "usedFor": "Import target Keychain and initial SecAccess ACL are explicit importer inputs."
+    },
+    {
+      "url": "https://developer.apple.com/library/archive/technotes/tn2206/",
+      "usedFor": "Owned/self-created CAs can exercise signing machinery; subsystem authorization and trust are separate. No reason to mutate global trust from exit1."
+    },
+    {
+      "url": "https://developer.apple.com/documentation/technotes/tn3161-inside-code-signing-certificates",
+      "usedFor": "A keychain-file argument limits identity lookup; keep actual owned file scope explicit."
+    },
+    {
+      "url": "https://developer.apple.com/documentation/corefoundation/error-domains",
+      "usedFor": "Only actual OSStatus-domain CFError codes become public OSStatus diagnostics; no arbitrary userInfo is printed."
+    }
+  ],
+  "remaining": [
+    "Original codesign stderr was never uploaded and cannot be reconstructed. This stage fixes observation and preflight gaps, not a proven underlying cause of codesign exit1.",
+    "The six portable cases execute real Python child processes to test failure/publication boundaries. They do not run or mock success of Apple codesign, the Swift importer, Security/Keychain or any native App tests.",
+    "Swift syntax parsing does not establish standalone swiftc typechecking, macOS Security API acceptance or whether the actual SDK-produced framework signs.",
+    "Actual codesign, exact detached-CMS/OpenSSL proof and complete native tests still need a root-controlled related SDK checkpoint; no cloud action was taken here.",
+    "No account, real device, real key, pairing record, production IPA or private user data was accessed."
+  ],
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-sdk-producer-diagnostics",
+    "manifest": "manifest.json",
+    "rawFiles": 6
+  },
+  "underlyingCodesignFailureFixed": false,
+  "newCloudBuildRequested": false,
+  "actualSDKAccepted": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
