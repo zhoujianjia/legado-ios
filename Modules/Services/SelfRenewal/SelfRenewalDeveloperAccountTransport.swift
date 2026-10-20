@@ -9,36 +9,49 @@ enum SelfRenewalDeveloperAccountTransportFailure: Int, Error, Sendable {
 }
 protocol SelfRenewalDeveloperAccountTransport: Sendable {
     func send(_ request: URLRequest) async throws -> SelfRenewalDeveloperAccountResponse
+    func sendAnisette(_ request: SelfRenewalAnisetteRequest) async throws -> SelfRenewalDeveloperAccountResponse
+    func openAnisetteProvisioning(_ configuration: SelfRenewalAnisetteV3Configuration) async throws -> any SelfRenewalAnisetteProvisioningSocket
+}
+extension SelfRenewalDeveloperAccountTransport {
+    // Existing account-only fixtures remain account-only. They cannot silently
+    // stand in for an implemented remote registration protocol.
+    func sendAnisette(_ request: SelfRenewalAnisetteRequest) async throws -> SelfRenewalDeveloperAccountResponse {
+        throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+    }
+    func openAnisetteProvisioning(_ configuration: SelfRenewalAnisetteV3Configuration) async throws -> any SelfRenewalAnisetteProvisioningSocket {
+        throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+    }
 }
 
 /// The account client's one reused ephemeral session. Book-source cookies,
 /// global credentials and caches are deliberately not account credentials.
 final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRenewalDeveloperAccountTransport {
     private let session: URLSession
-    private let delegate = Delegate()
+    private let delegate: Delegate
     init() {
+        let ownedDelegate = Delegate(); delegate = ownedDelegate
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil; configuration.httpCookieStorage = nil
         configuration.urlCredentialStorage = nil; configuration.httpShouldSetCookies = false
         configuration.timeoutIntervalForRequest = 30; configuration.timeoutIntervalForResource = 30
-        session = URLSession(configuration: configuration)
+        session = URLSession(configuration: configuration, delegate: ownedDelegate, delegateQueue: nil)
     }
     #if DEBUG
     /// Same actual URLSession transport, intercepted by an owned URLProtocol.
     /// No alternate HTTP host, skipped TLS result or simulated Apple authority.
     init(protocolClasses: [AnyClass]) {
+        let ownedDelegate = Delegate(); delegate = ownedDelegate
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil; configuration.httpCookieStorage = nil
         configuration.urlCredentialStorage = nil; configuration.httpShouldSetCookies = false
         configuration.timeoutIntervalForRequest = 30; configuration.timeoutIntervalForResource = 30
         configuration.protocolClasses = protocolClasses
-        session = URLSession(configuration: configuration)
+        session = URLSession(configuration: configuration, delegate: ownedDelegate, delegateQueue: nil)
     }
     #endif
     deinit { session.invalidateAndCancel() }
 
     func send(_ request: URLRequest) async throws -> SelfRenewalDeveloperAccountResponse {
-        let maximum = SelfRenewalDERPropertyList.Limits.bytes
         guard let url = request.url, url.scheme == "https", url.port == nil, url.user == nil, url.password == nil,
               Self.allowedEndpoint(url, method: request.httpMethod) else {
             throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
@@ -50,6 +63,76 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
                 throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
             }
         }
+        return try await perform(request, maximum: SelfRenewalDERPropertyList.Limits.bytes)
+    }
+
+    func sendAnisette(_ input: SelfRenewalAnisetteRequest) async throws -> SelfRenewalDeveloperAccountResponse {
+        var request: URLRequest
+        switch input {
+        case .clientInfo(let configuration):
+            try configuration.validate()
+            request = URLRequest(url: configuration.url("/v3/client_info")); request.httpMethod = "GET"
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+        case .headers(let configuration, let identifier, let adiPB):
+            try configuration.validate()
+            guard identifier.count == 16, (1...SelfRenewalAnisetteV3Provider.maximumBlobBytes).contains(adiPB.count) else {
+                throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+            }
+            request = URLRequest(url: configuration.url("/v3/get_headers")); request.httpMethod = "POST"
+            request.httpBody = try JSONSerialization.data(withJSONObject:
+                ["identifier": identifier.base64EncodedString(), "adi_pb": adiPB.base64EncodedString()], options: [.sortedKeys])
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+        case .appleLookup(let metadata):
+            request = try Self.appleProvisioningRequest(url: URL(string: "https://gsa.apple.com/grandslam/GsService2/lookup")!, metadata: metadata)
+            request.httpMethod = "GET"
+        case .appleStart(let url, let metadata):
+            guard url.absoluteString == "https://gsa.apple.com/grandslam/MidService/startMachineProvisioning" else {
+                throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+            }
+            request = try Self.appleProvisioningRequest(url: url, metadata: metadata); request.httpMethod = "POST"
+            request.httpBody = try PropertyListSerialization.data(fromPropertyList:
+                ["Header": [String: String](), "Request": [String: String]()] as [String: Any], format: .xml, options: 0)
+        case .appleFinish(let url, let metadata, let cpim):
+            guard url.absoluteString == "https://gsa.apple.com/grandslam/MidService/finishMachineProvisioning",
+                  cpim.utf8.count <= 87_384, let bytes = Data(base64Encoded: cpim), !bytes.isEmpty,
+                  bytes.count <= SelfRenewalAnisetteV3Provider.maximumBlobBytes, bytes.base64EncodedString() == cpim else {
+                throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+            }
+            request = try Self.appleProvisioningRequest(url: url, metadata: metadata); request.httpMethod = "POST"
+            request.httpBody = try PropertyListSerialization.data(fromPropertyList:
+                ["Header": [String: String](), "Request": ["cpim": cpim]] as [String: Any], format: .xml, options: 0)
+        }
+        request.timeoutInterval = 30
+        return try await perform(request, maximum: SelfRenewalAnisetteV3Provider.maximumRecordBytes)
+    }
+
+    func openAnisetteProvisioning(_ configuration: SelfRenewalAnisetteV3Configuration) async throws -> any SelfRenewalAnisetteProvisioningSocket {
+        try Task.checkCancellation(); try configuration.validate()
+        let url = configuration.url("/v3/provisioning_session", webSocket: true)
+        var request = URLRequest(url: url); request.timeoutInterval = 30
+        let task = session.webSocketTask(with: request)
+        task.maximumMessageSize = SelfRenewalAnisetteV3Provider.maximumRecordBytes
+        task.resume()
+        return ProvisioningSocket(task: task, url: url)
+    }
+
+    private static func appleProvisioningRequest(url: URL, metadata: SelfRenewalAnisetteRequest.Metadata) throws -> URLRequest {
+        let values = [metadata.clientInfo, metadata.userAgent, metadata.localUserID, metadata.deviceID]
+        guard metadata.issuedAt.timeIntervalSince1970.isFinite,
+              values.allSatisfy({ !$0.isEmpty && $0.utf8.count <= 4_096 && $0.unicodeScalars.allSatisfy({ $0.value >= 0x20 && $0.value != 0x7f }) }) else {
+            throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        var request = URLRequest(url: url)
+        let headers = ["X-Mme-Client-Info": metadata.clientInfo, "User-Agent": metadata.userAgent,
+            "Content-Type": "text/x-xml-plist", "X-Apple-I-MD-LU": metadata.localUserID,
+            "X-Mme-Device-Id": metadata.deviceID, "X-Apple-I-Client-Time": ISO8601DateFormatter().string(from: metadata.issuedAt),
+            "X-Apple-I-TimeZone": "UTC", "X-Apple-Locale": "en_US"]
+        for (key, value) in headers { request.setValue(value, forHTTPHeaderField: key) }
+        return request
+    }
+
+    private func perform(_ request: URLRequest, maximum: Int) async throws -> SelfRenewalDeveloperAccountResponse {
         do {
             try Task.checkCancellation()
             let (stream, response) = try await session.bytes(for: request, delegate: delegate)
@@ -72,6 +155,32 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
         catch let error as SelfRenewalDeveloperAccountTransportFailure { throw error }
         catch let error as URLError where error.code == .cancelled { throw SelfRenewalDeveloperAccountTransportFailure.cancelled }
         catch { throw SelfRenewalDeveloperAccountTransportFailure.network }
+    }
+
+    private final class ProvisioningSocket: SelfRenewalAnisetteProvisioningSocket, @unchecked Sendable {
+        let task: URLSessionWebSocketTask
+        let url: URL
+        init(task: URLSessionWebSocketTask, url: URL) { self.task = task; self.url = url }
+        func receive() async throws -> Data {
+            let message = try await withTaskCancellationHandler(operation: { try await task.receive() },
+                onCancel: { self.task.cancel(with: .goingAway, reason: nil) })
+            var handshake = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+            handshake.scheme = "https"
+            guard let response = task.response as? HTTPURLResponse, response.statusCode == 101,
+                  task.originalRequest?.url == url,
+                  response.url == url || response.url == handshake.url else { throw SelfRenewalDeveloperAccountTransportFailure.response }
+            guard case .string(let value) = message else { throw SelfRenewalDeveloperAccountTransportFailure.response }
+            let bytes = Data(value.utf8)
+            guard bytes.count <= SelfRenewalAnisetteV3Provider.maximumRecordBytes else { throw SelfRenewalDeveloperAccountTransportFailure.responseLimit }
+            return bytes
+        }
+        func send(_ data: Data) async throws {
+            guard data.count <= SelfRenewalAnisetteV3Provider.maximumRecordBytes,
+                  let value = String(data: data, encoding: .utf8) else { throw SelfRenewalDeveloperAccountTransportFailure.responseLimit }
+            try await withTaskCancellationHandler(operation: { try await task.send(.string(value)) },
+                onCancel: { self.task.cancel(with: .goingAway, reason: nil) })
+        }
+        func close() async { task.cancel(with: .normalClosure, reason: nil) }
     }
     private static func allowedEndpoint(_ url: URL, method: String?) -> Bool {
         if url.host == "developerservices2.apple.com" {

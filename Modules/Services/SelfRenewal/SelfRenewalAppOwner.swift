@@ -11,8 +11,11 @@ final class SelfRenewalAppOwner {
         case operationFailed, cancelled
     }
     let handoff: SelfRenewalUserDataHandoff
-    /// O(1) injection availability only; this grants no account/Apple authority.
-    let developerServicesConfigured: Bool
+    /// Explicit provider configuration/injection only, never Apple authority.
+    private(set) var developerServicesConfigured: Bool
+    private(set) var anisetteProvider: SelfRenewalAnisetteV3Configuration?
+    private(set) var anisetteRegistration: SelfRenewalAnisetteV3Provider.RegistrationObservation?
+    private(set) var anisetteRegistrationProblem: Problem?
     private let session: SelfRenewalAppSession
     private(set) var status: SelfRenewalAppSession.Status?
     private(set) var problem: Problem?
@@ -31,6 +34,11 @@ final class SelfRenewalAppOwner {
         let task: Task<SelfRenewalAppSession.AutomaticRenewalObservation, Error>
     }
     private var automaticOperation: AutomaticOperation?
+    private struct PairingImportOperation {
+        let id: UUID
+        let task: Task<SelfRenewalAppSession.Status, Error>
+    }
+    private var pairingImportOperation: PairingImportOperation?
     private var automaticSchedule: (@MainActor (Date?) -> Void)?
 
     init(root: URL? = nil, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
@@ -85,6 +93,9 @@ final class SelfRenewalAppOwner {
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
         automaticRenewal = await session.automaticRenewalObservation()
+        developerServicesConfigured = await session.developerServicesAreConfigured()
+        anisetteProvider = await session.configuredAnisetteProvider()
+        await refreshAnisetteRegistration()
         scheduleAutomaticRenewal()
     }
 
@@ -105,6 +116,7 @@ final class SelfRenewalAppOwner {
         // Foreground work does not keep running without a system runtime grant.
         // Cancellation awaits actual transport/archive drain before returning.
         await cancelAutomaticRenewal()
+        await cancelPairingIdentityImport()
         scheduleAutomaticRenewal()
     }
     func setAutomaticRenewalEnabled(_ enabled: Bool) async {
@@ -156,6 +168,60 @@ final class SelfRenewalAppOwner {
     }
     private func scheduleAutomaticRenewal() {
         automaticSchedule?(automaticRenewal?.isEnabled == true ? automaticRenewal?.nextEligibleAt : nil)
+    }
+
+    /// One service call owns both file scopes and the temporary password.
+    /// Callers clear their password input after this awaited operation returns.
+    @discardableResult
+    func importPairingIdentity(pkcs12: URL, password: String, publicConfiguration: URL) async -> Bool {
+        guard !isWorking else { return false }
+        isWorking = true
+        problem = nil
+        let id = UUID(), session = self.session, handoff = self.handoff
+        let worker = Task {
+            try await session.importPairingIdentity(pkcs12: pkcs12, password: password,
+                publicConfiguration: publicConfiguration, handoff: handoff)
+        }
+        pairingImportOperation = PairingImportOperation(id: id, task: worker)
+        let result = await withTaskCancellationHandler { await worker.result } onCancel: { worker.cancel() }
+        await finishPairingIdentityImport(id, result: result)
+        // Busy admission and unrelated owner observations are not evidence
+        // that this import committed. Return this exact awaited worker result.
+        if case .success = result { return true }
+        return false
+    }
+
+    func cancelPairingIdentityImport() async {
+        guard let operation = pairingImportOperation else { return }
+        operation.task.cancel()
+        let result = await operation.task.result
+        await finishPairingIdentityImport(operation.id, result: result)
+    }
+
+    private func finishPairingIdentityImport(_ id: UUID,
+        result: Result<SelfRenewalAppSession.Status, Error>) async {
+        guard pairingImportOperation?.id == id else { return }
+        let finalStatus: SelfRenewalAppSession.Status?
+        switch result {
+        case .success(let observed): finalStatus = observed
+        case .failure: finalStatus = await session.status()
+        }
+        let recovery = await session.recoveryIsAvailable()
+        let material = await session.signingMaterialFailure()
+        guard pairingImportOperation?.id == id else { return }
+        status = finalStatus
+        switch result {
+        case .success:
+            bootstrapped = true
+        case .failure(let error):
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal pairing identity import unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        // A failed durable ACK can already have invalidated Session's epoch.
+        // Re-observation obtains any account facts still usable after import.
+        developerSession = nil; developerMaterial = nil; developerChallenge = nil
+        recoveryAvailable = recovery; signingMaterialProblem = material == nil ? nil : .signingMaterials
+        pairingImportOperation = nil; isWorking = false
     }
 
     func importConfiguration(_ url: URL) async {
@@ -236,6 +302,73 @@ final class SelfRenewalAppOwner {
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
     }
 
+    /// The Settings UI supplies an explicitly trusted HTTPS endpoint or nil.
+    /// Persisting the selection does not connect to that provider or to Apple.
+    @discardableResult
+    func configureAnisetteProvider(endpoint: URL?) async -> Bool {
+        guard canTakeDeveloperAuthentication else { return false }
+        let id = takeDeveloperAuthentication()
+        defer { finishDeveloperOperation(id) }
+        problem = nil
+        var committed = false
+        do {
+            let value = try endpoint.map { try SelfRenewalAnisetteV3Configuration(endpoint: $0) }
+            try await session.configureAnisetteProvider(value)
+            guard developerOperationID == id else { return false }
+            developerSession = nil; developerMaterial = nil; developerChallenge = nil
+            committed = true
+        } catch {
+            guard developerOperationID == id else { return false }
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal anisette configuration unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        anisetteProvider = await session.configuredAnisetteProvider()
+        developerServicesConfigured = await session.developerServicesAreConfigured()
+        await refreshAnisetteRegistration()
+        return committed && developerOperationID == id
+    }
+
+    /// Local, read-only phase for Settings. It never allocates an identity or
+    /// constructs a transport; an unreadable record clears the old observation.
+    func observeAnisetteRegistration() async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        await refreshAnisetteRegistration()
+    }
+
+    /// Call only after the UI's explicit confirmation. An admitted reset signs
+    /// out the developer account and requires a fresh user login, even if a
+    /// later reset write fails. It never starts provisioning or deletes a
+    /// completed registration blob, signing material or pending transaction.
+    func resetUnknownAnisetteRegistration() async {
+        guard canTakeDeveloperAuthentication else { return }
+        let id = takeDeveloperAuthentication()
+        defer { finishDeveloperOperation(id) }
+        problem = nil
+        do {
+            anisetteRegistration = try await session.resetUnknownAnisetteRegistration()
+            guard developerOperationID == id else { return }
+        } catch {
+            guard developerOperationID == id else { return }
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal anisette reset unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        // Credential removal may have committed before a later reset failure.
+        developerSession = nil; developerMaterial = nil; developerChallenge = nil
+        await refreshAnisetteRegistration()
+    }
+
+    private func refreshAnisetteRegistration() async {
+        do {
+            anisetteRegistration = try await session.observeAnisetteRegistration()
+            anisetteRegistrationProblem = nil
+        } catch {
+            anisetteRegistration = nil
+            anisetteRegistrationProblem = Self.classify(error)
+            AppLogger.parse("Renewal anisette phase unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
     /// UI receives only a verified session observation or a bounded challenge.
     /// Password/code inputs stay in the actual session-owned login task.
     func signInDeveloperAccount(appleID: String, password: String) async {
@@ -251,6 +384,7 @@ final class SelfRenewalAppOwner {
             problem = Self.classify(error)
             AppLogger.parse("Renewal account login unavailable type=\(String(reflecting: type(of: error)))")
         }
+        await refreshAnisetteRegistration()
     }
 
     func submitDeveloperVerificationCode(_ code: String, challengeID: UUID) async {
@@ -266,6 +400,7 @@ final class SelfRenewalAppOwner {
             problem = Self.classify(error)
             AppLogger.parse("Renewal verification unavailable type=\(String(reflecting: type(of: error)))")
         }
+        await refreshAnisetteRegistration()
     }
 
     func cancelDeveloperAuthentication() async {
@@ -282,6 +417,7 @@ final class SelfRenewalAppOwner {
             problem = Self.classify(error)
             AppLogger.parse("Renewal login cancellation unavailable type=\(String(reflecting: type(of: error)))")
         }
+        await refreshAnisetteRegistration()
     }
 
     private func beginDeveloperAuthentication() -> UUID {
@@ -383,16 +519,28 @@ final class SelfRenewalAppOwner {
 
     func close() async throws {
         await cancelAutomaticRenewal()
+        await cancelPairingIdentityImport()
         guard !isWorking else { throw SelfRenewalAppSession.Failure.busy }
         isWorking = true; defer { isWorking = false }
         try await session.close()
         status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
         developerSession = nil; developerMaterial = nil; developerChallenge = nil
+        anisetteProvider = nil
+        anisetteRegistration = nil; anisetteRegistrationProblem = nil
+        developerServicesConfigured = await session.developerServicesAreConfigured()
         automaticRenewal = nil; automaticSchedule?(nil)
     }
 
     private static func classify(_ error: Error) -> Problem {
         if error is CancellationError { return .cancelled }
+        if let failure = error as? SelfRenewalAnisetteV3Provider.Failure {
+            switch failure {
+            case .invalidConfiguration: return .invalidConfiguration
+            case .storage, .storageUnavailable, .staleRegistration, .resetCommitUnknown: return .localStorage
+            case .resetNotRequired: return .operationFailed
+            default: return .authenticationUnavailable
+            }
+        }
         if let failure = error as? SelfRenewalAppSession.RenewalExecutionFailure {
             if failure.statusPersistenceError != nil { return .localStorage }
             switch failure.problem {
@@ -410,6 +558,14 @@ final class SelfRenewalAppOwner {
         if let failure = error as? SelfRenewalControlledRenewalCoordinator.Failure,
            failure == .signingMaterialsUnavailable { return .signingMaterials }
         if error is SelfRenewalAppSession.DeveloperServicesFailure { return .authenticationNotConfigured }
+        if let failure = error as? SelfRenewalPairingIdentityImport.Failure {
+            switch failure {
+            case .invalidPublicConfiguration, .invalidPassword: return .invalidConfiguration
+            case .keychain, .invalidPersistentReference: return .localStorage
+            case .invalidPKCS12, .hostCertificateMismatch, .invalidCertificateChain, .keyPossession:
+                return .authenticationUnavailable
+            }
+        }
         if error is SelfRenewalDeveloperAuthentication.Failure || error is SelfRenewalGSASRP.Failure { return .authenticationUnavailable }
         if let failure = error as? SelfRenewalAppSession.InitialNamespaceBindingFailure { return classify(failure.underlying) }
         if let failure = error as? SelfRenewalAppSession.DeveloperMaterialFinalizationFailure { return classify(failure.underlying) }

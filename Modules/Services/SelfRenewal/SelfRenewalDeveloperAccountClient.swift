@@ -5,6 +5,12 @@ import Security
 protocol SelfRenewalDeveloperSessionStorage: Sendable {
     func load(namespace: UUID) throws -> String?
     func save(namespace: UUID, value: String) throws
+    func loadAnisetteRegistration(namespace: UUID) throws -> String?
+    func saveAnisetteRegistration(namespace: UUID, value: String) throws
+}
+extension SelfRenewalDeveloperSessionStorage {
+    func loadAnisetteRegistration(namespace: UUID) throws -> String? { throw SelfRenewalAnisetteV3Provider.Failure.storageUnavailable }
+    func saveAnisetteRegistration(namespace: UUID, value: String) throws { throw SelfRenewalAnisetteV3Provider.Failure.storageUnavailable }
 }
 
 struct SelfRenewalDeveloperKeychainSessionStorage: SelfRenewalDeveloperSessionStorage {
@@ -20,12 +26,24 @@ struct SelfRenewalDeveloperKeychainSessionStorage: SelfRenewalDeveloperSessionSt
             throw SelfRenewalDeveloperAccountClient.Failure.storage
         }
     }
+    func loadAnisetteRegistration(namespace: UUID) throws -> String? {
+        try KeychainHelper.loadChecked(account: namespace.uuidString + ".anisette.v3", service: service,
+            accessibility: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+            synchronizable: false, maximumBytes: SelfRenewalAnisetteV3Provider.maximumRecordBytes)
+    }
+    func saveAnisetteRegistration(namespace: UUID, value: String) throws {
+        guard value.utf8.count <= SelfRenewalAnisetteV3Provider.maximumRecordBytes,
+              KeychainHelper.save(account: namespace.uuidString + ".anisette.v3", data: value, service: service,
+                accessibility: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly, synchronizable: false) else {
+            throw SelfRenewalAnisetteV3Provider.Failure.storage
+        }
+    }
 }
 
 /// One injected account/network owner consumes the existing material Vault.
 /// The wire contract follows the locked public AltSign developer-services
 /// implementation; no upstream implementation or private framework is linked.
-/// GSA/SRP/2FA and anisette generation are separate unfinished prerequisites.
+/// GSA/SRP/2FA and v3 anisette use the same session's injected dependencies.
 actor SelfRenewalDeveloperAccountClient {
     typealias Vault = SelfRenewalSigningMaterialVault
     private typealias Value = SelfRenewalDERPropertyList.Value
@@ -68,6 +86,8 @@ actor SelfRenewalDeveloperAccountClient {
         let localUserID: String
         let routingInfo: UInt64
         let deviceID: String
+        // Protocol metadata supplied by the chosen provider. SideStore v3
+        // uses the logical marker "0"; this is no physical device measurement.
         var deviceSerialNumber: String? = nil
         let clientInfo: String
         let issuedAt: Date
@@ -467,7 +487,8 @@ actor SelfRenewalDeveloperAccountClient {
     /// namespace, alter its pin/pending intent, or grant signing authority.
     /// Call off main and only after the owning Session has released its client.
     static func signOutStoredCredentials(namespaceID: UUID,
-        storage: any SelfRenewalDeveloperSessionStorage = SelfRenewalDeveloperKeychainSessionStorage()) throws {
+        storage: any SelfRenewalDeveloperSessionStorage = SelfRenewalDeveloperKeychainSessionStorage(),
+        requireReadback: Bool = false) throws {
         let started = SourcePerfTrace.now
         defer { SourcePerfTrace.record("renewal.account.eraseCredentials",
             "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
@@ -475,7 +496,11 @@ actor SelfRenewalDeveloperAccountClient {
         guard var loaded = try loadStored(namespaceID: namespaceID, storage: storage) else { return }
         guard loaded.record.credentials != nil else { return }
         loaded.record.credentials = nil
-        _ = try saveStored(loaded.record, replacing: loaded.encoded, namespaceID: namespaceID, storage: storage)
+        let saved = try saveStored(loaded.record, replacing: loaded.encoded, namespaceID: namespaceID, storage: storage)
+        if requireReadback {
+            let confirmed = try loadStored(namespaceID: namespaceID, storage: storage)
+            guard confirmed.map({ Data($0.encoded.utf8) }) == Data(saved.utf8), confirmed?.record.credentials == nil else { throw Failure.storage }
+        }
     }
 
     private func validateRemote(_ credentials: Credentials, expected: AccountPin?, epoch: UInt64) async throws -> RemoteAccount {

@@ -173,12 +173,20 @@ actor SelfRenewalAppSession {
         let configuration: Configuration?
         let initialNamespaceBinding: InitialNamespaceBinding?
         let automaticRenewal: AutomaticRenewalPolicy?
+        // Optional schema-1 addition. It contains only an explicit endpoint;
+        // the ID and registration blob belong to the existing Keychain owner.
+        let anisetteProvider: SelfRenewalAnisetteV3Configuration?
         let status: Status
     }
     private let requestedRoot: URL?
     private let ownedApplicationRoot: URL?
     private let clock: @Sendable () -> Date
     private let developerServices: DeveloperServices?
+    private var liveDeveloperServices: DeveloperServices?
+    private var liveAnisetteProvider: SelfRenewalAnisetteV3Provider?
+    private var localDeveloperStorage: (any SelfRenewalDeveloperSessionStorage)?
+    private var anisetteConfiguration: SelfRenewalAnisetteV3Configuration?
+    private var persistedAnisetteConfiguration: SelfRenewalAnisetteV3Configuration?
     private var root: URL?
     private var journal: Journal?
     private var vault: Vault?
@@ -372,7 +380,7 @@ actor SelfRenewalAppSession {
             configuration = pending.configuration
             vault = ownedVault; namespace = ownedNamespace
             coordinator = nil; access = nil; profileValidity = nil; materialFailure = nil
-            developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+            liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
             initialNamespaceBinding = nil
             // Only this durable final Document clears the initial intent. The
@@ -398,6 +406,38 @@ actor SelfRenewalAppSession {
         defer { if scope { input.stopAccessingSecurityScopedResource() } }
         let raw = try Self.readBounded(input, maximum: Self.maximumConfigurationBytes)
         let proposed = try Self.decodeConfiguration(raw)
+        return try await configure(proposed, handoff: handoff)
+    }
+
+    /// Explicit file import uses this same namespace, busy guard and journal
+    /// flock. Import success establishes a usable Keychain identity only; the
+    /// numeric endpoint still needs the existing real Lockdown/mTLS checks.
+    func importPairingIdentity(pkcs12: URL, password: String, publicConfiguration: URL,
+        handoff: SelfRenewalUserDataHandoff) async throws -> Status {
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        try Task.checkCancellation()
+        try await openLocalOwner()
+        guard initialNamespaceBinding == nil else { throw Failure.configurationInUse }
+        guard let configuration, let journal else { throw Failure.notConfigured }
+        if let snapshot = try await journal.load() {
+            // Even an equal peer cannot replace identities through an active
+            // or remotely uncertain transaction. Retired metadata must prove
+            // the actual candidate is absent before it permits configuration.
+            guard snapshot.record.phase == .retired else { throw Failure.configurationInUse }
+            _ = try await journal.resumeRetirement(snapshot, at: clock())
+        }
+        let device = try SelfRenewalPairingIdentityImport.importIdentity(pkcs12: pkcs12, password: password,
+            publicConfiguration: publicConfiguration, at: clock())
+        let proposed = Configuration(schema: configuration.schema, namespaceID: configuration.namespaceID,
+            codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, device: device)
+        try Self.validate(proposed)
+        return try await configure(proposed, handoff: handoff)
+    }
+
+    /// The two explicit configuration entry points share one actual resolver,
+    /// epoch invalidation and atomic Document publication while busy is held.
+    private func configure(_ proposed: Configuration, handoff: SelfRenewalUserDataHandoff) async throws -> Status {
         guard initialNamespaceBinding == nil else { throw Failure.configurationInUse }
         let existing = try await journal?.load()
         if existing != nil, let configuration {
@@ -413,6 +453,7 @@ actor SelfRenewalAppSession {
         // it is persisted and displayed explicitly without signing power.
         let candidate = try await resolve(proposed)
         if candidate.access == .recoveryOnly, proposed.device == nil { throw Failure.authenticationNotConfigured }
+        try await developerAuthentication?.clearPendingAuthentication()
         try Task.checkCancellation()
         let priorConfiguration = configuration
         configuration = proposed
@@ -425,7 +466,7 @@ actor SelfRenewalAppSession {
             configuration = priorConfiguration
             // A rename followed by a failed directory sync may have changed
             // disk. Never keep using an older in-memory authorization binding.
-            coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+            coordinator = nil; vault = nil; namespace = nil; liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
             access = nil; profileValidity = nil; configurationNeedsReload = true
             throw error
@@ -558,7 +599,7 @@ actor SelfRenewalAppSession {
             let existingExpiry = lease?.profiles.map(\.summary.expiresAt).min()
             let needsRefresh = existingExpiry.map { $0 <= validity.expiresAt } ?? true
             if needsRefresh {
-                guard developerServices != nil, !developerLocallySignedOut else {
+                guard developerServicesAreConfigured(), !developerLocallySignedOut else {
                     return try await finishAutomaticAttempt(policy, outcome: .accountRequired)
                 }
                 let account = try await developerAccountOwner()
@@ -737,7 +778,7 @@ actor SelfRenewalAppSession {
             let original = error
             // Same revoke-before-await barrier as observe(): a failed fresh
             // proof cannot leave cached signing access usable by a later call.
-            self.vault = nil; self.namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil
+            self.vault = nil; self.namespace = nil; liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil
             developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
             self.coordinator = nil; access = nil; self.profileValidity = nil
@@ -869,6 +910,103 @@ actor SelfRenewalAppSession {
         }
     }
 
+    func developerServicesAreConfigured() -> Bool { developerServices != nil || anisetteConfiguration != nil }
+    func configuredAnisetteProvider() -> SelfRenewalAnisetteV3Configuration? { anisetteConfiguration }
+
+    /// Public phase only; no identity/blob and no transport construction.
+    func observeAnisetteRegistration() async throws -> SelfRenewalAnisetteV3Provider.RegistrationObservation? {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        try await openLocalOwner()
+        guard let anisetteConfiguration, let configuration else { return nil }
+        return try SelfRenewalAnisetteV3Provider.observeRegistration(configuration: anisetteConfiguration,
+            namespaceID: configuration.namespaceID, storage: developerStorageOwner())
+    }
+
+    /// Explicit recovery only. This clears stored Apple credentials before
+    /// changing an unknown registration; the user must sign in again. Signing
+    /// materials and pending certificate/installation intents are retained.
+    /// A failure after credential removal may still leave the account signed
+    /// out, but never starts provisioning or erases a provisioned adi_pb.
+    func resetUnknownAnisetteRegistration() async throws -> SelfRenewalAnisetteV3Provider.RegistrationObservation {
+        _ = try await acquireAfterDrainingDeveloperAuthentication()
+        defer { busy = false }
+        try await developerAuthentication?.clearPendingAuthentication()
+        try await openLocalOwner()
+        guard !configurationNeedsReload else { throw Failure.commitDurabilityUnknown }
+        guard let anisetteConfiguration, let configuration else { throw Failure.notConfigured }
+        let storage = developerStorageOwner()
+        let observed = try SelfRenewalAnisetteV3Provider.observeRegistration(configuration: anisetteConfiguration,
+            namespaceID: configuration.namespaceID, storage: storage)
+        guard observed?.phase == .provisioningOutcomeUnknown || observed?.phase == .resetOutcomeUnknown else {
+            throw SelfRenewalAnisetteV3Provider.Failure.resetNotRequired
+        }
+        developerLocallySignedOut = true
+        developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+        // Drop all old account/authentication capabilities before changing the
+        // registration identity. The same storage owner retains their record.
+        let account = developerAccount
+        developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
+        liveDeveloperServices = nil; liveAnisetteProvider = nil
+        if let account { try await account.signOut() }
+        try SelfRenewalDeveloperAccountClient.signOutStoredCredentials(namespaceID: configuration.namespaceID,
+            storage: storage, requireReadback: true)
+        // Accurate credential readback is a durable barrier: automatic paths
+        // require a stored token before asking this provider for fresh data.
+        return try SelfRenewalAnisetteV3Provider.resetUnknownRegistration(configuration: anisetteConfiguration,
+            namespaceID: configuration.namespaceID, storage: storage)
+    }
+
+    /// Configuration is an explicit local action and performs no network work.
+    /// A login is cancelled and drained through the existing epoch barrier
+    /// before changing the provider. Stored Apple tokens/registration remain
+    /// owned by their existing Keychain scope; endpoint changes cannot silently
+    /// migrate a registration to a different server.
+    func configureAnisetteProvider(_ value: SelfRenewalAnisetteV3Configuration?) async throws {
+        _ = try await acquireAfterDrainingDeveloperAuthentication()
+        defer { busy = false }
+        try await developerAuthentication?.clearPendingAuthentication()
+        try await openLocalOwner()
+        guard !configurationNeedsReload else { throw Failure.commitDurabilityUnknown }
+        if let value { try value.validate() }
+        guard value != anisetteConfiguration else { return }
+        let previous = anisetteConfiguration
+        anisetteConfiguration = value
+        do {
+            _ = try publish(state: lastStatus?.state ?? .unconfigured,
+                phase: lastStatus?.phase, problem: lastStatus?.problem)
+        } catch {
+            anisetteConfiguration = previous; configurationNeedsReload = true
+            throw error
+        }
+        liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerAuthentication = nil; developerMaterial = nil
+        developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
+    }
+
+    /// Dependencies are constructed only when an explicit account/renewal
+    /// action needs them. GSA, account services and anisette share this exact
+    /// transport and Keychain owner; startup/endpoint selection never connects.
+    private func developerServicesOwner(namespaceID: UUID) throws -> DeveloperServices {
+        if let developerServices { return developerServices }
+        if let liveDeveloperServices { return liveDeveloperServices }
+        guard let anisetteConfiguration else { throw DeveloperServicesFailure.unavailable }
+        let transport = SelfRenewalDeveloperURLSessionTransport()
+        let storage = developerStorageOwner()
+        let provider = try SelfRenewalAnisetteV3Provider(configuration: anisetteConfiguration, namespaceID: namespaceID,
+            transport: transport, storage: storage, clock: clock)
+        let services = DeveloperServices(transport: transport, storage: storage,
+            freshAnisette: { try await provider.freshAnisette() })
+        liveAnisetteProvider = provider; liveDeveloperServices = services
+        return services
+    }
+
+    private func developerStorageOwner() -> any SelfRenewalDeveloperSessionStorage {
+        if let developerServices { return developerServices.storage }
+        if let localDeveloperStorage { return localDeveloperStorage }
+        let storage = SelfRenewalDeveloperKeychainSessionStorage()
+        localDeveloperStorage = storage
+        return storage
+    }
+
     /// The actual login task belongs to this session, rather than the caller's
     /// view task. Caller cancellation is forwarded to that same task and every
     /// terminal path releases the operation before publishing its result.
@@ -954,7 +1092,8 @@ actor SelfRenewalAppSession {
     private func developerAuthenticationOwner() async throws -> SelfRenewalDeveloperAuthentication {
         let account = try await developerAccountOwner()
         if let developerAuthentication { return developerAuthentication }
-        guard let developerServices else { throw DeveloperServicesFailure.unavailable }
+        guard let configuration else { throw Failure.notConfigured }
+        let developerServices = try developerServicesOwner(namespaceID: configuration.namespaceID)
         #if DEBUG
         let authentication = SelfRenewalDeveloperAuthentication(account: account, transport: developerServices.transport,
             freshAnisette: developerServices.freshAnisette, clock: clock, random: developerAuthenticationRandom)
@@ -1076,21 +1215,20 @@ actor SelfRenewalAppSession {
         developerAuthenticationResult = nil
         developerAuthenticationEpoch = UUID()
         if let developerAccount { try await developerAccount.signOut(); return }
-        guard let developerServices else { throw DeveloperServicesFailure.unavailable }
         try await openLocalOwner()
         guard let configuration else { throw Failure.notConfigured }
         // Erase-only operation uses the existing account record owner. Expired
         // signing materials must not prevent removal of stored credentials.
         try SelfRenewalDeveloperAccountClient.signOutStoredCredentials(namespaceID: configuration.namespaceID,
-            storage: developerServices.storage)
+            storage: developerStorageOwner())
     }
 
     func developerMaterialObservation() -> DeveloperMaterialObservation? { developerMaterial }
 
     private func developerAccountOwner() async throws -> SelfRenewalDeveloperAccountClient {
-        guard let developerServices else { throw DeveloperServicesFailure.unavailable }
         try await openLocalOwner()
         guard let configuration else { throw Failure.notConfigured }
+        let developerServices = try developerServicesOwner(namespaceID: configuration.namespaceID)
         try Task.checkCancellation()
         // This is a real bounded structural observation, not a current CMS or
         // profile verification result. Account scope comes exclusively from
@@ -1132,12 +1270,13 @@ actor SelfRenewalAppSession {
         busy = true; defer { busy = false }
         try await developerAuthentication?.clearPendingAuthentication()
         if let journal { try await journal.close() }
-        journal = nil; vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+        journal = nil; vault = nil; namespace = nil; liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
         developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
         coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
         configuration = nil; persistedConfiguration = nil; lastStatus = nil; configurationNeedsReload = false
         initialNamespaceBinding = nil; persistedInitialNamespaceBinding = nil
         automaticPolicy = nil; persistedAutomaticPolicy = nil
+        anisetteConfiguration = nil; persistedAnisetteConfiguration = nil
     }
 
     private func openLocalOwner() async throws {
@@ -1150,6 +1289,7 @@ actor SelfRenewalAppSession {
                 configuration = document?.configuration; persistedConfiguration = configuration; lastStatus = document?.status
                 initialNamespaceBinding = document?.initialNamespaceBinding; persistedInitialNamespaceBinding = initialNamespaceBinding
                 automaticPolicy = document?.automaticRenewal; persistedAutomaticPolicy = automaticPolicy
+                anisetteConfiguration = document?.anisetteProvider; persistedAnisetteConfiguration = anisetteConfiguration
                 configurationNeedsReload = false
             }
             return
@@ -1166,6 +1306,7 @@ actor SelfRenewalAppSession {
             configuration = document?.configuration; persistedConfiguration = configuration; lastStatus = document?.status
                 initialNamespaceBinding = document?.initialNamespaceBinding; persistedInitialNamespaceBinding = initialNamespaceBinding
                 automaticPolicy = document?.automaticRenewal; persistedAutomaticPolicy = automaticPolicy
+                anisetteConfiguration = document?.anisetteProvider; persistedAnisetteConfiguration = anisetteConfiguration
         } catch {
             let original = error
             do { try await opened.close() }
@@ -1204,7 +1345,7 @@ actor SelfRenewalAppSession {
 
     private func activate(_ connection: Connection) {
         vault = connection.vault; namespace = connection.namespace; coordinator = connection.coordinator
-        developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+        liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
         developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
         access = connection.access; materialFailure = connection.materialFailure
         profileValidity = connection.profileValidity
@@ -1401,7 +1542,7 @@ actor SelfRenewalAppSession {
             // Stop retaining failed signing access before another awaited
             // observation can be cancelled. Its separate failure must not
             // restore access already disproved by the live-material read.
-            vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+            vault = nil; namespace = nil; liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
             self.coordinator = nil; access = nil; profileValidity = nil
             materialFailure = SigningMaterialUnavailable(underlying: error, recoveryContextError: nil)
@@ -1467,9 +1608,10 @@ actor SelfRenewalAppSession {
         guard let root else { throw Failure.storage }
         if let lastStatus, lastStatus.state == state, lastStatus.phase == phase,
            lastStatus.problem == problem, lastStatus.access == access, configuration == persistedConfiguration,
-           initialNamespaceBinding == persistedInitialNamespaceBinding, automaticPolicy == persistedAutomaticPolicy { return lastStatus }
+           initialNamespaceBinding == persistedInitialNamespaceBinding, automaticPolicy == persistedAutomaticPolicy,
+           anisetteConfiguration == persistedAnisetteConfiguration { return lastStatus }
         let status = Status(state: state, phase: phase, observedAt: clock(), problem: problem, access: access)
-        let document = Document(schema: 1, configuration: configuration, initialNamespaceBinding: initialNamespaceBinding, automaticRenewal: automaticPolicy, status: status)
+        let document = Document(schema: 1, configuration: configuration, initialNamespaceBinding: initialNamespaceBinding, automaticRenewal: automaticPolicy, anisetteProvider: anisetteConfiguration, status: status)
         let raw = try JSONEncoder().encode(document)
         guard raw.count <= Self.maximumConfigurationBytes else { throw Failure.limit }
         do {
@@ -1497,7 +1639,7 @@ actor SelfRenewalAppSession {
                 // Every publication uses this boundary, including bootstrap
                 // status, observations and error status. A lost durable ACK
                 // can never leave a prior coordinator binding usable.
-                coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+                coordinator = nil; vault = nil; namespace = nil; liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
             developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
                 access = nil; profileValidity = nil; configurationNeedsReload = true
             }
@@ -1507,6 +1649,7 @@ actor SelfRenewalAppSession {
         persistedConfiguration = configuration
         persistedInitialNamespaceBinding = initialNamespaceBinding
         persistedAutomaticPolicy = automaticPolicy
+        persistedAnisetteConfiguration = anisetteConfiguration
         return status
     }
 
@@ -1546,7 +1689,8 @@ actor SelfRenewalAppSession {
     static func pairing(_ device: DeviceConfiguration) throws -> Transport.PairingIdentity {
         try Task.checkCancellation()
         // Persistent ref is scoped to this App's actual accessible Keychain.
-        // No global search, PKCS12 import, private export or key generation.
+        // No global search, private export or key generation. Explicit P12
+        // import obtains this same selector and re-reads this actual handle.
         let query: [String: Any] = [kSecClass as String: kSecClassIdentity,
             kSecValuePersistentRef as String: device.identityPersistentReference,
             kSecReturnRef as String: true, kSecMatchLimit as String: kSecMatchLimitOne,
@@ -1598,6 +1742,7 @@ actor SelfRenewalAppSession {
         guard document.configuration != nil || document.status.state == .unconfigured else { throw Failure.invalidConfiguration }
         if let configuration = document.configuration { try validate(configuration) }
         if let policy = document.automaticRenewal { try policy.validate() }
+        if let provider = document.anisetteProvider { try provider.validate() }
         if let pending = document.initialNamespaceBinding {
             guard document.configuration == nil, pending.schema == 1, pending.identitySHA256.count == 32,
                   document.status.state == .unconfigured, document.status.phase == nil, document.status.access == nil else {

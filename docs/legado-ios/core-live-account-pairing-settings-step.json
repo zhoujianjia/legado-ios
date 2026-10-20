@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "status": "production-integrated-awaiting-consolidated-Apple-SDK-and-device-validation",
+  "baselineCommit": "ca5a6c859c6943f3d3c3ce210a0eab009075b7d2",
+  "sources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift",
+      "bytes": 24423,
+      "sha256": "b40ebec7cc8698b4f7cca90ab942f91c68f152715c785bbcaeb44a83a6694048"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 31492,
+      "sha256": "130067a34c9b6189d28c0330ba237187d6d2b39bc28ac5e909ec86c483afbe0d"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 110227,
+      "sha256": "a5777e45fe23946754508bc5932607f12d604bc6a1dcc67b525e10299229a5f7"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 57793,
+      "sha256": "2b46314c0920eaf82d8ea87941636230fb24d6fb7d9c84e56c461339fd01bcb0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 13923,
+      "sha256": "4e285ce3bf4187ce5a52f1f0ec2c84ee5ab3709d64f9ad21f19b0765a8eac346"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalPairingIdentityImport.swift",
+      "bytes": 12981,
+      "sha256": "faf05cf6edf40ee9748af4f7202210bc99ac05942e3b27db710565b94224a8af"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAnisetteV3ProviderTests.swift",
+      "bytes": 23032,
+      "sha256": "05dfb0f5de2c7706254bc153765a53dffdeb4fee3a586bccc4941a62ad0296de"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalPairingIdentityImportTests.swift",
+      "bytes": 15639,
+      "sha256": "9d79ac97bf81dd670127e137ceff000f64aa0a608fb32e3f4d03baa03af31a97"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalPairingOwnedPKCS12Fixture.swift",
+      "bytes": 15208,
+      "sha256": "26965c74b912e6e2d1c94174fbbeea70ad36d86f9b886814cca970655b450666"
+    },
+    {
+      "path": "Modules/Features/Settings/SelfRenewalSettingsView.swift",
+      "bytes": 30200,
+      "sha256": "c2bda2c46be2ad0cea151d93478d113ddbeb5eaba352fc2dc83a051613c8ccdd"
+    },
+    {
+      "path": "Resources/en.lproj/Localizable.strings",
+      "bytes": 269689,
+      "sha256": "d09e3bf8e9c4af7a38989369a37f7ba2b2b00ec1f9630f589b853219b6a96a1c"
+    },
+    {
+      "path": "Resources/ja.lproj/Localizable.strings",
+      "bytes": 326875,
+      "sha256": "f87dcbd19277b6843a2a651afd18f1cb9212544073778b8cef67883d40eae8b6"
+    },
+    {
+      "path": "Resources/ko.lproj/Localizable.strings",
+      "bytes": 303176,
+      "sha256": "20467ef30161724ba3dee187d33dfcf23ae4f45a9e6a54d6b5a079bf111e79c1"
+    },
+    {
+      "path": "Resources/zh-Hans.lproj/Localizable.strings",
+      "bytes": 256201,
+      "sha256": "761c169815a345e923491ef275a90664fdce7d6aa03fd413afdc15d40159f347"
+    },
+    {
+      "path": "Resources/zh-Hant.lproj/Localizable.strings",
+      "bytes": 254000,
+      "sha256": "635546cb4b4dffc62079d917d391e696da0094dd9bce47364994ae101c9a27bd"
+    }
+  ],
+  "preparation": {
+    "mergedBackendSHA256": "ae6b8b26a581c12656ada3e73e28a072f732a83ff3c5807175efd04d2ea7fc6d",
+    "settingsSHA256": "d55333ccf536c20f6fc7f75ca0aa9b2d4660218a0a112e81cbcda4794966dc53",
+    "mergedIndependentReviewSHA256": "aeae34737b2ad247d96d2f49a257501c98ae4b8bf4398f869cdb0f0674d097da",
+    "settingsIndependentReviewSHA256": "c9ba514c14f439cbc271eff3497d1394a2554f5add7baf1d9fd87d353bc92542"
+  },
+  "behavior": [
+    "Settings selects a public HTTPS anisette v3 origin explicitly. Production lazily constructs its existing transport and Keychain owners only when an actual account action requires them; no default remote provider or startup connection.",
+    "Actual client_info, provisioning WebSocket, Apple lookup/start/finish and get_headers use bounded messages and an explicit deadline with cancellation and worker drain. No Apple ID/password/token is sent to the provider.",
+    "A stable logical protocol identifier and provisioning intent are persisted before remote mutation; accepted adi_pb is persisted before use. Unknown results refuse automatic replay.",
+    "Settings shows only registration phase. An explicit confirmed reset signs out stored Apple credentials with accurate readback before changing an unknown logical identity; interrupted retries retain one proposed identity and never delete a provisioned blob.",
+    "Explicit protected PKCS12 plus allowlisted public JSON import an actual SecIdentity into the same App Keychain. Exact host certificate, private-key challenge, offline root chain and genuine persistent reference are verified before same-Document publication.",
+    "Pairing import preserves the signing namespace and trust anchors, refuses active or unknown transactions, keeps old identities, and uses existing reload behavior after a lost durable ACK. Cancellation waits for the actual importer and observations to finish.",
+    "The Settings command result comes from its exact operation. Busy or failed operations cannot display successful import or overwrite an edited service draft through an unrelated nil owner problem."
+  ],
+  "actualValidation": {
+    "independentSourceReviews": "backend original stages, composed Session/Owner and final Settings delta",
+    "SwiftGrammarInputs": 10,
+    "SwiftGrammarDiagnostics": 0,
+    "stagedLocalizationChecks": "five locale key sets/syntax;26 added keys each; previous translation bytes preserved",
+    "syntheticP12Checks": "OpenSSL and cryptography password/MAC/key/certificate/signature/date checks passed; wrong password and modified input rejected",
+    "newSwiftTestDefinitions": 11,
+    "newSwiftTestsExecuted": 0,
+    "AppleSDKCompilationPerformed": false,
+    "UIRuntimeOrVoiceOverPerformed": false,
+    "realProviderOrAppleAuthenticationPerformed": false,
+    "newCloudRunsTriggered": 0
+  },
+  "knownLimitations": [
+    "The Windows workspace cannot compile or run Apple Security, SwiftUI, real WebSocket or new Swift regression definitions. Required SDK validation is pending.",
+    "Current Apple provisioning lookup was not verified over normal trusted TLS in this environment. Historically sourced exact allowed Apple start/finish endpoints fail closed; no TLS bypass.",
+    "A user-selected reachable trusted provider, a usable signing configuration, actual paired device identity and reachable authenticated installation endpoint are required. Identity import alone does not prove same-device connectivity or installation permission.",
+    "Real Apple authorization, installed-profile expiry extension, cold-launch data retention and unattended background renewal are unverified.",
+    "The already-delivered build13 source4836deb does not contain this batch or the later actual JVM archive correction; this record does not upgrade that diagnostic package."
+  ],
+  "completionFlags": {
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  }
+}
