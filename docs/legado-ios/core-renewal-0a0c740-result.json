@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T03:05:44.411172+00:00",
+  "status": "source-bound-implementation-SDK-passed",
+  "sourceCommit": "0a0c7402494f5a0409e4762ae32b4e2786c1245d",
+  "sourceTag": "reader-renewal-0a0c740",
+  "runID": 39357102164,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39357102164",
+  "historicalInitialReceipt": "docs/legado-ios/core-renewal-0a0c740-initial.json",
+  "sourceInputCount": 36,
+  "selectionMode": "implementation",
+  "passedMethods": 11,
+  "groups": [
+    {
+      "group": "replacement",
+      "expectedAndActualLeaves": [
+        "SelfRenewalReplacementPolicyTests/rejectsAccountTeamAndBundleMappingChanges",
+        "SelfRenewalReplacementPolicyTests/rejectsChangedOrUnknownEntitlementGroups",
+        "SelfRenewalReplacementPolicyTests/rejectsMissingDuplicateOrIncompleteBundleInventory",
+        "SelfRenewalReplacementPolicyTests/rejectsUnverifiedExpiredOrInvalidCandidateMaterial",
+        "SelfRenewalReplacementPolicyTests/sameVersionAndBuildYieldOnlyMetadataPreflight"
+      ],
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "device": {
+        "architecture": "arm64",
+        "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+        "deviceName": "iPhone 17 Pro Max",
+        "modelName": "iPhone 17 Pro Max",
+        "osBuildNumber": "23C54",
+        "osVersion": "26.2",
+        "platform": "iOS Simulator"
+      }
+    },
+    {
+      "group": "materials",
+      "expectedAndActualLeaves": [
+        "SelfRenewalMaterialInventoryTests/enforcesDirectoryAndByteLimits",
+        "SelfRenewalMaterialInventoryTests/parsesBoundedMetadataAndRejectsDamagedOrUnsafeValues",
+        "SelfRenewalMaterialInventoryTests/readsThreeBundleFactsWithoutTrustAssertion",
+        "SelfRenewalMaterialInventoryTests/rejectsLinkedMaterials",
+        "SelfRenewalMaterialInventoryTests/reportsIncompleteAndConflictingRoleStructure",
+        "SelfRenewalMaterialInventoryTests/retainsAdditionalPotentialSignedComponents"
+      ],
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "device": {
+        "architecture": "arm64",
+        "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+        "deviceName": "iPhone 17 Pro Max",
+        "modelName": "iPhone 17 Pro Max",
+        "osBuildNumber": "23C54",
+        "osVersion": "26.2",
+        "platform": "iOS Simulator"
+      }
+    }
+  ],
+  "artifact": {
+    "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/evidence.zip",
+    "bytes": 1301131,
+    "sha256": "6bb03114d60a9eeadd12f44a9d3ea43ebe393dff3865ddd194932936285408ac"
+  },
+  "artifactID": 12236443928,
+  "archivedEvidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-0a0c740-result",
+    "manifest": "manifest.json",
+    "files": 24
+  },
+  "independentReview": {
+    "historicalInputAndResultAndExportEqual": true,
+    "exactLeafSetsVerified": true,
+    "zeroFailuresOrSkips": true,
+    "githubArtifactDigestMatchesDownloadedBytes": true,
+    "auditedInfoOnlyOverlay": true,
+    "projectUnchanged": true,
+    "newSDKOrTestInvocationsDuringAudit": 0
+  },
+  "acceptanceZh": "只接受旧0a0c740源码的5项覆盖元数据策略与6项受控材料枚举测试。11项均有原xcresult导出叶集、独立源码方法和36输入绑定；不等于当前修改后的Inventory/Reader通过。",
+  "remainingUnverified": [
+    "Current changed Inventory/Reader and new signature/cryptography/resource checks",
+    "Apple authorization and actual signing/install clients",
+    "Device replacement/data-preserving cold launch",
+    "Computer-off no-companion unattended same-device renewal and expiry recovery"
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

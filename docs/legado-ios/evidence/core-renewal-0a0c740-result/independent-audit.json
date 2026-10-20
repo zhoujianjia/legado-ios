@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "sourceCommit": "0a0c7402494f5a0409e4762ae32b4e2786c1245d",
+  "sourceTag": "reader-renewal-0a0c740",
+  "runID": 39357102164,
+  "networkActionsDuringAudit": 0,
+  "testsReexecuted": false,
+  "rawBytePreserved": true,
+  "artifact": {
+    "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/evidence.zip",
+    "bytes": 1301131,
+    "sha256": "6bb03114d60a9eeadd12f44a9d3ea43ebe393dff3865ddd194932936285408ac"
+  },
+  "artifactID": 12236443928,
+  "safeZipMemberCount": 103,
+  "artifactSizeDigestAndAllMembersChecked": true,
+  "selectionMode": "implementation",
+  "historicalInputInventory": {
+    "path": "docs/legado-ios/evidence/core-renewal-sequence-first-step/gates/source-input-inventory.json",
+    "bytes": 6180,
+    "sha256": "4b2768aa08126eab1d5dd46f4f385010eb222db2bdcdb55ca4450acec80ba63d"
+  },
+  "exactHistoricalInputCount": 36,
+  "historicalAndExportedAndResultInputsEqual": true,
+  "evidenceHashBindings": [
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/build-settings.json",
+      "bytes": 43804,
+      "sha256": "6fd47b3287e515885af74058252c0f8ec84d24ea2881a42cff19b1a19183d6f8"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/source-inputs.json",
+      "bytes": 7774,
+      "sha256": "c049c818f677c6a3ced967a4b60ff5a4d84d098c930a9eeb8710d05d89fe49e0"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/overlays.json",
+      "bytes": 2624,
+      "sha256": "ebf92b39614fffd3f2d62cc138782f2fdc281b15ecbf3f02a388e7f2d786b16d"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/project-overlay.json",
+      "bytes": 1215,
+      "sha256": "ce2b597f6ac6c9cfeae2576ebb344f1f478cac96bfe850903ce0bfdad1f685e8"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/info-overlay.json",
+      "bytes": 691,
+      "sha256": "f0bf9d42b13c267ba466a8efa316e8cd1ab2661b72ed066e7a958a106185f1b8"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/replacement-summary.json",
+      "bytes": 984,
+      "sha256": "34b8715c24c68ac6e3b8fe78aa88f9847b8d3c56d8190f48e1ee2a63f9236cb4"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/replacement-tests.json",
+      "bytes": 3847,
+      "sha256": "c5c36a407ff9497e548043526b27365e9c269a639455c692b3845fc18bd05eec"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/materials-summary.json",
+      "bytes": 984,
+      "sha256": "02282e8de9119ba2d1f887af176d99a06ee89c1bc6c8bd979fb7515fb553ff13"
+    },
+    {
+      "path": ".build/renewal-discovery/material-crypto-SDK-results/0a0c740/artifact/reader-renewal-probe/materials-tests.json",
+      "bytes": 4343,
+      "sha256": "4fa4a866ed89a77f8d8413cb4fbe02130d3f4d0bab03b73bd72607b3f47d0a58"
+    }
+  ],
+  "groups": [
+    {
+      "group": "replacement",
+      "expectedSourceSnapshot": {
+        "path": ".build/renewal-discovery/replacement-policy-preparation/source/Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
+        "bytes": 12456,
+        "sha256": "c6e0b9e146c12e605f56a38b3004cd53296092f78ca984be8bc76484a705ad90"
+      },
+      "expectedAndActualLeaves": [
+        "SelfRenewalReplacementPolicyTests/rejectsAccountTeamAndBundleMappingChanges",
+        "SelfRenewalReplacementPolicyTests/rejectsChangedOrUnknownEntitlementGroups",
+        "SelfRenewalReplacementPolicyTests/rejectsMissingDuplicateOrIncompleteBundleInventory",
+        "SelfRenewalReplacementPolicyTests/rejectsUnverifiedExpiredOrInvalidCandidateMaterial",
+        "SelfRenewalReplacementPolicyTests/sameVersionAndBuildYieldOnlyMetadataPreflight"
+      ],
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "device": {
+        "architecture": "arm64",
+        "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+        "deviceName": "iPhone 17 Pro Max",
+        "modelName": "iPhone 17 Pro Max",
+        "osBuildNumber": "23C54",
+        "osVersion": "26.2",
+        "platform": "iOS Simulator"
+      },
+      "verdictLines": [
+        "✔ Test run with 5 tests in 1 suite passed after 0.034 seconds.",
+        "** TEST SUCCEEDED **"
+      ],
+      "nonFailingRuntimeDiagnostics": [
+        "eader[83506:205118] [ProcessSuspension] 0x10a170180 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=83631, error: (null)"
+      ]
+    },
+    {
+      "group": "materials",
+      "expectedSourceSnapshot": {
+        "path": ".build/renewal-discovery/material-inventory-first-step/sources/Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift",
+        "bytes": 12125,
+        "sha256": "b2280c74cc71493ea5eeeefcf1205d494ab71508f0af68f18b066a120fb07551"
+      },
+      "expectedAndActualLeaves": [
+        "SelfRenewalMaterialInventoryTests/enforcesDirectoryAndByteLimits",
+        "SelfRenewalMaterialInventoryTests/parsesBoundedMetadataAndRejectsDamagedOrUnsafeValues",
+        "SelfRenewalMaterialInventoryTests/readsThreeBundleFactsWithoutTrustAssertion",
+        "SelfRenewalMaterialInventoryTests/rejectsLinkedMaterials",
+        "SelfRenewalMaterialInventoryTests/reportsIncompleteAndConflictingRoleStructure",
+        "SelfRenewalMaterialInventoryTests/retainsAdditionalPotentialSignedComponents"
+      ],
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "device": {
+        "architecture": "arm64",
+        "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+        "deviceName": "iPhone 17 Pro Max",
+        "modelName": "iPhone 17 Pro Max",
+        "osBuildNumber": "23C54",
+        "osVersion": "26.2",
+        "platform": "iOS Simulator"
+      },
+      "verdictLines": [
+        "✔ Test run with 6 tests in 1 suite passed after 0.444 seconds.",
+        "** TEST SUCCEEDED **"
+      ],
+      "nonFailingRuntimeDiagnostics": []
+    }
+  ],
+  "acceptedMethodCount": 11,
+  "currentEditedSourcesAccepted": false,
+  "overlaySourceAndConfigurationBindingVerified": true,
+  "projectOriginalAndOverlayEqual": true,
+  "expectedTrackedChanges": [
+    "Info.plist"
+  ],
+  "buildSettings": {
+    "CONFIGURATION": "Debug",
+    "PLATFORM_NAME": "iphonesimulator",
+    "ARCHS": "arm64",
+    "SDK_VERSION": "26.2",
+    "SWIFT_VERSION": "5.0",
+    "PRODUCT_BUNDLE_IDENTIFIER": "local.zhoujianjia.legado-reader"
+  },
+  "xcode": "26.2 (17C52)",
+  "ciVerdictLines": [
+    "xcodebuild status: 0; wrapper verdict stop: false",
+    "✔ Test run with 5 tests in 1 suite passed after 0.034 seconds.",
+    "** TEST SUCCEEDED **",
+    "xcodebuild status: 0; wrapper verdict stop: false",
+    "✔ Test run with 6 tests in 1 suite passed after 0.444 seconds.",
+    "** TEST SUCCEEDED **"
+  ],
+  "resultFalseFlags": {
+    "ipaGenerated": false,
+    "ipaUploaded": false,
+    "appleAccountUsed": false,
+    "pairingRecordUsed": false,
+    "iphoneTransportVerified": false,
+    "physicalDeviceValidationPassed": false,
+    "serviceIdentityVerified": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false
+  },
+  "limitations": [
+    "Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
+    "Five replacement-policy cases check caller-supplied metadata only; no real platform adapter, signature or profile authenticity is established.",
+    "No Apple login, pairing, signing, installation or renewal operation is performed.",
+    "This selection executes exactly five replacement-policy and six owned-file material-inventory cases; unit, discovery and UI groups are not executed or accepted.",
+    "Material inventory reads bounded owned directory fixtures and untrusted metadata; it does not verify Mach-O signatures, resource seals, CMS profiles or certificate authority.",
+    "The 36-file comparison uses the previously retained source-bound historical inventory and two hash-matched test snapshots; it does not obtain source from Git or accept newly edited production bytes.",
+    "The built Info.plist is not exported independently. Its SHA256 and built discovery metadata are runner-reported bindings, not an independently rehashed built binary.",
+    "The raw xcresult directories and Xcode-exported summaries/leaves are preserved; Windows cannot re-run xcrun to produce another export.",
+    "Only the historical replacement five and material-inventory six cases are accepted. Signature, CMS/profile crypto, installation and renewal remain outside this result.",
+    "Two newer runs remain at their single captured in-progress observations; no subsequent query was made."
+  ]
+}
