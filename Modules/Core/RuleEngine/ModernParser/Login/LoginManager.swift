@@ -162,6 +162,22 @@ enum LoginError: LocalizedError {
 
 // MARK: - LoginManager
 
+protocol LoginCredentialStorage: Sendable {
+    func load(account: String) -> String?
+    func save(account: String, json: String) -> Bool
+    func delete(account: String)
+}
+
+struct KeychainLoginCredentialStorage: LoginCredentialStorage {
+    func load(account: String) -> String? {
+        KeychainHelper.load(account: account, accessibility: kSecAttrAccessibleAfterFirstUnlock)
+    }
+    func save(account: String, json: String) -> Bool {
+        KeychainHelper.save(account: account, data: json, accessibility: kSecAttrAccessibleAfterFirstUnlock)
+    }
+    func delete(account: String) { _ = KeychainHelper.delete(account: account) }
+}
+
 /// Singleton that manages book-source authentication.
 ///
 /// Mirrors Legado's `BaseSource` login helpers:
@@ -184,6 +200,7 @@ final class LoginManager {
 
     /// Dedicated UserDefaults suite so login data is isolated.
     private let defaults: UserDefaults
+    private let credentials: any LoginCredentialStorage
 
     /// In-memory cache of the raw `putLoginHeader` payload keyed by source URL.
     ///
@@ -205,8 +222,14 @@ final class LoginManager {
 
     // MARK: - Init
 
-    private init() {
-        defaults = UserDefaults(suiteName: LoginManager.suiteName) ?? .standard
+    private convenience init() {
+        self.init(defaults: UserDefaults(suiteName: LoginManager.suiteName) ?? .standard)
+    }
+
+    /// The production singleton and owned fixtures use the same header owner.
+    init(defaults: UserDefaults, credentials: any LoginCredentialStorage = KeychainLoginCredentialStorage()) {
+        self.defaults = defaults
+        self.credentials = credentials
         loadAllHeaders()
     }
 
@@ -567,15 +590,17 @@ final class LoginManager {
         var changed = false
         queue.sync(flags: .barrier) {
             changed = headerCache[sourceUrl] != raw
+            guard changed else { return }
             headerCache[sourceUrl] = raw
             persistHeader(sourceUrl: sourceUrl, raw: raw)
+            loginInfoRevisions[sourceUrl, default: 0] &+= 1
         }
         if changed {
             // Source JS commonly calls `putLoginHeader()` and immediately issues
             // `java.ajax()` in the same evaluation (书旗's Token/GetUrl flow).
             // Keep the write synchronous and invalidate credential-dependent
             // header rules before that next request is constructed.
-            markLoginInfoChanged(sourceUrl: sourceUrl)
+            notifyLoginInfoChanged(sourceUrl: sourceUrl)
         }
     }
 
@@ -586,7 +611,7 @@ final class LoginManager {
         storeLoginHeader(sourceUrl: sourceUrl, raw: json)
     }
 
-    /// Remove all login data for a source (Legado `removeLoginHeader`).
+    /// Remove all login data for an explicit sign-out.
     func clearLogin(sourceUrl: String) {
         queue.sync(flags: .barrier) {
             headerCache.removeValue(forKey: sourceUrl)
@@ -594,24 +619,66 @@ final class LoginManager {
                 forKey: LoginManager.loginHeaderPrefix + sourceUrl
             )
             // loginInfo is stored in Keychain; also clear any legacy UserDefaults entry
-            KeychainHelper.delete(account: LoginManager.loginInfoPrefix + sourceUrl)
+            credentials.delete(account: LoginManager.loginInfoPrefix + sourceUrl)
             defaults.removeObject(
                 forKey: LoginManager.loginInfoPrefix + sourceUrl
             )
+            loginInfoRevisions[sourceUrl, default: 0] &+= 1
         }
-        markLoginInfoChanged(sourceUrl: sourceUrl)
+        notifyLoginInfoChanged(sourceUrl: sourceUrl)
     }
 
     /// Removes only the stored login header payload for a source, keeping the
     /// credentials (Legado `source.removeLoginHeader()` — the 删除登录头 menu item).
     func removeLoginHeader(sourceUrl: String) {
+        var changed = false
         queue.sync(flags: .barrier) {
+            changed = headerCache[sourceUrl] != nil
+            guard changed else { return }
             headerCache.removeValue(forKey: sourceUrl)
             defaults.removeObject(
                 forKey: LoginManager.loginHeaderPrefix + sourceUrl
             )
+            loginInfoRevisions[sourceUrl, default: 0] &+= 1
         }
-        markLoginInfoChanged(sourceUrl: sourceUrl)
+        if changed { notifyLoginInfoChanged(sourceUrl: sourceUrl) }
+    }
+
+    func runtimeHeaderSnapshot(sourceUrl: String) -> LegadoOwnedStateSnapshot {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        return queue.sync {
+            .init(revision: loginInfoRevisions[sourceUrl] ?? 0,
+                  values: headerCache[sourceUrl].map { ["value": Data($0.utf8)] } ?? [:])
+        }
+    }
+
+    /// Compare and update under the same barrier used by existing writers.
+    /// Header removal never clears the user's separately owned Keychain entry.
+    func compareRuntimeHeader(sourceUrl: String, expected: LegadoOwnedStateSnapshot, value: Data?) -> Bool {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        var changed = false
+        let committed: Bool = queue.sync(flags: .barrier) {
+            guard (loginInfoRevisions[sourceUrl] ?? 0) == expected.revision,
+                  headerCache[sourceUrl].map({ Data($0.utf8) }) == expected.values["value"] else { return false }
+            let text = value.flatMap { String(data: $0, encoding: .utf8) }
+            guard value == nil || text != nil else { return false }
+            guard headerCache[sourceUrl] != text else { return true }
+            if let text {
+                headerCache[sourceUrl] = text
+                persistHeader(sourceUrl: sourceUrl, raw: text)
+            } else {
+                headerCache.removeValue(forKey: sourceUrl)
+                defaults.removeObject(forKey: LoginManager.loginHeaderPrefix + sourceUrl)
+            }
+            loginInfoRevisions[sourceUrl, default: 0] &+= 1
+            changed = true
+            return true
+        }
+        if changed {
+            NotificationCenter.default.post(name: .bookSourceLoginInfoDidChange, object: nil,
+                userInfo: ["sourceURL": sourceUrl])
+        }
+        return committed
     }
 
     /// Apply stored login headers to a URLRequest.
@@ -628,17 +695,24 @@ final class LoginManager {
     /// Passwords are never stored in UserDefaults — Keychain is the only accepted location
     /// for sensitive data on iOS.
     func storeLoginInfo(sourceUrl: String, info: [String: String]) {
-        guard let data = try? JSONSerialization.data(withJSONObject: info),
-              let json = String(data: data, encoding: .utf8) else { return }
-        let previous = getLoginInfo(sourceUrl: sourceUrl)
-        guard KeychainHelper.save(
-            account: LoginManager.loginInfoPrefix + sourceUrl,
-            data: json,
-            accessibility: kSecAttrAccessibleAfterFirstUnlock
-        ) else { return }
-        if previous != info {
-            markLoginInfoChanged(sourceUrl: sourceUrl)
+        let json: String
+        do {
+            json = String(decoding: try JSONSerialization.data(withJSONObject: info), as: UTF8.self)
+        } catch {
+            AppLogger.error("Source credentials could not be encoded", error: error)
+            return
         }
+        guard getLoginInfo(sourceUrl: sourceUrl) != info else { return }
+        // Keep Keychain I/O outside the header queue, as in the existing login
+        // path. A completed credential change advances the same revision proof.
+        guard credentials.save(account: LoginManager.loginInfoPrefix + sourceUrl, json: json) else {
+            AppLogger.error("Source credential owner rejected a save")
+            return
+        }
+        queue.sync(flags: .barrier) {
+            loginInfoRevisions[sourceUrl, default: 0] &+= 1
+        }
+        notifyLoginInfoChanged(sourceUrl: sourceUrl)
     }
 
     /// Revision of the credentials used by a source's dynamic header rule.
@@ -647,10 +721,7 @@ final class LoginManager {
         queue.sync { loginInfoRevisions[sourceUrl] ?? 0 }
     }
 
-    private func markLoginInfoChanged(sourceUrl: String) {
-        queue.sync(flags: .barrier) {
-            loginInfoRevisions[sourceUrl, default: 0] &+= 1
-        }
+    private func notifyLoginInfoChanged(sourceUrl: String) {
         NotificationCenter.default.post(
             name: .bookSourceLoginInfoDidChange,
             object: nil,
@@ -668,7 +739,7 @@ final class LoginManager {
         // authenticated chapter transitions. Keep it in Keychain, but allow access after
         // the first unlock; the default WhenUnlocked class made a saved MiMo key disappear
         // mid-session. load also migrates credentials saved by earlier app versions.
-        if let json = KeychainHelper.load(account: account, accessibility: kSecAttrAccessibleAfterFirstUnlock),
+        if let json = credentials.load(account: account),
            let data = json.data(using: .utf8),
            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
             return dict
@@ -678,7 +749,7 @@ final class LoginManager {
         if let json = defaults.string(forKey: account),
            let data = json.data(using: .utf8),
            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
-            if KeychainHelper.save(account: account, data: json, accessibility: kSecAttrAccessibleAfterFirstUnlock) {
+            if credentials.save(account: account, json: json) {
                 defaults.removeObject(forKey: account)
             }
             return dict

@@ -31,6 +31,10 @@ CMS_SUITE = "SelfRenewalCMSVerifierTests"
 PROFILE_SUITE = "SelfRenewalProvisioningProfileVerifierTests"
 SIGNED_CODE_SUITE = "SelfRenewalSignedCodeVerifierTests"
 RESOURCE_SUITE = "SelfRenewalResourceSealVerifierTests"
+NESTED_SUITE = "SelfRenewalNestedCodeRequirementsVerifierTests"
+MODERN_PROFILE_SUITE = "SelfRenewalModernProfileVerifierTests"
+APPLICATION_MATERIAL_SUITE = "SelfRenewalApplicationMaterialVerifierTests"
+PERSISTENT_STATE_SUITE = "LegadoPersistentStateHostTests"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -141,6 +145,49 @@ EXPECTED_CASES["sealedmaterials"] = EXPECTED_CASES["cryptography"] | EXPECTED_CA
         "rejectsShortReadsAndCancellation",
     )
 }
+EXPECTED_CASES["boundmaterials"] = EXPECTED_CASES["sealedmaterials"] | {
+    NESTED_SUITE + "/" + name for name in (
+        "evaluatesBooleanCertificateAndAttributeGrammar",
+        "preservesUnresolvedPolicyWithoutRejectingComplexSupportedExpressions",
+        "verifiesActualNestedBundlesAndPublishesBoundDERAttributes",
+        "rejectsFalseRequirementAndWrongSelectedOrUniversalIdentity",
+        "preservesHintAndLegacyAuthenticationMeaning",
+        "retainsActualSystemPolicyAsUnresolved",
+        "rejectsNestedResourceAndCMSTampering",
+        "rejectsChangedBoundAttributesAndCancellation",
+    )
+} | {
+    MODERN_PROFILE_SUITE + "/" + name for name in (
+        "decodesIndependentTypedPropertyValues",
+        "decodesVersionedCoreEntitlementsAndRejectsUnknownVersion",
+        "rejectsAmbiguousAndMalformedProperties",
+        "decodesCanonicalDatesAndRejectsInvalidCalendarValues",
+        "enforcesPropertyBudgetsAndCancellation",
+        "authenticatesBothCMSLayersAndUsesModernSourceOfTruth",
+        "rejectsInvalidInnerCMSAndAuthoritativeValidity",
+        "readsModernProfileFromSameInventoryAndRejectsReplacedLinks",
+    )
+} | {
+    APPLICATION_MATERIAL_SUITE + "/" + name for name in (
+        "verifiesActualThreeBundleChainWithoutClaimingAppleAuthority",
+        "rejectsSignedButInconsistentProfileAndEntitlementIdentities",
+        "bindsRereadProfileBytesToEarlierResourceSeals",
+        "acceptsNewProfileUUIDWithPreservedBundleGroupsAndIdentity",
+        "rejectsWholeChainResourceTamperingExpiryAndCancellation",
+    )
+} | {
+    PERSISTENT_STATE_SUITE + "/" + name for name in (
+        "sourceBridgeRemovalPreservesCredentials",
+        "isolatesSourcesAndPreservesVerbatimValues",
+        "rejectsStaleSourceLoginAndBindingRevisions",
+        "commitsSameOwnerAtomicallyAndSkipsUnchangedWrites",
+        "preservesOldStateWhenOwnerWritesFail",
+        "reusesLegacyCacheAndPreservesTTL",
+        "rejectsUnsupportedTransactionsBeforeAnyWrite",
+        "enforcesCancellationDeadlineAndBoundedLeases",
+        "preservesExplicitOptionsAndRawLoginPayloads",
+    )
+}
 SELECTION_GROUPS = {
     # Preserve the historical all-mode contract; new implementation tests have
     # an explicit independent selection rather than silently widening it.
@@ -150,6 +197,7 @@ SELECTION_GROUPS = {
     "signature": ("signature",),
     "cryptography": ("cryptography",),
     "sealedmaterials": ("sealedmaterials",),
+    "boundmaterials": ("boundmaterials",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -180,6 +228,23 @@ SOURCE_INPUTS = (
     "Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalResourceFixture.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalResourceSealVerifierTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalNestedCodeRequirementsVerifier.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalNestedResourceFixture.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalModernProfileFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalModernProfileVerifierTests.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialVerifierTests.swift",
+    "Modules/Core/RuleEngine/ModernParser/ModernParserBridge.swift",
+    "Modules/Core/RuleEngine/ModernParser/BookSourceRuntimeStateStore.swift",
+    "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+    "Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift",
+    "Modules/Services/Online/LegadoPersistentStateHost.swift",
+    "Modules/Services/Online/LegadoMainJSSourceService.swift",
+    "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+    "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -205,7 +270,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography or sealedmaterials")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials or boundmaterials")
     return mode
 
 
@@ -403,7 +468,15 @@ def result(work):
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "No Apple login, pairing, signing, installation or renewal operation is performed."] + (
-                           ["This selection executes exactly 48 cases in one sealedmaterials xcresult: nine signature-structure, seven CodeDirectory content-hash, seven generic CMS, two provisioning-envelope, six material-inventory, seven signed-code and ten resource-seal cases.",
+                           ["This selection executes exactly 78 cases in one boundmaterials xcresult: the original sealed-material 48 plus eight nested-requirement, eight modern-profile, five whole-application identity and nine Swift persistent-state host cases.",
+                             "Historical artifact groups are not accepted independently; their qualified method identities are rechecked inside this one group because shared verification inputs changed.",
+                             "Actual CodeDirectory CMS, recursive resource digests, supported nested expressions and every fat slice are checked against bounded owned material. Unavailable Apple/system-policy predicates and named fragments remain explicitly unresolved.",
+                             "Modern profiles require both actual CMS layers; fields come from the inner DER source, not unrelated legacy XML. Actual signer certificate, prefix, team, App ID and selected groups are compared, and later profile bytes must match any earlier verified resource seal.",
+                             "Generic explicit anchor trust does not establish Apple signing/provisioning authority, full entitlement authorization, device/account eligibility or installation permission. A trusted replacement adapter, signer and installer remain unverified.",
+                              "The nine Swift host cases use owned injected persistence and cancellation fixtures; source-only execution does not run the JVM/JNI bridge, the Kotlin persistence suite or a delivered App database migration.",
+                             "Unit, discovery, replacement and UI suites are not executed; no QueryType listener, RemotePairing browsing or diagnostic TCP probe is invoked."]
+                            if mode == "boundmaterials" else [
+                             "This selection executes exactly 48 cases in one sealedmaterials xcresult: nine signature-structure, seven CodeDirectory content-hash, seven generic CMS, two provisioning-envelope, six material-inventory, seven signed-code and ten resource-seal cases.",
                              "Signature, cryptography and materials artifact groups are not accepted separately; their method identities are included in the single sealedmaterials group because shared inventory, reader and CMS production inputs changed.",
                              "Detached CodeDirectory CMS and supported hash-agility encodings bind owned signatures to original CodeDirectory bytes; generic explicit anchors do not establish Apple provisioning authority.",
                              "Resource checks bind the consumed CodeResources bytes to re-read CodeDirectory slot 3 and check bounded resource digests and traversal. Nested requirements, strict Apple resource policy and Apple signing authority remain unverified.",

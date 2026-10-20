@@ -18,6 +18,7 @@ struct SelfRenewalCMSVerifierTests {
                 let signer = try #require(verified.signers.first)
                 #expect(signer.certificateSHA256 == Data(SHA256.hash(data: Fixture.leafCertificate)))
                 #expect(signer.signatureVerified && signer.chainValidatedToExplicitAnchors)
+                #expect(signer.verifiedCertificateChainDER == [Fixture.leafCertificate, Fixture.rootCertificate])
                 #expect(!signer.appleProvisioningAuthorityEstablished)
                 #expect(!verified.accountIdentityEstablished && !verified.replacementAuthorized)
             }

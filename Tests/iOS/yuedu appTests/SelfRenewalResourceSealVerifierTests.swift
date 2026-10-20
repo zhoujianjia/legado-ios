@@ -22,7 +22,11 @@ struct SelfRenewalResourceSealVerifierTests {
             if name == "large" { #expect(ranges.map(\.byteCount) == [65_536, 65_536, 5]) }
         }
         let data = try Self.envelope(files: ["a": Self.hashes("abc")], rules: ["^.*": true])
-        #expect(try Self.verify(data, content: ["a": Data("abc".utf8)], types: [1, 2, 3, 4]).hashedFiles == 1)
+        let verified = try Self.verify(data, content: ["a": Data("abc".utf8)], types: [1, 2, 3, 4])
+        #expect(verified.hashedFiles == 1)
+        for (type, hex) in SelfRenewalResourceFixture.vectors["abc"]! {
+            #expect(verified.verifiedFileDigests["a"]?[type] == Self.hex(hex))
+        }
     }
 
     @Test("Version two selects files2/rules2; legacy data and legacy fallback stay distinct")
@@ -50,6 +54,7 @@ struct SelfRenewalResourceSealVerifierTests {
         ])
         let result = try Self.verify(data, content: ["Resources/12.txt": Data("ignored".utf8), "Resources/keep12.txt": Data("abc".utf8)])
         #expect(result.hashedFiles == 1 && result.omittedFiles == 1)
+        #expect(result.verifiedFileDigests["Resources/12.txt"] == nil)
         #expect(result.resourceEnvelopeVerified && !result.strictResourcePolicyVerified)
     }
 

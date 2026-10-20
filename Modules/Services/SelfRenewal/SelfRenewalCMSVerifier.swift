@@ -39,16 +39,20 @@ enum SelfRenewalCMSVerifier {
         /// Exposed only after this signer's actual signature and chain pass.
         let signedAttributes: [SignedAttribute]
         let signedAttributesDER: Data?
+        /// Actual chain selected by successful SecTrust evaluation, leaf first.
+        /// It carries explicit-anchor trust only, never an Apple purpose claim.
+        let verifiedCertificateChainDER: [Data]
         var signatureVerified: Bool { true }
         var chainValidatedToExplicitAnchors: Bool { true }
         var appleProvisioningAuthorityEstablished: Bool { false }
         fileprivate init(certificateSHA256: Data, explicitAnchorSHA256: [Data], verifiedAt: Date,
-            signedAttributes: [SignedAttribute], signedAttributesDER: Data?) {
+            signedAttributes: [SignedAttribute], signedAttributesDER: Data?, verifiedCertificateChainDER: [Data]) {
             self.certificateSHA256 = certificateSHA256
             self.explicitAnchorSHA256 = explicitAnchorSHA256
             self.verifiedAt = verifiedAt
             self.signedAttributes = signedAttributes
             self.signedAttributesDER = signedAttributesDER
+            self.verifiedCertificateChainDER = verifiedCertificateChainDER
         }
     }
     struct VerifiedContent: Sendable, Equatable {
@@ -177,10 +181,17 @@ enum SelfRenewalCMSVerifier {
                   SecTrustSetVerifyDate(trust, date as CFDate) == errSecSuccess else { throw Failure.trustConfiguration }
             var trustError: CFError?
             guard SecTrustEvaluateWithError(trust, &trustError) else { throw Failure.untrustedChain }
+            guard let verifiedChain = SecTrustCopyCertificateChain(trust) as? [SecCertificate],
+                  !verifiedChain.isEmpty, verifiedChain.count <= Limits.certificates else { throw Failure.certificateLimit }
+            let verifiedChainDER = verifiedChain.map { SecCertificateCopyData($0) as Data }
+            guard verifiedChainDER.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }),
+                  let first = verifiedChainDER.first, Data(SHA256.hash(data: first)) == leafHash,
+                  let last = verifiedChainDER.last, anchors.contains(last) else { throw Failure.untrustedChain }
             try Task.checkCancellation()
             results.append(Signer(certificateSHA256: leafHash,
                 explicitAnchorSHA256: anchors.map { Data(SHA256.hash(data: $0)) }, verifiedAt: date,
-                signedAttributes: authenticatedAttributes, signedAttributesDER: authenticatedDER))
+                signedAttributes: authenticatedAttributes, signedAttributesDER: authenticatedDER,
+                verifiedCertificateChainDER: verifiedChainDER))
         }
         return VerifiedContent(content: content, signers: results)
     }
@@ -291,6 +302,19 @@ enum SelfRenewalCMSVerifier {
     static func children(of value: SignedAttribute.Value) throws -> [SignedAttribute.Value] {
         try children(Node(tag: value.tag, full: value.originalDER, body: value.body))
             .map { SignedAttribute.Value($0) }
+    }
+    /// Structural parsing only. This result conveys no signature/chain trust;
+    /// only a verified Signer establishes that its attributes were signed.
+    /// Reuses the same canonical DER, node, depth and child-count checks.
+    static func parseDER(_ data: Data) throws -> SignedAttribute.Value {
+        try Task.checkCancellation()
+        guard !data.isEmpty, data.count <= Limits.contentBytes else { throw Failure.sizeLimit }
+        var offset = 0
+        let node = try next(data, offset: &offset)
+        guard offset == data.count else { throw Failure.malformedDER }
+        var nodes = 0
+        try validateAttributeDER(node, depth: 0, nodes: &nodes)
+        return SignedAttribute.Value(node)
     }
     private static func validateAttributeDER(_ node: Node, depth: Int, nodes: inout Int) throws {
         try Task.checkCancellation()

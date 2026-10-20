@@ -6,6 +6,26 @@ import LegadoRuntime
 actor LegadoRuntimeProcess {
     static let shared = LegadoRuntimeProcess()
     private var runtime: LegadoRuntime?
+    private var stateHost: LegadoPersistentStateHost?
+
+    private func persistentHost() -> LegadoPersistentStateHost {
+        if let stateHost { return stateHost }
+        let value = LegadoPersistentStateHost(backing: AppLegadoOwnedStateBacking(
+            sources: .shared, login: .shared))
+        stateHost = value
+        return value
+    }
+
+    /// Embedders must pass an immutable source revision and then explicitly put
+    /// the returned grant in session options. This does not select an App route
+    /// or infer the UUID of a shelf book from a URL.
+    func bindPersistentSource(sourceURL: String, sourceRevision: String) async throws -> String {
+        try await persistentHost().bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
+    }
+
+    func revokePersistentSource(owner: String) async {
+        await persistentHost().revoke(owner: owner)
+    }
 
     func executor() throws -> LegadoRuntime {
         if let runtime { return runtime }
@@ -15,7 +35,7 @@ actor LegadoRuntimeProcess {
             guard diagnostics.available, let configuration else {
                 throw LegadoRuntimeError(code: "MISSING_RUNTIME", message: diagnostics.issues.joined(separator: "; "))
             }
-            let value = LegadoRuntime(configuration: configuration)
+            let value = LegadoRuntime(configuration: configuration, host: persistentHost())
             runtime = value
             return value
         }

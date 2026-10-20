@@ -26,9 +26,15 @@ final class BookSourceRuntimeStateStore: @unchecked Sendable {
 
     private let defaults: UserDefaults
     private let queue = DispatchQueue(label: "com.yuedu.bookSourceRuntimeState")
+    private var runtimeRevisions: [String: UInt64] = [:]
 
-    private init() {
-        defaults = UserDefaults(suiteName: "com.yuedu.bookSourceRuntimeState") ?? .standard
+    private convenience init() {
+        self.init(defaults: UserDefaults(suiteName: "com.yuedu.bookSourceRuntimeState") ?? .standard)
+    }
+
+    /// Isolated defaults are injectable for owned fixtures; production has one owner.
+    init(defaults: UserDefaults) {
+        self.defaults = defaults
     }
 
     func sourceVariableJSON(for sourceUrl: String) -> String? {
@@ -40,11 +46,15 @@ final class BookSourceRuntimeStateStore: @unchecked Sendable {
     func setSourceVariableJSON(_ json: String?, for sourceUrl: String) {
         queue.sync {
             let storageKey = key(sourceUrl: sourceUrl, suffix: "sourceVariableJSON")
-            guard let json, !json.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            let normalized = json.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
+            guard defaults.string(forKey: storageKey) != normalized else { return }
+            guard let normalized else {
                 defaults.removeObject(forKey: storageKey)
+                runtimeRevisions[sourceUrl, default: 0] &+= 1
                 return
             }
-            defaults.set(json, forKey: storageKey)
+            defaults.set(normalized, forKey: storageKey)
+            runtimeRevisions[sourceUrl, default: 0] &+= 1
         }
     }
 
@@ -89,8 +99,71 @@ final class BookSourceRuntimeStateStore: @unchecked Sendable {
         queue.sync {
             let storageKey = key(sourceUrl: sourceUrl, suffix: "sourceKeyValues")
             var values = defaults.dictionary(forKey: storageKey) as? [String: String] ?? [:]
+            guard values[entryKey] != value else { return }
             values[entryKey] = value
             defaults.set(values, forKey: storageKey)
+            runtimeRevisions[sourceUrl, default: 0] &+= 1
+        }
+    }
+
+    func runtimeVariableSnapshot(for sourceURL: String) -> LegadoOwnedStateSnapshot {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        return queue.sync {
+            let value = defaults.string(forKey: key(sourceUrl: sourceURL, suffix: "sourceVariableJSON"))
+            return .init(revision: runtimeRevisions[sourceURL] ?? 0,
+                         values: value.map { ["value": Data($0.utf8)] } ?? [:])
+        }
+    }
+
+    func runtimeValuesSnapshot(for sourceURL: String, keys: Set<String>) -> LegadoOwnedStateSnapshot {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        return queue.sync {
+            let values = defaults.dictionary(forKey: key(sourceUrl: sourceURL, suffix: "sourceKeyValues")) as? [String: String] ?? [:]
+            return .init(revision: runtimeRevisions[sourceURL] ?? 0,
+                values: Dictionary(uniqueKeysWithValues: keys.compactMap { name in values[name].map { (name, Data($0.utf8)) } }))
+        }
+    }
+
+    func compareRuntimeVariable(for sourceURL: String, expected: LegadoOwnedStateSnapshot, value: Data?) -> Bool {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        return queue.sync {
+            let storageKey = key(sourceUrl: sourceURL, suffix: "sourceVariableJSON")
+            let current = defaults.string(forKey: storageKey)
+            guard (runtimeRevisions[sourceURL] ?? 0) == expected.revision,
+                  current.map({ Data($0.utf8) }) == expected.values["value"] else { return false }
+            let text = value.flatMap { String(data: $0, encoding: .utf8) }
+            guard value == nil || text != nil else { return false }
+            // CacheManager stores source.setVariable verbatim, including an
+            // empty string. The user editor's empty-to-remove policy is separate.
+            guard current != text else { return true }
+            if let text { defaults.set(text, forKey: storageKey) }
+            else { defaults.removeObject(forKey: storageKey) }
+            runtimeRevisions[sourceURL, default: 0] &+= 1
+            return true
+        }
+    }
+
+    func compareRuntimeValues(for sourceURL: String, expected: LegadoOwnedStateSnapshot,
+                              changes: [String: Data?]) -> Bool {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        return queue.sync {
+            let storageKey = key(sourceUrl: sourceURL, suffix: "sourceKeyValues")
+            let current = defaults.dictionary(forKey: storageKey) as? [String: String] ?? [:]
+            guard (runtimeRevisions[sourceURL] ?? 0) == expected.revision,
+                  expected.values.allSatisfy({ current[$0.key].map { Data($0.utf8) } == $0.value }) else { return false }
+            var updated = current
+            for (name, bytes) in changes {
+                // A missing value was also part of the read proof.
+                guard current[name].map({ Data($0.utf8) }) == expected.values[name] else { return false }
+                if let bytes {
+                    guard let text = String(data: bytes, encoding: .utf8) else { return false }
+                    updated[name] = text
+                } else { updated.removeValue(forKey: name) }
+            }
+            guard updated != current else { return true }
+            defaults.set(updated, forKey: storageKey)
+            runtimeRevisions[sourceURL, default: 0] &+= 1
+            return true
         }
     }
 

@@ -1,0 +1,188 @@
+{
+  "recordedAtUTC": "2026-10-20T03:32:40.011024+00:00",
+  "status": "prepared_not_sdk_executed",
+  "sourceInputs": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+      "bytes": 25565,
+      "sha256": "d835a75bdeb280173b388a943a018a672476898d50b309b1c21a04aaa28c9c57",
+      "grammarErrors": []
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+      "bytes": 16456,
+      "sha256": "e7fc2366b6149ff5a5b1dde04e3f0c854cc3a8205135a8ed4dd60c42c934b8d2",
+      "grammarErrors": []
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift",
+      "bytes": 8386,
+      "sha256": "93461f503492f663854eb97569efb010fb57257f3f29ac75605ef8ea874b5666",
+      "grammarErrors": []
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+      "bytes": 12873,
+      "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+      "bytes": 7474,
+      "sha256": "8bc4a8346c0e4c2e0f8b6f3e0fd454305a0241a096ad600bbc3ddb7ef9eaa8e9",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalProvisioningProfileVerifierTests.swift",
+      "bytes": 4163,
+      "sha256": "96b48293a4ff0eb9e0f3bd239cbdf79e4625d27901d3210fbe4c6bc398f127fc",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCodeDirectoryHashVerifierTests.swift",
+      "bytes": 24584,
+      "sha256": "c1d4eedc8116907166ef59953da3d7aa8f9f25131209609eeed57210c6dd7058",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalModernProfileFixture.swift",
+      "bytes": 60026,
+      "sha256": "48b6fc3bf16bfc98e634fe1890d7c8575bd66705cf9ea1768e581d7449201af0",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalModernProfileVerifierTests.swift",
+      "bytes": 9382,
+      "sha256": "7071edd4cdac7fecb34b0b0f5832d5ccab7d92bb8eb13c115399ffd2b6d87665",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+      "bytes": 140748,
+      "sha256": "eb9b966c9843518796926c5df2b932f571c88c8549e24531281eab1aa42f11f7",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialVerifierTests.swift",
+      "bytes": 8236,
+      "sha256": "13433ec41dc1e138cde39a7f8df115b44b772836d84b1009b24be5090b35c0e4",
+      "grammarErrors": []
+    }
+  ],
+  "grammarParsedFiles": 11,
+  "newSuites": {
+    "SelfRenewalModernProfileVerifierTests": [
+      "decodesIndependentTypedPropertyValues",
+      "decodesVersionedCoreEntitlementsAndRejectsUnknownVersion",
+      "rejectsAmbiguousAndMalformedProperties",
+      "decodesCanonicalDatesAndRejectsInvalidCalendarValues",
+      "enforcesPropertyBudgetsAndCancellation",
+      "authenticatesBothCMSLayersAndUsesModernSourceOfTruth",
+      "rejectsInvalidInnerCMSAndAuthoritativeValidity",
+      "readsModernProfileFromSameInventoryAndRejectsReplacedLinks"
+    ],
+    "SelfRenewalApplicationMaterialVerifierTests": [
+      "verifiesActualThreeBundleChainWithoutClaimingAppleAuthority",
+      "rejectsSignedButInconsistentProfileAndEntitlementIdentities",
+      "bindsRereadProfileBytesToEarlierResourceSeals",
+      "acceptsNewProfileUUIDWithPreservedBundleGroupsAndIdentity",
+      "rejectsWholeChainResourceTamperingExpiryAndCancellation"
+    ]
+  },
+  "preparedNewSwiftMethods": 13,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0,
+  "grammarOnlyNotTypeChecking": true,
+  "productionConnection": "SignedCodeVerifier.read -> single inventory -> ResourceSealVerifier.verify and selected-CD-bound DER attributes -> Profile.readModern same inventory and independently authenticated inner CMS -> ApplicationMaterialVerifier identity/resource-profile digest binding",
+  "fixtureValidation": {
+    "modernFixtures": 9,
+    "wholeApplicationBundles": 3,
+    "wholeApplicationVariants": 5,
+    "actualCodeCMSVerified": 8,
+    "actualProfileCMSLayersVerified": 16,
+    "dummySizeSignaturesNotCountedAsCode": 8,
+    "wholeApplicationWireAudit": {
+      "status": "passed",
+      "scope": "Independent Python hashlib wire reconstruction and OpenSSL ASN.1 format inspection; not Swift execution",
+      "actualApplicationFixtures": [
+        {
+          "fixture": "main",
+          "codeSHA256": "ec75ac8930d1e7dd9361c3d483f05ec1c18ada85927dba1d34c97f05b5e3de07",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        },
+        {
+          "fixture": "widget",
+          "codeSHA256": "dbf3bda00d856098c6bc1a14b9b9c3cefbc86423703af7c8e1c36d285124c6bc",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        },
+        {
+          "fixture": "share",
+          "codeSHA256": "b00d0cc6c6b55b14555ea36509fbea140901f1d8c3024cea4233ef7805c09d04",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        },
+        {
+          "fixture": "wrong-signer",
+          "codeSHA256": "20376d4107decf4eaab03fd7bf8d3acd0eda96a7f16126c1083806a5ecd6653e",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        },
+        {
+          "fixture": "wrong-team",
+          "codeSHA256": "6980b03500e7cdab6b6b033df6b9c31efe685d1d53ef0d5557cc3e144d291c0e",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        },
+        {
+          "fixture": "wrong-app",
+          "codeSHA256": "8f0972685be2c2afccb2590c43fc47dcc02fa8b4a70e5f73c7f71da8faf0f036",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        },
+        {
+          "fixture": "wrong-group",
+          "codeSHA256": "0d929a12568a7937adcf4efb3d6d5f4096573db80858d61b00471f813354799d",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        },
+        {
+          "fixture": "changed-profile",
+          "codeSHA256": "1aafcaa2985a728928b1c29eb0b3799c04cbb7b7529f44541a8d94d98a8e41ff",
+          "codePagesChecked": 3,
+          "nonzeroSpecialSlotsChecked": 5,
+          "resourceSealsChecked": 2,
+          "actualVerifiedCMSContentEqualsRawCD": true
+        }
+      ],
+      "fixedTruncatedABCVectorBytes": 20,
+      "privateKeysIncludedInSwiftFixtures": false
+    }
+  },
+  "sourceOfTruth": "Authenticated inner DER-Encoded-Profile CMS, not legacy XML fields",
+  "applicationIdentifierPrefixCanDifferFromTeam": true,
+  "sameSizeChangedProfileResourceRejected": true,
+  "genericExplicitAnchorTrustIsAppleAuthority": false,
+  "replacementAuthorized": false,
+  "remainingUnverified": [
+    "SDK compilation and actual new Swift methods",
+    "Apple-specific signer/profile purpose and full entitlement/device/account eligibility policy",
+    "System requirements/trust-cache/notarization and named fragments without platform context",
+    "Signing/install clients, replacement/renewal transaction and physical device acceptance"
+  ]
+}

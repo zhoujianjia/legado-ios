@@ -21,25 +21,59 @@ import JavaScriptCore
     private let memoryCache = LRUCache<String, String>(capacity: 128)
     private let persistentStore: UserDefaults
     private let keyPrefix: String
+    private let sourceId: String
+    private var memoryOnlyKeys = Set<String>()
+    private static let storageLock = NSLock()
+    private static var revisions: [String: UInt64] = [:]
 
     init(sourceId: String) {
+        self.sourceId = sourceId
         self.keyPrefix = "cache_\(sourceId)"
         self.persistentStore = UserDefaults(suiteName: "com.yuedu.cache.\(sourceId)") ?? .standard
         super.init()
     }
 
     func get(_ key: String) -> String? {
-        memoryCache.get(key) ?? persistentStore.string(forKey: "\(keyPrefix)_\(key)")
+        if memoryOnlyKeys.contains(key), let value = memoryCache.get(key) { return value }
+        // Persistent writes can also arrive through the explicitly owned JVM
+        // host. Only explicit putMemory values may shadow that shared owner.
+        Self.storageLock.lock()
+        defer { Self.storageLock.unlock() }
+        do {
+            guard let entry = try Self.entry(store: persistentStore, storageKey: "\(keyPrefix)_\(key)"),
+                  entry.deadline == 0 || entry.deadline > Int64(Date().timeIntervalSince1970 * 1_000) else { return nil }
+            return try entry.text()
+        } catch {
+            AppLogger.error("Source cache entry could not be read", error: error)
+            return nil
+        }
     }
 
     func put(_ key: String, _ value: String) {
-        memoryCache.put(key, value: value)
-        persistentStore.set(value, forKey: "\(keyPrefix)_\(key)")
+        Self.storageLock.lock()
+        defer { Self.storageLock.unlock() }
+        let storageKey = "\(keyPrefix)_\(key)"
+        do {
+            if try Self.entry(store: persistentStore, storageKey: storageKey) != LegadoRuntimeCacheEntry(text: value) {
+                persistentStore.set(value, forKey: storageKey)
+                Self.revisions[sourceId, default: 0] &+= 1
+            }
+            memoryCache.put(key, value: value)
+            memoryOnlyKeys.remove(key)
+        } catch {
+            AppLogger.error("Source cache entry could not be changed", error: error)
+        }
     }
 
     func delete(_ key: String) {
         memoryCache.remove(key)
-        persistentStore.removeObject(forKey: "\(keyPrefix)_\(key)")
+        memoryOnlyKeys.remove(key)
+        Self.storageLock.lock()
+        defer { Self.storageLock.unlock() }
+        let storageKey = "\(keyPrefix)_\(key)"
+        guard persistentStore.object(forKey: storageKey) != nil else { return }
+        persistentStore.removeObject(forKey: storageKey)
+        Self.revisions[sourceId, default: 0] &+= 1
     }
 
     func getFromMemory(_ key: String) -> String? {
@@ -48,9 +82,55 @@ import JavaScriptCore
 
     func putMemory(_ key: String, _ value: String) {
         memoryCache.put(key, value: value)
+        memoryOnlyKeys.insert(key)
     }
 
     func deleteMemory(_ key: String) {
         memoryCache.remove(key)
+        memoryOnlyKeys.remove(key)
+    }
+
+    static func runtimeSnapshot(sourceId: String, key: String) throws -> LegadoOwnedStateSnapshot {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        let store = UserDefaults(suiteName: "com.yuedu.cache.\(sourceId)") ?? .standard
+        storageLock.lock()
+        defer { storageLock.unlock() }
+        let value = try entry(store: store, storageKey: "cache_\(sourceId)_\(key)")
+        return .init(revision: revisions[sourceId] ?? 0,
+            values: try value.map { ["value": try $0.encoded()] } ?? [:])
+    }
+
+    static func compareRuntimeEntry(sourceId: String, key: String, expected: LegadoOwnedStateSnapshot,
+                                   value: Data?) throws -> Bool {
+        dispatchPrecondition(condition: .notOnQueue(.main))
+        let store = UserDefaults(suiteName: "com.yuedu.cache.\(sourceId)") ?? .standard
+        storageLock.lock()
+        defer { storageLock.unlock() }
+        let storageKey = "cache_\(sourceId)_\(key)"
+        let current = try entry(store: store, storageKey: storageKey)
+        let bytes = try current.map { try $0.encoded() }
+        guard (revisions[sourceId] ?? 0) == expected.revision, bytes == expected.values["value"] else { return false }
+        guard bytes != value else { return true }
+        if let value {
+            let decoded = try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: value)
+            _ = try decoded.text()
+            // The existing UserDefaults key remains the sole backing record.
+            // Data preserves the original TTL alongside the text atomically;
+            // legacy plain String records remain readable with deadline zero.
+            store.set(value, forKey: storageKey)
+        } else { store.removeObject(forKey: storageKey) }
+        revisions[sourceId, default: 0] &+= 1
+        return true
+    }
+
+    private static func entry(store: UserDefaults, storageKey: String) throws -> LegadoRuntimeCacheEntry? {
+        guard let raw = store.object(forKey: storageKey) else { return nil }
+        if let text = raw as? String { return .init(text: text) }
+        guard let data = raw as? Data, data.count <= 1_048_576 else {
+            throw CocoaError(.coderReadCorrupt)
+        }
+        let value = try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: data)
+        _ = try value.text()
+        return value
     }
 }

@@ -94,10 +94,11 @@ class ModernParserBridge {
 
     // MARK: - Init
 
-    init(source: BookSource, requestSession: URLSession = LegadoJSBridge.requestSession) {
+    init(source: BookSource, requestSession: URLSession = LegadoJSBridge.requestSession,
+         loginManager: LoginManager = .shared, runtimeStateStore: BookSourceRuntimeStateStore = .shared) {
         self.sourceRuleData = BookSourceRuleData(source: source)
-        self.loginManager = LoginManager.shared
-        self.runtimeStateStore = BookSourceRuntimeStateStore.shared
+        self.loginManager = loginManager
+        self.runtimeStateStore = runtimeStateStore
         self.requestSession = requestSession
         // No JSContext here on purpose — see `jsEngine`.
     }
@@ -369,6 +370,7 @@ class ModernParserBridge {
         // ── Source Bridge Wiring ──
 
         let sourceUrl = sourceRuleData.source.bookSourceUrl
+        let loginOwner = loginManager
 
         engine.sourceBridge.getVariableHandler = { [weak self] in
             guard let self else { return "" }
@@ -385,7 +387,7 @@ class ModernParserBridge {
         }
 
         engine.sourceBridge.getLoginInfoHandler = {
-            LoginManager.shared.getLoginInfo(sourceUrl: sourceUrl).flatMap { info in
+            loginOwner.getLoginInfo(sourceUrl: sourceUrl).flatMap { info in
                 if let data = try? JSONSerialization.data(withJSONObject: info),
                    let json = String(data: data, encoding: .utf8) {
                     return json
@@ -396,13 +398,13 @@ class ModernParserBridge {
         engine.sourceBridge.putLoginInfoHandler = { info in
             guard let data = info.data(using: .utf8),
                   let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String] else { return }
-            LoginManager.shared.storeLoginInfo(sourceUrl: sourceUrl, info: dict)
+            loginOwner.storeLoginInfo(sourceUrl: sourceUrl, info: dict)
         }
         engine.sourceBridge.getLoginInfoMapHandler = {
-            LoginManager.shared.getLoginInfo(sourceUrl: sourceUrl) ?? [:]
+            loginOwner.getLoginInfo(sourceUrl: sourceUrl) ?? [:]
         }
         engine.sourceBridge.removeLoginInfoHandler = {
-            LoginManager.shared.clearLogin(sourceUrl: sourceUrl)
+            loginOwner.clearLogin(sourceUrl: sourceUrl)
         }
         // Legado stores whatever `putLoginHeader` was given verbatim and only sends
         // it as headers when it parses as a JSON object; a bare token (书山聚合's
@@ -410,17 +412,17 @@ class ModernParserBridge {
         // for it — guessing `X-Novel-Token` overwrote the constant token the source's
         // `header` rule sends and the server answered `{"error":"访问被拒绝"}`.
         engine.sourceBridge.putLoginHeaderHandler = { header in
-            LoginManager.shared.storeLoginHeader(sourceUrl: sourceUrl, raw: header)
+            loginOwner.storeLoginHeader(sourceUrl: sourceUrl, raw: header)
         }
         engine.sourceBridge.getLoginHeaderHandler = {
-            LoginManager.shared.getLoginHeader(sourceUrl: sourceUrl)
+            loginOwner.getLoginHeader(sourceUrl: sourceUrl)
         }
         engine.sourceBridge.removeLoginHeaderHandler = {
-            LoginManager.shared.clearLogin(sourceUrl: sourceUrl)
+            loginOwner.removeLoginHeader(sourceUrl: sourceUrl)
         }
         engine.sourceBridge.getHeaderMapHandler = { [weak self] in
             var merged = self?.resolvedSourceHeaders() ?? [:]
-            if let loginHeaders = LoginManager.shared.getLoginHeaderMap(sourceUrl: sourceUrl) {
+            if let loginHeaders = loginOwner.getLoginHeaderMap(sourceUrl: sourceUrl) {
                 merged.merge(loginHeaders) { _, new in new }
             }
             return merged

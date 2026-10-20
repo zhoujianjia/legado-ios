@@ -22,9 +22,13 @@ public struct LegadoSessionOptions: Encodable, Sendable {
     }
     public let httpTransport: HTTPTransport
     public let userAgent: String?
-    public init(httpTransport: HTTPTransport, userAgent: String? = nil) {
+    /// Granted explicitly by the embedding host; imported source JSON cannot
+    /// choose this owner or a persistence path. Nil preserves isolated memory.
+    public let stateOwner: String?
+    public init(httpTransport: HTTPTransport, userAgent: String? = nil, stateOwner: String? = nil) {
         self.httpTransport = httpTransport
         self.userAgent = userAgent
+        self.stateOwner = stateOwner
     }
 }
 

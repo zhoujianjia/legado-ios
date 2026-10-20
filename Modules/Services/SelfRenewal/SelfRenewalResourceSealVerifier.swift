@@ -4,19 +4,22 @@ import Darwin
 import Foundation
 
 /// Resource consistency for a caller-owned, quiescent staging app. This consumes
-/// the same inventory/content-hash pipeline as the executable verifier. It does
-/// not evaluate nested designated requirements or grant Apple install authority.
+/// the same inventory/content-hash pipeline as the executable verifier. It
+/// evaluates nested requirements against actual checked code/certificate fields;
+/// unavailable system-policy context stays unresolved. No Apple install authority.
 /// Rule selection follows Security/resources.cpp (POSIX ERE, weighted first
 /// match), rather than treating CodeResources as a simple filename/hash map.
 enum SelfRenewalResourceSealVerifier {
     typealias Reader = SelfRenewalMachOSignatureReader
     typealias Inventory = SelfRenewalMaterialInventory
+    typealias Requirements = SelfRenewalNestedCodeRequirementsVerifier
     enum Failure: Error, Sendable, Equatable {
         case malformedEnvelope, envelopeLimit, ruleLimit, invalidRule, invalidPath
         case unsupportedHash, missingEnvelope(String), unboundEnvelope(String)
         case changedCodeDirectory, digestMismatch(String), addedResource(String)
         case missingResource(String), resourceTypeMismatch(String), resourceReadLimit
         case invalidDigest(String)
+        case nestedRequirementFailed(String), missingNestedCode(String)
     }
     enum Limits {
         static let envelopeBytes = 2_097_152
@@ -31,6 +34,28 @@ enum SelfRenewalResourceSealVerifier {
         let requirement: String
         let cdHash: Data?
     }
+    struct NestedVerification: Sendable, Equatable {
+        let relativePath: String
+        let executableRelativePath: String
+        let requirement: String
+        let verifiedSlices: Int
+        let signerAuthenticatedSlices: Int
+        let adHocSlices: Int
+        /// The nested seal's cdhash is an informational hint in the original
+        /// validator. It never substitutes for evaluating its requirement.
+        let cdHashHintMatchesAnySelectedDirectory: Bool?
+        var allSelectedDirectoriesSignerAuthenticated: Bool { verifiedSlices > 0 && verifiedSlices == signerAuthenticatedSlices }
+        fileprivate init(relativePath: String, executableRelativePath: String, requirement: String,
+            verifiedSlices: Int, signerAuthenticatedSlices: Int, adHocSlices: Int, hintMatches: Bool?) {
+            self.relativePath = relativePath
+            self.executableRelativePath = executableRelativePath
+            self.requirement = requirement
+            self.verifiedSlices = verifiedSlices
+            self.signerAuthenticatedSlices = signerAuthenticatedSlices
+            self.adHocSlices = adHocSlices
+            cdHashHintMatchesAnySelectedDirectory = hintMatches
+        }
+    }
     struct EnvelopeVerification: Sendable, Equatable {
         let version: Int
         let hashedFiles: Int
@@ -40,18 +65,28 @@ enum SelfRenewalResourceSealVerifier {
         /// These were encountered according to the actual traversal rules. A
         /// requirement string and optional cdhash are not proof of nested code.
         let unresolvedNestedResources: [NestedResource]
+        let verifiedNestedResources: [NestedVerification]
+        let unresolvedRequirementCapabilities: [Requirements.Capability]
+        /// Only digests actually read and compared to this envelope's seal.
+        /// Keys are relative to this component; omitted files are absent here.
+        let verifiedFileDigests: [String: [UInt8: Data]]
         let hasExactCatchAll: Bool
         var resourceDigestsVerified: Bool { true }
         var resourceEnvelopeVerified: Bool { unresolvedNestedResources.isEmpty }
         var strictResourcePolicyVerified: Bool { false }
         fileprivate init(version: Int, hashedFiles: Int, hashedBytes: Int64,
-            omittedFiles: Int, absentOptionalFiles: Int, nested: [NestedResource], hasExactCatchAll: Bool) {
+            omittedFiles: Int, absentOptionalFiles: Int, nested: [NestedResource], hasExactCatchAll: Bool,
+            verifiedNested: [NestedVerification] = [], unresolvedCapabilities: [Requirements.Capability] = [],
+            verifiedFileDigests: [String: [UInt8: Data]] = [:]) {
             self.version = version
             self.hashedFiles = hashedFiles
             self.hashedBytes = hashedBytes
             self.omittedFiles = omittedFiles
             self.absentOptionalFiles = absentOptionalFiles
             self.unresolvedNestedResources = nested
+            verifiedNestedResources = verifiedNested
+            unresolvedRequirementCapabilities = unresolvedCapabilities
+            self.verifiedFileDigests = verifiedFileDigests
             self.hasExactCatchAll = hasExactCatchAll
         }
     }
@@ -75,17 +110,24 @@ enum SelfRenewalResourceSealVerifier {
         /// re-read and the executable pipeline's existing read counters.
         let bytesRead: Int64
         let codeDirectoryBytesRead: Int
+        let nestedAttributeBytesRead: Int
+        /// Actual selected-CD-bound Info/DER entitlement/certificate context,
+        /// reused by profile composition without another inventory or decoder.
+        let codeAttributes: [String: Requirements.LoadedCode]
         var resourceEnvelopesVerified: Bool {
             !components.isEmpty && components.allSatisfy { $0.resources.resourceEnvelopeVerified }
         }
         var appleSigningAuthorityVerified: Bool { false }
         var replacementAuthorized: Bool { false }
         fileprivate init(executableMaterials: Reader.Materials, components: [ComponentVerification], bytesRead: Int64,
-            codeDirectoryBytesRead: Int) {
+            codeDirectoryBytesRead: Int, nestedAttributeBytesRead: Int,
+            codeAttributes: [String: Requirements.LoadedCode]) {
             self.executableMaterials = executableMaterials
             self.components = components
             self.bytesRead = bytesRead
             self.codeDirectoryBytesRead = codeDirectoryBytesRead
+            self.nestedAttributeBytesRead = nestedAttributeBytesRead
+            self.codeAttributes = codeAttributes
         }
     }
 
@@ -113,10 +155,11 @@ enum SelfRenewalResourceSealVerifier {
         let started = SourcePerfTrace.now
         var bytesRead: Int64 = 0
         var directoryBytes = 0
+        var attributeBytes = 0
         var components: [ComponentVerification] = []
         defer {
             SourcePerfTrace.record("renewal.material.resources",
-                "components=\(components.count) bytes=\(bytesRead) directoryBytes=\(directoryBytes) main=\(Thread.isMainThread)",
+                "components=\(components.count) bytes=\(bytesRead) directoryBytes=\(directoryBytes) attributeBytes=\(attributeBytes) main=\(Thread.isMainThread)",
                 since: started, thresholdMs: 0)
         }
         for component in materials.inventory.components {
@@ -196,8 +239,68 @@ enum SelfRenewalResourceSealVerifier {
             components.append(ComponentVerification(relativePath: component.relativePath,
                 envelopeSHA256: Data(SHA256.hash(data: envelope)), boundCodeDirectories: bound, resources: result))
         }
-        return Materials(executableMaterials: materials, components: components, bytesRead: bytesRead,
-            codeDirectoryBytesRead: directoryBytes)
+        var attributes: [String: Requirements.LoadedCode] = [:]
+        for code in materials.code {
+            try Task.checkCancellation()
+            let component = materials.inventory.components.first { $0.executable?.file == code.file }
+            if let loaded = try Requirements.load(root: root, code: code, component: component,
+                files: materials.inventory.files, maximumReadBytes: Requirements.Limits.attributeReadBytes - attributeBytes) {
+                attributes[code.file.relativePath] = loaded
+                attributeBytes += loaded.bytesRead
+            }
+        }
+        // Nested paths are strict descendants, so resolving deepest bundles
+        // first establishes recursive resource validity without rescanning.
+        var resolved: [String: ComponentVerification] = [:]
+        for component in components.sorted(by: { $0.relativePath.count > $1.relativePath.count }) {
+            var unresolved: [NestedResource] = []
+            var verified: [NestedVerification] = []
+            var capabilities: [Requirements.Capability] = []
+            let prefix = component.relativePath == "." ? "" : component.relativePath + "/"
+            for nested in component.resources.unresolvedNestedResources {
+                try Task.checkCancellation()
+                let path = prefix + nested.relativePath
+                let childComponent = materials.inventory.components.first { $0.relativePath == path }
+                let code = materials.code.first {
+                    $0.file.relativePath == path || $0.file == childComponent?.executable?.file
+                }
+                guard let code else { throw Failure.missingNestedCode(path) }
+                guard let context = attributes[code.file.relativePath] else { unresolved.append(nested); continue }
+                if let childComponent {
+                    guard let child = resolved[childComponent.relativePath] else { throw Failure.missingNestedCode(path) }
+                    if !child.resources.resourceEnvelopeVerified {
+                        unresolved.append(nested)
+                        capabilities += child.resources.unresolvedRequirementCapabilities
+                        continue
+                    }
+                }
+                var missing: [Requirements.Capability] = []
+                for slice in context.slices {
+                    switch try Requirements.evaluate(nested.requirement, attributes: slice.attributes) {
+                    case .matched: break
+                    case .notMatched: throw Failure.nestedRequirementFailed(path)
+                    case .unresolved(let values): missing += values
+                    }
+                }
+                if !missing.isEmpty { unresolved.append(nested); capabilities += missing; continue }
+                verified.append(NestedVerification(relativePath: nested.relativePath,
+                    executableRelativePath: code.file.relativePath, requirement: nested.requirement,
+                    verifiedSlices: context.slices.count,
+                    signerAuthenticatedSlices: context.slices.filter(\.selectedDirectorySignerAuthenticated).count,
+                    adHocSlices: context.slices.filter(\.adHoc).count,
+                    hintMatches: nested.cdHash.map { hint in context.slices.contains { $0.attributes.cdHash == hint } }))
+            }
+            let value = component.resources
+            let resources = EnvelopeVerification(version: value.version, hashedFiles: value.hashedFiles,
+                hashedBytes: value.hashedBytes, omittedFiles: value.omittedFiles, absentOptionalFiles: value.absentOptionalFiles,
+                nested: unresolved, hasExactCatchAll: value.hasExactCatchAll,
+                verifiedNested: verified, unresolvedCapabilities: capabilities, verifiedFileDigests: value.verifiedFileDigests)
+            resolved[component.relativePath] = ComponentVerification(relativePath: component.relativePath,
+                envelopeSHA256: component.envelopeSHA256, boundCodeDirectories: component.boundCodeDirectories, resources: resources)
+        }
+        return Materials(executableMaterials: materials, components: components.map { resolved[$0.relativePath]! },
+            bytesRead: bytesRead, codeDirectoryBytesRead: directoryBytes,
+            nestedAttributeBytesRead: attributeBytes, codeAttributes: attributes)
     }
 
     /// Bounded semantic seam; production hashes the real regular files through
@@ -264,6 +367,7 @@ enum SelfRenewalResourceSealVerifier {
         var hashed = 0
         var hashedBytes: Int64 = 0
         var omitted = 0
+        var verifiedFileDigests: [String: [UInt8: Data]] = [:]
         var seen = Set<String>()
         for file in files.sorted(by: { $0.relativePath < $1.relativePath }) {
             try Task.checkCancellation()
@@ -291,6 +395,7 @@ enum SelfRenewalResourceSealVerifier {
                 }
                 let actual = try hashFile(file, types)
                 guard types.allSatisfy({ actual[$0] == expected[$0] }) else { throw Failure.digestMismatch(path) }
+                verifiedFileDigests[path] = Dictionary(uniqueKeysWithValues: types.map { ($0, actual[$0]!) })
                 hashed += 1
                 hashedBytes += file.byteCount
             }
@@ -303,7 +408,8 @@ enum SelfRenewalResourceSealVerifier {
         }
         let catchAll = rules.contains { $0.pattern == (version == 2 ? "^.*" : "^Resources/") && $0.isUnconditionalInclude }
         return EnvelopeVerification(version: version, hashedFiles: hashed, hashedBytes: hashedBytes,
-            omittedFiles: omitted, absentOptionalFiles: optional, nested: nested, hasExactCatchAll: catchAll)
+            omittedFiles: omitted, absentOptionalFiles: optional, nested: nested, hasExactCatchAll: catchAll,
+            verifiedFileDigests: verifiedFileDigests)
     }
 
     static func hashFile(byteCount: Int64, hashTypes: [UInt8],

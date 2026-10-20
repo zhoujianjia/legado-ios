@@ -1,0 +1,569 @@
+{
+  "producer": "Independent Python hashlib/plistlib/wire construction and OpenSSL actual detached signatures; no Swift SDK",
+  "validationUnixTime": 1792463713,
+  "genericOwnedRootSHA1": "67869ac01a962022c71a17e602b8e1ea41f3adba",
+  "genericOwnedLeafSHA1": "0676c35fdda00663d1821c145c84a1819991127a",
+  "cases": {
+    "valid": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "1f53c06a0d4f418e86ff42dd90f4cfeea719bb4435ab0b8eae57d84d8dc6a0e0",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "6e163001e792d725ee423c156156062205ef2d8baa121c937aa059843a730b6b",
+        "_CodeSignature/CodeResources": "1c8720349ce6f0cf070885998e1394f83bd57cd62963776e1d61545e92dc8fd1",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    },
+    "cdHashRequirement": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "1f53c06a0d4f418e86ff42dd90f4cfeea719bb4435ab0b8eae57d84d8dc6a0e0",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "35bae8237770e130f5e9ff8767843e658587ff1959bdb4beb73918aff1b909c3",
+        "_CodeSignature/CodeResources": "a4506cab2a5c1bcff00e486209e9d8c715d743e0bb6d84a5f17327d5dc2c2dc7",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    },
+    "falseRequirement": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "1f53c06a0d4f418e86ff42dd90f4cfeea719bb4435ab0b8eae57d84d8dc6a0e0",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "87f0dbdff2fd9b2ae096aa5ecb1de3d0a18f294cda4011ec5a52dae6d49da175",
+        "_CodeSignature/CodeResources": "f24651648df0ade526637d07f0d44636eafd00b67a55c8edfcd07cad8ba5352b",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    },
+    "wrongHint": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "1f53c06a0d4f418e86ff42dd90f4cfeea719bb4435ab0b8eae57d84d8dc6a0e0",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "f1f79ea0ffb119500e3eefdb5a8d582b85d466264acefeeac1459a3020fd0713",
+        "_CodeSignature/CodeResources": "6f5f8f65995aff3e2f1436d71000a88a3418878446ff9210bf2c09b68df4f611",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    },
+    "wrongIdentity": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "e88941daebd8cf36fe8079adec8f6b3a8a5c9145ca8c17222f525dd1cdf7d997",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "1a43131daa118832b77cd02458fd76e8e06de78032e4b04378fa46b6a59162fc",
+        "_CodeSignature/CodeResources": "656717f73d35c282bcf320f7fd52914438fa054dab930a181333cdceacd380da",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    },
+    "legacyUnbound": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "8ed22dc285fb1395c9ccf9b081d8538f48b7e45b24dd5599768cd01220efcb40",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "827a643355bdcd8c6ae8d70bd88df49fc4a266abcdc23ef59c1c72f91787bf49",
+        "_CodeSignature/CodeResources": "ceeecbe99fed5dd05fc49460a7907957cfbdf65da981b912f7e7ac3f3ca86d3b",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    },
+    "fatMismatch": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "04186c99349ddcbb003e73e44128da9036509c0ba57b75c39d4cb66df04cbad2",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "6e163001e792d725ee423c156156062205ef2d8baa121c937aa059843a730b6b",
+        "_CodeSignature/CodeResources": "1c8720349ce6f0cf070885998e1394f83bd57cd62963776e1d61545e92dc8fd1",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    },
+    "systemPolicy": {
+      "files": 16,
+      "components": 4,
+      "universalNestedSlices": 2,
+      "filesSHA256": {
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Info.plist": "a402e602d974a3e5fe69328dc23f2b4d7edee284ca5ff1cb861a8a5002d4e73e",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/Grand": "fc0b1dd139c1be71f057cbf07001e00356c57a0fecf047dcfe30d8074065f7e1",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/_CodeSignature/CodeResources": "071ecfbf3c1c41c850fa19aeeb8343aa8d4f205fa8670a6f763cd0b2a010f59a",
+        "Frameworks/Child.framework/Frameworks/Grand.framework/grand.txt": "38c3ee47ad43020708e98c0786640ca533284e4d4a4897babec317b8b53527ad",
+        "PlugIns/Extension.appex/Info.plist": "cb52ae914db11132d8203f18d5bf9c002260310cbc534f32f8b23ea73aaa3830",
+        "PlugIns/Extension.appex/Extension": "6fc41a9c083ac2e7dbf64260349bd73dd9a65fd932981a59ce035f740ffc5362",
+        "PlugIns/Extension.appex/_CodeSignature/CodeResources": "b46bb3846d0a4ff31eaa9f170fdc3b4ab0db1e57d55c706450fe56e6beef7822",
+        "PlugIns/Extension.appex/extension.txt": "81cb60a0413a90f7735c6d9860b6988605b1d993121da4784b89db52204a0229",
+        "Frameworks/Child.framework/Info.plist": "7631d4877983b1c76b0e3041983c9680815360a7fdaff86c7fe659d4b2b02a6c",
+        "Frameworks/Child.framework/Child": "1f53c06a0d4f418e86ff42dd90f4cfeea719bb4435ab0b8eae57d84d8dc6a0e0",
+        "Frameworks/Child.framework/_CodeSignature/CodeResources": "6d77cc757e207550a0cf3be2de0f761249fd2f3c0ec3ef156be4871f3b49a3c5",
+        "Frameworks/Child.framework/child.txt": "27ca32e8ed5e9d27500073c5cd15543dc9b141b649735ed045c48d6901c09f19",
+        "Info.plist": "e241f6f82d0497a6d74a75900ecf2e153559b26b02a1f725b25f60bc42d2b8b0",
+        "Parent": "3d879e6e11eb000959d338cae86d20755ff536b93e2bb658e28ea3f6d3df3b7d",
+        "_CodeSignature/CodeResources": "46cc95f4249f76bff656db92ad1162592b3d434e35a8506686a027c562a28393",
+        "root.txt": "4f8b6874e3800029dec092ceaa55efaf810b750f6a9a71a811ec4817667bae22"
+      }
+    }
+  },
+  "actualOpenSSLDetachedCMSVerifications": [
+    {
+      "name": "valid-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "valid-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "valid-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba68dc8641754e6caa990578ff1d4598f28be38a21121c410e5651241223c5d6",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "valid-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "9b07f9cd16b571abf5067985711f291fcd972dbb791ee61a150ff1ea7a2cc66a",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "valid-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "eaab7550fae16df1c3c977451270a7912730218fbe5da03ca57e6c1fb603c6ca",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "cdHashRequirement-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "cdHashRequirement-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "cdHashRequirement-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba68dc8641754e6caa990578ff1d4598f28be38a21121c410e5651241223c5d6",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "cdHashRequirement-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "9b07f9cd16b571abf5067985711f291fcd972dbb791ee61a150ff1ea7a2cc66a",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "cdHashRequirement-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "6fefb0b36e85fbe83a25cd431a6375c72efbe3fb130886dc520c1b3aeae44734",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "falseRequirement-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "falseRequirement-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "falseRequirement-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba68dc8641754e6caa990578ff1d4598f28be38a21121c410e5651241223c5d6",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "falseRequirement-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "9b07f9cd16b571abf5067985711f291fcd972dbb791ee61a150ff1ea7a2cc66a",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "falseRequirement-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "435323498c4b7f705fac816edfd04288ce84b1f4240d01935c28422ec615180b",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "wrongHint-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "wrongHint-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "wrongHint-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba68dc8641754e6caa990578ff1d4598f28be38a21121c410e5651241223c5d6",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "wrongHint-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "9b07f9cd16b571abf5067985711f291fcd972dbb791ee61a150ff1ea7a2cc66a",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "wrongHint-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "c0216ecd9e8a633b9f5bd29deaa5faf4ad672d42bfdc4e2cee3c0a1831c960e4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "wrongIdentity-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "wrongIdentity-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "wrongIdentity-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "a3bd78a0d56d854ffbfcab8febde82a99fbc3894492208c50feb8892c1c95362",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "wrongIdentity-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba412502e32eec9c68176a0dbbb40b075e404fae9ee4393ce03b549024bfd0b4",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "wrongIdentity-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "5cd700f1611cff32cc73fc7a248024aac7e73e4a837a2dd8ddbeadf0d7581091",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "legacyUnbound-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "legacyUnbound-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "legacyUnbound-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "407cb1491babf94f9058bfef9d92121d9c04ba6073f11816ee29e1f37c4a684a",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "legacyUnbound-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "7a44bdc7c2004e36b1422dc2112dc8ad61917270629f1d7c02a5e01748c8552e",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "legacyUnbound-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "6e8cf1a41958d145382234ffc33569b52b8900e0ef411c661994284bd34d6fa3",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fatMismatch-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fatMismatch-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "fatMismatch-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba68dc8641754e6caa990578ff1d4598f28be38a21121c410e5651241223c5d6",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "fatMismatch-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba412502e32eec9c68176a0dbbb40b075e404fae9ee4393ce03b549024bfd0b4",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "fatMismatch-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "eaab7550fae16df1c3c977451270a7912730218fbe5da03ca57e6c1fb603c6ca",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "systemPolicy-Grand",
+      "openssl": "Verification successful",
+      "primarySHA256": "a19f41f56fe2de049a3d61be2ba7cd6a66880496e56267637111bbf48c70abe4",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "systemPolicy-Extension",
+      "openssl": "Verification successful",
+      "primarySHA256": "7e686158fcf60fb24fed3460bb2c00db538e3aecce0f3497157dc1eb45952fa3",
+      "codeDirectoryKinds": [
+        3
+      ]
+    },
+    {
+      "name": "systemPolicy-Child",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba68dc8641754e6caa990578ff1d4598f28be38a21121c410e5651241223c5d6",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "systemPolicy-Child-x86",
+      "openssl": "Verification successful",
+      "primarySHA256": "9b07f9cd16b571abf5067985711f291fcd972dbb791ee61a150ff1ea7a2cc66a",
+      "codeDirectoryKinds": [
+        1,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "systemPolicy-Parent",
+      "openssl": "Verification successful",
+      "primarySHA256": "ba709566cf837ef2a5e8808a022b2f51c2b80272fa9992f95b4555ad808fa8ae",
+      "codeDirectoryKinds": [
+        1,
+        2
+      ]
+    }
+  ],
+  "unverified": [
+    "Apple-specific/system-policy context",
+    "profile authorization",
+    "replacement/renewal",
+    "Swift SDK execution"
+  ],
+  "privateKeyShipped": false
+}
