@@ -350,6 +350,16 @@ public final class LegadoRuntime: @unchecked Sendable {
             timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects, onReportedLoginUIEvents)
     }
 
+    /// Checked persistence for non-OK dismissal. This operation never evaluates
+    /// loginJS or form callbacks and cannot infer authentication from its receipt.
+    public func persistLoginInfoOriginal(session: LegadoSourceSession, credentials: [String: String],
+        timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
+        onReportedEffects: (@Sendable ([String]) -> Void)? = nil
+    ) async throws -> LegadoOriginalFormLoginResult {
+        return try await executeOriginal(session, "persistLoginInfo", OriginalFormLoginRequest(credentials: credentials,
+            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+    }
+
     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
         _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String,
         _ onReportedEffects: (@Sendable ([String]) -> Void)? = nil,

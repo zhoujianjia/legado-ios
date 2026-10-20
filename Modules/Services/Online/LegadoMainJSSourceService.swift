@@ -1731,6 +1731,57 @@ extension LegadoMainJSSourceService {
 }
 
 extension LegadoMainJSSourceService {
+    /// Non-OK close persists the working Map only. Its checked owner ACK does
+    /// not authorize loginJS, inferred headers, or any authentication claim.
+    func originalPersistLoginInfo(source: BookSource, values: [String: String],
+        sourceResolver: @escaping @MainActor @Sendable (UUID) -> BookSource? = { BookSourceStore.shared.source(id: $0) }
+    ) async throws -> LegadoOriginalFormLoginReceipt {
+        var effects: [String] = []
+        var events: [LegadoOriginalLoginUIEvent] = []
+        do {
+            let signature = try originalSignature(source)
+            let deadline = min(try operationDeadline(), Date().addingTimeInterval(30))
+            try await acquire(source.bookSourceUrl, deadline: deadline)
+            defer { release(source.bookSourceUrl) }
+            // Re-resolve after the gate wait. This is admission validation,
+            // not an atomic lock over later mutations in the source library.
+            guard let current = await sourceResolver(source.id), current.id == source.id,
+                  LegadoPreviewIdentity.same(current.bookSourceUrl, source.bookSourceUrl),
+                  try originalSignature(current) == signature else {
+                throw failure("SOURCE_CHANGED", "Original login source was removed or changed before persistence")
+            }
+            try previewCheck(deadline)
+            try acceptOriginalRevision(source, signature: signature)
+            let result = try await SourcePerfTrace.spanAsync("legado.original.login.persist",
+                "main=\(Thread.isMainThread) values=\(values.count)") {
+                try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
+                    sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
+                    operation: .persistLoginInfo(values), deadline: deadline)
+            }
+            guard case .formLogin(let reply, let reported) = result else {
+                throw failure("INVALID_RESULT", "Original login persistence omitted its result")
+            }
+            effects = reported; events = reply.loginUIEvents ?? []
+            guard !reply.executed, events.isEmpty else {
+                throw failure("INVALID_RESULT", "Login persistence returned an execution result")
+            }
+            guard values.isEmpty ? reply.credentialsCleared && !reply.credentialsStored
+                : reply.credentialsStored && !reply.credentialsCleared else {
+                throw failure("STATE_IO", "The credential owner rejected the working Map")
+            }
+            try previewCheck(deadline)
+            return .init(credentialsStored: reply.credentialsStored, credentialsCleared: reply.credentialsCleared,
+                executed: false, completedEffects: effects, loginUIEvents: [])
+        } catch {
+            let typed = error as? LegadoRuntimeError
+            let code = typed?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO")
+            throw LegadoRuntimeError(code: code, message: "Original login persistence did not complete (\(code))",
+                completedEffects: Array(Set(effects + (typed?.completedEffects ?? []))).sorted(),
+                loginUIEvents: typed?.loginUIEvents ?? (events.isEmpty ? nil : events),
+                secondaryFailures: typed?.secondaryFailures)
+        }
+    }
+
     /// Same source actor/process/owner as the reader and confirmation operation.
     func originalLoginUI(source: BookSource, values: [String: String]?,
                          evaluationValues: [String: String]? = nil) async throws -> LegadoOriginalLoginUIForm {

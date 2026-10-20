@@ -29,6 +29,7 @@ class OriginalSourceLoginUITest {
             val reply=owned.call("[{name:'username',default:'must-not-replace-empty'},{name:'password',type:'password',default:123},{name:'choice',type:'select',chars:['a','b']},{name:'caption',type:'label',viewName:\"throw new Error('must-not-eval-label')\"},{name:'other',type:'unknown',viewName:\"throw new Error('must-not-eval-unknown')\"},{name:'nilSelect',type:'select'},{name:'nilToggle',type:'toggle'},{name:'emptySelect',type:'select',chars:[],default:'kept'}]")
             val result=reply["result"].asJsonObject
             assertEquals(8,result["rows"].asJsonArray.size());assertFalse(result["dynamic"].asBoolean)
+            assertTrue(result["workingMapChanged"].asBoolean)
             assertEquals("123",result["rows"].asJsonArray[1].asJsonObject["default"].asString)
             assertEquals("",result["values"].asJsonObject["username"].asString)
             assertEquals("synthetic-hidden",result["values"].asJsonObject["hidden"].asString)
@@ -48,6 +49,7 @@ class OriginalSourceLoginUITest {
             val ui="""@js:if(java!==source||book!==null||chapter!==null||String(result.get('hidden'))!=='synthetic-hidden')throw new Error('wrong original UI binding');result.put('temporary','not-persistent');var uiOnly='not-in-label-scope';[{name:'text',default:'display-default',viewName:"prefixValue+':'+String(result.get('text'))+':'+typeof uiOnly"},{name:'literal',type:'button',viewName:"'literal'"}];"""
             val rendered=owned.call(ui,prelude)["result"].asJsonObject
             assertTrue(rendered["dynamic"].asBoolean)
+            assertFalse(rendered["workingMapChanged"].asBoolean)
             assertEquals(listOf("prefix:display-default:undefined","literal"),rendered["labels"].asJsonArray.map{it.asString})
             assertEquals(setOf("hidden"),rendered["values"].asJsonObject.keySet())
             assertEquals(0,owned.secretWrites)

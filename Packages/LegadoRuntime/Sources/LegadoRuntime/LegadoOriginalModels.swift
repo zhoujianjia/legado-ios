@@ -238,6 +238,7 @@ public struct LegadoOriginalLoginUIResult: Codable, Sendable, Equatable {
     /// The original null-result branch appends "null" after the toggle value,
     /// independently of its usual right-aligned caption ordering.
     public let toggleLabelSuffixes: [Bool]?
+    public let workingMapChanged: Bool?
 }
 internal struct OriginalLoginUIRequest: Encodable, Sendable {
     let values: [String: String]?

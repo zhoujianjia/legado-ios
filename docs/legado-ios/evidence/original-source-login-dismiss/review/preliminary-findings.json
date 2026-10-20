@@ -1,0 +1,40 @@
+{
+  "status": "preliminary-v1-findings-not-final-acceptance",
+  "reviewedManifest": {
+    "path": ".build/original-source-login-dismiss-step/final-v1.json",
+    "bytes": 18905,
+    "sha256": "c30916f44e387211ebcddd297a9ae009651a732643ba203f93760e4b93d4df9c"
+  },
+  "definiteFindings": [
+    {
+      "id": "P2-pre-task-sensitive-error",
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt:134",
+      "fact": "persistLoginInfo is missing from the operation-based error-redaction fallback. timeoutMs.asLong can throw before RuntimeTask creation, so the task sensitive flag cannot protect the error message.",
+      "independentActualProbe": "pre-task-redaction-probe.json",
+      "observed": "PRE_TASK_REDACTION code=INVALID_ARGUMENT syntheticMarkerLeaked=true",
+      "jar": {
+        "bytes": 10813151,
+        "sha256": "d196a002881cfe92c8a0383aecd5fc907a9fe977c0064f799448af2ad7459a56"
+      },
+      "boundary": "Fixed synthetic marker only, no user credentials, no Host callback, HTTP, account or device. Author has confirmed the cause and is preparing a localized fix and existing-method regression. No final repaired result yet bound."
+    },
+    {
+      "id": "P2-visible-error-no-discard-exit",
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift:requestFormClose",
+      "fact": "When a dirty form source is removed/changed, the default resolver persistently refuses save. Close leaves allowsDismiss false and dirty true; the visible failure alert only acknowledges, while native swipe is refused and retries the same failing Close. There is no explicit discard-and-close path.",
+      "scope": "A normal visible SOURCE_CHANGED/save-error path. Forced OS destruction logging does not provide a user-visible exit.",
+      "status": "Reported to root and author; root decides the bounded native alert policy. No extra owner, source mutation registry or credential cache requested."
+    }
+  ],
+  "conditionalRiskNotDefiniteFinding": {
+    "adapter": "The new coordinator forwards four dismissal delegate callbacks. Other optional adaptive-presentation selectors are not forwarded.",
+    "repositoryEvidence": "The three BookSourceLoginSheet parent sheet routes declare no custom adaptive/compact delegate. The reader FootnotePopover custom adaptation belongs to another host.",
+    "boundary": "SwiftUI's actual previous delegate selector implementation and iPad presentation behavior are opaque here. No actual iPad regression is asserted; SDK/device validation remains required."
+  },
+  "flags": {
+    "sdkAccepted": false,
+    "jniAccepted": false,
+    "deviceAccepted": false,
+    "dismissSliceAccepted": false
+  }
+}

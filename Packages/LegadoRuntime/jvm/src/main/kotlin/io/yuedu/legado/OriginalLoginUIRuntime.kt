@@ -46,8 +46,10 @@ internal object OriginalLoginUIRuntime {
                 requireRepresentableLoginUIKeys(values.keys + rows.map { it.name } + evaluationValues.orEmpty().keys)
                 // Original selector/toggle construction updates the dialog working
                 // map, not Keychain. Text defaults remain display-only edits.
+                var workingMapChanged = false
                 for (row in rows) if (row.type == "select" || row.type == "toggle") {
                     if (values[row.name].isNullOrEmpty()) {
+                        workingMapChanged = true
                         val chars = row.chars?.filterNotNull() ?: if (row.type == "select") listOf("chars", "is null") else listOf("chars is null")
                         values[row.name] = row.default ?: chars.firstOrNull()
                             ?: throw RuntimeFailure("INVALID_RESULT", "Login UI selection has no value")
@@ -90,7 +92,7 @@ internal object OriginalLoginUIRuntime {
                 }
                 jsonObject("rows" to GSON.toJsonTree(rows), "labels" to labels, "values" to values,
                     "dynamic" to (code != null), "toggleActionLabels" to toggleActionLabels,
-                    "toggleLabelSuffixes" to toggleLabelSuffixes)
+                    "toggleLabelSuffixes" to toggleLabelSuffixes, "workingMapChanged" to workingMapChanged)
             }
         }
     }

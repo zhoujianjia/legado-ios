@@ -56,6 +56,30 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
 }
 
 @MainActor final class LegadoOriginalAPITests: XCTestCase {
+    func testDismissPersistenceUsesPureOperationAndKeepsRejectedAndCommittedFactsDistinct() async throws {
+        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
+        transport.respondNext(#"{"ok":true,"result":{"credentialsStored":true,"credentialsCleared":false,"executed":false},"completedEffects":["sourceLoginInfoMayCommit","sourceLoginInfoCommitted"]}"#)
+        let value = try await runtime.persistLoginInfoOriginal(session: source,
+            credentials: ["hidden": "synthetic-hidden", "password": ""], taskID: "pure-dismiss")
+        XCTAssertTrue(value.credentialsStored); XCTAssertFalse(value.credentialsCleared); XCTAssertFalse(value.executed)
+        let call = try XCTUnwrap(transport.calls.last)
+        XCTAssertEqual(call.operation, "persistLoginInfo"); XCTAssertEqual(call.task, "pure-dismiss")
+        let request = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(call.request.utf8)) as? [String: Any])
+        XCTAssertEqual(request["credentials"] as? [String: String], ["hidden": "synthetic-hidden", "password": ""])
+        XCTAssertNil(request["action"]); XCTAssertNil(request["loginJS"])
+        transport.respondNext(#"{"ok":true,"result":{"credentialsStored":false,"credentialsCleared":false,"executed":false}}"#)
+        let rejected = try await runtime.persistLoginInfoOriginal(session: source, credentials: ["hidden": "new"])
+        XCTAssertFalse(rejected.credentialsStored); XCTAssertFalse(rejected.credentialsCleared); XCTAssertFalse(rejected.executed)
+        transport.respondNext(#"{"ok":false,"error":{"code":"CANCELLED","message":"cancelled after accepted mutation","completedEffects":["sourceLoginInfoMayCommit","sourceLoginInfoCommitted"]}}"#)
+        do {
+            _ = try await runtime.persistLoginInfoOriginal(session: source, credentials: [:])
+            XCTFail("Cancellation must not masquerade as a successful close")
+        } catch let failure as LegadoRuntimeError {
+            XCTAssertEqual(failure.code, "CANCELLED")
+            XCTAssertEqual(failure.completedEffects, ["sourceLoginInfoMayCommit", "sourceLoginInfoCommitted"])
+        }
+    }
+
     private func runtime(_ transport: OriginalAPITransport) -> LegadoRuntime {
         LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []), host: UnsupportedLegadoHost(), transport: transport)
     }

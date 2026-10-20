@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "status": "bounded-canonical-source-audit-one-confirmed-missing-dismiss-path",
+  "head": "9895ec6bc2ea5402ad71828258a051b2869b6a6b",
+  "scope": "Traditional text form only. Current canonical implementation and locked SourceLoginDialog/ViewModel; mutable callback work-in-progress files were not read.",
+  "sources": [
+    {
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "bytes": 55242,
+      "sha256": "56c72536d436d958ddaaf0b0f5f2a90f11107e9ad6c1f28401d486b72ba6c099",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Modules/SharedUI/Components/LoginFormGrid.swift",
+      "bytes": 21308,
+      "sha256": "abda549092fd5451e31cd6439ce1f805911ee94f4e99d68e0b59211fda7c2f82",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 37795,
+      "sha256": "e5b8c376021901d6560253461157e5d31be9600a9c713b1988d7feabec6ecead",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "bytes": 1667,
+      "sha256": "e2002619ee703492d68aa694b5d45c790a8147f4a362a1fa351237396eb1bdd1",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 117094,
+      "sha256": "60a3a3de12620f0ffc1f9a273a8dc5d203e9474fb7bb4aeeb8e161fefaa06ec9",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "bytes": 9157,
+      "sha256": "b983407d4bc0820ed31f5e7b68a13abacb96933f2b10c88dd99065611b8821eb",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt",
+      "bytes": 4806,
+      "sha256": "9a779e5ba067e44e2b5e64dbb959f700daf6d27404ad40c316a2758d5cbb8d70",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "bytes": 19359,
+      "sha256": "a526b1266e8b3962b85d2b62fc789cb4560829f03820e17fc18a10a7f0e49d13",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    },
+    {
+      "path": "Modules/Features/BookSource/BookSourceQuickActions.swift",
+      "bytes": 4868,
+      "sha256": "0cf2bc3223f89d70fdc2933ff5bcf53cca849012bee109033447228d47c87174",
+      "matchesGit": "9895ec6bc2ea5402ad71828258a051b2869b6a6b"
+    }
+  ],
+  "lockedReference": {
+    "manifest": {
+      "path": "Packages/LegadoRuntime/vendor/android-reference/manifest.json",
+      "bytes": 601979,
+      "sha256": "3bbb91ab12a464893962ddef9abf7358985504a21bc95893498e3048be2cccc8"
+    },
+    "archive": {
+      "path": "Packages/LegadoRuntime/vendor/android-reference/source-snapshot.zip",
+      "bytes": 32028114,
+      "sha256": "f3af069072b496fec21b3827135be344133705e7bff4ffb5bc0afcaa495759f6"
+    },
+    "members": [
+      {
+        "member": "app/src/main/java/io/legado/app/ui/login/SourceLoginDialog.kt",
+        "bytes": 37764,
+        "sha256": "6f15d89eed39d97668edb9d7b735fc1308c88dea3b70195dbb076c2b9213d1c8",
+        "matchesLockedManifest": true
+      },
+      {
+        "member": "app/src/main/java/io/legado/app/ui/login/SourceLoginViewModel.kt",
+        "bytes": 3348,
+        "sha256": "eab10040c2ea448ca4d2587a3a97378807a073f7f8c6afecebc229bd3a7ac55d",
+        "matchesLockedManifest": true
+      }
+    ]
+  },
+  "confirmedProductionGap": {
+    "severity": "P2",
+    "summary": "Traditional original form has no dirty working-map persistence on non-OK dismissal.",
+    "canonicalLocations": [
+      "BookSourceFormLoginView.swift:60 onValueChange only persists legacy select; original select/toggle changes stay in values",
+      "BookSourceFormLoginView.swift:98 close invokes onDismiss directly",
+      "BookSourceFormLoginView.swift:171 onDisappear invalidates generations and cancels three tasks without saving",
+      "OriginalLoginUIRuntime.kt:43-50 fills empty select/toggle working values without a persistent write"
+    ],
+    "lockedLocations": [
+      "SourceLoginDialog.kt:463/478/581/616/637 marks original select/toggle defaults and real changes dirty",
+      "SourceLoginDialog.kt:868-875 non-V2 dismissal writes/removes working loginInfo iff !oKToClose && hasChange"
+    ],
+    "concreteExample": "A valid original loginUi has a select with no saved value. The locked builder inserts its default and sets hasChange; close persists that map. iOS renders the same default into transient values, then close/onDisappear cancels tasks and writes nothing. The same loss applies to a user select/toggle edit without successful OK.",
+    "notClaimed": "This does not imply text-only edits should autosave, or that unsupported callback delivery currently works."
+  },
+  "lockedStateSemantics": [
+    {
+      "event": "Initial stored map",
+      "workingMap": "SourceLoginViewModel.kt:73 reads getStoredLoginInfoMap, separate from widget text.",
+      "dirty": "false initially"
+    },
+    {
+      "event": "Text/password edit only",
+      "workingMap": "The original widget text changes; viewModel.loginInfo is not updated. getLoginData overlays visible edits only for action/evaluation/OK.",
+      "dirty": "does not set hasChange by itself"
+    },
+    {
+      "event": "Select/toggle missing-or-empty value on row construction",
+      "workingMap": "Builder places declared default/fallback in workingMap.",
+      "dirty": "true even when a chosen empty default produces equal bytes"
+    },
+    {
+      "event": "Select/toggle real selection/cycle",
+      "workingMap": "Updates matching workingMap entry before optional row action.",
+      "dirty": "true"
+    },
+    {
+      "event": "upLoginData(data)",
+      "workingMap": "Main-thread accepted callback mutates workingMap and selected widgets; null resets to current row defaults/fallbacks and drops hidden keys.",
+      "dirty": "true even for no-diff/reset calls; callback pending slice is not read or accepted here"
+    },
+    {
+      "event": "reLoginView(false)",
+      "workingMap": "Dynamic loginUi marks dirty before starting evaluation; on failure old rows remain. Static UI rebuild only derives dirty through select/toggle construction. Evaluation result receives getLoginData, but that edited script copy is not automatically the persistent workingMap.",
+      "dirty": "dynamic true even if render fails; static render alone is not universally dirty"
+    },
+    {
+      "event": "Accepted valid toolbar OK",
+      "workingMap": "loginData=getLoginData; empty removes info, nonempty put must accept before loginJS.",
+      "dirty": "oKToClose becomes true before login(source) launches asynchronous IO and stays true on rejected write/script failure/cancellation"
+    },
+    {
+      "event": "Successful OK",
+      "workingMap": "Checked credential put/remove already happened. Nonempty loginJS success triggers dismissal; current iOS uses its completion alert then dismissal.",
+      "dirty": "fallback dismiss save must stay suppressed while alert is visible and during all later close paths"
+    },
+    {
+      "event": "Failed OK then dismiss",
+      "workingMap": "Existing write may already have committed before JS throws; source-authored credential effects may also exist.",
+      "dirty": "oKToClose remains true; never overwrite from a stale transient working map on dismissal"
+    }
+  ],
+  "minimalActualConnectionConstraints": [
+    {
+      "location": "Same BookSourceFormLoginView @State plus current grid callbacks",
+      "requirement": "Keep the workingMap distinct from the displayed text/password edit map. Do not implement dismissal by passing currentFormValues/originalFormSubmissionValues/current values to a writer: that would persist text edits the locked dismiss path intentionally excludes, and currentFormValues also drops hidden keys."
+    },
+    {
+      "location": "Existing typed loginUi render DTO and mapper",
+      "requirement": "Carry enough actual metadata to distinguish initial/default working-map changes and a dynamic re-render from an ordinary text field edit. LegadoOriginalLoginUIResult already exposes dynamic, but LegadoOriginalLoginUIForm currently drops it. A byte-difference heuristic alone cannot detect the locked empty-default dirty branch. Do not infer persistence authority from a receipt."
+    },
+    {
+      "location": "Accepted doLogin/submitForm entry",
+      "requirement": "After the current valid-form/not-loading guards accept original OK, set the close-suppression flag before any await/Task launch/credential write. Failure or cancellation must not reset that sticky fact for the same dialog lifetime. A failed initial render must not set the flag or clear credentials."
+    },
+    {
+      "location": "Actual close button, successful OK close and real sheet dismissal path",
+      "requirement": "One lifetime/generation owns close work. Repeated onDisappear must neither issue duplicate writes nor reset/ACK a newer dirty map. Drain or invalidate current action/render/submission according to their existing effects semantics before freezing the close snapshot. Do not start an unowned asynchronous save and immediately lose all pending state as the view disappears; if UIKit dismissal has already completed a later write failure cannot honestly be presented as saved."
+    },
+    {
+      "location": "Same LoginManager checked owner via existing source/transport validation",
+      "requirement": "Use off-main checked credential owner mutation with its actual Bool/error, same revision notification and sourceURL; empty workingMap must remove info rather than encode {} or return early. Existing void storeLoginInfo logs a rejected save and cannot report success to a close flow; legacy persistCurrentFormValues drops empty/hidden keys and is unsuitable. Do not call formLogin or loginAction merely to save on dismiss because those evaluate source loginJS."
+    },
+    {
+      "location": "Source validity and persistence failure handling",
+      "requirement": "Revalidate actual source identity/revision/removal at the existing source-authority boundary before issuing a write, rather than trusting the View captured source value. A rejected/throwing write must not clear dirty state or report saved. A cancellation after a checked owner commit must retain its actual effect and must not be retried as though no write occurred."
+    }
+  ],
+  "implementationBoundary": "These are source-backed constraints for a later minimal production connection in the same View/LoginManager/source owner. No alternate store, VM, JSC route, broad plan or helper-only patch is proposed. The mutable callback transport and its eventual frozen definitions remain a separate pending independent review.",
+  "findingsNotEstablished": [
+    "No new SDK compilation error is inferred from this audit.",
+    "Whether a particular UIKit interactive dismissal/cover path emits onDisappear once or repeatedly is device/runtime behavior and is not claimed tested.",
+    "Original loginUi v2/deltaUp true and browser/WebJS are outside this slice."
+  ],
+  "execution": {
+    "SwiftCompiler": 0,
+    "SwiftGrammar": 0,
+    "SDK": 0,
+    "JNI": 0,
+    "suites": 0,
+    "cloudQueries": 0
+  },
+  "operations": {
+    "canonicalModified": false,
+    "gitMutated": false,
+    "cloudSubmitted": false,
+    "tagCreated": false,
+    "mutableCallbackStageRead": false,
+    "privateDataRead": false
+  },
+  "flags": {
+    "sdkAccepted": false,
+    "jniAccepted": false,
+    "deviceAccepted": false,
+    "completeOriginalLoginUIAccepted": false
+  }
+}

@@ -77,7 +77,7 @@ object LegadoRuntime {
             val timeoutMs = input["timeoutMs"]?.asLong ?: 30_000L
             require(timeoutMs in 1..300_000) { "timeoutMs must be between 1 and 300000" }
             task = RuntimeTask(taskId, session, Job(), System.currentTimeMillis() + timeoutMs)
-            task.sensitiveSourceOperation = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction")
+            task.sensitiveSourceOperation = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction", "persistLoginInfo")
             task.loginUIEventsEnabled = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginAction")
             synchronized(session) {
                 if (session.closed.get()) throw RuntimeFailure("UNKNOWN_SESSION", "Session is closed")
@@ -131,7 +131,7 @@ object LegadoRuntime {
             }
             val completedEffects = (generateSequence(error as Throwable?) { it.cause }.take(32)
                 .filterIsInstance<RulePersistenceException>().mapNotNull { it.completedEffect }.toList() + hostFailure?.completedEffects.orEmpty() + task?.hostEffectsSnapshot().orEmpty()).distinct()
-            val message = if (operation in setOf("formLogin", "loginUi", "loginAction") || task?.sensitiveSourceOperation == true) "Original form login did not complete ($code)"
+            val message = if (operation in setOf("formLogin", "loginUi", "loginAction", "persistLoginInfo") || task?.sensitiveSourceOperation == true) "Original form login did not complete ($code)"
                 else if (stateFailure?.completedEffect != null) stateFailure.message else hostFailure?.message ?: error.message ?: error.javaClass.simpleName
             val detail = jsonObject("code" to code, "message" to message)
             if (completedEffects.isNotEmpty()) detail.add("completedEffects", gson.toJsonTree(completedEffects))

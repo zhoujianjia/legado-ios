@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "status": "root-authored-visible-failed-close-explicit-discard-candidate",
+  "file": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+  "baseline": {
+    "bytes": 78429,
+    "sha256": "71b69f7ff1605f6ab5d7898b1e5abed4f54076e15e161c4e71a46723fd5aa5bd"
+  },
+  "candidate": {
+    "bytes": 79451,
+    "sha256": "f98450507b6ea88e0d0a35aab4e75f62c306cdb020d04ceb0ed21683e9e4f1fc"
+  },
+  "diff": {
+    "bytes": 3898,
+    "sha256": "ddd1f46ae28c14548c2be1a4fa869c17f74cc55484edc660e14e61c3a6a62e15"
+  },
+  "grammar": [
+    {
+      "set": "rawbaseline",
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "bytes": 78429,
+      "sha256": "71b69f7ff1605f6ab5d7898b1e5abed4f54076e15e161c4e71a46723fd5aa5bd",
+      "grammarErrors": false
+    },
+    {
+      "set": "work",
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "bytes": 79451,
+      "sha256": "f98450507b6ea88e0d0a35aab4e75f62c306cdb020d04ceb0ed21683e9e4f1fc",
+      "grammarErrors": false
+    }
+  ],
+  "newLocalizedUsage": "不儲存退出",
+  "newLocalizationKeys": 0,
+  "existingTranslations": {
+    "zh-Hant": "\"不儲存退出\" = \"不儲存退出\";",
+    "zh-Hans": "\"不儲存退出\" = \"不保存并退出\";",
+    "en": "\"不儲存退出\" = \"Exit Without Saving\";",
+    "ja": "\"不儲存退出\" = \"保存せずに終了\";",
+    "ko": "\"不儲存退出\" = \"저장하지 않고 종료\";"
+  },
+  "behavior": [
+    "Only the alert for a failed current visible close offers Exit Without Saving; ordinary OK retains the form and dirty workingMap.",
+    "The explicit discard carries the failed exit generation and requires that exact operation to have returned/drained; it rejects system disappearance and stale/active exit tasks.",
+    "The same owned close path cancels and drains operations, skips the credential mutation for explicit abandonment, then allows the existing dismissal. It does not acknowledge a save, clear dirty state, erase old Keychain data or automatically write on the following disappearance."
+  ],
+  "actualSwiftSDKExecuted": false,
+  "actualUIInteractionExecuted": false,
+  "fullRubyLocalizationCheckRunLocally": false
+}

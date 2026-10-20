@@ -6,6 +6,70 @@ import XCTest
 /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
 /// are unique synthetic .invalid sources; no existing account is enumerated.
 final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
+    func testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a; source.enabledCookieJar = false
+            source.loginUrl = "function login( { malformed source.putLoginHeader('must-not-run')"
+            let admitted = source
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let saved = try await service.originalPersistLoginInfo(source: admitted,
+                values: ["hidden": "synthetic-hidden", "password": ""], sourceResolver: { _ in admitted })
+            XCTAssertTrue(saved.credentialsStored); XCTAssertFalse(saved.executed)
+            let stored = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(stored, ["hidden": "synthetic-hidden", "password": ""])
+            let removed = try await service.originalPersistLoginInfo(source: admitted, values: [:],
+                sourceResolver: { _ in admitted })
+            XCTAssertTrue(removed.credentialsCleared); XCTAssertFalse(removed.executed)
+            let header = await Task.detached { fixture.login.getLoginHeader(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(header, "kept-header")
+            do {
+                _ = try await service.originalPersistLoginInfo(source: admitted, values: ["must": "reject"],
+                    sourceResolver: { _ in nil })
+                XCTFail("Removed sources must reject before mutation admission")
+            } catch { XCTAssertEqual((error as? LegadoRuntimeError)?.code, "SOURCE_CHANGED") }
+            var changed = admitted; changed.loginUrl = "changed definition"
+            let changedDefinition = changed
+            do {
+                _ = try await service.originalPersistLoginInfo(source: admitted, values: ["must": "reject"],
+                    sourceResolver: { _ in changedDefinition })
+                XCTFail("Changed definitions must reject before mutation admission")
+            } catch { XCTAssertEqual((error as? LegadoRuntimeError)?.code, "SOURCE_CHANGED") }
+            let remaining = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertNil(remaining)
+
+            let accepted = expectation(description: "Actual pure persistence Keychain write accepted")
+            let held = HeldAcceptedHost(base: fixture.host, accepted: { accepted.fulfill() })
+            let runtime = LegadoRuntime(configuration: try XCTUnwrap(LegadoRuntime.Configuration.bundled()), host: held)
+            let owner = try await fixture.host.bind(sourceURL: fixture.a, sourceRevision: "native-persist-v1")
+            let session = try await runtime.createSession(sourceJSON: fixture.source(fixture.a, loginUrl: admitted.loginUrl),
+                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional))
+            let taskID = UUID().uuidString
+            let pending = Task { try await runtime.persistLoginInfoOriginal(session: session,
+                credentials: ["password": "accepted-synthetic"], taskID: taskID) }
+            await fulfillment(of: [accepted], timeout: 15)
+            do {
+                try await runtime.cancel(taskID: taskID)
+                do { _ = try await pending.value; XCTFail("Actual cancellation must retain its checked commit fact") }
+                catch let failure as LegadoRuntimeError {
+                    XCTAssertEqual(failure.code, "CANCELLED")
+                    XCTAssertTrue(failure.completedEffects?.contains("sourceLoginInfoCommitted") == true)
+                }
+                let actual = await Task.detached { fixture.login.getLoginInfo(sourceUrl: fixture.a) }.value
+                XCTAssertEqual(actual, ["password": "accepted-synthetic"])
+            } catch { problem = error }
+            await held.release(); _ = await pending.result
+            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
+            await fixture.host.revoke(owner: owner)
+        } catch { problem = error }
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
     func testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease() async throws {
         executionTimeAllowance = 180
         try await requireNativeRuntime()

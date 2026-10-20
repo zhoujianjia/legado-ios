@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "status": "independent-source-and-local-evidence-review-approved-no-remaining-definite-P1-P2",
+  "reviewedManifest": {
+    "path": ".build/original-source-login-dismiss-step/final-v2.json",
+    "bytes": 20828,
+    "sha256": "aadff0c1514458f6be514dd33e729e084ef1c734b1f4c72fced9889198d851f4"
+  },
+  "currentHeadAtReview": "86b6b9c9871e1dbef695545c8ddec48e50cdc7fd",
+  "sourceBinding": {
+    "changedFiles": 16,
+    "unchangedInheritedInputs": 6,
+    "allCandidateAndRawDiffHashesVerified": true,
+    "rawBaselinesMatchGit": "2194a17b48a176f559254a8d35d3325742a60111",
+    "allCurrentCanonicalBaselinesStillMatchAtReview": true,
+    "verifiedFacts": {
+      "path": ".build/original-source-login-dismiss-independent-review/final-v2-verified-facts.json",
+      "bytes": 17118,
+      "sha256": "c1fa6b73cfa46c1cf5859e4f7f84967df8cf357d6f28147134eba6180f4f62de"
+    }
+  },
+  "closedFindings": [
+    {
+      "id": "P2-pre-task-sensitive-error",
+      "before": "Independent javac consumer against frozen v1 ordinary production JAR observed INVALID_ARGUMENT with syntheticMarkerLeaked=true when timeoutMs.asLong throws before RuntimeTask creation.",
+      "repair": "persistLoginInfo is now in both the task sensitive flag and operation-based catch fallback. A malformed request remains INVALID_ARGUMENT without echoing the input value. Existing IO JVM definition adds the same category of regression; no new definition is invented.",
+      "independentAfter": "The exact previously compiled PreTaskRedactionProbe and fixed synthetic marker were run against final-v2 JAR e3b784…10813160B; actual output is INVALID_ARGUMENT syntheticMarkerLeaked=false. No Host callback is configured, no HTTP/account/device or user credential is used.",
+      "actualProbeScope": "One independent bounded negative request, not a rerun of an unrelated suite or Swift/JNI acceptance."
+    },
+    {
+      "id": "P2-visible-error-no-discard-exit",
+      "before": "A dirty removed/changed source causes repeated checked save refusal; all visible Close/swipe paths retried save and the failure alert had no abandonment exit.",
+      "repair": "The exact root-authored79451B/f984505…View is included in final-v2. Only a failed visible close alert carries its exit UUID and offers the existing localized Exit Without Saving action. The action validates current generation, no running exit task, not in progress and not system-destroyed; then enters the same cancellation/drain path with requiresSave=false.",
+      "noFalseACK": "Explicit abandonment never calls acknowledge or clears dirty state, writes/deletes credentials or claims persistence. It sets allowsDismiss only after current work drains, so ensuing onDisappear cannot save again. Ordinary OK keeps the form and pending state.",
+      "raceAssessment": "A second click is rejected by inProgress/task; an old failure token is rejected by exit generation; a late system disappearance sets the system flag and prevents duplicate onDismiss. This is source reasoning, not actual gesture/UI execution."
+    }
+  ],
+  "findingSummary": "Both independently identified P2 issues are closed at the reviewed final-v2 bytes and bounded evidence. No other definite P1/P2 was established; conditional runtime risks are retained below.",
+  "productionAssessment": [
+    "Pure persistLoginInfo is a distinct traditional operation with bounded string Map and timeout. Its branch does not call getLoginJs, evaluate a prelude/login/action, infer a header or accept UI events. Empty Map removes only login-info; rejected put is a non-ACK DTO and rejected removal/IO/cancel remains error.",
+    "It uses the existing same-source gate/executor/process and checked source.login-info credential owner. After waiting for the gate, the current source resolver checks UUID/URL/full definition signature. All old grant, host deadline, source ownership and keychain revision notification paths remain the actual owners.",
+    "MayCommit and Committed are retained independently on host error/cancellation, session close failure and post-receipt cancellation. The App copies receipt effects before its cancellation check and logs only codes/counts. No UI transient map is written merely because a callback is transported.",
+    "The existing View keeps working Map separate from text controls. Semantic missing/empty select/toggle construction carries workingMapChanged; callbacks/select/toggle/dynamic re-render mark dirty while text edits alone do not. Valid OK marks sticky oKToClose before async work and does not reset on failure/cancel.",
+    "Actual Close snapshots only working Map, invalidates/cancels prior actions/form/render, awaits each owned task before checked persistence, and permits dismissal only on exact ACK or explicit abandonment. Repeated disappearance shares one exit task; own log/browser child covers do not trigger form exit. Forced parent disappearance keeps the frozen owned task with existing BackgroundTaskHold until terminal, never invents recoverable credential storage.",
+    "The UIKit adapter restores the previous native delegate on dismantle and forwards the four dismissal callbacks; the broader optional-adaptation question remains conditional and is not mislabelled a proven iPad regression."
+  ],
+  "exhaustiveOperationCoverage": {
+    "newCase": "LegadoOriginalPreviewOperation.persistLoginInfo",
+    "wholeRepositoryTypeReferenceFiles": [
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 121359,
+        "sha256": "392507558cf77400d3659cb227938193ad7ace13978478b34371532cabfd877e",
+        "typeOccurrences": 2
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "bytes": 28600,
+        "sha256": "70049c21aa796d04ab12c384b91baae47e920d78c1d6b3f6ea880c9493a80e86",
+        "typeOccurrences": 3
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+        "bytes": 6924,
+        "sha256": "0b9a24c79cf1ae7b719c8e82fb0a95f5a47f3d060cf8ce8d327280f832de7c40",
+        "typeOccurrences": 1
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+        "bytes": 12955,
+        "sha256": "4a644c54f0fdfcadcc49df4d1b7f3558f2208f06343589a806d265dc736cf796",
+        "typeOccurrences": 1
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+        "bytes": 43974,
+        "sha256": "3d262d94ce86103370dd22dd7495bbb820d9ec36e5e6f9532424c804e2c7504e",
+        "typeOccurrences": 1
+      }
+    ],
+    "assessment": "Native executor handles persist explicitly and login cleanup classifies it; existing exhaustive entity fixture includes the new case; exploration fixture has rejecting default; reload fixture uses guarded if-case; service forwards the typed value and does not switch exhaustively. Whole-repository type-reference search found no other typed consumer. This is source coverage, not Swift compilation.",
+    "compilerExecuted": false
+  },
+  "actualEvidence": {
+    "authorJVM": {
+      "tests": 8,
+      "suites": [
+        {
+          "class": "io.yuedu.legado.OriginalSourceLoginUITest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "methods": [
+            "renderFailuresAreTypedAndSensitiveWhileLabelFailureUsesOriginalNullBranch",
+            "actualRenderHttpUsesExistingCookieHeaderOwnerAndCancellationPreventsLateWrites",
+            "staticOriginalRowsReadOnlyStoredMapAndSkipUnrenderedTypesWithoutDerivingDefaults",
+            "dynamicCompletionAndPerLabelPreludeUseRealJavaMapAndOnlyWorkingEdits"
+          ],
+          "xml": {
+            "path": "actual-jvm-xml/TEST-io.yuedu.legado.OriginalSourceLoginUITest.xml",
+            "bytes": 997,
+            "sha256": "8607a1d29113c00ebb1d21b48649bba6471948602fae812d0cf751c40d6a80da"
+          }
+        },
+        {
+          "class": "io.yuedu.legado.OriginalSourcePersistLoginInfoTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "methods": [
+            "workingMapPersistsHiddenAndEmptyValuesWithoutEvaluatingAnyLoginScript",
+            "emptyMapRemovesOnlyLoginInfoAndKnownRejectionsNeverClaimAcknowledgement",
+            "credentialIOErrorKeepsMayCommitAndSanitizesOwnerDiagnostics",
+            "cancellationBeforeAndAfterCheckedHostCommitRetainsDistinctRealEffects"
+          ],
+          "xml": {
+            "path": "actual-jvm-xml/TEST-io.yuedu.legado.OriginalSourcePersistLoginInfoTest.xml",
+            "bytes": 1011,
+            "sha256": "e427711507ac44c99d58fb1019891b8810931eb0d92bb8c15ea2b56970ea55ea"
+          }
+        }
+      ],
+      "compilationInputCount": 124
+    },
+    "ordinaryJar": {
+      "bytes": 10813160,
+      "sha256": "e3b784ef965fea7e12e9a03a391e6ae29c630bec011d9775bfcbb8f45e867e72",
+      "crc": "passed",
+      "exactProductionClasses": 335,
+      "classMajorMaximum": 65,
+      "ordinaryJavaSessions": 5,
+      "ordinaryJavaSources": 2,
+      "checkedMutations": 3,
+      "credentialReads": 0,
+      "genericOrHTTPCalls": 0,
+      "evaluatedLoginJS": 0,
+      "packagingTests": 6,
+      "validationOnlyGradleWorkerStanza": true
+    },
+    "allArtifactAndClassFactsIndependentlyRecomputed": true,
+    "sourceInputs": "All124 actual JVM input hashes verified against actual validation inputs. Production/resource files match frozen work/current immutable inputs; only the existing test-worker heap/SerialGC Gradle stanza differs and does not alter production code.",
+    "productionManifest": "All ported source byte/hash rows match; only the3 reviewed source rows change, with locked original/license/runtime metadata unchanged. JAR embedded manifest is byte-exact,335 actual compiled production classes equal ZIP class bytes, no JUnit/new test consumers bundled, CRC/major65 checks pass.",
+    "SwiftGrammar": "Author22 baseline/candidate root facts are bound to exact frozen bytes and no grammar errors. Reviewer does not treat this as Swift typecheck, macro expansion or runtime evidence.",
+    "definitionFacts": [
+      {
+        "path": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+        "baselineCount": 29,
+        "candidateCount": 29,
+        "added": [],
+        "oldIdentitiesRetained": true
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+        "baselineCount": 15,
+        "candidateCount": 15,
+        "added": [],
+        "oldIdentitiesRetained": true
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "baselineCount": 7,
+        "candidateCount": 8,
+        "added": [
+          [
+            "testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+            ""
+          ]
+        ],
+        "oldIdentitiesRetained": true
+      },
+      {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+        "baselineCount": 9,
+        "candidateCount": 10,
+        "added": [
+          [
+            "testDismissPersistenceUsesPureOperationAndKeepsRejectedAndCommittedFactsDistinct",
+            ""
+          ]
+        ],
+        "oldIdentitiesRetained": true
+      }
+    ],
+    "independentAdditionalProbe": {
+      "before": "pre-task-redaction-1.log",
+      "after": "pre-task-redaction-v2.log",
+      "sameProbeClassAndSyntheticMarker": true
+    }
+  },
+  "localization": {
+    "newKeys": 0,
+    "reusedExistingTranslations": [
+      {
+        "language": "zh-Hant",
+        "path": "Resources/zh-Hant.lproj/Localizable.strings",
+        "existingKeyLine": "\"不儲存退出\" = \"不儲存退出\";"
+      },
+      {
+        "language": "zh-Hans",
+        "path": "Resources/zh-Hans.lproj/Localizable.strings",
+        "existingKeyLine": "\"不儲存退出\" = \"不保存并退出\";"
+      },
+      {
+        "language": "en",
+        "path": "Resources/en.lproj/Localizable.strings",
+        "existingKeyLine": "\"不儲存退出\" = \"Exit Without Saving\";"
+      },
+      {
+        "language": "ja",
+        "path": "Resources/ja.lproj/Localizable.strings",
+        "existingKeyLine": "\"不儲存退出\" = \"保存せずに終了\";"
+      },
+      {
+        "language": "ko",
+        "path": "Resources/ko.lproj/Localizable.strings",
+        "existingKeyLine": "\"不儲存退出\" = \"저장하지 않고 종료\";"
+      }
+    ],
+    "completeRubyCheckerRun": false,
+    "boundary": "Only the reused affected key is checked across five languages. Ruby/macOS plutil full checker was not executed here."
+  },
+  "remainingBoundaries": [
+    "Source resolver admission rejects already removed/changed definitions after the gate wait. It does not atomically prevent concurrent deletion/change after admission and before later Host mutation; no new registry is claimed.",
+    "A forced OS destruction plus failed Keychain write cannot restore unsaved transient UI. The implementation does not ACK or persist a retry credential cache; visible failures now have the explicit abandonment exit.",
+    "Adapter only forwards four dismissal methods. No custom adaptive/compact delegate is declared at the three BookSourceLoginSheet parent routes; reader FootnotePopover is a different host. SwiftUI previous delegate selector implementation and real iPad adaptive behavior cannot be proven from repository source. Fresh SDK/UI validation is still needed.",
+    "Background expiration, child-cover/disappear delegate behavior and Swift actor/macro/type correctness require actual iOS SDK/JNI execution. All relevant snapshot acceptance flags remain false.",
+    "Fresh independent Package selection must include the new persistence case and changed sources. f2-only18 and current live210fb05 whole-snapshot results cannot cover callback/dismiss/S6 changes. No browser/WebJS/loginUi-v2/deltaUp-true or Android scheduling parity is claimed."
+  ],
+  "evidence": [
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/final-v2-verified-facts.json",
+      "bytes": 17118,
+      "sha256": "c1fa6b73cfa46c1cf5859e4f7f84967df8cf357d6f28147134eba6180f4f62de"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/preliminary-findings.json",
+      "bytes": 2687,
+      "sha256": "332ff5748e0ca97caa2c811fd4073fc9e72c0acc367e66239dd0053b4a5a7636"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/PreTaskRedactionProbe.java",
+      "bytes": 1504,
+      "sha256": "e1b8bd11d734daba600f07d697ed412459c7febe7b4a4bb8865f49797a9214cb"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/pre-task-redaction-probe.json",
+      "bytes": 1152,
+      "sha256": "da1785542fcdb1051c803f72d0b64958f595f7dbfa2c58ec8552cdb5646547b8"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/pre-task-redaction-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/pre-task-redaction-1.log",
+      "bytes": 69,
+      "sha256": "55e4ee8520478b24d408483ead72138029812d4f2248e289286c610a0ccf5ef1"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/pre-task-redaction-probe-v2.json",
+      "bytes": 962,
+      "sha256": "28b52b0261184adbdbc2f79390b7a1a61ac82233c63f818738639c85d1efc5c2"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-independent-review/pre-task-redaction-v2.log",
+      "bytes": 70,
+      "sha256": "78b279dd5db05ae4a95f5e7f6af037ad55e341705c9aa7aee01939c7dcbc4eb8"
+    },
+    {
+      "path": ".build/original-source-login-dismiss-ui-root-fix/final-v1.json",
+      "bytes": 2214,
+      "sha256": "3e629c9b36be2cc3ea678424fb3e9014f5e159c5533618d7bc633583a24a1be2"
+    }
+  ],
+  "operations": {
+    "canonicalModified": false,
+    "gitMutated": false,
+    "cloudQueried": false,
+    "cloudSubmitted": false,
+    "tagCreated": false,
+    "privateDataRead": false,
+    "authorSourcesModified": false,
+    "unrelatedSuitesRerun": false
+  },
+  "execution": {
+    "independentSyntheticJavaRequestBefore": 1,
+    "independentSyntheticJavaRequestAfter": 1,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "JNI": 0,
+    "device": 0,
+    "reviewerSuiteReruns": 0
+  },
+  "flags": {
+    "sdkAccepted": false,
+    "jniAccepted": false,
+    "deviceAccepted": false,
+    "fullLoginParityAccepted": false
+  }
+}

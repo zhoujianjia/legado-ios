@@ -20,6 +20,16 @@ struct BookSourceFormLoginView: View {
     @State private var fields: [LoginField] = []
     @State private var fieldLabels: [String: String] = [:]
     @State private var values: [String: String] = [:]
+    @State private var originalDismissState = LegadoOriginalLoginUIDismissState()
+    @State private var originalDynamic = false
+    @State private var originalFormSource: BookSource?
+    @State private var originalPresentedSourceID: UUID?
+    @State private var originalPresentedSourceURL: String?
+    @State private var originalExitTask: Task<Void, Never>?
+    @State private var originalExitGeneration = UUID()
+    @State private var originalExitInProgress = false
+    @State private var originalExitAllowsDismiss = false
+    @State private var originalExitSystemDismissed = false
     @State private var originalRows: [LegadoOriginalLoginUIRow] = []
     @State private var originalControls: [String: LegadoOriginalLoginUIControl] = [:]
     @State private var originalUIOwnerGeneration = UUID()
@@ -69,6 +79,7 @@ struct BookSourceFormLoginView: View {
         let title: String
         let detail: String
         var dismissesView = false
+        var discardExitGeneration: UUID? = nil
     }
 
     var body: some View {
@@ -89,6 +100,7 @@ struct BookSourceFormLoginView: View {
                                 switch field.type {
                                 case .text, .password: scheduleOriginalTextAction(field: field)
                                 case .select, .toggle:
+                                    originalDismissState.markChanged()
                                     if originalControls[field.id]?.listenerMapIsCurrent == true {
                                         values[field.name] = value
                                     }
@@ -132,7 +144,7 @@ struct BookSourceFormLoginView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        onDismiss()
+                        requestFormClose()
                     } label: {
                         Image(systemName: "xmark")
                     }
@@ -193,16 +205,27 @@ struct BookSourceFormLoginView: View {
                 }
             }
         }
-        .onAppear { loadUI() }
+        .background(OriginalLoginDismissObserver(
+            protectsDismissal: usesOriginalLoginUI && !originalExitAllowsDismiss,
+            onAttempt: { requestFormClose() },
+            onSystemDismiss: { requestFormClose(system: true) }))
+        .onAppear {
+            if !originalUIActive && !originalExitInProgress && !originalExitAllowsDismiss { loadUI() }
+        }
         .onDisappear {
-            originalUIActive = false
-            cancelOriginalTransientWork()
-            originalActionGeneration = UUID()
-            originalActionTask?.cancel(); originalActionTask = nil
-            formSubmissionGeneration = UUID()
-            formSubmissionTask?.cancel(); formSubmissionTask = nil
-            loginUIRenderGeneration = UUID()
-            loginUIRenderTask?.cancel(); loginUIRenderTask = nil
+            // Presenting this form's own child cover is not leaving the form.
+            // The native host observer still sees an actual parent dismissal.
+            guard !showLog && !showFanqieLogin else { return }
+            if usesOriginalLoginUI { requestFormClose(system: true) }
+            else { cancelOriginalOperations() }
+        }
+        .onChange(of: source.id) { _, current in
+            originalPresentedSourceID = current
+            originalExitTask?.cancel()
+        }
+        .onChange(of: source.bookSourceUrl) { _, current in
+            originalPresentedSourceURL = current
+            originalExitTask?.cancel()
         }
         .sheet(isPresented: $showLog) {
             BookSourceDebugView()
@@ -214,7 +237,7 @@ struct BookSourceFormLoginView: View {
                 set: { if !$0 { menuAlert = nil } }
             ),
             presenting: menuAlert
-        ) { _ in
+        ) { alert in
             if canRetryLoginUi {
                 Button(localized("重試")) {
                     menuAlert = nil
@@ -222,11 +245,17 @@ struct BookSourceFormLoginView: View {
                     loadUI()
                 }
             }
+            if let generation = alert.discardExitGeneration {
+                Button(localized("不儲存退出"), role: .destructive) {
+                    menuAlert = nil
+                    requestFormClose(discardingFailedGeneration: generation)
+                }
+            }
             Button(localized("好"), role: .cancel) {
                 let dismissesView = menuAlert?.dismissesView == true
                 menuAlert = nil
                 canRetryLoginUi = false
-                if dismissesView { onDismiss() }
+                if dismissesView { requestFormClose() }
             }
         } message: { alert in
             Text(alert.detail)
@@ -278,9 +307,114 @@ struct BookSourceFormLoginView: View {
         )
     }
 
+    /// Stop and drain the existing owned operations before any exit write. A
+    /// canceled operation keeps its host effect facts; it cannot publish new rows.
+    private func cancelOriginalOperations() {
+        originalUIActive = false
+        originalUIOwnerGeneration = UUID()
+        cancelOriginalTransientWork()
+        originalActionGeneration = UUID()
+        originalActionTask?.cancel(); originalActionTask = nil
+        formSubmissionGeneration = UUID()
+        formSubmissionTask?.cancel(); formSubmissionTask = nil
+        loginUIRenderGeneration = UUID()
+        loginUIRenderTask?.cancel(); loginUIRenderTask = nil
+    }
+
+    private func requestFormClose(system: Bool = false, discardingFailedGeneration: UUID? = nil) {
+        if let failedGeneration = discardingFailedGeneration {
+            // Explicit abandonment is available only after this exact failed
+            // close has drained. It never acknowledges a credential write.
+            guard usesOriginalLoginUI, !system, !originalExitSystemDismissed,
+                  originalExitGeneration == failedGeneration, !originalExitInProgress,
+                  originalExitTask == nil else { return }
+        }
+        guard usesOriginalLoginUI else {
+            if system { cancelOriginalOperations() } else { onDismiss() }
+            return
+        }
+        if system { originalExitSystemDismissed = true }
+        guard !originalExitAllowsDismiss else { return }
+        guard originalExitTask == nil else { return }
+        let runningAction = originalActionTask, runningForm = formSubmissionTask, runningRender = loginUIRenderTask
+        cancelOriginalOperations()
+        let snapshot = originalFormSource ?? source
+        // Deliberately omit current text-control buffers: original onDismiss writes
+        // viewModel.loginInfo, whereas OK's getLoginData overlays those controls.
+        let workingMap = values
+        let revision = originalDismissState.revision
+        let requiresSave = originalDismissState.shouldPersist && discardingFailedGeneration == nil
+        let validForm = originalFormLoaded
+        let generation = UUID()
+        originalExitGeneration = generation
+        originalExitInProgress = true
+        isLoading = true
+        let hold = BackgroundTaskHold(name: "OriginalLoginDismiss")
+        originalExitTask = Task {
+            defer {
+                hold.release()
+                if originalExitGeneration == generation {
+                    originalExitTask = nil
+                    originalExitInProgress = false
+                    if !originalExitAllowsDismiss && !system && !originalExitSystemDismissed {
+                        originalUIActive = true
+                        isLoading = false
+                    }
+                }
+            }
+            var retainedEffects: [String] = []
+            // No new source operation enters while these canceled actors drain.
+            await runningAction?.value
+            await runningForm?.value
+            await runningRender?.value
+            do {
+                try Task.checkCancellation()
+                guard originalExitGeneration == generation else { return }
+                if requiresSave {
+                    guard validForm, originalPresentedSourceID == snapshot.id,
+                          originalPresentedSourceURL?.utf8.elementsEqual(snapshot.bookSourceUrl.utf8) == true else {
+                        throw LegadoRuntimeError(code: "STALE_SOURCE", message: "Login form source changed before exit")
+                    }
+                    let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+                    let receipt = try await service.originalPersistLoginInfo(source: snapshot, values: workingMap)
+                    retainedEffects = receipt.completedEffects
+                    try Task.checkCancellation()
+                    guard !receipt.executed, receipt.loginUIEvents.isEmpty,
+                          workingMap.isEmpty ? receipt.credentialsCleared && !receipt.credentialsStored
+                            : receipt.credentialsStored && !receipt.credentialsCleared else {
+                        throw LegadoRuntimeError(code: "STATE_IO", message: "Credential owner did not acknowledge exit")
+                    }
+                    guard originalExitGeneration == generation else { return }
+                    guard originalDismissState.acknowledge(revision: revision) else {
+                        throw LegadoRuntimeError(code: "STATE_IO", message: "Login form changed during exit")
+                    }
+                }
+                originalExitAllowsDismiss = true
+                isLoading = false
+                if !system && !originalExitSystemDismissed { onDismiss() }
+            } catch {
+                let typed = error as? LegadoRuntimeError
+                let code = error is CancellationError ? "CANCELLED" : typed?.code ?? "STATE_IO"
+                let effectCount = Set(retainedEffects + (typed?.completedEffects ?? [])).count
+                let secondaryCodes = typed?.secondaryFailures?.map(\.code) ?? []
+                // Forced OS destruction cannot be prevented or restore unsaved UI.
+                // Do not ACK, clear dirty state, log values, or replace old Keychain.
+                AppLogger.error("Original login exit failed", context: ["code": code,
+                    "reportedEffects": effectCount, "secondaryCodes": secondaryCodes, "system": system])
+                if !system, !originalExitSystemDismissed, originalExitGeneration == generation {
+                    presentOriginalLoginFailure(code: code, secondary: secondaryCodes, effects: effectCount,
+                        discardExitGeneration: generation)
+                }
+            }
+        }
+    }
+
     // MARK: - Setup
 
     private func loadUI() {
+        guard !originalExitInProgress && !originalExitAllowsDismiss else { return }
+        originalPresentedSourceID = source.id
+        originalPresentedSourceURL = source.bookSourceUrl
         cancelOriginalTransientWork()
         originalUIActive = true
         formSubmissionGeneration = UUID()
@@ -297,6 +431,7 @@ struct BookSourceFormLoginView: View {
         let valueSnapshot = values
         let controlsSnapshot = originalControls
         let useExistingValues = originalFormLoaded
+        if useExistingValues { originalDismissState.requestedRender(dynamic: originalDynamic) }
         loginUIRenderTask = Task {
             defer {
                 if loginUIRenderGeneration == generation {
@@ -334,6 +469,9 @@ struct BookSourceFormLoginView: View {
                 originalControls = rendered.controls
                 originalControlGeneration = UUID()
                 originalFormLoaded = true
+                originalFormSource = snapshot
+                originalDynamic = rendered.dynamic
+                originalDismissState.rendered(workingMapChanged: rendered.workingMapChanged)
                 isLoading = false
             } catch {
                 guard !Task.isCancelled, loginUIRenderGeneration == generation else { return }
@@ -620,7 +758,10 @@ struct BookSourceFormLoginView: View {
     // MARK: - Login Action
 
     private func doLogin() {
-        guard !isLoading, !usesOriginalLoginUI || originalFormLoaded else { return }
+        guard !isLoading, !originalExitInProgress, !usesOriginalLoginUI || originalFormLoaded else { return }
+        // Locked menu_ok sets this before launching async login; it remains sticky
+        // on script failure/cancellation so exit cannot overwrite authored writes.
+        if usesOriginalLoginUI { originalDismissState.acceptedOK() }
         menuAlert = nil
         canRetryLoginUi = false
 
@@ -858,6 +999,7 @@ struct BookSourceFormLoginView: View {
             guard !Task.isCancelled, originalUIOwnerGeneration == ownerGeneration else { return failures }
             switch event.kind {
             case .updateData:
+                originalDismissState.markChanged()
                 let rows = originalRows, currentFields = fields, labels = fieldLabels,
                     map = values, controls = originalControls
                 do {
@@ -884,6 +1026,7 @@ struct BookSourceFormLoginView: View {
             case .render:
                 // deltaUp=true is rejected before acceptance by the native host.
                 guard event.deltaUp != true else { failures.append("UNSUPPORTED_CAPABILITY"); continue }
+                originalDismissState.requestedRender(dynamic: originalDynamic)
                 let snapshot = source, map = values, currentFields = fields, controls = originalControls
                 do {
                     let evaluation = await Task.detached {
@@ -897,6 +1040,8 @@ struct BookSourceFormLoginView: View {
                     fields = rendered.fields; fieldLabels = rendered.labels; values = rendered.values
                     originalRows = rendered.rows; originalControls = rendered.controls
                     originalControlGeneration = UUID(); originalFormLoaded = true
+                    originalFormSource = snapshot; originalDynamic = rendered.dynamic
+                    originalDismissState.rendered(workingMapChanged: rendered.workingMapChanged)
                 } catch {
                     guard !Task.isCancelled, originalUIOwnerGeneration == ownerGeneration else { return failures }
                     let typed = error as? LegadoRuntimeError
@@ -908,11 +1053,13 @@ struct BookSourceFormLoginView: View {
         return failures
     }
 
-    private func presentOriginalLoginFailure(code: String, secondary: [String] = [], effects: Int = 0) {
+    private func presentOriginalLoginFailure(code: String, secondary: [String] = [], effects: Int = 0,
+        discardExitGeneration: UUID? = nil) {
         AppLogger.error("Original login operation failed", context: ["code": code,
             "secondaryCodes": secondary, "reportedEffects": effects])
         menuAlert = MenuActionAlert(title: localized("操作失敗"),
-            detail: localized("操作失敗") + " (" + ([code] + secondary).joined(separator: ", ") + ")")
+            detail: localized("操作失敗") + " (" + ([code] + secondary).joined(separator: ", ") + ")",
+            discardExitGeneration: discardExitGeneration)
     }
 
     private func currentFormValues() -> [String: String] {
@@ -1401,4 +1548,94 @@ struct BookSourceFormLoginView: View {
     ]
     """
     return BookSourceFormLoginView(source: source, onDismiss: {})
+}
+
+/// Observe the existing native sheet. A visible swipe uses the same checked Close
+/// operation; forced dismissal still hands its frozen Map to the owned task.
+/// No credentials or pending form state live in this presentation adapter.
+private struct OriginalLoginDismissObserver: UIViewControllerRepresentable {
+    let protectsDismissal: Bool
+    let onAttempt: () -> Void
+    let onSystemDismiss: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+    func makeUIViewController(context: Context) -> ObserverController {
+        let controller = ObserverController()
+        controller.coordinator = context.coordinator
+        return controller
+    }
+    func updateUIViewController(_ controller: ObserverController, context: Context) {
+        context.coordinator.protectsDismissal = protectsDismissal
+        context.coordinator.onAttempt = onAttempt
+        context.coordinator.onSystemDismiss = onSystemDismiss
+        context.coordinator.attach(from: controller)
+    }
+    static func dismantleUIViewController(_ controller: ObserverController, coordinator: Coordinator) {
+        coordinator.restoreDelegate()
+    }
+
+    @MainActor final class ObserverController: UIViewController {
+        weak var coordinator: Coordinator?
+        override func loadView() {
+            view = UIView()
+            view.backgroundColor = .clear
+            view.isUserInteractionEnabled = false
+        }
+        override func didMove(toParent parent: UIViewController?) {
+            super.didMove(toParent: parent)
+            coordinator?.attach(from: self)
+        }
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            coordinator?.attach(from: self)
+        }
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            coordinator?.observeSystemDismissal()
+        }
+    }
+
+    @MainActor final class Coordinator: NSObject, UIAdaptivePresentationControllerDelegate {
+        var protectsDismissal = false
+        var onAttempt: () -> Void = {}
+        var onSystemDismiss: () -> Void = {}
+        private weak var presentation: UIPresentationController?
+        private weak var previousDelegate: (any UIAdaptivePresentationControllerDelegate)?
+
+        func attach(from controller: UIViewController) {
+            var candidate: UIViewController? = controller
+            while let current = candidate {
+                if current.presentingViewController != nil, let host = current.presentationController {
+                    if presentation !== host { restoreDelegate(); presentation = host }
+                    if host.delegate !== self { previousDelegate = host.delegate; host.delegate = self }
+                    return
+                }
+                candidate = current.parent
+            }
+        }
+        func restoreDelegate() {
+            if let presentation, presentation.delegate === self { presentation.delegate = previousDelegate }
+            presentation = nil
+            previousDelegate = nil
+        }
+        func observeSystemDismissal() {
+            if presentation?.presentedViewController.isBeingDismissed == true { onSystemDismiss() }
+        }
+        func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+            if protectsDismissal { return false }
+            return previousDelegate?.presentationControllerShouldDismiss?(presentationController) ?? true
+        }
+        func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+            if protectsDismissal { onAttempt() }
+            else { previousDelegate?.presentationControllerDidAttemptToDismiss?(presentationController) }
+        }
+        func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+            onSystemDismiss()
+            previousDelegate?.presentationControllerWillDismiss?(presentationController)
+        }
+        func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+            onSystemDismiss()
+            previousDelegate?.presentationControllerDidDismiss?(presentationController)
+        }
+    }
 }

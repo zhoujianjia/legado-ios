@@ -121,6 +121,36 @@ struct BookSourceLoginTests {
         let originalJSON = #"{"rows":[{"name":"same","type":"text","default":"fallback"},{"name":"hiddenLabel","type":"label"},{"name":"same","type":"password"},{"name":"unknown","type":"future"},{"name":"nilSelect","type":"select"},{"name":"nilToggle","type":"toggle"},{"name":"emptySelect","type":"select","chars":[],"default":"kept"},{"name":"emptyChoice","type":"select","chars":["","signed"]}],"labels":["first","not-an-input","second","not-an-input","nilSelect","nilToggle","emptySelect","emptyChoice"],"values":{"hidden":"synthetic-hidden","same":""},"dynamic":true}"#
         let originalReply = try JSONDecoder().decode(LegadoOriginalLoginUIResult.self, from: Data(originalJSON.utf8))
         let originalForm = try LegadoOriginalLoginUIForm(originalReply)
+        #expect(originalForm.dynamic && !originalForm.workingMapChanged)
+        let initializedJSON = #"{"rows":[],"labels":[],"values":{},"dynamic":false,"workingMapChanged":true}"#
+        let initializedForm = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(initializedJSON.utf8)))
+        #expect(!initializedForm.dynamic && initializedForm.workingMapChanged)
+        var exit = LegadoOriginalLoginUIDismissState()
+        #expect(!exit.shouldPersist)
+        // Text-control overlays remain outside the working Map; plain edits do
+        // not call markChanged, whereas semantic default/callback changes do.
+        exit.rendered(workingMapChanged: false)
+        exit.requestedRender(dynamic: false)
+        #expect(!exit.shouldPersist)
+        exit.rendered(workingMapChanged: initializedForm.workingMapChanged)
+        #expect(exit.shouldPersist)
+        let pendingRevision = exit.revision
+        exit.markChanged() // Empty Map callback is dirty even with equal bytes.
+        let staleExitACK = exit.acknowledge(revision: pendingRevision)
+        #expect(!staleExitACK && exit.shouldPersist)
+        // A failed checked save performs no acknowledge; the same revision can retry.
+        let retryRevision = exit.revision
+        #expect(exit.shouldPersist)
+        let retriedExitACK = exit.acknowledge(revision: retryRevision)
+        #expect(retriedExitACK && !exit.shouldPersist)
+        exit.requestedRender(dynamic: true) // Dirty before a failed dynamic render.
+        #expect(exit.shouldPersist)
+        exit.acceptedOK() // Sticky through script error, cancellation and retry.
+        exit.markChanged()
+        #expect(exit.oKToClose && exit.hasChange && !exit.shouldPersist)
+        let afterOKACK = exit.acknowledge(revision: exit.revision)
+        #expect(!afterOKACK)
         #expect(originalForm.fields.count == 6)
         #expect(originalForm.fields[0].id != originalForm.fields[1].id)
         #expect(originalForm.labels[originalForm.fields[0].id] == "first")

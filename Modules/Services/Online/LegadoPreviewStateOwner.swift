@@ -311,6 +311,7 @@ enum LegadoOriginalPreviewOperation: Sendable {
     case loginAction(action: String?, credentials: [String: String], isLongClick: Bool)
     case loginUI([String: String]?, evaluationValues: [String: String]?)
     case formLogin([String: String])
+    case persistLoginInfo([String: String])
     case search(String, Int32?)
     case explore(String, Int32?)
     case openExploreContext
@@ -359,7 +360,7 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
             reportedLoginUIEvents.withLock { $0 = events }
         }
         let loginOperation: Bool
-        switch operation { case .loginAction, .formLogin: loginOperation = true; default: loginOperation = false }
+        switch operation { case .loginAction, .formLogin, .persistLoginInfo: loginOperation = true; default: loginOperation = false }
         do {
             let runtime = try await process.executor()
             try check(deadline)
@@ -380,6 +381,10 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                     let value = try await runtime.loginUIOriginal(session: session, values: values, evaluationValues: evaluationValues,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
                     result = .loginUI(value, completedEffects: reportedEffects.withLock { $0 })
+                case .persistLoginInfo(let values):
+                    let value = try await runtime.persistLoginInfoOriginal(session: session, credentials: values,
+                        timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
+                    result = .formLogin(value, completedEffects: reportedEffects.withLock { $0 })
                 case .formLogin(let credentials):
                     let value = try await runtime.formLoginOriginal(session: session, credentials: credentials,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects,

@@ -3,6 +3,8 @@ import LegadoRuntime
 
 struct LegadoOriginalLoginUIForm: Sendable {
     let rows: [LegadoOriginalLoginUIRow]
+    let dynamic: Bool
+    let workingMapChanged: Bool
     let fields: [LoginField]
     let labels: [String: String]
     let values: [String: String]
@@ -59,6 +61,8 @@ struct LegadoOriginalLoginUIForm: Sendable {
         }
         rows = reply.rows; fields = mapped; labels = resolved; values = reply.values
         controls = buffers
+        dynamic = reply.dynamic
+        workingMapChanged = reply.workingMapChanged ?? false
     }
 }
 
@@ -216,5 +220,25 @@ extension LegadoOriginalLoginUIForm {
             submitted[field.name] = controls?[field.id]?.value ?? values[field.name] ?? field.defaultValue ?? ""
         }
         return submitted
+    }
+}
+
+/// Locked dialog hasChange is semantic: callbacks/default-selection can mark it
+/// even when Map bytes are equal; text-control edits alone never mark it.
+struct LegadoOriginalLoginUIDismissState: Sendable {
+    private(set) var hasChange = false
+    private(set) var oKToClose = false
+    private(set) var revision: UInt64 = 0
+    var shouldPersist: Bool { hasChange && !oKToClose }
+
+    mutating func markChanged() { hasChange = true; revision &+= 1 }
+    mutating func acceptedOK() { oKToClose = true }
+    mutating func requestedRender(dynamic: Bool) { if dynamic { markChanged() } }
+    mutating func rendered(workingMapChanged: Bool) { if workingMapChanged { markChanged() } }
+    /// Only the receipt of the exact frozen working Map can acknowledge it.
+    @discardableResult mutating func acknowledge(revision savedRevision: UInt64) -> Bool {
+        guard shouldPersist, revision == savedRevision else { return false }
+        hasChange = false
+        return true
     }
 }

@@ -39,7 +39,7 @@ internal object OriginalTraditionalRuntime {
         val fields = when (operation) {
             "loginUi" -> setOf("values", "evaluationValues", "timeoutMs")
             "loginAction" -> setOf("action", "credentials", "isLongClick", "timeoutMs")
-            "formLogin" -> setOf("credentials", "timeoutMs")
+            "formLogin", "persistLoginInfo" -> setOf("credentials", "timeoutMs")
             "sourceCallback" -> setOf("event", "timeoutMs")
             "bookCallback" -> setOf("event", "book", "chapter", "result", "timeoutMs")
             "search" -> setOf("key", "page", "timeoutMs")
@@ -63,6 +63,24 @@ internal object OriginalTraditionalRuntime {
                     when (operation) {
                         "loginUi" -> OriginalLoginUIRuntime.execute(source, input)
                         "loginAction" -> OriginalLoginActionRuntime.execute(source, input)
+                        "persistLoginInfo" -> {
+                            require(input.int("timeoutMs", 30_000) in 1..30_000) { "Login-info persistence timeout must be between 1 and 30000 milliseconds" }
+                            if (source.isLoginUiV2()) throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Interactive loginUi v2 is not connected")
+                            val raw = input.requiredObject("credentials")
+                            require(raw.size() <= 4096 && raw.entrySet().all { (_, value) -> value.isJsonPrimitive && value.asJsonPrimitive.isString }) { "Login-info values must be a bounded String map" }
+                            val values = raw.entrySet().associateTo(linkedMapOf()) { (key, value) -> key to value.asString }
+                            // Non-OK dismissal only persists the working Map. Do not
+                            // read/evaluate getLoginJs, prelude, login(), or callbacks.
+                            environment.platform.runWebBook(currentCoroutineContext()) {
+                                if (values.isEmpty()) {
+                                    source.removeLoginInfo()
+                                    jsonObject("credentialsStored" to false, "credentialsCleared" to true, "executed" to false)
+                                } else {
+                                    val accepted = source.putLoginInfo(GSON.toJson(values))
+                                    jsonObject("credentialsStored" to accepted, "credentialsCleared" to false, "executed" to false)
+                                }
+                            }
+                        }
                         "formLogin" -> {
                             // The Android dialog has lifecycle cancellation, no fixed
                             // 30s form timer. This is the finite iOS embedding budget.
