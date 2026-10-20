@@ -1,0 +1,283 @@
+    func testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit() async throws {
+        executionTimeAllowance = 180
+        let cold = try await coldContext()
+        let peer = try NativeOriginalLoopbackServer(runID: cold.control.runID, emitCookie: false)
+        let ready = expectation(description: "Cold producer loopback ready")
+        peer.start { ready.fulfill() }
+        await fulfillment(of: [ready], timeout: 10)
+        var fixture: Fixture?
+        var ownedID: UUID?
+        var prepared: ColdProducerReceipt?
+        var problem: Error?
+        do {
+            let base = try peer.readyBaseURL()
+            var source = Self.source(base: base, runID: cold.control.runID, tocRedirect: true)
+            source.enabledCookieJar = false
+            let data = cold.root.appendingPathComponent("data", isDirectory: true)
+            try await Task.detached { try FileManager.default.createDirectory(at: data, withIntermediateDirectories: false) }.value
+            let contexts = data.appendingPathComponent("contexts", isDirectory: true)
+            let body = data.appendingPathComponent("preview-body", isDirectory: true)
+            let f = Fixture(runID: cold.control.runID, prefix: "/" + cold.control.runID,
+                cookieName: "native_" + cold.control.runID.replacingOccurrences(of: "-", with: ""),
+                baseURL: base, root: data, contextDirectory: contexts,
+                metadata: data.appendingPathComponent("books_meta.json"), cacheDirectory: body,
+                cache: .init(rootDirectory: body), peer: peer, source: source,
+                service: .init(contextDirectory: contexts, operationTimeout: 45))
+            fixture = f
+            let fetcher = BookSourceFetcher(mainJSService: f.service)
+            let foundBooks = try await fetcher.search(query: "native-original", in: source, page: 2)
+            let found = try XCTUnwrap(foundBooks.first)
+            let detail = try await fetcher.fetchBookInfoPackage(url: found.bookUrl, source: source,
+                runtimeVariables: found.runtimeVariables, knownBook: found)
+            let toc = try await fetcher.fetchTOCPackage(tocUrl: detail.tocUrl, source: source,
+                runtimeVariables: detail.runtimeVariables, forceRefresh: true)
+            try Self.coldRequire(toc.chapters.count == 2, "Cold producer needs two real TOC chapters")
+            let adoption = await OriginalBookAdoption.prepare(toc.runtimeVariables, chapters: toc.chapters)
+            let owned = try await ownedBook(f, title: detail.name, url: found.bookUrl,
+                tocURL: toc.tocURL, chapters: adoption.chapters, variables: adoption.variables)
+            let cacheAbsent = await Task.detached {
+                !FileManager.default.fileExists(atPath: StorageLocations.onlineCache.appendingPathComponent(owned.book.id.uuidString).path)
+            }.value
+            try Self.coldRequire(cacheAbsent, "Cold producer refuses a preexisting global cache UUID")
+            ownedID = owned.book.id
+            try await Task.detached { try cold.write(ColdClaim(control: cold.control, bookID: owned.book.id), name: "claim.json") }.value
+            _ = try await fetcher.transferOriginalPreview(source: source, runtimeVariables: toc.runtimeVariables,
+                to: owned.store, bookID: owned.book.id)
+            let reader = await manager(f)
+            let first = try await reader.fetchChapter(book: owned.book, chapterIndex: 0,
+                priority: .immediate, store: owned.store)
+            let second = try await reader.fetchChapter(book: owned.book, chapterIndex: 1,
+                priority: .immediate, store: owned.store)
+            try Self.coldRequire(first.content.contains("first&page") && first.content.contains("last page")
+                && second.content.contains("second chapter"), "Cold producer did not parse real paginated bodies")
+            let position = CoreTextReadingPosition(spineIndex: 1, charOffset: 7)
+            let positions = JSONFileReadingPositionStore(baseURL: data.appendingPathComponent("positions", isDirectory: true), onSave: { _, _ in })
+            let positionReceipt = try await positions.saveChecked(position, for: owned.book.id.uuidString)
+            await BookStore.queuedWritesLanded()
+            let currentValue = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
+            let current = try XCTUnwrap(currentValue)
+            let chapters = try XCTUnwrap(current.onlineChapters)
+            try Self.coldRequire(chapters.count == 2 && chapters.map(\.index) == [0, 1] && chapters.map(\.cachedFilename) == ["0.txt", "1.txt"]
+                && chapters.first?.runtimeVariables?["nativeParsed"] == "yes"
+                && current.runtimeVariables?["nativeBig"] == String(repeating: "L", count: 10_000), "Producer ownership/variables were not persisted")
+            var fingerprints: [[String: String]] = []
+            for chapter in chapters {
+                let snapshot = try await BookSourceFetcher.chapterCacheRepository.originalBatchSnapshot(
+                    bookID: current.id, index: chapter.index, sourceURL: chapter.url, tocTitle: chapter.title, validateGrant: {})
+                try Self.coldRequire(snapshot.package != nil && snapshot.fingerprints.count == 5
+                    && !snapshot.fingerprints.values.contains("missing"), "Cold producer lacks committed cache artifacts")
+                fingerprints.append(snapshot.fingerprints)
+            }
+            let persistedSource = source
+            try await Task.detached { try cold.write(persistedSource, name: "data/source.json") }.value
+            let files = try await Task.detached { try cold.fileFacts(bookID: current.id) }.value
+            let expectedTargets = ["/search?key=native-original&page=2", "/book", "/toc-rewritten", "/toc2", "/c1", "/c1p2", "/c2"].map { f.prefix + $0 }
+            try Self.coldRequire(peer.snapshot.requests.map(\.target) == expectedTargets, "Cold producer bypassed the public search/detail/paginated reader chain")
+            prepared = ColdProducerReceipt(control: cold.control, producerPID: ProcessInfo.processInfo.processIdentifier,
+                bookID: current.id, sourceID: source.id, chapterIDs: chapters.map(\.id),
+                chapterVariables: chapters.map { $0.runtimeVariables ?? [:] }, bookVariables: current.runtimeVariables ?? [:],
+                bodySHA256: [Self.coldHash(Data(first.content.utf8)), Self.coldHash(Data(second.content.utf8))],
+                cacheFingerprints: fingerprints, files: files, position: position,
+                positionSHA256: Self.coldHex(positionReceipt.rawSHA256), requestTargets: peer.snapshot.requests.map(\.target),
+                peerStopped: false, activeConnections: -1, hostAccepted: false)
+        } catch { problem = error }
+        if let fixture {
+            do { try await fixture.service.closeSessions() } catch { if problem == nil { problem = error } }
+        }
+        let stopped = expectation(description: "Cold producer owns no live TCP listener or connection")
+        peer.stop { stopped.fulfill() }
+        await fulfillment(of: [stopped], timeout: 10)
+        let snapshot = peer.snapshot
+        if problem == nil {
+            do {
+                try Self.coldRequire(snapshot.listenerCancelled && snapshot.activeConnections == 0 && snapshot.errors.isEmpty,
+                    "Cold producer TCP peer failed to drain")
+                var receipt = try XCTUnwrap(prepared)
+                receipt.peerStopped = true; receipt.activeConnections = 0
+                let completedReceipt = receipt
+                // Pending only. CI commits producer.json after this exact host's
+                // original summary/tests exports prove one passed qualified case.
+                try await Task.detached { try cold.write(completedReceipt, name: "producer-pending.json") }.value
+            } catch { problem = error }
+        }
+        if let problem {
+            if let ownedID {
+                do { try await BookSourceFetcher.shared.clearAllChapterCacheAwait(bookId: ownedID) }
+                catch { attach(["coldCacheCleanupFailed": true], name: "ColdProducer-cleanup") }
+            }
+            do { try await Task.detached { try cold.removeDataOnly() }.value }
+            catch { attach(["coldDataCleanupFailed": true], name: "ColdProducer-cleanup") }
+            throw problem
+        }
+    }
+
+    func testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork() async throws {
+        executionTimeAllowance = 120
+        let cold = try await coldContext()
+        var ownedID: UUID?
+        var openedService: LegadoMainJSSourceService?
+        var problem: Error?
+        do {
+            let claim: ColdClaim = try await Task.detached { try cold.read(ColdClaim.self, name: "claim.json") }.value
+            try Self.coldRequire(claim.control == cold.control, "Cold claim belongs to another run")
+            let receipt: ColdProducerReceipt = try await Task.detached { try cold.read(ColdProducerReceipt.self, name: "producer.json") }.value
+            try Self.coldRequire(receipt.control == cold.control && receipt.bookID == claim.bookID
+                && receipt.hostAccepted && receipt.peerStopped && receipt.activeConnections == 0
+                && receipt.producerPID > 0 && receipt.producerPID != ProcessInfo.processInfo.processIdentifier,
+                "Cold consumer needs a committed different-process producer")
+            ownedID = claim.bookID
+            let before = try await Task.detached { try cold.fileFacts(bookID: claim.bookID) }.value
+            try Self.coldRequire(before == receipt.files, "Producer metadata/position/source bytes changed before cold load")
+            let source: BookSource = try await Task.detached { try cold.read(BookSource.self, name: "data/source.json") }.value
+            try Self.coldRequire(source.id == receipt.sourceID && URL(string: source.bookSourceUrl)?.host == "127.0.0.1",
+                "Cold source is not the owned loopback definition")
+            let metadata = cold.root.appendingPathComponent("data/books_meta.json")
+            let store = await Task.detached { BookStore(metadataFileURL: metadata, legacyMetadataDefaults: nil) }.value
+            let bookValue = await MainActor.run { store.readingBook(id: claim.bookID) }
+            let book = try XCTUnwrap(bookValue)
+            let chapters = try XCTUnwrap(book.onlineChapters)
+            try Self.coldRequire(book.id == receipt.bookID && book.bookSourceId == source.id && !book.isInBookshelf
+                && chapters.map(\.index) == [0, 1]
+                && chapters.map(\.id) == receipt.chapterIDs && chapters.map(\.cachedFilename) == ["0.txt", "1.txt"]
+                && chapters.map({ $0.runtimeVariables ?? [:] }) == receipt.chapterVariables
+                && book.runtimeVariables == receipt.bookVariables, "Cold BookStore lost owned identities/variables")
+            let positions = JSONFileReadingPositionStore(baseURL: cold.root.appendingPathComponent("data/positions", isDirectory: true), onSave: { _, _ in })
+            let loaded = try await positions.loadChecked(for: book.id.uuidString)
+            let position = try XCTUnwrap(loaded)
+            try Self.coldRequire(position.operation == .existingFileRead && position.bookId == book.id.uuidString
+                && position.position == receipt.position && Self.coldHex(position.rawSHA256) == receipt.positionSHA256,
+                "Cold reading position was not read from the producer's real file")
+            let probe = ColdSourceResolutionProbe()
+            let service = LegadoMainJSSourceService(contextDirectory: cold.root.appendingPathComponent("data/contexts"), operationTimeout: 20)
+            openedService = service
+            let fetcher = BookSourceFetcher(mainJSService: service)
+            let webViewFetcher = await MainActor.run { WebViewFetcher.shared }
+            let reader = ChapterFetchManager(bookSourceFetcher: fetcher, webViewFetcher: webViewFetcher,
+                sourceResolver: { _ in probe.record(); return source })
+            var bodyHashes: [String] = []
+            for chapter in chapters {
+                let beforeCache = try await BookSourceFetcher.chapterCacheRepository.originalBatchSnapshot(
+                    bookID: book.id, index: chapter.index, sourceURL: chapter.url, tocTitle: chapter.title, validateGrant: {})
+                try Self.coldRequire(beforeCache.fingerprints == receipt.cacheFingerprints[chapter.index], "Cold cache bytes changed")
+                let package = try await reader.fetchChapter(book: book, chapterIndex: chapter.index, priority: .immediate, store: store)
+                bodyHashes.append(Self.coldHash(Data(package.content.utf8)))
+                let afterCache = try await BookSourceFetcher.chapterCacheRepository.originalBatchSnapshot(
+                    bookID: book.id, index: chapter.index, sourceURL: chapter.url, tocTitle: chapter.title, validateGrant: {})
+                try Self.coldRequire(afterCache.fingerprints == beforeCache.fingerprints, "Cold reader rewrote cached data")
+            }
+            let after = try await Task.detached { try cold.fileFacts(bookID: book.id) }.value
+            try Self.coldRequire(bodyHashes == receipt.bodySHA256 && probe.count == 0 && before == after,
+                "Cold public reader did not return immutable offline cache before source resolution")
+            let result = ColdConsumerReceipt(control: cold.control, producerPID: receipt.producerPID,
+                consumerPID: ProcessInfo.processInfo.processIdentifier, bookID: book.id, sourceResolutions: probe.count,
+                bodySHA256: bodyHashes, fileHashesUnchanged: true, hostAccepted: false)
+            try await Task.detached { try cold.write(result, name: "consumer-pending.json") }.value
+        } catch { problem = error }
+        if let openedService {
+            do { try await openedService.closeSessions() }
+            catch { if problem == nil { problem = error } }
+        }
+        // The only global cache subtree admitted here is the freshly claimed
+        // book UUID. Never enumerate/erase the default shelf or other books.
+        if let ownedID {
+            do { try await BookSourceFetcher.shared.clearAllChapterCacheAwait(bookId: ownedID) }
+            catch { if problem == nil { problem = error } }
+        }
+        do { try await Task.detached { try cold.removeDataOnly() }.value }
+        catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
+    private func coldContext() async throws -> ColdContext {
+        do {
+            let value = try await Task.detached { try ColdContext.load() }.value
+            let diagnostics = await Task.detached { LegadoRuntime.diagnose() }.value
+            try Self.coldRequire(diagnostics.available, "Cold process needs the ordinary native runtime")
+            return value
+        } catch {
+            #if LEGADO_REQUIRE_NATIVE_MAINJS
+            throw error
+            #else
+            throw XCTSkip("Cold process fixture requires its explicit CI descriptor and ordinary runtime")
+            #endif
+        }
+    }
+    private static func coldRequire(_ condition: Bool, _ message: String) throws {
+        guard condition else { throw NativeOriginalReaderError.failed(message) }
+    }
+    private static func coldHex(_ data: Data) -> String { data.map { String(format: "%02x", $0) }.joined() }
+    private static func coldHash(_ data: Data) -> String { coldHex(Data(SHA256.hash(data: data))) }
+    private struct ColdControl: Codable, Equatable, Sendable {
+        let schemaVersion: Int; let runID: String; let nonce: String; let sourceCommit: String; let container: String
+    }
+    private struct ColdClaim: Codable, Sendable { let control: ColdControl; let bookID: UUID }
+    private struct ColdProducerReceipt: Codable, Sendable {
+        let control: ColdControl; let producerPID: Int32; let bookID: UUID; let sourceID: UUID
+        let chapterIDs: [UUID]; let chapterVariables: [[String: String]]; let bookVariables: [String: String]
+        let bodySHA256: [String]; let cacheFingerprints: [[String: String]]; let files: [String: String]
+        let position: CoreTextReadingPosition; let positionSHA256: String; let requestTargets: [String]
+        var peerStopped: Bool; var activeConnections: Int; var hostAccepted: Bool
+    }
+    private struct ColdConsumerReceipt: Codable, Sendable {
+        let control: ColdControl; let producerPID: Int32; let consumerPID: Int32; let bookID: UUID
+        let sourceResolutions: Int; let bodySHA256: [String]; let fileHashesUnchanged: Bool; let hostAccepted: Bool
+    }
+    private struct ColdContext: Sendable {
+        let control: ColdControl; let root: URL
+        static func load() throws -> Self {
+            let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            let base = support.appendingPathComponent("YueduNativeColdProcess", isDirectory: true)
+            let controlData = try bytes(base.appendingPathComponent("control.json"))
+            let control = try JSONDecoder().decode(ColdControl.self, from: controlData)
+            let home = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true).resolvingSymlinksInPath().path
+            let stamp = Bundle.main.object(forInfoDictionaryKey: "YueduExperienceSourceCommit") as? String
+            let local = Bundle.main.object(forInfoDictionaryKey: "YueduLocalExperience") as? Bool
+            try LegadoNativeOriginalReaderTests.coldRequire(control.schemaVersion == 1
+                && UUID(uuidString: control.runID)?.uuidString.lowercased() == control.runID, "Invalid cold namespace")
+            try LegadoNativeOriginalReaderTests.coldRequire(control.nonce.count == 64 && control.nonce.allSatisfy({ $0.isHexDigit }), "Invalid cold nonce")
+            try LegadoNativeOriginalReaderTests.coldRequire(control.sourceCommit.count == 40 && control.sourceCommit.allSatisfy({ $0.isHexDigit })
+                && control.sourceCommit == stamp && local == true && control.container == home,
+                "Cold descriptor differs from this source-stamped owned data container")
+            let root = base.appendingPathComponent(control.runID, isDirectory: true)
+            for directory in [base, root] {
+                let attributes = try FileManager.default.attributesOfItem(atPath: directory.path)
+                try LegadoNativeOriginalReaderTests.coldRequire((attributes[.type] as? FileAttributeType) == .typeDirectory,
+                    "Cold namespace must be an actual directory")
+            }
+            try LegadoNativeOriginalReaderTests.coldRequire(root.resolvingSymlinksInPath().deletingLastPathComponent().path == base.resolvingSymlinksInPath().path,
+                "Cold namespace escaped its owned parent")
+            return .init(control: control, root: root)
+        }
+        static func bytes(_ url: URL) throws -> Data {
+            let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            try LegadoNativeOriginalReaderTests.coldRequire((attributes[.type] as? FileAttributeType) == .typeRegular
+                && ((attributes[.size] as? NSNumber)?.intValue ?? Int.max) <= 16_777_216,
+                "Cold evidence must be a bounded regular file")
+            return try Data(contentsOf: url)
+        }
+        func read<T: Decodable>(_ type: T.Type, name: String) throws -> T {
+            try JSONDecoder().decode(type, from: Self.bytes(root.appendingPathComponent(name)))
+        }
+        func write<T: Encodable>(_ value: T, name: String) throws {
+            let destination = root.appendingPathComponent(name)
+            try LegadoNativeOriginalReaderTests.coldRequire(!FileManager.default.fileExists(atPath: destination.path), "Refusing stale cold receipt overwrite")
+            let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+            try encoder.encode(value).write(to: destination, options: .withoutOverwriting)
+        }
+        func fileFacts(bookID: UUID) throws -> [String: String] {
+            let names = ["books_meta.reading.json", "books_meta.chapters/" + bookID.uuidString + ".json",
+                "positions/" + bookID.uuidString + ".json", "source.json"]
+            var result: [String: String] = [:]
+            for name in names { result[name] = LegadoNativeOriginalReaderTests.coldHash(try Self.bytes(root.appendingPathComponent("data/" + name))) }
+            return result
+        }
+        func removeDataOnly() throws {
+            let data = root.appendingPathComponent("data", isDirectory: true)
+            if FileManager.default.fileExists(atPath: data.path) { try FileManager.default.removeItem(at: data) }
+        }
+    }
+    private final class ColdSourceResolutionProbe: @unchecked Sendable {
+        private let lock = NSLock(); private var calls = 0
+        func record() { lock.withLock { calls += 1 } }
+        var count: Int { lock.withLock { calls } }
+    }

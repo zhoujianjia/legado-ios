@@ -34,6 +34,11 @@ cd "$ROOT" || exit 1
 export DEVELOPER_DIR="${DEVELOPER_DIR:-$(bash scripts/sim.sh xcode)}"
 DEST="${YUEDU_DEST:-$(bash scripts/sim.sh dest)}"
 SCHEME="${YUEDU_SCHEME:-Yuedu-Reader}"
+TEST_ACTION="${YUEDU_TEST_ACTION:-test}"
+case "$TEST_ACTION" in
+  test|test-without-building) ;;
+  *) echo "Unsupported YUEDU_TEST_ACTION" >&2; exit 2 ;;
+esac
 XCODEBUILD_COMMAND=(xcodebuild -project Yuedu-Reader.xcodeproj)
 # A workspace can override a remote package with its original local checkout
 # while a coordinated package change awaits publication. Default runs continue
@@ -107,7 +112,7 @@ drop_stale_app_module_copy
 # (on-failure) runs `simctl diagnose ... --timeout=600` before it prints its verdict.
 # Measured 2026-09-21: Swift Testing finished at 20:37:44 and the run then sat in that
 # child process for ~10 minutes, twice in a row. Collect a sysdiagnose by hand when needed.
-"${XCODEBUILD_COMMAND[@]}" test \
+"${XCODEBUILD_COMMAND[@]}" "$TEST_ACTION" \
   -scheme "$SCHEME" \
   -destination "$DEST" \
   -parallel-testing-enabled NO \

@@ -1,0 +1,35 @@
+--- v1/scripts/reader-experience/test-original-cold-process-tools.py
++++ v2/scripts/reader-experience/test-original-cold-process-tools.py
+@@ -6,6 +6,7 @@
+ from pathlib import Path
+ import tempfile
+ import unittest
++from unittest.mock import Mock, patch
+
+ HERE = Path(__file__).resolve().parent
+ spec = importlib.util.spec_from_file_location('original_cold_protocol', HERE / 'original-cold-process-tools.py')
+@@ -77,6 +78,24 @@
+             with self.assertRaises(FileExistsError):
+                 cold.commit_marker(path, {'hostAccepted': False})
+             self.assertEqual(json.loads(path.read_text()), self.producer)
++        # Real controller branch: the owned process disappears between the
++        # initial liveness check and kernel event registration. No simctl or
++        # process is executed in this portable vector.
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory); queue = Mock(); queue.control.side_effect = ProcessLookupError()
++            installed = Path('/controlled/YueduReader.app')
++            completed = Mock(); completed.stdout = (str(installed) + '/YueduReader').encode()
++            with patch.object(cold.os, 'kill', return_value=None), \
++                 patch.object(cold, 'get_container', return_value=installed), \
++                 patch.object(cold.subprocess, 'run', return_value=completed), \
++                 patch.object(cold.select, 'kqueue', return_value=queue, create=True), \
++                 patch.object(cold.select, 'kevent', return_value=object(), create=True), \
++                 patch.multiple(cold.select, create=True, KQ_FILTER_PROC=1, KQ_EV_ADD=2, KQ_EV_ONESHOT=4, KQ_NOTE_EXIT=8):
++                cold.terminate_producer('controlled-udid', 'local.controlled', 41001, root)
++            observed = json.loads((root / 'producer-process-exit.json').read_text())
++            self.assertEqual(observed, {'producerPID': 41001, 'alreadyExited': True,
++                'observedDuring': 'kernelRegistration'})
++            queue.close.assert_called_once()
+
+     def test_two_qualified_invocations_use_frozen_binary_and_keep_host_budget(self):
+         udid = 'A08A4C4D-3384-4BB6-B785-288570157975'

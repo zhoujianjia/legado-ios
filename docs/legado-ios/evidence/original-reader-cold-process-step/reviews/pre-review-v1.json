@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T22:24:33.542291+00:00",
+  "scope": "C5 independent contract/ownership pre-review only, awaiting final candidate freeze",
+  "canonicalDependencies": [
+    {
+      "path": "scripts/xctest.sh",
+      "bytes": 7631,
+      "sha256": "fc3b9a2c45506b07d75945c571866396ad02f4cbe12f7125b3e930ef5b180da2"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 218869,
+      "sha256": "834533e2b86e4fd4b6b0566146448b4c54da892f574e2502bc0f7b604bb2a6d5"
+    },
+    {
+      "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+      "bytes": 45847,
+      "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+    },
+    {
+      "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+      "bytes": 63609,
+      "sha256": "dfacf47bfbe3396fe2003e3b051cb14ca9ce72981e6626e75c2c5ac7cd7a09e0"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift",
+      "bytes": 3991,
+      "sha256": "5c2c3729ace2344843010ebc284ee98e5a7db4bc0541fae800772552071b190f"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "bytes": 15862,
+      "sha256": "97fab13d790e908f898551f23b47e024971de4bb2433660a5d9a8a85424f959f"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "bytes": 6133,
+      "sha256": "4e7d2a454531b3a50e23c5787b4f708b222b62035b9cd529e477917525b41136"
+    }
+  ],
+  "mutableObserved": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "origin": "mutable observation only, not final approval",
+      "bytes": 93608,
+      "sha256": "34be104949d43b3b54a23bac4b9ece075163c69b5a4f6ca0f8b3e86ce0cb471e"
+    },
+    {
+      "path": "scripts/xctest.sh",
+      "origin": "mutable observation only, not final approval",
+      "bytes": 7800,
+      "sha256": "2a2f3771110fbe3651a384364b47f8a193aa556c547971b871f1e60c9afa0e3d"
+    },
+    {
+      "path": "scripts/reader-experience/original-cold-process-tools.py",
+      "origin": "mutable observation only, not final approval",
+      "bytes": 15810,
+      "sha256": "4ab1ceb22943a3df51c1bfd79e1497b4a6582c6452b1f91dde726a9a28fc4336"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "origin": "mutable observation only, not final approval",
+      "bytes": 25972,
+      "sha256": "adc1b948ce482b791f8301d6417884dfea4c25730da2d4b736ffa34663e6e3f2"
+    }
+  ],
+  "verifiedOwnerFacts": [
+    "BookStore(metadataFileURL:...,legacyMetadataDefaults:nil) uses the existing real metadata/chapter owner at fixture-only files; new ReadingBook ID is a fresh UUID and is off-shelf. saveReadingBook queues immediate metadata and queuedWritesLanded awaits real writer, not a settle sleep.",
+    "ChapterFetchManager.fetchChapter validates real cache before sourceResolver; cold consumer can demonstrate real public offline path by zero source-resolution count, stable content/cache fingerprints and unavailable producer listener.",
+    "JSONFileReadingPositionStore.saveChecked with no injected writeData produces atomicWriteCompleted receipt, loadChecked produces existingFileRead receipt/hash from owned disk files.",
+    "Global chapter cache cleanup is existing repository clearAllChapterCacheAwait(UUID), removing only that UUID subtree through the real writer. It is not a claim that deleting any asserted UUID is safe; consumer must validate ownership first.",
+    "xctest.sh default action test remains the old path; finite whitelist test-without-building can reuse the already-built installation, but matching real container before/after each host must still be measured. Different ProcessInfo PIDs plus observed actual producer process exit are needed.",
+    "Planned controller commits producer.json only after original xcresult summary+exact qualified testcase pass; source/run/nonce/container binding and exclusive fresh descriptors reject old receipts. No UIKit/device/full-source acceptance follows."
+  ],
+  "pendingPoints": [
+    {
+      "priority": "P2",
+      "topic": "cleanup authorization order",
+      "observed": "Consumer assigns ownedID from claim before reading/validating accepted producer receipt. On missing/rejected receipt error path it can clear global UUID cache using only claim.",
+      "requested": "Set cleanup-ownedID only after producer/control/bookID/hostAccepted and differentPID checks; malformed/stale receipt may clean owned fixture data only.",
+      "status": "sent author while mutable; final must be rechecked, not a final frozen finding yet"
+    },
+    {
+      "priority": "P2",
+      "topic": "explicit Simulator destination",
+      "observed": "Controller --udid governs install/container/terminate while xctest wrapper command lacks YUEDU_DEST and resolves environment/default destination independently. Usually fails closed but can target a different Simulator.",
+      "requested": "Pass the same explicit udid through YUEDU_DEST=id=<udid> in owned phase command and pure command guard.",
+      "status": "sent author while mutable; final must be rechecked"
+    }
+  ],
+  "testsOrCompilerRerun": false,
+  "canonicalMutated": false,
+  "authorStageMutated": false,
+  "GitMutated": false,
+  "cloudQueried": false,
+  "claims": {
+    "finalCandidateApproved": false,
+    "SDKPassed": false,
+    "NativePassed": false,
+    "crossProcessExecutionPassed": false
+  }
+}

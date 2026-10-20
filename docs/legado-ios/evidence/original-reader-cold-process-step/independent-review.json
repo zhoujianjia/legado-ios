@@ -1,0 +1,2710 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T22:37:29.525658+00:00",
+  "reviewer": "/root/login_info_v2_review",
+  "scope": "Independent final C5 v2 static ownership/protocol/source and existing actual portable evidence review. No actual Apple SDK, App host or JVM execution.",
+  "candidate": {
+    "path": ".build/c5-original-cold-process-step/final-v2.json",
+    "bytes": 18808,
+    "sha256": "8f1cfdb07da216ba920b87f1bd76bb8238da0dba62308d1622bf5d9795ca386a",
+    "sourcesRoot": ".build/c5-original-cold-process-step/snapshot-v2/work"
+  },
+  "parent": {
+    "path": ".build/c5-original-cold-process-step/final-v1.json",
+    "bytes": 13326,
+    "sha256": "5f274d3fabcf82bfb94e59e9ad0cb11848b556064c63491fb024f9a7e8001bf9",
+    "immutable": true
+  },
+  "verdict": "approved-source-and-portable-evidence-pending-AppleSDK",
+  "checkCount": 571,
+  "mismatches": [],
+  "sources": [
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/.github/workflows/legado-native-reader-test.yml",
+      "bytes": 11036,
+      "sha256": "0318c243eb490c23181ff1ff0850ae7e44afbe5abdc17d7e22eb788a4b755029"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/scripts/reader-experience/original-cold-process-tools.py",
+      "bytes": 16767,
+      "sha256": "857611a99eaf8d02f4a0af5fe3157e1e6f18d7227773920c3deac8940ef8be03"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 25972,
+      "sha256": "adc1b948ce482b791f8301d6417884dfea4c25730da2d4b736ffa34663e6e3f2"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/scripts/reader-experience/test-original-cold-process-tools.py",
+      "bytes": 8030,
+      "sha256": "60c07689e88c4053c19de6aa716d646679c58d20c3b60890bc612b52320d9648"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/scripts/xctest.sh",
+      "bytes": 7800,
+      "sha256": "2a2f3771110fbe3651a384364b47f8a193aa556c547971b871f1e60c9afa0e3d"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 93923,
+      "sha256": "538bac2a31ca90e06fe34067f12b12702543ff1675de408eaaf7ce36d66b7de7"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/baseline-rebind.json",
+      "bytes": 646,
+      "sha256": "eb683abfa9b419d6e5667784dc0d46706716c149ff17f7870801eb0ed7722e64"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/baseline.json",
+      "bytes": 825,
+      "sha256": "3aa0adb064d16e927354787d4a9a21b03675c1657521af0d038d63583221037f"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/ColdMethods.swiftpart",
+      "bytes": 21037,
+      "sha256": "bf09a6fc825036ab534aa7dacb74e78f6450110695c282d44c87a7f58b27c8eb"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/prepare.py",
+      "bytes": 3350,
+      "sha256": "d4ae84e0fa2dceab2d2da1fff6c786815f61693e4435336a651b4cd42db58bfa"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/rebase-controls.py",
+      "bytes": 2082,
+      "sha256": "ec89446abd5f2d629405e2bd8425e1e07f89861dcdaced68f77c27d62d4aeb5c"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/update-swift.py",
+      "bytes": 1044,
+      "sha256": "5038da8c12fdb38139c4281a69d2a2385984e0d53db646256dafb7cd35b98fef"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validate-final.py",
+      "bytes": 2912,
+      "sha256": "319f990dbda511fb457e7b161cd60bc9689887236056d4487c3500d9df63891d"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validate.py",
+      "bytes": 3931,
+      "sha256": "271371d837f2a30a9cfe0f0aa3d1f82426622aeec77af6fa52388daf237a48f8"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-final/cold-affected.log",
+      "bytes": 663,
+      "sha256": "8c01c20bf2bd529e6b80b99eda2d29f3be91af6c5845de438a3e93c2d5eb7ebe"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-final/commands.json",
+      "bytes": 619,
+      "sha256": "9d64e62e32a3219125876b8bca911d546b294cc6ebde9fff7982a6698e9cd9d5"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-final/facts.json",
+      "bytes": 540,
+      "sha256": "620b35dc555af29ca65f8143ceeca78d875cdb8efa0e3ad19acaa08106a58478"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-source-inputs.json",
+      "bytes": 39513,
+      "sha256": "2f1f6631aec1b2641190572b0548d73233869507805037f78e43f519f7b68385"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/bash-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/cold-protocol.log",
+      "bytes": 1005,
+      "sha256": "79b9a4f39c72105b3bad474eb7d5e9332e16ab59c7dfafa30b5887f845dc88d7"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/commands.json",
+      "bytes": 1171,
+      "sha256": "9d8db888998069d69cb032628f98205133ce1ef58c95bb82ed245c15e463ad17"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/facts.json",
+      "bytes": 41329,
+      "sha256": "59b9638c6cef75325e83a6b470fb6a93f2931800c9ad24219f0604345f8968ce"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/native-inventory.log",
+      "bytes": 308,
+      "sha256": "9236862e5227bef77c10ea42c92537b7e30f4ddbdb70dacd170988f4d3e323fc"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/wire-workflow.py",
+      "bytes": 1421,
+      "sha256": "fde56421a5a71bcb1cb4110d8751fac9cdcb48fc0954794033ae4ae247cec7ae"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/prepare-v2.py",
+      "bytes": 3535,
+      "sha256": "51e3aa191d40057f1e04cb9cce416ea11936e8268e7c04000ddb16d0a113d824"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/validate-v2.py",
+      "bytes": 2130,
+      "sha256": "0ae7f475d697704d08512e574cd40d2174b8e726345dd3651f33269738f70249"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation/commands.json",
+      "bytes": 417,
+      "sha256": "cf51ee6d7c1ff9fe1ff0c45c651093e1948accaad4b55fd45ee200c436e78227"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation/facts.json",
+      "bytes": 303,
+      "sha256": "02f8c28ea33e4675131e60ae80f0bb4f2be1215f2c339c98cd37e715b800f92d"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation/marker-and-kernel-exit.log",
+      "bytes": 264,
+      "sha256": "05e15a43687a77fcbfdbfeaa1b95859c7d5da71765fbb2c3a7122b5317d49ff2"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation-initial-fixture-path-failure/commands.json",
+      "bytes": 417,
+      "sha256": "5163d0b50875f6ca7279b6e2556bbf493a2db63b76e7db5fdaefea2c3cc6ec2b"
+    },
+    {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation-initial-fixture-path-failure/marker-and-kernel-exit.log",
+      "bytes": 1269,
+      "sha256": "849f760c53e0fcdf415cd327a581cacafb5965bbf9ec566b0247ce1845793f57"
+    }
+  ],
+  "unchangedOwners": [
+    {
+      "path": "scripts/xctest.sh",
+      "bytes": 7631,
+      "sha256": "fc3b9a2c45506b07d75945c571866396ad02f4cbe12f7125b3e930ef5b180da2"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 218869,
+      "sha256": "834533e2b86e4fd4b6b0566146448b4c54da892f574e2502bc0f7b604bb2a6d5"
+    },
+    {
+      "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+      "bytes": 45847,
+      "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+    },
+    {
+      "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+      "bytes": 63609,
+      "sha256": "dfacf47bfbe3396fe2003e3b051cb14ca9ce72981e6626e75c2c5ac7cd7a09e0"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift",
+      "bytes": 3991,
+      "sha256": "5c2c3729ace2344843010ebc284ee98e5a7db4bc0541fae800772552071b190f"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "bytes": 15862,
+      "sha256": "97fab13d790e908f898551f23b47e024971de4bb2433660a5d9a8a85424f959f"
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "bytes": 6133,
+      "sha256": "4e7d2a454531b3a50e23c5787b4f708b222b62035b9cd529e477917525b41136"
+    }
+  ],
+  "inventory": {
+    "oldReaderMethods": 11,
+    "candidateReaderMethods": 13,
+    "newMethods": [
+      "testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork",
+      "testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit"
+    ],
+    "old11MethodASTBytesExact": true,
+    "existingOriginalSelected": 26,
+    "existingMainJSSelected": 1,
+    "twoColdExplicitHostsIntended": 2,
+    "AppDefinitionsUnchanged": 463,
+    "AppLeavesUnchanged": 466,
+    "PackageSelectionUnchanged": 24,
+    "nativeExistingInputs": 140,
+    "coldNewPaths": 2,
+    "C5OnlyV2EffectiveUnion": 142,
+    "note": "Source lists are evidence bindings, not Xcode source whitelist. This effective142 is a C5-only static rebind; not S4-composed SDK closure."
+  },
+  "actualAuthorPortable": {
+    "distinctDefinitions": 6,
+    "totalExecutions": 11,
+    "passedExecutions": 10,
+    "historicalFixtureErrors": 1,
+    "allFinalDistinctDefinitionsPassed": true,
+    "logs": [
+      {
+        "label": "v1 full protocol",
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/cold-protocol.log",
+        "bytes": 1005,
+        "sha256": "79b9a4f39c72105b3bad474eb7d5e9332e16ab59c7dfafa30b5887f845dc88d7",
+        "tests": 5,
+        "passed": 5,
+        "fixtureErrors": 0,
+        "methodResults": [
+          {
+            "method": "ColdProcessProtocolTests.test_each_host_requires_one_exact_passed_case_without_retry_or_skip",
+            "result": "ok"
+          },
+          {
+            "method": "ColdProcessProtocolTests.test_marker_commit_is_complete_and_refuses_stale_overwrite",
+            "result": "ok"
+          },
+          {
+            "method": "ColdProcessProtocolTests.test_offline_marker_requires_two_real_bodies_all_artifacts_and_stopped_peer",
+            "result": "ok"
+          },
+          {
+            "method": "ColdProcessProtocolTests.test_receipts_require_current_nonce_accepted_host_and_different_pid",
+            "result": "ok"
+          },
+          {
+            "method": "ColdProcessProtocolTests.test_two_qualified_invocations_use_frozen_binary_and_keep_host_budget",
+            "result": "ok"
+          }
+        ]
+      },
+      {
+        "label": "v1 existing native inventory",
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/native-inventory.log",
+        "bytes": 308,
+        "sha256": "9236862e5227bef77c10ea42c92537b7e30f4ddbdb70dacd170988f4d3e323fc",
+        "tests": 1,
+        "passed": 1,
+        "fixtureErrors": 0,
+        "methodResults": [
+          {
+            "method": "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+            "result": "ok"
+          }
+        ]
+      },
+      {
+        "label": "v1 final affected",
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-final/cold-affected.log",
+        "bytes": 663,
+        "sha256": "8c01c20bf2bd529e6b80b99eda2d29f3be91af6c5845de438a3e93c2d5eb7ebe",
+        "tests": 3,
+        "passed": 3,
+        "fixtureErrors": 0,
+        "methodResults": [
+          {
+            "method": "ColdProcessProtocolTests.test_receipts_require_current_nonce_accepted_host_and_different_pid",
+            "result": "ok"
+          },
+          {
+            "method": "ColdProcessProtocolTests.test_offline_marker_requires_two_real_bodies_all_artifacts_and_stopped_peer",
+            "result": "ok"
+          },
+          {
+            "method": "ColdProcessProtocolTests.test_two_qualified_invocations_use_frozen_binary_and_keep_host_budget",
+            "result": "ok"
+          }
+        ]
+      },
+      {
+        "label": "v2 fixture path failure",
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation-initial-fixture-path-failure/marker-and-kernel-exit.log",
+        "bytes": 1269,
+        "sha256": "849f760c53e0fcdf415cd327a581cacafb5965bbf9ec566b0247ce1845793f57",
+        "tests": 1,
+        "passed": 0,
+        "fixtureErrors": 1,
+        "methodResults": [
+          {
+            "method": "ColdProcessProtocolTests.test_marker_commit_is_complete_and_refuses_stale_overwrite",
+            "result": "ERROR"
+          }
+        ]
+      },
+      {
+        "label": "v2 corrected affected",
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation/marker-and-kernel-exit.log",
+        "bytes": 264,
+        "sha256": "05e15a43687a77fcbfdbfeaa1b95859c7d5da71765fbb2c3a7122b5317d49ff2",
+        "tests": 1,
+        "passed": 1,
+        "fixtureErrors": 0,
+        "methodResults": [
+          {
+            "method": "ColdProcessProtocolTests.test_marker_commit_is_complete_and_refuses_stale_overwrite",
+            "result": "ok"
+          }
+        ]
+      }
+    ],
+    "BashSyntaxAuthorExit": 0,
+    "SwiftGrammarAuthorRoots": 2,
+    "SwiftGrammarAuthorFinalErrors": 0
+  },
+  "sourceLineEvidence": {
+    "controller": {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/scripts/reader-experience/original-cold-process-tools.py",
+      "actualSourceState": 162,
+      "qualifiedWrapper": 174,
+      "hostVerdict": 199,
+      "actualExit": 227,
+      "run": 258,
+      "exitBeforeMarker": 289,
+      "producerExclusiveMarker": 290,
+      "consumerLaunch": 291,
+      "finalExitBinding": 300
+    },
+    "Native": {
+      "path": ".build/c5-original-cold-process-step/snapshot-v2/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "producer": 12,
+      "cacheClaimAfterAbsence": 53,
+      "consumer": 125,
+      "acceptedCleanupAuthority": 139,
+      "boundedContext": 236,
+      "dataOnlyCleanup": 285
+    }
+  },
+  "ownerAndSuccessConclusions": [
+    "Actual future producer uses existing public search/detail/paginated TOC, owned BookStore and transferOriginalPreview, actual ChapterFetchManager two-body cache publication, real checked JSON reading position write. No mock HTTP/runtime/store replaces these owners.",
+    "Consumer opens existing owned BookStore/reading position files in a distinct App PID, compares persistent identities/variables/position and hashes, then uses the public ChapterFetchManager cache path with sourceResolver count0. It does not prove CoreText/Reader UI layout.",
+    "Controller chooses one explicit Simulator for install/container/wrapper/termination, measures data container before and after each host and exact source stamp, and fails if test-without-building changes the container. No assumption that Xcode preserves installation becomes success.",
+    "Both raw xcresult summary and tests must prove exactly one qualified passed case with wrapper/export exit0 and no timeout, skip, retry, foreign case or expected failure. Producer pending data alone cannot establish success.",
+    "Final v2 waits for actual owned producer exit before exclusive producer marker. Missing PID, registration ESRCH and observed kernel exit each write a bound observation; consumer and final result require it. Synthetic mocked ESRCH vector verifies serialization only, not actual kernel behavior.",
+    "Producer claims global cache cleanup only after verifying a fresh UUID has no directory; consumer assigns cleanup UUID only after accepted current producer/control/book/PID validation. Errors can remove fixture-owned data and that authorized UUID only; they never enumerate the default shelf or clear all user caches.",
+    "Descriptor/receipt bind current source, nonce, run UUID and real container. Stale namespace/receipt, reused same PID, hash mismatch or incomplete owner publication fail closed. A stale namespace is deliberately not auto-deleted or reused.",
+    "Root S4 integration does not alter the four existing C5 baselines; final six-source candidate must still be composed with current S4/control source hashes before any later SDK run."
+  ],
+  "closedFindings": [
+    {
+      "id": "C5-P2-cleanup-authority",
+      "status": "closed-source",
+      "fix": "Consumer ownedID assignment now follows complete accepted producer/control/book/PID validation."
+    },
+    {
+      "id": "C5-P2-explicit-simulator",
+      "status": "closed-source-and-portable",
+      "fix": "Qualified wrappers pass same --udid as YUEDU_DEST=id=...; retained exact command guard passes."
+    },
+    {
+      "id": "C5-P2-producer-marker-order",
+      "status": "closed-v2-source",
+      "fix": "terminate_producer now precedes producer marker; no false final pass was found in v1, whose final consumer already followed exit."
+    },
+    {
+      "id": "C5-P2-registration-exit-evidence",
+      "status": "closed-v2-source-and-portable",
+      "fix": "ProcessLookupError during kernel registration records observation, final result hashes observation. One existing guard errors on a synthetic Windows path fixture then passes after fixture-only path correction; both histories retained."
+    }
+  ],
+  "limits": [
+    "Actual Apple SDK compilation, install, test-without-building semantics, Simulator container retention, separate App hosts/PIDs, real kqueue and real public cache/position acceptance remain unexecuted (all0). Static Swift parsing and portable mocks cannot approve them.",
+    "C5 is a finite synthetic original-source text reader/offline/position chain. It does not establish full source compatibility, user library migration, Reader UI rendering, real device behavior, Apple installation/signing/renewal or profile validity.",
+    "No guarantee against malicious concurrent filesystem mutation/PID reuse beyond the explicit fail-closed source/container/path/PID checks; no new global ownership registry is introduced.",
+    "Author v1 shadow142 source list belongs to its own C5-only snapshot. v2 explicitly substitutes the two protocol hashes; future root must compose current S4 and final controls rather than reuse an old source stamp."
+  ],
+  "reviewerOperations": {
+    "ownIgnoredOutputsOnly": true,
+    "canonicalMutation": false,
+    "GitMutation": false,
+    "cloudCalls": 0,
+    "testsRerun": 0,
+    "SDKCompilation": 0,
+    "JVMOrJavaExecution": 0,
+    "sourceASTInspectionOnly": true
+  },
+  "fourCompletionFlags": {
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  },
+  "checks": [
+    {
+      "name": "exact final v2",
+      "passed": true
+    },
+    {
+      "name": "immutable parent final v1",
+      "passed": true
+    },
+    {
+      "name": "six sources",
+      "passed": true
+    },
+    {
+      "name": "candidate .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "whole diff .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "baseline .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "canonical baseline still exact .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "parent snapshot preserved .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "top work remains parent .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "v2 unchanged source .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "candidate scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "whole diff scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "new path still absent canonical scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "parent snapshot preserved scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "top work remains parent scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "candidate scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "whole diff scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "baseline scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "canonical baseline still exact scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "parent snapshot preserved scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "top work remains parent scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v2 unchanged source scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "candidate scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "whole diff scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "new path still absent canonical scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "parent snapshot preserved scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "top work remains parent scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "candidate scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "whole diff scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "baseline scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "canonical baseline still exact scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "parent snapshot preserved scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "top work remains parent scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "v2 unchanged source scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "candidate Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "whole diff Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "baseline Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "canonical baseline still exact Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "parent snapshot preserved Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "top work remains parent Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v2 unchanged source Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "incremental diff scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "incremental parent scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "incremental diff scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "incremental parent scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/baseline-rebind.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/baseline.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/ColdMethods.swiftpart",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/prepare.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/rebase-controls.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/update-swift.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validate-final.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validate.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-final/cold-affected.log",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-final/commands.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-final/facts.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-source-inputs.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-v1/bash-syntax.log",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-v1/cold-protocol.log",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-v1/commands.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-v1/facts.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/validation-v1/native-inventory.log",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v1/evidence/wire-workflow.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v2/evidence/prepare-v2.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v2/evidence/validate-v2.py",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v2/evidence/successor-v2/validation/commands.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v2/evidence/successor-v2/validation/facts.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v2/evidence/successor-v2/validation/marker-and-kernel-exit.log",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v2/evidence/successor-v2/validation-initial-fixture-path-failure/commands.json",
+      "passed": true
+    },
+    {
+      "name": "evidence snapshot-v2/evidence/successor-v2/validation-initial-fixture-path-failure/marker-and-kernel-exit.log",
+      "passed": true
+    },
+    {
+      "name": "all v1 evidence retained in v2",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/baseline-rebind.json",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/baseline.json",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/ColdMethods.swiftpart",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/prepare.py",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/rebase-controls.py",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/update-swift.py",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validate-final.py",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validate.py",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-final/cold-affected.log",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-final/commands.json",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-final/facts.json",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-source-inputs.json",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-v1/bash-syntax.log",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-v1/cold-protocol.log",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-v1/commands.json",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-v1/facts.json",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/validation-v1/native-inventory.log",
+      "passed": true
+    },
+    {
+      "name": "v1 evidence unchanged snapshot-v1/evidence/wire-workflow.py",
+      "passed": true
+    },
+    {
+      "name": "v1 copied rows actual count including Python dependencies",
+      "passed": true
+    },
+    {
+      "name": "v1 copied rows unique",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/BookSource/BookSourceFetcher+BookInfo.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/BookSource/BookSourceFetcher+Discover.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/BookSource/BookSourceFetcher+Search.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/BookSource/BookSourceFetcher+TOC.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/BookSource/BookSourceFetcher.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/RuleEngine/ModernParser/Login/LoginFieldStyle.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Core/TTS/AudiobookPlayer.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/BookDetail/AudiobookDetailView.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/BookDetail/OnlineBookView.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/Explore/ExploreSourcePage.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/Reader/ReaderView+SourceCallBack.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/Reader/ReaderView.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Features/Reader/TTS/AudiobookView.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/LibraryStore/BackgroundTaskHold.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/LibraryStore/BookChapterStore.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/LibraryStore/BookStore.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/ChapterCacheRepository.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/DiscoverKindsCache.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/DiscoverQuickActions.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/DiscoverViewModel.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/ExploreSettings.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/LegadoBookStateOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/LegadoReviewActionRunner.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/OnlineReadingPipeline.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/Online/SourceCallBackService.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/SharedUI/Components/LoginFormGrid.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Modules/SharedUI/Components/SourceWebUIDelegate.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Package.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/FlexChildStyle.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/RowUi.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/login/LoginUiV2.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginActionRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIReuse.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginV2Runtime.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalWebBookSession.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerTextTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/LockedLoginMapReference.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalBookCallbackTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceCallbackTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceFormLoginTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginActionTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserPostTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginDeltaTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginHeaderTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginInfoTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginMapTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUIEventsTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2BrowserTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2Test.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourcePersistLoginInfoTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/FlexChildStyle.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/RowUi.kt",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Targets/Yuedu/SharedApp/AppDependencies.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/LegadoNativeMainJSReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/PublicLibraryAvailabilityTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/ReaderFontCatalogTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/ReaderLocalProductTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/RemoteLibraryHTTPTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/SubscriptionPublicationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/UserFontSettingsTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow Tests/iOS/yuedu appTests/UserFontTransactionTests.swift",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/fetch-sources.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/prepare-app-runtime.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/prepare-symbol-keeper.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/prepare-zero-code-cache.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/prepare-zero-signal-context.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/prepare-zero-wx.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/run-simulator-probe.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/runtime-lock.json",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/stage-runtime.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-cpu-loop.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-fetch-sources.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-http-wire.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-native-reuse.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-runtime-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-zero-code-cache.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-zero-signal-context.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/test-zero-wx.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/verify-cpu-loop.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/verify-http-wire.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/verify-native-exports.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/verify-native-reuse.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/verify-runtime-reuse.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/legado-ios/verify-runtime.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/bundle-local-sources.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/check-completion-plan.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/collect-native-diagnostics.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/collect-reader-measurements.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/collect-rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/data-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/export-renewal-pairing.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/generate-brand-assets.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/inspect-renewal-report.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/inspect-umd-fixtures.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/online-source-fixture.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/original-api-package-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/owned-sdk-producer-check.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/reader-launch-memory.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/reader-stage-baseline.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/renewal-probe-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/renewal-report-schema1.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/run-online-smoke.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/runtime-notices.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/runtime-packaging.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/stage-config.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-bundle-local-sources.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-check-completion-plan.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-collect-reader-measurements.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-collect-rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-data-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-export-renewal-pairing.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-inspect-renewal-report.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-native-diagnostics.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-online-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-online-source-fixture.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-original-api-package-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-owned-sdk-producer-check.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-reader-launch-memory.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-reader-stage-baseline.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-renewal-probe-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-runtime-notices.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-runtime-packaging.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-stage-config.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/reader-experience/test-umd-fixtures.py",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/sim.sh",
+      "passed": true
+    },
+    {
+      "name": "v1 shadow scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "literal current native roster",
+      "passed": true
+    },
+    {
+      "name": "literal native roster unique",
+      "passed": true
+    },
+    {
+      "name": "effective C5-only v2 union",
+      "passed": true
+    },
+    {
+      "name": "v2 extra source paths only",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency .github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/BookSource/BookSourceFetcher+BookInfo.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/BookSource/BookSourceFetcher+Discover.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/BookSource/BookSourceFetcher+Search.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/BookSource/BookSourceFetcher+TOC.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/BookSource/BookSourceFetcher.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/RuleEngine/ModernParser/Login/LoginFieldStyle.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Core/TTS/AudiobookPlayer.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/BookDetail/AudiobookDetailView.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/BookDetail/OnlineBookView.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/Explore/ExploreSourcePage.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/Reader/ReaderView+SourceCallBack.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/Reader/ReaderView.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Features/Reader/TTS/AudiobookView.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/LibraryStore/BackgroundTaskHold.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/LibraryStore/BookChapterStore.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/LibraryStore/BookStore.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/ChapterCacheRepository.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/DiscoverKindsCache.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/DiscoverQuickActions.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/DiscoverViewModel.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/ExploreSettings.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/LegadoBookStateOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/LegadoReviewActionRunner.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/OnlineReadingPipeline.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/Online/SourceCallBackService.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/SharedUI/Components/LoginFormGrid.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Modules/SharedUI/Components/SourceWebUIDelegate.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Package.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalLoginV2Models.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/FlexChildStyle.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/RowUi.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/login/LoginUiV2.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginActionRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIReuse.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginV2Runtime.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalWebBookSession.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleWebBookState.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerTextTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/LockedLoginMapReference.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalBookCallbackTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceCallbackTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceFormLoginTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginActionTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserPostTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginDeltaTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginHeaderTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginInfoTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginMapTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUIEventsTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2BrowserTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2Test.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourcePersistLoginInfoTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalWebBookExecutionTest.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/FlexChildStyle.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/RowUi.kt",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Targets/Yuedu/SharedApp/AppDependencies.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/LegadoNativeMainJSReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/PublicLibraryAvailabilityTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/ReaderFontCatalogTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/ReaderLocalProductTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/RemoteLibraryHTTPTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/SubscriptionPublicationTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/UserFontSettingsTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency Tests/iOS/yuedu appTests/UserFontTransactionTests.swift",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/fetch-sources.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/prepare-app-runtime.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/prepare-symbol-keeper.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/prepare-zero-code-cache.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/prepare-zero-signal-context.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/prepare-zero-wx.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/run-simulator-probe.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/runtime-lock.json",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/stage-runtime.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-cpu-loop.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-fetch-sources.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-http-wire.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-native-reuse.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-runtime-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-zero-code-cache.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-zero-signal-context.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/test-zero-wx.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/verify-cpu-loop.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/verify-http-wire.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/verify-native-exports.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/verify-native-reuse.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/verify-runtime-reuse.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/legado-ios/verify-runtime.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/bundle-local-sources.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/check-completion-plan.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/collect-native-diagnostics.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/collect-reader-measurements.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/collect-rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/data-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/export-renewal-pairing.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/generate-brand-assets.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/inspect-renewal-report.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/inspect-umd-fixtures.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/online-source-fixture.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/original-api-package-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/owned-sdk-producer-check.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/reader-launch-memory.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/reader-stage-baseline.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/renewal-probe-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/renewal-report-schema1.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/run-online-smoke.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/runtime-notices.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/runtime-packaging.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/stage-config.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-bundle-local-sources.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-check-completion-plan.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-collect-reader-measurements.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-collect-rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-data-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-export-renewal-pairing.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-inspect-renewal-report.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-native-diagnostics.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-online-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-online-source-fixture.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-original-api-package-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-owned-sdk-producer-check.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-reader-launch-memory.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-reader-stage-baseline.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-renewal-probe-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-rule-defaults-reference.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-runtime-notices.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-runtime-packaging.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-stage-config.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/reader-experience/test-umd-fixtures.py",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/sim.sh",
+      "passed": true
+    },
+    {
+      "name": "successor validation unchanged dependency scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "successor tested source scripts/reader-experience/original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "successor tested source scripts/reader-experience/test-original-cold-process-tools.py",
+      "passed": true
+    },
+    {
+      "name": "Reader old definitions",
+      "passed": true
+    },
+    {
+      "name": "Reader new definitions",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalWebBookPreviewTransferAndReopen",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalBookNotificationCancellationDrains",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+      "passed": true
+    },
+    {
+      "name": "old method AST bytes testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+      "passed": true
+    },
+    {
+      "name": "only exact two new Native methods",
+      "passed": true
+    },
+    {
+      "name": "one exit wait before two exclusive markers and consumer",
+      "passed": true
+    },
+    {
+      "name": "all three successful exit branches write observation",
+      "passed": true
+    },
+    {
+      "name": "final result binds regular file bytes and hash",
+      "passed": true
+    },
+    {
+      "name": "no fixed sleep in controller",
+      "passed": true
+    },
+    {
+      "name": "real kernel exit subscription retained",
+      "passed": true
+    },
+    {
+      "name": "PID reuse rejects before signalling",
+      "passed": true
+    },
+    {
+      "name": "native snapshots and same container before after each host",
+      "passed": true
+    },
+    {
+      "name": "exact same Simulator in wrapper",
+      "passed": true
+    },
+    {
+      "name": "qualified binary reuse action",
+      "passed": true
+    },
+    {
+      "name": "cold bounded host timeout",
+      "passed": true
+    },
+    {
+      "name": "old receipts rejected via exclusive control",
+      "passed": true
+    },
+    {
+      "name": "accepted marker only link after fsync",
+      "passed": true
+    },
+    {
+      "name": "raw summary and exact test case both required",
+      "passed": true
+    },
+    {
+      "name": "all command exits and timeouts fail closed",
+      "passed": true
+    },
+    {
+      "name": "strict boolean versus int receipt counts",
+      "passed": true
+    },
+    {
+      "name": "additional source overlap must have exact facts",
+      "passed": true
+    },
+    {
+      "name": "consumer cleanup ownership only after accepted complete receipt",
+      "passed": true
+    },
+    {
+      "name": "producer UUID ownership only after cache absent guard",
+      "passed": true
+    },
+    {
+      "name": "fixture uses real checked position IO",
+      "passed": true
+    },
+    {
+      "name": "public actual reader on both sides",
+      "passed": true
+    },
+    {
+      "name": "public original source production chain",
+      "passed": true
+    },
+    {
+      "name": "consumer cache before source resolution proved",
+      "passed": true
+    },
+    {
+      "name": "producer actual network fully drained before pending",
+      "passed": true
+    },
+    {
+      "name": "owned cleanup only UUID cache and fixture data",
+      "passed": true
+    },
+    {
+      "name": "source and actual data container App-side checked",
+      "passed": true
+    },
+    {
+      "name": "controlled nonrequired skip not native proof",
+      "passed": true
+    },
+    {
+      "name": "custom real metadata owner no legacy default import",
+      "passed": true
+    },
+    {
+      "name": "old job timeout unchanged",
+      "passed": true
+    },
+    {
+      "name": "cold required conjunct and actual invocation",
+      "passed": true
+    },
+    {
+      "name": "always artifacts retain evidence subtree",
+      "passed": true
+    },
+    {
+      "name": "test remains default and finite binary reuse whitelist",
+      "passed": true
+    },
+    {
+      "name": "only wrapper invocation changes from literal test to action",
+      "passed": true
+    },
+    {
+      "name": "v1 full protocol executed count",
+      "passed": true
+    },
+    {
+      "name": "v1 full protocol raw summary count",
+      "passed": true
+    },
+    {
+      "name": "v1 full protocol actual errors",
+      "passed": true
+    },
+    {
+      "name": "v1 existing native inventory executed count",
+      "passed": true
+    },
+    {
+      "name": "v1 existing native inventory raw summary count",
+      "passed": true
+    },
+    {
+      "name": "v1 existing native inventory actual errors",
+      "passed": true
+    },
+    {
+      "name": "v1 final affected executed count",
+      "passed": true
+    },
+    {
+      "name": "v1 final affected raw summary count",
+      "passed": true
+    },
+    {
+      "name": "v1 final affected actual errors",
+      "passed": true
+    },
+    {
+      "name": "v2 fixture path failure executed count",
+      "passed": true
+    },
+    {
+      "name": "v2 fixture path failure raw summary count",
+      "passed": true
+    },
+    {
+      "name": "v2 fixture path failure actual errors",
+      "passed": true
+    },
+    {
+      "name": "v2 corrected affected executed count",
+      "passed": true
+    },
+    {
+      "name": "v2 corrected affected raw summary count",
+      "passed": true
+    },
+    {
+      "name": "v2 corrected affected actual errors",
+      "passed": true
+    },
+    {
+      "name": "distinct actual portable definitions",
+      "passed": true
+    },
+    {
+      "name": "actual portable execution count including failed fixture",
+      "passed": true
+    },
+    {
+      "name": "successful actual portable executions",
+      "passed": true
+    },
+    {
+      "name": "v2 tests only mock kernel branch not actual exit",
+      "passed": true
+    },
+    {
+      "name": "six final portable identities only",
+      "passed": true
+    },
+    {
+      "name": "v1 Swift proof final bytes rebound",
+      "passed": true
+    },
+    {
+      "name": "owner unchanged scripts/xctest.sh",
+      "passed": true
+    },
+    {
+      "name": "owner unchanged Modules/Services/LibraryStore/BookStore.swift",
+      "passed": true
+    },
+    {
+      "name": "owner unchanged Modules/Services/Online/ChapterCacheRepository.swift",
+      "passed": true
+    },
+    {
+      "name": "owner unchanged Modules/Services/Online/OnlineReadingPipeline.swift",
+      "passed": true
+    },
+    {
+      "name": "owner unchanged Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift",
+      "passed": true
+    },
+    {
+      "name": "owner unchanged Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "passed": true
+    },
+    {
+      "name": "owner unchanged Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "passed": true
+    }
+  ]
+}

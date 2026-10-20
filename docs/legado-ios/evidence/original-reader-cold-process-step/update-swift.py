@@ -1,0 +1,5 @@
+from pathlib import Path
+S=Path(__file__).parent;rel='Tests/iOS/LegadoNativeOriginalReaderTests.swift';text=(S/'rawbaseline'/rel).read_text(encoding='utf-8');fragment=(S/'ColdMethods.swiftpart').read_text(encoding='utf-8');marker='final class LegadoNativeOriginalReaderTests: XCTestCase {\n';assert text.count(marker)==1;text=text.replace(marker,marker+fragment)
+marker='    private let runID: String\n';assert text.count(marker)==1;text=text.replace(marker,marker+'    private let emitCookie: Bool\n')
+marker='    init(runID: String) throws {\n        self.runID = runID\n';assert text.count(marker)==1;text=text.replace(marker,'    init(runID: String, emitCookie: Bool = true) throws {\n        self.runID = runID\n        self.emitCookie = emitCookie\n')
+marker='let setCookie = target == prefix + "/search?key=native-original&page=2"';assert text.count(marker)==1;text=text.replace(marker,'let setCookie = emitCookie && target == prefix + "/search?key=native-original&page=2"');(S/'work'/rel).write_text(text,encoding='utf-8',newline='\n')

@@ -1,0 +1,18 @@
+--- a/scripts/reader-experience/test-native-smoke-tools.py
++++ b/scripts/reader-experience/test-native-smoke-tools.py
+@@ -332,8 +332,13 @@
+                 self.assertIn("final class " + suite + ": XCTestCase", source)
+                 declarations = re.findall(r"(?m)^\s+func (test\w+)\s*\(([^)]*)\)", source)
+                 self.assertEqual(len(declarations), len(set(name for name, _ in declarations)))
+-                self.assertEqual({name for name, _ in declarations},
+-                    {method.split("/")[1] for method in methods if method.split("/")[0] == suite})
++                expected_methods = {method.split("/")[1] for method in methods if method.split("/")[0] == suite}
++                if suite == "LegadoNativeOriginalReaderTests":
++                    # These two methods are selected by distinct, receipt-bound
++                    # cold-process host invocations, never this original group.
++                    expected_methods |= {"testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
++                        "testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork"}
++                self.assertEqual({name for name, _ in declarations}, expected_methods)
+                 self.assertTrue(all(parameters == "" for _, parameters in declarations))
+                 if suite == "LegadoNativeOriginalLoginInfoTests":
+                     # This suite throws directly under the required-native flag.

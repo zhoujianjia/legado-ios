@@ -1,0 +1,641 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-20T22:38:54.829804+00:00",
+  "status": "reviewed-production-CI-cross-process-original-reader-fixture-integrated-actual-two-hosts-pending",
+  "reviewedCanonicalParent": "17771791ce0eed63bba2a71d9a0623855fb6200f",
+  "sourceFiles": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "bytes": 10489,
+        "sha256": "c8b74f072b829d1081f479fc704ebbc2b98f01c6e796793002ac496a91517e68"
+      },
+      "candidate": {
+        "bytes": 11036,
+        "sha256": "0318c243eb490c23181ff1ff0850ae7e44afbe5abdc17d7e22eb788a4b755029"
+      },
+      "diff": {
+        "path": "snapshot-v2/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 2678,
+        "sha256": "6cf514b4ee89af4971e011492709dfbaf927e239dbc42a2c5437f99a72fdefdb"
+      },
+      "sourcePath": "snapshot-v2/work/.github/workflows/legado-native-reader-test.yml"
+    },
+    {
+      "path": "scripts/reader-experience/original-cold-process-tools.py",
+      "baseline": null,
+      "candidate": {
+        "bytes": 16767,
+        "sha256": "857611a99eaf8d02f4a0af5fe3157e1e6f18d7227773920c3deac8940ef8be03"
+      },
+      "diff": {
+        "path": "snapshot-v2/diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+        "bytes": 17235,
+        "sha256": "62cc053be040b4ed0451cce08c6743b3dd83c0fc54e97dff1770b1fcbd3aace6"
+      },
+      "sourcePath": "snapshot-v2/work/scripts/reader-experience/original-cold-process-tools.py"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "bytes": 25514,
+        "sha256": "054bdb3c4e43975ff4758dee23886aba5b365c37ed12d383e589cc0d0593058a"
+      },
+      "candidate": {
+        "bytes": 25972,
+        "sha256": "adc1b948ce482b791f8301d6417884dfea4c25730da2d4b736ffa34663e6e3f2"
+      },
+      "diff": {
+        "path": "snapshot-v2/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 1450,
+        "sha256": "4b0dddd16167fc16e8f6ece694eeaea3db8a0a33aebdf4ed4c1e23d07cc0cd79"
+      },
+      "sourcePath": "snapshot-v2/work/scripts/reader-experience/test-native-smoke-tools.py"
+    },
+    {
+      "path": "scripts/reader-experience/test-original-cold-process-tools.py",
+      "baseline": null,
+      "candidate": {
+        "bytes": 8030,
+        "sha256": "60c07689e88c4053c19de6aa716d646679c58d20c3b60890bc612b52320d9648"
+      },
+      "diff": {
+        "path": "snapshot-v2/diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+        "bytes": 8306,
+        "sha256": "022811441292e69acd514062c3ede045c581b7ba8800465342842ed2490810b4"
+      },
+      "sourcePath": "snapshot-v2/work/scripts/reader-experience/test-original-cold-process-tools.py"
+    },
+    {
+      "path": "scripts/xctest.sh",
+      "baseline": {
+        "bytes": 7631,
+        "sha256": "fc3b9a2c45506b07d75945c571866396ad02f4cbe12f7125b3e930ef5b180da2"
+      },
+      "candidate": {
+        "bytes": 7800,
+        "sha256": "2a2f3771110fbe3651a384364b47f8a193aa556c547971b871f1e60c9afa0e3d"
+      },
+      "diff": {
+        "path": "snapshot-v2/diffs/scripts/xctest.sh.diff",
+        "bytes": 1067,
+        "sha256": "14a57c46974c59fc19eae2d95c5f7eebba1fd4dcd6fee58d336a7668c7c45732"
+      },
+      "sourcePath": "snapshot-v2/work/scripts/xctest.sh"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 72777,
+        "sha256": "6910a7b966b7a83ce730871ee7ff57d666c3bda86acae202163663f45cd4f487"
+      },
+      "candidate": {
+        "bytes": 93923,
+        "sha256": "538bac2a31ca90e06fe34067f12b12702543ff1675de408eaaf7ce36d66b7de7"
+      },
+      "diff": {
+        "path": "snapshot-v2/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 23301,
+        "sha256": "1988f4bc748408f4737d799fd1ec4f816fba80a9326805947c73d52051ab0580"
+      },
+      "sourcePath": "snapshot-v2/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift"
+    }
+  ],
+  "scope": "Future C5: actual separate producer/consumer App host protocol and real original public Reader persistence fixture; authored0actualAppleSDK/host executions",
+  "ownedRoutes": {
+    "producer": "Public BookSourceFetcher search->bookinfo->paginatedTOC->BookStore custommetadata->transferOriginalPreview->ChapterFetchManager twochapters includingc1p2->existing globalChapterCacheRepository only verified-new claimed bookUUID->JSONFileReadingPositionStore.saveChecked; close same service and realTCP listener/0connections before pending receipt",
+    "consumer": "New App process PID, samecontainer/source/runUUID/nonce accepted producer; actual BookStore reopen+chapter/bookUUID/variables+position.loadChecked+4fileSHA+2x5cacheSHA; same public ChapterFetchManager cache before sourceResolver; resolver count0 and metadata/cache hashes unchanged",
+    "storage": "ApplicationSupport/YueduNativeColdProcess/<freshUUID>/data plus existing online_cache/<verified-new-bookUUID>; no newstore/VM/cache/HTTP owner. Only data namespace and accepted claimed UUID cleaned, never enumerate default library.",
+    "controller": "ExplicitsameUDID install/current get_app_container; run two qualified xctest.sh with enum-whitelisted test-without-building and explicit YUEDU_DEST; before/after source+samecontainer strict; await owned producer kernel exit if alive; pending receipt accepted only after wrapper+rawsummary/tests exact1pass then atomicexclusivemarker; stalebase/receipt/changedcontainer/nonce/source/samePID reject"
+  },
+  "selectors": {
+    "producer": "yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+    "consumer": "yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork"
+  },
+  "inventory": {
+    "oldReaderDefinitions": 11,
+    "candidateReaderDefinitions": 13,
+    "old11MethodBodiesASTExact": true,
+    "originalSelectedMethods": 26,
+    "independentMainJSMethods": 1,
+    "coldProducerSelectedMethods": 1,
+    "coldConsumerSelectedMethods": 1,
+    "AppSelectedDefinitions": 463,
+    "AppArgumentLeaves": 466,
+    "PackageSelection": 24,
+    "nativeExistingSourceInputs": 140,
+    "coldProtocolNewInputs": 2,
+    "coldShadowClosure": 142,
+    "sourceDedupe": "Future root nativeSOURCE_INPUTS may already include protocol2; additional_inputs verifies identical overlap and appends missingonly. Tested both current140+2 and future142+0; no fixed extra2 assumption.",
+    "newInputPaths": [
+      "scripts/reader-experience/original-cold-process-tools.py",
+      "scripts/reader-experience/test-original-cold-process-tools.py"
+    ],
+    "note": "Own source/receipt protocol; does not relabel original26 group or current frozen cloudcohort. Future root also adds protocol2 to native/core rosters and combines S4 bytes before actualSDK."
+  },
+  "workflowGates": {
+    "coldStatusRequiredForWholeJob": true,
+    "coldPortableGuardRequired": true,
+    "rawXcresultExportsAndCommandLedgers": true,
+    "preserveAlwaysArtifact": ".build/native-reader-test/cold-process/",
+    "oldNativeAndSummaryFailureGatesUnchanged": true,
+    "oldBudgetsUnchanged": true,
+    "coldHostBudgetSecondsEach": 900,
+    "jobBudgetMinutesUnchanged": 90
+  },
+  "validation": {
+    "distinctPortableDefinitions": 6,
+    "totalExecutionsIncludingOneFixtureFailure": 11,
+    "actualColdAppHosts": 0,
+    "actualSwiftSDK": 0,
+    "v1": {
+      "pureProtocolDefinitions": 5,
+      "existingAffectedNativeInventoryGuard": 1,
+      "distinctPortableDefinitions": 6,
+      "totalPortableTestExecutions": 11,
+      "initial": "newprotocol5+existinginventory1 allpass",
+      "final": "Only affected3 rerun after strict typed count vectors/source dedupe changes; allpass",
+      "bashSyntax": 0,
+      "PythonASTRoots": 2,
+      "SwiftGrammarRoots": 2,
+      "SwiftGrammarErrors": 0,
+      "SwiftTypecheck": 0,
+      "AppleSDK": 0,
+      "coldAppHosts": 0,
+      "JNI": 0,
+      "JVMTests": 0,
+      "cloudCalls": 0,
+      "v2Only": "Existing marker/error-path guard2executions(1fixturefailure+1pass), final6distinct maintained; no SDK/host/JVM repeat"
+    },
+    "v2": {
+      "existingAffectedGuard": 1,
+      "initialFixturePathFailure": 1,
+      "correctedSameGuardPassed": 1,
+      "PythonASTRoots": 2,
+      "staticCallOrderVerified": true,
+      "other6DistinctV1EvidenceReused": true,
+      "SwiftSourceUnchanged": true,
+      "SwiftSDK": 0,
+      "coldHosts": 0
+    },
+    "historyV2": "First targeted vector used a POSIX fake ps command against Windows Path text, so existing owned-App path check rejected before the intended kernel branch. Fixed only synthetic fixture path representation, retained failure log; same one guard then passed. No additional controller changes or unrelated suite repeat."
+  },
+  "v2Semantics": [
+    "Producer accepted marker is now committed strictly after actual producer process exit confirmation; no dependency required the earlier marker.",
+    "All three successful producer-exit branches write producer-process-exit.json, including process disappearance during kernel event registration.",
+    "Final cold result binds the actual exit observation path/bytes/SHA.",
+    "Existing marker guard adds one mocked kernel-registration ESRCH error-path vector; no new definitions or actual process/Simulator calls."
+  ],
+  "sourceChecksV2": "Parent validation-source-inputs and shadow142 describe v1 C5-only evidence. v2 two changed protocol paths are explicitly rebound by successorChanges and targeted argv/log; future root native/core dedupe closure must bind finalv2 bytes with S4, never reuse v1 source stamp as future acceptance.",
+  "independentReview": {
+    "path": ".build/c5-original-cold-process-independent-review/review-v1.json",
+    "bytes": 92808,
+    "sha256": "afb2f194edbcab6c931fb5d50569f34113491c6cf3302f55bf820c5caaa6b30f"
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/preparation-v2.json",
+      "bytes": 18808,
+      "sha256": "8f1cfdb07da216ba920b87f1bd76bb8238da0dba62308d1622bf5d9795ca386a",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/final-v2.json",
+        "bytes": 18808,
+        "sha256": "8f1cfdb07da216ba920b87f1bd76bb8238da0dba62308d1622bf5d9795ca386a"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/preparation-v1.json",
+      "bytes": 13326,
+      "sha256": "5f274d3fabcf82bfb94e59e9ad0cb11848b556064c63491fb024f9a7e8001bf9",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/final-v1.json",
+        "bytes": 13326,
+        "sha256": "5f274d3fabcf82bfb94e59e9ad0cb11848b556064c63491fb024f9a7e8001bf9"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/independent-review.json",
+      "bytes": 92808,
+      "sha256": "afb2f194edbcab6c931fb5d50569f34113491c6cf3302f55bf820c5caaa6b30f",
+      "original": {
+        "path": ".build/c5-original-cold-process-independent-review/review-v1.json",
+        "bytes": 92808,
+        "sha256": "afb2f194edbcab6c931fb5d50569f34113491c6cf3302f55bf820c5caaa6b30f"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/scripts/integrate-reviewed-source.py",
+      "bytes": 8176,
+      "sha256": "469c2959d9577982b4cf8f2cc5257c819cd6cff694d69ab8e0d72526fab6d445",
+      "original": {
+        "path": ".build/integrate-reviewed-c5-cold-process.py",
+        "bytes": 8176,
+        "sha256": "469c2959d9577982b4cf8f2cc5257c819cd6cff694d69ab8e0d72526fab6d445"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/baseline-rebind.json",
+      "bytes": 630,
+      "sha256": "22bff36390b573fac96d759483e8d171cfdfe716b6d6c5ebca893622365a755b",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/baseline-rebind.json",
+        "bytes": 646,
+        "sha256": "eb683abfa9b419d6e5667784dc0d46706716c149ff17f7870801eb0ed7722e64"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/baseline.json",
+      "bytes": 800,
+      "sha256": "922113a02cc49d75a125b298bceddbd9242d181ca17dd0c7e106d33a2662e904",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/baseline.json",
+        "bytes": 825,
+        "sha256": "3aa0adb064d16e927354787d4a9a21b03675c1657521af0d038d63583221037f"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/ColdMethods.swiftpart",
+      "bytes": 21036,
+      "sha256": "8e0ed7ad75d746bd7724ce76dc16a4a6abc6d543ef5e6140afa60a257a051f6b",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/ColdMethods.swiftpart",
+        "bytes": 21037,
+        "sha256": "bf09a6fc825036ab534aa7dacb74e78f6450110695c282d44c87a7f58b27c8eb"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/prepare.py",
+      "bytes": 3350,
+      "sha256": "d4ae84e0fa2dceab2d2da1fff6c786815f61693e4435336a651b4cd42db58bfa",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/prepare.py",
+        "bytes": 3350,
+        "sha256": "d4ae84e0fa2dceab2d2da1fff6c786815f61693e4435336a651b4cd42db58bfa"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/rebase-controls.py",
+      "bytes": 2082,
+      "sha256": "ec89446abd5f2d629405e2bd8425e1e07f89861dcdaced68f77c27d62d4aeb5c",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/rebase-controls.py",
+        "bytes": 2082,
+        "sha256": "ec89446abd5f2d629405e2bd8425e1e07f89861dcdaced68f77c27d62d4aeb5c"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/update-swift.py",
+      "bytes": 1044,
+      "sha256": "5038da8c12fdb38139c4281a69d2a2385984e0d53db646256dafb7cd35b98fef",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/update-swift.py",
+        "bytes": 1044,
+        "sha256": "5038da8c12fdb38139c4281a69d2a2385984e0d53db646256dafb7cd35b98fef"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validate-final.py",
+      "bytes": 2912,
+      "sha256": "319f990dbda511fb457e7b161cd60bc9689887236056d4487c3500d9df63891d",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validate-final.py",
+        "bytes": 2912,
+        "sha256": "319f990dbda511fb457e7b161cd60bc9689887236056d4487c3500d9df63891d"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validate.py",
+      "bytes": 3931,
+      "sha256": "271371d837f2a30a9cfe0f0aa3d1f82426622aeec77af6fa52388daf237a48f8",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validate.py",
+        "bytes": 3931,
+        "sha256": "271371d837f2a30a9cfe0f0aa3d1f82426622aeec77af6fa52388daf237a48f8"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-final/cold-affected.log",
+      "bytes": 655,
+      "sha256": "5221b429127088c6c3525234452c00bbbf4571a78a16afc7d803d0faa5b88b0e",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-final/cold-affected.log",
+        "bytes": 663,
+        "sha256": "8c01c20bf2bd529e6b80b99eda2d29f3be91af6c5845de438a3e93c2d5eb7ebe"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-final/commands.json",
+      "bytes": 604,
+      "sha256": "9fd06864b4e876860c8ffaa94fc619a7509e111d58d23a3aeb68ac3a23c9ddb3",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-final/commands.json",
+        "bytes": 619,
+        "sha256": "9d64e62e32a3219125876b8bca911d546b294cc6ebde9fff7982a6698e9cd9d5"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-final/facts.json",
+      "bytes": 529,
+      "sha256": "164608db40ef059b0f6897c35172531f576f5b8b63fec46ef04d16028ce19b76",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-final/facts.json",
+        "bytes": 540,
+        "sha256": "620b35dc555af29ca65f8143ceeca78d875cdb8efa0e3ad19acaa08106a58478"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-source-inputs.json",
+      "bytes": 39513,
+      "sha256": "2f1f6631aec1b2641190572b0548d73233869507805037f78e43f519f7b68385",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-source-inputs.json",
+        "bytes": 39513,
+        "sha256": "2f1f6631aec1b2641190572b0548d73233869507805037f78e43f519f7b68385"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-v1/bash-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/bash-syntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-v1/cold-protocol.log",
+      "bytes": 995,
+      "sha256": "ac34053a149801390e36692d79d6695f4bfbd733baf613ce314821c59f75f8c4",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/cold-protocol.log",
+        "bytes": 1005,
+        "sha256": "79b9a4f39c72105b3bad474eb7d5e9332e16ab59c7dfafa30b5887f845dc88d7"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-v1/commands.json",
+      "bytes": 1136,
+      "sha256": "630051e60a96a45e88a60675b40bacdb53d4e1cb810f5bded8f784a3ff05cffd",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/commands.json",
+        "bytes": 1171,
+        "sha256": "9d8db888998069d69cb032628f98205133ce1ef58c95bb82ed245c15e463ad17"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-v1/facts.json",
+      "bytes": 40285,
+      "sha256": "e7195d5b5a8d0095c538340963aae6522678029604a7a6f595c949302a91386b",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/facts.json",
+        "bytes": 41329,
+        "sha256": "59b9638c6cef75325e83a6b470fb6a93f2931800c9ad24219f0604345f8968ce"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validation-v1/native-inventory.log",
+      "bytes": 302,
+      "sha256": "c41c1be2dabaed3115009cb45dac89620a52db5a89727b34fa2097e04eb40e8d",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/validation-v1/native-inventory.log",
+        "bytes": 308,
+        "sha256": "9236862e5227bef77c10ea42c92537b7e30f4ddbdb70dacd170988f4d3e323fc"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/wire-workflow.py",
+      "bytes": 1421,
+      "sha256": "fde56421a5a71bcb1cb4110d8751fac9cdcb48fc0954794033ae4ae247cec7ae",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v1/evidence/wire-workflow.py",
+        "bytes": 1421,
+        "sha256": "fde56421a5a71bcb1cb4110d8751fac9cdcb48fc0954794033ae4ae247cec7ae"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/prepare-v2.py",
+      "bytes": 3535,
+      "sha256": "51e3aa191d40057f1e04cb9cce416ea11936e8268e7c04000ddb16d0a113d824",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/prepare-v2.py",
+        "bytes": 3535,
+        "sha256": "51e3aa191d40057f1e04cb9cce416ea11936e8268e7c04000ddb16d0a113d824"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/validate-v2.py",
+      "bytes": 2130,
+      "sha256": "0ae7f475d697704d08512e574cd40d2174b8e726345dd3651f33269738f70249",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/validate-v2.py",
+        "bytes": 2130,
+        "sha256": "0ae7f475d697704d08512e574cd40d2174b8e726345dd3651f33269738f70249"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/successor-v2/validation/commands.json",
+      "bytes": 404,
+      "sha256": "fb7252211ba1cdeea267c9b5fbc1924d2d1d1b13c37429a5a1a73e2fefd0a3bb",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation/commands.json",
+        "bytes": 417,
+        "sha256": "cf51ee6d7c1ff9fe1ff0c45c651093e1948accaad4b55fd45ee200c436e78227"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/successor-v2/validation/facts.json",
+      "bytes": 292,
+      "sha256": "83f6c17eb3a3ed661e1359fae4a6c2cb902977ba395045b5d63785513ace9dc7",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation/facts.json",
+        "bytes": 303,
+        "sha256": "02f8c28ea33e4675131e60ae80f0bb4f2be1215f2c339c98cd37e715b800f92d"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/successor-v2/validation/marker-and-kernel-exit.log",
+      "bytes": 258,
+      "sha256": "9589d2ce10c9ff564a8fa7f9f9512006dc74327d0cf78cc3aaa70272af887f34",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation/marker-and-kernel-exit.log",
+        "bytes": 264,
+        "sha256": "05e15a43687a77fcbfdbfeaa1b95859c7d5da71765fbb2c3a7122b5317d49ff2"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/successor-v2/validation-initial-fixture-path-failure/commands.json",
+      "bytes": 404,
+      "sha256": "ff9648068f480d5c49a62595c6b061dc90c21cc5e1e339e600413036d2e02948",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation-initial-fixture-path-failure/commands.json",
+        "bytes": 417,
+        "sha256": "5163d0b50875f6ca7279b6e2556bbf493a2db63b76e7db5fdaefea2c3cc6ec2b"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/successor-v2/validation-initial-fixture-path-failure/marker-and-kernel-exit.log",
+      "bytes": 1253,
+      "sha256": "f7464fe66372168660dd4592747788c5a0d2e397754b9fb5cb420f41537dc322",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/evidence/successor-v2/validation-initial-fixture-path-failure/marker-and-kernel-exit.log",
+        "bytes": 1269,
+        "sha256": "849f760c53e0fcdf415cd327a581cacafb5965bbf9ec566b0247ce1845793f57"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+      "bytes": 2678,
+      "sha256": "6cf514b4ee89af4971e011492709dfbaf927e239dbc42a2c5437f99a72fdefdb",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 2678,
+        "sha256": "6cf514b4ee89af4971e011492709dfbaf927e239dbc42a2c5437f99a72fdefdb"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+      "bytes": 17235,
+      "sha256": "62cc053be040b4ed0451cce08c6743b3dd83c0fc54e97dff1770b1fcbd3aace6",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+        "bytes": 17235,
+        "sha256": "62cc053be040b4ed0451cce08c6743b3dd83c0fc54e97dff1770b1fcbd3aace6"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+      "bytes": 1450,
+      "sha256": "4b0dddd16167fc16e8f6ece694eeaea3db8a0a33aebdf4ed4c1e23d07cc0cd79",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 1450,
+        "sha256": "4b0dddd16167fc16e8f6ece694eeaea3db8a0a33aebdf4ed4c1e23d07cc0cd79"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+      "bytes": 8306,
+      "sha256": "022811441292e69acd514062c3ede045c581b7ba8800465342842ed2490810b4",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+        "bytes": 8306,
+        "sha256": "022811441292e69acd514062c3ede045c581b7ba8800465342842ed2490810b4"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/diffs/scripts/xctest.sh.diff",
+      "bytes": 1067,
+      "sha256": "14a57c46974c59fc19eae2d95c5f7eebba1fd4dcd6fee58d336a7668c7c45732",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/diffs/scripts/xctest.sh.diff",
+        "bytes": 1067,
+        "sha256": "14a57c46974c59fc19eae2d95c5f7eebba1fd4dcd6fee58d336a7668c7c45732"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+      "bytes": 23300,
+      "sha256": "aa9928bbe39aef8b679798f7db69e74dcf62138a00aa7f5115e6746e027932f1",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 23301,
+        "sha256": "1988f4bc748408f4737d799fd1ec4f816fba80a9326805947c73d52051ab0580"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/incremental-diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+      "bytes": 1929,
+      "sha256": "7d47bb3f560a7409b329574723f6cce450075ef1117fa667aab8c2341f718429",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/incremental-diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+        "bytes": 1929,
+        "sha256": "7d47bb3f560a7409b329574723f6cce450075ef1117fa667aab8c2341f718429"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/incremental-diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+      "bytes": 2200,
+      "sha256": "856ea3274790742f7f13d32bd57dde0de14f6408028ffcefb08dbef8822d18ca",
+      "original": {
+        "path": ".build/c5-original-cold-process-step/snapshot-v2/incremental-diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+        "bytes": 2202,
+        "sha256": "47f91e7b15eb858408f003c8902eaa8d12fc4a136d0757affc9e913f1ddc4d0d"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/reviews/pre-review-v1.json",
+      "bytes": 5424,
+      "sha256": "df502b5604b1e0cd0c971b3a85c58c4372910671746f6d50ec411d9e50b052ec",
+      "original": {
+        "path": ".build/c5-original-cold-process-independent-review/pre-review-v1.json",
+        "bytes": 5424,
+        "sha256": "df502b5604b1e0cd0c971b3a85c58c4372910671746f6d50ec411d9e50b052ec"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-reader-cold-process-step/reviews/pre-review-closure-v1.json",
+      "bytes": 1428,
+      "sha256": "5839a9f2a73c869749b6e3741c735d0a8459b5de8ca3f29462c78a2958fe5f76",
+      "original": {
+        "path": ".build/c5-original-cold-process-independent-review/pre-review-closure-v1.json",
+        "bytes": 1428,
+        "sha256": "5839a9f2a73c869749b6e3741c735d0a8459b5de8ca3f29462c78a2958fe5f76"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; immutable original facts retained"
+    }
+  ],
+  "limits": [
+    "No localSwift compiler/Xcode/Simulator available. Grammar and Python protocolguards do not establish successful install/container preservation/host restart/cache acceptance; C5 remains pending actualAppleSDK execution.",
+    "test-without-building avoids rebuilding but platform installation behavior is not assumed: both actualdataContainer observations must remain identical or the future job fails. Normal source-stamped App lifecycle may initialize defaults; fixture itself reads only owned metadata/source/position and claimed cache UUID.",
+    "Fresh nonce/source stamped marker prevents old receipts; exclusive root means rerunning this phase on a stale simulator namespace fails closed instead of reusing data.",
+    "C5-only shadow is not a future S4+coherent combined compilation or acceptance result. Parent owns final source/controls composition and cloudtags.",
+    "Only original finite text publicReader/offline/position chain; no full booksource compatibility/ReaderUI/device/automaticrenewal acceptance.",
+    "The separate cold producer/consumer hosts are authored and CI-wired only; no process restart acceptance is established until both actually execute and all bound receipts pass.",
+    "The current fc3 cloud source does not contain these changes or later S4 Lookup-Complete repair. A future coherent source roster must bind final v2 plus current S4 bytes; no v1 shadow stamp is future acceptance."
+  ],
+  "liveImmutableSourceUnchanged": "fc3b01ce980f6bdcdc8a3b7559dac5b1d57fc64a",
+  "newCloudTagCreated": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

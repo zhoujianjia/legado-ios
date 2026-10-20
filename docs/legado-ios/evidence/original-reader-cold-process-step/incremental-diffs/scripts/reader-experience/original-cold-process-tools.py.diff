@@ -1,0 +1,29 @@
+--- v1/scripts/reader-experience/original-cold-process-tools.py
++++ v2/scripts/reader-experience/original-cold-process-tools.py
+@@ -243,6 +243,8 @@
+         try:
+             queue.control([event], 0, 0)
+         except ProcessLookupError:
++            write_new(work / 'producer-process-exit.json', {'producerPID': pid, 'alreadyExited': True,
++                'observedDuring': 'kernelRegistration'})
+             return
+         run_checked(['xcrun', 'simctl', 'terminate', udid, bundle], work / 'producer-terminate.log')
+         events = queue.control(None, 1, 30)
+@@ -284,8 +286,8 @@
+         raise ValueError('Producer cache claim differs from its accepted fixture')
+     producer['hostAccepted'] = True
+     producer['hostExecutionSHA256'] = fact(work / 'producer-execution.json')['sha256']
++    terminate_producer(udid, bundle, producer['producerPID'], work)
+     commit_marker(owned / 'producer.json', producer); write_new(work / 'producer.json', producer)
+-    terminate_producer(udid, bundle, producer['producerPID'], work)
+     run_host(work, 'consumer', expected, container, udid, bundle)
+     consumer = validate_consumer(read_json(owned / 'consumer-pending.json'), producer, control, False)
+     if (owned / 'data').exists():
+@@ -295,6 +297,7 @@
+     commit_marker(owned / 'consumer.json', consumer); write_new(work / 'consumer.json', consumer)
+     result = {'schemaVersion': 1, 'sourceState': expected, 'control': control,
+         'producer': fact(work / 'producer.json'), 'consumer': fact(work / 'consumer.json'),
++        'producerExitObservation': {'path': 'producer-process-exit.json', **fact(work / 'producer-process-exit.json')},
+         'status': 'passed', 'actualIndependentHosts': 2, 'sourceResolutions': 0,
+         'sameContainer': True, 'producerPeerStopped': True, 'differentPIDs': True,
+         'scope': 'Synthetic original public reader/process restart only; no full source/device acceptance'}

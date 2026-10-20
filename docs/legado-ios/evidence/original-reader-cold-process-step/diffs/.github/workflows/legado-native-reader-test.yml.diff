@@ -1,0 +1,31 @@
+--- a/.github/workflows/legado-native-reader-test.yml
++++ b/.github/workflows/legado-native-reader-test.yml
+@@ -34,6 +34,7 @@
+           python -B scripts/reader-experience/native-smoke-tools.py validate-tag
+           python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/native-reader-overlays.log
+           python -B scripts/reader-experience/test-native-smoke-tools.py -v 2>&1 | tee .build/ci-logs/native-reader-source-stamps.log
++          python -B scripts/reader-experience/test-original-cold-process-tools.py -v 2>&1 | tee .build/ci-logs/native-reader-cold-protocol-guards.log
+           python -B scripts/reader-experience/test-native-diagnostics.py -v 2>&1 | tee .build/ci-logs/native-reader-diagnostics-guards.log
+           python -B scripts/reader-experience/test-runtime-packaging.py -v 2>&1 | tee .build/ci-logs/native-reader-package-guards.log
+           python -B scripts/reader-experience/test-runtime-notices.py -v 2>&1 | tee .build/ci-logs/native-reader-notice-guards.log
+@@ -102,6 +103,11 @@
+           NATIVE_STATUS=$?
+           python -B scripts/reader-experience/native-smoke-tools.py run-group --group original
+           ORIGINAL_STATUS=$?
++          # A pending receipt is not success. This controller runs exactly one
++          # producer and one consumer in separate frozen-binary App hosts, then
++          # validates fresh nonce/source/container/PID and raw case evidence.
++          python -B scripts/reader-experience/original-cold-process-tools.py --udid "$(bash scripts/sim.sh udid)"
++          COLD_STATUS=$?
+           # Export every available group's evidence before evaluating verdicts.
+           # Missing bundles and failed exports remain failures, not empty passes.
+           export_test_results() {
+@@ -146,7 +152,7 @@
+           set -e
+           [[ $CONFIGURATION_STATUS == 0 && $LOCAL_PRODUCT_STATUS == 0 && $CACHE_STATUS == 0 && $NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0 \
+             && $CONFIGURATION_EXPORT_STATUS == 0 && $LOCAL_PRODUCT_EXPORT_STATUS == 0 && $CACHE_EXPORT_STATUS == 0 \
+-            && $CONFIGURATION_COUNT_STATUS == 0 && $LOCAL_PRODUCT_COUNT_STATUS == 0 && $CACHE_COUNT_STATUS == 0 && $NATIVE_RESULT_STATUS == 0 ]]
++            && $CONFIGURATION_COUNT_STATUS == 0 && $LOCAL_PRODUCT_COUNT_STATUS == 0 && $CACHE_COUNT_STATUS == 0 && $NATIVE_RESULT_STATUS == 0 && $COLD_STATUS == 0 ]]
+       - name: Preserve this Simulator run's JVM diagnostics and crash reports
+         if: ${{ always() && hashFiles('.build/native-reader-test/overlays.json') != '' }}
+         run: python -B scripts/reader-experience/collect-native-diagnostics.py --udid "$(bash scripts/sim.sh udid)"
