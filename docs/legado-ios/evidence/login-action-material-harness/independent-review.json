@@ -1,0 +1,285 @@
+{
+  "kind": "independent-combined-harness-review",
+  "reviewer": "/root/login_info_v2_review",
+  "reviewedAtUTC": "2026-10-20T17:40:13.512118+00:00",
+  "manifest": {
+    "path": ".build/consolidated-sdk-login-action-material-refresh-delta/preparation/final-v1.json",
+    "bytes": 14366,
+    "sha256": "dbb92cc713a878a2fe515bf4e4858dc2d81a74bc54eca6222ce327928675ca18"
+  },
+  "status": "no-determined-findings-in-frozen-seven-file-harness",
+  "files": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 172914,
+        "sha256": "985cea298337d84266f3d122a771df9814ab621eca8315b0c56749112343ec0c"
+      },
+      "candidate": {
+        "bytes": 176464,
+        "sha256": "5f5372392c7af7e6fa75438650fc55b558c7648062cfc8df8c03d7ae94f81f8a"
+      },
+      "diff": {
+        "path": "diffs/renewal-probe-tools.py.diff",
+        "bytes": 9246,
+        "sha256": "eb0311b7e59d5947d51d5e1cbc2a6a2c963be1cd21de5789b64643caf767a8de"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 162841,
+        "sha256": "4ecd8de855b590a24570c195aa97f968c18322689acb23aeaa4fff540208d423"
+      },
+      "candidate": {
+        "bytes": 168168,
+        "sha256": "96e1d25aa1a88d0f1331101e8f3200abb0afdc0b3d0c19e8465921e8a1151019"
+      },
+      "diff": {
+        "path": "diffs/test-renewal-probe-tools.py.diff",
+        "bytes": 32218,
+        "sha256": "e80b1505f972c94eb34a5e2762a462225e5a74bcae9400238f6875676c392d48"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "bytes": 26350,
+        "sha256": "75668cbee9524b62e79bc8d596061da78afe809be699c6a27b4148f2ea5c12f6"
+      },
+      "candidate": {
+        "bytes": 28506,
+        "sha256": "c7177c5a6e0af8355ae317f57a1813bd31502994b91de4f734c639106cf6bde7"
+      },
+      "diff": {
+        "path": "diffs/native-smoke-tools.py.diff",
+        "bytes": 3180,
+        "sha256": "3e8d43e1df27759465cb96d915e74253b878ca07b9ae908fbdc4aa87e16ff867"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "bytes": 18289,
+        "sha256": "65f77985f59a3f1a255068cfb4e94f522e6a2455529d78cc18b4e72e70e8796b"
+      },
+      "candidate": {
+        "bytes": 18574,
+        "sha256": "b740dbb04159e2807759771aa7109c2ad7c835e8f316de5edb2ae256547f7935"
+      },
+      "diff": {
+        "path": "diffs/test-native-smoke-tools.py.diff",
+        "bytes": 3187,
+        "sha256": "71a9a10ebe1fc9b693e5cdee49433fe4c64c3b19eb0ef045fbe1848fc03a52f9"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "baseline": {
+        "bytes": 43217,
+        "sha256": "7079c1920dbef39f5ec7cc1a03fd151a3628e29f4b621ebc30f466baf09a3396"
+      },
+      "candidate": {
+        "bytes": 43305,
+        "sha256": "5bbc17cb50ac0065a438c47a4d92d3d58af40c7d60229bc446443dbd45a82383"
+      },
+      "diff": {
+        "path": "diffs/renewal-probe-tests.sh.diff",
+        "bytes": 671,
+        "sha256": "5f1501321a7f54f9beec0c566e55512df988983ab9b4dbeaf6d0d723c96b379b"
+      }
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "baseline": {
+        "bytes": 8897,
+        "sha256": "ec79c86ed7e47e04c8677f7e3a00bcc580123ca11e4ec0c9a3af92a38835f75a"
+      },
+      "candidate": {
+        "bytes": 9230,
+        "sha256": "1ffc84dd512172d0dee405297d25e34357dc625250187904891599ff65f9d945"
+      },
+      "diff": {
+        "path": "diffs/reader-renewal-probe.yml.diff",
+        "bytes": 6835,
+        "sha256": "4d59db1d390d21fd0280afacf8124d855bfab6e161591e4e1af267b6bf7d7a3e"
+      }
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "bytes": 10146,
+        "sha256": "e5eedfbfe67cdf3f30909af1d0a9550555b2e0d24ae7ba35b412e7581be3bc9a"
+      },
+      "candidate": {
+        "bytes": 10149,
+        "sha256": "2ff7fed412c95903ddfa02f2ce0e4e70b592f64112a62dcf40c0796ce13f1c9c"
+      },
+      "diff": {
+        "path": "diffs/legado-native-reader-test.yml.diff",
+        "bytes": 775,
+        "sha256": "3c997366427470bd62ff88107d11bee0fbde7fd188e1ba258f3c3ad90b13fa4d"
+      }
+    }
+  ],
+  "allSevenCandidateBaselineDiffHashesVerified": true,
+  "allDiffsReconstructedByteExactly": true,
+  "allBaselinesMatchFrozenHarnessGitCommit": true,
+  "findings": [],
+  "sourceClosure": {
+    "productionManifestBindings": [
+      {
+        "label": "materialRefresh",
+        "path": ".build/renewal-material-session-refresh-step/preparation/final-v2.json",
+        "bytes": 11196,
+        "sha256": "0c8a23b955ac9496b6632a0697dbde011f3370eeb3835912b65c79c6c9a25c80"
+      },
+      {
+        "label": "loginAction",
+        "path": ".build/original-source-login-action-step/final-v2.json",
+        "bytes": 30220,
+        "sha256": "48a6bb3e9ba80991c7d80eb3a9f752d7af67e21266d6e37ed3c10a6cb8938033"
+      }
+    ],
+    "reviewedSliceSourcesVerified": 23,
+    "coreInputsVerified": 308,
+    "nativeInputsVerified": 91,
+    "oldCoreAndNativeInputsAllRetained": true,
+    "allSixCoreTextImportInputsAndActualImportsRetained": [
+      "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+      "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift"
+    ],
+    "allOverlayBytesMatchReviewedFinalManifestsAndBothRosters": true,
+    "sourceManifest": {
+      "path": ".build/consolidated-sdk-login-action-material-refresh-delta/preparation/source-inputs.json",
+      "bytes": 85654,
+      "sha256": "6168e93551b4835429e6ce722e3db49c91f8746280454c7a6517dcc24a4da59f"
+    }
+  },
+  "selection": {
+    "coreDefinitions": 452,
+    "coreLeaves": 455,
+    "newQualifiedMethods": [
+      "SelfRenewalDeveloperAccountClientTests/appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart",
+      "SelfRenewalDeveloperAccountClientTests/appSessionMaterialReconnectRejectsChangedCurrentBundleAndKeepsPublication",
+      "SelfRenewalDeveloperAccountClientTests/appSessionCancelledPostPublicationReconnectRetainsItsActualReceipt",
+      "SelfRenewalDeveloperAccountClientTests/appOwnerMaterialFinalizationConnectsWithoutRepeatedEnrollment",
+      "BookSourceLoginTests/blankLoginFieldIsRequired"
+    ],
+    "allFiveMethodsHaveExactlyOneActualEmptyParameterDeclaration": true,
+    "legacyModesPreserved": [
+      "boundmaterials",
+      "controlledsigning",
+      "cryptography",
+      "discovery",
+      "handoffrenewal",
+      "integratedrenewal",
+      "materials",
+      "replacement",
+      "sealedmaterials",
+      "signature",
+      "transactionrenewal",
+      "ui",
+      "unit"
+    ],
+    "allLegacyMethodsParametersAndLeafCountsUnchanged": true,
+    "threeCurrentcoreBoolPairsPreserved": {
+      "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt",
+      "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt",
+      "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll": "nestedBackdrop"
+    },
+    "oldCurrentcoreDefinitionsRetained": 447,
+    "nativeOriginalDefinitions": 14,
+    "actualReaderDefinitions": 10,
+    "actualLoginDefinitions": 4,
+    "nativeMainjsDefinitions": 1,
+    "nativeMainjsHostAndBudgetUnchanged": true,
+    "nativeOriginalBudgetSeconds": 1800,
+    "allFourLoginMethodsRequireActualNativeGate": true
+  },
+  "executionGates": {
+    "currentcoreNativeInvocations": 1,
+    "xcresultBundles": 1,
+    "nativeBudgetSeconds": 3600,
+    "phaseOrderAndAllTimeoutsUnchanged": true,
+    "mandatorySDKFixtureMethod": "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+    "producerStageCommandsUnchanged": true,
+    "unchangedCriticalFunctionASTs": [
+      "_currentcore_commands",
+      "_currentcore_build_args",
+      "_run_currentcore_phase",
+      "_currentcore_blockers",
+      "_currentcore_first_failure",
+      "verify_cases",
+      "parameter_cases",
+      "verify_sdk_fixture"
+    ],
+    "allProducerNativeExportArgumentSourceResourceLoaderExitTimeoutAndResultGatesRetained": true,
+    "evidence": "Production diffs plus exact old/candidate method sets, pure command construction and retained function ASTs; no command was executed."
+  },
+  "package": {
+    "futureActualMethods": 18,
+    "actualCompilationInputs": 15,
+    "controls": 7,
+    "sourceRecordsVerified": 22,
+    "changedCompilationInputs": [
+      "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift"
+    ],
+    "freshActualExecutionRequired": true,
+    "fa48PassReusable": false,
+    "independentFromAppNative": true,
+    "packageToolsAndSelectionUnchanged": true
+  },
+  "actualPortableGuardEvidence": [
+    {
+      "log": ".build/consolidated-sdk-login-action-material-refresh-delta/preparation/core-guards.log",
+      "tests": 10,
+      "exitCode": 0,
+      "bytes": 2208,
+      "sha256": "a3cb1ec3b9f9977f25edd1a2f19f6c0f1a6a5fd4c06a8ce9a8da8f418b60a002"
+    },
+    {
+      "log": ".build/consolidated-sdk-login-action-material-refresh-delta/preparation/native-guards.log",
+      "tests": 8,
+      "exitCode": 0,
+      "bytes": 1589,
+      "sha256": "9d21e5ea93f4ab9fcf87d2f5e050bdf49905f2d5b3d7916aa0f33634d373dc21"
+    },
+    {
+      "log": ".build/consolidated-sdk-login-action-material-refresh-delta/preparation/package-corrected-guards.log",
+      "tests": 5,
+      "exitCode": 0,
+      "bytes": 1151,
+      "sha256": "448fee86a5a326cff7a0a548a05c9ce57a4b8e779267f769fea30b2f4a9d3c32"
+    }
+  ],
+  "priorInvocationFailurePreserved": {
+    "log": ".build/consolidated-sdk-login-action-material-refresh-delta/preparation/package-guards.log",
+    "bytes": 1701,
+    "sha256": "606fa63f7fdd5df7c224f90ab80266e3ec36c29a6216a029723864bb0df518e8",
+    "exitCode": 1,
+    "realChecksPassed": 4,
+    "loaderErrors": 1,
+    "cause": "Wrong class qualifier for the effects method. Corrected five-check invocation has its own passing log; the failed run is not counted as a pass."
+  },
+  "notExecutedByReview": [
+    "new tests or portable suites",
+    "Swift/Xcode/App452 or455 leaves",
+    "JNI14 or MainJS1",
+    "actual SwiftPM18",
+    "codesign/CMS producer",
+    "physical-device installation or renewal"
+  ],
+  "limits": [
+    "The 10/8/5 passes are portable source/selection/provenance guards. They do not establish App SDK or Native/SwiftPM runtime acceptance.",
+    "Root may integrate the reviewed production slices before this harness. A changed final commit ID does not change these exact source bytes or invalidate the bounded portable evidence; the actual next CI preparation must bind the new immutable source/tag and execute fresh Package18.",
+    "No canonical files, Git state, cloud jobs/tags, user source files or credentials were modified/read. Only ignored review output/script was written."
+  ],
+  "canonicalOrGitOrCloudMutations": false,
+  "newTestExecution": false
+}
