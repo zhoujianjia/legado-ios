@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T06:55:29.486413+00:00",
+  "reviewer": "/root/preview_final_review",
+  "reviewMode": "independent read-only source review; no grammar, compilation, test, cloud or private-data execution",
+  "reviewedPreparation": {
+    "path": ".build/original-app-preview-owner-delta/freeze-v1/preparation.json",
+    "bytes": 20454,
+    "sha256": "38ef87d69c1ee55b634058f82bb1e4469a1d2842b4d6276ffe61b412ff6fd064"
+  },
+  "sourceBinding": [
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v1/final-sources/LegadoMainJSSourceService.swift",
+      "intendedPath": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 72958,
+      "sha256": "d36657e77702f67875e33b1b65c88ce9294745ce20cacc646b6ee3ad04174df2",
+      "matchedPreparation": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v1/final-sources/LegadoPersistentStateHost.swift",
+      "intendedPath": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 42095,
+      "sha256": "8515b4b349473f251b89918111132058151a1914639e34fee16f9cd82b13a589",
+      "matchedPreparation": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v1/final-sources/LegadoPreviewStateOwner.swift",
+      "intendedPath": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "bytes": 10980,
+      "sha256": "9da7c1ecdc5d840d8713496ec0ae7611f28589a23fdf6553127a025c973f9699",
+      "matchedPreparation": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v1/final-sources/BookSourceFetcher+OriginalPreview.swift",
+      "intendedPath": "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "bytes": 1968,
+      "sha256": "3f7596ae27a28c015eb78bdce4cf8c7f24d9cd4b11d00ae9a411652cf40c75c2",
+      "matchedPreparation": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v1/final-sources/LegadoPreviewStateOwnerTests.swift",
+      "intendedPath": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "bytes": 31811,
+      "sha256": "75225c24656b76d33ec935fcd2f3edf6f38a1d70ebedb9061a75814d79cc55d4",
+      "matchedPreparation": true
+    }
+  ],
+  "disposition": "freeze-v1 has a confirmed variable-key identity blocker; do not merge this frozen version unchanged",
+  "confirmedFindings": [
+    {
+      "id": "PREVIEW-UTF8-VARIABLE-KEY-IDENTITY",
+      "severity": "blocker",
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "lines": [
+        768,
+        800,
+        805,
+        807,
+        909,
+        913
+      ],
+      "trigger": "Two separately issued original big-variable writes use names U+00E9 and U+0065 U+0301, with different values.",
+      "evidence": "The new preview backing keeps companion names in [String:String] and assigns large[name] = value. Swift String equality equates canonically equivalent Unicode strings, so the second assignment replaces the first entry. Reads use that same String subscript. Java original String keys distinguish these two names. This reasoning does not assume a particular Foundation JSONDecoder behavior.",
+      "impact": "The new backing silently aliases two distinct original companion keys and can persist the replaced value in the same context file.",
+      "relatedBoundary": "previewVariableMap and the small-variable commit path decode raw original JSON directly into [String:String], without preflighting whether all original raw names are representable. Specific decoder behavior for such duplicate-equivalent input was not executed or claimed.",
+      "requiredRepair": "Preserve exact UTF-8 key identity within the existing record, or explicitly reject a conflicting raw identity before any dictionary alias/read/write. For raw JSON maps, validation must inspect original member names before their conversion into a Swift keyed container. Existing Swift dictionary keys alone cannot recover names already collapsed.",
+      "reportedTo": [
+        "/root",
+        "/root/implementation_checkpoint_result"
+      ],
+      "runtimeExecuted": false
+    }
+  ],
+  "acceptedSourceFindings": [
+    {
+      "area": "Previous malformed-index/duplicate-identity traps",
+      "evidence": "readPreview validates chapter index == enumerated offset, chapter ID count/uniqueness and Set<Data> exact URL uniqueness before later indexing or Dictionary(uniqueKeysWithValues:). finishPreview validates returned TOC before constructing previousIDs; it loads its previous state through readPreview."
+    },
+    {
+      "area": "Previous file TOCTOU and budget window",
+      "evidence": "readPreviewFile opens one O_NOFOLLOW|O_NONBLOCK|O_CLOEXEC FD, checks owned regular file and link count, bounds before allocating at 8 MiB, reads positional chunks with cancellation, compares before/after FD stats plus path identity, and checks exactly-once close before decode. No Data(contentsOf:) authorization race remains in this preview reader."
+    },
+    {
+      "area": "Previous duplicate-URL mixed chapter state",
+      "evidence": "Persisted and returned TOCs reject duplicate exact UTF-8 URLs. Chapter state keys are Base64 of original URL UTF-8. Distinct canonically equivalent URL strings therefore keep independent map entries; lookup uses LegadoPreviewIdentity.same rather than ordinary String equality."
+    },
+    {
+      "area": "Real original embedding call chain",
+      "evidence": "Fetcher explicit methods call the same injected mainJSService actor; NativeLegadoOriginalPreviewExecutor uses LegadoRuntimeProcess.shared and the actual typed searchOriginal/detailsOriginal/chaptersOriginal/contentOriginal methods. Session options explicitly choose jvmOkHttp, originalTraditional, appOwnerText and the actual Host owner. This is production source wiring, with no claimed JNI/App execution."
+    },
+    {
+      "area": "Ownership and grants",
+      "evidence": "One existing source gate/context actor remains owner. The private-init grant binds service/source UUID/revision/record/book/chapter/task/deadline and current raw SHA/revision. Host entity leases dispatch to the same preview actor without reacquiring the held gate, and enforce taskID. Accepted commits advance the grant proof; finishPreview compares the actual latest file SHA/revision."
+    },
+    {
+      "area": "Revocation and deadline",
+      "evidence": "The grant owns the existing cancellation ticket, bounds supplied deadlines by expiresAt, and is revoked on execution exit/cancellation. Persisted revoke/transferring/transferred states block active reopening. No sleep or timing barrier substitutes for state checks."
+    },
+    {
+      "area": "Actual App UUID transfer",
+      "evidence": "Transfer requires prepareOriginalRuntimeBookSnapshot for existing UUID/source/URL, compares actual TOC/chapter identities and variables, writes transferring before the original BookStore CAS, validates actual App identity during/after CAS, then records transferred. A failed App write leaves retryable intent. It is explicitly two-owner resumable, not atomic across files."
+    },
+    {
+      "area": "Old mainJs and Cookie/App preservation",
+      "evidence": "Independent textual reconstruction reversed only reviewed Host interface substitutions/new bindPreview/task check and matched the entire baseline Host exactly after newline normalization. The original mainJs service body from search through its private helpers matched baseline exactly. The unchanged AppLegadoBookStateOwner is only adapted via protocol forwarding; Cookie functions were not rewritten."
+    }
+  ],
+  "independentPreservationChecks": {
+    "wholeHostReconstructedAfterEnumeratedInterfaceDeltaMatchesBaseline": true,
+    "mainJSBodyFromSearchThroughPrivateHelpersMatchesBaseline": true,
+    "methodUsed": "direct source text comparison with newline normalization; not a Swift parser or compiler"
+  },
+  "evidenceLimits": {
+    "AppleSDKCompilation": 0,
+    "nativeMethodsExecuted": 0,
+    "newMethodDefinitionsOnly": 12,
+    "relatedMethodDefinitionsOnly": 42,
+    "JNIOrAppExecution": 0,
+    "grammarRerun": false,
+    "testsRerun": false
+  },
+  "remainingScope": [
+    "Default App traditional route is still unchanged and explicit preview APIs are not a new enabled product route.",
+    "Actual native SDK build/typecheck/test plus JVM/JNI/App integration remain required.",
+    "Full C2/C3/C4 acceptance, all original host actions, HTML/media and download/cache publication remain unfinished.",
+    "No new cold UI navigation-restoration index or source-edit observer is supplied.",
+    "Transfer only supports representable original compartments and existing App records; it does not manufacture library UUIDs or replace the existing chapter owner."
+  ],
+  "mutations": {
+    "onlyIgnoredReviewArtifactsWritten": true,
+    "frozenSourcesChanged": false,
+    "canonicalGitOrCloudChanged": false,
+    "privateDataRead": false
+  }
+}

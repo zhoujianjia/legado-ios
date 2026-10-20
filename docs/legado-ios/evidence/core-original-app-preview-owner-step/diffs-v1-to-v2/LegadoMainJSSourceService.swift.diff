@@ -1,0 +1,147 @@
+--- freeze-v1/Modules/Services/Online/LegadoMainJSSourceService.swift
++++ freeze-v2/Modules/Services/Online/LegadoMainJSSourceService.swift
+@@ -661,6 +661,7 @@
+               Set(small.keys).isDisjoint(with: read.record.bookLargeVariables.keys) else {
+             throw failure("UNSUPPORTED_CAPABILITY", "This preview variable compartment cannot be represented by the App book owner")
+         }
++        try LegadoPreviewVariableCodec.validateRepresentable([small, read.record.bookLargeVariables])
+         let preview = small.merging(read.record.bookLargeVariables) { first, _ in first }
+         var merged = owned.book.variables ?? [:]
+         if merged[Self.originalPreviewContextKey] != nil {
+@@ -670,7 +671,11 @@
+             }
+         }
+         let existing = merged.filter { $0.key != Self.originalPreviewContextKey }
+-        guard existing.allSatisfy({ preview[$0.key] == $0.value }) else {
++        try LegadoPreviewVariableCodec.validateRepresentable([existing, preview])
++        guard existing.allSatisfy({ entry in
++            guard let index = preview.index(forKey: entry.key), LegadoPreviewIdentity.same(preview[index].key, entry.key) else { return false }
++            return LegadoPreviewIdentity.same(preview[index].value, entry.value)
++        }) else {
+             throw failure("STATE_CONFLICT", "App variables changed before preview transfer")
+         }
+         for (key, value) in preview { merged[key] = value }
+@@ -692,19 +697,25 @@
+             let projected = try previewChapterProjection(read.record, chapter: chapter, reference: reference)
+                 .filter { $0.key != Self.originalPreviewContextKey }
+             guard app.index == Int(chapter.index), LegadoPreviewIdentity.same(app.url, chapter.url),
+-                  (app.runtimeVariables ?? [:]).filter({ $0.key != Self.originalPreviewContextKey }) == projected else {
++                  LegadoPreviewVariableCodec.sameMap((app.runtimeVariables ?? [:]).filter({ $0.key != Self.originalPreviewContextKey }), projected) else {
+                 throw failure("STATE_CONFLICT", "The App chapter owner differs from the latest preview variables")
+             }
+         }
+         try previewCheck(deadline)
+         let expectedTOC = read.record.book.tocURL
+         let sourceID = source.id; let bookURL = reference.bookURL
++        let expectedAppVariables = merged
++        let ownedInputVariables = owned.book.variables
++        let originalViewVariables = view.variables
+         let appIdentityCurrent: @Sendable () -> Bool = {
+             guard let current = store.originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL),
+                   LegadoPreviewIdentity.same(current.bookURL, bookURL), LegadoPreviewIdentity.same(current.tocURL, expectedTOC) else { return false }
+             let currentChapters = store.chapters(for: bookID) ?? []
++            guard LegadoPreviewVariableCodec.sameMap(current.variables, ownedInputVariables)
++                    || LegadoPreviewVariableCodec.sameMap(current.variables, originalViewVariables)
++                    || LegadoPreviewVariableCodec.sameMap(current.variables, expectedAppVariables) else { return false }
+             return currentChapters.count == appChapters.count && zip(currentChapters, appChapters).allSatisfy {
+-                LegadoPreviewIdentity.same($0.0.url, $0.1.url) && $0.0 == $0.1
++                LegadoPreviewIdentity.sameChapter($0.0, $0.1)
+             }
+         }
+         if read.record.status == .active {
+@@ -768,7 +779,7 @@
+         var values: [String: Data] = [:]
+         for key in keys {
+             if let name = key.largeVariable {
+-                if let value = large[name] { values[key.wire] = Data(value.utf8) }
++                if let value = try LegadoPreviewVariableCodec.exactValue(name, in: large) { values[key.wire] = Data(value.utf8) }
+             } else if let variables {
+                 values[key.wire] = try encoded(variables)
+             }
+@@ -794,10 +805,15 @@
+               LegadoPreviewIdentity.same(snapshot.chapterURL, chapterURL) else { return false }
+         var small = snapshot.variables ?? [:]
+         var large = snapshot.largeVariables
++        let readWires = Set(keys.map { Data($0.wire.utf8) })
++        guard changes.keys.allSatisfy({ readWires.contains(Data($0.utf8)) }) else {
++            throw failure("UNSUPPORTED_CAPABILITY", "Preview changes must preserve the exact original read-key bytes")
++        }
+         var deleted = false
+         for key in keys {
+             guard let change = changes[key.wire] else { continue }
+             if let name = key.largeVariable {
++                _ = try LegadoPreviewVariableCodec.exactValue(name, in: large)
+                 if let change {
+                     guard let value = String(data: change, encoding: .utf8) else {
+                         throw failure("UNSUPPORTED_CAPABILITY", "Preview companion variables must retain UTF-8 bytes")
+@@ -805,10 +821,11 @@
+                     large[name] = value
+                 } else { large.removeValue(forKey: name) }
+             } else if let change {
+-                let value = try JSONDecoder().decode([String: String].self, from: change)
+-                small = value
++                guard let raw = String(data: change, encoding: .utf8) else { throw failure("INVALID_RESULT", "Preview variables must contain UTF-8 JSON") }
++                small = try previewVariableMap(raw) ?? [:]
+             } else { small = [:]; deleted = true }
+         }
++        try LegadoPreviewVariableCodec.validateRepresentable([small, large])
+         guard small.count <= 4_096, small[Self.originalPreviewContextKey] == nil,
+               large.count <= 4_096, large[Self.originalPreviewContextKey] == nil else {
+             throw failure("STATE_LIMIT", "Preview variable keys exceed their budget or reserved namespace")
+@@ -909,9 +926,7 @@
+     private func previewVariableMap(_ raw: String?) throws -> [String: String]? {
+         guard let raw else { return nil }
+         guard raw.utf8.count <= 1_048_576 else { throw failure("STATE_LIMIT", "Preview variables exceed their byte budget") }
+-        let value: [String: String]
+-        do { value = try JSONDecoder().decode([String: String].self, from: Data(raw.utf8)) }
+-        catch { throw failure("INVALID_RESULT", "Preview variables must encode the original JSON String map") }
++        let value = try LegadoPreviewVariableCodec.decodeMap(raw)
+         guard value.count <= 4_096, value[Self.originalPreviewContextKey] == nil else {
+             throw failure("STATE_LIMIT", "Preview variables exceed their key budget or contain the reserved context key")
+         }
+@@ -935,14 +950,18 @@
+     }
+     private func previewVariables(_ record: PreviewRecord, reference: ContextReference, previous: [String: String]?) throws -> [String: String] {
+         // Project the current owner, including deletion, instead of merging an older UI map.
+-        var value = record.bookLargeVariables.merging(try previewVariableMap(record.book.variable) ?? [:]) { _, small in small }
++        let small = try previewVariableMap(record.book.variable) ?? [:]
++        try LegadoPreviewVariableCodec.validateRepresentable([small, record.bookLargeVariables])
++        var value = record.bookLargeVariables.merging(small) { _, small in small }
+         value[Self.originalPreviewContextKey] = try previewReferenceString(reference)
+         return value
+     }
+     private func previewChapterProjection(_ record: PreviewRecord, chapter: LegadoOriginalChapter,
+                                           reference: ContextReference) throws -> [String: String] {
+         let small = try record.chapterVariables[LegadoPreviewIdentity.key(chapter.url)] ?? previewVariableMap(chapter.variable) ?? [:]
+-        var values = (record.chapterLargeVariables[LegadoPreviewIdentity.key(chapter.url)] ?? [:]).merging(small) { _, small in small }
++        let large = record.chapterLargeVariables[LegadoPreviewIdentity.key(chapter.url)] ?? [:]
++        try LegadoPreviewVariableCodec.validateRepresentable([small, large])
++        var values = large.merging(small) { _, small in small }
+         values[Self.originalPreviewContextKey] = try previewReferenceString(reference)
+         return values
+     }
+@@ -968,6 +987,7 @@
+             dispatchPrecondition(condition: .notOnQueue(.main))
+             let path = try directory().appendingPathComponent(reference.bookRecordID + ".json")
+             let raw = try readPreviewFile(path, check: check)
++            try LegadoPreviewVariableCodec.validateRecordMaps(raw)
+             let record = try JSONDecoder().decode(PreviewRecord.self, from: raw)
+             try validateOriginalBook(record.book, sourceURL: reference.sourceURL)
+             try validatePreviewVariableBounds(record)
+@@ -1067,6 +1087,16 @@
+         return PreviewRead(record: next, raw: bytes, sha256: digest(bytes))
+     }
+     private func validatePreviewVariableBounds(_ record: PreviewRecord) throws {
++        try LegadoPreviewVariableCodec.validateRepresentable([try previewVariableMap(record.book.variable) ?? [:], record.bookLargeVariables])
++        var effectiveChapterVariables: [String: [String: String]] = [:]
++        for chapter in record.chapters {
++            effectiveChapterVariables[LegadoPreviewIdentity.key(chapter.url)] = try previewVariableMap(chapter.variable) ?? [:]
++        }
++        for (key, value) in record.chapterVariables { effectiveChapterVariables[key] = value }
++        let chapterKeys = Set(effectiveChapterVariables.keys).union(record.chapterLargeVariables.keys)
++        for key in chapterKeys {
++            try LegadoPreviewVariableCodec.validateRepresentable([effectiveChapterVariables[key] ?? [:], record.chapterLargeVariables[key] ?? [:]])
++        }
+         guard record.bookLargeVariables.count <= 4_096, record.bookLargeVariables[Self.originalPreviewContextKey] == nil,
+               record.chapterVariables.values.allSatisfy({ $0.count <= 4_096 && $0[Self.originalPreviewContextKey] == nil }),
+               record.chapterLargeVariables.values.allSatisfy({ $0.count <= 4_096 && $0[Self.originalPreviewContextKey] == nil }) else {

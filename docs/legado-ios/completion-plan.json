@@ -355,7 +355,8 @@
             "docs/legado-ios/core-original-app-cookie-owner-step.json",
             "docs/legado-ios/core-original-app-cookie-read-step.json",
             "docs/legado-ios/core-original-app-cookie-text-step.json",
-            "docs/legado-ios/core-original-app-book-unicode-step.json"
+            "docs/legado-ios/core-original-app-book-unicode-step.json",
+            "docs/legado-ios/core-original-app-preview-owner-step.json"
           ],
           "implementedSubtasksZh": [
             "Swift宿主已复用现有源变量/键值、登录头与文本缓存owner，绑定显式来源revision与CAS，删除登录头保留独立凭据；9项原owner与actor测试待SDK。完整Cookie属性、书URL/UUID/章节generation及正文保存App接线仍未完成，相关未接能力显式拒绝，传统产品入口未切换。",
@@ -365,9 +366,10 @@
             "已接通同一 Cookie owner 的 HTTP／WebKit／登录入口，修正过期旧值恢复、严格文件读取及复用导航的异步冲突；13项新增与16项受影响原生定义待本批SDK，原引擎完整Cookie读写和App入口仍未完成。",
             "原Cookie读取及AnalyzeUrl自动请求头已通过原任务HostCallback接同一App owner；47项实际JVM方法及普通JAR通过。只读模式拒绝写入和响应jar，2项新Swift定义待SDK；准确原DB/session文本写入和登录顺序继续实施，完整Cookie与App产品入口仍未完成。",
             "原Cookie文本写入已通过同一App owner/Host接入显式app-owner-text模式，包含原Map/null/逐跳请求头和响应属性、登录先后副作用；63项JVM实际通过，普通生产JAR四组smoke通过，未带135个项目测试类或JUnit。新增App5及Package2仍SDK执行0，WK平台和完整Cookie合同仍未完成。",
-            "已修复实际书架元数据 owner 的 Unicode 字节保真漏洞：变量名/值或书籍URL的NFC/NFD差异会推进原revision、拒绝旧grant/CAS和旧UI发布，不再被原whole-record overlay漏掉。新增2项真实文件保存/正常重开/旧CAS拒绝用例定义，7项原同组未改；3文件语法0诊断，SDK执行0。"
+            "已修复实际书架元数据 owner 的 Unicode 字节保真漏洞：变量名/值或书籍URL的NFC/NFD差异会推进原revision、拒绝旧grant/CAS和旧UI发布，不再被原whole-record overlay漏掉。新增2项真实文件保存/正常重开/旧CAS拒绝用例定义，7项原同组未改；3文件语法0诊断，SDK执行0。",
+            "已将未入架预览接到既有 context actor、原 public 搜索/详情/目录/正文及同一 Host 实体租约，保留真实 App UUID/章节所有权和取消/CAS；原始变量名无法保真的 NFC/NFD 组合在任何接受写入或 DTO 前显式拒绝，transfer 按 UTF8 比较变量名、值和章节。15 项新增与 44 项相关方法只是准备定义，SDK/JNI 执行 0；默认产品路由未切换。"
           ],
-          "nextActionZh": "合并同Host的真实预览owner；继续原setWebCookie、remove的WK副作用、clear原DB子集及native入口到原session文本的合同。将新App5/Package2与受影响旧owner方法集中SDK，随后打通普通JAR/JNI/原生阅读，不以JVM或语法通过宣称完整兼容。"
+          "nextActionZh": "语义合并同 Host 的 Cookie WebKit 后续差分，集中执行预览15项及受影响44项现有定义；继续跨进程恢复、全原字符串兼容与实际普通JAR/JNI/App路线，未通过前不验收整步。"
         },
         {
           "id": "C3",
@@ -396,9 +398,10 @@
             "docs/legado-ios/core-original-webbook-step.json",
             "docs/legado-ios/core-original-state-persistence-step.json",
             "docs/legado-ios/core-original-public-runtime-step.json",
-            "docs/legado-ios/core-original-text-subcontent-step.json"
+            "docs/legado-ios/core-original-text-subcontent-step.json",
+            "docs/legado-ios/core-original-app-preview-owner-step.json"
           ],
-          "preparatoryScopeZh": "原WebBook四段公开execute与跨任务同owner/HTTP/Cookie已有171项JVM及普通JAR证据，有限实体变量业务结果可往返；批量、完整保存栅栏和App状态/发布仍未完成，整步未验收。；本段另接原版文本subContent、分页后一次追加及全文替换后缩进，24项当前JVM通过（20既有复用+4新），普通JAR/JNI/App验收仍待。",
+          "preparatoryScopeZh": "原WebBook四段公开execute与跨任务同owner/HTTP/Cookie已有171项JVM及普通JAR证据，有限实体变量业务结果可往返；批量、完整保存栅栏和App状态/发布仍未完成，整步未验收。；本段另接原版文本subContent、分页后一次追加及全文替换后缩进，24项当前JVM通过（20既有复用+4新），普通JAR/JNI/App验收仍待。；新增显式预览 owner 及 public business/Host 接线准备，15项新与44项相关仅定义、SDK/JNI0；默认App路由、完整流水线与整步验收仍未完成。",
           "preparatoryStatus": "public-JVM-business-boundary-implemented-Swift-SDK-and-product-gates-unfinished",
           "implementationEvidence": [
             "docs/legado-ios/core-original-search-owner-correction.json"
@@ -433,10 +436,11 @@
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "preparatoryImplementationEvidence": [
             "docs/legado-ios/core-original-public-runtime-step.json",
-            "docs/legado-ios/core-original-app-cookie-text-step.json"
+            "docs/legado-ios/core-original-app-cookie-text-step.json",
+            "docs/legado-ios/core-original-app-preview-owner-step.json"
           ],
           "preparatoryStatus": "public-JVM-business-boundary-implemented-Swift-SDK-and-product-gates-unfinished",
-          "preparatoryScopeZh": "普通JAR公开原文本业务合同与Swift Package typed API已接线；Swift5项新测试仅准备，未执行JNI或App原生产品链。显式门槛保留、传统产品路由未切换。",
+          "preparatoryScopeZh": "普通JAR公开原文本业务合同与Swift Package typed API已接线；Swift5项新测试仅准备，未执行JNI或App原生产品链。显式门槛保留、传统产品路由未切换。；新增显式预览 owner 及 public business/Host 接线准备，15项新与44项相关仅定义、SDK/JNI0；默认App路由、完整流水线与整步验收仍未完成。",
           "implementationEvidence": [
             "docs/legado-ios/core-original-search-owner-correction.json",
             "docs/legado-ios/core-original-app-chapter-owner-step.json"
@@ -754,7 +758,8 @@
       "cookieReadSDKCorrectedFollowup1": "docs/legado-ios/core-cookie-read-sdk-corrected-followup1.json",
       "appBookUnicodeImplementation": "docs/legado-ios/core-original-app-book-unicode-step.json",
       "cookieReadSDKCorrectedTerminalResult": "docs/legado-ios/core-cookie-read-sdk-corrected-terminal.json",
-      "expirySafeRecoveryImplementation": "docs/legado-ios/core-renewal-expiry-safe-recovery-step.json"
+      "expirySafeRecoveryImplementation": "docs/legado-ios/core-renewal-expiry-safe-recovery-step.json",
+      "appPreviewOwnerImplementation": "docs/legado-ios/core-original-app-preview-owner-step.json"
     }
   },
   "stages": [
@@ -4825,6 +4830,10 @@
     "expiry-safe-recovery": {
       "path": "docs/legado-ios/core-renewal-expiry-safe-recovery-step.json",
       "scope": "Actual shared App recovery-only capability for existing authenticated transactions when signing material is unavailable; strict original Keychain read and final-status partial result preservation. Six definitions SDK0; cached full-expiry monitoring and automatic submission unfinished."
+    },
+    "app-preview-owner": {
+      "path": "docs/legado-ios/core-original-app-preview-owner-step.json",
+      "scope": "Existing context/Host preview ownership and exact UTF8 fail-closed transfer; C2 implementation, C3/C4 preparatory, 15+44=59 definitions only, SDK/JNI0. Full original string, route, cold-process and power-loss acceptance remain unfinished."
     }
   },
   "retainedExistingWork": [

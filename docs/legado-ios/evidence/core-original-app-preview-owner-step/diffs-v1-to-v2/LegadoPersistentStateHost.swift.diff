@@ -1,0 +1,11 @@
+--- freeze-v1/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ freeze-v2/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -572,7 +572,7 @@
+         guard let backing = bookOwners[owner] else {
+             throw failure("UNSUPPORTED_CAPABILITY", "Entity state has no explicitly connected App book owner")
+         }
+-        try backing.validateTask(request.taskID)
++        try backing.validateRequest(request)
+         let deadline = Date().addingTimeInterval(request.remainingTimeoutSeconds)
+         return try await SourcePerfTrace.spanAsync("legado.state.entity", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+             if isEntityRead {

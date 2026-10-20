@@ -1,0 +1,212 @@
+--- freeze-v1/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift
++++ freeze-v2/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift
+@@ -16,7 +16,10 @@
+ /// The executor replaces the unavailable native engine, not the state owner. Every
+ /// entity read/commit below dispatches the production Host into actual owned files.
+ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
+-    enum Mode: Sendable, Equatable { case normal, failAfterCommit, staleCAS, changeAfterSeal, waitBeforeCommit, failWrite, scopeChecks, unicodeURLs }
++    enum Mode: Sendable, Equatable {
++        case normal, failAfterCommit, staleCAS, changeAfterSeal, waitBeforeCommit, failWrite, scopeChecks, unicodeURLs
++        case unicodeRawSmallMap, unicodeLargeAccess, unicodeCrossCompartment
++    }
+     let host = LegadoPersistentStateHost(backing: PreviewFixtureNoSourceState())
+     let directory: URL
+     let entered: AsyncStream<Bool>
+@@ -27,6 +30,10 @@
+     private var lastOwner: String?
+     private var lastWire: String?
+     private var activeTaskID = ""
++    private var searchVariable: String?
++    private var rawSmallCommit = "{}"
++    private var unicodeNames = ("\u{00e9}", "e\u{0301}")
++    private var chapterLiteral: String?
+     private(set) var staleWasRejected = false
+     private(set) var scopeWasRejected = false
+     let large = String(repeating: "L", count: 10_000)
+@@ -36,6 +43,12 @@
+         let pair = AsyncStream<Bool>.makeStream(); entered = pair.stream; event = pair.continuation
+     }
+     func setMode(_ value: Mode) { mode = value }
++    func setSearchVariable(_ value: String?) { searchVariable = value }
++    func setRawSmallCommit(_ value: String) { rawSmallCommit = value; mode = .unicodeRawSmallMap }
++    func setUnicodeNames(_ first: String, _ second: String, crossCompartment: Bool) {
++        unicodeNames = (first, second); mode = crossCompartment ? .unicodeCrossCompartment : .unicodeLargeAccess
++    }
++    func setChapterLiteral(_ value: String?) { chapterLiteral = value }
+     func operations() -> [String] { calls }
+     func openGate() { gate?.resume(); gate = nil }
+     func oldGrantIsRejected() async throws -> Bool {
+@@ -50,7 +63,8 @@
+             calls.append("search")
+             var book = LegadoOriginalBook(bookURL: "https://preview-owned.invalid/book", origin: sourceURL,
+                 name: "Owned preview", author: "Fixture", tocURL: "https://preview-owned.invalid/book/toc")
+-            book.variable = try json(["seed": "kept"])
++            if let searchVariable { book.variable = searchVariable }
++            else { book.variable = try json(["seed": "kept"]) }
+             return .search([book])
+         }
+         let grant = try #require(grant)
+@@ -67,6 +81,44 @@
+                 lastWire = small
+                 let before = try await read(owner: owner, keys: [small, big])
+                 var values = try map(before, key: small) ?? [:]
++                if mode == .unicodeRawSmallMap {
++                    _ = try await commit(owner: owner, read: before, changes: [small: Data(rawSmallCommit.utf8).base64EncodedString()])
++                    throw LegadoRuntimeError(code: "FIXTURE_ERROR", message: "Ambiguous raw small names were accepted")
++                }
++                if mode == .unicodeLargeAccess || mode == .unicodeCrossCompartment {
++                    let first = try key(grant, chapter: nil, large: unicodeNames.0)
++                    let second = try key(grant, chapter: nil, large: unicodeNames.1)
++                    let firstRead = try await read(owner: owner, keys: [first])
++                    #expect(try await commit(owner: owner, read: firstRead, changes: [first: Data("first".utf8).base64EncodedString()]))
++                    if mode == .unicodeCrossCompartment {
++                        let next = try await read(owner: owner, keys: [small])
++                        _ = try await commit(owner: owner, read: next, changes: [small: try data([unicodeNames.1: "cross"]).base64EncodedString()])
++                    } else {
++                        // Alias GET must reject, while a second exact-name GET/PUT still
++                        // uses the genuine file owner and preserves the stored name bytes.
++                        do { _ = try await read(owner: owner, keys: [second]); Issue.record("Alias get must not return another Java name") }
++                        catch let error as LegadoRuntimeError { #expect(error.code == "UNSUPPORTED_CAPABILITY") }
++                        let wrongWireProof = try await read(owner: owner, keys: [first])
++                        let revision = try #require(wrongWireProof["revision"] as? NSNumber)
++                        let quote: (String) throws -> String = { String(decoding: try JSONEncoder().encode($0), as: UTF8.self) }
++                        let rawRequest = "{\"owner\":" + (try quote(owner)) + ",\"revision\":" + revision.stringValue
++                            + ",\"changes\":{" + (try quote(first)) + ":\"b25l\"," + (try quote(second)) + ":\"dHdv\"}}"
++                        do {
++                            _ = try await host.dispatch(.init(taskID: activeTaskID, operation: "state.commit", requestJSON: rawRequest))
++                            Issue.record("Raw wire names must not fold before preview validation")
++                        } catch let error as LegadoRuntimeError { #expect(error.code == "UNSUPPORTED_CAPABILITY") }
++                        do {
++                            _ = try await commit(owner: owner, read: wrongWireProof, changes: [second: Data("must not alias".utf8).base64EncodedString()])
++                            Issue.record("A canonical alias cannot borrow an exact read-wire proof")
++                        } catch let error as LegadoRuntimeError { #expect(error.code == "UNSUPPORTED_CAPABILITY") }
++                        let next = try await read(owner: owner, keys: [first])
++                        let payload = try #require((next["values"] as? [String: String])?[first])
++                        #expect(String(data: try #require(Data(base64Encoded: payload)), encoding: .utf8) == "first")
++                        #expect(try await commit(owner: owner, read: next, changes: [first: Data("updated".utf8).base64EncodedString()]))
++                        _ = try await read(owner: owner, keys: [second])
++                    }
++                    throw LegadoRuntimeError(code: "FIXTURE_ERROR", message: "Ambiguous variable compartment was accepted")
++                }
+                 if mode == .waitBeforeCommit {
+                     event.yield(true)
+                     await withCheckedContinuation { gate = $0 }
+@@ -120,6 +172,7 @@
+                     let before = try await read(owner: owner, keys: [small]) // New chapter constructor restoreVariables.
+                     var values = try map(before, key: small) ?? [:]; values["chapter"] = "toc"
+                     values["ownedIndex"] = String(index)
++                    if let chapterLiteral { values["raw"] = chapterLiteral }
+                     #expect(try await commit(owner: owner, read: before, changes: [small: try data(values).base64EncodedString()]))
+                     chapter.variable = try json(values)
+                     chapters.append(chapter)
+@@ -467,4 +520,110 @@
+         let finished = try #require(try JSONSerialization.jsonObject(with: contextBytes(f)) as? [String: Any])
+         #expect(finished["status"] as? String == "transferred")
+     }
++
++    @Test("Both raw Unicode key orders reject before DTO/Host acceptance or nested record decoding; exact duplicates keep last value")
++    func rawVariableMapsRejectAliasingBeforeDictionaryDecode() async throws {
++        let maps = [#"{"\u00e9":"first","e\u0301":"second"}"#, #"{"e\u0301":"first","\u00e9":"second"}"#]
++        for rawMap in maps {
++            let f = try fixture(); defer { cleanup(f) }
++            await f.executor.setSearchVariable(rawMap)
++            await expectError("UNSUPPORTED_CAPABILITY") { _ = try await search(f) }
++            #expect(try FileManager.default.contentsOfDirectory(atPath: f.directory.path).isEmpty)
++            await f.executor.setSearchVariable(#"{"same":"first","same":"last","e\u0301":"e\u0301"}"#)
++            let book = try await search(f)
++            #expect(book.runtimeVariables?["same"] == "last")
++            let decomposed = "e\u{0301}"
++            let original = try #require(book.runtimeVariables?.first { Data($0.key.utf8) == Data(decomposed.utf8) })
++            #expect(Data(original.value.utf8) == Data(decomposed.utf8))
++            let before = try contextBytes(f)
++            await f.executor.setRawSmallCommit(rawMap)
++            await expectError("UNSUPPORTED_CAPABILITY") { _ = try await details(f, book) }
++            #expect(try contextBytes(f) == before)
++            let path = try #require(FileManager.default.contentsOfDirectory(at: f.directory, includingPropertiesForKeys: nil).first)
++            let calls = await f.executor.operations()
++            for field in ["bookLargeVariables", "chapterVariables", "chapterLargeVariables"] {
++                var record = try #require(try JSONSerialization.jsonObject(with: before) as? [String: Any])
++                let marker = ["RAW_TOKEN": "marker"]
++                if field == "bookLargeVariables" { record[field] = marker }
++                else { record[field] = [Data((book.bookUrl + "/pending").utf8).base64EncodedString(): marker] }
++                let encoded = try JSONSerialization.data(withJSONObject: record, options: [.sortedKeys, .withoutEscapingSlashes])
++                let text = try #require(String(data: encoded, encoding: .utf8))
++                let needle = #"{"RAW_TOKEN":"marker"}"#
++                #expect(text.components(separatedBy: needle).count == 2)
++                let malformed = Data(text.replacingOccurrences(of: needle, with: rawMap).utf8)
++                try malformed.write(to: path, options: .atomic)
++                await expectError("UNSUPPORTED_CAPABILITY") { _ = try await details(f, book) }
++                #expect(try Data(contentsOf: path) == malformed)
++                #expect(await f.executor.operations() == calls)
++            }
++        }
++    }
++
++    @Test("Both Unicode name orders preserve exact multi-step big get/put and reject cross-compartment or wire aliasing")
++    func unicodeHostNamesAndCompartmentProjectionFailClosed() async throws {
++        let names = [("\u{00e9}", "e\u{0301}"), ("e\u{0301}", "\u{00e9}")]
++        for (first, second) in names {
++            for cross in [false, true] {
++                let f = try fixture(); defer { cleanup(f) }; let book = try await search(f)
++                await f.executor.setUnicodeNames(first, second, crossCompartment: cross)
++                await expectError("UNSUPPORTED_CAPABILITY") { _ = try await details(f, book) }
++                let object = try #require(try JSONSerialization.jsonObject(with: contextBytes(f)) as? [String: Any])
++                let large = try #require(object["bookLargeVariables"] as? [String: String])
++                #expect(large.count == 1)
++                #expect(Data(try #require(large.keys.first).utf8) == Data(first.utf8))
++                #expect(large.values.first == (cross ? "first" : "updated"))
++                let dto = try #require(object["book"] as? [String: Any])
++                let small = try JSONDecoder().decode([String: String].self, from: Data(try #require(dto["variable"] as? String).utf8))
++                #expect(small == ["seed": "kept"])
++                #expect(try await f.executor.oldGrantIsRejected())
++            }
++        }
++    }
++
++    @Test("Actual App book/chapter handoff rejects canonically equal variable names or values with different UTF-8 bytes")
++    @MainActor
++    func transferRequiresExactVariableNamesAndValues() async throws {
++        let values = [("\u{00e9}", "e\u{0301}"), ("e\u{0301}", "\u{00e9}")]
++        for (previewValue, appValue) in values {
++            for scope in ["book-value", "book-name", "chapter-value"] {
++                let f = try fixture(); defer { cleanup(f) }
++                let initial = scope == "book-name" ? [previewValue: "token"] : ["raw": previewValue]
++                await f.executor.setSearchVariable(String(decoding: try JSONEncoder().encode(initial), as: UTF8.self))
++                if scope == "chapter-value" { await f.executor.setChapterLiteral(previewValue) }
++                let preview = try await search(f); let detail = try await details(f, preview)
++                let toc = try await f.service.originalTOC(url: detail.tocUrl, source: f.source, runtimeVariables: detail.runtimeVariables)
++                let metadata = f.root.appendingPathComponent("books_meta.json")
++                let store = BookStore(metadataFileURL: metadata)
++                var book = ReadingBook(title: detail.name, source: preview.bookUrl, contentFilename: "")
++                book.isOnline = true; book.isInBookshelf = false; book.bookSourceId = f.source.id
++                book.bookInfoURL = preview.bookUrl; book.tocURL = detail.tocUrl
++                book.runtimeVariables = toc.runtimeVariables; book.onlineChapters = toc.chapters
++                if scope == "book-value" { book.runtimeVariables?["raw"] = appValue }
++                if scope == "book-name" {
++                    book.runtimeVariables?.removeValue(forKey: previewValue)
++                    book.runtimeVariables?[appValue] = "token"
++                }
++                if scope == "chapter-value" { book.onlineChapters?[0].runtimeVariables?["raw"] = appValue }
++                store.saveReadingBook(book); await BookStore.queuedWritesLanded()
++                let before = try contextBytes(f)
++                let expected = scope == "book-name" ? "UNSUPPORTED_CAPABILITY" : "STATE_CONFLICT"
++                await expectError(expected) {
++                    _ = try await f.service.transferOriginalPreview(source: f.source, runtimeVariables: toc.runtimeVariables, to: store, bookID: book.id)
++                }
++                #expect(try contextBytes(f) == before)
++                let reopened = BookStore(metadataFileURL: metadata)
++                let actual = try #require(reopened.readingBook(id: book.id))
++                if scope == "book-value" { #expect(Data(try #require(actual.runtimeVariables?["raw"]).utf8) == Data(appValue.utf8)) }
++                if scope == "book-name" {
++                    let exact = try #require(actual.runtimeVariables?.first { Data($0.key.utf8) == Data(appValue.utf8) })
++                    #expect(exact.value == "token")
++                }
++                if scope == "chapter-value" {
++                    let chapter = try #require(reopened.chapters(for: book.id)?.first)
++                    #expect(Data(try #require(chapter.runtimeVariables?["raw"]).utf8) == Data(appValue.utf8))
++                    #expect(!LegadoPreviewIdentity.sameChapter(chapter, toc.chapters[0]))
++                }
++            }
++        }
++    }
+ }

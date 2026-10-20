@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 2,
+  "reviewedAtUTC": "2026-10-20T07:19:45.488273+00:00",
+  "reviewer": "/root/preview_final_review",
+  "reviewMode": "Independent read-only incremental source review from immutable freeze-v1 to freeze-v2; no grammar, compiler, test, Git, cloud or private-data execution.",
+  "reviewedPreparation": {
+    "path": ".build/original-app-preview-owner-delta/freeze-v2/preparation.json",
+    "bytes": 27940,
+    "sha256": "08d01449a9b40d160bb9f87b7b9f9bf14ff90d35f70227099a425ef19eb81659"
+  },
+  "verifiedSources": [
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/final-sources/LegadoMainJSSourceService.swift",
+      "bytes": 75306,
+      "sha256": "0be45cf7e1e7ad6139b4707ec9e059cd10d5577e5d309bfe75c57d157c4107ad",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/final-sources/LegadoPersistentStateHost.swift",
+      "bytes": 42091,
+      "sha256": "797cd7542a7860967cdfa420d2e395a581dda896d9517b59a7927e93c7ea0d5a",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/final-sources/LegadoPreviewStateOwner.swift",
+      "bytes": 21280,
+      "sha256": "9e94b51c16af0d2489b827fa365bcbecbdd239cc083b90b4617438064c74d105",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/final-sources/BookSourceFetcher+OriginalPreview.swift",
+      "bytes": 1968,
+      "sha256": "3f7596ae27a28c015eb78bdce4cf8c7f24d9cd4b11d00ae9a411652cf40c75c2",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/final-sources/LegadoPreviewStateOwnerTests.swift",
+      "bytes": 43664,
+      "sha256": "59bc7016c90e1575c739c803c2c64a8484864ef8d5a27d75bac67cb1054fa267",
+      "matched": true
+    }
+  ],
+  "verifiedIncrementalDiffs": [
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/reviewdiffs-v1-to-v2/LegadoMainJSSourceService.swift.diff",
+      "bytes": 10189,
+      "sha256": "f9cce89b58396af8386fa1ba6fa9f68e1a2667a0dc3f63c118dd301a75538d11",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/reviewdiffs-v1-to-v2/LegadoPersistentStateHost.swift.diff",
+      "bytes": 695,
+      "sha256": "73910e9b9018c49ef5d48f48ec686d4cb07be145b8bf119c682a2d68c41a6694",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/reviewdiffs-v1-to-v2/LegadoPreviewStateOwner.swift.diff",
+      "bytes": 12564,
+      "sha256": "e88399f15e723739488334a338cb0e2a5aa8247142449d76204713126221c023",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/reviewdiffs-v1-to-v2/BookSourceFetcher+OriginalPreview.swift.diff",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matched": true
+    },
+    {
+      "path": ".build/original-app-preview-owner-delta/freeze-v2/reviewdiffs-v1-to-v2/LegadoPreviewStateOwnerTests.swift.diff",
+      "bytes": 15031,
+      "sha256": "5839c415d4f724b1af47b2e3c06ad8807cf8eb680f952a1661ae18ed8e541dba",
+      "matched": true
+    }
+  ],
+  "verifiedD78ReferenceInputs": [
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 205611,
+      "sha256": "9d4c420d8882948378728d4f58f1e40da3ea15fe8ffff46b71caf137f5b65690",
+      "matched": true
+    },
+    {
+      "path": "Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift",
+      "bytes": 10892,
+      "sha256": "cbc9a1066e9df3ca5c61b27fd81fb6cb28c0d7e1c5a0d3656d474fff17d32f93",
+      "matched": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoBookMetadataOwnerTests.swift",
+      "bytes": 24210,
+      "sha256": "d57f2b6413ad282a031904e3eea3b0fd0139dcd94fb8383cc3fbc0d487f1c7e3",
+      "matched": true
+    }
+  ],
+  "reusedV1Review": {
+    "path": ".build/original-app-preview-owner-delta/independent-final-review-v1.json",
+    "bytes": 8946,
+    "sha256": "a9e734d3abc9585cd7e2c704d49cd954ef17970fb83f956d35f3fa2c1e8e5323",
+    "matched": true
+  },
+  "reusedV1Preparation": {
+    "path": ".build/original-app-preview-owner-delta/freeze-v1/preparation.json",
+    "bytes": 20454,
+    "sha256": "38ef87d69c1ee55b634058f82bb1e4469a1d2842b4d6276ffe61b412ff6fd064",
+    "matched": true
+  },
+  "disposition": "No confirmed blocking finding remains in this five-source frozen preview delta after the reviewed fail-closed Unicode repair. This is source-review acceptance only, not SDK/JNI/runtime or full compatibility acceptance.",
+  "confirmedBlockers": [],
+  "v1FindingClosure": [
+    {
+      "id": "PREVIEW-UTF8-VARIABLE-KEY-IDENTITY",
+      "status": "Closed in source by typed rejection before accepting an unrepresentable alias; coexistence compatibility remains unsupported.",
+      "rawSmallMaps": "LegadoPreviewVariableCodec.decodeMap/flatMap scans the original bounded JSON byte stream and decodes each JSON String token individually. A seen String-to-Data identity map detects canonically equal names with different UTF-8 before adding the current entry to the result. Same-byte duplicates deliberately keep the last value; malformed maps fail explicitly. previewVariableMap and Host small changes both use this guard.",
+      "persistedNestedMaps": "readPreview invokes validateRecordMaps before JSONDecoder<PreviewRecord>. The bounded fixed-field navigator examines raw bookLargeVariables, chapterVariables and chapterLargeVariables leaf maps before outer dictionary decoding. Chapter-state outer names must be canonical Base64 encodings of nonempty bounded UTF-8 URLs; embedded DTO variable String maps are checked again by the ordinary record validation.",
+      "companionAccess": "Both read and commit use exactValue to compare the actual stored key UTF-8 before returning, overwriting or deleting a canonically equivalent key. Candidate writes, persisted-record validation and UI projections validateRepresentable across the small/companion maps before merge, so an alias cannot silently replace a value during projection.",
+      "proofAuthorization": "The preview backing validates raw Host changes through the token guard before lease removal/owner commit. commitPreviewEntity then restricts changed key bytes to Set<Data> of the exact read wires, closing single-alias borrowing even though the older shared Host Set<String> admits canonical equality.",
+      "evidenceLevel": "Source inspection and exact artifact binding only; not executed on Foundation/Apple SDK."
+    },
+    {
+      "id": "PREVIEW-UTF8-TRANSFER-VARIABLE-VALUES",
+      "status": "Closed in source for the reviewed transfer predicates.",
+      "evidence": "Transfer validates key representability before merging App and preview maps, compares existing book key and value UTF-8 explicitly, and uses sameMap for actual App chapter variables. sameMap checks exact names and values; sameChapter explicitly covers every current OnlineChapterRef field, using exact UTF-8 for textual fields and sameMap for variables. appIdentityCurrent additionally compares current App variables with exact captured input/view/committed candidate maps and the captured actual chapters. The d78 BookStore/metadata raw-byte identity changes are separately source-bound dependencies, not retested here.",
+      "concurrencyLimit": "The existing CAS and one context actor remain the authority. This predicate does not claim new cross-process transaction isolation or power-loss durability.",
+      "evidenceLevel": "Static source closure, not a measured concurrent-runtime result."
+    }
+  ],
+  "incrementalChecks": [
+    {
+      "area": "JSON navigator bounds and schema",
+      "evidence": "Actual production input bounds remain 8 MiB context and 2 MiB Host request, with 1 MiB small-map and 4096 distinct-key limits. The navigator has a 32-level nested-value cap, treats only the fixed state-map fields specially, and leaves the existing outer DTO/request decoder authoritative for its schema. It does not introduce a rule parser, owner, cache or transport."
+    },
+    {
+      "area": "Raw Host preflight timing",
+      "evidence": "dispatchEntityStateIfNeeded invokes backing.validateRequest before its commit removes the entity lease. App forwarding remains a no-op preserving the existing grant lifecycle; preview validates its taskID and raw changes. The frozen Host delta from v1 is exactly the reviewed validateTask-to-validateRequest call substitution."
+    },
+    {
+      "area": "Prior fixes and owner preservation",
+      "evidence": "Reuse immutable v1 review for malformed TOC index/duplicate IDs and exact URLs, single bounded FD read, source gate/task/deadline/CAS ownership, real original typed embedding and App UUID handoff. Incremental diffs do not change those paths. Fetcher bytes are unchanged. The old mainJs search-through-helper body is byte-equivalent after newline normalization, and Host differs from v1 at only the one reviewed request-validation call."
+    }
+  ],
+  "preparedFixtureReview": [
+    {
+      "method": "rawVariableMapsRejectAliasingBeforeDictionaryDecode",
+      "scope": "Both NFC/NFD orders arrive as manually authored raw JSON before dictionary construction. Exercises actual preview search acceptance, actual Host raw small commit, unchanged context bytes on rejection, same-byte duplicate last value, preservation of an isolated decomposed key/value, and all three corrupt nested raw context maps rejected before the executor. These are definitions only."
+    },
+    {
+      "method": "unicodeHostNamesAndCompartmentProjectionFailClosed",
+      "scope": "Both name orders use the real Host and actual context files: first accepted companion write; alias read rejection; raw two-key Host collision rejection; single alias attempting to borrow an exact read proof; fresh exact-name update; subsequent alias read; and a small/companion collision. Checks retained accepted bytes/values and revoked old grant. Definitions only."
+    },
+    {
+      "method": "transferRequiresExactVariableNamesAndValues",
+      "scope": "Both normalization orders and three actual App scopes (book value, book name, chapter value) persist through BookStore, attempt transfer, verify original context bytes and reopen the actual App file to confirm preserved raw bytes. Existing normal transfer and failure/reopen fixtures remain selected. Definitions only."
+    }
+  ],
+  "evidenceLimits": {
+    "SwiftSDKCompilation": 0,
+    "newMethodDefinitionsOnly": 15,
+    "relatedMethodDefinitionsOnly": 44,
+    "newOrRelatedMethodsExecuted": 0,
+    "JNIOrAppExecution": 0,
+    "grammarRerun": false,
+    "testsRerun": false,
+    "oldPassingResultsRecounted": false
+  },
+  "remainingScope": [
+    "Byte-distinct canonically equivalent Java variable names cannot coexist in the current Swift map representation. The new path rejects the unrepresentable combination with typed UNSUPPORTED_CAPABILITY rather than accepting a lossy write. This remains an explicit compatibility gap, not full parity.",
+    "Apple SDK typecheck/build, all selected native methods, the real native JVM/JNI runtime and product route execution are still unverified.",
+    "Default App traditional search/details/TOC/content routing remains unchanged; explicit preview entry points do not establish a newly enabled unique original product route.",
+    "No new cold-UI navigation restoration, global source-edit observer, preview media rendering or download/cache publication is supplied.",
+    "Context replacement remains Foundation atomic replacement without explicit file/directory fsync. Two-owner transfer is resumable but not cross-file atomic; power-loss and actual cold-process restoration are unverified.",
+    "C2/C3/C4 and complete book-source compatibility remain unfinished."
+  ],
+  "mutations": {
+    "onlyIgnoredReviewArtifactsWritten": true,
+    "frozenSourcesChanged": false,
+    "canonicalGitOrCloudChanged": false,
+    "privateDataRead": false
+  }
+}

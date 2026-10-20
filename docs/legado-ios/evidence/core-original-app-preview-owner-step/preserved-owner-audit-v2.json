@@ -1,0 +1,641 @@
+{
+  "reviewedAtUTC": "2026-10-20T07:13:49.939503+00:00",
+  "readOnlyStaticAudit": true,
+  "SDKExecuted": false,
+  "checks": [
+    {
+      "baseline": {
+        "path": ".build/original-app-preview-owner-delta/baseline-sources/LegadoMainJSSourceService.swift",
+        "bytes": 23985,
+        "sha256": "b9fc2b76fdd663730170f12742f641efcac651f371a4e206787c6cab84c8a800"
+      },
+      "future": {
+        "path": ".build/original-app-preview-owner-delta/work/LegadoMainJSSourceService.swift",
+        "bytes": 75306,
+        "sha256": "0be45cf7e1e7ad6139b4707ec9e059cd10d5577e5d309bfe75c57d157c4107ad"
+      },
+      "existingFunctionGroups": 34,
+      "unchangedGroups": [
+        "persistentHost",
+        "bindPersistentSource",
+        "revokePersistentSource",
+        "bindPersistentBook",
+        "executor",
+        "createSession",
+        "execute",
+        "closeSession",
+        "search",
+        "details",
+        "toc",
+        "content",
+        "closeSessions",
+        "validate",
+        "perform",
+        "operationDeadline",
+        "acquire",
+        "cancelWaiter",
+        "timeoutWaiter",
+        "finishWaiter",
+        "release",
+        "saveBook",
+        "context",
+        "loadBook",
+        "variables",
+        "onlineBook",
+        "requireTextBook",
+        "directory",
+        "encoded",
+        "json",
+        "object",
+        "string",
+        "digest",
+        "failure"
+      ],
+      "changedExistingGroups": [],
+      "addedGroups": [
+        "bindPersistentPreview",
+        "revoke",
+        "check",
+        "accepted",
+        "sealExecution",
+        "completion",
+        "originalSearch",
+        "originalDetails",
+        "originalTOC",
+        "originalContent",
+        "revokeOriginalPreview",
+        "transferOriginalPreview",
+        "validatePreviewGrant",
+        "readPreviewEntity",
+        "commitPreviewEntity",
+        "executePreview",
+        "finishPreview",
+        "originalSignature",
+        "acceptOriginalRevision",
+        "validateOriginalBook",
+        "previewVariableMap",
+        "previewReference",
+        "previewContext",
+        "previewVariables",
+        "previewChapterProjection",
+        "previewReferenceString",
+        "previewOnlineBook",
+        "previewID",
+        "readPreview",
+        "readPreviewFile",
+        "replacePreview",
+        "validatePreviewVariableBounds",
+        "writePreview",
+        "previewCheck",
+        "makePreviewGrant",
+        "grantReference",
+        "previewChapterURL"
+      ],
+      "baselineFunctionHashes": {
+        "persistentHost": [
+          "eb232bf824905e21526f936fc675ffd6117e83e886a2543e0c352471f8e0f974"
+        ],
+        "bindPersistentSource": [
+          "a0e6e28f4507bc49ee049370095ffb89df225552c9100afedf48fbfa2d6944be"
+        ],
+        "revokePersistentSource": [
+          "ef70a5a47d8966fed3970836b3d9edc628098f58675b31751b515371fc42dab7"
+        ],
+        "bindPersistentBook": [
+          "5ed9b67be1e39b0a420b24e32a00b089c35b43bbdcbacfcc33028cabbb1b6941"
+        ],
+        "executor": [
+          "e5b8f0775817ef9c412b2bf0d4c9986abae377f92279c27b416e6d3f9211e20a"
+        ],
+        "createSession": [
+          "8aeb260e1c8a39733e3a4de7d607b6ecdc64a379d09705509184fa0ff6cf821a"
+        ],
+        "execute": [
+          "1541610a4c4dd479ee4f58dfd3985fc99700d78b23ed0085e3ec220d837bb76a"
+        ],
+        "closeSession": [
+          "e92fe738b37af34fbdc2316ccd4e93b237ab5d65b1296225cb59b322dd95b1ec"
+        ],
+        "search": [
+          "6e8b8c2f410fcbab31a2127ec4b263772703391728d08798ccece81774e2c7cc"
+        ],
+        "details": [
+          "1de9c60f33853b1d91a421d1b8d3dcbc92392f03b60af88434bc4e25bb1ea6f3"
+        ],
+        "toc": [
+          "1814c7bc5eb4d55ab3f199a3ad541ee0dfb5fd944d858727a4cdf1f109b8d676"
+        ],
+        "content": [
+          "40385343b013cfc561c7fcdc73bb3785d538264c0feb843f61d9dd1ef70a15dd"
+        ],
+        "closeSessions": [
+          "4e13ad32bdc4bf78483ab791d96ce184bf2c7eed874b243dff0ba6d74e6b7ca0"
+        ],
+        "validate": [
+          "f7c1ff9d7d0ef7c5cca1436f854aaad5e66c20442edbceae4f90adc1be3e7ee7"
+        ],
+        "perform": [
+          "306c43ff19d105ce29b4ed91898b574f1accab4235e41c9615b829fd167f8383"
+        ],
+        "operationDeadline": [
+          "4a73b674fd6d320dead19fd7bbd4ca2940971904dd106adf5e8529e90c78b146"
+        ],
+        "acquire": [
+          "4b59058be342b56ce0aae4f75daf21d2e4028ebb5dc2ff7dff9f90ff3df98e4f"
+        ],
+        "cancelWaiter": [
+          "ba7bde6cc827b96ac49d27631850cdc6dee018e919ce6e9b8d3b5f4967db6946"
+        ],
+        "timeoutWaiter": [
+          "f0883b2699e82b1b394f4ee5810ce0ced14b3365646c3e412f8c700b1a6878a2"
+        ],
+        "finishWaiter": [
+          "3fb01ae23c5b35e2106cb0220c97f7a4d60f6ba15d9f5bc06eedd4f7865e585a"
+        ],
+        "release": [
+          "d248b43d2d3847426e9d22ebcf45825012a77e6e698f00d57079e6105d657004"
+        ],
+        "saveBook": [
+          "49a6f6d74d32e3ea71c97ee1ca493c708f7ce44064bb4ede3f80529cef28915f"
+        ],
+        "context": [
+          "997a4efe175c5c356f3c0950ee73dd7fae8f1e3b2c2b5bc1042e1bfc7d177f61"
+        ],
+        "loadBook": [
+          "0b23909ea98b69a20e6cea1a2d9b8b37e912fa7f53ff219687d93d2663c9a9bf"
+        ],
+        "variables": [
+          "d46dde4a6f87934727a9469ef2c07f30a1d94578d1e58b87910c5fb4f2a4f01f"
+        ],
+        "onlineBook": [
+          "541ac23f25d577d8ef042d0122b6a3bfa4bb55adcc024934dbf20a5fc9e963cf"
+        ],
+        "requireTextBook": [
+          "f84c7dc3cde8b0b8455f7621ef1ac77108d5673903888394c575e8576182518f"
+        ],
+        "directory": [
+          "9fc99c5979819978f7b95a47f4ac6cbea1751d737513ab6cbb3bb2df9f566bbd"
+        ],
+        "encoded": [
+          "0ef68e1b2ef77fd17a8f081f930d14ea050ce4c513a0a070c2aa32d29aeb045c"
+        ],
+        "json": [
+          "ce612bb9a610730572927082367bdeb4a72c7286fd721d98cc3947f760824854"
+        ],
+        "object": [
+          "b246165c284df58b2fe22a025d99e8f3fc607507680fd9b6ae7bc4703bb7d2cb"
+        ],
+        "string": [
+          "36a4674981a01972107cbbd6e9cc03eb44c9b1415ad72561d4bba06248c742d7"
+        ],
+        "digest": [
+          "eb83932c0f39e977196830c7ed3c6791a50bf589b123b703dc25f5fba3a9d4af"
+        ],
+        "failure": [
+          "aff884fd7d44aa9e0aedd1ddaf5c930833ae6dfb41cd70c5d62f8acbcf923ac6"
+        ]
+      },
+      "futureFunctionHashes": {
+        "persistentHost": [
+          "eb232bf824905e21526f936fc675ffd6117e83e886a2543e0c352471f8e0f974"
+        ],
+        "bindPersistentSource": [
+          "a0e6e28f4507bc49ee049370095ffb89df225552c9100afedf48fbfa2d6944be"
+        ],
+        "revokePersistentSource": [
+          "ef70a5a47d8966fed3970836b3d9edc628098f58675b31751b515371fc42dab7"
+        ],
+        "bindPersistentBook": [
+          "5ed9b67be1e39b0a420b24e32a00b089c35b43bbdcbacfcc33028cabbb1b6941"
+        ],
+        "bindPersistentPreview": [
+          "e2b3f1e41f96457cf85eb4f86c26ffd9216d30f469ea67ec3388296091d195ca"
+        ],
+        "executor": [
+          "e5b8f0775817ef9c412b2bf0d4c9986abae377f92279c27b416e6d3f9211e20a"
+        ],
+        "revoke": [
+          "9cfdf6410e4d20cdacbf1e6ce2d6e84ccf1bbb31719ae1b474b7f976825c6174"
+        ],
+        "check": [
+          "14ac9688e38038b5bcbf707d024398503bf5f991b354adc7aa73dd23aac01783"
+        ],
+        "accepted": [
+          "c0a91153e2d20458aa9bbbb6120d7bd9ca6a6858fdf4263325f2252862f87510"
+        ],
+        "sealExecution": [
+          "f230ab4f0a90d5445dadf223a62bcc537c4e356dbfd4ea1e729ae414e79d9c83"
+        ],
+        "completion": [
+          "44bab828bd15e5d8eedc934d135f67d51c266c4180dd08d70b6f95de97e2b20a"
+        ],
+        "createSession": [
+          "8aeb260e1c8a39733e3a4de7d607b6ecdc64a379d09705509184fa0ff6cf821a"
+        ],
+        "execute": [
+          "1541610a4c4dd479ee4f58dfd3985fc99700d78b23ed0085e3ec220d837bb76a"
+        ],
+        "closeSession": [
+          "e92fe738b37af34fbdc2316ccd4e93b237ab5d65b1296225cb59b322dd95b1ec"
+        ],
+        "search": [
+          "6e8b8c2f410fcbab31a2127ec4b263772703391728d08798ccece81774e2c7cc"
+        ],
+        "details": [
+          "1de9c60f33853b1d91a421d1b8d3dcbc92392f03b60af88434bc4e25bb1ea6f3"
+        ],
+        "toc": [
+          "1814c7bc5eb4d55ab3f199a3ad541ee0dfb5fd944d858727a4cdf1f109b8d676"
+        ],
+        "content": [
+          "40385343b013cfc561c7fcdc73bb3785d538264c0feb843f61d9dd1ef70a15dd"
+        ],
+        "closeSessions": [
+          "4e13ad32bdc4bf78483ab791d96ce184bf2c7eed874b243dff0ba6d74e6b7ca0"
+        ],
+        "validate": [
+          "f7c1ff9d7d0ef7c5cca1436f854aaad5e66c20442edbceae4f90adc1be3e7ee7"
+        ],
+        "perform": [
+          "306c43ff19d105ce29b4ed91898b574f1accab4235e41c9615b829fd167f8383"
+        ],
+        "operationDeadline": [
+          "4a73b674fd6d320dead19fd7bbd4ca2940971904dd106adf5e8529e90c78b146"
+        ],
+        "acquire": [
+          "4b59058be342b56ce0aae4f75daf21d2e4028ebb5dc2ff7dff9f90ff3df98e4f"
+        ],
+        "cancelWaiter": [
+          "ba7bde6cc827b96ac49d27631850cdc6dee018e919ce6e9b8d3b5f4967db6946"
+        ],
+        "timeoutWaiter": [
+          "f0883b2699e82b1b394f4ee5810ce0ced14b3365646c3e412f8c700b1a6878a2"
+        ],
+        "finishWaiter": [
+          "3fb01ae23c5b35e2106cb0220c97f7a4d60f6ba15d9f5bc06eedd4f7865e585a"
+        ],
+        "release": [
+          "d248b43d2d3847426e9d22ebcf45825012a77e6e698f00d57079e6105d657004"
+        ],
+        "saveBook": [
+          "49a6f6d74d32e3ea71c97ee1ca493c708f7ce44064bb4ede3f80529cef28915f"
+        ],
+        "context": [
+          "997a4efe175c5c356f3c0950ee73dd7fae8f1e3b2c2b5bc1042e1bfc7d177f61"
+        ],
+        "loadBook": [
+          "0b23909ea98b69a20e6cea1a2d9b8b37e912fa7f53ff219687d93d2663c9a9bf"
+        ],
+        "variables": [
+          "d46dde4a6f87934727a9469ef2c07f30a1d94578d1e58b87910c5fb4f2a4f01f"
+        ],
+        "onlineBook": [
+          "541ac23f25d577d8ef042d0122b6a3bfa4bb55adcc024934dbf20a5fc9e963cf"
+        ],
+        "requireTextBook": [
+          "f84c7dc3cde8b0b8455f7621ef1ac77108d5673903888394c575e8576182518f"
+        ],
+        "directory": [
+          "9fc99c5979819978f7b95a47f4ac6cbea1751d737513ab6cbb3bb2df9f566bbd"
+        ],
+        "encoded": [
+          "0ef68e1b2ef77fd17a8f081f930d14ea050ce4c513a0a070c2aa32d29aeb045c"
+        ],
+        "json": [
+          "ce612bb9a610730572927082367bdeb4a72c7286fd721d98cc3947f760824854"
+        ],
+        "object": [
+          "b246165c284df58b2fe22a025d99e8f3fc607507680fd9b6ae7bc4703bb7d2cb"
+        ],
+        "string": [
+          "36a4674981a01972107cbbd6e9cc03eb44c9b1415ad72561d4bba06248c742d7"
+        ],
+        "digest": [
+          "eb83932c0f39e977196830c7ed3c6791a50bf589b123b703dc25f5fba3a9d4af"
+        ],
+        "failure": [
+          "aff884fd7d44aa9e0aedd1ddaf5c930833ae6dfb41cd70c5d62f8acbcf923ac6"
+        ],
+        "originalSearch": [
+          "19509487316c6fe57c2724c4f4abc57e6d1093087913db52920d8320655c6504"
+        ],
+        "originalDetails": [
+          "65214654259c80677483014365f3246f0281be597cbe9e16262834b8242a5c9f"
+        ],
+        "originalTOC": [
+          "946418bd9eeea3b7b71cc09be620857394c1d5aa48990f1c3fa07857c72d2e9e"
+        ],
+        "originalContent": [
+          "b85efb9cf2cd27000dbf807383bdc719c92e5ad95039f33f46b1701eb4aa69d4"
+        ],
+        "revokeOriginalPreview": [
+          "dbaa886e926c2eca734526335bd4f5aa75679f1c96ea29a214df9fd64ab2ce65"
+        ],
+        "transferOriginalPreview": [
+          "16bdfe89cbe12fad1f0a9227efa11a5b182e7defcb6ebc96074b983c776100c5"
+        ],
+        "validatePreviewGrant": [
+          "8b056ee1fece81f6c45fa97bf8867cd4867a4a198c330c74a5c73e82572b05b9"
+        ],
+        "readPreviewEntity": [
+          "5187834895afc4f020c3ea7dd739dc8db8e8b90d15839932bb3cadc00b8db381"
+        ],
+        "commitPreviewEntity": [
+          "cc62b0ad1c6a1c6f56d9346158aa46ef510c57196f8a9dea53987348d875e286"
+        ],
+        "executePreview": [
+          "963b749667962b060486e2eaa7c2fdad91c07b739d12529e5e60f940f9109b7c"
+        ],
+        "finishPreview": [
+          "24c80da04e96973deeb83f82cf670fe00dc65be85bbf3da945088955b1c84ea8"
+        ],
+        "originalSignature": [
+          "37183c090a62aae6ca512fa93e71bdc0596ab08cb57a55dd8420996e9e7a2a99"
+        ],
+        "acceptOriginalRevision": [
+          "7cc155bd5460483c53eab83ee82c05c63ec2679023568b5548a14c7875a84a37"
+        ],
+        "validateOriginalBook": [
+          "00b17ed48e79a32055153e6c9e8a751b6eecc1d2840633fa2083c025b9122a2c"
+        ],
+        "previewVariableMap": [
+          "c7139785eccd3c51d47887c385a9b856693a75b2313bbc47c9fc67925ea9d0d2"
+        ],
+        "previewReference": [
+          "1e6418d028c4a50c163b4fc10ef8f29a793d8efc61a9bec8baa2e0476101221b"
+        ],
+        "previewContext": [
+          "0ccdfd81cef0126207cb2c0275df259d0a687387ad52aa38ea536defc0fbf38d"
+        ],
+        "previewVariables": [
+          "744b7350a452e53047f7bbb3ffa54a0e19ff4b5000a87d6535d158b9b0cc03f4"
+        ],
+        "previewChapterProjection": [
+          "b47d2abe0d8df9e7d0d5a198659e3ededee4d7e2a82453c9c28e9b95049ee230"
+        ],
+        "previewReferenceString": [
+          "6438cb26a397ffecc07f2be84681da93d21de13a748a224da4942392ea425953"
+        ],
+        "previewOnlineBook": [
+          "b27a841f77ddc54d4a7a682089181c29b03b58a63996a9cccc1f0eddb55a5b74"
+        ],
+        "previewID": [
+          "a943a0f5caf2b508af36ee02e2458fa2a24663884036a8cebaad4acb4690e0f3"
+        ],
+        "readPreview": [
+          "1e22d88686fa48ea141ff08dcbf3e89104aa726b1db487137d340afe8b3a91cf"
+        ],
+        "readPreviewFile": [
+          "d9ff1ffca70442fb40a4641378521a4639f0d10d271640145f83c1875f1fbc81"
+        ],
+        "replacePreview": [
+          "ce6122fa0ea6a4cba01634b82d72f511e916a0f5a462286e2abcc60cbbc2f8ce"
+        ],
+        "validatePreviewVariableBounds": [
+          "4e338f4c5a8d2cd8e30c14688522593eb1a27c75c616d7ce58cc77517d3fad55"
+        ],
+        "writePreview": [
+          "63f77e49d9a2a542ef270a43cba28369b80d8ae8f4a0cad35a72e46d4479686f"
+        ],
+        "previewCheck": [
+          "ac54aacc14b9d412b2b1b983549a7de88e3b3bd2e5a8c83d9d84a0cb3270ce60"
+        ],
+        "makePreviewGrant": [
+          "f959d4936573a57823acf43250137dddc28cbd9ebad631966c808e74a3953645"
+        ],
+        "grantReference": [
+          "b858bbc0c6a9d2213ebcdc85499bdc9519a1868626a2e9513a757e709a91f216"
+        ],
+        "previewChapterURL": [
+          "904eb2b16276795078b63e9b4698e9977812f089fc19025ad17860a0feaa418a"
+        ]
+      }
+    },
+    {
+      "baseline": {
+        "path": ".build/original-app-preview-owner-delta/baseline-sources/LegadoPersistentStateHost-cookie-write.swift",
+        "bytes": 41132,
+        "sha256": "ba9db4e6f8aaf796ef46e6748aef501a274b050e62d0aba265a298855ec2454d"
+      },
+      "future": {
+        "path": ".build/original-app-preview-owner-delta/work/LegadoPersistentStateHost.swift",
+        "bytes": 42091,
+        "sha256": "797cd7542a7860967cdfa420d2e395a581dda896d9517b59a7927e93c7ea0d5a"
+      },
+      "existingFunctionGroups": 26,
+      "unchangedGroups": [
+        "text",
+        "encoded",
+        "read",
+        "commit",
+        "bind",
+        "bindBook",
+        "revoke",
+        "ownershipCounts",
+        "dispatch",
+        "readCookieOwner",
+        "textCookieOwner",
+        "originalResponseCookies",
+        "cookieBoolean",
+        "cookieDomainURL",
+        "cookieReadDeadline",
+        "checkCookieRead",
+        "cancel",
+        "decodeStateRequest",
+        "trimLeases",
+        "currentEntityBinding",
+        "check",
+        "parse",
+        "wireValue",
+        "storedValue",
+        "failure"
+      ],
+      "changedExistingGroups": [
+        "dispatchEntityStateIfNeeded"
+      ],
+      "addedGroups": [
+        "bindPreview"
+      ],
+      "baselineFunctionHashes": {
+        "text": [
+          "2400db56edd7001e27a80e8b916ef800208182733272893192629ca6db8f8f60"
+        ],
+        "encoded": [
+          "466629cb7c6a43603bd7204ad5c4f1a783afdcf4b3bd639ae70b162c833d75ce",
+          "a3d876c99070f63c062f676e7ed0826d66197f8459c52d520286921bd983a614"
+        ],
+        "read": [
+          "4bb818584dca10d6acf634099e8ae292b8bc7b566127c81d00ad4e7a843e264b"
+        ],
+        "commit": [
+          "cf448c230b2b1d62598333cced528bab7a7253ce11af952fd123048db730a582"
+        ],
+        "bind": [
+          "5dbe9027b96d03127e000d6fc72daef981a82568f9d06bc19555ccb65af5db1d"
+        ],
+        "bindBook": [
+          "b4b93bbefdf3f20b6385de9c109248c06acacf856596101b1ee6476f4d7aad43"
+        ],
+        "revoke": [
+          "1d9521f910cd68120c972c604481bd26ccd48cf6383ff0f42ab9b5d849e239c7"
+        ],
+        "ownershipCounts": [
+          "434b5f758b4c37cebb27ffa995a9948a127dc823dc8b2e53e0befdbe4855a0cc"
+        ],
+        "dispatch": [
+          "a0c65828208f6559935fe0e506e5782710fe939f25e4b38ffc0b86d59bbf7f71"
+        ],
+        "readCookieOwner": [
+          "6891c2a4cc91abb13077a0ad9e1774e61f4b4f0e86ef6e6fc5a6a6711b3fbf30"
+        ],
+        "textCookieOwner": [
+          "6c0c4c4852c8c2bb2bedd5af145d31aa53dbd70bc1196ac77ded747c7e6a8518"
+        ],
+        "originalResponseCookies": [
+          "7104a1e98f26ffda7a2bd1e22753259f03ad0b0859dfe2d83b3828fadc87696a"
+        ],
+        "cookieBoolean": [
+          "3b81e115fdf0a45834074632cee661c6e0b7e187809dd26ebe3ad6d3e9bd660a"
+        ],
+        "cookieDomainURL": [
+          "06e6afac137b6652553c49a527ada0871ad246eea130e322e9923871b061ea6c"
+        ],
+        "cookieReadDeadline": [
+          "e14f2158418eac725bff49db8d926bc229c5c4d45c92cf1098ad00d3b0c01b64"
+        ],
+        "checkCookieRead": [
+          "0d07fd9eb11314f7380ae6c3427966a54523110b401cfa7eaab7b94df72a9993"
+        ],
+        "cancel": [
+          "c43000399d972111591fe3ac09c637190c386cd896dba6bc58cb897db0c2c610"
+        ],
+        "decodeStateRequest": [
+          "45c563b52014ab2c210230948aacfcb354d6bac2c26d29fa2ebd7d30eabeba21"
+        ],
+        "trimLeases": [
+          "609ba3b094b711385e8c450a5cca1e56e8514dff8eba1e293e28b1bcddc3afc2"
+        ],
+        "dispatchEntityStateIfNeeded": [
+          "f7becde39d733d594d10bf32db4716dc108a7739260abbc5679aaf56b423b1e8"
+        ],
+        "currentEntityBinding": [
+          "10a607f89019cd1a8d9a422db2a38f82a029fe8e53ffe915cbfa0dd9c4afe634"
+        ],
+        "check": [
+          "afa8a51f13998ed4392dd5193a6820555d68d46661eb9f2c47727451a0eea877"
+        ],
+        "parse": [
+          "c8f1e8245d844d45c15a439565c9e0cf654d96f4073b7f7fc8adc712ed784304"
+        ],
+        "wireValue": [
+          "a78b230ff30483ce1026e2684948805d5be3538d08246b1774a30eab09c7d302"
+        ],
+        "storedValue": [
+          "7fb0aed86fa6538eb6ffebc03f79ef62ed14ef0797105be605c968271e4b27a0"
+        ],
+        "failure": [
+          "383bccd6d086d932e92cb15b09fb97405f04a164d175a0203c583fd6db2c14c9"
+        ]
+      },
+      "futureFunctionHashes": {
+        "text": [
+          "2400db56edd7001e27a80e8b916ef800208182733272893192629ca6db8f8f60"
+        ],
+        "encoded": [
+          "466629cb7c6a43603bd7204ad5c4f1a783afdcf4b3bd639ae70b162c833d75ce",
+          "a3d876c99070f63c062f676e7ed0826d66197f8459c52d520286921bd983a614"
+        ],
+        "read": [
+          "4bb818584dca10d6acf634099e8ae292b8bc7b566127c81d00ad4e7a843e264b"
+        ],
+        "commit": [
+          "cf448c230b2b1d62598333cced528bab7a7253ce11af952fd123048db730a582"
+        ],
+        "bind": [
+          "5dbe9027b96d03127e000d6fc72daef981a82568f9d06bc19555ccb65af5db1d"
+        ],
+        "bindBook": [
+          "b4b93bbefdf3f20b6385de9c109248c06acacf856596101b1ee6476f4d7aad43"
+        ],
+        "bindPreview": [
+          "d7b281fe4fbb52844a7e245c1f49732baa06442baa3d91c642c5dcbc1911daf6"
+        ],
+        "revoke": [
+          "1d9521f910cd68120c972c604481bd26ccd48cf6383ff0f42ab9b5d849e239c7"
+        ],
+        "ownershipCounts": [
+          "434b5f758b4c37cebb27ffa995a9948a127dc823dc8b2e53e0befdbe4855a0cc"
+        ],
+        "dispatch": [
+          "a0c65828208f6559935fe0e506e5782710fe939f25e4b38ffc0b86d59bbf7f71"
+        ],
+        "readCookieOwner": [
+          "6891c2a4cc91abb13077a0ad9e1774e61f4b4f0e86ef6e6fc5a6a6711b3fbf30"
+        ],
+        "textCookieOwner": [
+          "6c0c4c4852c8c2bb2bedd5af145d31aa53dbd70bc1196ac77ded747c7e6a8518"
+        ],
+        "originalResponseCookies": [
+          "7104a1e98f26ffda7a2bd1e22753259f03ad0b0859dfe2d83b3828fadc87696a"
+        ],
+        "cookieBoolean": [
+          "3b81e115fdf0a45834074632cee661c6e0b7e187809dd26ebe3ad6d3e9bd660a"
+        ],
+        "cookieDomainURL": [
+          "06e6afac137b6652553c49a527ada0871ad246eea130e322e9923871b061ea6c"
+        ],
+        "cookieReadDeadline": [
+          "e14f2158418eac725bff49db8d926bc229c5c4d45c92cf1098ad00d3b0c01b64"
+        ],
+        "checkCookieRead": [
+          "0d07fd9eb11314f7380ae6c3427966a54523110b401cfa7eaab7b94df72a9993"
+        ],
+        "cancel": [
+          "c43000399d972111591fe3ac09c637190c386cd896dba6bc58cb897db0c2c610"
+        ],
+        "decodeStateRequest": [
+          "45c563b52014ab2c210230948aacfcb354d6bac2c26d29fa2ebd7d30eabeba21"
+        ],
+        "trimLeases": [
+          "609ba3b094b711385e8c450a5cca1e56e8514dff8eba1e293e28b1bcddc3afc2"
+        ],
+        "dispatchEntityStateIfNeeded": [
+          "305f996c3237217fc4f7cbf5fb959b36cbac03fc3decfbf99afaafeec9049143"
+        ],
+        "currentEntityBinding": [
+          "10a607f89019cd1a8d9a422db2a38f82a029fe8e53ffe915cbfa0dd9c4afe634"
+        ],
+        "check": [
+          "afa8a51f13998ed4392dd5193a6820555d68d46661eb9f2c47727451a0eea877"
+        ],
+        "parse": [
+          "c8f1e8245d844d45c15a439565c9e0cf654d96f4073b7f7fc8adc712ed784304"
+        ],
+        "wireValue": [
+          "a78b230ff30483ce1026e2684948805d5be3538d08246b1774a30eab09c7d302"
+        ],
+        "storedValue": [
+          "7fb0aed86fa6538eb6ffebc03f79ef62ed14ef0797105be605c968271e4b27a0"
+        ],
+        "failure": [
+          "383bccd6d086d932e92cb15b09fb97405f04a164d175a0203c583fd6db2c14c9"
+        ]
+      }
+    }
+  ],
+  "originalAppBookOwnerUnchanged": {
+    "path": "Modules/Services/Online/LegadoBookStateOwner.swift",
+    "bytes": 10077,
+    "sha256": "bf7260d8d34ccfd56dc4386aa21cb6df7f03321848a82d689c7ea1eec8b9f9aa"
+  },
+  "cookieCancellationOccurrences": 5,
+  "cookieReadAndTextFunctionsSourceUnchanged": true,
+  "sourceBindRevokeAndAppBindBookSourceUnchanged": true,
+  "oldPreviewTestDefinitionsPreserved": 12,
+  "semanticsNotEstablishedByThisHashAudit": [
+    "Swift compilation",
+    "Native JNI execution",
+    "Runtime correctness",
+    "Product route acceptance"
+  ]
+}

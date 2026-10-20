@@ -1,0 +1,72 @@
+--- canonical/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ freeze-v2/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -100,9 +100,9 @@
+     private struct EntityLease {
+         let owner: String
+         let binding: Binding
+-        let backing: AppLegadoBookStateOwner
++        let backing: any LegadoEntityStateBacking
+         let keys: [LegadoEntityStateKey]
+-        let snapshot: LegadoEntityStateSnapshot
++        let snapshot: LegadoEntityBackingSnapshot
+     }
+     private let cookieOwner: CookieStore
+     private let backing: any LegadoOwnedStateBacking
+@@ -110,7 +110,7 @@
+     private var bindings: [String: Binding] = [:]
+     private var revisions: [String: String] = [:]
+     private var leases: [Int64: Lease] = [:]
+-    private var bookOwners: [String: AppLegadoBookStateOwner] = [:]
++    private var bookOwners: [String: any LegadoEntityStateBacking] = [:]
+     private var entityLeases: [Int64: EntityLease] = [:]
+     private var pendingEntityOperations: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
+     private var leaseOrder: [Int64] = []
+@@ -175,6 +175,22 @@
+         }
+         try backing.validate(deadline: Date().addingTimeInterval(180))
+         let owner = try bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
++        bookOwners[owner] = backing
++        return owner
++    }
++
++    /// Only the existing context actor can issue this proof. Source JSON/reference text
++    /// alone cannot manufacture a preview grant or acquire a library UUID.
++    func bindPreview(grant: OriginalRuntimePreviewGrant) async throws -> String {
++        let previousRevision = revisions[grant.sourceURL]
++        let backing = LegadoPreviewStateOwner(grant: grant)
++        try await backing.validateState(deadline: Date().addingTimeInterval(180))
++        try Task.checkCancellation()
++        guard revisions[grant.sourceURL] == previousRevision else {
++            throw failure("INVALID_STATE_OWNER", "The source changed while granting its preview record")
++        }
++        try grant.check(deadline: Date().addingTimeInterval(180))
++        let owner = try bind(sourceURL: grant.sourceURL, sourceRevision: grant.sourceRevision)
+         bookOwners[owner] = backing
+         return owner
+     }
+@@ -556,6 +572,7 @@
+         guard let backing = bookOwners[owner] else {
+             throw failure("UNSUPPORTED_CAPABILITY", "Entity state has no explicitly connected App book owner")
+         }
++        try backing.validateRequest(request)
+         let deadline = Date().addingTimeInterval(request.remainingTimeoutSeconds)
+         return try await SourcePerfTrace.spanAsync("legado.state.entity", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+             if isEntityRead {
+@@ -570,7 +587,7 @@
+                     if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
+                 }
+                 let snapshot = try await withTaskCancellationHandler {
+-                    try await backing.read(keys: keys, deadline: deadline, cancellation: ticket)
++                    try await backing.readState(keys: keys, deadline: deadline, cancellation: ticket)
+                 } onCancel: { ticket.cancel() }
+                 try check(request)
+                 try currentEntityBinding(owner: owner, binding: binding)
+@@ -616,7 +633,7 @@
+                 if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
+             }
+             let committed = try await withTaskCancellationHandler {
+-                try await backing.commit(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
++                try await backing.commitState(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
+                     deadline: deadline, cancellation: ticket)
+             } onCancel: { ticket.cancel() }
+             // Successful atomic replacement is already the owner transaction boundary.
