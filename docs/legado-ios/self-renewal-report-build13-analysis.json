@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "status": "TCP-observed-authenticated-installation-and-renewal-unverified",
+  "input": {
+    "name": "SelfRenewalProbe-report(2).json",
+    "bytes": 2605,
+    "sha256": "84acfa7ae881eae539b6cba5bee2c36058e7096d786806250e4941524957becb"
+  },
+  "declaredBuild": "13",
+  "declaredSourceCommit": "4836debf2cfc46d0bc44c46df4d5cbc28d434ff2",
+  "deliveryBinding": {
+    "manifestSHA256": "3fa28df4b97478b961c63eb212ad07d1546db9755cdb46d2471dc384b5c13abe",
+    "artifactID": 12274856390,
+    "artifactSHA256": "71118991c20cb94dfa5ea3a17e02d2709007b5265b91c93c16d819232f82373a",
+    "manifestDigestMatched": true,
+    "manifestBuildSourcePairMatched": true,
+    "meaning": "Report declarations match the exact downloaded build13 manifest; no installed-app signature or device attestation is created."
+  },
+  "reportedDiscovery": {
+    "discoveryStarted": true,
+    "outcome": "tcpConnected",
+    "phase": "completed",
+    "elapsedMilliseconds": 3010.853625004529,
+    "discoveredServiceCount": 2,
+    "resolvedAddressCount": 6,
+    "rejectedAddressCount": 1,
+    "approvedEndpointCount": 4,
+    "tcpConnectionAttemptsStarted": 1,
+    "tcpAttempts": [
+      {
+        "family": "ipv4",
+        "addressCategory": "loopback",
+        "outcome": "tcpConnected",
+        "elapsedMilliseconds": 1.3870833354303613,
+        "networkError": null,
+        "lastWaitingError": null
+      }
+    ],
+    "networkError": null,
+    "lastWaitingError": null,
+    "tcpApplicationPayloadBytesSent": 0,
+    "serviceIdentityVerified": false,
+    "eligibleEndpointCount": 5,
+    "skippedEndpointCount": 1,
+    "endpointSelectionLimit": 4
+  },
+  "reportedAppState": {
+    "automaticRenewal": {
+      "isEnabled": false,
+      "outcome": "disabled"
+    },
+    "capturedAt": "2026-10-20T15:03:13Z",
+    "developerServicesConfigured": false,
+    "installationProven": false,
+    "isWorking": false,
+    "ownerAvailable": true,
+    "recoveryAvailable": false,
+    "renewalProven": false,
+    "status": {
+      "observedAt": "2026-10-20T15:00:13Z",
+      "state": "unconfigured"
+    }
+  },
+  "reportedAttemptFacts": {
+    "tlsAttempted": false,
+    "sessionStarted": false,
+    "pairingAttempted": false,
+    "accountAccessed": false,
+    "signingAttempted": false,
+    "installationAttempted": false
+  },
+  "userSuppliedConditions": {
+    "computerPoweredOn": true,
+    "USBConnected": false,
+    "VPNEnabled": false,
+    "companionAppPresent": false,
+    "measuredByReport": false,
+    "source": "Explicit user reply for this build13 report: computer on, USB unplugged, VPN off, no companion App."
+  },
+  "findings": [
+    "One IPv4 loopback TCP connection is reported successful. Four endpoints were selected from five eligible endpoints; the remaining endpoint was not tested.",
+    "No application payload was sent on that TCP connection. Service identity, TLS, pairing session, signing and installation were not attempted.",
+    "The App owner reports unconfigured signing state, developer services not configured and automatic renewal disabled. This diagnostic does not test an automatic renewal attempt.",
+    "USB was unplugged under the user-reported conditions. The computer remained powered on, so computer independence is unverified.",
+    "The actual account provider, explicit identity importer and Settings integration have since been committed at ef06939 and are absent from this source4836deb package."
+  ],
+  "nextAction": "Complete remaining source-core integration and consolidated SDK validation; prepare a later functional candidate with actual account/pairing setup. Repeating build13 TCP diagnostics cannot establish renewal.",
+  "physicalDeviceAuthenticityAttested": false,
+  "installedProfileExpiryExtensionProven": false,
+  "overwriteAndColdLaunchDataRetentionProven": false,
+  "automaticSelfRenewalImplemented": false,
+  "automaticSelfRenewalVerified": false,
+  "unattendedRenewalVerified": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "allNonDeviceWorkComplete": false,
+  "legalRedistributionClearanceEstablished": false
+}
