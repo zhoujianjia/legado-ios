@@ -1,0 +1,2035 @@
+{
+  "schemaVersion": 1,
+  "status": "actual-terminal-failure-source-and-evidence-confirmed",
+  "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
+  "run": 39476534384,
+  "job": 118813819896,
+  "artifact": {
+    "path": ".build/consolidated-native-210fb05/artifact.zip",
+    "bytes": 3261447,
+    "sha256": "2333e5beb000c416fb81584696d009bcd46955e9f28de46fcedd296f992a319e"
+  },
+  "ZIPCRCVerified": true,
+  "members": 482,
+  "sourceInputs": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 10149,
+      "sha256": "f2c8d8c2696b3d2010212cb68accf69adc726608c09ca8829f36190afc44762f"
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 32446,
+      "sha256": "df0cf96cd6d387ac43d8dd3df1252ac3b4d1fef5ba8ddf49002fec5ea2c7c74c"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 19213,
+      "sha256": "ecec37b130ccc955aa2919c0b6a56d2c1a1cd3e0055b2b214f68b3e57df92cfe"
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "bytes": 27526,
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+    },
+    {
+      "path": "scripts/reader-experience/stage-config.py",
+      "bytes": 26146,
+      "sha256": "63b19c420f3f55dfb7d4d2f45ad98e2b8cf0a9cf881586bc409a6bf8cd100841"
+    },
+    {
+      "path": "scripts/reader-experience/runtime-packaging.py",
+      "bytes": 12688,
+      "sha256": "0104eb7c1551a4bff437f28d02f52c5c6f7b7fb42eef46cfa0eebe6bed735812"
+    },
+    {
+      "path": "scripts/reader-experience/runtime-notices.py",
+      "bytes": 6992,
+      "sha256": "f2655858b99a9c365d221fa11f9335fc46c7277eeb673829fc3201570982da42"
+    },
+    {
+      "path": "scripts/xctest.sh",
+      "bytes": 7631,
+      "sha256": "fc3b9a2c45506b07d75945c571866396ad02f4cbe12f7125b3e930ef5b180da2"
+    },
+    {
+      "path": "scripts/sim.sh",
+      "bytes": 11179,
+      "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48"
+    },
+    {
+      "path": "scripts/legado-ios/runtime-lock.json",
+      "bytes": 1030,
+      "sha256": "2d5f9ead5b59d0becb846b01f8ed2b8d7bff3da8f3994f7cc12873f2892301d7"
+    },
+    {
+      "path": "scripts/legado-ios/stage-runtime.py",
+      "bytes": 4278,
+      "sha256": "be7d62b2ec20307107b07e7a35e9d0dcc22bf8393bb0e6d80f4bdaea36ed6ed6"
+    },
+    {
+      "path": "scripts/legado-ios/verify-native-exports.py",
+      "bytes": 3576,
+      "sha256": "c952690394a11ef512cbc3a709e021b0d5839a9085afed60dc2d22dabacbe645"
+    },
+    {
+      "path": "scripts/legado-ios/verify-runtime.py",
+      "bytes": 3692,
+      "sha256": "4058d90cda2628c668ba280e9daad04a52e57d8574395374c5d1d568f9ce9507"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeMainJSReaderTests.swift",
+      "bytes": 33102,
+      "sha256": "fb90306876590a3fdb5ff8027e6afada74051082c984789a87206c3c516b3c39"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 72317,
+      "sha256": "6afedef94dcfce03daca1fad06f98fa8b5104b5735124a2bb969af05ae1edcdb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Package.swift",
+      "bytes": 4171,
+      "sha256": "183cd2b775956d8c5b6f16bd97bbec13e7fca59fc26d3e03ef1569907f7c3e57"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+      "bytes": 35615,
+      "sha256": "304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+      "bytes": 1442,
+      "sha256": "cf59d8119a24139c83c0ee1e445eeed9325fa1c1e14323db33bf4485d734434d"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+      "bytes": 7574,
+      "sha256": "c194738ef2154f00806a70027438a52017a21591ad52bf3c848ba9067fcfaff9"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+      "bytes": 29709,
+      "sha256": "8becd2a986942c68fa67833817ad4cbf4fb1fe5ca04d2959b04332ab457ea4d1"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "bytes": 8119,
+      "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "bytes": 9157,
+      "sha256": "b983407d4bc0820ed31f5e7b68a13abacb96933f2b10c88dd99065611b8821eb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "bytes": 28442,
+      "sha256": "4767d4aa629ac7991446efb0bcc6489ce5f61d2b78afd5323bae24fd55642e27"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 133850,
+      "sha256": "13e0deec206932c4552bbb2cea427919d3c79c638ec06d398b82bd699b07f14d"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 117094,
+      "sha256": "60a3a3de12620f0ffc1f9a273a8dc5d203e9474fb7bb4aeeb8e161fefaa06ec9"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "bytes": 36295,
+      "sha256": "db0aa536df48729f76bbfced09409a808b7dfb0a81e99f2d4824d249a27d3483"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 70576,
+      "sha256": "0b2acf872d699e788ef6c1826f2511900c47961269b912b405414920f72075ba"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "bytes": 25961,
+      "sha256": "6664cbae86c4b16cbce31e10a411fd98986a5603148e635503e1ff7a6c84bc70"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoBookStateOwner.swift",
+      "bytes": 13044,
+      "sha256": "f211396d15dd5860981b5504b3b4239004198819715233c8da9983f11bf47b0e"
+    },
+    {
+      "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+      "bytes": 63609,
+      "sha256": "dfacf47bfbe3396fe2003e3b051cb14ca9ce72981e6626e75c2c5ac7cd7a09e0"
+    },
+    {
+      "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+      "bytes": 45847,
+      "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 218869,
+      "sha256": "834533e2b86e4fd4b6b0566146448b4c54da892f574e2502bc0f7b604bb2a6d5"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+      "bytes": 762,
+      "sha256": "b7e8deae03869cc8ffb7998baa70fae785b95cf7c39ecafcae27ccd9438bef18"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Search.swift",
+      "bytes": 12934,
+      "sha256": "841a52e983ddb668942c07232ceee39a1f50737a37f70fc454ed47398e77808f"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+BookInfo.swift",
+      "bytes": 1952,
+      "sha256": "687ad569d7df0a71cbdf119a0e622ce2b90e2ca9f024fc41653b2d76f82642b4"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+TOC.swift",
+      "bytes": 3248,
+      "sha256": "27fcf27a8cefa8d5dfbe907b871bcc40e5fd5362452e79ae238bd0785a818d4d"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+      "bytes": 7906,
+      "sha256": "cc91c73c4bd17d60879283521de7a336126d9f7b9d165e3282ea20b85d6a4378"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookChapterStore.swift",
+      "bytes": 22644,
+      "sha256": "362c2bb59cf8c668899bd2fd09a7730e7e222ed9e83899e4a273a98cdae8a514"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Discover.swift",
+      "bytes": 4759,
+      "sha256": "89f6064d8957ee38eb05b5ffdffaed71e3cd5945ac70577aba1c2bf1eeabc5a6"
+    },
+    {
+      "path": "Modules/Services/Online/DiscoverQuickActions.swift",
+      "bytes": 6199,
+      "sha256": "f952a60e4baefd6f2206ac82916b266b76e64fdbcd7cd7b5eff0d35540ca1dee"
+    },
+    {
+      "path": "Modules/Features/BookDetail/OnlineBookView.swift",
+      "bytes": 49988,
+      "sha256": "30f3a0fd8687d7a33f1b293e9a58e4cc0a18aae8d252c6746d61c77c44360af1"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "bytes": 6893,
+      "sha256": "fdf99e43c00320bd7977835b34c168dcc87eae50286d69fc4f37d5cfdddfd4b6"
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/AppDependencies.swift",
+      "bytes": 14991,
+      "sha256": "8d28fc41196a31bee10c1f18d3612797f4d6d507d24012f78a35ecfc1e7de960"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher.swift",
+      "bytes": 15141,
+      "sha256": "b2e9359ad1787de072bf8576663ee1470b196df744462b773edf9a4de9078883"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "bytes": 19359,
+      "sha256": "a526b1266e8b3962b85d2b62fc789cb4560829f03820e17fc18a10a7f0e49d13"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalExploreContexts.kt",
+      "bytes": 4609,
+      "sha256": "59356ec21beb0251a4039e9ee9d3154afd8640b84670d96cade27ea30c40789c"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "bytes": 21570,
+      "sha256": "85dc97cea4fa0f25095952206da7f117edbb6261edd4eb44c5bf53c0d5d5865e"
+    },
+    {
+      "path": "Modules/Core/TTS/AudiobookPlayer.swift",
+      "bytes": 70025,
+      "sha256": "fb2c50b9ab9b64402926669bb7a5010867c5988db029256791bc4ecc1def7a72"
+    },
+    {
+      "path": "Modules/Features/BookDetail/AudiobookDetailView.swift",
+      "bytes": 35706,
+      "sha256": "40f1ad89af48891b835f52364dde14304212f4b76b8fae6d14381e5764a543bd"
+    },
+    {
+      "path": "Modules/Features/Reader/ReaderView+SourceCallBack.swift",
+      "bytes": 4328,
+      "sha256": "f229eb3f7357b0b43e69a318fa43c21bffbebaad7214b6cc4fd008e226cd4fb4"
+    },
+    {
+      "path": "Modules/Features/Reader/ReaderView.swift",
+      "bytes": 151665,
+      "sha256": "5f04362f10e1c20ef75c1c318e60d511d397980824a63fecd93eafa311574a7b"
+    },
+    {
+      "path": "Modules/Features/Reader/TTS/AudiobookView.swift",
+      "bytes": 26038,
+      "sha256": "e136ed06d8fd23290f17441002552d62980db8e1f39c9195a5b7b52a6d6447dc"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoReviewActionRunner.swift",
+      "bytes": 20666,
+      "sha256": "889b9c8656a94a126d566598afb82835182acc9162b0f097ca1d985bc745977c"
+    },
+    {
+      "path": "Modules/Services/Online/SourceCallBackService.swift",
+      "bytes": 16578,
+      "sha256": "2babad9f6dd5d7280eda3c448d05391f9073f744889d98fd931c61ea4d952f16"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "bytes": 16748,
+      "sha256": "a268f7a2457c735c16bc941d7327ccce075d1f940d317623e915ad1478f73028"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt",
+      "bytes": 8648,
+      "sha256": "dd1da68c324e6a3dec473b09d79f395f499166e6f7cc147f764e6fa4853629e0"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalBookCallbackTest.kt",
+      "bytes": 9631,
+      "sha256": "0d121c10bef38149a3afa03a2f7496ba2591fdc6ffd1c0d8bdcd559cca0a4289"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "bytes": 43955,
+      "sha256": "8551a736061011422c27a078fe804554920d780fa497e2d2564da06c9782574e"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceCallbackTest.kt",
+      "bytes": 13636,
+      "sha256": "b478dd77efde6d884da6681bdb720006d9dbadbd40191f0dd6a22668aeb61380"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "bytes": 10954,
+      "sha256": "621ae13b5563053ad0b389e4ed45153490e2459763df446faccae4f4b7d0117c"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 37795,
+      "sha256": "e5b8c376021901d6560253461157e5d31be9600a9c713b1988d7feabec6ecead"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "bytes": 9253,
+      "sha256": "ea29ed72477949e7c2dd814797bd90fd58202313fcd8fdad9a3a781dc4b6468b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginInfoTest.kt",
+      "bytes": 9141,
+      "sha256": "1fee50e494583f53882db5244a62136be3d57acb975894d1bc931509b42d847c"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "bytes": 20211,
+      "sha256": "d457913f43b25f648135cc23e53d8e1ef3ff8697d54a2edc80b2e0a18cf331fd"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 35918,
+      "sha256": "20f4fa48480fbb000752048d6553d21f81cce1c7c454e2b21d3728dd70d29440"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+      "bytes": 35157,
+      "sha256": "9f0a716cdee9f0210cca9b82d97a58de7be03cec511b0f90dad9a1a7bfcc4ca8"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "bytes": 672,
+      "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/FlexChildStyle.kt",
+      "bytes": 764,
+      "sha256": "2765e87dabc428fcd48ca0813aaac1b6a16819e9a7ee6902402235c6373419df"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/rule/RowUi.kt",
+      "bytes": 1356,
+      "sha256": "6fbb4ff6536336e1deda8c1a7e069e6ac820b5e86b38cb3af0fe16e472a55ed8"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalWebBookSession.kt",
+      "bytes": 1761,
+      "sha256": "b754ea84f8dff70da706921c390d16629cefc0dc0bc922b28814a54a290e69c9"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/LockedLoginMapReference.kt",
+      "bytes": 4477,
+      "sha256": "122a50da313781baba3a8bf823c7e28667898df92cac3bb45800f0959141a9a1"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginMapTest.kt",
+      "bytes": 12673,
+      "sha256": "e2ff2f701cf9daa162bb1d285c28e559a71d95f1d1873eb5c19e13c320868386"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/FlexChildStyle.kt",
+      "bytes": 1111,
+      "sha256": "701a36240c09d9b2d0f0c6dfd8a7e395f8da4e06cd07ce0eee2c80930ef4088c"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/sources/data/entities/rule/RowUi.kt",
+      "bytes": 1356,
+      "sha256": "6fbb4ff6536336e1deda8c1a7e069e6ac820b5e86b38cb3af0fe16e472a55ed8"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionStorePersistenceTests.swift",
+      "bytes": 16631,
+      "sha256": "29d920ed495cb64588885104e8a5b03e9f1f45d2380c26e996e57784974120db"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/ReadingPositionWriteOrderingTests.swift",
+      "bytes": 25446,
+      "sha256": "4f736640c1d1fd86500a87408f5e175a2bba9a06e6f594cad130ede51c3303de"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+      "bytes": 9741,
+      "sha256": "ad6c759660326724c94824a2e39b454945403332d5f51a3983707386148bc96d"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "bytes": 20930,
+      "sha256": "8c870cc32db554d6bb1aa6dadfd40ca3659c09efca44e03fbc7b6eebf0e4ccd0"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "bytes": 16950,
+      "sha256": "3d5d8ade02eb5ef26ffaec9030e9759ab82e61b23d1996a4e68c457f48448fd0"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "bytes": 13491,
+      "sha256": "ca0f65caad0fbe922b3dd7e3762a6dcaacf7339dfdfa3a06ff4ffc0d5768fb19"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 114569,
+      "sha256": "139d89cd6c9c161fdc22334cc7f1fbda82b44761e28075b7ac7dc8affe489520"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 31711,
+      "sha256": "a198d0968b3a39ed1f7bba07bc5fda860cf6ffdaffd6d5019f54309458ec6fde"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "bytes": 68187,
+      "sha256": "27ab345e48c2bc52cbb12f35d952d3e5899d6da01d864baa2b1d27d073966c28"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 57804,
+      "sha256": "6f4fd67d76ca0e94accb7fa50d3e53ed850c5fea09b6a45028673e72cd71abec"
+    },
+    {
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "bytes": 55242,
+      "sha256": "56c72536d436d958ddaaf0b0f5f2a90f11107e9ad6c1f28401d486b72ba6c099"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "bytes": 37278,
+      "sha256": "6305cdf731e554bf9d5cf481b635a4746ceb4b753596ea359fbba2011238748a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 20904,
+      "sha256": "3668fc3c37abb27a4beb45e9324e36e776d37bcbaeebe1953066effd3959334f"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "bytes": 3159,
+      "sha256": "f6d04c80c18f616543771f3518acb94fc31ecaac7058a8627e626fb46e74d457"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
+      "bytes": 13019,
+      "sha256": "75c095662f3b1d03ab7bad5a2ee94fb41e2036a8fe50e20ed29798a27db5877e"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceFormLoginTest.kt",
+      "bytes": 12486,
+      "sha256": "99910d304a3328e0d0c8278926d74937aa64a5b6c932b237a3500138eaca6a3b"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+      "bytes": 37139,
+      "sha256": "1539403a9e4b064a9a256ae948c8422f6344202316239f3700c9088b7f6bebb5"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginFieldStyle.swift",
+      "bytes": 8472,
+      "sha256": "bbcc1a40414fcf00edfa04b9cae3a5cb023f3f059891c2ef23b0c263812dcc84"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "bytes": 1667,
+      "sha256": "e2002619ee703492d68aa694b5d45c790a8147f4a362a1fa351237396eb1bdd1"
+    },
+    {
+      "path": "Modules/SharedUI/Components/LoginFormGrid.swift",
+      "bytes": 21308,
+      "sha256": "abda549092fd5451e31cd6439ce1f805911ee94f4e99d68e0b59211fda7c2f82"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt",
+      "bytes": 4806,
+      "sha256": "9a779e5ba067e44e2b5e64dbb959f700daf6d27404ad40c316a2758d5cbb8d70"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt",
+      "bytes": 10606,
+      "sha256": "e110203b7949b94bbae159c4ece963352b6baedb73be813328379c273f679a90"
+    },
+    {
+      "path": "Modules/Services/Online/DiscoverViewModel.swift",
+      "bytes": 57750,
+      "sha256": "948c7010408a52d44cbb83d6e128b1f865508529ad51b3db7e4b31727eb3aaff"
+    },
+    {
+      "path": "Modules/Features/Explore/ExploreSourcePage.swift",
+      "bytes": 5374,
+      "sha256": "aca8441c1ce53ba307755a31844686147816697a93f60d96ecd61c24330bbe31"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/DiscoverViewModelReloadTests.swift",
+      "bytes": 6924,
+      "sha256": "0b9a24c79cf1ae7b719c8e82fb0a95f5a47f3d060cf8ce8d327280f832de7c40"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "bytes": 12955,
+      "sha256": "4a644c54f0fdfcadcc49df4d1b7f3558f2208f06343589a806d265dc736cf796"
+    },
+    {
+      "path": "Modules/Services/Online/DiscoverKindsCache.swift",
+      "bytes": 3033,
+      "sha256": "f814ab6767abb48f5305b9b8218925bff34ed79d280f77e2c3092b8cf3b71a34"
+    },
+    {
+      "path": "Modules/Services/Online/ExploreSettings.swift",
+      "bytes": 7068,
+      "sha256": "a3be3f0357369ad67a44aeb0e03ccf53f0a67278dcc28b3dd1524c1350c2f184"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BackgroundTaskHold.swift",
+      "bytes": 1239,
+      "sha256": "0f22c56ed218e89b26c6ccfe95cb0de52d0010a2e2ba2acca1600b3cdcfa32ef"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "bytes": 53471,
+      "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "bytes": 13753,
+      "sha256": "675cdffcbe0c1d8033f58ed257599dc2b313d5092f7eed0ebc0882650ec81e1a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginActionRuntime.kt",
+      "bytes": 2812,
+      "sha256": "7fcc05ed6ccde1afe000fd1e2bd2ddf15aefd7e3782f159037c82811bbc33dcb"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginActionTest.kt",
+      "bytes": 9664,
+      "sha256": "d1ac8e913241b3dcfcc08bd74ffa8db126a40cdf2427a5ebe1552c15ebbedaf9"
+    }
+  ],
+  "all107GitBytesAndBeforeAfterLedgersMatch": true,
+  "JVM": {
+    "suites": [
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.legado.app.JsEngineCapabilitiesTest.xml",
+        "bytes": 3637,
+        "sha256": "dff44ca1ad0392f6cc970685f03db9f241bbf74264c2569486ccec297c92ded3",
+        "suite": "io.legado.app.JsEngineCapabilitiesTest",
+        "tests": 25
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSonPathErrorPolicyTest.xml",
+        "bytes": 1474,
+        "sha256": "45141b5f2746a718a6a07db4ab9097ed44b1c02dbb405589ac8a556cbb66daf1",
+        "suite": "io.legado.app.model.analyzeRule.AnalyzeByJSonPathErrorPolicyTest",
+        "tests": 5
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSoupDomTest.xml",
+        "bytes": 1542,
+        "sha256": "c73daeee0811e0534e7cfb9dc7de34319f89b3daad7e2c428cf2c8b72350bcdf",
+        "suite": "io.legado.app.model.analyzeRule.AnalyzeByJSoupDomTest",
+        "tests": 7
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.AppCookieOwnerBrowserTest.xml",
+        "bytes": 843,
+        "sha256": "c68dda978564081255560eca9eda25822e68aa90073391daddd1a2e406637e1a",
+        "suite": "io.yuedu.legado.AppCookieOwnerBrowserTest",
+        "tests": 3
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.AppCookieOwnerReadTest.xml",
+        "bytes": 987,
+        "sha256": "16e09eedef467850c3e7135d6e0cf5b1d3ccc63721b192c363d47eebbdc62a93",
+        "suite": "io.yuedu.legado.AppCookieOwnerReadTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.AppCookieOwnerTextTest.xml",
+        "bytes": 1137,
+        "sha256": "53a56963f42a2ed1c2bb80c59c46b29bf364ea9cba3653b832ee5ed51f486cca",
+        "suite": "io.yuedu.legado.AppCookieOwnerTextTest",
+        "tests": 5
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.CpuLoopCapabilityProbeTest.xml",
+        "bytes": 994,
+        "sha256": "690c86709bc9bc5e5e5e4e35ae723fd9d57ac629b67b86b7dbed6e0f6328d4b7",
+        "suite": "io.yuedu.legado.CpuLoopCapabilityProbeTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.DeclarativeScalarSelectorTest.xml",
+        "bytes": 861,
+        "sha256": "47317a34102232e66bd66b85a9575f4b9faac51339b091eec6ba689615422376",
+        "suite": "io.yuedu.legado.DeclarativeScalarSelectorTest",
+        "tests": 3
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.DeclarativeSourceTest.xml",
+        "bytes": 790,
+        "sha256": "e8f8bffc5b3b271bf448721a275d94482148507c03e7171da4764282dbd4bd60",
+        "suite": "io.yuedu.legado.DeclarativeSourceTest",
+        "tests": 3
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.InteropSemanticSuiteTest.xml",
+        "bytes": 915,
+        "sha256": "fb0cae9acde448e413829ae4fcf026f6f6708ea1337240aa55cb664964819418",
+        "suite": "io.yuedu.legado.InteropSemanticSuiteTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.LegadoRuntimeTest.xml",
+        "bytes": 1898,
+        "sha256": "d4a12481b81eda86581cedfd525d68761a29b16aa7a320ad6c3f64e620628f6f",
+        "suite": "io.yuedu.legado.LegadoRuntimeTest",
+        "tests": 11
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.MainJsFacadeTest.xml",
+        "bytes": 1082,
+        "sha256": "54a6b5246b32d62da46b495cf4709c2a090b7f59744f40ddb04682d446205c17",
+        "suite": "io.yuedu.legado.MainJsFacadeTest",
+        "tests": 5
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.MainJsResultMarshallerTest.xml",
+        "bytes": 3553,
+        "sha256": "fad2507e87a01866c43b5050170ee6b5cd88c8a0b86eaa524b8b3a9f1e2c76f6",
+        "suite": "io.yuedu.legado.MainJsResultMarshallerTest",
+        "tests": 21
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.MainJsScopeTest.xml",
+        "bytes": 929,
+        "sha256": "d0a95cc47c3f71c88c91d8a73e24c8e2fa3ae6874695e4b49ec4e0a09bd352dd",
+        "suite": "io.yuedu.legado.MainJsScopeTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OkHttpWireCapabilityProbeTest.xml",
+        "bytes": 1576,
+        "sha256": "1f293de766bba54460389cf983fe73031087061a970a070ec127a74bc7342db4",
+        "suite": "io.yuedu.legado.OkHttpWireCapabilityProbeTest",
+        "tests": 8
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalAnalyzeRuleTest.xml",
+        "bytes": 3002,
+        "sha256": "0b50b84d2919f1744433bb5e1dcef82e3a794e176367be51cd010a87ecc765c5",
+        "suite": "io.yuedu.legado.OriginalAnalyzeRuleTest",
+        "tests": 18
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalBookCallbackTest.xml",
+        "bytes": 848,
+        "sha256": "3d407fa5cfc7d3dc800083008290f443b121e7b684a3ae1fd3163573ba46744c",
+        "suite": "io.yuedu.legado.OriginalBookCallbackTest",
+        "tests": 3
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalConcurrentRateTest.xml",
+        "bytes": 1519,
+        "sha256": "06a2b275cd79bf5860022d355d713f894581e7990ad0b738448ef2ed284a1d9f",
+        "suite": "io.yuedu.legado.OriginalConcurrentRateTest",
+        "tests": 7
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalContentBatchPublicTest.xml",
+        "bytes": 1380,
+        "sha256": "737b0cb0ece51687dc735e753ab75ef2976ef09355f6c30bccad3cd587c3b5ca",
+        "suite": "io.yuedu.legado.OriginalContentBatchPublicTest",
+        "tests": 6
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalContentBatchTest.xml",
+        "bytes": 1938,
+        "sha256": "11c5fb1c2cbe0188faf010fd0c26c1ac748612f6fe6e2c3ae3176e01cc0f7566",
+        "suite": "io.yuedu.legado.OriginalContentBatchTest",
+        "tests": 9
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalExploreRuntimeTest.xml",
+        "bytes": 1193,
+        "sha256": "57ceccfca27cbb82168581337dfb5af5edaef628a66ae5aba2f1e2224fece604",
+        "suite": "io.yuedu.legado.OriginalExploreRuntimeTest",
+        "tests": 5
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalRuleCookiePlatformTest.xml",
+        "bytes": 1330,
+        "sha256": "93322a1f175bdcbd06cec800b3346df39f1420c06111499906ab28545395efcf",
+        "suite": "io.yuedu.legado.OriginalRuleCookiePlatformTest",
+        "tests": 6
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalRuleHttpPlatformTest.xml",
+        "bytes": 1579,
+        "sha256": "ef9a107ef4ca76152ac571b6a7b1f2a7ad69eed4bc54855e9c2e48d4acf78f0a",
+        "suite": "io.yuedu.legado.OriginalRuleHttpPlatformTest",
+        "tests": 8
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalRuleScopesConcurrencyTest.xml",
+        "bytes": 2164,
+        "sha256": "d21c1425aaf28cbd49acd2bfbfc69ef4efb0cfa1ada01c7963c7236b86471588",
+        "suite": "io.yuedu.legado.OriginalRuleScopesConcurrencyTest",
+        "tests": 11
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceCallbackTest.xml",
+        "bytes": 862,
+        "sha256": "593c7a23e284c523c6e42bd454b932c3a5aa364fbd316f19e87b6579237d3faf",
+        "suite": "io.yuedu.legado.OriginalSourceCallbackTest",
+        "tests": 3
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceFormLoginTest.xml",
+        "bytes": 1028,
+        "sha256": "98fb87aeed3c2edcb86a4613ab986b36b6306aaaa1e21aab1e6e7aaa96a3b05d",
+        "suite": "io.yuedu.legado.OriginalSourceFormLoginTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginActionTest.xml",
+        "bytes": 1029,
+        "sha256": "ffd52eb8b551b1e440a2e223017100a31fde27a3735374601f07403710f5f784",
+        "suite": "io.yuedu.legado.OriginalSourceLoginActionTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginInfoTest.xml",
+        "bytes": 862,
+        "sha256": "aa47aacfbe1066ebf289b18e51520e687d0797058b9bc864964554689682a2c7",
+        "suite": "io.yuedu.legado.OriginalSourceLoginInfoTest",
+        "tests": 3
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginMapTest.xml",
+        "bytes": 1031,
+        "sha256": "c1249a21122d133b334dd20500a609b82735a857b6375d6b536795134b177e2c",
+        "suite": "io.yuedu.legado.OriginalSourceLoginMapTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginUITest.xml",
+        "bytes": 1038,
+        "sha256": "14feeea2c474b194746ec07eaa66204f9e06cf2872ec104db78d85c141406a46",
+        "suite": "io.yuedu.legado.OriginalSourceLoginUITest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalStatePersistenceTest.xml",
+        "bytes": 2257,
+        "sha256": "3f6cc9358c987d89e38159d8cc6cf24b4f5533f0536cfcfce64959396b249583",
+        "suite": "io.yuedu.legado.OriginalStatePersistenceTest",
+        "tests": 11
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalStatefulReferenceTest.xml",
+        "bytes": 562,
+        "sha256": "9401d6945be612ee2ec54e533aaa488b60a0a5a5558d0fae5f10f190c33c84f6",
+        "suite": "io.yuedu.legado.OriginalStatefulReferenceTest",
+        "tests": 1
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSubContentTest.xml",
+        "bytes": 1010,
+        "sha256": "86a22988af93aac112c9866f050162749072cd143b507bd9161d15d19d3faa60",
+        "suite": "io.yuedu.legado.OriginalSubContentTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalTraditionalRuntimeTest.xml",
+        "bytes": 1493,
+        "sha256": "e36c0ed88eb50fd31022d4e8e0399be280d5db35d0e309e8b739dca166f62dab",
+        "suite": "io.yuedu.legado.OriginalTraditionalRuntimeTest",
+        "tests": 7
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalUrlExecutionTest.xml",
+        "bytes": 1726,
+        "sha256": "0fd988940b20cbfc355a4b9ed24fe5bf1002490022da5541b179a13f30203aba",
+        "suite": "io.yuedu.legado.OriginalUrlExecutionTest",
+        "tests": 9
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalUrlRequestOptionsTest.xml",
+        "bytes": 3186,
+        "sha256": "5338844fed140947b9a341abbbfba838f2571300b58a35b90ac813d6d07fc4c8",
+        "suite": "io.yuedu.legado.OriginalUrlRequestOptionsTest",
+        "tests": 18
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalWebBookExecutionTest.xml",
+        "bytes": 2457,
+        "sha256": "66043ab4c8db00d5bea8a6701f930397132fc9ccd216c63673f0eefa81a95b7e",
+        "suite": "io.yuedu.legado.OriginalWebBookExecutionTest",
+        "tests": 13
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.ProductionHttpTransportTest.xml",
+        "bytes": 2303,
+        "sha256": "e231d8954e4b8dd60fcedfcb21e515cb857d6793d8c78267da450e3a0a483732",
+        "suite": "io.yuedu.legado.ProductionHttpTransportTest",
+        "tests": 12
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.RuntimeTaskTraceTest.xml",
+        "bytes": 982,
+        "sha256": "24b57b4f55780a783d69030141fb03ba4cefdf1e7e2e6903afd8381aba02769c",
+        "suite": "io.yuedu.legado.RuntimeTaskTraceTest",
+        "tests": 4
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.SourceHttpSemanticsTest.xml",
+        "bytes": 1686,
+        "sha256": "2a2edfd77c48140a993684157434af0eac0c60a46a90f8a602b88d7b2a91cdcf",
+        "suite": "io.yuedu.legado.SourceHttpSemanticsTest",
+        "tests": 9
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.StaticRuleReplacementTest.xml",
+        "bytes": 1141,
+        "sha256": "4cfa88c865be70300c8eb3636d8a9724180f7dba93e73b3d4d2362f940e0bb58",
+        "suite": "io.yuedu.legado.StaticRuleReplacementTest",
+        "tests": 5
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.StaticScalarSelectorRuleTest.xml",
+        "bytes": 1319,
+        "sha256": "4030fe7d115b113f151c48d71ccefbf029d379e1dcca2cf051204b46a51e1192",
+        "suite": "io.yuedu.legado.StaticScalarSelectorRuleTest",
+        "tests": 6
+      },
+      {
+        "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.TlsCapabilityProbeTest.xml",
+        "bytes": 2005,
+        "sha256": "7e4ac8d3b4d8b3fca2d9ca6cf9ade5467b6a11af713351086329aeab2965c89b",
+        "suite": "io.yuedu.legado.TlsCapabilityProbeTest",
+        "tests": 3
+      }
+    ],
+    "suiteCount": 43,
+    "actualTests": 309,
+    "failed": 0,
+    "skipped": 0
+  },
+  "actualIOSGroups": [
+    {
+      "group": "configuration",
+      "definitions": 9,
+      "parameterDefinitions": 0,
+      "argumentNodes": 0,
+      "executions": 9,
+      "passedDefinitions": 9,
+      "failedDefinitions": 0,
+      "summary": {
+        "member": "configuration-summary.json",
+        "bytes": 984,
+        "sha256": "85977da134f29060cddb79146e684d5c6f3e7d57c4566ae44329cf8d454df791"
+      },
+      "tests": {
+        "member": "configuration-tests.json",
+        "bytes": 5851,
+        "sha256": "657a1dd915b0f816dd94b19e4e93ab7a09f6da76136a178fd7cdd6d8323cfd85"
+      },
+      "cases": [
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/localExperienceRequiresExplicitInfoBoolean()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/localReaderCapabilitiesNeedNoAccountOrTransaction()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/localReaderAccountRoutesAreUnavailable()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/disabledStoreKitDoesNotStartAutomaticWork()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/disabledCloudKitSyncDoesNotConstructContainer()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/disabledSubscriptionMirrorDoesNotConstructContainer()",
+          "result": "Passed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/mainAppEntitlementsEnableAppleSignInAndCloudKit()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/iCloudPayloadCoversExistingSyncDataFiles()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "AuthAndICloudConfigurationTests/signInSyncWaitsForChoiceBeforeOverwritingRemoteBackup()",
+          "result": "Passed"
+        }
+      ],
+      "testFailures": []
+    },
+    {
+      "group": "localproduct",
+      "definitions": 50,
+      "parameterDefinitions": 4,
+      "argumentNodes": 22,
+      "executions": 68,
+      "passedDefinitions": 50,
+      "failedDefinitions": 0,
+      "summary": {
+        "member": "local-product-summary.json",
+        "bytes": 1279,
+        "sha256": "cd1310bacd44671c00574b0ff4ac3ba8af08fc18db2a1979849a6c1297b2de93"
+      },
+      "tests": {
+        "member": "local-product-tests.json",
+        "bytes": 33009,
+        "sha256": "c5482a381fceb456605546e2f843aec866556803f4dc206dc0f004219ff48d29"
+      },
+      "cases": [
+        {
+          "nodeIdentifier": "CachedBookTXTExportTests/partialExportUsesValidatedCacheInTOCOrder()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "CachedBookTXTExportTests/completeExportPreservesChinese()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "CachedBookTXTExportTests/plainTextExportsWithoutHTMLInterpretation()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "CachedBookTXTExportTests/emptyExportDoesNotCreateEmptyBook()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "PublicLibraryAvailabilityTests/countriesAndColdStart()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "PublicLibraryAvailabilityTests/runningUpdates()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ReaderFontCatalogTests/bundledFontsAreRegisteredWithLicensedResources()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ReaderFontCatalogTests/bundledSelectionsReachGlobalAndReaderFontResolvers()",
+          "result": "Passed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "ReaderLocalProductTests/localChineseUsesActualSimplifiedTranslations()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ReaderLocalProductTests/disabledBuiltInsStayHiddenAcrossStorefrontChanges()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ReaderLocalProductTests/disabledRemoteCatalogKeepsCacheWithoutFetchingOrStamping()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/feedRequestCountAndErrors()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/opds2ContentTypes()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/identifyingUserAgent()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/authenticationScope()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/redirectScope()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/mutationRedirectScope()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/mutationDirectOrigin()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/rangeStreaming()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/rangeFailureClassification()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/loginPageDoesNotTriggerDownload()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/malformedPartialResponse()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/searchDescription()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "RemoteLibraryHTTPTests/coverSessionCache()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "SubscriptionPublicationTests/repeatedFreeStatusDoesNotInvalidateSubscribers()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "SubscriptionPublicationTests/recomputingTheSameEntitlementDoesNotRepublishIt()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/fontImportReadsRealTrueTypeMetadata()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/reimportingFontReplacesItsFile()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/launchCleanupRemovesSupersededCopies()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/txtBuilderUsesSelectedReaderFont()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/epubPipelineExposesUserSelectedFont()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/onlineBooksAndEPUBExposeUserSelectedFont()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/epubFontOverrideAndRestoration()",
+          "result": "Passed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/onlineHTMLChaptersUseSelectedReaderFontAsDefault()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/onlineTXTFallbackUsesSelectedReaderFont()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldInTXT()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/regularOnlyCustomFontGainsSyntheticBoldForOnlineHTML()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/nativeBoldFaceDoesNotReceiveSyntheticStroke()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/globalFontImportDoesNotChangeReaderSelection()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/readerFontImportDoesNotChangeGlobalSelection()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/deletingSharedFontClearsGlobalAndReaderSelections()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/failedImportPreservesLibrary(fault:global:)",
+          "result": "Passed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/failedDeletePreservesLibrary()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/successPublishesOneCommittedFont()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/missingOldFilesCanBeRepaired(reimport:)",
+          "result": "Passed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/recoveryCopyMissingErrorStillAborts()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/defaultRegistryCanRemoveAnAlreadyMissingFont()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/heldImportHasOnePublicationBoundary(cancelFirst:)",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/invalidNamesAreRejected(name:)",
+          "result": "Passed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "UserFontSettingsTests/rollbackFailureRetainsMaterials()",
+          "result": "Passed"
+        }
+      ],
+      "testFailures": []
+    },
+    {
+      "group": "cache",
+      "definitions": 6,
+      "parameterDefinitions": 2,
+      "argumentNodes": 4,
+      "executions": 8,
+      "passedDefinitions": 6,
+      "failedDefinitions": 0,
+      "summary": {
+        "member": "cache-summary.json",
+        "bytes": 1083,
+        "sha256": "4d039207c097e3e1f051498d4ba1b2a572e0befc55ee66f6c19134c0aafea094"
+      },
+      "tests": {
+        "member": "cache-tests.json",
+        "bytes": 5482,
+        "sha256": "05fcaf1e463b4d8c00b38053d6d3243c8163c5649e173bc0b015a706cd3bdf2b"
+      },
+      "cases": [
+        {
+          "nodeIdentifier": "ChapterCacheMigrationTests/packageLoaderUpgradesDownloadedLegacyChapter()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ChapterCacheMigrationTests/corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState:)",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ChapterCacheMigrationTests/legacyBodyWithoutChecksumRemainsUpgradeable(hasCachedState:)",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ChapterCacheRepositoryWriteTests/emptyContentRejected()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ChapterCacheRepositoryWriteTests/bodyFailurePropagates()",
+          "result": "Passed"
+        },
+        {
+          "nodeIdentifier": "ChapterCacheRepositoryWriteTests/writeIsReloadable()",
+          "result": "Passed"
+        }
+      ],
+      "testFailures": []
+    },
+    {
+      "group": "mainjs",
+      "definitions": 1,
+      "parameterDefinitions": 0,
+      "argumentNodes": 0,
+      "executions": 1,
+      "passedDefinitions": 1,
+      "failedDefinitions": 0,
+      "summary": {
+        "member": "summary.json",
+        "bytes": 984,
+        "sha256": "3cd518a8adde6aebb13c4e60fd9edcc5cfb328e5e6aadeecfa0ba8286a0f755e"
+      },
+      "tests": {
+        "member": "native-tests.json",
+        "bytes": 1723,
+        "sha256": "7aa47db9cfcf0ff89e4e4c529f33aecc1dc320291170185677b742b4bbc1b9fd"
+      },
+      "cases": [
+        {
+          "nodeIdentifier": "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain()",
+          "result": "Passed",
+          "duration": "8s"
+        }
+      ],
+      "testFailures": []
+    },
+    {
+      "group": "original",
+      "definitions": 17,
+      "parameterDefinitions": 0,
+      "argumentNodes": 0,
+      "executions": 17,
+      "passedDefinitions": 4,
+      "failedDefinitions": 13,
+      "summary": {
+        "member": "original-summary.json",
+        "bytes": 10643,
+        "sha256": "1b20496e42c94446cbf8716fad7f4c1cc01f59c62773ba86abc4dbb539d09804"
+      },
+      "tests": {
+        "member": "original-tests.json",
+        "bytes": 26389,
+        "sha256": "ba270b721e7b19e52b8f7c84af0ead271557888ff1c4cda142018869cef2fffb"
+      },
+      "cases": [
+        {
+          "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners()",
+          "result": "Passed",
+          "duration": "11s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect()",
+          "result": "Failed",
+          "duration": "22s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen()",
+          "result": "Failed",
+          "duration": "0.27s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens()",
+          "result": "Failed",
+          "duration": "0.26s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap()",
+          "result": "Passed",
+          "duration": "2s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite()",
+          "result": "Passed",
+          "duration": "2s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix()",
+          "result": "Failed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities()",
+          "result": "Failed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains()",
+          "result": "Failed",
+          "duration": "53s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()",
+          "result": "Failed",
+          "duration": "8s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave()",
+          "result": "Failed",
+          "duration": "1s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner()",
+          "result": "Failed",
+          "duration": "2s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()",
+          "result": "Failed",
+          "duration": "3s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache()",
+          "result": "Passed",
+          "duration": "2s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority()",
+          "result": "Failed",
+          "duration": "50s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners()",
+          "result": "Failed",
+          "duration": "2s"
+        },
+        {
+          "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen()",
+          "result": "Failed",
+          "duration": "2s"
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "XCTAssertEqual failed: (\"Optional(\"　　Batch wire content INDEX_0\")\") is not equal to (\"Optional(\"Batch wire content INDEX_0\")\")",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 7,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+          "testName": "testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix()"
+        },
+        {
+          "failureText": "XCTAssertEqual failed: (\"　　Batch wire content INDEX_0\") is not equal to (\"Batch wire content INDEX_0\")",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 8,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+          "testName": "testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities()"
+        },
+        {
+          "failureText": "Asynchronous wait failed: Exceeded timeout of 30 seconds, with unfulfilled expectations: \"Actual callback HTTP is held\".",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 9,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+          "testName": "testNativeOriginalBookNotificationCancellationDrains()"
+        },
+        {
+          "failureText": "XCTAssertEqual failed: (\"[]\") is not equal to (\"[\"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\", \"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\", \"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\", \"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\"]\")",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 10,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+          "testName": "testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()"
+        },
+        {
+          "failureText": "XCTAssertTrue failed - [\"failed(\\\"Unknown fixture route: /04e5d16a-8ef7-4cf3-8bb4-7748ed904bd3/04e5d16a-8ef7-4cf3-8bb4-7748ed904bd3/search?key=native-original&page=2\\\")\"]",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 11,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+          "testName": "testNativeOriginalCachedExplorePageOpensAndSavesOnLeave()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"SCRIPT_ERROR\", message: \"Error: wrong original context\\nSource context:\\n> 1: if(infoMap.get(\\'genre\\')!==\\'first\\')throw new Error(\\'wrong original context\\');\\'http://127.0.0.1:58510/fff44fb9-f8a0-4cfd-8734-7ca4331c5412/fff44fb9-f8a0-4cfd-8734-7ca4331c5412/search?key=native-original&page=2\\' in <script-75> at line number 1\", completedEffects: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 12,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+          "testName": "testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"jni_3\", message: \"JVM is process scoped and cannot be restarted or reconfigured\", completedEffects: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 2,
+          "testIdentifierString": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+          "testName": "testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"jni_3\", message: \"JVM is process scoped and cannot be restarted or reconfigured\", completedEffects: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 3,
+          "testIdentifierString": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+          "testName": "testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"jni_3\", message: \"JVM is process scoped and cannot be restarted or reconfigured\", completedEffects: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 4,
+          "testIdentifierString": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+          "testName": "testNativeOriginalLoginInfoUsesExistingKeychainAndReopens()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"UNSUPPORTED_CAPABILITY: URL-keyed original variables do not identify a unique granted App chapter\", completedEffects: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 13,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+          "testName": "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()"
+        },
+        {
+          "failureText": "Asynchronous wait failed: Exceeded timeout of 30 seconds, with unfulfilled expectations: \"Actual source notification HTTP is held\".",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 15,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+          "testName": "testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority()"
+        },
+        {
+          "failureText": "XCTAssertEqual failed: (\"[]\") is not equal to (\"[\"/0a1847b9-52ef-43e2-bb80-62659b14ec9e/duplicate\", \"/0a1847b9-52ef-43e2-bb80-62659b14ec9e/duplicate\"]\")",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 16,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+          "testName": "testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"UNSUPPORTED_CAPABILITY: Preview chapter has not been explicitly granted\", completedEffects: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 17,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+          "testName": "testNativeOriginalWebBookPreviewTransferAndReopen()"
+        }
+      ]
+    }
+  ],
+  "executionLedgers": [
+    {
+      "path": "native-product-chain-execution.json",
+      "bytes": 47745,
+      "sha256": "41449d6554564b31a851602f20c87a20f6ea10c7dac18ff57cbf7f3b6899f479",
+      "group": "mainjs",
+      "expectedMethods": [
+        "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain"
+      ],
+      "commands": [
+        {
+          "argv": [
+            "bash",
+            "/Users/runner/work/legado-ios/legado-ios/scripts/xctest.sh",
+            "-l",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/native-product-chain.log",
+            "-t",
+            "2700",
+            "--",
+            "-configuration",
+            "Debug",
+            "-onlyUsePackageVersionsFromResolvedFile",
+            "CODE_SIGNING_ALLOWED=YES",
+            "CODE_SIGNING_REQUIRED=YES",
+            "CODE_SIGN_IDENTITY=-",
+            "CODE_SIGN_STYLE=Manual",
+            "DEVELOPMENT_TEAM=",
+            "CODE_SIGN_ENTITLEMENTS=",
+            "GATEWAY_BASE_URL=",
+            "YUEDU_LOCAL_EXPERIENCE=YES",
+            "IPHONEOS_DEPLOYMENT_TARGET=18.0",
+            "ENABLE_DEBUG_DYLIB=NO",
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS",
+            "-resultBundlePath",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/native-product-chain.xcresult",
+            "-only-testing:yuedu appTests/LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain"
+          ],
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 2760,
+          "elapsedSeconds": 331.240196,
+          "output": "native-product-chain-driver.log",
+          "stdout": {
+            "bytes": 246,
+            "sha256": "c9ca76954ccd49bfe89a86c339db0b9c63fdc38d45a6adcac62fde0ab98facca"
+          },
+          "stderr": "native-product-chain-driver.log.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "argv": [
+            "xcrun",
+            "xcresulttool",
+            "get",
+            "test-results",
+            "summary",
+            "--path",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/native-product-chain.xcresult"
+          ],
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 6.043311,
+          "output": "summary.json",
+          "stdout": {
+            "bytes": 984,
+            "sha256": "3cd518a8adde6aebb13c4e60fd9edcc5cfb328e5e6aadeecfa0ba8286a0f755e"
+          },
+          "stderr": "summary.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "argv": [
+            "xcrun",
+            "xcresulttool",
+            "get",
+            "test-results",
+            "tests",
+            "--path",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/native-product-chain.xcresult"
+          ],
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.158377,
+          "output": "native-tests.json",
+          "stdout": {
+            "bytes": 1723,
+            "sha256": "7aa47db9cfcf0ff89e4e4c529f33aecc1dc320291170185677b742b4bbc1b9fd"
+          },
+          "stderr": "native-tests.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "sourceBeforeAndAfterExactGit107": true
+    },
+    {
+      "path": "original-product-chain-execution.json",
+      "bytes": 51875,
+      "sha256": "e2f3d5f0d22cd8d7cd708760c5a61c74c791fd1c526a98fe301299ce1810a211",
+      "group": "original",
+      "expectedMethods": [
+        "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite"
+      ],
+      "commands": [
+        {
+          "argv": [
+            "bash",
+            "/Users/runner/work/legado-ios/legado-ios/scripts/xctest.sh",
+            "-l",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/original-product-chain.log",
+            "-t",
+            "1800",
+            "--",
+            "-configuration",
+            "Debug",
+            "-onlyUsePackageVersionsFromResolvedFile",
+            "CODE_SIGNING_ALLOWED=YES",
+            "CODE_SIGNING_REQUIRED=YES",
+            "CODE_SIGN_IDENTITY=-",
+            "CODE_SIGN_STYLE=Manual",
+            "DEVELOPMENT_TEAM=",
+            "CODE_SIGN_ENTITLEMENTS=",
+            "GATEWAY_BASE_URL=",
+            "YUEDU_LOCAL_EXPERIENCE=YES",
+            "IPHONEOS_DEPLOYMENT_TARGET=18.0",
+            "ENABLE_DEBUG_DYLIB=NO",
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS",
+            "-resultBundlePath",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/original-product-chain.xcresult",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+            "-only-testing:yuedu appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite"
+          ],
+          "exitCode": 1,
+          "timedOut": false,
+          "timeoutSeconds": 1860,
+          "elapsedSeconds": 531.919253,
+          "output": "original-product-chain-driver.log",
+          "stdout": {
+            "bytes": 10071,
+            "sha256": "535da8c0f86e4a072d3566745aacf44e2235f114cf66ab80d77fa0bed0af08fd"
+          },
+          "stderr": "original-product-chain-driver.log.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "argv": [
+            "xcrun",
+            "xcresulttool",
+            "get",
+            "test-results",
+            "summary",
+            "--path",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/original-product-chain.xcresult"
+          ],
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 1.607011,
+          "output": "original-summary.json",
+          "stdout": {
+            "bytes": 10643,
+            "sha256": "1b20496e42c94446cbf8716fad7f4c1cc01f59c62773ba86abc4dbb539d09804"
+          },
+          "stderr": "original-summary.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "argv": [
+            "xcrun",
+            "xcresulttool",
+            "get",
+            "test-results",
+            "tests",
+            "--path",
+            "/Users/runner/work/legado-ios/legado-ios/.build/native-reader-test/original-product-chain.xcresult"
+          ],
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.376538,
+          "output": "original-tests.json",
+          "stdout": {
+            "bytes": 26389,
+            "sha256": "ba270b721e7b19e52b8f7c84af0ead271557888ff1c4cda142018869cef2fffb"
+          },
+          "stderr": "original-tests.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "sourceBeforeAndAfterExactGit107": true
+    }
+  ],
+  "fullLogsRead": {
+    "native-build.log": {
+      "bytes": 8404183,
+      "sha256": "d38b3c67c78ee9c9885dd4f369607c9d1064ce2672fb301218f4ce398722364f",
+      "lines": 35909,
+      "compilerErrors": [],
+      "testSucceededMarkers": 0,
+      "testFailedMarkers": 0
+    },
+    "native-exports.log": {
+      "bytes": 12619270,
+      "sha256": "d203d3feac1216fa2c8588b70e3a9b2819480cf35a14f9f000394bf9ec92004a",
+      "lines": 141282,
+      "compilerErrors": [],
+      "testSucceededMarkers": 0,
+      "testFailedMarkers": 0
+    },
+    "configuration.log": {
+      "bytes": 626241,
+      "sha256": "40bbc194fe752af37b5286368bc771f7abf13ff044dbf6ad5cdb2156585233f6",
+      "lines": 3294,
+      "compilerErrors": [],
+      "testSucceededMarkers": 1,
+      "testFailedMarkers": 0
+    },
+    "local-product-regressions.log": {
+      "bytes": 505502,
+      "sha256": "d896f277f38197bdd43825a666a67e21a8530e5fea8747efc9eb019e7f9b33fb",
+      "lines": 3188,
+      "compilerErrors": [],
+      "testSucceededMarkers": 1,
+      "testFailedMarkers": 0
+    },
+    "cache-regressions.log": {
+      "bytes": 467434,
+      "sha256": "f6b98b0f451581d27f35e1edbd72947896b483a32b0a85b1d350246de4e9169e",
+      "lines": 2837,
+      "compilerErrors": [],
+      "testSucceededMarkers": 1,
+      "testFailedMarkers": 0
+    },
+    "native-product-chain.log": {
+      "bytes": 497685,
+      "sha256": "ec047f1d98b9688515ad7a4d3f2f1d9504db0e9a3f20ee64680413361feda4c8",
+      "lines": 3286,
+      "compilerErrors": [],
+      "testSucceededMarkers": 1,
+      "testFailedMarkers": 0
+    },
+    "original-product-chain.log": {
+      "bytes": 584865,
+      "sha256": "11c113ae5c97573a73ca370d54913dcdb8b8a773ce1cc5a267cf7f3949460c5b",
+      "lines": 4021,
+      "compilerErrors": [],
+      "testSucceededMarkers": 0,
+      "testFailedMarkers": 1
+    }
+  },
+  "runtimeDiagnostics": {
+    "schemaVersion": 1,
+    "sourceCommit": "210fb0597dcc4081db9324876c4be922ba186367",
+    "simulatorUDID": "4C675116-265D-488F-BFFA-836A4545674C",
+    "bundleIdentifier": "local.zhoujianjia.legado-reader",
+    "executionPlatform": "ios-simulator",
+    "collectionStatus": "partial",
+    "files": [
+      {
+        "path": "runtime/current/stages.log",
+        "origin": "app-native-diagnostics",
+        "bytes": 192808,
+        "sha256": "b2b9f8a4853813d7b772a2afe09b9c2dc98c6c6132231f79a1287b238589f1bf",
+        "modifiedAtEpochSeconds": 1792526482.8251455
+      },
+      {
+        "path": "runtime/current/vm-output.log",
+        "origin": "app-native-diagnostics",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "modifiedAtEpochSeconds": 1792526314.2519262
+      },
+      {
+        "path": "runtime/previous/native-task-events.jsonl",
+        "origin": "app-native-diagnostics",
+        "bytes": 5094,
+        "sha256": "6d5c2df1efd4de15c8d904e2dce80ba92dd13fc33f7e9a97b92c7377358a2192",
+        "modifiedAtEpochSeconds": 1792525951.5095396
+      },
+      {
+        "path": "runtime/previous/runtime-events.jsonl",
+        "origin": "app-native-diagnostics",
+        "bytes": 16280,
+        "sha256": "e5e459e93afa92827c904d4266479a7ab5329b24d4542c01d4412630787d90f2",
+        "modifiedAtEpochSeconds": 1792525951.5090978
+      },
+      {
+        "path": "runtime/previous/stages.log",
+        "origin": "app-native-diagnostics",
+        "bytes": 16828,
+        "sha256": "4cf21842cb9986448bbd42cdda9e315ccb38f8ef2292283044c209ab639c5ec9",
+        "modifiedAtEpochSeconds": 1792525951.5235958
+      },
+      {
+        "path": "runtime/previous/vm-output.log",
+        "origin": "app-native-diagnostics",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "modifiedAtEpochSeconds": 1792525943.1087928
+      }
+    ],
+    "errors": [
+      "origin=simulator-ips ValueError: Refusing a linked diagnostics path: rejectedPart=/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Library/Logs; requestedPath=/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Library/Logs/CrashReporter"
+    ],
+    "skipped": [],
+    "runtimeValidationEstablished": false,
+    "deviceValidationPassed": false,
+    "startedAtEpochSeconds": 1792526532.875702,
+    "sinceEpochSeconds": 1792522113.364905,
+    "installedSyntheticAppValidated": true,
+    "nativeDiagnosticsDirectoryPresent": true,
+    "hasNativeDiagnostics": true,
+    "hasCrashReports": false,
+    "totalBytes": 231010,
+    "completedAtEpochSeconds": 1792526535.779427
+  },
+  "runtimeStages": {
+    "current": {
+      "lines": 2204,
+      "stages": {
+        "startup.pre": 1,
+        "loadfunctions.before": 1,
+        "loadfunctions.after": 1,
+        "JNI_CreateJavaVM.before": 1,
+        "JNI_CreateJavaVM.after": 1,
+        "startup.attached": 1,
+        "facade.before": 1,
+        "facade.after": 1,
+        "methods.before": 1,
+        "methods.after": 1,
+        "RegisterNatives.before": 1,
+        "RegisterNatives.after": 1,
+        "startup.detached": 1,
+        "startup.complete": 1,
+        "thread.getEnv.before": 146,
+        "thread.getEnv.after": 146,
+        "thread.attach.before": 146,
+        "thread.attach.after": 146,
+        "thread.attached": 146,
+        "thread.sigio.entry.blocked": 146,
+        "thread.sigio.handlerInit.before": 146,
+        "thread.sigio.handlerInit.after": 146,
+        "thread.sigio.unblock.before": 146,
+        "thread.sigio.unblock.after": 146,
+        "invoke.configuredSession.before": 48,
+        "invoke.configuredSession.after": 48,
+        "thread.sigio.restore.before": 146,
+        "thread.sigio.restore.after": 146,
+        "thread.detached": 146,
+        "invoke.execute.before": 48,
+        "invoke.execute.after": 48,
+        "invoke.closeSession.before": 48,
+        "invoke.closeSession.after": 48,
+        "invoke.cancel.before": 2,
+        "invoke.cancel.after": 2
+      },
+      "member": "diagnostics/runtime/current/stages.log",
+      "bytes": 192808,
+      "sha256": "b2b9f8a4853813d7b772a2afe09b9c2dc98c6c6132231f79a1287b238589f1bf",
+      "VMOutputBytes": 0
+    },
+    "previous": {
+      "lines": 194,
+      "stages": {
+        "startup.pre": 1,
+        "loadfunctions.before": 1,
+        "loadfunctions.after": 1,
+        "JNI_CreateJavaVM.before": 1,
+        "JNI_CreateJavaVM.after": 1,
+        "startup.attached": 1,
+        "facade.before": 1,
+        "facade.after": 1,
+        "methods.before": 1,
+        "methods.after": 1,
+        "RegisterNatives.before": 1,
+        "RegisterNatives.after": 1,
+        "startup.detached": 1,
+        "startup.complete": 1,
+        "thread.getEnv.before": 12,
+        "thread.getEnv.after": 12,
+        "thread.attach.before": 12,
+        "thread.attach.after": 12,
+        "thread.attached": 12,
+        "thread.sigio.entry.blocked": 12,
+        "thread.sigio.handlerInit.before": 12,
+        "thread.sigio.handlerInit.after": 12,
+        "thread.sigio.unblock.before": 12,
+        "thread.sigio.unblock.after": 12,
+        "invoke.configuredSession.before": 2,
+        "invoke.configuredSession.after": 2,
+        "thread.sigio.restore.before": 12,
+        "thread.sigio.restore.after": 12,
+        "thread.detached": 12,
+        "invoke.execute.before": 7,
+        "invoke.execute.after": 7,
+        "invoke.closeSession.before": 2,
+        "invoke.closeSession.after": 2,
+        "invoke.cancel.before": 1,
+        "invoke.cancel.after": 1
+      },
+      "member": "diagnostics/runtime/previous/stages.log",
+      "bytes": 16828,
+      "sha256": "4cf21842cb9986448bbd42cdda9e315ccb38f8ef2292283044c209ab639c5ec9",
+      "VMOutputBytes": 0
+    }
+  },
+  "nativeExports": {
+    "schemaVersion": 1,
+    "requiredDynamicExportsPresent": true,
+    "requiredExports": [
+      "JDK_Canonicalize",
+      "JIMAGE_Open",
+      "JIMAGE_Close",
+      "JIMAGE_FindResource",
+      "JIMAGE_GetResource",
+      "VerifyClassForMajorVersion",
+      "Java_java_lang_Class_registerNatives",
+      "Java_java_lang_ClassLoader_registerNatives",
+      "Java_java_lang_System_registerNatives",
+      "Java_java_lang_Thread_registerNatives",
+      "JNI_OnLoad_net",
+      "JNI_OnLoad_nio",
+      "Java_java_net_InetAddress_isIPv4Available",
+      "Java_java_net_InetAddress_isIPv6Supported",
+      "Java_java_net_Inet4AddressImpl_getLocalHostName",
+      "Java_java_net_Inet4AddressImpl_lookupAllHostAddr",
+      "Java_java_net_Inet4AddressImpl_getHostByAddr",
+      "Java_java_net_Inet4AddressImpl_isReachable0",
+      "Java_java_net_Inet6AddressImpl_getLocalHostName",
+      "Java_java_net_Inet6AddressImpl_lookupAllHostAddr",
+      "Java_java_net_Inet6AddressImpl_getHostByAddr",
+      "Java_java_net_Inet6AddressImpl_isReachable0",
+      "Java_java_net_NetworkInterface_getAll",
+      "Java_java_net_NetworkInterface_getByName0",
+      "Java_java_net_NetworkInterface_getByIndex0",
+      "Java_java_net_NetworkInterface_boundInetAddress0",
+      "Java_java_net_NetworkInterface_getByInetAddress0",
+      "Java_java_net_NetworkInterface_isUp0",
+      "Java_java_net_NetworkInterface_isLoopback0",
+      "Java_java_net_NetworkInterface_supportsMulticast0",
+      "Java_java_net_NetworkInterface_isP2P0",
+      "Java_java_net_NetworkInterface_getMacAddr0",
+      "Java_java_net_NetworkInterface_getMTU0",
+      "Java_java_net_NetworkInterface_init",
+      "Java_sun_net_PortConfig_getLower0",
+      "Java_sun_net_PortConfig_getUpper0",
+      "Java_sun_net_spi_DefaultProxySelector_init",
+      "Java_sun_net_spi_DefaultProxySelector_getSystemProxies",
+      "Java_sun_net_dns_ResolverConfigurationImpl_fallbackDomain0"
+    ],
+    "missingExports": [],
+    "deviceValidationPassed": false
+  },
+  "ordinaryJarMetadata": {
+    "sha256": "da014e37a0cd4702f418a6dcd54af483351d45543b15325e170a9f0972f2d0bb",
+    "bytes": 10805760,
+    "maximumBaseClassMajor": 65,
+    "requiredClasses": [
+      "io/yuedu/legado/LegadoRuntime.class",
+      "io/yuedu/legado/NativeHost.class",
+      "io/yuedu/legado/ProductionHttpTransport.class",
+      "io/yuedu/legado/RuntimeSessionOptions.class",
+      "io/yuedu/legado/StaticScalarSelectorRule.class",
+      "org/htmlunit/corejs/javascript/Context.class",
+      "okhttp3/OkHttpClient.class",
+      "org/brotli/dec/BrotliInputStream.class",
+      "org/apache/commons/text/StringEscapeUtils.class",
+      "org/apache/commons/lang3/StringUtils.class",
+      "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+      "io/legado/app/data/entities/Book.class",
+      "io/legado/app/data/entities/BookChapter.class",
+      "io/legado/app/data/entities/BookSource.class"
+    ],
+    "testClassesIncluded": false
+  },
+  "confirmedFailures": [
+    {
+      "id": "NATIVE-ORIGINAL-ACTUAL-ASSERTIONS",
+      "severity": "P1",
+      "facts": "17 selected real JNI XCTest definitions ran; 4 passed and13 failed. MainJS is independent1/1 pass. No source/compiler/timeout substitution.",
+      "clusters": [
+        "3 LoginInfo methods jni_3 process-scoped context mismatch",
+        "Loopback routes contain repeated per-run path prefix; notifications and held-body latches consequently fail",
+        "2 Batch tests compare raw unindented content against actual original formatted U+3000 prefix",
+        "Explore infoMap wrong original context",
+        "Preview chapter grant refusal and URL-keyed chapter ambiguity"
+      ],
+      "causalBoundary": "Only observed diagnostics and exact frozen source seams are established here; root owns production/fixture cause repair. Do not weaken authority or JVM singleton checks."
+    },
+    {
+      "id": "NATIVE-LOCALPRODUCT-STALE-SUMMARY-INVENTORY",
+      "severity": "P2",
+      "location": ".github/workflows/legado-native-reader-test.yml:133-134",
+      "actual": {
+        "definitions": 50,
+        "executions": 68
+      },
+      "configuredExpectedDefinitions": 41,
+      "repairBoundary": "Source-inventory the exact selected seven suites and parameter leaves, then validate both grains. Cache is6 definitions/8 executions. Preserve raw summaries and all actual native failures."
+    }
+  ],
+  "failureLines": {
+    "path": ".build/consolidated-native-210fb05-independent-review/original-failure-lines.txt",
+    "bytes": 13208,
+    "sha256": "78e3615da677c83624ff3d6a7f72681edfe91f54897f6033eb14cf97c633e834"
+  },
+  "evidence": [
+    {
+      "member": ".build/native-reader-test/native-source-inputs.json",
+      "bytes": 21170,
+      "sha256": "6cb939ab691f8a316c1a9a4a5e8399871f8d6f5fd3274215f092bf349279fa84"
+    },
+    {
+      "member": ".build/native-reader-test/native-exports.json",
+      "bytes": 1907,
+      "sha256": "e8f0c3fa651c1d7ad2b1cbb2101175ce3b2b9456c30534858540e29ba85bea03"
+    },
+    {
+      "member": ".build/native-reader-test/ordinary-jar.json",
+      "bytes": 880,
+      "sha256": "1e445c8b3b155839d833485bea5d345f3f812e7f48a113f9ee29f0914f019c68"
+    },
+    {
+      "member": ".build/native-reader-test/diagnostics/collection.json",
+      "bytes": 2609,
+      "sha256": "4c43c97e5e7d84a8ca3adbe0bc93c779d423637c41a7d2ebd208486f29391dbd"
+    }
+  ],
+  "acceptance": {
+    "NativeOriginalPassed": false,
+    "MainJSSelectedCasePassed": true,
+    "JVM309Passed": true,
+    "AppCore463OrSDKFixtureAccepted": false,
+    "newerDeltaOrV2Accepted": false,
+    "deviceValidated": false,
+    "completeCompatibility": false
+  },
+  "limits": [
+    "Source210 only; not current55a/delta/V2 snapshot.",
+    "No crash report was collected because linked CrashReporter path was rejected; absence from artifact is not proof of no process crash.",
+    "43 JVM XML tests are distinct from actual17+1 JNI tests.",
+    "Native workflow17-method SwiftPM step is not the independent current-core Package18 acceptance and does not cover changed future Package inputs."
+  ],
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloudQuery": false,
+    "privateDownloadJSONRead": false,
+    "testSuiteRerun": false,
+    "sourceFix": false
+  }
+}

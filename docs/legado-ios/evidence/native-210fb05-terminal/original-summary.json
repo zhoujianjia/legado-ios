@@ -1,0 +1,159 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
+        "deviceName" : "iPhone 17 Pro Max",
+        "modelName" : "iPhone 17 Pro Max",
+        "osBuildNumber" : "23C54",
+        "osVersion" : "26.2",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 13,
+      "passedTests" : 4,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "Yuedu-Reader · Built with macOS 15.7.9",
+  "expectedFailures" : 0,
+  "failedTests" : 13,
+  "finishTime" : 1792526498.985,
+  "passedTests" : 4,
+  "result" : "Failed",
+  "skippedTests" : 0,
+  "startTime" : 1792526004.037,
+  "statistics" : [
+
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "XCTAssertEqual failed: (\"Optional(\"　　Batch wire content INDEX_0\")\") is not equal to (\"Optional(\"Batch wire content INDEX_0\")\")",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 7,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+      "testName" : "testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix()"
+    },
+    {
+      "failureText" : "XCTAssertEqual failed: (\"　　Batch wire content INDEX_0\") is not equal to (\"Batch wire content INDEX_0\")",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 8,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+      "testName" : "testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities()"
+    },
+    {
+      "failureText" : "Asynchronous wait failed: Exceeded timeout of 30 seconds, with unfulfilled expectations: \"Actual callback HTTP is held\".",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 9,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+      "testName" : "testNativeOriginalBookNotificationCancellationDrains()"
+    },
+    {
+      "failureText" : "XCTAssertEqual failed: (\"[]\") is not equal to (\"[\"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\", \"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\", \"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\", \"/64ea3a42-ca52-4555-a658-f7c38f05b661/duplicate\"]\")",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 10,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+      "testName" : "testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()"
+    },
+    {
+      "failureText" : "XCTAssertTrue failed - [\"failed(\\\"Unknown fixture route: /04e5d16a-8ef7-4cf3-8bb4-7748ed904bd3/04e5d16a-8ef7-4cf3-8bb4-7748ed904bd3/search?key=native-original&page=2\\\")\"]",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 11,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+      "testName" : "testNativeOriginalCachedExplorePageOpensAndSavesOnLeave()"
+    },
+    {
+      "failureText" : "failed: caught error: \"LegadoRuntimeError(code: \"SCRIPT_ERROR\", message: \"Error: wrong original context\\nSource context:\\n> 1: if(infoMap.get(\\'genre\\')!==\\'first\\')throw new Error(\\'wrong original context\\');\\'http://127.0.0.1:58510/fff44fb9-f8a0-4cfd-8734-7ca4331c5412/fff44fb9-f8a0-4cfd-8734-7ca4331c5412/search?key=native-original&page=2\\' in <script-75> at line number 1\", completedEffects: nil)\"",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 12,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+      "testName" : "testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner()"
+    },
+    {
+      "failureText" : "failed: caught error: \"LegadoRuntimeError(code: \"jni_3\", message: \"JVM is process scoped and cannot be restarted or reconfigured\", completedEffects: nil)\"",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 2,
+      "testIdentifierString" : "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+      "testName" : "testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect()"
+    },
+    {
+      "failureText" : "failed: caught error: \"LegadoRuntimeError(code: \"jni_3\", message: \"JVM is process scoped and cannot be restarted or reconfigured\", completedEffects: nil)\"",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 3,
+      "testIdentifierString" : "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+      "testName" : "testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen()"
+    },
+    {
+      "failureText" : "failed: caught error: \"LegadoRuntimeError(code: \"jni_3\", message: \"JVM is process scoped and cannot be restarted or reconfigured\", completedEffects: nil)\"",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 4,
+      "testIdentifierString" : "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+      "testName" : "testNativeOriginalLoginInfoUsesExistingKeychainAndReopens()"
+    },
+    {
+      "failureText" : "failed: caught error: \"LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"UNSUPPORTED_CAPABILITY: URL-keyed original variables do not identify a unique granted App chapter\", completedEffects: nil)\"",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 13,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+      "testName" : "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()"
+    },
+    {
+      "failureText" : "Asynchronous wait failed: Exceeded timeout of 30 seconds, with unfulfilled expectations: \"Actual source notification HTTP is held\".",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 15,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+      "testName" : "testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority()"
+    },
+    {
+      "failureText" : "XCTAssertEqual failed: (\"[]\") is not equal to (\"[\"/0a1847b9-52ef-43e2-bb80-62659b14ec9e/duplicate\", \"/0a1847b9-52ef-43e2-bb80-62659b14ec9e/duplicate\"]\")",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 16,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+      "testName" : "testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners()"
+    },
+    {
+      "failureText" : "failed: caught error: \"LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"UNSUPPORTED_CAPABILITY: Preview chapter has not been explicitly granted\", completedEffects: nil)\"",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 17,
+      "testIdentifierString" : "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+      "testName" : "testNativeOriginalWebBookPreviewTransferAndReopen()"
+    }
+  ],
+  "title" : "Test - Yuedu-Reader",
+  "topInsights" : [
+    {
+      "category" : "Common Failures",
+      "impact" : "23% of failures",
+      "text" : "3 runs of 3 tests failed with failed: caught error: \"LegadoRuntimeError(code: \"jni_3\", message: \"JVM is process scoped and cannot be restarted or reconfigured\", completedEffects: nil)\""
+    },
+    {
+      "category" : "Common Failures",
+      "impact" : "15% of failures",
+      "text" : "2 runs of 2 tests failed with XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"CANCELLED\")\")"
+    },
+    {
+      "category" : "Common Failures",
+      "impact" : "7% of failures",
+      "text" : "2 runs of 1 test failed with XCTAssertEqual failed: (\"4\") is not equal to (\"8\")"
+    }
+  ],
+  "totalTestCount" : 17
+}
