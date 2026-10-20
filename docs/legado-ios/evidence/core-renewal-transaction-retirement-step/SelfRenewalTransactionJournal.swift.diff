@@ -1,0 +1,376 @@
+--- fd0215dfba9a06741ca599299663844590d6bcbc:Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift
++++ work/SelfRenewalTransactionJournal.swift
+@@ -10,6 +10,7 @@
+     enum Failure: Error, Sendable, Equatable {
+         case invalidDirectory, ownerAlreadyOpen, storageIO, malformedRecord, missingRecord
+         case staleSnapshot, activeTransaction, invalidTransition, invalidCandidate, limit
++        case retirementNotAuthorized
+         /// rename succeeded but directory durability could not be confirmed. Reload;
+         /// do not submit a network operation based on a thrown publication call.
+         case commitDurabilityUnknown
+@@ -17,6 +18,7 @@
+     enum Phase: String, Sendable, Codable {
+         case created, signing, candidateReady, uploadIntent, upgradeIntent, receiptObserved
+         case installationUnknown, lookupObserved, attentionRequired
++        case retirementPending, retired
+     }
+     struct Candidate: Sendable, Codable, Equatable {
+         let byteCount: Int
+@@ -25,6 +27,81 @@
+     struct Submission: Sendable, Codable, Equatable {
+         let remotePackagePath: String
+         let deviceCertificateSHA256: Data
++    }
++    /// Persisted only by completeRemoteCleanup after its actual sealed Outcome.
++    /// Empty paths, a version Lookup or an old ready record cannot manufacture it.
++    struct SafePreSubmissionCleanup: Sendable, Codable, Equatable {
++        let grantID: UUID
++        let candidate: Candidate
++        let submission: Submission
++        let removal: String
++        let completedAt: Date
++        fileprivate init(grant: RemoteCleanupGrant, outcome: SelfRenewalInstallationRecovery.Outcome, at date: Date) throws {
++            guard grant.disposition == .safeBeforeSubmission, let removal = outcome.removal,
++                  outcome.grantID == grant.id, outcome.remotePackagePath == grant.remotePackagePath,
++                  outcome.deviceCertificateSHA256 == grant.deviceCertificateSHA256,
++                  outcome.stopSessionAcknowledged, outcome.lookup == nil,
++                  outcome.afcChannelReleasedLocally, outcome.lockdownChannelReleasedLocally,
++                  let candidate = grant.snapshot.record.candidate,
++                  let submission = grant.snapshot.record.submission else { throw Failure.invalidTransition }
++            grantID = grant.id; self.candidate = candidate; self.submission = submission
++            self.removal = removal.rawValue; completedAt = date
++        }
++    }
++    enum RetirementReason: String, Sendable, Codable {
++        case preparationFailed, preparationInterrupted, supersededUnsubmittedCandidate, authenticatedUploadCleanup
++    }
++    enum RemoteHistory: String, Sendable, Codable {
++        /// Written by this journal's actual create, not inferred from a nil path.
++        case neverStarted
++        /// Written durably before the install client may create its remote file.
++        case started
++    }
++    enum LocalCandidateRemoval: String, Sendable, Codable {
++        case removed, alreadyAbsent
++    }
++    struct Retirement: Sendable, Codable, Equatable {
++        let originalPhase: Phase
++        let originalRevision: UInt64
++        let originalRecordSHA256: Data
++        let candidate: Candidate?
++        let reason: RetirementReason
++        let initiatedAt: Date
++        var localCandidateRemoval: LocalCandidateRemoval?
++        var completedAt: Date?
++    }
++    /// One constant-size predecessor commitment, never a growing history array.
++    struct PreviousRetirement: Sendable, Codable, Equatable {
++        let transactionID: UUID
++        let revision: UInt64
++        let recordSHA256: Data
++        let retiredAt: Date
++        fileprivate init(_ receipt: RetirementReceipt) {
++            transactionID = receipt.transactionID; revision = receipt.revision
++            recordSHA256 = receipt.recordSHA256; retiredAt = receipt.retiredAt
++        }
++    }
++    struct RetirementReceipt: Sendable {
++        let transactionID: UUID
++        let revision: UInt64
++        let recordSHA256: Data
++        let originalPhase: Phase
++        let reason: RetirementReason
++        let localCandidateRemoval: LocalCandidateRemoval
++        let retiredAt: Date
++        let safePreSubmissionCleanup: SafePreSubmissionCleanup?
++        /// Does not establish installation, remote absence outside the sealed
++        /// pre-submission cleanup, user-data preservation or Apple authority.
++        var renewalVerified: Bool { false }
++        fileprivate init(_ snapshot: Snapshot) throws {
++            guard snapshot.record.phase == .retired, let retirement = snapshot.record.retirement,
++                  let removal = retirement.localCandidateRemoval,
++                  let date = retirement.completedAt else { throw Failure.invalidTransition }
++            transactionID = snapshot.record.id; revision = snapshot.record.revision
++            recordSHA256 = snapshot.encodedSHA256; originalPhase = retirement.originalPhase
++            reason = retirement.reason; localCandidateRemoval = removal; retiredAt = date
++            safePreSubmissionCleanup = snapshot.record.safePreSubmissionCleanup
++        }
+     }
+     struct InstalledMaterialObservation: Sendable, Codable, Equatable {
+         let candidateArchiveSHA256: Data
+@@ -116,6 +193,11 @@
+         var installedMaterial: InstalledMaterialObservation?
+         var userDataHandoff: UserDataCheckpoint?
+         var userDataRead: UserDataReadObservation?
++        var safePreSubmissionCleanup: SafePreSubmissionCleanup? = nil
++        var retirement: Retirement? = nil
++        var previousRetirement: PreviousRetirement? = nil
++        /// nil is a legacy record with unrecorded history, never a negative proof.
++        var remoteHistory: RemoteHistory? = nil
+         var userDataReadInDifferentProcess: Bool? {
+             guard let userDataHandoff, let userDataRead else { return nil }
+             return userDataHandoff.processID != userDataRead.processID
+@@ -138,7 +220,7 @@
+         let read: @Sendable (Int, Int) async throws -> Data
+     }
+     struct RemoteCleanupGrant: Sendable {
+-        enum Disposition: Sendable { case safeBeforeSubmission, reportedComplete, unknownSubmission }
++        enum Disposition: Sendable, Equatable { case safeBeforeSubmission, reportedComplete, unknownSubmission }
+         let id: UUID
+         let snapshot: Snapshot
+         let disposition: Disposition
+@@ -237,15 +319,127 @@
+         bundleIdentifier: String, bundleVersion: String, at date: Date,
+         process: SelfRenewalInstalledMaterialObserver.ProcessIdentity = .current) throws -> Snapshot {
+         guard !streamingCandidate, activeRemoteCleanup == nil else { throw Failure.activeTransaction }
+-        guard try load() == nil else { throw Failure.activeTransaction }
+-        let record = Record(schema: 1, id: UUID(), revision: 0, createdAt: date, updatedAt: date,
++        let previous = try load()
++        let predecessor: PreviousRetirement?
++        if let previous {
++            guard previous.record.phase == .retired else { throw Failure.activeTransaction }
++            predecessor = PreviousRetirement(try confirmRetirement(previous))
++        } else {
++            // A name with no checkpoint cannot be assumed to belong to this
++            // new transaction. Never silently replace an orphan/foreign file.
++            try requireCandidateAbsent()
++            predecessor = nil
++        }
++        var record = Record(schema: 1, id: UUID(), revision: 0, createdAt: date, updatedAt: date,
+             materialNamespace: namespace, materialGeneration: generation,
+             originalArchiveSHA256: originalSHA256, identitySHA256: identitySHA256,
+             bundleIdentifier: bundleIdentifier, bundleVersion: bundleVersion,
+             preparationProcessID: process.id,
+             phase: .created, candidate: nil, submission: nil, lookupReportedSameVersion: nil,
+             installedMaterial: nil, userDataHandoff: nil, userDataRead: nil)
++        record.previousRetirement = predecessor
++        record.remoteHistory = .neverStarted
+         return try publish(record)
++    }
++
++    /// A durable pending marker precedes destructive local cleanup. After that
++    /// marker is acknowledged, cancellation cannot interrupt the synchronous
++    /// admitted cleanup/commit; real I/O errors leave pending state for reopen.
++    func retireUnsubmitted(_ expected: Snapshot, reason: RetirementReason, at date: Date) throws -> RetirementReceipt {
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.transaction.retire", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        try Task.checkCancellation()
++        var value = try current(expected)
++        try authorizeRetirement(value, reason: reason)
++        value.retirement = Retirement(originalPhase: value.phase, originalRevision: value.revision,
++            originalRecordSHA256: expected.encodedSHA256, candidate: value.candidate,
++            reason: reason, initiatedAt: date, localCandidateRemoval: nil, completedAt: nil)
++        value.phase = .retirementPending
++        let pending = try advance(value, at: date)
++        return try finishRetirement(pending, at: date)
++    }
++
++    /// Actual recovery of the same pending CAS, not a caller-supplied safe Bool.
++    /// Also re-syncs a loaded tombstone before acknowledging it or admitting a
++    /// successor, including a previous rename whose directory fsync had failed.
++    func resumeRetirement(_ expected: Snapshot, at date: Date) throws -> RetirementReceipt {
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.transaction.retirement.resume", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        try Task.checkCancellation()
++        let value = try current(expected)
++        switch value.phase {
++        case .retirementPending: return try finishRetirement(expected, at: date)
++        case .retired: return try confirmRetirement(expected)
++        default: throw Failure.invalidTransition
++        }
++    }
++
++    private func authorizeRetirement(_ value: Record, reason: RetirementReason) throws {
++        guard value.retirement == nil, value.submission == nil, value.lookupReportedSameVersion == nil,
++              value.installedMaterial == nil, value.userDataHandoff == nil, value.userDataRead == nil,
++              value.revision < UInt64.max - 1 else { throw Failure.retirementNotAuthorized }
++        switch value.phase {
++        case .created, .signing:
++            guard value.candidate == nil, value.remoteHistory != .started,
++                  reason == .preparationFailed || reason == .preparationInterrupted else { throw Failure.retirementNotAuthorized }
++        case .candidateReady:
++            guard value.candidate != nil else { throw Failure.retirementNotAuthorized }
++            if value.remoteHistory == .neverStarted {
++                guard value.safePreSubmissionCleanup == nil,
++                      reason == .preparationFailed || reason == .supersededUnsubmittedCandidate else { throw Failure.retirementNotAuthorized }
++            } else {
++                guard value.remoteHistory == .started, value.safePreSubmissionCleanup != nil,
++                      reason == .authenticatedUploadCleanup else { throw Failure.retirementNotAuthorized }
++            }
++        default: throw Failure.retirementNotAuthorized
++        }
++    }
++
++    private func finishRetirement(_ expected: Snapshot, at date: Date) throws -> RetirementReceipt {
++        var value = try current(expected)
++        guard value.phase == .retirementPending, var retirement = value.retirement,
++              value.revision < UInt64.max, date.timeIntervalSinceReferenceDate.isFinite,
++              date >= value.updatedAt else { throw Failure.invalidTransition }
++        // No suspension or second owner queue. Only the fixed existing owned
++        // candidate name is touched; links, directories and foreign modes fail.
++        retirement.localCandidateRemoval = try removeOwnedCandidate()
++        retirement.completedAt = date
++        value.retirement = retirement; value.candidate = nil; value.phase = .retired
++        value.revision += 1; value.updatedAt = date
++        let retired = try publish(value, checksCancellation: false)
++        return try RetirementReceipt(retired)
++    }
++
++    private func confirmRetirement(_ expected: Snapshot) throws -> RetirementReceipt {
++        let value = try current(expected)
++        guard value.phase == .retired else { throw Failure.invalidTransition }
++        try requireCandidateAbsent()
++        guard fsync(directory) == 0 else { throw Failure.commitDurabilityUnknown }
++        return try RetirementReceipt(expected)
++    }
++
++    private func requireCandidateAbsent() throws {
++        var info = stat()
++        if fstatat(directory, "candidate.ipa", &info, AT_SYMLINK_NOFOLLOW) == 0 { throw Failure.invalidCandidate }
++        guard errno == ENOENT else { throw Failure.storageIO }
++    }
++
++    private func removeOwnedCandidate() throws -> LocalCandidateRemoval {
++        var info = stat()
++        let removal: LocalCandidateRemoval
++        if fstatat(directory, "candidate.ipa", &info, AT_SYMLINK_NOFOLLOW) == 0 {
++            guard info.st_mode & S_IFMT == S_IFREG, info.st_uid == getuid(), info.st_nlink == 1,
++                  info.st_mode & 0o077 == 0, info.st_size >= 0,
++                  info.st_size <= Limits.candidateBytes else { throw Failure.storageIO }
++            guard unlinkat(directory, "candidate.ipa", 0) == 0 else { throw Failure.storageIO }
++            removal = .removed
++        } else {
++            guard errno == ENOENT else { throw Failure.storageIO }
++            removal = .alreadyAbsent
++        }
++        // Sync even after ENOENT: a prior process may have died after unlink.
++        guard fsync(directory) == 0 else { throw Failure.commitDurabilityUnknown }
++        return removal
+     }
+ 
+     func beginSigning(_ expected: Snapshot, at date: Date) throws -> Snapshot {
+@@ -301,6 +495,7 @@
+               candidate.sha256 == intent.expectedArchiveSHA256, candidate.byteCount == intent.expectedArchiveBytes,
+               value.bundleIdentifier == intent.bundleIdentifier, value.bundleVersion == intent.bundleVersion else { throw Failure.invalidTransition }
+         value.submission = Submission(remotePackagePath: intent.remotePackagePath, deviceCertificateSHA256: intent.deviceCertificateSHA256)
++        value.remoteHistory = .started; value.safePreSubmissionCleanup = nil
+         value.phase = .uploadIntent
+         return try advance(value, at: date)
+     }
+@@ -432,6 +627,8 @@
+         switch grant.disposition {
+         case .safeBeforeSubmission:
+             guard outcome.removalVerified, outcome.lookup == nil, value.phase == .uploadIntent else { throw Failure.invalidTransition }
++            value.safePreSubmissionCleanup = try SafePreSubmissionCleanup(grant: grant, outcome: outcome, at: date)
++            value.remoteHistory = .started
+             value.phase = .candidateReady; value.submission = nil
+         case .reportedComplete:
+             guard outcome.removalVerified, outcome.lookup == nil, value.phase == .receiptObserved else { throw Failure.invalidTransition }
+@@ -487,6 +684,61 @@
+               !value.bundleVersion.isEmpty, value.bundleVersion.utf8.count <= 64,
+               value.createdAt.timeIntervalSinceReferenceDate.isFinite,
+               value.updatedAt.timeIntervalSinceReferenceDate.isFinite, value.updatedAt >= value.createdAt else { throw Failure.malformedRecord }
++        if let previous = value.previousRetirement {
++            guard previous.transactionID != value.id, previous.revision >= 2, previous.recordSHA256.count == 32,
++                  previous.retiredAt.timeIntervalSinceReferenceDate.isFinite,
++                  previous.retiredAt <= value.createdAt else { throw Failure.malformedRecord }
++        }
++        if value.remoteHistory == .neverStarted {
++            guard value.submission == nil, value.safePreSubmissionCleanup == nil,
++                  ![.uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase) else { throw Failure.malformedRecord }
++        }
++        if [.created, .signing].contains(value.phase), value.remoteHistory == .started { throw Failure.malformedRecord }
++        if let cleanup = value.safePreSubmissionCleanup {
++            guard let originalCandidate = value.retirement?.candidate ?? value.candidate,
++                  [.candidateReady, .retirementPending, .retired].contains(value.phase),
++                  value.remoteHistory == .started, cleanup.candidate == originalCandidate,
++                  cleanup.submission.deviceCertificateSHA256.count == 32,
++                  cleanup.completedAt.timeIntervalSinceReferenceDate.isFinite,
++                  cleanup.completedAt >= value.createdAt, cleanup.completedAt <= value.updatedAt,
++                  ["removedAcknowledged", "alreadyAbsentAcknowledged"].contains(cleanup.removal),
++                  value.submission == nil, value.lookupReportedSameVersion == nil else { throw Failure.malformedRecord }
++            do { try SelfRenewalInstallationRecovery.validateOwnedPath(cleanup.submission.remotePackagePath) }
++            catch { throw Failure.malformedRecord }
++        }
++        if value.phase == .candidateReady, value.remoteHistory == .started,
++           value.safePreSubmissionCleanup == nil { throw Failure.malformedRecord }
++        if let retirement = value.retirement {
++            guard [.retirementPending, .retired].contains(value.phase),
++                  retirement.originalRecordSHA256.count == 32,
++                  retirement.originalRevision < UInt64.max - 1,
++                  retirement.initiatedAt.timeIntervalSinceReferenceDate.isFinite,
++                  retirement.initiatedAt >= value.createdAt, retirement.initiatedAt <= value.updatedAt,
++                  value.submission == nil, value.lookupReportedSameVersion == nil,
++                  value.installedMaterial == nil, value.userDataHandoff == nil, value.userDataRead == nil else { throw Failure.malformedRecord }
++            if let candidate = retirement.candidate {
++                guard (1...Limits.candidateBytes).contains(candidate.byteCount), candidate.sha256.count == 32 else { throw Failure.malformedRecord }
++            }
++            // Re-run the same authorization against the committed original
++            // facts; no weak "safe" field or version observation is accepted.
++            var original = value
++            original.phase = retirement.originalPhase; original.candidate = retirement.candidate
++            original.revision = retirement.originalRevision; original.retirement = nil
++            do { try authorizeRetirement(original, reason: retirement.reason) }
++            catch { throw Failure.malformedRecord }
++            switch value.phase {
++            case .retirementPending:
++                guard value.revision == retirement.originalRevision + 1,
++                      value.candidate == retirement.candidate, value.updatedAt == retirement.initiatedAt,
++                      retirement.localCandidateRemoval == nil, retirement.completedAt == nil else { throw Failure.malformedRecord }
++            case .retired:
++                guard value.revision == retirement.originalRevision + 2, value.candidate == nil,
++                      retirement.localCandidateRemoval != nil, let completed = retirement.completedAt,
++                      completed.timeIntervalSinceReferenceDate.isFinite,
++                      completed >= retirement.initiatedAt, completed == value.updatedAt else { throw Failure.malformedRecord }
++            default: throw Failure.malformedRecord
++            }
++        } else if [.retirementPending, .retired].contains(value.phase) { throw Failure.malformedRecord }
+         if let candidate = value.candidate {
+             guard (1...Limits.candidateBytes).contains(candidate.byteCount), candidate.sha256.count == 32 else { throw Failure.malformedRecord }
+         }
+@@ -587,12 +839,15 @@
+             guard value.candidate != nil, value.submission != nil, value.lookupReportedSameVersion != nil else { throw Failure.malformedRecord }
+         case .attentionRequired:
+             guard value.lookupReportedSameVersion == nil || value.submission != nil else { throw Failure.malformedRecord }
+-        }
+-    }
+-    private func publish(_ record: Record) throws -> Snapshot {
++        case .retirementPending, .retired:
++            guard value.retirement != nil, value.submission == nil, value.lookupReportedSameVersion == nil else { throw Failure.malformedRecord }
++        }
++    }
++    private func publish(_ record: Record, checksCancellation: Bool = true) throws -> Snapshot {
+         let started = SourcePerfTrace.now
+         defer { SourcePerfTrace.record("renewal.transaction.commit", "phase=\(record.phase.rawValue) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+-        try Task.checkCancellation(); try validate(record)
++        if checksCancellation { try Task.checkCancellation() }
++        try validate(record)
+         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+         let raw = try encoder.encode(record)
+         guard raw.count <= Limits.recordBytes else { throw Failure.limit }
+@@ -604,9 +859,9 @@
+             if !closed { Darwin.close(descriptor) }
+             if unlinkat(directory, temporary, 0) != 0, errno != ENOENT { AppLogger.error("Owned renewal journal temporary cleanup failed") }
+         }
+-        try writeAll(raw, to: descriptor)
++        try writeAll(raw, to: descriptor, checksCancellation: checksCancellation)
+         guard fsync(descriptor) == 0 else { throw Failure.storageIO }
+-        try Task.checkCancellation()
++        if checksCancellation { try Task.checkCancellation() }
+         closed = true
+         guard Darwin.close(descriptor) == 0 else { throw Failure.storageIO }
+         try replaceOwned(temporary, named: "transaction.json")
+@@ -678,11 +933,11 @@
+               before.st_ctimespec.tv_nsec == after.st_ctimespec.tv_nsec else { throw Failure.storageIO }
+         return raw
+     }
+-    private func writeAll(_ raw: Data, to descriptor: Int32) throws {
++    private func writeAll(_ raw: Data, to descriptor: Int32, checksCancellation: Bool = true) throws {
+         try raw.withUnsafeBytes { buffer in
+             var offset = 0
+             while offset < buffer.count {
+-                try Task.checkCancellation()
++                if checksCancellation { try Task.checkCancellation() }
+                 let count = Darwin.write(descriptor, buffer.baseAddress!.advanced(by: offset), buffer.count - offset)
+                 guard count > 0 else { throw Failure.storageIO }
+                 offset += count

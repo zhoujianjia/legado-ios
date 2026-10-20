@@ -1,0 +1,114 @@
+--- fd0215dfba9a06741ca599299663844590d6bcbc:Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift
++++ work/SelfRenewalControlledRenewalCoordinator.swift
+@@ -22,12 +22,21 @@
+         let journalUpdateError: Error?
+         var mayHaveSubmittedUpgrade: Bool { persistedIntent != nil }
+     }
++    struct PreparationFailure: Error, @unchecked Sendable {
++        let underlying: Error
++        let lastAcknowledgedCheckpoint: Journal.Snapshot
++        let retirement: Journal.RetirementReceipt?
++        /// Original failure is never replaced by a cleanup/retirement error.
++        let retirementError: Error?
++        var wasCancelled: Bool { underlying is CancellationError }
++    }
+     enum Recovery: Sendable {
+         case noTransaction
+         case preparationInterrupted(Journal.Snapshot)
+         case candidateReady(Journal.Snapshot)
+         case remoteCleanup(Journal.Snapshot, SelfRenewalInstallationRecovery.Outcome)
+         case authenticatedLookup(Journal.Snapshot, Installer.LookupObservation)
++        case retiredUnsubmitted(Journal.RetirementReceipt)
+     }
+     struct TransportCompletion: Sendable {
+         let snapshot: Journal.Snapshot
+@@ -60,24 +69,55 @@
+             profileAnchors: originalProfileAnchors, at: lease.verifiedAt)
+         try await vault.validate(lease, for: original.application)
+         let target = try Self.target(original.application)
++        // Only after both the actual new input and its real lease/identity have
++        // passed. Existing unknown Upgrade/receipt/Lookup records are retained.
++        try await retirePreviousPreparationBeforeCreate()
+         let initial = try await journal.create(namespace: lease.namespace.id, generation: lease.generation,
+             originalSHA256: original.archiveSHA256, identitySHA256: Self.identityDigest(original.application),
+             bundleIdentifier: target.identifier, bundleVersion: target.build, at: clock())
+-        let signing = try await journal.beginSigning(initial, at: clock())
+-        let result = try await SelfRenewalControlledPackageSigner.resign(ipa: ipa, vault: vault, lease: lease,
+-            originalCodeAnchors: originalCodeAnchors, originalProfileAnchors: originalProfileAnchors)
+-        guard result.originalArchiveSHA256 == original.archiveSHA256,
+-              result.originalArchiveBytes == original.archiveBytes else { throw Failure.inputChanged }
+-        try await vault.validate(lease, for: result.signed)
+-        guard try Self.identityDigest(result.signed) == initial.record.identitySHA256 else { throw Failure.identityChanged }
+-        let archive = result.archive
+-        let input = Journal.ArchiveInput(byteCount: archive.byteCount, sha256: archive.sha256,
+-            read: { try await archive.read(at: $0, count: $1) })
+-        let ready = try await journal.storeCandidate(signing, archive: input, at: clock())
+-        // Re-read the actual persisted ZIP using the same extractor and complete
+-        // verifier before this coordinator can make it available for submission.
+-        _ = try await verifyCandidate(ready, lease: lease)
+-        return ready
++        var checkpoint = initial
++        do {
++            let signing = try await journal.beginSigning(initial, at: clock()); checkpoint = signing
++            let result = try await SelfRenewalControlledPackageSigner.resign(ipa: ipa, vault: vault, lease: lease,
++                originalCodeAnchors: originalCodeAnchors, originalProfileAnchors: originalProfileAnchors)
++            guard result.originalArchiveSHA256 == original.archiveSHA256,
++                  result.originalArchiveBytes == original.archiveBytes else { throw Failure.inputChanged }
++            try await vault.validate(lease, for: result.signed)
++            guard try Self.identityDigest(result.signed) == initial.record.identitySHA256 else { throw Failure.identityChanged }
++            let archive = result.archive
++            let input = Journal.ArchiveInput(byteCount: archive.byteCount, sha256: archive.sha256,
++                read: { try await archive.read(at: $0, count: $1) })
++            let ready = try await journal.storeCandidate(signing, archive: input, at: clock()); checkpoint = ready
++            // Actual persisted ZIP verification remains mandatory before submit.
++            _ = try await verifyCandidate(ready, lease: lease)
++            return ready
++        } catch {
++            let originalError = error
++            var retirement: Journal.RetirementReceipt?
++            var retirementError: Error?
++            do { retirement = try await journal.retireUnsubmitted(checkpoint, reason: .preparationFailed, at: clock()) }
++            catch { retirementError = error }
++            throw PreparationFailure(underlying: originalError, lastAcknowledgedCheckpoint: checkpoint,
++                retirement: retirement, retirementError: retirementError)
++        }
++    }
++
++    private func retirePreviousPreparationBeforeCreate() async throws {
++        guard let previous = try await journal.load() else { return }
++        switch previous.record.phase {
++        case .created, .signing:
++            _ = try await journal.retireUnsubmitted(previous, reason: .preparationInterrupted, at: clock())
++        case .candidateReady:
++            if previous.record.remoteHistory == .neverStarted {
++                _ = try await journal.retireUnsubmitted(previous, reason: .supersededUnsubmittedCandidate, at: clock())
++            } else if previous.record.remoteHistory == .started, previous.record.safePreSubmissionCleanup != nil {
++                _ = try await journal.retireUnsubmitted(previous, reason: .authenticatedUploadCleanup, at: clock())
++            } else { throw Journal.Failure.activeTransaction }
++        case .retirementPending, .retired:
++            _ = try await journal.resumeRetirement(previous, at: clock())
++        case .uploadIntent, .upgradeIntent, .receiptObserved, .installationUnknown, .lookupObserved, .attentionRequired:
++            throw Journal.Failure.activeTransaction
++        }
+     }
+ 
+     func submit(pairing: Transport.PairingIdentity, endpoint: Transport.Endpoint,
+@@ -138,10 +178,17 @@
+         busy = true; defer { busy = false }
+         guard let snapshot = try await journal.load() else { return .noTransaction }
+         switch snapshot.record.phase {
+-        case .created, .signing, .attentionRequired:
++        case .created, .signing:
++            return .retiredUnsubmitted(try await journal.retireUnsubmitted(snapshot, reason: .preparationInterrupted, at: clock()))
++        case .attentionRequired:
+             return .preparationInterrupted(snapshot)
+         case .candidateReady:
++            if snapshot.record.remoteHistory == .started, snapshot.record.safePreSubmissionCleanup != nil {
++                return .retiredUnsubmitted(try await journal.retireUnsubmitted(snapshot, reason: .authenticatedUploadCleanup, at: clock()))
++            }
+             return .candidateReady(snapshot)
++        case .retirementPending, .retired:
++            return .retiredUnsubmitted(try await journal.resumeRetirement(snapshot, at: clock()))
+         case .uploadIntent, .receiptObserved, .upgradeIntent, .installationUnknown, .lookupObserved:
+             guard let intent = snapshot.record.submission,
+                   Data(SHA256.hash(data: pairing.deviceCertificateDER)) == intent.deviceCertificateSHA256 else { throw Failure.wrongPeer }

@@ -632,13 +632,15 @@
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-controlled-transaction-step.json",
-            "docs/legado-ios/core-renewal-app-data-handoff-step.json"
+            "docs/legado-ios/core-renewal-app-data-handoff-step.json",
+            "docs/legado-ios/core-renewal-transaction-retirement-step.json"
           ],
           "implementedSubtasksZh": [
             "实际整包重签→持久候选全复验→上传前路径意图→首Upgrade字节前提交意图→真实回执/Lookup，已串同一Keychain租约/IPA提取器/认证客户端。单journal actor+进程flock、原子写及父目录fsync；重启清所属临时文件，清理grant跨网络排他。未知Upgrade只Lookup且保留远端文件；安全上传失败可新认证清理。16项原生方法含真实整包到受控TLS恢复，尚未SDK执行。",
-            "已把真实书架、书源和活动阅读进度保存回执接到首个Upgrade字节前的持久意图，并加入当前Bundle材料和原正常加载入口；27项新增定义待SDK。App启动协调器、自动观察、触发、冷启与完整数据保留仍未完成。"
+            "已把真实书架、书源和活动阅读进度保存回执接到首个Upgrade字节前的持久意图，并加入当前Bundle材料和原正常加载入口；27项新增定义待SDK。App启动协调器、自动观察、触发、冷启与完整数据保留仍未完成。",
+            "已接入同一持久 journal 的安全未提交事务退役：真实上传历史与认证清理回执授权、pending 后清理候选包并同步目录、重启续做及下一次 prepare；未知 Upgrade、安装回执和 Lookup 均保留。新增7项原生测试定义，SDK执行仍为0。"
           ],
-          "nextActionZh": "集中SDK执行16项及受影响既有链；继续真实当前Bundle签名材料冷启复核、原存储owner的可await实际失败回执/数据交接、安全事务退役/重试及App唯一入口，不能凭同版本Lookup或sentinel登记自动续签。"
+          "nextActionZh": "继续接通单一 App 生命周期 owner、材料配置与真实启动恢复；将退役7项、此前数据交接及受影响既有方法集中SDK检查。完成安装回执的下一轮策略、退避与系统允许触发仍未完成，不将局部清理或同版本Lookup登记为自动续签。"
         },
         {
           "id": "S6",
@@ -733,7 +735,8 @@
       "handoffRenewalSDKFirstResults": "docs/legado-ios/core-handoff-renewal-sdk-first-results.json",
       "cookieReadSDKCheckpoint": "docs/legado-ios/core-cookie-read-sdk-checkpoint.json",
       "cookieReadSDKRequest": "docs/legado-ios/core-cookie-read-sdk-request.json",
-      "cookieReadSDKCorrectedRequest": "docs/legado-ios/core-cookie-read-sdk-tag-correction.json"
+      "cookieReadSDKCorrectedRequest": "docs/legado-ios/core-cookie-read-sdk-tag-correction.json",
+      "unsubmittedTransactionRetirementImplementation": "docs/legado-ios/core-renewal-transaction-retirement-step.json"
     }
   },
   "stages": [
@@ -4768,6 +4771,10 @@
     "cookie-read-sdk-tag-correction": {
       "path": "docs/legado-ios/core-cookie-read-sdk-tag-correction.json",
       "scope": "Actual six-character source-tag validation failure retained; correct seven-character tag pushed for identical source. New run unobserved, SDK/Package acceptance zero."
+    },
+    "unsubmitted-transaction-retirement": {
+      "path": "docs/legado-ios/core-renewal-transaction-retirement-step.json",
+      "scope": "Actual journal/coordinator safe-unsubmitted retirement and recovery wiring, independently reviewed; seven native definitions, SDK execution zero. No submitted/completed retirement or App trigger acceptance."
     }
   },
   "retainedExistingWork": [

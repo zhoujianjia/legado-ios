@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-read-only-production-review",
+  "reviewer": "/root/implementation_checkpoint_result",
+  "observedAtUTC": "2026-10-20T06:16:37.744246+00:00",
+  "status": "no-confirmed-blocker-in-reviewed-source",
+  "confirmedBlockingFindings": [],
+  "sourceBinding": [
+    {
+      "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+      "bytes": 57818,
+      "sha256": "76ce3046a59b78211643839ee32a85c0cb5646b84aa2dc30f745a24019ec10dd"
+    },
+    {
+      "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 20220,
+      "sha256": "32cf95d2214906f20b8b48285175df214cb87ea5bffe76190c6806fce424f4cf"
+    },
+    {
+      "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionRetirementTests.swift",
+      "bytes": 23750,
+      "sha256": "723ac24f69be455cab98dafda1c93fed31db6d5c3c4c26992be469a334765fb5"
+    }
+  ],
+  "checks": [
+    {
+      "subject": "New actual remote history and old ambiguous ready state",
+      "conclusion": "create writes neverStarted. noteUploadIntent durably sets started and clears any older cleanup summary before the actual installer may create its remote file. Legacy candidateReady with missing history is denied retirement; nil submission alone is not negative remote-history proof. Legacy created/signing can retire only under the existing pre-upload phase invariant.",
+      "locations": [
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 318,
+          "entry": "func create("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 377,
+          "entry": "private func authorizeRetirement("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 492,
+          "entry": "func noteUploadIntent("
+        }
+      ]
+    },
+    {
+      "subject": "Only actual sealed pre-submission cleanup can authorize uploaded-candidate retirement",
+      "conclusion": "SafePreSubmissionCleanup has a fileprivate constructor requiring the live owner grant and actual Recovery.Outcome, matching grant/path/device/candidate/submission, actual removal, StopSession and released channels, with no Lookup. completeRemoteCleanup persists it in the same guarded commit; new upload clears it. Record validation binds its facts and phase before reuse.",
+      "locations": [
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 33,
+          "entry": "struct SafePreSubmissionCleanup"
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 619,
+          "entry": "func completeRemoteCleanup("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 681,
+          "entry": "private func validate("
+        }
+      ]
+    },
+    {
+      "subject": "Pending before destructive cleanup and crash recovery",
+      "conclusion": "retireUnsubmitted first publishes and directory-syncs retirementPending using the current raw-hash CAS. finishRetirement touches only the fixed owned candidate name, nofollow-checks file type/uid/nlink/mode/budget, unlinks and fsyncs the directory even on ENOENT, then publishes retired. Real failures retain old/pending state. Resume handles existing/absent candidate; confirmed tombstones recheck absence and re-sync before receipt or successor admission.",
+      "locations": [
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 348,
+          "entry": "func retireUnsubmitted("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 398,
+          "entry": "private func finishRetirement("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 427,
+          "entry": "private func removeOwnedCandidate("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 413,
+          "entry": "private func confirmRetirement("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 872,
+          "entry": "private func replaceOwned("
+        }
+      ]
+    },
+    {
+      "subject": "One owner, current CAS and lifecycle admission",
+      "conclusion": "Existing dedicated directory/flock lifetime, actor, streaming exclusion and active-cleanup exclusion remain in force. create accepts only no record plus no orphan candidate, or a confirmed retired record. Only one fixed-size previous-retirement commitment is stored. A second owner or stale snapshot cannot authorize cleanup or publication.",
+      "locations": [
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 263,
+          "entry": "nonisolated static func open("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 668,
+          "entry": "private func current("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 318,
+          "entry": "func create("
+        }
+      ]
+    },
+    {
+      "subject": "Cancellation and failure preservation",
+      "conclusion": "Cancellation is checked before retirement admission and pending publication. Once pending is acknowledged, the synchronous no-await cleanup/tombstone commit intentionally drains without cancellation checks. Actual IO/fsync failures are still thrown. Coordinator PreparationFailure preserves the original error and separately reports retirement success/error; unknown post-rename publication remains reload-only.",
+      "locations": [
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 348,
+          "entry": "func retireUnsubmitted("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 398,
+          "entry": "private func finishRetirement("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 846,
+          "entry": "private func publish("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalControlledRenewalCoordinator.swift",
+          "line": 25,
+          "entry": "struct PreparationFailure"
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalControlledRenewalCoordinator.swift",
+          "line": 78,
+          "entry": "var checkpoint = initial"
+        }
+      ]
+    },
+    {
+      "subject": "No uncertain Upgrade/receipt/Lookup resubmission",
+      "conclusion": "Retirement authorizer and prepare switch reject uploadIntent, upgradeIntent, installationUnknown, receiptObserved, lookupObserved and attentionRequired. Recovery keeps those submitted/uncertain states on existing authenticated cleanup/Lookup paths; a Lookup result never creates safe pre-submission cleanup or a new candidate. Only provably unsubmitted or genuinely pre-submission-cleaned candidates are retired.",
+      "locations": [
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalControlledRenewalCoordinator.swift",
+          "line": 105,
+          "entry": "private func retirePreviousPreparationBeforeCreate("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalControlledRenewalCoordinator.swift",
+          "line": 175,
+          "entry": "func recover("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 596,
+          "entry": "func acquireRemoteCleanup("
+        },
+        {
+          "path": ".build/renewal-discovery/transaction-retirement-step/work/SelfRenewalTransactionJournal.swift",
+          "line": 377,
+          "entry": "private func authorizeRetirement("
+        }
+      ]
+    },
+    {
+      "subject": "API and source integration review",
+      "conclusion": "Necessary canonical recovery/installer APIs match actual private Outcome and owner grant types. No other exhaustive production Phase switch was found outside the two changed modules. New optional Codable record fields preserve old missing-history decoding; new APIs do not add a second store, lock, signer or install transport.",
+      "dependencies": [
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift",
+          "bytes": 12137,
+          "sha256": "038e79c42b6305bf6c06a173bd08c78a968d068c36ccf5f0d25f627a4c71389c"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+          "bytes": 27643,
+          "sha256": "6687c3d884e12da4a8b758359f3219de42d8c94dacbcb373c34da0df15141e2e"
+        }
+      ]
+    }
+  ],
+  "preparedSDKDefinitions": {
+    "suite": "SelfRenewalTransactionRetirementTests",
+    "methods": [
+      "retiresNeverUploadedCandidateAndCreatesOneBoundedSuccessor",
+      "preservesLegacyReadyWithUnknownRemoteHistory",
+      "resumesActualPendingCandidateRemovalWindows",
+      "retainsCheckpointOnWriteFailureAndCancelledRetirement",
+      "nextActualPreparationRetiresOnlyProvenUnsubmittedCandidate",
+      "retiresAuthenticatedCleanupAfterRealUploadInterruptionAndReopen",
+      "preservesActualSubmittedReceiptAndLookupWithoutAutomaticResubmission"
+    ],
+    "count": 7,
+    "executed": 0,
+    "grammarEvidence": {
+      "path": ".build/renewal-discovery/transaction-retirement-step/grammar-v1.json",
+      "bytes": 975,
+      "sha256": "2c72a99f9a9642dd315e6a18de91413b7e868a08af962623d006c9e6200aa20b"
+    }
+  },
+  "limitations": [
+    "Static source/API and fixture-definition review only; no Swift SDK typecheck, XCTest or actual retirement execution was run by reviewer.",
+    "The owned reopen cases are definitions of before/after unlink/fsync states, not power-loss or filesystem-durability measurements.",
+    "This step only retires unsubmitted transactions. A completed receipt remains retained and does not yet implement a subsequent automatic renewal cycle, installed-profile proof, cold launch or complete data retention.",
+    "Journal integrity is relative to the private module-owned directory, cooperating flock owners and strict CAS. It is not cryptographic attestation against a same-UID adversary rewriting all owned storage.",
+    "No production routing, user/account/private IPA data, canonical files, Git or cloud tasks were changed or accessed."
+  ],
+  "reviewerActions": {
+    "newTestsRun": 0,
+    "SDKMethodsExecuted": 0,
+    "cloudQueries": 0,
+    "gitOperations": 0,
+    "canonicalEdits": 0
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "baseSourceCommit": "fd0215dfba9a06741ca599299663844590d6bcbc",
+  "productionSources": [
+    {
+      "canonicalPath": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "fixedBaseCommit": "fd0215dfba9a06741ca599299663844590d6bcbc",
+      "originalBytes": 42289,
+      "originalSHA256": "db70372fe0a2ca6083d350cd07846fd9431406899e1a22c414cb6f16058a7ecc",
+      "workBytes": 57818,
+      "workSHA256": "76ce3046a59b78211643839ee32a85c0cb5646b84aa2dc30f745a24019ec10dd"
+    },
+    {
+      "canonicalPath": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "fixedBaseCommit": "fd0215dfba9a06741ca599299663844590d6bcbc",
+      "originalBytes": 17307,
+      "originalSHA256": "92dce2dc1f8154a506c3dd107fadd68a63b0369481d20217a9eaf2f1903538f5",
+      "workBytes": 20220,
+      "workSHA256": "32cf95d2214906f20b8b48285175df214cb87ea5bffe76190c6806fce424f4cf"
+    }
+  ],
+  "suite": "SelfRenewalTransactionRetirementTests",
+  "definedMethods": [
+    "retiresNeverUploadedCandidateAndCreatesOneBoundedSuccessor",
+    "preservesLegacyReadyWithUnknownRemoteHistory",
+    "resumesActualPendingCandidateRemovalWindows",
+    "retainsCheckpointOnWriteFailureAndCancelledRetirement",
+    "nextActualPreparationRetiresOnlyProvenUnsubmittedCandidate",
+    "retiresAuthenticatedCleanupAfterRealUploadInterruptionAndReopen",
+    "preservesActualSubmittedReceiptAndLookupWithoutAutomaticResubmission"
+  ],
+  "definedMethodCount": 7,
+  "SDKExecutedMethods": 0,
+  "phasePolicy": {
+    "created/signing": "Retire local preparation using actual owner CAS; legacy nil history allowed only here.",
+    "candidateReady+neverStarted": "Only new actual create can write this negative history; safe local retirement/replacement.",
+    "legacy candidateReady+nil": "Retain; empty path is not negative history proof.",
+    "candidateReady+started": "Requires actual sealed pre-submission Remove and StopSession summary written in the same cleanup commit.",
+    "uploadIntent": "Fresh authenticated cleanup first; never direct retirement.",
+    "upgradeIntent/installationUnknown/lookupObserved/receiptObserved/attentionRequired": "Retain; no automatic retirement or another preparation, regardless of same-version/not-found Lookup.",
+    "retirementPending": "No new create until actual fixed-name owned cleanup + directory fsync + retired publication.",
+    "retired": "Confirm actual candidate absence and directory fsync; next create keeps one predecessor id/raw hash."
+  },
+  "cancellation": "Before pending admission and before resume: throw CancellationError without mutation. After pending commit: synchronous admitted cleanup/terminal publication ignores subsequent task cancellation; actual I/O failure retains pending for a new task. New create still checks cancellation at publication.",
+  "clock": "No scheduler, retry time, deadline or backoff is introduced. Journal dates must be finite/nondecreasing; predecessor date must not follow a new record creation date.",
+  "fixtureLimits": [
+    "Pending/unlinked/synced states use actual owned file operations and reopen. They are not OS termination or power-loss experiments.",
+    "No hardware fsync-failure injection or actual Swift execution occurs on Windows.",
+    "Owned package/CMS/TLS fixtures establish no Apple/device/install/cold-launch/user-data authority."
+  ]
+}
