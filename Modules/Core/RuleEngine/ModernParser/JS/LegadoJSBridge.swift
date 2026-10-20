@@ -248,26 +248,28 @@ struct LegadoHTTPResult {
 }
 
 @objc class LegadoCookieBridge: NSObject, LegadoCookieBridgeExport {
+    private let store: CookieStore
+    init(store: CookieStore = .shared) { self.store = store; super.init() }
 
     func get(_ url: String) -> String {
-        CookieStore.shared.get(url: url)
+        store.get(url: url)
     }
 
     /// Legado `cookie.getKey(tag, key)` — value of a single cookie for a domain/URL.
     func getKey(_ url: String, _ key: String) -> String {
-        CookieStore.shared.getKey(url: url, key: key)
+        store.getKey(url: url, key: key)
     }
 
     func getCookie(_ url: String) -> String {
-        CookieStore.shared.get(url: url)
+        store.get(url: url)
     }
 
     func set(_ url: String, _ cookie: String) {
-        CookieStore.shared.set(url: url, cookie: cookie)
+        store.set(url: url, cookie: cookie)
     }
 
     func setCookie(_ url: String, _ cookie: String) {
-        CookieStore.shared.set(url: url, cookie: cookie)
+        store.set(url: url, cookie: cookie)
     }
 
     /// Legado `cookie.replaceCookie(url, cookie)` — merge these key=value pairs over
@@ -276,15 +278,15 @@ struct LegadoHTTPResult {
     /// name threw. 同人小说网's 段评 mints a `_csrfToken` with it when 起点 has not set
     /// one yet, and the throw landed in the rule's own catch → no 段评, no message.
     func replaceCookie(_ url: String, _ cookie: String) {
-        CookieStore.shared.set(url: url, cookie: cookie)
+        store.set(url: url, cookie: cookie)
     }
 
     func remove(_ url: String) {
-        CookieStore.shared.remove(url: url)
+        store.remove(url: url)
     }
 
     func removeCookie(_ url: String) {
-        CookieStore.shared.remove(url: url)
+        store.remove(url: url)
     }
 }
 
@@ -1008,7 +1010,8 @@ struct LegadoHTTPResult {
 
     /// Legado `java.startBrowser(url, title, html)`: `html` is shown with `url` as its base.
     func startBrowser(_ url: String, _ title: String, _ html: String?) {
-        browserPresenter?(browserRequest(url: url, title: title, awaitsResult: false, html: html)) { _ in }
+        guard let request = browserRequest(url: url, title: title, awaitsResult: false, html: html) else { return }
+        browserPresenter?(request) { _ in }
     }
 
     /// Legado `java.startBrowserAwait(url, title)`: `refetchAfterSuccess` defaults to true.
@@ -1054,7 +1057,10 @@ struct LegadoHTTPResult {
             AppLogger.parse("startBrowserAwait called on the main thread", context: ["url": String(url.prefix(200))])
             return throwBrowserCancelled(url: url)
         }
-        let request = browserRequest(url: url, title: title, awaitsResult: true, html: html)
+        guard let request = browserRequest(url: url, title: title, awaitsResult: true, html: html) else {
+            // sourceBrowserRequest already raised the typed owner error into JS.
+            return LegadoStrResponse(url: url, body: "")
+        }
         guard let body = waitForUser({ presenter(request, $0) }) else {
             return throwBrowserCancelled(url: url)
         }
@@ -1066,11 +1072,14 @@ struct LegadoHTTPResult {
 
     private func browserRequest(
         url: String, title: String, awaitsResult: Bool, html: String? = nil
-    ) -> SourceBrowserRequest {
-        SourceBrowserRequest(
+    ) -> SourceBrowserRequest? {
+        let prepared = sourceBrowserRequest(urlString: url)
+        if let scheme = URL(string: AnalyzeUrl.stripOptions(from: url))?.scheme?.lowercased(),
+           ["http", "https"].contains(scheme), prepared == nil { return nil }
+        return SourceBrowserRequest(
             url: url,
             title: title,
-            urlRequest: sourceBrowserRequest(urlString: url),
+            urlRequest: prepared,
             awaitsResult: awaitsResult,
             html: html
         )
@@ -1088,10 +1097,11 @@ struct LegadoHTTPResult {
             AppLogger.parse("getVerificationCode called on the main thread", context: ["url": String(imageUrl.prefix(200))])
             return throwIntoScript("getVerificationCode: called on the main thread")
         }
+        guard let prepared = sourceBrowserRequest(urlString: imageUrl) else { return "" }
         let identity = sourceIdentityProvider?() ?? (name: "", url: "")
         let request = SourceCaptchaRequest(
             imageURL: imageUrl,
-            headers: sourceBrowserRequest(urlString: imageUrl)?.allHTTPHeaderFields ?? [:],
+            headers: prepared.allHTTPHeaderFields ?? [:],
             sourceName: identity.name,
             sourceURL: identity.url
         )
@@ -1104,7 +1114,14 @@ struct LegadoHTTPResult {
     /// The request a source's page opens with, as Legado's `WebViewModel` builds it: the
     /// URL's own `,{"headers":…}` options, then the source's headers and login headers (the
     /// same set `java.ajax` sends), then the cookie jar. nil for anything but http(s).
-    func sourceBrowserRequest(urlString: String) -> URLRequest? {
+    func sourceBrowserRequest(urlString: String, cookieOwner: CookieStore = .shared) -> URLRequest? {
+        do { return try prepareSourceBrowserRequest(urlString: urlString, cookieOwner: cookieOwner) }
+        catch { CookieStore.raiseScriptError(error); return nil }
+    }
+
+    /// Native async entry points carry owner failure through SourceScriptThread,
+    /// rather than treating nil as permission to open an unauthenticated URL.
+    func prepareSourceBrowserRequest(urlString: String, cookieOwner: CookieStore = .shared) throws -> URLRequest? {
         let trimmed = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         let address = AnalyzeUrl.stripOptions(from: trimmed)
         guard let url = URL(string: address),
@@ -1120,8 +1137,8 @@ struct LegadoHTTPResult {
             request.setValue(value, forHTTPHeaderField: key)
         }
         if request.value(forHTTPHeaderField: "Cookie") == nil {
-            let jar = CookieStore.shared.get(url: url.absoluteString)
-            if !jar.isEmpty { request.setValue(jar, forHTTPHeaderField: "Cookie") }
+            let jar = try cookieOwner.blocking { try await cookieOwner.requestHeader(url: url) }
+            if let jar { request.setValue(jar, forHTTPHeaderField: "Cookie") }
         }
         return request
     }
@@ -1827,7 +1844,8 @@ struct LegadoHTTPResult {
     /// Opens a URL in browser without returning body. Only a runtime that presents its own
     /// pages (段評 capture) shows it; it does not fall back to `sharedBrowserPresenter`.
     func showBrowser(_ url: String, _ title: String) {
-        browserPresentHandler?(browserRequest(url: url, title: title, awaitsResult: false)) { _ in }
+        guard let request = browserRequest(url: url, title: title, awaitsResult: false) else { return }
+        browserPresentHandler?(request) { _ in }
     }
 
     func showReadingBrowser(_ url: String, _ title: String) {
@@ -1934,12 +1952,13 @@ struct LegadoHTTPResult {
         let sem = DispatchSemaphore(value: 0)
         let box = WebViewResultBox()
         Task { @MainActor in
-            box.value = await LegadoHeadlessWebView.run(
+            do { box.value = try await LegadoHeadlessWebView.run(
                 html: htmlArg, url: urlArg, js: jsArg, userAgent: ua, timeout: 30
-            )
+            ) } catch { box.error = error }
             sem.signal()
         }
         _ = sem.wait(timeout: .now() + 35)
+        if let error = box.error { CookieStore.raiseScriptError(error) }
         return box.value
     }
 
@@ -1987,7 +2006,7 @@ struct LegadoHTTPResult {
         let sem = DispatchSemaphore(value: 0)
         let box = WebViewResultBox()
         Task { @MainActor in
-            box.value = await LegadoHeadlessWebView.run(
+            do { box.value = try await LegadoHeadlessWebView.run(
                 html: htmlArg,
                 url: urlArg,
                 js: jsArg,
@@ -1995,10 +2014,11 @@ struct LegadoHTTPResult {
                 timeout: 30,
                 sourceRegex: sourceRegex,
                 overrideURLRegex: overrideURLRegex
-            )
+            ) } catch { box.error = error }
             sem.signal()
         }
         _ = sem.wait(timeout: .now() + 35)
+        if let error = box.error { CookieStore.raiseScriptError(error) }
         return box.value
     }
 
@@ -2097,17 +2117,7 @@ struct LegadoHTTPResult {
             return handler(request) ?? .bodyOnly(request: request, body: "")
         }
 
-        var responseResult: LegadoHTTPResult?
-        let semaphore = DispatchSemaphore(value: 0)
-        let task = Self.requestSession.dataTask(with: request) { data, response, _ in
-            defer { semaphore.signal() }
-            responseResult = LegadoHTTPResult.make(request: request, data: data, response: response)
-        }
-        task.resume()
-        if semaphore.wait(timeout: .now() + timeoutSeconds) == .timedOut {
-            task.cancel()
-        }
-        return responseResult ?? .bodyOnly(request: request, body: "")
+        return performOwnedHTTPRequest(request, timeout: timeoutSeconds)
     }
 
     private func performSimpleRequest(
@@ -2142,17 +2152,7 @@ struct LegadoHTTPResult {
             return handler(request) ?? .bodyOnly(request: request, body: "")
         }
 
-        var responseResult: LegadoHTTPResult?
-        let semaphore = DispatchSemaphore(value: 0)
-        let task = Self.requestSession.dataTask(with: request) { data, response, _ in
-            defer { semaphore.signal() }
-            responseResult = LegadoHTTPResult.make(request: request, data: data, response: response)
-        }
-        task.resume()
-        if semaphore.wait(timeout: .now() + timeoutSeconds) == .timedOut {
-            task.cancel()
-        }
-        return responseResult ?? .bodyOnly(request: request, body: "")
+        return performOwnedHTTPRequest(request, timeout: timeoutSeconds)
     }
 
     /// Synchronous HTTP POST used by `java.post`. Blocks the calling (JS serial queue) thread.
@@ -2186,15 +2186,7 @@ struct LegadoHTTPResult {
             )
         }
 
-        var responseResult: LegadoHTTPResult?
-        let semaphore = DispatchSemaphore(value: 0)
-        let task = Self.requestSession.dataTask(with: request) { data, response, _ in
-            defer { semaphore.signal() }
-            responseResult = LegadoHTTPResult.make(request: request, data: data, response: response)
-        }
-        task.resume()
-        _ = semaphore.wait(timeout: .now() + timeoutSeconds)
-        return LegadoStrResponse(result: responseResult ?? .bodyOnly(request: request, body: ""))
+        return LegadoStrResponse(result: performOwnedHTTPRequest(request, timeout: timeoutSeconds))
     }
 
     private func performRequest(_ urlStr: String) -> String {
@@ -2244,21 +2236,22 @@ struct LegadoHTTPResult {
         // Apply book source headers (may override User-Agent)
         sourceHeaders.forEach { request.setValue($1, forHTTPHeaderField: $0) }
 
-        var responseResult: LegadoHTTPResult?
-        let semaphore = DispatchSemaphore(value: 0)
+        // Preserve status/body/charset, while the existing HTTP pool delegates
+        // every redirect and final Cookie update to the same durable owner.
+        return performOwnedHTTPRequest(request, timeout: requestTimeoutSeconds)
+    }
 
-        // The response goes back to the source as it came — a Cloudflare challenge page
-        // included, as in Legado. A source whose site is protected checks the body itself
-        // and calls `java.startBrowserAwait`; blanking the page here hid it from that check.
-        let task = Self.requestSession.dataTask(with: request) { data, response, _ in
-            if let data {
-                responseResult = LegadoHTTPResult.make(request: request, data: data, response: response)
-            }
-            semaphore.signal()
+    private func performOwnedHTTPRequest(_ request: URLRequest, timeout: TimeInterval) -> LegadoHTTPResult {
+        do {
+            let (data, response) = try CookieStore.shared.dataForScript(request: request, session: Self.requestSession, timeout: timeout)
+            return .make(request: request, data: data, response: response)
+        } catch let error as CookieOwnerError {
+            CookieStore.raiseScriptError(error)
+            return .bodyOnly(request: request, body: "")
+        } catch {
+            AppLogger.error("Source HTTP did not complete", error: error)
+            return .bodyOnly(request: request, body: "")
         }
-        task.resume()
-        _ = semaphore.wait(timeout: .now() + requestTimeoutSeconds)
-        return responseResult ?? .bodyOnly(request: request, body: "")
     }
 
     /// Charset-aware string decoding for `java.ajax` / `java.post` responses.
@@ -2425,5 +2418,15 @@ final class BrowserAwaitBox {
 /// MainActor → JS-queue boundary. Safe because access is serialized by the
 /// DispatchSemaphore (write-before-signal, read-after-wait).
 final class WebViewResultBox: @unchecked Sendable {
-    var value: String = ""
+    private let lock = NSLock()
+    private var storedValue = ""
+    private var storedError: Error?
+    var value: String {
+        get { lock.withLock { storedValue } }
+        set { lock.withLock { storedValue = newValue } }
+    }
+    var error: Error? {
+        get { lock.withLock { storedError } }
+        set { lock.withLock { storedError = newValue } }
+    }
 }

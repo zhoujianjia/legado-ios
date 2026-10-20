@@ -10,11 +10,15 @@ import WebKit
 @MainActor
 final class WebViewNavigationWait {
     private var continuation: CheckedContinuation<String, Error>?
+    private(set) var cookieCancellation = OriginalRuntimeCommitCancellation()
+    var navigation: WKNavigation?
 
     var isWaiting: Bool { continuation != nil }
 
     func value(start: @MainActor () -> Void) async throws -> String {
-        try await withTaskCancellationHandler {
+        cookieCancellation = OriginalRuntimeCommitCancellation()
+        let cancellation = cookieCancellation
+        return try await withTaskCancellationHandler {
             try Task.checkCancellation()
             return try await withCheckedThrowingContinuation { continuation in
                 if Task.isCancelled {
@@ -26,6 +30,7 @@ final class WebViewNavigationWait {
                 start()
             }
         } onCancel: {
+            cancellation.cancel()
             Task { @MainActor [weak self] in
                 self?.cancel()
             }
@@ -35,16 +40,19 @@ final class WebViewNavigationWait {
     func resume(returning value: String) {
         guard let continuation else { return }
         self.continuation = nil
+        cookieCancellation.cancel()
         continuation.resume(returning: value)
     }
 
     func resume(throwing error: Error) {
         guard let continuation else { return }
         self.continuation = nil
+        cookieCancellation.cancel()
         continuation.resume(throwing: error)
     }
 
     func cancel() {
+        cookieCancellation.cancel()
         resume(throwing: CancellationError())
     }
 }
@@ -105,7 +113,11 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
 
     /// WebView instance pool (reused to avoid repeated creation costs)
     private var pool: [WKWebView] = []
-    private let poolSize = AppConfig.webViewPoolSize
+    private let poolSize: Int
+    private let cookieOwner: CookieStore
+    private let websiteDataStore: WKWebsiteDataStore
+    /// Fault injection at the real async delegate boundary; production leaves it nil.
+    private let afterResponseCookieCommit: (@MainActor () async throws -> Void)?
     private var waiters: [WebViewLeaseWait] = []
     /// Currently active (checked out but not yet returned) WebView count, including temporaries
     private var activeCount: Int = 0
@@ -116,8 +128,15 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
     /// In-flight loading tasks
     private var loadingMap: [WKWebView: WebViewNavigationWait] = [:]
 
-    private override init() {
+    init(cookieOwner: CookieStore = .shared, poolSize: Int = AppConfig.webViewPoolSize,
+         websiteDataStore: WKWebsiteDataStore = .default(),
+         afterResponseCookieCommit: (@MainActor () async throws -> Void)? = nil) {
         assert(Thread.isMainThread, "WebViewFetcher must be initialized on the main thread")
+        precondition(poolSize > 0 && poolSize <= AppConfig.webViewPoolSize)
+        self.cookieOwner = cookieOwner
+        self.poolSize = poolSize
+        self.websiteDataStore = websiteDataStore
+        self.afterResponseCookieCommit = afterResponseCookieCommit
         super.init()
         // Pre-populate the WebView pool
         for _ in 0..<poolSize {
@@ -127,7 +146,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
 
     private func createWebView() -> WKWebView {
         let config = WKWebViewConfiguration()
-        config.websiteDataStore = .default()
+        config.websiteDataStore = websiteDataStore
         let prefs = WKWebpagePreferences()
         prefs.allowsContentJavaScript = true
         config.defaultWebpagePreferences = prefs
@@ -196,7 +215,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
 
         defer { releaseWebView(webView) }
 
-        let request = await prepareRequest(
+        let request = try await prepareRequest(
             url: url,
             headers: headers,
             timeout: timeout,
@@ -251,7 +270,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         let webView = try await acquireWebView()
         defer { releaseWebView(webView) }
 
-        let request = await prepareRequest(
+        let request = try await prepareRequest(
             url: url,
             headers: headers,
             timeout: timeout,
@@ -332,7 +351,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         let webView = try await acquireWebView()
         defer { releaseWebView(webView) }
 
-        let request = await prepareRequest(
+        let request = try await prepareRequest(
             url: url,
             headers: headers,
             timeout: timeout,
@@ -495,7 +514,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         let webView = try await acquireWebView()
         defer { releaseWebView(webView) }
 
-        let request = await prepareRequest(
+        let request = try await prepareRequest(
             url: url,
             headers: headers,
             timeout: timeout,
@@ -547,7 +566,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         let webView = try await acquireWebView()
         defer { releaseWebView(webView) }
 
-        let request = await prepareRequest(
+        let request = try await prepareRequest(
             url: url,
             headers: headers,
             timeout: timeout,
@@ -678,7 +697,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
 
     private func waitForNavigation(
         in webView: WKWebView,
-        start: @MainActor () -> Void
+        start: @MainActor () -> WKNavigation?
     ) async throws {
         let wait = WebViewNavigationWait()
         loadingMap[webView]?.cancel()
@@ -688,7 +707,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
                 loadingMap.removeValue(forKey: webView)
             }
         }
-        _ = try await wait.value(start: start)
+        _ = try await wait.value { wait.navigation = start() }
     }
 
     private func prepareRequest(
@@ -696,8 +715,8 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         headers: [String: String],
         timeout: TimeInterval,
         webView: WKWebView
-    ) async -> URLRequest {
-        await syncCookiesToWebView(webView, for: url)
+    ) async throws -> URLRequest {
+        try await syncCookiesToWebView(webView, for: url)
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: timeout)
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
@@ -705,16 +724,15 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
             request.setValue(v, forHTTPHeaderField: k)
         }
         if request.value(forHTTPHeaderField: "Cookie") == nil,
-            let cookieHeader = cookieHeader(for: url)
+            let cookieHeader = try await cookieOwner.requestHeader(url: url)
         {
             request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
         }
         return request
     }
 
-    private func syncCookiesToWebView(_ webView: WKWebView, for url: URL) async {
-        let sharedCookies = HTTPCookieStorage.shared.cookies(for: url) ?? []
-        guard !sharedCookies.isEmpty else { return }
+    private func syncCookiesToWebView(_ webView: WKWebView, for url: URL) async throws {
+        let sharedCookies = try await cookieOwner.nativeCookies(url: url)
         let store = webView.configuration.websiteDataStore.httpCookieStore
         for cookie in sharedCookies {
             await withCheckedContinuation { continuation in
@@ -723,12 +741,7 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
                 }
             }
         }
-    }
-
-    private func cookieHeader(for url: URL) -> String? {
-        let cookies = HTTPCookieStorage.shared.cookies(for: url) ?? []
-        guard !cookies.isEmpty else { return nil }
-        return HTTPCookie.requestHeaderFields(with: cookies)["Cookie"]
+        _ = try await cookieOwner.captureWebKit(store, requireCurrent: false)
     }
 
     private func acquireWebView() async throws -> WKWebView {
@@ -792,7 +805,9 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
 
     nonisolated func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         Task { @MainActor in
-            loadingMap.removeValue(forKey: webView)?.resume(returning: "loaded")
+            guard let wait = loadingMap[webView], let navigation, wait.navigation === navigation else { return }
+            loadingMap.removeValue(forKey: webView)
+            wait.resume(returning: "loaded")
         }
     }
 
@@ -800,7 +815,9 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         _ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error
     ) {
         Task { @MainActor in
-            loadingMap.removeValue(forKey: webView)?.resume(throwing: error)
+            guard let wait = loadingMap[webView], let navigation, wait.navigation === navigation else { return }
+            loadingMap.removeValue(forKey: webView)
+            wait.resume(throwing: error)
         }
     }
 
@@ -809,7 +826,9 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         withError error: Error
     ) {
         Task { @MainActor in
-            loadingMap.removeValue(forKey: webView)?.resume(throwing: error)
+            guard let wait = loadingMap[webView], let navigation, wait.navigation === navigation else { return }
+            loadingMap.removeValue(forKey: webView)
+            wait.resume(throwing: error)
         }
     }
 
@@ -824,17 +843,30 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         {
             let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
             if !cookies.isEmpty {
+                guard let wait = loadingMap[webView], wait.isWaiting else { decisionHandler(.cancel); return }
+                let cancellation = wait.cookieCancellation
                 Task { @MainActor in
-                    let store = webView.configuration.websiteDataStore.httpCookieStore
-                    for cookie in cookies {
-                        HTTPCookieStorage.shared.setCookie(cookie)
-                        await withCheckedContinuation { continuation in
-                            store.setCookie(cookie) {
-                                continuation.resume()
-                            }
+                    do {
+                        guard self.loadingMap[webView] === wait, wait.isWaiting else { throw CancellationError() }
+                        try await self.cookieOwner.ingest(cookies, provenance: .httpResponse, originURL: url) {
+                            try cancellation.check(deadline: .distantFuture)
                         }
+                        if let afterCommit = self.afterResponseCookieCommit { try await afterCommit() }
+                        guard self.loadingMap[webView] === wait, wait.isWaiting else { decisionHandler(.cancel); return }
+                        // WebKit owns its response-cookie application. Re-enqueueing
+                        // setCookie here would let this old async task write a
+                        // cookie after the pooled view has been returned/reused.
+                        decisionHandler(.allow)
+                    } catch {
+                        if self.loadingMap[webView] === wait {
+                            self.loadingMap.removeValue(forKey: webView)
+                            wait.resume(throwing: error)
+                            webView.stopLoading()
+                        }
+                        decisionHandler(.cancel)
                     }
                 }
+                return
             }
         }
         decisionHandler(.allow)

@@ -339,10 +339,10 @@ struct BookSourceFormLoginView: View {
 
     /// The one login engine: a `JSCoreEngine` wired to the source's runtime (jsLib,
     /// java.* handlers, localStorage-equivalent store) with toasts presented as alerts.
-    nonisolated static func makeLoginEngine(source: BookSource) -> JSCoreEngine {
+    nonisolated static func makeLoginEngine(source: BookSource, loginOwner: LoginManager = .shared) -> JSCoreEngine {
         let engine = JSCoreEngine()
         engine.bookSource = source
-        configureLegadoRuntime(engine, source: source)
+        configureLegadoRuntime(engine, source: source, loginOwner: loginOwner)
         engine.toastHandler = { msg in
             Task { @MainActor in BookSourceFormLoginView.presentToastAlert(message: msg) }
         }
@@ -580,7 +580,7 @@ struct BookSourceFormLoginView: View {
             let lastError: String? = await SourceScriptThread.run {
                 let engine = JSCoreEngine()
                 engine.bookSource = source
-                Self.configureLegadoRuntime(engine, source: source)
+                Self.configureLegadoRuntime(engine, source: source, loginOwner: .shared)
 
                 // java.startBrowser / java.startBrowserAwait open through
                 // `SourceBrowserPresenter`, the same as from any other script.
@@ -766,7 +766,7 @@ struct BookSourceFormLoginView: View {
         var fired = false
     }
 
-    nonisolated private static func configureLegadoRuntime(_ engine: JSCoreEngine, source: BookSource) {
+    nonisolated private static func configureLegadoRuntime(_ engine: JSCoreEngine, source: BookSource, loginOwner: LoginManager) {
         let sourceUrl = source.bookSourceUrl
         let runtimeStore = BookSourceRuntimeStateStore.shared
         let ruleData = BookSourceRuleData(source: source)
@@ -792,21 +792,21 @@ struct BookSourceFormLoginView: View {
             runtimeStore.setSourceValue(value, for: sourceUrl, key: key)
         }
         engine.sourceBridge.getLoginInfoHandler = {
-            LoginManager.shared.getLoginInfo(sourceUrl: sourceUrl).flatMap { info in
+            loginOwner.getLoginInfo(sourceUrl: sourceUrl).flatMap { info in
                 guard let data = try? JSONSerialization.data(withJSONObject: info) else { return nil }
                 return String(data: data, encoding: .utf8)
             }
         }
         engine.sourceBridge.getLoginInfoMapHandler = {
-            LoginManager.shared.getLoginInfo(sourceUrl: sourceUrl) ?? [:]
+            loginOwner.getLoginInfo(sourceUrl: sourceUrl) ?? [:]
         }
         engine.sourceBridge.putLoginInfoHandler = { info in
             guard let data = info.data(using: .utf8),
                   let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String] else { return }
-            LoginManager.shared.storeLoginInfo(sourceUrl: sourceUrl, info: dict)
+            loginOwner.storeLoginInfo(sourceUrl: sourceUrl, info: dict)
         }
         engine.sourceBridge.removeLoginInfoHandler = {
-            LoginManager.shared.clearLogin(sourceUrl: sourceUrl)
+            loginOwner.clearLogin(sourceUrl: sourceUrl)
         }
         // Legado semantics: the payload is stored verbatim and only becomes request
         // headers if it is a JSON object. 书山聚合's `login()` stores a bare api_key
@@ -814,19 +814,19 @@ struct BookSourceFormLoginView: View {
         // URLs — synthesising a header name for it clobbers the constant token the
         // source's own `header` rule sends.
         engine.sourceBridge.putLoginHeaderHandler = { header in
-            LoginManager.shared.storeLoginHeader(sourceUrl: sourceUrl, raw: header)
+            loginOwner.storeLoginHeader(sourceUrl: sourceUrl, raw: header)
         }
         engine.sourceBridge.getLoginHeaderHandler = {
-            LoginManager.shared.getLoginHeader(sourceUrl: sourceUrl)
+            loginOwner.getLoginHeader(sourceUrl: sourceUrl)
         }
         engine.sourceBridge.removeLoginHeaderHandler = {
-            LoginManager.shared.clearLogin(sourceUrl: sourceUrl)
+            loginOwner.removeLoginHeader(sourceUrl: sourceUrl)
         }
         engine.sourceBridge.getHeaderMapHandler = {
             // This sheet's own engine resolves the (possibly `@js:`) header rule —
             // don't reach for a second engine via `source.parsedHeaders`.
             var headers = engine.resolvedSourceHeaders()
-            if let loginHeaders = LoginManager.shared.getLoginHeaderMap(sourceUrl: sourceUrl) {
+            if let loginHeaders = loginOwner.getLoginHeaderMap(sourceUrl: sourceUrl) {
                 headers.merge(loginHeaders) { _, new in new }
             }
             return headers
@@ -854,25 +854,19 @@ struct BookSourceFormLoginView: View {
             where request.value(forHTTPHeaderField: key) == nil {
                 request.setValue(value, forHTTPHeaderField: key)
             }
-            LoginManager.shared.applyLoginHeaders(to: &request, sourceUrl: sourceUrl)
-            if request.value(forHTTPHeaderField: "Cookie") == nil,
-               let reqUrl = request.url?.absoluteString {
-                let jar = CookieStore.shared.get(url: reqUrl)
-                if !jar.isEmpty {
-                    request.setValue(jar, forHTTPHeaderField: "Cookie")
-                }
-            }
-            let semaphore = DispatchSemaphore(value: 0)
+            loginOwner.applyLoginHeaders(to: &request, sourceUrl: sourceUrl)
             var body = ""
             var statusCode: Int?
-            URLSession.shared.dataTask(with: request) { data, response, _ in
+            var timedOut = false
+            do {
+                let (data, response) = try CookieStore.shared.dataForScript(request: request, session: URLSession.shared, timeout: 30)
                 statusCode = (response as? HTTPURLResponse)?.statusCode
-                if let data {
-                    body = String(data: data, encoding: .utf8) ?? ""
-                }
-                semaphore.signal()
-            }.resume()
-            let timedOut = semaphore.wait(timeout: .now() + 30) == .timedOut
+                body = String(data: data, encoding: .utf8) ?? ""
+            } catch {
+                timedOut = (error as? URLError)?.code == .timedOut
+                if let ownerError = error as? CookieOwnerError { CookieStore.raiseScriptError(ownerError) }
+                else { AppLogger.error("Login menu HTTP did not complete", error: error) }
+            }
             // Menu actions are the one place a source's API failure has no other way
             // to reach the user: the rule JS returns early on a bad reply, so the
             // button just looks dead. `runButtonJS` reports whatever lands here.
@@ -893,9 +887,9 @@ struct BookSourceFormLoginView: View {
                 updates[name] = (value as? String) ?? String(describing: value)
             }
             guard !updates.isEmpty else { return }
-            var info = LoginManager.shared.getLoginInfo(sourceUrl: sourceUrl) ?? [:]
+            var info = loginOwner.getLoginInfo(sourceUrl: sourceUrl) ?? [:]
             info.merge(updates) { _, new in new }
-            LoginManager.shared.storeLoginInfo(sourceUrl: sourceUrl, info: info)
+            loginOwner.storeLoginInfo(sourceUrl: sourceUrl, info: info)
         }
         if !source.jsLib.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             _ = engine.evaluate(source.jsLib, bindings: ["baseUrl": source.bookSourceUrl])

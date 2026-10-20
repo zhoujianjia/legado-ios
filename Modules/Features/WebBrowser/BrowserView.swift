@@ -530,8 +530,8 @@ class BrowserState: NSObject, ObservableObject, WKNavigationDelegate {
     }
 
     /// Extract chapter links (syncs cookies to URLSession before parsing).
-    func extractChapterLinks(completion: @escaping ([WebChapterItem]) -> Void) {
-        syncCookiesToURLSession {
+    func extractChapterLinks(completion: @escaping ([WebChapterItem]) -> Void, onFailure: @escaping (Error) -> Void) {
+        syncCookiesToURLSession(completion: {
             self.webView.evaluateJavaScript(extractChaptersJS) { result, _ in
                 guard let jsonStr = result as? String,
                       let data = jsonStr.data(using: .utf8),
@@ -542,7 +542,7 @@ class BrowserState: NSObject, ObservableObject, WKNavigationDelegate {
                 }
                 completion(normalizeDetectedChapters(arr))
             }
-        }
+        }, onFailure: onFailure)
     }
 
     /// Loads a URL in a background WebView and extracts content (for lazy-loading chapters during TOC transcoding).
@@ -613,12 +613,17 @@ class BrowserState: NSObject, ObservableObject, WKNavigationDelegate {
     }
 
     /// Syncs cookies to URLSession.
-    func syncCookiesToURLSession(completion: @escaping () -> Void) {
-        WKWebsiteDataStore.default().httpCookieStore.getAllCookies { cookies in
-            for cookie in cookies {
-                HTTPCookieStorage.shared.setCookie(cookie)
+    func syncCookiesToURLSession(completion: @escaping () -> Void, onFailure: @escaping (Error) -> Void) {
+        let store = WKWebsiteDataStore.default().httpCookieStore
+        let scope = webView.url
+        Task { @MainActor in
+            do {
+                _ = try await CookieStore.shared.captureWebKit(store, confirming: scope)
+                completion()
+            } catch {
+                AppLogger.error("Browser cookies were not persisted", error: error)
+                onFailure(error)
             }
-            DispatchQueue.main.async { completion() }
         }
     }
 
@@ -941,9 +946,9 @@ struct BrowserPage: View {
 
         // Sync browser login cookies to HTTPCookieStorage.shared so ChapterFetchManager
         // can carry the auth state when fetching chapters via URLSession / WebViewFetcher.
-        browser.syncCookiesToURLSession {
+        browser.syncCookiesToURLSession(completion: {
             readerPresentation = ReaderPresentation(id: book.id)
-        }
+        }, onFailure: { error in errorMsg = localized("儲存失敗：") + error.localizedDescription })
     }
 
     // MARK: 轉碼閱讀
@@ -955,7 +960,7 @@ struct BrowserPage: View {
         isExtracting = true
 
         if browser.hasTOC {
-            browser.extractChapterLinks { items in
+            browser.extractChapterLinks(completion: { items in
                 isExtracting = false
                 if items.isEmpty {
                     errorMsg = localized("無法識別章節連結，請直接進入章節頁面再轉碼")
@@ -964,7 +969,10 @@ struct BrowserPage: View {
                     extractedChapters = items
                     showTOCSheet = true
                 }
-            }
+            }, onFailure: { error in
+                isExtracting = false
+                errorMsg = localized("儲存失敗：") + error.localizedDescription
+            })
         } else {
             browser.extractContentPayload { title, content, html in
                 guard content.count >= 200 else {

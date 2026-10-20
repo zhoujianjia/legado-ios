@@ -61,24 +61,26 @@ struct SourceBrowserAuthenticationTests {
     }
 
     @Test("login rotation, source isolation and JSON login headers use parser precedence")
-    func currentCredentialsAndIsolation() throws {
+    func currentCredentialsAndIsolation() async throws {
         let first = source()
         let second = source()
-        defer {
-            LoginManager.shared.clearLogin(sourceUrl: first.bookSourceUrl)
-            LoginManager.shared.clearLogin(sourceUrl: second.bookSourceUrl)
+        try await SourceScriptThread.run {
+            defer {
+                LoginManager.shared.clearLogin(sourceUrl: first.bookSourceUrl)
+                LoginManager.shared.clearLogin(sourceUrl: second.bookSourceUrl)
+            }
+            let bridge = ModernParserBridge(source: first)
+            let url = "https://example.com/qm_comment"
+            LoginManager.shared.storeLoginHeader(sourceUrl: first.bookSourceUrl, raw: "first-fixture-token")
+            #expect(bridge.sourceBrowserRequest(urlString: url)?.value(forHTTPHeaderField: "X-Api-Key") == Data("first-fixture-token".utf8).base64EncodedString())
+            LoginManager.shared.storeLoginHeader(sourceUrl: first.bookSourceUrl, raw: "second-fixture-token")
+            #expect(bridge.sourceBrowserRequest(urlString: url)?.value(forHTTPHeaderField: "X-Api-Key") == Data("second-fixture-token".utf8).base64EncodedString())
+            LoginManager.shared.storeLoginHeaders(sourceUrl: second.bookSourceUrl, headers: ["X-Api-Key": "other-source", "Authorization": "Bearer fixture"])
+            let other = try #require(ModernParserBridge(source: second).sourceBrowserRequest(urlString: url))
+            #expect(other.value(forHTTPHeaderField: "X-Api-Key") == "other-source")
+            #expect(other.value(forHTTPHeaderField: "Authorization") == "Bearer fixture")
+            #expect(bridge.sourceBrowserRequest(urlString: "file:///tmp/review") == nil)
         }
-        let bridge = ModernParserBridge(source: first)
-        let url = "https://example.com/qm_comment"
-        LoginManager.shared.storeLoginHeader(sourceUrl: first.bookSourceUrl, raw: "first-fixture-token")
-        #expect(bridge.sourceBrowserRequest(urlString: url)?.value(forHTTPHeaderField: "X-Api-Key") == Data("first-fixture-token".utf8).base64EncodedString())
-        LoginManager.shared.storeLoginHeader(sourceUrl: first.bookSourceUrl, raw: "second-fixture-token")
-        #expect(bridge.sourceBrowserRequest(urlString: url)?.value(forHTTPHeaderField: "X-Api-Key") == Data("second-fixture-token".utf8).base64EncodedString())
-        LoginManager.shared.storeLoginHeaders(sourceUrl: second.bookSourceUrl, headers: ["X-Api-Key": "other-source", "Authorization": "Bearer fixture"])
-        let other = try #require(ModernParserBridge(source: second).sourceBrowserRequest(urlString: url))
-        #expect(other.value(forHTTPHeaderField: "X-Api-Key") == "other-source")
-        #expect(other.value(forHTTPHeaderField: "Authorization") == "Bearer fixture")
-        #expect(bridge.sourceBrowserRequest(urlString: "file:///tmp/review") == nil)
     }
 
     @Test(

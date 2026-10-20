@@ -16,6 +16,7 @@ struct SourceLoginWebView: View {
 /// cookie sync routine running inside the Coordinator.
     @StateObject private var bridge = LoginWebBridge()
     @State private var isSyncing = false
+    @State private var cookieSyncFailed = false
     /// Some sites answer a phone user-agent with an app-download page and no way to sign in at
     /// all — bot.n.cn (纳米AI TTS's `loginUrl`) is one, so its 网页登录 mode was unreachable from
     /// here however the rest of the plumbing behaved. The desktop identity is a user's escape
@@ -77,8 +78,12 @@ struct SourceLoginWebView: View {
                     } else {
                         Button {
                             isSyncing = true
-                            bridge.syncCookiesAndDismiss? {
-                                onDismiss()
+                            bridge.syncCookiesAndDismiss? { result in
+                                isSyncing = false
+                                switch result {
+                                case .success: onDismiss()
+                                case .failure: cookieSyncFailed = true
+                                }
                             }
                         } label: {
                             Image(systemName: "checkmark")
@@ -87,6 +92,9 @@ struct SourceLoginWebView: View {
                     }
                 }
             }
+        }
+        .alert(localized("無法儲存"), isPresented: $cookieSyncFailed) {
+            Button(localized("確定"), role: .cancel) {}
         }
     }
 
@@ -104,7 +112,7 @@ struct SourceLoginWebView: View {
 final class LoginWebBridge: ObservableObject {
     /// Set by the Coordinator after the WKWebView is created.
     /// Calling it triggers a full cookie sync and then invokes `completion`.
-    var syncCookiesAndDismiss: ((@escaping () -> Void) -> Void)?
+    var syncCookiesAndDismiss: ((@escaping (Result<Void, Error>) -> Void) -> Void)?
     /// Reloads the page. A sign-in flow that stalls, a captcha that expired, or a site that
     /// half-loaded has no other way back without abandoning the sheet and starting over.
     var reload: (() -> Void)?
@@ -148,7 +156,7 @@ struct SourceLoginWebViewRepresentable: UIViewRepresentable {
         // Wire the "Done" button to the Coordinator's authoritative sync
         let coordinator = context.coordinator
         bridge.syncCookiesAndDismiss = { completion in
-            guard let wv = coordinator.webView else { completion(); return }
+            guard let wv = coordinator.webView else { completion(.failure(CookieOwnerError(code: "STATE_OWNER_CLOSED", message: "Login browser was closed"))); return }
             coordinator.syncCookies(from: wv, completion: completion)
         }
         bridge.reload = { [weak coordinator] in coordinator?.webView?.reload() }
@@ -231,38 +239,28 @@ struct SourceLoginWebViewRepresentable: UIViewRepresentable {
         /// Pull all WKWebView cookies (including async-set Cloudflare `cf_clearance`)
         /// into CookieStore, HTTPCookieStorage, and LoginManager. Calls `completion`
         /// after the async cookie fetch completes.
-        func syncCookies(from webView: WKWebView, completion: (() -> Void)?) {
-            // The identity the session was established under. A site that hands out a cookie to a
-            // desktop browser and then sees a phone asking with it is entitled to refuse, so the
-            // user-agent travels with the cookie rather than being left to whatever the request
-            // path happens to send.
+        func syncCookies(from webView: WKWebView, completion: ((Result<Void, Error>) -> Void)?) {
             let userAgent = webView.customUserAgent
-            webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { [login] cookies in
-                guard !cookies.isEmpty else { completion?(); return }
-
-                // (1) Push every cookie into HTTPCookieStorage for URLSession auto-handling
-                cookies.forEach { HTTPCookieStorage.shared.setCookie($0) }
-
-                let cookieString = cookies
-                    .map { "\($0.name)=\($0.value)" }
-                    .joined(separator: "; ")
-
-                // (2) CookieStore keyed by the page that was opened (JS bridge access)
-                CookieStore.shared.set(url: login.url.absoluteString, cookie: cookieString)
-
-                // (3) LoginManager keyed by the source's own key — read by applyLoginHeaders()
-                //    when the rule engine builds a request, and merged into every TTS synthesis
-                //    request by `CustomHTTPProvider.buildJSRequestOrThrow`.
-                var headers = LoginManager.shared.getLoginHeaders(sourceUrl: login.storageKey)
-                headers["Cookie"] = cookieString
-                if let userAgent, !userAgent.isEmpty {
-                    headers["User-Agent"] = userAgent
+            let store = webView.configuration.websiteDataStore.httpCookieStore
+            let scope = webView.url
+            Task { @MainActor [login] in
+                do {
+                    let cookies = try await CookieStore.shared.captureWebKit(store, confirming: scope)
+                        // Cookie and LoginManager are still separate owners. Do
+                        // not present this legacy sequence as an atomic JVM CAS.
+                        await SourceScriptThread.run {
+                            let cookieString = cookies.map { "\($0.name)=\($0.value)" }.joined(separator: "; ")
+                            guard !cookieString.isEmpty else { return }
+                            var headers = LoginManager.shared.getLoginHeaders(sourceUrl: login.storageKey)
+                            headers["Cookie"] = cookieString
+                            if let userAgent, !userAgent.isEmpty { headers["User-Agent"] = userAgent }
+                            LoginManager.shared.storeLoginHeaders(sourceUrl: login.storageKey, headers: headers)
+                        }
+                        completion?(Result<Void, Error>(catching: {}))
+                    } catch {
+                        AppLogger.error("Login cookies were not persisted", error: error)
+                        completion?(.failure(error))
                 }
-                LoginManager.shared.storeLoginHeaders(
-                    sourceUrl: login.storageKey, headers: headers
-                )
-
-                completion?()
             }
         }
     }

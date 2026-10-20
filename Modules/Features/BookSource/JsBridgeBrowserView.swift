@@ -805,23 +805,18 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
         func syncCookiesAndDismiss(from webView: WKWebView, completion: ((String?) -> Void)?) {
             webView.evaluateJavaScript("document.documentElement.outerHTML") { body, _ in
                 let pageBody = body as? String
-                webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { cookies in
-                    guard !cookies.isEmpty else { completion?(pageBody); return }
-
-                    cookies.forEach { HTTPCookieStorage.shared.setCookie($0) }
-
-                    var byDomain: [String: [HTTPCookie]] = [:]
-                    for cookie in cookies {
-                        let domain = cookie.domain.hasPrefix(".")
-                            ? String(cookie.domain.dropFirst()) : cookie.domain
-                        byDomain["https://\(domain)", default: []].append(cookie)
+                let store = webView.configuration.websiteDataStore.httpCookieStore
+                let scope = webView.url
+                Task { @MainActor in
+                    do {
+                        _ = try await CookieStore.shared.captureWebKit(store, confirming: scope)
+                        completion?(pageBody)
+                    } catch {
+                        AppLogger.error("Source browser cookies were not persisted", error: error)
+                        self.setPhase(.failed, error: localized("無法儲存"))
+                        // Do not return a page as successfully confirmed.
+                        completion?(nil)
                     }
-                    for (domainKey, domainCookies) in byDomain {
-                        let joined = domainCookies.map { "\($0.name)=\($0.value)" }.joined(separator: "; ")
-                        CookieStore.shared.set(url: domainKey, cookie: joined)
-                    }
-
-                    completion?(pageBody)
                 }
             }
         }

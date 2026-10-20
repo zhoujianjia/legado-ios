@@ -511,15 +511,21 @@ extension ReaderView {
         }
         // Resolving the source's headers can run its JS (`@js:` header rules).
         Task {
-            let urlRequest = await SourceScriptThread.run {
-                source.flatMap {
-                    BookSourceSession.session(for: $0).bridgeForAsyncOperations
-                        .sourceBrowserRequest(urlString: chapter.url)
-                } ?? URL(string: chapter.url).map { URLRequest(url: $0) }
+            do {
+                let urlRequest = try await SourceScriptThread.run { () throws -> URLRequest? in
+                    if let source {
+                        return try BookSourceSession.session(for: source).bridgeForAsyncOperations
+                            .prepareSourceBrowserRequest(urlString: chapter.url)
+                    }
+                    return URL(string: chapter.url).map { URLRequest(url: $0) }
+                }
+                guard let urlRequest else { return }
+                let request = SourceBrowserRequest(
+                    url: chapter.url, title: chapter.title, urlRequest: urlRequest, awaitsResult: false)
+                SourceBrowserPresenter.present(request) { _ in }
+            } catch {
+                AppLogger.error("The chapter browser request could not read its Cookie owner", error: error)
             }
-            let request = SourceBrowserRequest(
-                url: chapter.url, title: chapter.title, urlRequest: urlRequest, awaitsResult: false)
-            SourceBrowserPresenter.present(request) { _ in }
         }
     }
 

@@ -15,8 +15,12 @@ actor WebFetcher {
 
     /// Nonisolated so the request/response path can run off the actor's executor.
     nonisolated private let session: URLSession
+    nonisolated private let cookies: CookieStore
+    nonisolated private let webViewCookies: WebViewCookieMirror?
 
-    init(session: URLSession? = nil) {
+    init(session: URLSession? = nil, cookies: CookieStore = .shared, webViewCookies: WebViewCookieMirror? = .shared) {
+        self.cookies = cookies
+        self.webViewCookies = webViewCookies
         if let session {
             self.session = session
         } else {
@@ -104,7 +108,7 @@ actor WebFetcher {
         bodyCharset: String? = nil,
         redirect: (@Sendable (URL) -> Bool)? = nil
     ) async throws -> FetchedPage {
-        let request = await buildRequest(
+        let request = try await buildRequest(
             url: url, method: method, body: body,
             headers: headers, baseURL: baseURL, bodyCharset: bodyCharset
         )
@@ -126,10 +130,8 @@ actor WebFetcher {
 
         do {
             let (data, response) = try await PerHostSemaphore.shared.withLock(host: host) {
-                if let redirect {
-                    return try await self.session.data(for: request, delegate: RedirectGate(allows: redirect))
-                }
-                return try await self.session.data(for: request)
+                try await self.cookies.data(for: request, session: self.session, redirect: redirect,
+                    authoredCookie: headers.first(where: { $0.key.caseInsensitiveCompare("Cookie") == .orderedSame })?.value)
             }
             let latencyMs = Int((CFAbsoluteTimeGetCurrent() - fetchStart) * 1000)
             return FetchedPage(request: request, data: data, response: response, latencyMs: latencyMs)
@@ -148,13 +150,9 @@ actor WebFetcher {
         headers: [String: String],
         baseURL: String,
         bodyCharset: String?
-    ) async -> URLRequest {
-        let allCookies: [HTTPCookie]
-        if let host = url.host {
-            allCookies = await WebViewCookieMirror.shared.cookies(for: host)
-        } else {
-            allCookies = []
-        }
+    ) async throws -> URLRequest {
+        try await cookies.prepare()
+        try await webViewCookies?.prepare()
 
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
         request.httpMethod = method
@@ -176,25 +174,9 @@ actor WebFetcher {
         for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
         }
-        if let wvCookieHeader = cookieHeaderString(from: allCookies) {
-            request.setValue(wvCookieHeader, forHTTPHeaderField: "Cookie")
-        }
-        if request.value(forHTTPHeaderField: "Cookie") == nil,
-            let cookieHeader = cookieHeader(for: url)
-        {
-            request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
-        }
-        if request.value(forHTTPHeaderField: "Cookie") == nil {
-            // CookieStore is the durable Legado cookie jar. Native URLSession
-            // storage can be empty after a cold launch even though a source's
-            // login session is still persisted (e.g. shenmoxs.top
-            // `admin_session`); reading it here prevents authenticated chapter
-            // requests from incorrectly becoming HTTP 401.
-            let persistedCookie = CookieStore.shared.get(url: url.absoluteString)
-            if !persistedCookie.isEmpty {
-                request.setValue(persistedCookie, forHTTPHeaderField: "Cookie")
-            }
-        }
+        // The same owner supplies domain/path/Secure-aware request cookies at
+        // dispatch and after each redirect. Do not flatten every WebKit cookie
+        // for this host into a header that could bypass its path or Secure flag.
         if let bodyStr = body, method == "POST" {
             let enc = HTMLResponseDecoder.encoding(forIANA: bodyCharset) ?? .utf8
             request.httpBody = bodyStr.data(using: enc)
@@ -224,29 +206,4 @@ actor WebFetcher {
         return err
     }
 
-    nonisolated private func cookieHeaderString(from cookies: [HTTPCookie]) -> String? {
-        guard !cookies.isEmpty else { return nil }
-        return cookies.map { "\($0.name)=\($0.value)" }.joined(separator: "; ")
-    }
-
-    nonisolated private func cookieHeader(for url: URL) -> String? {
-        let cookies = session.configuration.httpCookieStorage?.cookies(for: url) ?? HTTPCookieStorage.shared.cookies(for: url) ?? []
-        guard !cookies.isEmpty else { return nil }
-        return HTTPCookie.requestHeaderFields(with: cookies)["Cookie"]
-    }
-}
-
-/// Asks before a redirect is followed (`WebFetcher.fetchPage(redirect:)`).
-private final class RedirectGate: NSObject, URLSessionTaskDelegate, Sendable {
-    let allows: @Sendable (URL) -> Bool
-
-    init(allows: @escaping @Sendable (URL) -> Bool) {
-        self.allows = allows
-    }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
-                    newRequest request: URLRequest) async -> URLRequest? {
-        guard let url = request.url, allows(url) else { return nil }
-        return request
-    }
 }

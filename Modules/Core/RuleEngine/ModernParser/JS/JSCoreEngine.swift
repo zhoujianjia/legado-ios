@@ -108,6 +108,10 @@ class JSCoreEngine {
         bridge.sourceBrowserRequest(urlString: urlString)
     }
 
+    func prepareSourceBrowserRequest(urlString: String) throws -> URLRequest? {
+        try bridge.prepareSourceBrowserRequest(urlString: urlString)
+    }
+
     /// Called for Legado's source-authored four-argument browser pages.
     var browserPagePresentHandler: ((LegadoBrowserPageRequest) -> Void)? {
         didSet { bridge.browserPagePresentHandler = browserPagePresentHandler }

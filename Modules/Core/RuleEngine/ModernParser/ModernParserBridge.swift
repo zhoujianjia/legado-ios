@@ -194,6 +194,11 @@ class ModernParserBridge {
         return jsEngine.sourceBrowserRequest(urlString: urlString)
     }
 
+    func prepareSourceBrowserRequest(urlString: String) throws -> URLRequest? {
+        evaluateJsLibIfNeeded()
+        return try jsEngine.prepareSourceBrowserRequest(urlString: urlString)
+    }
+
     private func applySourceAuthentication(to request: inout URLRequest) {
         for (key, value) in resolvedSourceHeaders() {
             if request.value(forHTTPHeaderField: key) == nil {
@@ -201,11 +206,7 @@ class ModernParserBridge {
             }
         }
         loginManager.applyLoginHeaders(to: &request, sourceUrl: sourceRuleData.source.bookSourceUrl)
-        if request.value(forHTTPHeaderField: "Cookie") == nil,
-           let url = request.url?.absoluteString {
-            let jar = CookieStore.shared.get(url: url)
-            if !jar.isEmpty { request.setValue(jar, forHTTPHeaderField: "Cookie") }
-        }
+
     }
 
     /// Executes Legado `ruleToc.preUpdateJs` in the source's JavaScript runtime
@@ -488,7 +489,6 @@ class ModernParserBridge {
                     baseURL: injected.finalURL.absoluteString
                 )
             }
-            let sem = DispatchSemaphore(value: 0)
             var result: String?
             var responseStatusCode: Int?
             var responseError: Error?
@@ -534,23 +534,17 @@ class ModernParserBridge {
                     ownsReviewRequest = true
                 }
             }
-            let task = requestSession.dataTask(with: request) { data, response, error in
-                if let httpResponse = response as? HTTPURLResponse {
-                    responseStatusCode = httpResponse.statusCode
-                    responseFinalURL = httpResponse.url?.absoluteString
-                }
+            var waitResult: DispatchTimeoutResult = .success
+            do {
+                let (data, response) = try CookieStore.shared.dataForScript(request: request, session: requestSession, timeout: 30)
+                responseStatusCode = (response as? HTTPURLResponse)?.statusCode
+                responseFinalURL = response.url?.absoluteString
+                result = HTMLResponseDecoder.decode(data: data, response: response, declaredCharset: analyzeUrl.charset)
+            } catch {
                 responseError = error
-                if let data {
-                    // The same decoder as every other response: the `charset` option decides
-                    // when present; otherwise the page's charset is detected, not assumed UTF-8.
-                    result = HTMLResponseDecoder.decode(
-                        data: data, response: response, declaredCharset: analyzeUrl.charset
-                    )
-                }
-                sem.signal()
+                if (error as? URLError)?.code == .timedOut { waitResult = .timedOut }
+                if let ownerError = error as? CookieOwnerError { CookieStore.raiseScriptError(ownerError) }
             }
-            task.resume()
-            let waitResult = sem.wait(timeout: .now() + 30)
             self.recordJSNetwork(
                 url: request.url?.absoluteString,
                 statusCode: responseStatusCode,
@@ -572,7 +566,6 @@ class ModernParserBridge {
                     "url": request.url?.absoluteString ?? analyzeUrl.url,
                     "method": analyzeUrl.method
                 ])
-                task.cancel()
                 if ownsReviewRequest, let requestURL = request.url?.absoluteString {
                     ReviewSummaryResponseCache.shared.finishRequest(
                         nil,
@@ -689,7 +682,6 @@ class ModernParserBridge {
                     ownsReviewRequest = true
                 }
             }
-            let semaphore = DispatchSemaphore(value: 0)
             var result: String?
             var statusCode: Int?
             var responseResult: LegadoHTTPResult?
@@ -697,17 +689,17 @@ class ModernParserBridge {
             // Pool at 16/host: this handler is ALWAYS set for the online reader, so plain 段評
             // ajaxAll requests land here — URLSession.shared would re-cap them at 6/host (why the
             // ajaxAll throttle raise alone left `⏱ chapter.jsNet` unchanged).
-            let task = requestSession.dataTask(with: request) { data, response, error in
+            var timedOut = false
+            do {
+                let (data, response) = try CookieStore.shared.dataForScript(request: request, session: requestSession, timeout: 30)
                 statusCode = (response as? HTTPURLResponse)?.statusCode
-                transportError = error
                 responseResult = LegadoHTTPResult.make(request: request, data: data, response: response)
-                if let data {
-                    result = LegadoJSBridge.decodeData(data, response: response)
-                }
-                semaphore.signal()
+                result = LegadoJSBridge.decodeData(data, response: response)
+            } catch {
+                transportError = error
+                timedOut = (error as? URLError)?.code == .timedOut
+                if let ownerError = error as? CookieOwnerError { CookieStore.raiseScriptError(ownerError) }
             }
-            task.resume()
-            let timedOut = semaphore.wait(timeout: .now() + 30) == .timedOut
             self?.recordJSNetwork(
                 url: request.url?.absoluteString,
                 statusCode: statusCode,
@@ -739,7 +731,7 @@ class ModernParserBridge {
                     "bodyHead": (result ?? "nil").prefix(200).description
                 ])
             }
-            if timedOut { task.cancel() }
+
             if ownsReviewRequest,
                let reviewSummaryCacheKey,
                let requestURL = request.url?.absoluteString {
@@ -813,30 +805,32 @@ class ModernParserBridge {
             request.setValue(value, forHTTPHeaderField: key)
         }
         LoginManager.shared.applyLoginHeaders(to: &request, sourceUrl: source.bookSourceUrl)
-        let cookie = CookieStore.shared.get(url: requestURL)
-        if !cookie.isEmpty {
-            request.setValue(cookie, forHTTPHeaderField: "Cookie")
-        }
 
         let started = ProcessInfo.processInfo.systemUptime
-        let task = requestSession.dataTask(with: request) { data, response, _ in
-            let statusCode = (response as? HTTPURLResponse)?.statusCode
-            let body = data.flatMap { String(data: $0, encoding: .utf8) }
-            let usable = statusCode.map({ (200..<300).contains($0) }) == true
-                && body.map(Self.isUsableChapterReviewSummary) == true
-            ReviewSummaryResponseCache.shared.finishRequest(
-                usable ? body : nil,
-                sourceKey: sourceKey,
-                requestURL: requestURL
-            )
-            SourcePerfTrace.record(
-                "chapter.reviewSummary.prefetch",
-                source.bookSourceName,
-                since: started,
-                thresholdMs: 0
-            )
+        Task {
+            do {
+                let (data, response) = try await CookieStore.shared.data(for: request, session: requestSession,
+                    authoredCookie: request.value(forHTTPHeaderField: "Cookie"))
+                let statusCode = (response as? HTTPURLResponse)?.statusCode
+                let body: String? = String(data: data, encoding: .utf8)
+                let usable = statusCode.map({ (200..<300).contains($0) }) == true
+                    && body.map(Self.isUsableChapterReviewSummary) == true
+                ReviewSummaryResponseCache.shared.finishRequest(
+                    usable ? body : nil,
+                    sourceKey: sourceKey,
+                    requestURL: requestURL
+                )
+                SourcePerfTrace.record(
+                    "chapter.reviewSummary.prefetch",
+                    source.bookSourceName,
+                    since: started,
+                    thresholdMs: 0
+                )
+            } catch {
+                ReviewSummaryResponseCache.shared.finishRequest(nil, sourceKey: sourceKey, requestURL: requestURL)
+                AppLogger.error("Review prefetch did not complete its owned Cookie exchange", error: error)
+            }
         }
-        task.resume()
     }
 
     private static func reviewSummaryHost(in jsLib: String) -> String? {
@@ -2424,42 +2418,15 @@ class ModernParserBridge {
         let searchUrl = source.searchUrl.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !searchUrl.isEmpty else { return }
         let cookieHost = "https://qidian.com"
-        let before = CookieStore.shared.getKey(url: cookieHost, key: "_csrfToken")
-        NSLog(
-            "❖DISC TRACE❖ source=%@ stage=csrf.prime.begin tokenBefore=%d searchRuleLen=%d",
-            source.bookSourceName,
-            before.count,
-            searchUrl.count
-        )
-        // 同人小說網 can mint a random `_csrfToken` for its review API. 起點's
-        // ranking API instead requires a token issued by the current web session.
-        // Merely loading the search page while the random token is present does not
-        // replace it, leaving query and cookie populated but session-invalid. Remove
-        // only this named cookie across qidian's related hosts, preserving login and
-        // every other site cookie, then let the search page issue a fresh token.
-        CookieStore.shared.remove(
-            url: cookieHost,
-            key: "_csrfToken",
-            includingRelatedDomains: true
-        )
         do {
+            let before = try await CookieStore.shared.getKeyOwned(url: cookieHost, key: "_csrfToken")
+            NSLog("❖DISC TRACE❖ source=%@ stage=csrf.prime.begin tokenBefore=%d searchRuleLen=%d", source.bookSourceName, before.count, searchUrl.count)
+            try await CookieStore.shared.removeOwned(url: cookieHost, key: "_csrfToken", includingRelatedDomains: true)
             let (body, finalURL) = try await fetch(ruleUrl: searchUrl, key: "1", page: 1)
-            let after = CookieStore.shared.getKey(url: cookieHost, key: "_csrfToken")
-            NSLog(
-                "❖DISC TRACE❖ source=%@ stage=csrf.prime.end tokenAfter=%d bodyLen=%d finalHost=%@",
-                source.bookSourceName,
-                after.count,
-                body.count,
-                URL(string: finalURL)?.host ?? "nil"
-            )
+            let after = try await CookieStore.shared.getKeyOwned(url: cookieHost, key: "_csrfToken")
+            NSLog("❖DISC TRACE❖ source=%@ stage=csrf.prime.end tokenAfter=%d bodyLen=%d finalHost=%@", source.bookSourceName, after.count, body.count, URL(string: finalURL)?.host ?? "nil")
         } catch {
-            let after = CookieStore.shared.getKey(url: cookieHost, key: "_csrfToken")
-            NSLog(
-                "❖DISC TRACE❖ source=%@ stage=csrf.prime.error tokenAfter=%d error=%@",
-                source.bookSourceName,
-                after.count,
-                error.localizedDescription
-            )
+            AppLogger.error("Discover Cookie prime did not complete", error: error)
         }
     }
 
@@ -2492,7 +2459,7 @@ class ModernParserBridge {
                     of: (Data, URLResponse).self
                 ) { group in
                     group.addTask {
-                        try await URLSession.shared.data(for: request)
+                        try await CookieStore.shared.data(for: request, session: URLSession.shared, authoredCookie: request.value(forHTTPHeaderField: "Cookie"))
                     }
                     group.addTask {
                         try await Task.sleep(nanoseconds: 30_000_000_000)

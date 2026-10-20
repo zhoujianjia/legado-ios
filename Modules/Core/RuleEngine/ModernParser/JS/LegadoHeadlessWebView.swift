@@ -24,8 +24,11 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate {
     private let js: String
     private let captureMode: CaptureMode
     private var initialURL: String?
-    private var continuation: CheckedContinuation<String, Never>?
+    private var continuation: CheckedContinuation<String, Error>?
     private var finished = false
+    private var cookieTask: Task<Void, Never>?
+    private let cookieCancellation = OriginalRuntimeCommitCancellation()
+    private var cookieDeadline = Date.distantFuture
 
     /// Strong references that keep in-flight runners alive until they resolve.
     private static var retained: [LegadoHeadlessWebView] = []
@@ -36,7 +39,7 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate {
         super.init()
     }
 
-    /// Run a headless load + JS evaluation. Always resolves (with "" on failure/timeout).
+    /// Run a headless load + JS evaluation. Owner errors, cancellation and timeout throw.
     static func run(
         html: String?,
         url: String?,
@@ -45,7 +48,7 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate {
         timeout: TimeInterval,
         sourceRegex: String? = nil,
         overrideURLRegex: String? = nil
-    ) async -> String {
+    ) async throws -> String {
         let mode: CaptureMode
         if let sourceRegex, !sourceRegex.isEmpty {
             mode = .resource(regex: sourceRegex)
@@ -56,9 +59,16 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate {
         }
         let runner = LegadoHeadlessWebView(js: js, captureMode: mode)
         retained.append(runner)
-        return await withCheckedContinuation { (cont: CheckedContinuation<String, Never>) in
-            runner.continuation = cont
-            runner.begin(html: html, url: url, userAgent: userAgent, timeout: timeout)
+        let cancellation = runner.cookieCancellation
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<String, Error>) in
+                runner.continuation = cont
+                runner.begin(html: html, url: url, userAgent: userAgent, timeout: timeout)
+            }
+        } onCancel: {
+            cancellation.cancel()
+            Task { @MainActor in runner.finishFailure(CancellationError()) }
         }
     }
 
@@ -69,10 +79,13 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate {
         wv.navigationDelegate = self
         webView = wv
         initialURL = url
+        cookieDeadline = Date().addingTimeInterval(timeout)
 
         // Hard timeout: never leave the JS queue blocked indefinitely.
         DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { [weak self] in
-            self?.finish("")
+            guard let self, !self.finished else { return }
+            self.cookieCancellation.cancel()
+            self.finishFailure(URLError(.timedOut))
         }
 
         if let urlStr = url, let u = URL(string: urlStr) {
@@ -150,9 +163,24 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate {
     }
 
     private func persistCookies(from webView: WKWebView, completion: @escaping () -> Void) {
-        webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { cookies in
-            cookies.forEach { HTTPCookieStorage.shared.setCookie($0) }
-            completion()
+        guard !finished else { return }
+        cookieTask?.cancel()
+        let store = webView.configuration.websiteDataStore.httpCookieStore
+        let scope = webView.url
+        let cancellation = cookieCancellation
+        let deadline = cookieDeadline
+        cookieTask = Task { @MainActor in
+            do {
+                _ = try await CookieStore.shared.captureWebKit(store, confirming: scope) {
+                    try cancellation.check(deadline: deadline)
+                }
+                guard !self.finished else { return }
+                completion()
+            } catch {
+                guard !self.finished else { return }
+                AppLogger.error("Headless browser cookies were not persisted", error: error)
+                self.finishFailure(error)
+            }
         }
     }
 
@@ -173,12 +201,22 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate {
     """
 
     private func finish(_ value: String) {
+        finishResult(.success(value))
+    }
+
+    private func finishFailure(_ error: Error) {
+        finishResult(.failure(error))
+    }
+
+    private func finishResult(_ result: Result<String, Error>) {
         guard !finished else { return }
         finished = true
+        cookieTask?.cancel()
+        cookieTask = nil
         webView?.stopLoading()
         webView?.navigationDelegate = nil
         webView = nil
-        continuation?.resume(returning: value)
+        continuation?.resume(with: result)
         continuation = nil
         Self.retained.removeAll { $0 === self }
     }

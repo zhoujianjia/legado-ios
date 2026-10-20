@@ -1,0 +1,145 @@
+{
+  "methodDefinitions": [
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "legacyFileMigratesWithoutInventedProofs"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "nativeAttributesSurviveActualFileRestart"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "failedOwnerIOPreservesOldCookieState"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "scriptWritesExposeTypedOwnerFailure"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "browserObservationKeepsNewerHTTPState"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "browserRemovalDoesNotReviveLegacyText"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "actualHTTPRedirectAndRestart"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "actualHTTPWriteFailureDoesNotAcknowledge"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "cancelledHTTPCommitKeepsOldCookieState"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "actualBrowserRequestRespectsCookieScope"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "staleWebViewCookieDecisionCannotEndReusedLease"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "nativeBrowserPreparationFailureRemainsTyped"
+    },
+    {
+      "suite": "LegadoCookieOwnerTests",
+      "method": "formLoginRemovalPreservesCredentials"
+    },
+    {
+      "suite": "WebFetcherPersistedCookieTests",
+      "method": "nativeRequestRestoresPersistedCookie"
+    },
+    {
+      "suite": "WebFetcherChallengeResponseTests",
+      "method": "challengeStatusIsAnHTTPError"
+    },
+    {
+      "suite": "WebFetcherChallengeResponseTests",
+      "method": "challengeBodyIsReturned"
+    },
+    {
+      "suite": "StageLoginCheckTests",
+      "method": "forbiddenResponseCanBeReplaced"
+    },
+    {
+      "suite": "StageLoginCheckTests",
+      "method": "untouchedForbiddenResponseThrows"
+    },
+    {
+      "suite": "StageLoginCheckTests",
+      "method": "successfulResponsePassesThrough"
+    },
+    {
+      "suite": "StageLoginCheckTests",
+      "method": "sourceWithoutCheckIsUnchanged"
+    },
+    {
+      "suite": "SourceBrowserAuthenticationTests",
+      "method": "authenticatedFirstLoad"
+    },
+    {
+      "suite": "SourceBrowserAuthenticationTests",
+      "method": "currentCredentialsAndIsolation"
+    },
+    {
+      "suite": "SourceBrowserAuthenticationTests",
+      "method": "nativeMarkerAuthentication"
+    },
+    {
+      "suite": "BookSourceLoginTests",
+      "method": "browserInitialLoadUsesStoredCookies"
+    },
+    {
+      "suite": "BookSourceLoginTests",
+      "method": "fanqieSessionCookieReadableByJSBridge"
+    },
+    {
+      "suite": "BookSourceLoginTests",
+      "method": "loginInfoChangeInvalidatesResolvedHeaderCache"
+    },
+    {
+      "suite": "JSCoreEngineTests",
+      "method": "sourceBrowserRequestCarriesHeaders"
+    },
+    {
+      "suite": "WebViewNavigationWaitTests",
+      "method": "cancellationResumesSuspendedWait"
+    },
+    {
+      "suite": "WebViewNavigationWaitTests",
+      "method": "resultResumesWaiter"
+    }
+  ],
+  "definitionCount": 29,
+  "sdkExecutedMethods": 0,
+  "intendedPaths": [
+    "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+    "Modules/Core/RuleEngine/ModernParser/CookieStore.swift",
+    "Modules/Core/RuleEngine/ModernParser/JS/JSCoreEngine.swift",
+    "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+    "Modules/Core/RuleEngine/ModernParser/JS/LegadoJSBridge.swift",
+    "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+    "Modules/Core/RuleEngine/ModernParser/ModernParserBridge.swift",
+    "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+    "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+    "Modules/Features/Reader/ReaderView+Toolbars.swift",
+    "Modules/Features/WebBrowser/BrowserView.swift",
+    "Modules/Services/Network/CookieStore+HTTP.swift",
+    "Modules/Services/Network/CookieStore+WebKit.swift",
+    "Modules/Services/Network/WebFetcher.swift",
+    "Modules/Services/Network/WebViewCookieMirror.swift",
+    "Modules/Services/Network/WebViewFetcher.swift",
+    "Modules/Services/Online/LegadoReviewActionRunner.swift",
+    "Modules/SharedUI/Components/SourceLoginWebView.swift",
+    "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+    "Tests/iOS/yuedu appTests/SourceBrowserAuthenticationTests.swift",
+    "Tests/iOS/yuedu appTests/WebFetcherPersistedCookieTests.swift"
+  ]
+}

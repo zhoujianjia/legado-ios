@@ -397,7 +397,7 @@ final class LoginManager {
 
         let (_, response): (Data, URLResponse)
         do {
-            (_, response) = try await URLSession.shared.data(for: request)
+            (_, response) = try await CookieStore.shared.data(for: request, session: URLSession.shared, authoredCookie: request.value(forHTTPHeaderField: "Cookie"))
         } catch {
             throw LoginError.networkError(error)
         }

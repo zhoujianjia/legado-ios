@@ -57,7 +57,7 @@ actor LegadoReviewActionRunner {
         guard target.requiresSourceJS else { return target }
         guard target.sourceURL == source.bookSourceUrl else { throw ResolveError.sourceUnavailable }
         let js = target.sourceJS
-        let captured = await SourceScriptThread.run { () -> BrowserRequestSink.Value? in
+        let captured = try await SourceScriptThread.run { () throws -> BrowserRequestSink.Value? in
             let session = BookSourceSession.session(for: source)
             let bridge = session.bridgeForAsyncOperations
             let sink = BrowserRequestSink()
@@ -91,7 +91,7 @@ actor LegadoReviewActionRunner {
             // A plain URL, or a source page that names its URL without HTML, is loaded from the
             // network: with the source's headers and cookies, as legado's `AnalyzeUrl` does.
             if captured.page == nil || captured.page?.html == nil {
-                captured.request = bridge.sourceBrowserRequest(urlString: captured.url)
+                captured.request = try bridge.prepareSourceBrowserRequest(urlString: captured.url)
             }
             return captured
         }
@@ -373,6 +373,13 @@ extension LegadoReviewActionRunner {
             // `showBrowser` shows a page only where the host installs a presenter.
             bridge.browserPresentHandler = LegadoJSBridge.sharedBrowserPresenter
             bridge.browserPagePresentHandler = { [weak bridge] request in
+                let prepared: URLRequest?
+                do {
+                    prepared = request.html == nil ? try bridge?.prepareSourceBrowserRequest(urlString: request.baseURL) : nil
+                } catch {
+                    CookieStore.raiseScriptError(error)
+                    return
+                }
                 sink.record(page: ReaderHTMLUtilities.ReviewTarget(
                     url: request.baseURL,
                     title: displayName,
@@ -386,8 +393,7 @@ extension LegadoReviewActionRunner {
                         actionContext: context
                     ),
                     // No HTML: the page is the URL, requested with the source's headers.
-                    browserRequest: request.html == nil
-                        ? bridge?.sourceBrowserRequest(urlString: request.baseURL) : nil
+                    browserRequest: prepared
                 ))
             }
             // The bridge delivers toasts on the main queue.

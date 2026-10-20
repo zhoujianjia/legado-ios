@@ -11,18 +11,26 @@ struct WebFetcherPersistedCookieTests {
         PersistedCookieURLProtocol.reset()
         let host = "persisted-cookie-\(UUID().uuidString).example.com"
         let url = try #require(URL(string: "https://\(host)/chapter"))
-        CookieStore.shared.set(url: url.absoluteString, cookie: "admin_session=session-token")
-        defer { CookieStore.shared.remove(url: url.absoluteString) }
-
-        // Model a cold native HTTP stack: the cookie remains in CookieStore's
-        // on-disk snapshot but is absent from HTTPCookieStorage.
-        for cookie in HTTPCookieStorage.shared.cookies(for: url) ?? [] {
-            HTTPCookieStorage.shared.deleteCookie(cookie)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer {
+            do { try FileManager.default.removeItem(at: directory) }
+            catch { Issue.record("Owned persisted Cookie fixture cleanup failed: \(error)") }
         }
+        let file = directory.appendingPathComponent("legado_cookies.json")
+        let initialStorage = try #require(URLSessionConfiguration.ephemeral.httpCookieStorage)
+        let initial = CookieStore(fileURL: file, storage: initialStorage)
+        try await initial.setOwned(url: url.absoluteString, cookie: "admin_session=session-token")
 
+        // A different owner instance/native jar reads the actual accepted file.
+        let storage = try #require(URLSessionConfiguration.ephemeral.httpCookieStorage)
+        let reopened = CookieStore(fileURL: file, storage: storage)
         let configuration = URLSessionConfiguration.ephemeral
+        configuration.httpCookieStorage = storage
         configuration.protocolClasses = [PersistedCookieURLProtocol.self]
-        let fetcher = WebFetcher(session: URLSession(configuration: configuration))
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let fetcher = WebFetcher(session: session, cookies: reopened, webViewCookies: nil)
 
         _ = try await fetcher.fetchHTML(
             url: url,
