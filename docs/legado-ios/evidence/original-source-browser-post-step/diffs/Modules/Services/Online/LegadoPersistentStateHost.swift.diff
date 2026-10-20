@@ -1,0 +1,59 @@
+--- baseline/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ candidate/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -106,6 +106,8 @@
+     let url: String
+     let title: String
+     let headers: [String: String]
++    /// Present, including empty, only for original JVM POST prefetch. Never local WebJS.
++    let prefetchedHTML: String?
+     let awaitsResult: Bool
+     let refetchAfterSuccess: Bool
+     let deadline: Date
+@@ -445,14 +447,14 @@
+     }
+
+     private func presentSourceBrowserRequest(_ request: LegadoHostRequest) async throws -> String {
+-        guard request.requestJSON.utf8.count <= 262_144 else {
++        guard request.requestJSON.utf8.count <= 6 * 4 * 1024 * 1024 + 262_144 else {
+             throw failure("STATE_LIMIT", "Browser presentation request exceeds its budget")
+         }
+         let decoded: Any
+         do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
+         catch { throw failure("INVALID_STATE_REQUEST", "Browser presentation request is not JSON") }
+         guard let input = decoded as? [String: Any],
+-              Set(input.keys).isSubset(of: ["owner", "sourceURL", "url", "title", "headers", "awaitsResult", "refetchAfterSuccess", "deadlineEpochMs", "remainingTimeoutMs"]),
++              Set(input.keys).isSubset(of: ["owner", "sourceURL", "url", "title", "headers", "prefetchedHTML", "awaitsResult", "refetchAfterSuccess", "deadlineEpochMs", "remainingTimeoutMs"]),
+               let owner = input["owner"] as? String, let sourceURL = input["sourceURL"] as? String,
+               let url = input["url"] as? String, url.utf8.count < 65_536,
+               let target = URL(string: url), target.host?.isEmpty == false,
+@@ -460,6 +462,21 @@
+               let title = input["title"] as? String, title.utf8.count <= 8_192,
+               let headers = input["headers"] as? [String: String], headers.count <= 256 else {
+             throw failure("INVALID_STATE_REQUEST", "Browser presentation requires bounded page fields")
++        }
++        let prefetchedHTML: String?
++        if let rawHTML = input["prefetchedHTML"] {
++            guard let html = rawHTML as? String else {
++                throw failure("INVALID_STATE_REQUEST", "Browser prefetch must be a String")
++            }
++            guard html.utf8.count <= 4 * 1024 * 1024 else {
++                throw failure("STATE_LIMIT", "Browser prefetch exceeds its byte budget")
++            }
++            prefetchedHTML = html
++        } else {
++            guard request.requestJSON.utf8.count <= 262_144 else {
++                throw failure("STATE_LIMIT", "Browser presentation request exceeds its budget")
++            }
++            prefetchedHTML = nil
+         }
+         let headerToken = Set("!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".utf8)
+         var normalizedHeaders = Set<String>(), headerBytes = 0
+@@ -486,7 +503,7 @@
+         try authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)
+         guard let binding = bindings[owner] else { throw CancellationError() }
+         let presentation = LegadoOriginalBrowserPresentation(taskID: request.taskID, url: url, title: title,
+-            headers: headers, awaitsResult: awaitsResult, refetchAfterSuccess: refetchAfterSuccess, deadline: deadline,
++            headers: headers, prefetchedHTML: prefetchedHTML, awaitsResult: awaitsResult, refetchAfterSuccess: refetchAfterSuccess, deadline: deadline,
+             authorize: { [weak self] in
+                 guard let self else { throw CancellationError() }
+                 try await self.authorizeSourceBrowser(request, owner: owner, sourceURL: sourceURL, deadline: deadline)

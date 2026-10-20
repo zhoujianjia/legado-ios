@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "status": "Interface frozen for root review before dependent production changes",
+  "baseline": {
+    "path": "baseline.json",
+    "bytes": 2898,
+    "sha256": "dee76347b129d5932d1719da27477d8e9022f263130d46a885445f318b62e816"
+  },
+  "lockedContract": {
+    "path": "F:\\yuedu-reader\\.build\\original-source-login-browser-await-contract-review\\review.json",
+    "bytes": 14052,
+    "sha256": "0115111b1ba42b14bcb2b9da62d9d4024e25cf263a0c6cfb773d6b16730da93f"
+  },
+  "newWireField": {
+    "name": "prefetchedHTML",
+    "type": "optional JSON String; absent means no POST prefetch; present empty String is distinct from absent",
+    "producer": "Only existing ProductionRulePlatform.prepareLoginBrowser after same AnalyzeUrl POST response; explicit JS html remains typed unsupported",
+    "consumer": "existing source.browser Host -> LegadoOriginalBrowserPresentation.prefetchedHTML:String? -> existing Presenter -> JsBridgeBrowserView.initialHTML",
+    "budget": "decoded UTF8 <=4MiB; total encoded envelope <=6*4MiB+262144; GET without field retains <=262144 envelope; explicit null/nonstring rejected"
+  },
+  "originalOrdering": [
+    "AnalyzeUrl(original authored input) on current source/runtime task",
+    "snapshot initial analyzed URL and a copy of initial headerMap before HTTP",
+    "for POST only, same AnalyzeUrl.getStrResponseAwait(useWebView=false), same session HTTP/Cookie owner",
+    "pass decoded body verbatim as prefetchedHTML; URL/header snapshot does not adopt redirect URL",
+    "existing checked Host authorization -> actual Presenter/Shell presentation; never localHtml/sourceRunHandler/WebJS"
+  ],
+  "terminal": {
+    "nonawait": "actual UIKit presentation ACK; accepted normal producer end leaves page alive",
+    "awaitTrue": "actual close/confirm and dismissal -> existing refetchConfirmed; reuse present prefetchedHTML even empty; no repeated POST; GET keeps original existing refetch; empty final body yields BROWSER_EMPTY_RESULT",
+    "awaitFalse": "actual one-evaluation DOM+finalURL after confirm, existing checked Cookie capture and actual dismissal",
+    "emptyPrefetchDisplay": "Locked WebViewActivity130-141 navigates GET when prefetched HTML is empty: map only display initialHTML empty to nil, retain present empty String on JVM so confirmation never repeats POST"
+  },
+  "initialLoadOwnership": "Nonempty initialHTML loads through the same existing Coordinator initialLoadWork generation/token/authorization, Cookie seed callback drain and stopLoading checks. No direct HTML call bypass. Empty display uses existing URL GET path.",
+  "newTaskEffectFacts": [
+    "sourceBrowserPostMaySend recorded before same-task POST fetch begins; conservative may-have-effect fact including cancellation",
+    "sourceBrowserPostResponseReceived recorded only after AnalyzeUrl returns its response/body; no rollback or success-credential claim"
+  ],
+  "unchanged": [
+    "existing GET/result DTO modes and synthetic200/OK/empty headers",
+    "explicit local HTML/WebJS unsupported",
+    "same source/HTTP/Cookie owners and cancellation/deadline",
+    "no new store/VM/cache/native HTTP owner",
+    "existing flight/generalWebJS/V2 browser remain incomplete"
+  ],
+  "verificationPlanned": [
+    "real loopback POST body/content-type/authored headers and redirect, assert one POST per browser action",
+    "defaulttrue prefetched body reuse vs false actual DOM contract wire",
+    "held real HTTP cancellation retains may-send and rejects late UI admission",
+    "ordinary production-JAR-only outside Java consumer",
+    "Swift grammar and actual Native UIKit consumer definition; no local SDK/UI execution claim"
+  ]
+}

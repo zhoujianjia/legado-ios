@@ -1,0 +1,1167 @@
+{
+  "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+  "members": [
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/ui/browser/WebViewModel.kt",
+      "bytes": 6536,
+      "sha256": "698464861863800d341b33705eec98bc7cc3ca1e9b4c38f7705b62428521f6fa",
+      "excerpts": [
+        {
+          "first": 44,
+          "last": 79,
+          "lines": [
+            {
+              "line": 44,
+              "text": "    fun initData("
+            },
+            {
+              "line": 45,
+              "text": "        intent: Intent,"
+            },
+            {
+              "line": 46,
+              "text": "        success: () -> Unit"
+            },
+            {
+              "line": 47,
+              "text": "    ) {"
+            },
+            {
+              "line": 48,
+              "text": "        execute {"
+            },
+            {
+              "line": 49,
+              "text": "            this@WebViewModel.intent = intent"
+            },
+            {
+              "line": 50,
+              "text": "            val url = intent.getStringExtra(\"url\")"
+            },
+            {
+              "line": 51,
+              "text": "                ?: throw NoStackTraceException(\"url不能为空\")"
+            },
+            {
+              "line": 52,
+              "text": "            sourceName = intent.getStringExtra(\"sourceName\") ?: \"\""
+            },
+            {
+              "line": 53,
+              "text": "            sourceOrigin = intent.getStringExtra(\"sourceOrigin\") ?: \"\""
+            },
+            {
+              "line": 54,
+              "text": "            sourceType = intent.getIntExtra(\"sourceType\", SourceType.book)"
+            },
+            {
+              "line": 55,
+              "text": "            sourceVerificationEnable = intent.getBooleanExtra(\"sourceVerificationEnable\", false)"
+            },
+            {
+              "line": 56,
+              "text": "            refetchAfterSuccess = intent.getBooleanExtra(\"refetchAfterSuccess\", true)"
+            },
+            {
+              "line": 57,
+              "text": "            verificationResultKey = intent.getStringExtra(\"verificationResultKey\")"
+            },
+            {
+              "line": 58,
+              "text": "            html = intent.getStringExtra(\"html\")?.let{"
+            },
+            {
+              "line": 59,
+              "text": "                localHtml = true"
+            },
+            {
+              "line": 60,
+              "text": "                val headIndex = it.indexOf(\"<head\", ignoreCase = true)"
+            },
+            {
+              "line": 61,
+              "text": "                if (headIndex >= 0) {"
+            },
+            {
+              "line": 62,
+              "text": "                    val closingHeadIndex = it.indexOf('>', startIndex = headIndex)"
+            },
+            {
+              "line": 63,
+              "text": "                    if (closingHeadIndex >= 0) {"
+            },
+            {
+              "line": 64,
+              "text": "                        val insertPos = closingHeadIndex + 1"
+            },
+            {
+              "line": 65,
+              "text": "                        StringBuilder(it).insert(insertPos, \"<script>$JS_INJECTION2</script>\").toString()"
+            },
+            {
+              "line": 66,
+              "text": "                    } else {"
+            },
+            {
+              "line": 67,
+              "text": "                        \"<head><script>$JS_INJECTION2</script></head>$it\""
+            },
+            {
+              "line": 68,
+              "text": "                    }"
+            },
+            {
+              "line": 69,
+              "text": "                } else {"
+            },
+            {
+              "line": 70,
+              "text": "                    \"<head><script>$JS_INJECTION2</script></head>$it\""
+            },
+            {
+              "line": 71,
+              "text": "                }"
+            },
+            {
+              "line": 72,
+              "text": "            }"
+            },
+            {
+              "line": 73,
+              "text": "            source = SourceHelp.getSource(sourceOrigin, sourceType)"
+            },
+            {
+              "line": 74,
+              "text": "            val analyzeUrl = AnalyzeUrl(url, source = source, coroutineContext = coroutineContext)"
+            },
+            {
+              "line": 75,
+              "text": "            baseUrl = analyzeUrl.url"
+            },
+            {
+              "line": 76,
+              "text": "            headerMap.putAll(analyzeUrl.headerMap)"
+            },
+            {
+              "line": 77,
+              "text": "            if (analyzeUrl.isPost()) {"
+            },
+            {
+              "line": 78,
+              "text": "                html = analyzeUrl.getStrResponseAwait(useWebView = false).body"
+            },
+            {
+              "line": 79,
+              "text": "            }"
+            }
+          ]
+        },
+        {
+          "first": 117,
+          "last": 149,
+          "lines": [
+            {
+              "line": 117,
+              "text": "    fun saveVerificationResult(webView: WebView, success: () -> Unit) {"
+            },
+            {
+              "line": 118,
+              "text": "        if (!sourceVerificationEnable) {"
+            },
+            {
+              "line": 119,
+              "text": "            return success.invoke()"
+            },
+            {
+              "line": 120,
+              "text": "        }"
+            },
+            {
+              "line": 121,
+              "text": "        if (refetchAfterSuccess) {"
+            },
+            {
+              "line": 122,
+              "text": "            execute {"
+            },
+            {
+              "line": 123,
+              "text": "                val url = intent!!.getStringExtra(\"url\")!!"
+            },
+            {
+              "line": 124,
+              "text": "                val source = appDb.bookSourceDao.getBookSource(sourceOrigin)"
+            },
+            {
+              "line": 125,
+              "text": "                if (html == null) {"
+            },
+            {
+              "line": 126,
+              "text": "                    html = AnalyzeUrl("
+            },
+            {
+              "line": 127,
+              "text": "                        url,"
+            },
+            {
+              "line": 128,
+              "text": "                        headerMapF = headerMap,"
+            },
+            {
+              "line": 129,
+              "text": "                        source = source,"
+            },
+            {
+              "line": 130,
+              "text": "                        coroutineContext = coroutineContext"
+            },
+            {
+              "line": 131,
+              "text": "                    ).getStrResponseAwait(useWebView = false).body"
+            },
+            {
+              "line": 132,
+              "text": "                }"
+            },
+            {
+              "line": 133,
+              "text": "                SourceVerificationHelp.setResult(verificationResultKey, html ?: \"\", baseUrl)"
+            },
+            {
+              "line": 134,
+              "text": "            }.onSuccess {"
+            },
+            {
+              "line": 135,
+              "text": "                success.invoke()"
+            },
+            {
+              "line": 136,
+              "text": "            }"
+            },
+            {
+              "line": 137,
+              "text": "        } else {"
+            },
+            {
+              "line": 138,
+              "text": "            webView.evaluateJavascript(\"document.documentElement.outerHTML\") {"
+            },
+            {
+              "line": 139,
+              "text": "                execute {"
+            },
+            {
+              "line": 140,
+              "text": "                    html = StringEscapeUtils.unescapeJson(it).trim('\"')"
+            },
+            {
+              "line": 141,
+              "text": "                }.onSuccess {"
+            },
+            {
+              "line": 142,
+              "text": "                    SourceVerificationHelp.setResult("
+            },
+            {
+              "line": 143,
+              "text": "                        verificationResultKey,"
+            },
+            {
+              "line": 144,
+              "text": "                        html ?: \"\","
+            },
+            {
+              "line": 145,
+              "text": "                        webView.url ?: \"\","
+            },
+            {
+              "line": 146,
+              "text": "                    )"
+            },
+            {
+              "line": 147,
+              "text": "                    success.invoke()"
+            },
+            {
+              "line": 148,
+              "text": "                }"
+            },
+            {
+              "line": 149,
+              "text": "            }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/ui/browser/WebViewActivity.kt",
+      "bytes": 20149,
+      "sha256": "777bd10e19c7686014a23a02547368562cdb85153bfaab2e79a5236e43805e34",
+      "excerpts": [
+        {
+          "first": 118,
+          "last": 145,
+          "lines": [
+            {
+              "line": 118,
+              "text": "            return"
+            },
+            {
+              "line": 119,
+              "text": "        }"
+            },
+            {
+              "line": 120,
+              "text": "        currentWebView.post {"
+            },
+            {
+              "line": 121,
+              "text": "            currentWebView.clearHistory()"
+            },
+            {
+              "line": 122,
+              "text": "        }"
+            },
+            {
+              "line": 123,
+              "text": "        binding.titleBar.title = intent.getStringExtra(\"title\") ?: getString(R.string.loading)"
+            },
+            {
+              "line": 124,
+              "text": "        binding.titleBar.subtitle = intent.getStringExtra(\"sourceName\")"
+            },
+            {
+              "line": 125,
+              "text": "        viewModel.initData(intent) {"
+            },
+            {
+              "line": 126,
+              "text": "            val url = viewModel.baseUrl"
+            },
+            {
+              "line": 127,
+              "text": "            val headerMap = viewModel.headerMap"
+            },
+            {
+              "line": 128,
+              "text": "            val requestConfig = headerMap.toWebViewRequestConfig(AppConfig.userAgent)"
+            },
+            {
+              "line": 129,
+              "text": "            initWebView(url, requestConfig.userAgent)"
+            },
+            {
+              "line": 130,
+              "text": "            val html = viewModel.html"
+            },
+            {
+              "line": 131,
+              "text": "            if (html.isNullOrEmpty()) {"
+            },
+            {
+              "line": 132,
+              "text": "                currentWebView.loadUrl(url, requestConfig.additionalHeaders)"
+            },
+            {
+              "line": 133,
+              "text": "            } else {"
+            },
+            {
+              "line": 134,
+              "text": "                if (viewModel.localHtml) {"
+            },
+            {
+              "line": 135,
+              "text": "                    viewModel.source?.let {"
+            },
+            {
+              "line": 136,
+              "text": "                        val webJsExtensions = WebJsExtensions(it, this, currentWebView)"
+            },
+            {
+              "line": 137,
+              "text": "                        currentWebView.addJavascriptInterface(webJsExtensions, nameJava)"
+            },
+            {
+              "line": 138,
+              "text": "                    }"
+            },
+            {
+              "line": 139,
+              "text": "                    currentWebView.addJavascriptInterface(WebCacheManager, nameCache)"
+            },
+            {
+              "line": 140,
+              "text": "                }"
+            },
+            {
+              "line": 141,
+              "text": "                currentWebView.loadDataWithBaseURL(url, html, \"text/html\", \"utf-8\", url)"
+            },
+            {
+              "line": 142,
+              "text": "            }"
+            },
+            {
+              "line": 143,
+              "text": "        }"
+            },
+            {
+              "line": 144,
+              "text": "        currentWebView.clearHistory()"
+            },
+            {
+              "line": 145,
+              "text": "        onBackPressedDispatcher.addCallback(this) {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+      "bytes": 45719,
+      "sha256": "b587bd35e58898a0197abedb352a2acbe8c1a3c5c24573d77d2b7a98b6d7be6c",
+      "excerpts": [
+        {
+          "first": 396,
+          "last": 436,
+          "lines": [
+            {
+              "line": 396,
+              "text": "     * @param url 要打开的链接"
+            },
+            {
+              "line": 397,
+              "text": "     * @param title 浏览器页面的标题"
+            },
+            {
+              "line": 398,
+              "text": "     */"
+            },
+            {
+              "line": 399,
+              "text": "    fun startBrowser(url: String, title: String) {"
+            },
+            {
+              "line": 400,
+              "text": "        return startBrowser(url, title, null)"
+            },
+            {
+              "line": 401,
+              "text": "    }"
+            },
+            {
+              "line": 402,
+              "text": ""
+            },
+            {
+              "line": 403,
+              "text": "    fun startBrowser(url: String, title: String, html: String?) {"
+            },
+            {
+              "line": 404,
+              "text": "        rhinoContext.ensureActive()"
+            },
+            {
+              "line": 405,
+              "text": "        if (!canOpenSourceUi()) return"
+            },
+            {
+              "line": 406,
+              "text": "        SourceVerificationHelp.startBrowser(getSource(), url, title, html=html)"
+            },
+            {
+              "line": 407,
+              "text": "    }"
+            },
+            {
+              "line": 408,
+              "text": ""
+            },
+            {
+              "line": 409,
+              "text": "    /**"
+            },
+            {
+              "line": 410,
+              "text": "     * 使用内置浏览器打开链接，并等待网页结果"
+            },
+            {
+              "line": 411,
+              "text": "     */"
+            },
+            {
+              "line": 412,
+              "text": "    fun startBrowserAwait(url: String, title: String): StrResponse {"
+            },
+            {
+              "line": 413,
+              "text": "        return startBrowserAwait(url, title, true, null)"
+            },
+            {
+              "line": 414,
+              "text": "    }"
+            },
+            {
+              "line": 415,
+              "text": ""
+            },
+            {
+              "line": 416,
+              "text": "    fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean): StrResponse {"
+            },
+            {
+              "line": 417,
+              "text": "        return startBrowserAwait(url, title, refetchAfterSuccess, null)"
+            },
+            {
+              "line": 418,
+              "text": "    }"
+            },
+            {
+              "line": 419,
+              "text": ""
+            },
+            {
+              "line": 420,
+              "text": "    fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean, html: String?): StrResponse {"
+            },
+            {
+              "line": 421,
+              "text": "        rhinoContext.ensureActive()"
+            },
+            {
+              "line": 422,
+              "text": "        if (!canOpenSourceUi()) throw NoStackTraceException(\"已阻止当前操作中的书源网页跳转\")"
+            },
+            {
+              "line": 423,
+              "text": "        return when (val result = SourceVerificationHelp.getVerificationResult("
+            },
+            {
+              "line": 424,
+              "text": "            getSource(), url, title, true, refetchAfterSuccess, html, context"
+            },
+            {
+              "line": 425,
+              "text": "        )) {"
+            },
+            {
+              "line": 426,
+              "text": "            is VerificationResult.Response -> {"
+            },
+            {
+              "line": 427,
+              "text": "                val (url2, body) = result.value"
+            },
+            {
+              "line": 428,
+              "text": "                StrResponse(url2.ifEmpty { url }, body)"
+            },
+            {
+              "line": 429,
+              "text": "            }"
+            },
+            {
+              "line": 430,
+              "text": ""
+            },
+            {
+              "line": 431,
+              "text": "            VerificationResult.Refetch -> AnalyzeUrl("
+            },
+            {
+              "line": 432,
+              "text": "                url,"
+            },
+            {
+              "line": 433,
+              "text": "                source = getSource(),"
+            },
+            {
+              "line": 434,
+              "text": "                coroutineContext = context"
+            },
+            {
+              "line": 435,
+              "text": "            ).getStrResponse(useWebView = false)"
+            },
+            {
+              "line": 436,
+              "text": "        }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/help/source/SourceVerificationHelp.kt",
+      "bytes": 13958,
+      "sha256": "e3f0cb0c71c581c6e5f18c08173e09cca1d2fb0ffc154da760c8d056b7a5b283",
+      "excerpts": [
+        {
+          "first": 300,
+          "last": 334,
+          "lines": [
+            {
+              "line": 300,
+              "text": "                    putExtra(\"sourceName\", source.getTag())"
+            },
+            {
+              "line": 301,
+              "text": "                    putExtra(\"sourceType\", source.getSourceType())"
+            },
+            {
+              "line": 302,
+              "text": "                    putExtra(\"verificationResultKey\", verificationResultKey)"
+            },
+            {
+              "line": 303,
+              "text": "                }"
+            },
+            {
+              "line": 304,
+              "text": "            } else {"
+            },
+            {
+              "line": 305,
+              "text": "                startBrowser("
+            },
+            {
+              "line": 306,
+              "text": "                    source,"
+            },
+            {
+              "line": 307,
+              "text": "                    url,"
+            },
+            {
+              "line": 308,
+              "text": "                    title,"
+            },
+            {
+              "line": 309,
+              "text": "                    true,"
+            },
+            {
+              "line": 310,
+              "text": "                    refetchAfterSuccess,"
+            },
+            {
+              "line": 311,
+              "text": "                    html,"
+            },
+            {
+              "line": 312,
+              "text": "                    verificationResultKey,"
+            },
+            {
+              "line": 313,
+              "text": "                )"
+            },
+            {
+              "line": 314,
+              "text": "            }"
+            },
+            {
+              "line": 315,
+              "text": ""
+            },
+            {
+              "line": 316,
+              "text": "            var waitUserInput = false"
+            },
+            {
+              "line": 317,
+              "text": "            while (getResult(verificationResultKey) == null) {"
+            },
+            {
+              "line": 318,
+              "text": "                if (coroutineContext?.isActive == false) {"
+            },
+            {
+              "line": 319,
+              "text": "                    throw CancellationException(\"source verification cancelled\")"
+            },
+            {
+              "line": 320,
+              "text": "                }"
+            },
+            {
+              "line": 321,
+              "text": "                if (Thread.interrupted()) {"
+            },
+            {
+              "line": 322,
+              "text": "                    throw InterruptedException(\"source verification interrupted\")"
+            },
+            {
+              "line": 323,
+              "text": "                }"
+            },
+            {
+              "line": 324,
+              "text": "                if (!waitUserInput && html == null) {"
+            },
+            {
+              "line": 325,
+              "text": "                    AppLog.putDebug(\"等待返回验证结果...\")"
+            },
+            {
+              "line": 326,
+              "text": "                    waitUserInput = true"
+            },
+            {
+              "line": 327,
+              "text": "                }"
+            },
+            {
+              "line": 328,
+              "text": "                LockSupport.parkNanos(this, waitPollTime)"
+            },
+            {
+              "line": 329,
+              "text": "            }"
+            },
+            {
+              "line": 330,
+              "text": "            val result = getResult(verificationResultKey)"
+            },
+            {
+              "line": 331,
+              "text": "                ?: throw NoStackTraceException(\"验证结果为空\")"
+            },
+            {
+              "line": 332,
+              "text": "            if (result.second.isEmpty()) throw NoStackTraceException(\"验证结果为空\")"
+            },
+            {
+              "line": 333,
+              "text": "            return result"
+            },
+            {
+              "line": 334,
+              "text": "        } catch (error: Throwable) {"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 35401,
+      "sha256": "f7ba074137c8e3a847dc7bbf9465c7fd9318646c5670c144300e7959fb931a9b",
+      "excerpts": [
+        {
+          "first": 330,
+          "last": 405,
+          "lines": [
+            {
+              "line": 330,
+              "text": "        encodedQuery = encodeParams(query, charset, true)"
+            },
+            {
+              "line": 331,
+              "text": "    }"
+            },
+            {
+              "line": 332,
+              "text": ""
+            },
+            {
+              "line": 333,
+              "text": "    private fun encodeParams(params: String, charset: String?, isQuery: Boolean): String {"
+            },
+            {
+              "line": 334,
+              "text": "        val checkEncoded = charset.isNullOrEmpty()"
+            },
+            {
+              "line": 335,
+              "text": "        val charset = when {"
+            },
+            {
+              "line": 336,
+              "text": "            charset.isNullOrEmpty() -> Charsets.UTF_8"
+            },
+            {
+              "line": 337,
+              "text": "            charset == \"escape\" -> null"
+            },
+            {
+              "line": 338,
+              "text": "            else -> charset(charset)"
+            },
+            {
+              "line": 339,
+              "text": "        }"
+            },
+            {
+              "line": 340,
+              "text": "        if (isQuery && charset != null) {"
+            },
+            {
+              "line": 341,
+              "text": "            if (NetworkUtils.encodedQuery(params)) {"
+            },
+            {
+              "line": 342,
+              "text": "                return params"
+            },
+            {
+              "line": 343,
+              "text": "            }"
+            },
+            {
+              "line": 344,
+              "text": "            return queryEncoder.encode(params, charset)"
+            },
+            {
+              "line": 345,
+              "text": "        }"
+            },
+            {
+              "line": 346,
+              "text": "        val len = params.length"
+            },
+            {
+              "line": 347,
+              "text": "        val sb = StringBuilder()"
+            },
+            {
+              "line": 348,
+              "text": "        var pos = 0"
+            },
+            {
+              "line": 349,
+              "text": "        while (pos <= len) {"
+            },
+            {
+              "line": 350,
+              "text": "            if (sb.isNotEmpty()) {"
+            },
+            {
+              "line": 351,
+              "text": "                sb.append(\"&\")"
+            },
+            {
+              "line": 352,
+              "text": "            }"
+            },
+            {
+              "line": 353,
+              "text": "            var ampOffset = params.indexOf(\"&\", pos)"
+            },
+            {
+              "line": 354,
+              "text": "            if (ampOffset == -1) {"
+            },
+            {
+              "line": 355,
+              "text": "                ampOffset = len"
+            },
+            {
+              "line": 356,
+              "text": "            }"
+            },
+            {
+              "line": 357,
+              "text": "            val eqOffset = params.indexOf(\"=\", pos)"
+            },
+            {
+              "line": 358,
+              "text": "            val key: String"
+            },
+            {
+              "line": 359,
+              "text": "            val value: String?"
+            },
+            {
+              "line": 360,
+              "text": "            if (eqOffset == -1 || eqOffset > ampOffset) {"
+            },
+            {
+              "line": 361,
+              "text": "                key = params.substring(pos, ampOffset)"
+            },
+            {
+              "line": 362,
+              "text": "                value = null"
+            },
+            {
+              "line": 363,
+              "text": "            } else {"
+            },
+            {
+              "line": 364,
+              "text": "                key = params.substring(pos, eqOffset)"
+            },
+            {
+              "line": 365,
+              "text": "                value = params.substring(eqOffset + 1, ampOffset)"
+            },
+            {
+              "line": 366,
+              "text": "            }"
+            },
+            {
+              "line": 367,
+              "text": "            sb.appendEncoded(key, checkEncoded, charset)"
+            },
+            {
+              "line": 368,
+              "text": "            if (value != null) {"
+            },
+            {
+              "line": 369,
+              "text": "                sb.append(\"=\")"
+            },
+            {
+              "line": 370,
+              "text": "                sb.appendEncoded(value, checkEncoded, charset)"
+            },
+            {
+              "line": 371,
+              "text": "            }"
+            },
+            {
+              "line": 372,
+              "text": "            pos = ampOffset + 1"
+            },
+            {
+              "line": 373,
+              "text": "        }"
+            },
+            {
+              "line": 374,
+              "text": "        return sb.toString()"
+            },
+            {
+              "line": 375,
+              "text": "    }"
+            },
+            {
+              "line": 376,
+              "text": ""
+            },
+            {
+              "line": 377,
+              "text": "    private fun StringBuilder.appendEncoded("
+            },
+            {
+              "line": 378,
+              "text": "        value: String,"
+            },
+            {
+              "line": 379,
+              "text": "        checkEncoded: Boolean,"
+            },
+            {
+              "line": 380,
+              "text": "        charset: Charset?"
+            },
+            {
+              "line": 381,
+              "text": "    ) {"
+            },
+            {
+              "line": 382,
+              "text": "        if (checkEncoded && NetworkUtils.encodedForm(value)) {"
+            },
+            {
+              "line": 383,
+              "text": "            append(value)"
+            },
+            {
+              "line": 384,
+              "text": "        } else if (charset == null) {"
+            },
+            {
+              "line": 385,
+              "text": "            append(EncoderUtils.escape(value))"
+            },
+            {
+              "line": 386,
+              "text": "        } else {"
+            },
+            {
+              "line": 387,
+              "text": "            append(URLEncoder.encode(value, charset))"
+            },
+            {
+              "line": 388,
+              "text": "        }"
+            },
+            {
+              "line": 389,
+              "text": "    }"
+            },
+            {
+              "line": 390,
+              "text": ""
+            },
+            {
+              "line": 391,
+              "text": ""
+            },
+            {
+              "line": 392,
+              "text": "    /**"
+            },
+            {
+              "line": 393,
+              "text": "     * 执行JS"
+            },
+            {
+              "line": 394,
+              "text": "     */"
+            },
+            {
+              "line": 395,
+              "text": "    fun evalJS(jsStr: String, result: Any? = null): Any? {"
+            },
+            {
+              "line": 396,
+              "text": "        val bindings = buildScriptBindings { bindings ->"
+            },
+            {
+              "line": 397,
+              "text": "            bindings[\"java\"] = this"
+            },
+            {
+              "line": 398,
+              "text": "            bindings[\"baseUrl\"] = baseUrl"
+            },
+            {
+              "line": 399,
+              "text": "            bindings[\"cookie\"] = CookieStore"
+            },
+            {
+              "line": 400,
+              "text": "            bindings[\"cache\"] = CacheManager"
+            },
+            {
+              "line": 401,
+              "text": "            bindings[\"page\"] = page"
+            },
+            {
+              "line": 402,
+              "text": "            bindings[\"key\"] = key"
+            },
+            {
+              "line": 403,
+              "text": "            bindings[\"speakText\"] = speakText"
+            },
+            {
+              "line": 404,
+              "text": "            bindings[\"speakSpeed\"] = speakSpeed"
+            },
+            {
+              "line": 405,
+              "text": "            bindings[\"book\"] = ruleData as? Book"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "legado-master/app/src/main/java/io/legado/app/help/http/StrResponse.kt",
+      "bytes": 1907,
+      "sha256": "99b7138e4657eec7f7d546aa6ebf4fa5d7a7497d6f3cf79e2dd310fbd9cf722c",
+      "excerpts": [
+        {
+          "first": 25,
+          "last": 43,
+          "lines": [
+            {
+              "line": 25,
+              "text": "    constructor(rawResponse: Response, body: String?) {"
+            },
+            {
+              "line": 26,
+              "text": "        this.raw = rawResponse"
+            },
+            {
+              "line": 27,
+              "text": "        this.body = body"
+            },
+            {
+              "line": 28,
+              "text": "    }"
+            },
+            {
+              "line": 29,
+              "text": ""
+            },
+            {
+              "line": 30,
+              "text": "    constructor(url: String, body: String?) {"
+            },
+            {
+              "line": 31,
+              "text": "        val request = try {"
+            },
+            {
+              "line": 32,
+              "text": "            Request.Builder().url(url).build()"
+            },
+            {
+              "line": 33,
+              "text": "        } catch (e: Exception) {"
+            },
+            {
+              "line": 34,
+              "text": "            Request.Builder().url(\"http://localhost/\").build()"
+            },
+            {
+              "line": 35,
+              "text": "        }"
+            },
+            {
+              "line": 36,
+              "text": "        raw = Builder()"
+            },
+            {
+              "line": 37,
+              "text": "            .code(200)"
+            },
+            {
+              "line": 38,
+              "text": "            .message(\"OK\")"
+            },
+            {
+              "line": 39,
+              "text": "            .protocol(Protocol.HTTP_1_1)"
+            },
+            {
+              "line": 40,
+              "text": "            .request(request)"
+            },
+            {
+              "line": 41,
+              "text": "            .build()"
+            },
+            {
+              "line": 42,
+              "text": "        this.body = body"
+            },
+            {
+              "line": 43,
+              "text": "    }"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "conclusions": [
+    "WebViewModel74-78: AnalyzeUrl constructor; snapshot baseURL/headerMap; POST prefetch same original AnalyzeUrl body before presenting",
+    "WebViewActivity130-141: html.isNullOrEmpty() navigates URL+headers, else loadDataWithBaseURL text/html UTF8. POST prefetch is not localHtml and does not install WebJsExtensions",
+    "WebViewModel117-149: refetchAfterSuccess true fetches only html==null; nonnull empty POST body is reused and cannot repeat POST. False reads actual DOM+URL",
+    "SourceVerificationHelp: empty response fails; JS owner response constructs synthetic200/OK/emptyheaders"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+  "bytes": 67994,
+  "sha256": "35629ce013b89bf190cc231f725cb628c5a37a08ae999538598a2fe4a2666c14",
+  "oldDefinitions": [
+    "testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+    "testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+    "testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+    "testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+    "testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+    "testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+    "testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+    "testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+    "testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+    "testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+    "testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+    "testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite"
+  ],
+  "newDefinitions": [
+    "testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody"
+  ],
+  "actualExecution": 0,
+  "flow": "One shared LegadoRuntimeProcess executor, same checked source owner and real default Presenter. NWListener peer consumes real POST body. Actual WK didFinish task-ID-only notification gates mounted confirm; true reuses prefetch, false samples actual DOM; same existing checked Cookie capture then actual dismissal. Observation is never completion. No fake page ACK, sleep, poll, second VM, Keychain store or network owner. Successor fix explicitly waits actual task-ID-matched UIKit presentation completion AND WK didFinish in either order before mounted close; no timing wait or production terminal change."
+}

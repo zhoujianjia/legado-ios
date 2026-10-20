@@ -58,7 +58,7 @@ jobs:
           xcrun simctl bootstatus "$(bash scripts/sim.sh udid)" -b > .build/native-reader-test/simulator-boot.log 2>&1
           python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime
           python -B scripts/reader-experience/native-smoke-tools.py prepare
-      - name: Execute1 MainJS and23 original methods in separate required hosts
+      - name: Execute1 MainJS and24 original methods in separate required hosts
         run: |
           unset LEGADO_RUNTIME_SOURCE_ONLY
           ARGS=(

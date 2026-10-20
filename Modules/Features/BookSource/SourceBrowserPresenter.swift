@@ -15,6 +15,8 @@ import UIKit
 enum SourceBrowserPresenter {
     /// State-only signal from actual UIKit completion; no page text or secrets.
     static let originalPageDidPresent = Notification.Name("YueduOriginalBrowserPageDidPresent")
+    /// Observation only: actual WK didFinish does not complete an awaited page.
+    static let originalPageDidLoad = Notification.Name("YueduOriginalBrowserPageDidLoad")
     /// Installs this as `LegadoJSBridge.sharedBrowserPresenter` and
     /// `sharedCaptchaPresenter`. Called once at launch.
     static func install() {
@@ -296,6 +298,9 @@ enum SourceBrowserPresenter {
                     }, recordEffect: packet.recordEffect) : nil
                 let controller = OriginalPageController(rootView: JsBridgeBrowserView(
                     urlString: url.absoluteString, title: ticket.presentation.title,
+                    // Locked Activity130-141 navigates GET for empty HTML.
+                    // The JVM retains present-empty to prohibit a second POST.
+                    initialHTML: packet.prefetchedHTML?.isEmpty == false ? packet.prefetchedHTML : nil,
                     initialRequest: request, sourceRunHandler: nil,
                     userAgent: userAgent?.isEmpty == false ? userAgent : nil,
                     finishesWhenChallengeClears: packet.awaitsResult,
@@ -308,6 +313,11 @@ enum SourceBrowserPresenter {
                     onOriginalAwaitCompletion: { completeOriginal(ticket, result: $0) },
                     onOriginalPageReady: { [weak ticket] controls in
                         (ticket?.controller as? OriginalPageController)?.pageControls = controls
+                    },
+                    onOriginalPageLoaded: { [weak ticket] in
+                        guard let ticket, !ticket.cancelled, !ticket.ended else { return }
+                        NotificationCenter.default.post(name: originalPageDidLoad, object: nil,
+                            userInfo: ["taskID": ticket.presentation.taskID])
                     },
                     onDismiss: { _ in userCancelledOriginal(ticket) }
                 ))

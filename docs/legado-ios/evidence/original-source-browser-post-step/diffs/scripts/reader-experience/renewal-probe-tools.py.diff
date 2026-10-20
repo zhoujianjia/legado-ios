@@ -1,0 +1,22 @@
+--- a/scripts/reader-experience/renewal-probe-tools.py
++++ b/scripts/reader-experience/renewal-probe-tools.py
+@@ -1049,6 +1049,19 @@
+ )
+ SOURCE_INPUTS += tuple(path for path in CURRENTCORE_ORIGINAL_LOGIN_BROWSER_AWAIT_INPUTS if path not in SOURCE_INPUTS)
+ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 334
++CURRENTCORE_ORIGINAL_LOGIN_BROWSER_POST_INPUTS = (
++    'Modules/Features/BookSource/JsBridgeBrowserView.swift',
++    'Modules/Features/BookSource/SourceBrowserPresenter.swift',
++    'Modules/Services/Online/LegadoPersistentStateHost.swift',
++    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserPostTest.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt',
++    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
++    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
++)
++SOURCE_INPUTS += tuple(path for path in CURRENTCORE_ORIGINAL_LOGIN_BROWSER_POST_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 335
+
+
+ def selection_mode():

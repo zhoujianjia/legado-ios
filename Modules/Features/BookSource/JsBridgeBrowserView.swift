@@ -91,6 +91,7 @@ struct JsBridgeBrowserView: View {
     let originalPageLoadCheck: (@Sendable () throws -> Void)?
     let onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)?
     let onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)?
+    let onOriginalPageLoaded: (() -> Void)?
 
     init(
         urlString: String,
@@ -107,6 +108,7 @@ struct JsBridgeBrowserView: View {
         originalPageLoadCheck: (@Sendable () throws -> Void)? = nil,
         onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)? = nil,
         onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)? = nil,
+        onOriginalPageLoaded: (() -> Void)? = nil,
         onDismiss: @escaping (_ body: String?) -> Void
     ) {
         self.urlString = urlString
@@ -123,6 +125,7 @@ struct JsBridgeBrowserView: View {
         self.originalPageLoadCheck = originalPageLoadCheck
         self.onOriginalAwaitCompletion = onOriginalAwaitCompletion
         self.onOriginalPageReady = onOriginalPageReady
+        self.onOriginalPageLoaded = onOriginalPageLoaded
         self.onDismiss = onDismiss
     }
 
@@ -234,7 +237,8 @@ struct JsBridgeBrowserView: View {
                 originalAwaitPolicy: originalAwaitPolicy,
                 originalPageLoadCheck: originalPageLoadCheck,
                 onOriginalAwaitCompletion: onOriginalAwaitCompletion,
-                onOriginalPageReady: onOriginalPageReady
+                onOriginalPageReady: onOriginalPageReady,
+                onOriginalPageLoaded: onOriginalPageLoaded
             )
                 .edgesIgnoringSafeArea(hidesToolbar ? .all : [])
 
@@ -400,6 +404,7 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
     var originalPageLoadCheck: (@Sendable () throws -> Void)? = nil
     var onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)? = nil
     var onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)? = nil
+    var onOriginalPageLoaded: (() -> Void)? = nil
 
     static let sourceJavaPromptName = SourceWebUIDelegate.sourceBridgePromptName
 
@@ -590,6 +595,7 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
         context.coordinator.originalAwaitPolicy = originalAwaitPolicy
         context.coordinator.originalPageLoadCheck = originalPageLoadCheck
         context.coordinator.onOriginalAwaitCompletion = onOriginalAwaitCompletion
+        context.coordinator.onOriginalPageLoaded = onOriginalPageLoaded
         if originalAwaitPolicy != nil {
             context.coordinator.uiDelegate.onCloseRequested = { [weak coordinator = context.coordinator] in
                 coordinator?.requestOriginalPageClose()
@@ -677,6 +683,7 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
         var originalAwaitPolicy: OriginalBrowserAwaitPolicy?
         var originalPageLoadCheck: (@Sendable () throws -> Void)?
         var onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)?
+        var onOriginalPageLoaded: (() -> Void)?
         var originalAwaitWork: Task<Void, Never>?
         private var initialLoadWork: Task<Void, Never>?
         private var initialLoadGeneration = UUID()
@@ -754,7 +761,7 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
         }
 
         @MainActor
-        func load(url: URL, request initialRequest: URLRequest? = nil, in webView: WKWebView) {
+        func load(url: URL, request initialRequest: URLRequest? = nil, html: String? = nil, in webView: WKWebView) {
             guard !pageLoadStopped else { return }
             // Attach source credentials only to the exact destination prepared by its runtime.
             let request: URLRequest
@@ -827,7 +834,14 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
                         try policy.validateCommit()
                         try self.checkInitialLoad(generation)
                     }
-                    webView.load(request)
+                    if let html {
+                        // Same owned generation/token and real Cookie callback
+                        // drain as URL loads. This HTML is a JVM POST response,
+                        // not a new HTTP transport or a local source JS bridge.
+                        webView.loadHTMLString(html, baseURL: url)
+                    } else {
+                        webView.load(request)
+                    }
                 } catch {
                     guard self.initialLoadGeneration == generation, !self.pageLoadStopped else { return }
                     if self.originalAwaitPolicy != nil {
@@ -846,7 +860,9 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
         @MainActor
         func loadInitial(urlString: String, html: String?, request: URLRequest? = nil, in webView: WKWebView) {
             guard !pageLoadStopped else { return }
-            if let html {
+            if let html, originalPageLoadCheck != nil, let url = URL(string: urlString) {
+                load(url: url, request: request, html: html, in: webView)
+            } else if let html {
                 webView.loadHTMLString(html, baseURL: URL(string: urlString))
             } else if let url = URL(string: urlString) {
                 load(url: url, request: request, in: webView)
@@ -976,6 +992,9 @@ struct JsBridgeBrowserRepresentable: UIViewRepresentable {
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            // A real load observation is useful to consumers, but is never the
+            // original confirmation/result. Explicit cancellation seals it.
+            if !pageLoadStopped { onOriginalPageLoaded?() }
             DispatchQueue.main.async { [weak self] in
                 self?.bridge?.progress = 1
                 self?.bridge?.phase = .finished

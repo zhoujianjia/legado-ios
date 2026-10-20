@@ -80,24 +80,46 @@ internal class ProductionRulePlatform(
         check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
         task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "render", "deltaUp" to deltaUp))
     }
-    private fun prepareLoginBrowser(source: BaseSource, url: String, title: String): Pair<AnalyzeUrl, JsonObject> {
+    private data class PreparedLoginBrowser(val initialURL: String, val initialHeaders: Map<String, String>,
+        val prefetchedHTML: String?, val input: JsonObject)
+    private fun prepareLoginBrowser(source: BaseSource, url: String, title: String): PreparedLoginBrowser {
         ensureOwnerOpen(); task.ensureActiveForRuntime()
         check(source.getRuleEnvironment() === environment()) { "Browser source belongs to another environment" }
         if (!task.sensitiveSourceOperation) unsupportedRule("original browser requires an explicit login task")
         require(url.length < 65_536 && title.toByteArray(Charsets.UTF_8).size <= 8_192) { "Browser request text exceeds its budget" }
         val owner = task.session.options.stateOwner ?: unsupportedRule("original browser requires the checked source owner")
-        // Locked WebViewModel74-78: the initial AnalyzeUrl owns URL/header
-        // preparation. POST prefetch and explicit local HTML remain unported.
+        // Locked WebViewModel74-78 captures URL/headers before the same
+        // AnalyzeUrl performs POST. The initial HTML is not localHtml/WebJS.
         val analyze = AnalyzeUrl(url, source = source, environment = environment(), coroutineContext = source.getRuleCoroutineContext())
-        if (analyze.isPost()) unsupportedRule("original browser POST prefetch")
-        val parsed = java.net.URI(analyze.url)
+        val initialURL = analyze.url
+        val initialHeaders = LinkedHashMap(analyze.headerMap)
+        val parsed = java.net.URI(initialURL)
         if (parsed.scheme?.lowercase() !in setOf("http", "https")) unsupportedRule("original browser URL scheme")
-        return analyze to io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to source.getKey(),
-            "url" to analyze.url, "title" to title, "headers" to analyze.headerMap)
+        val prefetchedHTML = if (analyze.isPost()) {
+            task.ensureActiveForRuntime()
+            // Conservative fact: HTTP may escape before cancellation. It is
+            // neither a successful response nor an accepted credential write.
+            task.recordHostEffect("sourceBrowserPostMaySend")
+            val fetched = runBlocking(source.getRuleCoroutineContext()) {
+                analyze.getStrResponseAwait(useWebView = false)
+            }
+            task.recordHostEffect("sourceBrowserPostResponseReceived")
+            fetched.body().also { body ->
+                if (body.toByteArray(Charsets.UTF_8).size > 4 * 1024 * 1024)
+                    throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "Browser prefetch exceeds its byte budget")
+            }
+        } else null
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        val input = io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to source.getKey(),
+            "url" to initialURL, "title" to title, "headers" to initialHeaders)
+        // Absent GET versus present empty POST is observable in original
+        // confirm(): only absent HTML permits the original HTTP refetch.
+        if (prefetchedHTML != null) input.addProperty("prefetchedHTML", prefetchedHTML)
+        return PreparedLoginBrowser(initialURL, initialHeaders, prefetchedHTML, input)
     }
 
     override fun startLoginBrowser(source: BaseSource, url: String, title: String) {
-        val (_, input) = prepareLoginBrowser(source, url, title)
+        val input = prepareLoginBrowser(source, url, title).input
         val reply = hostDispatch(task, "source.browser", input)
         ensureOwnerOpen(); task.ensureActiveForRuntime()
         if (reply["presented"]?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } != true)
@@ -105,7 +127,8 @@ internal class ProductionRulePlatform(
     }
 
     override fun awaitLoginBrowser(source: BaseSource, url: String, title: String, refetchAfterSuccess: Boolean): StrResponse {
-        val (initial, input) = prepareLoginBrowser(source, url, title)
+        val initial = prepareLoginBrowser(source, url, title)
+        val input = initial.input
         input.addProperty("awaitsResult", true)
         input.addProperty("refetchAfterSuccess", refetchAfterSuccess)
         val reply = hostDispatch(task, "source.browser", input)
@@ -127,13 +150,12 @@ internal class ProductionRulePlatform(
             // source gate from a MainActor page callback. Locked owner behavior
             // snapshots the first headers, reparses the original input URL, and
             // returns its initial analyzed URL rather than HTTP redirect URL.
-            val fetched = runBlocking(source.getRuleCoroutineContext()) {
+            body = initial.prefetchedHTML ?: runBlocking(source.getRuleCoroutineContext()) {
                 AnalyzeUrl(url, source = source, environment = environment(),
-                    coroutineContext = source.getRuleCoroutineContext(), headerMapF = initial.headerMap)
-                    .getStrResponseAwait(useWebView = false)
+                    coroutineContext = source.getRuleCoroutineContext(), headerMapF = initial.initialHeaders)
+                    .getStrResponseAwait(useWebView = false).body()
             }
-            body = fetched.body()
-            responseURL = initial.url.ifEmpty { url }
+            responseURL = initial.initialURL.ifEmpty { url }
         } else {
             if (mode != "response")
                 throw io.yuedu.legado.RuntimeFailure("INVALID_BROWSER_RESULT", "Awaited page needs its DOM response")

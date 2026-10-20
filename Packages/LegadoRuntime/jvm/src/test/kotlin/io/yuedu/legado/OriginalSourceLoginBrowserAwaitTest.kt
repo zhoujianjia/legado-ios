@@ -54,7 +54,7 @@ class OriginalSourceLoginBrowserAwaitTest {
             assertEquals("BROWSER_CANCELLED",cancelled["error"].asJsonObject["code"].asString)
             assertFalse(cancelled.toString().contains("SYNTHETIC-AWAIT-PRIVATE"))
             owned.failure=null;val count=owned.pages.size
-            for(script in listOf("java.startBrowserAwait('https://synthetic-await.invalid/page','HTML',false,'');","java.startBrowserAwait('https://synthetic-await.invalid/page,{\"method\":\"POST\",\"body\":\"a=b\"}','Post');")){
+            for(script in listOf("java.startBrowserAwait('https://synthetic-await.invalid/page','HTML',false,'');")){
                 assertEquals("UNSUPPORTED_CAPABILITY",owned.call(script,success=false)["error"].asJsonObject["code"].asString)
             }
             assertEquals(count,owned.pages.size);assertEquals(0,owned.credentialCalls);assertEquals(0,owned.httpHostCalls)

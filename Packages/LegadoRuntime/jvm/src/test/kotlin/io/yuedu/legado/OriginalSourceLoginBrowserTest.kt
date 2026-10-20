@@ -35,7 +35,6 @@ class OriginalSourceLoginBrowserTest {
             for(script in listOf(
                 "java.showBrowser('https://synthetic-browser.invalid/page');",
                 "java.startBrowser('https://synthetic-browser.invalid/page','HTML','');",
-                "java.startBrowser('https://synthetic-browser.invalid/page,{\"method\":\"POST\",\"body\":\"x=y\"}','Post');",
                 "java.startBrowser('file:///private/synthetic','Not web');")) {
                 val reply=owned.call(script,success=false)
                 assertEquals(reply.toString(),"UNSUPPORTED_CAPABILITY",reply["error"].asJsonObject["code"].asString)

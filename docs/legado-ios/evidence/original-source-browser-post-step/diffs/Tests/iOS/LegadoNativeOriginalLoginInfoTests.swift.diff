@@ -1,0 +1,152 @@
+--- baseline/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
++++ candidate/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
+@@ -633,6 +633,96 @@
+         if let problem { throw problem }
+     }
+
++    func testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody() async throws {
++        executionTimeAllowance = 180
++        try await requireNativeRuntime()
++        let fixture = try await Task.detached { try Fixture() }.value
++        let peer = try OriginalAwaitHTTPPeer()
++        let ready = expectation(description: "Synthetic POST HTTP peer ready")
++        peer.start { ready.fulfill() }
++        await fulfillment(of: [ready], timeout: 10)
++        let process = LegadoRuntimeProcess.shared
++        let runtime = try await process.executor()
++        let owner = try await process.bindPersistentSource(sourceURL: fixture.a, sourceRevision: "native-browser-post-v1")
++        var session: LegadoSourceSession?
++        var problem: Error?
++        var taskIDs: [String] = []
++        do {
++            let url = try peer.readyURL()
++            var source = BookSource()
++            source.bookSourceUrl = fixture.a; source.enabledCookieJar = true
++            source.loginUi = "[]"; source.loginUrl = "var browserPostPrelude=true;"
++            let admittedSource = source
++            let sourceJSON = try await Task.detached {
++                String(decoding: try JSONEncoder().encode(admittedSource), as: UTF8.self)
++            }.value
++            let current = try await runtime.createSession(sourceJSON: sourceJSON,
++                options: .init(httpTransport: .jvmOkHttp, stateOwner: owner,
++                    sourceMode: .originalTraditional, cookieAccess: .appOwnerText))
++            session = current
++            let pageDidLoad = await SourceBrowserPresenter.originalPageDidLoad
++            let pageDidPresent = await SourceBrowserPresenter.originalPageDidPresent
++            for refetch in [true, false] {
++                let taskID = UUID().uuidString
++                taskIDs.append(taskID)
++                let loaded = expectation(description: "Actual POST HTML WK didFinish")
++                loaded.assertForOverFulfill = false
++                let presented = expectation(description: "Actual POST page UIKit presentation completed")
++                let presentationObserver = NotificationCenter.default.addObserver(forName: pageDidPresent,
++                    object: nil, queue: nil) { event in
++                    if event.userInfo?["taskID"] as? String == taskID { presented.fulfill() }
++                }
++                let observer = NotificationCenter.default.addObserver(forName: pageDidLoad,
++                    object: nil, queue: nil) { event in
++                    if event.userInfo?["taskID"] as? String == taskID { loaded.fulfill() }
++                }
++                let effects = OriginalBrowserEffects()
++                let postURL = url + ",{\"method\":\"POST\",\"body\":\"field=synthetic\"}"
++                let mode = refetch ? "true" : "false"
++                let bodyCheck = refetch
++                    ? "String(r.body())==='<html>synthetic-await-body</html>'"
++                    : "String(r.body()).indexOf('synthetic-await-body')>=0"
++                let pending = Task {
++                    try await runtime.loginActionOriginal(session: current,
++                        action: "var r=java.startBrowserAwait('\(postURL)','Synthetic POST',\(mode));if(!(\(bodyCheck))||String(r.url())!=='\(url)'||r.code()!==200||String(r.message())!=='OK'||r.headers().size()!==0)throw new Error('wrong POST owner response');",
++                        credentials: [:], taskID: taskID, onReportedEffects: { effects.record($0) })
++                }
++                // Inline HTML can finish before UIKit's presentation animation.
++                // Mounted close requires both real signals, in either order.
++                await fulfillment(of: [presented, loaded], timeout: 20)
++                NotificationCenter.default.removeObserver(presentationObserver)
++                NotificationCenter.default.removeObserver(observer)
++                // Actual DOM is loaded and UIKit presented, then mounted confirmation performs
++                // checked Cookie capture and waits for real UIKit dismissal.
++                await SourceBrowserPresenter.requestOriginalPageClose(taskID: taskID)
++                do { let result = try await pending.value; XCTAssertTrue(result.executed) }
++                catch { pending.cancel(); _ = await pending.result; throw error }
++                let active = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
++                XCTAssertFalse(active)
++                XCTAssertTrue(effects.snapshot().contains("sourceBrowserPostMaySend"))
++                XCTAssertTrue(effects.snapshot().contains("sourceBrowserPostResponseReceived"))
++                XCTAssertTrue(effects.snapshot().contains("sourceBrowserCookieCaptureCompleted"))
++            }
++            XCTAssertEqual(peer.requestMethods, ["POST", "POST"], "Neither HTML display nor true confirmation may repeat POST or issue GET")
++            XCTAssertEqual(peer.requestBodies, ["field=synthetic", "field=synthetic"])
++            XCTAssertTrue(peer.requestContentTypes.allSatisfy { $0.hasPrefix("application/x-www-form-urlencoded") })
++            let raw = try await Task.detached {
++                try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
++            }.value
++            XCTAssertNil(raw)
++        } catch { problem = error }
++        for taskID in taskIDs { await SourceBrowserPresenter.cancelOriginal(taskID: taskID) }
++        if let session {
++            do { try await runtime.close(session: session) } catch { if problem == nil { problem = error } }
++        }
++        await process.revokePersistentSource(owner: owner)
++        let stopped = expectation(description: "POST peer stopped and all connections drained")
++        peer.stop { stopped.fulfill() }
++        await fulfillment(of: [stopped], timeout: 10)
++        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
++        if let problem { throw problem }
++    }
++
+     @MainActor
+     private func exerciseCancelledInitialCookieSeed(url: URL, peer: OriginalAwaitHTTPPeer) async throws {
+         let name = "synthetic_initial_seed_" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
+@@ -724,6 +814,9 @@
+         private let lock = NSLock()
+         private var url: String?
+         private var count = 0
++        private var methods: [String] = []
++        private var bodies: [String] = []
++        private var contentTypes: [String] = []
+         private var failure: String?
+         private var connections: [UUID: NWConnection] = [:]
+         private var stopping = false
+@@ -736,6 +829,9 @@
+             listener = try NWListener(using: parameters)
+         }
+         var requestCount: Int { lock.withLock { count } }
++        var requestMethods: [String] { lock.withLock { methods } }
++        var requestBodies: [String] { lock.withLock { bodies } }
++        var requestContentTypes: [String] { lock.withLock { contentTypes } }
+         func readyURL() throws -> String {
+             try lock.withLock {
+                 guard let url, failure == nil else {
+@@ -816,8 +912,30 @@
+                 var current = bytes
+                 if let data { current.append(data) }
+                 guard error == nil, current.count < 65_536 else { connection.cancel(); return }
+-                if current.range(of: Data("\r\n\r\n".utf8)) != nil {
+-                    let accepted = self.lock.withLock { self.count += 1; return self.count <= 16 }
++                if let boundary = current.range(of: Data("\r\n\r\n".utf8)) {
++                    let headers = String(decoding: current[..<boundary.lowerBound], as: UTF8.self)
++                    let lines = headers.components(separatedBy: "\r\n")
++                    var contentLength = 0
++                    var contentType = ""
++                    for line in lines.dropFirst() {
++                        let pair = line.split(separator: ":", maxSplits: 1).map(String.init)
++                        guard pair.count == 2 else { connection.cancel(); return }
++                        if pair[0].lowercased() == "content-length" {
++                            guard let parsed = Int(pair[1].trimmingCharacters(in: .whitespaces)), (0..<65_536).contains(parsed) else { connection.cancel(); return }
++                            contentLength = parsed
++                        }
++                        if pair[0].lowercased() == "content-type" { contentType = pair[1].trimmingCharacters(in: .whitespaces) }
++                    }
++                    guard current.count >= boundary.upperBound + contentLength else {
++                        if !done { self.receive(connection, bytes: current) } else { connection.cancel() }
++                        return
++                    }
++                    let method = lines.first?.split(separator: " ").first.map(String.init) ?? ""
++                    let bodyText = String(decoding: current[boundary.upperBound..<(boundary.upperBound + contentLength)], as: UTF8.self)
++                    let accepted = self.lock.withLock {
++                        self.count += 1; self.methods.append(method); self.bodies.append(bodyText); self.contentTypes.append(contentType)
++                        return self.count <= 16
++                    }
+                     guard accepted else { connection.cancel(); return }
+                     let body = "<html>synthetic-await-body</html>"
+                     let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: \(body.utf8.count)\r\nConnection: close\r\n\r\n\(body)"
