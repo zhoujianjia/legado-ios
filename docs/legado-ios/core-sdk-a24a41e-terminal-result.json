@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
+  "sourceTag": "reader-renewal-a24a41e",
+  "runID": 39451829856,
+  "jobID": 118728357125,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39451829856",
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "artifacts": [
+    {
+      "id": 12279702076,
+      "bytes": 908369,
+      "sha256": "5a8a012a2df13310404db6e4198f07df0c673c83e7a8db0d922f166775d94a40",
+      "members": 72
+    },
+    {
+      "id": 12279866443,
+      "bytes": 27305,
+      "sha256": "2c92d9ed2b6185ad318bc0ef89fd73e371421dd5671504bca815810a4b490707",
+      "members": 10
+    }
+  ],
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/core-sdk-a24a41e-terminal-result/native/currentcore-native.log",
+      "bytes": 469,
+      "sha256": "93b20cb48ceb88c241a080745e9778518cb33571aef0d93ca2515db235736f05"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-sdk-a24a41e-terminal-result/native/currentcore-completion.json",
+      "bytes": 3881,
+      "sha256": "d47f216d36f13cc681723c5bd2844ef1bab30a7076370fce68accc6ff89c32f9"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-sdk-a24a41e-terminal-result/package/result.json",
+      "bytes": 14505,
+      "sha256": "39915ae58c7dc958fb2378a4b5a1fe951e80e69304c40addd47502ad508e3ab5"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-sdk-a24a41e-terminal-result/package/source-inputs.json",
+      "bytes": 8701,
+      "sha256": "d6889160bd2908ecc303f14c8bdf91f74515207fccbd12c98ff728d9e598a7b9"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-sdk-a24a41e-terminal-result/package/xunit.xml",
+      "bytes": 3129,
+      "sha256": "59cf8f12de3b68c4eeebc4f1f1d49f078453373ec2ac622722055024a4aece31"
+    }
+  ],
+  "firstFailure": {
+    "phase": "producer",
+    "exitCode": 1
+  },
+  "phaseSummary": [
+    {
+      "phase": "producer",
+      "state": "failed",
+      "elapsedSeconds": 21.618658,
+      "exitCode": 1,
+      "timedOut": false
+    },
+    {
+      "phase": "stage",
+      "state": "blocked",
+      "elapsedSeconds": 5.816578,
+      "exitCode": null,
+      "timedOut": null
+    },
+    {
+      "phase": "before-build",
+      "state": "blocked",
+      "elapsedSeconds": 5.971228,
+      "exitCode": null,
+      "timedOut": null
+    },
+    {
+      "phase": "boot",
+      "state": "succeeded",
+      "elapsedSeconds": 213.424214,
+      "exitCode": 0,
+      "timedOut": false
+    },
+    {
+      "phase": "native",
+      "state": "failed",
+      "elapsedSeconds": 614.042152,
+      "exitCode": 1,
+      "timedOut": false
+    },
+    {
+      "phase": "export",
+      "state": "failed",
+      "elapsedSeconds": 22.01087,
+      "exitCode": 1,
+      "timedOut": false
+    },
+    {
+      "phase": "cases",
+      "state": "failed",
+      "elapsedSeconds": 10.462019,
+      "exitCode": 1,
+      "timedOut": false
+    },
+    {
+      "phase": "test-settings",
+      "state": "succeeded",
+      "elapsedSeconds": 41.147826,
+      "exitCode": 0,
+      "timedOut": false
+    },
+    {
+      "phase": "after-tests",
+      "state": "blocked",
+      "elapsedSeconds": 6.899654,
+      "exitCode": null,
+      "timedOut": null
+    },
+    {
+      "phase": "build-settings",
+      "state": "succeeded",
+      "elapsedSeconds": 20.767789,
+      "exitCode": 0,
+      "timedOut": false
+    }
+  ],
+  "producerFinding": "Owned user search-list append/readback membership differs at the raw path boundary; no real file-identity readback evidence establishes the specific path cause. Generation and cleanup remain failed. No fixture substitution or trust expansion is accepted.",
+  "native": {
+    "AppCompilationAttempted": true,
+    "executedTests": 0,
+    "selectedDefinitions": 444,
+    "selectedArgumentLeaves": 447,
+    "compileErrors": [
+      "Modules/Services/Online/SourceCallBackService.swift:68:29: type 'BookStore' has no member 'shared'",
+      "Modules/Services/Online/SourceCallBackService.swift:119:115: type 'BookStore' has no member 'shared'"
+    ],
+    "nativePhaseSeconds": 614.042152,
+    "budgetTimedOut": false,
+    "fixDirection": "Require the existing caller-owned BookStore and update actual callers; never add a global singleton."
+  },
+  "independentSwiftPackage": {
+    "status": "passed",
+    "tests": 18,
+    "failures": 0,
+    "skips": 0,
+    "actualCompilationInputs": 15,
+    "controls": 7,
+    "all22FrozenSourceBlobsVerified": true,
+    "scope": "Source-only macOS SwiftPM typed APIs, host effects and cancellation. No JVM, App, device, original rule runtime or renewal acceptance."
+  },
+  "otherJobs": "Corrected build14 and Native75c87a9 jobs remain independently live; their results are not inferred from this SDK failure.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
