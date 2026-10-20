@@ -444,7 +444,7 @@ struct CoverImagePipelineTests {
             diagnosticLog: nil,
             coverPipeline: pipeline
         )
-        try service.clear(.covers)
+        try await service.clear(.covers)
         fixture.probe.release(downloaded)
         fixture.probe.release(custom)
 

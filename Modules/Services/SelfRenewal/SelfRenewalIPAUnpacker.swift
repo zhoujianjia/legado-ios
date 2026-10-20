@@ -46,6 +46,106 @@ enum SelfRenewalIPAUnpacker {
         }
     }
 
+    /// Snapshot the real, presently verified installed bundle for the next
+    /// renewal. The URL exists only inside this drained scope; it carries no
+    /// signing or installation authority and enters the ordinary IPA verifier
+    /// and Coordinator.prepare path again. No imported/previous IPA is reused.
+    nonisolated static func withCurrentApplicationArchive<T: Sendable>(application root: URL,
+        codeAnchors: [Data], profileAnchors: [Data], at date: Date,
+        operation: @escaping @Sendable (URL) async throws -> T) async throws -> T {
+        let worker = Task.detached(priority: .utility) {
+            let started = SourcePerfTrace.now
+            var total = 0
+            defer { SourcePerfTrace.record("renewal.ipa.current-bundle", "bytes=\(total) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+            try Task.checkCancellation()
+            let original = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: root,
+                codeAnchors: codeAnchors, profileAnchors: profileAnchors, at: date)
+            let inventory = original.resources.executableMaterials.inventory
+            let entries = inventory.files.count + inventory.directories.count + 2
+            guard entries <= Validator.Limits.entries,
+                  inventory.directories.count + 3 <= Validator.Limits.directoryDescriptors,
+                  inventory.declaredFileBytes <= Int64(Validator.Limits.archiveBytes - entries * 4096 - 22),
+                  inventory.files.allSatisfy({ $0.byteCount <= Int64(Validator.Limits.compressedEntryBytes) }),
+                  date.timeIntervalSince1970 >= 315_532_800, date.timeIntervalSince1970 < 4_354_819_200 else { throw Failure.readBudget }
+            total = Int(inventory.declaredFileBytes)
+            let tree = try OwnedTree()
+            do {
+                let name = "current-" + UUID().uuidString.lowercased() + ".ipa"
+                let descriptor = try tree.file(name)
+                do { try OwnedTree.write(Data([0x50, 0x4b, 0x05, 0x06] + Array(repeating: 0, count: 18)), to: descriptor) }
+                catch { Darwin.close(descriptor); throw error }
+                guard Darwin.close(descriptor) == 0 else { throw Failure.stagingIO }
+                let url = tree.url.appendingPathComponent(name)
+                let archive = try await Archive(url: url, accessMode: .update, pathEncoding: .utf8)
+                let prefix = "Payload/Current.app"
+                for path in ["Payload", prefix] + inventory.directories.map({ prefix + "/" + $0 }) {
+                    try Task.checkCancellation()
+                    try await archive.addEntry(with: path + "/", type: .directory, uncompressedSize: 0,
+                        modificationDate: date, permissions: 0o755, compressionMethod: .none,
+                        bufferSize: Validator.Limits.chunkBytes, provider: { _, _ in Data() })
+                }
+                let executables = Set(inventory.codeFiles.map(\.file.relativePath))
+                var hashes: [String: Data] = [:]
+                for fact in inventory.files {
+                    try Task.checkCancellation(); try tree.validateNames()
+                    // Bind every file, including original resource-rule omissions.
+                    // withOwnedFile rejects links and identity/size/mtime changes.
+                    hashes[fact.relativePath] = try currentHash(root: root, fact: fact)
+                    try await archive.addEntry(with: prefix + "/" + fact.relativePath, type: .file,
+                        uncompressedSize: fact.byteCount, modificationDate: date,
+                        permissions: executables.contains(fact.relativePath) ? 0o755 : 0o644,
+                        compressionMethod: .none, bufferSize: Validator.Limits.chunkBytes, provider: { offset, count in
+                            guard offset >= 0, offset <= Int64(Int.max) else { throw Failure.inputRead }
+                            return try currentPart(root: root, fact: fact, offset: Int(offset), count: count)
+                        })
+                    try tree.boundFile(name, maximumBytes: Validator.Limits.archiveBytes)
+                    guard hashes[fact.relativePath] == (try currentHash(root: root, fact: fact)) else { throw Failure.inputChanged }
+                }
+                // Compare the exact captured bytes too: a transient source edit
+                // during an archive callback cannot hide behind unchanged seals.
+                let expectedHashes = hashes
+                let captured = try await withOwnedApplication(ipa: url, codeAnchors: codeAnchors, profileAnchors: profileAnchors, at: date) { scope in
+                    guard try await scope.hashes() == expectedHashes else { throw Failure.inputChanged }
+                    return scope.original
+                }
+                guard captured == original else { throw Failure.inputChanged }
+                let current = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: root,
+                    codeAnchors: codeAnchors, profileAnchors: profileAnchors, at: date)
+                guard current == original else { throw Failure.inputChanged }
+                for fact in inventory.files {
+                    guard hashes[fact.relativePath] == (try currentHash(root: root, fact: fact)) else { throw Failure.inputChanged }
+                }
+                try Task.checkCancellation(); try tree.validateNames()
+                let result = try await operation(url)
+                try Task.checkCancellation(); try tree.validateNames(); try tree.cleanup()
+                return result
+            } catch {
+                do { try tree.cleanup() } catch { AppLogger.error("Current bundle IPA cleanup failed", error: error) }
+                throw error
+            }
+        }
+        return try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
+    }
+
+    private static func currentPart(root: URL, fact: SelfRenewalMaterialInventory.FileFact, offset: Int, count: Int) throws -> Data {
+        guard offset >= 0, count >= 0, count <= Validator.Limits.chunkBytes,
+              Int64(offset) <= fact.byteCount, Int64(count) <= fact.byteCount - Int64(offset) else { throw Failure.inputRead }
+        return try SelfRenewalMachOSignatureReader.withOwnedFile(root: root, fact: fact, maximumReadBytes: count) { read in
+            try read(.init(offset: UInt64(offset), byteCount: count))
+        }
+    }
+    private static func currentHash(root: URL, fact: SelfRenewalMaterialInventory.FileFact) throws -> Data {
+        try SelfRenewalMachOSignatureReader.withOwnedFile(root: root, fact: fact, maximumReadBytes: Int(fact.byteCount)) { read in
+            var hash = SHA256(); var offset = 0
+            while offset < Int(fact.byteCount) {
+                try Task.checkCancellation()
+                let count = min(Validator.Limits.chunkBytes, Int(fact.byteCount) - offset)
+                hash.update(data: try read(.init(offset: UInt64(offset), byteCount: count))); offset += count
+            }
+            return Data(hash.finalize())
+        }
+    }
+
     nonisolated static func withOwnedApplication<T: Sendable>(ipa input: URL, codeAnchors: [Data], profileAnchors: [Data],
         at date: Date, observer: OperationObserver? = nil, operation: @escaping @Sendable (OwnedApplication) async throws -> T) async throws -> T {
         try Task.checkCancellation()

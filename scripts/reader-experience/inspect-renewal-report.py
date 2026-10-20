@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check one explicitly named diagnostic export; never discover user files.
 
-Schema 1 retains the frozen build 10/11 contract. Schema 2 is source independent:
+Schema 1 retains the frozen build 10/11 contract. Schemas 2/3 are source independent:
 --manifest binds its declarations, while --manifest-sha256 must come from an
 independent delivery audit to establish that binding's provenance. JSON and an
 external digest do not attest a physical device, a signed installation or renewal.
@@ -40,6 +40,10 @@ INTERPRETATION = (
 )
 SELECTION_INTERPRETATION = INTERPRETATION + (
     " At most four selected endpoints may be attempted; unselected candidates remain untested."
+)
+STATE_INTERPRETATION = "Network fields: " + SELECTION_INTERPRETATION + (
+    " App state fields are a public in-memory observation only. Published developer profile expiry is not installed profile expiry."
+    " receiptObserved does not prove installation or renewed signing validity."
 )
 OUTCOMES = {
     "tcpConnected", "noLocalCandidate", "discoveryTimedOut", "discoveryUnavailable", "resolutionFailed",
@@ -263,6 +267,70 @@ def inspect_schema_two(value):
             **{flag: False for flag in FALSE_FLAGS}, "interpretation": envelope["interpretation"]}
 
 
+def inspect_app_state(value):
+    record = exact_object(value, {"capturedAt", "ownerAvailable", "renewalProven", "installationProven"},
+        {"developerServicesConfigured", "isWorking", "recoveryAvailable", "ownerProblem", "signingMaterialProblem",
+         "status", "automaticRenewal", "developerProfileExpiresAt", "developerMaterialObservedAt"}, "appStateObservation")
+    legacy.iso_date(record["capturedAt"], "appStateObservation.capturedAt")
+    available = boolean(record["ownerAvailable"], "appStateObservation.ownerAvailable")
+    for name in ("renewalProven", "installationProven"):
+        require(record[name] is False, "appStateObservation." + name + " must remain false")
+    owner_fields = {"developerServicesConfigured", "isWorking", "recoveryAvailable"}
+    require(available or set(record) == {"capturedAt", "ownerAvailable", "renewalProven", "installationProven"},
+            "an absent owner cannot report owner observations")
+    require(not available or owner_fields.issubset(record), "an available owner requires its public availability flags")
+    for name in owner_fields.intersection(record):
+        boolean(record[name], "appStateObservation." + name)
+    owner_problems = {"invalidConfiguration", "configurationInUse", "signingMaterials", "authenticationNotConfigured",
+                      "authenticationUnavailable", "localStorage", "operationFailed", "cancelled"}
+    for name in ("ownerProblem", "signingMaterialProblem"):
+        if name in record:
+            choice(record[name], owner_problems, "appStateObservation." + name)
+    for name in ("developerProfileExpiresAt", "developerMaterialObservedAt"):
+        if name in record:
+            legacy.iso_date(record[name], "appStateObservation." + name)
+    require("developerProfileExpiresAt" not in record or "developerMaterialObservedAt" in record,
+            "developer profile expiry requires the corresponding material observation date")
+    if "status" in record:
+        status = exact_object(record["status"], {"state", "observedAt"}, {"phase", "problem", "access"}, "appStateObservation.status")
+        choice(status["state"], {"unconfigured", "ready", "candidateReady", "recoveryRequired", "attentionRequired",
+            "retiredUnsubmitted", "authenticatedRecoveryObserved", "unavailable"}, "appStateObservation.status.state")
+        legacy.iso_date(status["observedAt"], "appStateObservation.status.observedAt")
+        if "phase" in status:
+            choice(status["phase"], {"created", "signing", "candidateReady", "uploadIntent", "upgradeIntent", "receiptObserved",
+                "installationUnknown", "lookupObserved", "attentionRequired", "retirementPending", "retired"}, "appStateObservation.status.phase")
+        if "problem" in status:
+            choice(status["problem"], {"configuration", "signingMaterials", "authentication", "storage", "observation", "cancelled"},
+                   "appStateObservation.status.problem")
+        if "access" in status:
+            choice(status["access"], {"signing", "recoveryOnly"}, "appStateObservation.status.access")
+    if "automaticRenewal" in record:
+        automatic = exact_object(record["automaticRenewal"], {"isEnabled", "outcome"}, {"nextEligibleAt", "lastAttemptAt"},
+                                 "appStateObservation.automaticRenewal")
+        enabled = boolean(automatic["isEnabled"], "appStateObservation.automaticRenewal.isEnabled")
+        outcome = choice(automatic["outcome"], {"disabled", "waiting", "configurationRequired", "accountRequired", "recoveryRequired",
+            "interrupted", "receiptObserved", "failed", "clockChanged"}, "appStateObservation.automaticRenewal.outcome")
+        require(enabled == (outcome != "disabled"), "automatic renewal enablement contradicts its observation outcome")
+        for name in ("nextEligibleAt", "lastAttemptAt"):
+            if name in automatic:
+                legacy.iso_date(automatic[name], "appStateObservation.automaticRenewal." + name)
+    return record
+
+
+def inspect_schema_three(value):
+    envelope = exact_object(value, {"schemaVersion", "report", "appStateObservation", "operatingSystem", "computerPoweredOff",
+        "companionAppsAbsent", "dynamicRemotePairingDiscoveryAttempted", "interpretation"},
+        {"appVersion", "appBuild", "sourceCommit"}, "envelope")
+    require(type(envelope["schemaVersion"]) is int and envelope["schemaVersion"] == 3, "unsupported envelope schemaVersion")
+    require(envelope["interpretation"] == STATE_INTERPRETATION, "interpretation differs from the network and public-observation scope")
+    network_envelope = {key: item for key, item in envelope.items() if key != "appStateObservation"}
+    network_envelope["schemaVersion"] = 2
+    network_envelope["interpretation"] = SELECTION_INTERPRETATION
+    network = inspect_schema_two(network_envelope)
+    return {**network, "schemaVersion": 3, "appStateObservation": inspect_app_state(envelope["appStateObservation"]),
+            "interpretation": STATE_INTERPRETATION}
+
+
 def manifest_binding(envelope, manifest_path=None, expected_digest=None):
     require(expected_digest is None or (type(expected_digest) is str and re.fullmatch(r"[0-9a-f]{64}", expected_digest) is not None),
             "expected manifest digest must be lowercase SHA256")
@@ -309,7 +377,12 @@ def inspect_envelope(value, manifest_path=None, manifest_sha256=None):
     require(type(value) is dict and type(value.get("report")) is dict, "envelope must contain a report object")
     schema = value["report"].get("schemaVersion")
     require(type(schema) is int and schema in {1, 2}, "unsupported report schemaVersion")
-    facts = legacy.inspect_envelope(value) if schema == 1 else inspect_schema_two(value)
+    if schema == 1:
+        facts = legacy.inspect_envelope(value)
+    elif type(value.get("schemaVersion")) is int and value["schemaVersion"] == 3:
+        facts = inspect_schema_three(value)
+    else:
+        facts = inspect_schema_two(value)
     binding = manifest_binding(value, manifest_path, manifest_sha256)
     return {**facts, **binding, "status": "manifest-bound-contract-checked" if binding["provenanceEstablished"] else "schema-only-contract-checked",
             "deviceAuthenticityAttested": False, "manifestDeliveryOrDeviceInstallationAttested": False,
@@ -317,7 +390,7 @@ def inspect_envelope(value, manifest_path=None, manifest_sha256=None):
             "unattendedRenewalVerified": False, "allTransportFeasibility": "notDetermined", "otherTransportsExcluded": False,
             "deadlineSchedulingAccuracyEstablished": False,
             "provenanceMeaning": "Build/source declarations match the exact manifest digest supplied from an independent audit; no device or delivery attestation is created.",
-            "evidenceLimit": "Only declarations in an explicitly selected JSON file were checked. Waiting, no discovery result and TCP readiness establish neither permission cause, VPN state, computer independence, authenticated service nor renewal."}
+            "evidenceLimit": "Only declarations in an explicitly selected JSON file were checked. Waiting, no discovery result and TCP readiness establish neither permission cause, VPN state, computer independence, authenticated service nor renewal. App state, developer profile expiry and receiptObserved do not attest installation or renewed signing validity."}
 
 
 def inspect_file(path, manifest_path=None, manifest_sha256=None):

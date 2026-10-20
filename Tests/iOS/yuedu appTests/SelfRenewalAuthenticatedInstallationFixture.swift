@@ -189,6 +189,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
     static func withPeer(_ mode: Mode = .normal, bytes overrideBytes: Data? = nil,
         bundle: String = "owned.reader", version: String = "42", at date: Date = Date(),
         beforeRecoveryRemoveReply: @escaping @Sendable () throws -> Void = {},
+        expectedUploadedArchive: (@Sendable () throws -> Data)? = nil,
         _ action: @escaping @Sendable (Context) async throws -> Void) async throws {
         let cancellation = Transport.Cancellation()
         let worker = Task.detached(priority: .utility) {
@@ -320,7 +321,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                             try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(code))
                         case 0x14:
                             guard request.header == Client.AFCChannel.integer(42),
-                                  observed.snapshot.uploaded == bytes || mode == .midUploadError || mode == .midUploadCleanupError else { throw FixtureFailure.invalidRequest }
+                                  observed.snapshot.uploaded == (try expectedUploadedArchive?() ?? bytes) || mode == .midUploadError || mode == .midUploadCleanupError else { throw FixtureFailure.invalidRequest }
                             observed.update { $0.closedFileHandles += 1 }
                             try sendAFC(stream, sequence: sequence, operation: 1, header: Client.AFCChannel.integer(0))
                         case 8:

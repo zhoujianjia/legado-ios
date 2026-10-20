@@ -19,6 +19,7 @@ struct SelfRenewalSettingsView: View {
     private enum FilePurpose: Equatable { case initialize, configure, prepare }
     private enum Operation {
         case initialize(URL), configure(URL), prepare(URL), submit
+        case setAutomatic(Bool), checkAutomatic, cancelAutomatic
         case signIn(String, String), verify(String, UUID), cancelAuthentication
         case observeAccount, signOut, refresh(String), reconcile, finalizePublication, recover
     }
@@ -28,6 +29,7 @@ struct SelfRenewalSettingsView: View {
         List {
             if let owner = dependencies.selfRenewalOwner {
                 statusSection(owner)
+                automaticSection(owner)
                 configurationSection(owner)
                 accountSection(owner)
                 materialSection(owner)
@@ -77,6 +79,9 @@ struct SelfRenewalSettingsView: View {
             case .configure(let url): await owner.importConfiguration(url)
             case .prepare(let url): await owner.prepareRenewal(from: url)
             case .submit: await owner.submitPreparedRenewal()
+            case .setAutomatic(let enabled): await owner.setAutomaticRenewalEnabled(enabled)
+            case .checkAutomatic: await owner.runAutomaticRenewalNow()
+            case .cancelAutomatic: await owner.cancelAutomaticRenewal()
             case .signIn(let account, let secret): await owner.signInDeveloperAccount(appleID: account, password: secret)
             case .verify(let code, let challenge): await owner.submitDeveloperVerificationCode(code, challengeID: challenge)
             case .cancelAuthentication: await owner.cancelDeveloperAuthentication()
@@ -138,6 +143,53 @@ struct SelfRenewalSettingsView: View {
             .accessibilityIdentifier("self_renewal_configure")
         }
         .interfaceSectionSurface()
+    }
+
+    private func automaticSection(_ owner: SelfRenewalAppOwner) -> some View {
+        Section {
+            Toggle(isOn: Binding(
+                get: { owner.automaticRenewal?.isEnabled == true },
+                set: { begin(.setAutomatic($0)) })) {
+                SettingsRowLabel(localized("自動續簽"), systemImage: "arrow.triangle.2.circlepath")
+            }
+            .disabled(owner.isWorking || owner.automaticRenewal == nil)
+            .accessibilityIdentifier("self_renewal_automatic_toggle")
+            if let observation = owner.automaticRenewal {
+                ThemedLabeledContent(localized("續簽狀態"), value: localized(automaticStatusKey(observation.outcome)))
+                    .accessibilityIdentifier("self_renewal_automatic_status")
+                if let next = observation.nextEligibleAt, observation.isEnabled {
+                    LabeledContent(localized("下次檢查時間")) {
+                        Text(next, format: .dateTime.year().month().day().hour().minute())
+                            .foregroundStyle(DSColor.textSecondary)
+                    }
+                }
+            }
+            Button(localized("立即檢查續簽條件")) { begin(.checkAutomatic) }
+                .disabled(owner.isWorking || owner.automaticRenewal?.isEnabled != true)
+                .accessibilityIdentifier("self_renewal_automatic_check")
+            if owner.isWorking && action == nil {
+                Button(localized("取消"), role: .cancel) { begin(.cancelAutomatic) }
+                    .accessibilityIdentifier("self_renewal_automatic_cancel")
+            }
+        } footer: {
+            Text(localized("需要有效簽名材料及已配對的安裝連線；背景執行時間由系統決定。"))
+                .dsSectionFooter()
+        }
+        .interfaceSectionSurface()
+    }
+
+    private func automaticStatusKey(_ outcome: SelfRenewalAppSession.AutomaticRenewalOutcome) -> String {
+        switch outcome {
+        case .disabled: return "自動續簽已關閉"
+        case .waiting: return "等待下次續簽檢查"
+        case .configurationRequired: return "尚未配置續簽材料"
+        case .accountRequired: return "需要登入 Apple ID"
+        case .recoveryRequired: return "已有事務需要恢復檢查"
+        case .interrupted: return "上次續簽檢查已中斷"
+        case .receiptObserved: return "已收到安裝回應，仍需確認更新結果"
+        case .failed: return "續簽檢查未完成"
+        case .clockChanged: return "裝置時間已變更，稍後重新檢查"
+        }
     }
 
     private func accountSection(_ owner: SelfRenewalAppOwner) -> some View {

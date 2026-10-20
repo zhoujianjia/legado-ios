@@ -172,6 +172,7 @@ actor SelfRenewalAppSession {
         let schema: Int
         let configuration: Configuration?
         let initialNamespaceBinding: InitialNamespaceBinding?
+        let automaticRenewal: AutomaticRenewalPolicy?
         let status: Status
     }
     private let requestedRoot: URL?
@@ -204,6 +205,8 @@ actor SelfRenewalAppSession {
     private var initialNamespaceBinding: InitialNamespaceBinding?
     private var persistedInitialNamespaceBinding: InitialNamespaceBinding?
     private var configurationNeedsReload = false
+    private var automaticPolicy: AutomaticRenewalPolicy?
+    private var persistedAutomaticPolicy: AutomaticRenewalPolicy?
     private var busy = false
     #if DEBUG
     private var developerAuthenticationRandom: @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent
@@ -434,6 +437,205 @@ actor SelfRenewalAppSession {
         return try await observe(candidate.coordinator, handoff: handoff)
     }
 
+    enum AutomaticRenewalOutcome: String, Codable, Sendable {
+        case disabled, waiting, configurationRequired, accountRequired, recoveryRequired
+        case interrupted, receiptObserved, failed, clockChanged
+    }
+    struct AutomaticRenewalObservation: Sendable, Equatable {
+        let isEnabled: Bool
+        let nextEligibleAt: Date?
+        let lastAttemptAt: Date?
+        let outcome: AutomaticRenewalOutcome
+        var automaticRenewalVerified: Bool { false }
+    }
+    private struct AutomaticRenewalPolicy: Codable, Equatable, Sendable {
+        var enabled: Bool
+        var lastAttemptAt: Date?
+        var nextEligibleAt: Date?
+        var lastClockAt: Date?
+        var failureCount: Int
+        var attemptID: UUID?
+        var outcome: AutomaticRenewalOutcome
+        func validate() throws {
+            guard (0...16).contains(failureCount),
+                  [lastAttemptAt, nextEligibleAt, lastClockAt].compactMap({ $0 }).allSatisfy({
+                      $0.timeIntervalSince1970.isFinite && $0.timeIntervalSince1970 >= 315_532_800
+                  }), enabled || attemptID == nil else { throw Failure.invalidConfiguration }
+        }
+        var observation: AutomaticRenewalObservation {
+            .init(isEnabled: enabled, nextEligibleAt: nextEligibleAt, lastAttemptAt: lastAttemptAt,
+                outcome: enabled ? (attemptID == nil ? outcome : .interrupted) : .disabled)
+        }
+    }
+    private enum AutomaticRenewalFailure: Error { case materialsDoNotExtendCurrentApplication }
+    private static let automaticRenewalLead: TimeInterval = 48 * 3_600
+    private static let automaticRetryMinimum: TimeInterval = 3_600
+
+    func automaticRenewalObservation() -> AutomaticRenewalObservation {
+        automaticPolicy?.observation ?? .init(isEnabled: false, nextEligibleAt: nil, lastAttemptAt: nil, outcome: .disabled)
+    }
+
+    /// Opt-in is stored in the existing flock-owned configuration document.
+    /// Neither enabling nor disabling creates credentials or network traffic.
+    func setAutomaticRenewalEnabled(_ enabled: Bool) async throws -> AutomaticRenewalObservation {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        try await openLocalOwner()
+        guard configuration != nil || !enabled else { throw Failure.notConfigured }
+        var policy = automaticPolicy ?? AutomaticRenewalPolicy(enabled: false, failureCount: 0, outcome: .disabled)
+        guard policy.enabled != enabled else { return policy.observation }
+        policy.enabled = enabled; policy.attemptID = nil
+        policy.nextEligibleAt = enabled ? clock() : nil
+        policy.outcome = enabled ? .waiting : .disabled
+        try persistAutomaticPolicy(policy)
+        return policy.observation
+    }
+
+    /// A whole automatic attempt owns the same Session busy guard. Its private
+    /// stages are exactly the explicit prepare/submit/material/recovery paths;
+    /// no second signer, installer, journal, Vault or data owner is introduced.
+    func runAutomaticRenewal(handoff: SelfRenewalUserDataHandoff) async throws -> AutomaticRenewalObservation {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        let started = SourcePerfTrace.now
+        defer { trace("automatic-renewal", since: started) }
+        try Task.checkCancellation(); try await openLocalOwner()
+        guard var policy = automaticPolicy, policy.enabled else { return automaticRenewalObservation() }
+        let now = clock()
+        guard now.timeIntervalSince1970.isFinite, now.timeIntervalSince1970 >= 315_532_800 else { throw Vault.Failure.clockMovedBackwards }
+        if let last = policy.lastClockAt, now < last {
+            policy.lastClockAt = now; policy.nextEligibleAt = now.addingTimeInterval(Self.automaticRetryMinimum)
+            policy.outcome = .clockChanged; policy.attemptID = nil
+            try persistAutomaticPolicy(policy); return policy.observation
+        }
+        if let next = policy.nextEligibleAt, now < next { return policy.observation }
+        guard let configuration, configuration.device != nil, let journal else {
+            policy.outcome = .configurationRequired; policy.nextEligibleAt = now.addingTimeInterval(Self.automaticRetryMinimum)
+            policy.lastClockAt = now; policy.attemptID = nil
+            try persistAutomaticPolicy(policy); return policy.observation
+        }
+        do {
+            let snapshot = try await journal.load()
+            if let phase = snapshot?.record.phase, Self.isRemoteRecoveryPhase(phase) {
+                // Intent is durable BEFORE any authenticated Lookup/cleanup.
+                try beginAutomaticAttempt(&policy, at: now)
+                if coordinator == nil { activate(try await resolve(configuration)) }
+                _ = try await recoverExplicitlyOwned(handoff: handoff)
+                return try await finishAutomaticAttempt(policy, outcome: .recoveryRequired)
+            }
+            if snapshot?.record.phase == .attentionRequired { throw Journal.Failure.activeTransaction }
+            if snapshot?.record.phase == .candidateReady {
+                // A prior automatic preparation may have completed before
+                // cancellation/termination. Revalidate and submit those exact
+                // durable bytes, without changing their material generation,
+                // refreshing the account, or replacing the candidate.
+                try beginAutomaticAttempt(&policy, at: now)
+                if coordinator == nil { activate(try await resolve(configuration)) }
+                _ = try await renewalSigningContext()
+                _ = try await submitPreparedRenewalOwned(handoff: handoff)
+                return try await finishAutomaticAttempt(policy, outcome: .receiptObserved)
+            }
+            let actual = try await SelfRenewalApplicationMaterialVerifier.read(
+                unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
+                codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: now)
+            let validity = try ConnectedProfileValidity(actual)
+            let due = validity.expiresAt.addingTimeInterval(-Self.automaticRenewalLead)
+            if now < due {
+                policy.outcome = .waiting; policy.nextEligibleAt = due; policy.lastClockAt = now; policy.attemptID = nil
+                try persistAutomaticPolicy(policy); return policy.observation
+            }
+            try beginAutomaticAttempt(&policy, at: now)
+            let liveVault = vault ?? Vault(codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, clock: clock)
+            let liveNamespace: Vault.Namespace
+            if let namespace { liveNamespace = namespace }
+            else { liveNamespace = try await liveVault.resume(namespaceID: configuration.namespaceID, identity: actual) }
+            vault = liveVault; namespace = liveNamespace
+            // A still-valid already-refreshed lease avoids unnecessary Apple
+            // requests. Missing/expired publication may be enrolled through the
+            // same account owner, but cryptographic/key/storage failures remain.
+            var lease: Vault.Lease?
+            do { lease = try await liveVault.lease(in: liveNamespace) }
+            catch Vault.Failure.namespaceUnavailable { lease = nil }
+            catch SelfRenewalProvisioningProfileVerifier.Failure.profileExpired { lease = nil }
+            let existingExpiry = lease?.profiles.map(\.summary.expiresAt).min()
+            let needsRefresh = existingExpiry.map { $0 <= validity.expiresAt } ?? true
+            if needsRefresh {
+                guard developerServices != nil, !developerLocallySignedOut else {
+                    return try await finishAutomaticAttempt(policy, outcome: .accountRequired)
+                }
+                let account = try await developerAccountOwner()
+                // A pending CSR always takes read-only reconciliation; never
+                // send another CSR after an unknown account result.
+                if try await account.pendingEnrollment() != nil { _ = try await reconcileDeveloperMaterialsOwned() }
+                else { _ = try await refreshDeveloperMaterialsOwned(machineName: "Yuedu") }
+                lease = try await liveVault.lease(in: liveNamespace)
+            }
+            guard let lease, let renewedExpiry = lease.profiles.map(\.summary.expiresAt).min(),
+                  renewedExpiry > validity.expiresAt else { throw AutomaticRenewalFailure.materialsDoNotExtendCurrentApplication }
+            try await liveVault.validate(lease, for: actual)
+            // Reconnect the same actual namespace after a material generation
+            // change before private prepare/submit obtain their fresh proofs.
+            activate(try await resolve(configuration))
+            let application = ownedApplicationRoot ?? Bundle.main.bundleURL
+            _ = try await SelfRenewalIPAUnpacker.withCurrentApplicationArchive(application: application,
+                codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: now) { [self] ipa in
+                try await prepareRenewalOwned(from: ipa)
+            }
+            _ = try await submitPreparedRenewalOwned(handoff: handoff)
+            return try await finishAutomaticAttempt(policy, outcome: .receiptObserved)
+        } catch {
+            // Every actual worker has returned/drained before policy is saved.
+            // A killed process keeps attemptID + the same durable journal; it
+            // can only recover an existing upload/Upgrade on its next trigger.
+            let original = error
+            let outcome: AutomaticRenewalOutcome
+            if Self.renewalWasCancelled(original) { outcome = .interrupted }
+            else if original is SelfRenewalDeveloperAccountClient.Failure || original is SelfRenewalDeveloperAccountClient.EnrollmentFailure || original is DeveloperServicesFailure {
+                outcome = .accountRequired
+            } else { outcome = .failed }
+            do { _ = try await finishAutomaticAttempt(policy, outcome: outcome) }
+            catch { throw RenewalExecutionFailure(underlying: original, problem: .storage,
+                preparedCandidate: nil, completedSubmission: nil, statusPersistenceError: error) }
+            throw original
+        }
+    }
+
+    private func beginAutomaticAttempt(_ policy: inout AutomaticRenewalPolicy, at now: Date) throws {
+        policy.attemptID = UUID(); policy.lastAttemptAt = now; policy.lastClockAt = now
+        policy.nextEligibleAt = now.addingTimeInterval(Self.automaticRetryMinimum); policy.outcome = .interrupted
+        try persistAutomaticPolicy(policy)
+    }
+    private func finishAutomaticAttempt(_ initial: AutomaticRenewalPolicy, outcome: AutomaticRenewalOutcome) async throws -> AutomaticRenewalObservation {
+        // An uncancelled, actor-owned terminal write follows the same rule as
+        // finishRenewalExecution and is awaited before releasing busy.
+        let terminal = Task { [self] in
+            // A lost configuration ACK must first reload the same locked
+            // Document, including its precise opt-in and attempt identity.
+            try await openLocalOwner()
+            guard let current = automaticPolicy, current.enabled,
+                  current.attemptID == initial.attemptID else { return automaticRenewalObservation() }
+            var policy = initial
+            policy.attemptID = nil; policy.outcome = outcome
+            if outcome == .receiptObserved { policy.failureCount = 0 }
+            else { policy.failureCount = min(16, policy.failureCount + 1) }
+            let interval = min(86_400, Self.automaticRetryMinimum * pow(2, Double(min(5, policy.failureCount))))
+            policy.nextEligibleAt = clock().addingTimeInterval(interval)
+            try persistAutomaticPolicy(policy)
+            return policy.observation
+        }
+        return try await terminal.value
+    }
+    private func persistAutomaticPolicy(_ policy: AutomaticRenewalPolicy) throws {
+        guard !configurationNeedsReload else { throw Failure.commitDurabilityUnknown }
+        try policy.validate()
+        let previous = automaticPolicy; automaticPolicy = policy
+        do {
+            _ = try publish(state: lastStatus?.state ?? .unconfigured, phase: lastStatus?.phase,
+                problem: lastStatus?.problem)
+        } catch {
+            automaticPolicy = previous; configurationNeedsReload = true
+            throw error
+        }
+    }
+
     /// Keep exact operation/transport facts even when the final local status
     /// write fails. A receipt does not prove installation or renewed profiles.
     struct RenewalExecutionFailure: Error, @unchecked Sendable {
@@ -450,6 +652,10 @@ actor SelfRenewalAppSession {
     func prepareRenewal(from ipa: URL) async throws -> Status {
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
+        return try await prepareRenewalOwned(from: ipa)
+    }
+
+    private func prepareRenewalOwned(from ipa: URL) async throws -> Status {
         let started = SourcePerfTrace.now
         var candidateBytes = 0
         defer { SourcePerfTrace.record("renewal.app.prepare",
@@ -483,6 +689,10 @@ actor SelfRenewalAppSession {
     func submitPreparedRenewal(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
+        return try await submitPreparedRenewalOwned(handoff: handoff)
+    }
+
+    private func submitPreparedRenewalOwned(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
         let started = SourcePerfTrace.now
         var candidateBytes = 0
         defer { SourcePerfTrace.record("renewal.app.submit",
@@ -555,10 +765,6 @@ actor SelfRenewalAppSession {
     private func finishRenewalExecution(prepared: Journal.Snapshot? = nil,
         submitted: Coordinator.TransportCompletion? = nil, failure: Error? = nil) async throws -> Status {
         let observation = Task { [self] in
-            // A prior rename may have committed even when its durability ACK
-            // was lost. Reload under this journal owner before any status
-            // publication so an initial binding can never be erased by stale
-            // in-memory configuration during a failed renewal attempt.
             try await openLocalOwner()
             let phase = try await journal?.load()?.record.phase
             let problem: Problem?
@@ -629,6 +835,10 @@ actor SelfRenewalAppSession {
     func recoverExplicitly(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
+        return try await recoverExplicitlyOwned(handoff: handoff)
+    }
+
+    private func recoverExplicitlyOwned(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
         let started = SourcePerfTrace.now
         defer { trace("recover-explicit", since: started) }
         guard let coordinator else { throw Failure.notConfigured }
@@ -778,6 +988,10 @@ actor SelfRenewalAppSession {
     /// a possible upload/submission blocks every remote enrollment mutation.
     func refreshDeveloperMaterials(machineName: String) async throws -> DeveloperMaterialObservation {
         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        return try await refreshDeveloperMaterialsOwned(machineName: machineName)
+    }
+
+    private func refreshDeveloperMaterialsOwned(machineName: String) async throws -> DeveloperMaterialObservation {
         let started = SourcePerfTrace.now
         defer { trace("developer-material-refresh", since: started) }
         guard !developerLocallySignedOut else { throw SelfRenewalDeveloperAccountClient.Failure.signedOut }
@@ -817,6 +1031,10 @@ actor SelfRenewalAppSession {
     /// never issues another CSR or implicitly connects at App startup.
     func reconcileDeveloperMaterials() async throws -> DeveloperMaterialObservation {
         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        return try await reconcileDeveloperMaterialsOwned()
+    }
+
+    private func reconcileDeveloperMaterialsOwned() async throws -> DeveloperMaterialObservation {
         let started = SourcePerfTrace.now
         defer { trace("developer-material-reconcile", since: started) }
         guard !developerLocallySignedOut else { throw SelfRenewalDeveloperAccountClient.Failure.signedOut }
@@ -918,6 +1136,7 @@ actor SelfRenewalAppSession {
         coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
         configuration = nil; persistedConfiguration = nil; lastStatus = nil; configurationNeedsReload = false
         initialNamespaceBinding = nil; persistedInitialNamespaceBinding = nil
+        automaticPolicy = nil; persistedAutomaticPolicy = nil
     }
 
     private func openLocalOwner() async throws {
@@ -929,6 +1148,7 @@ actor SelfRenewalAppSession {
                 try Self.removeUncommittedDocument(root)
                 configuration = document?.configuration; persistedConfiguration = configuration; lastStatus = document?.status
                 initialNamespaceBinding = document?.initialNamespaceBinding; persistedInitialNamespaceBinding = initialNamespaceBinding
+                automaticPolicy = document?.automaticRenewal; persistedAutomaticPolicy = automaticPolicy
                 configurationNeedsReload = false
             }
             return
@@ -944,6 +1164,7 @@ actor SelfRenewalAppSession {
             root = directory; journal = opened
             configuration = document?.configuration; persistedConfiguration = configuration; lastStatus = document?.status
                 initialNamespaceBinding = document?.initialNamespaceBinding; persistedInitialNamespaceBinding = initialNamespaceBinding
+                automaticPolicy = document?.automaticRenewal; persistedAutomaticPolicy = automaticPolicy
         } catch {
             let original = error
             do { try await opened.close() }
@@ -1245,9 +1466,9 @@ actor SelfRenewalAppSession {
         guard let root else { throw Failure.storage }
         if let lastStatus, lastStatus.state == state, lastStatus.phase == phase,
            lastStatus.problem == problem, lastStatus.access == access, configuration == persistedConfiguration,
-           initialNamespaceBinding == persistedInitialNamespaceBinding { return lastStatus }
+           initialNamespaceBinding == persistedInitialNamespaceBinding, automaticPolicy == persistedAutomaticPolicy { return lastStatus }
         let status = Status(state: state, phase: phase, observedAt: clock(), problem: problem, access: access)
-        let document = Document(schema: 1, configuration: configuration, initialNamespaceBinding: initialNamespaceBinding, status: status)
+        let document = Document(schema: 1, configuration: configuration, initialNamespaceBinding: initialNamespaceBinding, automaticRenewal: automaticPolicy, status: status)
         let raw = try JSONEncoder().encode(document)
         guard raw.count <= Self.maximumConfigurationBytes else { throw Failure.limit }
         do {
@@ -1284,6 +1505,7 @@ actor SelfRenewalAppSession {
         lastStatus = status
         persistedConfiguration = configuration
         persistedInitialNamespaceBinding = initialNamespaceBinding
+        persistedAutomaticPolicy = automaticPolicy
         return status
     }
 
@@ -1374,6 +1596,7 @@ actor SelfRenewalAppSession {
         guard document.schema == 1, document.status.observedAt.timeIntervalSince1970.isFinite else { throw Failure.invalidConfiguration }
         guard document.configuration != nil || document.status.state == .unconfigured else { throw Failure.invalidConfiguration }
         if let configuration = document.configuration { try validate(configuration) }
+        if let policy = document.automaticRenewal { try policy.validate() }
         if let pending = document.initialNamespaceBinding {
             guard document.configuration == nil, pending.schema == 1, pending.identitySHA256.count == 32,
                   document.status.state == .unconfigured, document.status.phase == nil, document.status.access == nil else {

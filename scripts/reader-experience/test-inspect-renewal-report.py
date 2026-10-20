@@ -56,6 +56,17 @@ def schema_one(build="11"):
                 "receivedByteCount": 0} for address in ("127.0.0.1", "::1")]}}
 
 
+def schema_three(owner_available=True):
+    record = fixture()
+    record["schemaVersion"] = 3
+    record["interpretation"] = inspector.STATE_INTERPRETATION
+    record["appStateObservation"] = {"capturedAt": "2026-10-19T00:00:08Z", "ownerAvailable": owner_available,
+        "renewalProven": False, "installationProven": False}
+    if owner_available:
+        record["appStateObservation"].update(developerServicesConfigured=False, isWorking=False, recoveryAvailable=False)
+    return record
+
+
 class SyntheticInspectorTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -118,6 +129,53 @@ class SyntheticInspectorTests(unittest.TestCase):
             self.assertEqual(result["companionAppsAbsent"], "notMeasured")
             self.assertFalse(result["discoveryFactsFromReport"]["serviceIdentityVerified"])
             self.assertNotIn("Owned synthetic fixture", json.dumps(result))
+
+    def test_schema_three_unavailable_and_not_yet_bootstrapped_owners_do_not_invent_state(self):
+        for available in (False, True):
+            result = inspector.inspect_envelope(schema_three(available))
+            self.assertEqual(result["schemaVersion"], 3)
+            self.assertEqual(result["appStateObservation"]["ownerAvailable"], available)
+            self.assertNotIn("automaticRenewal", result["appStateObservation"])
+            self.assertFalse(result["automaticSelfRenewalVerified"])
+        bad = schema_three(False)
+        bad["appStateObservation"]["isWorking"] = False
+        self.reject(bad)
+
+    def test_schema_three_receipt_and_published_profile_dates_never_prove_installed_renewal(self):
+        record = schema_three()
+        observation = record["appStateObservation"]
+        observation.update(status={"state": "attentionRequired", "phase": "receiptObserved",
+            "observedAt": "2026-10-19T00:00:07Z", "access": "signing"},
+            automaticRenewal={"isEnabled": True, "outcome": "receiptObserved",
+                "lastAttemptAt": "2026-10-19T00:00:00Z", "nextEligibleAt": "2026-10-19T01:00:00Z"},
+            developerProfileExpiresAt="2026-10-26T00:00:00Z", developerMaterialObservedAt="2026-10-19T00:00:01Z")
+        manifest, digest = self.manifest(record)
+        result = inspector.inspect_envelope(record, manifest, digest)
+        self.assertTrue(result["provenanceEstablished"])
+        self.assertEqual(result["appStateObservation"]["automaticRenewal"]["outcome"], "receiptObserved")
+        self.assertFalse(result["appStateObservation"]["renewalProven"])
+        self.assertFalse(result["appStateObservation"]["installationProven"])
+        self.assertFalse(result["automaticSelfRenewalVerified"])
+        self.assertFalse(result["unattendedRenewalVerified"])
+
+    def test_schema_three_rejects_private_unknown_fields_bad_dates_and_unearned_claims(self):
+        for mutate in (
+            lambda s: s.__setitem__("namespaceID", "owned-private"),
+            lambda s: s.__setitem__("device", {}),
+            lambda s: s.__setitem__("developerServicesConfigured", "false"),
+            lambda s: s.__setitem__("ownerProblem", "arbitrary-secret"),
+            lambda s: s.__setitem__("capturedAt", "invalid-date"),
+            lambda s: s.__setitem__("renewalProven", True),
+            lambda s: s.__setitem__("installationProven", True),
+            lambda s: s.__setitem__("developerProfileExpiresAt", "2026-10-26T00:00:00Z"),
+            lambda s: s.__setitem__("status", {"state": "ready", "observedAt": "2026-10-19T00:00:01Z", "certificate": "secret"}),
+            lambda s: s.__setitem__("automaticRenewal", {"isEnabled": False, "outcome": "receiptObserved"}),
+            lambda s: s.__setitem__("automaticRenewal", {"isEnabled": True, "outcome": "renewalProven"}),
+            lambda s: s.__setitem__("automaticRenewal", {"isEnabled": True, "outcome": "waiting", "lastAttemptAt": "invalid"}),
+        ):
+            record = schema_three()
+            mutate(record["appStateObservation"])
+            self.reject(record)
 
     def test_snapshot_prestart_outcomes_remain_consistent(self):
         for outcome in ("cancelled", "timedOut", "internalError"):

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "status": "production-integrated-awaiting-Release-device-package-build",
+  "sources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 100278,
+      "sha256": "1efcce4c4a917408dae7b85ef131747ee77fff02ac0755ad4a2f2841d9101a92"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 23576,
+      "sha256": "c8ebd558a95ec83fe07817188ec4c3adff076ccf6cc43e72451b2c51f0f59ad7"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+      "bytes": 50096,
+      "sha256": "eb8a6381016912416a1fa8a656b70ad7b5af9ee000ca622f349b3db5a48e80b0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+      "bytes": 4772,
+      "sha256": "8817f110dea8a022fe8ecedc1153b65b1427c0ca6f065a79080e3c210bbb2166"
+    },
+    {
+      "path": "Modules/Services/RSS/RSSNotificationManager.swift",
+      "bytes": 9186,
+      "sha256": "d9d32209218dd0c30e4aa1aea124774a530c499a9a39e40ba960a905671e0a86"
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "bytes": 26328,
+      "sha256": "e5f00ae67de4bd625f88e43ccce81ff1dc6f7f1f97f31816b157a2cf1007bd49"
+    },
+    {
+      "path": "Info.plist",
+      "bytes": 8595,
+      "sha256": "259fc6d3e8e25ab3f797636bcf231227b2c90442a964e240e3c3068660276b71"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "bytes": 13723,
+      "sha256": "fef5457c8f4be3d4995a93c0417d2ea81589a5238bba82ff94a7539a40d4bdbb"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift",
+      "bytes": 20909,
+      "sha256": "de2668a33399e63d751ae272c4a36a442e378b6d8ddc894b78752195532ca64a"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "bytes": 29854,
+      "sha256": "0e77ffc87d2dc66cb69aa90bc3bfeafeacec459b5ccc4cbe489a48804e6c5488"
+    },
+    {
+      "path": "Modules/Features/Settings/SelfRenewalSettingsView.swift",
+      "bytes": 17509,
+      "sha256": "1d43168a41324233ea8307b82e590ba24c816f1b7ec47a0b7c81a4cc53a27978"
+    },
+    {
+      "path": "scripts/reader-experience/build.sh",
+      "bytes": 6633,
+      "sha256": "93aa46ddce8c9ecbdcca8ff8f713f1093f6f6b4b84ce4d87d60aeb111c0f4abf"
+    },
+    {
+      "path": "Resources/zh-Hant.lproj/Localizable.strings",
+      "bytes": 252103,
+      "sha256": "5c1fd5e5aa4e6e94a93ca439bd5cac1d9b4ab4cda5ea9b9ace2d0ebf2ef92bce"
+    },
+    {
+      "path": "Resources/zh-Hans.lproj/Localizable.strings",
+      "bytes": 254307,
+      "sha256": "ebe875287eff315f86c7d1f14ddf4a87c9ec035a1e17259532ec758875970562"
+    },
+    {
+      "path": "Resources/en.lproj/Localizable.strings",
+      "bytes": 267586,
+      "sha256": "56cae8e9513e03c885d0a15ef69077a17340b9283c6140196440b1d00ec9e6db"
+    },
+    {
+      "path": "Resources/ja.lproj/Localizable.strings",
+      "bytes": 324459,
+      "sha256": "4eac34b218631b31b1b66a4d6d84583f1788fa9b674f399b2e1d3c8eea6529d6"
+    },
+    {
+      "path": "Resources/ko.lproj/Localizable.strings",
+      "bytes": 300942,
+      "sha256": "2ea959309656481994cdd6d6260745b3a2a20380a9970d3341c830f19e5a5a2e"
+    }
+  ],
+  "behavior": [
+    "Opt-in policy, exact attempt identity, deadlines, durable throttling and clock rollback are stored in the existing locked Document.",
+    "Automatic renewal derives its due date from actual current profile expiry, snapshots the real current Bundle into a bounded IPA and reuses the explicit signing/install/data-handoff path.",
+    "Existing ready candidates are freshly validated and submitted without preparing again; unknown remote results run recovery only.",
+    "Foreground and granted BGProcessingTask execution use the same Session and actual persistence owners, with cancellation and worker drain before completion.",
+    "Settings exposes opt-in, current status and a throttled check; the physical-device package build number is 13."
+  ],
+  "actualValidation": {
+    "authorSwiftGrammarFiles": 9,
+    "authorSwiftGrammarDiagnostics": 0,
+    "rootChangedSettingsGrammarDiagnostics": 0,
+    "packagingPortableTests": 23,
+    "AppleSDKCompilationPerformed": false,
+    "newSwiftTestsExecuted": false
+  },
+  "limitations": [
+    "Live anisette/DeveloperServices is still unconfigured in the production owner. No credentials are embedded.",
+    "The App needs a usable pairing identity in its Keychain and a genuinely reachable authenticated Lockdown installation endpoint.",
+    "A background-only cold launch that never binds the existing App stores fails on expiration; foreground remains available. No replacement store is constructed.",
+    "A transport receipt does not establish installation, expiration extension or preserved data. These need actual device observations."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "physicalDeviceValidationPerformed": false
+}

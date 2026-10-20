@@ -219,7 +219,7 @@ struct SelfRenewalAppExecutionTests {
 
     /// Re-create only the fixture's checked public files for the DEBUG current
     /// application verifier. This test root cannot be a current-process proof.
-    nonisolated private static func application(_ f: Package.Fixture) async throws -> URL {
+    nonisolated static func application(_ f: Package.Fixture) async throws -> URL {
         let destination = f.directory.appendingPathComponent("Current.app")
         try await SelfRenewalIPAUnpacker.withOwnedApplication(ipa: f.input,
             codeAnchors: [f.oldAnchor], profileAnchors: [f.oldAnchor], at: f.date) { scope in
@@ -235,8 +235,8 @@ struct SelfRenewalAppExecutionTests {
         return destination
     }
 
-    private static let position = CoreTextReadingPosition(spineIndex: 2, charOffset: 31, translationOffset: 4)
-    @MainActor private final class Owners {
+    static let position = CoreTextReadingPosition(spineIndex: 2, charOffset: 31, translationOffset: 4)
+    @MainActor final class Owners {
         let books: BookStore
         let sources: BookSourceStore
         let positions: JSONFileReadingPositionStore
@@ -248,7 +248,7 @@ struct SelfRenewalAppExecutionTests {
             self.handoff = handoff; self.navigator = navigator
         }
     }
-    nonisolated private static func library(in directory: URL, at date: Date,
+    nonisolated static func library(in directory: URL, at date: Date,
         handoff existingHandoff: SelfRenewalUserDataHandoff? = nil) async throws -> Owners {
         let app = directory.appendingPathComponent("library")
         let book = try await Task.detached {
@@ -277,7 +277,7 @@ struct SelfRenewalAppExecutionTests {
             return Owners(books: books, sources: sources, positions: positions, handoff: handoff, navigator: navigator)
         }
     }
-    nonisolated private static func configuration(_ f: Package.Fixture, device: Session.DeviceConfiguration?) throws -> URL {
+    nonisolated static func configuration(_ f: Package.Fixture, device: Session.DeviceConfiguration?) throws -> URL {
         let anchors = [f.oldAnchor] + f.issuer.certificateChainDER
         let value = Session.Configuration(schema: 1, namespaceID: f.namespace.id,
             codeAnchors: anchors, profileAnchors: anchors, device: device)
@@ -285,7 +285,7 @@ struct SelfRenewalAppExecutionTests {
         try JSONEncoder().encode(value).write(to: file, options: .atomic)
         return file
     }
-    nonisolated private static func device(_ peer: Peer.Context) throws -> Session.DeviceConfiguration {
+    nonisolated static func device(_ peer: Peer.Context) throws -> Session.DeviceConfiguration {
         var reference: CFTypeRef?
         guard SecItemCopyMatching([kSecClass as String: kSecClassIdentity,
             kSecValueRef as String: peer.pairing.hostIdentity, kSecReturnPersistentRef as String: true] as CFDictionary,
@@ -295,12 +295,12 @@ struct SelfRenewalAppExecutionTests {
             hostID: peer.pairing.hostID, systemBUID: peer.pairing.systemBUID,
             numericAddress: peer.endpoint.numericAddress, port: peer.endpoint.port, interfaceIndex: peer.endpoint.interfaceIndex)
     }
-    nonisolated private static func record(_ root: URL) throws -> Journal.Record {
+    nonisolated static func record(_ root: URL) throws -> Journal.Record {
         let raw = try Data(contentsOf: root.appendingPathComponent("SelfRenewalTransactions/transaction.json"))
         guard raw.count <= Journal.Limits.recordBytes else { throw CocoaError(.fileReadTooLarge) }
         return try JSONDecoder().decode(Journal.Record.self, from: raw)
     }
-    nonisolated private static func candidate(_ root: URL, record: Journal.Record) throws -> Data {
+    nonisolated static func candidate(_ root: URL, record: Journal.Record) throws -> Data {
         let candidate = try #require(record.candidate)
         let raw = try Data(contentsOf: root.appendingPathComponent("SelfRenewalTransactions/candidate.ipa"))
         #expect(raw.count == candidate.byteCount && raw.count <= 1_048_576)

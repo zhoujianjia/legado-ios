@@ -198,6 +198,10 @@ struct yuedu_appApp: App {
     }
 
     var body: some Scene {
+        // O(1) injection of the same already-owned objects. Do not move the
+        // BookStore initializer or normal disk loader into App.init.
+        let _ = rssNotificationDelegate.renewalBackground.bind(owner: renewalOwner, books: bookStore,
+            sources: BookSourceStore.shared, positions: AppDependencies.live.readingPositionStore)
         WindowGroup {
             Group {
                 #if DEBUG
@@ -325,6 +329,7 @@ struct yuedu_appApp: App {
                     // reliable moment to get buffered log lines onto disk.
                     switch newPhase {
                     case .background:
+                        Task { await renewalOwner.enteredBackground() }
                         DiagnosticLog.shared.noteEnteredBackground()
                         BookSourceStore.shared.flushPendingWrites()
                         DiagnosticScale.publish(bookStore: bookStore, reason: "background")

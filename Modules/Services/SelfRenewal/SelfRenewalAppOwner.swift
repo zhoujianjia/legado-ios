@@ -25,6 +25,13 @@ final class SelfRenewalAppOwner {
     private var developerOperationID: UUID?
     private var authenticatingOperationID: UUID?
     private var bootstrapped = false
+    private(set) var automaticRenewal: SelfRenewalAppSession.AutomaticRenewalObservation?
+    private struct AutomaticOperation {
+        let id: UUID
+        let task: Task<SelfRenewalAppSession.AutomaticRenewalObservation, Error>
+    }
+    private var automaticOperation: AutomaticOperation?
+    private var automaticSchedule: (@MainActor (Date?) -> Void)?
 
     init(root: URL? = nil, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }) {
@@ -49,7 +56,7 @@ final class SelfRenewalAppOwner {
     }
     #endif
 
-    func start(books: BookStore, sources: BookSourceStore, positions: any ReadingPositionStore) async {
+    func start(books: BookStore, sources: BookSourceStore, positions: any ReadingPositionStore, automatically: Bool = true) async {
         do { try handoff.bind(books: books, sources: sources, positions: positions) }
         catch {
             problem = .operationFailed
@@ -57,6 +64,7 @@ final class SelfRenewalAppOwner {
             return
         }
         await bootstrap()
+        if automatically { await runAutomaticRenewalNow() }
     }
 
     /// Called only after the App binds its actual BookStore, BookSourceStore and
@@ -76,14 +84,78 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        automaticRenewal = await session.automaticRenewalObservation()
+        scheduleAutomaticRenewal()
     }
 
-    /// Foreground observes the same process at most once through the existing
-    /// coordinator proof guards. It never turns a foreground event into cold
-    /// launch evidence, Lookup, remote cleanup, signing, or submission.
+    /// Foreground preserves normal material observations and then attempts the
+    /// same opt-in, durably throttled renewal use case. A foreground is never
+    /// cold-launch or installation evidence.
     func becameActive() async {
-        guard bootstrapped, !isWorking else { return }
+        guard !isWorking else { return }
         await bootstrap()
+        await runAutomaticRenewalNow()
+    }
+
+    func installAutomaticScheduling(_ schedule: @escaping @MainActor (Date?) -> Void) {
+        automaticSchedule = schedule
+        scheduleAutomaticRenewal()
+    }
+    func enteredBackground() async {
+        // Foreground work does not keep running without a system runtime grant.
+        // Cancellation awaits actual transport/archive drain before returning.
+        await cancelAutomaticRenewal()
+        scheduleAutomaticRenewal()
+    }
+    func setAutomaticRenewalEnabled(_ enabled: Bool) async {
+        if !enabled { await cancelAutomaticRenewal() }
+        guard !isWorking else { return }
+        isWorking = true
+        do { automaticRenewal = try await session.setAutomaticRenewalEnabled(enabled); problem = nil }
+        catch { problem = Self.classify(error) }
+        isWorking = false
+        scheduleAutomaticRenewal()
+        if enabled { await runAutomaticRenewalNow() }
+    }
+    /// Both foreground and a system-granted BGProcessingTask await this exact
+    /// owned worker. A caller cancellation is forwarded, then fully drained.
+    @discardableResult func runAutomaticRenewalNow() async -> Bool {
+        guard !isWorking else { return false }
+        isWorking = true
+        problem = nil
+        let id = UUID(), session = self.session, handoff = self.handoff
+        let worker = Task { try await session.runAutomaticRenewal(handoff: handoff) }
+        automaticOperation = AutomaticOperation(id: id, task: worker)
+        let result = await withTaskCancellationHandler { await worker.result } onCancel: { worker.cancel() }
+        await finishAutomaticOperation(id, result: result)
+        switch result {
+        case .success(let observed):
+            return [.disabled, .waiting, .receiptObserved].contains(observed.outcome)
+        case .failure: return false
+        }
+    }
+    func cancelAutomaticRenewal() async {
+        guard let operation = automaticOperation else { return }
+        operation.task.cancel()
+        let result = await operation.task.result
+        await finishAutomaticOperation(operation.id, result: result)
+    }
+    private func finishAutomaticOperation(_ id: UUID,
+        result: Result<SelfRenewalAppSession.AutomaticRenewalObservation, Error>) async {
+        guard automaticOperation?.id == id else { return }
+        let observed = await session.automaticRenewalObservation()
+        let status = await session.status()
+        let recovery = await session.recoveryIsAvailable()
+        let material = await session.signingMaterialFailure()
+        guard automaticOperation?.id == id else { return }
+        automaticRenewal = observed; self.status = status
+        recoveryAvailable = recovery; signingMaterialProblem = material == nil ? nil : .signingMaterials
+        if case .failure(let error) = result { problem = Self.classify(error) }
+        automaticOperation = nil; isWorking = false
+        scheduleAutomaticRenewal()
+    }
+    private func scheduleAutomaticRenewal() {
+        automaticSchedule?(automaticRenewal?.isEnabled == true ? automaticRenewal?.nextEligibleAt : nil)
     }
 
     func importConfiguration(_ url: URL) async {
@@ -310,11 +382,13 @@ final class SelfRenewalAppOwner {
     }
 
     func close() async throws {
+        await cancelAutomaticRenewal()
         guard !isWorking else { throw SelfRenewalAppSession.Failure.busy }
         isWorking = true; defer { isWorking = false }
         try await session.close()
         status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
         developerSession = nil; developerMaterial = nil; developerChallenge = nil
+        automaticRenewal = nil; automaticSchedule?(nil)
     }
 
     private static func classify(_ error: Error) -> Problem {

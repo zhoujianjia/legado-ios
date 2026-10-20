@@ -12,7 +12,7 @@ private final class SelfRenewalProbeModel {
     var wasCancelled = false
     var exportError: String?
 
-    func run(using probe: SelfRenewalTransportProbe) async {
+    func run(using probe: SelfRenewalTransportProbe, owner: SelfRenewalAppOwner?) async {
         guard !isRunning else { return }
         isRunning = true
         wasCancelled = false
@@ -24,7 +24,8 @@ private final class SelfRenewalProbeModel {
             let result = await probe.runDiscovery()
             try Task.checkCancellation()
             report = result
-            reportURL = try await SelfRenewalProbeExport.write(result)
+            let appState = SelfRenewalProbeExport.capture(owner: owner)
+            reportURL = try await SelfRenewalProbeExport.write(result, appState: appState)
             try Task.checkCancellation()
         } catch is CancellationError {
             wasCancelled = true
@@ -168,7 +169,7 @@ struct SelfRenewalProbeView: View {
         .themedAppSurface(for: .settings)
         .task(id: runIdentifier) {
             guard let identifier = runIdentifier else { return }
-            await model.run(using: dependencies.selfRenewalTransportProbe)
+            await model.run(using: dependencies.selfRenewalTransportProbe, owner: dependencies.selfRenewalOwner)
             if runIdentifier == identifier { runIdentifier = nil }
         }
     }
@@ -292,9 +293,72 @@ struct SelfRenewalProbeView: View {
 }
 
 private enum SelfRenewalProbeExport {
+    /// An explicit allowlist, rather than encoding the owner's credential or
+    /// material observations. Capturing these bounded values performs no I/O.
+    struct AppStateObservation: Encodable, Sendable {
+        struct Status: Encodable, Sendable {
+            let state: String
+            let phase: String?
+            let observedAt: Date
+            let problem: String?
+            let access: String?
+        }
+        struct AutomaticRenewal: Encodable, Sendable {
+            let isEnabled: Bool
+            let outcome: String
+            let nextEligibleAt: Date?
+            let lastAttemptAt: Date?
+        }
+        let capturedAt: Date
+        let ownerAvailable: Bool
+        let developerServicesConfigured: Bool?
+        let isWorking: Bool?
+        let recoveryAvailable: Bool?
+        let ownerProblem: String?
+        let signingMaterialProblem: String?
+        let status: Status?
+        let automaticRenewal: AutomaticRenewal?
+        /// Dates of the last published developer materials, not proof that the
+        /// currently installed application contains those profiles.
+        let developerProfileExpiresAt: Date?
+        let developerMaterialObservedAt: Date?
+        let renewalProven = false
+        let installationProven = false
+    }
+
+    @MainActor static func capture(owner: SelfRenewalAppOwner?) -> AppStateObservation {
+        AppStateObservation(
+            capturedAt: Date(), ownerAvailable: owner != nil,
+            developerServicesConfigured: owner?.developerServicesConfigured,
+            isWorking: owner?.isWorking, recoveryAvailable: owner?.recoveryAvailable,
+            ownerProblem: owner?.problem.map(problemCode),
+            signingMaterialProblem: owner?.signingMaterialProblem.map(problemCode),
+            status: owner?.status.map { .init(state: $0.state.rawValue, phase: $0.phase?.rawValue,
+                observedAt: $0.observedAt, problem: $0.problem?.rawValue, access: $0.access?.rawValue) },
+            automaticRenewal: owner?.automaticRenewal.map { .init(isEnabled: $0.isEnabled,
+                outcome: $0.outcome.rawValue, nextEligibleAt: $0.nextEligibleAt, lastAttemptAt: $0.lastAttemptAt) },
+            developerProfileExpiresAt: owner?.developerMaterial?.profileExpiresAt,
+            developerMaterialObservedAt: owner?.developerMaterial?.verifiedAt
+        )
+    }
+
+    private static func problemCode(_ problem: SelfRenewalAppOwner.Problem) -> String {
+        switch problem {
+        case .invalidConfiguration: return "invalidConfiguration"
+        case .configurationInUse: return "configurationInUse"
+        case .signingMaterials: return "signingMaterials"
+        case .authenticationNotConfigured: return "authenticationNotConfigured"
+        case .authenticationUnavailable: return "authenticationUnavailable"
+        case .localStorage: return "localStorage"
+        case .operationFailed: return "operationFailed"
+        case .cancelled: return "cancelled"
+        }
+    }
+
     private struct Envelope: Encodable {
-        let schemaVersion = 2
+        let schemaVersion = 3
         let report: SelfRenewalTransportProbeReport
+        let appStateObservation: AppStateObservation
         let appVersion: String?
         let appBuild: String?
         let sourceCommit: String?
@@ -302,11 +366,11 @@ private enum SelfRenewalProbeExport {
         let computerPoweredOff = "notMeasured"
         let companionAppsAbsent = "notMeasured"
         let dynamicRemotePairingDiscoveryAttempted: Bool
-        let interpretation = "Opt-in dynamic remote-pairing discovery, same-device address ownership checks, and TCP connection only. DNS-SD queries may be sent; no application frames are sent on TCP. Device service identity, automatic renewal, and installation remain unverified. At most four selected endpoints may be attempted; unselected candidates remain untested."
+        let interpretation = "Network fields: Opt-in dynamic remote-pairing discovery, same-device address ownership checks, and TCP connection only. DNS-SD queries may be sent; no application frames are sent on TCP. Device service identity, automatic renewal, and installation remain unverified. At most four selected endpoints may be attempted; unselected candidates remain untested. App state fields are a public in-memory observation only. Published developer profile expiry is not installed profile expiry. receiptObserved does not prove installation or renewed signing validity."
     }
 
     /// Encoding and file I/O stay off the main actor in the app's Swift 5 mode.
-    nonisolated static func write(_ report: SelfRenewalTransportProbeReport) async throws -> URL {
+    nonisolated static func write(_ report: SelfRenewalTransportProbeReport, appState: AppStateObservation) async throws -> URL {
         let started = SourcePerfTrace.now
         defer {
             SourcePerfTrace.record("diagnostic.selfRenewalExport", "main=\(Thread.isMainThread) attempts=\(report.attempts.count)", since: started)
@@ -317,7 +381,7 @@ private enum SelfRenewalProbeExport {
             value.count == 40 && value.utf8.allSatisfy { (48...57).contains($0) || (97...102).contains($0) } ? value : nil
         }
         let envelope = Envelope(
-            report: report,
+            report: report, appStateObservation: appState,
             appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
             appBuild: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
             sourceCommit: source, operatingSystem: ProcessInfo.processInfo.operatingSystemVersionString,
