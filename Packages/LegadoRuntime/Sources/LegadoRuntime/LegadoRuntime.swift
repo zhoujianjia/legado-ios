@@ -317,17 +317,18 @@ public final class LegadoRuntime: @unchecked Sendable {
 
     public func loginUIOriginal(session: LegadoSourceSession, values: [String: String]? = nil,
         evaluationValues: [String: String]? = nil,
+        reuseState: LegadoOriginalLoginUIReuseState? = nil,
         timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
         onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalLoginUIResult {
         guard (1...30_000).contains(timeoutMilliseconds) else {
             throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original login UI timeout must be between 1 and 30000 milliseconds")
         }
-        return try await executeOriginal(session, "loginUi", OriginalLoginUIRequest(values: values, evaluationValues: evaluationValues,
+        return try await executeOriginal(session, "loginUi", OriginalLoginUIRequest(values: values, evaluationValues: evaluationValues, reuseState: reuseState,
             timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
     }
 
     public func loginActionOriginal(session: LegadoSourceSession, action: String?,
-        credentials: [String: String], isLongClick: Bool = false,
+        credentials: [String: String], isLongClick: Bool = false, inputBindingFailed: Bool = false,
         timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
         onReportedEffects: (@Sendable ([String]) -> Void)? = nil,
         onReportedLoginUIEvents: (@Sendable ([LegadoOriginalLoginUIEvent]) -> Void)? = nil) async throws -> LegadoOriginalLoginActionResult {
@@ -335,7 +336,7 @@ public final class LegadoRuntime: @unchecked Sendable {
             throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original login action timeout must be between 1 and 30000 milliseconds")
         }
         return try await executeOriginal(session, "loginAction", OriginalLoginActionRequest(action: action,
-            credentials: credentials, isLongClick: isLongClick, timeoutMs: timeoutMilliseconds),
+            credentials: credentials, isLongClick: isLongClick, inputBindingFailed: inputBindingFailed, timeoutMs: timeoutMilliseconds),
             timeoutMilliseconds, taskID, onReportedEffects, onReportedLoginUIEvents)
     }
 
@@ -473,7 +474,7 @@ public final class LegadoRuntime: @unchecked Sendable {
                 guard !event.taskID.isEmpty, event.taskID == task, event.sequence == index + 1,
                       (event.entries?.count ?? 0) <= 4096,
                       (event.kind == .updateData && event.deltaUp == nil) ||
-                      (event.kind == .render && event.entries == nil && event.deltaUp == false) else {
+                      (event.kind == .render && event.entries == nil && event.deltaUp != nil) else {
                     throw LegadoRuntimeError(code: "invalid_response", message: "Invalid original login UI event snapshot")
                 }
             }

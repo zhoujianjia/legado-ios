@@ -176,7 +176,8 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
                 entries: [.init(key: "nullable", value: nil), .init(key: "empty", value: "")]),
             .init(taskID: "ui-events", sequence: 2, kind: .updateData, entries: []),
             .init(taskID: "ui-events", sequence: 3, kind: .updateData),
-            .init(taskID: "ui-events", sequence: 4, kind: .render, deltaUp: false)
+            .init(taskID: "ui-events", sequence: 4, kind: .render, deltaUp: false),
+            .init(taskID: "ui-events", sequence: 5, kind: .render, deltaUp: true)
         ]
         func encoded(_ value: [String: Any]) throws -> String {
             String(decoding: try JSONSerialization.data(withJSONObject: value), as: UTF8.self)
@@ -204,13 +205,77 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
         }
     }
 
+    func testLoginUIDeltaReuseRequestAndTypedControlStateKeepRawRowsSeparate() async throws {
+        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
+        let oldRow = try JSONDecoder().decode(LegadoOriginalLoginUIRow.self, from: Data(#"{"name":"flag","type":"toggle","action":"oldCycle()","chars":["","on",null],"default":"","viewName":"old label","style":{"layout_justifySelf":"right"}}"#.utf8))
+        let nextRow = try JSONDecoder().decode(LegadoOriginalLoginUIRow.self, from: Data(#"{"name":"flag","type":"button","action":"newAction()","viewName":"new label"}"#.utf8))
+        let control = LegadoOriginalLoginUIControlState(id: "control-retained", value: "visible",
+            label: "old label", cycleValue: "on", cycleLabel: "captured label",
+            listenerMapIsCurrent: false, forceSuffix: true, displayTextOverride: "callback caption")
+        let snapshot = LegadoOriginalLoginUIReuseState(layout: .init(names: ["unknown", "flag"],
+            children: [.init(id: control.id, rowIndex: 1, row: oldRow)]), controls: [control])
+        let snapshotBytes = try JSONEncoder().encode(snapshot)
+        XCTAssertEqual(try JSONDecoder().decode(LegadoOriginalLoginUIReuseState.self, from: snapshotBytes), snapshot)
+        let moved = LegadoOriginalLoginUILayout(names: ["flag"],
+            children: [.init(id: control.id, rowIndex: 0, row: oldRow)])
+        let result: [String: Any] = ["rows": OriginalAPITransport.object([nextRow]), "labels": [control.label],
+            "values": ["flag": "working-map", "hidden": "synthetic-hidden"], "dynamic": true,
+            "workingMapChanged": false, "layout": OriginalAPITransport.object(moved),
+            "controlStates": OriginalAPITransport.object([control])]
+        let response = String(decoding: try JSONSerialization.data(withJSONObject: ["ok": true, "result": result]), as: UTF8.self)
+        transport.respondNext(response)
+        let value = try await runtime.loginUIOriginal(session: source,
+            values: ["flag": "working-map", "hidden": "synthetic-hidden"],
+            evaluationValues: ["flag": "visible-edit"], reuseState: snapshot,
+            timeoutMilliseconds: 1_234, taskID: "typed-delta")
+        let call = try XCTUnwrap(transport.calls.last)
+        XCTAssertEqual(call.operation, "loginUi"); XCTAssertEqual(call.task, "typed-delta"); XCTAssertFalse(call.main)
+        let request = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(call.request.utf8)) as? [String: Any])
+        XCTAssertEqual(request["values"] as? [String: String], ["flag": "working-map", "hidden": "synthetic-hidden"])
+        XCTAssertEqual(request["evaluationValues"] as? [String: String], ["flag": "visible-edit"])
+        XCTAssertEqual((request["timeoutMs"] as? NSNumber)?.intValue, 1_234)
+        let encodedReuse = try JSONSerialization.data(withJSONObject: XCTUnwrap(request["reuseState"]))
+        XCTAssertEqual(try JSONDecoder().decode(LegadoOriginalLoginUIReuseState.self, from: encodedReuse), snapshot)
+        XCTAssertNil(request["credentials"]); XCTAssertNil(request["action"]); XCTAssertNil(request["stateOwner"])
+        XCTAssertEqual(value.rows, [nextRow]); XCTAssertEqual(value.layout, moved)
+        XCTAssertEqual(value.layout?.children.first?.row.action, "oldCycle()")
+        XCTAssertEqual(value.layout?.children.first?.row.type, "toggle")
+        XCTAssertEqual(value.controlStates, [control]); XCTAssertEqual(value.workingMapChanged, false)
+        XCTAssertEqual(value.values["flag"], "working-map")
+        // Initial rendering still omits the transient reuse snapshot entirely.
+        transport.respondNext(response)
+        _ = try await runtime.loginUIOriginal(session: source, values: [:])
+        let initial = try XCTUnwrap(transport.calls.last)
+        let initialRequest = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(initial.request.utf8)) as? [String: Any])
+        XCTAssertNil(initialRequest["reuseState"])
+        // A failed physical input snapshot travels as an explicit denial fact.
+        // The actual JVM, rather than this codec fixture, owns skip-before-error.
+        transport.respondNext(#"{"ok":false,"error":{"code":"UI_BINDING_ERROR","message":"Original input binding failed"}}"#)
+        do {
+            _ = try await runtime.loginActionOriginal(session: source, action: "capturedAction()",
+                credentials: [:], inputBindingFailed: true, taskID: "typed-binding-failure")
+            XCTFail("An unavailable physical input cannot become a valid empty form")
+        } catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "UI_BINDING_ERROR") }
+        let failedInput = try XCTUnwrap(transport.calls.last)
+        let failedRequest = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(failedInput.request.utf8)) as? [String: Any])
+        XCTAssertEqual(failedInput.operation, "loginAction")
+        XCTAssertEqual(failedRequest["inputBindingFailed"] as? Bool, true)
+        XCTAssertEqual(failedRequest["credentials"] as? [String: String], [:])
+        XCTAssertEqual(failedRequest["action"] as? String, "capturedAction()")
+        transport.respondNext(#"{"ok":true,"result":{"executed":false}}"#)
+        _ = try await runtime.loginActionOriginal(session: source, action: nil, credentials: [:])
+        let defaultInput = try XCTUnwrap(transport.calls.last)
+        let defaultRequest = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(defaultInput.request.utf8)) as? [String: Any])
+        XCTAssertEqual(defaultRequest["inputBindingFailed"] as? Bool, false)
+    }
+
     func testLoginUIEventsRejectWrongTaskOrSequenceBeforePublicationAndKeepDtoFailureFacts() async throws {
         let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
         let observed = OSAllocatedUnfairLock(initialState: [LegadoOriginalLoginUIEvent]())
         for raw in [
             #"{"ok":true,"result":{"executed":true},"loginUIEvents":[{"taskId":"another-task","sequence":1,"kind":"updateData"}]}"#,
             #"{"ok":true,"result":{"executed":true},"loginUIEvents":[{"taskId":"dto-event","sequence":2,"kind":"updateData"}]}"#,
-            #"{"ok":true,"result":{"executed":true},"loginUIEvents":[{"taskId":"dto-event","sequence":1,"kind":"render","deltaUp":true}]}"#
+            #"{"ok":true,"result":{"executed":true},"loginUIEvents":[{"taskId":"dto-event","sequence":1,"kind":"render","deltaUp":true,"entries":[]}]}"#
         ] {
             transport.respondNext(raw)
             do {

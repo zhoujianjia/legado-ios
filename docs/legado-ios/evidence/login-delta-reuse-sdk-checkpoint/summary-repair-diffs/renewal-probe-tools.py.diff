@@ -1,0 +1,45 @@
+--- selector-v1/scripts/reader-experience/renewal-probe-tools.py
++++ selector-summary-v2/scripts/reader-experience/renewal-probe-tools.py
+@@ -1210,7 +1210,7 @@
+               "bindingSHA256": smoke.config.digest(work / "sdk-fixture-binding.json"),
+               "resourceSHA256": actual["sha256"], "resourceBytes": actual["bytes"]}
+     if phase == "after-tests":
+-        summary = smoke.verify_summary(smoke.read_json(work / (selection_mode() + "-summary.json")), expected_leaf_count(selection_mode()))
++        summary = verify_group_summary(smoke.read_json(work / (selection_mode() + "-summary.json")), selection_mode())
+         actual_cases = verify_cases(smoke.read_json(work / (selection_mode() + "-tests.json")), selection_mode())
+         if SDK_REQUIRED_CASE not in actual_cases["passedCaseIdentifiers"]: raise ValueError("Actual SDK method did not pass")
+         entries = smoke.read_json(work / "sdk-test-build-settings.json")
+@@ -1632,7 +1632,7 @@
+     groups = {}
+     for group in cases:
+         groups[group] = {
+-            **smoke.verify_summary(smoke.read_json(work / (group + "-summary.json")), expected_leaf_count(group)),
++            **verify_group_summary(smoke.read_json(work / (group + "-summary.json")), group),
+             **verify_cases(smoke.read_json(work / (group + "-tests.json")), group),
+         }
+     sdk_evidence = None
+@@ -2066,6 +2066,15 @@
+     return case + "()"
+
+
++def verify_group_summary(summary, group):
++    if group == "currentcore":
++        # Actual210 xcresult reports unique definitions at the top level and
++        # parameter executions on the sole device/configuration. Require both;
++        # neither count substitutes for the qualified-case/raw-argument gates.
++        return smoke.verify_summary(summary, len(EXPECTED_CASES[group]), expected_leaf_count(group))
++    return smoke.verify_summary(summary, expected_leaf_count(group))
++
++
+ def _currentcore_commands(work, native_exit=1):
+     repo = smoke.REPO; script = repo / "scripts/reader-experience/renewal-probe-tools.py"
+     tool = [sys.executable, str(script)]; args = _currentcore_build_args()
+@@ -2296,7 +2305,7 @@
+         elif args.phase == "verify-tests":
+             if args.group not in selected_cases():
+                 raise ValueError("Test group is not part of YUEDU_RENEWAL_SELECTION")
+-            record = {**smoke.verify_summary(smoke.read_json(args.summary), expected_leaf_count(args.group)),
++            record = {**verify_group_summary(smoke.read_json(args.summary), args.group),
+                       **verify_cases(smoke.read_json(args.tests), args.group)}
+             if args.group in ("handoffrenewal", "currentcore"):
+                 verify_transaction_details(smoke.config.checked_path(args.tests.parent), smoke.read_json(args.tests), args.group)

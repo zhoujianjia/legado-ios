@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-root-currentcore-selector-fix-awaiting-composed-portable-and-fresh-SDK-execution",
+  "baselineCommit": "13a13cce0bc62dd6df82247ea5a345e7dfcfa607",
+  "files": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 184016,
+        "sha256": "1793fd075aa72d7e445956ee8911bcd7063199df596ae57bb55a3214727c423e"
+      },
+      "candidate": {
+        "bytes": 184755,
+        "sha256": "bd354311426251888f675be9211d3f8faadf2c080a64ebdd4bda1ebf0fb73d88"
+      },
+      "diff": {
+        "path": ".build/currentcore-swift-testing-filter-repair/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 1980,
+        "sha256": "a586c9567ea4665ca009906619f8ddf7ae1b002e6840198d72662e8ad1821561"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 178948,
+        "sha256": "b84c978085f787e2d1bc7f6f3f293ce29b3a4aad3b1329613190d71a371977a6"
+      },
+      "candidate": {
+        "bytes": 181638,
+        "sha256": "9081751f1a9b8c737cdc7404e86f3e60e9f694fa807e918757b85ad9919a8a02"
+      },
+      "diff": {
+        "path": ".build/currentcore-swift-testing-filter-repair/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 7700,
+        "sha256": "afeafae9e0a599168806e17002d5762b589b77e748afce0a27039420a1278a5b"
+      }
+    }
+  ],
+  "actualFailure": "210fb05 SDK native exited0; strict cases rejected21 definitions/24 argument leaves instead of459/462. Bare zero-argument Swift Testing names omitted438 selected functions;18 XCTest and3 correctly labeled Bool methods ran.",
+  "scope": "Change only active currentcore argv spelling; prior group identities, historical argv paths, counts/budgets/source/result/fixture gates remain unchanged.",
+  "newPortableDefinition": "CurrentCoreSwiftTestingSelectorTests.test_currentcore_selectors_match_real_frameworks_and_keep_every_required_function",
+  "existingAffectedAssertionsAdjusted": [
+    1,
+    1,
+    1,
+    1,
+    2
+  ],
+  "actualSDKExecutionsForThisFix": 0,
+  "actualPortableExecutionsAtFreeze": 0,
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false
+  }
+}

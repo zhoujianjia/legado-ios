@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "status": "two-root-authored-regression-sources-frozen-awaiting-combined-SDK-and-JNI-execution",
+  "canonicalBaseline": "13a13cce0bc62dd6df82247ea5a345e7dfcfa607; these two test inputs equal af865bf production baseline",
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "baseline": {
+        "bytes": 20526,
+        "sha256": "9af1f85ae38f2aca0157b16c331f27ae765f40de0736c1e2c6825a6b4a498683"
+      },
+      "candidate": {
+        "bytes": 24630,
+        "sha256": "9f7fcbf7fe0606fe5531c397a47fc1b04cdf064ddc013bda495dfd351e58d23b"
+      },
+      "frozenCandidatePath": ".build/original-source-login-delta-reuse-root-tests/work/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "diff": {
+        "path": ".build/original-source-login-delta-reuse-root-tests/diffs/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift.diff",
+        "bytes": 5953,
+        "sha256": "0666342c54685348d9878de18a71ce371518ed4eb582223659f840f1db577517"
+      },
+      "retainedExistingMethodDefinitions": 10,
+      "newMethod": "testLoginUIDeltaReuseRequestAndTypedControlStateKeepRawRowsSeparate"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "bytes": 28600,
+        "sha256": "c613ae42293a2145dbd51737b4c5218fc1853ee2d74efcfb27937006d506d9f7"
+      },
+      "candidate": {
+        "bytes": 33764,
+        "sha256": "fd52519a48a7d2ea1273d1522ba8450bbe895a419e69b71f45ff370a74659df7"
+      },
+      "frozenCandidatePath": ".build/original-source-login-delta-reuse-root-tests/work/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "diff": {
+        "path": ".build/original-source-login-delta-reuse-root-tests/diffs/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 6770,
+        "sha256": "0c7e4703d9db84ecfce2ddfc0b196040e6fd5305cbfdab8120a035fe48220067"
+      },
+      "retainedExistingMethodDefinitions": 8,
+      "newMethod": "testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite"
+    }
+  ],
+  "changedExistingCases": [
+    "Package ordered-events success/error now retains both false and true render facts.",
+    "Package malformed-render rejection uses incompatible entries on a render event; true alone is no longer invalid.",
+    "Native original row action now requires the accepted typed true receipt and still forbids credential-store effects."
+  ],
+  "newPackageCase": "Typed reuse request contains the current working Map, separate evaluation Map and complete stable layout/control snapshot. New raw rows and retained physical definition stay distinct; cycle, captured Map flag and caption round-trip. Initial rendering omits reuseState.",
+  "newNativeCase": "Required real ordinary JVM/JNI through current source service and App form consumes ordered update/true receipt, reorders stable controls and preserves old action/type/label/edited value. Latest raw password binding to retained Button remains a typed error and Keychain Map stays unchanged.",
+  "grammarBindings": [
+    {
+      "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "version": "baseline",
+      "bytes": 20526,
+      "sha256": "9af1f85ae38f2aca0157b16c331f27ae765f40de0736c1e2c6825a6b4a498683",
+      "grammarErrors": 0
+    },
+    {
+      "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "version": "candidate",
+      "bytes": 24630,
+      "sha256": "9f7fcbf7fe0606fe5531c397a47fc1b04cdf064ddc013bda495dfd351e58d23b",
+      "grammarErrors": 0
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "version": "baseline",
+      "bytes": 28600,
+      "sha256": "c613ae42293a2145dbd51737b4c5218fc1853ee2d74efcfb27937006d506d9f7",
+      "grammarErrors": 0
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "version": "candidate",
+      "bytes": 33764,
+      "sha256": "fd52519a48a7d2ea1273d1522ba8450bbe895a419e69b71f45ff370a74659df7",
+      "grammarErrors": 0
+    }
+  ],
+  "actualSwiftCompilerInvocations": 0,
+  "actualSDKTestExecutions": 0,
+  "actualJNIExecutions": 0,
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false
+  }
+}

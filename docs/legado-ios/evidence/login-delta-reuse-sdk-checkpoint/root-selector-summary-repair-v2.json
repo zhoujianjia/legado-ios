@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "root-frozen-selector-and-actual-summary-count-repair-awaiting-final-composed-portable-and-SDK",
+  "previousVersion": {
+    "path": ".build/currentcore-swift-testing-filter-repair/preparation-v1.json",
+    "bytes": 2255,
+    "sha256": "9479cf8a28d3b976d6b38df09710e35a973f6e58b1f68ee0176bdd5c93349c6e"
+  },
+  "files": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baselineSelectorV1": {
+        "bytes": 184755,
+        "sha256": "bd354311426251888f675be9211d3f8faadf2c080a64ebdd4bda1ebf0fb73d88"
+      },
+      "candidate": {
+        "bytes": 185172,
+        "sha256": "0e40d7ac253899a5aeff9f9a8fdee3616ea3d351e4c3df9fe88ab2a312db119c"
+      },
+      "incrementalDiff": {
+        "path": ".build/currentcore-swift-testing-filter-repair/v2/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 2803,
+        "sha256": "36deef7ca5077fd5bb97ff1d73d6cde191a197f538896e8bc45a830b22683bdd"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baselineSelectorV1": {
+        "bytes": 181638,
+        "sha256": "9081751f1a9b8c737cdc7404e86f3e60e9f694fa807e918757b85ad9919a8a02"
+      },
+      "candidate": {
+        "bytes": 184553,
+        "sha256": "db66737fb9efef2cc73e1b10a5f4ea85a51c5c899fe1a730c51e87d8499017c2"
+      },
+      "incrementalDiff": {
+        "path": ".build/currentcore-swift-testing-filter-repair/v2/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 5150,
+        "sha256": "d58bc02b4ed8bb878a65b888cb8875b6515e011a2c62cdb4e358352ce82c7dd8"
+      }
+    }
+  ],
+  "newActualFinding": "210 top total/passed21 counts method definitions; sole device passed24 counts argument executions. Three active currentcore callers incorrectly supplied execution count as the top definition count. Correct all three through one helper into the existing strict smoke.verify_summary(definitions, executions).",
+  "changedActiveCallSites": [
+    "after-tests SDK fixture verification",
+    "full result(group) summary",
+    "CLI verify-tests"
+  ],
+  "keptStrict": [
+    "463 definitions/466 exact leaves",
+    "one device, zero failed/skipped/expectedFailures with real integer counts",
+    "qualified case identities, all raw Bool details and required App SDK signer",
+    "all intended legacy mode sets, old summary paths,3600 single invocation/ten phase ordering"
+  ],
+  "newPortableDefinitionsAcrossBothVersions": [
+    "CurrentCoreSwiftTestingSelectorTests.test_currentcore_selectors_match_real_frameworks_and_keep_every_required_function",
+    "CurrentCoreSwiftTestingSelectorTests.test_currentcore_summary_keeps_definition_and_single_device_execution_counts_distinct"
+  ],
+  "actualSDKExecutions": 0,
+  "actualPortableExecutionsAtRootFreeze": 0,
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false
+  }
+}

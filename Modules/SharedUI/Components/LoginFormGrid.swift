@@ -55,7 +55,8 @@ struct LoginFormGrid: View {
                     acceptOriginalPointer: acceptOriginalPointerRelease,
                     originalSelectionIndex: selectionBinding(for: field),
                     originalCycleValue: cycleBinding(for: field),
-                    originalForceSuffix: originalControls?.wrappedValue[field.id]?.forceSuffix ?? false
+                    originalForceSuffix: originalControls?.wrappedValue[field.id]?.forceSuffix ?? false,
+                    originalDisplayTextOverride: originalControls?.wrappedValue[field.id]?.displayTextOverride
                 )
             }
         }
@@ -106,7 +107,8 @@ struct LoginFormGrid: View {
         return Binding(get: { originalControls.wrappedValue[field.id]?.cycleValue ?? "" }, set: { value in
             var controls = originalControls.wrappedValue
             var control = controls[field.id] ?? .init(value: "")
-            control.cycleValue = value; control.forceSuffix = false; controls[field.id] = control
+            control.cycleValue = value; control.forceSuffix = false; control.displayTextOverride = nil
+            controls[field.id] = control
             originalControls.wrappedValue = controls
         })
     }
@@ -124,6 +126,7 @@ private struct LoginFieldCell: View {
     let originalSelectionIndex: Binding<Int>?
     let originalCycleValue: Binding<String>?
     let originalForceSuffix: Bool
+    let originalDisplayTextOverride: String?
 
     private func dispatch(_ isLongClick: Bool = false) {
         if field.originalRowID != nil, let onOriginalAction { onOriginalAction(field, isLongClick) }
@@ -150,7 +153,7 @@ private struct LoginFieldCell: View {
             LoginTextFieldCell(field: field, label: label, value: $value, alignment: alignment)
 
         case .button:
-            LoginActionPill(label: label, alignment: alignment, action: { dispatch() },
+            LoginActionPill(label: originalDisplayTextOverride ?? label, alignment: alignment, action: { dispatch() },
                 longAction: longAction, acceptOriginalPointer: acceptOriginalPointer)
 
         case .toggle:
@@ -159,6 +162,7 @@ private struct LoginFieldCell: View {
                     field: field, label: label, value: $value,
                     alignment: alignment, originalCycleValue: originalCycleValue,
                     originalForceSuffix: originalForceSuffix,
+                    originalDisplayTextOverride: originalDisplayTextOverride,
                     action: { dispatch() }, longAction: longAction,
                     acceptOriginalPointer: acceptOriginalPointer
                 )
@@ -278,6 +282,7 @@ private struct LoginTogglePill: View {
     let alignment: LoginPillAlignment
     var originalCycleValue: Binding<String>? = nil
     var originalForceSuffix = false
+    var originalDisplayTextOverride: String? = nil
     let action: () -> Void
     var longAction: (() -> Void)? = nil
     var acceptOriginalPointer: (() -> Bool)? = nil
@@ -298,6 +303,7 @@ private struct LoginTogglePill: View {
 
     private var displayText: String {
         if field.originalRowID != nil {
+            if let originalDisplayTextOverride { return originalDisplayTextOverride }
             return LegadoOriginalLoginUIControl.toggleDisplay(value: currentChar, label: label,
                 justifySelf: field.style?.justifySelf, forceSuffix: originalForceSuffix)
         }

@@ -239,10 +239,59 @@ public struct LegadoOriginalLoginUIResult: Codable, Sendable, Equatable {
     /// independently of its usual right-aligned caption ordering.
     public let toggleLabelSuffixes: [Bool]?
     public let workingMapChanged: Bool?
+    public let layout: LegadoOriginalLoginUILayout?
+    public let controlStates: [LegadoOriginalLoginUIControlState]?
+}
+
+/// Physical children and original rowUiName are separate in the locked builder.
+/// `id` follows a retained control; `rowIndex` follows Android's assigned View id.
+public struct LegadoOriginalLoginUIChild: Codable, Sendable, Equatable {
+    public let id: String
+    public let rowIndex: Int
+    public let row: LegadoOriginalLoginUIRow
+    public init(id: String, rowIndex: Int, row: LegadoOriginalLoginUIRow) {
+        self.id = id; self.rowIndex = rowIndex; self.row = row
+    }
+}
+public struct LegadoOriginalLoginUILayout: Codable, Sendable, Equatable {
+    public let names: [String]
+    public let children: [LegadoOriginalLoginUIChild]
+    public init(names: [String], children: [LegadoOriginalLoginUIChild]) {
+        self.names = names; self.children = children
+    }
+}
+/// An invocation snapshot of the existing form controls, never a credential owner.
+public struct LegadoOriginalLoginUIControlState: Codable, Sendable, Equatable {
+    public let id: String
+    public let value: String
+    public let label: String
+    public let selectedIndex: Int?
+    public let cycleValue: String?
+    public let cycleLabel: String?
+    public let listenerMapIsCurrent: Bool
+    public let forceSuffix: Bool
+    public let displayTextOverride: String?
+    public init(id: String, value: String, label: String, selectedIndex: Int? = nil,
+                cycleValue: String? = nil, cycleLabel: String? = nil,
+                listenerMapIsCurrent: Bool = true, forceSuffix: Bool = false,
+                displayTextOverride: String? = nil) {
+        self.id = id; self.value = value; self.label = label; self.selectedIndex = selectedIndex
+        self.cycleValue = cycleValue; self.cycleLabel = cycleLabel
+        self.listenerMapIsCurrent = listenerMapIsCurrent; self.forceSuffix = forceSuffix
+        self.displayTextOverride = displayTextOverride
+    }
+}
+public struct LegadoOriginalLoginUIReuseState: Codable, Sendable, Equatable {
+    public let layout: LegadoOriginalLoginUILayout
+    public let controls: [LegadoOriginalLoginUIControlState]
+    public init(layout: LegadoOriginalLoginUILayout, controls: [LegadoOriginalLoginUIControlState]) {
+        self.layout = layout; self.controls = controls
+    }
 }
 internal struct OriginalLoginUIRequest: Encodable, Sendable {
     let values: [String: String]?
     let evaluationValues: [String: String]?
+    let reuseState: LegadoOriginalLoginUIReuseState?
     let timeoutMs: Int64
 }
 
@@ -254,5 +303,7 @@ internal struct OriginalLoginActionRequest: Encodable, Sendable {
     let action: String?
     let credentials: [String: String]
     let isLongClick: Bool
+    // Explicit unavailable UI binding, never a legitimate empty input Map.
+    let inputBindingFailed: Bool
     let timeoutMs: Int64
 }

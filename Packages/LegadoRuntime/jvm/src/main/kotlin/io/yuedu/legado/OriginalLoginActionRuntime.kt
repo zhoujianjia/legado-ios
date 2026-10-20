@@ -24,6 +24,13 @@ internal object OriginalLoginActionRuntime {
         val action = actionValue?.asString
         val loginJS = source.getLoginJs()
         if (action == null || loginJS == null) return jsonObject("executed" to false)
+        // Original handleButtonClick obtains getLoginJs before getLoginData.
+        // The App reports an unavailable physical EditText binding explicitly;
+        // it must never become a legitimate empty result Map or execute JS.
+        val bindingFailure = input["inputBindingFailed"]
+        require(bindingFailure == null || bindingFailure.isJsonPrimitive && bindingFailure.asJsonPrimitive.isBoolean) { "Login action binding failure must be a Boolean" }
+        if (input.boolean("inputBindingFailed", false))
+            throw RuntimeFailure("UI_BINDING_ERROR", "Original login input control is incompatible")
         if (action.startsWith("http://", true) || action.startsWith("https://", true) ||
             loginJS.startsWith("http://", true) || loginJS.startsWith("https://", true))
             throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Original login browser action is not connected")

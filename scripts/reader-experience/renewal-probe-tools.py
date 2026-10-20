@@ -960,6 +960,29 @@ CURRENTCORE_LOGIN_EVENTS_DISMISS_LIFECYCLE_INPUTS = (
 )
 SOURCE_INPUTS += tuple(path for path in CURRENTCORE_LOGIN_EVENTS_DISMISS_LIFECYCLE_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 322
+CURRENTCORE_DELTA_REUSE_INPUTS = (
+    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
+    'Modules/Services/Online/LegadoMainJSSourceService.swift',
+    'Modules/Services/Online/LegadoOriginalLoginUIForm.swift',
+    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+    'Modules/SharedUI/Components/LoginFormGrid.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginActionRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIReuse.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginActionTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginDeltaTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUIEventsTest.kt',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+    'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+    'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in CURRENTCORE_DELTA_REUSE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 324
 
 
 def selection_mode():
@@ -1210,7 +1233,7 @@ def verify_sdk_fixture(work, phase, save=True):
               "bindingSHA256": smoke.config.digest(work / "sdk-fixture-binding.json"),
               "resourceSHA256": actual["sha256"], "resourceBytes": actual["bytes"]}
     if phase == "after-tests":
-        summary = smoke.verify_summary(smoke.read_json(work / (selection_mode() + "-summary.json")), expected_leaf_count(selection_mode()))
+        summary = verify_group_summary(smoke.read_json(work / (selection_mode() + "-summary.json")), selection_mode())
         actual_cases = verify_cases(smoke.read_json(work / (selection_mode() + "-tests.json")), selection_mode())
         if SDK_REQUIRED_CASE not in actual_cases["passedCaseIdentifiers"]: raise ValueError("Actual SDK method did not pass")
         entries = smoke.read_json(work / "sdk-test-build-settings.json")
@@ -1632,7 +1655,7 @@ def result(work):
     groups = {}
     for group in cases:
         groups[group] = {
-            **smoke.verify_summary(smoke.read_json(work / (group + "-summary.json")), expected_leaf_count(group)),
+            **verify_group_summary(smoke.read_json(work / (group + "-summary.json")), group),
             **verify_cases(smoke.read_json(work / (group + "-tests.json")), group),
         }
     sdk_evidence = None
@@ -1745,7 +1768,7 @@ def result(work):
             "Currentcore requires exactly463 definitions and466 argument leaves in one cold3600-second invocation/xcresult, retaining both original Bool false/true pairs and the glyph nestedBackdrop pair and the required same-job SDK fixture case.",
             "All producer/stage/native/export/verification phases and actual portable guards must succeed. Producer or guard failure remains failure while the complete native selection is still attempted for diagnostics.",
             "AppOwner/retirement/foreground, Cookie text/WK, preview/Unicode, all-source pause, public content batch, first enrollment/durable binding, explicit and automatic execution, measured JVM bundle bounds, anisette v3, pairing import, pagination recovery, raw source login-info and CSR/account/GSA definitions are checked only within this current source boundary. This does not establish whole compatibility, real cold launch, Apple authority, installation, data retention or unattended renewal.",
-            "The independent explicitly selected currentcore SwiftPM loginui selection is22 methods with15 actual compilation inputs plus7 controls. It must execute freshly for these changed inputs; historical10/default16/publicbatch17/effects18 modes retain their exact sets and are not included in native466.",
+            "The independent explicitly selected currentcore SwiftPM deltareuse selection is23 methods with15 actual compilation inputs plus7 controls. It must execute freshly for these changed inputs; historical10/default16/publicbatch17/effects18/loginui22 modes retain their exact sets and are not included in native466.",
             "Existing eleven mode method/parameter identities and budgets remain unchanged. Benchmarks, diagnostic UI, unmerged later source work and unrelated JVM replay are excluded."]
         output["historicalIndependentPackageEvidence"] = smoke.read_json(work / "historical-package-evidence.json")
     return output
@@ -2046,12 +2069,41 @@ def _currentcore_build_args():
             "INFOPLIST_KEY_firebase_performance_instrumentation_enabled=NO"]
 
 
+# The 210fb05 xcresult contains all18 selected XCTest methods, but only
+# the three parameterized Swift Testing functions. Bare Swift function names
+# are not their Xcode identifiers: zero-argument functions require (). Keep
+# XCTest method selectors unchanged and retain each real parameter label.
+CURRENTCORE_XCTEST_SUITES = frozenset({
+    "ReadingPositionStorePersistenceTests", "ReaderViewportSizeObserverHostingTests",
+})
+
+
+def currentcore_test_selector(case):
+    if case not in EXPECTED_CASES["currentcore"]:
+        raise ValueError("Unselected current-core test identifier")
+    parameters = parameter_cases("currentcore")
+    if case in parameters:
+        return case + "(" + parameters[case] + ":)"
+    if case.split("/", 1)[0] in CURRENTCORE_XCTEST_SUITES:
+        return case
+    return case + "()"
+
+
+def verify_group_summary(summary, group):
+    if group == "currentcore":
+        # Actual210 xcresult reports unique definitions at the top level and
+        # parameter executions on the sole device/configuration. Require both;
+        # neither count substitutes for the qualified-case/raw-argument gates.
+        return smoke.verify_summary(summary, len(EXPECTED_CASES[group]), expected_leaf_count(group))
+    return smoke.verify_summary(summary, expected_leaf_count(group))
+
+
 def _currentcore_commands(work, native_exit=1):
     repo = smoke.REPO; script = repo / "scripts/reader-experience/renewal-probe-tools.py"
     tool = [sys.executable, str(script)]; args = _currentcore_build_args()
     settings = ["xcodebuild", "-project", str(repo / "Yuedu-Reader.xcodeproj"), "-scheme", "Yuedu-Reader",
                 "-destination", os.environ.get("YUEDU_DEST", ""), *args, "-showBuildSettings", "-json"]
-    only = ["-only-testing:yuedu appTests/" + case + ("(" + parameter_cases("currentcore")[case] + ":)" if case in parameter_cases("currentcore") else "")
+    only = ["-only-testing:yuedu appTests/" + currentcore_test_selector(case)
             for case in sorted(EXPECTED_CASES["currentcore"])]
     return {
         "producer": [sys.executable, str(repo / (SDK_TOOL_ROOT + "generate-sdk-owned-package.py")), "--output", str(repo / ".build/reader-renewal-sdk-produced-public")],
@@ -2276,7 +2328,7 @@ def main():
         elif args.phase == "verify-tests":
             if args.group not in selected_cases():
                 raise ValueError("Test group is not part of YUEDU_RENEWAL_SELECTION")
-            record = {**smoke.verify_summary(smoke.read_json(args.summary), expected_leaf_count(args.group)),
+            record = {**verify_group_summary(smoke.read_json(args.summary), args.group),
                       **verify_cases(smoke.read_json(args.tests), args.group)}
             if args.group in ("handoffrenewal", "currentcore"):
                 verify_transaction_details(smoke.config.checked_path(args.tests.parent), smoke.read_json(args.tests), args.group)

@@ -3,6 +3,7 @@ import LegadoRuntime
 
 struct LegadoOriginalLoginUIForm: Sendable {
     let rows: [LegadoOriginalLoginUIRow]
+    let layout: LegadoOriginalLoginUILayout
     let dynamic: Bool
     let workingMapChanged: Bool
     let fields: [LoginField]
@@ -20,14 +21,40 @@ struct LegadoOriginalLoginUIForm: Sendable {
         if let suffixes = reply.toggleLabelSuffixes, suffixes.count != reply.rows.count {
             throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original login toggle placement differs")
         }
-        try Self.validateNameBridge(reply.rows.map(\.name) + Array(reply.values.keys))
+        let physical = reply.layout ?? .init(names: reply.rows.map(\.name), children:
+            reply.rows.enumerated().compactMap { index, row -> LegadoOriginalLoginUIChild? in
+                LoginField.LoginFieldType(rawValue: row.type) == nil ? nil
+                    : .init(id: "original-row-\(index)", rowIndex: index, row: row)
+            })
+        guard (reply.layout == nil) == (reply.controlStates == nil),
+              physical.names.count <= 4096, physical.children.count <= 4096 else {
+            throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original physical layout is incomplete")
+        }
+        try Self.validateNameBridge(reply.rows.map(\.name) + physical.names
+            + physical.children.map { $0.row.name } + Array(reply.values.keys))
+        var states: [String: LegadoOriginalLoginUIControlState] = [:]
+        for state in reply.controlStates ?? [] {
+            guard states[state.id] == nil else {
+                throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Duplicate original physical state")
+            }
+            states[state.id] = state
+        }
+        if reply.layout != nil, states.count != physical.children.count {
+            throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original physical state count differs")
+        }
         var mapped: [LoginField] = []
         var resolved: [String: String] = [:]
         var buffers: [String: LegadoOriginalLoginUIControl] = [:]
-        for (index, row) in reply.rows.enumerated() {
+        for child in physical.children {
+            let index = child.rowIndex, row = child.row
             // The locked legacy builder has no label/unknown-type branch.
             // Keep the original DTO row, omit its UI node and do not invent input.
-            guard let type = LoginField.LoginFieldType(rawValue: row.type) else { continue }
+            guard let type = LoginField.LoginFieldType(rawValue: row.type),
+                  !child.id.isEmpty, child.id.utf8.count <= 128,
+                  child.id.utf8.allSatisfy({ $0 >= 33 && $0 <= 126 }),
+                  index >= 0, index < 4096, buffers[child.id] == nil else {
+                throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Invalid original physical control")
+            }
             let style = row.style.map { LoginFieldStyle(cols: $0.cols, rows: $0.rows,
                 basisPercent: $0.layout_flexBasisPercent, flexGrow: $0.layout_flexGrow,
                 wrapBefore: $0.layout_wrapBefore ?? false, justifySelf: $0.layout_justifySelf) }
@@ -36,8 +63,24 @@ struct LegadoOriginalLoginUIForm: Sendable {
             var field = LoginField(name: row.name, type: type, action: row.action,
                 options: options, defaultValue: row.defaultValue,
                 style: style, viewName: row.viewName)
-            field.originalRowID = "original-row-\(index)"
+            field.originalRowID = child.id
             mapped.append(field)
+            if reply.layout != nil {
+                guard let state = states[child.id] else {
+                    throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Missing original physical state")
+                }
+                if type == .select {
+                    guard state.selectedIndex.map({ field.options.indices.contains($0) }) ?? field.options.isEmpty else {
+                        throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original selection exceeds retained adapter")
+                    }
+                }
+                resolved[field.id] = state.label
+                buffers[field.id] = .init(value: state.value, selectedIndex: state.selectedIndex,
+                    cycleValue: state.cycleValue, cycleLabel: state.cycleLabel,
+                    listenerMapIsCurrent: state.listenerMapIsCurrent, forceSuffix: state.forceSuffix,
+                    displayTextOverride: state.displayTextOverride)
+                continue
+            }
             resolved[field.id] = reply.labels[index]
             let raw: String
             switch type {
@@ -60,6 +103,7 @@ struct LegadoOriginalLoginUIForm: Sendable {
             }
         }
         rows = reply.rows; fields = mapped; labels = resolved; values = reply.values
+        layout = physical
         controls = buffers
         dynamic = reply.dynamic
         workingMapChanged = reply.workingMapChanged ?? false
@@ -75,6 +119,7 @@ struct LegadoOriginalLoginUIControl: Equatable, Sendable {
     var cycleLabel: String? = nil
     var listenerMapIsCurrent = true
     var forceSuffix = false
+    var displayTextOverride: String? = nil
 
     nonisolated static func toggleDisplay(value: String, label: String, justifySelf: String?,
         forceSuffix: Bool) -> String {
@@ -95,6 +140,7 @@ struct LegadoOriginalLoginUIActionBudget: Sendable {
 struct LegadoOriginalLoginUIListenerAction: Sendable {
     let field: LoginField
     let credentials: [String: String]
+    var bindingFailure: LegadoRuntimeError? = nil
 }
 
 struct LegadoOriginalLoginUIUpdate: Sendable {
@@ -106,97 +152,151 @@ struct LegadoOriginalLoginUIUpdate: Sendable {
 }
 
 extension LegadoOriginalLoginUIForm {
-    /// Locked Dialog130–217. This only changes the current form, never credentials.
+    /// Same form controls, in physical child order; never a credential owner.
+    nonisolated static func reuseState(layout: LegadoOriginalLoginUILayout,
+        labels: [String: String], controls: [String: LegadoOriginalLoginUIControl]
+    ) throws -> LegadoOriginalLoginUIReuseState {
+        try SourcePerfTrace.span("legado.original.login.ui.reuse.snapshot",
+            "main=\(Thread.isMainThread) controls=\(layout.children.count)") {
+            let states = try layout.children.map { child -> LegadoOriginalLoginUIControlState in
+                guard let control = controls[child.id], let label = labels[child.id] else {
+                    throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original physical snapshot is incomplete")
+                }
+                return .init(id: child.id, value: control.value, label: label,
+                    selectedIndex: control.selectedIndex, cycleValue: control.cycleValue,
+                    cycleLabel: control.cycleLabel, listenerMapIsCurrent: control.listenerMapIsCurrent,
+                    forceSuffix: control.forceSuffix, displayTextOverride: control.displayTextOverride)
+            }
+            return .init(layout: layout, controls: states)
+        }
+    }
+
+    /// Raw text/password rows bind the first physical EditText with the assigned
+    /// Android id. A reused different widget is an error at getLoginData time.
+    nonisolated static func submissionValues(rows: [LegadoOriginalLoginUIRow],
+        layout: LegadoOriginalLoginUILayout, values: [String: String],
+        controls: [String: LegadoOriginalLoginUIControl]
+    ) throws -> [String: String] {
+        try SourcePerfTrace.span("legado.original.login.ui.input.snapshot",
+            "main=\(Thread.isMainThread) rows=\(rows.count) controls=\(controls.count)") {
+            try validateNameBridge(rows.map(\.name) + layout.children.map { $0.row.name } + Array(values.keys))
+            var first: [Int: LegadoOriginalLoginUIChild] = [:]
+            for child in layout.children where first[child.rowIndex] == nil { first[child.rowIndex] = child }
+            var submitted = values
+            for (index, row) in rows.enumerated() where row.type == "text" || row.type == "password" {
+                guard let child = first[index], child.row.type == "text" || child.row.type == "password",
+                      let control = controls[child.id] else {
+                    throw LegadoRuntimeError(code: "UI_BINDING_ERROR", message: "Original login row cannot bind its physical input")
+                }
+                submitted[row.name] = control.value
+            }
+            return submitted
+        }
+    }
+
+    /// Locked callbacks dispatch by physical View class, then (TextView only)
+    /// latest raw type. Reused listeners retain their old name/options/actions.
     nonisolated static func applying(entries: [LegadoOriginalLoginUIEntry]?,
         rows: [LegadoOriginalLoginUIRow], fields: [LoginField], labels: [String: String],
-        values: [String: String], controls: [String: LegadoOriginalLoginUIControl]
+        values: [String: String], controls: [String: LegadoOriginalLoginUIControl],
+        layout: LegadoOriginalLoginUILayout? = nil
     ) throws -> LegadoOriginalLoginUIUpdate {
-        try validateNameBridge(rows.map(\.name) + Array(values.keys) + (entries?.map(\.key) ?? []))
+        try validateNameBridge(rows.map(\.name) + (layout?.names ?? [])
+            + (layout?.children.map { $0.row.name } ?? []) + Array(values.keys) + (entries?.map(\.key) ?? []))
         var map = values, edited = controls, captions = labels
         var changedText: [LoginField] = [], actions: [LegadoOriginalLoginUIListenerAction] = []
         let byID = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
-        var firstRows: [[UInt16]: Int] = [:]
-        for (index, row) in rows.enumerated() where firstRows[Array(row.name.utf16)] == nil {
-            firstRows[Array(row.name.utf16)] = index
+        var assigned: [Int: LoginField] = [:]
+        if let layout {
+            for child in layout.children where assigned[child.rowIndex] == nil { assigned[child.rowIndex] = byID[child.id] }
+        } else {
+            for index in rows.indices { assigned[index] = byID["original-row-\(index)"] }
         }
-        func rowField(_ index: Int) -> LoginField? { byID["original-row-\(index)"] }
+        var firstName: [[UInt16]: Int] = [:]
+        for (index, name) in (layout?.names ?? rows.map(\.name)).enumerated() where firstName[Array(name.utf16)] == nil {
+            firstName[Array(name.utf16)] = index
+        }
+        func rawChars(_ row: LegadoOriginalLoginUIRow, toggle: Bool = false) -> [String] {
+            row.chars?.compactMap { $0 } ?? (toggle ? ["chars is null"] : ["chars", "is null"])
+        }
         func updateText(_ field: LoginField, _ value: String) {
             if edited[field.id]?.value.utf16.elementsEqual(value.utf16) != true { changedText.append(field) }
             edited[field.id] = .init(value: value)
         }
-        func updateSelect(_ field: LoginField, _ value: String?) -> Bool {
-            let index = value.flatMap { value in field.options.firstIndex { $0.utf16.elementsEqual(value.utf16) } }
-                ?? (field.options.isEmpty ? nil : 0)
+        func updateSelect(_ field: LoginField, row: LegadoOriginalLoginUIRow, value: String?) -> Bool {
+            guard !field.options.isEmpty else { return false }
+            let desired = value.flatMap { value in rawChars(row).firstIndex { $0.utf16.elementsEqual(value.utf16) } } ?? -1
+            let index = min(max(desired, 0), field.options.count - 1)
             let changed = edited[field.id]?.selectedIndex != index
             var control = edited[field.id] ?? .init(value: "")
-            control.value = index.map { field.options[$0] } ?? ""; control.selectedIndex = index
-            edited[field.id] = control
-            return changed && index != nil
+            control.value = field.options[index]; control.selectedIndex = index; edited[field.id] = control
+            return changed
         }
         func action(_ field: LoginField) {
             guard field.action != nil else { return }
-            actions.append(.init(field: field, credentials: submissionValues(fields: fields,
-                values: map, controls: edited)))
+            do {
+                let credentials: [String: String]
+                if let layout { credentials = try submissionValues(rows: rows, layout: layout, values: map, controls: edited) }
+                else { credentials = submissionValues(fields: fields, values: map, controls: edited) }
+                actions.append(.init(field: field, credentials: credentials))
+            } catch {
+                // Keep earlier control/Map updates even when the listener's later
+                // getLoginData cannot bind a reused widget. Never run an empty substitute.
+                actions.append(.init(field: field, credentials: [:], bindingFailure:
+                    (error as? LegadoRuntimeError) ?? .init(code: "STATE_IO", message: "Original input snapshot failed")))
+            }
+        }
+        func updateTextView(_ field: LoginField, row: LegadoOriginalLoginUIRow,
+            value: String?, output: inout [String: String]) {
+            var control = edited[field.id] ?? .init(value: "")
+            if row.type == "button" {
+                let text = value ?? row.viewName ?? row.name; captions[field.id] = text
+                control.displayTextOverride = field.type == .toggle ? text : nil
+            } else if row.type == "toggle" {
+                let char = value ?? rawChars(row, toggle: true).first ?? ""
+                output[row.name] = char
+                let name = row.viewName ?? row.name; captions[field.id] = name
+                control.value = char; control.forceSuffix = false
+                control.displayTextOverride = row.style?.layout_justifySelf == "right" ? name + char : char + name
+            }
+            edited[field.id] = control
         }
         if let entries {
             for entry in entries {
-                guard let index = firstRows[Array(entry.key.utf16)] else {
-                    map[entry.key] = entry.value ?? ""
-                    continue
-                }
-                // An original unknown/label row has a name but no matching View.
-                guard let field = rowField(index) else { continue }
+                guard let index = firstName[Array(entry.key.utf16)] else { map[entry.key] = entry.value ?? ""; continue }
+                guard rows.indices.contains(index), let field = assigned[index] else { continue }
                 let row = rows[index], value = entry.value ?? row.defaultValue
                 switch field.type {
                 case .text, .password:
-                    let text = value ?? ""
-                    map[field.name] = text; updateText(field, text)
-                case .button:
-                    captions[field.id] = value ?? row.viewName ?? row.name
-                case .toggle:
-                    let text = value ?? field.options.first ?? ""
-                    map[field.name] = text
-                    var control = edited[field.id] ?? .init(value: "")
-                    control.value = text; control.forceSuffix = false; edited[field.id] = control
-                    captions[field.id] = row.viewName ?? row.name
+                    let text = value ?? ""; map[row.name] = text; updateText(field, text)
+                case .button, .toggle: updateTextView(field, row: row, value: value, output: &map)
                 case .select:
-                    if updateSelect(field, value) {
-                        if edited[field.id]?.listenerMapIsCurrent == true {
-                            map[field.name] = edited[field.id]?.value ?? ""
-                        }
+                    if updateSelect(field, row: row, value: value) {
+                        if edited[field.id]?.listenerMapIsCurrent == true { map[field.name] = edited[field.id]?.value ?? "" }
                         action(field)
                     }
                 }
             }
         } else {
             var replacement: [String: String] = [:], selected: [LoginField] = []
+            // All existing listener closures captured the replaced Map, even
+            // those whose stale assigned ids no longer match a raw row.
+            for field in fields where field.type == .select || field.type == .toggle { edited[field.id]?.listenerMapIsCurrent = false }
             for (index, row) in rows.enumerated() {
-                guard let field = rowField(index) else { continue }
+                guard let field = assigned[index] else { continue }
                 switch field.type {
                 case .text, .password:
-                    let text = row.defaultValue ?? ""
-                    replacement[field.name] = text; updateText(field, text)
-                case .button:
-                    captions[field.id] = row.viewName ?? row.name
-                case .toggle:
-                    let text = row.defaultValue ?? field.options.first ?? ""
-                    replacement[field.name] = text
-                    var control = edited[field.id] ?? .init(value: "")
-                    control.value = text; control.listenerMapIsCurrent = false; control.forceSuffix = false
-                    edited[field.id] = control
-                    captions[field.id] = row.viewName ?? row.name
+                    let text = row.defaultValue ?? ""; replacement[row.name] = text; updateText(field, text)
+                case .button, .toggle: updateTextView(field, row: row, value: row.defaultValue, output: &replacement)
                 case .select:
-                    replacement[field.name] = row.defaultValue ?? field.options.first ?? ""
-                    edited[field.id]?.listenerMapIsCurrent = false
-                    if updateSelect(field, row.defaultValue) { selected.append(field) }
+                    replacement[row.name] = row.defaultValue ?? rawChars(row).first ?? ""
+                    if updateSelect(field, row: row, value: row.defaultValue) { selected.append(field) }
                 }
             }
             map = replacement
-            // Spinner notification observes the completed reset, including the new Map.
             for field in selected { action(field) }
         }
-        return .init(values: map, controls: edited, labels: captions,
-            changedTextRows: changedText, actions: actions)
+        return .init(values: map, controls: edited, labels: captions, changedTextRows: changedText, actions: actions)
     }
 
     /// Java names use exact UTF16 units. Swift String-keyed Maps cannot express

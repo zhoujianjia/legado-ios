@@ -151,6 +151,73 @@ struct BookSourceLoginTests {
         #expect(exit.oKToClose && exit.hasChange && !exit.shouldPersist)
         let afterOKACK = exit.acknowledge(revision: exit.revision)
         #expect(!afterOKACK)
+        let reuseJSON = #"{"rows":[{"name":"renamed","type":"password"},{"name":"choiceNew","type":"select","chars":["new-0","new-1","new-2"]},{"name":"toggleNew","type":"toggle","viewName":"newLabel","chars":["N0","N1"],"style":{"layout_justifySelf":"right"}},{"name":"badBinding","type":"text"}],"labels":["new","choice","toggle","bad"],"values":{"hidden":"synthetic-hidden","oldEdit":"working-original","oldSelect":"old-0"},"dynamic":true,"layout":{"names":["textSlot","selectSlot","toggleSlot","buttonSlot"],"children":[{"id":"stable-edit","rowIndex":0,"row":{"name":"oldEdit","type":"text","action":"oldTextAction()"}},{"id":"stable-select","rowIndex":1,"row":{"name":"oldSelect","type":"select","chars":["old-0","old-1"],"action":"oldSelectAction()"}},{"id":"stable-toggle","rowIndex":2,"row":{"name":"oldToggle","type":"toggle","chars":["old-A","old-B"],"action":"oldToggleAction()"}},{"id":"stable-button","rowIndex":3,"row":{"name":"oldButton","type":"button","action":"oldButtonAction()"}}]},"controlStates":[{"id":"stable-edit","value":"retained-buffer","label":"old-edit","listenerMapIsCurrent":true,"forceSuffix":false},{"id":"stable-select","value":"old-0","label":"old-select","selectedIndex":0,"listenerMapIsCurrent":true,"forceSuffix":false},{"id":"stable-toggle","value":"old-A","label":"old-toggle","cycleValue":"old-A","cycleLabel":"captured-toggle","listenerMapIsCurrent":false,"forceSuffix":false},{"id":"stable-button","value":"","label":"old-button","listenerMapIsCurrent":true,"forceSuffix":false}]}"#
+        let reused = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(reuseJSON.utf8)))
+        #expect(reused.fields.map(\.id) == ["stable-edit", "stable-select", "stable-toggle", "stable-button"])
+        #expect(reused.fields[0].name == "oldEdit" && reused.fields[0].action == "oldTextAction()")
+        #expect(reused.fields[0].type == .text && reused.rows[0].type == "password")
+        #expect(reused.fields[3].type == .button && reused.rows[3].type == "text")
+        let reuseSnapshot = try LegadoOriginalLoginUIForm.reuseState(layout: reused.layout,
+            labels: reused.labels, controls: reused.controls)
+        #expect(reuseSnapshot.layout == reused.layout)
+        #expect(reuseSnapshot.controls[0].value == "retained-buffer")
+        #expect(reuseSnapshot.controls[2].cycleLabel == "captured-toggle")
+        do {
+            _ = try BookSourceFormLoginView.originalFormSubmissionValues(rows: reused.rows,
+                layout: reused.layout, values: reused.values, controls: reused.controls)
+            Issue.record("A raw text row must not bind a retained button")
+        } catch let failure as LegadoRuntimeError { #expect(failure.code == "UI_BINDING_ERROR") }
+        let reuseUpdate = try LegadoOriginalLoginUIForm.applying(entries: [
+            .init(key: "textSlot", value: "changed-buffer"),
+            .init(key: "selectSlot", value: "new-2"),
+            .init(key: "toggleSlot", value: "N1")
+        ], rows: reused.rows, fields: reused.fields, labels: reused.labels,
+            values: reused.values, controls: reused.controls, layout: reused.layout)
+        #expect(reuseUpdate.values["renamed"] == "changed-buffer")
+        #expect(reuseUpdate.values["oldEdit"] == "working-original")
+        #expect(reuseUpdate.changedTextRows.map(\.id) == ["stable-edit"])
+        #expect(reuseUpdate.controls["stable-select"]?.selectedIndex == 1)
+        #expect(reuseUpdate.values["oldSelect"] == "old-1")
+        #expect(reuseUpdate.values["choiceNew"] == nil)
+        #expect(reuseUpdate.actions.count == 1 && reuseUpdate.actions[0].field.action == "oldSelectAction()")
+        #expect(reuseUpdate.actions[0].bindingFailure?.code == "UI_BINDING_ERROR")
+        #expect(reuseUpdate.controls["stable-toggle"]?.displayTextOverride == "newLabelN1")
+        #expect(reuseUpdate.controls["stable-toggle"]?.cycleValue == "old-A")
+        #expect(reuseUpdate.controls["stable-toggle"]?.cycleLabel == "captured-toggle")
+        let callbackSnapshot = try LegadoOriginalLoginUIForm.reuseState(layout: reused.layout,
+            labels: reuseUpdate.labels, controls: reuseUpdate.controls)
+        #expect(callbackSnapshot.controls[2].displayTextOverride == "newLabelN1")
+        #expect(callbackSnapshot.controls[2].cycleValue == "old-A")
+        #expect(!callbackSnapshot.controls[2].listenerMapIsCurrent)
+        let validReuseJSON = reuseJSON.replacingOccurrences(of: #""name":"badBinding","type":"text""#,
+            with: #""name":"badBinding","type":"button""#)
+        let validReuse = try LegadoOriginalLoginUIForm(JSONDecoder().decode(
+            LegadoOriginalLoginUIResult.self, from: Data(validReuseJSON.utf8)))
+        let physicalSubmission = try BookSourceFormLoginView.originalFormSubmissionValues(rows: validReuse.rows,
+            layout: validReuse.layout, values: validReuse.values, controls: validReuse.controls)
+        #expect(physicalSubmission["renamed"] == "retained-buffer")
+        #expect(physicalSubmission["oldEdit"] == "working-original" && physicalSubmission["hidden"] == "synthetic-hidden")
+        let sameAssignedID: [LegadoOriginalLoginUIChild] = [
+            .init(id: "stable-edit", rowIndex: 0, row: validReuse.layout.children[0].row),
+            .init(id: "stable-button", rowIndex: 0, row: validReuse.layout.children[3].row)
+        ]
+        let firstPhysical = try BookSourceFormLoginView.originalFormSubmissionValues(rows: validReuse.rows,
+            layout: .init(names: validReuse.layout.names, children: sameAssignedID),
+            values: validReuse.values, controls: validReuse.controls)
+        #expect(firstPhysical["renamed"] == "retained-buffer")
+        do {
+            _ = try BookSourceFormLoginView.originalFormSubmissionValues(rows: validReuse.rows,
+                layout: .init(names: validReuse.layout.names, children: Array(sameAssignedID.reversed())),
+                values: validReuse.values, controls: validReuse.controls)
+            Issue.record("findViewById must bind the first physical control, even when its type differs")
+        } catch let failure as LegadoRuntimeError { #expect(failure.code == "UI_BINDING_ERROR") }
+        let resetReuse = try LegadoOriginalLoginUIForm.applying(entries: nil, rows: validReuse.rows,
+            fields: validReuse.fields, labels: validReuse.labels, values: validReuse.values,
+            controls: validReuse.controls, layout: validReuse.layout)
+        #expect(resetReuse.controls["stable-select"]?.listenerMapIsCurrent == false)
+        #expect(resetReuse.controls["stable-toggle"]?.listenerMapIsCurrent == false)
+        #expect(resetReuse.controls["stable-toggle"]?.cycleValue == "old-A")
         #expect(originalForm.fields.count == 6)
         #expect(originalForm.fields[0].id != originalForm.fields[1].id)
         #expect(originalForm.labels[originalForm.fields[0].id] == "first")

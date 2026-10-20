@@ -73,8 +73,9 @@ class OriginalSourceLoginUIEventsTest {
             assertEquals("STATE_LIMIT",count["code"].asString);assertEquals(128,count["loginUIEvents"].asJsonArray.size())
             val bytes=owned.call("java.upLoginData(null);result.put('huge',Array(530000).join('x'));java.upLoginData(result);",success=false)["error"].asJsonObject
             assertEquals("STATE_LIMIT",bytes["code"].asString);assertEquals(1,bytes["loginUIEvents"].asJsonArray.size())
-            val delta=owned.call("java.upLoginData(null);java.reLoginView(true);",success=false)["error"].asJsonObject
-            assertEquals("UNSUPPORTED_CAPABILITY",delta["code"].asString);assertEquals(1,delta["loginUIEvents"].asJsonArray.size())
+            val delta=owned.call("java.upLoginData(null);java.reLoginView(true);")
+            assertEquals(2,delta["loginUIEvents"].asJsonArray.size())
+            assertTrue(delta["loginUIEvents"].asJsonArray[1].asJsonObject["deltaUp"].asBoolean)
             val alias=owned.call("result.put('e\u0301','second');java.upLoginData(result);",jsonObject("\u00e9" to "first"),success=false)["error"].asJsonObject
             assertEquals("UNSUPPORTED_CAPABILITY",alias["code"].asString);assertFalse(alias.has("loginUIEvents"))
             val rendered=owned.call(null,values=jsonObject("text" to "working"),evaluation=jsonObject("text" to "edited"),operation="loginUi",ui="""@js:if(String(result.get('text'))!=='edited')throw new Error('wrong evaluation Map');[{name:'text',default:'default'},{name:'button',type:'button',viewName:"'cooked'"},{name:'toggle',type:'toggle',chars:['a'],viewName:"''"}];""")["result"].asJsonObject

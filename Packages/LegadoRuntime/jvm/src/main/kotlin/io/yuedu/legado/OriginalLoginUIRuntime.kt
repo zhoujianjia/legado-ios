@@ -22,6 +22,11 @@ internal object OriginalLoginUIRuntime {
         }
         val suppliedValues = inputValues("values")
         val evaluationValues = inputValues("evaluationValues")
+        val reuseState = input["reuseState"]?.takeUnless { it.isJsonNull }?.let {
+            require(it.isJsonObject) { "Login UI reuse requires a bounded object" }
+            require(suppliedValues != null) { "Login UI reuse requires the current working Map" }
+            it.asJsonObject
+        }
         val environment = source.getRuleEnvironment()
         return environment.platform.runWebBook(currentCoroutineContext()) {
             val context = currentCoroutineContext()
@@ -44,31 +49,20 @@ internal object OriginalLoginUIRuntime {
                 }
                 require(rows.size <= 4096) { "Login UI contains too many rows" }
                 requireRepresentableLoginUIKeys(values.keys + rows.map { it.name } + evaluationValues.orEmpty().keys)
-                // Original selector/toggle construction updates the dialog working
-                // map, not Keychain. Text defaults remain display-only edits.
-                var workingMapChanged = false
-                for (row in rows) if (row.type == "select" || row.type == "toggle") {
-                    if (values[row.name].isNullOrEmpty()) {
-                        workingMapChanged = true
-                        val chars = row.chars?.filterNotNull() ?: if (row.type == "select") listOf("chars", "is null") else listOf("chars is null")
-                        values[row.name] = row.default ?: chars.firstOrNull()
-                            ?: throw RuntimeFailure("INVALID_RESULT", "Login UI selection has no value")
-                    }
-                }
-                val edited = values.toMutableMap()
-                for (row in rows) if (row.type == "text" || row.type == "password")
-                    edited[row.name] = values[row.name] ?: row.default ?: ""
-                val toggleActionLabels = arrayListOf<String?>()
-                val toggleLabelSuffixes = arrayListOf<Boolean>()
-                val labels = rows.map { row ->
+                val plan = OriginalLoginUIReuse(rows, values, reuseState)
+                // Only newly created physical Views evaluate labels/defaults.
+                // Retained Views keep their captured definition, label and state.
+                val edited = plan.labelValues()
+                for (child in plan.created) {
+                    val row = child.row
                     val viewName = row.viewName
                     var retainedName: String? = null
                     var nullResult = false
                     val label = when {
-                        row.type !in setOf("text", "password", "select", "button", "toggle") -> row.name
                         viewName == null -> row.name
                         viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'' ->
                             viewName.substring(1, viewName.length - 1).also { retainedName = it }
+                        edited == null -> { nullResult = true; "null" }
                         else -> try {
                             evaluate(viewName, edited).let { value ->
                                 if (value.isEmpty()) { nullResult = true; "null" }
@@ -82,17 +76,25 @@ internal object OriginalLoginUIRuntime {
                             "null"
                         }
                     }
-                    // The original button/toggle builder caches successful
-                    // display names on RowUi for later upLoginData resets.
                     if ((row.type == "button" || row.type == "toggle") && retainedName != null)
                         row.viewName = retainedName
-                    toggleActionLabels += if (row.type == "toggle") retainedName ?: row.name else null
-                    toggleLabelSuffixes += row.type == "toggle" && nullResult
-                    label
+                    child.state.addProperty("label", label)
+                    if (row.type == "toggle") {
+                        child.state.addProperty("cycleLabel", retainedName ?: row.name)
+                        child.state.addProperty("forceSuffix", nullResult)
+                    }
                 }
-                jsonObject("rows" to GSON.toJsonTree(rows), "labels" to labels, "values" to values,
+                val toggleActionLabels = rows.indices.map { index ->
+                    if (rows[index].type == "toggle") plan.slot(index)?.state?.get("cycleLabel")
+                        ?.takeUnless { it.isJsonNull }?.asString ?: rows[index].name else null
+                }
+                val toggleLabelSuffixes = rows.indices.map { index ->
+                    rows[index].type == "toggle" && plan.slot(index)?.state?.get("forceSuffix")?.asBoolean == true
+                }
+                jsonObject("rows" to GSON.toJsonTree(rows), "labels" to plan.labels(), "values" to values,
                     "dynamic" to (code != null), "toggleActionLabels" to toggleActionLabels,
-                    "toggleLabelSuffixes" to toggleLabelSuffixes, "workingMapChanged" to workingMapChanged)
+                    "toggleLabelSuffixes" to toggleLabelSuffixes, "workingMapChanged" to plan.workingMapChanged,
+                    "layout" to plan.layout(), "controlStates" to plan.states())
             }
         }
     }

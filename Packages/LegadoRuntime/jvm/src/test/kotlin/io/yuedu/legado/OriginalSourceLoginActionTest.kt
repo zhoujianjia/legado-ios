@@ -39,7 +39,12 @@ class OriginalSourceLoginActionTest {
             owned.secret="unchanged-non-json-raw"
             assertFalse(owned.call(null,prelude="source.putLoginHeader('must-not-run')")["result"].asJsonObject["executed"].asBoolean)
             assertFalse(owned.call("throw new Error('must-not-run')",prelude="")["result"].asJsonObject["executed"].asBoolean)
-            assertNull(owned.header())
+            assertFalse(owned.call(null,prelude="source.putLoginHeader('unbound-null-action')",inputBindingFailed=true)["result"].asJsonObject["executed"].asBoolean)
+            assertFalse(owned.call("throw new Error('unbound-missing-prefix')",prelude="",inputBindingFailed=true)["result"].asJsonObject["executed"].asBoolean)
+            val unbound=owned.call("source.putLoginHeader('unbound-action-must-not-run')",prelude="source.putLoginHeader('unbound-prefix-must-not-run')",success=false,inputBindingFailed=true)
+            assertEquals("UI_BINDING_ERROR",unbound["error"].asJsonObject["code"].asString)
+            assertTrue(unbound["error"].asJsonObject["completedEffects"]?.asJsonArray?.isEmpty != false)
+            assertNull(owned.header());assertEquals(0,owned.secretWrites);assertEquals(0,owned.secretReads)
             assertTrue(owned.call("",prelude="source.putLoginHeader('empty-action-prelude')")["result"].asJsonObject["executed"].asBoolean)
             assertEquals("empty-action-prelude",owned.header())
             assertTrue(owned.call("if(!result.isEmpty())throw new Error('expected actual empty Map');source.putLoginHeader('explicit-only')")["result"].asJsonObject["executed"].asBoolean)
@@ -59,12 +64,10 @@ class OriginalSourceLoginActionTest {
                 assertFalse(failed.toString().contains("SYNTHETIC-ACTION-CANARY"));assertTrue(messages.none{it.contains("SYNTHETIC-ACTION-CANARY")})
                 val supported=owned.call("java.upLoginData(result);java.upLoginData(null);java.reLoginView();java.refreshExplore();")
                 assertEquals(listOf("updateData","updateData","render","render"),supported["loginUIEvents"].asJsonArray.map{it.asJsonObject["kind"].asString})
-                for(callback in listOf("java.reLoginView(true)")) {
-                    val unsupported=owned.call("source.putLoginHeader('before-callback');$callback;source.putLoginHeader('must-not-run');",success=false)
-                    assertEquals(callback,"UNSUPPORTED_CAPABILITY",unsupported["error"].asJsonObject["code"].asString)
-                    assertTrue(unsupported["error"].asJsonObject["completedEffects"].asJsonArray.any{it.asString=="sourceStateCommitted"})
-                    assertEquals("before-callback",owned.header())
-                }
+                val delta=owned.call("source.putLoginHeader('before-callback');java.reLoginView(true);source.putLoginHeader('after-callback');")
+                assertTrue(delta["loginUIEvents"].asJsonArray[0].asJsonObject["deltaUp"].asBoolean)
+                assertTrue(delta["completedEffects"].asJsonArray.any{it.asString=="sourceStateCommitted"})
+                assertEquals("after-callback",owned.header())
                 assertEquals(0,owned.secretWrites)
             } finally {logger.removeHandler(handler);logger.level=old}
         }
@@ -100,10 +103,10 @@ class OriginalSourceLoginActionTest {
             }
         }}
         fun call(action:String?,values:JsonObject=jsonObject(),prelude:String="var actionPrelude='present';",longClick:Boolean=false,
-                 task:String="action-${UUID.randomUUID()}",success:Boolean=true):JsonObject {
+                 task:String="action-${UUID.randomUUID()}",success:Boolean=true,inputBindingFailed:Boolean=false):JsonObject {
             val source=jsonObject("bookSourceUrl" to origin,"loginUi" to "[]","loginUrl" to prelude,"enabledCookieJar" to true,"ruleContent" to jsonObject())
             val created=parseObject(LegadoRuntime.createSession(source.toString(),jsonObject("sourceMode" to "original-traditional","httpTransport" to "jvm-okhttp","stateOwner" to "owned-action").toString()));assertTrue(created.toString(),created["ok"].asBoolean);val id=created["sessionId"].asString
-            try {val result=parseObject(LegadoRuntime.execute(id,task,"loginAction",jsonObject("action" to action,"credentials" to values,"isLongClick" to longClick,"timeoutMs" to 20_000).toString()));assertEquals(result.toString(),success,result["ok"].asBoolean);return result}
+            try {val result=parseObject(LegadoRuntime.execute(id,task,"loginAction",jsonObject("action" to action,"credentials" to values,"isLongClick" to longClick,"inputBindingFailed" to inputBindingFailed,"timeoutMs" to 20_000).toString()));assertEquals(result.toString(),success,result["ok"].asBoolean);return result}
             finally {LegadoRuntime.closeSession(id)}
         }
         fun header():String? {

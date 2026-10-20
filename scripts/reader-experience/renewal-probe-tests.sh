@@ -33,6 +33,7 @@ python3 "$SCRIPT_DIR/renewal-probe-tools.py" prepare --work "$WORK" > "$WORK/pre
 xcodebuild -version > "$WORK/xcode-version.log"
 if [[ $YUEDU_RENEWAL_SELECTION == currentcore ]]; then
   # 463 definitions,466 argument leaves: one cold3600-second invocation/xcresult.
+  # Run control-reuse checks in the separate native and Package groups.
   # First failure never gets overwritten; all mandatory producer/fixture gates remain.
   python3 "$SCRIPT_DIR/renewal-probe-tools.py" run-currentcore --work "$WORK"
   exit $?

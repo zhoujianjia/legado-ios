@@ -308,8 +308,8 @@ struct LegadoPreviewStateOwner: LegadoEntityStateBacking {
 
 /// Explicit original-business execution only. No route selection, JSC or second HTTP jar.
 enum LegadoOriginalPreviewOperation: Sendable {
-    case loginAction(action: String?, credentials: [String: String], isLongClick: Bool)
-    case loginUI([String: String]?, evaluationValues: [String: String]?)
+    case loginAction(action: String?, credentials: [String: String], isLongClick: Bool, inputBindingFailed: Bool = false)
+    case loginUI([String: String]?, evaluationValues: [String: String]?, reuseState: LegadoOriginalLoginUIReuseState?)
     case formLogin([String: String])
     case persistLoginInfo([String: String])
     case search(String, Int32?)
@@ -371,14 +371,14 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 let taskID = grant?.taskID ?? UUID().uuidString
                 let remaining = Int64(min(300_000, max(1, deadline.timeIntervalSinceNow * 1000)))
                 switch operation {
-                case .loginAction(let action, let credentials, let isLongClick):
+                case .loginAction(let action, let credentials, let isLongClick, let inputBindingFailed):
                     let value = try await runtime.loginActionOriginal(session: session, action: action,
-                        credentials: credentials, isLongClick: isLongClick,
+                        credentials: credentials, isLongClick: isLongClick, inputBindingFailed: inputBindingFailed,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects,
                         onReportedLoginUIEvents: observeLoginUIEvents)
                     result = .loginAction(value, completedEffects: reportedEffects.withLock { $0 })
-                case .loginUI(let values, let evaluationValues):
-                    let value = try await runtime.loginUIOriginal(session: session, values: values, evaluationValues: evaluationValues,
+                case .loginUI(let values, let evaluationValues, let reuseState):
+                    let value = try await runtime.loginUIOriginal(session: session, values: values, evaluationValues: evaluationValues, reuseState: reuseState,
                         timeoutMilliseconds: min(30_000, remaining), taskID: taskID, onReportedEffects: observeEffects)
                     result = .loginUI(value, completedEffects: reportedEffects.withLock { $0 })
                 case .persistLoginInfo(let values):

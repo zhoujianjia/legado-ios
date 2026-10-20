@@ -1,0 +1,126 @@
+{
+  "actualTestsAcrossTwoInvocations": 16,
+  "invocations": [
+    {
+      "log": "jvm-tests-binding-final.log",
+      "actualTests": 12,
+      "argv": [
+        ".tools/gradle-8.14.3/bin/gradle.bat",
+        "-p",
+        ".build/original-source-login-delta-reuse-step/validation-root/Packages/LegadoRuntime/jvm",
+        "--offline",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx512m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "test",
+        "--tests",
+        "io.yuedu.legado.OriginalSourceLoginDeltaTest",
+        "--tests",
+        "io.yuedu.legado.OriginalSourceLoginUiTest",
+        "--tests",
+        "io.yuedu.legado.OriginalSourceLoginActionTest",
+        "--tests",
+        "io.yuedu.legado.OriginalSourceLoginUIEventsTest",
+        "runtimeJar"
+      ],
+      "note": "OriginalSourceLoginUiTest is a mistyped selector, matches no class; the other three actual XML suites are12 passed. Earlier16 summary corrected before freeze."
+    },
+    {
+      "log": "jvm-ui-corrected-selection.log",
+      "actualTests": 4,
+      "argv": [
+        ".tools/gradle-8.14.3/bin/gradle.bat",
+        "-p",
+        ".build/original-source-login-delta-reuse-step/validation-root/Packages/LegadoRuntime/jvm",
+        "--offline",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx512m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "test",
+        "--tests",
+        "io.yuedu.legado.OriginalSourceLoginUITest"
+      ],
+      "note": "Only omitted exact UI4 selection run; prior12/XML and ordinaryJAR unchanged. Same exact125 production inputs."
+    }
+  ],
+  "suites": [
+    {
+      "class": "io.yuedu.legado.OriginalSourceLoginActionTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "methods": [
+        "actionUsesOriginalJavaMapNullEntitiesLongFlagAndNeverImplicitlyStores",
+        "supportedCallbacksRetainOrderAndSensitiveErrorsRetainAcceptedEffects",
+        "nullActionAndMissingLoginSkipWhileEmptyActionAndEmptyMapStillFollowOriginal",
+        "realHttpCookieOwnerAndCancelledActionDoNotPermitLateWrites"
+      ],
+      "invocation": "jvm-tests-binding-final.log",
+      "xml": {
+        "path": "actual-jvm-xml/TEST-io.yuedu.legado.OriginalSourceLoginActionTest.xml",
+        "bytes": 988,
+        "sha256": "284f20078d71a1d9530aaaa00898f28ac39c6f2fdcedb1b7ea7e8a6e72fa0c73"
+      }
+    },
+    {
+      "class": "io.yuedu.legado.OriginalSourceLoginDeltaTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "methods": [
+        "unknownNameSlotsUseLockedPhysicalIndexAndTruncateRemovedChildrenWithoutInventingControls",
+        "invalidSnapshotsStayErrorsAndCancelledNewLabelKeepsPriorAcceptedEffectsWithoutPublishingNewLayout",
+        "onlyNewControlsInitializeDefaultsAndEvaluateLabelsInOriginalRhinoWithRetainedVisibleEdits",
+        "duplicateNamesMovePhysicalControlsAndRetainOldDefinitionsLabelsAndWorkingMapIdentity"
+      ],
+      "invocation": "jvm-tests-binding-final.log",
+      "xml": {
+        "path": "actual-jvm-xml/TEST-io.yuedu.legado.OriginalSourceLoginDeltaTest.xml",
+        "bytes": 1071,
+        "sha256": "88e3f49599d4eef1be04912792944ac4ac423522e274a33ad2cc51c9bd5757f8"
+      }
+    },
+    {
+      "class": "io.yuedu.legado.OriginalSourceLoginUIEventsTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "methods": [
+        "actualHttpCancellationAndDeadlinePreserveCallbackOnlyEventsWithoutLateWrites",
+        "boundsDeltaAndNameBridgeRejectExplicitlyWhileRenderKeepsWorkingAndEvaluationMapsSeparate",
+        "callbacksBeforeThrowRetainEventsAndIndependentCommittedEffectsWithoutDiagnosticSecrets",
+        "eventsAreOrderedEagerTaskScopedSnapshotsWithDistinctNullAndEmptyMap"
+      ],
+      "invocation": "jvm-tests-binding-final.log",
+      "xml": {
+        "path": "actual-jvm-xml/TEST-io.yuedu.legado.OriginalSourceLoginUIEventsTest.xml",
+        "bytes": 1045,
+        "sha256": "76b8355d6b321e646ad4af53ba13b4d55d3f185e22f35d734120bbd60cc710a8"
+      }
+    },
+    {
+      "class": "io.yuedu.legado.OriginalSourceLoginUITest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "methods": [
+        "renderFailuresAreTypedAndSensitiveWhileLabelFailureUsesOriginalNullBranch",
+        "actualRenderHttpUsesExistingCookieHeaderOwnerAndCancellationPreventsLateWrites",
+        "staticOriginalRowsReadOnlyStoredMapAndSkipUnrenderedTypesWithoutDerivingDefaults",
+        "dynamicCompletionAndPerLabelPreludeUseRealJavaMapAndOnlyWorkingEdits"
+      ],
+      "invocation": "jvm-ui-corrected-selection.log",
+      "xml": {
+        "path": "actual-jvm-xml/TEST-io.yuedu.legado.OriginalSourceLoginUITest.xml",
+        "bytes": 997,
+        "sha256": "826bb1b0d1452905575da52adb63f779dd31a15fd38027b20772f10d26cd42c9"
+      }
+    }
+  ]
+}

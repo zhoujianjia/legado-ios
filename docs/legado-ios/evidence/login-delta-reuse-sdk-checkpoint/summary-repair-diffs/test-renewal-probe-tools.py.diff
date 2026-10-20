@@ -1,0 +1,75 @@
+--- selector-v1/scripts/reader-experience/test-renewal-probe-tools.py
++++ selector-summary-v2/scripts/reader-experience/test-renewal-probe-tools.py
+@@ -89,6 +89,16 @@
+                                      "children": [{"nodeType": "Test Case Run", "result": "Passed"}]} for value in ("false", "true")]
+             cases.append(node)
+         return {"testNodes": [{"nodeType": "Test Plan", "name": "All tests", "children": cases}]}
++
++    def summary_fixture(self, group):
++        count = probe.expected_leaf_count(group)
++        if group != "currentcore":
++            return {"totalTestCount": count, "passedTests": count, "failedTests": 0, "skippedTests": 0}
++        definitions = len(probe.EXPECTED_CASES[group])
++        return {"totalTestCount": definitions, "passedTests": definitions,
++                "failedTests": 0, "skippedTests": 0, "expectedFailures": 0,
++                "devicesAndConfigurations": [{"passedTests": count, "failedTests": 0,
++                                              "skippedTests": 0, "expectedFailures": 0}]}
+
+     def built_fixture(self):
+         probe.prepare(self.work)
+@@ -117,9 +127,7 @@
+             "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(app.parent),
+             "FULL_PRODUCT_NAME": app.name}}])
+         for group in probe.selected_cases():
+-            count = probe.expected_leaf_count(group)
+-            self.write_json(group + "-summary.json", {"totalTestCount": count, "passedTests": count,
+-                                                      "failedTests": 0, "skippedTests": 0})
++            self.write_json(group + "-summary.json", self.summary_fixture(group))
+             self.write_json(group + "-tests.json", self.tree(group))
+         return app
+
+@@ -2139,7 +2147,7 @@
+             if '--help' in argv:
+                 raw = b'Arguments nodeIdentifier result testIdentifier testResult testRuns'
+             elif 'summary' in argv:
+-                raw = json.dumps({'totalTestCount': count, 'passedTests': count, 'failedTests': 0, 'skippedTests': 0}).encode()
++                raw = json.dumps(self.summary_fixture('currentcore')).encode()
+             elif 'tests' in argv:
+                 raw = json.dumps(tree).encode()
+             else:
+@@ -2435,6 +2443,35 @@
+
+
+ class CurrentCoreSwiftTestingSelectorTests(unittest.TestCase):
++    def test_currentcore_summary_keeps_definition_and_single_device_execution_counts_distinct(self):
++        summary = {"totalTestCount": 463, "passedTests": 463, "failedTests": 0, "skippedTests": 0,
++                   "expectedFailures": 0, "devicesAndConfigurations": [{"passedTests": 466,
++                       "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
++        accepted = probe.verify_group_summary(summary, "currentcore")
++        self.assertEqual(accepted["totalTestCount"], 463)
++        self.assertEqual(accepted["expectedExecutions"], 466)
++        self.assertEqual(accepted["deviceExecutionCounts"]["passedTests"], 466)
++        faults = []
++        changed = copy.deepcopy(summary); changed.update(totalTestCount=466, passedTests=466); faults.append(changed)
++        changed = copy.deepcopy(summary); changed["devicesAndConfigurations"][0]["passedTests"] = 463; faults.append(changed)
++        changed = copy.deepcopy(summary); changed.pop("devicesAndConfigurations"); faults.append(changed)
++        changed = copy.deepcopy(summary); changed["devicesAndConfigurations"] *= 2; faults.append(changed)
++        changed = copy.deepcopy(summary); changed["devicesAndConfigurations"][0]["skippedTests"] = 1; faults.append(changed)
++        changed = copy.deepcopy(summary); changed["devicesAndConfigurations"][0]["failedTests"] = 1; faults.append(changed)
++        changed = copy.deepcopy(summary); changed["devicesAndConfigurations"][0]["expectedFailures"] = 1; faults.append(changed)
++        changed = copy.deepcopy(summary); changed["expectedFailures"] = True; faults.append(changed)
++        changed = copy.deepcopy(summary); changed["totalTestCount"] = True; faults.append(changed)
++        # The real incomplete210 shape stays rejected; this repair must never
++        # downgrade the required definitions or accept its short execution.
++        changed = copy.deepcopy(summary); changed.update(totalTestCount=21, passedTests=21)
++        changed["devicesAndConfigurations"][0]["passedTests"] = 24; faults.append(changed)
++        for index, changed in enumerate(faults):
++            with self.subTest(fault=index), self.assertRaises(ValueError):
++                probe.verify_group_summary(changed, "currentcore")
++        # Existing non-currentcore summary paths keep their exact old contract.
++        historical = {"totalTestCount": 8, "passedTests": 8, "failedTests": 0, "skippedTests": 0}
++        self.assertEqual(probe.verify_group_summary(historical, "unit"), smoke.verify_summary(historical, 8))
++
+     def test_currentcore_selectors_match_real_frameworks_and_keep_every_required_function(self):
+         # Independent source classification prevents a hard-coded XCTest
+         # exception from silently selecting the wrong framework after a change.

@@ -148,13 +148,98 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
             let header = await Task.detached { LoginManager.shared.getLoginHeader(sourceUrl: fixture.a) }.value
             XCTAssertEqual(stored, original)
             XCTAssertEqual(header, "synthetic-action-header")
-            do {
-                _ = try await service.originalLoginAction(source: source,
-                    action: "java.reLoginView(true)", credentials: values, isLongClick: false)
-                XCTFail("UI callback must not become a successful action")
-            } catch { XCTAssertEqual((error as? LegadoRuntimeError)?.code, "UNSUPPORTED_CAPABILITY") }
+            let callback = try await service.originalLoginAction(source: source,
+                action: "java.reLoginView(true)", credentials: values, isLongClick: false)
+            XCTAssertTrue(callback.executed)
+            XCTAssertEqual(callback.loginUIEvents.map(\.kind), [.render])
+            XCTAssertEqual(callback.loginUIEvents.map(\.sequence), [1])
+            XCTAssertEqual(callback.loginUIEvents.first?.deltaUp, true)
+            XCTAssertFalse(callback.completedEffects.contains("sourceLoginInfoMayCommit"))
+            XCTAssertFalse(callback.completedEffects.contains("sourceLoginInfoCommitted"))
         } catch { problem = error }
         await Task.detached { LoginManager.shared.removeLoginHeader(sourceUrl: fixture.a) }.value
+        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
+    func testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite() async throws {
+        executionTimeAllowance = 180
+        try await requireNativeRuntime()
+        let fixture = try await Task.detached { try Fixture() }.value
+        var problem: Error?
+        do {
+            let stored = ["hidden": "synthetic-hidden", "username": "stored-user", "phase": "first"]
+            await Task.detached { LoginManager.shared.storeLoginInfo(sourceUrl: fixture.a, info: stored) }.value
+            var source = BookSource()
+            source.bookSourceUrl = fixture.a; source.enabledCookieJar = false
+            source.loginUrl = "function login(){throw new Error('must-not-submit');}"
+            source.loginUi = """
+            @js:if(String(result.get('phase'))==='next'){
+              [{name:'caption',type:'password',default:'must-not-reset',action:'newAction()',viewName:"throw new Error('must-not-evaluate-reused')"},
+               {name:'username',type:'button',action:'newWatcher()',viewName:"throw new Error('must-not-evaluate-reused')"}];
+            }else{
+              [{name:'username',action:'oldWatcher()',viewName:"'Original user'"},
+               {name:'caption',type:'button',action:'oldAction()',viewName:"'Original button'"}];
+            }
+            """
+            let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
+            let first = try await service.originalLoginUI(source: source, values: nil)
+            XCTAssertEqual(first.fields.count, 2)
+            let text = try XCTUnwrap(first.fields.first { $0.name == "username" })
+            let button = try XCTUnwrap(first.fields.first { $0.name == "caption" })
+            var controls = first.controls
+            controls[text.id]?.value = "visible-edit"
+            let credentials = try BookSourceFormLoginView.originalFormSubmissionValues(rows: first.rows,
+                layout: first.layout, values: first.values, controls: controls)
+            let receipt = try await service.originalLoginAction(source: source,
+                action: "result.put('phase','next');java.upLoginData(result);java.reLoginView(true)",
+                credentials: credentials, isLongClick: false)
+            XCTAssertTrue(receipt.executed)
+            XCTAssertEqual(receipt.loginUIEvents.map(\.kind), [.updateData, .render])
+            XCTAssertEqual(receipt.loginUIEvents.last?.deltaUp, true)
+            let update = try XCTUnwrap(receipt.loginUIEvents.first)
+            let updated = try LegadoOriginalLoginUIForm.applying(entries: update.entries,
+                rows: first.rows, fields: first.fields, labels: first.labels,
+                values: first.values, controls: controls, layout: first.layout)
+            let snapshot = try LegadoOriginalLoginUIForm.reuseState(layout: first.layout,
+                labels: updated.labels, controls: updated.controls)
+            let evaluation = try BookSourceFormLoginView.originalFormSubmissionValues(rows: first.rows,
+                layout: first.layout, values: updated.values, controls: updated.controls)
+            // The real action has returned and released the source gate before
+            // the same service/JVM receives this retained physical snapshot.
+            let moved = try await service.originalLoginUI(source: source, values: updated.values,
+                evaluationValues: evaluation, reuseState: snapshot)
+            XCTAssertEqual(moved.fields.map(\.id), [button.id, text.id])
+            XCTAssertEqual(moved.layout.children.map(\.rowIndex), [0, 1])
+            XCTAssertEqual(moved.rows.map(\.type), ["password", "button"])
+            XCTAssertEqual(moved.fields.map(\.type), [.button, .text])
+            XCTAssertEqual(moved.fields.map(\.action), ["oldAction()", "oldWatcher()"])
+            XCTAssertEqual(moved.labels[button.id], "Original button")
+            XCTAssertEqual(moved.labels[text.id], "Original user")
+            XCTAssertEqual(moved.controls[text.id]?.value, "visible-edit")
+            XCTAssertEqual(moved.values, updated.values)
+            XCTAssertFalse(moved.workingMapChanged)
+            do {
+                _ = try BookSourceFormLoginView.originalFormSubmissionValues(rows: moved.rows,
+                    layout: moved.layout, values: moved.values, controls: moved.controls)
+                XCTFail("A new password row bound to the retained Button must stay a binding error")
+            } catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "UI_BINDING_ERROR") }
+            do {
+                _ = try await service.originalLoginAction(source: source, action: button.action,
+                    credentials: [:], isLongClick: false, inputBindingFailed: true)
+                XCTFail("A present original prelude requires the missing input to fail before authored JS")
+            } catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "UI_BINDING_ERROR") }
+            // The locked action first checks its original login script. An
+            // absent script skips before attempting to bind current controls.
+            source.loginUrl = ""
+            let skipped = try await service.originalLoginAction(source: source, action: button.action,
+                credentials: [:], isLongClick: false, inputBindingFailed: true)
+            XCTAssertFalse(skipped.executed); XCTAssertTrue(skipped.loginUIEvents.isEmpty)
+            XCTAssertFalse(skipped.completedEffects.contains("sourceLoginInfoMayCommit"))
+            XCTAssertFalse(skipped.completedEffects.contains("sourceLoginInfoCommitted"))
+            let unchanged = await Task.detached { LoginManager.shared.getLoginInfo(sourceUrl: fixture.a) }.value
+            XCTAssertEqual(unchanged, stored)
+        } catch { problem = error }
         do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
         if let problem { throw problem }
     }

@@ -1,0 +1,139 @@
+{
+  "version": "app-final-v1",
+  "owner": "original_source_login_info",
+  "baseline": "Canonical af865bf538936d0cd76e0983fda6814ba9855b56; exact seeded dismiss-v2 bytes. Frozen nine-file harness and its checkpoint untouched.",
+  "candidateRoot": ".build/original-source-login-delta-reuse-step/work",
+  "ownedAndChangedSources": 4,
+  "sources": [
+    {
+      "relativePath": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "baseline": {
+        "path": ".build/original-source-login-delta-reuse-step/rawbaseline/Modules/Features/BookSource/BookSourceFormLoginView.swift",
+        "bytes": 79451,
+        "sha256": "f98450507b6ea88e0d0a35aab4e75f62c306cdb020d04ceb0ed21683e9e4f1fc"
+      },
+      "candidate": {
+        "path": ".build/original-source-login-delta-reuse-step/work/Modules/Features/BookSource/BookSourceFormLoginView.swift",
+        "bytes": 82555,
+        "sha256": "0aeae777e18a8e80138c74f04069dc9daaf3931f0b97eec75f2035d0da65170a"
+      },
+      "diff": {
+        "path": ".build/original-source-login-delta-reuse-step/app-diffs/Modules__Features__BookSource__BookSourceFormLoginView.swift.diff",
+        "bytes": 14616,
+        "sha256": "742af2f0b62b6aa8ec5c69c76c50e4efb97980220c55b7955c48cc57224585d3"
+      }
+    },
+    {
+      "relativePath": "Modules/SharedUI/Components/LoginFormGrid.swift",
+      "baseline": {
+        "path": ".build/original-source-login-delta-reuse-step/rawbaseline/Modules/SharedUI/Components/LoginFormGrid.swift",
+        "bytes": 25452,
+        "sha256": "af163a7d31f23ffa9e65f0d9ebf3e2ace0873699c904d05550b65bec4aa6b5ba"
+      },
+      "candidate": {
+        "path": ".build/original-source-login-delta-reuse-step/work/Modules/SharedUI/Components/LoginFormGrid.swift",
+        "bytes": 25901,
+        "sha256": "be49d001dce1d79c7ce5425dda5cf1e5a616e31b7aa96a5a07e480889fa080ab"
+      },
+      "diff": {
+        "path": ".build/original-source-login-delta-reuse-step/app-diffs/Modules__SharedUI__Components__LoginFormGrid.swift.diff",
+        "bytes": 3283,
+        "sha256": "209509f68c80bf9b8611232895ec11550cea6740bc95ff97dedfbc4000831722"
+      }
+    },
+    {
+      "relativePath": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "baseline": {
+        "path": ".build/original-source-login-delta-reuse-step/rawbaseline/Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+        "bytes": 12293,
+        "sha256": "f782b8d42c42aecd6df31518ea19177cce61cf4e7271d966d1fd2762f12ce7a2"
+      },
+      "candidate": {
+        "path": ".build/original-source-login-delta-reuse-step/work/Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+        "bytes": 19110,
+        "sha256": "7baf9dcab761d63ed9605321bada8ace8f5de51cc06bae06af324aa3580084bb"
+      },
+      "diff": {
+        "path": ".build/original-source-login-delta-reuse-step/app-diffs/Modules__Services__Online__LegadoOriginalLoginUIForm.swift.diff",
+        "bytes": 18645,
+        "sha256": "a232b5bc07e875e7c99293dbe0fdb74afd2e7b9cb6768534c23b6604ad8c50e6"
+      }
+    },
+    {
+      "relativePath": "Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+      "baseline": {
+        "path": ".build/original-source-login-delta-reuse-step/rawbaseline/Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+        "bytes": 49053,
+        "sha256": "6a8d23114d8a80b980be2d36c20a5b8d5ee8be18d37c790a20afa32c14fd5138"
+      },
+      "candidate": {
+        "path": ".build/original-source-login-delta-reuse-step/work/Tests/iOS/yuedu appTests/BookSourceLoginTests.swift",
+        "bytes": 55772,
+        "sha256": "d2e7863860fedfa9e6ff78b0775dc3c32f09d89f8a3e1069b80885b39181cd66"
+      },
+      "diff": {
+        "path": ".build/original-source-login-delta-reuse-step/app-diffs/Tests__iOS__yuedu appTests__BookSourceLoginTests.swift.diff",
+        "bytes": 7306,
+        "sha256": "774ad1329629ea0913dee7b31543c9fb7231bafb9e369c7e6274e8c8cba643e5"
+      }
+    }
+  ],
+  "evidence": {
+    "grammar": {
+      "path": ".build/original-source-login-delta-reuse-step/app-grammar-final-v1.json",
+      "bytes": 801,
+      "sha256": "c9d3286b456bbd11daa7755d5657d7a8cc16881aa1aedbd33ef148ec9ecf2049"
+    },
+    "existingAppTestMethod": "BookSourceLoginTests.blankLoginFieldIsRequired() throws",
+    "AppTestDefinitions": 29,
+    "AppDefinitionsAdded": 0,
+    "localAppSDKCompilation": 0,
+    "localAppTestExecution": 0,
+    "deviceInteraction": 0
+  },
+  "stableHelperAPI": [
+    "Form.layout: LegadoOriginalLoginUILayout",
+    "LegadoOriginalLoginUIForm.reuseState(layout:labels:controls:) throws -> LegadoOriginalLoginUIReuseState",
+    "BookSourceFormLoginView.originalFormSubmissionValues(rows:layout:values:controls:) throws -> [String:String]",
+    "LegadoOriginalLoginUIForm.applying(...layout: LegadoOriginalLoginUILayout? = nil) throws -> Update",
+    "Control.displayTextOverride: String?; ListenerAction.bindingFailure: LegadoRuntimeError?"
+  ],
+  "implemented": [
+    "Actual View sends true reuseState through the existing source service, stores returned physical layout and maps retained child ids/captured definitions/controlStates; true preserves the debounce generation while false creates a new control generation.",
+    "Raw rowUiName slots remain separate from physical children. Callback lookup uses first exact UTF16 name slot then first physical assigned row id; unknown raw names are retained without invented inputs.",
+    "Callbacks dispatch by retained widget class. EditText writes latest raw name; select derives index from latest raw chars then clamps the retained adapter and writes captured listener name only while its Map is current; TextView branches on latest raw button/toggle type with complete caption override.",
+    "Actual getLoginData follows latest raw text/password rows and first physical EditText shape. It preserves complete working Map/hidden keys and empty edits; incompatible widget fails UI_BINDING_ERROR without replacement credentials.",
+    "Source-authored JS action handles only this strict binding failure as explicit inputBindingFailed metadata. Same original JVM decides null action/missing login prelude skip before rejecting a present-prelude bad binding; no authored evaluation or credential effect is allowed with unavailable input.",
+    "Earlier UI/Map callback updates survive a later bad listener input binding. Strict binding failure is queued as metadata, other failures stay typed errors.",
+    "Static renders do not pre-evaluate getLoginData; dynamic evaluation does, preserving errors while allowing static bad-shape repair. Reused labels/actions/styles/defaults/adapter/cycle/Map flags stay physical-control state; only new controls are initialized by the original planner.",
+    "Changed-text timers remain keyed by stable physical id and generation. Removed controls keep pending old action callbacks until existing lifetime cancellation; new controls do not trigger initialization watchers. Manual toggle cycle clears full caption override and restores captured cycle label/style.",
+    "New snapshot loops use count-only SourcePerfTrace with actual main/rows/controls facts, off MainActor in production callers. Same view, source actor, JVM/Rhino and credential/Cookie owners; no new store/VM/cache."
+  ],
+  "syntheticRegressionCoverage": [
+    "Captured identity/type/action survives conflicting latest raw row",
+    "Ordered independent names slots and retained selector adapter clamp",
+    "Partial UI/Map facts survive listener binding failure",
+    "Full toggle caption override/captured cycle/Map flag round-trip",
+    "Raw text/password binding failure is typed; complete hidden/empty Map remains intact",
+    "First physical child wins when multiple controls share assigned id",
+    "Null reset invalidates all existing captured select/toggle Map closures"
+  ],
+  "limitations": [
+    "Grammar is not SDK/concurrency or UIKit/VoiceOver/gesture acceptance; fresh coherent Package/App/Native execution remains required.",
+    "Source-authored browser/WebJS, loginUi v2 and Android live-post/main-handler scheduling parity remain separate.",
+    "No promise that unsubmitted transient UI edits survive forced OS destruction; existing checked dismiss owner boundary remains as frozen."
+  ],
+  "claims": {
+    "iosValidationPassed": false,
+    "deviceValidationPassed": false,
+    "fullFeatureParityEstablished": false
+  },
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false,
+    "privateCredentialsRead": false,
+    "extraRuntimeOrPersistenceOwner": false
+  }
+}

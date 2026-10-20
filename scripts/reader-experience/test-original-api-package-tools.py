@@ -503,5 +503,78 @@ class LoginUIPackageSelectionTests(unittest.TestCase):
             with patch.dict(os.environ, {'YUEDU_RENEWAL_PACKAGE_SELECTION': 'effects'}):
                 with self.assertRaises(ValueError): api.result(self.work)
 
+
+class DeltaReusePackageSelectionTests(unittest.TestCase):
+    """Explicit new23; all older10/16/17/18/22 modes retain exact method sets."""
+    setUp = OriginalAPIPackageEvidenceTests.setUp
+    write = OriginalAPIPackageEvidenceTests.write
+    write_json = OriginalAPIPackageEvidenceTests.write_json
+    git = OriginalAPIPackageEvidenceTests.git
+    context = OriginalAPIPackageEvidenceTests.context
+    xml = OriginalAPIPackageEvidenceTests.xml
+    log = OriginalAPIPackageEvidenceTests.log
+    built = OriginalAPIPackageEvidenceTests.built
+
+    def test_delta_one_actual_definition_preserves_all_five_old_modes_and_rejects_flag_aliases(self):
+        extra = 'LegadoRuntimeTests.LegadoOriginalAPITests/testLoginUIDeltaReuseRequestAndTypedControlStateKeepRawRowsSeparate'
+        self.assertEqual(api.DELTAREUSE_EXTRA, {extra})
+        self.assertEqual(api.DELTAREUSE_EXPECTED, api.LOGINUI_EXPECTED | {extra})
+        source = (HERE.parents[1] / 'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift').read_text(encoding='utf8')
+        self.assertEqual(len(re.findall(r'\bfunc\s+' + extra.split('/')[1] + r'\s*\(', source)), 1)
+        for mode, flag, expected, count in (
+                ('all', '', api.EXPECTED, 10), ('currentcore', '', api.CURRENTCORE_EXPECTED, 16),
+                ('currentcore', 'publicbatch', api.PUBLICBATCH_EXPECTED, 17),
+                ('currentcore', 'effects', api.EFFECTS_EXPECTED, 18),
+                ('currentcore', 'loginui', api.LOGINUI_EXPECTED, 22)):
+            with patch.dict(os.environ, {'YUEDU_RENEWAL_SELECTION': mode, 'YUEDU_RENEWAL_PACKAGE_SELECTION': flag}):
+                self.assertEqual(api.expected_cases(), expected)
+                self.assertEqual(len(api.expected_cases()), count)
+                self.assertNotIn(extra, api.expected_cases())
+        for flag, mode in (('deltareuse', 'all'), ('deltareuse', 'handoffrenewal'), ('deltareuse-alias', 'currentcore')):
+            with self.subTest(flag=flag, mode=mode), patch.dict(os.environ,
+                    {'YUEDU_RENEWAL_SELECTION': mode, 'YUEDU_RENEWAL_PACKAGE_SELECTION': flag}):
+                with self.assertRaises(ValueError): api.expected_cases()
+                with self.assertRaises(ValueError): api.selected_mode()
+
+    def test_delta_fresh23_requires_extra_xml_verbose_leaf_current_compilation_inputs_and_mode(self):
+        extra = next(iter(api.DELTAREUSE_EXTRA))
+        with self.context(), patch.dict(os.environ,
+                {'YUEDU_RENEWAL_SELECTION': 'currentcore', 'YUEDU_RENEWAL_PACKAGE_SELECTION': 'deltareuse'}):
+            inputs = self.built(); result = api.result(self.work)
+            self.assertEqual(inputs['selectionMode'], 'original-api-package-currentcore-deltareuse')
+            self.assertEqual(inputs['packageSourceInputCount'], 15)
+            self.assertEqual(len(inputs['sourceInputs']), 22)
+            self.assertEqual(result['totalTestCount'], 23)
+            self.assertEqual(result['passedCaseIdentifiers'], sorted(api.DELTAREUSE_EXPECTED))
+            self.assertEqual(result['verbosePassedCaseIdentifiers'], sorted(api.DELTAREUSE_EXPECTED))
+            self.assertIn(api.selected_filter(), api.test_command(str(self.swift), self.work))
+            self.assertIsNotNone(re.fullmatch(api.selected_filter(), extra))
+            self.assertIsNone(re.fullmatch(api.selected_filter(), extra + 'Alias'))
+            original = (self.work / 'xunit.xml').read_bytes()
+            for change in ('missing', 'duplicate', 'skip', 'wrongSuite'):
+                root = ET.fromstring(original)
+                node = next(item for item in root.iter('testcase') if item.get('name') == extra.split('/')[1])
+                suite = next(item for item in root.iter('testsuite') if node in list(item))
+                if change == 'missing': suite.remove(node)
+                elif change == 'duplicate': suite.append(copy.deepcopy(node))
+                elif change == 'skip': ET.SubElement(node, 'skipped')
+                else: node.set('classname', 'Other.LegadoOriginalAPITests')
+                self.write(self.work / 'xunit.xml', ET.tostring(root))
+                with self.subTest(change=change), self.assertRaises(ValueError): api.result(self.work)
+            self.write(self.work / 'xunit.xml', original)
+            rawlog = (self.work / 'tests.log').read_bytes()
+            self.write(self.work / 'tests.log', ''.join(line for line in rawlog.decode().splitlines(True)
+                if extra.split('/')[1] not in line).encode())
+            with self.assertRaises(ValueError): api.result(self.work)
+            self.write(self.work / 'tests.log', rawlog)
+            for path in ('Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+                    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+                    'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift'):
+                raw = self.originals[path]; self.write(self.root / path, raw + b' changed')
+                with self.subTest(source=path), self.assertRaises(ValueError): api.result(self.work)
+                self.write(self.root / path, raw)
+            with patch.dict(os.environ, {'YUEDU_RENEWAL_PACKAGE_SELECTION': 'loginui'}):
+                with self.assertRaises(ValueError): api.result(self.work)
+
 if __name__ == "__main__":
     unittest.main()

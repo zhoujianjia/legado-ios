@@ -66,11 +66,15 @@ LOGINUI_EXPECTED = EFFECTS_EXPECTED | LOGINUI_EXTRA
 assert len(LOGINUI_EXTRA) == 4 and not (LOGINUI_EXTRA & EFFECTS_EXPECTED)
 assert len(LOGINUI_EXPECTED) == 22
 
+DELTAREUSE_EXTRA = {"LegadoRuntimeTests.LegadoOriginalAPITests/testLoginUIDeltaReuseRequestAndTypedControlStateKeepRawRowsSeparate"}
+DELTAREUSE_EXPECTED = LOGINUI_EXPECTED | DELTAREUSE_EXTRA
+assert len(DELTAREUSE_EXPECTED) == 23 and not (DELTAREUSE_EXTRA & LOGINUI_EXPECTED)
+
 def publicbatch_selected():
     value = os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "")
-    if value not in ("", "publicbatch", "effects", "loginui"):
+    if value not in ("", "publicbatch", "effects", "loginui", "deltareuse"):
         raise ValueError("Unknown independent Package selection")
-    if value in ("publicbatch", "effects", "loginui") and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
+    if value in ("publicbatch", "effects", "loginui", "deltareuse") and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
         raise ValueError("Explicit Package selection requires the currentcore native boundary")
     return value == "publicbatch"
 
@@ -84,7 +88,13 @@ def loginui_selected():
     return os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "") == "loginui"
 
 
+def deltareuse_selected():
+    publicbatch_selected()  # Strict flag and currentcore boundary validation.
+    return os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "") == "deltareuse"
+
+
 def expected_cases():
+    if deltareuse_selected(): return DELTAREUSE_EXPECTED
     if loginui_selected(): return LOGINUI_EXPECTED
     if effects_selected(): return EFFECTS_EXPECTED
     if publicbatch_selected(): return PUBLICBATCH_EXPECTED
@@ -94,6 +104,7 @@ def selected_filter():
     return "^(" + "|".join(re.escape(case) for case in sorted(expected_cases())) + ")$"
 
 def selected_mode():
+    if deltareuse_selected(): return "original-api-package-currentcore-deltareuse"
     if loginui_selected(): return "original-api-package-currentcore-loginui"
     if effects_selected(): return "original-api-package-currentcore-effects"
     if publicbatch_selected(): return "original-api-package-currentcore-publicbatch"
@@ -318,7 +329,7 @@ def result(work):
             "evidenceSHA256": {name: hashlib.sha256(value).hexdigest() for name, value in raw.items()},
             "appSimulatorCaseCount": 0, "jvmExecuted": False, "physicalDeviceValidationPassed": False,
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
-            "limitations": ["Exactly the selected10 historical-mode,16 unflagged currentcore,17 explicit publicbatch,18 effects or22 loginui macOS package XCTest cases; unchanged source closure15+7 is independently bound and App Simulator results remain independent.",
+            "limitations": ["Exactly the selected10 historical-mode,16 unflagged currentcore,17 explicit publicbatch,18 effects,22 loginui or23 deltareuse macOS package XCTest cases; unchanged source closure15+7 is independently bound and App Simulator results remain independent.",
                             "Injected transport and owned DTO cases do not execute the original Kotlin WebBook or JVM/JNI runtime.",
                             "No Apple account, private pairing material, device, App install, package signing or renewal is used.",
                             "XML and actual verbose XCTest case outcomes are required together; process/log summaries alone never establish passing tests."]}

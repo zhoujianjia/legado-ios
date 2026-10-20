@@ -1784,7 +1784,8 @@ extension LegadoMainJSSourceService {
 
     /// Same source actor/process/owner as the reader and confirmation operation.
     func originalLoginUI(source: BookSource, values: [String: String]?,
-                         evaluationValues: [String: String]? = nil) async throws -> LegadoOriginalLoginUIForm {
+                         evaluationValues: [String: String]? = nil,
+                         reuseState: LegadoOriginalLoginUIReuseState? = nil) async throws -> LegadoOriginalLoginUIForm {
         var effects: [String] = []
         do {
             let signature = try originalSignature(source)
@@ -1796,7 +1797,7 @@ extension LegadoMainJSSourceService {
                 "main=\(Thread.isMainThread) values=\(values?.count ?? 0)") {
                 try await originalExecutor.execute(sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
                     sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
-                    operation: .loginUI(values, evaluationValues: evaluationValues), deadline: deadline)
+                    operation: .loginUI(values, evaluationValues: evaluationValues, reuseState: reuseState), deadline: deadline)
             }
             guard case .loginUI(let reply, let reported) = result else {
                 throw failure("INVALID_RESULT", "Original login UI omitted its result")
@@ -1821,7 +1822,7 @@ extension LegadoMainJSSourceService {
     /// Supported UI callbacks return ordered task facts for the existing form
     /// owner to consume after this source gate is released.
     func originalLoginAction(source: BookSource, action: String?, credentials: [String: String],
-                             isLongClick: Bool) async throws -> LegadoOriginalLoginActionResult {
+                             isLongClick: Bool, inputBindingFailed: Bool = false) async throws -> LegadoOriginalLoginActionResult {
         var effects: [String] = []
         var events: [LegadoOriginalLoginUIEvent] = []
         do {
@@ -1835,7 +1836,7 @@ extension LegadoMainJSSourceService {
                 try await originalExecutor.execute(
                     sourceJSON: String(decoding: try encoded(source), as: UTF8.self),
                     sourceURL: source.bookSourceUrl, sourceRevision: signature, grant: nil,
-                    operation: .loginAction(action: action, credentials: credentials, isLongClick: isLongClick),
+                    operation: .loginAction(action: action, credentials: credentials, isLongClick: isLongClick, inputBindingFailed: inputBindingFailed),
                     deadline: deadline)
             }
             guard case .loginAction(let reply, let reported) = result else {

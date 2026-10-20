@@ -77,8 +77,7 @@ internal class ProductionRulePlatform(
     override fun renderLoginUI(source: BaseSource, deltaUp: Boolean) {
         ensureOwnerOpen(); task.ensureActiveForRuntime()
         check(source.getRuleEnvironment() === environment()) { "Login source belongs to another environment" }
-        if (deltaUp) unsupportedRule("incremental login UI control reuse is not connected")
-        task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "render", "deltaUp" to false))
+        task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "render", "deltaUp" to deltaUp))
     }
     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
     init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }

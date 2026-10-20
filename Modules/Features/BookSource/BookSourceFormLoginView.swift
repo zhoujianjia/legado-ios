@@ -31,6 +31,7 @@ struct BookSourceFormLoginView: View {
     @State private var originalExitAllowsDismiss = false
     @State private var originalExitSystemDismissed = false
     @State private var originalRows: [LegadoOriginalLoginUIRow] = []
+    @State private var originalLayout: LegadoOriginalLoginUILayout?
     @State private var originalControls: [String: LegadoOriginalLoginUIControl] = [:]
     @State private var originalUIOwnerGeneration = UUID()
     @State private var originalUIActive = false
@@ -48,10 +49,12 @@ struct BookSourceFormLoginView: View {
     private struct OriginalQueuedAction: Sendable {
         let action: String
         let isLongClick: Bool
-        let fields: [LoginField]
+        let rows: [LegadoOriginalLoginUIRow]
+        let layout: LegadoOriginalLoginUILayout?
         let values: [String: String]
         let controls: [String: LegadoOriginalLoginUIControl]
         let credentials: [String: String]?
+        let inputBindingFailed: Bool
         let chain: OriginalListenerChain
     }
     // Dynamic loginUi is evaluated asynchronously. Start in the same loading state
@@ -427,10 +430,10 @@ struct BookSourceFormLoginView: View {
         isLoading = true
         canRetryLoginUi = false
         let snapshot = source
-        let fieldSnapshot = fields
         let valueSnapshot = values
         let controlsSnapshot = originalControls
-        let useExistingValues = originalFormLoaded
+        let rowsSnapshot = originalRows, layoutSnapshot = originalLayout
+        let useExistingValues = originalFormLoaded, dynamic = originalDynamic
         if useExistingValues { originalDismissState.requestedRender(dynamic: originalDynamic) }
         loginUIRenderTask = Task {
             defer {
@@ -450,10 +453,10 @@ struct BookSourceFormLoginView: View {
             }
             usesOriginalLoginUI = true
             do {
-                let evaluation: [String: String]? = await Task.detached {
-                    useExistingValues
-                        ? Self.originalFormSubmissionValues(fields: fieldSnapshot, values: valueSnapshot,
-                            controls: controlsSnapshot)
+                let evaluation: [String: String]? = try await Task.detached {
+                    useExistingValues && dynamic
+                        ? try Self.originalFormSubmissionValues(rows: rowsSnapshot, layout: layoutSnapshot,
+                            values: valueSnapshot, controls: controlsSnapshot)
                         : nil
                 }.value
                 let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
@@ -466,6 +469,7 @@ struct BookSourceFormLoginView: View {
                 fieldLabels = rendered.labels
                 values = rendered.values
                 originalRows = rendered.rows
+                originalLayout = rendered.layout
                 originalControls = rendered.controls
                 originalControlGeneration = UUID()
                 originalFormLoaded = true
@@ -777,14 +781,27 @@ struct BookSourceFormLoginView: View {
         LegadoOriginalLoginUIForm.submissionValues(fields: fields, values: values, controls: controls)
     }
 
+    /// Actual original getLoginData uses raw rows and assigned physical ids.
+    /// The simple field-only overload remains for older synthetic/native fixtures.
+    nonisolated static func originalFormSubmissionValues(
+        rows: [LegadoOriginalLoginUIRow], layout: LegadoOriginalLoginUILayout?,
+        values: [String: String], controls: [String: LegadoOriginalLoginUIControl]
+    ) throws -> [String: String] {
+        guard let layout else {
+            throw LegadoRuntimeError(code: "UI_BINDING_ERROR", message: "Original physical login layout is missing")
+        }
+        return try LegadoOriginalLoginUIForm.submissionValues(rows: rows, layout: layout,
+            values: values, controls: controls)
+    }
+
     private func submitForm() {
         let generation = UUID()
         formSubmissionGeneration = generation
         isLoading = true
         let snapshot = source
         let valueSnapshot = values
-        let fieldSnapshot = fields
         let controlSnapshot = originalControls
+        let rowsSnapshot = originalRows, layoutSnapshot = originalLayout
         let ownerGeneration = originalUIOwnerGeneration
         let listenerChain = OriginalListenerChain()
         let hadValidOriginalForm = originalFormLoaded
@@ -796,13 +813,8 @@ struct BookSourceFormLoginView: View {
                 }
             }
             // Source classification and complete form synthesis run off MainActor.
-            let (original, submittedCredentials) = await Task.detached {
-                let original = snapshot.bookSourceType == 0 && !snapshot.isJsSource
-                let submitted = original
-                    ? Self.originalFormSubmissionValues(fields: fieldSnapshot, values: valueSnapshot,
-                        controls: controlSnapshot)
-                    : [:]
-                return (original, submitted)
+            let original = await Task.detached {
+                snapshot.bookSourceType == 0 && !snapshot.isJsSource
             }.value
             guard !Task.isCancelled, formSubmissionGeneration == generation else {
                 if formSubmissionGeneration == generation { isLoading = false }
@@ -831,6 +843,11 @@ struct BookSourceFormLoginView: View {
                 return
             }
             do {
+                let submittedCredentials = try await Task.detached {
+                    try Self.originalFormSubmissionValues(rows: rowsSnapshot, layout: layoutSnapshot,
+                        values: valueSnapshot, controls: controlSnapshot)
+                }.value
+                guard !Task.isCancelled, formSubmissionGeneration == generation else { return }
                 let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
                 let receipt = try await service.originalFormLogin(source: snapshot, credentials: submittedCredentials)
                 let consumptionFailures = await consumeOriginalLoginEvents(receipt.loginUIEvents,
@@ -888,7 +905,7 @@ struct BookSourceFormLoginView: View {
 
     @discardableResult
     private func enqueueOriginalAction(field: LoginField, isLongClick: Bool = false,
-        credentials: [String: String]? = nil, automatic: Bool = false,
+        credentials: [String: String]? = nil, inputBindingFailed: Bool = false, automatic: Bool = false,
         chain: OriginalListenerChain? = nil) -> LegadoRuntimeError? {
         guard originalUIActive, usesOriginalLoginUI, originalFormLoaded, let action = field.action else { return nil }
         let context = chain ?? OriginalListenerChain()
@@ -902,7 +919,9 @@ struct BookSourceFormLoginView: View {
             return LegadoRuntimeError(code: "STATE_IO", message: "Original login listener budget failed")
         }
         originalActionQueue.append(.init(action: action, isLongClick: isLongClick,
-            fields: fields, values: values, controls: originalControls, credentials: credentials, chain: context))
+            rows: originalRows, layout: originalLayout,
+            values: values, controls: originalControls, credentials: credentials,
+            inputBindingFailed: inputBindingFailed, chain: context))
         startOriginalActionDrain()
         return nil
     }
@@ -930,14 +949,23 @@ struct BookSourceFormLoginView: View {
                     continue
                 }
                 do {
-                    let credentials = await Task.detached {
-                        request.credentials ?? Self.originalFormSubmissionValues(fields: request.fields,
-                            values: request.values, controls: request.controls)
+                    let input = try await Task.detached { () throws -> ([String: String], Bool) in
+                        if request.inputBindingFailed { return ([:], true) }
+                        if let credentials = request.credentials { return (credentials, false) }
+                        do {
+                            return (try Self.originalFormSubmissionValues(rows: request.rows, layout: request.layout,
+                                values: request.values, controls: request.controls), false)
+                        } catch let failure as LegadoRuntimeError where failure.code == "UI_BINDING_ERROR" {
+                            // The original getLoginJs null check precedes getLoginData.
+                            // Pass an explicit unavailable-input fact; the same JVM
+                            // decides skip or rejects before any authored evaluation.
+                            return ([:], true)
+                        }
                     }.value
                     guard !Task.isCancelled, originalUIOwnerGeneration == ownerGeneration else { return }
                     let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
                     let receipt = try await service.originalLoginAction(source: snapshot, action: request.action,
-                        credentials: credentials, isLongClick: request.isLongClick)
+                        credentials: input.0, isLongClick: request.isLongClick, inputBindingFailed: input.1)
                     let consumptionFailures = await consumeOriginalLoginEvents(receipt.loginUIEvents ?? [],
                         ownerGeneration: ownerGeneration, chain: request.chain)
                     guard !Task.isCancelled, originalUIOwnerGeneration == ownerGeneration else { return }
@@ -1001,21 +1029,24 @@ struct BookSourceFormLoginView: View {
             case .updateData:
                 originalDismissState.markChanged()
                 let rows = originalRows, currentFields = fields, labels = fieldLabels,
-                    map = values, controls = originalControls
+                    map = values, controls = originalControls, layout = originalLayout
                 do {
                     let update = try await Task.detached {
                         try SourcePerfTrace.span("legado.original.login.ui.update",
                             "main=\(Thread.isMainThread) rows=\(rows.count) entries=\(event.entries?.count ?? 0)") {
                             try LegadoOriginalLoginUIForm.applying(entries: event.entries, rows: rows,
-                                fields: currentFields, labels: labels, values: map, controls: controls)
+                                fields: currentFields, labels: labels, values: map, controls: controls, layout: layout)
                         }
                     }.value
                     guard !Task.isCancelled, originalUIOwnerGeneration == ownerGeneration else { return failures }
                     values = update.values; originalControls = update.controls; fieldLabels = update.labels
                     for field in update.changedTextRows { scheduleOriginalTextAction(field: field, chain: chain) }
                     for action in update.actions {
+                        if let failure = action.bindingFailure, failure.code != "UI_BINDING_ERROR" {
+                            failures.append(failure.code); continue
+                        }
                         if let failure = enqueueOriginalAction(field: action.field, credentials: action.credentials,
-                            automatic: true, chain: chain) {
+                            inputBindingFailed: action.bindingFailure != nil, automatic: true, chain: chain) {
                             failures.append(failure.code)
                         }
                     }
@@ -1024,22 +1055,33 @@ struct BookSourceFormLoginView: View {
                     failures.append((error as? LegadoRuntimeError)?.code ?? "STATE_IO")
                 }
             case .render:
-                // deltaUp=true is rejected before acceptance by the native host.
-                guard event.deltaUp != true else { failures.append("UNSUPPORTED_CAPABILITY"); continue }
                 originalDismissState.requestedRender(dynamic: originalDynamic)
-                let snapshot = source, map = values, currentFields = fields, controls = originalControls
+                let snapshot = source, map = values, controls = originalControls
+                let rows = originalRows, layout = originalLayout, labels = fieldLabels, dynamic = originalDynamic
                 do {
-                    let evaluation = await Task.detached {
-                        Self.originalFormSubmissionValues(fields: currentFields, values: map, controls: controls)
+                    let (evaluation, reuse) = try await Task.detached {
+                        let evaluation = dynamic ? try Self.originalFormSubmissionValues(rows: rows, layout: layout,
+                            values: map, controls: controls) : nil
+                        let reuse: LegadoOriginalLoginUIReuseState?
+                        if event.deltaUp == true {
+                            guard let layout else {
+                                throw LegadoRuntimeError(code: "UI_BINDING_ERROR", message: "Original reuse layout is missing")
+                            }
+                            reuse = try LegadoOriginalLoginUIForm.reuseState(layout: layout, labels: labels, controls: controls)
+                        } else { reuse = nil }
+                        return (evaluation, reuse)
                     }.value
                     guard !Task.isCancelled, originalUIOwnerGeneration == ownerGeneration else { return failures }
                     let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
                     let rendered = try await service.originalLoginUI(source: snapshot, values: map,
-                        evaluationValues: evaluation)
+                        evaluationValues: evaluation, reuseState: reuse)
                     guard !Task.isCancelled, originalUIOwnerGeneration == ownerGeneration else { return failures }
                     fields = rendered.fields; fieldLabels = rendered.labels; values = rendered.values
-                    originalRows = rendered.rows; originalControls = rendered.controls
-                    originalControlGeneration = UUID(); originalFormLoaded = true
+                    originalRows = rendered.rows; originalLayout = rendered.layout; originalControls = rendered.controls
+                    // Reused physical ids keep the same watcher/debounce identity.
+                    // Removed controls retain pending callbacks until actual dismissal.
+                    if event.deltaUp != true { originalControlGeneration = UUID() }
+                    originalFormLoaded = true
                     originalFormSource = snapshot; originalDynamic = rendered.dynamic
                     originalDismissState.rendered(workingMapChanged: rendered.workingMapChanged)
                 } catch {
