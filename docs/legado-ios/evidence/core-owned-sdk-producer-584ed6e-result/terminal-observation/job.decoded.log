@@ -1,0 +1,473 @@
+﻿2026-10-20T10:08:59.9472750Z Current runner version: '2.337.0'
+2026-10-20T10:08:59.9489000Z ##[group]Runner Image Provisioner
+2026-10-20T10:08:59.9489560Z Hosted Compute Agent
+2026-10-20T10:08:59.9489940Z Version: 20260828.587
+2026-10-20T10:08:59.9490350Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-10-20T10:08:59.9490830Z Build Date: 2026-08-28T16:44:25Z
+2026-10-20T10:08:59.9491280Z Worker ID: {5cbcf5b8-b5ca-4463-afcc-058725999cb6}
+2026-10-20T10:08:59.9491750Z Azure Region: westus
+2026-10-20T10:08:59.9492130Z ##[endgroup]
+2026-10-20T10:08:59.9493000Z ##[group]Operating System
+2026-10-20T10:08:59.9493410Z macOS
+2026-10-20T10:08:59.9493750Z 15.7.9
+2026-10-20T10:08:59.9494090Z 24G830
+2026-10-20T10:08:59.9494440Z ##[endgroup]
+2026-10-20T10:08:59.9494810Z ##[group]Runner Image
+2026-10-20T10:08:59.9495210Z Image: macos-15-arm64
+2026-10-20T10:08:59.9495600Z Version: 20260907.0337.1
+2026-10-20T10:08:59.9496460Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260907.0337/images/macos/macos-15-arm64-Readme.md
+2026-10-20T10:08:59.9497510Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260907.0337
+2026-10-20T10:08:59.9498170Z ##[endgroup]
+2026-10-20T10:08:59.9498900Z ##[group]GITHUB_TOKEN Permissions
+2026-10-20T10:08:59.9503080Z Contents: read
+2026-10-20T10:08:59.9503570Z Metadata: read
+2026-10-20T10:08:59.9503940Z ##[endgroup]
+2026-10-20T10:08:59.9505850Z Secret source: Actions
+2026-10-20T10:08:59.9506450Z Cache mode: write
+2026-10-20T10:08:59.9506920Z Prepare workflow directory
+2026-10-20T10:08:59.9887350Z Prepare all required actions
+2026-10-20T10:08:59.9951710Z Getting action download info
+2026-10-20T10:09:00.3524230Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-20T10:09:00.9145910Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+2026-10-20T10:09:01.1051270Z Download action repository 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-20T10:09:01.8273790Z Complete job name: producer
+2026-10-20T10:09:01.8975550Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-20T10:09:01.8976740Z with:
+2026-10-20T10:09:01.8977090Z   persist-credentials: false
+2026-10-20T10:09:01.8977480Z   repository: zhoujianjia/legado-ios
+2026-10-20T10:09:01.8980580Z   token: ***
+2026-10-20T10:09:01.8980890Z   ssh-strict: true
+2026-10-20T10:09:01.8981210Z   ssh-user: git
+2026-10-20T10:09:01.8981530Z   clean: true
+2026-10-20T10:09:01.8981860Z   sparse-checkout-cone-mode: true
+2026-10-20T10:09:01.8982230Z   fetch-depth: 1
+2026-10-20T10:09:01.8982550Z   fetch-tags: false
+2026-10-20T10:09:01.8982870Z   show-progress: true
+2026-10-20T10:09:01.8983190Z   lfs: false
+2026-10-20T10:09:01.8983500Z   submodules: false
+2026-10-20T10:09:01.8983840Z   set-safe-directory: true
+2026-10-20T10:09:01.8984210Z   allow-unsafe-pr-checkout: false
+2026-10-20T10:09:01.8984860Z env:
+2026-10-20T10:09:01.8985250Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T10:09:01.8985620Z ##[endgroup]
+2026-10-20T10:09:02.2144400Z Syncing repository: zhoujianjia/legado-ios
+2026-10-20T10:09:02.2145890Z ##[group]Getting Git version info
+2026-10-20T10:09:02.2146630Z Working directory is '/Users/runner/work/legado-ios/legado-ios'
+2026-10-20T10:09:02.2147420Z [command]/opt/homebrew/bin/git version
+2026-10-20T10:09:02.2790070Z git version 2.55.0
+2026-10-20T10:09:02.2821350Z ##[endgroup]
+2026-10-20T10:09:02.2829440Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/f4cebcb9-ef14-4c85-9fd6-625e00e5ed61/.gitconfig'
+2026-10-20T10:09:02.2830620Z Temporarily overriding HOME='/Users/runner/work/_temp/f4cebcb9-ef14-4c85-9fd6-625e00e5ed61' before making global git config changes
+2026-10-20T10:09:02.2831580Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-20T10:09:02.2832570Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/legado-ios/legado-ios
+2026-10-20T10:09:02.2965270Z Deleting the contents of '/Users/runner/work/legado-ios/legado-ios'
+2026-10-20T10:09:02.2975830Z ##[group]Determining repository object format
+2026-10-20T10:09:02.2979090Z ##[endgroup]
+2026-10-20T10:09:02.2979680Z ##[group]Initializing the repository
+2026-10-20T10:09:02.2988090Z [command]/opt/homebrew/bin/git init /Users/runner/work/legado-ios/legado-ios
+2026-10-20T10:09:02.3353240Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-20T10:09:02.3358330Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-20T10:09:02.3360930Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-20T10:09:02.3362910Z hint: call:
+2026-10-20T10:09:02.3363340Z hint:
+2026-10-20T10:09:02.3364030Z hint: 	git config --global init.defaultBranch <name>
+2026-10-20T10:09:02.3364510Z hint:
+2026-10-20T10:09:02.3365100Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-20T10:09:02.3366040Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-20T10:09:02.3366610Z hint:
+2026-10-20T10:09:02.3367030Z hint: 	git branch -m <name>
+2026-10-20T10:09:02.3367420Z hint:
+2026-10-20T10:09:02.3367890Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-20T10:09:02.3380850Z Initialized empty Git repository in /Users/runner/work/legado-ios/legado-ios/.git/
+2026-10-20T10:09:02.3388820Z [command]/opt/homebrew/bin/git remote add origin https://github.com/zhoujianjia/legado-ios
+2026-10-20T10:09:02.3489530Z ##[endgroup]
+2026-10-20T10:09:02.3493010Z ##[group]Disabling automatic garbage collection
+2026-10-20T10:09:02.3496620Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-20T10:09:02.3592760Z ##[endgroup]
+2026-10-20T10:09:02.3597130Z ##[group]Setting up auth
+2026-10-20T10:09:02.3600030Z Removing SSH command configuration
+2026-10-20T10:09:02.3602710Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T10:09:02.3696200Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-20T10:09:02.5440800Z Removing HTTP extra header
+2026-10-20T10:09:02.5445280Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T10:09:02.5566570Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-20T10:09:02.6726750Z Removing includeIf entries pointing to credentials config files
+2026-10-20T10:09:02.6731690Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T10:09:02.6855850Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-20T10:09:02.8370570Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-20T10:09:02.8468450Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path /Users/runner/work/_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:02.8473650Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:02.8568350Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:02.8638730Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:02.8723190Z ##[endgroup]
+2026-10-20T10:09:02.8724120Z ##[group]Fetching the repository
+2026-10-20T10:09:02.8726820Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/tags/reader-owned-sdk-584ed6e:refs/tags/reader-owned-sdk-584ed6e
+2026-10-20T10:09:07.8311200Z From https://github.com/zhoujianjia/legado-ios
+2026-10-20T10:09:07.8318550Z  * [new tag]         reader-owned-sdk-584ed6e -> reader-owned-sdk-584ed6e
+2026-10-20T10:09:07.8340160Z [command]/opt/homebrew/bin/git tag --list reader-owned-sdk-584ed6e
+2026-10-20T10:09:07.8466360Z reader-owned-sdk-584ed6e
+2026-10-20T10:09:07.8481790Z [command]/opt/homebrew/bin/git rev-parse refs/tags/reader-owned-sdk-584ed6e^{commit}
+2026-10-20T10:09:07.8559590Z 584ed6e5d553ec5d9c07ae8bde80bd6d94153873
+2026-10-20T10:09:07.8565390Z ##[endgroup]
+2026-10-20T10:09:07.8566420Z ##[group]Determining the checkout info
+2026-10-20T10:09:07.8567380Z ##[endgroup]
+2026-10-20T10:09:07.8577920Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-10-20T10:09:07.8707280Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-20T10:09:07.8784450Z ##[group]Checking out the ref
+2026-10-20T10:09:07.8786750Z [command]/opt/homebrew/bin/git checkout --progress --force refs/tags/reader-owned-sdk-584ed6e
+2026-10-20T10:09:08.9768320Z Updating files:  64% (4531/7074)
+2026-10-20T10:09:08.9873420Z Updating files:  65% (4599/7074)
+2026-10-20T10:09:08.9953590Z Updating files:  66% (4669/7074)
+2026-10-20T10:09:09.0121550Z Updating files:  67% (4740/7074)
+2026-10-20T10:09:09.0233590Z Updating files:  68% (4811/7074)
+2026-10-20T10:09:09.0377160Z Updating files:  69% (4882/7074)
+2026-10-20T10:09:09.0567280Z Updating files:  70% (4952/7074)
+2026-10-20T10:09:09.0741130Z Updating files:  71% (5023/7074)
+2026-10-20T10:09:09.0890130Z Updating files:  72% (5094/7074)
+2026-10-20T10:09:09.0986700Z Updating files:  73% (5165/7074)
+2026-10-20T10:09:09.1134120Z Updating files:  74% (5235/7074)
+2026-10-20T10:09:09.1260530Z Updating files:  75% (5306/7074)
+2026-10-20T10:09:09.1474000Z Updating files:  76% (5377/7074)
+2026-10-20T10:09:09.1618990Z Updating files:  77% (5447/7074)
+2026-10-20T10:09:09.1781250Z Updating files:  78% (5518/7074)
+2026-10-20T10:09:09.2281420Z Updating files:  79% (5589/7074)
+2026-10-20T10:09:09.2446470Z Updating files:  80% (5660/7074)
+2026-10-20T10:09:09.2574400Z Updating files:  81% (5730/7074)
+2026-10-20T10:09:09.5661260Z Updating files:  82% (5801/7074)
+2026-10-20T10:09:09.6586920Z Updating files:  83% (5872/7074)
+2026-10-20T10:09:09.6717680Z Updating files:  84% (5943/7074)
+2026-10-20T10:09:09.6926280Z Updating files:  85% (6013/7074)
+2026-10-20T10:09:09.7070470Z Updating files:  86% (6084/7074)
+2026-10-20T10:09:09.7262040Z Updating files:  87% (6155/7074)
+2026-10-20T10:09:09.8069440Z Updating files:  88% (6226/7074)
+2026-10-20T10:09:09.8981670Z Updating files:  89% (6296/7074)
+2026-10-20T10:09:09.9594850Z Updating files:  89% (6324/7074)
+2026-10-20T10:09:10.0440730Z Updating files:  90% (6367/7074)
+2026-10-20T10:09:10.0524150Z Updating files:  91% (6438/7074)
+2026-10-20T10:09:10.0607230Z Updating files:  92% (6509/7074)
+2026-10-20T10:09:10.0789040Z Updating files:  93% (6579/7074)
+2026-10-20T10:09:10.1003840Z Updating files:  94% (6650/7074)
+2026-10-20T10:09:10.1188520Z Updating files:  95% (6721/7074)
+2026-10-20T10:09:10.1428960Z Updating files:  96% (6792/7074)
+2026-10-20T10:09:10.1545920Z Updating files:  97% (6862/7074)
+2026-10-20T10:09:10.1662090Z Updating files:  98% (6933/7074)
+2026-10-20T10:09:10.1772210Z Updating files:  99% (7004/7074)
+2026-10-20T10:09:10.1775490Z Updating files: 100% (7074/7074)
+2026-10-20T10:09:10.1777740Z Updating files: 100% (7074/7074), done.
+2026-10-20T10:09:10.1931160Z HEAD is now at 584ed6e fix(ci): scope owned signing key ACL and verify private partitions
+2026-10-20T10:09:10.2238190Z ##[endgroup]
+2026-10-20T10:09:10.2240620Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-20T10:09:10.2326330Z 584ed6e5d553ec5d9c07ae8bde80bd6d94153873
+2026-10-20T10:09:10.2343880Z ##[group]Removing auth
+2026-10-20T10:09:10.2344340Z Removing SSH command configuration
+2026-10-20T10:09:10.2348360Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T10:09:10.2422710Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-20T10:09:10.3935120Z Removing HTTP extra header
+2026-10-20T10:09:10.3937110Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T10:09:10.4027450Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-20T10:09:10.5612520Z Removing includeIf entries pointing to credentials config files
+2026-10-20T10:09:10.5642300Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T10:09:10.5693380Z includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path
+2026-10-20T10:09:10.5697720Z includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path
+2026-10-20T10:09:10.5698310Z includeif.gitdir:/github/workspace/.git.path
+2026-10-20T10:09:10.5700840Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-20T10:09:10.5704840Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path
+2026-10-20T10:09:10.5788430Z /Users/runner/work/_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:10.5955300Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-cbf500ff\-8eb1\-4d45\-8a9a\-d40295f313cf\.config
+2026-10-20T10:09:10.6026880Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path
+2026-10-20T10:09:10.6087180Z /Users/runner/work/_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:10.6093120Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/legado-ios/legado-ios/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-cbf500ff\-8eb1\-4d45\-8a9a\-d40295f313cf\.config
+2026-10-20T10:09:10.6211090Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-20T10:09:10.6277480Z /github/runner_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:10.6289170Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-cbf500ff\-8eb1\-4d45\-8a9a\-d40295f313cf\.config
+2026-10-20T10:09:10.6364650Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-20T10:09:10.6471290Z /github/runner_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config
+2026-10-20T10:09:10.6536850Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-cbf500ff\-8eb1\-4d45\-8a9a\-d40295f313cf\.config
+2026-10-20T10:09:10.6560710Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-20T10:09:10.8467710Z Removing credentials config '/Users/runner/work/_temp/git-credentials-cbf500ff-8eb1-4d45-8a9a-d40295f313cf.config'
+2026-10-20T10:09:10.8475160Z ##[endgroup]
+2026-10-20T10:09:10.8782970Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+2026-10-20T10:09:10.8783700Z with:
+2026-10-20T10:09:10.8783900Z   python-version: 3.12
+2026-10-20T10:09:10.8784130Z   check-latest: false
+2026-10-20T10:09:10.8786580Z   token: ***
+2026-10-20T10:09:10.8786780Z   update-environment: true
+2026-10-20T10:09:10.8787050Z   allow-prereleases: false
+2026-10-20T10:09:10.8787370Z   freethreaded: false
+2026-10-20T10:09:10.8787580Z env:
+2026-10-20T10:09:10.8787820Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T10:09:10.8788050Z ##[endgroup]
+2026-10-20T10:09:11.1049010Z ##[group]Installed versions
+2026-10-20T10:09:11.1128170Z Successfully set up CPython (3.12.10)
+2026-10-20T10:09:11.1129400Z ##[endgroup]
+2026-10-20T10:09:11.1279690Z ##[group]Run mkdir -p .build/owned-sdk-producer-ci-logs
+2026-10-20T10:09:11.1280140Z [36;1mmkdir -p .build/owned-sdk-producer-ci-logs[0m
+2026-10-20T10:09:11.1280740Z [36;1mpython -B scripts/reader-experience/owned-sdk-producer-check.py validate-source 2>&1 | tee .build/owned-sdk-producer-ci-logs/source.log[0m
+2026-10-20T10:09:11.1409060Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-20T10:09:11.1409840Z env:
+2026-10-20T10:09:11.1410290Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T10:09:11.1411040Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:11.1412170Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T10:09:11.1413320Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:11.1414370Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:11.1415440Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:11.1416240Z ##[endgroup]
+2026-10-20T10:09:12.1031860Z {
+2026-10-20T10:09:12.1032690Z   "sourceCommit": "584ed6e5d553ec5d9c07ae8bde80bd6d94153873",
+2026-10-20T10:09:12.1033500Z   "sourceTag": "reader-owned-sdk-584ed6e",
+2026-10-20T10:09:12.1034150Z   "sourceInputs": [
+2026-10-20T10:09:12.1034570Z     {
+2026-10-20T10:09:12.1035250Z       "path": ".github/workflows/reader-owned-sdk-producer.yml",
+2026-10-20T10:09:12.1036010Z       "bytes": 3846,
+2026-10-20T10:09:12.1036790Z       "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+2026-10-20T10:09:12.1037610Z     },
+2026-10-20T10:09:12.1037990Z     {
+2026-10-20T10:09:12.1038580Z       "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+2026-10-20T10:09:12.1039310Z       "bytes": 14191,
+2026-10-20T10:09:12.1040000Z       "sha256": "62434d613e07ce98f1f1fd646f4630a08a42d240263835b183c3b9cfe31d2cdb"
+2026-10-20T10:09:12.1040790Z     },
+2026-10-20T10:09:12.1041230Z     {
+2026-10-20T10:09:12.1041900Z       "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+2026-10-20T10:09:12.1042740Z       "bytes": 13845,
+2026-10-20T10:09:12.1043520Z       "sha256": "755ec45f371a0d3bc4c3e18ae1f2d1c56c6eda2ae8cfd2adba36352d8b72f20a"
+2026-10-20T10:09:12.1044360Z     },
+2026-10-20T10:09:12.1044730Z     {
+2026-10-20T10:09:12.1045300Z       "path": "scripts/reader-experience/renewal-probe-tools.py",
+2026-10-20T10:09:12.1046040Z       "bytes": 142987,
+2026-10-20T10:09:12.1046720Z       "sha256": "967f0d77e96c86a1ae105e56f776b0c8fb8bd07ce7ffab2fcf141d0fba68d5de"
+2026-10-20T10:09:12.1047530Z     },
+2026-10-20T10:09:12.1047920Z     {
+2026-10-20T10:09:12.1048390Z       "path": "scripts/reader-experience/smoke-tools.py",
+2026-10-20T10:09:12.1049060Z       "bytes": 27526,
+2026-10-20T10:09:12.1049760Z       "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+2026-10-20T10:09:12.1050530Z     },
+2026-10-20T10:09:12.1050900Z     {
+2026-10-20T10:09:12.1051420Z       "path": "scripts/reader-experience/stage-config.py",
+2026-10-20T10:09:12.1052070Z       "bytes": 26097,
+2026-10-20T10:09:12.1052780Z       "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+2026-10-20T10:09:12.1053610Z     },
+2026-10-20T10:09:12.1054300Z     {
+2026-10-20T10:09:12.1054910Z       "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+2026-10-20T10:09:12.1056430Z       "bytes": 133487,
+2026-10-20T10:09:12.1057140Z       "sha256": "bce6e42851ae34d358079741019624e360621f22ce6d316c29a34bda9d201997"
+2026-10-20T10:09:12.1057930Z     },
+2026-10-20T10:09:12.1058300Z     {
+2026-10-20T10:09:12.1058960Z       "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+2026-10-20T10:09:12.1059870Z       "bytes": 657444,
+2026-10-20T10:09:12.1060590Z       "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+2026-10-20T10:09:12.1061420Z     },
+2026-10-20T10:09:12.1061780Z     {
+2026-10-20T10:09:12.1062190Z       "path": "scripts/sim.sh",
+2026-10-20T10:09:12.1063400Z       "bytes": 11179,
+2026-10-20T10:09:12.1064140Z       "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48"
+2026-10-20T10:09:12.1064980Z     },
+2026-10-20T10:09:12.1065340Z     {
+2026-10-20T10:09:12.1066130Z       "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+2026-10-20T10:09:12.1067170Z       "bytes": 42835,
+2026-10-20T10:09:12.1067900Z       "sha256": "5d59f9f50f83afab0dc0d3632d5e7a3b4e190b266d1d5ded3dade8fcb4c4315b"
+2026-10-20T10:09:12.1068740Z     },
+2026-10-20T10:09:12.1069120Z     {
+2026-10-20T10:09:12.1069870Z       "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+2026-10-20T10:09:12.1070950Z       "bytes": 15728,
+2026-10-20T10:09:12.1071640Z       "sha256": "847c25df080627db3fc0ce775a11507e2499879c35d8cb09e848c2b16b127916"
+2026-10-20T10:09:12.1072440Z     },
+2026-10-20T10:09:12.1072890Z     {
+2026-10-20T10:09:12.1073740Z       "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+2026-10-20T10:09:12.1074710Z       "bytes": 2540,
+2026-10-20T10:09:12.1075440Z       "sha256": "9be216394c4dce27c31cc949e2fa05466b1286f8ccc5235045a2b2325b573b50"
+2026-10-20T10:09:12.1076450Z     },
+2026-10-20T10:09:12.1076620Z     {
+2026-10-20T10:09:12.1076930Z       "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+2026-10-20T10:09:12.1077320Z       "bytes": 23985,
+2026-10-20T10:09:12.1077620Z       "sha256": "5c64c9ccf2e0b4ca6aa63c565ae6d27f35d455bc956628bac76c489b1cb152ae"
+2026-10-20T10:09:12.1077950Z     },
+2026-10-20T10:09:12.1078080Z     {
+2026-10-20T10:09:12.1078310Z       "path": "scripts/reader-experience/owned-package-fixture/main.c",
+2026-10-20T10:09:12.1078620Z       "bytes": 180,
+2026-10-20T10:09:12.1078980Z       "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+2026-10-20T10:09:12.1079970Z     },
+2026-10-20T10:09:12.1080400Z     {
+2026-10-20T10:09:12.1080730Z       "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+2026-10-20T10:09:12.1081080Z       "bytes": 186,
+2026-10-20T10:09:12.1081380Z       "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+2026-10-20T10:09:12.1081720Z     },
+2026-10-20T10:09:12.1081860Z     {
+2026-10-20T10:09:12.1082120Z       "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+2026-10-20T10:09:12.1082440Z       "bytes": 156,
+2026-10-20T10:09:12.1082740Z       "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+2026-10-20T10:09:12.1083040Z     },
+2026-10-20T10:09:12.1083180Z     {
+2026-10-20T10:09:12.1083490Z       "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+2026-10-20T10:09:12.1083950Z       "bytes": 6262,
+2026-10-20T10:09:12.1084240Z       "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+2026-10-20T10:09:12.1084580Z     },
+2026-10-20T10:09:12.1084730Z     {
+2026-10-20T10:09:12.1085030Z       "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+2026-10-20T10:09:12.1085380Z       "bytes": 11655,
+2026-10-20T10:09:12.1085660Z       "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+2026-10-20T10:09:12.1086000Z     },
+2026-10-20T10:09:12.1086130Z     {
+2026-10-20T10:09:12.1086460Z       "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+2026-10-20T10:09:12.1087280Z       "bytes": 23238,
+2026-10-20T10:09:12.1087600Z       "sha256": "c2b4de59ca616eb9652eb4d4ece266830970c17f43eb842993368f41b4ca54b4"
+2026-10-20T10:09:12.1087930Z     }
+2026-10-20T10:09:12.1088060Z   ],
+2026-10-20T10:09:12.1088230Z   "runtimeSourceOnly": true
+2026-10-20T10:09:12.1088410Z }
+2026-10-20T10:09:12.1372370Z ##[group]Run python -B scripts/reader-experience/test-owned-sdk-producer-check.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/check-guards.log
+2026-10-20T10:09:12.1373290Z [36;1mpython -B scripts/reader-experience/test-owned-sdk-producer-check.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/check-guards.log[0m
+2026-10-20T10:09:12.1374220Z [36;1mpython -B scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/diagnostic-guards.log[0m
+2026-10-20T10:09:12.1375230Z [36;1mpython -B scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/timeout-guards.log[0m
+2026-10-20T10:09:12.1376220Z [36;1mpython -B scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py -v 2>&1 | tee .build/owned-sdk-producer-ci-logs/reopen-guards.log[0m
+2026-10-20T10:09:12.1417310Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-20T10:09:12.1417650Z env:
+2026-10-20T10:09:12.1417840Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T10:09:12.1418120Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:12.1418580Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T10:09:12.1419000Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:12.1419400Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:12.1419800Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:12.1420090Z ##[endgroup]
+2026-10-20T10:09:12.7147290Z test_actual_public_child_nonzero_and_logs_remain_failure (__main__.OwnedSDKProducerCheckTests.test_actual_public_child_nonzero_and_logs_remain_failure) ... ok
+2026-10-20T10:09:12.8071390Z test_all_necessary_producer_runner_guard_and_fixture_sources_are_bound (__main__.OwnedSDKProducerCheckTests.test_all_necessary_producer_runner_guard_and_fixture_sources_are_bound) ... ok
+2026-10-20T10:09:12.8499120Z test_commands_are_fixed_real_generator_and_finite_budgets (__main__.OwnedSDKProducerCheckTests.test_commands_are_fixed_real_generator_and_finite_budgets) ... ok
+2026-10-20T10:09:12.8925050Z test_device_toolchain_chooses_installed_sdk_when_active_has_none (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_chooses_installed_sdk_when_active_has_none) ... ok
+2026-10-20T10:09:12.9725170Z test_device_toolchain_missing_sdk_fails_without_querying_simulators (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_missing_sdk_fails_without_querying_simulators) ... ok
+2026-10-20T10:09:13.0146780Z test_device_toolchain_uses_active_sdk_without_querying_simulators (__main__.OwnedSDKProducerCheckTests.test_device_toolchain_uses_active_sdk_without_querying_simulators) ... ok
+2026-10-20T10:09:13.0561690Z test_requires_exact_isolated_tag_sha_checkout_and_source_only (__main__.OwnedSDKProducerCheckTests.test_requires_exact_isolated_tag_sha_checkout_and_source_only) ... ok
+2026-10-20T10:09:13.1534650Z test_stages_only_existing_allowlist_without_writing_an_xctest_resource (__main__.OwnedSDKProducerCheckTests.test_stages_only_existing_allowlist_without_writing_an_xctest_resource) ... ok
+2026-10-20T10:09:13.2429630Z test_staging_rejects_extra_private_changed_public_and_wrong_source_inputs (__main__.OwnedSDKProducerCheckTests.test_staging_rejects_extra_private_changed_public_and_wrong_source_inputs) ... ok
+2026-10-20T10:09:13.3493550Z test_successful_child_source_mutation_is_a_nonzero_whole_check_failure (__main__.OwnedSDKProducerCheckTests.test_successful_child_source_mutation_is_a_nonzero_whole_check_failure) ... ok
+2026-10-20T10:09:13.4123870Z test_timeout_and_changed_phase_inputs_are_never_accepted (__main__.OwnedSDKProducerCheckTests.test_timeout_and_changed_phase_inputs_are_never_accepted) ... ok
+2026-10-20T10:09:13.4610740Z test_workflow_is_isolated_and_never_uploads_raw_producer_directory (__main__.OwnedSDKProducerCheckTests.test_workflow_is_isolated_and_never_uploads_raw_producer_directory) ... ok
+2026-10-20T10:09:13.4612380Z 
+2026-10-20T10:09:13.4612740Z ----------------------------------------------------------------------
+2026-10-20T10:09:13.4613450Z Ran 12 tests in 0.897s
+2026-10-20T10:09:13.4613730Z 
+2026-10-20T10:09:13.4613890Z OK
+2026-10-20T10:09:13.5927900Z test_actual_private_child_failure_publishes_no_stream_or_command (__main__.ProducerDiagnosticsTests.test_actual_private_child_failure_publishes_no_stream_or_command) ... ok
+2026-10-20T10:09:13.6144320Z test_actual_public_child_failure_reaches_existing_uploaded_stdout (__main__.ProducerDiagnosticsTests.test_actual_public_child_failure_reaches_existing_uploaded_stdout) ... ok
+2026-10-20T10:09:13.6348920Z test_malformed_private_import_status_is_suppressed_not_echoed (__main__.ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed) ... ok
+2026-10-20T10:09:13.6351600Z test_private_public_log_request_is_rejected_before_child_executes (__main__.ProducerDiagnosticsTests.test_private_public_log_request_is_rejected_before_child_executes) ... ok
+2026-10-20T10:09:13.6620700Z test_public_capture_is_bounded_and_redacts_secrets_before_truncation (__main__.ProducerDiagnosticsTests.test_public_capture_is_bounded_and_redacts_secrets_before_truncation) ... ok
+2026-10-20T10:09:13.7108930Z test_typed_public_import_facts_keep_other_process_acl_unverified (__main__.ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified) ... ok
+2026-10-20T10:09:13.7110490Z 
+2026-10-20T10:09:13.7110780Z ----------------------------------------------------------------------
+2026-10-20T10:09:13.7111520Z Ran 6 tests in 0.144s
+2026-10-20T10:09:13.7111860Z 
+2026-10-20T10:09:13.7112010Z OK
+2026-10-20T10:09:14.6136330Z test_actual_private_timeout_never_forwards_partial_status_or_secret (__main__.ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret) ... ok
+2026-10-20T10:09:15.4256560Z test_actual_public_timeout_terminates_child_and_retains_failure_log (__main__.ProducerToolTimeoutTests.test_actual_public_timeout_terminates_child_and_retains_failure_log) ... ok
+2026-10-20T10:09:16.2325560Z test_actual_remaining_producer_budget_caps_a_longer_tool_budget (__main__.ProducerToolTimeoutTests.test_actual_remaining_producer_budget_caps_a_longer_tool_budget) ... ok
+2026-10-20T10:09:16.6612350Z test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes (__main__.ProducerToolTimeoutTests.test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes) ... ok
+2026-10-20T10:09:16.8758420Z test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child (__main__.ProducerToolTimeoutTests.test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child) ... ok
+2026-10-20T10:09:17.7283810Z test_cleanup_has_a_separate_real_child_budget_after_producer_expiry (__main__.ProducerToolTimeoutTests.test_cleanup_has_a_separate_real_child_budget_after_producer_expiry) ... ok
+2026-10-20T10:09:17.7386300Z test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn (__main__.ProducerToolTimeoutTests.test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn) ... ok
+2026-10-20T10:09:17.7457490Z test_exhausted_producer_deadline_does_not_start_another_tool (__main__.ProducerToolTimeoutTests.test_exhausted_producer_deadline_does_not_start_another_tool) ... ok
+2026-10-20T10:09:17.7468070Z test_private_spawn_failure_has_no_argv_or_raw_exception_chain (__main__.ProducerToolTimeoutTests.test_private_spawn_failure_has_no_argv_or_raw_exception_chain) ... ok
+2026-10-20T10:09:17.7468820Z 
+2026-10-20T10:09:17.7469130Z ----------------------------------------------------------------------
+2026-10-20T10:09:17.7470620Z Ran 9 tests in 3.912s
+2026-10-20T10:09:17.7470870Z 
+2026-10-20T10:09:17.7471140Z OK
+2026-10-20T10:09:17.8354690Z test_acl_schema_rejects_unknown_payloads_counts_and_inconsistent_append (__main__.OwnedKeyACLReportTests.test_acl_schema_rejects_unknown_payloads_counts_and_inconsistent_append) ... ok
+2026-10-20T10:09:17.9408660Z test_actual_acl_malformed_or_cross_operation_private_output_stays_suppressed (__main__.OwnedKeyACLReportTests.test_actual_acl_malformed_or_cross_operation_private_output_stays_suppressed) ... ok
+2026-10-20T10:09:17.9906020Z test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim (__main__.OwnedKeyACLReportTests.test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim) ... ok
+2026-10-20T10:09:18.1714970Z test_actual_fresh_inspection_rejects_unapplied_partition_or_changed_classic_facts (__main__.OwnedKeyACLReportTests.test_actual_fresh_inspection_rejects_unapplied_partition_or_changed_classic_facts) ... ok
+2026-10-20T10:09:18.2320500Z test_actual_partition_failure_remains_nonzero_and_blocks_fresh_read (__main__.OwnedKeyACLReportTests.test_actual_partition_failure_remains_nonzero_and_blocks_fresh_read) ... ok
+2026-10-20T10:09:18.3033570Z test_actual_pipeline_checks_unique_owned_key_before_private_only_partition_then_fresh_inspection (__main__.OwnedKeyACLReportTests.test_actual_pipeline_checks_unique_owned_key_before_private_only_partition_then_fresh_inspection) ... ok
+2026-10-20T10:09:18.3345090Z test_actual_c_compile_failure_remains_nonzero_and_never_starts_swift (__main__.OwnedKeychainReopenReportTests.test_actual_c_compile_failure_remains_nonzero_and_never_starts_swift) ... ok
+2026-10-20T10:09:18.3542390Z test_actual_child_failure_cannot_be_accepted_from_a_passed_report (__main__.OwnedKeychainReopenReportTests.test_actual_child_failure_cannot_be_accepted_from_a_passed_report) ... ok
+2026-10-20T10:09:18.4247770Z test_actual_compile_children_require_public_c_then_formal_header_and_object_link (__main__.OwnedKeychainReopenReportTests.test_actual_compile_children_require_public_c_then_formal_header_and_object_link) ... ok
+2026-10-20T10:09:18.4464340Z test_actual_malformed_private_report_suppresses_all_unknown_data (__main__.OwnedKeychainReopenReportTests.test_actual_malformed_private_report_suppresses_all_unknown_data) ... ok
+2026-10-20T10:09:18.4919330Z test_actual_owned_identity_children_use_one_key_and_self_signed_code_signing_constraints (__main__.OwnedKeychainReopenReportTests.test_actual_owned_identity_children_use_one_key_and_self_signed_code_signing_constraints) ... ok
+2026-10-20T10:09:18.5131730Z test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim (__main__.OwnedKeychainReopenReportTests.test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim) ... ok
+2026-10-20T10:09:18.5585110Z test_actual_self_signed_identity_failure_stays_nonzero_without_an_alternative_shape (__main__.OwnedKeychainReopenReportTests.test_actual_self_signed_identity_failure_stays_nonzero_without_an_alternative_shape) ... ok
+2026-10-20T10:09:18.5846160Z test_actual_self_signed_pkcs12_child_binds_the_same_key_and_only_one_certificate (__main__.OwnedKeychainReopenReportTests.test_actual_self_signed_pkcs12_child_binds_the_same_key_and_only_one_certificate) ... ok
+2026-10-20T10:09:18.6467290Z test_actual_swift_compile_failure_preserves_its_exit_and_public_diagnostic (__main__.OwnedKeychainReopenReportTests.test_actual_swift_compile_failure_preserves_its_exit_and_public_diagnostic) ... ok
+2026-10-20T10:09:18.6664250Z test_actual_unlock_failure_retains_only_the_typed_osstatus (__main__.OwnedKeychainReopenReportTests.test_actual_unlock_failure_retains_only_the_typed_osstatus) ... ok
+2026-10-20T10:09:18.6668860Z test_reopen_success_rejects_missing_extra_ambiguous_and_false_proof_fields (__main__.OwnedKeychainReopenReportTests.test_reopen_success_rejects_missing_extra_ambiguous_and_false_proof_fields) ... ok
+2026-10-20T10:09:18.6669870Z 
+2026-10-20T10:09:18.6670280Z ----------------------------------------------------------------------
+2026-10-20T10:09:18.6671370Z Ran 17 tests in 0.832s
+2026-10-20T10:09:18.6671590Z 
+2026-10-20T10:09:18.6671640Z OK
+2026-10-20T10:09:18.7082330Z ##[group]Run python -B scripts/reader-experience/owned-sdk-producer-check.py run 2>&1 | tee .build/owned-sdk-producer-ci-logs/producer-check.log
+2026-10-20T10:09:18.7083190Z [36;1mpython -B scripts/reader-experience/owned-sdk-producer-check.py run 2>&1 | tee .build/owned-sdk-producer-ci-logs/producer-check.log[0m
+2026-10-20T10:09:18.7151500Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-20T10:09:18.7151890Z env:
+2026-10-20T10:09:18.7152230Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T10:09:18.7152570Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:18.7153070Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T10:09:18.7153530Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:18.7153990Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:18.7154490Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:18.7154920Z   YUEDU_OWNED_PRODUCER_GUARDS_OUTCOME: success
+2026-10-20T10:09:18.7155280Z ##[endgroup]
+2026-10-20T10:09:34.9103980Z ##[error]Process completed with exit code 1.
+2026-10-20T10:09:34.9385460Z ##[group]Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+2026-10-20T10:09:34.9386100Z with:
+2026-10-20T10:09:34.9386430Z   name: reader-owned-sdk-producer-evidence
+2026-10-20T10:09:34.9386920Z   path: .build/owned-sdk-producer-check/
+.build/owned-sdk-producer-ci-logs/
+
+2026-10-20T10:09:34.9387400Z   if-no-files-found: warn
+2026-10-20T10:09:34.9387640Z   include-hidden-files: true
+2026-10-20T10:09:34.9387960Z   retention-days: 7
+2026-10-20T10:09:34.9388200Z   compression-level: 6
+2026-10-20T10:09:34.9388520Z   overwrite: false
+2026-10-20T10:09:34.9388740Z   archive: true
+2026-10-20T10:09:34.9427470Z env:
+2026-10-20T10:09:34.9428580Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T10:09:34.9429950Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:34.9431860Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T10:09:34.9433490Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:34.9434580Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:34.9435620Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:34.9436500Z ##[endgroup]
+2026-10-20T10:09:35.4636380Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-20T10:09:35.4637720Z The least common ancestor is /Users/runner/work/legado-ios/legado-ios/.build. This will be the root directory of the artifact
+2026-10-20T10:09:35.4638890Z With the provided path, there will be 21 files uploaded
+2026-10-20T10:09:35.4639430Z Artifact name is valid!
+2026-10-20T10:09:35.4639760Z Root directory input is valid!
+2026-10-20T10:09:35.8132640Z Uploading artifact: reader-owned-sdk-producer-evidence.zip
+2026-10-20T10:09:35.8282590Z Beginning upload of artifact content to blob storage
+2026-10-20T10:09:36.1229710Z Uploaded bytes 19449
+2026-10-20T10:09:36.1771430Z Finished uploading artifact content to blob storage!
+2026-10-20T10:09:36.1776570Z SHA256 digest of uploaded artifact is 7f1ee254e37f2b351b9cf3d9be345d1d9083e4fe19903186f21bb27fc8a6397f
+2026-10-20T10:09:36.1778700Z Finalizing artifact upload
+2026-10-20T10:09:36.5352610Z Artifact reader-owned-sdk-producer-evidence successfully finalized. Artifact ID 12257800364
+2026-10-20T10:09:36.5353440Z Artifact reader-owned-sdk-producer-evidence has been successfully uploaded! Final size is 19449 bytes. Artifact ID is 12257800364
+2026-10-20T10:09:36.5354300Z Artifact download URL: https://github.com/zhoujianjia/legado-ios/actions/runs/39405837240/artifacts/12257800364
+2026-10-20T10:09:36.5438470Z ##[group]Run cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+2026-10-20T10:09:36.5448230Z [36;1mcat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'[0m
+2026-10-20T10:09:36.5450270Z [36;1mThis independent source-only job runs the existing owned SDK producer and the existing public source/structure/hash/allowlist checks. It uses the selected installed Xcode toolchain, real clang/codesign and synthetic short-lived Keychain material. The producer's successful complete path includes four actual detached-CMS OpenSSL verifications; staging does not execute the Swift CMS verifier. Codesign, cleanup, timeout, source or staging failure remains failure with the original bounded public evidence. Private keys/P12/passwords and the raw producer output directory are never artifact members; only validated allowlisted public outputs are copied.[0m
+2026-10-20T10:09:36.5452790Z [36;1m[0m
+2026-10-20T10:09:36.5454450Z [36;1mNo App build, native XCTest, Swift CMS verifier, SwiftPM case, simulator boot, JNI, real device, account, installation or renewal runs here. Native methods executed remain zero; no native253/255 or other full-selection gate is weakened or accepted by this job. Its separate reader-owned-sdk tag namespace does not trigger the existing reader-renewal workflow. Import/reopen diagnostics alone do not establish codesign success, Apple authority or automatic renewal.[0m
+2026-10-20T10:09:36.5455940Z [36;1mTEXT[0m
+2026-10-20T10:09:36.5543020Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-20T10:09:36.5543390Z env:
+2026-10-20T10:09:36.5543560Z   LEGADO_RUNTIME_SOURCE_ONLY: 1
+2026-10-20T10:09:36.5543980Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:36.5544520Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-20T10:09:36.5544980Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:36.5545530Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:36.5545980Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-20T10:09:36.5546420Z ##[endgroup]
+2026-10-20T10:09:36.6289500Z Post job cleanup.
+2026-10-20T10:09:36.7680360Z [command]/opt/homebrew/bin/git version
+2026-10-20T10:09:36.7798620Z git version 2.55.0
+2026-10-20T10:09:36.7824570Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/6668685f-071c-4853-9318-14886651bf3b/.gitconfig'
+2026-10-20T10:09:36.7834180Z Temporarily overriding HOME='/Users/runner/work/_temp/6668685f-071c-4853-9318-14886651bf3b' before making global git config changes
+2026-10-20T10:09:36.7837490Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-20T10:09:36.7838210Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/legado-ios/legado-ios
+2026-10-20T10:09:36.7906160Z Removing SSH command configuration
+2026-10-20T10:09:36.7918610Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T10:09:36.8004160Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-20T10:09:36.9559230Z Removing HTTP extra header
+2026-10-20T10:09:36.9809000Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T10:09:37.0110330Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-20T10:09:37.1219070Z Removing includeIf entries pointing to credentials config files
+2026-10-20T10:09:37.1226330Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T10:09:37.1263840Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-20T10:09:37.2836220Z Cleaning up orphan processes
