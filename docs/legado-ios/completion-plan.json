@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-owned-search-list-file-identity-step.json",
+  "activeBatchRecord": "docs/legado-ios/core-sdk-shelf-login-checkpoint.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,7 +169,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Consolidate the reviewed source-only shelf callbacks, raw login-info owner, caller-owned BookStore/import compilation repairs and owned-Keychain fixture identity/cleanup repair into one currentcore SDK checkpoint with exact updated test selectors. Build14 package44f125b remains independent; later getLoginInfoMap development must not block either checkpoint.",
+      "nextPlannedCheckpoint": "Submit this fixed related batch once to reader-renewal currentcore and the separate actual Native12 host. Every observed compilation/producer issue is repaired; retain mandatory fixture and failure gates. Existing44f125b device package proceeds independently. Do not include unmerged getLoginInfoMap or create per-item jobs.",
       "alreadyRunningTasks": "Latest package44f125b run39457883604/job118749408493 and actual Native run39457883358/job118749408039 are running on the source that fixes every currently observed compile error. Earlier e88f6fc package/Native are superseded but last observed live; they are not cancelled or terminal by inference. Both75c87a9 jobs and a24currentcore are terminal failures and archived.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
@@ -1119,6 +1119,14 @@
         "affectedPortableMethodsPassed": 12,
         "actualCodesignAccepted": false,
         "actualSDKAccepted": false
+      },
+      "shelfLoginSDKCheckpoint": {
+        "record": "docs/legado-ios/core-sdk-shelf-login-checkpoint.json",
+        "AppDefinitionsSelected": 447,
+        "AppArgumentLeavesSelected": 450,
+        "NativeOriginalMethodsSelected": 12,
+        "actualSDKAccepted": false,
+        "actualJNIAccepted": false
       }
     }
   },

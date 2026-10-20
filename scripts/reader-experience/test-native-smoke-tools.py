@@ -80,7 +80,7 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
             result = native.result(self.root)
             self.assertEqual(result["sourceCommitStamped"], SOURCE)
             self.assertEqual(result["sourceOverlays"]["infoOverlay"]["sourceCommitStamped"], SOURCE)
-            self.assertEqual(result["originalReaderTests"]["expectedTests"], 8)
+            self.assertEqual(result["originalReaderTests"]["expectedTests"], 12)
             self.assertFalse(result["deviceValidationPassed"])
             for key, value in (("YueduExperienceSourceCommit", "b" * 40), ("GitCommitSHA", "b" * 7),
                                ("YueduExperienceSourceCommit", None)):
@@ -211,10 +211,13 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
     def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
         repo = Path(__file__).resolve().parents[2]
         workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
+        self.assertEqual(len(native.SOURCE_INPUTS), 66)
         self.assertEqual(len(native.SOURCE_INPUTS), len(set(native.SOURCE_INPUTS)))
+        self.assertEqual(len(native.ORIGINAL_SOURCE_STATE_INPUTS), 20)
+        self.assertTrue(set(native.ORIGINAL_SOURCE_STATE_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertEqual(native.NATIVE_GROUPS["mainjs"]["seconds"], 2700)
         self.assertEqual(len(native.NATIVE_GROUPS["mainjs"]["methods"]), 1)
-        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 8)
+        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 12)
         self.assertIn("unset LEGADO_RUNTIME_SOURCE_ONLY", workflow)
         self.assertIn("LEGADO_REQUIRE_NATIVE_MAINJS", workflow)
         self.assertIn("verify-native-exports.py", workflow)
@@ -229,12 +232,27 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
             self.assertIn("SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS", argv)
             selectors = [value for value in argv if value.startswith("-only-testing:")]
             self.assertEqual(selectors, ["-only-testing:yuedu appTests/" + value for value in native.NATIVE_GROUPS[group]["methods"]])
-            suite = native.NATIVE_GROUPS[group]["methods"][0].split("/")[0]
-            source = (repo / ("Tests/iOS/" + suite + ".swift")).read_text(encoding="utf-8")
-            self.assertIn("final class " + suite + ": XCTestCase", source)
-            self.assertEqual(set(re.findall(r"(?m)^\s+func (test\w+)\s*\(", source)),
-                {method.split("/")[1] for method in native.NATIVE_GROUPS[group]["methods"]})
-            self.assertRegex(source, r"#if LEGADO_REQUIRE_NATIVE_MAINJS\s+required = true")
+            methods = native.NATIVE_GROUPS[group]["methods"]
+            self.assertEqual(len(methods), len(set(methods)))
+            for suite in {method.split("/")[0] for method in methods}:
+                relative = "Tests/iOS/" + suite + ".swift"
+                self.assertIn(relative, native.SOURCE_INPUTS)
+                source = (repo / relative).read_text(encoding="utf-8")
+                self.assertIn("final class " + suite + ": XCTestCase", source)
+                declarations = re.findall(r"(?m)^\s+func (test\w+)\s*\(([^)]*)\)", source)
+                self.assertEqual(len(declarations), len(set(name for name, _ in declarations)))
+                self.assertEqual({name for name, _ in declarations},
+                    {method.split("/")[1] for method in methods if method.split("/")[0] == suite})
+                self.assertTrue(all(parameters == "" for _, parameters in declarations))
+                if suite == "LegadoNativeOriginalLoginInfoTests":
+                    # This suite throws directly under the required-native flag.
+                    # Its source-only fallback must never run in this workflow.
+                    self.assertEqual(source.count("try await requireNativeRuntime()"), 2)
+                    self.assertRegex(source, r"#if LEGADO_REQUIRE_NATIVE_MAINJS\s+throw LegadoRuntimeError\(code: \"missing_runtime\"")
+                    self.assertRegex(source, r'#else\s+if ProcessInfo\.processInfo\.environment\["LEGADO_REQUIRE_NATIVE_MAINJS"\] == "1"\s*\{\s*throw LegadoRuntimeError\(code: "missing_runtime"')
+                    self.assertIn('throw XCTSkip("Requires real ordinary JAR/JNI and Keychain; source-only cannot pass")', source)
+                else:
+                    self.assertRegex(source, r"#if LEGADO_REQUIRE_NATIVE_MAINJS\s+required = true")
 
 
 if __name__ == "__main__":
