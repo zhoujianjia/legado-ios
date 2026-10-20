@@ -30,11 +30,17 @@ struct SelfRenewalNestedCodeRequirementsVerifierTests {
                 "entitlement[values] = 0x62657461 and entitlement[enabled] and ! entitlement[disabled]",
                 "info[date] = timestamp \"20261020000000Z\" and info[date] >= timestamp \"20261019000000Z\"",
             ]
-            for text in positives { #expect(try Requirements.evaluate(text, attributes: attributes) == .matched) }
+            for text in positives {
+                let result = try Requirements.evaluate(text, attributes: attributes)
+                #expect(result == .matched)
+            }
             let negatives = ["identifier \"other\"", "info[disabled] absent", "info[enabled] = \"true\"",
                 "certificate 12[subject.CN] absent", "certificate leaf[subject.OU] absent",
                 "entitlement[missing] exists", "info[name] = \"book Name\"", "platform 3"]
-            for text in negatives { #expect(try Requirements.evaluate(text, attributes: attributes) == .notMatched) }
+            for text in negatives {
+                let result = try Requirements.evaluate(text, attributes: attributes)
+                #expect(result == .notMatched)
+            }
         }.value
     }
 
@@ -58,7 +64,8 @@ struct SelfRenewalNestedCodeRequirementsVerifierTests {
                 ("anchor = \"/owned/certificate\"", .externalCertificateFile("/owned/certificate")),
             ]
             for (text, capability) in policies {
-                #expect(try Requirements.evaluate("identifier owned.child and (\(text))", attributes: Self.attributes) == .unresolved([capability]))
+                let result = try Requirements.evaluate("identifier owned.child and (\(text))", attributes: Self.attributes)
+                #expect(result == .unresolved([capability]))
             }
         }.value
     }

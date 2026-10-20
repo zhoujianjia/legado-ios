@@ -1,0 +1,30 @@
+        try await Task.detached {
+        ^
+@__swiftmacro_14yuedu_appTests0057SelfRenewalNestedCodeRequirementsVerifierTestsswift_tCHFufMX32_36_33_6B677F204158FBA2B260C873D3C012ECLl6expectfMf_.swift:1:22: error: errors thrown from here are not handled
+Testing.__checkValue(try Requirements.evaluate(text, attributes: attributes) == .matched,expression: .__fromSyntaxNode("try Requirements.evaluate(text, attributes: attributes) == .matched"),comments: [],isRequired: false,sourceLocation: Testing.SourceLocation.__here()).__expected()
+                     ^
+/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift:33:37: note: in expansion of macro 'expect' here
+            for text in positives { #expect(try Requirements.evaluate(text, attributes: attributes) == .matched) }
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift:33:37: note: in expansion of macro 'expect' here
+            for text in positives { #expect(try Requirements.evaluate(text, attributes: attributes) == .matched) }
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@__swiftmacro_14yuedu_appTests0057SelfRenewalNestedCodeRequirementsVerifierTestsswift_tCHFufMX36_36_33_6B677F204158FBA2B260C873D3C012ECLl6expectfMf0_.swift:1:22: error: errors thrown from here are not handled
+Testing.__checkValue(try Requirements.evaluate(text, attributes: attributes) == .notMatched,expression: .__fromSyntaxNode("try Requirements.evaluate(text, attributes: attributes) == .notMatched"),comments: [],isRequired: false,sourceLocation: Testing.SourceLocation.__here()).__expected()
+                     ^
+/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift:37:37: note: in expansion of macro 'expect' here
+            for text in negatives { #expect(try Requirements.evaluate(text, attributes: attributes) == .notMatched) }
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift:37:37: note: in expansion of macro 'expect' here
+            for text in negatives { #expect(try Requirements.evaluate(text, attributes: attributes) == .notMatched) }
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@__swiftmacro_14yuedu_appTests0057SelfRenewalNestedCodeRequirementsVerifierTestsswift_tCHFufMX60_16_33_6B677F204158FBA2B260C873D3C012ECLl6expectfMf2_.swift:1:22: error: errors thrown from here are not handled
+Testing.__checkValue(try Requirements.evaluate("identifier owned.child and (\(text))", attributes: Self.attributes) == .unresolved([capability]),expression: .__fromSyntaxNode(#"try Requirements.evaluate("identifier owned.child and (\(text))", attributes: Self.attributes) == .unresolved([capability])"#),comments: [],isRequired: false,sourceLocation: Testing.SourceLocation.__here()).__expected()
+                     ^
+/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift:61:17: note: in expansion of macro 'expect' here
+                #expect(try Requirements.evaluate("identifier owned.child and (\(text))", attributes: Self.attributes) == .unresolved([capability]))
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift:61:17: note: in expansion of macro 'expect' here
+                #expect(try Requirements.evaluate("identifier owned.child and (\(text))", attributes: Self.attributes) == .unresolved([capability]))
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+

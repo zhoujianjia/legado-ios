@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T04:22:25.638693+00:00",
+  "status": "test-target-compilation-failed-zero-methods-executed-repaired-awaiting-concentrated-SDK",
+  "sourceCommit": "478b69d6a1074e9a1d82c2b55e522b0d39e23f8a",
+  "sourceTag": "reader-renewal-478b69d",
+  "runID": 39365634542,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39365634542",
+  "runConclusion": "failure",
+  "selectionMode": "boundmaterials",
+  "sourceInputs": 68,
+  "plannedNativeMethods": 78,
+  "executedNativeMethods": 0,
+  "acceptedNativeMethods": 0,
+  "artifact": {
+    "path": ".build/renewal-discovery/post-controlled-signing-sdk-observation/478b69d/evidence.zip",
+    "bytes": 1006831,
+    "sha256": "e8fdcf81224105a179766a3e90a5b7f4e37ab551d4033cdb0debf1e6afe71835"
+  },
+  "audit": "docs/legado-ios/evidence/core-renewal-sdk-478b69d-result/478b69d/independent-audit.json",
+  "evidenceManifest": "docs/legado-ios/evidence/core-renewal-sdk-478b69d-result/manifest.json",
+  "failureKind": "Swift Testing macro expansion typecheck failure in throwing detached closure; test target did not compile",
+  "failureSource": "Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift",
+  "failureSourceLines": [
+    33,
+    37,
+    61
+  ],
+  "uniqueCompilerDiagnostics": 3,
+  "repeatedCompilerDiagnosticOccurrences": 72,
+  "xcodebuildExitCode": 65,
+  "timeout": false,
+  "repair": {
+    "source": "Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift",
+    "beforeSHA256": "e278ad401717536bbda37b233cf43166626ad8a7a2a742c2fb42b39b654433e0",
+    "after": {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests.swift",
+      "bytes": 14983,
+      "sha256": "5c817ee56c006cc59e6365bd9b2306f9d8188c0a2c02d0127a634002ef309c77"
+    },
+    "exactMethodNamesPreserved": [
+      "evaluatesBooleanCertificateAndAttributeGrammar",
+      "preservesUnresolvedPolicyWithoutRejectingComplexSupportedExpressions",
+      "verifiesActualNestedBundlesAndPublishesBoundDERAttributes",
+      "rejectsFalseRequirementAndWrongSelectedOrUniversalIdentity",
+      "preservesHintAndLegacyAuthenticationMeaning",
+      "retainsActualSystemPolicyAsUnresolved",
+      "rejectsNestedResourceAndCMSTampering",
+      "rejectsChangedBoundAttributesAndCancellation"
+    ],
+    "grammarErrors": [],
+    "SDKExecuted": false,
+    "change": "Evaluate the same throwing expressions into locals before #expect, preserving inputs and expected values."
+  },
+  "repairStatus": "same throwing evaluations moved before assertions; eight exact methods retained; actual SDK execution pending",
+  "newSDKRequestedWhileRecording": false,
+  "currentEditedSourcesAccepted": false,
+  "liveRunSingleObservation": {
+    "source": "44528e0",
+    "record": "44528e0-live-observation/observation.json",
+    "statusAtObservation": "in_progress",
+    "knownAffectedTestSourceStillPresent": true,
+    "independentPackageResultStillCollectable": true,
+    "acceptedNativeMethods": 0
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
