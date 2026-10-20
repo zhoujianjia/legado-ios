@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T12:35:27.889088+00:00",
+  "status": "source-reviewed-owned-current-user-searchlist-lifecycle-integrated-Mac0",
+  "predecessorActualFailure": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json",
+  "sources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 67743,
+      "sha256": "2fdf7a0291496da7f3ffefbfc5f584d65e09e5e3a9a1ad8107846008df522131"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 32262,
+      "sha256": "df3414df77b6eda6f58420dd9b5932930fa93e1cf793b5f39dca4e2c5874b56e"
+    }
+  ],
+  "unchangedImporterBridgeSources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 30240,
+      "sha256": "b271f8761b92b2cc74b16ea5c8cb0a4b74084385749bbb2e15be3dc78719e849"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "bytes": 37981,
+      "sha256": "d7451a4ecdae1a7a10b960046a588dfafd398369517e1dea74183b9791e9ac20"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "bytes": 3976,
+      "sha256": "038ca6bbef96cd2b1511967dce4daa8c55ba6403a758272132d809be55cab7a8"
+    }
+  ],
+  "rootSourceReview": {
+    "existingOtherPythonASTsExact": true,
+    "originalCodesignCMSMachOArchiveTailExact": true,
+    "oldUserAdmin16DefinitionsExact": true,
+    "budgetsUnchanged": true,
+    "confirmedSourceBlockers": [],
+    "finding": "Owned keychain creation does not add it to the user search list. The documented --keychain scope and published signing source justify testing exact temporary registration; source is not proof of the installed codesign cause.",
+    "lifecycle": "Original order and paths are bounded private metadata. Read twice, append only owned, set cleanup intent before setter, verify exact order, restore only the exact original/appended observed state, then verify absence before successful publication.",
+    "privacy": "The added parent query reads only list paths, not arbitrary items or credentials. Real OS codesign chain construction may query public certificates in its normal search list. Exact owned SHA1 and scoped --keychain still choose the signing identity.",
+    "trustChange": "Main no longer calls User/Admin trust helpers or sudo. The previously introduced global valid-identity0-to1 gate was a fixture hypothesis and is removed; real codesign and independent explicit owned-anchor CMS/MachO verification are unchanged.",
+    "limit": "Public list setter has no CAS. Observed foreign changes refuse restoration; changes between check and setter, host death and lost cleanup can leave uncertainty. Failure remains failure on disposable hosted jobs."
+  },
+  "actualChecks": {
+    "newPortablePassed": 5,
+    "oldUserAdmin16ReusedFromActual3dfRun": true,
+    "SwiftCChanged": false,
+    "MacSecurityExecuted": 0,
+    "codesignExecuted": 0,
+    "expectedNextFinitePortableMethods": 65
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/generate-sdk-owned-package.py.diff",
+      "bytes": 12759,
+      "sha256": "5cde91d317862912f6a105cd5e8423d13b69fc30d5a7088b4322f4364090ec75"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/initial-portable-failed.json",
+      "bytes": 924,
+      "sha256": "46d0033622a680c140fced46908e27a41981c8ec52dc4a448358aa964272cc88"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/initial-portable-failed.log",
+      "bytes": 10001,
+      "sha256": "4ecb616f703437bb88c9506b9c2aea3a70e40d5952d7b4eb3e42ab3ef200f4c0"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/portable.json",
+      "bytes": 922,
+      "sha256": "3d6859235dede5f8f89f2c183ef226d92413fa249f7e198e5f3c0ff20a23df4a"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/portable.log",
+      "bytes": 1208,
+      "sha256": "09dbd3eae3a2299c9eac591a8e6dc4a436b852adff586ab6a351f040b5a6acc8"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/preparation.json",
+      "bytes": 5664,
+      "sha256": "9ae6994fe8f69067d4a812121651e2163dca6b0d85bda286a521fcc7a62bc283"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/research.json",
+      "bytes": 5834,
+      "sha256": "3ac578e334c005ce3ddffd9523af7691bf9cbc98897246acebe80ff3a938a7e7"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/self-review.json",
+      "bytes": 2780,
+      "sha256": "29d2988758f97857b71539a10b3f3e7d866b943a3e65f586014fe1db8a56635e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-owned-searchlist-lifecycle-step/test-producer-user-trust.py.diff",
+      "bytes": 8169,
+      "sha256": "12303add22fd0fb81c890c7d22465a11553a730934c277512d27e267b33b38e4"
+    }
+  ],
+  "automaticSelfRenewalImplemented": false,
+  "AppleAuthorityEstablished": false,
+  "physicalDeviceValidationPerformed": false
+}

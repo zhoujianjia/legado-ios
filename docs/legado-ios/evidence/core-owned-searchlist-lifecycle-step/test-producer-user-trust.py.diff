@@ -1,0 +1,111 @@
+--- a/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py
++++ b/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py
+@@ -323,4 +323,108 @@
+         self.assertFalse(scope.cleanup_intent)
+ 
+ 
++class OwnedTemporaryUserSearchListTests(unittest.TestCase):
++    """Real portable marker children; never security/search-list/codesign execution."""
++    setUp = OwnedTemporaryUserTrustTests.setUp
++    original=('/Users/private-path-canary/Library/Keychains/login.keychain-db',
++              '/Library/Keychains/System.keychain')
++    owned='/private/var/owned-fixture/synthetic.keychain-db'
++
++    def scope(self):
++        with patch.object(producer,'require_owned_hosted_runner'):
++            return producer.OwnedUserSearchListScope(self.owned)
++
++    def route(self,state,commands,*,lost_append=False,lost_restore=False):
++        actual=producer.bounded_child
++        def child(args,input,env,seconds):
++            commands.append(tuple(args))
++            self.assertEqual(args[:4],['security','list-keychains','-d','user'])
++            self.assertIsNone(input)
++            prefix='import json,pathlib,sys;p=pathlib.Path('+repr(str(state))+');'
++            if len(args)==4:
++                action='v=json.loads(p.read_text());sys.stdout.buffer.write("".join(\'    "\'+x+\'"\\n\' for x in v).encode());'
++                code=0
++            else:
++                self.assertEqual(args[4],'-s');values=list(args[5:])
++                action='p.write_text('+repr(json.dumps(values))+');'
++                code=7 if ((lost_append and values==[*self.original,self.owned]) or (lost_restore and values==list(self.original))) else 0
++            # Execute real process effects through the production run() and
++            # its private stream/argv recording boundary; substitute only OS tool.
++            command=[sys.executable,'-c',prefix+action+'sys.stderr.write("private-list-stderr-canary");sys.exit('+str(code)+')']
++            return actual(command,input,env,seconds)
++        return child
++
++    def test_public_cli_path_representation_preserves_order_spaces_backslashes_and_rejects_ambiguity(self):
++        values=('/Users/private space/Library/a\\b.keychain-db','/Library/Keychains/System.keychain')
++        raw=''.join('    "'+x+'"\n' for x in values).encode()
++        self.assertEqual(producer.owned_user_search_list(raw),values)
++        self.assertEqual(producer.owned_user_search_list(b''),())
++        for invalid in [raw+raw,b' <NULL>\n',b'    "relative"\n',b'    "/a/../b"\n',
++                        b'    "/a"b"\n',b'    "/a"\r\n',b'    "//a"\n',b'    "/a/./b"\n',b'\xff']:
++            with self.subTest(invalid=invalid),self.assertRaises((ValueError,UnicodeError)):
++                producer.owned_user_search_list(invalid)
++        with self.assertRaises(ValueError):producer.owned_user_search_list(b'x'*65_537)
++        with self.assertRaises(ValueError):producer.owned_user_search_list(''.join('    "/keychain/'+str(i)+'"\n' for i in range(129)).encode())
++        scope=self.scope()
++        with patch.object(scope,'read',return_value=tuple('/keychain/'+str(i) for i in range(128))),patch.object(scope,'write') as write:
++            with self.assertRaises(producer.ToolFailure):scope.install()
++            write.assert_not_called();self.assertFalse(scope.cleanup_intent)
++
++    def test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list(self):
++        for original in [self.original,()]:
++            with self.subTest(entries=len(original)),tempfile.TemporaryDirectory() as directory:
++                state=Path(directory)/'list.json';state.write_text(json.dumps(original));commands=[];scope=self.scope();out=io.StringIO()
++                with patch.object(producer,'bounded_child',self.route(state,commands)),redirect_stdout(out):
++                    scope.install();self.assertEqual(json.loads(state.read_text()),[*original,self.owned])
++                    scope.cleanup();scope.cleanup()
++                self.assertEqual(json.loads(state.read_text()),list(original))
++                writes=[a[5:] for a in commands if len(a)>4]
++                self.assertEqual(writes,[(*original,self.owned),original])
++                self.assertTrue(scope.registered and scope.restored);self.assertFalse(scope.cleanup_intent)
++                public=out.getvalue()+json.dumps(producer.RECORDS)
++                for secret in [*self.original,self.owned,'private-list-stderr-canary']:
++                    self.assertNotIn(secret,public)
++                self.assertIn('<preserved-user-search-list-and-owned-keychain>',public)
++
++    def test_lost_append_ack_preserves_original_error_and_restores_real_effect(self):
++        with tempfile.TemporaryDirectory() as directory:
++            state=Path(directory)/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope()
++            with patch.object(producer,'bounded_child',self.route(state,commands,lost_append=True)),redirect_stdout(io.StringIO()):
++                with self.assertRaises(producer.ToolFailure) as failure:scope.install()
++                self.assertEqual(failure.exception.code,7);self.assertTrue(scope.cleanup_intent)
++                self.assertEqual(json.loads(state.read_text()),[*self.original,self.owned])
++                self.assertIsNone(producer.finish_owned_user_search_list(scope,failure.exception))
++            self.assertEqual(json.loads(state.read_text()),list(self.original))
++            self.assertTrue(scope.restored);self.assertFalse(scope.registered or scope.cleanup_intent)
++
++    def test_observed_before_append_and_cleanup_conflicts_never_overwrite_foreign_state(self):
++        scope=self.scope();changed=(*self.original,'/private/another.keychain-db')
++        with patch.object(scope,'read',side_effect=[self.original,changed]),patch.object(scope,'write') as write:
++            with self.assertRaises(producer.ToolFailure):scope.install()
++            write.assert_not_called();self.assertFalse(scope.cleanup_intent)
++        with tempfile.TemporaryDirectory() as directory:
++            state=Path(directory)/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope();out=io.StringIO()
++            with patch.object(producer,'bounded_child',self.route(state,commands)),redirect_stdout(out):
++                scope.install();foreign=[*self.original,self.owned,'/private/another.keychain-db'];state.write_text(json.dumps(foreign))
++                primary=producer.ToolFailure('actual target codesign',1)
++                failure=producer.finish_owned_user_search_list(scope,primary)
++            self.assertIsInstance(failure,producer.ToolFailure);self.assertTrue(scope.cleanup_intent)
++            self.assertFalse(scope.restored);self.assertEqual(json.loads(state.read_text()),foreign)
++            self.assertEqual(len([a for a in commands if len(a)>4]),1)
++            record=json.loads(out.getvalue().split('OWNED_USER_SEARCH_LIST_CLEANUP_FAILURE ',1)[1])
++            self.assertTrue(record['originalToolFailureRetained'] and record['temporaryUserSearchListMayRemain'])
++
++    def test_lost_restore_ack_does_not_erase_original_failure_and_finally_confirms_absence(self):
++        with tempfile.TemporaryDirectory() as directory:
++            state=Path(directory)/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope()
++            with patch.object(producer,'bounded_child',self.route(state,commands,lost_restore=True)),redirect_stdout(io.StringIO()):
++                scope.install()
++                with self.assertRaises(producer.ToolFailure) as failure:scope.cleanup()
++                self.assertEqual(failure.exception.code,7);self.assertTrue(scope.cleanup_intent)
++                self.assertEqual(json.loads(state.read_text()),list(self.original))
++                self.assertIsNone(producer.finish_owned_user_search_list(scope,failure.exception))
++            self.assertTrue(scope.restored);self.assertFalse(scope.cleanup_intent)
++            self.assertEqual(len([a for a in commands if len(a)>4]),2)
++
++
+ if __name__=='__main__':unittest.main()

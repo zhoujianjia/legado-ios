@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "authorSelfReview": true,
+  "productionChanged": [
+    "generate-sdk-owned-package.py"
+  ],
+  "oldTopLevelDefinitionsUnchanged": [
+    "ToolFailure",
+    "ToolTimeout",
+    "ToolProcessFailure",
+    "process_issue",
+    "tool_timeout",
+    "terminate_owned_group",
+    "bounded_child",
+    "compile_owned_importer",
+    "public_text",
+    "public_record",
+    "identity_status",
+    "reopened_identity_status",
+    "key_acl_summary",
+    "key_access_status",
+    "prepare_owned_codesign_access",
+    "require_owned_hosted_runner",
+    "owned_user_trust_status",
+    "exact_valid_owned_identity",
+    "OwnedUserTrustScope",
+    "finish_owned_user_trust",
+    "owned_admin_trust_status",
+    "OwnedAdminTrustScope",
+    "finish_owned_admin_trust",
+    "tlv",
+    "integer",
+    "seq",
+    "der",
+    "fingerprint",
+    "create_owned_signing_identity",
+    "export_owned_signing_identity"
+  ],
+  "oldUserAdmin16TestMethodsASTUnchanged": true,
+  "nestedRealCodesignAndProfileCMSFunctionsASTUnchanged": true,
+  "originalCMSMachOArchiveTailByteIdentical": true,
+  "allTimeoutBudgetsASTUnchanged": true,
+  "mainActiveTrustSetRemoveOrSudo": false,
+  "observedConflictBehavior": "Refuse append if second read differs; refuse restore if current is neither exact snapshot nor exact appended list. Never overwrite observed foreign changes.",
+  "privacy": "Original user paths only live in parent memory and private child argv; private stdout/stderr suppressed, list setter argv redacted in RECORDS. Other keychain contents/credentials never read. Metadata counts only are public.",
+  "limits": [
+    "Public search-list setter has no CAS: a same-user writer between check and set can race. This candidate is disposable hosted-Mac-only and never asserts atomic cross-process exclusion.",
+    "SIGKILL/host crash can prevent finally; on observed restore conflict the producer fails and reports possible search-list remainder rather than overwriting foreign state. Owned private keychain deletion is still attempted.",
+    "No Mac security/codesign/SDK execution on this local machine; actual root-controlled finite Mac run is required. No new fallback/adhoc signing or weaker CMS/profile/MachO gate."
+  ],
+  "pythonASTParsed": 2,
+  "newPortableMethods": 5,
+  "macOSSecurityExecuted": 0,
+  "SwiftGrammarRerun": 0,
+  "SDKExecuted": 0,
+  "portable": {
+    "path": ".build/renewal-discovery/owned-searchlist-lifecycle-step/portable.json",
+    "bytes": 922,
+    "sha256": "3d6859235dede5f8f89f2c183ef226d92413fa249f7e198e5f3c0ff20a23df4a"
+  },
+  "retainedFailure": {
+    "path": ".build/renewal-discovery/owned-searchlist-lifecycle-step/initial-portable-failed.json",
+    "bytes": 924,
+    "sha256": "46d0033622a680c140fced46908e27a41981c8ec52dc4a448358aa964272cc88"
+  }
+}

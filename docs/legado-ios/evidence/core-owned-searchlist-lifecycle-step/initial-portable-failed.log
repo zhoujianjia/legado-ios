@@ -1,0 +1,101 @@
+test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list (__main__.OwnedTemporaryUserSearchListTests.test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list) ... 
+  test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list (__main__.OwnedTemporaryUserSearchListTests.test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list) (entries=2) ... ERROR
+  test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list (__main__.OwnedTemporaryUserSearchListTests.test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list) (entries=0) ... ERROR
+test_lost_append_ack_preserves_original_error_and_restores_real_effect (__main__.OwnedTemporaryUserSearchListTests.test_lost_append_ack_preserves_original_error_and_restores_real_effect) ... ERROR
+test_lost_restore_ack_does_not_erase_original_failure_and_finally_confirms_absence (__main__.OwnedTemporaryUserSearchListTests.test_lost_restore_ack_does_not_erase_original_failure_and_finally_confirms_absence) ... ERROR
+test_observed_before_append_and_cleanup_conflicts_never_overwrite_foreign_state (__main__.OwnedTemporaryUserSearchListTests.test_observed_before_append_and_cleanup_conflicts_never_overwrite_foreign_state) ... ERROR
+test_public_cli_path_representation_preserves_order_spaces_backslashes_and_rejects_ambiguity (__main__.OwnedTemporaryUserSearchListTests.test_public_cli_path_representation_preserves_order_spaces_backslashes_and_rejects_ambiguity) ... ok
+
+======================================================================
+ERROR: test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list (__main__.OwnedTemporaryUserSearchListTests.test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list) (entries=2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\test-producer-user-trust.py", line 373, in test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list
+    scope.install();self.assertEqual(json.loads(state.read_text()),[*original,self.owned])
+    ^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 557, in install
+    self.original=self.read()
+                  ^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 550, in read
+    return owned_user_search_list(run(['security','list-keychains','-d','user'],private=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 529, in owned_user_search_list
+    if match is None:raise ValueError('Ambiguous owned search list representation')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Ambiguous owned search list representation
+
+======================================================================
+ERROR: test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list (__main__.OwnedTemporaryUserSearchListTests.test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list) (entries=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\test-producer-user-trust.py", line 373, in test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list
+    scope.install();self.assertEqual(json.loads(state.read_text()),[*original,self.owned])
+    ^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 566, in install
+    if self.read()!=self.expected:raise ToolFailure('owned search list append not exact',-1)
+       ^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 550, in read
+    return owned_user_search_list(run(['security','list-keychains','-d','user'],private=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 529, in owned_user_search_list
+    if match is None:raise ValueError('Ambiguous owned search list representation')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Ambiguous owned search list representation
+
+======================================================================
+ERROR: test_lost_append_ack_preserves_original_error_and_restores_real_effect (__main__.OwnedTemporaryUserSearchListTests.test_lost_append_ack_preserves_original_error_and_restores_real_effect)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\test-producer-user-trust.py", line 388, in test_lost_append_ack_preserves_original_error_and_restores_real_effect
+    with self.assertRaises(producer.ToolFailure) as failure:scope.install()
+                                                            ^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 557, in install
+    self.original=self.read()
+                  ^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 550, in read
+    return owned_user_search_list(run(['security','list-keychains','-d','user'],private=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 529, in owned_user_search_list
+    if match is None:raise ValueError('Ambiguous owned search list representation')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Ambiguous owned search list representation
+
+======================================================================
+ERROR: test_lost_restore_ack_does_not_erase_original_failure_and_finally_confirms_absence (__main__.OwnedTemporaryUserSearchListTests.test_lost_restore_ack_does_not_erase_original_failure_and_finally_confirms_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\test-producer-user-trust.py", line 416, in test_lost_restore_ack_does_not_erase_original_failure_and_finally_confirms_absence
+    scope.install()
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 557, in install
+    self.original=self.read()
+                  ^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 550, in read
+    return owned_user_search_list(run(['security','list-keychains','-d','user'],private=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 529, in owned_user_search_list
+    if match is None:raise ValueError('Ambiguous owned search list representation')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Ambiguous owned search list representation
+
+======================================================================
+ERROR: test_observed_before_append_and_cleanup_conflicts_never_overwrite_foreign_state (__main__.OwnedTemporaryUserSearchListTests.test_observed_before_append_and_cleanup_conflicts_never_overwrite_foreign_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\test-producer-user-trust.py", line 403, in test_observed_before_append_and_cleanup_conflicts_never_overwrite_foreign_state
+    scope.install();foreign=[*self.original,self.owned,'/private/another.keychain-db'];state.write_text(json.dumps(foreign))
+    ^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 557, in install
+    self.original=self.read()
+                  ^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 550, in read
+    return owned_user_search_list(run(['security','list-keychains','-d','user'],private=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\renewal-discovery\owned-searchlist-lifecycle-step\work\generate-sdk-owned-package.py", line 529, in owned_user_search_list
+    if match is None:raise ValueError('Ambiguous owned search list representation')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Ambiguous owned search list representation
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.372s
+
+FAILED (errors=5)

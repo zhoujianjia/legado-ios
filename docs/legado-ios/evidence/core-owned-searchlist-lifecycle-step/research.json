@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "primarySources": [
+    {
+      "name": "StorageManager.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/StorageManager.cpp",
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/StorageManager.cpp",
+      "bytes": 87183,
+      "sha256": "5152c7d7931d4b41cccaee2d27f496a3164c1c3c64d4dc5241ad344bfe77239f",
+      "lines": [
+        [
+          119,
+          134
+        ],
+        [
+          507,
+          532
+        ]
+      ]
+    },
+    {
+      "name": "IdentityCursor.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/IdentityCursor.cpp",
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/IdentityCursor.cpp",
+      "bytes": 11965,
+      "sha256": "4120f4c67b5a4005e4f9b6733ad5d8b08068fdad853795797ba174663e5f1f6c",
+      "lines": [
+        [
+          192,
+          206
+        ]
+      ]
+    },
+    {
+      "name": "signerutils.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/signerutils.cpp",
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/signerutils.cpp",
+      "bytes": 14378,
+      "sha256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699",
+      "lines": [
+        [
+          367,
+          397
+        ]
+      ]
+    },
+    {
+      "name": "TrustSettings.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/TrustSettings.cpp",
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/TrustSettings.cpp",
+      "bytes": 57320,
+      "sha256": "5eba3124dc03f49a7e00dc3ddd530ef369e71b327344a79e5182440dabb58eab",
+      "lines": [
+        [
+          430,
+          443
+        ],
+        [
+          625,
+          675
+        ]
+      ]
+    },
+    {
+      "name": "trusted_cert_add.c",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/trusted_cert_add.c",
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/trusted_cert_add.c",
+      "bytes": 17290,
+      "sha256": "a97f4925c44880cf080115aa634c6e74a6ee3a2497d980fa9da9afdc93984898",
+      "lines": [
+        [
+          575,
+          604
+        ]
+      ]
+    },
+    {
+      "name": "cs_utils.cpp",
+      "url": "https://github.com/apple-oss-distributions/security_systemkeychain/blob/2b4c65b1074521e9c1dd2c8dc7fbf45dd775ec70/src/cs_utils.cpp",
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/cs_utils.cpp",
+      "bytes": 21388,
+      "sha256": "a0ebc6f31fda06331fa336384d97c811c7af8390da47f7181c293d843bba0ebb",
+      "lines": [
+        [
+          246,
+          250
+        ]
+      ]
+    },
+    {
+      "name": "codesign.1",
+      "url": "https://github.com/apple-oss-distributions/security_systemkeychain/blob/21f3ff10bb50f0e1404042b38c1b81564204f322/src/codesign.1",
+      "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/codesign.1",
+      "bytes": 27880,
+      "sha256": "417de91937fa4114955e6a95bd12179fee28661a0407825b7f38d06b25f1c3a5",
+      "lines": [
+        [
+          224,
+          234
+        ],
+        [
+          385,
+          400
+        ]
+      ]
+    },
+    {
+      "path": "primary/keychain_list.c",
+      "bytes": 12122,
+      "sha256": "6d60f6830ed246a2c25cba0fbbc04b02d2e6acda9a4bfda3566fd5d0a7f8e8a9",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/keychain_list.c",
+      "lines": [
+        [
+          48,
+          58
+        ],
+        [
+          197,
+          260
+        ]
+      ]
+    }
+  ],
+  "actualPreviousResult": {
+    "path": "docs/legado-ios/core-owned-sdk-producer-3df5243-result.json",
+    "bytes": 15566,
+    "sha256": "b222fc3a0e63339bc71c0b5192f693e5f82d0994df8c940b29dde951650706cb"
+  },
+  "facts": [
+    "3df5243 terminal failure: Admin Set/readback and ordinary-user valid identity 0→1 succeeded, first real framework codesign still item-not-found; root cleanup child exited124 without Remove ACK or absence proof; owned keychain deletion exited0. No repeated cloud query.",
+    "Apple codesign manual requires signing identity on calling user search list; --keychain restricts identity lookup but not certificate-chain search. StorageManager deliberately does not register newly-created private keychains; login/System are special cases.",
+    "Public Apple codesign source asks policy-qualified identity search with returnOnlyValidIdentities=false. IdentityCursor returns such policy-qualified identity before full trusted-only evaluation; signer chain preflight treats trust evaluation failure as nonfatal. This supports a candidate, not proof of the actual item-not-found throw site or a successful Mac signature.",
+    "TrustSettings whole-domain serialization is null when removing its final entry. The root-add authorization exception requires non-null nonempty serialization; Remove may therefore request a different admin authentication right. No actual UI or exact blocking API was measured; replacing Remove with security remove-trusted-cert calls the same public API.",
+    "Root explicitly accepted removing our global valid0→1 fixture assumption and all active trust mutation. Original explicit owned-anchor policy/CMS verification and real codesign/MachO/package gates remain. Existing prior cleanup failure remains unresolved historical evidence, not rewritten as removed."
+  ]
+}

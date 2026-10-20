@@ -1,0 +1,177 @@
+--- a/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
++++ b/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
+@@ -3,7 +3,7 @@
+ Keychain; published outputs contain public code/certificates/profiles only.
+ The JSON output is an XCTest resource, not a source file mutation.
+ """
+-from pathlib import Path
++from pathlib import Path, PurePosixPath
+ from datetime import datetime,timezone,timedelta
+ import argparse, base64, hashlib, io, json, os, plistlib, re, secrets, shutil, struct, subprocess, sys, tempfile, zipfile, math, signal, time
+ HERE=Path(__file__).resolve().parent
+@@ -517,6 +517,83 @@
+     return None
+ 
+ 
++def owned_user_search_list(raw):
++    # security's public list-keychains CLI prints one quoted path per line
++    # without shell escaping. Preserve backslashes literally; refuse paths its
++    # representation cannot express unambiguously. Never inspect other items.
++    if len(raw)>65_536:raise ValueError('Owned search list byte budget')
++    text=raw.decode('utf-8','strict');paths=[]
++    for line in text.split('\n'):
++        if not line:continue
++        match=re.fullmatch(r'    "([^"\x00-\x1f\x7f]+)"',line)
++        if match is None:raise ValueError('Ambiguous owned search list representation')
++        path=match.group(1)
++        if (not path.startswith('/') or path.startswith('//') or path=='/'
++                or str(PurePosixPath(path))!=path or '..' in PurePosixPath(path).parts):
++            raise ValueError('Noncanonical owned search list path')
++        paths.append(path)
++    if len(paths)>128 or len(paths)!=len(set(paths)):
++        raise ValueError('Duplicate or oversized owned search list')
++    return tuple(paths)
++
++class OwnedUserSearchListScope:
++    def __init__(self, keychain):
++        require_owned_hosted_runner()
++        self.owned=str(keychain)
++        if owned_user_search_list(('    "'+self.owned+'"\n').encode())!=(self.owned,):
++            raise ValueError('Invalid owned keychain path')
++        self.original=None;self.expected=None;self.cleanup_intent=False
++        self.registered=False;self.restored=False
++    def read(self, *, cleanup=False):
++        # These paths are private metadata. They stay only in parent memory;
++        # stdout/stderr and set argv are suppressed by the existing runner.
++        return owned_user_search_list(run(['security','list-keychains','-d','user'],private=True,
++            cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None))
++    def write(self, paths, *, cleanup=False):
++        run(['security','list-keychains','-d','user','-s',*paths],private=True,
++            cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
++    def install(self):
++        if self.original is not None:raise ToolFailure('owned search list already admitted',-1)
++        self.original=self.read()
++        if self.owned in self.original:raise ToolFailure('owned keychain already registered',-1)
++        if len(self.original)>=128:raise ToolFailure('owned search list has no append capacity',-1)
++        self.expected=(*self.original,self.owned)
++        # The public setter has no compare-and-swap API. Refuse every observed
++        # conflict before mutation and on readback; this is not an atomic lock
++        # against another same-user process writing between these two calls.
++        if self.read()!=self.original:raise ToolFailure('owned search list changed before append',-1)
++        self.cleanup_intent=True  # Publication may complete before a lost ACK.
++        self.write(self.expected)
++        if self.read()!=self.expected:raise ToolFailure('owned search list append not exact',-1)
++        self.registered=True
++        public_record('OWNED_USER_SEARCH_LIST_REGISTERED',{'schemaVersion':1,'status':'passed',
++            'originalEntryCount':len(self.original),'ownedKeychainEntriesAdded':1,
++            'exactOrderReadbackVerified':True,'privatePathsPublished':False,
++            'userAdminSystemTrustChanged':False,'codesignExecutionVerified':False})
++    def cleanup(self):
++        if not self.cleanup_intent:return
++        current=self.read(cleanup=True)
++        if current!=self.original:
++            if current!=self.expected:raise ToolFailure('owned search list restore conflict',-1)
++            self.write(self.original,cleanup=True)
++        if self.read(cleanup=True)!=self.original:raise ToolFailure('owned search list restore not exact',-1)
++        self.restored=True;self.cleanup_intent=False
++        public_record('OWNED_USER_SEARCH_LIST_RESTORED',{'schemaVersion':1,'status':'passed',
++            'originalEntryCount':len(self.original),'exactOrderReadbackVerified':True,
++            'ownedKeychainAbsent':True,'privatePathsPublished':False,'userAdminSystemTrustChanged':False})
++
++def finish_owned_user_search_list(scope, primary_error):
++    if scope is None or not scope.cleanup_intent:return None
++    try:scope.cleanup()
++    except BaseException as error:
++        public_record('OWNED_USER_SEARCH_LIST_CLEANUP_FAILURE',{'schemaVersion':1,'status':'failed',
++            'exitCode':error.code if isinstance(error,ToolFailure) else None,
++            'originalToolFailureRetained':primary_error is not None,'temporaryUserSearchListMayRemain':True,
++            'userAdminSystemTrustChanged':False,'privatePathsPublished':False})
++        return error
++    return None
++
++
+ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=False,public_output_label=None,timeout_seconds=None,cleanup=False):
+     if private and (public_log is not None or public_output_label is not None):
+         raise ValueError('Private tool streams cannot become public logs')
+@@ -526,6 +603,9 @@
+     redacted=[public_text(value.encode()) for value in redacted]
+     if redacted[0]=='security' and 'set-key-partition-list' in redacted:
+         redacted[redacted.index('-k')+1]='<random-owned-password>'
++    if redacted[:5]==['security','list-keychains','-d','user','-s']:
++        if not private:raise ValueError('Preserved user search list metadata requires private execution')
++        redacted=redacted[:5]+['<preserved-user-search-list-and-owned-keychain>']
+     seconds=tool_timeout(args,timeout_seconds,cleanup)
+     admin_root_deadline=None;admin_absolute_ns=None
+     if public_status in OWNED_ADMIN_TRUST_OPERATIONS and str(args[0])=='/usr/bin/sudo':
+@@ -674,7 +754,7 @@
+     if sys.platform!='darwin':raise SystemExit('Requires macOS/Xcode; no SDK execution was attempted.')
+     require_owned_hosted_runner()
+     # An outer producer deadline may request graceful termination. Let finally
+-    # clean only this producer's own Keychain; SIGKILL remains uncatchable.
++    # restore its user search list and delete its owned Keychain; SIGKILL remains uncatchable.
+     def terminate_producer(signum, frame):raise SystemExit(128+signum)
+     signal.signal(signal.SIGTERM,terminate_producer)
+     global OPENSSL,PRODUCER_DEADLINE
+@@ -705,7 +785,7 @@
+         keychain_password=secrets.token_hex(24);p12_password=secrets.token_hex(24)
+         PRIVATE_LITERALS.extend([keychain_password,p12_password])
+         primary_error=None
+-        trust_scope=None
++        search_scope=None
+         try:
+             # Every key PEM is captured from stdout and only fed to a child's
+             # stdin. No private_bytes file, P12 file or account credential.
+@@ -723,7 +803,7 @@
+             public_record('OWNED_SIGNING_IDENTITY_SHAPE',{'schemaVersion':3,
+                 'shape':'self-signed-code-signing-identity','leafSHA256':fingerprint(leaf),
+                 'explicitCodeAndProfileAnchorSHA256':fingerprint(root),
+-                'temporaryAdminCodeSignTrustPlanned':True,'userSystemTrustOrSearchListChanged':False,'sudoNoninteractivePlanned':True,'codesignExecutionVerified':False})
++                'temporaryUserSearchListRegistrationPlanned':True,'userAdminSystemTrustChangePlanned':False,'sudoNoninteractivePlanned':False,'codesignExecutionVerified':False})
+             # No duplicate -certfile copy: the self-signed leaf is already the
+             # complete one-certificate identity. PKCS12 and keys stay in memory.
+             p12=export_owned_signing_identity(signing_key,leaf_pem,p12_password)
+@@ -751,8 +831,11 @@
+             # cross-process identity lookup or system/global trust.
+             run(['security','verify-cert','-c',out/'leaf.cert.der','-c',root_der,'-r',root_der,
+                  '-p','codeSign','-L','-N','-q'],public_output_label='OWNED_EXPLICIT_ANCHOR_CODE_SIGN_POLICY')
+-            trust_scope=OwnedAdminTrustScope(importer,request,keychain)
+-            trust_scope.install()
++            # --keychain restricts identity lookup, not later certificate-chain
++            # construction. codesign.1 requires its identity on the user list.
++            # This sole path makes no User/Admin/System trust-settings mutation.
++            search_scope=OwnedUserSearchListScope(keychain)
++            search_scope.install()
+             del request,p12
+             root_key_memory=signing_key
+             del signing_key
+@@ -826,17 +909,17 @@
+             (out/'owned-sdk-package.ipa').write_bytes(raw)
+             resource={'schema':1,'archive':base64.b64encode(raw).decode(),'anchor':base64.b64encode(root).decode(),'verificationEpochSeconds':int(at.timestamp()),'archiveSHA256':fingerprint(raw),'actualSDKProducedMachOs':parsed}
+             (out/'owned-sdk-package.json').write_text(json.dumps(resource,separators=(',',':'))+'\n')
+-            trust_scope.cleanup()
++            search_scope.cleanup()
+             run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
+             keychain=None
+-            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'temporaryAdminCodeSignTrustInstalled':trust_scope.installed,'temporaryAdminCodeSignTrustRemovedAndAbsent':trust_scope.cleaned,'userSystemTrustOrSearchListChanged':False,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
++            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'temporaryUserSearchListRegistered':search_scope.registered,'temporaryUserSearchListRestoredAndOwnedAbsent':search_scope.restored,'userAdminSystemTrustChanged':False,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
+             record['publicOutputs']=[{'path':p.name,'bytes':p.stat().st_size,'sha256':fingerprint(p.read_bytes())} for p in sorted(out.iterdir()) if p.is_file()]
+             (out/'sdk-produced-fixture-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+         except BaseException as error:
+             primary_error=error
+             raise
+         finally:
+-            trust_cleanup_error=finish_owned_admin_trust(trust_scope,primary_error)
++            search_cleanup_error=finish_owned_user_search_list(search_scope,primary_error)
+             if keychain is not None and keychain.exists():
+                 try:
+                     run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
+@@ -844,7 +927,7 @@
+                 except Exception as cleanup_error:
+                     public_record('OWNED_KEYCHAIN_CLEANUP',{'status':'failed','exitCode':cleanup_error.code if isinstance(cleanup_error,ToolFailure) else None,
+                         'originalToolFailureRetained':primary_error is not None,'privateCommandPublished':False})
+-                    if primary_error is None and trust_cleanup_error is None:raise
+-            if trust_cleanup_error is not None and primary_error is None:raise trust_cleanup_error
++                    if primary_error is None and search_cleanup_error is None:raise
++            if search_cleanup_error is not None and primary_error is None:raise search_cleanup_error
+     print('Owned SDK main/extensions/framework generated and original CMS verified; no private material published.')
+ if __name__=='__main__':main()
