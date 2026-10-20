@@ -1,0 +1,117 @@
+{
+  "observed": {
+    "immutableTag": "reader-renewal-9105b46",
+    "rawBinding": [
+      {
+        "source": ".build\\sdk-evidence\\9105b46\\native\\reader-renewal-probe\\handoff-producer.log",
+        "bytes": 2319,
+        "sha256": "76f5d9423ec649bd5c8a43145988a4803571562d8cf72d3304e9e3a299077136"
+      },
+      {
+        "source": ".build\\sdk-evidence\\9105b46\\native\\reader-renewal-probe\\handoff-producer.log.stderr.log",
+        "bytes": 927,
+        "sha256": "bab6b3d2e7ecd09f02e43694ad7155c7f784fe8eeeb42b1d53c94a3dd2733dd0"
+      },
+      {
+        "source": ".build\\sdk-evidence\\9105b46\\native\\reader-renewal-probe\\handoff-phase-producer.json",
+        "bytes": 3140,
+        "sha256": "b5425db58ff7b7210736d21fef623ac6233b87f156c057544ff85c35a81d70bc"
+      }
+    ],
+    "facts": [
+      "Real macOS importer returned complete: exactly one imported and stored identity, exact public leaf/root hashes, real private-key sign/verify passed. codesignACLExecutionVerified was explicitly false.",
+      "security find-identity -p codesigning found the same full SHA1 later given to codesign; matching count 1, valid count 0, CSSMERR_TP_NOT_TRUSTED.",
+      "security verify-cert with explicit owned root and codeSign policy, local/no-network flags, returned 0. This is explicit-anchor policy verification, not global/system trust.",
+      "First real framework codesign returned 1 with the specified-item-not-found Keychain error. Public failure command/stderr and successful owned Keychain cleanup were retained.",
+      "No native tests executed in that SDK run because another real test compile failure also occurred. Windows tests cannot override this result."
+    ]
+  },
+  "primary": [
+    {
+      "url": "https://developer.apple.com/documentation/technotes/tn3161-inside-code-signing-certificates",
+      "contract": "codesign accepts a full certificate SHA1 and --keychain restricts signing-identity search to that Keychain; later chain handling is separate.",
+      "condition": "Current official explanation, not proof of which internal branch emitted the installed codesign error."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_keychain/lib/SecIdentitySearch.h",
+      "lines": "55-75 (one based)",
+      "contract": "Public deprecated identity search accepts an explicit Keychain and CSSM signing-use filter; enumeration ends at errSecItemNotFound.",
+      "condition": "Public macOS API/header, deprecated since 10.7. Windows does not prove actual Xcode 26 Swift import/typecheck."
+    },
+    {
+      "url": "https://developer.apple.com/documentation/security/seckeychaingetstatus(_:_:)",
+      "contract": "Reports unlock/read/write status of a specific Keychain. That status can change; checking it does not grant codesign authority.",
+      "condition": "We read before explicit unlock and after it, with interaction disabled and only the owned random password passed via private stdin."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/security_systemkeychain/main/src/cs_utils.cpp",
+      "lines": "182-315 (one based)",
+      "contract": "Historical codesign source uses policy-constrained legacy identity search and compares the full SHA1; search is not restricted to valid-only identities.",
+      "condition": "Historical source is not the installed modern codesign. Our public no-policy legacy sign-use probe is an additional boundary, not an assertion of identical CLI internals."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/signerutils.cpp",
+      "lines": "341-370 (one based)",
+      "contract": "Published current signing context attempts chain construction, logging SecTrust evaluation failure as not fatal before reading the resulting chain.",
+      "condition": "Published source does not establish installed binary version/path. valid-only count zero is not sufficient to attribute specified-item-not-found to trust."
+    }
+  ],
+  "change": [
+    "Same importer executable gains a private-stdin reopenIdentity operation. It opens the already-created owned Keychain, records actual pre-unlock status, explicitly unlocks only it, and checks real resulting read/write/unlock state.",
+    "Fresh process really enumerates the expected sole public leaf via legacy signing-use search, then reuses the same bounded SecItem stored identity/root/leaf/public-key matching and real private-key challenge signature verification as import.",
+    "Generator invokes this fresh process after partition-list setup and before the original codesign command. No PKCS12/password for PKCS12 is supplied to the reopen operation.",
+    "Typed schema2 exposes only operation, finite stage/status/OSStatus, exact counts, public certificate hashes and boolean observations. All arbitrary private child stdout/stderr remains suppressed.",
+    "Original import schema1, original codesign identity/arguments/requirements, certificate model, scoped ACL/partition list, timeout/drain/cleanup, real SDK binaries and independent detached-CMS OpenSSL checks remain in force."
+  ],
+  "notEstablished": [
+    "Original codesign root cause remains unproven. Explicit unlock may correct a lock issue, but the previous log does not measure that lock state.",
+    "Fresh-process direct and legacy identity searches do not prove the installed codesign exact lookup, later chain construction, ACL execution, or successful signature creation.",
+    "No macOS compiler/importer/Keychain/codesign/native SDK acceptance has executed for this delta here. Portable reporter success is not real producer success."
+  ],
+  "finiteMacCheckProposal": {
+    "status": "Proposal only; no workflow or cloud task created",
+    "entry": "Explicit independent producer-only workflow scope/job after root review; do not reuse the native result gate as if a subset passed",
+    "pipeline": "Existing same-source preparation/hash -> same real generator (outer 600s/internal 300s/cleanup 10s), whose successful complete path contains actual detached-CMS OpenSSL verification -> existing stage-sdk-fixture source hash/structure/allowlist checks -> same-source after hash",
+    "successMeans": "Owned producer and fixture structural/hash staging only. Any actual OpenSSL CMS verification is a separate generator fact, not Swift CMS execution. No native count/result, no SPM rerun, no 253/255-method acceptance.",
+    "failureMeans": "Any original producer, cleanup, timeout, or stage failure remains a failing check with exact public raw stderr/exit. No fallback resource, ad-hoc signature or skip."
+  },
+  "sourceArtifacts": {
+    "retrievedAtUTC": "2026-10-20T07:18:24.393270+00:00",
+    "sources": [
+      {
+        "path": "current-signerutils.cpp",
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/signerutils.cpp",
+        "bytes": 14378,
+        "sha256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699"
+      },
+      {
+        "path": "historical-cs_utils.cpp",
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/security_systemkeychain/main/src/cs_utils.cpp",
+        "bytes": 21388,
+        "sha256": "a0ebc6f31fda06331fa336384d97c811c7af8390da47f7181c293d843bba0ebb"
+      },
+      {
+        "path": "public-SecIdentitySearch.h",
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_keychain/lib/SecIdentitySearch.h",
+        "bytes": 4749,
+        "sha256": "6e864e7a1bbd3d5e18982d01135dd3bf7c23998b49a0ed6de81568bc4e64a8b9"
+      },
+      {
+        "path": "public-SecKeychain.h",
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_keychain/lib/SecKeychain.h",
+        "bytes": 43995,
+        "sha256": "a642513ab6d971a702b169b185ba27b6562c401546d4db0b901101b47ef2a308"
+      },
+      {
+        "path": "secidentitysearchcreate-doc.json",
+        "url": "https://developer.apple.com/tutorials/data/documentation/security/secidentitysearchcreate.json",
+        "bytes": 10274,
+        "sha256": "1cdf8b579dbfcea699089426fdb5361b7fcbe145c742cdea77ed91e33b746d64"
+      }
+    ]
+  },
+  "canonicalMutations": 0,
+  "gitMutations": 0,
+  "cloudQueries": 0,
+  "sdkExecutedHere": 0
+}

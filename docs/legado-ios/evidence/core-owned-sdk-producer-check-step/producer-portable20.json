@@ -1,0 +1,144 @@
+{
+  "checkedAtUTC": "2026-10-20T07:21:35.841874+00:00",
+  "scope": "Portable real child/report and timeout guards only; no Swift/macOS Keychain/codesign/SDK executed.",
+  "sourcesBeforeAndAfterEqual": true,
+  "sources": [
+    {
+      "path": "work\\extension.c",
+      "bytes": 186,
+      "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+    },
+    {
+      "path": "work\\framework.c",
+      "bytes": 156,
+      "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+    },
+    {
+      "path": "work\\generate-sdk-owned-package.py",
+      "bytes": 34037,
+      "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1"
+    },
+    {
+      "path": "work\\ImportOwnedIdentity.swift",
+      "bytes": 13690,
+      "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205"
+    },
+    {
+      "path": "work\\main.c",
+      "bytes": 180,
+      "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+    },
+    {
+      "path": "work\\test-producer-diagnostics.py",
+      "bytes": 6262,
+      "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+    },
+    {
+      "path": "work\\test-producer-keychain-reopen.py",
+      "bytes": 5655,
+      "sha256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41"
+    },
+    {
+      "path": "work\\test-producer-timeouts.py",
+      "bytes": 11655,
+      "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+    }
+  ],
+  "elapsedSeconds": 4.467999999993481,
+  "testsRun": 20,
+  "uniqueLeaves": 20,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "leaves": [
+    {
+      "id": "owned_gate_test_0.ProducerDiagnosticsTests.test_actual_private_child_failure_publishes_no_stream_or_command",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_0.ProducerDiagnosticsTests.test_actual_public_child_failure_reaches_existing_uploaded_stdout",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_0.ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_0.ProducerDiagnosticsTests.test_private_public_log_request_is_rejected_before_child_executes",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_0.ProducerDiagnosticsTests.test_public_capture_is_bounded_and_redacts_secrets_before_truncation",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_0.ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_actual_public_timeout_terminates_child_and_retains_failure_log",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_actual_remaining_producer_budget_caps_a_longer_tool_budget",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_cleanup_has_a_separate_real_child_budget_after_producer_expiry",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_exhausted_producer_deadline_does_not_start_another_tool",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_1.ProducerToolTimeoutTests.test_private_spawn_failure_has_no_argv_or_raw_exception_chain",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_2.OwnedKeychainReopenReportTests.test_actual_child_failure_cannot_be_accepted_from_a_passed_report",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_2.OwnedKeychainReopenReportTests.test_actual_malformed_private_report_suppresses_all_unknown_data",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_2.OwnedKeychainReopenReportTests.test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_2.OwnedKeychainReopenReportTests.test_actual_unlock_failure_retains_only_the_typed_osstatus",
+      "outcome": "passed"
+    },
+    {
+      "id": "owned_gate_test_2.OwnedKeychainReopenReportTests.test_reopen_success_rejects_missing_extra_ambiguous_and_false_proof_fields",
+      "outcome": "passed"
+    }
+  ],
+  "passed": true,
+  "rawLog": {
+    "path": "portable-v1\\unittest.log",
+    "bytes": 3845,
+    "sha256": "37ec60b4245a2b12142a8263eeb32cd9120d5b0d11c45dfe46839e99ced7bd1f"
+  },
+  "sdkExecuted": 0,
+  "macOSKeychainExecuted": 0,
+  "codesignExecuted": 0
+}

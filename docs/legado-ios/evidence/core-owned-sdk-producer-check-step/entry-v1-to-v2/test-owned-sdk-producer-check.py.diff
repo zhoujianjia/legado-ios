@@ -1,0 +1,18 @@
+--- v1/test-owned-sdk-producer-check.py
++++ v2/test-owned-sdk-producer-check.py
+@@ -95,6 +95,15 @@
+             entry['sha256']='b'*64
+             with self.assertRaises(ValueError): check.stage_public(self.probe,self.work,produced,changed)
+             self.assertFalse((self.work/'sdk-produced-public').exists())
++            original = self.probe._verify_sdk_public
++            def reject_copied_bytes(directory, inputs):
++                if directory.name.endswith('-public.pending'):
++                    raise ValueError('portable post-copy verification rejection')
++                return original(directory,inputs)
++            with patch.object(self.probe,'_verify_sdk_public',side_effect=reject_copied_bytes), self.assertRaises(ValueError):
++                check.stage_public(self.probe,self.work,produced,source['sourceInputs'])
++            self.assertFalse((self.work/'sdk-produced-public').exists())
++            self.assertTrue((self.work.parent/(self.work.name+'-public.pending')).is_dir())
+ 
+     def test_actual_public_child_nonzero_and_logs_remain_failure(self):
+         with self.context():

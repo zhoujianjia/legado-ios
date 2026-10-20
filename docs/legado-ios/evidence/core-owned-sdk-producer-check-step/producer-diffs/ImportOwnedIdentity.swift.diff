@@ -1,0 +1,131 @@
+--- 9105b46/ImportOwnedIdentity.swift
++++ future/ImportOwnedIdentity.swift
+@@ -6,6 +6,7 @@
+ // macOS generator tool only, never linked into the iOS app. Private PKCS12 and
+ // random passwords arrive only through stdin and never become a file or output.
+ struct Input: Decodable {
++    let operation: Operation?
+     let path: String
+     let keychainPassword: String
+     let p12Password: String
+@@ -13,9 +14,12 @@
+     let leafCertificate: Data
+     let rootCertificate: Data
+ }
++enum Operation: String, Decodable { case importIdentity, reopenIdentity }
++var activeOperation = Operation.importIdentity
+ enum Stage: String {
+     case readInput, createKeychain, createTrustedApplications, createACL, importPKCS12
+     case findImportedIdentity, findStoredIdentity, matchLeaf, findRoot, privateKey, signChallenge, verifyChallenge, complete
++    case openKeychain, unlockKeychain, keychainStatus, legacyIdentitySearch
+ }
+ struct Failure: Error { let stage: Stage; let status: OSStatus }
+ func keyFailure(_ stage: Stage, _ error: Unmanaged<CFError>?, fallback: OSStatus) -> Failure {
+@@ -43,12 +47,40 @@
+     guard let bytes = try inputHandle.read(upToCount: 1_048_577), bytes.count <= 1_048_576,
+           (try inputHandle.read(upToCount: 1) ?? Data()).isEmpty else { throw Failure(stage: .readInput, status: errSecParam) }
+     let input = try JSONDecoder().decode(Input.self, from: bytes)
+-    guard !input.p12.isEmpty, input.p12.count <= 524_288,
++    activeOperation = input.operation ?? .importIdentity
++    guard (activeOperation == .reopenIdentity ? input.p12.isEmpty && input.p12Password.isEmpty : !input.p12.isEmpty && (1...256).contains(input.p12Password.utf8.count)),
++          input.p12.count <= 524_288,
+           (1...65_536).contains(input.leafCertificate.count), (1...65_536).contains(input.rootCertificate.count),
+-          (1...256).contains(input.keychainPassword.utf8.count), (1...256).contains(input.p12Password.utf8.count),
++          (1...256).contains(input.keychainPassword.utf8.count),
+           let expectedLeaf = SecCertificateCreateWithData(nil, input.leafCertificate as CFData),
+           SecCertificateCreateWithData(nil, input.rootCertificate as CFData) != nil else {
+         throw Failure(stage: .readInput, status: errSecParam)
++    }
++    if activeOperation == .reopenIdentity {
++        // Run in a fresh process after import/partition changes. Open only the
++        // caller-owned Keychain; neither default nor global search list changes.
++        var reopened: SecKeychain?
++        try require(SecKeychainOpen(input.path, &reopened), at: .openKeychain)
++        guard let reopened else { throw Failure(stage: .openKeychain, status: errSecInvalidKeychain) }
++        var initialStatus: SecKeychainStatus = 0
++        try require(SecKeychainGetStatus(reopened, &initialStatus), at: .keychainStatus)
++        let initiallyUnlocked = initialStatus & SecKeychainStatus(kSecUnlockStateStatus) != 0
++        try input.keychainPassword.withCString { password in
++            try require(SecKeychainUnlock(reopened, UInt32(input.keychainPassword.utf8.count), password, true), at: .unlockKeychain)
++        }
++        var keychainStatus: SecKeychainStatus = 0
++        try require(SecKeychainGetStatus(reopened, &keychainStatus), at: .keychainStatus)
++        let unlocked = keychainStatus & SecKeychainStatus(kSecUnlockStateStatus) != 0
++        let readable = keychainStatus & SecKeychainStatus(kSecReadPermStatus) != 0
++        let writable = keychainStatus & SecKeychainStatus(kSecWritePermStatus) != 0
++        guard unlocked && readable && writable else { throw Failure(stage: .keychainStatus, status: errSecInteractionNotAllowed) }
++        let legacyCount = try legacySigningIdentityCount(reopened, expected: input.leafCertificate)
++        var value = try verifyStoredIdentity(reopened, input: input, expectedLeaf: expectedLeaf, importedCount: nil)
++        value["schemaVersion"] = 2; value["operation"] = Operation.reopenIdentity.rawValue
++        value["legacySigningIdentityCount"] = legacyCount
++        value["keychainUnlockedBeforeRequest"] = initiallyUnlocked
++        value["keychainUnlocked"] = unlocked; value["keychainReadable"] = readable; value["keychainWritable"] = writable
++        return value
+     }
+     var keychain: SecKeychain?
+     let status = input.keychainPassword.withCString { password in
+@@ -89,6 +121,37 @@
+     guard let importedLeaf, SecCertificateCopyData(importedLeaf) as Data == input.leafCertificate else {
+         throw Failure(stage: .matchLeaf, status: errSecDecode)
+     }
++    return try verifyStoredIdentity(keychain, input: input, expectedLeaf: expectedLeaf, importedCount: items.count)
++}
++
++func legacySigningIdentityCount(_ keychain: SecKeychain, expected: Data) throws -> Int {
++    // codesign's historical identity search uses the legacy sign-use search,
++    // while the existing proof uses SecItemCopyMatching. Both must really find
++    // this exact leaf in this one owned file before codesign is invoked again.
++    // This does not assert that the installed codesign implementation uses an
++    // identical search, or that codesign's own ACL has executed successfully.
++    var search: SecIdentitySearch?
++    try require(SecIdentitySearchCreate(keychain, CSSM_KEYUSE(CSSM_KEYUSE_SIGN), &search), at: .legacyIdentitySearch)
++    guard let search else { throw Failure(stage: .legacyIdentitySearch, status: errSecInternalComponent) }
++    var count = 0
++    while true {
++        var identity: SecIdentity?
++        let status = SecIdentitySearchCopyNext(search, &identity)
++        if status == errSecItemNotFound { break }
++        try require(status, at: .legacyIdentitySearch)
++        guard let identity, count < 16 else { throw Failure(stage: .legacyIdentitySearch, status: errSecDecode) }
++        var certificate: SecCertificate?
++        try require(SecIdentityCopyCertificate(identity, &certificate), at: .legacyIdentitySearch)
++        guard let certificate, SecCertificateCopyData(certificate) as Data == expected else {
++            throw Failure(stage: .legacyIdentitySearch, status: errSecDecode)
++        }
++        count += 1
++    }
++    guard count == 1 else { throw Failure(stage: .legacyIdentitySearch, status: errSecItemNotFound) }
++    return count
++}
++
++func verifyStoredIdentity(_ keychain: SecKeychain, input: Input, expectedLeaf: SecCertificate, importedCount: Int?) throws -> [String: Any] {
+     // A successful import-return dictionary alone is insufficient: query the
+     // actual one owned Keychain that the later codesign command selects.
+     var found: CFTypeRef?
+@@ -131,18 +194,22 @@
+     guard SecKeyVerifySignature(certificateKey, .rsaSignatureMessagePKCS1v15SHA256, challenge as CFData, signature as CFData, &error) else {
+         throw keyFailure(.verifyChallenge, error, fallback: errSecVerifyFailed)
+     }
+-    return ["schemaVersion": 1, "stage": Stage.complete.rawValue, "status": "passed", "osStatus": 0,
+-        "importedItemCount": items.count, "storedIdentityCount": stored.count,
++    var value: [String: Any] = ["schemaVersion": 1, "stage": Stage.complete.rawValue, "status": "passed", "osStatus": 0,
++        "storedIdentityCount": stored.count,
+         "leafSHA256": fingerprint(input.leafCertificate), "rootSHA256": fingerprint(input.rootCertificate),
+         "privateKeySignatureVerified": true,
+         // This process performed the preflight. Another process's ACL use is
+         // proven only when the subsequent real codesign command succeeds.
+         "codesignACLExecutionVerified": false]
++    if let importedCount { value["importedItemCount"] = importedCount }
++    return value
+ }
+ do { report(try run()) } catch {
+     let failure = error as? Failure
+-    report(["schemaVersion": 1, "stage": (failure?.stage ?? .readInput).rawValue,
+-        "status": "failed", "osStatus": Int(failure?.status ?? errSecDecode)])
++    var value: [String: Any] = ["schemaVersion": activeOperation == .reopenIdentity ? 2 : 1,
++        "stage": (failure?.stage ?? .readInput).rawValue, "status": "failed", "osStatus": Int(failure?.status ?? errSecDecode)]
++    if activeOperation == .reopenIdentity { value["operation"] = Operation.reopenIdentity.rawValue }
++    report(value)
+     // Never echo stdin, passwords, key data or Error.userInfo.
+     fputs("Owned identity import failed\n", stderr); exit(1)
+ }

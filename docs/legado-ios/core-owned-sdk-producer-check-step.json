@@ -1,0 +1,448 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T07:48:57.924379+00:00",
+  "status": "finite-owned-SDK-producer-entry-implemented-not-yet-Mac-validated",
+  "problem": "Actual immutable 9105b46 producer failed first framework codesign with a Keychain item-not-found error. The correct identity and own-key signature proof alone did not establish codesign ACL use or its root cause.",
+  "actualChange": [
+    "A second actual importer process now opens and explicitly unlocks the already-created owned temporary Keychain after partition setup, before the original codesign call.",
+    "Actual unlocked-before and unlocked/readable/writable-after observations, bounded sole exact-leaf public legacy sign-use enumeration, SecItem enumeration and real private-key signature proof are checked.",
+    "Fresh operation uses only existing owned Keychain password/public certificates via private stdin, not PKCS12 or a new key. All private streams stay suppressed except exact schema2 public fields.",
+    "No certificate/identity/requirements change, global searchlist/trust-database command, new key owner, ad-hoc signature, alternate signing route or fixture fallback was introduced.",
+    "Original codesign nonzero exit and public stderr remain failures; successful import/reopen status is never accepted as codesign success. Original independent CMS OpenSSL checks are unchanged."
+  ],
+  "producerInputsRemainFive": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "workPath": ".build/renewal-discovery/sdk-owned-keychain-reopen-step/work/generate-sdk-owned-package.py",
+      "bytes": 34037,
+      "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1",
+      "baseline": {
+        "bytes": 30463,
+        "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520"
+      },
+      "changed": true
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "workPath": ".build/renewal-discovery/sdk-owned-keychain-reopen-step/work/ImportOwnedIdentity.swift",
+      "bytes": 13690,
+      "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205",
+      "baseline": {
+        "bytes": 9258,
+        "sha256": "17ecc9cd83eadc5ae1ebbc37762636bbc90664f71106f89f1e011d50c516d6ba"
+      },
+      "changed": true
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/main.c",
+      "workPath": ".build/renewal-discovery/sdk-owned-keychain-reopen-step/work/main.c",
+      "bytes": 180,
+      "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7",
+      "baseline": {
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      "changed": false
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+      "workPath": ".build/renewal-discovery/sdk-owned-keychain-reopen-step/work/extension.c",
+      "bytes": 186,
+      "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609",
+      "baseline": {
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      "changed": false
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+      "workPath": ".build/renewal-discovery/sdk-owned-keychain-reopen-step/work/framework.c",
+      "bytes": 156,
+      "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef",
+      "baseline": {
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      "changed": false
+    }
+  ],
+  "finiteEntry": {
+    "workflow": ".github/workflows/reader-owned-sdk-producer.yml",
+    "tagPrefix": "reader-owned-sdk-",
+    "exactTag": "reader-owned-sdk-<current SHA7>",
+    "sourceChecks": "GITHUB_SHA == HEAD == explicit tag peeled commit; exact GITHUB_REF/REF_NAME; every necessary file equals immutable HEAD bytes; source-only env required; each phase before/after repeats exact source table",
+    "jobTimeoutMinutes": 20,
+    "nativeWorkflowNotTriggeredByThisPrefix": true,
+    "phases": {
+      "toolchain": 20,
+      "xcode-version": 30,
+      "sdk-path": 30,
+      "producer": 600,
+      "stage": "bounded existing output validator, 128MiB total public budget"
+    },
+    "producerInternalSeconds": 300,
+    "producerCleanupIndependentSeconds": 10,
+    "actualCommands": "Existing sim.sh toolchain selection; xcodebuild -version only; xcrun --sdk iphoneos --show-sdk-path; same canonical generator with fixed --output. No App build/test/simulator boot/SPM/JNI or installation",
+    "firstFailure": "Original tool exit/timeout/public streams retained; remaining phases explicitly blocked; no result unless every actual phase and actual portable workflow guards succeeded",
+    "artifactBoundary": "Raw producer directory and public-copy pending directory stay outside both exact artifact roots. One existing _verify_sdk_public handles source/structure/hash/allowlist validation before and after pending copy; only then directory rename publishes public outputs. Failed pending copy may remain in ephemeral runner storage and is not claimed cleaned",
+    "cryptographyBoundary": "Successful generator contains four actual OpenSSL detached-CMS checks. Staging verifies returned public structure/hash/command evidence only; no Swift CMS verifier or native method executes"
+  },
+  "sourceBinding": {
+    "integrationBaseCommit": "bffea09839a6d8ca20a94673149928b718362632",
+    "changedFiles": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 34037,
+        "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1",
+        "frozenBytes": 34037,
+        "frozenSHA256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 13690,
+        "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205",
+        "frozenBytes": 13690,
+        "frozenSHA256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 5655,
+        "sha256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41",
+        "frozenBytes": 5655,
+        "frozenSHA256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41"
+      },
+      {
+        "path": ".github/workflows/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e",
+        "frozenBytes": 3846,
+        "frozenSHA256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14136,
+        "sha256": "22b6060bee62a61df5d6dc067cc997c924f21547de7f77a17123bc880943bcaa",
+        "frozenBytes": 14129,
+        "frozenSHA256": "04300dd9b0accf9549fc4e2544cdfd95501e401b9f4c2c9ec1123a720bac3b4b"
+      },
+      {
+        "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "bytes": 10704,
+        "sha256": "0c9cdc64f4dbc163dc2e8cdba08ed2b95f10d2bb0e6837b7016cba4a1de5f7b8",
+        "frozenBytes": 9349,
+        "frozenSHA256": "c59d7fb977e6810bdc4a1b323b6aa794fc7e5e0d477fc6654eb46400b7c43884"
+      }
+    ],
+    "finiteSeventeenInputs": [
+      {
+        "path": ".github/workflows/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14136,
+        "sha256": "22b6060bee62a61df5d6dc067cc997c924f21547de7f77a17123bc880943bcaa"
+      },
+      {
+        "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "bytes": 10704,
+        "sha256": "0c9cdc64f4dbc163dc2e8cdba08ed2b95f10d2bb0e6837b7016cba4a1de5f7b8"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 118487,
+        "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1"
+      },
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+      },
+      {
+        "path": "scripts/reader-experience/stage-config.py",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 121250,
+        "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "bytes": 657444,
+        "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+      },
+      {
+        "path": "scripts/sim.sh",
+        "bytes": 10507,
+        "sha256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 34037,
+        "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 13690,
+        "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "bytes": 11655,
+        "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 5655,
+        "sha256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41"
+      }
+    ],
+    "frozenSeventeenInputs": [
+      {
+        "path": ".github/workflows/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e",
+        "resolution": "new finite-entry source (ignored future delta)",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/.github/workflows/reader-owned-sdk-producer.yml",
+        "canonicalBytesAlreadyMatch": false
+      },
+      {
+        "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14129,
+        "sha256": "04300dd9b0accf9549fc4e2544cdfd95501e401b9f4c2c9ec1123a720bac3b4b",
+        "resolution": "new finite-entry source (ignored future delta)",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-sdk-producer-check.py",
+        "canonicalBytesAlreadyMatch": false
+      },
+      {
+        "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "bytes": 9349,
+        "sha256": "c59d7fb977e6810bdc4a1b323b6aa794fc7e5e0d477fc6654eb46400b7c43884",
+        "resolution": "new finite-entry source (ignored future delta)",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "canonicalBytesAlreadyMatch": false
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 118487,
+        "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/renewal-probe-tools.py",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/smoke-tools.py",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/stage-config.py",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/stage-config.py",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 121250,
+        "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/test-renewal-probe-tools.py",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "bytes": 657444,
+        "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/sim.sh",
+        "bytes": 10507,
+        "sha256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/sim.sh",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 34037,
+        "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1",
+        "resolution": "exact frozen producer delta",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "canonicalBytesAlreadyMatch": false
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 13690,
+        "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205",
+        "resolution": "exact frozen producer delta",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "canonicalBytesAlreadyMatch": false
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/main.c",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/extension.c",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/framework.c",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "bytes": 11655,
+        "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa",
+        "resolution": "unchanged canonical dependency",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "canonicalBytesAlreadyMatch": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 5655,
+        "sha256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41",
+        "resolution": "exact frozen producer delta",
+        "snapshotPath": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "canonicalBytesAlreadyMatch": false
+      }
+    ],
+    "unchangedFullNativeGate": [
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 7881,
+        "sha256": "555da2b33c48bc4ba5e25918bac8ed721652e99606fdc9bdc256ce1c94258138",
+        "matchesImmutable9105b46Bytes": true
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 118487,
+        "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1",
+        "matchesImmutable9105b46Bytes": true
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 41311,
+        "sha256": "e68f243ddf7792a89f8c922e8bfd9a0076c01bee3b3c167d89e83a7cb082ea66",
+        "matchesImmutable9105b46Bytes": true
+      }
+    ],
+    "currentSourceBytesCommittedWithRecord": true
+  },
+  "actualRetainedValidation": {
+    "producerPortableMethods": 20,
+    "producerNewReportMethods": 5,
+    "finiteRunnerUniqueMethods": 9,
+    "finiteRunnerInitialUnaffectedReused": 6,
+    "finiteRunnerFinalAffected": 2,
+    "finiteRunnerNewSourceFailureRegression": 1,
+    "finiteMethods": [
+      "test_actual_public_child_nonzero_and_logs_remain_failure",
+      "test_all_necessary_producer_runner_guard_and_fixture_sources_are_bound",
+      "test_commands_are_fixed_real_generator_and_finite_budgets",
+      "test_requires_exact_isolated_tag_sha_checkout_and_source_only",
+      "test_stages_only_existing_allowlist_without_writing_an_xctest_resource",
+      "test_staging_rejects_extra_private_changed_public_and_wrong_source_inputs",
+      "test_successful_child_source_mutation_is_a_nonzero_whole_check_failure",
+      "test_timeout_and_changed_phase_inputs_are_never_accepted",
+      "test_workflow_is_isolated_and_never_uploads_raw_producer_directory"
+    ],
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "workflowActionlintExit": 0,
+    "importerGrammarFiles": 1,
+    "grammarIsSDKCompilation": false,
+    "testsReexecutedByRootIntegration": 0,
+    "independentConfirmedBlockers": 0
+  },
+  "macOSProducerExecuted": 0,
+  "nativeMethodsExecuted": 0,
+  "SwiftCMSVerifierExecuted": 0,
+  "codesignFailureFixed": false,
+  "rootCauseEstablished": false,
+  "rootConfirmedAndRepairedFailure": {
+    "problem": "A real child could exit zero while sourceAfter validation failed; returning the original zero from a failed phase incorrectly made the workflow step succeed.",
+    "repair": "Preserve original nonzero/timeout/oversize exits; require nonzero when a phase failed after an exit-zero tool.",
+    "actualRegression": "One actual public child mutates an owned input and exits zero. Original whole check returned zero and failed the test; final check returns nonzero, retains command exit zero and validation failure, blocks later phases and writes no success result.",
+    "uniqueMethods": 1,
+    "originalFailurePreserved": true,
+    "macOSBranchPatchedForPortableRegression": true,
+    "MacExecuted": 0
+  },
+  "remaining": [
+    "Original specified-item-not-found root cause remains unknown. Explicit unlock is an actual bounded operation but is not proven to fix that failure.",
+    "One Swift public deprecated API grammar check is not typecheck. Actual Xcode Swift import/Keychain/codesign and complete producer still require a bounded Mac-only check.",
+    "20 portable methods use real child processes and strict reporter/schema/timeout handling, not real Keychain or codesign acceptance.",
+    "No Git/tag mutation, cloud task, macOS compiler, Keychain, codesign or SDK producer was executed by this agent for this entry.",
+    "This entry cannot make a native253-definition/255-leaf gate pass. Full existing workflow/tools/wrapper remain exact immutable 9105b46 bytes.",
+    "A successful status from importer/reopen is not codesign success. Original specified-item-not-found cause remains unresolved until actual macOS evidence narrows it.",
+    "Portable staging uses explicitly hermetic public guard fixtures and report data; it never establishes actual SDK signing or Swift verification.",
+    "Future controlled App/typecheck/installation, Apple authorization, cold launch, selected or complete user-data preservation, automatic renewal are separate unverified work."
+  ],
+  "proposalHistory": "The producer contract originally proposed this finite entry; that proposal raw remains historical. The new three-source entry is now implemented by this record. No cloud tag was pushed by integration.",
+  "nextAction": "Push exactly one reader-owned-sdk-<current SHA7> tag for the finite real Mac producer check. Collect actual source, command, timeout, exit and public outputs; repair the actual failed boundary before another coherent full native selection.",
+  "physicalDeviceValidationRequested": false,
+  "cloudTriggeredByThisIntegration": false,
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-owned-sdk-producer-check-step",
+    "rawFiles": 24,
+    "privateMaterialIncluded": false
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

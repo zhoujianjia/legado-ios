@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "reviewedAtUTC": "2026-10-20T07:48:27.387752+00:00",
+  "reviewer": "/root/preview_final_review",
+  "reviewMode": "Read-only incremental review of the root source-failure exit repair and its existing actual before/after raw regression. No rerun, compiler, grammar, Git, cloud or credentials.",
+  "priorReview": {
+    "path": ".build/renewal-discovery/owned-producer-check-step/independent-review.json",
+    "bytes": 15618,
+    "sha256": "209d0e446148494a80e68d222ac1009d9c2a831f96108a09547e8013fb8ae12c"
+  },
+  "correctionAddendum": {
+    "path": ".build/renewal-discovery/owned-producer-check-step/independent-review-source-exit-addendum.json",
+    "bytes": 2302,
+    "sha256": "2fdc42f0d3df6a919ac26a7974fd8fa65307c23fec40c2b2e5afb193d4d7b20c"
+  },
+  "confirmedBlockers": [],
+  "closedBlocker": {
+    "id": "OWNED-PRODUCER-SOURCE-FAILURE-EXIT-ZERO",
+    "foundBy": "/root; independently confirmed by /root/preview_final_review",
+    "severity": "blocker in the original prepared finite runner",
+    "trigger": "An actual command exits 0, but the required sourceAfter check fails and capture_phase leaves row.state=failed.",
+    "cause": "run_check constructed firstFailure.exitCode directly from that real command exit (0). The final source failure preserved the existing firstFailure, and run_check returned 0 even though completion.passed was false and no result existed. The workflow could therefore mark its run step successful.",
+    "initialReviewCorrection": "The earlier independent-review.json no-blocker disposition missed this confirmed branch. That file is preserved as historical evidence and is superseded by this addendum/final review; it must not be used to accept the unchanged original runner.",
+    "evidence": {
+      "beforeFixRecord": {
+        "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/before-fix/result.json",
+        "bytes": 2464,
+        "sha256": "b96ece2f1088d9a2b90606664ba7977cfa6d910be856af81807b12f7c4a5cfc8"
+      },
+      "beforeFixRawLog": {
+        "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/before-fix/unittest.log",
+        "bytes": 956,
+        "sha256": "88a8d4637ef39a7efe74d5c584694c3f4f22438b1f022ab6140d64dac75b2248"
+      }
+    },
+    "minimumRequiredRepair": "When a row is failed, use its true nonzero/timeout/oversize code if present; otherwise convert actual code 0 into validation failure code 1. Do not alter the captured original command exit."
+  },
+  "closureEvidence": {
+    "finalRootSources": [
+      {
+        "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/owned-sdk-producer-check.py",
+        "bytes": 14136,
+        "sha256": "22b6060bee62a61df5d6dc067cc997c924f21547de7f77a17123bc880943bcaa"
+      },
+      {
+        "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/test-owned-sdk-producer-check.py",
+        "bytes": 10704,
+        "sha256": "0c9cdc64f4dbc163dc2e8cdba08ed2b95f10d2bb0e6837b7016cba4a1de5f7b8"
+      },
+      {
+        "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+      }
+    ],
+    "actualBeforeFail": {
+      "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/before-fix/result.json",
+      "bytes": 2464,
+      "sha256": "b96ece2f1088d9a2b90606664ba7977cfa6d910be856af81807b12f7c4a5cfc8"
+    },
+    "actualBeforeFailRaw": {
+      "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/before-fix/unittest.log",
+      "bytes": 956,
+      "sha256": "88a8d4637ef39a7efe74d5c584694c3f4f22438b1f022ab6140d64dac75b2248"
+    },
+    "actualAfterPass": {
+      "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/after-fix/result.json",
+      "bytes": 2463,
+      "sha256": "45c8ef354f0603a09b7950a05d87a29e54e336eddff5f65dfda2b540d3914fd3"
+    },
+    "actualAfterPassRaw": {
+      "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/after-fix/unittest.log",
+      "bytes": 290,
+      "sha256": "063e539c43bffccc0add2c1b8322e285bb70973c20f87454a52647b68aa878eb"
+    },
+    "exactRunnerDelta": "Only the failed-row firstFailure fallback adds (command_exit(...) or 1); all other runner bytes match the original prepared snapshot after newline normalization. The actual captured command exit remains unchanged. Existing nonzero, signal, 124 timeout and 125 oversize/process codes are preserved.",
+    "exactGuardDelta": "Only one new method is inserted. It runs a genuine successful child that changes one owned source input, then exercises the whole run_check with only the platform branch/commands patched. It checks actual child exit=0, failed phase, completion.passed=false, result absence, later phases blocked and whole-check/firstFailure nonzero. No Mac tool executes.",
+    "workflowPreserved": "The workflow matches its initial passing frozen bytes exactly."
+  },
+  "finalFinite17SourceClosureWithRootOverlay": [
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/.github/workflows/reader-owned-sdk-producer.yml",
+      "bytes": 3846,
+      "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/owned-sdk-producer-check.py",
+      "bytes": 14136,
+      "sha256": "22b6060bee62a61df5d6dc067cc997c924f21547de7f77a17123bc880943bcaa",
+      "intendedPath": "scripts/reader-experience/owned-sdk-producer-check.py",
+      "replacesOriginalFrozenLeaf": {
+        "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14129,
+        "sha256": "04300dd9b0accf9549fc4e2544cdfd95501e401b9f4c2c9ec1123a720bac3b4b"
+      }
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/test-owned-sdk-producer-check.py",
+      "bytes": 10704,
+      "sha256": "0c9cdc64f4dbc163dc2e8cdba08ed2b95f10d2bb0e6837b7016cba4a1de5f7b8",
+      "intendedPath": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+      "replacesOriginalFrozenLeaf": {
+        "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "bytes": 9349,
+        "sha256": "c59d7fb977e6810bdc4a1b323b6aa794fc7e5e0d477fc6654eb46400b7c43884"
+      }
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 118487,
+      "sha256": "995ae2a4546ab53eb3ff8b312db25fb6d0022360cdd3fab0b40475d601a4ead1"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/smoke-tools.py",
+      "bytes": 27526,
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/stage-config.py",
+      "bytes": 26097,
+      "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 121250,
+      "sha256": "72954242138557bb924ac1f97363b7b081a829cc6bbe728ac3e4523999667c93"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+      "bytes": 657444,
+      "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/sim.sh",
+      "bytes": 10507,
+      "sha256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 34037,
+      "sha256": "3dac5952c9ecfee146d14e50e00df3b6ca81acd622bf81ecb6039424e308a6f1"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 13690,
+      "sha256": "e53660ee83ec869fb5bfb77d7c08d7849e969ed1c5dbc00ff5bcccf46a925205"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/main.c",
+      "bytes": 180,
+      "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/extension.c",
+      "bytes": 186,
+      "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/framework.c",
+      "bytes": 156,
+      "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+      "bytes": 6262,
+      "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+      "bytes": 11655,
+      "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-producer-check-step/source-closure/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+      "bytes": 5655,
+      "sha256": "35ae0bd55a51b553d5ba258f3738c5bd76994727ef395c08fe4aff7029a7ce41"
+    }
+  ],
+  "acceptance": "No confirmed blocking finding remains after applying the exact root two-source overlay to the original six-source prepared delta. Preserve the two immutable preparations and explicitly override only these runner/guard leaves in the integrated closure before deriving the exact SHA7 tag.",
+  "portableAccounting": {
+    "producerUnique": 20,
+    "finitePreviouslyAcceptedUnique": 8,
+    "newActualUnique": 1,
+    "finiteAcceptedUnique": 9,
+    "newMethodBeforeAfterAttempts": 2,
+    "newMethodCountedOnce": true,
+    "oldEightRerun": false,
+    "notTenOrElevenFiniteUnique": true
+  },
+  "reusedUnchangedReview": "All original private-stdin/public-schema, owned Keychain operation, actual codesign/CMS, 17-source/ref7 checks, phase binding, stage-before-rename artifact privacy and unchanged full253/255 conclusions remain from the prior source review. This additive review corrects its one false-negative acceptance branch.",
+  "executionLimits": {
+    "macOS": 0,
+    "Keychain": 0,
+    "codesign": 0,
+    "SwiftCompiler": 0,
+    "nativeMethods": 0,
+    "testsRunByReviewer": 0,
+    "grammarRunByReviewer": 0
+  },
+  "remaining": "One bounded macOS producer attempt must still establish actual Swift API/typechecking, reopen/unlock/search, codesign and original OpenSSL verification. The original specified-item-not-found root cause is not inferred or claimed fixed; no native/JNI/App/Apple/install/automatic-renewal acceptance follows.",
+  "mutations": {
+    "onlyIgnoredReviewArtifactsWritten": true,
+    "preparedOrRootFixSourcesChanged": false,
+    "canonicalGitOrCloudChanged": false
+  }
+}

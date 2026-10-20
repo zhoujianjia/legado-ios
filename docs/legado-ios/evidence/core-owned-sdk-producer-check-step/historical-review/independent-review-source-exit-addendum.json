@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T07:48:27.387752+00:00",
+  "reviewer": "/root/preview_final_review",
+  "originalReview": {
+    "path": ".build/renewal-discovery/owned-producer-check-step/independent-review.json",
+    "bytes": 15618,
+    "sha256": "209d0e446148494a80e68d222ac1009d9c2a831f96108a09547e8013fb8ae12c"
+  },
+  "confirmedBlockersInOriginalFreeze": [
+    {
+      "id": "OWNED-PRODUCER-SOURCE-FAILURE-EXIT-ZERO",
+      "foundBy": "/root; independently confirmed by /root/preview_final_review",
+      "severity": "blocker in the original prepared finite runner",
+      "trigger": "An actual command exits 0, but the required sourceAfter check fails and capture_phase leaves row.state=failed.",
+      "cause": "run_check constructed firstFailure.exitCode directly from that real command exit (0). The final source failure preserved the existing firstFailure, and run_check returned 0 even though completion.passed was false and no result existed. The workflow could therefore mark its run step successful.",
+      "initialReviewCorrection": "The earlier independent-review.json no-blocker disposition missed this confirmed branch. That file is preserved as historical evidence and is superseded by this addendum/final review; it must not be used to accept the unchanged original runner.",
+      "evidence": {
+        "beforeFixRecord": {
+          "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/before-fix/result.json",
+          "bytes": 2464,
+          "sha256": "b96ece2f1088d9a2b90606664ba7977cfa6d910be856af81807b12f7c4a5cfc8"
+        },
+        "beforeFixRawLog": {
+          "path": ".build/renewal-discovery/owned-producer-check-step/root-source-failure-fix/before-fix/unittest.log",
+          "bytes": 956,
+          "sha256": "88a8d4637ef39a7efe74d5c584694c3f4f22438b1f022ab6140d64dac75b2248"
+        }
+      },
+      "minimumRequiredRepair": "When a row is failed, use its true nonzero/timeout/oversize code if present; otherwise convert actual code 0 into validation failure code 1. Do not alter the captured original command exit."
+    }
+  ],
+  "originalFreezeDisposition": "Not accepted unchanged. Its source-closure runner and guard leaves require the separately bound root repair.",
+  "actualExecutionForThisReview": 0
+}

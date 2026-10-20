@@ -508,7 +508,8 @@
             "已接入真实CodeDirectory页/特殊槽摘要计算与profile CMS签名、显式根证书链校验；hash7、CMS7、profile2共16新增方法已定义，连同变更reader的结构9共25待SDK执行。10组Python摘要fixture审计与OpenSSL6正/1篡改样本验证通过；不算Swift通过或Apple/profile安装授权。",
             "已接通实际raw CodeDirectory CMS与V1/V2 signed agility、每目录认证事实及CodeResources规则/真实文件流式摘要；新增17项Swift方法，选中48项相关方法，实际SDK尚未验收。嵌套requirement、Apple授权及实际签名安装仍未完成。",
             "已接通嵌套代码requirement、实际CD绑定Info/DER权限/签名证书、现代profile双CMS及三包材料身份与资源字节一致性。新增21项签名材料方法连同48项受影响方法，共69项；另9项状态宿主检查集中提交SDK，尚未执行验收。系统策略/Apple授权、IPA与真实签名安装仍未完成。",
-            "已接通受控classic ZIP单Payload IPA的固定副本、头/路径/链接/预算与raw-deflate/CRC预检、既有Readium consumer及openat独占文件提取，再调用真实三包材料校验；成功/失败只清理本次owned inode，不导出安装路径。9项原生方法待SDK，3个自有ZIP样本Python字节审计不算Swift通过。ZIP64/额外根/真实安装权限及Apple授权仍未完成。"
+            "已接通受控classic ZIP单Payload IPA的固定副本、头/路径/链接/预算与raw-deflate/CRC预检、既有Readium consumer及openat独占文件提取，再调用真实三包材料校验；成功/失败只清理本次owned inode，不导出安装路径。9项原生方法待SDK，3个自有ZIP样本Python字节审计不算Swift通过。ZIP64/额外根/真实安装权限及Apple授权仍未完成。",
+            "已补充受控临时 Keychain 的新进程重开、显式解锁及精确身份诊断，并实现独立有限 Mac producer 检查入口；20+9 项便携守卫通过，含实际复现并修复工具退出零但源码校验失败时误报成功的问题。实际 codesign 修复尚未验证，完整原生验收未改变。"
           ],
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-sequence-first-step.json",
@@ -516,7 +517,8 @@
             "docs/legado-ios/core-renewal-request-crypto-step.json",
             "docs/legado-ios/core-renewal-signed-resource-step.json",
             "docs/legado-ios/core-renewal-bound-material-step.json",
-            "docs/legado-ios/core-renewal-controlled-ipa-step.json"
+            "docs/legado-ios/core-renewal-controlled-ipa-step.json",
+            "docs/legado-ios/core-owned-sdk-producer-check-step.json"
           ],
           "nextActionZh": "收取本阶段固定源码SDK结果并先修实际失败；补齐受控IPA读取、明确Apple授权/系统策略边界，继续账号材料生命周期与真实受控重签底层。"
         },
@@ -577,11 +579,13 @@
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-controlled-signing-step.json",
-            "docs/legado-ios/core-renewal-controlled-package-step.json"
+            "docs/legado-ios/core-renewal-controlled-package-step.json",
+            "docs/legado-ios/core-owned-sdk-producer-check-step.json"
           ],
           "implementedSubtasksZh": [
             "已接入受控thin64 arm64重签器，调用真实SecKeyCreateSignature，重建CodeDirectory/CMS/agility及页/特殊槽摘要，并调用既有验签器复检。旧资源与替换slot3输入分开，Info/身份/权限字节保持；7项原生方法待SDK。整包嵌套/profile/资源编排与framework等布局仍未完成。",
-            "受控整包已接同一IPA提取器、实际namespace身份/材料租约、由内到外profile/资源/nested hint及Mach-O重签、原始XML规则字节保留和新IPA重新提取全链复验；只导出只读FD。补常见DYSYMTAB/MH_DYLIB布局及同job真实clang/codesign生成器；11项原生方法待SDK，Windows独立38个CMS及自有ZIP/摘要校验不等于Swift通过。"
+            "受控整包已接同一IPA提取器、实际namespace身份/材料租约、由内到外profile/资源/nested hint及Mach-O重签、原始XML规则字节保留和新IPA重新提取全链复验；只导出只读FD。补常见DYSYMTAB/MH_DYLIB布局及同job真实clang/codesign生成器；11项原生方法待SDK，Windows独立38个CMS及自有ZIP/摘要校验不等于Swift通过。",
+            "已补充受控临时 Keychain 的新进程重开、显式解锁及精确身份诊断，并实现独立有限 Mac producer 检查入口；20+9 项便携守卫通过，含实际复现并修复工具退出零但源码校验失败时误报成功的问题。实际 codesign 修复尚未验证，完整原生验收未改变。"
           ],
           "nextActionZh": "将整包11项及受影响基础、App章节owner和认证安装方法集中SDK；同job实际生成并独立检查平台Mach-O，再执行其重签用例，先修实际失败。继续S5真实持久事务与恢复，不将受控结果升级Apple/设备授权。"
         },
@@ -763,7 +767,8 @@
       "cookieReadSDKCorrectedTerminalResult": "docs/legado-ios/core-cookie-read-sdk-corrected-terminal.json",
       "expirySafeRecoveryImplementation": "docs/legado-ios/core-renewal-expiry-safe-recovery-step.json",
       "appPreviewOwnerImplementation": "docs/legado-ios/core-original-app-preview-owner-step.json",
-      "appCookieWebKitImplementation": "docs/legado-ios/core-original-app-cookie-webkit-step.json"
+      "appCookieWebKitImplementation": "docs/legado-ios/core-original-app-cookie-webkit-step.json",
+      "ownedSDKProducerFiniteCheckImplementation": "docs/legado-ios/core-owned-sdk-producer-check-step.json"
     }
   },
   "stages": [
@@ -4842,6 +4847,10 @@
     "app-cookie-webkit": {
       "path": "docs/legado-ios/core-original-app-cookie-webkit-step.json",
       "scope": "Actual retained JVM29/5XML and ordinary JAR5 smoke against their original153-input boundaries; current native5/Package2 and merged preview Host remain SDK0. C2 implementation/C4 preparatory only."
+    },
+    "finite-owned-sdk-producer-check": {
+      "path": "docs/legado-ios/core-owned-sdk-producer-check-step.json",
+      "scope": "Real producer diagnostic and separate finite CI implementation; retained 20+9 unique portable guards, including actual reproduced/repaired source-failure exit. Mac, codesign and native execution remain zero at integration."
     }
   },
   "retainedExistingWork": [

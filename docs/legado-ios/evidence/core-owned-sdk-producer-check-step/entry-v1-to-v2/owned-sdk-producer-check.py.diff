@@ -1,0 +1,23 @@
+--- v1/owned-sdk-producer-check.py
++++ v2/owned-sdk-producer-check.py
+@@ -90,12 +90,17 @@
+     # native method. The original generator itself performs its OpenSSL checks.
+     verified = probe._verify_sdk_public(produced,inputs)
+     destination = probe.smoke.config.checked_path(work/'sdk-produced-public')
+-    destination.mkdir(exist_ok=False)
++    if destination.exists(): raise ValueError('Refusing prior public evidence')
++    # Verification or copy failure cannot leave partial public files in the
++    # always-uploaded directory. The pending copy is outside that directory.
++    pending = probe.smoke.config.checked_path(work.parent/(work.name + '-public.pending'))
++    pending.mkdir(exist_ok=False)
+     for name in sorted(probe._sdk_output_names() | {'sdk-produced-fixture-manifest.json'}):
+-        with (destination/name).open('xb') as stream:
++        with (pending/name).open('xb') as stream:
+             stream.write((produced/name).read_bytes())
+-    if probe._verify_sdk_public(destination,inputs) != verified:
++    if probe._verify_sdk_public(pending,inputs) != verified:
+         raise ValueError('Staged public bytes changed')
++    pending.rename(destination)
+     return {'publicValidation':verified,'xctestResourceWritten':False,'nativeMethodsExecuted':0,
+             'swiftCMSVerifierExecuted':False,'verificationKind':'existing source/structure/hash/allowlist checks',
+             'generatorOpenSSLDetachedCMSCommandCount':4}

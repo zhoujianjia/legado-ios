@@ -155,6 +155,37 @@ def identity_status(raw):
     elif set(value)!={'schemaVersion','stage','status','osStatus'} or value['osStatus']==0:
         raise ValueError('Invalid owned importer failure facts')
     return value
+def reopened_identity_status(raw):
+    # A second strict schema for a fresh process with no PKCS12 input. Never
+    # promote its own sign challenge into proof that codesign ran successfully.
+    if len(raw)>4_096:raise ValueError('Owned reopen status byte budget')
+    value=json.loads(raw)
+    common={'schemaVersion','operation','stage','status','osStatus'}
+    facts={'storedIdentityCount','legacySigningIdentityCount','leafSHA256','rootSHA256',
+           'privateKeySignatureVerified','codesignACLExecutionVerified',
+           'keychainUnlockedBeforeRequest','keychainUnlocked','keychainReadable','keychainWritable'}
+    stages={'readInput','openKeychain','unlockKeychain','keychainStatus','legacyIdentitySearch',
+            'findStoredIdentity','matchLeaf','findRoot','privateKey','signChallenge','verifyChallenge','complete'}
+    if (not isinstance(value,dict) or type(value.get('schemaVersion')) is not int or value.get('schemaVersion')!=2
+            or value.get('operation')!='reopenIdentity' or value.get('stage') not in stages
+            or value.get('status') not in ('passed','failed') or type(value.get('osStatus')) is not int
+            or not -(2**31)<=value['osStatus']<2**31):
+        raise ValueError('Invalid owned reopen public status')
+    if value['status']=='failed':
+        if set(value)!=common or value['osStatus']==0:raise ValueError('Invalid owned reopen failure')
+        return value
+    if set(value)!=common|facts or value['stage']!='complete' or value['osStatus']!=0:
+        raise ValueError('Incomplete owned reopen completion')
+    for name in ('storedIdentityCount','legacySigningIdentityCount'):
+        if type(value[name]) is not int or value[name]!=1:raise ValueError('Ambiguous owned reopen identity')
+    for name in ('leafSHA256','rootSHA256'):
+        if not isinstance(value[name],str) or re.fullmatch('[0-9a-f]{64}',value[name]) is None:
+            raise ValueError('Invalid owned reopen public fingerprint')
+    for name in ('privateKeySignatureVerified','keychainUnlocked','keychainReadable','keychainWritable'):
+        if value[name] is not True:raise ValueError('Unproven owned reopen fact')
+    if type(value['keychainUnlockedBeforeRequest']) is not bool:raise ValueError('Invalid initial owned Keychain status')
+    if value['codesignACLExecutionVerified'] is not False:raise ValueError('Unexecuted codesign is not proven')
+    return value
 def run(args,*,input=None,env=None,private=False,public_log=None,public_status=False,public_output_label=None,timeout_seconds=None,cleanup=False):
     if private and (public_log is not None or public_output_label is not None):
         raise ValueError('Private tool streams cannot become public logs')
@@ -197,9 +228,12 @@ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=F
     if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
     if public_status:
         # A malformed/private stdout must remain suppressed even on failure.
-        try:status=identity_status(result.stdout)
-        except (ValueError,UnicodeError,TypeError,RecursionError):status={'schemaVersion':1,'stage':'readInput','status':'failed','osStatus':-1}
-        public_record('OWNED_IDENTITY_STATUS',status)
+        reopen=public_status=='reopen'
+        try:status=(reopened_identity_status if reopen else identity_status)(result.stdout)
+        except (ValueError,UnicodeError,TypeError,RecursionError):
+            status={'schemaVersion':2 if reopen else 1,'stage':'readInput','status':'failed','osStatus':-1}
+            if reopen:status['operation']='reopenIdentity'
+        public_record('OWNED_KEYCHAIN_REOPEN_STATUS' if reopen else 'OWNED_IDENTITY_STATUS',status)
         if result.returncode==0 and (status.get('stage')!='complete' or status.get('status')!='passed'
                 or status.get('privateKeySignatureVerified') is not True
                 or status.get('codesignACLExecutionVerified') is not False):
@@ -295,6 +329,17 @@ def main():
                 'rootCertificate':base64.b64encode(root).decode()}
             run([importer],input=json.dumps(request).encode(),private=True,public_status=True)
             run(['security','set-key-partition-list','-S','apple-tool:,apple:,codesign:','-s','-k',keychain_password,keychain],private=True)
+            # Explicitly unlock only this existing owned Keychain in a fresh
+            # process, then compare SecItem and legacy sign-use searches and
+            # actually sign/verify with its persisted key. This is additional
+            # diagnostics and bounded unlock, not a claim codesign will work.
+            reopen_request={'operation':'reopenIdentity','path':str(keychain),'keychainPassword':keychain_password,
+                'p12Password':'','p12':'','leafCertificate':base64.b64encode(leaf).decode(),
+                'rootCertificate':base64.b64encode(root).decode()}
+            reopened=reopened_identity_status(run([importer],input=json.dumps(reopen_request).encode(),private=True,public_status='reopen'))
+            if reopened['leafSHA256']!=fingerprint(leaf) or reopened['rootSHA256']!=fingerprint(root):
+                raise ToolFailure('owned reopen identity fingerprint mismatch',-1)
+            del reopen_request,reopened
             run(['security','find-identity','-p','codesigning',keychain],public_output_label='OWNED_CODESIGN_IDENTITY_SEARCH')
             # Scoped diagnostics only: explicit public owned anchor, no Keychain
             # search, no network and no trust-settings installation. This proves

@@ -1,0 +1,55 @@
+{
+  "scope": "New finite-runner portable guards and workflow static lint only; no macOS producer/Swift/Keychain/codesign/SDK execution",
+  "sourceInputs": [
+    {
+      "path": ".build\\renewal-discovery\\owned-producer-check-step\\work\\owned-sdk-producer-check.py",
+      "bytes": 13785,
+      "sha256": "5148fd64420200bec5b1ed6a266fd69bdc2eaf4e748a844cab9a72ecd3cc3673"
+    },
+    {
+      "path": ".build\\renewal-discovery\\owned-producer-check-step\\work\\reader-owned-sdk-producer.yml",
+      "bytes": 3846,
+      "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+    },
+    {
+      "path": ".build\\renewal-discovery\\owned-producer-check-step\\work\\test-owned-sdk-producer-check.py",
+      "bytes": 8664,
+      "sha256": "7fc1678ac892be58114abade2e11e64af9c135448c5194fd1d5c2062ae8fc9b5"
+    }
+  ],
+  "sourceAfterEqual": true,
+  "checks": [
+    {
+      "name": "portable8",
+      "argv": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        ".build\\renewal-discovery\\owned-producer-check-step\\work\\test-owned-sdk-producer-check.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.484,
+      "log": {
+        "path": ".build\\renewal-discovery\\owned-producer-check-step\\validation-v1\\portable8.log",
+        "bytes": 1505,
+        "sha256": "7930f3dc36c4a1198a56ac420861a1506fc9699c27ca66e347e83bdd701f6fca"
+      }
+    },
+    {
+      "name": "actionlint",
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+        "-color",
+        ".build\\renewal-discovery\\owned-producer-check-step\\work\\reader-owned-sdk-producer.yml"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.157,
+      "log": {
+        "path": ".build\\renewal-discovery\\owned-producer-check-step\\validation-v1\\actionlint.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "sdkExecuted": 0
+}
