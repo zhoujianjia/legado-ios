@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-21",
-  "activeBatchRecord": "docs/legado-ios/core-discover-sdk-import-fix.json",
+  "activeBatchRecord": "docs/legado-ios/core-build14-44f125b-request.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "All currently observed compiler failures are now repaired: caller-owned BookStore and explicit LegadoRuntime import. Source-only import audit of26 related Swift files found no other determined omissions. Retry the minimal frozen build14 package/Native source once, while producer/C2 development continues independently.",
-      "alreadyRunningTasks": "Only e88f6fc package run39456819172/job118745760946 and Native run39456819622/job118745761312 were observed running. They contain the BookStore fix but not the later observed missing import. Both75c87a9 runs and currentcorea24a41e are actual terminal failures and must not be polled again.",
+      "nextPlannedCheckpoint": "Observe actual44f125b package/Native outcomes while completing independent reviewed C2 and signed-fixture repair on main. Do not create further package tags absent a new actual failure or concrete unresolved issue. Consolidated SDK checkpoint follows the related source/producer batch.",
+      "alreadyRunningTasks": "Latest package44f125b run39457883604/job118749408493 and actual Native run39457883358/job118749408039 are running on the source that fixes every currently observed compile error. Earlier e88f6fc package/Native are superseded but last observed live; they are not cancelled or terminal by inference. Both75c87a9 jobs and a24currentcore are terminal failures and archived.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
         "sourceTag": "reader-owned-sdk-4b6f5dc",
@@ -209,7 +209,8 @@
           "conclusion": null,
           "queryAgain": true,
           "record": "docs/legado-ios/core-build14-e88f6fc-request.json",
-          "knownSourceDefect": "DiscoverQuickActions missing LegadoRuntime import; source fixed separately. This job has not been observed terminal and cannot be called cancelled/failed."
+          "knownSourceDefect": "DiscoverQuickActions missing LegadoRuntime import; source fixed separately. This job has not been observed terminal and cannot be called cancelled/failed.",
+          "supersededByDeviceSource": "44f125b73c06bf95637765ab58e65f41d0651b44"
         },
         {
           "sourceCommit": "e88f6fc9d7c877a932ad958f45b544e5d19d309a",
@@ -221,7 +222,38 @@
           "conclusion": null,
           "queryAgain": true,
           "record": "docs/legado-ios/core-build14-e88f6fc-request.json",
-          "knownSourceDefect": "DiscoverQuickActions missing LegadoRuntime import; source fixed separately. This job has not been observed terminal and cannot be called cancelled/failed."
+          "knownSourceDefect": "DiscoverQuickActions missing LegadoRuntime import; source fixed separately. This job has not been observed terminal and cannot be called cancelled/failed.",
+          "supersededByDeviceSource": "44f125b73c06bf95637765ab58e65f41d0651b44"
+        },
+        {
+          "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
+          "sourceTag": "reader-legado-44f125b",
+          "runID": 39457883604,
+          "jobID": 118749408493,
+          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39457883604",
+          "createdAt": "2026-10-20T16:29:24Z",
+          "status": "in_progress",
+          "conclusion": null,
+          "current": [
+            "Verify the exact source tag and build the fresh ordinary JVM"
+          ],
+          "queryAgain": true,
+          "record": "docs/legado-ios/core-build14-44f125b-request.json"
+        },
+        {
+          "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
+          "sourceTag": "legado-native-reader-test-44f125b",
+          "runID": 39457883358,
+          "jobID": 118749408039,
+          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39457883358",
+          "createdAt": "2026-10-20T16:29:24Z",
+          "status": "in_progress",
+          "conclusion": null,
+          "current": [
+            "Build and audit this checkout's ordinary production runtime"
+          ],
+          "queryAgain": true,
+          "record": "docs/legado-ios/core-build14-44f125b-request.json"
         }
       ],
       "latestDevicePackageTerminal": {
@@ -283,7 +315,8 @@
       "currentDeviceValidationStatus": "TCP-connected-no-authentication-signing-or-installation-attempted",
       "scopeZh": "build13报告显示本机IPv4回环TCP连接成功；用户确认电脑开机、USB拔掉、VPN关闭且无伴侣App。应用续签配置未初始化、认证未配置、自动续签关闭，签名/安装尝试均为零；完整自动续签及脱离电脑均未证明。",
       "fullAutomaticRenewalImplemented": false,
-      "latestReportRecord": "docs/legado-ios/self-renewal-report-build13-analysis.json"
+      "latestReportRecord": "docs/legado-ios/self-renewal-report-build13-analysis.json",
+      "latestRepairRequest": "docs/legado-ios/core-build14-44f125b-request.json"
     },
     "userPriorityScope": {
       "requestedOn": "2026-10-20",
