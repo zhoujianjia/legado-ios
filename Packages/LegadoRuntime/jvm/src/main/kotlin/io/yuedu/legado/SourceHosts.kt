@@ -19,6 +19,7 @@ import java.io.IOException
 /** Deliberately limited platform adapter, not a replacement for all upstream JsExtensions. */
 class SourceJavaHost internal constructor(
     private val task: RuntimeTask,
+    private val expandedOriginalUrl: Boolean = false,
     private val dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
 ) {
     internal var batchUrls: Set<String>? = null
@@ -51,7 +52,7 @@ class SourceJavaHost internal constructor(
         var url = rawUrl
         var options = JsonObject()
         val production = task.session.options.usesJvmHttp
-        if (production && listOf("@js:", "<js>", "{{").any { rawUrl.contains(it, true) }) unsupported("Dynamic URL rules are not migrated")
+        if (production && !expandedOriginalUrl && listOf("@js:", "<js>", "{{").any { rawUrl.contains(it, true) }) unsupported("Dynamic URL rules are not migrated")
         val delimiter = if (production) Regex("\\s*,\\s*(?=\\{)").find(rawUrl) else null
         val optionsAt = if (production) delimiter?.range?.first ?: -1 else rawUrl.indexOf(",{")
         if (optionsAt >= 0) {

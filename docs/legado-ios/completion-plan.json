@@ -163,7 +163,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Fixed source0a0c740 implementation5+6 only is submitted with cold-build2700. Collect actual source-specific results once appropriate, fix actual failures, and continue ready C1/S1 implementation without repeated status polling. No old diagnostic/smoke/measurement replay, Release/IPA or device request.",
+      "nextPlannedCheckpoint": "本轮源码冻结后仅提交signature9的Debug Simulator SDK检查，使用既有2700秒冷编译预算；不重跑未改的implementation5+6、诊断、smoke或measurement。旧0a0c740仅保留02:13:37 UTC的in_progress观察，不反复轮询。继续C1/S1开发；无Release/IPA或设备请求。",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
@@ -300,11 +300,14 @@
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementedSubtasksZh": [
-            "Cookie宿主接通同一JVM会话，44项桌面回归与普通JAR/smoke通过；完整规则／AnalyzeUrl及App入口尚未完成。"
+            "Cookie宿主接通同一JVM会话，44项桌面回归与普通JAR/smoke通过；完整规则／AnalyzeUrl及App入口尚未完成。",
+            "原AnalyzeRule.ajax/connect已接入有限AnalyzeUrl的@js/<js>、@result、原{{…}}扫描及页组选项；实际82项JVM方法与普通JAR/smoke通过，新增URL9项中的一项含140组原ZIP方法差分。保留同一任务、Rhino、HTTP与Cookie；完整header/login、option.js/bodyJs、WebBook与App传统入口仍未完成。"
           ],
           "implementationEvidence": [
-            "docs/legado-ios/core-renewal-sequence-first-step.json"
-          ]
+            "docs/legado-ios/core-renewal-sequence-first-step.json",
+            "docs/legado-ios/core-renewal-url-signature-step.json"
+          ],
+          "nextActionZh": "继续移植锁定原AnalyzeUrl的header/login域判断、请求选项与编码顺序；以现有单一任务和传输做最小原版差分，不先切App路由。"
         },
         {
           "id": "C2",
@@ -438,11 +441,14 @@
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementedSubtasksZh": [
-            "已解包.app真实材料清单读取器已实现，6个测试定义与2文件grammar通过；IPA解包、密码学验签和实际SDK执行尚未完成。"
+            "已解包.app真实材料清单读取器已实现，6个测试定义与2文件grammar通过；IPA解包、密码学验签和实际SDK执行尚未完成。",
+            "Mach-O结构读取器已接到原材料清单读取，支持有界thin/fat 32/64、load commands、SuperBlob、CodeDirectory与CMS槽结构。新增9个测试定义、2文件grammar通过；SDK执行为0，页面哈希、CMS/profile/证书链、资源封印及可信替换适配仍未完成。"
           ],
           "implementationEvidence": [
-            "docs/legado-ios/core-renewal-sequence-first-step.json"
-          ]
+            "docs/legado-ios/core-renewal-sequence-first-step.json",
+            "docs/legado-ios/core-renewal-url-signature-step.json"
+          ],
+          "nextActionZh": "在结构读取基础上实现真正页面/特殊槽哈希与CMS/profile/证书、资源封印验证；仅在固定源码的阶段检查收取新9项SDK结果，失败先修复，继续非真机开发。"
         },
         {
           "id": "S2",
@@ -585,7 +591,17 @@
         "actualAcceptedEvidence": [],
         "automaticRenewalFeasibilityUnknown": true
       },
-      "implementationSDKSubmission": "docs/legado-ios/core-renewal-0a0c740-initial.json"
+      "implementationSDKSubmission": "docs/legado-ios/core-renewal-0a0c740-initial.json",
+      "continuation": {
+        "mechanism": "Codex persistent Goal",
+        "userExplicitlyAuthorizedOn": "2026-10-20",
+        "activationConfirmedAtUTC": "2026-10-20T02:17:58Z",
+        "lastObservedStatus": "active",
+        "ordinaryTurnCompletionEndsGoal": false,
+        "scopeUnchanged": true,
+        "physicalDeviceValidationRequested": false,
+        "ruleZh": "按已启用的持续目标继续实际开发；保留C1至C5、S1至S6及原依赖关系，不因单轮结束将目标标为完成。设备验证与其他17包仍暂缓。"
+      }
     }
   },
   "stages": [
@@ -1196,7 +1212,7 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "本批新增纯元数据覆盖预检：主App／Widget／Share三角色的账号、Team、App-ID前缀、bundle映射与数据访问组保持；同版本同build可预检，候选授权窗口必须有效。它只比较未来平台适配器提供的事实，当前没有真实适配器、证书／profile验证、签名器或安装后端。5个Swift方法只已定义且grammar通过，实际SDK／测试为0；新18个便携守卫及34源码清单为验证准备。 已收到并核对 build12 动态发现报告：2 条服务记录、6 次地址回调、1 次排除，剩余 5 个去重候选在赋值 approved 前触发旧 4 端点守卫，TCP 尝试为 0。用户另报电脑开机、USB 已拔、VPN 关闭、无伴侣 App；原报告 notMeasured 保留。已实现完整窗口后稳定选择最多 4 个、明确跳过计数的修复，并保留硬溢出、地址归属、TTL、总截止及零载荷约束；新 8／16／1 Swift 叶集待真实 SDK 验证，不能将准备改成通道或续签成功。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。 用户现将自签列为独立优先主线；当前仅推进不依赖真机的实现准备与已有 SDK 证据核对，完整自签仍未实现，当前不索取设备验证。 后续已将固定源码 4ada44e 的新增5个元数据方法单独提交SDK检查；只记录提交，不认定已执行通过。 本次已将后续工作细化为S1至S6实际实现步骤，收窄旧设备门槛至真实安装启用和最终验收；两线C1／S1开工，不把制定计划认定为完成。 最新S1首段已完成实际未验签材料清单读取，6方法已定义；旧4ada44e SDK因共享目标冷编译900秒预算被中断，实际5方法仍0；已修首轮预算并准备仅5＋6检查，未宣称新SDK通过。",
+        "currentState": "已实现未验签的已解包.app材料清单读取；本轮Mach-O结构读取器接入同一清单，检查thin/fat 32/64、load commands、SuperBlob、CodeDirectory及CMS槽，所有身份、密码学与替换授权标志仍false。新增9个Swift测试定义、2文件grammar通过，实际SDK为0；签名专组选取的23个便携守卫通过，38项源码绑定。旧0a0c740的5+6检查在02:13:37 UTC观察为in_progress，未计通过。页面与特殊槽哈希、CMS/profile/证书链、资源封印、账号、签名、认证安装及续签事务仍未完成。",
         "remainingWork": [
           "S1 读取并验证真实包与签名材料：先实现有界只读的已解包.app清单读取器，读取主App／Widget／Share、Info.plist、可执行文件及profile材料事实，明确输出未验证。；再接受控IPA解包、Mach-O签名／资源封印／CMS profile／证书链与有效期验证，将真实验证事实接入现有替换策略。",
           "S2 实现账号授权与证书、描述文件更新：实现账号授权、会话与凭据安全存取、过期／撤销／二次认证处理和受控服务适配；不把模拟账号当实际授权。；实现同一免费团队、主App／Widget／Share的证书与profile申请／刷新、材料缓存及失效处理，保留原bundle和数据访问身份。",
@@ -1205,7 +1221,7 @@
           "S5 串联持久化续签事务与数据交接：串联读取→更新材料→预检→重签→签后复检→安装提交→冷启复核，按实际回执推进状态。；实现防重复执行、持久化检查点、退避重试、中断恢复、到期／时钟异常及取消；复用现有书籍／书源／进度存储。",
           "S6 接通前台与系统允许的后台触发：通过现有依赖注入接入实际续签服务与前台到期检查，后台仅使用系统允许的任务入口。；取消／失效时保存真实事务状态，显示可理解的未授权／待重试／需恢复状态，不以提醒或外部跳转冒充续签。"
         ],
-        "nextAction": "执行S1：实现已解包.app实际清单读取并补材料验签；并行推进C1的原规则同会话接线。已提交的replacement5仅在固定源码取实际结果，不阻塞下一段开发。当前不请求真机。",
+        "nextAction": "在结构读取基础上实现真正页面/特殊槽哈希与CMS/profile/证书、资源封印验证；仅在固定源码的阶段检查收取新9项SDK结果，失败先修复，继续非真机开发。",
         "readiness": "ready",
         "readyPreparation": [
           "现在即可实现材料读取、受控签名及协议模块；每段交付实际代码和局部验证，不能只新增探针或计划。"
@@ -1235,7 +1251,8 @@
           "docs/legado-ios/stage-checkpoint-5f543a1-initial.json",
           "docs/legado-ios/core-self-signing-first-segment.json",
           "docs/legado-ios/self-signing-metadata-4ada44e-initial.json",
-          "docs/legado-ios/core-renewal-sequence-first-step.json"
+          "docs/legado-ios/core-renewal-sequence-first-step.json",
+          "docs/legado-ios/core-renewal-url-signature-step.json"
         ],
         "deferredHardware": [
           "已按用户要求交付 build12 通道诊断包，待电脑关机、USB 断开的动态发现报告；认证 transport、签名、替换安装、冷启数据与无人值守分别待验。"
@@ -1381,7 +1398,7 @@
       ],
       "execution": {
         "summaryZh": "普通产品桥的原运行时语义",
-        "currentState": "??C1??????Cookie????????JVM???44?Windows?????JAR/smoke?????????Android????????WebView???AnalyzeUrl/WebBook?App???????38???????????????44???? 本批新增显式 task-bound 原规则请求平台，复用同一 JVM HTTP、任务截止时间与取消；关闭环境拒绝晚结果。Windows JDK21 已实际通过新增8／原协调器18／现有HTTP12，共38方法38执行，普通runtimeJar／runtimeSmoke亦通过。未改变App传统唯一入口，没有新增运行时operation，完整AnalyzeUrl／WebBook、原源状态和登录宿主仍未完成；iOS／JNI实际验收未取得。 原范围现状保留：锁定Rhino/Zero与Java互操作已有桌面及历史独立Probe证据；普通主App固定mainJS链路通过只证明有限调用，动态this/eval/Function、E4X及全部Java返回类型尚未在当前普通产品桥逐项重放。 历史设备报告和含测试类的Probe JAR不能替代当前普通JAR、原生模块、JNI边界及签名App的同源码验收。",
+        "currentState": "原AnalyzeRule公开协调器的显式请求现复用同一RuntimeTask、JVM HTTP及Cookie，有限AnalyzeUrl执行@js/<js>、@result、原{{…}}扫描与页组选项。Windows JDK21实际82项方法通过，新增URL9项中一项含140组原ZIP方法差分；普通JAR/smoke通过。该原版方法参考使用合成构造/eval接缝，不是完整Android构造器运行。完整动态header、登录头域与初始化顺序、option.js/bodyJs、编码选项、WebBook、持久状态及App传统入口仍未完成；iOS/JNI本轮未验收。此前44/38项是历史子集，不与82相加。",
         "remainingWork": [
           "锁定Rhino/Zero与Java互操作已有桌面及历史独立Probe证据；普通主App固定mainJS链路通过只证明有限调用，动态this/eval/Function、E4X及全部Java返回类型尚未在当前普通产品桥逐项重放。 历史设备报告和含测试类的Probe JAR不能替代当前普通JAR、原生模块、JNI边界及签名App的同源码验收。",
           "1. 冻结现有JsEngineCapabilitiesTest与InteropSemanticSuiteTest向量清单，标记已验证的桌面/Probe/普通App来源，复用未变代码的已有证据。",
@@ -1404,7 +1421,8 @@
           "docs/legado-ios/sdk-and-rule-scope-validation.json",
           "docs/legado-ios/native-cancellation-investigation.json",
           "docs/legado-ios/runtime-notices.md",
-          "docs/legado-ios/core-self-signing-first-segment.json"
+          "docs/legado-ios/core-self-signing-first-segment.json",
+          "docs/legado-ios/core-renewal-url-signature-step.json"
         ],
         "deferredHardware": [
           "最终签名App从主屏幕冷启动、无调试器/JIT执行核心/E4X/Java子集；记录新源码与资源身份。"
@@ -1527,14 +1545,14 @@
       ],
       "execution": {
         "summaryZh": "原 AnalyzeRule 公开入口",
-        "currentState": "??C1??????Cookie????????JVM???44?Windows?????JAR/smoke?????????Android????????WebView???AnalyzeUrl/WebBook?App???????38???????????????44???? 本批新增显式 task-bound 原规则请求平台，复用同一 JVM HTTP、任务截止时间与取消；关闭环境拒绝晚结果。Windows JDK21 已实际通过新增8／原协调器18／现有HTTP12，共38方法38执行，普通runtimeJar／runtimeSmoke亦通过。未改变App传统唯一入口，没有新增运行时operation，完整AnalyzeUrl／WebBook、原源状态和登录宿主仍未完成；iOS／JNI实际验收未取得。 原范围现状保留：JVM已保留原AnalyzeRule协调器切片和CSS/XPath/JSONPath/regex helper，但产品传统阅读与DeclarativeSource没有调用它；有限静态选择/替换通过不能替代完整公开入口。 有状态47调用保留两处异常脚本编号差异；完整JS/get-put、列表/元素转换、URL分支、同实例并发及iOS协调器执行仍有边界。",
+        "currentState": "原AnalyzeRule公开协调器的显式请求现复用同一RuntimeTask、JVM HTTP及Cookie，有限AnalyzeUrl执行@js/<js>、@result、原{{…}}扫描与页组选项。Windows JDK21实际82项方法通过，新增URL9项中一项含140组原ZIP方法差分；普通JAR/smoke通过。该原版方法参考使用合成构造/eval接缝，不是完整Android构造器运行。完整动态header、登录头域与初始化顺序、option.js/bodyJs、编码选项、WebBook、持久状态及App传统入口仍未完成；iOS/JNI本轮未验收。此前44/38项是历史子集，不与82相加。",
         "remainingWork": [
           "JVM已保留原AnalyzeRule协调器切片和CSS/XPath/JSONPath/regex helper，但产品传统阅读与DeclarativeSource没有调用它；有限静态选择/替换通过不能替代完整公开入口。 有状态47调用保留两处异常脚本编号差异；完整JS/get-put、列表/元素转换、URL分支、同实例并发及iOS协调器执行仍有边界。",
           "1. 在现有OriginalAnalyzeRuleTest按公开getString/getStringList/getElements入口组织CSS/XPath/JSONPath/regex和组合规则，而非只验底层helper；复用28标量、36 JSONPath和47有状态原基线。",
           "2. 先定位并记录每个实际差异：空/缺失/错误、||/&&/%%、捕获组、替换、HTML实体、Java DOM/节点类型、动态JS与变量；一次修复一个原入口差异，比较器不替实现补值。",
           "3. 原协调器分阶段接入现有JVM业务编排所需接口，先补平台依赖再做普通JAR→Swift固定产品链路，禁止用新Swift解析器绕过原协调器。"
         ],
-        "nextAction": "结合已接通的显式请求平台完成原公开规则与URL编排，逐步推进固定传统源完整阅读链；本批38桌面通过不替代原完整语义、持久状态或App唯一入口验收。",
+        "nextAction": "继续移植锁定原AnalyzeUrl的header/login域判断、请求选项与编码顺序；以现有单一任务和传输做最小原版差分，不先切App路由。",
         "readiness": "ready",
         "readyPreparation": [
           "补原公开入口缺失向量、将已有golden逐项映射到当前协调器测试；与schema和URL原契约可并行。"
@@ -1552,7 +1570,8 @@
           "docs/legado-ios/scalar-selector-port.json",
           "docs/legado-ios/traditional-stateful-reference.json",
           "docs/legado-ios/core-self-signing-first-segment.json",
-          "docs/legado-ios/core-renewal-sequence-first-step.json"
+          "docs/legado-ios/core-renewal-sequence-first-step.json",
+          "docs/legado-ios/core-renewal-url-signature-step.json"
         ],
         "deferredHardware": [
           "最终普通JVM中重放选定原向量，再用用户自有代表传统源验证真实链路；私人源不进入仓库/日志。"
@@ -1592,14 +1611,14 @@
       ],
       "execution": {
         "summaryZh": "原 AnalyzeUrl 与请求语义",
-        "currentState": "??C1??????Cookie????????JVM???44?Windows?????JAR/smoke?????????Android????????WebView???AnalyzeUrl/WebBook?App???????38???????????????44???? 本批新增显式 task-bound 原规则请求平台，复用同一 JVM HTTP、任务截止时间与取消；关闭环境拒绝晚结果。Windows JDK21 已实际通过新增8／原协调器18／现有HTTP12，共38方法38执行，普通runtimeJar／runtimeSmoke亦通过。未改变App传统唯一入口，没有新增运行时operation，完整AnalyzeUrl／WebBook、原源状态和登录宿主仍未完成；iOS／JNI实际验收未取得。 原范围现状保留：传统产品仍走Swift/JSC AnalyzeUrl；原协调器RulePlatform.request明确报未连接，JVM SourceJavaHost生产路径拒绝动态URL、动态header、proxy及若干URL选项。 JVM普通HTTP已有固定字节/TLS/取消证据，但不覆盖完整AnalyzeUrl编排；URLSession可选宿主不能保留重复头字段，不能用它冒充原响应类型或完整wire一致。",
+        "currentState": "原AnalyzeRule公开协调器的显式请求现复用同一RuntimeTask、JVM HTTP及Cookie，有限AnalyzeUrl执行@js/<js>、@result、原{{…}}扫描与页组选项。Windows JDK21实际82项方法通过，新增URL9项中一项含140组原ZIP方法差分；普通JAR/smoke通过。该原版方法参考使用合成构造/eval接缝，不是完整Android构造器运行。完整动态header、登录头域与初始化顺序、option.js/bodyJs、编码选项、WebBook、持久状态及App传统入口仍未完成；iOS/JNI本轮未验收。此前44/38项是历史子集，不与82相加。",
         "remainingWork": [
-          "传统产品仍走Swift/JSC AnalyzeUrl；原协调器RulePlatform.request明确报未连接，JVM SourceJavaHost生产路径拒绝动态URL、动态header、proxy及若干URL选项。 JVM普通HTTP已有固定字节/TLS/取消证据，但不覆盖完整AnalyzeUrl编排；URLSession可选宿主不能保留重复头字段，不能用它冒充原响应类型或完整wire一致。",
+          "普通mainJs宿主与主App传统路由仍保留旧入口；只有显式原规则请求启用有限URL展开。完整AnalyzeUrl的header/login、option.js/bodyJs、编码/DNS/WebView与WebBook尚未完成，返回类型、异常与请求字节需逐项对照。",
           "1. 按原AnalyzeUrl的URL JS、模板、key/page分支、header/bodyJs、请求选项执行顺序建立固定loopback请求记录；每个缺口保留原字节/类型/异常。",
           "2. 把锁定AnalyzeUrl必要依赖接到现有JVM传输和原StrResponse/Connection.Response接口，统一RulePlatform.request与当前网络宿主，保留不支持错误，不加静默平台回退。",
           "3. 扩大现有SourceHttpSemanticsTest/ProductionHttpTransportTest到POST/二进制/GBK、重复头/Set-Cookie、相对重定向、超时/取消/重试和DNS/proxy边界；阶段末单次普通App集中验证。"
         ],
-        "nextAction": "沿锁定原AnalyzeUrl补动态URL／header／bodyJs和请求选项执行顺序，使用本批唯一task-bound传输接点；先对照原请求字节／Java返回类型／异常与状态，再接完整WebBook，不另造解析器或Swift回退。",
+        "nextAction": "继续移植锁定原AnalyzeUrl的header/login域判断、请求选项与编码顺序；以现有单一任务和传输做最小原版差分，不先切App路由。",
         "readiness": "ready",
         "readyPreparation": [
           "立即构造原AnalyzeUrl固定输入与loopback wire向量；不等待UI或状态持久化实现。"
@@ -1614,7 +1633,8 @@
           "docs/legado-ios/http-wire-capability.json",
           "docs/legado-ios/native-worker-thread-fix.json",
           "docs/legado-ios/core-self-signing-first-segment.json",
-          "docs/legado-ios/core-renewal-sequence-first-step.json"
+          "docs/legado-ios/core-renewal-sequence-first-step.json",
+          "docs/legado-ios/core-renewal-url-signature-step.json"
         ],
         "deferredHardware": [
           "真机TLS/网络切换、代理/权限、实际站点重定向和超时；无系统长期后台网络承诺。"
@@ -1848,7 +1868,7 @@
       ],
       "execution": {
         "summaryZh": "Cookie、原生表单与网页登录",
-        "currentState": "??C1??????Cookie????????JVM???44?Windows?????JAR/smoke?????????Android????????WebView???AnalyzeUrl/WebBook?App???????38???????????????44???? JSC路径已有CookieStore、LoginManager、原生表单、SourceBrowserPresenter/WebView；这些入口不是JVM持久Cookie/浏览器宿主或完整LoginUiV2验收。 JVM SessionCookies只在内存，RuleCookieHost默认unsupported，默认平台宿主不提供browser；重复Set-Cookie、WKWebView同步、域/路径/expiry、登录头和关闭取消仍缺统一原契约。",
+        "currentState": "显式ProductionRulePlatform的Cookie宿主已复用同一RuntimeSession JVM内存jar，原Cookie首段44方法及本轮包含它的URL82方法通过，计数不累加。默认基础RuleCookieHost仍unsupported，与已接通生产平台区分记录。JSC路径已有CookieStore、LoginManager、原生表单与SourceBrowserPresenter/WebView；尚未统一JVM持久状态、Android注册域共享语义、WKWebView同步、完整登录头域/初始化顺序及浏览器宿主，不能据此验收完整LoginUiV2或App传统入口。",
         "remainingWork": [
           "JSC路径已有CookieStore、LoginManager、原生表单、SourceBrowserPresenter/WebView；这些入口不是JVM持久Cookie/浏览器宿主或完整LoginUiV2验收。 JVM SessionCookies只在内存，RuleCookieHost默认unsupported，默认平台宿主不提供browser；重复Set-Cookie、WKWebView同步、域/路径/expiry、登录头和关闭取消仍缺统一原契约。",
           "1. 准备本地固定登录站点：重复Set-Cookie、跨域/路径/过期、显式Cookie覆盖、401/403 loginCheckJs、跳转验证码与退出/取消；保留原Cookie和请求字节。",
@@ -4447,6 +4467,10 @@
     "core-renewal-implementation-SDK-submission": {
       "path": "docs/legado-ios/core-renewal-0a0c740-initial.json",
       "scope": "One fixed-source implementation5+6 initial workflow observation only; no actual native leaf acceptance, JVM or old diagnostics rerun, real signing/install/renewal, IPA or device result."
+    },
+    "core-renewal-url-signature-step": {
+      "path": "docs/legado-ios/core-renewal-url-signature-step.json",
+      "scope": "Actual82 Windows JVM methods and ordinaryJAR/smoke; bounded Mach-O reader9 prepared methods/grammar2 only, SDK0; portable23 selection guards. No whole C1/S1, native crypto/signing/install/renewal or full source acceptance."
     }
   },
   "retainedExistingWork": [

@@ -81,7 +81,7 @@
   ],
   "currentImplementation": {
     "priority": "P0",
-    "status": "active_scope_changed_by_user_not_feature_completion",
+    "status": "active_C1_S1_production_slices_desktop_verified_native_pending",
     "activeLines": [
       {
         "id": "self-signing-lane",
@@ -136,8 +136,18 @@
       ],
       "actualStepsCompleted": 0
     },
-    "latestStepExecution": "docs/legado-ios/core-renewal-sequence-first-step.json",
-    "implementationSDKSubmission": "docs/legado-ios/core-renewal-0a0c740-initial.json"
+    "latestStepExecution": "docs/legado-ios/core-renewal-url-signature-step.json",
+    "implementationSDKSubmission": "docs/legado-ios/core-renewal-0a0c740-initial.json",
+    "continuation": {
+      "mechanism": "Codex persistent Goal",
+      "userExplicitlyAuthorizedOn": "2026-10-20",
+      "activationConfirmedAtUTC": "2026-10-20T02:17:58Z",
+      "lastObservedStatus": "active",
+      "ordinaryTurnCompletionEndsGoal": false,
+      "scopeUnchanged": true,
+      "physicalDeviceValidationRequested": false,
+      "ruleZh": "按已启用的持续目标继续实际开发；保留C1至C5、S1至S6及原依赖关系，不因单轮结束将目标标为完成。设备验证与其他17包仍暂缓。"
+    }
   },
   "actualCloudFailure": {
     "runId": 39249523428,
@@ -181,7 +191,7 @@
     "smokeShellSyntax": "passed_with_Git_Bash_bash_n",
     "gitDiffCheck": "passed"
   },
-  "nextCheckpoint": "仅围绕相关自签与书源核心实际改动组织集中非真机检查，复用已提交任务的源码绑定证据；不自动开展暂缓扩展、材料批次或真机测试，不据此制作新 IPA。",
+  "nextCheckpoint": "冻结本轮源码后仅新Mach-O signature9做SDK检查；复用既有证据，继续C1/S1剩余实现，其他17包及真机暂缓，不制作IPA。",
   "newIPAProduced": false,
   "privateSourceAccessed": false,
   "physicalDeviceValidated": false,

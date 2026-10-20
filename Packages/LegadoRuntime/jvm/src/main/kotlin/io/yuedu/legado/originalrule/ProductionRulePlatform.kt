@@ -1,6 +1,10 @@
 package io.yuedu.legado.originalrule
 
 import com.google.gson.JsonObject
+import com.script.ScriptException
+import com.script.rhino.ScriptExecutionGuard
+import io.legado.app.data.entities.BaseSource
+import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.yuedu.legado.RuntimeFailure
 import io.yuedu.legado.RuntimeTask
 import io.yuedu.legado.SourceJavaHost
@@ -10,20 +14,22 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
+import org.htmlunit.corejs.javascript.WrappedException
 import kotlin.coroutines.CoroutineContext
 
 /**
  * First request boundary for the retained AnalyzeRule: one existing task, source
  * snapshot, cookie jar, deadline and ProductionHttpTransport. It deliberately
- * reuses SourceJavaHost's finite request preparation, including its explicit
- * unsupported dynamic-URL/options checks; it is not a second AnalyzeUrl parser.
+ * expands the retained finite AnalyzeUrl script stages, then reuses
+ * SourceJavaHost's single request/options preparation. Unported options remain
+ * explicit capability failures; this is not the complete AnalyzeUrl port.
  * No browser, persistent source state or App reader routing is implied here.
  */
 @OptIn(InternalCoroutinesApi::class)
 internal class ProductionRulePlatform(
     private val task: RuntimeTask,
     dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
-    private val ensureEnvironmentOpen: () -> Unit,
+    private val environment: () -> RuleEnvironment,
 ) : RulePlatform() {
     override val cookie: RuleCookieHost = object : RuleCookieHost() {
         override fun getCookie(url: String): String = cookieOperation { task.session.cookies.getRuleCookie(url) }
@@ -33,7 +39,9 @@ internal class ProductionRulePlatform(
         override fun removeCookie(url: String): Unit = cookieOperation { task.session.cookies.removeRuleCookie(url) }
     }
 
-    private val javaHost = SourceJavaHost(task) { current, operation, input ->
+    // Qualification is private constructor state, never a script-visible
+    // internal/public bypass method or setter on the ordinary mainJs host.
+    private val javaHost = SourceJavaHost(task, expandedOriginalUrl = true) { current, operation, input ->
         check(current === task && operation == "http.request") { "Unexpected original-rule host operation" }
         ensureOwnerOpen()
         // Never fall back to a native/Swift transport after session shutdown.
@@ -42,7 +50,17 @@ internal class ProductionRulePlatform(
         dispatch(current, operation, input)
     }
 
-    override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse {
+    override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
+        requestOwned(url, headers, callTimeout, context, null)
+
+    override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext,
+                         requester: RuleJsExtensions): StrResponse {
+        check(requester.getRuleEnvironment() === environment()) { "Original-rule requester belongs to another environment" }
+        return requestOwned(url, headers, callTimeout, context, requester.getSource())
+    }
+
+    private fun requestOwned(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext,
+                             source: BaseSource?): StrResponse {
         ensureOwnerOpen()
         context.ensureActive()
         task.ensureActiveForRuntime()
@@ -59,7 +77,19 @@ internal class ProductionRulePlatform(
         try {
             context.ensureActive()
             task.ensureActiveForRuntime()
-            val response = javaHost.connect(url, headers, callTimeout)
+            // Reuse Rhino's existing instruction observer and task Job. The
+            // optional guard checks the same deadline/owner without a new timer,
+            // job, thread or cancellation authority (and without inheriting Job).
+            val guard = ScriptExecutionGuard {
+                ensureOwnerOpen()
+                task.ensureActiveForRuntime()
+            }
+            val scriptContext = context.minusKey(Job) + task.job + guard
+            // JsExtensions.ajax/connect pass no search key/page/book/baseUrl.
+            // Never inherit a parent search's inputs into a nested URL request.
+            val expanded = AnalyzeUrl(url, source = source, environment = environment(),
+                coroutineContext = scriptContext).ruleUrl
+            val response = javaHost.connect(expanded, headers, callTimeout)
             // Environment close rejects late publication; it does not abort an
             // already-running host call or cancel a shared session. That call is
             // still bounded by this task's existing deadline/transport timeout.
@@ -67,19 +97,44 @@ internal class ProductionRulePlatform(
             context.ensureActive()
             task.ensureActiveForRuntime()
             return response
-        } catch (error: RuntimeFailure) {
-            // AnalyzeRule.ajax preserves this typed capability error. Without
-            // translation it would mistake an unsupported rule for network text.
-            if (error.code == "UNSUPPORTED_CAPABILITY") throw UnsupportedRuleCapability(error.message.orEmpty())
+        } catch (error: Exception) {
+            // Library initialization and host callbacks can fail after close or
+            // cancellation too. Preserve those authorities even on exceptional
+            // exits so ajax cannot turn a closed-owner failure into body text.
+            ensureOwnerOpen()
+            context.ensureActive()
+            task.ensureActiveForRuntime()
+            rethrowControlFailure(error)
             throw error
         } finally {
             cancellation?.dispose()
         }
     }
 
+    private fun rethrowControlFailure(error: Exception) {
+        // Only unwrap the known Rhino evaluation/invocation wrappers of an
+        // escaping host failure. JS try/catch has already run, so caught errors
+        // stay caught; ordinary JS errors retain the existing ajax text policy.
+        var current: Throwable = error
+        repeat(32) {
+            current = when (val failure = current) {
+                is UnsupportedRuleCapability -> throw failure
+                is CancellationException -> throw failure
+                is RuntimeFailure -> {
+                    if (failure.code == "UNSUPPORTED_CAPABILITY")
+                        throw UnsupportedRuleCapability(failure.message.orEmpty())
+                    return
+                }
+                is ScriptException -> failure.cause ?: return
+                is WrappedException -> failure.wrappedException ?: return
+                else -> return
+            }
+        }
+    }
+
     private fun ensureOwnerOpen() {
         try {
-            ensureEnvironmentOpen()
+            environment().ensureOpen()
         } catch (closed: IllegalStateException) {
             // ajax catches ordinary exceptions as response text; a closed owner
             // must never publish that text as a late successful result.

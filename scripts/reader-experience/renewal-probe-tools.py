@@ -25,6 +25,7 @@ DISCOVERY_SUITE = "SelfRenewalDiscoveryProbeTests"
 UI_SUITE = "SelfRenewalProbeUITests"
 REPLACEMENT_SUITE = "SelfRenewalReplacementPolicyTests"
 MATERIALS_SUITE = "SelfRenewalMaterialInventoryTests"
+SIGNATURE_SUITE = "SelfRenewalMachOSignatureReaderTests"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -72,6 +73,17 @@ EXPECTED_CASES = {
         "rejectsLinkedMaterials",
         "enforcesDirectoryAndByteLimits",
     )},
+    "signature": {SIGNATURE_SUITE + "/" + name for name in (
+        "readsThinSignaturesWithoutReadingExecutableBodiesOrClaimingTrust",
+        "readsFat32And64InBothByteOrders",
+        "rejectsMalformedFatTablesAndOverlappingSlices",
+        "rejectsMalformedAndUnknownRequiredLoadCommands",
+        "rejectsDamagedEmbeddedSignatureStructures",
+        "rejectsInvalidCodeDirectoryOffsetsAndUnsupportedLayouts",
+        "readsKnownDirectoryVersionsAndEmptyCMSWithoutAssumingTrust",
+        "handlesUnsignedTruncatedAndCancelledInputs",
+        "readsOwnedUnpackedAppThroughInventoryAndRejectsLinkedCode",
+    )},
     "ui": {UI_SUITE + "/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"},
 }
 SELECTION_GROUPS = {
@@ -80,6 +92,7 @@ SELECTION_GROUPS = {
     "all": ("unit", "discovery", "replacement", "ui"),
     "replacement": ("replacement",),
     "implementation": ("replacement", "materials"),
+    "signature": ("signature",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -95,6 +108,8 @@ SOURCE_INPUTS = (
     "Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
     "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalMaterialInventoryTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -120,7 +135,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement or implementation")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation or signature")
     return mode
 
 
@@ -316,14 +331,20 @@ def result(work):
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
-                            "Five replacement-policy cases check caller-supplied metadata only; no real platform adapter, signature or profile authenticity is established.",
                             "No Apple login, pairing, signing, installation or renewal operation is performed."] + (
-                           ["This selection executes only replacement metadata cases; unit, discovery, materials and UI groups are not executed or accepted."]
+                           ["This selection executes exactly nine owned-fixture Mach-O signature-structure cases; unit, discovery, replacement, materials and UI groups are not executed or accepted.",
+                            "Thin/fat Mach-O, load commands, SuperBlob, CodeDirectory and CMS slot observations remain untrusted; no CMS ASN.1, certificate-chain, page-hash, resource-seal or profile authenticity is established.",
+                            "No QueryType fixture listener, RemotePairing browsing or diagnostic TCP probe is invoked."]
+                           if mode == "signature" else [
+                            "Five replacement-policy cases check caller-supplied metadata only; no real platform adapter, signature or profile authenticity is established.",
+                            "This selection executes only replacement metadata cases; unit, discovery, materials, signature and UI groups are not executed or accepted."]
                            if mode == "replacement" else [
-                            "This selection executes exactly five replacement-policy and six owned-file material-inventory cases; unit, discovery and UI groups are not executed or accepted.",
+                            "Five replacement-policy cases check caller-supplied metadata only; no real platform adapter, signature or profile authenticity is established.",
+                            "This selection executes exactly five replacement-policy and six owned-file material-inventory cases; unit, discovery, signature and UI groups are not executed or accepted.",
                             "Material inventory reads bounded owned directory fixtures and untrusted metadata; it does not verify Mach-O signatures, resource seals, CMS profiles or certificate authority."]
                            if mode == "implementation" else [
-                            "Historical all mode retains only unit, discovery, replacement and UI groups; material-inventory cases are not executed or accepted.",
+                            "Five replacement-policy cases check caller-supplied metadata only; no real platform adapter, signature or profile authenticity is established.",
+                            "Historical all mode retains only unit, discovery, replacement and UI groups; material-inventory and signature-structure cases are not executed or accepted.",
                             "Unit network responses come from owned temporary loopback fixture listeners.",
                             "The explicit UI operation browses only RemotePairing, filters numeric local ownership, opens TCP and closes without an application payload.",
                             "The existing eight QueryType fixture cases remain separate from sixteen discovery cases and one UI case.",

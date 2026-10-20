@@ -160,7 +160,7 @@ object LegadoRuntime {
             }
         )
         val source = task.session.source
-        val javaHost = SourceJavaHost(task, ::dispatchHost)
+        val javaHost = SourceJavaHost(task, dispatch = ::dispatchHost)
         if (source["mainJs"]?.takeUnless { it.isJsonNull }?.asString.isNullOrBlank()) {
             return DeclarativeSource(task, javaHost).execute(operation, input)
         }
@@ -246,7 +246,7 @@ object LegadoRuntime {
         check(!task.session.closed.get()) { "Session is closed" }
         require(task.session.options.usesJvmHttp) { "Original-rule requests require the JVM HTTP transport" }
         lateinit var environment: RuleEnvironment
-        environment = RuleEnvironment(ProductionRulePlatform(task, ::dispatchHost) { environment.ensureOpen() })
+        environment = RuleEnvironment(ProductionRulePlatform(task, ::dispatchHost) { environment })
         return environment
     }
 

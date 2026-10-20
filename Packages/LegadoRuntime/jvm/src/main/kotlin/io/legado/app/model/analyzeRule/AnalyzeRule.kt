@@ -952,7 +952,7 @@ class AnalyzeRule(
             url.toString()
         }
         return kotlin.runCatching {
-            runtime.platform.request(urlStr, null, null, coroutineContext).body()
+            runtime.platform.request(urlStr, null, null, coroutineContext, this).body()
         }.onFailure {
             // Missing capabilities and task cancellation are not network-response bodies.
             if (it is UnsupportedRuleCapability || it is CancellationException) throw it

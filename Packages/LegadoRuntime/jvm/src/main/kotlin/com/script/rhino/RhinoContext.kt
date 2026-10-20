@@ -336,6 +336,7 @@ class RhinoContext(factory: ContextFactory) : Context(factory) {
     @Throws(RhinoInterruptError::class)
     fun ensureActive() {
         try {
+            coroutineContext?.get(ScriptExecutionGuard)?.checkActive?.invoke()
             coroutineContext?.ensureActive()
         } catch (e: CancellationException) {
             throw RhinoInterruptError(e)

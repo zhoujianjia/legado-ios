@@ -87,8 +87,8 @@ class OriginalRuleHttpPlatformTest {
             Session(peer.origin).use { owned ->
                 owned.environment().use { environment ->
                     AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned fixture")).use { rule ->
-                        listOf("@js:'${peer.origin}'", peer.origin + "/{{1}}", "<js>'${peer.origin}'</js>",
-                            peer.origin + "/,{\"webView\":true}").forEach { url ->
+                        listOf(peer.origin + "/,{\"webView\":true}",
+                            peer.origin + "/,{\"js\":\"result\"}", peer.origin + "/,{\"bodyJs\":\"result\"}").forEach { url ->
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.connect(url) }
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.ajax(url) }
                         }

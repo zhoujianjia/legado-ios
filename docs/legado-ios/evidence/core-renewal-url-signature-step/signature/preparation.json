@@ -1,0 +1,82 @@
+{
+  "createdAtUTC": "2026-10-20T02:17:06.494093+00:00",
+  "status": "prepared_not_sdk_executed",
+  "sourceInputs": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "bytes": 25896,
+      "sha256": "5db6ead9ed0cd22fce5cf4833ed86602233cf0e3da99e6267824c2064ed36c52",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalMachOSignatureReaderTests.swift",
+      "bytes": 18684,
+      "sha256": "4c6bdda7ce187ae1e207fda2a62e0cc8fb859e4b2a2a8c203046b8ac5faf96f3",
+      "grammarErrors": []
+    }
+  ],
+  "grammarParsedFiles": 2,
+  "preparedSwiftTestMethods": [
+    "readsThinSignaturesWithoutReadingExecutableBodiesOrClaimingTrust",
+    "readsFat32And64InBothByteOrders",
+    "rejectsMalformedFatTablesAndOverlappingSlices",
+    "rejectsMalformedAndUnknownRequiredLoadCommands",
+    "rejectsDamagedEmbeddedSignatureStructures",
+    "rejectsInvalidCodeDirectoryOffsetsAndUnsupportedLayouts",
+    "readsKnownDirectoryVersionsAndEmptyCMSWithoutAssumingTrust",
+    "handlesUnsignedTruncatedAndCancelledInputs",
+    "readsOwnedUnpackedAppThroughInventoryAndRejectsLinkedCode"
+  ],
+  "preparedSwiftTestCount": 9,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0,
+  "productionConnection": "Calls existing SelfRenewalMaterialInventory.read, then parses only inventory codeFile ranges",
+  "newSeparateHardLimits": {
+    "architectures": 16,
+    "loadCommands": 4096,
+    "commandBytesPerSlice": 1048576,
+    "signatureBytesPerSlice": 16777216,
+    "blobSlots": 32,
+    "stringBytes": 255,
+    "totalAdditionalReadBytes": 67108864
+  },
+  "readOnly": true,
+  "callerOwnedQuiescentUnpackedApplicationRequired": true,
+  "wholeExecutableReadRequired": false,
+  "originalInventoryBudgetChanged": false,
+  "realCredentialsProfilesIPAsOrDeviceMaterialsRead": false,
+  "cryptographicVerificationPerformed": false,
+  "replacementPolicyTrustedAdapterConstructed": false,
+  "signingInstallationOrAutomaticRenewalImplemented": false,
+  "deferredFormats": [
+    "raw standalone CodeDirectory",
+    "scatter vectors",
+    "pre-encrypted hash arrays",
+    "linkage signatures",
+    "unknown required dyld commands",
+    "unknown signature slots",
+    "future CodeDirectory versions",
+    "CMS ASN.1 and trust",
+    "page and special-slot digest verification"
+  ],
+  "primaryReferences": [
+    {
+      "path": ".build/renewal-discovery/macho-materials-step/primary/loader.h",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/EXTERNAL_HEADERS/mach-o/loader.h",
+      "bytes": 71322,
+      "sha256": "8780a1e622375833b563f488bc820422c2fb5b8727bb8df8ceaa73ab6f0f88e3"
+    },
+    {
+      "path": ".build/renewal-discovery/macho-materials-step/primary/fat.h",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/cctools/main/include/mach-o/fat.h",
+      "bytes": 3323,
+      "sha256": "19925cdb5fed9b5b7981b05420856f65b99abb54bca34ea95e0e581da8cc580f"
+    },
+    {
+      "path": ".build/renewal-discovery/macho-materials-step/primary/cs_blobs.h",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/osfmk/kern/cs_blobs.h",
+      "bytes": 14256,
+      "sha256": "71179676100bab2b321abd888237d4a6eda0088489f9930a77559c517d8c7c80"
+    }
+  ]
+}

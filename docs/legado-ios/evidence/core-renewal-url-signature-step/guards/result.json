@@ -1,0 +1,79 @@
+{
+  "recordedAtUTC": "2026-10-20T02:20:01.999964+00:00",
+  "status": "passed",
+  "parentSelectionMode": "signature",
+  "commands": [
+    {
+      "name": "renewal-evidence-guards",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.875,
+      "log": ".build/renewal-discovery/signature-selection-gates/renewal-evidence-guards.log",
+      "logBytes": 4363,
+      "logSHA256": "fc206b3e3dda5fe61c04dd2de37ef7560be334d99f01aa62219161a13a256026",
+      "actualPortableTestMethodsPassed": 23
+    },
+    {
+      "name": "renewal-shell-syntax",
+      "command": [
+        "D:\\app\\Git\\bin\\bash.exe",
+        "-n",
+        "scripts/reader-experience/renewal-probe-tests.sh"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.079,
+      "log": ".build/renewal-discovery/signature-selection-gates/renewal-shell-syntax.log",
+      "logBytes": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "renewal-workflow-lint",
+      "command": [
+        "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+        "-shellcheck=",
+        ".github/workflows/reader-renewal-probe.yml"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.063,
+      "log": ".build/renewal-discovery/signature-selection-gates/renewal-workflow-lint.log",
+      "logBytes": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "sourceInputs": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 22057,
+      "sha256": "9eafcb085ce4fd20f6e12038f7f2b47ec598fd27c3972751a3c0c5c5b5d6b435"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 38454,
+      "sha256": "8e8ad2a2a255be8fa2a05e48ad93cc708cb081ec210f087c56f76b8c31441142"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "bytes": 6416,
+      "sha256": "ed09d38c996dc7f05855bd4c4fe730a99a68d07eb23bba3fb35923fb53ad3080"
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "bytes": 5205,
+      "sha256": "2b09a0f87cadb542ee7328a88ad5decea81e8aeb15be8f67eb2fc37b9c5c556d"
+    }
+  ],
+  "allSourceInputCount": 38,
+  "selectedSwiftGroup": "signature",
+  "preparedSwiftTests": 9,
+  "actualSwiftSDKBuilds": 0,
+  "actualSwiftTestExecutions": 0,
+  "shellcheckExecuted": false,
+  "networkProbeOrDeviceOperationExecuted": false,
+  "CITriggered": false,
+  "oldSelectionsAndBudgetsPreserved": true
+}

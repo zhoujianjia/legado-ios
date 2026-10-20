@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "scope": "Retained original AnalyzeRule coordinator in the ordinary JVM module, not connected to DeclarativeSource, mainJs, or the reader. Typed Java models are a finite API subset, not full Android/Room entities. Desktop vectors are not iOS/device/full-source acceptance.",
+  "scope": "Retained original AnalyzeRule coordinator plus finite AnalyzeUrl URL-script phases in the ordinary JVM module. An explicit task-bound HTTP adapter is available; not selected as DeclarativeSource/mainJs/App reader routing. Typed Java models are finite APIs, not full Android/Room entities. Desktop vectors are not iOS/device/full-source acceptance.",
   "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
   "sourceProvenance": [
     {
@@ -110,6 +110,12 @@
       "vendorPath": "sources/constant/AppPattern.kt",
       "bytes": 2553,
       "sha256": "ddf4dd291c8f6f092783673a8f7ed81af6e8eb6fc02271c42220baa00a5b1ae8"
+    },
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 35401,
+      "sha256": "f7ba074137c8e3a847dc7bbf9465c7fd9318646c5670c144300e7959fb931a9b",
+      "vendorPath": "sources/model/analyzeRule/AnalyzeUrl.kt"
     }
   ],
   "retainedAlgorithms": {
@@ -122,7 +128,14 @@
       "per-instance compiled-script/regex/source-rule caches"
     ],
     "RuleDataInterface.kt": "Original archive bytes unchanged, including length < 10000 and Boolean returns",
-    "RuleData.kt": "Original implementation; only GSON import is redirected"
+    "RuleData.kt": "Original implementation; only GSON import is redirected",
+    "AnalyzeUrl.kt": [
+      "Finite URL script phase only: analyzeJs then replaceKeyPageJs, followed by existing SourceJavaHost HTTP preparation.",
+      "Original case-insensitive @js/<js>, @result replacement order, String/Double/null formatting, first-end-delimiter innerRule overload, and page alternatives including original edge-case exceptions.",
+      "Actual Rhino java=this and original FQN Book/BookSource bindings; source inline jsLib/CryptoJS and environment-owned scopes reused.",
+      "Nested JsExtensions ajax/connect defaults are key/page/ruleData/chapter null and baseUrl empty. No inherited parent search input.",
+      "Full analyzeUrl/getStrResponse, option.js/bodyJs, dynamic source headers, extraParams/infoMap/speech configuration, WebView/DNS/media/rate limiting and Android persistence are not ported."
+    ]
   },
   "platformSeams": [
     "Android annotations and TextUtils empty checks replaced by JVM equivalents",
@@ -131,9 +144,9 @@
     "Cache seconds/typed memory/50 MiB access-order limit and original source cache keys retained",
     "Scopes use original inline-library/CryptoJS algorithms, owner+thread crypto identity and weak 16-entry caches; shared-global state additionally namespaced to the explicit RuleEnvironment lifetime",
     "Scope creation serializes only matching library or owner/thread keys with same-thread reentrancy; metadata/condition monitors do not execute scripts, Job cancellation and environment close notify same-key condition waiters, compiled CryptoJS stays environment-owned, and close rejects later publication; arbitrary initializer host calls are not interrupted",
-    "No HTTP delegate installed by default; AnalyzeUrl, browser, update-book, batch, RSS and remote/map jsLib are not migrated",
+    "Default RulePlatform still has no HTTP delegate. Explicit task-bound ProductionRulePlatform expands the finite original AnalyzeUrl URL-script phases then uses the sole existing JVM HTTP/session cookie/deadline path; complete AnalyzeUrl, browser, update-book, batch, RSS and remote/map jsLib remain unported",
     "Unsupported capability and cancellation exceptions escape ajax error-text recovery",
-    "Coroutine context can be supplied explicitly; RuntimeTask/reader routing has not been integrated",
+    "Coroutine context can be supplied explicitly; the optional production adapter is bound to the existing RuntimeTask. App traditional reader routing remains unintegrated",
     "Android Base64 flags/byte-array overloads explicitly unsupported; default String/charset overload follows Hutool 5.8.22 decoding, default encoding is Android NO_WRAP-equivalent UTF-8",
     "Original pure Gson adapters are retained for String/Int/Map; Android rule-model and LocalDate adapters are not installed",
     "Explicit close releases environment state and scope handles; original Android app-global persistence is not claimed"
@@ -356,8 +369,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
-      "bytes": 37228,
-      "sha256": "aae5c57d943d62dd16d5a6be46fc398afa2cb8c8f4e89332a61b447b696e809c"
+      "bytes": 37234,
+      "sha256": "ee42da1ab17f5cf0dd59f9690b2d51ad05c5fccbd54bfd49152215219d137865"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/RuleData.kt",
@@ -391,8 +404,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-      "bytes": 4714,
-      "sha256": "47f69c994ad614ba3ad1b7a047c6da0868aee0f06322c02f3ab5738a5b70f6f9"
+      "bytes": 4928,
+      "sha256": "187e37a5b1973f8d2b2c8d39510b1a4714b788af9c7c8c2c09ce66fd14870610"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
@@ -403,6 +416,11 @@
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
       "bytes": 5430,
       "sha256": "594b04a5377c8f469ff21dc9f33635038101d6d21ff033adfdd9ce9ec4d0550a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 5697,
+      "sha256": "b0c8c0b02af85aed72065cf9b7437457d6a43beb71e28a6d76b9daffe5fd5b11"
     }
   ],
   "readerRouteIntegrated": false,
@@ -427,5 +445,62 @@
     "newPortLifecycleRegressionMethods": 1,
     "newAndroidGoldenObservations": 0,
     "regressionBasis": "Pinned CacheManager separate text/binary stores and SharedJsScope map parsing order plus the port close contract; no new Android golden execution."
+  },
+  "urlExpansionIntegration": {
+    "scope": "Task-bound finite URL expansion, not complete AnalyzeUrl or full traditional source compatibility",
+    "integrationSources": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/com/script/rhino/RhinoContext.kt",
+        "bytes": 13257,
+        "sha256": "527efaf29547841708d27176b5d936a5ce6163965b479a493cfcad55a2d7fe58"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/com/script/rhino/ScriptExecutionGuard.kt",
+        "bytes": 391,
+        "sha256": "189bab0e56d4115157e288417c6ea7b1509eddde4f4ee18ee440de7f47e46cc3"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 19689,
+        "sha256": "604781f1b0aa2c003c741961a128efe88c0c5107dc362627f07272e1c1a5b9fa"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+        "bytes": 20486,
+        "sha256": "55ecf3d31773c5eb152f5935651298d02a874c3fd4c0922c269281ceedd4108d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 8103,
+        "sha256": "30e195a499d2e5a99c6f3e5b2c40f2792b208c4537016e1c21507725c4efc2ee"
+      }
+    ],
+    "executionGuard": "Optional context element checked by the existing Rhino instruction observer. No guard means the previous context check is unchanged. The original RuntimeTask Job, deadline, HTTP transport and cancellation authority are retained; no Job inheritance/new timer/new thread.",
+    "remainingRequestDifferences": [
+      "SourceJavaHost still prepares source/login headers after URL expansion, rather than original AnalyzeUrl constructor initialization before initUrl.",
+      "Login-header site filtering still uses the expanded resolved URL; upstream checks the initial mUrl/baseUrl before JS rewriting.",
+      "Relative request URL resolution remains SourceJavaHost RuntimeSession.bookSourceUrl based; baseUrl binding for nested URL JS is the original empty default.",
+      "Source variables/login/cache are not fully unified with RuntimeSession stores. Cookie access uses the same existing per-session JVM jar, not Android Room/WebView persistence.",
+      "Arbitrary already-running Java host code is not interrupted by environment close; the instruction/host return boundary rejects publication after close."
+    ],
+    "validation": {
+      "platform": "Windows JDK21",
+      "actualFocusedUniqueMethods": 82,
+      "newURLMethods": 9,
+      "lockedArchiveMethodDifferentialCombinations": 140,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "archiveReferenceBoundary": "Two original ZIP methods executed through a synthetic constructor/eval seam; not Android execution or full original constructor comparison",
+      "runRecord": ".build/original-url-execution/focused-v6.json"
+    },
+    "readerRouteIntegrated": false,
+    "completeAnalyzeUrlPort": false,
+    "fullSourceCompatibilityEstablished": false,
+    "androidExecuted": false,
+    "iosExecuted": false,
+    "deviceExecuted": false,
+    "hostQualification": "The original-rule SourceJavaHost instance has a private constructor qualification. Ordinary mainJs hosts default false; no script-visible bypass method or setter is added. Actual Rhino enumeration/mangled-call/dynamic-request regressions passed.",
+    "escapingHostErrors": "Only at the URL production boundary, at most 32 known ScriptException/WrappedException wrappers are inspected for escaping typed unsupported/cancellation. Existing JavaScript try/catch works and ordinary JS errors keep the previous ajax text policy."
   }
 }

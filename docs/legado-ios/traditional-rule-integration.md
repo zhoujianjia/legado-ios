@@ -20,7 +20,7 @@
 
 上述仓库路径均以 `Packages/LegadoRuntime/` 为前缀。现有 `DeclarativeSourceTest` 仅证明固定 CSS 四步链路、几个底层解析调用及 unsupported 错误，不证明真实书源可用。
 
-当前执行顺序统一见 `completion-plan.json` 的 `execution.stepByStep`：C1 至 C5 依次推进原规则与请求、状态与登录、WebBook 编排、普通 JAR／JNI／App 唯一入口，以及核心对照和重启离线阅读。C1 最新首段已将原规则 Cookie 宿主接入现有单一 JVM 会话；44 项 Windows 回归及普通 JAR／smoke 实际通过。原 Android 域共享、持久化、WebView、完整 URL／业务编排与 App 传统入口仍未完成；上一段 38 项不与本次 44 项相加。源码、失败记录与验证边界见 `core-renewal-sequence-first-step.json`。
+当前执行顺序统一见 `completion-plan.json` 的 `execution.stepByStep`：C1 至 C5 依次推进原规则与请求、状态与登录、WebBook 编排、普通 JAR／JNI／App 唯一入口，以及核心对照和重启离线阅读。C1 已将原规则 Cookie 宿主接入同一 JVM 会话，并将原 `AnalyzeRule.ajax/connect` 接入有限 `AnalyzeUrl` URL 脚本阶段。本轮实际 82 项 Windows JVM 方法、普通 JAR／smoke 通过；新增 URL 9 项，其中一项包含 140 组锁定原 ZIP 方法差分，不能将组合数另加为测试数。原 Android 域共享、持久化、WebView、完整 header/login、请求选项、WebBook 与 App 传统入口仍未完成；历史 44／38 项不与本次 82 项累加。源码与边界见 `core-renewal-url-signature-step.json`，首段历史见 `core-renewal-sequence-first-step.json`。
 
 ## 原版文件与关键方法
 
@@ -115,3 +115,7 @@ Windows JDK 21 本轮强制执行完整 JVM 回归，实际为 18 份 XML、153 
 2026-10-20，按“先做自签和核心、其余未完成并暂缓、暂不做真机验证”的新范围，新增显式 task-bound 的 `ProductionRulePlatform`。保留的原协调器现在可以通过 `LegadoRuntime.originalRuleEnvironment(task)` 复用同一个任务、截止时间、会话及现有 JVM HTTP 客户端，执行当前已支持的静态请求；返回原 `StrResponse`、OkHttp 响应及重复头字段。未支持的动态 URL／选项继续明确报错，不另建请求解析器或 Swift 回退。环境关闭会拒绝晚结果；它不承诺立即中止已经运行的宿主调用，调用仍受原任务截止时间约束。
 
 本段实际 Windows JDK 21 回归为新增 8、原协调器 18、现有 HTTP 12，共 38 方法／38 执行，失败、错误和跳过均为零；普通 `runtimeJar`／`runtimeSmoke` 也已通过。原先 37 项记录保留。此工厂仍供后续原流程显式接入，尚未新增运行时 operation 或切换 App 传统源入口；完整 `AnalyzeUrl`／`WebBook`、源状态及登录宿主仍未完成。它不构成 iOS／JNI／真实书源或完整兼容验收。
+
+2026-10-20 后续 URL 切片保留原 `@js/<js>` → `{{…}}` → 页组选项顺序和 `@result`，原 `RuleAnalyzer` 使用第一个结束分隔符的 String 重载；没有自行改为平衡括号。嵌套 `java.ajax/connect` 按原版保留空 key/page/book/baseUrl 默认值，绑定真实原 Java 对象和 inline jsLib，复用同一任务、Rhino、HTTP、Cookie、绝对截止和取消。测试实际覆盖 CPU 脚本截止、caller 取消、环境关闭拒绝晚结果，以及普通 mainJs 动态 URL 仍拒绝。独立审查发现并修复了脚本可见 URL 绕过入口和嵌套 unsupported 被转换为正文的问题。
+
+原 ZIP 两个方法通过合成构造/eval 接缝做 140 组差分，未执行完整 Android 构造器。当前 SourceJavaHost 仍在 URL 展开后准备 source/login header，登录域检查及相对 URL 基址也未恢复原初始化顺序；动态 header、`option.js/bodyJs`、完整请求选项、WebBook、持久状态和 App 阅读接入均待完成。82 方法包含原 44、Rhino 25、互操作 4 和新 URL 9；普通 JAR 未包含项目测试类或 JUnit。这些结果证明当前有限桌面接线，不构成 iOS、完整书源或自动续签通过。

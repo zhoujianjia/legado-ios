@@ -14,6 +14,8 @@ open class RulePlatform {
     open val cookie: RuleCookieHost = RuleCookieHost()
     open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
         unsupportedRule("AnalyzeUrl HTTP orchestration is not connected to original rules")
+    open fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext,
+                     requester: RuleJsExtensions): StrResponse = request(url, headers, callTimeout, context)
     open fun webJs(baseUrl: String?, html: String, js: String, result: Any, context: CoroutineContext): String =
         unsupportedRule("original-rule WebJS/browser")
     open fun refreshBookInfo(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Nothing =
@@ -44,7 +46,7 @@ interface RuleJsExtensions {
     fun connect(url: String, header: String?): StrResponse = connect(url, header, null)
     fun connect(url: String, header: String?, callTimeout: Long?): StrResponse {
         getRuleEnvironment().ensureOpen()
-        return getRuleEnvironment().platform.request(url, header, callTimeout, getRuleCoroutineContext())
+        return getRuleEnvironment().platform.request(url, header, callTimeout, getRuleCoroutineContext(), this)
     }
     fun webView(html: String?, url: String?, js: String?): Nothing = unsupportedRule("original-rule browser")
     fun cacheContent(chapter: Any?, content: String): Nothing = unsupportedRule("original-rule batch content")
